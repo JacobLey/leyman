@@ -1,0 +1,9 @@
+{
+  "executors": {
+    "lifecycle": {
+      "implementation": "./dist/executors/lifecycle/index.cjs",
+      "schema": "./src/executors/lifecycle/schema.json",
+      "description": "Keep nx lifecycle targets in sync."
+    }
+  }
+}

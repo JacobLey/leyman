@@ -1,51 +1,52 @@
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { expect } from 'chai';
-import * as ParseCwd from '../../parse-cwd.js';
+import { expect, use } from 'chai';
+import chaiAsPromised from 'chai-as-promised';
+import { suite, test } from 'mocha-hookup';
+import * as ParseCwd from 'parse-cwd';
 
-export const ParseCwdSpec = {
+use(chaiAsPromised);
 
-    parseCwd: {
+suite('parseCwd', () => {
+    
+    test('Defaults to process.cwd()', async () => {
 
-        async 'Defaults to process.cwd()'() {
+        const cwd = await ParseCwd.parseCwd();
+        expect(cwd).to.equal(process.cwd());
+    });
 
-            const cwd = await ParseCwd.parseCwd();
-            expect(cwd).to.equal(process.cwd());
-        },
+    test('Resolves relative to process.cwd()', async () => {
 
-        async 'Resolves relative to process.cwd()'() {
+        const cwd = await ParseCwd.parseCwd(Path.relative(
+            process.cwd(),
+            Path.dirname(fileURLToPath(import.meta.url))
+        ));
+        expect(cwd).to.equal(
+            Path.dirname(fileURLToPath(import.meta.url))
+        );
+    });
 
-            const cwd = await ParseCwd.parseCwd(Path.relative(
-                process.cwd(),
-                Path.dirname(fileURLToPath(import.meta.url))
-            ));
+    suite('Allows file path', () => {
+
+        test('As string', async () => {
+
+            const cwd = await ParseCwd.parseCwd(import.meta.url);
             expect(cwd).to.equal(
                 Path.dirname(fileURLToPath(import.meta.url))
             );
-        },
+        });
 
-        'Allows file path': {
+        test('As URL', async () => {
 
-            async 'As string'() {
+            const cwd = await ParseCwd.parseCwd(new URL(import.meta.url));
+            expect(cwd).to.equal(
+                Path.dirname(fileURLToPath(import.meta.url))
+            );
+        });
 
-                const cwd = await ParseCwd.parseCwd(import.meta.url);
-                expect(cwd).to.equal(
-                    Path.dirname(fileURLToPath(import.meta.url))
-                );
-            },
+        suite('Allows options', () => {
 
-            async 'As URL'() {
-
-                const cwd = await ParseCwd.parseCwd(new URL(import.meta.url));
-                expect(cwd).to.equal(
-                    Path.dirname(fileURLToPath(import.meta.url))
-                );
-            },
-        },
-
-        'Allows options': {
-
-            async 'As string'() {
+            test('As string', async () => {
 
                 const cwd = await ParseCwd.parseCwd({
                     cwd: import.meta.url,
@@ -53,9 +54,9 @@ export const ParseCwdSpec = {
                 expect(cwd).to.equal(
                     Path.dirname(fileURLToPath(import.meta.url))
                 );
-            },
+            });
 
-            async 'As URL'() {
+            test('As URL', async () => {
 
                 const cwd = await ParseCwd.parseCwd({
                     cwd: new URL(import.meta.url),
@@ -63,30 +64,25 @@ export const ParseCwdSpec = {
                 expect(cwd).to.equal(
                     Path.dirname(fileURLToPath(import.meta.url))
                 );
-            },
+            });
 
-            async 'As Empty'() {
+            test('As Empty', async () => {
 
                 const cwd = await ParseCwd.parseCwd({});
                 expect(cwd).to.equal(process.cwd());
-            },
-        },
+            });
+        });
 
-        async 'Allows null'() {
+        test('Allows null', async () => {
             const cwd = await ParseCwd.parseCwd(null);
             expect(cwd).to.equal(process.cwd());
-        },
+        });
 
-        async 'Throws on non-found'() {
+        test('Throws on non-found', async () => {
 
-            let error: unknown;
-            try {
-                await ParseCwd.parseCwd('/not/found');
-            } catch (err) {
-                error = err;
-            }
-
-            expect(error).to.be.an('error').with.property('message', 'Directory not found');
-        },
-    },
-};
+            await expect(ParseCwd.parseCwd('/not/found')).eventually.be.rejectedWith(Error).that.contain({
+                message: 'Directory not found: /not/found',
+            });
+        });
+    });
+});

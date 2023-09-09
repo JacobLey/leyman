@@ -2,45 +2,46 @@ import AjvDefault from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
+import { suite, test } from 'mocha-hookup';
 import {
     type JsonSchema,
     NumberSchema,
     numberSchema,
     type Schema,
     type SchemaType,
-} from '../../../index.js';
+} from 'juniper';
 
 const Ajv = defaultImport(AjvDefault);
 
 // Schema itself is an abstract class, so use NumberSchema
-export const SchemaSpec = {
+suite('schema', () => {
 
-    'create': {
+    suite('create', () => {
 
-        constructor() {
+        test('constructor', () => {
             const schema = new NumberSchema();
             expectTypeOf(schema).toMatchTypeOf<Schema<number>>();
             expect(schema).to.be.an.instanceOf(NumberSchema);
-        },
+        });
 
-        create() {
+        test('create', () => {
             const schema = NumberSchema.create();
             expectTypeOf(schema).toMatchTypeOf<Schema<number>>();
             expect(schema).to.be.an.instanceOf(NumberSchema);
-        },
+        });
 
-        method() {
+        test('method', () => {
             const schema = numberSchema();
             expectTypeOf(schema).toMatchTypeOf<Schema<number>>();
             expect(schema).to.be.an.instanceOf(NumberSchema);
-        },
-    },
+        });
+    });
 
-    'keywords': {
+    suite('keywords', () => {
 
-        options: {
+        suite('options', () => {
 
-            success() {
+            suite('success', () => {
 
                 const json = numberSchema({
                     title: '<title>',
@@ -61,9 +62,9 @@ export const SchemaSpec = {
                 const validator = new Ajv({ strict: true }).compile(json);
                 expectTypeOf<SchemaType<typeof json>>().toEqualTypeOf<number>();
                 expect(validator(123)).to.equal(true);
-            },
+            });
 
-            'Unset options'() {
+            test('Unset options', () => {
                 const json = numberSchema({
                     title: '<title>',
                     description: '<description>',
@@ -80,10 +81,10 @@ export const SchemaSpec = {
                 expect(json).to.deep.equal({
                     type: 'number',
                 });
-            },
-        },
+            });
+        });
 
-        methods() {
+        test('methods', () => {
             const schema = numberSchema()
                 .title('<title>')
                 .description('<description>')
@@ -109,20 +110,20 @@ export const SchemaSpec = {
                 xCustomVal: 123,
                 customKeyword: 'foobar',
             });
-        },
+        });
 
-        immutable() {
+        test('immutable', () => {
 
             const schema = numberSchema().title('<title>');
             const updatedSchema = schema.description('<description>');
 
             expect(schema).to.not.equal(updatedSchema);
-        },
-    },
+        });
+    });
 
-    'toJSON': {
+    suite('toJSON', () => {
 
-        'With schema'() {
+        test('With schema', () => {
 
             const schema = numberSchema().toJSON({
                 schema: true,
@@ -132,9 +133,9 @@ export const SchemaSpec = {
                 $schema: 'https://json-schema.org/draft/2020-12/schema',
                 type: 'number',
             });
-        },
+        });
 
-        id() {
+        test('id', () => {
 
             const schema = numberSchema().toJSON({
                 id: '<id>',
@@ -144,9 +145,9 @@ export const SchemaSpec = {
                 $id: '<id>',
                 type: 'number',
             });
-        },
+        });
 
-        openApi30() {
+        test('openApi30', () => {
             const schema = numberSchema()
                 .example(1)
                 .example(2)
@@ -159,9 +160,9 @@ export const SchemaSpec = {
                 type: 'number',
                 example: 1,
             });
-        },
+        });
 
-        type() {
+        test('type', () => {
 
             const sym = Symbol('sym');
             type CustomNumber = number & {
@@ -172,13 +173,13 @@ export const SchemaSpec = {
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<CustomNumber>();
             const json = schema.toJSON();
             expectTypeOf<SchemaType<typeof json>>().toEqualTypeOf<CustomNumber>();
-        },
+        });
 
-        'With subschemas': {
+        suite('With subschemas', () => {
 
-            'Base is not nullable': {
+            suite('Base is not nullable', () => {
 
-                'If + Else are nullable'() {
+                test('If + Else are nullable', () => {
 
                     const schema = numberSchema<-1 | 4 | 7 | 12>().if(
                         numberSchema<-1 | 4>().nullable().maximum(5),
@@ -235,9 +236,9 @@ export const SchemaSpec = {
                             numberSchema().nullable()
                         ).nullable().toJSON()
                     ).toEqualTypeOf<JsonSchema<-1 | 4 | 12>>();
-                },
+                });
 
-                'If + Then + Else are nullable'() {
+                test('If + Then + Else are nullable', () => {
 
                     const schema = numberSchema<-1 | 4 | 7 | 12>().if(
                         numberSchema<-1 | 4>().nullable().maximum(5),
@@ -349,9 +350,9 @@ export const SchemaSpec = {
                             },
                         ],
                     });
-                },
+                });
 
-                'Not is nullable'() {
+                test('Not is nullable', () => {
 
                     const schema = numberSchema().not(
                         numberSchema({ type: 'integer' }).nullable()
@@ -380,14 +381,14 @@ export const SchemaSpec = {
                     expect(oaValidator(4.5)).to.equal(true);
                     expect(oaValidator(12)).to.equal(false);
                     expect(oaValidator(null)).to.equal(false);
-                },
-            },
+                });
+            });
 
-            'Base is nullable': {
+            suite('Base is nullable', () => {
 
-                'Subschemas are partially nullable': {
+                suite('Subschemas are partially nullable', () => {
 
-                    'If is nullable'() {
+                    test('If is nullable', () => {
 
                         const schema = numberSchema<-1 | 4 | 7 | 12>().nullable().if(
                             numberSchema<-1 | 4>().nullable().maximum(5),
@@ -432,9 +433,9 @@ export const SchemaSpec = {
                         expect(oaValidator(7)).to.equal(false);
                         expect(oaValidator(12)).to.equal(true);
                         expect(oaValidator(null)).to.equal(true);
-                    },
+                    });
 
-                    'Then is nullable'() {
+                    test('Then is nullable', () => {
 
                         const schema = numberSchema<-1 | 4 | 7 | 12>().nullable().if(
                             numberSchema<-1 | 4>().maximum(5),
@@ -486,9 +487,9 @@ export const SchemaSpec = {
                         expect(oaValidator(4.5)).to.equal(false);
                         expect(oaValidator(7)).to.equal(true);
                         expect(oaValidator(null)).to.equal(true);
-                    },
+                    });
 
-                    'Else is nullable'() {
+                    test('Else is nullable', () => {
                         const schema = numberSchema<-1 | 4 | 7 | 12>().nullable().if(
                             numberSchema<-1 | 4>().maximum(5),
                             {
@@ -555,10 +556,10 @@ export const SchemaSpec = {
                         expect(oaValidator(4.5)).to.equal(false);
                         expect(oaValidator(12)).to.equal(true);
                         expect(oaValidator(null)).to.equal(true);
-                    },
-                },
+                    });
+                });
 
-                'Subschemas are partially nullable and stricter'() {
+                test('Subschemas are partially nullable and stricter', () => {
 
                     const schema = numberSchema<-1 | 4 | 7 | 12>().if(
                         numberSchema<-1 | 4>({ maximum: 5, type: 'integer' }).nullable(),
@@ -651,9 +652,9 @@ export const SchemaSpec = {
                     expect(nullableOaValidator(3.5)).to.equal(false);
                     expect(nullableOaValidator(12.5)).to.equal(true);
                     expect(nullableOaValidator(null)).to.equal(true);
-                },
+                });
 
-                'Subschemas are not nullable'() {
+                test('Subschemas are not nullable', () => {
 
                     const schema = numberSchema<-1 | 4 | 7 | 12>({ type: 'integer' }).if(
                         numberSchema<-1 | 4>({ type: 'integer' }).maximum(5),
@@ -694,9 +695,9 @@ export const SchemaSpec = {
                             },
                         ],
                     });
-                },
+                });
 
-                'Subschemas are deeply not nullable'() {
+                test('Subschemas are deeply not nullable', () => {
 
                     const schema = numberSchema<-1 | 4 | 7 | 12>({ type: 'number' }).nullable().if(
                         numberSchema<-1 | 4>({ type: 'number' }).nullable().maximum(5).if(
@@ -775,9 +776,9 @@ export const SchemaSpec = {
                     expect(oaValidator(11)).to.equal(true);
                     expect(oaValidator(11.5)).to.equal(false);
                     expect(oaValidator(null)).to.equal(false);
-                },
+                });
 
-                'Not is nullable'() {
+                test('Not is nullable', () => {
 
                     const schema = numberSchema().nullable().not(
                         numberSchema({ type: 'integer' }).nullable()
@@ -828,9 +829,9 @@ export const SchemaSpec = {
                     expect(stillNotNullableValidator(3.5)).to.equal(true);
                     expect(stillNotNullableValidator(11)).to.equal(false);
                     expect(stillNotNullableValidator(null)).to.equal(false);
-                },
+                });
 
-                'Not is not nullable'() {
+                test('Not is not nullable', () => {
 
                     const schema = numberSchema().nullable().not(
                         numberSchema({ type: 'integer' })
@@ -860,9 +861,9 @@ export const SchemaSpec = {
                     expect(oaValidator(3.5)).to.equal(true);
                     expect(oaValidator(11)).to.equal(false);
                     expect(oaValidator(null)).to.equal(true);
-                },
+                });
 
-                'Not is deeply not nullable'() {
+                test('Not is deeply not nullable', () => {
 
                     const schema = numberSchema().nullable().not(
                         numberSchema({ type: 'integer' }).nullable().not(
@@ -908,12 +909,12 @@ export const SchemaSpec = {
                     expect(oaValidator(4)).to.equal(false);
                     expect(oaValidator(11)).to.equal(true);
                     expect(oaValidator(null)).to.equal(true);
-                },
-            },
+                });
+            });
 
-            'Base is number': {
+            suite('Base is number', () => {
 
-                'If + Else are integer'() {
+                test('If + Else are integer', () => {
 
                     const schema = numberSchema().if(
                         numberSchema({ type: 'integer' }),
@@ -927,9 +928,9 @@ export const SchemaSpec = {
                         if: {},
                         else: {},
                     });
-                },
+                });
 
-                'Then + Else are integer'() {
+                test('Then + Else are integer', () => {
 
                     const schema = numberSchema().if(
                         numberSchema().maximum(5),
@@ -949,9 +950,9 @@ export const SchemaSpec = {
                             },
                         ],
                     });
-                },
+                });
 
-                'Base is integer'() {
+                test('Base is integer', () => {
 
                     const schema = numberSchema().type('integer').if(
                         numberSchema().maximum(5),
@@ -971,14 +972,14 @@ export const SchemaSpec = {
                             },
                         ],
                     });
-                },
-            },
-        },
-    },
+                });
+            });
+        });
+    });
 
-    'if': {
+    suite('if', () => {
 
-        'Multiple conditions'() {
+        test('Multiple conditions', () => {
 
             const schema = numberSchema().if(
                 numberSchema().maximum(5),
@@ -1028,12 +1029,12 @@ export const SchemaSpec = {
                     },
                 ],
             });
-        },
-    },
+        });
+    });
 
-    'not': {
+    suite('not', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = numberSchema().not(
                 numberSchema({ minimum: 1 }).not(
@@ -1064,24 +1065,24 @@ export const SchemaSpec = {
             expect(validator(11)).to.equal(true);
             expect(validator(13)).to.equal(false);
             expect(validator(9)).to.equal(false);
-        },
-    },
+        });
+    });
 
-    'nullable': {
+    suite('nullable', () => {
 
-        success() {
+        test('success', () => {
             const schema = numberSchema().nullable().toJSON();
 
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<number | null>();
             expect(schema).to.deep.equal({
                 type: ['number', 'null'],
             });
-        },
-    },
+        });
+    });
 
-    'ref': {
+    suite('ref', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = numberSchema().ref('/path/to/ref').toJSON();
 
@@ -1089,11 +1090,11 @@ export const SchemaSpec = {
             expect(schema).to.deep.equal({
                 $ref: '/path/to/ref',
             });
-        },
+        });
 
-        'Handles inconsistencies': {
+        suite('Handles inconsistencies', () => {
 
-            'Applies default values'() {
+            test('Applies default values', () => {
 
                 const schema = numberSchema()
                     .type('integer')
@@ -1133,9 +1134,9 @@ export const SchemaSpec = {
                     $ref: '/second/path',
                     readOnly: false,
                 });
-            },
+            });
 
-            'Does not optimize integer'() {
+            test('Does not optimize integer', () => {
 
                 expect(
                     numberSchema()
@@ -1164,9 +1165,9 @@ export const SchemaSpec = {
                         type: 'integer',
                     },
                 });
-            },
+            });
 
-            'Overrides type'() {
+            test('Overrides type', () => {
 
                 const schema = numberSchema()
                     .ref('/path/to/base')
@@ -1194,9 +1195,9 @@ export const SchemaSpec = {
                     $ref: '/path/to/base',
                     type: ['number', 'null'],
                 });
-            },
+            });
 
-            'Only replaces nullable when necessary'() {
+            test('Only replaces nullable when necessary', () => {
 
                 const refThenNull = numberSchema()
                     .allOf(
@@ -1289,9 +1290,9 @@ export const SchemaSpec = {
                         },
                     ],
                 });
-            },
+            });
 
-            'Handles integer + number'() {
+            test('Handles integer + number', () => {
 
                 const integerToNumber = numberSchema()
                     .allOf(
@@ -1346,9 +1347,9 @@ export const SchemaSpec = {
                         },
                     ],
                 });
-            },
+            });
 
-            'Integer to number'() {
+            test('Integer to number', () => {
 
                 const integerToNumber = numberSchema({ type: 'integer' })
                     .nullable()
@@ -1397,9 +1398,9 @@ export const SchemaSpec = {
                         },
                     ],
                 });
-            },
+            });
 
-            'Strict schemas'() {
+            test('Strict schemas', () => {
 
                 const schema = numberSchema().allOf(
                     numberSchema({ type: 'integer' }).ref('/path/to/first').type('number')
@@ -1451,13 +1452,13 @@ export const SchemaSpec = {
                         },
                     ],
                 });
-            },
-        },
-    },
+            });
+        });
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Reserved metadata keywords'() {
+        test('Reserved metadata keywords', () => {
 
             const schema = numberSchema();
 
@@ -1470,6 +1471,6 @@ export const SchemaSpec = {
                 // @ts-expect-error
                 { properties: 123 }
             );
-        },
-    },
-};
+        });
+    });
+});

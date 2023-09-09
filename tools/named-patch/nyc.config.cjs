@@ -1,1 +1,0 @@
-../../common/config/packages/nyc.config.cjs

@@ -2,15 +2,16 @@ import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { numberSchema, type SchemaType } from '../../../index.js';
+import { suite, test } from 'mocha-hookup';
+import { numberSchema, type SchemaType } from 'juniper';
 
 const Ajv = defaultImport(DefaultAjv);
 
-export const NumberSchemaSpec = {
+suite('NumberSchema', () => {
 
-    keywords: {
+    suite('keywords', () => {
 
-        options() {
+        test('options', () => {
 
             const schema = numberSchema({
                 minimum: 4,
@@ -26,9 +27,9 @@ export const NumberSchemaSpec = {
                 multipleOf: 3,
             });
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<number>();
-        },
+        });
 
-        methods() {
+        test('methods', () => {
             const schema = numberSchema()
                 .exclusiveMaximum(20)
                 .exclusiveMinimum(-5)
@@ -45,9 +46,9 @@ export const NumberSchemaSpec = {
             expect(validator(10)).to.equal(true);
             expect(validator(20)).to.equal(false);
             expect(validator(1.5)).to.equal(false);
-        },
+        });
 
-        'Unset options'() {
+        test('Unset options', () => {
 
             const schema = numberSchema()
                 .exclusiveMaximum(20)
@@ -61,12 +62,12 @@ export const NumberSchemaSpec = {
             expect(schema).to.deep.equal({
                 type: 'number',
             });
-        },
-    },
+        });
+    });
 
-    multipleOf: {
+    suite('multipleOf', () => {
 
-        'GCD of multipleOf integers'() {
+        test('GCD of multipleOf integers', () => {
             const schema = numberSchema({
                 multipleOf: [1.5, 4, 6],
             }).multipleOf(5).toJSON();
@@ -80,9 +81,9 @@ export const NumberSchemaSpec = {
                     },
                 ],
             });
-        },
+        });
 
-        'Single float multiple'() {
+        test('Single float multiple', () => {
             const schema = numberSchema({
                 multipleOf: 1.5,
             }).toJSON();
@@ -91,9 +92,9 @@ export const NumberSchemaSpec = {
                 type: 'number',
                 multipleOf: 1.5,
             });
-        },
+        });
 
-        'Many float multiple'() {
+        test('Many float multiple', () => {
             const schema = numberSchema({
                 multipleOf: 1.5,
             }).multipleOf(3.3).toJSON();
@@ -107,14 +108,14 @@ export const NumberSchemaSpec = {
                     },
                 ],
             });
-        },
-    },
+        });
+    });
 
-    ref: {
+    suite('ref', () => {
 
-        'Applies defaults': {
+        suite('Applies defaults', () => {
 
-            success() {
+            test('success', () => {
 
                 expect(
                     numberSchema()
@@ -129,9 +130,9 @@ export const NumberSchemaSpec = {
                     exclusiveMinimum: -1.797_693_134_862_315_7e+308,
                     maximum: 1.797_693_134_862_315_7e+308,
                 });
-            },
+            });
 
-            openApi30() {
+            test('openApi30', () => {
 
                 expect(
                     numberSchema()
@@ -147,13 +148,13 @@ export const NumberSchemaSpec = {
                     exclusiveMaximum: false,
                     minimum: -1.797_693_134_862_315_7e+308,
                 });
-            },
-        },
-    },
+            });
+        });
+    });
 
-    composite: {
+    suite('composite', () => {
 
-        allOf() {
+        test('allOf', () => {
 
             const schema = numberSchema<1 | 2 | 3 | 4>()
                 .nullable()
@@ -191,9 +192,9 @@ export const NumberSchemaSpec = {
                     {},
                 ],
             });
-        },
+        });
 
-        anyOf() {
+        test('anyOf', () => {
 
             const schema = numberSchema<1 | 2 | 3 | 4>()
                 .anyOf([
@@ -276,9 +277,9 @@ export const NumberSchemaSpec = {
                 type: 'number',
                 anyOf: [],
             });
-        },
+        });
 
-        oneOf() {
+        test('oneOf', () => {
 
             const schema = numberSchema<1 | 2 | 3 | 4>()
                 .oneOf([
@@ -361,14 +362,14 @@ export const NumberSchemaSpec = {
                 type: 'number',
                 oneOf: [],
             });
-        },
-    },
+        });
+    });
 
-    toJSON: {
+    suite('toJSON', () => {
 
-        'Integer and number': {
+        suite('Integer and number', () => {
 
-            'Integer in number'() {
+            test('Integer in number', () => {
                 const schema = numberSchema()
                     .not(numberSchema({ type: 'integer', multipleOf: 5 }))
                     .if(
@@ -397,9 +398,9 @@ export const NumberSchemaSpec = {
                         multipleOf: 5,
                     },
                 });
-            },
+            });
 
-            'All Integers in number'() {
+            test('All Integers in number', () => {
                 const schema = numberSchema()
                     .not(numberSchema({ type: 'integer', multipleOf: 5 }))
                     .if(
@@ -433,9 +434,9 @@ export const NumberSchemaSpec = {
                         multipleOf: 5,
                     },
                 });
-            },
+            });
 
-            'Number in integer'() {
+            test('Number in integer', () => {
                 const schema = numberSchema({ type: 'integer' })
                     .not(numberSchema({ multipleOf: 5 }))
                     .if(
@@ -461,10 +462,10 @@ export const NumberSchemaSpec = {
                         multipleOf: 5,
                     },
                 });
-            },
-        },
+            });
+        });
 
-        'Open Api 3.0'() {
+        test('Open Api 3.0', () => {
             const schema = numberSchema()
                 .exclusiveMaximum(20)
                 .exclusiveMinimum(-5)
@@ -477,6 +478,6 @@ export const NumberSchemaSpec = {
                 minimum: -5,
                 exclusiveMinimum: true,
             });
-        },
-    },
-};
+        });
+    });
+});

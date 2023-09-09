@@ -1,1 +1,1 @@
-export { EntryScript, runtimeError } from './lib/entry-script.js';
+export { EntryScript, runtimeError } from '#entry-script';

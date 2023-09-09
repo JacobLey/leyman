@@ -1,0 +1,40 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../juniper"
+    },
+    {
+      "path": "../populate-files/load-populate-files"
+    },
+    {
+      "path": "../populate-files/nx-populate-files"
+    },
+    {
+      "path": "../../tools/common-proxy"
+    },
+    {
+      "path": "../../tools/default-import"
+    },
+    {
+      "path": "../../tools/haystack-di"
+    },
+    {
+      "path": "../../tools/mocha-hookup"
+    },
+    {
+      "path": "../../tools/nx-plugin-handler"
+    },
+    {
+      "path": "../../tools/nx-tsc"
+    },
+    {
+      "path": "../../tools/sinon-typed-stub"
+    }
+  ]
+}

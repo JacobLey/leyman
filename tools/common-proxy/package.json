@@ -1,0 +1,44 @@
+{
+  "name": "common-proxy",
+  "version": "0.0.1",
+  "description": "Utility methods to help manage and expose nx plugins",
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "author": "jacobley",
+  "license": "MIT",
+  "repository": "jacobley/jacobley",
+  "homepage": "https://github.com/JacobLey/jacobley/tree/main/tools/common-proxy#readme",
+  "bugs": {
+    "url": "https://github.com/jacobley/jacobley/issues"
+  },
+  "keywords": [
+    "commonjs",
+    "async",
+    "handler",
+    "import"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "require": "./dist/common-proxy.cjs"
+    }
+  },
+  "dependencies": {
+    "npm-default-import": "npm:default-import@^1.1.5"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.11",
+    "@types/chai-as-promised": "^7.1.8",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.8.10",
+    "c8": "^8.0.1",
+    "chai": "^5.1.0",
+    "expect-type": "^0.17.3",
+    "mocha": "^10.3.0",
+    "npm-nx-tsc": "npm:nx-tsc@^0.0.2",
+    "tslib": "^2.6.2",
+    "typescript": "^5.3.3"
+  }
+}

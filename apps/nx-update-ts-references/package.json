@@ -1,0 +1,51 @@
+{
+  "name": "nx-update-ts-references",
+  "version": "0.0.1",
+  "description": "Update references in tsconfig based on local dependencies",
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "author": "jacobley",
+  "license": "MIT",
+  "repository": "jacobley/jacobley",
+  "homepage": "https://github.com/JacobLey/jacobley/tree/main/apps/update-ts-references/update-ts-references/nx-tsc#readme",
+  "bugs": {
+    "url": "https://github.com/jacobley/jacobley/issues"
+  },
+  "keywords": [
+    "typescript",
+    "references",
+    "pnpm",
+    "dependencies"
+  ],
+  "sideEffects": false,
+  "executors": "./executors.json",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    }
+  },
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ci-info": "^4.0.0",
+    "comment-json": "^4.2.3",
+    "npm-default-import": "npm:default-import@^1.1.5",
+    "npm-juniper": "npm:juniper@^1.1.10"
+  },
+  "optionalDependencies": {
+    "@nx/devkit": "^18.0.4"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.8.10",
+    "chai": "^5.1.0",
+    "mocha": "^10.3.0",
+    "npm-load-populate-files": "npm:load-populate-files@^0.0.1",
+    "npm-nx-populate-files": "npm:nx-populate-files@^0.0.2",
+    "nx-tsc": "workspace:^",
+    "nyc": "^15.1.0",
+    "typescript": "^5.3.3"
+  }
+}

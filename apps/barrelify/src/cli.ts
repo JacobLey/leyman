@@ -3,7 +3,7 @@ import { EntryScript } from 'entry-script';
 import { findImport } from 'find-import';
 import { patch } from 'named-patch';
 import yargsDefault, { type Argv, type CommandModule } from 'yargs';
-// eslint-disable-next-line node/file-extension-in-import
+// eslint-disable-next-line n/file-extension-in-import
 import { hideBin } from 'yargs/helpers';
 import * as Commands from './commands/index.js';
 

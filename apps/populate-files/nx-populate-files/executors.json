@@ -1,0 +1,9 @@
+{
+  "executors": {
+    "populate-files": {
+      "implementation": "dist/executors/populate-files/index.cjs",
+      "schema": "src/executors/populate-files/schema.json",
+      "description": "Populate files based on dynamic content."
+    }
+  }
+}

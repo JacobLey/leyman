@@ -1,44 +1,45 @@
 import { expect } from 'chai';
-import * as Errors from '../../../lib/errors.js';
+import { suite, test } from 'mocha-hookup';
+import * as Errors from '#errors';
 
-export const ErrorsSpec = {
+suite('errors', () => {
 
-    checkOverflow: {
+    suite('checkOverflow', () => {
 
-        success: {
+        suite('success', () => {
 
-            'Less than'() {
+            test('Less than', () => {
                 Errors.checkOverflow(1, 2);
-            },
+            });
 
-            'Less than (gte)'() {
+            test('Less than (gte)', () => {
                 Errors.checkOverflow(1, 2, { gte: true });
-            },
+            });
 
-            'Equal to'() {
+            test('Equal to', () => {
                 Errors.checkOverflow(1, 1);
-            },
-        },
+            });
+        });
 
-        failure: {
+        suite('failure', () => {
 
-            'Greater than'() {
+            test('Greater than', () => {
                 expect(() => {
                     Errors.checkOverflow(2, 1);
                 }).to.throw(RangeError);
-            },
+            });
 
-            'Greater than (gte)'() {
+            test('Greater than (gte)', () => {
                 expect(() => {
                     Errors.checkOverflow(2, 1, { gte: true });
                 }).to.throw('Overflow: input needs wider integers to process');
-            },
+            });
 
-            'Equal to'() {
+            test('Equal to', () => {
                 expect(() => {
                     Errors.checkOverflow(1, 1, { gte: true, error: 'invalid-input' });
                 }).to.throw('Invalid input');
-            },
-        },
-    },
-};
+            });
+        });
+    });
+});

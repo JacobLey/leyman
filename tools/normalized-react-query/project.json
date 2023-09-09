@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "normalized-react-query",
+  "implicitDependencies": [
+    "nx-tsc"
+  ],
+  "targets": {
+    "tsc": {},
+    "build:_": {},
+    "build:pre": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "test:_": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {}
+  }
+}

@@ -22,7 +22,7 @@
 
 Handle importing unknown/CJS modules in ESM that do not properly export a default value.
 
-Importing CJS is supported natively in ESM, and the "default" import is the raw `module.exports` value. See [NodeJS docs](https://nodejs.org/docs/latest-v16.x/api/esm.html#interoperability-with-commonjs).
+Importing CJS is supported natively in ESM, and the "default" import is the raw `module.exports` value. See [NodeJS docs](https://nodejs.org/docs/latest/api/esm.html#interoperability-with-commonjs).
 
 Some libraries improperly mix "default" and "named" exports in CommonJS, which requires extra instrumenting that is not natively available in ESM.
 

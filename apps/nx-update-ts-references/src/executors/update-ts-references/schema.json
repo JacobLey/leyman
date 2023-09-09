@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "outputCapture": "direct-nodejs",
+  "cli": "nx",
+  "type": "object",
+  "title": "update-ts-references",
+  "description": "Update TSConfig references based on dependencies",
+  "properties": {
+    "check": {
+      "type": "boolean",
+      "description": "Fails if references are not already updated, will not overwrite. Defaults to true during CI, false otherwise."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Load files and content, but do not write anything."
+    }
+  }
+}

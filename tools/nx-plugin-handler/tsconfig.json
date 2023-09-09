@@ -1,0 +1,21 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../haystack-di"
+    },
+    {
+      "path": "../mocha-hookup"
+    },
+    {
+      "path": "../sinon-typed-stub"
+    }
+  ]
+}

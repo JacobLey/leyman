@@ -1,0 +1,18 @@
+{
+	"$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
+	"name": "JacobLey",
+	"dockerComposeFile": "docker-compose.yml",
+	"service": "app",
+	"workspaceFolder": "/workspace",
+	"remoteUser": "jacobley",
+
+	"customizations": {
+    "vscode": {
+      "extensions": [
+				"ms-azuretools.vscode-docker"
+			]
+    }
+  },
+
+	"features": {}
+}

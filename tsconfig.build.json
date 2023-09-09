@@ -25,13 +25,12 @@
         "noEmitOnError": true,
         "noFallthroughCasesInSwitch": true,
         "noPropertyAccessFromIndexSignature": false,
-        "noStrictGenericChecks": true,
         "noUncheckedIndexedAccess": true,
         "noUnusedLocals": true,
         "noUnusedParameters": false,
         "pretty": true,
         "preserveConstEnums": false,
-        "removeComments": false,
+        "removeComments": true,
         "resolveJsonModule": true,
         "skipLibCheck": true,
         "sourceMap": true,
@@ -41,8 +40,8 @@
         "useUnknownInCatchVariables": true
     },
     "exclude": [
-        "*/*/coverage/**",
-        "*/*/dist/**",
-        "*/*/nyc/**"
+        "**/coverage/**/*.d.*ts",
+        "**/dist/**/*.d.*ts",
+        "**/nyc/**/*.d.*ts"
     ]
 }

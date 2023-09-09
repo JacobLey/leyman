@@ -36,7 +36,7 @@ export const parseCwd = async (
     try {
         const stats = await stat(directory);
         return stats.isDirectory() ? directory : Path.dirname(directory);
-    } catch {}
-
-    throw new Error('Directory not found');
+    } catch {
+        throw new Error(`Directory not found: ${directory}`);
+    }
 };

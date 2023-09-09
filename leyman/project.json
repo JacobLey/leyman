@@ -1,0 +1,48 @@
+{
+  "$schema": "../node_modules/nx/schemas/project-schema.json",
+  "name": "leyman",
+  "targets": {
+    "lifecycle": {
+      "executor": "nx-lifecycle:lifecycle",
+      "options": {
+        "stages": {
+          "build": {
+            "hooks": [
+              "pre",
+              "run",
+              "post"
+            ],
+            "dependsOn": [
+              "^build"
+            ]
+          },
+          "test": {
+            "hooks": [
+              "run",
+              "report"
+            ],
+            "dependsOn": [
+              "build"
+            ]
+          }
+        },
+        "targets": {
+          "update-ts-references": "build:pre",
+          "tsc": "build:run",
+          "populate-files": "build:post",
+          "mocha-unit-test": "test:run",
+          "coverage-report": "test:report"
+        }
+      }
+    },
+    "build:_": {},
+    "build:pre": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "test:_": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {}
+  }
+}

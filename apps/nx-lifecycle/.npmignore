@@ -1,0 +1,15 @@
+project.json
+tsconfig.json
+
+dist/tsconfig.tsbuildinfo
+dist/**/*.map
+dist/**/*.spec.*js
+
+src/**
+!src/executors/lifecycle/schema.json
+
+dist/file-content.js
+dist/file-content.d.ts
+
+dist/executors/lifecycle/schema.js
+dist/executors/lifecycle/schema.d.ts

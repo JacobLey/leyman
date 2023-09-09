@@ -3,9 +3,20 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "tsBuildInfoFile": "dist/.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "references": [
-    { "path": "../../tools/default-import" }
+    {
+      "path": "../nx-update-ts-references"
+    },
+    {
+      "path": "../../tools/default-import"
+    },
+    {
+      "path": "../../tools/mocha-hookup"
+    },
+    {
+      "path": "../../tools/nx-tsc"
+    }
   ]
 }

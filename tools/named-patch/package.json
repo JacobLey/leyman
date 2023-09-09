@@ -3,7 +3,7 @@
   "version": "1.0.8",
   "description": "Higher order function for patching named export functions.",
   "engines": {
-    "node": ">=14"
+    "node": ">=18"
   },
   "type": "module",
   "author": "jacobley",
@@ -20,41 +20,26 @@
     "stub"
   ],
   "sideEffects": false,
-  "scripts": {
-    "build": "tsc",
-    "coverage": "rushx instrument && nyc mocha ./nyc/tests/unit",
-    "instrument": "nyc instrument --nycrc-path=nyc.instrument.cjs ./dist ./nyc",
-    "lint": "rush lint-package",
-    "test": "rushx coverage",
-    "unit-test": "mocha ./dist/tests/unit"
-  },
-  "types": "./dist/patch.js",
   "exports": {
     ".": {
-      "types": "./src/patch.ts",
+      "types": "./dist/patch.js",
       "patchable": "./dist/patch.js",
       "default": "./dist/noop.js"
     }
   },
-  "publishConfig": {
-    "exports": {
-      ".": {
-        "types": "./dist/patch.js",
-        "patchable": "./dist/patch.js",
-        "default": "./dist/noop.js"
-      }
-    }
-  },
   "devDependencies": {
-    "@types/chai": "^4.3.1",
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^18.0.0",
-    "@types/sinon": "^10.0.11",
-    "chai": "^4.3.6",
-    "expect-type": "^0.13.0",
-    "mocha": "^10.0.0",
-    "nyc": "^15.1.0",
-    "sinon": "^14.0.0",
-    "typescript": "^4.7.2"
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.8.10",
+    "@types/sinon": "^17.0.3",
+    "c8": "^8.0.1",
+    "chai": "^5.1.0",
+    "expect-type": "^0.17.3",
+    "mocha": "^10.3.0",
+    "mocha-hookup": "workspace:^",
+    "nx-tsc": "workspace:^",
+    "nx-update-ts-references": "workspace:^",
+    "sinon": "^17.0.1",
+    "typescript": "^5.3.3"
   }
 }

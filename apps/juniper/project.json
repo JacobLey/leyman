@@ -1,0 +1,19 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "juniper",
+  "targets": {
+    "update-ts-references": {},
+    "tsc": {},
+    "mocha-unit-test": {},
+    "coverage-report": {},
+    "build:_": {},
+    "build:pre": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "test:_": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {}
+  }
+}

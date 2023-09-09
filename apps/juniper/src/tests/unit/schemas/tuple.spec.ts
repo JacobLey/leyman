@@ -2,17 +2,18 @@ import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { ArraySchema, arraySchema, type SchemaType, stringSchema, TupleSchema, tupleSchema } from '../../../index.js';
+import { suite, test } from 'mocha-hookup';
+import { ArraySchema, arraySchema, type SchemaType, stringSchema, TupleSchema, tupleSchema } from 'juniper';
 
 const Ajv = defaultImport(DefaultAjv);
 
-export const TupleSchemaSpec = {
+suite('TupleSchema', () => {
 
-    'keywords': {
+    suite('keywords', () => {
 
-        options: {
+        suite('options', () => {
 
-            success() {
+            test('success', () => {
 
                 const schema = tupleSchema({
                     minContains: 2,
@@ -33,10 +34,10 @@ export const TupleSchemaSpec = {
                 expectTypeOf<typeof schema['items']>().toBeNever();
                 expectTypeOf<typeof schema['maxItems']>().toBeNever();
                 expectTypeOf<typeof schema['minItems']>().toBeNever();
-            },
-        },
+            });
+        });
 
-        methods() {
+        test('methods', () => {
 
             const schema = tupleSchema()
                 .minContains(0)
@@ -132,9 +133,9 @@ export const TupleSchemaSpec = {
             expect(oaValidator(['ab', 'xc'])).to.equal(false);
             // Max Items > 3
             expect(oaValidator(['ab', 'xc', 'xd', 'xx'])).to.equal(false);
-        },
+        });
 
-        'Unset options'() {
+        test('Unset options', () => {
 
             const schema = tupleSchema({
                 minContains: 4,
@@ -150,12 +151,12 @@ export const TupleSchemaSpec = {
                 items: false,
                 maxItems: 0,
             });
-        },
-    },
+        });
+    });
 
-    'not': {
+    suite('not', () => {
 
-        'Unsets nullable'() {
+        test('Unsets nullable', () => {
 
             const baseSchema = tupleSchema();
             expectTypeOf<SchemaType<typeof baseSchema>>().toEqualTypeOf<[]>();
@@ -276,10 +277,10 @@ export const TupleSchemaSpec = {
             });
             new Ajv({ strict: true }).compile(notNullableSchema.toJSON());
             new Ajv({ strict: true }).compile(notNullableSchema.toJSON({ openApi30: true }));
-        },
-    },
+        });
+    });
 
-    'prefixItems'() {
+    test('prefixItems', () => {
 
         const schema = tupleSchema().prependPrefixItem(stringSchema());
 
@@ -304,35 +305,35 @@ export const TupleSchemaSpec = {
             minItems: 1,
             maxItems: 1,
         });
-    },
+    });
 
-    'contains': {
+    suite('contains', () => {
 
-        'Extends any item'() {
+        test('Extends any item', () => {
 
             const baseSchema = tupleSchema().prefixItem(stringSchema().startsWith('a'));
             baseSchema.contains(stringSchema());
-        },
-    },
+        });
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Blocked methods'() {
+        test('Blocked methods', () => {
 
             const schema = tupleSchema();
 
             expectTypeOf<typeof schema['items']>().toBeNever();
             expectTypeOf<typeof schema['maxItems']>().toBeNever();
             expectTypeOf<typeof schema['minItems']>().toBeNever();
-        },
+        });
 
-        'Contains only set once'() {
+        test('Contains only set once', () => {
 
             tupleSchema()
                 .prefixItem(stringSchema().endsWith('abc'))
                 .contains(stringSchema().startsWith('abc'))
                 // @ts-expect-error
                 .contains(stringSchema().startsWith('abc'));
-        },
-    },
-};
+        });
+    });
+});

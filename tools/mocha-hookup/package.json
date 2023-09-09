@@ -1,0 +1,57 @@
+{
+  "name": "mocha-hookup",
+  "version": "0.0.1",
+  "description": "Utility methods to help manage and expose nx plugins",
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "author": "jacobley",
+  "license": "MIT",
+  "repository": "jacobley/jacobley",
+  "homepage": "https://github.com/JacobLey/jacobley/tree/main/tools/mocha-hookup#readme",
+  "bugs": {
+    "url": "https://github.com/jacobley/jacobley/issues"
+  },
+  "keywords": [
+    "commonjs",
+    "async",
+    "handler",
+    "import"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "imports": {
+    "#contextual-module": "./dist/lib/contextual-module.js",
+    "#mocha-module": "./dist/lib/mocha-module.js"
+  },
+  "dependencies": {
+    "haystack-di": "workspace:^",
+    "p-defer": "^4.0.0"
+  },
+  "peerDependencies": {
+    "@types/mocha": "^10.0.6",
+    "mocha": "^10.3.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/mocha": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.11",
+    "@types/chai-as-promised": "^7.1.8",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.8.10",
+    "@types/sinon": "^17.0.3",
+    "c8": "^8.0.1",
+    "chai": "^5.1.0",
+    "expect-type": "^0.17.3",
+    "mocha": "^10.3.0",
+    "npm-nx-tsc": "npm:nx-tsc@^0.0.2",
+    "sinon": "^17.0.1",
+    "typescript": "^5.3.3"
+  }
+}

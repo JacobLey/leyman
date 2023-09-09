@@ -54,7 +54,7 @@ export class TupleSchema<
     declare public minItems: never;
 
     declare public allOf: <
-        S extends TupleSchema<any, any[], any, unknown, boolean>
+        S extends ArraySchema<any, any[], any, unknown, boolean>
     >(
         this: AnyTupleSchema,
         schema: S
@@ -65,7 +65,7 @@ export class TupleSchema<
     >;
 
     declare public anyOf: <
-        S extends TupleSchema<any, any[], any, unknown, boolean>
+        S extends ArraySchema<any, any[], any, unknown, boolean>
     >(
         this: AnyTupleSchema,
         schemas: S[]
@@ -117,7 +117,7 @@ export class TupleSchema<
     ) => TupleSchema<T, P, C, M, boolean extends N ? boolean : true>;
 
     declare public oneOf: <
-        S extends TupleSchema<any, any[], any, unknown, boolean>
+        S extends ArraySchema<any, any[], any, unknown, boolean>
     >(
         this: AnyTupleSchema,
         schemas: S[]

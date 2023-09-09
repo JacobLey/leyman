@@ -2,15 +2,16 @@ import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { nullSchema, type SchemaType } from '../../../index.js';
+import { suite, test } from 'mocha-hookup';
+import { nullSchema, type SchemaType } from 'juniper';
 
 const Ajv = defaultImport(DefaultAjv);
 
-export const NullSchemaSpec = {
+suite('NullSchema', () => {
 
-    'toJSON': {
+    suite('toJSON', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = nullSchema().toJSON();
 
@@ -20,9 +21,9 @@ export const NullSchemaSpec = {
             const validator = new Ajv({ strict: true }).compile<SchemaType<typeof schema>>(schema);
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<null>();
             expect(validator(null)).to.equal(true);
-        },
+        });
 
-        openApi30() {
+        test('openApi30', () => {
             const schema = nullSchema({
                 description: 'type null is not supported',
             }).toJSON({ openApi30: true });
@@ -33,18 +34,18 @@ export const NullSchemaSpec = {
             });
             const validator = new Ajv({ strict: true }).compile<SchemaType<typeof schema>>(schema);
             expect(validator(null)).to.equal(true);
-        },
-    },
+        });
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Blocked methods'() {
+        test('Blocked methods', () => {
 
             const schema = nullSchema();
 
             expectTypeOf<typeof schema['if']>().toBeNever();
             expectTypeOf<typeof schema['not']>().toBeNever();
             expectTypeOf<typeof schema['nullable']>().toBeNever();
-        },
-    },
-};
+        });
+    });
+});

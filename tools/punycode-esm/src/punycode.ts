@@ -1,4 +1,4 @@
-import { checkOverflow, rangeError } from './lib/errors.js';
+import { checkOverflow, rangeError } from '#errors';
 
 /** Highest positive signed 32-bit float value */
 const maxInt = 0x7FFFFFFF;
@@ -89,7 +89,7 @@ export const ucs2Decode = (string: string): number[] => {
  * @param {number[]} codePoints - The array of numeric code points.
  * @returns {string} The new Unicode string (UCS-2).
  */
-export const ucs2Encode = (codePoints: number[]): string => String.fromCodePoint(...codePoints);
+export const ucs2Encode = (codePoints: readonly number[]): string => String.fromCodePoint(...codePoints);
 
 /**
  * Converts a basic code point into a digit/integer.

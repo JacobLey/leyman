@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "outputCapture": "direct-nodejs",
+  "cli": "nx",
+  "type": "object",
+  "title": "Typescript Build Target",
+  "description": "Builds using TypeScript.",
+  "properties": {
+    "tsConfig": {
+      "type": "string",
+      "description": "The path to the Typescript configuration file."
+    }
+  },
+  "required": [
+    "tsConfig"
+  ]
+}

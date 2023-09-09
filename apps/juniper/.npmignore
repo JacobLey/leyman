@@ -1,0 +1,14 @@
+project.json
+tsconfig.json
+
+dist/tsconfig.tsbuildinfo
+dist/**/*.map
+dist/tests/**
+
+src/**
+
+.nyc-cache/**
+.nyc_output/**
+coverage/**
+nyc/**
+

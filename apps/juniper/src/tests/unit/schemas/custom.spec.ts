@@ -1,11 +1,12 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { customSchema, type SchemaType } from '../../../index.js';
+import { suite, test } from 'mocha-hookup';
+import { customSchema, type SchemaType } from 'juniper';
 import type { AvailableProperties } from '../../types.js';
 
-export const CustomSchemaSpec = {
+suite('CustomSchema', () => {
 
-    'Custom schema + type'() {
+    test('Custom schema + type', () => {
 
         const sym = Symbol('sym');
 
@@ -19,22 +20,22 @@ export const CustomSchemaSpec = {
 
         expect(schema.toJSON()).to.deep.equal(externalSchema);
         expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<'abc' | number>();
-    },
+    });
 
-    'Default empty object'() {
+    test('Default empty object', () => {
         const schema = customSchema().toJSON();
 
         expect(schema).to.deep.equal({});
         expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<unknown>();
-    },
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Blocked methods'() {
+        test('Blocked methods', () => {
 
             const schema = customSchema();
 
             expectTypeOf<AvailableProperties<typeof schema>>().toEqualTypeOf<'cast' | 'toJSON'>();
-        },
-    },
-};
+        });
+    });
+});

@@ -3,13 +3,32 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "tsBuildInfoFile": "dist/.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "references": [
-    { "path": "../../tools/default-import" },
-    { "path": "../../tools/entry-script" },
-    { "path": "../../tools/find-import" },
-    { "path": "../../tools/named-patch" },
-    { "path": "../../tools/parse-cwd" }
+    {
+      "path": "../nx-update-ts-references"
+    },
+    {
+      "path": "../../tools/default-import"
+    },
+    {
+      "path": "../../tools/entry-script"
+    },
+    {
+      "path": "../../tools/find-import"
+    },
+    {
+      "path": "../../tools/mocha-hookup"
+    },
+    {
+      "path": "../../tools/named-patch"
+    },
+    {
+      "path": "../../tools/nx-tsc"
+    },
+    {
+      "path": "../../tools/parse-cwd"
+    }
   ]
 }

@@ -60,7 +60,7 @@ interface ArrayGenerics<
     params: ArrayParams<T, P, C, M, N>;
 }
 
-type AnyArraySchema = ArraySchema<any, any[], any, unknown, boolean>;
+export type AnyArraySchema = ArraySchema<any, any[], any, unknown, boolean>;
 
 /**
  * Schema for defining `array` types.

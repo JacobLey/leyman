@@ -1,42 +1,38 @@
 import Path from 'node:path';
 import { expect } from 'chai';
-import type { Context } from 'mocha';
+import { afterEach, beforeEach, suite, test } from 'mocha-hookup';
 import { patchKey } from 'named-patch';
-import Sinon from 'sinon';
+import { spy, stub, verifyAndRestore } from 'sinon';
 import BarrelCli, { yargsOutput } from '../../cli.js';
 import { barrelFiles } from '../../lib/barrel.js';
 
-interface CliTest extends Context {
-    outputStub: Sinon.SinonStub<Parameters<typeof yargsOutput>, unknown>;
-}
+suite('cli', () => {
 
-export const CliSpec = {
+    const stubbedOutput = beforeEach(() => ({
+        outputStub: stub(yargsOutput, patchKey),
+    }));
 
-    beforeEach(this: CliTest) {
-        this.outputStub = Sinon.stub(yargsOutput, patchKey);
-    },
+    afterEach(() => {
+        verifyAndRestore();
+    });
 
-    afterEach() {
-        Sinon.restore();
-    },
+    suite('create', () => {
 
-    create: {
-
-        async success() {
+        test('success', async () => {
 
             const barrel = await BarrelCli.create();
 
             expect(barrel).to.be.an.instanceOf(BarrelCli);
-        },
-    },
+        });
+    });
 
-    commands: {
+    suite('commands', () => {
 
-        default: {
+        suite('default', () => {
 
-            async success() {
+            test('success', async () => {
 
-                const buildStub = Sinon.stub(barrelFiles, patchKey).callsFake(async params => {
+                const buildStub = stub(barrelFiles, patchKey).callsFake(async params => {
                     expect(params).to.deep.equal({
                         cwd: process.cwd(),
                         dryRun: true,
@@ -51,12 +47,12 @@ export const CliSpec = {
                 }).start();
 
                 expect(buildStub.callCount).to.equal(1);
-            },
+            });
 
-            async failure(this: Readonly<CliTest>) {
+            stubbedOutput.test('failure', async ({ outputStub }) => {
 
-                const buildSpy = Sinon.spy(barrelFiles, patchKey);
-                this.outputStub.callsFake((err, argv, log) => {
+                const buildSpy = spy(barrelFiles, patchKey);
+                outputStub.callsFake((err, argv, log) => {
                     expect(err).to.have.property('message', 'Unknown arguments: unknown, option');
                     expect(log.startsWith('barrelify')).to.equal(true);
                     expect(log.endsWith('Unknown arguments: unknown, option')).to.equal(true);
@@ -67,15 +63,15 @@ export const CliSpec = {
                 }).start();
 
                 expect(buildSpy.callCount).to.equal(0);
-                expect(this.outputStub.callCount).to.equal(1);
-            },
-        },
+                expect(outputStub.callCount).to.equal(1);
+            });
+        });
 
-        ci: {
+        suite('ci', () => {
 
-            async success() {
+            test('success', async () => {
 
-                const buildStub = Sinon.stub(barrelFiles, patchKey).callsFake(async params => {
+                const buildStub = stub(barrelFiles, patchKey).callsFake(async params => {
                     expect(params).to.deep.equal({
                         cwd: Path.resolve('..'),
                         dryRun: true,
@@ -91,15 +87,15 @@ export const CliSpec = {
 
                 expect(buildStub.callCount).to.equal(1);
                 expect(process.exitCode).to.equal(undefined);
-            },
+            });
 
-            async failure() {
+            test('failure', async () => {
 
-                const errorStub = Sinon.stub(console, 'error').callsFake(msg => {
+                const errorStub = stub(console, 'error').callsFake(msg => {
                     expect(msg).to.equal('Files are not built');
                 });
 
-                Sinon.stub(barrelFiles, patchKey).resolves(['<file-path>']);
+                stub(barrelFiles, patchKey).resolves(['<file-path>']);
 
                 await new BarrelCli({
                     argv: ['node', 'barrelify', '--ci'],
@@ -109,30 +105,30 @@ export const CliSpec = {
                 delete process.exitCode;
 
                 expect(errorStub.callCount).to.equal(1);
-            },
-        },
-    },
+            });
+        });
+    });
 
-    yargsOutput: {
+    suite('yargsOutput', () => {
 
-        'Pipes to console.log'(this: Readonly<CliTest>) {
+        stubbedOutput.test('Pipes to console.log', ({ outputStub }) => {
 
-            const logStub = Sinon.stub(console, 'log').callsFake((...args) => {
+            const logStub = stub(console, 'log').callsFake((...args) => {
                 expect(args).to.deep.equal(['<log-data>']);
             });
 
-            this.outputStub.wrappedMethod(null, {}, '<log-data>');
+            outputStub.wrappedMethod(null, {}, '<log-data>');
 
             expect(logStub.callCount).to.equal(1);
-        },
+        });
 
-        'Ignores empty text'(this: Readonly<CliTest>) {
+        stubbedOutput.test('Ignores empty text', ({ outputStub }) => {
 
-            const logSpy = Sinon.spy(console, 'log');
+            const logSpy = spy(console, 'log');
 
-            this.outputStub.wrappedMethod(null, {}, '');
+            outputStub.wrappedMethod(null, {}, '');
 
             expect(logSpy.callCount).to.equal(0);
-        },
-    },
-};
+        });
+    });
+});

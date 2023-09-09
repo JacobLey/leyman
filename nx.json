@@ -1,0 +1,185 @@
+{
+  "$schema": "./node_modules/nx/schemas/nx-schema.json",
+  "affected": {
+    "defaultBase": "main"
+  },
+  "installation": {
+    "version": "18.0.4"
+  },
+  "namedInputs": {
+    "ts-source": [
+      "{projectRoot}/src/**/*.{c,m,}ts{x,}",
+      "{projectRoot}/package.json",
+      "{projectRoot}/tsconfig.json",
+      "{workspaceRoot}/tsconfig.build.json"
+    ]
+  },
+  "targetDefaults": {
+    "update-ts-references": {
+      "executor": "nx-update-ts-references:update-ts-references",
+      "dependsOn": [
+        "build:_"
+      ]
+    },
+    "tsc": {
+      "executor": "nx-tsc:build",
+      "options": {
+        "tsConfig": "{projectRoot}/tsconfig.json"
+      },
+      "inputs": [
+        "ts-source",
+        "^ts-source"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "dependsOn": [
+        "build:pre"
+      ]
+    },
+    "populate-files": {
+      "executor": "nx-populate-files:populate-files",
+      "options": {
+        "filePath": "{projectRoot}/dist/file-content.js",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "build:run"
+      ]
+    },
+    "mocha-unit-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["c8 --reporter=none mocha --recursive './dist/tests/unit/**/*.spec.*js'"],
+        "parallel": true,
+        "description": "Run unit test suite",
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "inputs": [
+        "ts-source",
+        "^ts-source",
+        "^prod-data"
+      ],
+      "outputs": [
+        "{projectRoot}/coverage/tmp"
+      ],
+      "dependsOn": [
+        "test:_"
+      ]
+    },
+    "coverage-report": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["c8 report --all --check-coverage"],
+        "description": "Create html report of coverage and report if failing threshold",
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "inputs": [
+        "{projectRoot}/coverage"
+      ],
+      "dependsOn": [
+        "test:run"
+      ]
+    },
+    "build:_": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "^build"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "build:pre": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "build:_",
+        "update-ts-references"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "build:run": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "build:pre",
+        "tsc"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "build:post": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "build:run",
+        "populate-files"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "build": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "build:post"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "test:_": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "build"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "test:run": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test:_",
+        "mocha-unit-test"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "test:report": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test:run",
+        "coverage-report"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "test": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test:report"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    }
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "nx/tasks-runners/default",
+      "options": {
+        "cacheableOperations": [
+          "tsc",
+          "populate-files",
+          "lint"
+        ]
+      }
+    }
+  }
+}

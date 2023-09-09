@@ -4,6 +4,7 @@ type IfEmpty<Enum extends Record<string, unknown>, Else> = Record<never, string>
     ? []
     : Else;
 
+
 /**
  * List key-value pairs of enum, in order that they occur.
  *
@@ -23,7 +24,7 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
 ): IfEmpty<
     Enum,
     Values<{
-        [key in keyof Enum]: { key: key; value: Enum[key] };
+        [key in keyof Enum]: number extends key ? never : { key: key; value: Enum[key] };
     }>[]
 > => {
     const knownValues: {
@@ -50,7 +51,7 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
     return knownValues as IfEmpty<
         Enum,
         Values<{
-            [key in keyof Enum]: { key: key; value: Enum[key] };
+            [key in keyof Enum]: number extends key ? never : { key: key; value: Enum[key] };
         }>[]
     >;
 };
@@ -86,10 +87,20 @@ export const enumToValues = <Enum extends Record<string, unknown>>(
     }: {
         unique?: boolean;
     } = {}
-): IfEmpty<Enum, Values<Enum>[]> => {
+): IfEmpty<
+    Enum,
+    Values<{
+        [key in keyof Enum]: number extends key ? never : Enum[key];
+    }>[]
+> => {
     const arr = enumToArray(enumDict).map(v => v.value);
 
-    return (unique ? [...new Set(arr)] : arr) as IfEmpty<Enum, Values<Enum>[]>;
+    return (unique ? [...new Set(arr)] : arr) as IfEmpty<
+        Enum,
+        Values<{
+            [key in keyof Enum]: number extends key ? never : Enum[key];
+        }>[]
+    >;
 };
 
 /**

@@ -1,0 +1,25 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "nx-update-ts-references",
+  "targets": {
+    "update-ts-references": {
+      "executor": "nx-update-ts-references@npm:update-ts-references"
+    },
+    "tsc": {},
+    "populate-files": {
+      "executor": "npm-nx-populate-files:populate-files",
+      "options": {
+        "filePath": "{projectRoot}/dist/file-content.js"
+      }
+    },
+    "build:_": {},
+    "build:pre": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "test:_": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {}
+  }
+}

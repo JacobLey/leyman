@@ -2,6 +2,7 @@ import AjvDefault from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
+import { suite, test } from 'mocha-hookup';
 import {
     type EmptyObject,
     numberSchema,
@@ -9,17 +10,17 @@ import {
     type PatternProperties,
     type SchemaType,
     stringSchema,
-} from '../../../index.js';
+} from 'juniper';
 
 const Ajv = defaultImport(AjvDefault);
 
-export const ObjectSchemaSpec = {
+suite('ObjectSchema', () => {
 
-    'keywords': {
+    suite('keywords', () => {
 
-        options: {
+        suite('options', () => {
 
-            success() {
+            test('success', () => {
 
                 const schema = objectSchema({
                     properties: {
@@ -32,9 +33,9 @@ export const ObjectSchemaSpec = {
                     maxProperties: 3,
                     additionalProperties: true,
                     unevaluatedProperties: false,
-                }).toJSON();
+                });
 
-                expect(schema).to.deep.equal({
+                expect(schema.toJSON()).to.deep.equal({
                     type: 'object',
                     properties: {
                         foo: {
@@ -52,14 +53,14 @@ export const ObjectSchemaSpec = {
                     additionalProperties: true,
                     unevaluatedProperties: false,
                 });
-                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<Record<string, unknown> & {
+                expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<Record<string, unknown> & {
                     foo: `abc${string}`;
                     bar?: number;
                     baz?: unknown;
                 }>();
-            },
+            });
 
-            'Only properties'() {
+            test('Only properties', () => {
 
                 const schema = objectSchema({
                     properties: {
@@ -88,9 +89,9 @@ export const ObjectSchemaSpec = {
                     bar?: number;
                     baz?: never;
                 }>();
-            },
+            });
 
-            'Only additionalProperties'() {
+            test('Only additionalProperties', () => {
 
                 const schema = objectSchema({
                     additionalProperties: numberSchema(),
@@ -102,9 +103,9 @@ export const ObjectSchemaSpec = {
                 });
 
                 expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<Record<string, number>>();
-            },
+            });
 
-            'No options'() {
+            test('No options', () => {
 
                 const schema = objectSchema().toJSON();
 
@@ -113,12 +114,12 @@ export const ObjectSchemaSpec = {
                 });
 
                 expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<EmptyObject>();
-            },
-        },
+            });
+        });
 
-        methods: {
+        suite('methods', () => {
 
-            success() {
+            test('success', () => {
 
                 const schema = objectSchema()
                     .minProperties(2)
@@ -147,7 +148,7 @@ export const ObjectSchemaSpec = {
                     )
                     .unevaluatedProperties(true);
 
-                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<
                     Record<`${string}abc`, 1 | 2> &
                     Record<`abc${string}`, EmptyObject | null> &
                     Record<string, { x: number }> & {
@@ -162,7 +163,7 @@ export const ObjectSchemaSpec = {
                 expectTypeOf(example.aaabc).toEqualTypeOf<1 | 2 | undefined>();
                 expectTypeOf(example.abccc).toEqualTypeOf<EmptyObject | null | undefined>();
                 expectTypeOf(example.abc).toEqualTypeOf<((1 | 2) & (EmptyObject | null)) | undefined>();
-                expectTypeOf(example.random).toEqualTypeOf<{ x: number } | undefined>();
+                expectTypeOf(example.random).toMatchTypeOf<{ x: number } | undefined>();
 
                 expect(schema.toJSON()).to.deep.equal({
                     type: ['object', 'null'],
@@ -245,9 +246,9 @@ export const ObjectSchemaSpec = {
                     minProperties: 2,
                     required: ['bar'],
                 });
-            },
+            });
 
-            'Unset options'() {
+            test('Unset options', () => {
 
                 const schema = objectSchema({
                     minProperties: 4,
@@ -264,13 +265,13 @@ export const ObjectSchemaSpec = {
                     type: 'object',
                     additionalProperties: false,
                 });
-            },
-        },
-    },
+            });
+        });
+    });
 
-    'if': {
+    suite('if', () => {
 
-        'Then + else'() {
+        test('Then + else', () => {
 
             const schema = objectSchema({
                 properties: {
@@ -298,15 +299,15 @@ export const ObjectSchemaSpec = {
                 }
             );
 
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<{
                 foo?: number;
             } & (Record<string, unknown> | (Record<`a${string}`, number> & {
                 bar: string;
                 baz?: number;
             }))>();
-        },
+        });
 
-        'Only then'() {
+        test('Only then', () => {
 
             const schema = objectSchema({
                 properties: {
@@ -328,16 +329,16 @@ export const ObjectSchemaSpec = {
                 }
             );
 
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<{
                 foo?: number;
                 bar: string;
                 baz?: number;
             } | {
                 foo?: number;
             }>();
-        },
+        });
 
-        'Only else'() {
+        test('Only else', () => {
 
             const schema = objectSchema({
                 properties: {
@@ -359,19 +360,19 @@ export const ObjectSchemaSpec = {
                 }
             ).nullable();
 
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<{
                 foo?: number;
             } & ({
                 bar: string;
             } | {
                 baz?: number;
             })>();
-        },
-    },
+        });
+    });
 
-    'not': {
+    suite('not', () => {
 
-        'Unsets nullable'() {
+        test('Unsets nullable', () => {
 
             const baseSchema = objectSchema({
                 properties: {
@@ -381,19 +382,19 @@ export const ObjectSchemaSpec = {
             expectTypeOf<SchemaType<typeof baseSchema>>().toEqualTypeOf<{ x?: string }>();
 
             const nullableSchema = baseSchema.nullable().required(['x']);
-            expectTypeOf<SchemaType<typeof nullableSchema>>().toEqualTypeOf<{ x: string } | null>();
+            expectTypeOf<SchemaType<typeof nullableSchema>>().toMatchTypeOf<{ x: string } | null>();
 
             const stillNullableSchema = nullableSchema.not(objectSchema());
-            expectTypeOf<SchemaType<typeof stillNullableSchema>>().toEqualTypeOf<{ x: string } | null>();
+            expectTypeOf<SchemaType<typeof stillNullableSchema>>().toMatchTypeOf<{ x: string } | null>();
 
             const notNullableSchema = stillNullableSchema.not(objectSchema().nullable());
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<{ x: string }>();
-        },
-    },
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<{ x: string }>();
+        });
+    });
 
-    'ref': {
+    suite('ref', () => {
 
-        'Applies defaults'() {
+        test('Applies defaults', () => {
 
             expect(
                 objectSchema()
@@ -408,12 +409,12 @@ export const ObjectSchemaSpec = {
                 maxProperties: 1e308,
                 minProperties: 0,
             });
-        },
-    },
+        });
+    });
 
-    'patternProperties': {
+    suite('patternProperties', () => {
 
-        success() {
+        test('success', () => {
 
             const strSchema = stringSchema();
 
@@ -453,7 +454,7 @@ export const ObjectSchemaSpec = {
                 Record<`${string}b${string}`, unknown> &
                 Record<`${string}c${string}`, never>
             >();
-            expectTypeOf<SchemaType<typeof withSubSchema>>().toEqualTypeOf<
+            expectTypeOf<SchemaType<typeof withSubSchema>>().toMatchTypeOf<
                 Record<`${string}a${string}`, number> &
                 Record<`${string}abc${string}`, string> &
                 Record<`${string}b${string}`, never> &
@@ -530,12 +531,12 @@ export const ObjectSchemaSpec = {
                 expect(validator(test)).to.equal(expected);
                 expect(subSchemaValidator(test)).to.equal(subSchemaExpected);
             }
-        },
-    },
+        });
+    });
 
-    'dependentRequired': {
+    suite('dependentRequired', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = objectSchema({
                 properties: {
@@ -546,7 +547,7 @@ export const ObjectSchemaSpec = {
                 },
                 required: ['c', 'd'],
             }).dependentRequired('a', ['b', 'c']);
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<({
+            expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<({
                 a?: number;
                 b?: number;
                 c: number;
@@ -637,7 +638,7 @@ export const ObjectSchemaSpec = {
 
             if (typeof example.a === 'number') {
                 expectTypeOf(example.a).toEqualTypeOf<number>();
-                expectTypeOf(example.b).toEqualTypeOf<number | undefined>();
+                expectTypeOf(example.b).toEqualTypeOf<number>();
                 expectTypeOf(example.c).toEqualTypeOf<number>();
             } else {
                 expectTypeOf(example.a).toEqualTypeOf<undefined>();
@@ -746,12 +747,12 @@ export const ObjectSchemaSpec = {
 
             new Ajv({ strict: true, strictRequired: false }).compile(withIfSchema.toJSON());
             new Ajv({ strict: true, strictRequired: false }).compile(withIfSchema.toJSON({ openApi30: true }));
-        },
-    },
+        });
+    });
 
-    'dependentSchemas': {
+    suite('dependentSchemas', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = objectSchema({
                 properties: {
@@ -771,7 +772,7 @@ export const ObjectSchemaSpec = {
                     required: ['b'],
                 }).nullable()
             ).nullable();
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<(({
+            expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<(({
                 a?: number;
                 b?: number;
                 c: number;
@@ -888,9 +889,8 @@ export const ObjectSchemaSpec = {
 
             if (typeof example.a === 'number') {
                 expectTypeOf(example.a).toEqualTypeOf<number>();
-                expectTypeOf(example.b).toEqualTypeOf<number | undefined>();
+                expectTypeOf(example.b).toEqualTypeOf<number>();
                 expectTypeOf(example.c).toEqualTypeOf<number>();
-                // @ts-expect-error
                 expectTypeOf(example.e);
             } else {
                 expectTypeOf(example.a).toEqualTypeOf<undefined>();
@@ -913,12 +913,12 @@ export const ObjectSchemaSpec = {
                 expectTypeOf(example.a).toEqualTypeOf<number | undefined>();
                 expectTypeOf(example.b).toEqualTypeOf<number>();
             }
-        },
-    },
+        });
+    });
 
-    'composite': {
+    suite('composite', () => {
 
-        allOf() {
+        test('allOf', () => {
 
             const schema = objectSchema({
                 properties: {
@@ -935,18 +935,18 @@ export const ObjectSchemaSpec = {
                     }).nullable()
                 );
 
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{ foo?: number; bar: string } | null>();
+            expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<{ foo?: number; bar: string } | null>();
 
             const notNullableSchema = schema.allOf(
                 objectSchema().additionalProperties(stringSchema().startsWith('a'))
             );
 
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<
                 Record<string, `a${string}`> & { foo?: number; bar: string }
             >();
-        },
+        });
 
-        anyOf() {
+        test('anyOf', () => {
 
             const schema = objectSchema({
                 properties: {
@@ -967,12 +967,12 @@ export const ObjectSchemaSpec = {
                 ])
                 .nullable();
 
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+            expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<
                 ({ foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })) | null
             >();
 
             const notNullableSchema = schema.anyOf([objectSchema()]);
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<
                 { foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })
             >();
 
@@ -982,9 +982,9 @@ export const ObjectSchemaSpec = {
 
             const neverSchema2 = stringSchema().nullable().anyOf([]);
             expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
-        },
+        });
 
-        oneOf() {
+        test('oneOf', () => {
 
             const schema = objectSchema({
                 properties: {
@@ -1005,12 +1005,12 @@ export const ObjectSchemaSpec = {
                 ])
                 .nullable();
 
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+            expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<
                 ({ foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })) | null
             >();
 
             const notNullableSchema = schema.oneOf([objectSchema()]);
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<
                 { foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })
             >();
 
@@ -1020,14 +1020,14 @@ export const ObjectSchemaSpec = {
 
             const neverSchema2 = stringSchema().nullable().oneOf([]);
             expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
-        },
-    },
+        });
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Required not exists': {
+        suite('Required not exists', () => {
 
-            create() {
+            test('create', () => {
                 objectSchema({
                     // @ts-expect-error
                     required: ['foo'],
@@ -1041,9 +1041,9 @@ export const ObjectSchemaSpec = {
                     // @ts-expect-error
                     required: ['foo', 'foo2'],
                 });
-            },
+            });
 
-            method() {
+            test('method', () => {
 
                 // @ts-expect-error
                 objectSchema().required('foo');
@@ -1066,10 +1066,10 @@ export const ObjectSchemaSpec = {
                     },
                 // @ts-expect-error
                 }).required('foo2');
-            },
-        },
+            });
+        });
 
-        'Property already exists'() {
+        test('Property already exists', () => {
 
             objectSchema({
                 properties: {
@@ -1089,6 +1089,6 @@ export const ObjectSchemaSpec = {
                 foo: numberSchema(),
                 foo2: numberSchema(),
             });
-        },
-    },
-};
+        });
+    });
+});

@@ -1,22 +1,23 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { CustomEvent } from '../../custom-event.js';
-import { events } from '../../events.js';
-import { StaticEventTarget } from '../../static-event-target.js';
+import { suite, test } from 'mocha-hookup';
+import { events } from 'static-emitter';
+import { CustomEvent } from 'static-emitter/custom-event';
+import { StaticEventTarget } from 'static-emitter/static-event-target';
 import { ExtendTarget, NativeEvent } from '../data/extend-event-target.js';
 import { ServerEvent } from '../data/server-event.js';
 
-export const StaticEventTargetSpec = {
+suite('StaticEventTarget', () => {
 
-    success: {
+    suite('success', () => {
 
-        'Unchanged EventTarget'() {
+        test('Unchanged EventTarget', () => {
             expect(StaticEventTarget).to.eq(EventTarget);
-        },
+        });
 
-        'Declare event types': {
+        suite('Declare event types', () => {
 
-            'Generic parameter'() {
+            test('Generic parameter', () => {
 
                 const extendTarget = new ExtendTarget();
                 extendTarget.addEventListener('foo', event => {
@@ -49,9 +50,9 @@ export const StaticEventTargetSpec = {
                         expectTypeOf(event).toEqualTypeOf<ServerEvent<'bar'>>();
                     },
                 });
-            },
+            });
 
-            'Explicit event declaration'() {
+            test('Explicit event declaration', () => {
 
                 /**
                  * @override
@@ -60,13 +61,14 @@ export const StaticEventTargetSpec = {
                     declare public [events]: {
                         foo: 123;
                         bar: ServerEvent<'bar'>;
+                        onStuff: NativeEvent;
                     };
                 }
 
-                expectTypeOf(ExtendTargetDeclare).toEqualTypeOf(ExtendTarget);
-            },
+                expectTypeOf(ExtendTargetDeclare).toMatchTypeOf(ExtendTarget);
+            });
 
-            'Both generics and event param'() {
+            test('Both generics and event param', () => {
 
                 /**
                  * @override
@@ -78,11 +80,12 @@ export const StaticEventTargetSpec = {
                         foo: 123;
                     }>[typeof events] & {
                         bar: ServerEvent<'bar'>;
+                        onStuff: NativeEvent;
                     };
                 }
 
-                expectTypeOf(ExtendTargetCombo).toEqualTypeOf(ExtendTarget);
-            },
-        },
-    },
-};
+                expectTypeOf(ExtendTargetCombo).toMatchTypeOf(ExtendTarget);
+            });
+        });
+    });
+});

@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "Isomorphic cryptographic functions for browser and NodeJS.",
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
   },
   "type": "module",
   "author": "jacobley",
@@ -26,129 +26,58 @@
     "ecc"
   ],
   "sideEffects": false,
-  "scripts": {
-    "build": "tsc",
-    "coverage": "rushx instrument && nyc mocha ./nyc/tests/unit",
-    "instrument": "nyc instrument --nycrc-path=nyc.instrument.cjs ./dist ./nyc",
-    "lint": "rush lint-package",
-    "test": "rushx coverage",
-    "unit-test": "mocha ./dist/tests/unit"
-  },
   "types": "./dist/index.js",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
-    }
+    ".": "./dist/index.js"
   },
   "imports": {
     "#base64": {
-      "types": "./src/iso/base64/browser.ts",
-      "node": {
-        "nyc-iso-crypto": "./nyc/iso/base64/node.js",
-        "default": "./dist/iso/base64/node.js"
-      },
+      "node": "./dist/iso/base64/node.js",
       "default": "./dist/iso/base64/browser.js"
     },
     "#crypto": {
-      "types": "./src/iso/crypto/node.ts",
       "browser": "./dist/iso/crypto/browser.js",
-      "default": {
-        "nyc-iso-crypto": "./nyc/iso/crypto/node.js",
-        "default": "./dist/iso/crypto/node.js"
-      }
+      "default": "./dist/iso/crypto/node.js"
     },
     "#ecc": {
-      "types": "./src/iso/ecc/types.ts",
+      "types": "./dist/iso/ecc/types.js",
       "browser": "./dist/iso/ecc/browser.js",
-      "default": {
-        "nyc-iso-crypto": "./nyc/iso/ecc/node.js",
-        "default": "./dist/iso/ecc/node.js"
-      }
+      "default": "./dist/iso/ecc/node.js"
     },
     "#encode": {
-      "types": "./src/iso/encode/types.ts",
+      "types": "./dist/iso/encode/types.js",
       "browser": "./dist/iso/encode/browser.js",
-      "default": {
-        "nyc-iso-crypto": "./nyc/iso/encode/node.js",
-        "default": "./dist/iso/encode/node.js"
-      }
+      "default": "./dist/iso/encode/node.js"
     },
     "#encrypt": {
-      "types": "./src/iso/encrypt/types.ts",
+      "types": "./dist/iso/encrypt/types.js",
       "browser": "./dist/iso/encrypt/browser.js",
-      "default": {
-        "nyc-iso-crypto": "./nyc/iso/encrypt/node.js",
-        "default": "./dist/iso/encrypt/node.js"
-      }
+      "default": "./dist/iso/encrypt/node.js"
     },
     "#hash": {
-      "types": "./src/iso/hash/types.ts",
+      "types": "./dist/iso/hash/types.js",
       "browser": "./dist/iso/hash/browser.js",
-      "default": {
-        "nyc-iso-crypto": "./nyc/iso/hash/node.js",
-        "default": "./dist/iso/hash/node.js"
-      }
+      "default": "./dist/iso/hash/node.js"
     },
     "#random": {
-      "types": "./src/iso/random/types.ts",
+      "types": "./dist/iso/random/types.js",
       "browser": "./dist/iso/random/browser.js",
-      "default": {
-        "nyc-iso-crypto": "./nyc/iso/random/node.js",
-        "default": "./dist/iso/random/node.js"
-      }
-    }
-  },
-  "publishConfig": {
-    "exports": {
-      ".": "./dist/index.js"
-    },
-    "imports": {
-      "#base64": {
-        "node": "./dist/iso/base64/node.js",
-        "default": "./dist/iso/base64/browser.js"
-      },
-      "#crypto": {
-        "browser": "./dist/iso/crypto/browser.js",
-        "default": "./dist/iso/crypto/node.js"
-      },
-      "#ecc": {
-        "types": "./dist/iso/ecc/types.js",
-        "browser": "./dist/iso/ecc/browser.js",
-        "default": "./dist/iso/ecc/node.js"
-      },
-      "#encode": {
-        "types": "./dist/iso/encode/types.js",
-        "browser": "./dist/iso/encode/browser.js",
-        "default": "./dist/iso/encode/node.js"
-      },
-      "#encrypt": {
-        "types": "./dist/iso/encrypt/types.js",
-        "browser": "./dist/iso/encrypt/browser.js",
-        "default": "./dist/iso/encrypt/node.js"
-      },
-      "#hash": {
-        "types": "./dist/iso/hash/types.js",
-        "browser": "./dist/iso/hash/browser.js",
-        "default": "./dist/iso/hash/node.js"
-      },
-      "#random": {
-        "types": "./dist/iso/random/types.js",
-        "browser": "./dist/iso/random/browser.js",
-        "default": "./dist/iso/random/node.js"
-      }
+      "default": "./dist/iso/random/node.js"
     }
   },
   "devDependencies": {
-    "@types/chai": "^4.3.1",
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^18.0.0",
-    "@types/sinon": "^10.0.11",
-    "chai": "^4.3.6",
-    "expect-type": "^0.13.0",
-    "mocha": "^10.0.0",
-    "nyc": "^15.1.0",
-    "sinon": "^14.0.0",
-    "typescript": "^4.7.2"
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.8.10",
+    "@types/sinon": "^17.0.3",
+    "c8": "^8.0.1",
+    "chai": "^5.1.0",
+    "expect-type": "^0.17.3",
+    "mocha": "^10.3.0",
+    "mocha-hookup": "workspace:^",
+    "nx-tsc": "workspace:^",
+    "nx-update-ts-references": "workspace:^",
+    "sinon": "^17.0.1",
+    "typescript": "^5.3.3"
   }
 }

@@ -3,7 +3,7 @@
   "version": "2.1.1",
   "description": "Modular control for entry script execution.",
   "engines": {
-    "node": ">=14.5"
+    "node": ">=18"
   },
   "type": "module",
   "author": "jacobley",
@@ -19,39 +19,29 @@
     "require main"
   ],
   "sideEffects": false,
-  "scripts": {
-    "build": "tsc",
-    "coverage": "rushx instrument && nyc mocha ./nyc/tests/unit",
-    "instrument": "nyc instrument --nycrc-path=nyc.instrument.cjs ./dist ./nyc",
-    "lint": "rush lint-package",
-    "test": "rushx coverage",
-    "unit-test": "mocha ./dist/tests/unit"
-  },
   "types": "./dist/index.js",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
-    }
+    ".": "./dist/index.js"
   },
-  "publishConfig": {
-    "exports": {
-      ".": "./dist/index.js"
-    }
+  "imports": {
+    "#entry-script": "./dist/lib/entry-script.js"
   },
   "dependencies": {
     "default-import": "workspace:^",
     "static-emitter": "workspace:^"
   },
   "devDependencies": {
-    "@types/chai": "^4.3.1",
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^18.0.0",
-    "@types/sinon": "^10.0.11",
-    "chai": "^4.3.6",
-    "mocha": "^10.0.0",
-    "nyc": "^15.1.0",
-    "sinon": "^14.0.0",
-    "typescript": "^4.7.2"
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.8.10",
+    "@types/sinon": "^17.0.3",
+    "c8": "^8.0.1",
+    "chai": "^5.1.0",
+    "mocha": "^10.3.0",
+    "mocha-hookup": "workspace:^",
+    "nx-tsc": "workspace:^",
+    "nx-update-ts-references": "workspace:^",
+    "sinon": "^17.0.1",
+    "typescript": "^5.3.3"
   }
 }

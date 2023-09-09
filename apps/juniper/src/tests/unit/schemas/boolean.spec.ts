@@ -2,15 +2,16 @@ import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { booleanSchema, type SchemaType } from '../../../index.js';
+import { suite, test } from 'mocha-hookup';
+import { booleanSchema, type SchemaType } from 'juniper';
 
 const Ajv = defaultImport(DefaultAjv);
 
-export const BooleanSchemaSpec = {
+suite('BooleanSchema', () => {
 
-    'nullable': {
+    suite('nullable', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = booleanSchema().nullable().toJSON();
 
@@ -21,12 +22,12 @@ export const BooleanSchemaSpec = {
             const validator = new Ajv({ strict: true }).compile(schema);
             expect(validator(true)).to.equal(true);
             expect(validator(null)).to.equal(true);
-        },
-    },
+        });
+    });
 
-    'toJSON': {
+    suite('toJSON', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = booleanSchema().toJSON();
 
@@ -37,12 +38,12 @@ export const BooleanSchemaSpec = {
             const validator = new Ajv({ strict: true }).compile(schema);
             expect(validator(true)).to.equal(true);
             expect(validator(null)).to.equal(false);
-        },
-    },
+        });
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Blocked methods'() {
+        test('Blocked methods', () => {
 
             const schema = booleanSchema();
 
@@ -51,6 +52,6 @@ export const BooleanSchemaSpec = {
             expectTypeOf<typeof schema['if']>().toBeNever();
             expectTypeOf<typeof schema['not']>().toBeNever();
             expectTypeOf<typeof schema['oneOf']>().toBeNever();
-        },
-    },
-};
+        });
+    });
+});

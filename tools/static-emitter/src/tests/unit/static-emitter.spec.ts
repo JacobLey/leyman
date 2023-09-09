@@ -1,20 +1,21 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { CustomEvent, type events, StaticEmitter } from '../../index.js';
+import { suite, test } from 'mocha-hookup';
+import { CustomEvent, type events, StaticEmitter } from 'static-emitter';
 import { CustomEmitter, eventSym } from '../data/custom-emitter.js';
 import { ServerEvent } from '../data/server-event.js';
 
-export const StaticEmitterSpec = {
+suite('StaticEmitter', () => {
 
-    success: {
+    suite('success', () => {
 
-        'Extends EventTarget'() {
+        test('Extends EventTarget', () => {
             expect(new StaticEmitter()).to.be.an.instanceOf(EventTarget);
-        },
+        });
 
-        'Declare event types': {
+        suite('Declare event types', () => {
 
-            'Generic parameter'() {
+            test('Generic parameter', () => {
 
                 const customEmitter = new CustomEmitter();
                 customEmitter.on('foo', (...args) => {
@@ -55,9 +56,9 @@ export const StaticEmitterSpec = {
                         CustomEvent<string, { myData: string }>,
                     ]>();
                 });
-            },
+            });
 
-            'Explicit event declaration'() {
+            test('Explicit event declaration', () => {
 
                 /**
                  * @override
@@ -70,10 +71,10 @@ export const StaticEmitterSpec = {
                     };
                 }
 
-                expectTypeOf(CustomEmitterDeclare).toEqualTypeOf(CustomEmitter);
-            },
+                expectTypeOf(CustomEmitterDeclare).toMatchTypeOf(CustomEmitter);
+            });
 
-            'Both generics and event param'() {
+            test('Both generics and event param', () => {
 
                 /**
                  * @override
@@ -91,11 +92,11 @@ export const StaticEmitterSpec = {
                     };
                 }
 
-                expectTypeOf(CustomEmitterCombo).toEqualTypeOf(CustomEmitter);
-            },
-        },
+                expectTypeOf(CustomEmitterCombo).toMatchTypeOf(CustomEmitter);
+            });
+        });
 
-        'Wrap custom event listeners'() {
+        test('Wrap custom event listeners', () => {
 
             let order = 0;
 
@@ -138,6 +139,6 @@ export const StaticEmitterSpec = {
             customEmitter.off(eventSym, () => {});
 
             expect(++order).to.equal(4);
-        },
-    },
-};
+        });
+    });
+});

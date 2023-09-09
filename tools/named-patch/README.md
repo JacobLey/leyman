@@ -97,7 +97,7 @@ rand(['foo', 'bar']); // '<custom>'
 
 This module exports 2 different packages depending on the environment. By default it is the noop module which only exports the `patch` method that returns the method _unchanged_.
 
-Using a [Condition](https://nodejs.org/dist/latest-v16.x/docs/api/packages.html#resolving-user-conditions) of `--conditions=patchable` will enable the `patchKey` and `getPatched` methods.
+Using a [Condition](https://nodejs.org/dist/latest/docs/api/packages.html#resolving-user-conditions) of `--conditions=patchable` will enable the `patchKey` and `getPatched` methods.
 
 This enforces a best practice that _by default_ monkey patching and stubbing is a testing-specific pattern that should be omitted in production.
 

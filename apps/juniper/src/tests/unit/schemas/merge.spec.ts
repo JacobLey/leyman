@@ -2,15 +2,16 @@ import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { enumSchema, mergeSchema, numberSchema, type SchemaType, stringSchema } from '../../../index.js';
+import { suite, test } from 'mocha-hookup';
+import { enumSchema, mergeSchema, numberSchema, type SchemaType, stringSchema } from 'juniper';
 
 const Ajv = defaultImport(DefaultAjv);
 
-export const MergeSchemaSpec = {
+suite('MergeSchema', () => {
 
-    'allOf': {
+    suite('allOf', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = mergeSchema()
                 .allOf(stringSchema().startsWith('abc').nullable())
@@ -29,12 +30,12 @@ export const MergeSchemaSpec = {
             expect(validator(null)).to.equal(true);
             expect(validator('abc')).to.equal(false);
             expect(validator(123)).to.equal(false);
-        },
-    },
+        });
+    });
 
-    'anyOf': {
+    suite('anyOf', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = mergeSchema().anyOf([
                 stringSchema().endsWith('abc'),
@@ -122,12 +123,12 @@ export const MergeSchemaSpec = {
 
             const neverSchema = numSchema.anyOf([]);
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
-        },
-    },
+        });
+    });
 
-    'if': {
+    suite('if', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = mergeSchema({ title: '<title>' }).if(
                 stringSchema().startsWith('a').nullable(),
@@ -208,12 +209,12 @@ export const MergeSchemaSpec = {
             expect(oaValidator('abbc')).to.equal(true);
             expect(oaValidator('abbbc')).to.equal(false);
             expect(oaValidator(null)).to.equal(false);
-        },
-    },
+        });
+    });
 
-    'oneOf': {
+    suite('oneOf', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = mergeSchema().oneOf([
                 stringSchema().endsWith('abc'),
@@ -260,12 +261,12 @@ export const MergeSchemaSpec = {
 
             const neverSchema = numSchema.oneOf([]);
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
-        },
-    },
+        });
+    });
 
-    'ref': {
+    suite('ref', () => {
 
-        success() {
+        suite('success', () => {
             const schema = mergeSchema()
                 .oneOf([
                     stringSchema().startsWith('abc'),
@@ -334,16 +335,16 @@ export const MergeSchemaSpec = {
                     },
                 ],
             });
-        },
-    },
+        });
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Blocked methods'() {
+        test('Blocked methods', () => {
 
             const schema = mergeSchema();
 
             expectTypeOf<typeof schema['nullable']>().toBeNever();
-        },
-    },
-};
+        });
+    });
+});

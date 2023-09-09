@@ -1,0 +1,49 @@
+{
+  "name": "load-populate-files",
+  "version": "0.0.1",
+  "description": "Load and dynamically populate file content",
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "author": "jacobley",
+  "license": "MIT",
+  "repository": "jacobley/jacobley",
+  "homepage": "https://github.com/JacobLey/jacobley/tree/main/apps/populate-files/load-populate-files/nx-tsc#readme",
+  "bugs": {
+    "url": "https://github.com/jacobley/jacobley/issues"
+  },
+  "keywords": [
+    "content",
+    "write",
+    "build"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "publishConfig": {
+    "exports": {
+      ".": "./dist/index.js"
+    }
+  },
+  "dependencies": {
+    "default-import": "workspace:^",
+    "npm-parse-cwd": "npm:parse-cwd@^1.0.8",
+    "populate-files": "workspace:^"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.8.10",
+    "chai": "^5.1.0",
+    "mocha": "^10.3.0",
+    "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.1",
+    "nx-tsc": "workspace:^",
+    "nyc": "^15.1.0",
+    "typescript": "^5.3.3"
+  }
+}

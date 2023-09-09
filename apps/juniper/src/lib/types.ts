@@ -37,13 +37,7 @@ export interface Schema<T> {
     toJSON: (params?: ToJsonParams) => JsonSchema<T>;
 }
 
-export type SchemaType<
-    T extends {
-        [typeCache]?: {
-            type: any;
-        };
-    }
-> = T extends {
+export type SchemaType<T> = T extends {
     [typeCache]?: {
         type: infer U;
     };

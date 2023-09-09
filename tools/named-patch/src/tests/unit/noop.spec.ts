@@ -1,17 +1,17 @@
 import { expect } from 'chai';
-import { expectTypeOf } from 'expect-type';
-import * as Noop from '../../noop.js';
+import { suite, test } from 'mocha-hookup';
+import * as Noop from 'named-patch';
 
-export const NoopSpec = {
+suite('noop', () =>  {
 
-    'Returns input unchanged'() {
+    test('Returns input unchanged', () => {
 
         const original = <
             A extends string,
             B = [123]
         >(a: A, b: B[]): { a: [A]; b: B[]; c: boolean } => ({ a: [a], b, c: true });
+        Object.freeze(original);
         const patched = Noop.patch(original);
         expect(patched).to.equal(patched);
-        expectTypeOf(original).toEqualTypeOf(patched);
-    },
-};
+    });
+});

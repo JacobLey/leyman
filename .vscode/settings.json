@@ -9,14 +9,12 @@
     "eslint.useESLintClass": true,
     "files.associations": {
         "*.cts": "typescript",
-        "*.mts": "typescript",
-        "rush.json": "jsonc",
-        "**/common/config/rush/*.json": "jsonc"
+        "*.mts": "typescript"
     },
     "javascript.preferences.quoteStyle": "single",
     "typescript.preferences.importModuleSpecifierEnding": "js",
     "typescript.preferences.quoteStyle": "single",
-    "typescript.tsdk": "common/temp/node_modules/.pnpm/typescript@4.7.4/node_modules/typescript/lib",
+    "typescript.tsdk": "node_modules/vscode-ts/lib",
     "[javascript]": {
       "editor.tabSize": 4
     },
@@ -30,6 +28,7 @@
         "editor.tabSize": 2
     },
     "eslint.options": {
-      "overrideConfigFile": "./root/jacobley/.eslintrc.cjs"
-    }
+      "overrideConfigFile": "eslint.config.js"
+    },
+    "git.ignoreLimitWarning": true
 }

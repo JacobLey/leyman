@@ -4,15 +4,13 @@
 **/.nyc-cache/**
 **/.nyc_output/**
 **/node_modules/**
+.pnpm-store
 
-/*/*/coverage/**
-/*/*/dist/**
-/*/*/nyc/**
+/**/coverage/**
+/**/dist/**
+/**/nyc/**
 
-/*/*/LICENSE
-/*/*/.npmignore
-
-# Rush temporary files
-**/.rush/temp/**
-common/deploy/
-common/temp/
+.nx/**
+!.nx/package.json
+nx
+nx.bat

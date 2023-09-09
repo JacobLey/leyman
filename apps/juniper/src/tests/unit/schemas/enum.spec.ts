@@ -2,19 +2,16 @@ import AjvDefault from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { type EnumSchema, enumSchema, type SchemaType } from '../../../index.js';
+import { before, suite, test } from 'mocha-hookup';
+import { enumSchema, type SchemaType } from 'juniper';
 
 const Ajv = defaultImport(AjvDefault);
 
-interface EnumSchemaTest {
-    schema: EnumSchema<unknown>;
-}
+suite('EnumSchema', () => {
 
-export const EnumSchemaSpec = {
+    suite('toJSON', () => {
 
-    'toJSON': {
-
-        success() {
+        test('success', () => {
 
             const schema = enumSchema({
                 enum: [1, 'a', [false]] as const,
@@ -28,42 +25,42 @@ export const EnumSchemaSpec = {
             expect(validator([false])).to.equal(true);
             expect(validator(1)).to.equal(true);
             expect(validator('b')).to.equal(false);
-        },
+        });
 
-        'Single value': {
+        suite('Single value', () => {
 
-            before(this: EnumSchemaTest) {
-                this.schema = enumSchema({ enum: [123] })
+            const withSchema = before(() => ({
+                schema: enumSchema({ enum: [123] })
                     .enum(123)
-                    .enums([123]);
-            },
+                    .enums([123]),
+            }));
 
-            const(this: EnumSchemaTest) {
+            withSchema.test('const', ({ schema }) => {
 
-                expect(this.schema.toJSON()).to.deep.equal({
+                expect(schema.toJSON()).to.deep.equal({
                     const: 123,
                 });
 
-                const validator = new Ajv({ strict: true }).compile(this.schema.toJSON());
+                const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                 expect(validator(123)).to.equal(true);
                 expect(validator(124)).to.equal(false);
-            },
+            });
 
-            openApi30(this: EnumSchemaTest) {
-                expect(this.schema.toJSON({ openApi30: true })).to.deep.equal({
+            withSchema.test('openApi30', ({ schema }) => {
+                expect(schema.toJSON({ openApi30: true })).to.deep.equal({
                     enum: [123],
                 });
 
-                const validator = new Ajv({ strict: true }).compile(this.schema.toJSON({ openApi30: true }));
+                const validator = new Ajv({ strict: true }).compile(schema.toJSON({ openApi30: true }));
                 expect(validator(123)).to.equal(true);
                 expect(validator(124)).to.equal(false);
-            },
-        },
-    },
+            });
+        });
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Blocked methods'() {
+        test('Blocked methods', () => {
 
             const schema = enumSchema();
 
@@ -73,6 +70,6 @@ export const EnumSchemaSpec = {
             expectTypeOf<typeof schema['not']>().toBeNever();
             expectTypeOf<typeof schema['nullable']>().toBeNever();
             expectTypeOf<typeof schema['oneOf']>().toBeNever();
-        },
-    },
-};
+        });
+    });
+});

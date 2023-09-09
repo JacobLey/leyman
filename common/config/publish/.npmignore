@@ -1,6 +1,0 @@
-# Copied into individual packages
-*
-!/dist/**
-/dist/tests
-/dist/**/*.map
-/dist/.tsbuildinfo

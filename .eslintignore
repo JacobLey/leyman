@@ -11,8 +11,3 @@ root/*/nyc
 tools/*/coverage
 tools/*/dist
 tools/*/nyc
-
-# Rush temporary files
-**/.rush/temp/**
-common/deploy/
-common/temp/

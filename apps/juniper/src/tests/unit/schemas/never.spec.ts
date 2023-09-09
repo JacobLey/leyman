@@ -2,15 +2,16 @@ import AjvDefault from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { neverSchema, type SchemaType } from '../../../index.js';
+import { suite, test } from 'mocha-hookup';
+import { neverSchema, type SchemaType } from 'juniper';
 
 const Ajv = defaultImport(AjvDefault);
 
-export const NeverSchemaSpec = {
+suite('NeverSchema', () => {
 
-    'toJSON': {
+    suite('toJSON', () => {
 
-        success() {
+        test('success', () => {
 
             const schema = neverSchema().toJSON();
 
@@ -20,12 +21,12 @@ export const NeverSchemaSpec = {
             const validator = new Ajv({ strict: true }).compile<SchemaType<typeof schema>>(schema);
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<never>();
             expect(validator(null)).to.equal(false);
-        },
-    },
+        });
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Blocked methods'() {
+        test('Blocked methods', () => {
 
             const schema = neverSchema();
 
@@ -35,6 +36,6 @@ export const NeverSchemaSpec = {
             expectTypeOf<typeof schema['not']>().toBeNever();
             expectTypeOf<typeof schema['nullable']>().toBeNever();
             expectTypeOf<typeof schema['oneOf']>().toBeNever();
-        },
-    },
-};
+        });
+    });
+});

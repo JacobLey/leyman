@@ -34,7 +34,7 @@ npm i enum-to-array
 ## Example
 
 ```ts
-import { enumToValues } from 'enum-to-values';
+import { enumToArray } from 'enum-to-array';
 
 enum MyEnum {
     FOO = 'BAR',

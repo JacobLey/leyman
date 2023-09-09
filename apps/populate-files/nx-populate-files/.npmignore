@@ -1,0 +1,15 @@
+project.json
+tsconfig.json
+
+dist/tsconfig.tsbuildinfo
+dist/**/*.map
+
+src/**
+
+dist/file-content.js
+dist/file-content.d.ts
+
+dist/executors/populate-files/schema.js
+dist/executors/populate-files/schema.d.ts
+
+!src/executors/populate-files/schema.json

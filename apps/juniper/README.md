@@ -583,6 +583,7 @@ There are many other tools available for dealing with JSON Schema in a Typescrip
   * [JTD for Ajv](https://ajv.js.org/json-type-definition.html)
 * Javascript validation
   * [joi](https://www.npmjs.com/package/joi)
+  * [zod](https://zod.dev/)
 * TS -> JSON Schema
   * [typescript-json-schema](https://www.npmjs.com/package/typescript-json-schema)
   * [ts-json-schema-henerator](https://www.npmjs.com/package/ts-json-schema-generator)

@@ -78,7 +78,7 @@ export interface SerializationParams {
  * Base class for JSON Schema generation and serialization.
  */
 export abstract class AbstractSchema<
-    T extends SchemaGenerics<unknown>
+    T extends SchemaGenerics<any>
 > {
 
     /**
@@ -89,7 +89,7 @@ export abstract class AbstractSchema<
      * @param {object} options - constructor parameters
      * @returns {AbstractSchema} schema
      */
-    declare protected static create: <T2 extends SchemaGenerics<any>>(options?: T2['params']) => AbstractSchema<T2>;
+    declare protected static create: (this: void, options?: any) => AbstractSchema<any>;
 
     readonly #allOf: AbstractSchema<SchemaGenerics<any>>[];
     readonly #anyOf: AbstractSchema<SchemaGenerics<any>>[][];
@@ -392,7 +392,7 @@ export abstract class AbstractSchema<
      * @returns {object} schema
      */
     protected allOf(
-        schema: AbstractSchema<SchemaGenerics<unknown>>
+        schema: never
     ): unknown {
         return this.clone({
             [allOfSym]: [...this.#allOf, schema],
@@ -408,7 +408,7 @@ export abstract class AbstractSchema<
      * @returns {object} schema
      */
     protected anyOf(
-        schemas: AbstractSchema<SchemaGenerics<unknown>>[]
+        schemas: never[]
     ): unknown {
         return this.clone({
             [anyOfSym]: [...this.#anyOf, schemas],
@@ -425,8 +425,8 @@ export abstract class AbstractSchema<
      * @returns {AbstractSchema} schema.
      */
     protected if(
-        schema: AbstractSchema<SchemaGenerics<any>>,
-        conditionals: ConditionalResult<AbstractSchema<SchemaGenerics<any>>>
+        schema: never,
+        conditionals: ConditionalResult<never>
     ): unknown {
         return this.clone({
             [conditionalsSym]: [
@@ -460,7 +460,7 @@ export abstract class AbstractSchema<
      * @returns {AbstractSchema} schema
      */
     protected not(
-        schema: AbstractSchema<SchemaGenerics<any>>
+        schema: never
     ): unknown {
         return this.clone({
             [notSym]: [...this.#nots, schema],
@@ -487,7 +487,7 @@ export abstract class AbstractSchema<
      * @param {object[]} schemas - one of schema must be valid
      * @returns {object} schema
      */
-    protected oneOf(schemas: AbstractSchema<SchemaGenerics<unknown>>[]): unknown {
+    protected oneOf(schemas: never[]): unknown {
         return this.clone({
             [oneOfSym]: [...this.#oneOf, schemas],
         });
@@ -619,10 +619,10 @@ export abstract class AbstractSchema<
      * @returns {object} schema params
      */
     protected clone(overrideParams: Partial<T['params']>): this {
-        return (this.constructor as typeof AbstractSchema).create<T>({
+        return (this.constructor as typeof AbstractSchema).create({
             ...this.getCloneParams(),
             ...overrideParams,
-        }) as unknown as this;
+        }) as this;
     }
 
     /**

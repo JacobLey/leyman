@@ -1,27 +1,28 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { CustomEvent as TypedCustomEvent } from '../../custom-event.js';
+import { suite, test } from 'mocha-hookup';
+import { CustomEvent as TypedCustomEvent } from 'static-emitter/custom-event';
 
-export const CustomEventSpec = {
+suite('CustomEvent', () => {
 
-    success: {
+    suite('success', () => {
 
-        'Conforms to native CustomEvent types'() {
+        test('Conforms to native CustomEvent types', () => {
 
             const event: CustomEvent<123> = new TypedCustomEvent('abc', { detail: 123 });
 
-            expectTypeOf(event).toEqualTypeOf<TypedCustomEvent<string, 123>>;
-        },
+            expectTypeOf(event).toMatchTypeOf<TypedCustomEvent<string, 123>>();
+        });
 
-        'Extends Event'() {
+        test('Extends Event', () => {
             expect(new TypedCustomEvent('abc')).to.be.an.instanceOf(Event);
-        },
+        });
 
-        'Requires type and detail'() {
+        test('Requires type and detail', () => {
             expectTypeOf<TypedCustomEvent<'abc', 123>>(new TypedCustomEvent('abc', { detail: 123 }));
-        },
+        });
 
-        'Only null detail is optional'() {
+        test('Only null detail is optional', () => {
 
             const customEvent = new TypedCustomEvent('abc');
             expectTypeOf(customEvent).toEqualTypeOf<TypedCustomEvent<'abc'>>();
@@ -31,9 +32,9 @@ export const CustomEventSpec = {
                 // @ts-expect-error
                 new TypedCustomEvent('abc')
             );
-        },
+        });
 
-        'Detail is readonly'() {
+        test('Detail is readonly', () => {
 
             const customEvent = new TypedCustomEvent('abc', { detail: 123 });
 
@@ -41,6 +42,6 @@ export const CustomEventSpec = {
                 // @ts-expect-error
                 customEvent.detail = 123;
             }).to.throw(TypeError);
-        },
-    },
-};
+        });
+    });
+});

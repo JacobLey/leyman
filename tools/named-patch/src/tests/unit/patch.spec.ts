@@ -1,17 +1,18 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import Sinon from 'sinon';
-import * as Patch from '../../patch.js';
+import { afterEach, suite, test } from 'mocha-hookup';
+import { stub, verifyAndRestore } from 'sinon';
+import * as Patch from 'named-patch';
 
-export const NamedPatchSpec = {
+suite('namedPatch', () => {
 
-    afterEach() {
-        Sinon.restore();
-    },
+    afterEach(() => {
+        verifyAndRestore();
+    });
 
-    patch: {
+    suite('patch', () => {
 
-        'With sync'() {
+        test('With sync', () => {
 
             const syncMethod = <
                 A extends string,
@@ -41,7 +42,7 @@ export const NamedPatchSpec = {
                 b: [[]],
                 c: false,
             };
-            Sinon.stub(patched, Patch.patchKey).callsFake(() => patchedResponse);
+            stub(patched, Patch.patchKey).returns(patchedResponse);
 
             expect(patched('abc', [null])).to.eq(patchedResponse);
             expectTypeOf(patched<'abc', null>('abc', [null])).toEqualTypeOf<{
@@ -49,20 +50,20 @@ export const NamedPatchSpec = {
                 b: null[];
                 c: boolean;
             }>();
-        },
+        });
 
-        async 'With async'() {
+        test('With async', async () => {
 
             const asyncMethod = Patch.patch(async (a: number): Promise<number> => a * 2);
 
             expect(await asyncMethod(2)).to.equal(4);
 
-            Sinon.stub(asyncMethod, Patch.patchKey).callsFake(async () => -5);
+            stub(asyncMethod, Patch.patchKey).resolves(-5);
 
             expect(await asyncMethod(2)).to.equal(-5);
-        },
+        });
 
-        'With this'() {
+        test('With this', () => {
 
             let counter = 0;
 
@@ -85,7 +86,7 @@ export const NamedPatchSpec = {
             container.contextMethod();
             expect(counter).to.equal(2);
 
-            Sinon.stub(contextMethod, Patch.patchKey).callsFake(
+            stub(contextMethod, Patch.patchKey).callsFake(
                 function(this: typeof context) {
                     this.decrement();
                 }
@@ -93,32 +94,32 @@ export const NamedPatchSpec = {
 
             container.contextMethod();
             expect(counter).to.equal(1);
-        },
-    },
+        });
+    });
 
-    getPatched: {
+    suite('getPatched', () => {
 
-        success() {
+        test('success', () => {
 
             const method = (): void => {};
             const patched = Patch.patch(method);
 
             expect(Patch.getPatched(method)).to.eq(patched);
-        },
+        });
 
-        failure: {
+        suite('failure', () => {
 
-            'Never patched'() {
+            test('Never patched', () => {
                 expect(
                     () => Patch.getPatched(() => {})
                 ).to.throw(Error, 'Method is un-patched');
-            },
+            });
 
-            'Already patched'() {
+            test('Already patched', () => {
                 expect(
                     () => Patch.getPatched(Patch.patch(() => {}))
                 ).to.throw(Error, 'Method is already patched');
-            },
-        },
-    },
-};
+            });
+        });
+    });
+});

@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "outputCapture": "direct-nodejs",
+  "cli": "nx",
+  "type": "object",
+  "title": "Populate Files Target",
+  "description": "Load and dynamically populate files.",
+  "properties": {
+    "filePath": {
+      "type": "string",
+      "description": "Path to file with content and file paths to populate."
+    },
+    "cwd": {
+      "type": "string",
+      "description": "Path to resolve all provided paths (_excluding_ above `filePath`). Defaults to process.cwd()."
+    },
+    "check": {
+      "type": "boolean",
+      "description": "Fails if files are not already written, will not overwrite. Defaults to true during CI, false otherwise."
+    },
+    "dryRun": {
+      "type": "boolean",
+      "description": "Load files and content, but do not write anything."
+    }
+  },
+  "required": [
+    "filePath"
+  ]
+}

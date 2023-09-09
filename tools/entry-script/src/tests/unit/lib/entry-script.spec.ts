@@ -1,50 +1,40 @@
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
-import type { Context } from 'mocha';
-import Sinon from 'sinon';
-import * as ExportedEntryScript from '../../../index.js';
-import * as EntryScript from '../../../lib/entry-script.js';
+import { afterEach, beforeEach, suite, test } from 'mocha-hookup';
+import { fake, spy, stub, verifyAndRestore } from 'sinon';
+import * as EntryScript from 'entry-script';
+import { runAsMain } from '#entry-script';
 import EntryScriptMock from '../../data/entry-script-mock.js';
 
-interface EntryScriptTest extends Context {
-    entryScript: EntryScriptMock;
-}
+suite('EntryScript', () => {
 
-export const EntryScriptSpec = {
+    afterEach(() => {
+        verifyAndRestore();
+    });
 
-    afterEach() {
-        Sinon.restore();
-    },
+    suite('create', () => {
 
-    type() {
-        expect(ExportedEntryScript).to.deep.equal({
-            [Symbol.toStringTag]: 'Module',
-            EntryScript: EntryScript.EntryScript,
-            runtimeError: EntryScript.runtimeError,
-        });
-    },
-
-    create: {
-
-        async success(): Promise<void> {
+        test('success', async () => {
             expect(await EntryScript.EntryScript.create()).to.be.an.instanceOf(EntryScript.EntryScript);
-        },
-    },
+        });
+    });
 
-    runAsMain: {
+    suite('runAsMain', () => {
 
-        async beforeEach(this: EntryScriptTest) {
-            this.entryScript = await EntryScriptMock.create();
-            Sinon.stub(EntryScriptMock, 'create').callsFake(async () => this.entryScript);
-        },
+        const withStubbedEntryScript = beforeEach(async () => {
+            const entryScript = await EntryScriptMock.create();
+            stub(EntryScriptMock, 'create').callsFake(async () => entryScript);
 
-        async success(this: Readonly<EntryScriptTest>) {
+            return { entryScript };
+        });
 
-            const startSpy = Sinon.spy(this.entryScript, 'start');
-            const finishSpy = Sinon.spy(this.entryScript, 'finish');
+        withStubbedEntryScript.test('success', async ({ entryScript }) => {
 
-            await EntryScript.runAsMain(
+            const startSpy = spy(entryScript, 'start');
+            const finishSpy = spy(entryScript, 'finish');
+
+            await runAsMain(
                 Path.resolve(
                     Path.dirname(fileURLToPath(import.meta.url)),
                     '../../data/entry-script-mock.js'
@@ -54,41 +44,41 @@ export const EntryScriptSpec = {
             expect(startSpy.callCount).to.equal(1);
             expect(startSpy.calledBefore(finishSpy)).to.equal(true);
             expect(finishSpy.callCount).to.equal(1);
-        },
+        });
 
-        failure: {
+        suite('failure', () => {
 
-            async 'No URL exists'() {
-                await EntryScript.runAsMain();
-            },
+            test('No URL exists', async () => {
+                await runAsMain();
+            });
 
-            async 'URL is not js file'() {
-                await EntryScript.runAsMain('/does/not/exist');
-            },
+            test('URL is not js file', async () => {
+                await runAsMain('/does/not/exist');
+            });
 
-            async 'Different entry point'() {
-                await EntryScript.runAsMain(process.argv[1]);
-            },
+            test('Different entry point', async () => {
+                await runAsMain(process.argv[1]);
+            });
 
-            async 'Entry module is not EntryScript'() {
-                await EntryScript.runAsMain(import.meta.url);
-            },
+            test('Entry module is not EntryScript', async () => {
+                await runAsMain(import.meta.url);
+            });
 
-            async 'Emits runtime error'(this: Readonly<EntryScriptTest>) {
+            withStubbedEntryScript.test('Emits runtime error', async ({ entryScript }) =>  {
 
                 const error = new Error('<ERROR>');
 
-                Sinon.stub(this.entryScript, 'start').callsFake(() => {
+                stub(entryScript, 'start').callsFake(() => {
                     throw error;
                 });
-                const finishSpy = Sinon.stub(this.entryScript, 'finish');
-                const listenerStub = Sinon.fake((err: unknown, event: CustomEvent<unknown>) => [err, event]);
+                const finishSpy = stub(entryScript, 'finish');
+                const listenerStub = fake((err: unknown, event: CustomEvent<unknown>) => [err, event]);
 
-                this.entryScript.on(EntryScript.runtimeError, listenerStub);
+                entryScript.on(EntryScript.runtimeError, listenerStub);
 
                 let caughtError: unknown;
                 try {
-                    await EntryScript.runAsMain(
+                    await runAsMain(
                         Path.resolve(
                             Path.dirname(fileURLToPath(import.meta.url)),
                             '../../data/entry-script-mock.js'
@@ -102,7 +92,7 @@ export const EntryScriptSpec = {
                 expect(finishSpy.callCount).to.equal(1);
                 expect(listenerStub.callCount).to.equal(1);
                 expect(listenerStub.getCall(0).args[0]).to.eq(error);
-            },
-        },
-    },
-};
+            });
+        });
+    });
+});

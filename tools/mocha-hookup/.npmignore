@@ -1,0 +1,11 @@
+project.json
+tsconfig.json
+
+coverage/**
+.c8rc.json
+
+dist/tsconfig.tsbuildinfo
+dist/**/*.map
+dist/tests/**
+
+src/**

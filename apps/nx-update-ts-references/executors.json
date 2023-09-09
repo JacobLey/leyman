@@ -1,0 +1,9 @@
+{
+  "executors": {
+    "update-ts-references": {
+      "implementation": "./dist/executors/update-ts-references/index.cjs",
+      "schema": "./src/executors/update-ts-references/schema.json",
+      "description": "Update tsconfig references."
+    }
+  }
+}

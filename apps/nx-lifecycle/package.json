@@ -1,0 +1,69 @@
+{
+  "name": "nx-lifecycle",
+  "version": "0.0.1",
+  "description": "Keep high level nx lifecycle targets in sync",
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "author": "jacobley",
+  "license": "MIT",
+  "repository": "jacobley/jacobley",
+  "homepage": "https://github.com/JacobLey/jacobley/tree/main/apps/nx-lifecycle#readme",
+  "bugs": {
+    "url": "https://github.com/jacobley/jacobley/issues"
+  },
+  "keywords": [
+    "nx",
+    "lifecycle",
+    "build",
+    "test",
+    "format",
+    "lint"
+  ],
+  "sideEffects": false,
+  "executors": "./executors.json",
+  "exports": {
+    "./package.json": {
+      "default": "./package.json"
+    }
+  },
+  "imports": {
+    "#schemas": {
+      "types": "./src/schemas/index.ts",
+      "default": "./dist/schemas/index.js"
+    }
+  },
+  "dependencies": {
+    "ajv": "^8.12.0",
+    "ci-info": "^4.0.0",
+    "common-proxy": "workspace:^",
+    "default-import": "workspace:^",
+    "fast-equals": "^5.0.1",
+    "haystack-di": "workspace:^",
+    "juniper": "workspace:^",
+    "nx-plugin-handler": "workspace:^"
+  },
+  "optionalDependencies": {
+    "@nx/devkit": "^18.0.4"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.11",
+    "@types/chai-as-promised": "^7.1.8",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.8.10",
+    "@types/sinon": "^17.0.2",
+    "chai": "^5.1.0",
+    "chai-as-promised":"^7.1.1",
+    "c8": "^8.0.1",
+    "load-populate-files": "workspace:^",
+    "mocha": "^10.3.0",
+    "mocha-hookup": "workspace:^",
+    "nx-populate-files": "workspace:^",
+    "nx-tsc": "workspace:^",
+    "nyc": "^15.1.0",
+    "sinon": "^17.0.1",
+    "sinon-typed-stub": "workspace:^",
+    "typescript": "^5.3.3"
+  }
+}

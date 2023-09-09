@@ -1,6 +1,6 @@
-/* eslint-disable max-len */
 import { expect } from 'chai';
-import * as Punycode from '../../punycode.js';
+import { suite, test } from 'mocha-hookup';
+import * as Punycode from 'punycode-esm';
 
 const testData = {
     strings: {
@@ -205,174 +205,177 @@ const testData = {
             encoded: 'xn--maana-pta.com',
         },
     },
-};
+} as const;
 
-const PunycodeSpec = {
+suite('punycode', () => {
 
-    ucs2Decode: {
+    suite('ucs2Decode', () => {
 
-        success: {} as Record<string, () => void>,
-        idempotent: {} as Record<string, () => void>,
-    },
+        for (const [description, { decoded, encoded }] of Object.entries(testData.ucs2)) {
 
-    ucs2Encode: {
+            suite(description, () => {
+                test('success', () => {
+                    expect(
+                        Punycode.ucs2Decode(encoded)
+                    ).to.deep.equal(decoded);
+                });
 
-        success: {} as Record<string, () => void>,
-        idempotent: {} as Record<string, () => void>,
+                test('idempotent', () => {
+                    expect(
+                        Punycode.ucs2Decode(String.fromCodePoint(...decoded))
+                    ).to.deep.equal(decoded);
+                });
+            });
+        }
+    });
 
-        'Does not mutate argument array'() {
+    suite('ucs2Encode', () => {
+
+        for (const [description, { decoded, encoded }] of Object.entries(testData.ucs2)) {
+
+            suite(description, () => {
+                test('success', () => {
+                    expect(
+                        Punycode.ucs2Encode(decoded)
+                    ).to.equal(encoded);
+                });
+
+                test('idempotent', () => {
+                    expect(
+                        Punycode.ucs2Encode([...encoded].map(txt => txt.codePointAt(0)!))
+                    ).to.equal(encoded);
+                });
+            });
+        }
+
+        test('Does not mutate argument array', () => {
             const codePoints = [0x61, 0x62, 0x63];
             expect(
                 Punycode.ucs2Encode(codePoints)
             ).to.equal('abc');
             expect(codePoints).to.deep.equal([0x61, 0x62, 0x63]);
-        },
-    },
+        });
+    });
 
-    decode: {
+    suite('decode', () => {
 
-        success: {} as Record<string, () => void>,
+        for (const [description, { decoded, encoded }] of Object.entries(testData.strings)) {
+            test(description, () => {
+                expect(
+                    Punycode.decode(encoded)
+                ).to.equal(decoded);
+            });
+        }
 
-        'Handles uppercase Z'() {
+        test('Handles uppercase Z', () => {
             expect(
                 Punycode.decode('ZZZ')
             ).to.equal('\u7BA5');
-        },
+        });
 
-        'Throws RangeError: Illegal input >= 0x80 (not a basic code point)'() {
+        test('Throws RangeError: Illegal input >= 0x80 (not a basic code point)', () => {
 
             expect(
                 () => Punycode.decode('\u0081-')
             ).to.throw(RangeError);
-        },
+        }),
 
-        'Throws RangeError: Overflow: input needs wider integers to process'() {
+        test('Throws RangeError: Overflow: input needs wider integers to process', () => {
             expect(
                 () => Punycode.decode('\u0081')
             ).to.throw(RangeError);
-        },
-    },
+        });
+    });
 
-    encode: {
+    suite('encode', () => {
 
-        success: {} as Record<string, () => void>,
-    },
+        for (const [description, { decoded, encoded }] of Object.entries(testData.strings)) {
+            test(description, () => {
+                expect(
+                    Punycode.encode(decoded)
+                ).to.equal(encoded);
+            });
+        }
+    });
 
-    toUnicode: {
+    suite('toUnicode', () => {
 
-        'success': {} as Record<string, () => void>,
-        'idempotent': {} as Record<string, () => void>,
+        for (const [description, { decoded, encoded }] of Object.entries(testData.domains)) {
+            suite(description, () => {
+                test('success', () => {
+                    expect(
+                        Punycode.toUnicode(encoded)
+                    ).to.equal(decoded);
+                });
 
-        'Does not convert names (or other strings) that don\'t start with `xn--`': {
-            encoded: {} as Record<string, () => void>,
-            decoded: {} as Record<string, () => void>,
-        },
-    },
+                test('idempotent', () => {
+                    expect(
+                        Punycode.toUnicode(decoded)
+                    ).to.equal(decoded);
+                });
+            });
+        }
 
-    toASCII: {
+        suite('Does not convert names (or other strings) that don\'t start with `xn--`', () => {
 
-        'success': {} as Record<string, () => void>,
-        'idempotent': {} as Record<string, () => void>,
+            for (const [description, { decoded, encoded }] of Object.entries(testData.strings)) {
 
-        'Does not convert domain names (or other strings) that are already in ASCII': {} as Record<string, () => void>,
+                suite(description, () => {
+                    test('decoded', () => {
+                        expect(
+                            Punycode.toUnicode(decoded)
+                        ).to.equal(decoded);
+                    });
 
-        'Supports IDNA2003 separators for backwards compatibility': {} as Record<string, () => void>,
-    },
-};
+                    test('encoded', () => {
+                        expect(
+                            Punycode.toUnicode(encoded)
+                        ).to.equal(encoded);
+                    });
+                });
+            }
+        });
+    });
 
-for (const [description, test] of Object.entries(testData.ucs2)) {
-    PunycodeSpec.ucs2Decode.success[description] = () => {
-        expect(
-            Punycode.ucs2Decode(test.encoded)
-        ).to.deep.equal(test.decoded);
-    };
-    PunycodeSpec.ucs2Decode.idempotent[description] = () => {
-        expect(
-            Punycode.ucs2Decode(String.fromCodePoint(...test.decoded))
-        ).to.deep.equal(test.decoded);
-    };
+    suite('toASCII', () => {
 
-    PunycodeSpec.ucs2Encode.success[description] = () => {
-        expect(
-            Punycode.ucs2Encode(test.decoded)
-        ).to.equal(test.encoded);
-    };
-    PunycodeSpec.ucs2Encode.idempotent[description] = () => {
-        expect(
-            Punycode.ucs2Encode([...test.encoded].map(txt => txt.codePointAt(0)!))
-        ).to.equal(test.encoded);
-    };
-}
+        for (const [description, { decoded, encoded }] of Object.entries(testData.domains)) {
+            suite(description, () => {
+                test('success', () => {
+                    expect(
+                        Punycode.toASCII(decoded)
+                    ).to.equal(encoded);
+                });
 
-for (const [description, test] of Object.entries(testData.strings)) {
-    PunycodeSpec.decode.success[description] = () => {
-        expect(
-            Punycode.decode(test.encoded)
-        ).to.equal(test.decoded);
-    };
+                test('idempotent', () => {
+                    expect(
+                        Punycode.toASCII(encoded)
+                    ).to.equal(encoded);
+                });
+            });
+        }
 
-    PunycodeSpec.encode.success[description] = () => {
-        expect(
-            Punycode.encode(test.decoded)
-        ).to.equal(test.encoded);
-    };
+        suite('Does not convert domain names (or other strings) that are already in ASCII', () => {
 
-    PunycodeSpec.toUnicode[
-        'Does not convert names (or other strings) that don\'t start with `xn--`'
-    ].encoded[test.encoded] = () => {
-        expect(
-            Punycode.toUnicode(test.encoded)
-        ).to.equal(test.encoded);
-    };
-    PunycodeSpec.toUnicode[
-        'Does not convert names (or other strings) that don\'t start with `xn--`'
-    ].decoded[test.decoded] = () => {
-        expect(
-            Punycode.toUnicode(test.decoded)
-        ).to.equal(test.decoded);
-    };
+            for (const [description, { encoded }] of Object.entries(testData.strings)) {
+                test(description, () => {
+                    expect(
+                        Punycode.toASCII(encoded)
+                    ).to.equal(encoded);
+                });
+            }
+        });
 
-    PunycodeSpec.toASCII[
-        'Does not convert domain names (or other strings) that are already in ASCII'
-    ][test.encoded] = () => {
-        expect(
-            Punycode.toASCII(test.encoded)
-        ).to.equal(test.encoded);
-    };
-}
+        suite('Supports IDNA2003 separators for backwards compatibility', () => {
 
-for (const [description, test] of Object.entries(testData.domains)) {
+            for (const [description, { decoded, encoded }] of Object.entries(testData.separators)) {
 
-    PunycodeSpec.toUnicode.success[description] = () => {
-        expect(
-            Punycode.toUnicode(test.encoded)
-        ).to.equal(test.decoded);
-    };
-    PunycodeSpec.toUnicode.idempotent[description] = () => {
-        expect(
-            Punycode.toUnicode(test.decoded)
-        ).to.equal(test.decoded);
-    };
-
-    PunycodeSpec.toASCII.success[description] = () => {
-        expect(
-            Punycode.toASCII(test.decoded)
-        ).to.equal(test.encoded);
-    };
-    PunycodeSpec.toASCII.idempotent[description] = () => {
-        expect(
-            Punycode.toASCII(test.encoded)
-        ).to.equal(test.encoded);
-    };
-}
-
-for (const [description, test] of Object.entries(testData.separators)) {
-
-    PunycodeSpec.toASCII['Supports IDNA2003 separators for backwards compatibility'][description] = () => {
-        expect(
-            Punycode.toASCII(test.decoded)
-        ).to.equal(test.encoded);
-    };
-}
-
-export { PunycodeSpec };
+                test(description, () => {
+                    expect(
+                        Punycode.toASCII(decoded)
+                    ).to.equal(encoded);
+                });
+            }
+        });
+    });
+});

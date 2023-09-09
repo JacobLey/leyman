@@ -22,9 +22,11 @@ const base64url = (text: string): string => text.replaceAll('=', '').replaceAll(
  * @param {string} text - base64url text
  * @returns {string} base64 text
  */
-const base64standard = (text: string): string => `${
-    text.replaceAll('-', '+').replaceAll('_', '/')
-  }${'='.repeat((4 - text.length % 4) % 4)}`;
+const base64standard = (text: string): string => {
+    const charReplaced = text.replaceAll('-', '+').replaceAll('_', '/');
+    const appendEquals = charReplaced + '='.repeat((4 - text.length % 4) % 4);
+    return appendEquals.replace(/(={4})+$/, '');
+};
 
 const toBase64 = (buf: ArrayBuffer | number[] | Uint8Array): string => base64url(
     btoa(String.fromCodePoint(...new Uint8Array(buf)))

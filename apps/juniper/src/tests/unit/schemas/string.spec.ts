@@ -2,22 +2,18 @@ import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import type { Context } from 'mocha';
-import { type SchemaType, type StringSchema, stringSchema } from '../../../index.js';
+import { before, suite, test } from 'mocha-hookup';
+import { type SchemaType, stringSchema } from 'juniper';
 
 const Ajv = defaultImport(DefaultAjv);
 
-interface StringSchemaTest extends Context {
-    schema: StringSchema<string>;
-}
+suite('StringSchema', () => {
 
-export const StringSchemaSpec = {
+    suite('keywords', () => {
 
-    keywords: {
+        suite('options', () => {
 
-        options: {
-
-            success() {
+            test('success', () => {
 
                 const schema = stringSchema({
                     minLength: 4,
@@ -38,9 +34,9 @@ export const StringSchemaSpec = {
                     contentMediaType: 'image/png',
                 });
                 expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<string>();
-            },
+            });
 
-            'Multiple patterns'() {
+            test('Multiple patterns', () => {
                 const schema = stringSchema({
                     pattern: ['a', 'b'],
                 }).toJSON();
@@ -50,10 +46,10 @@ export const StringSchemaSpec = {
                     pattern: 'a',
                     allOf: [{ pattern: 'b' }],
                 });
-            },
-        },
+            });
+        });
 
-        methods() {
+        test('methods', () => {
             const schema = stringSchema()
                 .minLength(4)
                 .maxLength(10)
@@ -102,9 +98,9 @@ export const StringSchemaSpec = {
                 `${string}$c${string}` & `${string}d^${string}` & `${string}f` & `a${string}`
             >();
             expect(validator('ab$cd^ef')).to.equal(true);
-        },
+        });
 
-        'Unset options'() {
+        test('Unset options', () => {
 
             const schema = stringSchema({
                 minLength: 4,
@@ -123,14 +119,14 @@ export const StringSchemaSpec = {
             expect(schema).to.deep.equal({
                 type: 'string',
             });
-        },
-    },
+        });
+    });
 
-    if: {
+    suite('if', () => {
 
-        'Then and else': {
+        suite('Then and else', () => {
 
-            'success'() {
+            test('success', () => {
 
                 const schema = stringSchema().pattern('1').pattern('2').if(
                     stringSchema().startsWith('a').nullable(),
@@ -162,7 +158,7 @@ export const StringSchemaSpec = {
                 });
 
                 const validator = new Ajv({ strict: true }).compile(json);
-                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<
                     `${string}b${string}` |
                         (`${string}b${string}` & `${string}c` & `a${string}`) |
                         (`${string}c` & `a${string}`)
@@ -172,9 +168,9 @@ export const StringSchemaSpec = {
                 expect(validator('a1b2c')).to.equal(true);
                 expect(validator('12c')).to.equal(false);
                 expect(validator('a12')).to.equal(false);
-            },
+            });
 
-            'Open API 3.0'() {
+            test('Open API 3.0', () => {
 
                 const schema = stringSchema().pattern('1').pattern('2').if(
                     stringSchema().startsWith('a').nullable(),
@@ -220,12 +216,12 @@ export const StringSchemaSpec = {
                 expect(validator('a1b2c')).to.equal(true);
                 expect(validator('12c')).to.equal(false);
                 expect(validator('a12')).to.equal(false);
-            },
-        },
+            });
+        });
 
-        'Only then': {
+        suite('Only then', () => {
 
-            before(this: StringSchemaTest) {
+            const withSchema = before(() => {
                 const schema = stringSchema().contains('b').if(
                     stringSchema().startsWith('a'),
                     {
@@ -237,12 +233,12 @@ export const StringSchemaSpec = {
                     `${string}b${string}` | (`${string}b${string}` & `${string}c` & `a${string}`)
                 >();
 
-                this.schema = schema;
-            },
+                return { schema };
+            });
 
-            success(this: StringSchemaTest) {
+            withSchema.test('success', ({ schema }) => {
 
-                const json = this.schema.toJSON();
+                const json = schema.toJSON();
 
                 expect(json).to.deep.equal({
                     type: 'string',
@@ -263,10 +259,10 @@ export const StringSchemaSpec = {
                 expect(validator('abc')).to.equal(true);
                 expect(validator('b')).to.equal(true);
                 expect(validator('ab')).to.equal(false);
-            },
+            });
 
-            'Open API 3.0'(this: StringSchemaTest) {
-                const json = this.schema.toJSON({ openApi30: true });
+            withSchema.test('Open API 3.0', ({ schema }) => {
+                const json = schema.toJSON({ openApi30: true });
 
                 expect(json).to.deep.equal({
                     type: 'string',
@@ -287,12 +283,12 @@ export const StringSchemaSpec = {
                 expect(validator('abc')).to.equal(true);
                 expect(validator('b')).to.equal(true);
                 expect(validator('ab')).to.equal(false);
-            },
-        },
+            });
+        });
 
-        'Only else': {
+        suite('Only else', () => {
 
-            before(this: StringSchemaTest) {
+            const withSchema = before(() => {
                 const schema = stringSchema().contains('b').if(
                     stringSchema().startsWith('a'),
                     {
@@ -304,12 +300,12 @@ export const StringSchemaSpec = {
                     `${string}b${string}` & (`${string}c` | `a${string}`)
                 >();
 
-                this.schema = schema;
-            },
+                return { schema };
+            });
 
-            success(this: StringSchemaTest) {
+            withSchema.test('success', ({ schema }) => {
 
-                const json = this.schema.toJSON();
+                const json = schema.toJSON();
 
                 expect(json).to.deep.equal({
                     type: 'string',
@@ -327,10 +323,10 @@ export const StringSchemaSpec = {
                 expect(validator('bc')).to.equal(true);
                 expect(validator('abc')).to.equal(true);
                 expect(validator('b')).to.equal(false);
-            },
+            });
 
-            'Open API 3.0'(this: StringSchemaTest) {
-                const json = this.schema.toJSON({ openApi30: true });
+            withSchema.test('Open API 3.0', ({ schema }) => {
+                const json = schema.toJSON({ openApi30: true });
 
                 expect(json).to.deep.equal({
                     type: 'string',
@@ -350,13 +346,13 @@ export const StringSchemaSpec = {
                 expect(validator('bc')).to.equal(true);
                 expect(validator('abc')).to.equal(true);
                 expect(validator('b')).to.equal(false);
-            },
-        },
-    },
+            });
+        });
+    });
 
-    ref: {
+    suite('ref', () => {
 
-        'Applies defaults'() {
+        test('Applies defaults', () => {
 
             expect(
                 stringSchema()
@@ -371,12 +367,12 @@ export const StringSchemaSpec = {
                 maxLength: 1e308,
                 minLength: 0,
             });
-        },
-    },
+        });
+    });
 
-    composite: {
+    suite('composite', () => {
 
-        allOf() {
+        test('allOf', () => {
 
             const schema = stringSchema().contains('a')
                 .nullable()
@@ -416,9 +412,9 @@ export const StringSchemaSpec = {
                     },
                 ],
             });
-        },
+        });
 
-        anyOf() {
+        test('anyOf', () => {
 
             const schema = stringSchema().contains('a')
                 .anyOf([
@@ -499,9 +495,9 @@ export const StringSchemaSpec = {
 
             const neverSchema2 = stringSchema().nullable().anyOf([]);
             expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
-        },
+        });
 
-        oneOf() {
+        test('oneOf', () => {
 
             const schema = stringSchema().contains('a')
                 .oneOf([
@@ -595,6 +591,6 @@ export const StringSchemaSpec = {
                     },
                 ],
             });
-        },
-    },
-};
+        });
+    });
+});

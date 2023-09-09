@@ -3,7 +3,7 @@
   "version": "2.0.1",
   "description": "Statically typed event emitter.",
   "engines": {
-    "node": ">=14.5"
+    "node": ">=18"
   },
   "type": "module",
   "author": "jacobley",
@@ -19,88 +19,36 @@
     "types"
   ],
   "sideEffects": false,
-  "scripts": {
-    "build": "tsc",
-    "coverage": "rushx instrument && nyc mocha ./nyc/tests/unit",
-    "instrument": "nyc instrument --nycrc-path=nyc.instrument.cjs ./dist ./nyc",
-    "lint": "rush lint-package",
-    "test": "rushx coverage",
-    "unit-test": "mocha ./dist/tests/unit"
-  },
   "types": "./dist/index.js",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
-    },
-    "./custom-event": {
-      "types": "./src/custom-event.ts",
-      "default": "./dist/custom-event.js"
-    },
-    "./static-emitter": {
-      "types": "./src/static-emitter.ts",
-      "default": "./dist/static-emitter.js"
-    },
-    "./static-event-target": {
-      "types": "./src/static-event-target.ts",
-      "default": "./dist/static-event-target.js"
-    },
-    "./typed-event": {
-      "types": "./src/typed-event.ts",
-      "default": "./dist/typed-event.js"
-    }
+    ".": "./dist/index.js",
+    "./custom-event": "./dist/custom-event.js",
+    "./static-emitter": "./dist/static-emitter.js",
+    "./static-event-target": "./dist/static-event-target.js",
+    "./typed-event": "./dist/typed-event.js"
   },
   "imports": {
-    "#custom-event": {
-      "types": "./src/lib/custom-event/node.ts",
-      "browser": "./dist/lib/custom-event/browser.js",
-      "default": {
-        "nyc-static-emitter": "./nyc/lib/custom-event/node.js",
-        "default": "./dist/lib/custom-event/node.js"
-      }
-    },
+    "#custom-event": "./dist/lib/custom-event/custom-event.js",
     "#typed-event": {
-      "types":  "./src/lib/typed-event/type.ts",
-      "nyc-static-emitter": "./nyc/lib/typed-event/typed-event.js",
+      "types": "./dist/lib/typed-event/type.js",
       "default": "./dist/lib/typed-event/typed-event.js"
     },
     "#static-event-target": {
-      "types": "./src/lib/static-event-target/type.ts",
-      "nyc-static-emitter": "./nyc/lib/static-event-target/static-event-target.js",
+      "types": "./dist/lib/static-event-target/type.js",
       "default": "./dist/lib/static-event-target/static-event-target.js"
     }
   },
-  "publishConfig": {
-    "exports": {
-      ".": "./dist/index.js",
-      "./custom-event": "./dist/custom-event.js",
-      "./static-emitter": "./dist/static-emitter.js",
-      "./static-event-target": "./dist/static-event-target.js",
-      "./typed-event": "./dist/typed-event.js"
-    },
-    "imports": {
-      "#custom-event": {
-        "browser": "./dist/lib/custom-event/browser.js",
-        "default": "./dist/lib/custom-event/node.js"
-      },
-      "#typed-event": {
-        "types":  "./dist/lib/typed-event/type.js",
-        "default": "./dist/lib/typed-event/typed-event.js"
-      },
-      "#static-event-target": {
-        "types": "./dist/lib/static-event-target/type.js",
-        "default": "./dist/lib/static-event-target/static-event-target.js"
-      }
-    }
-  },
   "devDependencies": {
-    "@types/chai": "^4.3.1",
-    "@types/mocha": "^9.1.1",
-    "@types/node": "^18.0.0",
-    "chai": "^4.3.6",
-    "expect-type": "^0.13.0",
-    "mocha": "^10.0.0",
-    "nyc": "^15.1.0",
-    "typescript": "^4.7.2"
+    "@types/chai": "^4.3.11",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.8.10",
+    "c8": "^8.0.1",
+    "chai": "^5.1.0",
+    "expect-type": "^0.17.3",
+    "mocha": "^10.3.0",
+    "mocha-hookup": "workspace:^",
+    "nx-tsc": "workspace:^",
+    "nx-update-ts-references": "workspace:^",
+    "typescript": "^5.3.3"
   }
 }

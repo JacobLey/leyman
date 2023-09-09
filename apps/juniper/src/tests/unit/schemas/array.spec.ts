@@ -2,22 +2,23 @@ import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
+import { suite, test } from 'mocha-hookup';
 import {
     arraySchema,
     neverSchema,
     type SchemaType,
     stringSchema,
-} from '../../../index.js';
+} from 'juniper';
 
 const Ajv = defaultImport(DefaultAjv);
 
-export const ArraySchemaSpec = {
+suite('ArraySchema', () => {
 
-    'keywords': {
+    suite('keywords', () => {
 
-        options: {
+        suite('options', () => {
 
-            success() {
+            test('success', () => {
 
                 const schema = arraySchema({
                     minItems: 4,
@@ -34,11 +35,11 @@ export const ArraySchemaSpec = {
                     uniqueItems: true,
                 });
                 expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<unknown[]>();
-            },
+            });
 
-            'With items': {
+            suite('With items', () => {
 
-                'With options'() {
+                test('With options', () => {
                     const schema = arraySchema({
                         items: stringSchema().contains('el').default('hello'),
                         description: '<description>',
@@ -64,9 +65,9 @@ export const ArraySchemaSpec = {
                             default: 'hello',
                         },
                     });
-                },
+                });
 
-                'Only schema'() {
+                test('Only schema', () => {
                     const schema = arraySchema(arraySchema(stringSchema().contains('el').default('hello')));
                     expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<`${string}el${string}`[][]>();
                     expectTypeOf<Parameters<typeof schema['items']>[1]>().toBeNever();
@@ -93,11 +94,11 @@ export const ArraySchemaSpec = {
                             },
                         },
                     });
-                },
-            },
-        },
+                });
+            });
+        });
 
-        methods() {
+        test('methods', () => {
 
             const schema = arraySchema()
                 .minItems(2)
@@ -218,9 +219,9 @@ export const ArraySchemaSpec = {
             expect(oaValidator([['ab'], 'xd', 'xc', ['abc']])).to.equal(true);
             expect(oaValidator([['ab'], 'xc'])).to.equal(true);
             expect(oaValidator([['ab']])).to.equal(false);
-        },
+        });
 
-        'Unset options'() {
+        test('Unset options', () => {
 
             const schema = arraySchema({
                 minItems: 4,
@@ -259,12 +260,12 @@ export const ArraySchemaSpec = {
                     type: 'array',
                 },
             });
-        },
-    },
+        });
+    });
 
-    'not': {
+    suite('not', () => {
 
-        'Unsets nullable'() {
+        test('Unsets nullable', () => {
 
             const baseSchema = arraySchema().items(neverSchema());
             expectTypeOf<SchemaType<typeof baseSchema>>().toEqualTypeOf<[]>();
@@ -278,10 +279,10 @@ export const ArraySchemaSpec = {
 
             const notNullableSchema = stillNullableSchema.not(arraySchema().nullable());
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<[]>();
-        },
-    },
+        });
+    });
 
-    prefixItems() {
+    suite('prefixItems', () => {
 
         const schema = arraySchema().prefixItem(stringSchema());
 
@@ -298,11 +299,11 @@ export const ArraySchemaSpec = {
         expect(schema.toJSON({ openApi30: true })).to.deep.equal({
             type: 'array',
         });
-    },
+    });
 
-    'contains': {
+    suite('contains', () => {
 
-        'Extends any item'() {
+        test('Extends any item', () => {
 
             const baseSchema = arraySchema();
             baseSchema.contains(arraySchema(stringSchema()));
@@ -316,9 +317,9 @@ export const ArraySchemaSpec = {
                 stringSchema().endsWith('d')
             );
             prefixSchema.contains(stringSchema().endsWith('cd'));
-        },
+        });
 
-        'Omit min+max when missing contains'() {
+        test('Omit min+max when missing contains', () => {
 
             const schema = arraySchema({
                 maxContains: 5,
@@ -350,12 +351,12 @@ export const ArraySchemaSpec = {
                 type: 'array',
                 minItems: 4,
             });
-        },
-    },
+        });
+    });
 
-    'ref': {
+    suite('ref', () => {
 
-        'Applies defaults'() {
+        test('Applies defaults', () => {
 
             expect(
                 arraySchema()
@@ -377,20 +378,20 @@ export const ArraySchemaSpec = {
                 maxItems: 1e308,
                 minItems: 0,
             });
-        },
-    },
+        });
+    });
 
-    'Invalid types': {
+    suite('Invalid types', () => {
 
-        'Contains only set once'() {
+        test('Contains only set once', () => {
 
             arraySchema()
                 .contains(stringSchema())
                 // @ts-expect-error
                 .contains(stringSchema());
-        },
+        });
 
-        'Items can only be set once'() {
+        test('Items can only be set once', () => {
 
             arraySchema()
                 .items(stringSchema())
@@ -402,6 +403,6 @@ export const ArraySchemaSpec = {
             })
                 // @ts-expect-error
                 .items(stringSchema());
-        },
-    },
-};
+        });
+    });
+});

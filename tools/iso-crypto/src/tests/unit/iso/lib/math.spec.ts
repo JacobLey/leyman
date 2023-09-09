@@ -1,12 +1,13 @@
 import { expect } from 'chai';
-import * as MathLib from '../../../../iso/lib/math.js';
+import { suite, test } from 'mocha-hookup';
+import { deriveYCoordinate } from '../../../../iso/lib/math.js';
 
-export const MathSpec = {
+suite('Math', () => {
 
-    deriveYCoordinate() {
+    test('deriveYCoordinate', () => {
 
         expect(
-            MathLib.deriveYCoordinate(1n, false, {
+            deriveYCoordinate(1n, false, {
                 // Not a "real" curve, just getting test coverage
                 a: 1n,
                 b: 3n,
@@ -17,5 +18,5 @@ export const MathSpec = {
                 },
             })
         ).to.equal(28n);
-    },
-};
+    });
+});

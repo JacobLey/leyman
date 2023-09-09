@@ -104,7 +104,7 @@ const eccSecret = async ({ curve, privateKey, publicKey }: {
             decompressEccPublicKey(publicKey, curve),
             curveParams,
             true,
-            ['deriveKey']
+            []
         ),
     ]);
 
@@ -121,7 +121,7 @@ const eccSecret = async ({ curve, privateKey, publicKey }: {
             length: bytes * 8,
         },
         true,
-        []
+        ['sign']
     );
     const secret = await crypto.subtle.exportKey('raw', derivedSecret);
 

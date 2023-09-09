@@ -1,0 +1,20 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "nx-lifecycle",
+  "targets": {
+    "update-ts-references": {},
+    "tsc": {},
+    "populate-files": {},
+    "mocha-unit-test": {},
+    "coverage-report": {},
+    "build:_": {},
+    "build:pre": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "test:_": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {}
+  }
+}

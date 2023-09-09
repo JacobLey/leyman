@@ -15,7 +15,7 @@ type ExtractDefault<T> = T extends { __esModule?: boolean; default: infer U } ?
  * It also handles CJS exports that export an entire object via `module.exports = {}` rather than export syntax,
  * as well as extracting the `default` (if exists) from a dynamic import.
  *
- * Note there is not "namedExport" equivalent because it is assumed module loaders successfully parse that
+ * Note there is not "namedImport" equivalent because it is assumed module loaders successfully parse that
  * out for both CJS and ESM.
  *
  * @param {*} mod - "default" export that might be wrapped in another layer
@@ -36,6 +36,7 @@ export const defaultImport = <T>(
         mod;
 
     if (
+        typeof defaultVal === 'object' &&
         '__esModule' in defaultVal &&
         // eslint-disable-next-line @typescript-eslint/naming-convention
         (defaultVal as unknown as { __esModule?: boolean }).__esModule &&
