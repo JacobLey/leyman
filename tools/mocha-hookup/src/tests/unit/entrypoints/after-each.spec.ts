@@ -7,9 +7,7 @@ const order: number[] = [];
 let activeTest = false;
 
 suite('afterEach', () => {
-
     suite('Inside a suite', function () {
-
         this.retries(2);
 
         let shouldFail = true;
@@ -20,7 +18,6 @@ suite('afterEach', () => {
         });
 
         suite('Inside another suite', () => {
-
             const compareTest = mocha.test('afterEach is teardown', () => {
                 activeTest = true;
                 expect(afterEach).to.equal(teardown);
@@ -60,25 +57,31 @@ suite('afterEach', () => {
             }
         });
 
-        const mergedContextualAfterEach = contextualAfterEach.teardown(async (ctx, done) => {
-            expect(ctx).to.deep.equal({ abc: 123 });
-            expectTypeOf(ctx).toEqualTypeOf<{
-                abc: number;
-            }>();
-            Object.assign(ctx, { ignored: [] });
-            expect(contextualAfterEach.afterEach).to.equal(contextualAfterEach.teardown);
-            expectTypeOf(contextualAfterEach.afterEach).toEqualTypeOf(contextualAfterEach.teardown);
+        const mergedContextualAfterEach = contextualAfterEach.teardown(
+            async (ctx, done) => {
+                expect(ctx).to.deep.equal({ abc: 123 });
+                expectTypeOf(ctx).toEqualTypeOf<{
+                    abc: number;
+                }>();
+                Object.assign(ctx, { ignored: [] });
+                expect(contextualAfterEach.afterEach).to.equal(
+                    contextualAfterEach.teardown
+                );
+                expectTypeOf(contextualAfterEach.afterEach).toEqualTypeOf(
+                    contextualAfterEach.teardown
+                );
 
-            setTimeout(() => {
-                if (activeTest) {
-                    expect(order).to.deep.equal([1, 2, 3]);
-                    order.push(4);
-                }
-                done();
-            }, 10);
+                setTimeout(() => {
+                    if (activeTest) {
+                        expect(order).to.deep.equal([1, 2, 3]);
+                        order.push(4);
+                    }
+                    done();
+                }, 10);
 
-            return Promise.resolve({ efg: true } as const);
-        });
+                return Promise.resolve({ efg: true } as const);
+            }
+        );
 
         contextualAfterEach.teardown('Contextual teardown', (ctx, done) => {
             expect(ctx).to.deep.equal({ abc: 123 });
@@ -94,7 +97,7 @@ suite('afterEach', () => {
             done();
         });
 
-        mergedContextualAfterEach.afterEach(async (ctx) => {
+        mergedContextualAfterEach.afterEach(async ctx => {
             expect(ctx).to.deep.equal({ abc: 123, efg: true });
             expectTypeOf(ctx).toEqualTypeOf<{
                 abc: number;
@@ -111,27 +114,25 @@ suite('afterEach', () => {
     mocha.after('Mocha enforced after completion', () => {
         expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
     });
-    
+
     afterEach('afterEach with a title', async done => {
-    
         if (activeTest) {
             expect(order).to.deep.equal([1, 2, 3, 4, 5, 6]);
             order.push(7);
         }
-    
+
         done();
     }).teardown(ctx => {
         expect(ctx).to.deep.equal({});
         expectTypeOf(ctx).toEqualTypeOf<{}>();
-    
+
         if (activeTest) {
             expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);
             order.push(8);
         }
     });
-    
+
     mocha.afterEach('Mocha enforced afterEach completion', () => {
-    
         if (activeTest) {
             expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8]);
             order.push(9);

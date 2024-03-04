@@ -14,10 +14,7 @@ export const loggerIdentifier = identifier<Logger>();
 
 export const dependenciesModule = createModule(
     bind(readFileIdentifier).withInstance(readFile)
-).addBinding(
-    bind(writeFileIdentifier).withInstance(writeFile)
-).addBinding(
-    bind(isCiIdentifier).withInstance(isCI)
-).addBinding(
-    bind(loggerIdentifier).withInstance(console)
-);
+)
+    .addBinding(bind(writeFileIdentifier).withInstance(writeFile))
+    .addBinding(bind(isCiIdentifier).withInstance(isCI))
+    .addBinding(bind(loggerIdentifier).withInstance(console));

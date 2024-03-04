@@ -1,7 +1,7 @@
 import { checkOverflow, rangeError } from '#errors';
 
 /** Highest positive signed 32-bit float value */
-const maxInt = 0x7FFFFFFF;
+const maxInt = 0x7fffffff;
 
 /** Bootstring parameters */
 const base = 36;
@@ -26,7 +26,10 @@ const regexSeparators = /[\u002E\u3002\uFF0E\uFF61]/gu; // RFC 3490 separators
  * @param {Function} callback - The function that gets called for every character.
  * @returns {string} A new string of characters returned by the callback function.
  */
-const mapDomain = (domain: string, callback: (input: string) => string): string => {
+const mapDomain = (
+    domain: string,
+    callback: (input: string) => string
+): string => {
     const [first, ...rest] = domain.split('@');
     let result: string;
     let toEncode: string;
@@ -62,14 +65,17 @@ export const ucs2Decode = (string: string): number[] => {
     while (counter < string.length) {
         // eslint-disable-next-line unicorn/prefer-code-point
         const value = string.charCodeAt(counter++)!;
-        if (value >= 0xD800 && value <= 0xDBFF && counter < string.length) {
+        if (value >= 0xd800 && value <= 0xdbff && counter < string.length) {
             // It's a high surrogate, and there is a next character.
             // eslint-disable-next-line unicorn/prefer-code-point
             const extra = string.charCodeAt(counter++)!;
             // eslint-disable-next-line no-bitwise
-            if ((extra & 0xFC00) === 0xDC00) { // Low surrogate.
+            if ((extra & 0xfc00) === 0xdc00) {
+                // Low surrogate.
                 // eslint-disable-next-line no-bitwise
-                output.push(((value & 0x3FF) << 10) + (extra & 0x3FF) + 0x10000);
+                output.push(
+                    ((value & 0x3ff) << 10) + (extra & 0x3ff) + 0x10000
+                );
             } else {
                 // It's an unmatched surrogate; only append this code unit, in case the
                 // next code unit is the high surrogate of a surrogate pair.
@@ -89,7 +95,8 @@ export const ucs2Decode = (string: string): number[] => {
  * @param {number[]} codePoints - The array of numeric code points.
  * @returns {string} The new Unicode string (UCS-2).
  */
-export const ucs2Encode = (codePoints: readonly number[]): string => String.fromCodePoint(...codePoints);
+export const ucs2Encode = (codePoints: readonly number[]): string =>
+    String.fromCodePoint(...codePoints);
 
 /**
  * Converts a basic code point into a digit/integer.
@@ -100,13 +107,13 @@ export const ucs2Encode = (codePoints: readonly number[]): string => String.from
  * the code point does not represent a value.
  */
 const basicToDigit = (codePoint: number): number => {
-    if (codePoint - 0x30 < 0x0A) {
+    if (codePoint - 0x30 < 0x0a) {
         return codePoint - 0x16;
     }
-    if (codePoint - 0x41 < 0x1A) {
+    if (codePoint - 0x41 < 0x1a) {
         return codePoint - 0x41;
     }
-    if (codePoint - 0x61 < 0x1A) {
+    if (codePoint - 0x61 < 0x1a) {
         return codePoint - 0x61;
     }
     return base;
@@ -139,18 +146,22 @@ const digitToBasic = (digit: number): number => {
  * @param {boolean} firstTime - first time
  * @returns {number} bias adaptation
  */
-const adapt = (delta: number, numPoints: number, firstTime: boolean): number => {
+const adapt = (
+    delta: number,
+    numPoints: number,
+    firstTime: boolean
+): number => {
     let k = 0;
     // eslint-disable-next-line no-bitwise
     let newDelta = firstTime ? Math.floor(delta / damp) : delta >> 1;
     newDelta += Math.floor(newDelta / numPoints);
     // eslint-disable-next-line no-bitwise
-    const minCheck = baseMinusTMin * tMax >> 1;
+    const minCheck = (baseMinusTMin * tMax) >> 1;
     while (newDelta > minCheck) {
         newDelta = Math.floor(newDelta / baseMinusTMin);
         k += base;
     }
-    return Math.floor(k + (baseMinusTMin + 1) * newDelta / (newDelta + skew));
+    return Math.floor(k + ((baseMinusTMin + 1) * newDelta) / (newDelta + skew));
 };
 
 /**
@@ -190,7 +201,6 @@ export const decode = (input: string): string => {
 
     let index = basic > 0 ? basic + 1 : 0;
     while (index < inputLength) {
-
         // `index` is the index of the next character to be consumed.
         // Decode a generalized variable-length integer into `delta`,
         // which gets added to `i`. The overflow checking is easier
@@ -200,40 +210,31 @@ export const decode = (input: string): string => {
         let w = 1;
         let k = base;
         while (true) {
-
-            checkOverflow(
-                index,
-                inputLength,
-                { gte: true, error: 'invalid-input' }
-            );
+            checkOverflow(index, inputLength, {
+                gte: true,
+                error: 'invalid-input',
+            });
 
             const digit = basicToDigit(input.codePointAt(index++)!);
 
-            checkOverflow(
-                digit,
-                base,
-                { gte: true }
-            );
-            checkOverflow(
-                digit,
-                Math.floor((maxInt - i) / w)
-            );
+            checkOverflow(digit, base, { gte: true });
+            checkOverflow(digit, Math.floor((maxInt - i) / w));
 
             i += digit * w;
-            const t = k <= bias ?
-                tMin :
-                // eslint-disable-next-line @typescript-eslint/no-extra-parens
-                (k >= bias + tMax ? tMax : k - bias);
+            const t =
+                k <= bias
+                    ? tMin
+                    : // eslint-disable-next-line @typescript-eslint/no-extra-parens
+                      k >= bias + tMax
+                      ? tMax
+                      : k - bias;
 
             if (digit < t) {
                 break;
             }
 
             const baseMinusT = base - t;
-            checkOverflow(
-                w,
-                Math.floor(maxInt / baseMinusT)
-            );
+            checkOverflow(w, Math.floor(maxInt / baseMinusT));
 
             w *= baseMinusT;
             k += base;
@@ -244,17 +245,13 @@ export const decode = (input: string): string => {
 
         // `i` was supposed to wrap around from `out` to `0`,
         // incrementing `n` each time, so we'll fix that now:
-        checkOverflow(
-            Math.floor(i / out),
-            maxInt - n
-        );
+        checkOverflow(Math.floor(i / out), maxInt - n);
 
         n += Math.floor(i / out);
         i %= out;
 
         // Insert `n` at position `i` of the output.
         output.splice(i++, 0, n);
-
     }
 
     return String.fromCodePoint(...output);
@@ -301,7 +298,6 @@ export const encode = (input: string): string => {
 
     // Main encoding loop:
     while (handledCPCount < inputLength) {
-
         // All non-basic code points < n have been handled already. Find the next
         // larger one:
         let m = maxInt;
@@ -324,34 +320,40 @@ export const encode = (input: string): string => {
 
         for (const currentValue of decodedInput) {
             if (currentValue < n) {
-                checkOverflow(
-                    ++delta,
-                    maxInt
-                );
+                checkOverflow(++delta, maxInt);
             }
             if (currentValue === n) {
                 // Represent delta as a generalized variable-length integer.
                 let q = delta;
                 let k = base;
                 while (true) {
-                    const t = k <= bias ?
-                        tMin :
-                        // eslint-disable-next-line @typescript-eslint/no-extra-parens
-                        (k >= bias + tMax ? tMax : k - bias);
+                    const t =
+                        k <= bias
+                            ? tMin
+                            : // eslint-disable-next-line @typescript-eslint/no-extra-parens
+                              k >= bias + tMax
+                              ? tMax
+                              : k - bias;
                     if (q < t) {
                         break;
                     }
                     const qMinusT = q - t;
                     const baseMinusT = base - t;
                     output.push(
-                        String.fromCodePoint(digitToBasic(t + qMinusT % baseMinusT))
+                        String.fromCodePoint(
+                            digitToBasic(t + (qMinusT % baseMinusT))
+                        )
                     );
                     q = Math.floor(qMinusT / baseMinusT);
                     k += base;
                 }
 
                 output.push(String.fromCodePoint(digitToBasic(q)));
-                bias = adapt(delta, handledCPCountPlusOne, handledCPCount === basicLength);
+                bias = adapt(
+                    delta,
+                    handledCPCountPlusOne,
+                    handledCPCount === basicLength
+                );
                 delta = 0;
                 ++handledCPCount;
             }
@@ -374,12 +376,10 @@ export const encode = (input: string): string => {
  * @returns {string} The Unicode representation of the given Punycode
  * string.
  */
-export const toUnicode = (input: string): string => mapDomain(
-    input,
-    (str: string) => (str.startsWith('xn--') ?
-        decode(str.slice(4).toLowerCase()) :
-        str)
-);
+export const toUnicode = (input: string): string =>
+    mapDomain(input, (str: string) =>
+        str.startsWith('xn--') ? decode(str.slice(4).toLowerCase()) : str
+    );
 
 /**
  * Converts a Unicode string representing a domain name or an email address to
@@ -392,9 +392,7 @@ export const toUnicode = (input: string): string => mapDomain(
  * @returns {string} The Punycode representation of the given domain name or
  * email address.
  */
-export const toASCII = (input: string): string => mapDomain(
-    input,
-    (string: string) => (regexNonASCII.test(string) ?
-        `xn--${encode(string)}` :
-        string)
-);
+export const toASCII = (input: string): string =>
+    mapDomain(input, (string: string) =>
+        regexNonASCII.test(string) ? `xn--${encode(string)}` : string
+    );

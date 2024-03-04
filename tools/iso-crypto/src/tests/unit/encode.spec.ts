@@ -4,11 +4,8 @@ import { suite, test } from 'mocha-hookup';
 import { decodeObject, encodeObject } from 'iso-crypto';
 
 suite('EncodeObject', () => {
-
     suite('decodeObject', () => {
-
         test('success', () => {
-
             const myData = {
                 foo: 'abcdef',
                 bar: '012345',
@@ -25,7 +22,6 @@ suite('EncodeObject', () => {
         });
 
         test('Default utf8', () => {
-
             const myData: Record<string, string> = {
                 foo: '<foo>',
                 bar: '<bar>',
@@ -40,9 +36,7 @@ suite('EncodeObject', () => {
     });
 
     suite('encodeObject', () => {
-
         test('success', () => {
-
             const myData = {
                 foo: Buffer.from('abcdef', 'hex'),
                 bar: Buffer.from('012345', 'hex'),
@@ -59,7 +53,6 @@ suite('EncodeObject', () => {
         });
 
         test('Default utf8', () => {
-
             const myData: Record<string, Uint8Array> = {
                 foo: Buffer.from('<foo>'),
                 bar: Buffer.from('<bar>'),

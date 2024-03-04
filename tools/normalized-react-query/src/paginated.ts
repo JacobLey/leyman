@@ -1,4 +1,9 @@
-import type { DefaultPage, EmptyObject, PaginatedData, PaginatedParams } from './lib/types.js';
+import type {
+    DefaultPage,
+    EmptyObject,
+    PaginatedData,
+    PaginatedParams,
+} from './lib/types.js';
 import { Resource, resource } from './resource.js';
 
 /**
@@ -11,7 +16,7 @@ declare abstract class IPaginated<
     Data,
     Params extends object = EmptyObject,
     Page = DefaultPage,
-    Meta = EmptyObject
+    Meta = EmptyObject,
 > extends Resource<
     PaginatedData<Data, Page, Meta>,
     PaginatedParams<Params, Page>
@@ -28,13 +33,12 @@ export const paginated = resource as <
     Data,
     Params extends object = EmptyObject,
     Page = DefaultPage,
-    Meta = EmptyObject
->(...params: Parameters<typeof resource<
-    PaginatedData<Data, Page, Meta>,
-    PaginatedParams<Params, Page>
->>) => IPaginated<
-    Data,
-    Params,
-    Page,
-    Meta
->;
+    Meta = EmptyObject,
+>(
+    ...params: Parameters<
+        typeof resource<
+            PaginatedData<Data, Page, Meta>,
+            PaginatedParams<Params, Page>
+        >
+    >
+) => IPaginated<Data, Params, Page, Meta>;

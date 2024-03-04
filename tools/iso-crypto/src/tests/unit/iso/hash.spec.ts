@@ -10,7 +10,6 @@ import * as NodeHash from '../../../iso/hash/node.js';
 import '../../../iso/hash/types.js';
 
 suite('Hash', () => {
-
     test('types', () => {
         expectTypeOf<typeof Hash>().toEqualTypeOf(BrowserHash);
         expectTypeOf<typeof Hash>().toEqualTypeOf(NodeHash);
@@ -18,7 +17,6 @@ suite('Hash', () => {
     });
 
     suite('hash', () => {
-
         interface HashContext {
             hash: typeof Hash;
         }
@@ -62,7 +60,7 @@ suite('Hash', () => {
                 expect(Buffer.from(hashed).toString('hex')).to.equal(output);
             }
         };
-        
+
         const emptyTest = async ({ hash }: HashContext) => {
             for (const { algorithm, output } of [
                 {
@@ -99,13 +97,10 @@ suite('Hash', () => {
 
         const rawTest = async ({ hash }: HashContext) => {
             const buf = Buffer.from('abcd', 'hex');
-            expect(
-                await hash.hash(buf, 'raw')
-            ).to.eq(buf);
+            expect(await hash.hash(buf, 'raw')).to.eq(buf);
         };
 
         suite('browser', () => {
-
             const withBrowserHash = before(() => ({
                 hash: BrowserHash,
             }));
@@ -116,7 +111,6 @@ suite('Hash', () => {
         });
 
         suite('node', () => {
-
             const withNodeHash = before(() => ({
                 hash: NodeHash,
             }));

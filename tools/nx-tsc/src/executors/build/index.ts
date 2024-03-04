@@ -7,9 +7,15 @@ interface NormalizedOptions extends BuildOptions {
     projectDir: string;
 }
 
-const normalizeOptions = (options: BuildOptions, context: ExecutorContext): NormalizedOptions => ({
+const normalizeOptions = (
+    options: BuildOptions,
+    context: ExecutorContext
+): NormalizedOptions => ({
     tsConfig: resolve(context.root, options.tsConfig),
-    projectDir: resolve(context.root, context.projectsConfigurations!.projects[context.projectName!]!.root),
+    projectDir: resolve(
+        context.root,
+        context.projectsConfigurations!.projects[context.projectName!]!.root
+    ),
 });
 
 const readConfig = (options: NormalizedOptions): ts.ParsedCommandLine => {
@@ -17,7 +23,11 @@ const readConfig = (options: NormalizedOptions): ts.ParsedCommandLine => {
 
     if (configResponse.error) {
         throw new Error(
-            ts.flattenDiagnosticMessageText(configResponse.error.messageText, ts.sys.newLine, 2)
+            ts.flattenDiagnosticMessageText(
+                configResponse.error.messageText,
+                ts.sys.newLine,
+                2
+            )
         );
     }
 
@@ -28,18 +38,22 @@ const readConfig = (options: NormalizedOptions): ts.ParsedCommandLine => {
     );
     if (parsed.errors.length > 0) {
         throw new Error(
-            parsed.errors.map(
-                err => ts.flattenDiagnosticMessageText(err.messageText, ts.sys.newLine, 2)
-            ).join('\n')
+            parsed.errors
+                .map(err =>
+                    ts.flattenDiagnosticMessageText(
+                        err.messageText,
+                        ts.sys.newLine,
+                        2
+                    )
+                )
+                .join('\n')
         );
     }
 
     return {
         ...parsed,
         options: {
-            typeRoots: [
-                resolve(options.projectDir, 'node_modules', '@types'),
-            ],
+            typeRoots: [resolve(options.projectDir, 'node_modules', '@types')],
             ...ts.getDefaultCompilerOptions(),
             ...parsed.options,
         },
@@ -47,20 +61,18 @@ const readConfig = (options: NormalizedOptions): ts.ParsedCommandLine => {
 };
 
 const reportIfFailure = (results: ts.EmitResult): void => {
-
     const containsError = results.diagnostics.some(diagnostic => {
-        return diagnostic.category === ts.DiagnosticCategory.Error
+        return diagnostic.category === ts.DiagnosticCategory.Error;
     });
 
     if (containsError) {
-        throw new Error(ts.formatDiagnosticsWithColorAndContext(
-            results.diagnostics,
-            {
-              getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
-              getNewLine: () => ts.sys.newLine,
-              getCanonicalFileName: name => name,
-            }
-        ));
+        throw new Error(
+            ts.formatDiagnosticsWithColorAndContext(results.diagnostics, {
+                getCurrentDirectory: () => ts.sys.getCurrentDirectory(),
+                getNewLine: () => ts.sys.newLine,
+                getCanonicalFileName: name => name,
+            })
+        );
     }
 };
 
@@ -68,9 +80,7 @@ export default async (
     options: BuildOptions,
     context: ExecutorContext
 ): Promise<{ success: boolean }> => {
-
     try {
-
         const normalized = normalizeOptions(options, context);
 
         const tsConfig = readConfig(normalized);

@@ -1,4 +1,8 @@
-import { AbstractSchema, type SchemaGenerics, type SchemaParams } from '../lib/schema.js';
+import {
+    AbstractSchema,
+    type SchemaGenerics,
+    type SchemaParams,
+} from '../lib/schema.js';
 import type { Nullable } from '../lib/types.js';
 
 type AnyBooleanSchema = BooleanSchema<boolean>;
@@ -8,37 +12,36 @@ type AnyBooleanSchema = BooleanSchema<boolean>;
  */
 export class BooleanSchema<
     // Nullable
-    N extends boolean = false
+    N extends boolean = false,
 > extends AbstractSchema<SchemaGenerics<Nullable<boolean, N>>> {
-
     protected override readonly schemaType = 'boolean';
 
     /**
      * Not enough possible states.
      */
-    declare public anyOf: never;
+    public declare anyOf: never;
 
     /**
      * Not enough possible states.
      */
-    declare public allOf: never;
+    public declare allOf: never;
 
     /**
      * Not enough possible states.
      */
-    declare public if: never;
+    public declare if: never;
 
     /**
      * Not enough possible states.
      */
-    declare public oneOf: never;
+    public declare oneOf: never;
 
     /**
      * Not enough possible states.
      */
-    declare public not: never;
+    public declare not: never;
 
-    declare public nullable: (this: AnyBooleanSchema) => BooleanSchema<true>;
+    public declare nullable: (this: AnyBooleanSchema) => BooleanSchema<true>;
 
     /**
      * Create a new instance of BooleanSchema.
@@ -52,7 +55,10 @@ export class BooleanSchema<
      * @param {boolean} [options.writeOnly] - value should be hidden
      * @returns {BooleanSchema} boolean schema
      */
-    public static override create(this: void, options?: SchemaParams<boolean>): BooleanSchema {
+    public static override create(
+        this: void,
+        options?: SchemaParams<boolean>
+    ): BooleanSchema {
         return new BooleanSchema(options);
     }
 }

@@ -8,13 +8,9 @@ import { type SchemaType, stringSchema } from 'juniper';
 const Ajv = defaultImport(DefaultAjv);
 
 suite('StringSchema', () => {
-
     suite('keywords', () => {
-
         suite('options', () => {
-
             test('success', () => {
-
                 const schema = stringSchema({
                     minLength: 4,
                     maxLength: 10,
@@ -33,7 +29,9 @@ suite('StringSchema', () => {
                     contentEncoding: 'base64',
                     contentMediaType: 'image/png',
                 });
-                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<string>();
+                expectTypeOf<
+                    SchemaType<typeof schema>
+                >().toEqualTypeOf<string>();
             });
 
             test('Multiple patterns', () => {
@@ -95,13 +93,15 @@ suite('StringSchema', () => {
                 },
             }).compile(schema);
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                `${string}$c${string}` & `${string}d^${string}` & `${string}f` & `a${string}`
+                `${string}$c${string}` &
+                    `${string}d^${string}` &
+                    `${string}f` &
+                    `a${string}`
             >();
             expect(validator('ab$cd^ef')).to.equal(true);
         });
 
         test('Unset options', () => {
-
             const schema = stringSchema({
                 minLength: 4,
                 maxLength: 10,
@@ -123,18 +123,15 @@ suite('StringSchema', () => {
     });
 
     suite('if', () => {
-
         suite('Then and else', () => {
-
             test('success', () => {
-
-                const schema = stringSchema().pattern('1').pattern('2').if(
-                    stringSchema().startsWith('a').nullable(),
-                    {
+                const schema = stringSchema()
+                    .pattern('1')
+                    .pattern('2')
+                    .if(stringSchema().startsWith('a').nullable(), {
                         then: stringSchema().endsWith('c'),
                         else: stringSchema().contains('b').nullable(),
-                    }
-                );
+                    });
 
                 const json = schema.toJSON();
 
@@ -159,9 +156,9 @@ suite('StringSchema', () => {
 
                 const validator = new Ajv({ strict: true }).compile(json);
                 expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<
-                    `${string}b${string}` |
-                        (`${string}b${string}` & `${string}c` & `a${string}`) |
-                        (`${string}c` & `a${string}`)
+                    | `${string}b${string}`
+                    | (`${string}b${string}` & `${string}c` & `a${string}`)
+                    | (`${string}c` & `a${string}`)
                 >();
                 expect(validator('12b34')).to.equal(true);
                 expect(validator('a12c')).to.equal(true);
@@ -171,14 +168,13 @@ suite('StringSchema', () => {
             });
 
             test('Open API 3.0', () => {
-
-                const schema = stringSchema().pattern('1').pattern('2').if(
-                    stringSchema().startsWith('a').nullable(),
-                    {
+                const schema = stringSchema()
+                    .pattern('1')
+                    .pattern('2')
+                    .if(stringSchema().startsWith('a').nullable(), {
                         then: stringSchema().endsWith('c'),
                         else: stringSchema().contains('b').nullable(),
-                    }
-                );
+                    });
 
                 const json = schema.toJSON({ openApi30: true });
 
@@ -220,24 +216,22 @@ suite('StringSchema', () => {
         });
 
         suite('Only then', () => {
-
             const withSchema = before(() => {
-                const schema = stringSchema().contains('b').if(
-                    stringSchema().startsWith('a'),
-                    {
+                const schema = stringSchema()
+                    .contains('b')
+                    .if(stringSchema().startsWith('a'), {
                         then: stringSchema().nullable().endsWith('c'),
-                    }
-                );
+                    });
 
                 expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                    `${string}b${string}` | (`${string}b${string}` & `${string}c` & `a${string}`)
+                    | `${string}b${string}`
+                    | (`${string}b${string}` & `${string}c` & `a${string}`)
                 >();
 
                 return { schema };
             });
 
             withSchema.test('success', ({ schema }) => {
-
                 const json = schema.toJSON();
 
                 expect(json).to.deep.equal({
@@ -287,14 +281,12 @@ suite('StringSchema', () => {
         });
 
         suite('Only else', () => {
-
             const withSchema = before(() => {
-                const schema = stringSchema().contains('b').if(
-                    stringSchema().startsWith('a'),
-                    {
+                const schema = stringSchema()
+                    .contains('b')
+                    .if(stringSchema().startsWith('a'), {
                         else: stringSchema().endsWith('c'),
-                    }
-                );
+                    });
 
                 expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                     `${string}b${string}` & (`${string}c` | `a${string}`)
@@ -304,7 +296,6 @@ suite('StringSchema', () => {
             });
 
             withSchema.test('success', ({ schema }) => {
-
                 const json = schema.toJSON();
 
                 expect(json).to.deep.equal({
@@ -351,9 +342,7 @@ suite('StringSchema', () => {
     });
 
     suite('ref', () => {
-
         test('Applies defaults', () => {
-
             expect(
                 stringSchema()
                     .maxLength(10)
@@ -371,16 +360,15 @@ suite('StringSchema', () => {
     });
 
     suite('composite', () => {
-
         test('allOf', () => {
-
-            const schema = stringSchema().contains('a')
+            const schema = stringSchema()
+                .contains('a')
                 .nullable()
-                .allOf(
-                    stringSchema().startsWith('b').nullable()
-                );
+                .allOf(stringSchema().startsWith('b').nullable());
 
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<`${string}a${string}` & `b${string}` | null>();
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                (`${string}a${string}` & `b${string}`) | null
+            >();
 
             expect(schema.toJSON()).to.deep.equal({
                 type: ['string', 'null'],
@@ -415,8 +403,8 @@ suite('StringSchema', () => {
         });
 
         test('anyOf', () => {
-
-            const schema = stringSchema().contains('a')
+            const schema = stringSchema()
+                .contains('a')
                 .anyOf([
                     stringSchema().startsWith('b'),
                     stringSchema().nullable().startsWith('c'),
@@ -455,18 +443,19 @@ suite('StringSchema', () => {
                 ],
             });
 
-            const notNullableSchema = schema.anyOf([stringSchema().endsWith('d')]);
+            const notNullableSchema = schema.anyOf([
+                stringSchema().endsWith('d'),
+            ]);
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
-                `${string}a${string}` & `${string}d` & (`b${string}` | `c${string}`)
+                `${string}a${string}` &
+                    `${string}d` &
+                    (`b${string}` | `c${string}`)
             >();
 
             expect(notNullableSchema.toJSON()).to.deep.equal({
                 type: 'string',
                 pattern: 'a',
-                anyOf: [
-                    { pattern: '^b' },
-                    { pattern: '^c' },
-                ],
+                anyOf: [{ pattern: '^b' }, { pattern: '^c' }],
                 allOf: [
                     {
                         anyOf: [{ pattern: 'd$' }],
@@ -476,15 +465,14 @@ suite('StringSchema', () => {
 
             const neverSchema = notNullableSchema.anyOf([]);
 
-            expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
+            expectTypeOf<
+                SchemaType<typeof neverSchema>
+            >().toEqualTypeOf<never>();
 
             expect(neverSchema.toJSON({ openApi30: true })).to.deep.equal({
                 type: 'string',
                 pattern: 'a',
-                anyOf: [
-                    { pattern: '^b' },
-                    { pattern: '^c' },
-                ],
+                anyOf: [{ pattern: '^b' }, { pattern: '^c' }],
                 allOf: [
                     {
                         anyOf: [{ pattern: 'd$' }],
@@ -494,12 +482,14 @@ suite('StringSchema', () => {
             });
 
             const neverSchema2 = stringSchema().nullable().anyOf([]);
-            expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
+            expectTypeOf<
+                SchemaType<typeof neverSchema2>
+            >().toEqualTypeOf<never>();
         });
 
         test('oneOf', () => {
-
-            const schema = stringSchema().contains('a')
+            const schema = stringSchema()
+                .contains('a')
                 .oneOf([
                     stringSchema().startsWith('b'),
                     stringSchema().nullable().startsWith('c'),
@@ -524,18 +514,19 @@ suite('StringSchema', () => {
                 ],
             });
 
-            const notNullableSchema = schema.oneOf([stringSchema().endsWith('d')]);
+            const notNullableSchema = schema.oneOf([
+                stringSchema().endsWith('d'),
+            ]);
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
-                `${string}a${string}` & `${string}d` & (`b${string}` | `c${string}`)
+                `${string}a${string}` &
+                    `${string}d` &
+                    (`b${string}` | `c${string}`)
             >();
 
             expect(notNullableSchema.toJSON()).to.deep.equal({
                 type: 'string',
                 pattern: 'a',
-                oneOf: [
-                    { pattern: '^b' },
-                    { pattern: '^c' },
-                ],
+                oneOf: [{ pattern: '^b' }, { pattern: '^c' }],
                 allOf: [
                     {
                         oneOf: [{ pattern: 'd$' }],
@@ -544,15 +535,14 @@ suite('StringSchema', () => {
             });
 
             const neverSchema = notNullableSchema.oneOf([]);
-            expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
+            expectTypeOf<
+                SchemaType<typeof neverSchema>
+            >().toEqualTypeOf<never>();
 
             expect(neverSchema.toJSON()).to.deep.equal({
                 type: 'string',
                 pattern: 'a',
-                oneOf: [
-                    { pattern: '^b' },
-                    { pattern: '^c' },
-                ],
+                oneOf: [{ pattern: '^b' }, { pattern: '^c' }],
                 allOf: [
                     {
                         oneOf: [{ pattern: 'd$' }],
@@ -562,32 +552,30 @@ suite('StringSchema', () => {
             });
 
             const neverSchema2 = stringSchema().nullable().oneOf([]);
-            expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
+            expectTypeOf<
+                SchemaType<typeof neverSchema2>
+            >().toEqualTypeOf<never>();
 
             const notReallyNullableSchema = schema.oneOf([
                 stringSchema().endsWith('d').nullable(),
                 stringSchema().endsWith('e').nullable(),
             ]);
-            expectTypeOf<SchemaType<typeof notReallyNullableSchema>>().toEqualTypeOf<
-                `${string}a${string}` &
-                (`${string}d` | `${string}e`) &
-                (`b${string}` | `c${string}`) |
-                null
+            expectTypeOf<
+                SchemaType<typeof notReallyNullableSchema>
+            >().toEqualTypeOf<
+                | (`${string}a${string}` &
+                      (`${string}d` | `${string}e`) &
+                      (`b${string}` | `c${string}`))
+                | null
             >();
 
             expect(notReallyNullableSchema.toJSON()).to.deep.equal({
                 type: 'string',
                 pattern: 'a',
-                oneOf: [
-                    { pattern: '^b' },
-                    { pattern: '^c' },
-                ],
+                oneOf: [{ pattern: '^b' }, { pattern: '^c' }],
                 allOf: [
                     {
-                        oneOf: [
-                            { pattern: 'd$' },
-                            { pattern: 'e$' },
-                        ],
+                        oneOf: [{ pattern: 'd$' }, { pattern: 'e$' }],
                     },
                 ],
             });

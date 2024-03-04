@@ -16,36 +16,35 @@ import type { JsonSchema, SchemaType } from '../lib/types.js';
  * an empty array `never[]`.
  */
 export class NeverSchema extends AbstractSchema<SchemaGenerics<never>> {
+    /**
+     * Not applicable.
+     */
+    public declare allOf: never;
 
     /**
      * Not applicable.
      */
-    declare public allOf: never;
+    public declare anyOf: never;
 
     /**
      * Not applicable.
      */
-    declare public anyOf: never;
-
-    /**
-     * Not applicable.
-     */
-    declare public if: never;
+    public declare if: never;
 
     /**
      * Used internally
      */
-    declare public not: never;
+    public declare not: never;
 
     /**
      * Not applicable.
      */
-    declare public nullable: never;
+    public declare nullable: never;
 
     /**
      * Not applicable.
      */
-    declare public oneOf: never;
+    public declare oneOf: never;
 
     /**
      * Create a new instance of NullSchema.
@@ -59,14 +58,19 @@ export class NeverSchema extends AbstractSchema<SchemaGenerics<never>> {
      * @param {boolean} [options.writeOnly] - value should be hidden
      * @returns {NullSchema} null schema
      */
-    public static override create(this: void, options?: SchemaParams<never>): NeverSchema {
+    public static override create(
+        this: void,
+        options?: SchemaParams<never>
+    ): NeverSchema {
         return new NeverSchema(options);
     }
 
     /**
      * @override
      */
-    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
+    protected override toSchema(
+        params: SerializationParams
+    ): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         base.not = {};

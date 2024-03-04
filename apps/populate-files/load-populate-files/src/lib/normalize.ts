@@ -6,7 +6,6 @@ export const normalizeParams = async (
     params: RawParams,
     options: RawOptions = {}
 ): Promise<NormalizedParams> => {
-
     const cwd = await parseCwd(options.cwd);
 
     return {

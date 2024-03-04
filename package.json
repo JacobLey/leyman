@@ -45,6 +45,7 @@
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "nx-update-ts-references@npm": "npm:nx-update-ts-references@^0.0.1",
+    "root-biome": "npm:@biomejs/biome@^1.5.3",
     "vscode-ts": "npm:typescript@^5.3.3"
   }
 }

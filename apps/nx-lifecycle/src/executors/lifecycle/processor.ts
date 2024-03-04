@@ -1,5 +1,12 @@
 import { identifier } from 'haystack-di';
-import { type NxJson, type ProjectJson, type Target, type DependsOn, type AllTargets, isEmpty } from '#schemas';
+import {
+    type NxJson,
+    type ProjectJson,
+    type Target,
+    type DependsOn,
+    type AllTargets,
+    isEmpty,
+} from '#schemas';
 import { NOOP_EXECUTOR } from './constants.js';
 import type { NormalizedOptions } from './normalizer.js';
 
@@ -9,29 +16,31 @@ type LifecycleTarget = {
     name: string;
     dependsOn: DependsOn;
 } & (
-    {
-        kind: 'anchor';
-    } | (
-        {
-            previousHook: string;
-        } & (
-            {
-                kind: 'hook';
-            } | {
-                kind: 'base';
-                hasHooks: boolean;
-            }
-        )
-    )
+    | {
+          kind: 'anchor';
+      }
+    | ({
+          previousHook: string;
+      } & (
+          | {
+                  kind: 'hook';
+              }
+          | {
+                  kind: 'base';
+                  hasHooks: boolean;
+              }
+      ))
 );
 
 type LifecycleTargets = Map<string, LifecycleTarget>;
 
-type LifecycleTargetWithHooks = Extract<LifecycleTarget, { previousHook: string }>;
+type LifecycleTargetWithHooks = Extract<
+    LifecycleTarget,
+    { previousHook: string }
+>;
 type RegisteredTargets = Map<string, LifecycleTargetWithHooks>;
 
 const calculateTargets = ({ stages }: ProcessorOptions): LifecycleTargets => {
-
     const lifecycleTargets: LifecycleTargets = new Map();
 
     for (const [stageName, stage] of Object.entries(stages)) {
@@ -68,24 +77,35 @@ const calculateTargets = ({ stages }: ProcessorOptions): LifecycleTargets => {
     return lifecycleTargets;
 };
 
-const registerTargets = ({ lifecycleTargets, options }: {
+const registerTargets = ({
+    lifecycleTargets,
+    options,
+}: {
     lifecycleTargets: LifecycleTargets;
-    options: ProcessorOptions,
+    options: ProcessorOptions;
 }): RegisteredTargets => {
     const registeredTargets: RegisteredTargets = new Map();
     for (const [targetName, hookName] of Object.entries(options.targets)) {
         if (lifecycleTargets.has(targetName)) {
-            throw new Error(`Overlap in lifecycle hook and target: ${targetName}`);
+            throw new Error(
+                `Overlap in lifecycle hook and target: ${targetName}`
+            );
         }
         const hook = lifecycleTargets.get(hookName);
         if (!hook) {
-            throw new Error(`Hook for target ${targetName} not found: ${hookName}`);
+            throw new Error(
+                `Hook for target ${targetName} not found: ${hookName}`
+            );
         }
         if (hook.kind === 'anchor') {
-            throw new Error(`Target ${targetName} cannot be part of anchor hook ${hook.name}`);
+            throw new Error(
+                `Target ${targetName} cannot be part of anchor hook ${hook.name}`
+            );
         }
         if (hook.kind === 'base' && hook.hasHooks) {
-            throw new Error(`Target ${targetName} cannot be part of base hook ${hook.name}. Use format ${hook.name}:<hook>`);
+            throw new Error(
+                `Target ${targetName} cannot be part of base hook ${hook.name}. Use format ${hook.name}:<hook>`
+            );
         }
         registeredTargets.set(targetName, hook);
     }
@@ -93,11 +113,13 @@ const registerTargets = ({ lifecycleTargets, options }: {
     return registeredTargets;
 };
 
-const calculateTargetsToRemove = ({ lifecycleTargets, nxJson } : {
-   lifecycleTargets: LifecycleTargets;
-   nxJson: NxJson;
+const calculateTargetsToRemove = ({
+    lifecycleTargets,
+    nxJson,
+}: {
+    lifecycleTargets: LifecycleTargets;
+    nxJson: NxJson;
 }): Set<string> => {
-
     const targetsToRemove = new Set<string>();
 
     for (const [targetName, target] of lifecycleTargets.entries()) {
@@ -106,7 +128,9 @@ const calculateTargetsToRemove = ({ lifecycleTargets, nxJson } : {
         }
     }
 
-    for (const [targetName, target] of Object.entries(nxJson.targetDefaults ?? {})) {
+    for (const [targetName, target] of Object.entries(
+        nxJson.targetDefaults ?? {}
+    )) {
         if (
             !lifecycleTargets.has(targetName) &&
             '__lifecycle' in (target.configurations ?? {})
@@ -118,29 +142,30 @@ const calculateTargetsToRemove = ({ lifecycleTargets, nxJson } : {
     return targetsToRemove;
 };
 
-const removeDependencyTargets = ({ target, lifecycleTargets, targetsToRemove }: {
+const removeDependencyTargets = ({
+    target,
+    lifecycleTargets,
+    targetsToRemove,
+}: {
     target: Target;
     lifecycleTargets: LifecycleTargets;
     targetsToRemove: Set<String>;
 }): DependsOn => {
     if (target.dependsOn) {
-        return target.dependsOn.filter(
-            dependency => {
-                const target = typeof dependency === 'string' ?
-                    dependency :
-                    dependency.target;
+        return target.dependsOn.filter(dependency => {
+            const target =
+                typeof dependency === 'string' ? dependency : dependency.target;
 
-                const normalized = target.replace(/^\^/, '');
-                if (targetsToRemove.has(normalized)) {
-                    return false;
-                }
-                const lifecycleTarget = lifecycleTargets.get(normalized);
-                if (lifecycleTarget) {
-                    return lifecycleTarget.kind === 'base';
-                }
-                return true;
+            const normalized = target.replace(/^\^/, '');
+            if (targetsToRemove.has(normalized)) {
+                return false;
             }
-        );
+            const lifecycleTarget = lifecycleTargets.get(normalized);
+            if (lifecycleTarget) {
+                return lifecycleTarget.kind === 'base';
+            }
+            return true;
+        });
     }
     return [];
 };
@@ -163,7 +188,9 @@ const validateLifecycleDependencies = ({
             });
 
             if (filtered.length !== dependsOn.length) {
-                throw new Error(`Invalid dependency detected on lifecycle stage ${stageName}`);
+                throw new Error(
+                    `Invalid dependency detected on lifecycle stage ${stageName}`
+                );
             }
         }
     }
@@ -180,7 +207,6 @@ const processNxJson = ({
     registeredTargets: RegisteredTargets;
     targetsToRemove: Set<string>;
 }): NxJson => {
-
     const originalTargets = nxJson.targetDefaults ?? {};
     const targetDefaults = { ...originalTargets };
     const lifecycles: AllTargets = {};
@@ -195,11 +221,16 @@ const processNxJson = ({
     }
 
     for (const [targetName, originalTarget] of Object.entries(targetDefaults)) {
-        if (targetsToRemove.has(targetName) || lifecycleTargets.has(targetName)) {
+        if (
+            targetsToRemove.has(targetName) ||
+            lifecycleTargets.has(targetName)
+        ) {
             if ('__lifecycle' in (originalTarget.configurations ?? {})) {
                 delete targetDefaults[targetName];
             } else {
-                throw new Error(`Overlap in lifecycle hook and target: ${targetName}`);
+                throw new Error(
+                    `Overlap in lifecycle hook and target: ${targetName}`
+                );
             }
         } else {
             targetDefaults[targetName] = {
@@ -250,7 +281,6 @@ const processProjectJson = ({
     registeredTargets: RegisteredTargets;
     targetsToRemove: Set<string>;
 }): ProjectJson => {
-
     const originalTargets = projectJson.targets ?? {};
     const targets = { ...originalTargets };
     const lifecycles: AllTargets = {};
@@ -259,7 +289,10 @@ const processProjectJson = ({
     }
 
     for (const [targetName, target] of Object.entries(targets)) {
-        if (targetsToRemove.has(targetName) || lifecycleTargets.has(targetName)) {
+        if (
+            targetsToRemove.has(targetName) ||
+            lifecycleTargets.has(targetName)
+        ) {
             delete targets[targetName];
         } else if (target.dependsOn) {
             const processedTarget = { ...target };
@@ -282,10 +315,7 @@ const processProjectJson = ({
         ...lifecycles,
     };
 
-    if (
-        !('targets' in projectJson) &&
-        isEmpty(processedTargets)
-    ) {
+    if (!('targets' in projectJson) && isEmpty(processedTargets)) {
         return projectJson;
     }
 
@@ -309,7 +339,8 @@ export interface NxAndProjectJsonProcessor {
         processedProjectJsons: ProjectJson[];
     };
 }
-export const nxAndProjectJsonProcessorIdentifier = identifier<NxAndProjectJsonProcessor>();
+export const nxAndProjectJsonProcessorIdentifier =
+    identifier<NxAndProjectJsonProcessor>();
 
 export const processNxAndProjectJsons: NxAndProjectJsonProcessor = ({
     nxJson,
@@ -323,9 +354,11 @@ export const processNxAndProjectJsons: NxAndProjectJsonProcessor = ({
     processedNxJson: NxJson;
     processedProjectJsons: ProjectJson[];
 } => {
-
     const lifecycleTargets = calculateTargets(options);
-    const targetsToRemove = calculateTargetsToRemove({ lifecycleTargets, nxJson });
+    const targetsToRemove = calculateTargetsToRemove({
+        lifecycleTargets,
+        nxJson,
+    });
     validateLifecycleDependencies({
         lifecycleTargets,
         options,
@@ -341,12 +374,14 @@ export const processNxAndProjectJsons: NxAndProjectJsonProcessor = ({
         targetsToRemove,
     });
 
-    const processedProjectJsons = projectJsons.map(projectJson => processProjectJson({
-        projectJson,
-        lifecycleTargets,
-        targetsToRemove,
-        registeredTargets,
-    }));
+    const processedProjectJsons = projectJsons.map(projectJson =>
+        processProjectJson({
+            projectJson,
+            lifecycleTargets,
+            targetsToRemove,
+            registeredTargets,
+        })
+    );
 
     const response: ReturnType<typeof processNxAndProjectJsons> = {
         processedNxJson,

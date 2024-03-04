@@ -7,7 +7,6 @@
  * @returns {Uint8Array} properly sized array.
  */
 export const padBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
-
     if (arr.length >= bytes) {
         return arr;
     }
@@ -30,7 +29,6 @@ export const padBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
  * @returns {Uint8Array} properly sized array.
  */
 export const trimBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
-
     if (arr.length <= bytes) {
         return arr;
     }
@@ -46,7 +44,5 @@ export const trimBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
  * @param {number} bytes - desired length
  * @returns {Uint8Array} properly sized array.
  */
-export const fixBytes = (
-    arr: Uint8Array,
-    bytes: number
-): Uint8Array => padBytes(trimBytes(arr, bytes), bytes);
+export const fixBytes = (arr: Uint8Array, bytes: number): Uint8Array =>
+    padBytes(trimBytes(arr, bytes), bytes);

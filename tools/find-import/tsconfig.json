@@ -6,6 +6,17 @@
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
   "references": [
-    { "path": "../parse-cwd" }
+    {
+      "path": "../../apps/nx-update-ts-references"
+    },
+    {
+      "path": "../mocha-hookup"
+    },
+    {
+      "path": "../nx-tsc"
+    },
+    {
+      "path": "../parse-cwd"
+    }
   ]
 }

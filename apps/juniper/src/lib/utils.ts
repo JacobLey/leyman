@@ -14,10 +14,13 @@ const deepStrictEqual = (a: unknown, b: unknown): boolean => {
         }
         const aKeys = Object.keys(a);
         const bKeys = Object.keys(b);
-        return aKeys.length === bKeys.length && aKeys.every(
-            key => deepStrictEqual(
-                (a as Record<string, unknown>)[key],
-                (b as Record<string, unknown>)[key]
+        return (
+            aKeys.length === bKeys.length &&
+            aKeys.every(key =>
+                deepStrictEqual(
+                    (a as Record<string, unknown>)[key],
+                    (b as Record<string, unknown>)[key]
+                )
             )
         );
     }
@@ -66,12 +69,16 @@ export const mergeAllOf = <S extends JsonSchema<any>>(
         const schemaKeys = new Set(Object.keys(schema));
         while (true) {
             const baseAll = baseAllOf[i];
-            if (!(
-                baseAll &&
-                Object.keys(baseAll).some(
-                    key => schemaKeys.has(key) && !deepStrictEqual(schema[key], baseAll[key])
+            if (
+                !(
+                    baseAll &&
+                    Object.keys(baseAll).some(
+                        key =>
+                            schemaKeys.has(key) &&
+                            !deepStrictEqual(schema[key], baseAll[key])
+                    )
                 )
-            )) {
+            ) {
                 break;
             }
             ++i;
@@ -107,7 +114,6 @@ export const mergeRef = <T>({
     refPath: string;
     refSchema: JsonSchema<T>;
 }): JsonSchema<T> => {
-
     const output: JsonSchema<T> = {};
 
     const baseKeys = Object.keys(baseSchema);

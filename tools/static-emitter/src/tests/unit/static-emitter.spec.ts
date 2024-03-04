@@ -6,31 +6,34 @@ import { CustomEmitter, eventSym } from '../data/custom-emitter.js';
 import { ServerEvent } from '../data/server-event.js';
 
 suite('StaticEmitter', () => {
-
     suite('success', () => {
-
         test('Extends EventTarget', () => {
             expect(new StaticEmitter()).to.be.an.instanceOf(EventTarget);
         });
 
         suite('Declare event types', () => {
-
             test('Generic parameter', () => {
-
                 const customEmitter = new CustomEmitter();
                 customEmitter.on('foo', (...args) => {
-                    expectTypeOf(args).toEqualTypeOf<[123, CustomEvent<'foo', 123>]>();
+                    expectTypeOf(args).toEqualTypeOf<
+                        [123, CustomEvent<'foo', 123>]
+                    >();
                 });
                 customEmitter.addListener('foo', (...args) => {
-                    expectTypeOf(args).toEqualTypeOf<[123, CustomEvent<'foo', 123>]>();
+                    expectTypeOf(args).toEqualTypeOf<
+                        [123, CustomEvent<'foo', 123>]
+                    >();
                 });
                 // @ts-expect-error
                 customEmitter.on('bar', () => {});
 
                 customEmitter.emit('foo', 123);
                 customEmitter.emit(eventSym, { myData: '<my-data>' });
-                // @ts-expect-error
-                customEmitter.emit('bar', new ServerEvent('bar', '<server-data>'));
+                customEmitter.emit(
+                    // @ts-expect-error
+                    'bar',
+                    new ServerEvent('bar', '<server-data>')
+                );
 
                 customEmitter.off('foo', (detail: 123) => {
                     expectTypeOf(detail).toEqualTypeOf<123>();
@@ -41,7 +44,9 @@ suite('StaticEmitter', () => {
                 });
                 customEmitter.off('foo', {
                     handleEvent: detail => {
-                        expectTypeOf(detail).toEqualTypeOf<CustomEvent<'foo', 123>>();
+                        expectTypeOf(detail).toEqualTypeOf<
+                            CustomEvent<'foo', 123>
+                        >();
                     },
                 });
                 customEmitter.off('bar', event => {
@@ -51,20 +56,21 @@ suite('StaticEmitter', () => {
                     expectTypeOf(event).toEqualTypeOf<ServerEvent<'bar'>>();
                 });
                 customEmitter.removeListener(eventSym, (...args) => {
-                    expectTypeOf(args).toEqualTypeOf<[
-                        { myData: string },
-                        CustomEvent<string, { myData: string }>,
-                    ]>();
+                    expectTypeOf(args).toEqualTypeOf<
+                        [
+                            { myData: string },
+                            CustomEvent<string, { myData: string }>,
+                        ]
+                    >();
                 });
             });
 
             test('Explicit event declaration', () => {
-
                 /**
                  * @override
                  */
                 class CustomEmitterDeclare extends StaticEmitter {
-                    declare public [events]: {
+                    public declare [events]: {
                         foo: 123;
                         bar: ServerEvent<'bar'>;
                         [eventSym]: { myData: string };
@@ -75,7 +81,6 @@ suite('StaticEmitter', () => {
             });
 
             test('Both generics and event param', () => {
-
                 /**
                  * @override
                  */
@@ -83,7 +88,7 @@ suite('StaticEmitter', () => {
                     foo: 123 | 456;
                     bar: ServerEvent<'bar'>;
                 }> {
-                    declare public [events]: StaticEmitter<{
+                    public declare [events]: StaticEmitter<{
                         foo: 123 | 456;
                         bar: ServerEvent<'bar'>;
                     }>[typeof events] & {
@@ -97,12 +102,14 @@ suite('StaticEmitter', () => {
         });
 
         test('Wrap custom event listeners', () => {
-
             let order = 0;
 
             const customEmitter = new CustomEmitter();
 
-            const listener = (detail: number, event: CustomEvent<string, number>): void => {
+            const listener = (
+                detail: number,
+                event: CustomEvent<string, number>
+            ): void => {
                 expect(++order).to.equal(1);
                 expect(detail).to.equal(123);
                 expect(event).to.be.an.instanceOf(CustomEvent);

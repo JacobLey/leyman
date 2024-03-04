@@ -1,8 +1,8 @@
-export type { 
-    AsyncSupplier, 
+export type {
+    AsyncSupplier,
     Constructable,
     IsClass,
-    LateBinding, 
+    LateBinding,
     NonExtendable,
     Supplier,
 } from '#types';

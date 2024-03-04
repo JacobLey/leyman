@@ -5,7 +5,6 @@ import { globby } from 'globby';
 import { patch } from 'named-patch';
 
 const getExtensions = async (path: string): Promise<string> => {
-
     const pkg = await findImport<{
         type?: string;
     }>('package.json', {
@@ -13,9 +12,8 @@ const getExtensions = async (path: string): Promise<string> => {
     });
 
     const isModule = pkg?.content.type === 'module';
-    const fileIsModule = path.endsWith('.mts') || (
-        path.endsWith('.ts') && isModule
-    );
+    const fileIsModule =
+        path.endsWith('.mts') || (path.endsWith('.ts') && isModule);
 
     if (fileIsModule) {
         return '?(c|m)ts';
@@ -27,18 +25,11 @@ const getExtensions = async (path: string): Promise<string> => {
 };
 
 const generateBarrelFile = async (path: string): Promise<string> => {
-
     const extensions = await getExtensions(path);
-    const files = await globby(
-        [
-            `*.${extensions}`,
-            '!index.?(c|m)ts',
-        ],
-        {
-            cwd: Path.dirname(path),
-            gitignore: true,
-        }
-    );
+    const files = await globby([`*.${extensions}`, '!index.?(c|m)ts'], {
+        cwd: Path.dirname(path),
+        gitignore: true,
+    });
 
     return [
         // Idempotent
@@ -54,53 +45,55 @@ const generateBarrelFile = async (path: string): Promise<string> => {
     ].join('\n');
 };
 
-export const barrelFiles = patch(async ({
-    cwd,
-    dryRun,
-    ignore = [],
-    logger = { info: () => {} },
-}: {
-    cwd: string;
-    dryRun: boolean;
-    ignore?: string[] | undefined;
-    logger?: { info: (...args: unknown[]) => void };
-}): Promise<string[]> => {
-
-    const indexFiles = await globby(
-        [
-            '**/index.?(c|m)ts',
-            '!**/node_modules/**',
-            ...ignore.map(i => `!${i.replaceAll('\\', '/')}`),
-        ],
-        {
-            cwd,
-            gitignore: true,
-        }
-    );
-
-    const mismatchFiles: string[] = [];
-
-    await Promise.all(indexFiles.map(async file => {
-
-        const filePath = Path.resolve(cwd, file);
-
-        const data = await readFile(filePath, 'utf8');
-
-        if (!data.startsWith('// AUTO-BARREL')) {
-            return;
-        }
-
-        const barrel = await generateBarrelFile(filePath);
-
-        if (barrel !== data) {
-            mismatchFiles.push(filePath);
-            logger.info(filePath);
-            if (dryRun) {
-                return;
+export const barrelFiles = patch(
+    async ({
+        cwd,
+        dryRun,
+        ignore = [],
+        logger = { info: () => {} },
+    }: {
+        cwd: string;
+        dryRun: boolean;
+        ignore?: string[] | undefined;
+        logger?: { info: (...args: unknown[]) => void };
+    }): Promise<string[]> => {
+        const indexFiles = await globby(
+            [
+                '**/index.?(c|m)ts',
+                '!**/node_modules/**',
+                ...ignore.map(i => `!${i.replaceAll('\\', '/')}`),
+            ],
+            {
+                cwd,
+                gitignore: true,
             }
-            await patch(writeFile)(filePath, barrel, 'utf8');
-        }
-    }));
+        );
 
-    return mismatchFiles;
-});
+        const mismatchFiles: string[] = [];
+
+        await Promise.all(
+            indexFiles.map(async file => {
+                const filePath = Path.resolve(cwd, file);
+
+                const data = await readFile(filePath, 'utf8');
+
+                if (!data.startsWith('// AUTO-BARREL')) {
+                    return;
+                }
+
+                const barrel = await generateBarrelFile(filePath);
+
+                if (barrel !== data) {
+                    mismatchFiles.push(filePath);
+                    logger.info(filePath);
+                    if (dryRun) {
+                        return;
+                    }
+                    await patch(writeFile)(filePath, barrel, 'utf8');
+                }
+            })
+        );
+
+        return mismatchFiles;
+    }
+);

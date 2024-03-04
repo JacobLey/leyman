@@ -21,29 +21,23 @@
   "sideEffects": false,
   "types": "./dist/find-import.js",
   "exports": {
-    ".": {
-      "types": "./src/find-import.ts",
-      "default": "./dist/find-import.js"
-    }
-  },
-  "publishConfig": {
-    "exports": {
-      ".": "./dist/find-import.js"
-    }
+    ".": "./dist/find-import.js"
   },
   "dependencies": {
     "parse-cwd": "workspace:^"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.8.10",
+    "c8": "^8.0.1",
     "chai": "^5.1.0",
     "expect-type": "^0.17.3",
     "mocha": "^10.3.0",
+    "mocha-hookup": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
-    "nyc": "^15.1.0",
     "typescript": "^5.3.3"
   }
 }

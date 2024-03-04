@@ -1,11 +1,14 @@
 {
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "name": "load-populate-files",
-  "implicitDependencies": [
-    "nx-tsc"
-  ],
   "targets": {
+    "biome": {},
+    "update-ts-references": {},
     "tsc": {},
+    "analyze:_": {},
+    "analyze:lint": {},
+    "analyze:format": {},
+    "analyze": {},
     "build:_": {},
     "build:pre": {},
     "build:run": {},

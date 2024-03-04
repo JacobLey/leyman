@@ -16,14 +16,19 @@ export const rangeError = (type: keyof typeof errors): never => {
 export const checkOverflow = (
     lower: number,
     upper: number,
-    { gte = false, error }: {
+    {
+        gte = false,
+        error,
+    }: {
         gte?: boolean;
         error?: keyof typeof errors;
     } = {}
 ): void => {
     if (gte ? lower >= upper : lower > upper) {
         throw new RangeError(
-            error ? errors[error] : 'Overflow: input needs wider integers to process'
+            error
+                ? errors[error]
+                : 'Overflow: input needs wider integers to process'
         );
     }
 };

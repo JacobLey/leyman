@@ -3,11 +3,8 @@ import { suite, test } from 'mocha-hookup';
 import * as Errors from '#errors';
 
 suite('errors', () => {
-
     suite('checkOverflow', () => {
-
         suite('success', () => {
-
             test('Less than', () => {
                 Errors.checkOverflow(1, 2);
             });
@@ -22,7 +19,6 @@ suite('errors', () => {
         });
 
         suite('failure', () => {
-
             test('Greater than', () => {
                 expect(() => {
                     Errors.checkOverflow(2, 1);
@@ -37,7 +33,10 @@ suite('errors', () => {
 
             test('Equal to', () => {
                 expect(() => {
-                    Errors.checkOverflow(1, 1, { gte: true, error: 'invalid-input' });
+                    Errors.checkOverflow(1, 1, {
+                        gte: true,
+                        error: 'invalid-input',
+                    });
                 }).to.throw('Invalid input');
             });
         });

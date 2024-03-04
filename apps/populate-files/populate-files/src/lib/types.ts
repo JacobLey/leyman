@@ -21,12 +21,16 @@ export interface NormalizedOptions {
     dryRun: boolean;
 }
 
-export interface NormalizedFileParams extends NormalizedOptions, NormalizedParams {}
+export interface NormalizedFileParams
+    extends NormalizedOptions,
+        NormalizedParams {}
 export interface NormalizedFilesParams extends NormalizedOptions {
     files: NormalizedParams[];
 }
 
-export type PopulationResponseUpdateReason = 'file-not-exist' | 'content-changed';
+export type PopulationResponseUpdateReason =
+    | 'file-not-exist'
+    | 'content-changed';
 export interface AbstractPopulationResponse {
     filePath: string;
 }
@@ -34,7 +38,10 @@ export interface PopulationResponseUpdated extends AbstractPopulationResponse {
     updated: true;
     reason: PopulationResponseUpdateReason;
 }
-export interface PopulationResponseUnchanged extends AbstractPopulationResponse {
+export interface PopulationResponseUnchanged
+    extends AbstractPopulationResponse {
     updated: false;
 }
-export type PopulationResponse = PopulationResponseUnchanged | PopulationResponseUpdated;
+export type PopulationResponse =
+    | PopulationResponseUnchanged
+    | PopulationResponseUpdated;

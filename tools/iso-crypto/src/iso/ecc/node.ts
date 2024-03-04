@@ -6,19 +6,17 @@ import { eccMeta } from '../lib/size-meta.js';
 import { type Curve, defaultCurve, defaultEncryption } from '../lib/types.js';
 import type * as Ecc from './types.js';
 
-const getECDH = (curve: Curve): ECDH => createECDH(
-    curve === 'p256' ? 'prime256v1' : `sec${curve}r1`
-);
+const getECDH = (curve: Curve): ECDH =>
+    createECDH(curve === 'p256' ? 'prime256v1' : `sec${curve}r1`);
 
-export const generateEccPrivateKey: typeof Ecc['generateEccPrivateKey'] = async (
-    curve = defaultCurve
-): Promise<Uint8Array> => {
-    const ecdh = getECDH(curve);
-    const { bytes } = eccMeta(curve);
-    ecdh.generateKeys();
-    return padBytes(ecdh.getPrivateKey(), bytes);
-};
-export const generateEccPublicKey: typeof Ecc['generateEccPublicKey'] = (
+export const generateEccPrivateKey: (typeof Ecc)['generateEccPrivateKey'] =
+    async (curve = defaultCurve): Promise<Uint8Array> => {
+        const ecdh = getECDH(curve);
+        const { bytes } = eccMeta(curve);
+        ecdh.generateKeys();
+        return padBytes(ecdh.getPrivateKey(), bytes);
+    };
+export const generateEccPublicKey: (typeof Ecc)['generateEccPublicKey'] = (
     privateKey,
     curve = defaultCurve
 ) => {
@@ -27,38 +25,39 @@ export const generateEccPublicKey: typeof Ecc['generateEccPublicKey'] = (
     return ecdh.getPublicKey(null, 'compressed');
 };
 
-export const eccEncrypt: typeof Ecc['eccEncrypt'] = async ({
-    data,
-    publicKey,
-    privateKey,
-}, { curve = defaultCurve, encryption = defaultEncryption } = {}) => {
-
+export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
+    { data, publicKey, privateKey },
+    { curve = defaultCurve, encryption = defaultEncryption } = {}
+) => {
     const ecdh = getECDH(curve);
     ecdh.setPrivateKey(decode(privateKey));
 
-    const encrypted = await encrypt({
-        data,
-        secret: ecdh.computeSecret(decode(publicKey)),
-    }, { encryption, hash: 'raw' });
+    const encrypted = await encrypt(
+        {
+            data,
+            secret: ecdh.computeSecret(decode(publicKey)),
+        },
+        { encryption, hash: 'raw' }
+    );
 
     return {
         ...encrypted,
         publicKey: ecdh.getPublicKey(null, 'compressed'),
     };
 };
-export const eccDecrypt: typeof Ecc['eccDecrypt'] = async ({
-    encrypted,
-    iv,
-    publicKey,
-    privateKey,
-}, { curve = defaultCurve, encryption = defaultEncryption } = {}) => {
-
+export const eccDecrypt: (typeof Ecc)['eccDecrypt'] = async (
+    { encrypted, iv, publicKey, privateKey },
+    { curve = defaultCurve, encryption = defaultEncryption } = {}
+) => {
     const ecdh = getECDH(curve);
     ecdh.setPrivateKey(decode(privateKey));
 
-    return decrypt({
-        encrypted,
-        iv,
-        secret: ecdh.computeSecret(decode(publicKey)),
-    }, { encryption, hash: 'raw' });
+    return decrypt(
+        {
+            encrypted,
+            iv,
+            secret: ecdh.computeSecret(decode(publicKey)),
+        },
+        { encryption, hash: 'raw' }
+    );
 };

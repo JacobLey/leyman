@@ -68,6 +68,9 @@ importers:
       nx-update-ts-references@npm:
         specifier: npm:nx-update-ts-references@^0.0.1
         version: /nx-update-ts-references@0.0.1(nx@17.0.2)
+      root-biome:
+        specifier: npm:@biomejs/biome@^1.5.3
+        version: /@biomejs/biome@1.5.3
       vscode-ts:
         specifier: npm:typescript@^5.3.3
         version: /typescript@5.3.3
@@ -96,6 +99,9 @@ importers:
         specifier: ^17.7.2
         version: 17.7.2
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -148,6 +154,9 @@ importers:
         specifier: ^5.0.0
         version: 5.0.0
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -225,6 +234,9 @@ importers:
         specifier: ^18.0.4
         version: 18.0.4(nx@17.0.2)
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -264,9 +276,6 @@ importers:
       nx-tsc:
         specifier: workspace:^
         version: link:../../tools/nx-tsc
-      nyc:
-        specifier: ^15.1.0
-        version: 15.1.0
       sinon:
         specifier: ^17.0.1
         version: 17.0.1
@@ -299,6 +308,9 @@ importers:
         specifier: ^18.0.4
         version: 18.0.4(nx@17.0.2)
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -342,6 +354,9 @@ importers:
         specifier: workspace:^
         version: link:../populate-files
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -386,6 +401,9 @@ importers:
         specifier: workspace:^
         version: link:../../juniper
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -423,6 +441,9 @@ importers:
         specifier: npm:parse-cwd@^1.0.8
         version: /parse-cwd@1.0.8
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -457,6 +478,9 @@ importers:
         specifier: npm:default-import@^1.1.5
         version: /default-import@1.1.5
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -493,6 +517,9 @@ importers:
 
   tools/default-import:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -536,6 +563,9 @@ importers:
         specifier: workspace:^
         version: link:../static-emitter
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -575,6 +605,9 @@ importers:
 
   tools/enum-to-array:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -615,6 +648,9 @@ importers:
         specifier: workspace:^
         version: link:../parse-cwd
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -624,6 +660,9 @@ importers:
       '@types/node':
         specifier: ^20.8.10
         version: 20.8.10
+      c8:
+        specifier: ^8.0.1
+        version: 8.0.1
       chai:
         specifier: ^5.1.0
         version: 5.1.0
@@ -633,15 +672,15 @@ importers:
       mocha:
         specifier: ^10.3.0
         version: 10.3.0
+      mocha-hookup:
+        specifier: workspace:^
+        version: link:../mocha-hookup
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
-      nyc:
-        specifier: ^15.1.0
-        version: 15.1.0
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
@@ -652,6 +691,9 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -688,6 +730,9 @@ importers:
 
   tools/iso-crypto:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -737,6 +782,9 @@ importers:
         specifier: ^4.0.0
         version: 4.0.0
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -776,6 +824,9 @@ importers:
 
   tools/named-patch:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -818,12 +869,15 @@ importers:
 
   tools/normalized-react-query:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@tanstack/react-query':
-        specifier: ^5.4.3
-        version: 5.4.3(react@18.2.0)
+        specifier: ^4.0.10 && <5
+        version: 4.36.1(react-dom@18.2.0)(react@18.2.0)
       '@testing-library/react-hooks':
         specifier: ^8.0.1
-        version: 8.0.1(@types/react@18.2.33)(react-test-renderer@18.2.0)(react@18.2.0)
+        version: 8.0.1(@types/react@18.2.33)(react-dom@18.2.0)(react-test-renderer@18.2.0)(react@18.2.0)
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -839,6 +893,9 @@ importers:
       '@types/sinon':
         specifier: ^17.0.3
         version: 17.0.3
+      c8:
+        specifier: ^8.0.1
+        version: 8.0.1
       chai:
         specifier: ^5.1.0
         version: 5.1.0
@@ -848,18 +905,21 @@ importers:
       mocha:
         specifier: ^10.3.0
         version: 10.3.0
+      mocha-hookup:
+        specifier: workspace:^
+        version: link:../mocha-hookup
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
-      nyc:
-        specifier: ^15.1.0
-        version: 15.1.0
       react:
         specifier: ^18.2.0
         version: 18.2.0
+      react-dom:
+        specifier: ^18.2.0
+        version: 18.2.0(react@18.2.0)
       react-test-renderer:
         specifier: ^18.2.0
         version: 18.2.0(react@18.2.0)
@@ -880,6 +940,9 @@ importers:
         specifier: ^18.0.4
         version: 18.0.4(nx@17.0.2)
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -935,6 +998,9 @@ importers:
         specifier: npm:juniper@^1.1.10
         version: /juniper@1.1.10
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -968,6 +1034,9 @@ importers:
 
   tools/parse-cwd:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -1010,6 +1079,9 @@ importers:
 
   tools/punycode-esm:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -1037,15 +1109,15 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
-      nyc:
-        specifier: ^15.1.0
-        version: 15.1.0
       typescript:
         specifier: ^5.3.3
         version: 5.3.3
 
   tools/sinon-typed-stub:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -1088,6 +1160,9 @@ importers:
 
   tools/static-emitter:
     devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.5.3
+        version: 1.5.3
       '@types/chai':
         specifier: ^4.3.11
         version: 4.3.11
@@ -1362,6 +1437,94 @@ packages:
   /@bcoe/v8-coverage@0.2.3:
     resolution: {integrity: sha512-0hYQ8SB4Db5zvZB4axdMHGwEaQjkZzFjQiN9LVYvIFB2nSUHW9tYpxWriPrWDASIxiaXax83REcLxuSdnGPZtw==}
     dev: true
+
+  /@biomejs/biome@1.5.3:
+    resolution: {integrity: sha512-yvZCa/g3akwTaAQ7PCwPWDCkZs3Qa5ONg/fgOUT9e6wAWsPftCjLQFPXBeGxPK30yZSSpgEmRCfpGTmVbUjGgg==}
+    engines: {node: '>=14.*'}
+    hasBin: true
+    requiresBuild: true
+    optionalDependencies:
+      '@biomejs/cli-darwin-arm64': 1.5.3
+      '@biomejs/cli-darwin-x64': 1.5.3
+      '@biomejs/cli-linux-arm64': 1.5.3
+      '@biomejs/cli-linux-arm64-musl': 1.5.3
+      '@biomejs/cli-linux-x64': 1.5.3
+      '@biomejs/cli-linux-x64-musl': 1.5.3
+      '@biomejs/cli-win32-arm64': 1.5.3
+      '@biomejs/cli-win32-x64': 1.5.3
+    dev: true
+
+  /@biomejs/cli-darwin-arm64@1.5.3:
+    resolution: {integrity: sha512-ImU7mh1HghEDyqNmxEZBoMPr8SxekkZuYcs+gynKlNW+TALQs7swkERiBLkG9NR0K1B3/2uVzlvYowXrmlW8hw==}
+    engines: {node: '>=14.*'}
+    cpu: [arm64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@biomejs/cli-darwin-x64@1.5.3:
+    resolution: {integrity: sha512-vCdASqYnlpq/swErH7FD6nrFz0czFtK4k/iLgj0/+VmZVjineFPgevOb+Sr9vz0tk0GfdQO60bSpI74zU8M9Dw==}
+    engines: {node: '>=14.*'}
+    cpu: [x64]
+    os: [darwin]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@biomejs/cli-linux-arm64-musl@1.5.3:
+    resolution: {integrity: sha512-DYuMizUYUBYfS0IHGjDrOP1RGipqWfMGEvNEJ398zdtmCKLXaUvTimiox5dvx4X15mBK5M2m8wgWUgOP1giUpQ==}
+    engines: {node: '>=14.*'}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@biomejs/cli-linux-arm64@1.5.3:
+    resolution: {integrity: sha512-cupBQv0sNF1OKqBfx7EDWMSsKwRrBUZfjXawT4s6hKV6ALq7p0QzWlxr/sDmbKMLOaLQtw2Qgu/77N9rm+f9Rg==}
+    engines: {node: '>=14.*'}
+    cpu: [arm64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@biomejs/cli-linux-x64-musl@1.5.3:
+    resolution: {integrity: sha512-UUHiAnlDqr2Y/LpvshBFhUYMWkl2/Jn+bi3U6jKuav0qWbbBKU/ByHgR4+NBxpKBYoCtWxhnmatfH1bpPIuZMw==}
+    engines: {node: '>=14.*'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@biomejs/cli-linux-x64@1.5.3:
+    resolution: {integrity: sha512-YQrSArQvcv4FYsk7Q91Yv4uuu5F8hJyORVcv3zsjCLGkjIjx2RhjYLpTL733SNL7v33GmOlZY0eFR1ko38tuUw==}
+    engines: {node: '>=14.*'}
+    cpu: [x64]
+    os: [linux]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@biomejs/cli-win32-arm64@1.5.3:
+    resolution: {integrity: sha512-HxatYH7vf/kX9nrD+pDYuV2GI9GV8EFo6cfKkahAecTuZLPxryHx1WEfJthp5eNsE0+09STGkKIKjirP0ufaZA==}
+    engines: {node: '>=14.*'}
+    cpu: [arm64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
+
+  /@biomejs/cli-win32-x64@1.5.3:
+    resolution: {integrity: sha512-fMvbSouZEASU7mZH8SIJSANDm5OqsjgtVXlbUqxwed6BP7uuHRSs396Aqwh2+VoW8fwTpp6ybIUoC9FrzB0kyA==}
+    engines: {node: '>=14.*'}
+    cpu: [x64]
+    os: [win32]
+    requiresBuild: true
+    dev: true
+    optional: true
 
   /@es-joy/jsdoccomment@0.41.0:
     resolution: {integrity: sha512-aKUhyn1QI5Ksbqcr3fFJj16p99QdjUxXAEuFst1Z47DRyoiMwivIH9MV/ARcJOCXVjPfjITciej8ZD2O/6qUmw==}
@@ -1690,15 +1853,15 @@ packages:
     resolution: {integrity: sha512-sXXKG+uL9IrKqViTtao2Ws6dy0znu9sOaP1di/jKGW1M6VssO8vlpXCQcpZ+jisQ1tTFAC5Jo/EOzFbggBagFQ==}
     dev: true
 
-  /@tanstack/query-core@5.4.3:
-    resolution: {integrity: sha512-fnI9ORjcuLGm1sNrKatKIosRQUpuqcD4SV7RqRSVmj8JSicX2aoMyKryHEBpVQvf6N4PaBVgBxQomjsbsGPssQ==}
+  /@tanstack/query-core@4.36.1:
+    resolution: {integrity: sha512-DJSilV5+ytBP1FbFcEJovv4rnnm/CokuVvrBEtW/Va9DvuJ3HksbXUJEpI0aV1KtuL4ZoO9AVE6PyNLzF7tLeA==}
     dev: true
 
-  /@tanstack/react-query@5.4.3(react@18.2.0):
-    resolution: {integrity: sha512-4aSOrRNa6yEmf7mws5QPTVMn8Lp7L38tFoTZ0c1ZmhIvbr8GIA0WT7X5N3yz/nuK8hUtjw9cAzBr4BPDZZ+tzA==}
+  /@tanstack/react-query@4.36.1(react-dom@18.2.0)(react@18.2.0):
+    resolution: {integrity: sha512-y7ySVHFyyQblPl3J3eQBWpXZkliroki3ARnBKsdJchlgt7yJLRDUcf4B8soufgiYt3pEQIkBWBx1N9/ZPIeUWw==}
     peerDependencies:
-      react: ^18.0.0
-      react-dom: ^18.0.0
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+      react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
       react-native: '*'
     peerDependenciesMeta:
       react-dom:
@@ -1706,11 +1869,13 @@ packages:
       react-native:
         optional: true
     dependencies:
-      '@tanstack/query-core': 5.4.3
+      '@tanstack/query-core': 4.36.1
       react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
+      use-sync-external-store: 1.2.0(react@18.2.0)
     dev: true
 
-  /@testing-library/react-hooks@8.0.1(@types/react@18.2.33)(react-test-renderer@18.2.0)(react@18.2.0):
+  /@testing-library/react-hooks@8.0.1(@types/react@18.2.33)(react-dom@18.2.0)(react-test-renderer@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-Aqhl2IVmLt8IovEVarNDFuJDVWVvhnr9/GCU6UUnrYXwgDFF9h2L2o2P9KBni1AST5sT6riAyoukFLyjQUgD/g==}
     engines: {node: '>=12'}
     peerDependencies:
@@ -1729,6 +1894,7 @@ packages:
       '@babel/runtime': 7.23.2
       '@types/react': 18.2.33
       react: 18.2.0
+      react-dom: 18.2.0(react@18.2.0)
       react-error-boundary: 3.1.4(react@18.2.0)
       react-test-renderer: 18.2.0(react@18.2.0)
     dev: true
@@ -4691,6 +4857,16 @@ packages:
       safe-buffer: 5.2.1
     dev: true
 
+  /react-dom@18.2.0(react@18.2.0):
+    resolution: {integrity: sha512-6IMTriUmvsjHUjNtEDudZfuDQUoWXVxKHhlEGSk81n4YFS+r/Kl99wXiwlVXtPBtJenozv2P+hxDsw9eA7Xo6g==}
+    peerDependencies:
+      react: ^18.2.0
+    dependencies:
+      loose-envify: 1.4.0
+      react: 18.2.0
+      scheduler: 0.23.0
+    dev: true
+
   /react-error-boundary@3.1.4(react@18.2.0):
     resolution: {integrity: sha512-uM9uPzZJTF6wRQORmSrvOIgt4lJ9MC1sNgEOj2XGsDTRE4kmpWxg7ENK9EWNKJRMAOY9z0MuF4yIfl6gp4sotA==}
     engines: {node: '>=10', npm: '>=6'}
@@ -5360,6 +5536,14 @@ packages:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
     dependencies:
       punycode: 2.3.1
+
+  /use-sync-external-store@1.2.0(react@18.2.0):
+    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dependencies:
+      react: 18.2.0
+    dev: true
 
   /util-deprecate@1.0.2:
     resolution: {integrity: sha512-EPD5q1uXyFxJpCrLnCc1nHnq3gOa6DZBocAIiI2TaSCA7VCJ1UJDMagCzIkXNsUYfD1daK//LTEQ8xiIbrHtcw==}

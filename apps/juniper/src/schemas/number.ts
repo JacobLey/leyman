@@ -5,7 +5,13 @@ import {
     type SchemaParams,
     type SerializationParams,
 } from '../lib/schema.js';
-import type { AbstractClean, ConditionalNullable, JsonSchema, Nullable, SchemaType } from '../lib/types.js';
+import type {
+    AbstractClean,
+    ConditionalNullable,
+    JsonSchema,
+    Nullable,
+    SchemaType,
+} from '../lib/types.js';
 import { mergeAllOf } from '../lib/utils.js';
 
 interface LimitWithExclusive {
@@ -13,19 +19,15 @@ interface LimitWithExclusive {
     exclusive: boolean;
 }
 
-interface NumberParams<
-    T extends number,
-    N extends boolean
-> extends SchemaParams<Nullable<T, N>> {
+interface NumberParams<T extends number, N extends boolean>
+    extends SchemaParams<Nullable<T, N>> {
     type?: 'integer' | 'number';
     multipleOf?: number | number[];
     maximum?: number | LimitWithExclusive;
     minimum?: number | LimitWithExclusive;
 }
-interface NumberGenerics<
-    T extends number,
-    N extends boolean
-> extends SchemaGenerics<Nullable<T, N>> {
+interface NumberGenerics<T extends number, N extends boolean>
+    extends SchemaGenerics<Nullable<T, N>> {
     params: NumberParams<T, N>;
 }
 
@@ -65,7 +67,8 @@ const lcm = (x: number, y: number): number => (x * y) / gcd(x, y);
 
 const numToExclusive = (
     value: number | LimitWithExclusive
-): LimitWithExclusive => (typeof value === 'number' ? { value, exclusive: false } : value);
+): LimitWithExclusive =>
+    typeof value === 'number' ? { value, exclusive: false } : value;
 
 type AnyNumberSchema = NumberSchema<number, boolean>;
 
@@ -82,36 +85,37 @@ type AnyNumberSchema = NumberSchema<number, boolean>;
 export class NumberSchema<
     T extends number,
     // Nullable
-    N extends boolean = false
+    N extends boolean = false,
 > extends AbstractSchema<NumberGenerics<T, N>> {
-
-    declare protected readonly schemaType;
+    protected declare readonly schemaType;
 
     readonly #maximum: LimitWithExclusive;
     readonly #minimum: LimitWithExclusive;
     readonly #multipleOfs: number[];
 
-    declare public allOf: <
-        S extends NumberSchema<number, boolean>
-    >(this: AnyNumberSchema, schema: S) => NumberSchema<
+    public declare allOf: <S extends NumberSchema<number, boolean>>(
+        this: AnyNumberSchema,
+        schema: S
+    ) => NumberSchema<
         NonNullable<SchemaType<S>> & T,
         null extends SchemaType<S> ? N : boolean
     >;
 
-    declare public anyOf: <
-        S extends NumberSchema<number, boolean>
-    >(this: AnyNumberSchema, schemas: S[]) => NumberSchema<
+    public declare anyOf: <S extends NumberSchema<number, boolean>>(
+        this: AnyNumberSchema,
+        schemas: S[]
+    ) => NumberSchema<
         NonNullable<SchemaType<S>> & T,
         null extends SchemaType<S> ? N : boolean
     >;
 
-    declare public if: <
+    public declare if: <
         IfT extends number,
         IfN extends boolean,
         ThenT extends number,
         ElseT extends number,
         ThenN extends boolean = true,
-        ElseN extends boolean = true
+        ElseN extends boolean = true,
     >(
         this: AnyNumberSchema,
         schema: NumberSchema<IfT, IfN>,
@@ -120,21 +124,23 @@ export class NumberSchema<
             NumberSchema<ElseT, ElseN>
         >
     ) => NumberSchema<
-        StripNumber<T & (ElseT | IfT & ThenT)>,
+        StripNumber<T & (ElseT | (IfT & ThenT))>,
         ConditionalNullable<N, IfN, ThenN, ElseN>
     >;
 
-    declare public not: <
-        NotN extends boolean
-    >(this: AnyNumberSchema, schema: NumberSchema<number, NotN>) => NotN extends true ? NumberSchema<T, boolean> : this;
+    public declare not: <NotN extends boolean>(
+        this: AnyNumberSchema,
+        schema: NumberSchema<number, NotN>
+    ) => NotN extends true ? NumberSchema<T, boolean> : this;
 
-    declare public nullable: (
+    public declare nullable: (
         this: AnyNumberSchema
     ) => NumberSchema<T, boolean extends N ? boolean : true>;
 
-    declare public oneOf: <
-        S extends NumberSchema<number, boolean>
-    >(this: AnyNumberSchema, schemas: S[]) => NumberSchema<
+    public declare oneOf: <S extends NumberSchema<number, boolean>>(
+        this: AnyNumberSchema,
+        schemas: S[]
+    ) => NumberSchema<
         NonNullable<SchemaType<S>> & T,
         null extends SchemaType<S> ? N : boolean
     >;
@@ -145,8 +151,12 @@ export class NumberSchema<
     public constructor(options: NumberParams<T, N> = {}) {
         super(options);
         this.schemaType = options.type ?? 'number';
-        this.#maximum = numToExclusive(options.maximum ?? Number.POSITIVE_INFINITY);
-        this.#minimum = numToExclusive(options.minimum ?? Number.NEGATIVE_INFINITY);
+        this.#maximum = numToExclusive(
+            options.maximum ?? Number.POSITIVE_INFINITY
+        );
+        this.#minimum = numToExclusive(
+            options.minimum ?? Number.NEGATIVE_INFINITY
+        );
         this.#multipleOfs = [options.multipleOf ?? []].flat();
     }
 
@@ -165,7 +175,10 @@ export class NumberSchema<
      * @param {boolean} [options.writeOnly] - value should be hidden
      * @returns {NumberSchema} number schema
      */
-    public static override create<T2 extends number>(this: void, options?: NumberParams<T2, false>): NumberSchema<T2> {
+    public static override create<T2 extends number>(
+        this: void,
+        options?: NumberParams<T2, false>
+    ): NumberSchema<T2> {
         return new NumberSchema(options);
     }
 
@@ -291,7 +304,9 @@ export class NumberSchema<
     /**
      * @override
      */
-    protected static override getDefaultValues(params: SerializationParams): Record<string, unknown> {
+    protected static override getDefaultValues(
+        params: SerializationParams
+    ): Record<string, unknown> {
         const superParams = super.getDefaultValues(params);
         if (params.openApi30) {
             return {
@@ -314,7 +329,9 @@ export class NumberSchema<
     /**
      * @override
      */
-    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
+    protected override toSchema(
+        params: SerializationParams
+    ): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         if (this.#minimum.value > Number.NEGATIVE_INFINITY) {
@@ -343,16 +360,28 @@ export class NumberSchema<
             }
         }
 
-        const integerMultiples = this.#multipleOfs.filter(x => Number.isInteger(x));
-        const floatMultiples = this.#multipleOfs.filter(x => !Number.isInteger(x));
+        const integerMultiples = this.#multipleOfs.filter(x =>
+            Number.isInteger(x)
+        );
+        const floatMultiples = this.#multipleOfs.filter(
+            x => !Number.isInteger(x)
+        );
 
         if (integerMultiples.length > 0) {
             // eslint-disable-next-line unicorn/no-array-reduce
-            base.multipleOf = integerMultiples.reduce((acc, val) => lcm(acc, val));
-            mergeAllOf(base, floatMultiples.map(multipleOf => ({ multipleOf })));
+            base.multipleOf = integerMultiples.reduce((acc, val) =>
+                lcm(acc, val)
+            );
+            mergeAllOf(
+                base,
+                floatMultiples.map(multipleOf => ({ multipleOf }))
+            );
         } else if (floatMultiples.length > 0) {
             base.multipleOf = floatMultiples[0];
-            mergeAllOf(base, floatMultiples.slice(1).map(multipleOf => ({ multipleOf })));
+            mergeAllOf(
+                base,
+                floatMultiples.slice(1).map(multipleOf => ({ multipleOf }))
+            );
         }
 
         return base;

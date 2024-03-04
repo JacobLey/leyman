@@ -1,11 +1,20 @@
 {
-  "$schema": "../node_modules/nx/schemas/project-schema.json",
-  "name": "leyman",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/main",
   "targets": {
     "lifecycle": {
       "executor": "nx-lifecycle:lifecycle",
       "options": {
         "stages": {
+          "analyze": {
+            "hooks": [
+              "lint",
+              "format"
+            ],
+            "dependsOn": [
+              "^build"
+            ]
+          },
           "build": {
             "hooks": [
               "pre",
@@ -22,11 +31,14 @@
               "report"
             ],
             "dependsOn": [
+              "analyze",
               "build"
             ]
           }
         },
         "targets": {
+          "eslint": "analyze:lint",
+          "biome": "analyze:format",
           "update-ts-references": "build:pre",
           "tsc": "build:run",
           "populate-files": "build:post",
@@ -35,6 +47,10 @@
         }
       }
     },
+    "analyze:_": {},
+    "analyze:lint": {},
+    "analyze:format": {},
+    "analyze": {},
     "build:_": {},
     "build:pre": {},
     "build:run": {},

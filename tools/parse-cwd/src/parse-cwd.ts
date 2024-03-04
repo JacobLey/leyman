@@ -16,7 +16,6 @@ export type Directory = string | URL | null | undefined;
 export const parseCwd = async (
     cwd?: Directory | { cwd?: Directory }
 ): Promise<string> => {
-
     let rawCwd: Directory;
 
     if (typeof cwd === 'string' || cwd instanceof URL) {
@@ -29,9 +28,10 @@ export const parseCwd = async (
         return process.cwd();
     }
 
-    const directory = rawCwd instanceof URL || rawCwd.startsWith('file://') ?
-        fileURLToPath(rawCwd) :
-        Path.resolve(rawCwd);
+    const directory =
+        rawCwd instanceof URL || rawCwd.startsWith('file://')
+            ? fileURLToPath(rawCwd)
+            : Path.resolve(rawCwd);
 
     try {
         const stats = await stat(directory);

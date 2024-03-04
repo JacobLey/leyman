@@ -3,18 +3,21 @@ import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha-hookup';
-import { ArraySchema, arraySchema, type SchemaType, stringSchema, TupleSchema, tupleSchema } from 'juniper';
+import {
+    ArraySchema,
+    arraySchema,
+    type SchemaType,
+    stringSchema,
+    TupleSchema,
+    tupleSchema,
+} from 'juniper';
 
 const Ajv = defaultImport(DefaultAjv);
 
 suite('TupleSchema', () => {
-
     suite('keywords', () => {
-
         suite('options', () => {
-
             test('success', () => {
-
                 const schema = tupleSchema({
                     minContains: 2,
                     maxContains: 5,
@@ -31,14 +34,13 @@ suite('TupleSchema', () => {
                 expect(schema).to.be.an.instanceOf(TupleSchema);
                 expect(schema).to.be.an.instanceOf(ArraySchema);
 
-                expectTypeOf<typeof schema['items']>().toBeNever();
-                expectTypeOf<typeof schema['maxItems']>().toBeNever();
-                expectTypeOf<typeof schema['minItems']>().toBeNever();
+                expectTypeOf<(typeof schema)['items']>().toBeNever();
+                expectTypeOf<(typeof schema)['maxItems']>().toBeNever();
+                expectTypeOf<(typeof schema)['minItems']>().toBeNever();
             });
         });
 
         test('methods', () => {
-
             const schema = tupleSchema()
                 .minContains(0)
                 .maxContains(2)
@@ -48,7 +50,9 @@ suite('TupleSchema', () => {
                 .prependPrefixItem(stringSchema().endsWith('b'))
                 .contains(stringSchema().startsWith('ab'));
 
-            expectTypeOf<Parameters<typeof schema['contains']>[1]>().toBeNever();
+            expectTypeOf<
+                Parameters<(typeof schema)['contains']>[1]
+            >().toBeNever();
 
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                 [`${string}b`, `${string}c`, `${string}d`]
@@ -82,7 +86,9 @@ suite('TupleSchema', () => {
                 ],
             });
 
-            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
+            const validator = new Ajv({ strict: true }).compile(
+                schema.toJSON()
+            );
             expect(validator(['ab', 'xc', 'xd'])).to.equal(true);
             // Second tuple is invalid
             expect(validator(['ab', 'xx', 'xd'])).to.equal(false);
@@ -119,7 +125,9 @@ suite('TupleSchema', () => {
                 schema.minContains(2).toJSON({ openApi30: true })
             ).to.deep.equal(schema.toJSON({ openApi30: true }));
 
-            const oaValidator = new Ajv({ strict: true }).compile(schema.toJSON({ openApi30: true }));
+            const oaValidator = new Ajv({ strict: true }).compile(
+                schema.toJSON({ openApi30: true })
+            );
             expect(oaValidator(['ab', 'xc', 'xd'])).to.equal(true);
             // Tuple order not enforced
             expect(oaValidator(['ab', 'xd', 'xc'])).to.equal(true);
@@ -136,7 +144,6 @@ suite('TupleSchema', () => {
         });
 
         test('Unset options', () => {
-
             const schema = tupleSchema({
                 minContains: 4,
                 maxContains: 5,
@@ -155,19 +162,21 @@ suite('TupleSchema', () => {
     });
 
     suite('not', () => {
-
         test('Unsets nullable', () => {
-
             const baseSchema = tupleSchema();
             expectTypeOf<SchemaType<typeof baseSchema>>().toEqualTypeOf<[]>();
 
             const nullableSchema = baseSchema.nullable();
-            expectTypeOf<SchemaType<typeof nullableSchema>>().toEqualTypeOf<[] | null>();
+            expectTypeOf<SchemaType<typeof nullableSchema>>().toEqualTypeOf<
+                [] | null
+            >();
 
             const stillNullableSchema = nullableSchema.not(
                 tupleSchema().prefixItem(stringSchema()).minContains(5)
             );
-            expectTypeOf<SchemaType<typeof stillNullableSchema>>().toEqualTypeOf<[] | null>();
+            expectTypeOf<
+                SchemaType<typeof stillNullableSchema>
+            >().toEqualTypeOf<[] | null>();
 
             expect(stillNullableSchema.toJSON()).to.deep.equal({
                 type: ['array', 'null'],
@@ -185,7 +194,9 @@ suite('TupleSchema', () => {
                     ],
                 },
             });
-            expect(stillNullableSchema.toJSON({ openApi30: true })).to.deep.equal({
+            expect(
+                stillNullableSchema.toJSON({ openApi30: true })
+            ).to.deep.equal({
                 type: 'array',
                 nullable: true,
                 items: { not: {} },
@@ -200,12 +211,20 @@ suite('TupleSchema', () => {
                 },
             });
             new Ajv({ strict: true }).compile(stillNullableSchema.toJSON());
-            new Ajv({ strict: true }).compile(stillNullableSchema.toJSON({ openApi30: true }));
+            new Ajv({ strict: true }).compile(
+                stillNullableSchema.toJSON({ openApi30: true })
+            );
 
             const notNullableSchema = stillNullableSchema
                 .not(arraySchema().items(stringSchema()).nullable())
-                .not(tupleSchema().prefixItem(stringSchema().startsWith('abc')).nullable());
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<[]>();
+                .not(
+                    tupleSchema()
+                        .prefixItem(stringSchema().startsWith('abc'))
+                        .nullable()
+                );
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
+                []
+            >();
 
             expect(notNullableSchema.toJSON()).to.deep.equal({
                 type: 'array',
@@ -244,44 +263,47 @@ suite('TupleSchema', () => {
                     },
                 ],
             });
-            expect(notNullableSchema.toJSON({ openApi30: true })).to.deep.equal({
-                type: 'array',
-                items: { not: {} },
-                maxItems: 0,
-                not: {
-                    maxItems: 1,
-                    minItems: 1,
-                    items: {
-                        type: 'string',
-                    },
-                },
-                allOf: [
-                    {
-                        not: {
-                            items: {
-                                type: 'string',
-                            },
+            expect(notNullableSchema.toJSON({ openApi30: true })).to.deep.equal(
+                {
+                    type: 'array',
+                    items: { not: {} },
+                    maxItems: 0,
+                    not: {
+                        maxItems: 1,
+                        minItems: 1,
+                        items: {
+                            type: 'string',
                         },
                     },
-                    {
-                        not: {
-                            maxItems: 1,
-                            minItems: 1,
-                            items: {
-                                type: 'string',
-                                pattern: '^abc',
+                    allOf: [
+                        {
+                            not: {
+                                items: {
+                                    type: 'string',
+                                },
                             },
                         },
-                    },
-                ],
-            });
+                        {
+                            not: {
+                                maxItems: 1,
+                                minItems: 1,
+                                items: {
+                                    type: 'string',
+                                    pattern: '^abc',
+                                },
+                            },
+                        },
+                    ],
+                }
+            );
             new Ajv({ strict: true }).compile(notNullableSchema.toJSON());
-            new Ajv({ strict: true }).compile(notNullableSchema.toJSON({ openApi30: true }));
+            new Ajv({ strict: true }).compile(
+                notNullableSchema.toJSON({ openApi30: true })
+            );
         });
     });
 
     test('prefixItems', () => {
-
         const schema = tupleSchema().prependPrefixItem(stringSchema());
 
         expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<[string]>();
@@ -308,27 +330,24 @@ suite('TupleSchema', () => {
     });
 
     suite('contains', () => {
-
         test('Extends any item', () => {
-
-            const baseSchema = tupleSchema().prefixItem(stringSchema().startsWith('a'));
+            const baseSchema = tupleSchema().prefixItem(
+                stringSchema().startsWith('a')
+            );
             baseSchema.contains(stringSchema());
         });
     });
 
     suite('Invalid types', () => {
-
         test('Blocked methods', () => {
-
             const schema = tupleSchema();
 
-            expectTypeOf<typeof schema['items']>().toBeNever();
-            expectTypeOf<typeof schema['maxItems']>().toBeNever();
-            expectTypeOf<typeof schema['minItems']>().toBeNever();
+            expectTypeOf<(typeof schema)['items']>().toBeNever();
+            expectTypeOf<(typeof schema)['maxItems']>().toBeNever();
+            expectTypeOf<(typeof schema)['minItems']>().toBeNever();
         });
 
         test('Contains only set once', () => {
-
             tupleSchema()
                 .prefixItem(stringSchema().endsWith('abc'))
                 .contains(stringSchema().startsWith('abc'))

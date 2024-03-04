@@ -12,88 +12,87 @@ import type { JsonSchema, SchemaType } from '../lib/types.js';
  * Provided schema is returned as a shallow clone.
  */
 export class CustomSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
-
     readonly #schema: unknown;
 
     /**
      * Not applicable.
      */
-    declare public title: never;
+    public declare title: never;
 
     /**
      * Not applicable.
      */
-    declare public allOf: never;
+    public declare allOf: never;
 
     /**
      * Not applicable.
      */
-    declare public anyOf: never;
+    public declare anyOf: never;
 
     /**
      * Not applicable.
      */
-    declare public description: never;
+    public declare description: never;
 
     /**
      * Not applicable.
      */
-    declare public default: never;
+    public declare default: never;
 
     /**
      * Not applicable.
      */
-    declare public deprecated: never;
+    public declare deprecated: never;
 
     /**
      * Not applicable.
      */
-    declare public example: never;
+    public declare example: never;
 
     /**
      * Not applicable.
      */
-    declare public examples: never;
+    public declare examples: never;
 
     /**
      * Not applicable.
      */
-    declare public readOnly: never;
+    public declare readOnly: never;
 
     /**
      * Not applicable.
      */
-    declare public writeOnly: never;
+    public declare writeOnly: never;
 
     /**
      * Not applicable.
      */
-    declare public if: never;
+    public declare if: never;
 
     /**
      * Not applicable.
      */
-    declare public metadata: never;
+    public declare metadata: never;
 
     /**
      * Not applicable.
      */
-    declare public not: never;
+    public declare not: never;
 
     /**
      * Not applicable.
      */
-    declare public nullable: never;
+    public declare nullable: never;
 
     /**
      * Not applicable.
      */
-    declare public oneOf: never;
+    public declare oneOf: never;
 
     /**
      * Not applicable.
      */
-    declare public ref: never;
+    public declare ref: never;
 
     /**
      * @override
@@ -110,7 +109,10 @@ export class CustomSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
      * @param {object} [schema] - raw JSON Schema
      * @returns {CustomSchema} custom schema
      */
-    public static override create<T>(this: void, schema?: Record<string, unknown>): CustomSchema<T> {
+    public static override create<T>(
+        this: void,
+        schema?: Record<string, unknown>
+    ): CustomSchema<T> {
         return new CustomSchema(schema);
     }
 
@@ -128,6 +130,6 @@ export class CustomSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
      * @override
      */
     protected override toSchema(): JsonSchema<SchemaType<this>> {
-        return { ...this.#schema as JsonSchema<SchemaType<this>> };
+        return { ...(this.#schema as JsonSchema<SchemaType<this>>) };
     }
 }

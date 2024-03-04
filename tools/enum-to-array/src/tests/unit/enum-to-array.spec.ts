@@ -8,7 +8,6 @@ import * as EnumToArray from 'enum-to-array';
 // to ensure it works as intended, hence eslint-disable abuse.
 
 suite('enumToArray', () => {
-
     test('Default values', () => {
         enum Default {
             /* eslint-disable @typescript-eslint/prefer-enum-initializers */
@@ -20,19 +19,24 @@ suite('enumToArray', () => {
         }
 
         expectTypeOf(EnumToArray.enumToArray(Default)).toEqualTypeOf<
-            ({
-                key: 'A';
-                value: Default.A;
-            } | {
-                key: 'B';
-                value: Default.B;
-            } | {
-                key: 'C';
-                value: Default.C;
-            } | {
-                key: 'D';
-                value: Default.D;
-            })[]
+            (
+                | {
+                      key: 'A';
+                      value: Default.A;
+                  }
+                | {
+                      key: 'B';
+                      value: Default.B;
+                  }
+                | {
+                      key: 'C';
+                      value: Default.C;
+                  }
+                | {
+                      key: 'D';
+                      value: Default.D;
+                  }
+            )[]
         >();
         expect(EnumToArray.enumToArray(Default)).to.deep.equal([
             { key: 'A', value: Default.A },
@@ -41,7 +45,9 @@ suite('enumToArray', () => {
             { key: 'D', value: Default.D },
         ]);
 
-        expectTypeOf(EnumToArray.enumToValues(Default)).toEqualTypeOf<(Default.A | Default.B | Default.C | Default.D)[]>();
+        expectTypeOf(EnumToArray.enumToValues(Default)).toEqualTypeOf<
+            (Default.A | Default.B | Default.C | Default.D)[]
+        >();
         expect(EnumToArray.enumToValues(Default)).to.deep.equal([
             Default.A,
             Default.B,
@@ -49,11 +55,18 @@ suite('enumToArray', () => {
             Default.D,
         ]);
 
-        expectTypeOf(EnumToArray.enumToKeys(Default)).toEqualTypeOf<(keyof typeof Default)[]>();
+        expectTypeOf(EnumToArray.enumToKeys(Default)).toEqualTypeOf<
+            (keyof typeof Default)[]
+        >();
         expectTypeOf(EnumToArray.enumToKeys(Default)).toEqualTypeOf<
             ('A' | 'B' | 'C' | 'D')[]
         >();
-        expect(EnumToArray.enumToKeys(Default)).to.deep.equal(['A', 'B', 'C', 'D']);
+        expect(EnumToArray.enumToKeys(Default)).to.deep.equal([
+            'A',
+            'B',
+            'C',
+            'D',
+        ]);
     });
 
     test('String literals', () => {
@@ -65,19 +78,24 @@ suite('enumToArray', () => {
         }
 
         expectTypeOf(EnumToArray.enumToArray(Opposite)).toEqualTypeOf<
-            ({
-                key: 'ABC';
-                value: Opposite.ABC;
-            } | {
-                key: 'FOO';
-                value: Opposite.FOO;
-            } | {
-                key: 'ONE';
-                value: Opposite.ONE;
-            } | {
-                key: 'YES';
-                value: Opposite.YES;
-            })[]
+            (
+                | {
+                      key: 'ABC';
+                      value: Opposite.ABC;
+                  }
+                | {
+                      key: 'FOO';
+                      value: Opposite.FOO;
+                  }
+                | {
+                      key: 'ONE';
+                      value: Opposite.ONE;
+                  }
+                | {
+                      key: 'YES';
+                      value: Opposite.YES;
+                  }
+            )[]
         >();
         expect(EnumToArray.enumToArray(Opposite)).to.deep.equal([
             { key: 'FOO', value: Opposite.FOO },
@@ -86,7 +104,9 @@ suite('enumToArray', () => {
             { key: 'ONE', value: Opposite.ONE },
         ]);
 
-        expectTypeOf(EnumToArray.enumToValues(Opposite)).toEqualTypeOf<(Opposite.FOO | Opposite.ABC | Opposite.YES | Opposite.ONE)[]>();
+        expectTypeOf(EnumToArray.enumToValues(Opposite)).toEqualTypeOf<
+            (Opposite.FOO | Opposite.ABC | Opposite.YES | Opposite.ONE)[]
+        >();
         expect(EnumToArray.enumToValues(Opposite)).to.deep.equal([
             Opposite.FOO,
             Opposite.ABC,
@@ -100,7 +120,12 @@ suite('enumToArray', () => {
         expectTypeOf(EnumToArray.enumToKeys(Opposite)).toEqualTypeOf<
             ('ABC' | 'FOO' | 'ONE' | 'YES')[]
         >();
-        expect(EnumToArray.enumToKeys(Opposite)).to.deep.equal(['FOO', 'ABC', 'YES', 'ONE']);
+        expect(EnumToArray.enumToKeys(Opposite)).to.deep.equal([
+            'FOO',
+            'ABC',
+            'YES',
+            'ONE',
+        ]);
     });
 
     test('keys are values', () => {
@@ -111,16 +136,20 @@ suite('enumToArray', () => {
         }
 
         expectTypeOf(EnumToArray.enumToArray(Colors)).toEqualTypeOf<
-            ({
-                key: 'BLACK';
-                value: Colors.BLACK;
-            } | {
-                key: 'BLUE';
-                value: Colors.BLUE;
-            } | {
-                key: 'WHITE';
-                value: Colors.WHITE;
-            })[]
+            (
+                | {
+                      key: 'BLACK';
+                      value: Colors.BLACK;
+                  }
+                | {
+                      key: 'BLUE';
+                      value: Colors.BLUE;
+                  }
+                | {
+                      key: 'WHITE';
+                      value: Colors.WHITE;
+                  }
+            )[]
         >();
         expect(EnumToArray.enumToArray(Colors)).to.deep.equal([
             { key: 'WHITE', value: Colors.WHITE },
@@ -128,15 +157,23 @@ suite('enumToArray', () => {
             { key: 'BLUE', value: Colors.BLUE },
         ]);
 
-        expectTypeOf(EnumToArray.enumToValues(Colors)).toEqualTypeOf<(Colors.WHITE | Colors.BLACK | Colors.BLUE)[]>();
+        expectTypeOf(EnumToArray.enumToValues(Colors)).toEqualTypeOf<
+            (Colors.WHITE | Colors.BLACK | Colors.BLUE)[]
+        >();
         expect(EnumToArray.enumToValues(Colors)).to.deep.equal([
             Colors.WHITE,
             Colors.BLACK,
             Colors.BLUE,
         ]);
 
-        expectTypeOf(EnumToArray.enumToKeys(Colors)).toEqualTypeOf<(keyof typeof Colors)[]>();
-        expect(EnumToArray.enumToKeys(Colors)).to.deep.equal(['WHITE', 'BLACK', 'BLUE']);
+        expectTypeOf(EnumToArray.enumToKeys(Colors)).toEqualTypeOf<
+            (keyof typeof Colors)[]
+        >();
+        expect(EnumToArray.enumToKeys(Colors)).to.deep.equal([
+            'WHITE',
+            'BLACK',
+            'BLUE',
+        ]);
     });
 
     test('Keys and values do not match', () => {
@@ -147,16 +184,20 @@ suite('enumToArray', () => {
         }
 
         expectTypeOf(EnumToArray.enumToArray(Colors)).toEqualTypeOf<
-            ({
-                key: 'BLACK';
-                value: Colors.BLACK;
-            } | {
-                key: 'BLUE';
-                value: Colors.BLUE;
-            } | {
-                key: 'WHITE';
-                value: Colors.WHITE;
-            })[]
+            (
+                | {
+                      key: 'BLACK';
+                      value: Colors.BLACK;
+                  }
+                | {
+                      key: 'BLUE';
+                      value: Colors.BLUE;
+                  }
+                | {
+                      key: 'WHITE';
+                      value: Colors.WHITE;
+                  }
+            )[]
         >();
         expect(EnumToArray.enumToArray(Colors)).to.deep.equal([
             { key: 'WHITE', value: Colors.WHITE },
@@ -164,9 +205,13 @@ suite('enumToArray', () => {
             { key: 'BLUE', value: Colors.BLUE },
         ]);
 
-        expectTypeOf(EnumToArray.enumToValues(Colors)).toEqualTypeOf<(Colors.WHITE | Colors.BLACK | Colors.BLUE)[]>();
+        expectTypeOf(EnumToArray.enumToValues(Colors)).toEqualTypeOf<
+            (Colors.WHITE | Colors.BLACK | Colors.BLUE)[]
+        >();
 
-        expectTypeOf(EnumToArray.enumToKeys(Colors)).toEqualTypeOf<(keyof typeof Colors)[]>();
+        expectTypeOf(EnumToArray.enumToKeys(Colors)).toEqualTypeOf<
+            (keyof typeof Colors)[]
+        >();
     });
 
     test('Duplicate values', () => {
@@ -184,28 +229,36 @@ suite('enumToArray', () => {
         }
 
         expectTypeOf(EnumToArray.enumToArray(Duplicates)).toEqualTypeOf<
-            ({
-                key: 'FOR';
-                value: Duplicates.FOR;
-            } | {
-                key: 'FORE';
-                value: Duplicates.FORE;
-            } | {
-                key: 'FOUR';
-                value: Duplicates.FOUR;
-            } | {
-                key: 'ONE';
-                value: Duplicates.ONE;
-            } | {
-                key: 'TOO';
-                value: Duplicates.TOO;
-            } | {
-                key: 'TWO';
-                value: Duplicates.TWO;
-            } | {
-                key: 'WON';
-                value: Duplicates.WON;
-            })[]
+            (
+                | {
+                      key: 'FOR';
+                      value: Duplicates.FOR;
+                  }
+                | {
+                      key: 'FORE';
+                      value: Duplicates.FORE;
+                  }
+                | {
+                      key: 'FOUR';
+                      value: Duplicates.FOUR;
+                  }
+                | {
+                      key: 'ONE';
+                      value: Duplicates.ONE;
+                  }
+                | {
+                      key: 'TOO';
+                      value: Duplicates.TOO;
+                  }
+                | {
+                      key: 'TWO';
+                      value: Duplicates.TWO;
+                  }
+                | {
+                      key: 'WON';
+                      value: Duplicates.WON;
+                  }
+            )[]
         >();
         expect(EnumToArray.enumToArray(Duplicates)).to.deep.equal([
             { key: 'ONE', value: Duplicates.ONE },
@@ -217,16 +270,20 @@ suite('enumToArray', () => {
             { key: 'FORE', value: Duplicates.FORE },
         ]);
 
-        expectTypeOf(EnumToArray.enumToValues(Duplicates)).toEqualTypeOf<(
-            Duplicates.ONE |
-            Duplicates.WON |
-            Duplicates.TOO |
-            Duplicates.TWO |
-            Duplicates.FOUR |
-            Duplicates.FOR |
-            Duplicates.FORE
-        )[]>();
-        expect(EnumToArray.enumToValues(Duplicates, { unique: true })).to.deep.equal([
+        expectTypeOf(EnumToArray.enumToValues(Duplicates)).toEqualTypeOf<
+            (
+                | Duplicates.ONE
+                | Duplicates.WON
+                | Duplicates.TOO
+                | Duplicates.TWO
+                | Duplicates.FOUR
+                | Duplicates.FOR
+                | Duplicates.FORE
+            )[]
+        >();
+        expect(
+            EnumToArray.enumToValues(Duplicates, { unique: true })
+        ).to.deep.equal([
             Duplicates.ONE,
             Duplicates.TOO,
             Duplicates.FOUR,
@@ -254,22 +311,28 @@ suite('enumToArray', () => {
         }
 
         expectTypeOf(EnumToArray.enumToArray(Computed)).toEqualTypeOf<
-            ({
-                key: 'DOUBLE';
-                value: typeof Computed.DOUBLE;
-            } | {
-                key: 'FIVE';
-                value: typeof Computed.FIVE;
-            } | {
-                key: 'HALF';
-                value: typeof Computed.HALF;
-            } | {
-                key: 'Infinity';
-                value: typeof Computed.Infinity;
-            } | {
-                key: 'NAN';
-                value: typeof Computed.NAN;
-            })[]
+            (
+                | {
+                      key: 'DOUBLE';
+                      value: typeof Computed.DOUBLE;
+                  }
+                | {
+                      key: 'FIVE';
+                      value: typeof Computed.FIVE;
+                  }
+                | {
+                      key: 'HALF';
+                      value: typeof Computed.HALF;
+                  }
+                | {
+                      key: 'Infinity';
+                      value: typeof Computed.Infinity;
+                  }
+                | {
+                      key: 'NAN';
+                      value: typeof Computed.NAN;
+                  }
+            )[]
         >();
         expect(EnumToArray.enumToArray(Computed)).to.deep.equal([
             { key: 'FIVE', value: Computed.FIVE },
@@ -279,14 +342,18 @@ suite('enumToArray', () => {
             { key: 'Infinity', value: Computed.Infinity },
         ]);
 
-        expectTypeOf(EnumToArray.enumToValues(Computed)).toEqualTypeOf<(
-            Computed.FIVE |
-            Computed.DOUBLE |
-            Computed.HALF |
-            Computed.NAN |
-            Computed.Infinity
-        )[]>();
-        expect(EnumToArray.enumToValues(Computed, { unique: true })).to.deep.equal([
+        expectTypeOf(EnumToArray.enumToValues(Computed)).toEqualTypeOf<
+            (
+                | Computed.FIVE
+                | Computed.DOUBLE
+                | Computed.HALF
+                | Computed.NAN
+                | Computed.Infinity
+            )[]
+        >();
+        expect(
+            EnumToArray.enumToValues(Computed, { unique: true })
+        ).to.deep.equal([
             Computed.FIVE,
             Computed.DOUBLE,
             Computed.NAN,
@@ -317,22 +384,28 @@ suite('enumToArray', () => {
         }
 
         expectTypeOf(EnumToArray.enumToArray(Literals)).toEqualTypeOf<
-            ({
-                key: 'ARR';
-                value: typeof Literals.ARR;
-            } | {
-                key: 'NIL';
-                value: typeof Literals.NIL;
-            } | {
-                key: 'OBJ';
-                value: typeof Literals.OBJ;
-            } | {
-                key: 'REG';
-                value: typeof Literals.REG;
-            } | {
-                key: 'SET';
-                value: typeof Literals.SET;
-            })[]
+            (
+                | {
+                      key: 'ARR';
+                      value: typeof Literals.ARR;
+                  }
+                | {
+                      key: 'NIL';
+                      value: typeof Literals.NIL;
+                  }
+                | {
+                      key: 'OBJ';
+                      value: typeof Literals.OBJ;
+                  }
+                | {
+                      key: 'REG';
+                      value: typeof Literals.REG;
+                  }
+                | {
+                      key: 'SET';
+                      value: typeof Literals.SET;
+                  }
+            )[]
         >();
         expect(EnumToArray.enumToArray(Literals)).to.deep.equal([
             { key: 'SET', value: Literals.SET },
@@ -342,13 +415,15 @@ suite('enumToArray', () => {
             { key: 'REG', value: Literals.REG },
         ]);
 
-        expectTypeOf(EnumToArray.enumToValues(Literals)).toEqualTypeOf<(
-            Literals.SET |
-            Literals.OBJ |
-            Literals.ARR |
-            Literals.NIL |
-            Literals.REG
-        )[]>();
+        expectTypeOf(EnumToArray.enumToValues(Literals)).toEqualTypeOf<
+            (
+                | Literals.SET
+                | Literals.OBJ
+                | Literals.ARR
+                | Literals.NIL
+                | Literals.REG
+            )[]
+        >();
 
         expectTypeOf(EnumToArray.enumToKeys(Literals)).toEqualTypeOf<
             (keyof typeof Literals)[]

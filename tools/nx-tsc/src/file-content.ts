@@ -7,4 +7,3 @@ export default [
         content: buildOptionsSchema,
     },
 ] satisfies PopulateFileParams[];
-

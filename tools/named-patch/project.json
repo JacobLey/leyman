@@ -2,6 +2,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "name": "named-patch",
   "targets": {
+    "biome": {},
     "update-ts-references": {},
     "tsc": {},
     "mocha-unit-test": {
@@ -13,6 +14,10 @@
       }
     },
     "coverage-report": {},
+    "analyze:_": {},
+    "analyze:lint": {},
+    "analyze:format": {},
+    "analyze": {},
     "build:_": {},
     "build:pre": {},
     "build:run": {},

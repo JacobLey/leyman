@@ -4,5 +4,16 @@
     "outDir": "dist",
     "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
-  }
+  },
+  "references": [
+    {
+      "path": "../../apps/nx-update-ts-references"
+    },
+    {
+      "path": "../mocha-hookup"
+    },
+    {
+      "path": "../nx-tsc"
+    }
+  ]
 }

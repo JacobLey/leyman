@@ -54,9 +54,7 @@
                           ]
                         }
                       },
-                      "required": [
-                        "projects"
-                      ]
+                      "required": ["projects"]
                     }
                   ],
                   "properties": {
@@ -64,15 +62,10 @@
                       "type": "string"
                     },
                     "params": {
-                      "enum": [
-                        "forward",
-                        "ignore"
-                      ]
+                      "enum": ["forward", "ignore"]
                     }
                   },
-                  "required": [
-                    "target"
-                  ]
+                  "required": ["target"]
                 }
               ]
             }

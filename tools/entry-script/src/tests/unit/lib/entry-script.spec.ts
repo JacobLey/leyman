@@ -8,20 +8,19 @@ import { runAsMain } from '#entry-script';
 import EntryScriptMock from '../../data/entry-script-mock.js';
 
 suite('EntryScript', () => {
-
     afterEach(() => {
         verifyAndRestore();
     });
 
     suite('create', () => {
-
         test('success', async () => {
-            expect(await EntryScript.EntryScript.create()).to.be.an.instanceOf(EntryScript.EntryScript);
+            expect(await EntryScript.EntryScript.create()).to.be.an.instanceOf(
+                EntryScript.EntryScript
+            );
         });
     });
 
     suite('runAsMain', () => {
-
         const withStubbedEntryScript = beforeEach(async () => {
             const entryScript = await EntryScriptMock.create();
             stub(EntryScriptMock, 'create').callsFake(async () => entryScript);
@@ -30,7 +29,6 @@ suite('EntryScript', () => {
         });
 
         withStubbedEntryScript.test('success', async ({ entryScript }) => {
-
             const startSpy = spy(entryScript, 'start');
             const finishSpy = spy(entryScript, 'finish');
 
@@ -47,7 +45,6 @@ suite('EntryScript', () => {
         });
 
         suite('failure', () => {
-
             test('No URL exists', async () => {
                 await runAsMain();
             });
@@ -64,35 +61,42 @@ suite('EntryScript', () => {
                 await runAsMain(import.meta.url);
             });
 
-            withStubbedEntryScript.test('Emits runtime error', async ({ entryScript }) =>  {
+            withStubbedEntryScript.test(
+                'Emits runtime error',
+                async ({ entryScript }) => {
+                    const error = new Error('<ERROR>');
 
-                const error = new Error('<ERROR>');
-
-                stub(entryScript, 'start').callsFake(() => {
-                    throw error;
-                });
-                const finishSpy = stub(entryScript, 'finish');
-                const listenerStub = fake((err: unknown, event: CustomEvent<unknown>) => [err, event]);
-
-                entryScript.on(EntryScript.runtimeError, listenerStub);
-
-                let caughtError: unknown;
-                try {
-                    await runAsMain(
-                        Path.resolve(
-                            Path.dirname(fileURLToPath(import.meta.url)),
-                            '../../data/entry-script-mock.js'
-                        )
+                    stub(entryScript, 'start').callsFake(() => {
+                        throw error;
+                    });
+                    const finishSpy = stub(entryScript, 'finish');
+                    const listenerStub = fake(
+                        (err: unknown, event: CustomEvent<unknown>) => [
+                            err,
+                            event,
+                        ]
                     );
-                } catch (err) {
-                    caughtError = err;
-                }
 
-                expect(caughtError).to.eq(error);
-                expect(finishSpy.callCount).to.equal(1);
-                expect(listenerStub.callCount).to.equal(1);
-                expect(listenerStub.getCall(0).args[0]).to.eq(error);
-            });
+                    entryScript.on(EntryScript.runtimeError, listenerStub);
+
+                    let caughtError: unknown;
+                    try {
+                        await runAsMain(
+                            Path.resolve(
+                                Path.dirname(fileURLToPath(import.meta.url)),
+                                '../../data/entry-script-mock.js'
+                            )
+                        );
+                    } catch (err) {
+                        caughtError = err;
+                    }
+
+                    expect(caughtError).to.eq(error);
+                    expect(finishSpy.callCount).to.equal(1);
+                    expect(listenerStub.callCount).to.equal(1);
+                    expect(listenerStub.getCall(0).args[0]).to.eq(error);
+                }
+            );
         });
     });
 });

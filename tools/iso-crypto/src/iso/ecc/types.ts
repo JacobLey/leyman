@@ -6,7 +6,9 @@ import type { Curve, Encryption, InputText } from '../lib/types.js';
  * @param {string} [curve] - curve algorithm, defaults to p256
  * @returns {Promise<Uint8Array>} private key
  */
-export declare const generateEccPrivateKey: (curve?: Curve | undefined) => Promise<Uint8Array>;
+export declare const generateEccPrivateKey: (
+    curve?: Curve | undefined
+) => Promise<Uint8Array>;
 
 /**
  * Generate a public key from the incoming private key.
@@ -17,7 +19,10 @@ export declare const generateEccPrivateKey: (curve?: Curve | undefined) => Promi
  * @param {string} [curve] - curve algorithm, defaults to p256
  * @returns {Uint8Array} public key
  */
-export declare const generateEccPublicKey: (privateKey: InputText, curve?: Curve | undefined) => Uint8Array;
+export declare const generateEccPublicKey: (
+    privateKey: InputText,
+    curve?: Curve | undefined
+) => Uint8Array;
 
 /**
  * Encrypt data using a "sender's" ECC private key, and a

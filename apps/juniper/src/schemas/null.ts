@@ -10,38 +10,37 @@ import type { JsonSchema, SchemaType } from '../lib/types.js';
  * Schema for defining null literal.
  */
 export class NullSchema extends AbstractSchema<SchemaGenerics<null>> {
-
     protected override readonly schemaType = 'null';
 
     /**
      * Not applicable.
      */
-    declare public allOf: never;
+    public declare allOf: never;
 
     /**
      * Not applicable.
      */
-    declare public anyOf: never;
+    public declare anyOf: never;
 
     /**
      * Not enough possible states.
      */
-    declare public if: never;
+    public declare if: never;
 
     /**
      * Not enough possible states.
      */
-    declare public not: never;
+    public declare not: never;
 
     /**
      * Already nullable.
      */
-    declare public nullable: never;
+    public declare nullable: never;
 
     /**
      * Not applicable.
      */
-    declare public oneOf: never;
+    public declare oneOf: never;
 
     /**
      * Create a new instance of NullSchema.
@@ -55,14 +54,19 @@ export class NullSchema extends AbstractSchema<SchemaGenerics<null>> {
      * @param {boolean} [options.writeOnly] - value should be hidden
      * @returns {NullSchema} null schema
      */
-    public static override create(this: void, options?: SchemaParams<null>): NullSchema {
+    public static override create(
+        this: void,
+        options?: SchemaParams<null>
+    ): NullSchema {
         return new NullSchema(options);
     }
 
     /**
      * @override
      */
-    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
+    protected override toSchema(
+        params: SerializationParams
+    ): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         if (params.openApi30) {

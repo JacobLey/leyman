@@ -41,7 +41,9 @@ export type SchemaType<T> = T extends {
     [typeCache]?: {
         type: infer U;
     };
-} ? U : never;
+}
+    ? U
+    : never;
 
 declare const emptyObject: unique symbol;
 export interface EmptyIndex {
@@ -64,16 +66,18 @@ export type IsUnknown<T> = [unknown] extends [T] ? Not<IsAny<T>> : false;
 export type AbstractClean<
     Base,
     Check,
-    Stripped = Check extends Base & infer U ? U : Check
+    Stripped = Check extends Base & infer U ? U : Check,
 > = Stripped extends Base ? Stripped : Check;
 
 export type AbstractStrip<
     Base,
     ToStrip,
-    Replacement = never
-> = Base extends infer U & ToStrip ?
-    (IsUnknown<U> extends true ? Replacement : U) :
-    Base;
+    Replacement = never,
+> = Base extends infer U & ToStrip
+    ? IsUnknown<U> extends true
+        ? Replacement
+        : U
+    : Base;
 
 /**
  * Append `| null` to type.
@@ -81,27 +85,34 @@ export type AbstractStrip<
  * `false` = Do not add `| null`. Calling `nullable()` should append `| null`.
  * `boolean` = Do not add `| null`. Calling `nullable()` should not append `| null`.
  */
-export type Nullable<
-    T,
-    N extends boolean
-> = [N] extends [true] ? T | null : T;
+export type Nullable<T, N extends boolean> = [N] extends [true] ? T | null : T;
 
 export type ConditionalNullable<
     Base extends boolean,
     If extends boolean,
     Then extends boolean,
-    Else extends boolean
-> = ([If] extends [true] ?
-    ([Then] extends [true] ? Base : boolean)
-    : ([Else] extends [true] ? Base : boolean));
+    Else extends boolean,
+> = [If] extends [true]
+    ? [Then] extends [true]
+        ? Base
+        : boolean
+    : [Else] extends [true]
+      ? Base
+      : boolean;
 
-export type ToBaseType<T> =
-    T extends never ? never :
-        T extends boolean ? boolean :
-            T extends number ? number :
-                T extends string ? string :
-                    T extends readonly unknown[] ? ToBaseType<T[number]>[] :
-                        T extends Record<string, unknown> ? Record<string, unknown> : T;
+export type ToBaseType<T> = T extends never
+    ? never
+    : T extends boolean
+      ? boolean
+      : T extends number
+          ? number
+          : T extends string
+              ? string
+              : T extends readonly unknown[]
+                  ? ToBaseType<T[number]>[]
+                  : T extends Record<string, unknown>
+                      ? Record<string, unknown>
+                      : T;
 
 declare const reservedWords: [
     // Generic
@@ -114,7 +125,6 @@ declare const reservedWords: [
     'nullable',
     'title',
     'type',
-
     // Composition
     'allOf',
     'anyOf',
@@ -123,11 +133,9 @@ declare const reservedWords: [
     'not',
     'oneOf',
     'then',
-
     // Enum
     'enum',
     'const',
-
     // Object
     'maxProperties',
     'minProperties',
@@ -137,21 +145,18 @@ declare const reservedWords: [
     'dependentRequired',
     'dependentSchemas',
     'unevaluatedProperties',
-
     // Array
     'items',
     'maxItems',
     'minItems',
     'prefixItems',
     'uniqueItems',
-
     // Number
     'exclusiveMaximum',
     'exclusiveMinimum',
     'maximum',
     'minimum',
     'multipleOf',
-
     // String
     'contentEncoding',
     'contentMediaType',
@@ -160,4 +165,4 @@ declare const reservedWords: [
     'minLength',
     'pattern',
 ];
-export type ReservedWords = typeof reservedWords[number];
+export type ReservedWords = (typeof reservedWords)[number];

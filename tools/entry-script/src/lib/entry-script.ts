@@ -13,7 +13,6 @@ export const runtimeError = Symbol('runtimeError');
 export class EntryScript extends StaticEmitter<{
     [runtimeError]: unknown;
 }> {
-
     /**
      * Creates an instance of EntryScript's child class.
      *
@@ -22,7 +21,9 @@ export class EntryScript extends StaticEmitter<{
      * @param {EntryScript} this - child class of EntryScript
      * @returns {EntryScript} Instance of EntryScript.
      */
-    public static async create<I extends typeof EntryScript>(this: I): Promise<I['prototype']> {
+    public static async create<I extends typeof EntryScript>(
+        this: I
+    ): Promise<I['prototype']> {
         return new this();
     }
 
@@ -82,7 +83,9 @@ export class EntryScript extends StaticEmitter<{
  */
 export const runAsMain = async (url?: string): Promise<void> => {
     if (url) {
-        const rawEntryScript = await import(url).catch(() => {}) as typeof EntryScript;
+        const rawEntryScript = (await import(url).catch(
+            () => {}
+        )) as typeof EntryScript;
         const script = defaultImport(rawEntryScript);
 
         if (Object.prototype.isPrototypeOf.call(EntryScript, script)) {

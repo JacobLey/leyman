@@ -17,5 +17,8 @@ export interface IsProjectJson {
     (val: unknown): val is ProjectJson;
     errors?: null | ErrorObject[];
 }
-export const isProjectJson: IsProjectJson = ajv.compile<ProjectJson>(projectJsonSchema.toJSON());
-export const isProjectJsonIdentifier = identifier<IsProjectJson>().named('projectJson');
+export const isProjectJson: IsProjectJson = ajv.compile<ProjectJson>(
+    projectJsonSchema.toJSON()
+);
+export const isProjectJsonIdentifier =
+    identifier<IsProjectJson>().named('projectJson');

@@ -8,24 +8,24 @@ import { ExtendTarget, NativeEvent } from '../data/extend-event-target.js';
 import { ServerEvent } from '../data/server-event.js';
 
 suite('StaticEventTarget', () => {
-
     suite('success', () => {
-
         test('Unchanged EventTarget', () => {
             expect(StaticEventTarget).to.eq(EventTarget);
         });
 
         suite('Declare event types', () => {
-
             test('Generic parameter', () => {
-
                 const extendTarget = new ExtendTarget();
                 extendTarget.addEventListener('foo', event => {
-                    expectTypeOf(event).toEqualTypeOf<CustomEvent<'foo', 123>>();
+                    expectTypeOf(event).toEqualTypeOf<
+                        CustomEvent<'foo', 123>
+                    >();
                 });
                 extendTarget.addEventListener('foo', {
                     handleEvent: event => {
-                        expectTypeOf(event).toEqualTypeOf<CustomEvent<'foo', 123>>();
+                        expectTypeOf(event).toEqualTypeOf<
+                            CustomEvent<'foo', 123>
+                        >();
                     },
                 });
                 extendTarget.addEventListener('bar', event => {
@@ -35,15 +35,23 @@ suite('StaticEventTarget', () => {
                     expectTypeOf(event).toEqualTypeOf<NativeEvent>();
                 });
 
-                extendTarget.dispatchEvent(new CustomEvent('foo', { detail: 123 }));
-                extendTarget.dispatchEvent(new ServerEvent('bar', '<server-data>'));
+                extendTarget.dispatchEvent(
+                    new CustomEvent('foo', { detail: 123 })
+                );
+                extendTarget.dispatchEvent(
+                    new ServerEvent('bar', '<server-data>')
+                );
                 extendTarget.dispatchEvent(new NativeEvent('onStuff'));
-                // @ts-expect-error
-                extendTarget.dispatchEvent(new CustomEvent('foo', { detail: 456 }));
+                extendTarget.dispatchEvent(
+                    // @ts-expect-error
+                    new CustomEvent('foo', { detail: 456 })
+                );
 
                 // eslint-disable-next-line unicorn/no-invalid-remove-event-listener
                 extendTarget.removeEventListener('foo', event => {
-                    expectTypeOf(event).toEqualTypeOf<CustomEvent<'foo', 123>>();
+                    expectTypeOf(event).toEqualTypeOf<
+                        CustomEvent<'foo', 123>
+                    >();
                 });
                 extendTarget.removeEventListener('bar', {
                     handleEvent: event => {
@@ -53,12 +61,11 @@ suite('StaticEventTarget', () => {
             });
 
             test('Explicit event declaration', () => {
-
                 /**
                  * @override
                  */
                 class ExtendTargetDeclare extends StaticEventTarget {
-                    declare public [events]: {
+                    public declare [events]: {
                         foo: 123;
                         bar: ServerEvent<'bar'>;
                         onStuff: NativeEvent;
@@ -69,14 +76,13 @@ suite('StaticEventTarget', () => {
             });
 
             test('Both generics and event param', () => {
-
                 /**
                  * @override
                  */
                 class ExtendTargetCombo extends StaticEventTarget<{
                     foo: 123;
                 }> {
-                    declare public [events]: StaticEventTarget<{
+                    public declare [events]: StaticEventTarget<{
                         foo: 123;
                     }>[typeof events] & {
                         bar: ServerEvent<'bar'>;

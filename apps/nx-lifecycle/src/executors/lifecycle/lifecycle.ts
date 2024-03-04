@@ -11,37 +11,30 @@ interface LoadedJsonConfig<T> {
     name: string;
     path: string;
     data: T;
-};
+}
 interface ProcessedJsonConfig<T> extends LoadedJsonConfig<T> {
     processed: T;
-};
+}
 
 export class Lifecycle {
-
     public constructor(
         private readonly normalizer: Normalizer,
-        private readonly readFile: typeof fs['readFile'],
-        private readonly writeFile: typeof fs['writeFile'],
+        private readonly readFile: (typeof fs)['readFile'],
+        private readonly writeFile: (typeof fs)['writeFile'],
         private readonly processNxAndProjectJsons: NxAndProjectJsonProcessor,
         private readonly isNxJson: IsNxJson,
         private readonly isProjectJson: IsProjectJson,
-        private readonly logger: Logger,
+        private readonly logger: Logger
     ) {}
 
-    async #loadJsonConfigs(
-        {
-            nxJsonPath,
-            packageJsonPaths,
-        }: NormalizedOptions
-    ): Promise<{
+    async #loadJsonConfigs({
+        nxJsonPath,
+        packageJsonPaths,
+    }: NormalizedOptions): Promise<{
         nxJson: LoadedJsonConfig<NxJson>;
         projectJsons: LoadedJsonConfig<ProjectJson>[];
     }> {
-
-        const [
-            rawNxJson,
-            ...rawProjectJsons
-        ] = await Promise.all([
+        const [rawNxJson, ...rawProjectJsons] = await Promise.all([
             this.readFile(nxJsonPath, 'utf8'),
             ...packageJsonPaths.map(async ({ name, path }) => ({
                 name,
@@ -52,7 +45,13 @@ export class Lifecycle {
 
         const parsedNxJson = JSON.parse(rawNxJson);
         if (!this.isNxJson(parsedNxJson)) {
-            throw new Error(`Failed to parse nx.json: ${JSON.stringify(this.isNxJson.errors!, null, 2)}`);
+            throw new Error(
+                `Failed to parse nx.json: ${JSON.stringify(
+                    this.isNxJson.errors!,
+                    null,
+                    2
+                )}`
+            );
         }
 
         return {
@@ -62,11 +61,16 @@ export class Lifecycle {
                 data: parsedNxJson,
             },
             projectJsons: rawProjectJsons.map(({ name, path, rawData }) => {
-
                 const data = JSON.parse(rawData);
 
                 if (!this.isProjectJson(data)) {
-                    throw new Error(`Failed to parse ${path}: ${JSON.stringify(this.isProjectJson.errors!, null, 2)}`);
+                    throw new Error(
+                        `Failed to parse ${path}: ${JSON.stringify(
+                            this.isProjectJson.errors!,
+                            null,
+                            2
+                        )}`
+                    );
                 }
 
                 return {
@@ -78,11 +82,13 @@ export class Lifecycle {
         };
     }
 
-    async #saveJsonConfigs({ jsons, options }: {
+    async #saveJsonConfigs({
+        jsons,
+        options,
+    }: {
         jsons: ProcessedJsonConfig<unknown>[];
         options: NormalizedOptions;
     }): Promise<void> {
-
         const filesToUpdate: {
             path: string;
             processed: unknown;
@@ -101,32 +107,36 @@ export class Lifecycle {
             });
         }
 
-        await Promise.all(filesToUpdate.map(async ({ path, processed }) => {
-            this.logger.info(`Updating ${path}`);
-            if (options.dryRun) {
-                return;
-            }
-            return this.writeFile(path, JSON.stringify(processed, null, 2), 'utf8');
-        }));
+        await Promise.all(
+            filesToUpdate.map(async ({ path, processed }) => {
+                this.logger.info(`Updating ${path}`);
+                if (options.dryRun) {
+                    return;
+                }
+                return this.writeFile(
+                    path,
+                    JSON.stringify(processed, null, 2),
+                    'utf8'
+                );
+            })
+        );
     }
 
-    public async lifecycle (
+    public async lifecycle(
         options: LifecycleOptions,
         context: SimpleExecutorContext
     ): Promise<{ success: boolean }> {
-
         const normalized = this.normalizer.normalizeOptions(options, context);
 
-        const { nxJson, projectJsons } = await this.#loadJsonConfigs(normalized);
+        const { nxJson, projectJsons } =
+            await this.#loadJsonConfigs(normalized);
 
-        const {
-            processedNxJson,
-            processedProjectJsons,
-        } = this.processNxAndProjectJsons({
-            nxJson: nxJson.data,
-            projectJsons: projectJsons.map(({ data }) => data),
-            options: normalized,
-        });
+        const { processedNxJson, processedProjectJsons } =
+            this.processNxAndProjectJsons({
+                nxJson: nxJson.data,
+                projectJsons: projectJsons.map(({ data }) => data),
+                options: normalized,
+            });
 
         await this.#saveJsonConfigs({
             jsons: [
@@ -143,5 +153,5 @@ export class Lifecycle {
         });
 
         return { success: true };
-    };
+    }
 }

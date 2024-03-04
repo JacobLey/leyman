@@ -1,4 +1,4 @@
-export { 
+export {
     HaystackError,
     HaystackContainerValidationError,
     HaystackInstanceValidationError,

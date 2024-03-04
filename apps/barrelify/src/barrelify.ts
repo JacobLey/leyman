@@ -11,12 +11,13 @@ import { barrelFiles } from './lib/barrel.js';
  * @param {string[]} [options.ignore=[]] - list of files to ignore
  * @returns {Promise<string[]>} list of files that were re-written
  */
-export const barrelify = async (options: {
-    cwd?: Directory;
-    dryRun?: boolean;
-    ignore?: string[];
-} = {}): Promise<string[]> => {
-
+export const barrelify = async (
+    options: {
+        cwd?: Directory;
+        dryRun?: boolean;
+        ignore?: string[];
+    } = {}
+): Promise<string[]> => {
     const cwd = await parseCwd(options.cwd);
 
     return barrelFiles({

@@ -1,4 +1,10 @@
-import { arraySchema, booleanSchema, objectSchema, stringSchema, type SchemaType } from 'juniper';
+import {
+    arraySchema,
+    booleanSchema,
+    objectSchema,
+    stringSchema,
+    type SchemaType,
+} from 'juniper';
 import { dependsOnSchema } from '#schemas';
 
 const lifecycleOptionsSchema = objectSchema({
@@ -6,7 +12,8 @@ const lifecycleOptionsSchema = objectSchema({
     description: 'Update TSConfig references based on dependencies',
     properties: {
         check: booleanSchema({
-            description: 'Fails if references are not already updated, will not overwrite. Defaults to true during CI, false otherwise.'
+            description:
+                'Fails if references are not already updated, will not overwrite. Defaults to true during CI, false otherwise.',
         }),
         dryRun: booleanSchema({
             description: 'Load files and content, but do not write anything.',
@@ -30,10 +37,9 @@ const lifecycleOptionsSchema = objectSchema({
     additionalProperties: false,
 }).metadata({
     version: 1,
-    outputCapture: "direct-nodejs",
-    cli: "nx",
+    outputCapture: 'direct-nodejs',
+    cli: 'nx',
 });
 
 export default lifecycleOptionsSchema.toJSON();
 export type LifecycleOptions = SchemaType<typeof lifecycleOptionsSchema>;
-

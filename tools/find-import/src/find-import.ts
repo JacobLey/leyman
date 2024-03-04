@@ -7,10 +7,8 @@ export type { Directory };
 
 const require = createRequire(import.meta.url);
 
-const isInside = (
-    parent: string,
-    target: string
-): boolean => !Path.relative(parent, target).startsWith('..');
+const isInside = (parent: string, target: string): boolean =>
+    !Path.relative(parent, target).startsWith('..');
 
 /**
  * Load the first instance of JS/JSON module.
@@ -34,7 +32,6 @@ export const findImport = async <T>(
     filePath: string;
     content: T;
 } | null> => {
-
     const fileNames = Array.isArray(fileName) ? fileName : [fileName];
 
     let [directory, startAt] = await Promise.all([
@@ -46,7 +43,10 @@ export const findImport = async <T>(
 
     const allDirectories = [directory];
 
-    while (directory !== parentDirectory && isInside(startAt, parentDirectory)) {
+    while (
+        directory !== parentDirectory &&
+        isInside(startAt, parentDirectory)
+    ) {
         allDirectories.push(parentDirectory);
 
         directory = parentDirectory;
@@ -72,7 +72,7 @@ export const findImport = async <T>(
                     };
                 }
 
-                const js = await import(filePath) as T;
+                const js = (await import(filePath)) as T;
                 return {
                     filePath,
                     content: js,

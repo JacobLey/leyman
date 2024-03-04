@@ -5,7 +5,6 @@ import { define, verifyAndRestore } from 'sinon';
 import { mockMethod, spyMethod, stubMethod } from 'sinon-typed-stub';
 
 suite('Wraps sinon methods', () => {
-
     // Example AJV-esque validator that doesn't map well to Sinon's default breakdown of parameters -> return type
     const validator = Object.assign(
         (val: unknown): val is number => typeof val === 'number',
@@ -15,7 +14,6 @@ suite('Wraps sinon methods', () => {
     );
 
     test('spyMethod wraps spy', () => {
-
         const spy = spyMethod(validator);
 
         const myVal = Math.random() > 0.5 ? 123 : 'abc';
@@ -27,14 +25,13 @@ suite('Wraps sinon methods', () => {
     });
 
     test('stubMethod wraps stub', () => {
-
         const stub = stubMethod<typeof validator>();
 
         expectTypeOf(stub.method).toEqualTypeOf(validator);
 
         stub.stub.returns(false);
         stub.stub.withArgs(123).returns(true);
-        
+
         expect(stub.method(789)).to.equal(false);
         expect(stub.method(123)).to.equal(true);
 
@@ -42,14 +39,13 @@ suite('Wraps sinon methods', () => {
     });
 
     test('mockMethodMethod wraps mock', () => {
-
         const mock = mockMethod<typeof validator>();
         define(mock.method, 'errors', ['<foo>', '<bar>']);
 
         expect(mock.method.errors).to.deep.equal(['<foo>', '<bar>']);
 
         mock.stub.withArgs(123).returns(true);
-        
+
         expect(mock.method(123)).to.equal(true);
 
         expect(mock.spy.callCount).to.equal(1);

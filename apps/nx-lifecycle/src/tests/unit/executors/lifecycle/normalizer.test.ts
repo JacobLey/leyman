@@ -3,41 +3,40 @@ import { suite, test } from 'mocha-hookup';
 import { Normalizer } from '../../../../executors/lifecycle/normalizer.js';
 
 suite('Normalizer', () => {
-
     suite('normalizeOptions', () => {
-
         test('Use provided options', () => {
-
             const normalizer = new Normalizer(true);
 
-            expect(normalizer.normalizeOptions(
-                {
-                    check: false,
-                    dryRun: true,
-                    stages: {
-                        myStage: {},
-                    },
-                    targets: {
-                        myTarget: 'myStage',
-                    },
-                },
-                {
-                    root: '/path/to/workspace',
-                    projectsConfigurations: {
-                        version: 123,
-                        projects: {
-                            foo: {
-                                name: 'myFoo',
-                                root: 'path/to/foo',
-                            },
-                            bar: {
-                                name: 'myBar',
-                                root: 'path/to/bar',
-                            },
+            expect(
+                normalizer.normalizeOptions(
+                    {
+                        check: false,
+                        dryRun: true,
+                        stages: {
+                            myStage: {},
+                        },
+                        targets: {
+                            myTarget: 'myStage',
                         },
                     },
-                }
-            )).to.deep.equal({
+                    {
+                        root: '/path/to/workspace',
+                        projectsConfigurations: {
+                            version: 123,
+                            projects: {
+                                foo: {
+                                    name: 'myFoo',
+                                    root: 'path/to/foo',
+                                },
+                                bar: {
+                                    name: 'myBar',
+                                    root: 'path/to/bar',
+                                },
+                            },
+                        },
+                    }
+                )
+            ).to.deep.equal({
                 check: false,
                 dryRun: true,
                 nxJsonPath: '/path/to/workspace/nx.json',
@@ -61,28 +60,29 @@ suite('Normalizer', () => {
         });
 
         test('Use defaults', () => {
-
             const normalizer = new Normalizer(false);
 
-            expect(normalizer.normalizeOptions(
-                {},
-                {
-                    root: '/path/to/workspace',
-                    projectsConfigurations: {
-                        version: 123,
-                        projects: {
-                            foo: {
-                                name: 'myFoo',
-                                root: 'path/to/foo',
-                            },
-                            bar: {
-                                name: 'myBar',
-                                root: 'path/to/bar',
+            expect(
+                normalizer.normalizeOptions(
+                    {},
+                    {
+                        root: '/path/to/workspace',
+                        projectsConfigurations: {
+                            version: 123,
+                            projects: {
+                                foo: {
+                                    name: 'myFoo',
+                                    root: 'path/to/foo',
+                                },
+                                bar: {
+                                    name: 'myBar',
+                                    root: 'path/to/bar',
+                                },
                             },
                         },
-                    },
-                }
-            )).to.deep.equal({
+                    }
+                )
+            ).to.deep.equal({
                 check: false,
                 dryRun: false,
                 nxJsonPath: '/path/to/workspace/nx.json',

@@ -13,13 +13,9 @@ import {
 const Ajv = defaultImport(DefaultAjv);
 
 suite('ArraySchema', () => {
-
     suite('keywords', () => {
-
         suite('options', () => {
-
             test('success', () => {
-
                 const schema = arraySchema({
                     minItems: 4,
                     maxItems: 10,
@@ -34,18 +30,23 @@ suite('ArraySchema', () => {
                     maxItems: 10,
                     uniqueItems: true,
                 });
-                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<unknown[]>();
+                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                    unknown[]
+                >();
             });
 
             suite('With items', () => {
-
                 test('With options', () => {
                     const schema = arraySchema({
                         items: stringSchema().contains('el').default('hello'),
                         description: '<description>',
                     });
-                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<`${string}el${string}`[]>();
-                    expectTypeOf<Parameters<typeof schema['items']>[1]>().toBeNever();
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                        `${string}el${string}`[]
+                    >();
+                    expectTypeOf<
+                        Parameters<(typeof schema)['items']>[1]
+                    >().toBeNever();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'array',
@@ -68,9 +69,17 @@ suite('ArraySchema', () => {
                 });
 
                 test('Only schema', () => {
-                    const schema = arraySchema(arraySchema(stringSchema().contains('el').default('hello')));
-                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<`${string}el${string}`[][]>();
-                    expectTypeOf<Parameters<typeof schema['items']>[1]>().toBeNever();
+                    const schema = arraySchema(
+                        arraySchema(
+                            stringSchema().contains('el').default('hello')
+                        )
+                    );
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                        `${string}el${string}`[][]
+                    >();
+                    expectTypeOf<
+                        Parameters<(typeof schema)['items']>[1]
+                    >().toBeNever();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'array',
@@ -99,7 +108,6 @@ suite('ArraySchema', () => {
         });
 
         test('methods', () => {
-
             const schema = arraySchema()
                 .minItems(2)
                 .maxItems(10)
@@ -112,11 +120,18 @@ suite('ArraySchema', () => {
                 .prependPrefixItem(arraySchema(stringSchema().endsWith('b')))
                 .contains(arraySchema(stringSchema().startsWith('ab')));
 
-            expectTypeOf<Parameters<typeof schema['contains']>[1]>().toBeNever();
-            expectTypeOf<Parameters<typeof schema['items']>[1]>().toBeNever();
+            expectTypeOf<
+                Parameters<(typeof schema)['contains']>[1]
+            >().toBeNever();
+            expectTypeOf<Parameters<(typeof schema)['items']>[1]>().toBeNever();
 
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                [`${string}b`[], `${string}c`, `${string}d`, ...`a${string}`[][]]
+                [
+                    `${string}b`[],
+                    `${string}c`,
+                    `${string}d`,
+                    ...`a${string}`[][],
+                ]
             >();
 
             expect(schema.toJSON()).to.deep.equal({
@@ -158,14 +173,23 @@ suite('ArraySchema', () => {
                 ],
             });
 
-            const validator = new Ajv({ strict: true, strictTuples: false }).compile(schema.toJSON());
-            expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abbc']])).to.equal(true);
+            const validator = new Ajv({
+                strict: true,
+                strictTuples: false,
+            }).compile(schema.toJSON());
+            expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abbc']])).to.equal(
+                true
+            );
             // Not unique
-            expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abc']])).to.equal(false);
+            expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abc']])).to.equal(
+                false
+            );
             // Contains < 2
             expect(validator([['xb'], 'xc', 'xd', ['ac']])).to.equal(false);
             // Contains > 3
-            expect(validator([['ab'], 'xc', 'xd', ['abc'], ['abbc'], ['abbbc']])).to.equal(false);
+            expect(
+                validator([['ab'], 'xc', 'xd', ['abc'], ['abbc'], ['abbbc']])
+            ).to.equal(false);
             // Prefix items
             expect(validator([['ab'], 'xd', 'xc', ['abc']])).to.equal(false);
             expect(validator([['ab'], 'xc'])).to.equal(true);
@@ -208,13 +232,21 @@ suite('ArraySchema', () => {
                 schema.minItems(0).minContains(2).toJSON({ openApi30: true })
             ).to.deep.equal(schema.toJSON({ openApi30: true }));
 
-            const oaValidator = new Ajv({ strict: true }).compile(schema.toJSON({ openApi30: true }));
-            expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abbc']])).to.equal(true);
-            expect(oaValidator([['xb'], 'xc', 'xd', ['abc'], ['abc']])).to.equal(false);
+            const oaValidator = new Ajv({ strict: true }).compile(
+                schema.toJSON({ openApi30: true })
+            );
+            expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abbc']])).to.equal(
+                true
+            );
+            expect(
+                oaValidator([['xb'], 'xc', 'xd', ['abc'], ['abc']])
+            ).to.equal(false);
             // Contains not enforced
             expect(oaValidator([['xb'], 'xc', 'xd', ['ac']])).to.equal(true);
             // Contains not enforced
-            expect(oaValidator([['ab'], 'xc', 'xd', ['abc'], ['abbc'], ['abbbc']])).to.equal(true);
+            expect(
+                oaValidator([['ab'], 'xc', 'xd', ['abc'], ['abbc'], ['abbbc']])
+            ).to.equal(true);
             // Prefix items not enforced
             expect(oaValidator([['ab'], 'xd', 'xc', ['abc']])).to.equal(true);
             expect(oaValidator([['ab'], 'xc'])).to.equal(true);
@@ -222,7 +254,6 @@ suite('ArraySchema', () => {
         });
 
         test('Unset options', () => {
-
             const schema = arraySchema({
                 minItems: 4,
                 maxItems: 10,
@@ -264,29 +295,38 @@ suite('ArraySchema', () => {
     });
 
     suite('not', () => {
-
         test('Unsets nullable', () => {
-
             const baseSchema = arraySchema().items(neverSchema());
             expectTypeOf<SchemaType<typeof baseSchema>>().toEqualTypeOf<[]>();
-            expectTypeOf<Parameters<typeof baseSchema['items']>[1]>().toBeNever();
+            expectTypeOf<
+                Parameters<(typeof baseSchema)['items']>[1]
+            >().toBeNever();
 
             const nullableSchema = baseSchema.nullable();
-            expectTypeOf<SchemaType<typeof nullableSchema>>().toEqualTypeOf<[] | null>();
+            expectTypeOf<SchemaType<typeof nullableSchema>>().toEqualTypeOf<
+                [] | null
+            >();
 
             const stillNullableSchema = nullableSchema.not(arraySchema());
-            expectTypeOf<SchemaType<typeof stillNullableSchema>>().toEqualTypeOf<[] | null>();
+            expectTypeOf<
+                SchemaType<typeof stillNullableSchema>
+            >().toEqualTypeOf<[] | null>();
 
-            const notNullableSchema = stillNullableSchema.not(arraySchema().nullable());
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<[]>();
+            const notNullableSchema = stillNullableSchema.not(
+                arraySchema().nullable()
+            );
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
+                []
+            >();
         });
     });
 
     suite('prefixItems', () => {
-
         const schema = arraySchema().prefixItem(stringSchema());
 
-        expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<[string, ...unknown[]]>();
+        expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+            [string, ...unknown[]]
+        >();
 
         expect(schema.toJSON()).to.deep.equal({
             type: 'array',
@@ -302,9 +342,7 @@ suite('ArraySchema', () => {
     });
 
     suite('contains', () => {
-
         test('Extends any item', () => {
-
             const baseSchema = arraySchema();
             baseSchema.contains(arraySchema(stringSchema()));
 
@@ -320,7 +358,6 @@ suite('ArraySchema', () => {
         });
 
         test('Omit min+max when missing contains', () => {
-
             const schema = arraySchema({
                 maxContains: 5,
                 minContains: 0,
@@ -334,7 +371,9 @@ suite('ArraySchema', () => {
             });
 
             const containsSchema = schema.contains(stringSchema().nullable());
-            expectTypeOf<SchemaType<typeof containsSchema>>().toEqualTypeOf<unknown[]>();
+            expectTypeOf<SchemaType<typeof containsSchema>>().toEqualTypeOf<
+                unknown[]
+            >();
 
             expect(containsSchema.toJSON()).to.deep.equal({
                 type: 'array',
@@ -347,7 +386,9 @@ suite('ArraySchema', () => {
             expect(containsSchema.toJSON({ openApi30: true })).to.deep.equal({
                 type: 'array',
             });
-            expect(containsSchema.minContains(4).toJSON({ openApi30: true })).to.deep.equal({
+            expect(
+                containsSchema.minContains(4).toJSON({ openApi30: true })
+            ).to.deep.equal({
                 type: 'array',
                 minItems: 4,
             });
@@ -355,9 +396,7 @@ suite('ArraySchema', () => {
     });
 
     suite('ref', () => {
-
         test('Applies defaults', () => {
-
             expect(
                 arraySchema()
                     .contains(stringSchema())
@@ -382,9 +421,7 @@ suite('ArraySchema', () => {
     });
 
     suite('Invalid types', () => {
-
         test('Contains only set once', () => {
-
             arraySchema()
                 .contains(stringSchema())
                 // @ts-expect-error
@@ -392,7 +429,6 @@ suite('ArraySchema', () => {
         });
 
         test('Items can only be set once', () => {
-
             arraySchema()
                 .items(stringSchema())
                 // @ts-expect-error

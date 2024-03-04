@@ -13,7 +13,8 @@ const decoder = new TextDecoder();
  * @param {string} text - base64 text
  * @returns {string} base64url text
  */
-const base64url = (text: string): string => text.replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
+const base64url = (text: string): string =>
+    text.replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
 
 /**
  * Convert a base64url-encoded string to base64.
@@ -24,29 +25,27 @@ const base64url = (text: string): string => text.replaceAll('=', '').replaceAll(
  */
 const base64standard = (text: string): string => {
     const charReplaced = text.replaceAll('-', '+').replaceAll('_', '/');
-    const appendEquals = charReplaced + '='.repeat((4 - text.length % 4) % 4);
+    const appendEquals = charReplaced + '='.repeat((4 - (text.length % 4)) % 4);
     return appendEquals.replace(/(={4})+$/, '');
 };
 
-const toBase64 = (buf: ArrayBuffer | number[] | Uint8Array): string => base64url(
-    btoa(String.fromCodePoint(...new Uint8Array(buf)))
-);
-const fromBase64 = (str: string): Uint8Array => Uint8Array.from(
-    [...atob(base64standard(str))].map(x => x.codePointAt(0)!)
-);
+const toBase64 = (buf: ArrayBuffer | number[] | Uint8Array): string =>
+    base64url(btoa(String.fromCodePoint(...new Uint8Array(buf))));
+const fromBase64 = (str: string): Uint8Array =>
+    Uint8Array.from([...atob(base64standard(str))].map(x => x.codePointAt(0)!));
 
-const toHex = (buf: Uint8Array): string => [...buf].map(x => x.toString(16).padStart(2, '0')).join('');
+const toHex = (buf: Uint8Array): string =>
+    [...buf].map(x => x.toString(16).padStart(2, '0')).join('');
 const fromHex = (str: string): Uint8Array => {
     const length = str.length % 2 ? str.length + 1 : str.length;
     return new Uint8Array(
-        (
-            str.padStart(length, '0').match(/.{2}/gu) ?? []
-        ).map(byte => Number.parseInt(byte, 16))
+        (str.padStart(length, '0').match(/.{2}/gu) ?? []).map(byte =>
+            Number.parseInt(byte, 16)
+        )
     );
 };
 
-export const decode: typeof Encode['decode'] = input => {
-
+export const decode: (typeof Encode)['decode'] = input => {
     const { encoding, text } = inputToEncoding(input);
 
     if (encoding === 'raw') {
@@ -62,11 +61,10 @@ export const decode: typeof Encode['decode'] = input => {
     return fromBase64(text);
 };
 
-export const encode: typeof Encode['encode'] = (
+export const encode: (typeof Encode)['encode'] = (
     input,
     encoding = defaultEncoding
 ) => {
-
     const buffer = decode(input);
 
     if (encoding === 'utf8') {

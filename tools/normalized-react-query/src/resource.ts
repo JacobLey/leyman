@@ -27,18 +27,14 @@ declare const typeCached: typeof typeCache;
  * - Optionally implement handlers `onSuccess`, `onError`, and `onSettled`
  * - Create a single instance ("singleton") of class and export it.
  */
-export abstract class Resource<
-    Data,
-    Params = DefaultParams
-> {
-
+export abstract class Resource<Data, Params = DefaultParams> {
     /**
      * Used to access type parameters.
      * See `QueryData` and `QueryParams`.
      *
      * __DO NOT USE__
      */
-    declare public readonly [typeCached]: { data: Data; params: Params };
+    public declare readonly [typeCached]: { data: Data; params: Params };
 
     /**
      * React Hook for data loading. Wrapper around `useQuery`.
@@ -48,28 +44,31 @@ export abstract class Resource<
      * @param {object} [options] - `useQuery` options.
      * @returns {object} useQuery response.
      */
-    public useQuery(this: this, params: Params, options?: UseQueryOptions<Data>): UseQueryResult<Data> {
+    public useQuery(
+        this: this,
+        params: Params,
+        options?: UseQueryOptions<Data>
+    ): UseQueryResult<Data> {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const client = useQueryClient();
 
         const queryKey = this.getKey(params);
 
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const [queryFn, handlers] = useMemo(() => [
-            async () => this.queryFn(params),
-            this.getHandlers(client, params),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        ], [hashQueryKey(queryKey)]);
+        const [queryFn, handlers] = useMemo(
+            () => [
+                async () => this.queryFn(params),
+                this.getHandlers(client, params),
+                // eslint-disable-next-line react-hooks/exhaustive-deps
+            ],
+            [hashQueryKey(queryKey)]
+        );
 
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        return useQuery(
-            queryKey,
-            queryFn,
-            {
-                ...handlers,
-                ...options,
-            }
-        );
+        return useQuery(queryKey, queryFn, {
+            ...handlers,
+            ...options,
+        });
     }
 
     /**
@@ -82,7 +81,11 @@ export abstract class Resource<
      * @param {*} data - response from query.
      * @returns {Promise} success handled
      */
-    protected async onSuccess(client: QueryClient, params: Params, data: Data): Promise<void>;
+    protected async onSuccess(
+        client: QueryClient,
+        params: Params,
+        data: Data
+    ): Promise<void>;
     /**
      * @override
      */
@@ -98,7 +101,11 @@ export abstract class Resource<
      * @param {*} error - error from query.
      * @returns {Promise} error handled
      */
-    protected async onError(client: QueryClient, params: Params, error: unknown): Promise<void>;
+    protected async onError(
+        client: QueryClient,
+        params: Params,
+        error: unknown
+    ): Promise<void>;
     /**
      * @override
      */
@@ -133,13 +140,17 @@ export abstract class Resource<
      * @param {*} params - method params defined by class.
      * @returns {object} on* handlers
      */
-    protected getHandlers(client: QueryClient, params: Params): Required<
+    protected getHandlers(
+        client: QueryClient,
+        params: Params
+    ): Required<
         Pick<UseQueryOptions<Data>, 'onError' | 'onSettled' | 'onSuccess'>
     > {
         return {
             onSuccess: async data => this.onSuccess(client, params, data),
             onError: async err => this.onError(client, params, err),
-            onSettled: async (data, err) => this.onSettled(client, params, data, err),
+            onSettled: async (data, err) =>
+                this.onSettled(client, params, data, err),
         };
     }
 
@@ -173,16 +184,22 @@ export abstract class Resource<
             if (called) {
                 await this.onSuccess(client, params, data);
             }
+            console.log('RETURNING');
             return data;
         } catch (err) {
+            console.log('CAUGHT ERR');
             error = err;
             await this.onError(client, params, err);
-            throw err;
         } finally {
+            console.log('FINALLIED');
             if (called) {
+                console.log('FINALLIED CALLED');
                 await this.onSettled(client, params, data, error);
+                console.log('SETTLED');
             }
+            console.log('FINALLIED NOT CALLED');
         }
+        throw error;
     }
 
     /**
@@ -194,7 +211,12 @@ export abstract class Resource<
      * @param {object} [filters] - query filters
      * @returns {*} cached data (if exists)
      */
-    public getData(this: this, client: QueryClient, params: Params, filters?: QueryFilters): Data | undefined {
+    public getData(
+        this: this,
+        client: QueryClient,
+        params: Params,
+        filters?: QueryFilters
+    ): Data | undefined {
         return client.getQueryData(this.getKey(params), filters);
     }
 
@@ -206,7 +228,11 @@ export abstract class Resource<
      * @param {*} params - method params defined by class.
      * @returns {string} query status, null if not exists
      */
-    public getStatus(this: this, client: QueryClient, params: Params): QueryStatus | null {
+    public getStatus(
+        this: this,
+        client: QueryClient,
+        params: Params
+    ): QueryStatus | null {
         const state = client.getQueryState(this.getKey(params));
         return state?.status ?? null;
     }
@@ -263,8 +289,17 @@ export abstract class Resource<
      * @param {*} params - method params defined by class.
      * @param {object} [options] - `resetQueries` options.
      */
-    public async reset(this: this, client: QueryClient, params: Params, options?: ResetOptions): Promise<void> {
-        await client.resetQueries<Data>(this.getKey(params), { exact: true }, options);
+    public async reset(
+        this: this,
+        client: QueryClient,
+        params: Params,
+        options?: ResetOptions
+    ): Promise<void> {
+        await client.resetQueries<Data>(
+            this.getKey(params),
+            { exact: true },
+            options
+        );
     }
 
     /**
@@ -307,10 +342,7 @@ export abstract class Resource<
  * @param {Function} [options.onSettled] - onSettled handler
  * @returns {object} typed resource
  */
-export const resource = <
-    Data,
-    Params = DefaultParams
->(
+export const resource = <Data, Params = DefaultParams>(
     params: {
         getKey: Resource<Data, Params>['getKey'];
         queryFn: Resource<Data, Params>['queryFn'];
@@ -327,9 +359,9 @@ export const resource = <
     class ChildResource extends Resource<Data, Params> {
         protected getKey = params.getKey;
         protected queryFn = params.queryFn;
-        declare public onSuccess;
-        declare public onError;
-        declare public onSettled;
+        public declare onSuccess;
+        public declare onError;
+        public declare onSettled;
     }
     if (options.onSuccess) {
         ChildResource.prototype.onSuccess = options.onSuccess;

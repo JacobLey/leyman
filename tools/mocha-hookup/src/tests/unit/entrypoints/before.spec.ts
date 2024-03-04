@@ -6,7 +6,6 @@ import { before, suite, suiteSetup } from 'mocha-hookup';
 const order: number[] = [];
 
 suite('before', () => {
-
     mocha.before(() => {
         expect(order).to.deep.equal([]);
     });
@@ -21,29 +20,26 @@ suite('before', () => {
         return { abc: 123 as const };
     });
 
-    const mergedContextualBefore = contextualBefore.suiteSetup('Suite Setup with title', async (ctx, done) => {
+    const mergedContextualBefore = contextualBefore.suiteSetup(
+        'Suite Setup with title',
+        async (ctx, done) => {
+            expect(order).to.deep.equal([1]);
+            order.push(2);
 
-        expect(order).to.deep.equal([1]);
-        order.push(2);
+            expect(ctx).to.deep.equal({ abc: 123 });
+            expectTypeOf(ctx).toEqualTypeOf<{ abc: 123 }>();
 
-        expect(ctx).to.deep.equal({ abc: 123 });
-        expectTypeOf(ctx).toEqualTypeOf<{ abc: 123 }>();
+            setTimeout(() => {
+                done();
+            }, 5);
 
-        setTimeout(() => {
-            done();
-        }, 5);
-
-        return { efg: true };
-    });
+            return { efg: true };
+        }
+    );
 
     let firstRun = true;
     const mergedBeforeEach = mergedContextualBefore.beforeEach((ctx, done) => {
-
-        expect(order).to.deep.equal(
-            firstRun 
-                ? [1, 2, 3]
-                : [1, 2, 3, 4, 5]
-        );
+        expect(order).to.deep.equal(firstRun ? [1, 2, 3] : [1, 2, 3, 4, 5]);
         firstRun = false;
 
         done();
@@ -52,9 +48,8 @@ suite('before', () => {
     });
 
     suite('Chained with beforeEach', async () => {
-
         mergedBeforeEach.xit(
-            'No async with done', 
+            'No async with done',
             // @ts-expect-error
             async (ctx, done) => {
                 expectTypeOf(ctx).toEqualTypeOf<{
@@ -71,7 +66,6 @@ suite('before', () => {
             'Done cannot return',
             // @ts-expect-error
             (ctx, done): number => {
-
                 expect(order).to.deep.equal([1, 2, 3]);
                 order.push(4);
 
@@ -87,8 +81,7 @@ suite('before', () => {
             }
         );
 
-        mergedContextualBefore.afterEach(async function() {
-
+        mergedContextualBefore.afterEach(async function () {
             expect(order).to.deep.equal([1, 2, 3, 4]);
             order.push(5);
 
@@ -97,9 +90,7 @@ suite('before', () => {
     });
 
     suite('Test from before', () => {
-
-        mergedContextualBefore.it('runs test', async function(ctx) {
-
+        mergedContextualBefore.it('runs test', async function (ctx) {
             expect(order).to.deep.equal([1, 2, 3, 4, 5]);
             order.push(6);
 
@@ -116,7 +107,6 @@ suite('before', () => {
         });
 
         mergedContextualBefore.after('After with a title', (ctx, done) => {
-
             expect(order).to.deep.equal([1, 2, 3, 4, 5, 6]);
             order.push(7);
 
@@ -133,20 +123,20 @@ suite('before', () => {
         });
     });
 
-    contextualBefore.before(ctx => {
-        delete (ctx as Record<string, number>).abc;
-        return null;
-    }).suiteSetup(ctx => {
+    contextualBefore
+        .before(ctx => {
+            delete (ctx as Record<string, number>).abc;
+            return null;
+        })
+        .suiteSetup(ctx => {
+            expect(order).to.deep.equal([1, 2]);
+            order.push(3);
 
-        expect(order).to.deep.equal([1, 2]);
-        order.push(3);
-
-        expect(ctx).to.deep.equal({ abc: 123 });
-        expectTypeOf(ctx).toEqualTypeOf<{ abc: 123 }>();
-    });
+            expect(ctx).to.deep.equal({ abc: 123 });
+            expectTypeOf(ctx).toEqualTypeOf<{ abc: 123 }>();
+        });
 
     mergedContextualBefore.after(async ctx => {
-
         expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);
         order.push(8);
 

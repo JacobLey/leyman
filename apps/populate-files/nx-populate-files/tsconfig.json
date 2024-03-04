@@ -4,5 +4,16 @@
     "outDir": "dist",
     "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
-  }
+  },
+  "references": [
+    {
+      "path": "../../juniper"
+    },
+    {
+      "path": "../load-populate-files"
+    },
+    {
+      "path": "../../../tools/nx-tsc"
+    }
+  ]
 }

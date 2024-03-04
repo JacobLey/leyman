@@ -7,13 +7,17 @@ import {
     type SchemaParams,
     type SerializationParams,
 } from '../lib/schema.js';
-import type { AbstractClean, ConditionalNullable, JsonSchema, Nullable, SchemaType } from '../lib/types.js';
+import type {
+    AbstractClean,
+    ConditionalNullable,
+    JsonSchema,
+    Nullable,
+    SchemaType,
+} from '../lib/types.js';
 import { mergeAllOf } from '../lib/utils.js';
 
-interface StringParams<
-    T extends string,
-    N extends boolean
-> extends SchemaParams<Nullable<T, N>> {
+interface StringParams<T extends string, N extends boolean>
+    extends SchemaParams<Nullable<T, N>> {
     /**
      * Content encoding.
      */
@@ -25,10 +29,8 @@ interface StringParams<
     pattern?: string | string[];
 }
 
-interface StringGenerics<
-    T extends string,
-    N extends boolean
-> extends SchemaGenerics<Nullable<T, N>> {
+interface StringGenerics<T extends string, N extends boolean>
+    extends SchemaGenerics<Nullable<T, N>> {
     params: StringParams<T, N>;
 }
 
@@ -47,9 +49,8 @@ type AnyStringSchema = StringSchema<string, boolean>;
 export class StringSchema<
     T extends string,
     // Nullable
-    N extends boolean = false
+    N extends boolean = false,
 > extends AbstractSchema<StringGenerics<T, N>> {
-
     readonly #contentEncoding: string | null;
     readonly #contentMediaType: string | null;
     readonly #format: string | null;
@@ -59,27 +60,29 @@ export class StringSchema<
 
     protected override readonly schemaType = 'string';
 
-    declare public allOf: <
-        S extends StringSchema<string, boolean>
-    >(this: AnyStringSchema, schema: S) => StringSchema<
+    public declare allOf: <S extends StringSchema<string, boolean>>(
+        this: AnyStringSchema,
+        schema: S
+    ) => StringSchema<
         NonNullable<SchemaType<S>> & T,
         null extends SchemaType<S> ? N : boolean
     >;
 
-    declare public anyOf: <
-        S extends StringSchema<string, boolean>
-    >(this: AnyStringSchema, schemas: S[]) => StringSchema<
+    public declare anyOf: <S extends StringSchema<string, boolean>>(
+        this: AnyStringSchema,
+        schemas: S[]
+    ) => StringSchema<
         NonNullable<SchemaType<S>> & T,
         null extends SchemaType<S> ? N : boolean
     >;
 
-    declare public if: <
+    public declare if: <
         IfT extends string,
         IfN extends boolean,
         ThenT extends string,
         ElseT extends string,
         ThenN extends boolean = true,
-        ElseN extends boolean = true
+        ElseN extends boolean = true,
     >(
         this: AnyStringSchema,
         schema: StringSchema<IfT, IfN>,
@@ -88,21 +91,23 @@ export class StringSchema<
             StringSchema<ElseT, ElseN>
         >
     ) => StringSchema<
-        StripString<T & (ElseT | IfT & ThenT)>,
+        StripString<T & (ElseT | (IfT & ThenT))>,
         ConditionalNullable<N, IfN, ThenN, ElseN>
     >;
 
-    declare public not: <
-        NotN extends boolean
-    >(this: AnyStringSchema, schema: StringSchema<string, NotN>) => NotN extends true ? StringSchema<T, boolean> : this;
+    public declare not: <NotN extends boolean>(
+        this: AnyStringSchema,
+        schema: StringSchema<string, NotN>
+    ) => NotN extends true ? StringSchema<T, boolean> : this;
 
-    declare public nullable: (
+    public declare nullable: (
         this: AnyStringSchema
     ) => StringSchema<T, boolean extends N ? boolean : true>;
 
-    declare public oneOf: <
-        S extends StringSchema<string, boolean>
-    >(this: AnyStringSchema, schemas: S[]) => StringSchema<
+    public declare oneOf: <S extends StringSchema<string, boolean>>(
+        this: AnyStringSchema,
+        schemas: S[]
+    ) => StringSchema<
         NonNullable<SchemaType<S>> & T,
         null extends SchemaType<S> ? N : boolean
     >;
@@ -138,7 +143,10 @@ export class StringSchema<
      * @param {boolean} [options.writeOnly] - value should be hidden
      * @returns {StringSchema} string schema
      */
-    public static override create<T2 extends string>(this: void, options?: StringParams<T2, false>): StringSchema<T2> {
+    public static override create<T2 extends string>(
+        this: void,
+        options?: StringParams<T2, false>
+    ): StringSchema<T2> {
         return new StringSchema(options);
     }
 
@@ -228,7 +236,9 @@ export class StringSchema<
         this: this,
         start: Start
     ): StringSchema<StripString<`${Start}${string}` & T>, N> {
-        return this.pattern<`${Start}${string}`>(`^${escapeStringRegexp(start)}`);
+        return this.pattern<`${Start}${string}`>(
+            `^${escapeStringRegexp(start)}`
+        );
     }
 
     /**
@@ -252,10 +262,13 @@ export class StringSchema<
      * @param {string} contain - string literal
      * @returns {StringSchema} schema
      */
-    public contains<
-        Contain extends string
-    >(this: this, contain: Contain): StringSchema<StripString<`${string}${Contain}${string}` & T>, N> {
-        return this.pattern<`${string}${Contain}${string}`>(escapeStringRegexp(contain));
+    public contains<Contain extends string>(
+        this: this,
+        contain: Contain
+    ): StringSchema<StripString<`${string}${Contain}${string}` & T>, N> {
+        return this.pattern<`${string}${Contain}${string}`>(
+            escapeStringRegexp(contain)
+        );
     }
 
     /**
@@ -314,7 +327,9 @@ export class StringSchema<
     /**
      * @override
      */
-    protected static override getDefaultValues(params: SerializationParams): Record<string, unknown> {
+    protected static override getDefaultValues(
+        params: SerializationParams
+    ): Record<string, unknown> {
         return {
             ...super.getDefaultValues(params),
             contentEncoding: null,
@@ -328,7 +343,9 @@ export class StringSchema<
     /**
      * @override
      */
-    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
+    protected override toSchema(
+        params: SerializationParams
+    ): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         if (this.#format) {
@@ -349,7 +366,10 @@ export class StringSchema<
         const [pattern, ...patterns] = this.#patterns;
         if (pattern) {
             base.pattern = pattern;
-            mergeAllOf(base, patterns.map(p => ({ pattern: p })));
+            mergeAllOf(
+                base,
+                patterns.map(p => ({ pattern: p }))
+            );
         }
 
         return base;

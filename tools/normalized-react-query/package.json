@@ -22,37 +22,33 @@
   "sideEffects": false,
   "types": "./dist/index.js",
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "publishConfig": {
-    "exports": {
       ".": "./dist/index.js"
-    }
+  },
+  "peerDependencies": {
+    "@tanstack/react-query": "^4.0.10 && <5",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
   },
   "devDependencies": {
-    "@tanstack/react-query": "^5.4.3",
+    "@biomejs/biome": "^1.5.3",
+    "@tanstack/react-query": "^4.0.10 && <5",
     "@testing-library/react-hooks": "^8.0.1",
     "@types/chai": "^4.3.11",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.8.10",
     "@types/react": "^18.2.33",
     "@types/sinon": "^17.0.3",
+    "c8": "^8.0.1",
     "chai": "^5.1.0",
     "expect-type": "^0.17.3",
     "mocha": "^10.3.0",
+    "mocha-hookup": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
-    "nyc": "^15.1.0",
     "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "react-test-renderer": "^18.2.0",
     "sinon": "^17.0.1",
     "typescript": "^5.3.3"
-  },
-  "peerDependencies": {
-    "@tanstack/react-query": "^4.0.10",
-    "react": "^18.2.0"
   }
 }

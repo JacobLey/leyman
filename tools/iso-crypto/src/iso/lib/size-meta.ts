@@ -7,7 +7,9 @@ import type { Curve, Encryption } from './types.js';
  * @param {Encryption} encryption - encryption algorithm
  * @returns {object} size metadata
  */
-export const encryptionMeta = (encryption: Encryption): {
+export const encryptionMeta = (
+    encryption: Encryption
+): {
     secret: number;
     iv: number;
 } => ({
@@ -15,7 +17,9 @@ export const encryptionMeta = (encryption: Encryption): {
     iv: 16,
 });
 
-export const eccMeta = (curve: Curve): {
+export const eccMeta = (
+    curve: Curve
+): {
     bytes: number;
 } => {
     const bytePairs = Number.parseInt(curve.slice(1), 10) / 16;

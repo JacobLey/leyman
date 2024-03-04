@@ -6,9 +6,7 @@ import { after, suite, suiteTeardown } from 'mocha-hookup';
 const order: number[] = [];
 
 suite('after', () => {
-
     suite('Inside a suite', function () {
-
         this.retries(2);
 
         let shouldFail = true;
@@ -18,7 +16,6 @@ suite('after', () => {
         });
 
         suite('Inside another suite', () => {
-
             mocha.test('After is SuiteTeardown', () => {
                 expect(after).to.equal(suiteTeardown);
                 expectTypeOf(after).toEqualTypeOf(suiteTeardown);
@@ -51,38 +48,47 @@ suite('after', () => {
             order.push(3);
         });
 
-        const mergedContextualAfter = contextualAfter.suiteTeardown(async (ctx, done) => {
-            expect(ctx).to.deep.equal({ abc: 123 });
-            expectTypeOf(ctx).toEqualTypeOf<{
-                abc: number;
-            }>();
-            Object.assign(ctx, { ignored: [] });
-            expect(contextualAfter.after).to.equal(contextualAfter.suiteTeardown);
-            expectTypeOf(contextualAfter.after).toEqualTypeOf(contextualAfter.suiteTeardown);
+        const mergedContextualAfter = contextualAfter.suiteTeardown(
+            async (ctx, done) => {
+                expect(ctx).to.deep.equal({ abc: 123 });
+                expectTypeOf(ctx).toEqualTypeOf<{
+                    abc: number;
+                }>();
+                Object.assign(ctx, { ignored: [] });
+                expect(contextualAfter.after).to.equal(
+                    contextualAfter.suiteTeardown
+                );
+                expectTypeOf(contextualAfter.after).toEqualTypeOf(
+                    contextualAfter.suiteTeardown
+                );
 
-            setTimeout(() => {
-                expect(order).to.deep.equal([1, 2, 3]);
-                order.push(4);
-                console.log('CALLING DONE!!');
+                setTimeout(() => {
+                    expect(order).to.deep.equal([1, 2, 3]);
+                    order.push(4);
+                    console.log('CALLING DONE!!');
+                    done();
+                }, 10);
+
+                return Promise.resolve({ efg: true } as const);
+            }
+        );
+
+        contextualAfter.suiteTeardown(
+            'Contextual suite teardown',
+            (ctx, done) => {
+                expect(ctx).to.deep.equal({ abc: 123 });
+                expectTypeOf(ctx).toEqualTypeOf<{
+                    abc: number;
+                }>();
+
+                expect(order).to.deep.equal([1, 2, 3, 4]);
+                order.push(5);
+
                 done();
-            }, 10);
+            }
+        );
 
-            return Promise.resolve({ efg: true } as const);
-        });
-
-        contextualAfter.suiteTeardown('Contextual suite teardown', (ctx, done) => {
-            expect(ctx).to.deep.equal({ abc: 123 });
-            expectTypeOf(ctx).toEqualTypeOf<{
-                abc: number;
-            }>();
-
-            expect(order).to.deep.equal([1, 2, 3, 4]);
-            order.push(5);
-
-            done();
-        });
-
-        mergedContextualAfter.after(async (ctx) => {
+        mergedContextualAfter.after(async ctx => {
             expect(ctx).to.deep.equal({ abc: 123, efg: true });
             expectTypeOf(ctx).toEqualTypeOf<{
                 abc: number;
@@ -95,17 +101,16 @@ suite('after', () => {
     });
 
     after('After with a title', async () => {
-    
         expect(order).to.deep.equal([1, 2, 3, 4, 5, 6]);
         order.push(7);
     }).suiteTeardown(ctx => {
         expect(ctx).to.deep.equal({});
         expectTypeOf(ctx).toEqualTypeOf<{}>();
-    
+
         expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);
         order.push(8);
     });
-    
+
     mocha.after('Mocha enforced completion', () => {
         expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8]);
     });

@@ -5,9 +5,7 @@ import { customSchema, type SchemaType } from 'juniper';
 import type { AvailableProperties } from '../../types.js';
 
 suite('CustomSchema', () => {
-
     test('Custom schema + type', () => {
-
         const sym = Symbol('sym');
 
         const externalSchema = {
@@ -19,7 +17,9 @@ suite('CustomSchema', () => {
         const schema = customSchema<'abc' | number>(externalSchema);
 
         expect(schema.toJSON()).to.deep.equal(externalSchema);
-        expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<'abc' | number>();
+        expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+            'abc' | number
+        >();
     });
 
     test('Default empty object', () => {
@@ -30,12 +30,12 @@ suite('CustomSchema', () => {
     });
 
     suite('Invalid types', () => {
-
         test('Blocked methods', () => {
-
             const schema = customSchema();
 
-            expectTypeOf<AvailableProperties<typeof schema>>().toEqualTypeOf<'cast' | 'toJSON'>();
+            expectTypeOf<AvailableProperties<typeof schema>>().toEqualTypeOf<
+                'cast' | 'toJSON'
+            >();
         });
     });
 });

@@ -14,7 +14,6 @@ interface EncodeContext {
 }
 
 suite('Encode', () => {
-
     test('types', () => {
         expectTypeOf<typeof Encode>().toEqualTypeOf(BrowserEncode);
         expectTypeOf<typeof Encode>().toMatchTypeOf(NodeEncode);
@@ -22,7 +21,6 @@ suite('Encode', () => {
     });
 
     suite('decode', () => {
-
         const base64Test = ({ encode }: EncodeContext) => {
             for (const encoding of ['base64', 'base64url'] as const) {
                 for (const { input, output } of [
@@ -134,10 +132,12 @@ suite('Encode', () => {
             ]) {
                 const withDefault = encode.decode(input);
                 expect([...withDefault]).to.deep.equal(output);
-                expect(withDefault).to.deep.equal(encode.decode({
-                    text: input,
-                    encoding: 'utf8',
-                }));
+                expect(withDefault).to.deep.equal(
+                    encode.decode({
+                        text: input,
+                        encoding: 'utf8',
+                    })
+                );
             }
         };
 
@@ -150,12 +150,13 @@ suite('Encode', () => {
             ]) {
                 const buf = Buffer.from(arr);
                 expect(encode.decode(buf)).to.eq(buf);
-                expect(encode.decode({ text: buf, encoding: 'raw' })).to.eq(buf);
+                expect(encode.decode({ text: buf, encoding: 'raw' })).to.eq(
+                    buf
+                );
             }
         };
 
         suite('browser', () => {
-
             const withBrowserEncode = before(() => ({
                 encode: BrowserEncode,
             }));
@@ -167,7 +168,6 @@ suite('Encode', () => {
         });
 
         suite('node', () => {
-
             const withNodeEncode = before(() => ({
                 encode: NodeEncode,
             }));
@@ -180,7 +180,6 @@ suite('Encode', () => {
     });
 
     suite('encode', () => {
-
         const base64Test = ({ encode }: EncodeContext) => {
             for (const { input, output } of [
                 {
@@ -216,9 +215,9 @@ suite('Encode', () => {
                     output: '',
                 },
             ]) {
-                expect(
-                    encode.encode(Buffer.from(input), 'base64')
-                ).to.equal(output);
+                expect(encode.encode(Buffer.from(input), 'base64')).to.equal(
+                    output
+                );
             }
         };
 
@@ -257,9 +256,9 @@ suite('Encode', () => {
                     output: '',
                 },
             ]) {
-                expect(
-                    encode.encode(Buffer.from(input), 'base64url')
-                ).to.equal(output);
+                expect(encode.encode(Buffer.from(input), 'base64url')).to.equal(
+                    output
+                );
             }
         };
 
@@ -282,9 +281,9 @@ suite('Encode', () => {
                     output: '',
                 },
             ]) {
-                expect(
-                    encode.encode(Buffer.from(input), 'hex')
-                ).to.equal(output);
+                expect(encode.encode(Buffer.from(input), 'hex')).to.equal(
+                    output
+                );
             }
         };
 
@@ -311,7 +310,6 @@ suite('Encode', () => {
         };
 
         suite('browser', () => {
-
             const withBrowserEncode = before(() => ({
                 encode: BrowserEncode,
             }));
@@ -323,7 +321,6 @@ suite('Encode', () => {
         });
 
         suite('node', () => {
-
             const withNodeEncode = before(() => ({
                 encode: NodeEncode,
             }));

@@ -23,16 +23,15 @@ export interface IEmitter {
 /**
  * List of all registered events for an emitter.
  */
-export type AllEventTypes<
-    Emitter extends IEmitter
-> = keyof Emitter[typeof events];
+export type AllEventTypes<Emitter extends IEmitter> =
+    keyof Emitter[typeof events];
 
 /**
  * Helper type to access "detail" of event given "type".
  */
 export type GetEventDetail<
     Emitter extends IEmitter,
-    Event extends AllEventTypes<Emitter>
+    Event extends AllEventTypes<Emitter>,
 > = Emitter[typeof events][Event];
 
 /**
@@ -40,9 +39,10 @@ export type GetEventDetail<
  *
  * Restricted to `string` as that is native implementation requirement.
  */
-export type EventList<
-    Emitter extends IEmitter
-> = Extract<AllEventTypes<Emitter>, string>;
+export type EventList<Emitter extends IEmitter> = Extract<
+    AllEventTypes<Emitter>,
+    string
+>;
 
 /**
  * List of events that support being wrapped by custom event.
@@ -51,11 +51,12 @@ export type EventList<
  *
  * Events that declare explicit Event types are not allowed and must use native methods.
  */
-export type CustomEventList<
-    Emitter extends IEmitter
-> = {
-    [K in AllEventTypes<Emitter>]: GetEventDetail<Emitter, K> extends Event ? never : K;
-}[AllEventTypes<Emitter>] & (string | symbol);
+export type CustomEventList<Emitter extends IEmitter> = {
+    [K in AllEventTypes<Emitter>]: GetEventDetail<Emitter, K> extends Event
+        ? never
+        : K;
+}[AllEventTypes<Emitter>] &
+    (string | symbol);
 
 /**
  * Convenience wrapper for assigning the `type` + `detail` to a custom event if possible.
@@ -64,23 +65,22 @@ export type CustomEventList<
  */
 export type EventType<
     Type extends number | string | symbol,
-    Detail
-> = Detail extends Event ? Detail : CustomEvent<
-    Type extends string ? Type : string,
-    Detail
->;
+    Detail,
+> = Detail extends Event
+    ? Detail
+    : CustomEvent<Type extends string ? Type : string, Detail>;
 
 export type EventListenerParam<
     Emitter extends IEmitter,
-    EventName extends EventList<Emitter>
+    EventName extends EventList<Emitter>,
 > = EventType<EventName, GetEventDetail<Emitter, EventName>>;
 
 /**
  * Native EventTarget listener, with additional types for event + detail.
  */
-type EventTargetCallback <
+type EventTargetCallback<
     Emitter extends IEmitter,
-    EventName extends EventList<Emitter>
+    EventName extends EventList<Emitter>,
 > = (event: EventListenerParam<Emitter, EventName>) => void;
 
 /**
@@ -88,7 +88,7 @@ type EventTargetCallback <
  */
 interface EventTargetHandler<
     Emitter extends IEmitter,
-    EventName extends EventList<Emitter>
+    EventName extends EventList<Emitter>,
 > {
     handleEvent: EventTargetCallback<Emitter, EventName>;
 }
@@ -98,8 +98,10 @@ interface EventTargetHandler<
  */
 export type EventTargetListener<
     Emitter extends IEmitter,
-    EventName extends EventList<Emitter>
-> = EventTargetCallback<Emitter, EventName> | EventTargetHandler<Emitter, EventName>;
+    EventName extends EventList<Emitter>,
+> =
+    | EventTargetCallback<Emitter, EventName>
+    | EventTargetHandler<Emitter, EventName>;
 
 /**
  * Null is required for consistency with default types.
@@ -107,15 +109,15 @@ export type EventTargetListener<
  */
 export type NullishEventTargetListener<
     Emitter extends IEmitter,
-    EventName extends EventList<Emitter>
+    EventName extends EventList<Emitter>,
 > = EventTargetListener<Emitter, EventName> | null;
 
 /**
  * CustomEvent listener that is internally wrapped for EventTarget.
  */
-export type CustomEventListener <
+export type CustomEventListener<
     Emitter extends IEmitter,
-    EventName extends CustomEventList<Emitter>
+    EventName extends CustomEventList<Emitter>,
 > = (
     eventDetail: GetEventDetail<Emitter, EventName>,
     customEvent: EventType<EventName, GetEventDetail<Emitter, EventName>>

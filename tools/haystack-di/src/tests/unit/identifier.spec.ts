@@ -1,19 +1,26 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
-import { type AsyncSupplier, type HaystackId, type HaystackIdType, identifier, type LateBinding, type Supplier } from 'haystack-di';
+import {
+    type AsyncSupplier,
+    type HaystackId,
+    type HaystackIdType,
+    identifier,
+    type LateBinding,
+    type Supplier,
+} from 'haystack-di';
 
 suite('Generate identifier', () => {
-
     test('From type parameter', () => {
-
         interface Foo {
             foo: () => boolean;
             bar: number;
         }
 
         const id = identifier<Foo>();
-        expectTypeOf(id).toEqualTypeOf<HaystackId<Foo, null, null, false, false, false, false>>();
+        expectTypeOf(id).toEqualTypeOf<
+            HaystackId<Foo, null, null, false, false, false, false>
+        >();
         expect(id.id).to.equal('haystack-id');
         expect(id.construct).to.equal(null);
 
@@ -42,11 +49,8 @@ suite('Generate identifier', () => {
     });
 
     test('From class', () => {
-
         class Foo {
-            constructor(
-                public readonly val: string
-            ) {}
+            constructor(public readonly val: string) {}
         }
         class Bar extends Foo {
             constructor(val: string) {
@@ -70,7 +74,9 @@ suite('Generate identifier', () => {
         }
 
         const fooId = identifier(Foo);
-        expectTypeOf(fooId).toEqualTypeOf<HaystackId<Foo, typeof Foo, null, false, false, false, false>>();
+        expectTypeOf(fooId).toEqualTypeOf<
+            HaystackId<Foo, typeof Foo, null, false, false, false, false>
+        >();
         expect(fooId.id).to.equal('Foo');
         expect(fooId.construct).to.equal(Foo);
 
@@ -83,21 +89,22 @@ suite('Generate identifier', () => {
         // @ts-expect-error
         identifier<typeof Foo>(PrivateBar);
         expect(privateBarId.construct).to.equal(PrivateBar);
-        expectTypeOf(privateBarId).toEqualTypeOf<HaystackId<PrivateBar, null, null, false, false, false, false>>();
+        expectTypeOf(privateBarId).toEqualTypeOf<
+            HaystackId<PrivateBar, null, null, false, false, false, false>
+        >();
 
         identifier(ExtraBar);
         // @ts-expect-error
         identifier<typeof Foo>(ExtraBar);
 
         const unknownConstructor = {} as {
-            new (): unknown
+            new (): unknown;
         };
         // @ts-expect-error
         identifier(unknownConstructor);
     });
 
     test('From existing id', () => {
-
         const id = identifier<string>();
 
         const dupe = identifier(id);
@@ -109,7 +116,6 @@ suite('Generate identifier', () => {
 declare const x: unique symbol;
 
 suite('annotations', () => {
-
     interface Foo {
         foo: 123;
     }
@@ -117,11 +123,10 @@ suite('annotations', () => {
     const id = identifier<Foo>();
 
     test('named', () => {
-
         const named = id.named('<named>');
         expectTypeOf(named.annotations.named).toEqualTypeOf<'<named>'>;
         expect(named.annotations.named).to.equal('<named>');
-        
+
         expectTypeOf(id.annotations.named).toEqualTypeOf<null>;
         expect(id.annotations.named).to.equal(null);
 
@@ -141,11 +146,7 @@ suite('annotations', () => {
         expect(id).to.not.equal(symbolNamed);
         expect(symbolNamed.named()).to.equal(id);
 
-        expect(
-            named.named('<new-name>')
-        ).to.equal(
-            id.named('<new-name>')
-        );
+        expect(named.named('<new-name>')).to.equal(id.named('<new-name>'));
 
         const removed = named.named();
         expectTypeOf(removed).toEqualTypeOf(id);
@@ -158,7 +159,7 @@ suite('annotations', () => {
         // @ts-expect-error
         id.named(Symbol.for('abc'));
         // @ts-expect-error
-        id.named(Math.random() ? sym : 'a' as const);
+        id.named(Math.random() ? sym : ('a' as const));
         // @ts-expect-error
         id.named(Math.random() ? sym : Symbol.metadata);
         // @ts-expect-error
@@ -168,13 +169,14 @@ suite('annotations', () => {
     });
 
     test('nullable', () => {
-
         const nullable = id.nullable();
-        expectTypeOf<HaystackIdType<typeof nullable>>().toEqualTypeOf<Foo | null>();
+        expectTypeOf<
+            HaystackIdType<typeof nullable>
+        >().toEqualTypeOf<Foo | null>();
 
         expectTypeOf(nullable.annotations.nullable).toEqualTypeOf<true>;
         expect(nullable.annotations.nullable).to.equal(true);
-        
+
         expectTypeOf(id.annotations.nullable).toEqualTypeOf<false>;
         expect(id.annotations.nullable).to.equal(false);
 
@@ -190,13 +192,14 @@ suite('annotations', () => {
     });
 
     test('undefinable', () => {
-
         const undefinable = id.undefinable();
-        expectTypeOf<HaystackIdType<typeof undefinable>>().toEqualTypeOf<Foo | undefined>();
+        expectTypeOf<HaystackIdType<typeof undefinable>>().toEqualTypeOf<
+            Foo | undefined
+        >();
 
         expectTypeOf(undefinable.annotations.undefinable).toEqualTypeOf<true>;
         expect(undefinable.annotations.undefinable).to.equal(true);
-        
+
         expectTypeOf(id.annotations.undefinable).toEqualTypeOf<false>;
         expect(id.annotations.undefinable).to.equal(false);
 
@@ -212,9 +215,10 @@ suite('annotations', () => {
     });
 
     test('supplier', () => {
-
         const supplier = id.supplier();
-        expectTypeOf<HaystackIdType<typeof supplier>>().toEqualTypeOf<Supplier<Foo>>();
+        expectTypeOf<HaystackIdType<typeof supplier>>().toEqualTypeOf<
+            Supplier<Foo>
+        >();
 
         expectTypeOf(supplier.annotations.supplier).toEqualTypeOf<{
             sync: true;
@@ -226,7 +230,9 @@ suite('annotations', () => {
         });
 
         const asyncSupplier = id.supplier('async');
-        expectTypeOf<HaystackIdType<typeof asyncSupplier>>().toEqualTypeOf<AsyncSupplier<Foo>>();
+        expectTypeOf<HaystackIdType<typeof asyncSupplier>>().toEqualTypeOf<
+            AsyncSupplier<Foo>
+        >();
 
         expectTypeOf(asyncSupplier.annotations.supplier).toEqualTypeOf<{
             sync: false;
@@ -236,7 +242,7 @@ suite('annotations', () => {
             sync: false,
             propagateScope: false,
         });
-        
+
         expectTypeOf(id.annotations.supplier).toEqualTypeOf<false>;
         expect(id.annotations.supplier).to.equal(false);
 
@@ -256,13 +262,14 @@ suite('annotations', () => {
     });
 
     test('lateBinding', () => {
-
         const lateBinding = id.lateBinding();
-        expectTypeOf<HaystackIdType<typeof lateBinding>>().toEqualTypeOf<LateBinding<Foo>>();
+        expectTypeOf<HaystackIdType<typeof lateBinding>>().toEqualTypeOf<
+            LateBinding<Foo>
+        >();
 
         expectTypeOf(lateBinding.annotations.lateBinding).toEqualTypeOf<true>;
         expect(lateBinding.annotations.lateBinding).to.equal(true);
-        
+
         expectTypeOf(id.annotations.lateBinding).toEqualTypeOf<false>;
         expect(id.annotations.lateBinding).to.equal(false);
 
@@ -278,7 +285,6 @@ suite('annotations', () => {
     });
 
     test('baseId', () => {
-
         expect(id.baseId()).to.equal(id);
         expectTypeOf(id.baseId()).toEqualTypeOf(id);
 
@@ -292,14 +298,32 @@ suite('annotations', () => {
     });
 
     test('all', () => {
-
-        const all = id.named('<name>').nullable().undefinable().supplier().lateBinding();
-        const allOrder = id.lateBinding().supplier().undefinable().nullable().named('<name>');
+        const all = id
+            .named('<name>')
+            .nullable()
+            .undefinable()
+            .supplier()
+            .lateBinding();
+        const allOrder = id
+            .lateBinding()
+            .supplier()
+            .undefinable()
+            .nullable()
+            .named('<name>');
         expectTypeOf(allOrder).toEqualTypeOf(all);
         expect(allOrder).to.equal(all);
 
-        expectTypeOf<HaystackIdType<typeof all>>().toEqualTypeOf<LateBinding<Supplier<Foo | null | undefined>>>();
+        expectTypeOf<HaystackIdType<typeof all>>().toEqualTypeOf<
+            LateBinding<Supplier<Foo | null | undefined>>
+        >();
 
-        expect(all.named().nullable(false).undefinable(false).supplier(false).lateBinding(false)).to.equal(id);
+        expect(
+            all
+                .named()
+                .nullable(false)
+                .undefinable(false)
+                .supplier(false)
+                .lateBinding(false)
+        ).to.equal(id);
     });
 });

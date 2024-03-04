@@ -1,14 +1,11 @@
 export const patchKey = Symbol('patchKey');
 
 type AnyFunc = (...args: any[]) => any;
-export type PatchableInterface <T extends AnyFunc> = T & {
+export type PatchableInterface<T extends AnyFunc> = T & {
     [patchKey]: (...args: Parameters<T>) => ReturnType<T>;
 };
 
-const patchableMap = new WeakMap<
-    AnyFunc,
-    PatchableInterface<AnyFunc>
->();
+const patchableMap = new WeakMap<AnyFunc, PatchableInterface<AnyFunc>>();
 
 /**
  * Higher order function that allows patching a method.
@@ -42,10 +39,7 @@ const patchableMap = new WeakMap<
  * @returns {Function} Method with same signature as input, but patchable.
  */
 
-export const patch = <T extends AnyFunc>(
-    fn: T
-): PatchableInterface<T> => {
-
+export const patch = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {
     if (patchableMap.has(fn)) {
         return patchableMap.get(fn)! as PatchableInterface<T>;
     }
@@ -54,7 +48,10 @@ export const patch = <T extends AnyFunc>(
         return fn as PatchableInterface<T>;
     }
 
-    const patched = function(this: unknown, ...args: Parameters<T>): ReturnType<T> {
+    const patched = function (
+        this: unknown,
+        ...args: Parameters<T>
+    ): ReturnType<T> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return patched[patchKey]!.call(this, ...args);
     } as PatchableInterface<T>;

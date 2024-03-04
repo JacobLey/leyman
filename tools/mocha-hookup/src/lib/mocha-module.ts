@@ -1,17 +1,12 @@
 import { bind, createModule, identifier } from 'haystack-di';
-import { 
-    after,
-    afterEach,
-    before, 
-    beforeEach, 
-    suite, 
-    test, 
-} from 'mocha';
+import { after, afterEach, before, beforeEach, suite, test } from 'mocha';
 
 export const afterIdentifier = identifier<typeof after>().named('after');
-export const afterEachIdentifier = identifier<typeof afterEach>().named('afterEach');
+export const afterEachIdentifier =
+    identifier<typeof afterEach>().named('afterEach');
 export const beforeIdentifier = identifier<typeof before>().named('before');
-export const beforeEachIdentifier = identifier<typeof beforeEach>().named('beforeEach');
+export const beforeEachIdentifier =
+    identifier<typeof beforeEach>().named('beforeEach');
 export const suiteIdentifier = identifier<typeof suite>().named('suite');
 export const testIdentifier = identifier<typeof test>().named('test');
 
@@ -20,14 +15,9 @@ export const testIdentifier = identifier<typeof test>().named('test');
  */
 export const mochaModule = createModule(
     bind(afterIdentifier).withInstance(after)
-).addBinding(
-    bind(afterEachIdentifier).withInstance(afterEach)
-).addBinding(
-    bind(beforeIdentifier).withInstance(before)
-).addBinding(
-    bind(beforeEachIdentifier).withInstance(beforeEach)
-).addBinding(
-    bind(suiteIdentifier).withInstance(suite)
-).addBinding(
-    bind(testIdentifier).withInstance(test)
-);
+)
+    .addBinding(bind(afterEachIdentifier).withInstance(afterEach))
+    .addBinding(bind(beforeIdentifier).withInstance(before))
+    .addBinding(bind(beforeEachIdentifier).withInstance(beforeEach))
+    .addBinding(bind(suiteIdentifier).withInstance(suite))
+    .addBinding(bind(testIdentifier).withInstance(test));

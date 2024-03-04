@@ -3,16 +3,19 @@ import { expect } from 'chai';
 import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha-hookup';
-import { enumSchema, mergeSchema, numberSchema, type SchemaType, stringSchema } from 'juniper';
+import {
+    enumSchema,
+    mergeSchema,
+    numberSchema,
+    type SchemaType,
+    stringSchema,
+} from 'juniper';
 
 const Ajv = defaultImport(DefaultAjv);
 
 suite('MergeSchema', () => {
-
     suite('allOf', () => {
-
         test('success', () => {
-
             const schema = mergeSchema()
                 .allOf(stringSchema().startsWith('abc').nullable())
                 .allOf(numberSchema().nullable())
@@ -34,20 +37,19 @@ suite('MergeSchema', () => {
     });
 
     suite('anyOf', () => {
-
         test('success', () => {
-
-            const schema = mergeSchema().anyOf([
-                stringSchema().endsWith('abc'),
-                stringSchema().startsWith('abc'),
-                numberSchema(),
-            ]).if(
-                numberSchema(),
-                {
+            const schema = mergeSchema()
+                .anyOf([
+                    stringSchema().endsWith('abc'),
+                    stringSchema().startsWith('abc'),
+                    numberSchema(),
+                ])
+                .if(numberSchema(), {
                     else: stringSchema(),
-                }
-            );
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<`${string}abc` | `abc${string}` | number>();
+                });
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                `${string}abc` | `abc${string}` | number
+            >();
 
             expect(schema.toJSON()).to.deep.equal({
                 if: {
@@ -62,7 +64,9 @@ suite('MergeSchema', () => {
                     { type: 'number' },
                 ],
             });
-            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
+            const validator = new Ajv({ strict: true }).compile(
+                schema.toJSON()
+            );
             expect(validator('abcefg')).to.equal(true);
             expect(validator('aabcefg')).to.equal(false);
             expect(validator('aabcabc')).to.equal(true);
@@ -89,14 +93,15 @@ suite('MergeSchema', () => {
                         ],
                     },
                 ],
-                anyOf: [
-                    { type: 'number' },
-                    { type: 'string' },
-                ],
+                anyOf: [{ type: 'number' }, { type: 'string' }],
             });
 
-            const numSchema = schema.anyOf([numberSchema({ type: 'integer' }).nullable()]);
-            expectTypeOf<SchemaType<typeof numSchema>>().toEqualTypeOf<number>();
+            const numSchema = schema.anyOf([
+                numberSchema({ type: 'integer' }).nullable(),
+            ]);
+            expectTypeOf<
+                SchemaType<typeof numSchema>
+            >().toEqualTypeOf<number>();
 
             expect(numSchema.toJSON()).to.deep.equal({
                 anyOf: [
@@ -116,30 +121,28 @@ suite('MergeSchema', () => {
                     },
                 ],
             });
-            const numValidator = new Ajv({ strict: true }).compile(numSchema.toJSON());
+            const numValidator = new Ajv({ strict: true }).compile(
+                numSchema.toJSON()
+            );
             expect(numValidator('abcefg')).to.equal(false);
             expect(numValidator(123.456)).to.equal(false);
             expect(numValidator(123)).to.equal(true);
 
             const neverSchema = numSchema.anyOf([]);
-            expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
+            expectTypeOf<
+                SchemaType<typeof neverSchema>
+            >().toEqualTypeOf<never>();
         });
     });
 
     suite('if', () => {
-
         test('success', () => {
-
-            const schema = mergeSchema({ title: '<title>' }).if(
-                stringSchema().startsWith('a').nullable(),
-                {
+            const schema = mergeSchema({ title: '<title>' })
+                .if(stringSchema().startsWith('a').nullable(), {
                     then: stringSchema().endsWith('c'),
-                }
-            ).not(
-                enumSchema().enum('abc' as const)
-            ).not(
-                stringSchema().contains('bbb').nullable()
-            );
+                })
+                .not(enumSchema().enum('abc' as const))
+                .not(stringSchema().contains('bbb').nullable());
 
             expect(schema.toJSON()).to.deep.equal({
                 title: '<title>',
@@ -163,7 +166,9 @@ suite('MergeSchema', () => {
                     const: 'abc',
                 },
             });
-            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
+            const validator = new Ajv({ strict: true }).compile(
+                schema.toJSON()
+            );
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<unknown>();
             expect(validator(123)).to.equal(true);
             expect(validator('xyz')).to.equal(true);
@@ -201,7 +206,9 @@ suite('MergeSchema', () => {
                     enum: ['abc'],
                 },
             });
-            const oaValidator = new Ajv({ strict: true }).compile(schema.toJSON({ openApi30: true }));
+            const oaValidator = new Ajv({ strict: true }).compile(
+                schema.toJSON({ openApi30: true })
+            );
             expect(oaValidator(123)).to.equal(true);
             expect(oaValidator('xyz')).to.equal(true);
             expect(oaValidator('a')).to.equal(false);
@@ -213,15 +220,15 @@ suite('MergeSchema', () => {
     });
 
     suite('oneOf', () => {
-
         test('success', () => {
-
             const schema = mergeSchema().oneOf([
                 stringSchema().endsWith('abc'),
                 stringSchema().startsWith('abc'),
                 numberSchema(),
             ]);
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<`${string}abc` | `abc${string}` | number>();
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                `${string}abc` | `abc${string}` | number
+            >();
 
             expect(schema.toJSON()).to.deep.equal({
                 oneOf: [
@@ -230,7 +237,9 @@ suite('MergeSchema', () => {
                     { type: 'number' },
                 ],
             });
-            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
+            const validator = new Ajv({ strict: true }).compile(
+                schema.toJSON()
+            );
             expect(validator('abcefg')).to.equal(true);
             expect(validator('aabcefg')).to.equal(false);
             expect(validator('aabcabc')).to.equal(true);
@@ -239,8 +248,12 @@ suite('MergeSchema', () => {
             expect(validator(null)).to.equal(false);
             expect(validator(false)).to.equal(false);
 
-            const numSchema = schema.oneOf([numberSchema({ type: 'integer' }).nullable()]);
-            expectTypeOf<SchemaType<typeof numSchema>>().toEqualTypeOf<number>();
+            const numSchema = schema.oneOf([
+                numberSchema({ type: 'integer' }).nullable(),
+            ]);
+            expectTypeOf<
+                SchemaType<typeof numSchema>
+            >().toEqualTypeOf<number>();
 
             expect(numSchema.toJSON()).to.deep.equal({
                 oneOf: [
@@ -254,24 +267,24 @@ suite('MergeSchema', () => {
                     },
                 ],
             });
-            const numValidator = new Ajv({ strict: true }).compile(numSchema.toJSON());
+            const numValidator = new Ajv({ strict: true }).compile(
+                numSchema.toJSON()
+            );
             expect(numValidator('abcefg')).to.equal(false);
             expect(numValidator(123.456)).to.equal(false);
             expect(numValidator(123)).to.equal(true);
 
             const neverSchema = numSchema.oneOf([]);
-            expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
+            expectTypeOf<
+                SchemaType<typeof neverSchema>
+            >().toEqualTypeOf<never>();
         });
     });
 
     suite('ref', () => {
-
         suite('success', () => {
             const schema = mergeSchema()
-                .oneOf([
-                    stringSchema().startsWith('abc'),
-                    numberSchema(),
-                ])
+                .oneOf([stringSchema().startsWith('abc'), numberSchema()])
                 .anyOf([
                     enumSchema({
                         enum: [1, 2, 3, 4] as const,
@@ -279,15 +292,10 @@ suite('MergeSchema', () => {
                     stringSchema().endsWith('abc'),
                 ])
                 .ref('/path/to/base')
-                .if(
-                    numberSchema(),
-                    {
-                        then: numberSchema({ type: 'integer' }),
-                    }
-                )
-                .allOf(
-                    mergeSchema().not(enumSchema({ enum: [null] }))
-                );
+                .if(numberSchema(), {
+                    then: numberSchema({ type: 'integer' }),
+                })
+                .allOf(mergeSchema().not(enumSchema({ enum: [null] })));
 
             expect(schema.toJSON()).to.deep.equal({
                 $ref: '/path/to/base',
@@ -339,12 +347,10 @@ suite('MergeSchema', () => {
     });
 
     suite('Invalid types', () => {
-
         test('Blocked methods', () => {
-
             const schema = mergeSchema();
 
-            expectTypeOf<typeof schema['nullable']>().toBeNever();
+            expectTypeOf<(typeof schema)['nullable']>().toBeNever();
         });
     });
 });

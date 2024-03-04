@@ -48,6 +48,7 @@
     "@nx/devkit": "^18.0.4"
   },
   "devDependencies": {
+    "@biomejs/biome": "^1.5.3",
     "@types/chai": "^4.3.11",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
@@ -61,7 +62,6 @@
     "mocha-hookup": "workspace:^",
     "nx-populate-files": "workspace:^",
     "nx-tsc": "workspace:^",
-    "nyc": "^15.1.0",
     "sinon": "^17.0.1",
     "sinon-typed-stub": "workspace:^",
     "typescript": "^5.3.3"

@@ -1,4 +1,12 @@
-import { arraySchema, booleanSchema, enumSchema, mergeSchema, objectSchema, type SchemaType, stringSchema } from 'juniper';
+import {
+    arraySchema,
+    booleanSchema,
+    enumSchema,
+    mergeSchema,
+    objectSchema,
+    type SchemaType,
+    stringSchema,
+} from 'juniper';
 
 const dependencyObject = objectSchema({
     properties: {
@@ -19,7 +27,7 @@ const dependencyObject = objectSchema({
             projects: mergeSchema().oneOf([
                 arraySchema(stringSchema()),
                 stringSchema(),
-            ])
+            ]),
         },
         required: ['projects'],
     }),
@@ -27,10 +35,7 @@ const dependencyObject = objectSchema({
 export type DependencyObject = SchemaType<typeof dependencyObject>;
 
 export const dependsOnSchema = arraySchema(
-    mergeSchema().oneOf([
-        stringSchema(),
-        dependencyObject,
-    ])
+    mergeSchema().oneOf([stringSchema(), dependencyObject])
 );
 
 export type DependsOn = SchemaType<typeof dependsOnSchema>;

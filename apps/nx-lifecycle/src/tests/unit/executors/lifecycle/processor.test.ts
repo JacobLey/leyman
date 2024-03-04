@@ -21,35 +21,35 @@ const idempotentAssertion = ({
     params: Parameters<typeof Processor.processNxAndProjectJsons>[0];
     expected: ReturnType<typeof Processor.processNxAndProjectJsons>;
 }) => {
-
     const result = Processor.processNxAndProjectJsons(deepFreeze(params));
     expect(result).to.deep.equal(expected, 'Result is expected');
 
-    const idempotentResult = Processor.processNxAndProjectJsons(deepFreeze({
-        options: params.options,
-        nxJson: result.processedNxJson,
-        projectJsons: result.processedProjectJsons,
-    }));
+    const idempotentResult = Processor.processNxAndProjectJsons(
+        deepFreeze({
+            options: params.options,
+            nxJson: result.processedNxJson,
+            projectJsons: result.processedProjectJsons,
+        })
+    );
 
     expect(idempotentResult).to.deep.equal(expected, 'Result is idempotent');
 
     // Assert serialization order as well
     const stringifiedExpected = JSON.stringify(expected, null, 2);
-    expect(
-        JSON.stringify(result, null, 2)
-    ).to.deep.equal(stringifiedExpected, 'Result attributes are in order provided');
+    expect(JSON.stringify(result, null, 2)).to.deep.equal(
+        stringifiedExpected,
+        'Result attributes are in order provided'
+    );
 
-    expect(
-        JSON.stringify(idempotentResult, null, 2)
-    ).to.equal(stringifiedExpected, 'Idempotent result attributes are in order provided');
+    expect(JSON.stringify(idempotentResult, null, 2)).to.equal(
+        stringifiedExpected,
+        'Idempotent result attributes are in order provided'
+    );
 };
 
 suite('Processor', () => {
-
     suite('processNxAndProjectJsons', () => {
-
         test('Adds dependencies for standalone stage', () => {
-
             idempotentAssertion({
                 params: {
                     options: {
@@ -76,14 +76,14 @@ suite('Processor', () => {
                         {
                             targets: {
                                 withStage: {},
-                            }
+                            },
                         },
                         {
                             targets: {
                                 withStage2: {
                                     dependsOn: ['some', 'other', 'tasks'],
                                 },
-                            }
+                            },
                         },
                     ],
                 },
@@ -105,7 +105,11 @@ suite('Processor', () => {
                             },
                             standalone: {
                                 executor: 'nx:noop',
-                                dependsOn: ['standalone:_', 'withStage', 'withStage2'],
+                                dependsOn: [
+                                    'standalone:_',
+                                    'withStage',
+                                    'withStage2',
+                                ],
                                 configurations: { __lifecycle: {} },
                             },
                             'second:_': {
@@ -128,18 +132,23 @@ suite('Processor', () => {
                                 standalone: {},
                                 'second:_': {},
                                 second: {},
-                            }
+                            },
                         },
                         {
                             targets: {
                                 withStage2: {
-                                    dependsOn: ['some', 'other', 'tasks', 'standalone:_'],
+                                    dependsOn: [
+                                        'some',
+                                        'other',
+                                        'tasks',
+                                        'standalone:_',
+                                    ],
                                 },
                                 'standalone:_': {},
                                 standalone: {},
                                 'second:_': {},
                                 second: {},
-                            }
+                            },
                         },
                     ],
                 },
@@ -147,14 +156,18 @@ suite('Processor', () => {
         });
 
         test('Adds dependencies for stage with hooks', () => {
-
             idempotentAssertion({
                 params: {
                     options: {
                         stages: {
                             firstStage: {
                                 hooks: ['first', 'second'],
-                                dependsOn: [{ dependencies: true, target: 'some-other' }],
+                                dependsOn: [
+                                    {
+                                        dependencies: true,
+                                        target: 'some-other',
+                                    },
+                                ],
                             },
                             secondStage: {
                                 hooks: ['only'],
@@ -184,7 +197,12 @@ suite('Processor', () => {
                             },
                             'firstStage:_': {
                                 executor: 'nx:noop',
-                                dependsOn: [{ dependencies: true, target: 'some-other' }],
+                                dependsOn: [
+                                    {
+                                        dependencies: true,
+                                        target: 'some-other',
+                                    },
+                                ],
                                 configurations: { __lifecycle: {} },
                             },
                             'firstStage:first': {
@@ -197,7 +215,7 @@ suite('Processor', () => {
                                 dependsOn: ['firstStage:first', 'withStage2'],
                                 configurations: { __lifecycle: {} },
                             },
-                            'firstStage': {
+                            firstStage: {
                                 executor: 'nx:noop',
                                 dependsOn: ['firstStage:second'],
                                 configurations: { __lifecycle: {} },
@@ -209,10 +227,13 @@ suite('Processor', () => {
                             },
                             'secondStage:only': {
                                 executor: 'nx:noop',
-                                dependsOn: ['secondStage:_', 'withSecondStage1'],
+                                dependsOn: [
+                                    'secondStage:_',
+                                    'withSecondStage1',
+                                ],
                                 configurations: { __lifecycle: {} },
                             },
-                            'secondStage': {
+                            secondStage: {
                                 executor: 'nx:noop',
                                 dependsOn: ['secondStage:only'],
                                 configurations: { __lifecycle: {} },
@@ -225,11 +246,11 @@ suite('Processor', () => {
                                 'firstStage:_': {},
                                 'firstStage:first': {},
                                 'firstStage:second': {},
-                                'firstStage': {},
+                                firstStage: {},
                                 'secondStage:_': {},
                                 'secondStage:only': {},
-                                'secondStage': {},
-                            }
+                                secondStage: {},
+                            },
                         },
                     ],
                 },
@@ -237,7 +258,6 @@ suite('Processor', () => {
         });
 
         test('Removes old lifecycle targets', () => {
-
             idempotentAssertion({
                 params: {
                     options: {
@@ -256,13 +276,16 @@ suite('Processor', () => {
                             'oldStage:oldHook': {
                                 configurations: {
                                     __lifecycle: {},
-                                }
+                                },
                             },
-                            'oldStage': {
+                            oldStage: {
                                 configurations: {
                                     __lifecycle: {},
                                 },
-                                dependsOn: ['oldStage:oldHook', 'ignoredTarget']
+                                dependsOn: [
+                                    'oldStage:oldHook',
+                                    'ignoredTarget',
+                                ],
                             },
                         },
                     },
@@ -271,16 +294,16 @@ suite('Processor', () => {
                             targets: {
                                 ignoredTarget: {},
                                 'oldStage:oldHook': {
-                                    configurations: {}
+                                    configurations: {},
                                 },
-                                'oldStage': {
+                                oldStage: {
                                     dependsOn: ['ignored'],
                                 },
                                 myTarget: {
                                     dependsOn: ['ignoredTarget'],
                                 },
                             },
-                        }
+                        },
                     ],
                 },
                 expected: {
@@ -322,7 +345,7 @@ suite('Processor', () => {
                                 'newStage:_': {},
                                 'newStage:newHook': {},
                                 newStage: {},
-                            }
+                            },
                         },
                     ],
                 },
@@ -330,9 +353,7 @@ suite('Processor', () => {
         });
 
         suite('Does not add or remove extra fields', () => {
-
             test('Does not add targets', () => {
-
                 idempotentAssertion({
                     params: {
                         options: {
@@ -345,7 +366,7 @@ suite('Processor', () => {
                         projectJsons: [
                             {
                                 name: '<name>',
-                            }
+                            },
                         ],
                     },
                     expected: {
@@ -355,14 +376,13 @@ suite('Processor', () => {
                         processedProjectJsons: [
                             {
                                 name: '<name>',
-                            }
+                            },
                         ],
                     },
                 });
             });
 
             test('Does not add dependsOn', () => {
-
                 idempotentAssertion({
                     params: {
                         options: {
@@ -410,14 +430,13 @@ suite('Processor', () => {
                                     'standalone:_': {},
                                     standalone: {},
                                 },
-                            }
+                            },
                         ],
                     },
                 });
             });
 
             test('Does not remove targets', () => {
-
                 idempotentAssertion({
                     params: {
                         options: {
@@ -442,14 +461,13 @@ suite('Processor', () => {
                         processedProjectJsons: [
                             {
                                 targets: {},
-                            }
+                            },
                         ],
                     },
                 });
             });
 
             test('Does not remove dependsOn', () => {
-
                 idempotentAssertion({
                     params: {
                         options: {
@@ -518,17 +536,14 @@ suite('Processor', () => {
                                 'standalone:_': {
                                     executor: 'nx:noop',
                                     configurations: {
-                                        __lifecycle: {}
+                                        __lifecycle: {},
                                     },
                                 },
                                 standalone: {
                                     executor: 'nx:noop',
-                                    dependsOn: [
-                                        'standalone:_',
-                                        'withHook',
-                                    ],
+                                    dependsOn: ['standalone:_', 'withHook'],
                                     configurations: {
-                                        __lifecycle: {}
+                                        __lifecycle: {},
                                     },
                                 },
                             },
@@ -545,10 +560,10 @@ suite('Processor', () => {
                                         executor: '<executor>',
                                         dependsOn: [],
                                     },
-                                    "standalone:_": {},
+                                    'standalone:_': {},
                                     standalone: {},
                                 },
-                            }
+                            },
                         ],
                     },
                 });
@@ -556,123 +571,129 @@ suite('Processor', () => {
         });
 
         suite('failure', () => {
-
             test('Overlap between stage and nx.json target', () => {
-
                 expect(() => {
-
-                    Processor.processNxAndProjectJsons(deepFreeze({
-                        options: {
-                            stages: {
-                                overlap: {},
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    overlap: {},
+                                },
+                                targets: {},
                             },
-                            targets: {},
-                        },
-                        nxJson: {
-                            targetDefaults: {
-                                overlap: {},
+                            nxJson: {
+                                targetDefaults: {
+                                    overlap: {},
+                                },
                             },
-                        },
-                        projectJsons: [{}],
-                    }))
+                            projectJsons: [{}],
+                        })
+                    );
                 }).to.throw('Overlap in lifecycle hook and target: overlap');
             });
 
             test('Overlap between stage and registered target', () => {
-
                 expect(() => {
-
-                    Processor.processNxAndProjectJsons(deepFreeze({
-                        options: {
-                            stages: {
-                                overlap: {},
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    overlap: {},
+                                },
+                                targets: {
+                                    overlap: 'overlap',
+                                },
                             },
-                            targets: {
-                                overlap: 'overlap',
-                            },
-                        },
-                        nxJson: {},
-                        projectJsons: [{}],
-                    }))
+                            nxJson: {},
+                            projectJsons: [{}],
+                        })
+                    );
                 }).to.throw('Overlap in lifecycle hook and target: overlap');
             });
 
             test('Registered stage does not exist', () => {
-
                 expect(() => {
-
-                    Processor.processNxAndProjectJsons(deepFreeze({
-                        options: {
-                            stages: {
-                                myStage: {},
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    myStage: {},
+                                },
+                                targets: {
+                                    myTarget: 'doesNotExist',
+                                },
                             },
-                            targets: {
-                                myTarget: 'doesNotExist',
-                            },
-                        },
-                        nxJson: {},
-                        projectJsons: [{}],
-                    }))
+                            nxJson: {},
+                            projectJsons: [{}],
+                        })
+                    );
                 }).to.throw('Hook for target myTarget not found: doesNotExist');
             });
 
             test('Registered stage is anchor', () => {
-
                 expect(() => {
-
-                    Processor.processNxAndProjectJsons(deepFreeze({
-                        options: {
-                            stages: {
-                                myStage: {},
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    myStage: {},
+                                },
+                                targets: {
+                                    myTarget: 'myStage:_',
+                                },
                             },
-                            targets: {
-                                myTarget: 'myStage:_',
-                            },
-                        },
-                        nxJson: {},
-                        projectJsons: [{}],
-                    }))
-                }).to.throw('Target myTarget cannot be part of anchor hook myStage:_');
+                            nxJson: {},
+                            projectJsons: [{}],
+                        })
+                    );
+                }).to.throw(
+                    'Target myTarget cannot be part of anchor hook myStage:_'
+                );
             });
 
             test('Registered stage is has hooks', () => {
-
                 expect(() => {
-
-                    Processor.processNxAndProjectJsons(deepFreeze({
-                        options: {
-                            stages: {
-                                myStage: {
-                                    hooks: ['hookName'],
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    myStage: {
+                                        hooks: ['hookName'],
+                                    },
+                                },
+                                targets: {
+                                    myTarget: 'myStage',
                                 },
                             },
-                            targets: {
-                                myTarget: 'myStage',
-                            },
-                        },
-                        nxJson: {},
-                        projectJsons: [{}],
-                    }))
-                }).to.throw('Target myTarget cannot be part of base hook myStage. Use format myStage:<hook>');
+                            nxJson: {},
+                            projectJsons: [{}],
+                        })
+                    );
+                }).to.throw(
+                    'Target myTarget cannot be part of base hook myStage. Use format myStage:<hook>'
+                );
             });
 
             test('Stage depends on stage internals', () => {
-
                 expect(() => {
-                    Processor.processNxAndProjectJsons(deepFreeze({
-                        options: {
-                            stages: {
-                                firstStage: {},
-                                secondStage: {
-                                    dependsOn: ['firstStage:_'],
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    firstStage: {},
+                                    secondStage: {
+                                        dependsOn: ['firstStage:_'],
+                                    },
                                 },
+                                targets: {},
                             },
-                            targets: {},
-                        },
-                        nxJson: {},
-                        projectJsons: [{}],
-                    }))
-                }).to.throw('Invalid dependency detected on lifecycle stage secondStage');
+                            nxJson: {},
+                            projectJsons: [{}],
+                        })
+                    );
+                }).to.throw(
+                    'Invalid dependency detected on lifecycle stage secondStage'
+                );
             });
         });
     });

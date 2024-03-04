@@ -10,7 +10,6 @@ import * as NodeRandom from '../../../iso/random/node.js';
 import '../../../iso/random/types.js';
 
 suite('Random', () => {
-
     test('types', () => {
         expectTypeOf<typeof Random>().toEqualTypeOf(BrowserRandom);
         expectTypeOf<typeof Random>().toEqualTypeOf(NodeRandom);
@@ -18,8 +17,9 @@ suite('Random', () => {
     });
 
     suite('randomBytes', () => {
-
-        const randomTest = async ({ random }: { random : typeof NodeRandom }) => {
+        const randomTest = async ({
+            random,
+        }: { random: typeof NodeRandom }) => {
             for (const size of [0, 1, 10, 32, 100, 1234]) {
                 const bytes = await random.randomBytes(size);
                 expect(bytes.length).to.equal(size);
@@ -28,14 +28,12 @@ suite('Random', () => {
         };
 
         suite('browser', () => {
-
             before(() => ({
                 random: BrowserRandom,
             })).test('success', randomTest);
         });
 
         suite('node', () => {
-
             before(() => ({
                 random: NodeRandom,
             })).test('success', randomTest);

@@ -22,40 +22,43 @@ type AnyMergeSchema = MergeSchema<any>;
  * This schema without any conditions is effectively an `unknown` schema, allowing everything
  * to validate.
  */
-export class MergeSchema<
-    T
-> extends AbstractSchema<SchemaGenerics<T>> {
+export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
+    public declare allOf: <S extends Schema<unknown>>(
+        this: AnyMergeSchema,
+        schema: S
+    ) => MergeSchema<SchemaType<S> & T>;
 
-    declare public allOf: <
-        S extends Schema<unknown>
-    >(this: AnyMergeSchema, schema: S) => MergeSchema<SchemaType<S> & T>;
+    public declare anyOf: <S extends Schema<unknown>>(
+        this: AnyMergeSchema,
+        schemas: S[]
+    ) => MergeSchema<SchemaType<S> & T>;
 
-    declare public anyOf: <
-        S extends Schema<unknown>
-    >(this: AnyMergeSchema, schemas: S[]) => MergeSchema<SchemaType<S> & T>;
-
-    declare public if: <
+    public declare if: <
         If extends AbstractSchema<SchemaGenerics<unknown>>,
         Then extends AbstractSchema<SchemaGenerics<unknown>>,
-        Else extends AbstractSchema<SchemaGenerics<unknown>>
+        Else extends AbstractSchema<SchemaGenerics<unknown>>,
     >(
         this: AnyMergeSchema,
         schema: If,
         conditionals: ConditionalResult<Then, Else>
     ) => MergeSchema<
-        T & (SchemaType<Else> | SchemaType<If> & SchemaType<Then>)
+        T & (SchemaType<Else> | (SchemaType<If> & SchemaType<Then>))
     >;
 
-    declare public not: (this: AnyMergeSchema, schemas: Schema<unknown>) => this;
+    public declare not: (
+        this: AnyMergeSchema,
+        schemas: Schema<unknown>
+    ) => this;
 
     /**
      * Not applicable.
      */
-    declare public nullable: never;
+    public declare nullable: never;
 
-    declare public oneOf: <
-        S extends Schema<unknown>
-    >(this: AnyMergeSchema, schemas: S[]) => MergeSchema<SchemaType<S> & T>;
+    public declare oneOf: <S extends Schema<unknown>>(
+        this: AnyMergeSchema,
+        schemas: S[]
+    ) => MergeSchema<SchemaType<S> & T>;
 
     /**
      * Create a new instance of MergeSchema.

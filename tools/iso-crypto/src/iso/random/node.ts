@@ -12,4 +12,5 @@ import type * as Random from './types.js';
  * @param {number} size - number of bytes to generate
  * @returns {Promise<Uint8Array>} random bytes
  */
-export const randomBytes: typeof Random['randomBytes'] = promisify(randomBytesCb);
+export const randomBytes: (typeof Random)['randomBytes'] =
+    promisify(randomBytesCb);

@@ -5,19 +5,16 @@ import { stub, verifyAndRestore } from 'sinon';
 import * as Patch from 'named-patch';
 
 suite('namedPatch', () => {
-
     afterEach(() => {
         verifyAndRestore();
     });
 
     suite('patch', () => {
-
         test('With sync', () => {
-
-            const syncMethod = <
-                A extends string,
-                B = [123]
-            >(a: A, b: B[]): { a: [A]; b: B[]; c: boolean } => ({ a: [a], b, c: true });
+            const syncMethod = <A extends string, B = [123]>(
+                a: A,
+                b: B[]
+            ): { a: [A]; b: B[]; c: boolean } => ({ a: [a], b, c: true });
 
             const patched = Patch.patch(syncMethod);
             expect(patched[Patch.patchKey]).to.eq(syncMethod);
@@ -53,8 +50,9 @@ suite('namedPatch', () => {
         });
 
         test('With async', async () => {
-
-            const asyncMethod = Patch.patch(async (a: number): Promise<number> => a * 2);
+            const asyncMethod = Patch.patch(
+                async (a: number): Promise<number> => a * 2
+            );
 
             expect(await asyncMethod(2)).to.equal(4);
 
@@ -64,7 +62,6 @@ suite('namedPatch', () => {
         });
 
         test('With this', () => {
-
             let counter = 0;
 
             const context = {
@@ -72,7 +69,9 @@ suite('namedPatch', () => {
                 decrement: () => counter--,
             };
 
-            const contextMethod = Patch.patch(function(this: typeof context): void {
+            const contextMethod = Patch.patch(function (
+                this: typeof context
+            ): void {
                 this.increment();
             });
 
@@ -86,11 +85,11 @@ suite('namedPatch', () => {
             container.contextMethod();
             expect(counter).to.equal(2);
 
-            stub(contextMethod, Patch.patchKey).callsFake(
-                function(this: typeof context) {
-                    this.decrement();
-                }
-            );
+            stub(contextMethod, Patch.patchKey).callsFake(function (
+                this: typeof context
+            ) {
+                this.decrement();
+            });
 
             container.contextMethod();
             expect(counter).to.equal(1);
@@ -98,9 +97,7 @@ suite('namedPatch', () => {
     });
 
     suite('getPatched', () => {
-
         test('success', () => {
-
             const method = (): void => {};
             const patched = Patch.patch(method);
 
@@ -108,17 +105,18 @@ suite('namedPatch', () => {
         });
 
         suite('failure', () => {
-
             test('Never patched', () => {
-                expect(
-                    () => Patch.getPatched(() => {})
-                ).to.throw(Error, 'Method is un-patched');
+                expect(() => Patch.getPatched(() => {})).to.throw(
+                    Error,
+                    'Method is un-patched'
+                );
             });
 
             test('Already patched', () => {
-                expect(
-                    () => Patch.getPatched(Patch.patch(() => {}))
-                ).to.throw(Error, 'Method is already patched');
+                expect(() => Patch.getPatched(Patch.patch(() => {}))).to.throw(
+                    Error,
+                    'Method is already patched'
+                );
             });
         });
     });

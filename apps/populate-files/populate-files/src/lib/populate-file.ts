@@ -7,14 +7,17 @@ import type {
     PopulationResponseUpdateReason,
 } from './types.js';
 
-export const formatErrorMessage = ({ filePath, reason }: {
+export const formatErrorMessage = ({
+    filePath,
+    reason,
+}: {
     filePath: string;
     reason: PopulationResponseUpdateReason;
 }) => {
     return `File ${filePath} not up to date. Reason: ${reason}`;
 };
 
-const createPathAndWrite = async({
+const createPathAndWrite = async ({
     filePath,
     content,
     dryRun,
@@ -34,9 +37,12 @@ const createPathAndWrite = async({
     await writeFile(filePath, content);
 };
 
-export const internalPopulateFile = async (
-    { filePath, content, check, dryRun }: NormalizedFileParams
-): Promise<PopulationResponse> => {
+export const internalPopulateFile = async ({
+    filePath,
+    content,
+    check,
+    dryRun,
+}: NormalizedFileParams): Promise<PopulationResponse> => {
     const rawFile = await loadRawFile(filePath);
 
     let reason: PopulationResponseUpdateReason;

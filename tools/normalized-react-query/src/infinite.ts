@@ -7,7 +7,12 @@ import {
 } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useForceRerender } from './lib/hooks.js';
-import type { DefaultPage, EmptyObject, PaginatedData, PaginatedParams } from './lib/types.js';
+import type {
+    DefaultPage,
+    EmptyObject,
+    PaginatedData,
+    PaginatedParams,
+} from './lib/types.js';
 import { Paginated } from './paginated.js';
 
 /**
@@ -26,9 +31,8 @@ export abstract class Infinite<
     Data,
     Params extends object = EmptyObject,
     Page = DefaultPage,
-    Meta = EmptyObject
+    Meta = EmptyObject,
 > extends Paginated<Data, Params, Page, Meta> {
-
     /**
      * React Hook for "infinite" data loading.
      * Wraps `useQueries` in addition to extra methods to support pagination.
@@ -37,12 +41,22 @@ export abstract class Infinite<
      * @returns {object} useQuery response.
      */
     public useInfinite(
-        ...input: [
-            Omit<PaginatedParams<Params, Page>, 'nextPage'>,
-            UseQueryOptions<PaginatedData<Data, Page, Meta>>,
-        ] |
-        [Omit<PaginatedParams<Params, Page>, 'nextPage'>] |
-        (EmptyObject extends Params ? [] | [null | undefined, UseQueryOptions<PaginatedData<Data, Page, Meta>>] : never)
+        ...input:
+            | [
+                  Omit<PaginatedParams<Params, Page>, 'nextPage'>,
+                  UseQueryOptions<PaginatedData<Data, Page, Meta>>,
+              ]
+            | [Omit<PaginatedParams<Params, Page>, 'nextPage'>]
+            | (EmptyObject extends Params
+                  ?
+                          | []
+                          | [
+                                  null | undefined,
+                                  UseQueryOptions<
+                                      PaginatedData<Data, Page, Meta>
+                                  >,
+                              ]
+                  : never)
     ): Omit<UseQueryResult<PaginatedData<Data, Page, Meta>>, 'data'> & {
         lastData: UseQueryResult<PaginatedData<Data, Page, Meta>>['data'];
         data: Data[];
@@ -50,12 +64,11 @@ export abstract class Infinite<
         hasNextPage: boolean;
         fetchNextPage: () => void;
     } {
-
         const params = input[0] ?? {};
         const options = input[1];
 
         const defaultPageParams = {
-            ...params as PaginatedParams<Params, Page>,
+            ...(params as PaginatedParams<Params, Page>),
             nextPage: null,
         };
         const defaultKey = this.getKey(defaultPageParams);
@@ -79,7 +92,12 @@ export abstract class Infinite<
             const baseQueries: Required<
                 Pick<
                     UseQueryOptions<PaginatedData<Data, Page, Meta>>,
-                    'onError' | 'onSettled' | 'onSuccess' | 'queryFn' | 'queryHash' | 'queryKey'
+                    | 'onError'
+                    | 'onSettled'
+                    | 'onSuccess'
+                    | 'queryFn'
+                    | 'queryHash'
+                    | 'queryKey'
                 >
             >[] = [
                 {
@@ -91,7 +109,9 @@ export abstract class Infinite<
             ];
             const queryHashSet = new Set([hashedDefaultKey]);
             // Mutate array internally (so `useMemo` response stays "immutable")
-            const appendToBaseQuery = (query: (typeof baseQueries)[number]): void => {
+            const appendToBaseQuery = (
+                query: (typeof baseQueries)[number]
+            ): void => {
                 if (!queryHashSet.has(query.queryHash)) {
                     // Only append if unique (dedupe `fetchNextPage` calls).
                     baseQueries.push(query);
@@ -100,21 +120,27 @@ export abstract class Infinite<
                 }
             };
             return [baseQueries, appendToBaseQuery];
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+            // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [hashedDefaultKey]);
 
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const results = useQueries({ queries: queries.map(x => ({ ...x, ...options })) });
+        const results = useQueries({
+            queries: queries.map(x => ({ ...x, ...options })),
+        });
 
         const last = results.at(-1)!;
 
         // Pull individual `data` elements out of paginated responses.
         // Then dedupe based on identifier, favoring earlier appearance.
-        const rawDatas = results.filter(
-            (x): x is UseQueryResult<PaginatedData<Data, Page, Meta>> & { isSuccess: true } => x.isSuccess
-        ).flatMap(
-            x => x.data.data
-        );
+        const rawDatas = results
+            .filter(
+                (
+                    x
+                ): x is UseQueryResult<PaginatedData<Data, Page, Meta>> & {
+                    isSuccess: true;
+                } => x.isSuccess
+            )
+            .flatMap(x => x.data.data);
         const deduped: typeof rawDatas = [];
         const deduper = new Set<unknown>();
         for (const rawData of rawDatas) {
@@ -128,7 +154,7 @@ export abstract class Infinite<
         const [
             hasNextPage,
             fetchNextPage,
-        // eslint-disable-next-line react-hooks/rules-of-hooks
+            // eslint-disable-next-line react-hooks/rules-of-hooks
         ] = useMemo(() => {
             if (last.isSuccess) {
                 const { nextPage } = last.data;
@@ -137,13 +163,14 @@ export abstract class Infinite<
                         true,
                         () => {
                             const nextPageParams = {
-                                ...params as PaginatedParams<Params, Page>,
+                                ...(params as PaginatedParams<Params, Page>),
                                 nextPage,
                             };
                             const nextPageKey = this.getKey(nextPageParams);
                             appendQuery({
                                 queryKey: nextPageKey,
-                                queryFn: async () => this.queryFn(nextPageParams),
+                                queryFn: async () =>
+                                    this.queryFn(nextPageParams),
                                 queryHash: queryKeyHashFn(nextPageKey),
                                 ...this.getHandlers(client, nextPageParams),
                             });
@@ -152,7 +179,7 @@ export abstract class Infinite<
                 }
             }
             return [false, () => {}];
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+            // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [client, hashedDefaultKey, last.isSuccess, last.data]);
 
         return {
@@ -203,7 +230,7 @@ export const infinite = <
     Data,
     Params extends object = EmptyObject,
     Page = DefaultPage,
-    Meta = EmptyObject
+    Meta = EmptyObject,
 >(
     params: {
         getKey: Infinite<Data, Params, Page, Meta>['getKey'];
@@ -215,22 +242,23 @@ export const infinite = <
         onSettled?: Infinite<Data, Params, Page, Meta>['onSettled'];
         getIdentifier?: Infinite<Data, Params, Page, Meta>['getIdentifier'];
     } = {}
-// eslint-disable-next-line jsdoc/require-jsdoc
-): Infinite<Data, Params, Page, Meta> => new class extends Infinite<Data, Params, Page, Meta> {
-    protected getKey = params.getKey;
-    protected queryFn = params.queryFn;
-    static {
-        if (options.onSuccess) {
-            this.prototype.onSuccess = options.onSuccess;
+    // eslint-disable-next-line jsdoc/require-jsdoc
+): Infinite<Data, Params, Page, Meta> =>
+    new (class extends Infinite<Data, Params, Page, Meta> {
+        protected getKey = params.getKey;
+        protected queryFn = params.queryFn;
+        static {
+            if (options.onSuccess) {
+                this.prototype.onSuccess = options.onSuccess;
+            }
+            if (options.onError) {
+                this.prototype.onError = options.onError;
+            }
+            if (options.onSettled) {
+                this.prototype.onSettled = options.onSettled;
+            }
+            if (options.getIdentifier) {
+                this.prototype.getIdentifier = options.getIdentifier;
+            }
         }
-        if (options.onError) {
-            this.prototype.onError = options.onError;
-        }
-        if (options.onSettled) {
-            this.prototype.onSettled = options.onSettled;
-        }
-        if (options.getIdentifier) {
-            this.prototype.getIdentifier = options.getIdentifier;
-        }
-    }
-}();
+    })();

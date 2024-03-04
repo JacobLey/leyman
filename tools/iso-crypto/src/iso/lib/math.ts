@@ -48,38 +48,38 @@ interface Curve {
  */
 export const curves = {
     p256: {
-        p: (2n ** 224n) * (2n ** 32n - 1n) + 2n ** 192n + 2n ** 96n - 1n,
-        a: 0xFFFFFFFF_00000001_00000000_00000000_00000000_FFFFFFFF_FFFFFFFF_FFFFFFFCn,
-        b: 0x5AC635D8_AA3A93E7_B3EBBD55_769886BC_651D06B0_CC53B0F6_3BCE3C3E_27D2604Bn,
+        p: 2n ** 224n * (2n ** 32n - 1n) + 2n ** 192n + 2n ** 96n - 1n,
+        a: 0xffffffff_00000001_00000000_00000000_00000000_ffffffff_ffffffff_fffffffcn,
+        b: 0x5ac635d8_aa3a93e7_b3ebbd55_769886bc_651d06b0_cc53b0f6_3bce3c3e_27d2604bn,
         g: {
-            x: 0x6B17D1F2_E12C4247_F8BCE6E5_63A440F2_77037D81_2DEB33A0_F4A13945_D898C296n,
-            y: 0x4FE342E2_FE1A7F9B_8EE7EB4A_7C0F9E16_2BCE3357_6B315ECE_CBB64068_37BF51F5n,
+            x: 0x6b17d1f2_e12c4247_f8bce6e5_63a440f2_77037d81_2deb33a0_f4a13945_d898c296n,
+            y: 0x4fe342e2_fe1a7f9b_8ee7eb4a_7c0f9e16_2bce3357_6b315ece_cbb64068_37bf51f5n,
         },
     },
     p384: {
         p: 2n ** 384n - 2n ** 128n - 2n ** 96n + 2n ** 32n - 1n,
         // eslint-disable-next-line max-len
-        a: 0xFFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFE_FFFFFFFF_00000000_00000000_FFFFFFFCn,
+        a: 0xffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_fffffffe_ffffffff_00000000_00000000_fffffffcn,
         // eslint-disable-next-line max-len
-        b: 0xB3312FA7_E23EE7E4_988E056B_E3F82D19_181D9C6E_FE814112_0314088F_5013875A_C656398D_8A2ED19D_2A85C8ED_D3EC2AEFn,
+        b: 0xb3312fa7_e23ee7e4_988e056b_e3f82d19_181d9c6e_fe814112_0314088f_5013875a_c656398d_8a2ed19d_2a85c8ed_d3ec2aefn,
         g: {
             // eslint-disable-next-line max-len
-            x: 0xAA87CA22_BE8B0537_8EB1C71E_F320AD74_6E1D3B62_8BA79B98_59F741E0_82542A38_5502F25D_BF55296C_3A545E38_72760AB7n,
+            x: 0xaa87ca22_be8b0537_8eb1c71e_f320ad74_6e1d3b62_8ba79b98_59f741e0_82542a38_5502f25d_bf55296c_3a545e38_72760ab7n,
             // eslint-disable-next-line max-len
-            y: 0x3617DE4A_96262C6F_5D9E98BF_9292DC29_F8F41DBD_289A147C_E9DA3113_B5F0B8C0_0A60B1CE_1D7E819D_7A431D7C_90EA0E5Fn,
+            y: 0x3617de4a_96262c6f_5d9e98bf_9292dc29_f8f41dbd_289a147c_e9da3113_b5f0b8c0_0a60b1ce_1d7e819d_7a431d7c_90ea0e5fn,
         },
     },
     p521: {
         p: 2n ** 521n - 1n,
         // eslint-disable-next-line max-len
-        a: 0x1FF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFF_FFFFFFFCn,
+        a: 0x1ff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_fffffffcn,
         // eslint-disable-next-line max-len
-        b: 0x51_953EB961_8E1C9A1F_929A21A0_B68540EE_A2DA725B_99B315F3_B8B48991_8EF109E1_56193951_EC7E937B_1652C0BD_3BB1BF07_3573DF88_3D2C34F1_EF451FD4_6B503F00n,
+        b: 0x51_953eb961_8e1c9a1f_929a21a0_b68540ee_a2da725b_99b315f3_b8b48991_8ef109e1_56193951_ec7e937b_1652c0bd_3bb1bf07_3573df88_3d2c34f1_ef451fd4_6b503f00n,
         g: {
             // eslint-disable-next-line max-len
-            x: 0xC6_858E06B7_0404E9CD_9E3ECB66_2395B442_9C648139_053FB521_F828AF60_6B4D3DBA_A14B5E77_EFE75928_FE1DC127_A2FFA8DE_3348B3C1_856A429B_F97E7E31_C2E5BD66n,
+            x: 0xc6_858e06b7_0404e9cd_9e3ecb66_2395b442_9c648139_053fb521_f828af60_6b4d3dba_a14b5e77_efe75928_fe1dc127_a2ffa8de_3348b3c1_856a429b_f97e7e31_c2e5bd66n,
             // eslint-disable-next-line max-len
-            y: 0x118_39296A78_9A3BC004_5C8A5FB4_2C7D1BD9_98F54449_579B4468_17AFBD17_273E662C_97EE7299_5EF42640_C550B901_3FAD0761_353C7086_A272C240_88BE9476_9FD16650n,
+            y: 0x118_39296a78_9a3bc004_5c8a5fb4_2c7d1bd9_98f54449_579b4468_17afbd17_273e662c_97ee7299_5ef42640_c550b901_3fad0761_353c7086_a272c240_88be9476_9fd16650n,
         },
     },
 };
@@ -100,7 +100,6 @@ export const curves = {
  * @returns {object} base solution
  */
 const euclidian = (a: bigint, b: bigint): Point => {
-
     const pairs: { a: bigint; b: bigint }[] = [];
     let oldA = a;
     let oldB = b;
@@ -175,14 +174,17 @@ const positiveMod = (x: bigint, mod: bigint): bigint => {
  * @returns {Point} result point
  */
 const addPoints = (p: Point, q: Point, curve: Curve): Point => {
-    const { rise, run } = p.x === q.x ? {
-        rise: 3n * p.x * p.x + curve.a,
-        run: 2n * p.y,
-    } : {
-        rise: q.y - p.y,
-        run: q.x - p.x,
-    };
-    const slope = rise * modularInverse(run, curve.p) % curve.p;
+    const { rise, run } =
+        p.x === q.x
+            ? {
+                  rise: 3n * p.x * p.x + curve.a,
+                  run: 2n * p.y,
+              }
+            : {
+                  rise: q.y - p.y,
+                  run: q.x - p.x,
+              };
+    const slope = (rise * modularInverse(run, curve.p)) % curve.p;
 
     const x = positiveMod(slope * slope - q.x - p.x, curve.p);
     return {
@@ -202,14 +204,15 @@ const addPoints = (p: Point, q: Point, curve: Curve): Point => {
  * @returns {Point} public key point
  */
 export const derivePublicKey = (privateKey: bigint, curve: Curve): Point => {
-
     const bits = [...privateKey.toString(2)].reverse();
 
     let doublePoint: Point | null = null;
     let sum: Point | null = null;
 
     for (const bit of bits) {
-        doublePoint = doublePoint ? addPoints(doublePoint, doublePoint, curve) : curve.g;
+        doublePoint = doublePoint
+            ? addPoints(doublePoint, doublePoint, curve)
+            : curve.g;
         if (bit === '1') {
             sum = sum ? addPoints(sum, doublePoint, curve) : doublePoint;
         }
@@ -259,15 +262,14 @@ const power = (x: bigint, y: bigint, p: bigint): bigint => {
  * @returns {bigint} y
  */
 const modSqrt = (n: bigint, p: bigint): bigint => {
-
     let s = 1n;
 
-    while ((p - 1n) % (2n ** s) === 0n) {
+    while ((p - 1n) % 2n ** s === 0n) {
         ++s;
     }
     --s;
 
-    const q = (p - 1n) / (2n ** s);
+    const q = (p - 1n) / 2n ** s;
 
     let z = 1n;
     let res = power(z, (p - 1n) / 2n, p);
@@ -299,8 +301,11 @@ const modSqrt = (n: bigint, p: bigint): bigint => {
     return r;
 };
 
-export const deriveYCoordinate = (x: bigint, odd: boolean, curve: Curve): bigint => {
-
+export const deriveYCoordinate = (
+    x: bigint,
+    odd: boolean,
+    curve: Curve
+): bigint => {
     const y = modSqrt(x ** 3n + curve.a * x + curve.b, curve.p);
     // eslint-disable-next-line no-bitwise
     const isOdd = !!(y & 1n);

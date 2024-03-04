@@ -11,7 +11,12 @@ import { StringSchema } from './schemas/string.js';
 import { TupleSchema } from './schemas/tuple.js';
 
 export type { EmptyObject, PatternProperties } from './schemas/object.js';
-export type { EmptyIndex, JsonSchema, Schema, SchemaType } from './lib/types.js';
+export type {
+    EmptyIndex,
+    JsonSchema,
+    Schema,
+    SchemaType,
+} from './lib/types.js';
 
 export {
     ArraySchema,

@@ -23,16 +23,19 @@ declare const typeCached: typeof typeCache;
 export abstract class Mutation<
     Data,
     Params = DefaultParams,
-    Variables = DefaultParams
+    Variables = DefaultParams,
 > {
-
     /**
      * Used to access type parameters.
      * See `QueryData`, `QueryParams`, and `QueryVariables`.
      *
      * __DO NOT USE__
      */
-    declare public readonly [typeCached]: { data: Data; params: Params; variables: Variables };
+    public declare readonly [typeCached]: {
+        data: Data;
+        params: Params;
+        variables: Variables;
+    };
 
     /**
      * React Hook for data manipulation. Wrapper around `useMutation`.
@@ -40,23 +43,31 @@ export abstract class Mutation<
      * @param {*} params - method params defined by class.
      * @returns {object} useMutation response.
      */
-    public useMutation(params: Params): UseMutationResult<Data, unknown, Variables> {
+    public useMutation(
+        params: Params
+    ): UseMutationResult<Data, unknown, Variables> {
         // eslint-disable-next-line react-hooks/rules-of-hooks
         const client = useQueryClient();
         const mutationKey = this.getKey(params);
 
         // eslint-disable-next-line react-hooks/rules-of-hooks
-        const [mutationFn, onSuccess, onError, onSettled] = useMemo(() => [
-            async (variables: Variables) => this.mutationFn(params, variables),
-            async (data: Data, variables: Variables) => this.onSuccess(client, params, data, variables),
-            async (error: unknown, variables: Variables) => this.onError(client, params, error, variables),
-            async (
-                data: Data | undefined,
-                error: unknown,
-                variables: Variables
-            ) => this.onSettled(client, params, data, error, variables),
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        ], [hashQueryKey(mutationKey)]);
+        const [mutationFn, onSuccess, onError, onSettled] = useMemo(
+            () => [
+                async (variables: Variables) =>
+                    this.mutationFn(params, variables),
+                async (data: Data, variables: Variables) =>
+                    this.onSuccess(client, params, data, variables),
+                async (error: unknown, variables: Variables) =>
+                    this.onError(client, params, error, variables),
+                async (
+                    data: Data | undefined,
+                    error: unknown,
+                    variables: Variables
+                ) => this.onSettled(client, params, data, error, variables),
+                // eslint-disable-next-line react-hooks/exhaustive-deps
+            ],
+            [hashQueryKey(mutationKey)]
+        );
 
         // eslint-disable-next-line react-hooks/rules-of-hooks
         return useMutation<Data, unknown, Variables>(mutationKey, mutationFn, {
@@ -77,7 +88,12 @@ export abstract class Mutation<
      * @param {*} variables - variables provided directly to mutation
      * @returns {Promise} success handled
      */
-    protected async onSuccess(client: QueryClient, params: Params, data: Data, variables: Variables): Promise<void>;
+    protected async onSuccess(
+        client: QueryClient,
+        params: Params,
+        data: Data,
+        variables: Variables
+    ): Promise<void>;
     /**
      * @override
      */
@@ -94,7 +110,12 @@ export abstract class Mutation<
      * @param {*} variables - variables provided directly to mutation
      * @returns {Promise} error handled
      */
-    protected async onError(client: QueryClient, params: Params, error: unknown, variables: Variables): Promise<void>;
+    protected async onError(
+        client: QueryClient,
+        params: Params,
+        error: unknown,
+        variables: Variables
+    ): Promise<void>;
     /**
      * @override
      */
@@ -146,7 +167,10 @@ export abstract class Mutation<
      * @param {*} params - method params defined by class.
      * @returns {Promise<*>} function that will be called by React Query for data loading.
      */
-    protected abstract mutationFn(params: Params, variables: Variables): Promise<Data>;
+    protected abstract mutationFn(
+        params: Params,
+        variables: Variables
+    ): Promise<Data>;
 }
 
 /**
@@ -166,7 +190,7 @@ export abstract class Mutation<
 export const mutation = <
     Data,
     Params = DefaultParams,
-    Variables = DefaultParams
+    Variables = DefaultParams,
 >(
     params: {
         getKey: Mutation<Data, Params, Variables>['getKey'];
@@ -177,19 +201,20 @@ export const mutation = <
         onError?: Mutation<Data, Params, Variables>['onError'];
         onSettled?: Mutation<Data, Params, Variables>['onSettled'];
     } = {}
-// eslint-disable-next-line jsdoc/require-jsdoc
-): Mutation<Data, Params, Variables> => new class extends Mutation<Data, Params, Variables> {
-    protected getKey = params.getKey;
-    protected mutationFn = params.mutationFn;
-    static {
-        if (options.onSuccess) {
-            this.prototype.onSuccess = options.onSuccess;
+    // eslint-disable-next-line jsdoc/require-jsdoc
+): Mutation<Data, Params, Variables> =>
+    new (class extends Mutation<Data, Params, Variables> {
+        protected getKey = params.getKey;
+        protected mutationFn = params.mutationFn;
+        static {
+            if (options.onSuccess) {
+                this.prototype.onSuccess = options.onSuccess;
+            }
+            if (options.onError) {
+                this.prototype.onError = options.onError;
+            }
+            if (options.onSettled) {
+                this.prototype.onSettled = options.onSettled;
+            }
         }
-        if (options.onError) {
-            this.prototype.onError = options.onError;
-        }
-        if (options.onSettled) {
-            this.prototype.onSettled = options.onSettled;
-        }
-    }
-}();
+    })();

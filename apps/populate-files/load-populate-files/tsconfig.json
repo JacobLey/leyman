@@ -4,5 +4,16 @@
     "outDir": "dist",
     "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
-  }
+  },
+  "references": [
+    {
+      "path": "../populate-files"
+    },
+    {
+      "path": "../../../tools/default-import"
+    },
+    {
+      "path": "../../../tools/nx-tsc"
+    }
+  ]
 }

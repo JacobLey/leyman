@@ -1,3 +1,6 @@
 import type { ExecutorContext } from '@nx/devkit';
 
-export type SimpleExecutorContext = Pick<ExecutorContext, 'projectsConfigurations' | 'root'>;
+export type SimpleExecutorContext = Pick<
+    ExecutorContext,
+    'projectsConfigurations' | 'root'
+>;

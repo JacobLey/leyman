@@ -8,34 +8,31 @@ import { neverSchema, type SchemaType } from 'juniper';
 const Ajv = defaultImport(AjvDefault);
 
 suite('NeverSchema', () => {
-
     suite('toJSON', () => {
-
         test('success', () => {
-
             const schema = neverSchema().toJSON();
 
             expect(schema).to.deep.equal({
                 not: {},
             });
-            const validator = new Ajv({ strict: true }).compile<SchemaType<typeof schema>>(schema);
+            const validator = new Ajv({ strict: true }).compile<
+                SchemaType<typeof schema>
+            >(schema);
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<never>();
             expect(validator(null)).to.equal(false);
         });
     });
 
     suite('Invalid types', () => {
-
         test('Blocked methods', () => {
-
             const schema = neverSchema();
 
-            expectTypeOf<typeof schema['allOf']>().toBeNever();
-            expectTypeOf<typeof schema['anyOf']>().toBeNever();
-            expectTypeOf<typeof schema['if']>().toBeNever();
-            expectTypeOf<typeof schema['not']>().toBeNever();
-            expectTypeOf<typeof schema['nullable']>().toBeNever();
-            expectTypeOf<typeof schema['oneOf']>().toBeNever();
+            expectTypeOf<(typeof schema)['allOf']>().toBeNever();
+            expectTypeOf<(typeof schema)['anyOf']>().toBeNever();
+            expectTypeOf<(typeof schema)['if']>().toBeNever();
+            expectTypeOf<(typeof schema)['not']>().toBeNever();
+            expectTypeOf<(typeof schema)['nullable']>().toBeNever();
+            expectTypeOf<(typeof schema)['oneOf']>().toBeNever();
         });
     });
 });

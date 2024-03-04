@@ -11,8 +11,8 @@ const buildOptionsSchema = objectSchema({
     required: ['tsConfig'],
 }).metadata({
     version: 1,
-    outputCapture: "direct-nodejs",
-    cli: "nx",
+    outputCapture: 'direct-nodejs',
+    cli: 'nx',
 });
 
 export default buildOptionsSchema.toJSON();

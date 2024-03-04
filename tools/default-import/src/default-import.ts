@@ -1,8 +1,10 @@
 // eslint-disable-next-line @typescript-eslint/naming-convention
-type ExtractDefault<T> = T extends { __esModule?: boolean; default: infer U } ?
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    (U extends { __esModule?: boolean; default: infer V } ? V : U) :
-    T;
+type ExtractDefault<T> = T extends { __esModule?: boolean; default: infer U }
+    ? // eslint-disable-next-line @typescript-eslint/naming-convention
+      U extends { __esModule?: boolean; default: infer V }
+        ? V
+        : U
+    : T;
 
 /**
  * With ESM it is possible to export both a default value and multiple named exports.
@@ -21,28 +23,35 @@ type ExtractDefault<T> = T extends { __esModule?: boolean; default: infer U } ?
  * @param {*} mod - "default" export that might be wrapped in another layer
  * @returns {*} unwrapped module
  */
-export const defaultImport = <T>(
-    mod: T
-): ExtractDefault<T> => {
-
+export const defaultImport = <T>(mod: T): ExtractDefault<T> => {
     if (typeof mod !== 'object' || mod === null) {
         return mod as ExtractDefault<T>;
     }
 
     // Webpack provides a Module tag to match NodeJS' Module module
-    const defaultVal = Symbol.toStringTag in mod &&
-        (mod as unknown as { [Symbol.toStringTag]: string; default: T })[Symbol.toStringTag] === 'Module' ?
-        (mod as unknown as { [Symbol.toStringTag]: 'Module'; default?: T }).default ?? mod :
-        mod;
+    const defaultVal =
+        Symbol.toStringTag in mod &&
+        (mod as unknown as { [Symbol.toStringTag]: string; default: T })[
+            Symbol.toStringTag
+        ] === 'Module'
+            ? (
+                  mod as unknown as {
+                      [Symbol.toStringTag]: 'Module';
+                      default?: T;
+                  }
+              ).default ?? mod
+            : mod;
 
     if (
         typeof defaultVal === 'object' &&
         '__esModule' in defaultVal &&
         // eslint-disable-next-line @typescript-eslint/naming-convention
         (defaultVal as unknown as { __esModule?: boolean }).__esModule &&
-        (defaultVal as unknown as { default?: ExtractDefault<T> | undefined }).default !== undefined
+        (defaultVal as unknown as { default?: ExtractDefault<T> | undefined })
+            .default !== undefined
     ) {
-        return (defaultVal as unknown as { default: ExtractDefault<T> }).default;
+        return (defaultVal as unknown as { default: ExtractDefault<T> })
+            .default;
     }
     return defaultVal as ExtractDefault<T>;
 };

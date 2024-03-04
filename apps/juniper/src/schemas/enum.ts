@@ -23,38 +23,37 @@ interface EnumGenerics<T> extends SchemaGenerics<T> {
  * const schema = EnumSchema.create({ enums: [1, 2] as const }).enum(3 as const);
  */
 export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
-
     readonly #enum: readonly T[];
 
     /**
      * Enums aren't conditional.
      */
-    declare public allOf: never;
+    public declare allOf: never;
 
     /**
      * Enums aren't conditional.
      */
-    declare public anyOf: never;
+    public declare anyOf: never;
 
     /**
      * Enums aren't conditional.
      */
-    declare public if: never;
+    public declare if: never;
 
     /**
      * Enums aren't conditional.
      */
-    declare public not: never;
+    public declare not: never;
 
     /**
      * Not applicable.
      */
-    declare public nullable: never;
+    public declare nullable: never;
 
     /**
      * Enums aren't conditional.
      */
-    declare public oneOf: never;
+    public declare oneOf: never;
 
     /**
      * @override
@@ -77,7 +76,10 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
      * @param {boolean} [options.writeOnly] - value should be hidden
      * @returns {EnumSchema} enum schema
      */
-    public static override create<T = never>(this: void, options?: EnumParams<T>): EnumSchema<T> {
+    public static override create<T = never>(
+        this: void,
+        options?: EnumParams<T>
+    ): EnumSchema<T> {
         return new EnumSchema(options);
     }
 
@@ -103,7 +105,10 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
      * @param {*[]} enums - enum literal array
      * @returns {Schema} schema
      */
-    public enums<EVal>(this: this, enums: readonly EVal[]): EnumSchema<EVal | T> {
+    public enums<EVal>(
+        this: this,
+        enums: readonly EVal[]
+    ): EnumSchema<EVal | T> {
         return this.clone({
             enum: [...this.#enum, ...enums] as T[],
         }) as EnumSchema<EVal | T>;
@@ -122,7 +127,9 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
     /**
      * @override
      */
-    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
+    protected override toSchema(
+        params: SerializationParams
+    ): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         const enums = [...new Set(this.#enum)];

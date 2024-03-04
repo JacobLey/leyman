@@ -2,6 +2,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "name": "nx-tsc",
   "targets": {
+    "biome": {},
     "tsc": {
       "executor": "npm-nx-tsc:build",
       "options": {
@@ -14,6 +15,10 @@
         "filePath": "{projectRoot}/dist/file-content.js"
       }
     },
+    "analyze:_": {},
+    "analyze:lint": {},
+    "analyze:format": {},
+    "analyze": {},
     "build:_": {},
     "build:pre": {},
     "build:run": {},

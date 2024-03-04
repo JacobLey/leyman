@@ -14,13 +14,11 @@ const testDir = Path.join(
 );
 
 suite('barrelify', () => {
-
     afterEach(() => {
         verifyAndRestore();
     });
 
     test('Noop for pre-barreled files', async () => {
-
         const written = await barrelify({
             cwd: testDir,
             ignore: ['./wrong/*'],
@@ -29,7 +27,6 @@ suite('barrelify', () => {
     });
 
     test('Detects out-of-sync files', async () => {
-
         const written = await barrelify({
             cwd: testDir,
             dryRun: true,
@@ -41,7 +38,6 @@ suite('barrelify', () => {
     });
 
     test('All options are optional', async () => {
-
         const writeStub = stub(patch(writeFile), patchKey).callsFake(
             async (path, content, encoding) => {
                 expect(path).to.equal(Path.join(testDir, 'wrong/index.ts'));

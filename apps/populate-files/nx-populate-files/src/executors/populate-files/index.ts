@@ -7,16 +7,18 @@ export default async (
     options: PopulateFilesOptions,
     context: ExecutorContext
 ): Promise<{ success: boolean }> => {
-
     try {
         await loadAndPopulateFiles(
             {
-                filePath: resolve(context.root, options.filePath)
+                filePath: resolve(context.root, options.filePath),
             },
             {
                 cwd: resolve(
                     context.root,
-                    options.cwd ?? context.projectsConfigurations!.projects[context.projectName!]!.root
+                    options.cwd ??
+                        context.projectsConfigurations!.projects[
+                            context.projectName!
+                        ]!.root
                 ),
                 check: options.check,
                 dryRun: options.dryRun,

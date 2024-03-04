@@ -8,10 +8,10 @@ export const addAllNums = (...nums: number[]): number => {
     return sum;
 };
 
-export const delayForLongestTime = async (...delays: number[]): Promise<void> => {
-    await Promise.all(
-        delays.map(async delay => setTimeout(delay))
-    );
+export const delayForLongestTime = async (
+    ...delays: number[]
+): Promise<void> => {
+    await Promise.all(delays.map(async delay => setTimeout(delay)));
 };
 
 export const slowReverse = async (str: string): Promise<string> => {

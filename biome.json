@@ -1,0 +1,42 @@
+{
+  "$schema": "./node_modules/root-biome/configuration_schema.json",
+  "vcs": {
+    "clientKind": "git",
+    "enabled": true,
+    "useIgnoreFile": true
+  },
+  "formatter": {
+    "enabled": true,
+    "formatWithErrors": false,
+    "indentStyle": "space",
+    "lineEnding": "lf",
+    "lineWidth": 80
+  },
+  "javascript": {
+    "formatter": {
+      "arrowParentheses": "asNeeded",
+      "bracketSameLine": false,
+      "bracketSpacing": true,
+      "indentWidth": 4,
+      "jsxQuoteStyle": "double",
+      "quoteProperties": "asNeeded",
+      "quoteStyle": "single",
+      "semicolons": "always",
+      "trailingComma": "es5"
+    },
+    "parser": {
+      "unsafeParameterDecoratorsEnabled": false
+    }
+  },
+  "json": {
+    "formatter": {
+      "indentWidth": 2
+    }
+  },
+  "linter": {
+    "enabled": false
+  },
+  "organizeImports": {
+    "enabled": true
+  }
+}

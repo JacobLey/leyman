@@ -7,7 +7,6 @@ import { mockMethod } from 'sinon-typed-stub';
 import { Handler, type RawHandler } from '#handler';
 
 suite('Handler', () => {
-
     afterEach(() => {
         verifyAndRestore();
     });
@@ -29,61 +28,64 @@ suite('Handler', () => {
     const fakeContext = {} as ExecutorContext;
 
     suite('handle', () => {
-
         suite('success', () => {
+            context.test(
+                'Proxies request to handler',
+                async ({ handler, errorLogger, mockedHandler }) => {
+                    mockedHandler.stub
+                        .withArgs({ foo: 123 }, match.same(fakeContext))
+                        .resolves({ success: true });
 
-            context.test('Proxies request to handler', async ({ handler, errorLogger, mockedHandler }) => {
+                    const handle = await handler.handle(mockedHandler.method);
 
-                mockedHandler.stub.withArgs(
-                    { foo: 123 },
-                    match.same(fakeContext)
-                ).resolves({ success: true });
+                    expectTypeOf(handle).toEqualTypeOf(mockedHandler.method);
 
-                const handle = await handler.handle(
-                    mockedHandler.method
-                );
+                    const result = await handle({ foo: 123 }, fakeContext);
 
-                expectTypeOf(handle).toEqualTypeOf(mockedHandler.method);
-
-                const result = await handle({ foo: 123 }, fakeContext);
-
-                expect(result).to.deep.equal({ success: true });
-                expectTypeOf(result).toEqualTypeOf<{ success: boolean }>();
-                expect(errorLogger.called).to.equal(false);
-            });
+                    expect(result).to.deep.equal({ success: true });
+                    expectTypeOf(result).toEqualTypeOf<{ success: boolean }>();
+                    expect(errorLogger.called).to.equal(false);
+                }
+            );
         });
 
         suite('failure', () => {
+            context.test(
+                'Throws error',
+                async ({ handler, errorLogger, mockedHandler }) => {
+                    mockedHandler.stub.rejects(new Error('<ERROR>'));
 
-            context.test('Throws error', async ({ handler, errorLogger, mockedHandler }) => {
+                    const handle = await handler.handle(mockedHandler.method);
 
-                mockedHandler.stub.rejects(new Error('<ERROR>'));
-    
-                const handle = await handler.handle(
-                    mockedHandler.method
-                );
-    
-                const result = await handle({ foo: 123 }, fakeContext);
-    
-                expect(result).to.deep.equal({ success: false });
-                expect(errorLogger.callCount).to.equal(1);
-                expect(errorLogger.firstCall.args).to.deep.equal(['<ERROR>']);
-            });
+                    const result = await handle({ foo: 123 }, fakeContext);
 
-            context.test('Throws anything but an error', async ({ handler, errorLogger, mockedHandler }) => {
+                    expect(result).to.deep.equal({ success: false });
+                    expect(errorLogger.callCount).to.equal(1);
+                    expect(errorLogger.firstCall.args).to.deep.equal([
+                        '<ERROR>',
+                    ]);
+                }
+            );
 
-                mockedHandler.stub.returns(Promise.reject('<just-some-error-text>'));
-    
-                const handle = await handler.handle(
-                    mockedHandler.method
-                );
-    
-                const result = await handle({ foo: 123 }, fakeContext);
-    
-                expect(result).to.deep.equal({ success: false });
-                expect(errorLogger.callCount).to.equal(1);
-                expect(errorLogger.firstCall.args).to.deep.equal(['Unknown Error', '<just-some-error-text>']);
-            });
+            context.test(
+                'Throws anything but an error',
+                async ({ handler, errorLogger, mockedHandler }) => {
+                    mockedHandler.stub.returns(
+                        Promise.reject('<just-some-error-text>')
+                    );
+
+                    const handle = await handler.handle(mockedHandler.method);
+
+                    const result = await handle({ foo: 123 }, fakeContext);
+
+                    expect(result).to.deep.equal({ success: false });
+                    expect(errorLogger.callCount).to.equal(1);
+                    expect(errorLogger.firstCall.args).to.deep.equal([
+                        'Unknown Error',
+                        '<just-some-error-text>',
+                    ]);
+                }
+            );
         });
     });
 });

@@ -1,12 +1,20 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as mocha from 'mocha';
-import { context, describe, it, specify, suite, test, xdescribe, xit } from 'mocha-hookup';
+import {
+    context,
+    describe,
+    it,
+    specify,
+    suite,
+    test,
+    xdescribe,
+    xit,
+} from 'mocha-hookup';
 
 const ranTests = new Set<number>();
 
 suite('test', () => {
-
     test.skip('Suite types are consistent', () => {
         ranTests.add(-1);
 
@@ -20,28 +28,22 @@ suite('test', () => {
         throw new Error('<ERROR>');
     });
 
-    xit(
-        'Typed to prevent async + done', 
-        // @ts-expect-error
-        async (done) => {
-            ranTests.add(-1);
+    // @ts-expect-error
+    xit('Typed to prevent async + done', async done => {
+        ranTests.add(-1);
 
+        done();
+    });
+
+    // @ts-expect-error
+    test('Typed to prevent return + done', (done): number => {
+        ranTests.add(1);
+
+        setTimeout(() => {
             done();
-        }
-    );
-
-    test(
-        'Typed to prevent return + done',
-        // @ts-expect-error 
-        (done): number => {
-            ranTests.add(1);
-
-            setTimeout(() => {
-                done();
-            }, 5);
-            return 0;
-        }
-    );
+        }, 5);
+        return 0;
+    });
 
     test('Compare describe', async () => {
         ranTests.add(2);
@@ -63,7 +65,6 @@ suite('test', () => {
     });
 
     suite.skip('Skipped suite', () => {
-
         test('Test types are consistent', async () => {
             ranTests.add(-1);
 
@@ -77,8 +78,7 @@ suite('test', () => {
         });
     });
 
-    suite('With retries', function() {
-
+    suite('With retries', function () {
         this.retries(2);
 
         let shouldFailAsync = true;
@@ -90,7 +90,7 @@ suite('test', () => {
         });
 
         let shouldFailDone = true;
-        test('Done test fails first time', (done) => {
+        test('Done test fails first time', done => {
             if (shouldFailDone) {
                 shouldFailDone = false;
                 throw new Error('<ERROR>');

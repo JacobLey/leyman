@@ -6,7 +6,6 @@ import { suite, test } from 'mocha-hookup';
 const filePath = fileURLToPath(import.meta.url);
 
 suite('FileContent', () => {
-
     test('Files `are populated', async () => {
         await loadAndPopulateFiles(
             {

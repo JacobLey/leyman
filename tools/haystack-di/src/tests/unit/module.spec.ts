@@ -1,26 +1,28 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
-import { 
-    AsyncContainer, 
-    bind, 
-    createContainer, 
-    createModule, 
-    HaystackModuleValidationError, 
-    identifier, 
-    Module, 
+import {
+    AsyncContainer,
+    bind,
+    createContainer,
+    createModule,
+    HaystackModuleValidationError,
+    identifier,
+    Module,
     SyncContainer,
 } from 'haystack-di';
 
 suite('module', () => {
-
-    const aOrBId = identifier<'a' | 'b'>('<custom-name>').named('AorB').nullable().undefinable();
+    const aOrBId = identifier<'a' | 'b'>('<custom-name>')
+        .named('AorB')
+        .nullable()
+        .undefinable();
     const numberId = identifier<number>().named('num');
     abstract class Foo {
         public doFoo() {
             return true;
         }
-    };
+    }
     class Bar extends Foo {
         protected constructor() {
             super();
@@ -28,12 +30,10 @@ suite('module', () => {
         public doBar() {
             return 'bar';
         }
-    };
+    }
     class Baz {
-        constructor(
-            protected readonly baz: number
-        ) {}
-    };
+        constructor(protected readonly baz: number) {}
+    }
 
     const uniqueSym = Symbol('abc');
 
@@ -41,24 +41,24 @@ suite('module', () => {
         .withDependencies([aOrBId.lateBinding()])
         .withProvider(() => 'a');
     const numberBinding = bind(numberId).withInstance(123);
-    const fooBinding = bind(identifier(Foo).nullable().undefinable().named(uniqueSym))
+    const fooBinding = bind(
+        identifier(Foo).nullable().undefinable().named(uniqueSym)
+    )
         .withDependencies([identifier(Bar).nullable()])
         .withProvider(bar => bar);
-    const barBinding = bind(Bar)
-        .withGenerator(() => {
-            class Extends extends Bar {
-                constructor() {
-                    super();
-                }
+    const barBinding = bind(Bar).withGenerator(() => {
+        class Extends extends Bar {
+            constructor() {
+                super();
             }
-            return new Extends();
-        });
+        }
+        return new Extends();
+    });
     const bazBinding = bind(Baz)
         .withDependencies([numberId.supplier(), aOrBId.supplier()])
         .withAsyncProvider(numSupplier => new Baz(numSupplier()));
 
     suite('fromBinding', () => {
-
         const aOrBModule = Module.fromBinding(aOrBBinding);
         const numberModule = Module.fromBinding(numberBinding);
         const fooModule = Module.fromBinding(fooBinding);
@@ -74,7 +74,6 @@ suite('module', () => {
         createContainer(bazModule);
 
         test('addBinding', () => {
-
             const module = aOrBModule
                 .addBinding(numberBinding)
                 .addBinding(fooBinding);
@@ -87,17 +86,29 @@ suite('module', () => {
 
             const withBarModule = module.addBinding(barBinding);
 
-            expect(createContainer(withBarModule)).to.be.an.instanceOf(SyncContainer);
+            expect(createContainer(withBarModule)).to.be.an.instanceOf(
+                SyncContainer
+            );
             expectTypeOf(createContainer(withBarModule)).toHaveProperty('get');
 
             const withBazModule = withBarModule.addBinding(bazBinding);
 
-            expect(createContainer(withBazModule)).to.be.an.instanceOf(AsyncContainer);
-            expect(createContainer(withBazModule)).to.not.be.an.instanceOf(SyncContainer);
-            expectTypeOf(createContainer(withBazModule)).not.toHaveProperty('getSync');
+            expect(createContainer(withBazModule)).to.be.an.instanceOf(
+                AsyncContainer
+            );
+            expect(createContainer(withBazModule)).to.not.be.an.instanceOf(
+                SyncContainer
+            );
+            expectTypeOf(createContainer(withBazModule)).not.toHaveProperty(
+                'getSync'
+            );
 
             const dupeNumberBinding = bind(
-                identifier<number>().nullable().undefinable().supplier().lateBinding()
+                identifier<number>()
+                    .nullable()
+                    .undefinable()
+                    .supplier()
+                    .lateBinding()
             ).withInstance(4);
             numberModule.addBinding(dupeNumberBinding);
             // @ts-expect-error
@@ -110,48 +121,55 @@ suite('module', () => {
             withBazModule.addBinding(dupeNumberBinding.named('<name>'));
 
             fooModule.addBinding(dupeNumberBinding);
-            
+
             expect(() => {
                 // @ts-expect-error
-                aOrBModule.addBinding(aOrBBinding)
-            }).to.throw(
-                HaystackModuleValidationError
-            ).contains({
-                message: 'Duplicate output identifier for module: <custom-name>(named: AorB)'
-            });
+                aOrBModule.addBinding(aOrBBinding);
+            })
+                .to.throw(HaystackModuleValidationError)
+                .contains({
+                    message:
+                        'Duplicate output identifier for module: <custom-name>(named: AorB)',
+                });
 
-            const symNumberBinding = bind(numberId.named(uniqueSym)).withInstance(123);
+            const symNumberBinding = bind(
+                numberId.named(uniqueSym)
+            ).withInstance(123);
             expect(() => {
                 module
-                    .addBinding(
-                        numberBinding.named(uniqueSym)
-                    )
+                    .addBinding(numberBinding.named(uniqueSym))
                     // @ts-expect-error
-                    .addBinding(symNumberBinding)
-            }).to.throw(
-                HaystackModuleValidationError
-            ).contains({
-                message: 'Duplicate output identifier for module: haystack-id(named: Symbol(abc))',
-            });
+                    .addBinding(symNumberBinding);
+            })
+                .to.throw(HaystackModuleValidationError)
+                .contains({
+                    message:
+                        'Duplicate output identifier for module: haystack-id(named: Symbol(abc))',
+                });
 
             expect(() => {
                 // @ts-expect-error
                 barModule.addBinding(
-                    bind(identifier(Bar).nullable().undefinable()).withInstance({} as Bar)
-                )
-            }).to.throw(HaystackModuleValidationError).contains({
-                message: 'Duplicate output identifier for module: Bar',
-            });
+                    bind(identifier(Bar).nullable().undefinable()).withInstance(
+                        {} as Bar
+                    )
+                );
+            })
+                .to.throw(HaystackModuleValidationError)
+                .contains({
+                    message: 'Duplicate output identifier for module: Bar',
+                });
 
             const dependencyOnUnnamedFoo = withBarModule.addBinding(
-                bind(identifier<'<val>'>()).withDependencies([Foo]).withProvider(() => '<val>')
+                bind(identifier<'<val>'>())
+                    .withDependencies([Foo])
+                    .withProvider(() => '<val>')
             );
             // @ts-expect-error
             createContainer(dependencyOnUnnamedFoo);
         });
 
         test('mergeModule', () => {
-
             const module = numberModule.mergeModule(aOrBModule);
             expectTypeOf(module).toEqualTypeOf(
                 aOrBModule.mergeModule(numberModule)
@@ -163,16 +181,28 @@ suite('module', () => {
                 fooModule.mergeModule(barModule)
             );
 
-            expect(createContainer(withFooModule)).to.be.an.instanceOf(SyncContainer);
+            expect(createContainer(withFooModule)).to.be.an.instanceOf(
+                SyncContainer
+            );
             expectTypeOf(createContainer(withFooModule)).toHaveProperty('get');
 
             const withBazModule = withFooModule.mergeModule(bazModule);
-            expect(createContainer(withBazModule)).to.be.an.instanceOf(AsyncContainer);
-            expect(createContainer(withBazModule)).to.not.be.an.instanceOf(SyncContainer);
-            expectTypeOf(createContainer(withBazModule)).not.toHaveProperty('getSync');
+            expect(createContainer(withBazModule)).to.be.an.instanceOf(
+                AsyncContainer
+            );
+            expect(createContainer(withBazModule)).to.not.be.an.instanceOf(
+                SyncContainer
+            );
+            expectTypeOf(createContainer(withBazModule)).not.toHaveProperty(
+                'getSync'
+            );
 
             const dupNumBinding = bind(
-                identifier<number>().nullable().undefinable().supplier().lateBinding()
+                identifier<number>()
+                    .nullable()
+                    .undefinable()
+                    .supplier()
+                    .lateBinding()
             ).withInstance(4);
 
             module.mergeModule(createModule(dupNumBinding));
@@ -182,44 +212,46 @@ suite('module', () => {
 
             expect(() => {
                 // @ts-expect-error
-                module.mergeModule(module)
-            }).to.throw(
-                HaystackModuleValidationError
-            ).contains({
-                message: [
-                    'Duplicate output identifier for module: <custom-name>(named: AorB)',
-                    'haystack-id(named: num)',
-                ].join(', '),
-            });
+                module.mergeModule(module);
+            })
+                .to.throw(HaystackModuleValidationError)
+                .contains({
+                    message: [
+                        'Duplicate output identifier for module: <custom-name>(named: AorB)',
+                        'haystack-id(named: num)',
+                    ].join(', '),
+                });
 
             expect(() => {
                 // @ts-expect-error
-                module.mergeModule(
-                    fooModule.mergeModule(numberModule)
-                )
-            }).to.throw(
-                HaystackModuleValidationError
-            ).contains({
-                message: 'Duplicate output identifier for module: haystack-id(named: num)',
-            });
+                module.mergeModule(fooModule.mergeModule(numberModule));
+            })
+                .to.throw(HaystackModuleValidationError)
+                .contains({
+                    message:
+                        'Duplicate output identifier for module: haystack-id(named: num)',
+                });
 
-            const symNumberModule = createModule(bind(numberId.named(uniqueSym)).withInstance(123));
+            const symNumberModule = createModule(
+                bind(numberId.named(uniqueSym)).withInstance(123)
+            );
             expect(() => {
                 module
-                    .addBinding(
-                        numberBinding.named(uniqueSym)
-                    )
+                    .addBinding(numberBinding.named(uniqueSym))
                     // @ts-expect-error
-                    .mergeModule(symNumberModule)
-            }).to.throw(
-                HaystackModuleValidationError
-            ).contains({
-                message: 'Duplicate output identifier for module: haystack-id(named: Symbol(abc))',
-            });
+                    .mergeModule(symNumberModule);
+            })
+                .to.throw(HaystackModuleValidationError)
+                .contains({
+                    message:
+                        'Duplicate output identifier for module: haystack-id(named: Symbol(abc))',
+                });
 
             const dependencyOnUnnamedFoo = withFooModule.mergeModule(
                 createModule(
-                    bind(identifier<'<val>'>()).withDependencies([Foo]).withProvider(() => '<val>')
+                    bind(identifier<'<val>'>())
+                        .withDependencies([Foo])
+                        .withProvider(() => '<val>')
                 )
             );
             // @ts-expect-error

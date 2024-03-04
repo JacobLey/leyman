@@ -7,9 +7,8 @@ export type { FileContent, PopulateFileParams } from 'populate-files';
 
 export const loadAndPopulateFiles = async (
     params: RawParams,
-    options?: RawOptions,
+    options?: RawOptions
 ): Promise<PopulationResponse[]> => {
-
     const normalized = await normalizeParams(params, options);
 
     const files = await loadFile(normalized.filePath);

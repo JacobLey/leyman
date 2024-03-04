@@ -15,8 +15,10 @@ interface NormalizedOptions {
     dependencies: string[];
 }
 
-const normalizeOptions = (options: UpdateTsReferencesOptions, context: ExecutorContext): NormalizedOptions => {
-
+const normalizeOptions = (
+    options: UpdateTsReferencesOptions,
+    context: ExecutorContext
+): NormalizedOptions => {
     const projectName = context.projectName!;
     const packageRoot = join(
         context.root,
@@ -27,19 +29,20 @@ const normalizeOptions = (options: UpdateTsReferencesOptions, context: ExecutorC
         check: options.check ?? isCI,
         dryRun: options.dryRun ?? false,
         packageRoot,
-        tsConfig: join(
-            packageRoot,
-            'tsconfig.json'
-        ),
-        dependencies: context.projectGraph!.dependencies[projectName]!.filter(
-            dependency => context.projectsConfigurations!.projects[dependency.target]
-        ).map(
-            dependency => join(
-                context.root,
-                context.projectsConfigurations!.projects[dependency.target]!.root,
-                'tsconfig.json'
+        tsConfig: join(packageRoot, 'tsconfig.json'),
+        dependencies: context
+            .projectGraph!.dependencies[projectName]!.filter(
+                dependency =>
+                    context.projectsConfigurations!.projects[dependency.target]
             )
-        ),
+            .map(dependency =>
+                join(
+                    context.root,
+                    context.projectsConfigurations!.projects[dependency.target]!
+                        .root,
+                    'tsconfig.json'
+                )
+            ),
     };
 };
 
@@ -62,7 +65,7 @@ const readTsConfigFile = async (path: string): Promise<TsConfigFile> => {
         };
     }
     throw new Error('tsconfig.json did not contain expected data');
-}
+};
 
 const safeReadTsConfig = async (path: string): Promise<TsConfigFile | null> => {
     try {
@@ -70,21 +73,17 @@ const safeReadTsConfig = async (path: string): Promise<TsConfigFile | null> => {
     } catch {
         return null;
     }
-}
+};
 
 export default async (
     options: UpdateTsReferencesOptions,
     context: ExecutorContext
 ): Promise<{ success: boolean }> => {
-
     const normalized = normalizeOptions(options, context);
 
-    const [
-        packageTsConfig,
-        ...dependencyTsConfigs
-    ] = await Promise.all([
+    const [packageTsConfig, ...dependencyTsConfigs] = await Promise.all([
         readTsConfigFile(normalized.tsConfig),
-        ...normalized.dependencies.map(path => safeReadTsConfig(path))
+        ...normalized.dependencies.map(path => safeReadTsConfig(path)),
     ]);
 
     if (!packageTsConfig) {
@@ -92,17 +91,18 @@ export default async (
         return { success: false };
     }
 
-    const foundDependencies = dependencyTsConfigs.filter((ts): ts is NonNullable<typeof ts> => !!ts);
-
-    packageTsConfig.json.references = foundDependencies.sort(
-        (a, b) => a.path.localeCompare(b.path)
-    ).map(
-        ({ path }) => ({
-            path: relative(normalized.packageRoot, join(path, '..')),
-        })
+    const foundDependencies = dependencyTsConfigs.filter(
+        (ts): ts is NonNullable<typeof ts> => !!ts
     );
 
-    const dataToWrite = commentJson.stringify(packageTsConfig.json, null, 2) + '\n';
+    packageTsConfig.json.references = foundDependencies
+        .sort((a, b) => a.path.localeCompare(b.path))
+        .map(({ path }) => ({
+            path: relative(normalized.packageRoot, join(path, '..')),
+        }));
+
+    const dataToWrite =
+        commentJson.stringify(packageTsConfig.json, null, 2) + '\n';
 
     if (dataToWrite === packageTsConfig.rawData) {
         return { success: true };

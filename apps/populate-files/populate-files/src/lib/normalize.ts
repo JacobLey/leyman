@@ -1,15 +1,22 @@
 import { resolve } from 'node:path';
 import { isCI } from 'ci-info';
 import { parseCwd } from 'npm-parse-cwd';
-import type { FileContent, NormalizedFileParams, NormalizedFilesParams, PopulateFileParams, RawOptions } from './types.js';
+import type {
+    FileContent,
+    NormalizedFileParams,
+    NormalizedFilesParams,
+    PopulateFileParams,
+    RawOptions,
+} from './types.js';
 
 const parseContent = (content: FileContent): Buffer => {
     if (Buffer.isBuffer(content)) {
         return content;
     }
-    const str = content instanceof String ?
-        content :
-        `${JSON.stringify(content, null, 2)}\n`;
+    const str =
+        content instanceof String
+            ? content
+            : `${JSON.stringify(content, null, 2)}\n`;
 
     return Buffer.from(str, 'utf8');
 };
@@ -19,15 +26,11 @@ const normalizeDryRun = (dryRun?: boolean) => dryRun || false;
 
 export const normalizeFileParams = async (
     params: PopulateFileParams,
-    options: RawOptions = {},
+    options: RawOptions = {}
 ): Promise<NormalizedFileParams> => {
-
-    const [
-        cwd,
-        loadedContent,
-    ] = await Promise.all([
+    const [cwd, loadedContent] = await Promise.all([
         parseCwd(options.cwd),
-        params.content
+        params.content,
     ]);
 
     return {
@@ -36,13 +39,12 @@ export const normalizeFileParams = async (
         check: normalizeCheck(options.check),
         dryRun: normalizeDryRun(options.dryRun),
     };
-}
+};
 
 export const normalizeFilesParams = async (
     params: PopulateFileParams[],
-    options: RawOptions = {},
+    options: RawOptions = {}
 ): Promise<NormalizedFilesParams> => {
-
     const loadedContentsPromise = Promise.all(
         params.map(async param => ({
             filePath: param.filePath,
@@ -50,10 +52,7 @@ export const normalizeFilesParams = async (
         }))
     );
 
-    const [
-        cwd,
-        loadedContents
-    ] = await Promise.all([
+    const [cwd, loadedContents] = await Promise.all([
         parseCwd(options.cwd),
         loadedContentsPromise,
     ]);

@@ -15,17 +15,13 @@ export const delayImmediate = async (): Promise<void> => {
 };
 
 export const listUsers = async (size: number): Promise<User[]> => {
-
     await delayImmediate();
 
     const response: User[] = [];
     for (let i = 0; i < size; ++i) {
         response.push({
             id: randomUUID(),
-            data: [
-                randomUUID(),
-                Math.random().toString(36),
-            ],
+            data: [randomUUID(), Math.random().toString(36)],
             age: Math.round(Math.random() * 100),
         });
     }
@@ -33,29 +29,24 @@ export const listUsers = async (size: number): Promise<User[]> => {
 };
 
 export const getUser = async (id: string): Promise<User> => {
-
     await delayImmediate();
 
     return {
         id,
-        data: [
-            randomUUID(),
-            Math.random().toString(36),
-        ],
+        data: [randomUUID(), Math.random().toString(36)],
         age: Math.round(Math.random() * 100),
     };
 };
 
-export const updateUser = async (id: string, user: Partial<Omit<User, 'id'>>): Promise<User> => {
-
+export const updateUser = async (
+    id: string,
+    user: Partial<Omit<User, 'id'>>
+): Promise<User> => {
     await delayImmediate();
 
     return {
         id,
-        data: [
-            randomUUID(),
-            Math.random().toString(36),
-        ],
+        data: [randomUUID(), Math.random().toString(36)],
         age: Math.round(Math.random() * 100),
         ...user,
     };
