@@ -3,6 +3,7 @@
   "name": "nx-tsc",
   "targets": {
     "biome": {},
+    "eslint": {},
     "tsc": {
       "executor": "npm-nx-tsc:build",
       "options": {

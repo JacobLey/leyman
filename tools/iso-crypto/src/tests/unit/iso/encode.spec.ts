@@ -1,27 +1,16 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { before, suite, test } from 'mocha-hookup';
 import * as IsoCrypto from 'iso-crypto';
-import type * as Encode from '#encode';
-import * as BrowserEncode from '../../../iso/encode/browser.js';
-import * as NodeEncode from '../../../iso/encode/node.js';
-
-// coverage
-import '../../../iso/encode/types.js';
-
-interface EncodeContext {
-    encode: typeof Encode;
-}
+import { suite, test } from 'mocha-hookup';
+import * as Encode from '#encode';
 
 suite('Encode', () => {
     test('types', () => {
-        expectTypeOf<typeof Encode>().toEqualTypeOf(BrowserEncode);
-        expectTypeOf<typeof Encode>().toMatchTypeOf(NodeEncode);
         expectTypeOf(IsoCrypto).toMatchTypeOf<typeof Encode>();
     });
 
     suite('decode', () => {
-        const base64Test = ({ encode }: EncodeContext) => {
+        test('base64', () => {
             for (const encoding of ['base64', 'base64url'] as const) {
                 for (const { input, output } of [
                     {
@@ -73,7 +62,7 @@ suite('Encode', () => {
                         output: [],
                     },
                 ]) {
-                    const buf = encode.decode({
+                    const buf = Encode.decode({
                         text: input,
                         encoding,
                     });
@@ -81,9 +70,9 @@ suite('Encode', () => {
                     expect([...buf]).to.deep.equal(output);
                 }
             }
-        };
+        });
 
-        const hexTest = ({ encode }: EncodeContext) => {
+        test('hex', () => {
             for (const { input, output } of [
                 {
                     input: 'abc123',
@@ -107,15 +96,15 @@ suite('Encode', () => {
                 },
             ]) {
                 expect([
-                    ...encode.decode({
+                    ...Encode.decode({
                         text: input,
                         encoding: 'hex',
                     }),
                 ]).to.deep.equal(output);
             }
-        };
+        });
 
-        const utf8Test = ({ encode }: EncodeContext) => {
+        test('utf8', () => {
             for (const { input, output } of [
                 {
                     input: 'abc123',
@@ -130,57 +119,35 @@ suite('Encode', () => {
                     output: [0, 1, 50, 227, 145, 150],
                 },
             ]) {
-                const withDefault = encode.decode(input);
+                const withDefault = Encode.decode(input);
                 expect([...withDefault]).to.deep.equal(output);
                 expect(withDefault).to.deep.equal(
-                    encode.decode({
+                    Encode.decode({
                         text: input,
                         encoding: 'utf8',
                     })
                 );
             }
-        };
+        });
 
-        const rawTest = ({ encode }: EncodeContext) => {
+        test('raw', () => {
             for (const arr of [
                 [1, 2, 3, 4],
                 [97, 98, 99, 49, 50, 51],
                 [0, 0, 0],
                 [],
             ]) {
-                const buf = Buffer.from(arr);
-                expect(encode.decode(buf)).to.eq(buf);
-                expect(encode.decode({ text: buf, encoding: 'raw' })).to.eq(
+                const buf = Uint8Array.from(arr);
+                expect(Encode.decode(buf)).to.eq(buf);
+                expect(Encode.decode({ text: buf, encoding: 'raw' })).to.eq(
                     buf
                 );
             }
-        };
-
-        suite('browser', () => {
-            const withBrowserEncode = before(() => ({
-                encode: BrowserEncode,
-            }));
-
-            withBrowserEncode.test('base64', base64Test);
-            withBrowserEncode.test('hex', hexTest);
-            withBrowserEncode.test('utf8', utf8Test);
-            withBrowserEncode.test('raw', rawTest);
-        });
-
-        suite('node', () => {
-            const withNodeEncode = before(() => ({
-                encode: NodeEncode,
-            }));
-
-            withNodeEncode.test('base64', base64Test);
-            withNodeEncode.test('hex', hexTest);
-            withNodeEncode.test('utf8', utf8Test);
-            withNodeEncode.test('raw', rawTest);
         });
     });
 
     suite('encode', () => {
-        const base64Test = ({ encode }: EncodeContext) => {
+        test('base64', () => {
             for (const { input, output } of [
                 {
                     input: [171, 193, 35],
@@ -215,13 +182,13 @@ suite('Encode', () => {
                     output: '',
                 },
             ]) {
-                expect(encode.encode(Buffer.from(input), 'base64')).to.equal(
-                    output
-                );
+                expect(
+                    Encode.encode(Uint8Array.from(input), 'base64')
+                ).to.equal(output);
             }
-        };
+        });
 
-        const base64urlTest = ({ encode }: EncodeContext) => {
+        test('base64url', () => {
             for (const { input, output } of [
                 {
                     input: [171, 193, 35],
@@ -256,13 +223,13 @@ suite('Encode', () => {
                     output: '',
                 },
             ]) {
-                expect(encode.encode(Buffer.from(input), 'base64url')).to.equal(
-                    output
-                );
+                expect(
+                    Encode.encode(Uint8Array.from(input), 'base64url')
+                ).to.equal(output);
             }
-        };
+        });
 
-        const hexTest = ({ encode }: EncodeContext) => {
+        test('hex', () => {
             for (const { input, output } of [
                 {
                     input: [171, 193, 35],
@@ -281,13 +248,13 @@ suite('Encode', () => {
                     output: '',
                 },
             ]) {
-                expect(encode.encode(Buffer.from(input), 'hex')).to.equal(
+                expect(Encode.encode(Uint8Array.from(input), 'hex')).to.equal(
                     output
                 );
             }
-        };
+        });
 
-        const utf8Test = ({ encode }: EncodeContext) => {
+        test('utf8', () => {
             for (const { input, output } of [
                 {
                     input: [97, 98, 99, 49, 50, 51],
@@ -302,33 +269,11 @@ suite('Encode', () => {
                     output: '\u0000\u00012\u3456',
                 },
             ]) {
-                const bufInput = Buffer.from(input);
-                const withDefault = encode.encode(bufInput);
+                const bufInput = Uint8Array.from(input);
+                const withDefault = Encode.encode(bufInput);
                 expect(withDefault).to.equal(output);
-                expect(withDefault).to.equal(encode.encode(bufInput, 'utf8'));
+                expect(withDefault).to.equal(Encode.encode(bufInput, 'utf8'));
             }
-        };
-
-        suite('browser', () => {
-            const withBrowserEncode = before(() => ({
-                encode: BrowserEncode,
-            }));
-
-            withBrowserEncode.test('base64', base64Test);
-            withBrowserEncode.test('base64url', base64urlTest);
-            withBrowserEncode.test('hex', hexTest);
-            withBrowserEncode.test('utf8', utf8Test);
-        });
-
-        suite('node', () => {
-            const withNodeEncode = before(() => ({
-                encode: NodeEncode,
-            }));
-
-            withNodeEncode.test('base64', base64Test);
-            withNodeEncode.test('base64url', base64urlTest);
-            withNodeEncode.test('hex', hexTest);
-            withNodeEncode.test('utf8', utf8Test);
         });
     });
 });

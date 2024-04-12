@@ -1,5 +1,5 @@
 import type { ErrorObject } from 'ajv';
-import { identifier } from 'haystack-di';
+import { identifier } from 'haywire';
 import { objectSchema, type SchemaType } from 'juniper';
 import { ajv } from './lib/ajv.js';
 import { allTargetsSchema } from './target.js';
@@ -15,7 +15,7 @@ export type ProjectJson = SchemaType<typeof projectJsonSchema>;
 
 export interface IsProjectJson {
     (val: unknown): val is ProjectJson;
-    errors?: null | ErrorObject[];
+    errors?: ErrorObject[] | null;
 }
 export const isProjectJson: IsProjectJson = ajv.compile<ProjectJson>(
     projectJsonSchema.toJSON()

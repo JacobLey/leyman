@@ -18,9 +18,9 @@ type Decoded<T extends Record<string, Uint8Array>> = Replace<
  *
  * Convenience method when de-serializing encoded input (e.g. hex encoded text from JSON).
  *
- * @param {object} obj - map of key to string
- * @param {string} [encoding] - encoding of strings, defaults to UTF8
- * @returns {object} same interface as input, with Uint8Array
+ * @param obj - map of key to string
+ * @param [encoding='utf8'] - encoding of strings, defaults to UTF8
+ * @returns same interface as input, with Uint8Array
  */
 export const decodeObject = <T extends Record<string, string>>(
     obj: T,
@@ -38,9 +38,9 @@ export const decodeObject = <T extends Record<string, string>>(
  *
  * Convenience method when serializing decoded content (e.g. hex encoding prior to `JSON.stringify`).
  *
- * @param {object} obj - map of key to Uint8Array
- * @param {string} [encoding] - encoding to use, defaults to UTF8
- * @returns {object} same interface as input, with strings
+ * @param obj - map of key to Uint8Array
+ * @param [encoding='utf8'] - encoding to use, defaults to UTF8
+ * @returns same interface as input, with strings
  */
 export const encodeObject = <T extends Record<string, Uint8Array>>(
     obj: T,

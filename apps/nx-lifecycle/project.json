@@ -3,10 +3,21 @@
   "name": "nx-lifecycle",
   "targets": {
     "biome": {},
+    "eslint": {},
     "update-ts-references": {},
     "tsc": {},
     "populate-files": {},
-    "mocha-unit-test": {},
+    "coverage-reset": {},
+    "mocha-unit-test": {
+      "options": {
+        "commands": [
+          "c8 --clean=false --reporter=none mocha --require './dist/tests/unit/hooks.js' --recursive './dist/tests/unit/**/*.spec.*js'"
+        ],
+        "parallel": true,
+        "color": true,
+        "cwd": "{projectRoot}"
+      }
+    },
     "coverage-report": {},
     "analyze:_": {},
     "analyze:lint": {},

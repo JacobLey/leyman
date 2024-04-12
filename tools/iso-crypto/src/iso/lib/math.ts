@@ -58,27 +58,19 @@ export const curves = {
     },
     p384: {
         p: 2n ** 384n - 2n ** 128n - 2n ** 96n + 2n ** 32n - 1n,
-        // eslint-disable-next-line max-len
         a: 0xffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_fffffffe_ffffffff_00000000_00000000_fffffffcn,
-        // eslint-disable-next-line max-len
         b: 0xb3312fa7_e23ee7e4_988e056b_e3f82d19_181d9c6e_fe814112_0314088f_5013875a_c656398d_8a2ed19d_2a85c8ed_d3ec2aefn,
         g: {
-            // eslint-disable-next-line max-len
             x: 0xaa87ca22_be8b0537_8eb1c71e_f320ad74_6e1d3b62_8ba79b98_59f741e0_82542a38_5502f25d_bf55296c_3a545e38_72760ab7n,
-            // eslint-disable-next-line max-len
             y: 0x3617de4a_96262c6f_5d9e98bf_9292dc29_f8f41dbd_289a147c_e9da3113_b5f0b8c0_0a60b1ce_1d7e819d_7a431d7c_90ea0e5fn,
         },
     },
     p521: {
         p: 2n ** 521n - 1n,
-        // eslint-disable-next-line max-len
         a: 0x1ff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_ffffffff_fffffffcn,
-        // eslint-disable-next-line max-len
         b: 0x51_953eb961_8e1c9a1f_929a21a0_b68540ee_a2da725b_99b315f3_b8b48991_8ef109e1_56193951_ec7e937b_1652c0bd_3bb1bf07_3573df88_3d2c34f1_ef451fd4_6b503f00n,
         g: {
-            // eslint-disable-next-line max-len
             x: 0xc6_858e06b7_0404e9cd_9e3ecb66_2395b442_9c648139_053fb521_f828af60_6b4d3dba_a14b5e77_efe75928_fe1dc127_a2ffa8de_3348b3c1_856a429b_f97e7e31_c2e5bd66n,
-            // eslint-disable-next-line max-len
             y: 0x118_39296a78_9a3bc004_5c8a5fb4_2c7d1bd9_98f54449_579b4468_17afbd17_273e662c_97ee7299_5ef42640_c550b901_3fad0761_353c7086_a272c240_88be9476_9fd16650n,
         },
     },
@@ -95,9 +87,9 @@ export const curves = {
  *
  * [Validate Solutions]{@link https://planetcalc.com/3303/}
  *
- * @param {bigint} a - constant a
- * @param {bigint} b - constant b
- * @returns {object} base solution
+ * @param a - constant a
+ * @param b - constant b
+ * @returns base solution
  */
 const euclidian = (a: bigint, b: bigint): Point => {
     const pairs: { a: bigint; b: bigint }[] = [];
@@ -128,11 +120,11 @@ const euclidian = (a: bigint, b: bigint): Point => {
  *
  * @see {@link https://en.wikipedia.org/wiki/Modular_multiplicative_inverse}
  *
- * [Validate Solutions]{@link https://planetcalc.com/3311/}
+ * {@link https://planetcalc.com/3311/ Validate Solutions}
  *
- * @param {bigint} a - value
- * @param {bigint} mod - modulus
- * @returns {bigint} modular inverse of `a`
+ * @param a - value
+ * @param mod - modulus
+ * @returns modular inverse of `a`
  */
 const modularInverse = (a: bigint, mod: bigint): bigint => {
     const inverse = euclidian(a < 0n ? a + mod : a, mod).x;
@@ -149,9 +141,9 @@ const modularInverse = (a: bigint, mod: bigint): bigint => {
  * positiveMod(7n, 10n) === 7n;
  * positiveMod(-7n, 10n) === 3n;
  *
- * @param {bigint} x - value
- * @param {bigint} mod - modulus
- * @returns {bigint} positive remainder
+ * @param x - value
+ * @param mod - modulus
+ * @returns positive remainder
  */
 const positiveMod = (x: bigint, mod: bigint): bigint => {
     const result = x % mod;
@@ -168,10 +160,10 @@ const positiveMod = (x: bigint, mod: bigint): bigint => {
  *
  * Note conditions like Infinity are ignored/improperly handled, but that is acceptable for expected use case.
  *
- * @param {Point} p - first point
- * @param {Point} q - second point
- * @param {Curve} curve - curve specification
- * @returns {Point} result point
+ * @param p - first point
+ * @param q - second point
+ * @param curve - curve specification
+ * @returns result point
  */
 const addPoints = (p: Point, q: Point, curve: Curve): Point => {
     const { rise, run } =
@@ -199,9 +191,9 @@ const addPoints = (p: Point, q: Point, curve: Curve): Point => {
  *
  * @see {@link https://en.wikipedia.org/wiki/Elliptic_curve_point_multiplication}
  *
- * @param {bigint} privateKey - random number in curve range
- * @param {Curve} curve - Curve specification
- * @returns {Point} public key point
+ * @param privateKey - random number in curve range
+ * @param curve - Curve specification
+ * @returns public key point
  */
 export const derivePublicKey = (privateKey: bigint, curve: Curve): Point => {
     const bits = [...privateKey.toString(2)].reverse();
@@ -228,10 +220,10 @@ export const derivePublicKey = (privateKey: bigint, curve: Curve): Point => {
  * Exponents are supported natively, but in cases of _large_ exponents, it is not possible.
  * (Either very slow, or hits max BigInt).
  *
- * @param {bigint} x - x in equation. "Base x"
- * @param {bigint} y - y in equation. "Power y"
- * @param {bigint} p - p in equation. Prime modulus.
- * @returns {bigint} result of (x ^ y) % p
+ * @param x - x in equation. "Base x"
+ * @param y - y in equation. "Power y"
+ * @param p - p in equation. Prime modulus.
+ * @returns result of (x ^ y) % p
  */
 const power = (x: bigint, y: bigint, p: bigint): bigint => {
     let res = 1n;
@@ -257,9 +249,9 @@ const power = (x: bigint, y: bigint, p: bigint): bigint => {
  *
  * Implementation translated from [python](https://github.com/fabiomainardi/Tonelli-Shanks/blob/master/tonelli_shanks.py).
  *
- * @param {bigint} n - "quadratic residue" mod p
- * @param {bigint} p - prime modulus
- * @returns {bigint} y
+ * @param n - "quadratic residue" mod p
+ * @param p - prime modulus
+ * @returns y
  */
 const modSqrt = (n: bigint, p: bigint): bigint => {
     let s = 1n;

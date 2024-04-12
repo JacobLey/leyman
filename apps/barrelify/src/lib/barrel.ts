@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
-import { findImport } from 'find-import';
 import { globby } from 'globby';
+import { findImport } from 'find-import';
 import { patch } from 'named-patch';
 
 const getExtensions = async (path: string): Promise<string> => {

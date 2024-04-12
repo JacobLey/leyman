@@ -37,8 +37,8 @@ export abstract class Infinite<
      * React Hook for "infinite" data loading.
      * Wraps `useQueries` in addition to extra methods to support pagination.
      *
-     * @param {*} input - method params defined by class, + options
-     * @returns {object} useQuery response.
+     * @param input - method params defined by class, + options
+     * @returns useQuery response.
      */
     public useInfinite(
         ...input:
@@ -49,13 +49,13 @@ export abstract class Infinite<
             | [Omit<PaginatedParams<Params, Page>, 'nextPage'>]
             | (EmptyObject extends Params
                   ?
-                          | []
                           | [
                                   null | undefined,
                                   UseQueryOptions<
                                       PaginatedData<Data, Page, Meta>
                                   >,
                               ]
+                          | []
                   : never)
     ): Omit<UseQueryResult<PaginatedData<Data, Page, Meta>>, 'data'> & {
         lastData: UseQueryResult<PaginatedData<Data, Page, Meta>>['data'];
@@ -64,8 +64,7 @@ export abstract class Infinite<
         hasNextPage: boolean;
         fetchNextPage: () => void;
     } {
-        const params = input[0] ?? {};
-        const options = input[1];
+        const [params = {}, options] = input;
 
         const defaultPageParams = {
             ...(params as PaginatedParams<Params, Page>),
@@ -80,13 +79,10 @@ export abstract class Infinite<
         // to check if `params` has changed in a meaningful way.
         const hashedDefaultKey = queryKeyHashFn(defaultKey);
 
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const client = useQueryClient();
 
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const forceRerender = useForceRerender();
 
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const [queries, appendQuery] = useMemo(() => {
             // Array of queries is initialized in a `useMemo` hook so it immediately reset on changed dependencies.
             const baseQueries: Required<
@@ -120,10 +116,8 @@ export abstract class Infinite<
                 }
             };
             return [baseQueries, appendToBaseQuery];
-            // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [hashedDefaultKey]);
 
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const results = useQueries({
             queries: queries.map(x => ({ ...x, ...options })),
         });
@@ -151,11 +145,7 @@ export abstract class Infinite<
             }
         }
 
-        const [
-            hasNextPage,
-            fetchNextPage,
-            // eslint-disable-next-line react-hooks/rules-of-hooks
-        ] = useMemo(() => {
+        const [hasNextPage, fetchNextPage] = useMemo(() => {
             if (last.isSuccess) {
                 const { nextPage } = last.data;
                 if (nextPage !== null) {
@@ -179,7 +169,6 @@ export abstract class Infinite<
                 }
             }
             return [false, () => {}];
-            // eslint-disable-next-line react-hooks/exhaustive-deps
         }, [client, hashedDefaultKey, last.isSuccess, last.data]);
 
         return {
@@ -199,13 +188,11 @@ export abstract class Infinite<
      *
      * Default behavior is to return an empty object, which is effectively unique.
      *
-     * @param {*} data - response from most recent data.
-     * @returns {*} if non-end there are more pages to load.
+     * @param data - response from most recent data.
+     * @returns if non-end there are more pages to load.
      */
     protected getIdentifier(data: Data): unknown;
-    /**
-     * @override
-     */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     protected getIdentifier(): unknown {
         return {};
     }
@@ -216,15 +203,15 @@ export abstract class Infinite<
  *
  * See Infinite class for implementation details.
  *
- * @param {object} params - params
- * @param {Function} params.getKey - getKey
- * @param {Function} params.queryFn - queryFn
- * @param {object} [options] - options
- * @param {Function} [options.onSuccess] - onSuccess handler
- * @param {Function} [options.onError] - onError handler
- * @param {Function} [options.onSettled] - onSettled handler
- * @param {Function} [options.getIdentifier] - getIdentifier
- * @returns {object} typed infinite resource
+ * @param params - required parameters
+ * @param params.getKey - method to generated key based on parameters
+ * @param params.queryFn - method that actually does data loading
+ * @param [options] - optional
+ * @param [options.onSuccess] - onSuccess handler
+ * @param [options.onError] - onError handler
+ * @param [options.onSettled] - onSettled handler
+ * @param [options.getIdentifier] - custom get id
+ * @returns typed infinite resource
  */
 export const infinite = <
     Data,
@@ -242,7 +229,6 @@ export const infinite = <
         onSettled?: Infinite<Data, Params, Page, Meta>['onSettled'];
         getIdentifier?: Infinite<Data, Params, Page, Meta>['getIdentifier'];
     } = {}
-    // eslint-disable-next-line jsdoc/require-jsdoc
 ): Infinite<Data, Params, Page, Meta> =>
     new (class extends Infinite<Data, Params, Page, Meta> {
         protected getKey = params.getKey;

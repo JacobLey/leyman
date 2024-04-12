@@ -1,11 +1,12 @@
 FROM mcr.microsoft.com/devcontainers/base:debian
 
-ARG NX_VERSION=18.0.4
-ARG NODE_VERSION=21.6.2
-ARG PNPM_VERSION=8.15.4
+ARG NX_VERSION=18.2.4
+ARG NODE_VERSION=20.12.0
+ARG PNPM_VERSION=8.15.6
 
 RUN apt-get update \
-    && apt-get upgrade -y
+    && apt-get upgrade -y \
+    && apt-get install vim -y
 
 ARG USER=jacobley
 RUN adduser $USER

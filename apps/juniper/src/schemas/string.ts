@@ -128,20 +128,19 @@ export class StringSchema<
     /**
      * Create a new instance of StringSchema.
      *
-     * @param {void} [this] - this
-     * @param {object} [options] - options
-     * @param {string|null} [options.contentEncoding] - content encoding
-     * @param {string|null} [options.contentMediaType] - content media type
-     * @param {string|null} [options.format] - format of string
-     * @param {number} [options.minLength] - minimum length of string (inclusive)
-     * @param {number} [options.maxLength] - maximum length of string (inclusive)
-     * @param {string|string[]} [options.pattern] - RegExp patterns to describe string
-     * @param {string} [options.title] - Add title to schema
-     * @param {string} [options.description] - Add description to schema
-     * @param {boolean} [options.deprecated] - flag schema as deprecated
-     * @param {boolean} [options.readOnly] - value should not be modified
-     * @param {boolean} [options.writeOnly] - value should be hidden
-     * @returns {StringSchema} string schema
+     * @param [options] - optional
+     * @param [options.contentEncoding] - contentEncoding property
+     * @param [options.contentMediaType] - contentMediaType property
+     * @param [options.format] - text format of string
+     * @param [options.minLength] - minimum length of string (inclusive)
+     * @param [options.maxLength] - maximum length of string (inclusive)
+     * @param [options.pattern] - RegExp patterns to describe string
+     * @param [options.title] - Add title to schema
+     * @param [options.description] - Add description to schema
+     * @param [options.deprecated] - flag schema as deprecated
+     * @param [options.readOnly] - value should not be modified
+     * @param [options.writeOnly] - value should be hidden
+     * @returns new string schema
      */
     public static override create<T2 extends string>(
         this: void,
@@ -162,9 +161,9 @@ export class StringSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7}
      *
-     * @param {this} this - this instance
-     * @param {string|null} format - format
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param format - format property
+     * @returns cloned schema
      */
     public format(this: this, format: string | null): this {
         return this.clone({ format });
@@ -179,9 +178,9 @@ export class StringSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1}
      *
-     * @param {this} this - this instance
-     * @param {number} maxLength - max length
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param maxLength - max length property
+     * @returns cloned schema
      */
     public maxLength(this: this, maxLength: number): this {
         return this.clone({ maxLength });
@@ -196,9 +195,9 @@ export class StringSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.2}
      *
-     * @param {this} this - this instance
-     * @param {number} minLength - min length
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param minLength - min length property
+     * @returns cloned schema
      */
     public minLength(this: this, minLength: number): this {
         return this.clone({ minLength });
@@ -212,9 +211,9 @@ export class StringSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.3}
      *
-     * @param {this} this - this instance
-     * @param {string} pattern - regular expression pattern
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param pattern - regular expression pattern
+     * @returns cloned schema
      */
     public pattern<Constraint extends string>(
         this: this,
@@ -228,9 +227,9 @@ export class StringSchema<
     /**
      * Add a special case `pattern` that enforces a string occurs as the start.
      *
-     * @param {this} this - this instance
-     * @param {string} start - string literal
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param start - string literal
+     * @returns cloned schema
      */
     public startsWith<Start extends string>(
         this: this,
@@ -244,9 +243,9 @@ export class StringSchema<
     /**
      * Add a special case `pattern` that enforces a string occurs as the end.
      *
-     * @param {this} this - this instance
-     * @param {string} end - string literal
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param end - string literal
+     * @returns cloned schema
      */
     public endsWith<End extends string>(
         this: this,
@@ -258,9 +257,9 @@ export class StringSchema<
     /**
      * Add a special case `pattern` that enforces a string occurs somewhere in the string.
      *
-     * @param {this} this - this instance
-     * @param {string} contain - string literal
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param contain - string literal
+     * @returns cloned schema
      */
     public contains<Contain extends string>(
         this: this,
@@ -280,9 +279,9 @@ export class StringSchema<
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentencoding}
      *
-     * @param {this} this - this instance
-     * @param {string|null} contentEncoding - content encoding
-     * @returns {StringSchema} string schema
+     * @param this - this instance
+     * @param contentEncoding - content encoding property
+     * @returns cloned string schema
      */
     public contentEncoding(this: this, contentEncoding: string | null): this {
         return this.clone({
@@ -299,9 +298,9 @@ export class StringSchema<
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype}
      *
-     * @param {this} this - this instance
-     * @param {string|null} contentMediaType - content media type
-     * @returns {StringSchema} string schema
+     * @param this - this instance
+     * @param contentMediaType - content media type property
+     * @returns cloned string schema
      */
     public contentMediaType(this: this, contentMediaType: string | null): this {
         return this.clone({

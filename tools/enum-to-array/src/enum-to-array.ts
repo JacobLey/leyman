@@ -18,8 +18,8 @@ type IfEmpty<Enum extends Record<string, unknown>, Else> = Record<
  * console.log(enumToArray(MyEnum));
  * // [{ key: 'FOO', value: 'BAR' }, { key: 'ABC', value: 123 }]
  *
- * @param {object} enumDict - enum variable
- * @returns {object[]} list of key+value
+ * @param enumDict - enum variable
+ * @returns list of key+value
  */
 export const enumToArray = <Enum extends Record<string, unknown>>(
     enumDict: Enum
@@ -81,16 +81,19 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
  * console.log(enumToValues(MyEnum), { unique: true });
  * // ['BAR', 123]
  *
- * @param {object} enumDict - enum variable
- * @param {object} [options] - options
- * @param {boolean} [options.unique=false] - unique values
- * @returns {(string|number)[]} list of enum values
+ * @param enumDict - enum variable
+ * @param [options] - optional
+ * @param [options.unique=false] - Dedupe values in enums
+ * @returns list of enum values
  */
 export const enumToValues = <Enum extends Record<string, unknown>>(
     enumDict: Enum,
     {
-        unique,
+        unique = false,
     }: {
+        /**
+         * Dedupe values in enums.
+         */
         unique?: boolean;
     } = {}
 ): IfEmpty<
@@ -121,8 +124,8 @@ export const enumToValues = <Enum extends Record<string, unknown>>(
  * console.log(enumToKeys(MyEnum));
  * // ['FOO', 'ABC']
  *
- * @param {object} enumDict - enum variable
- * @returns {string[]} list of enum keys
+ * @param enumDict - enum variable
+ * @returns list of enum keys
  */
 export const enumToKeys = <Enum extends Record<string, unknown>>(
     enumDict: Enum

@@ -1,5 +1,5 @@
-import { afterModule } from './after-hooks.js';
 import { afterEachModule } from './after-each-hooks.js';
+import { afterModule } from './after-hooks.js';
 import { beforeEachModule } from './before-each-hooks.js';
 import { beforeModule } from './before-hooks.js';
 import { testModule } from './test-hooks.js';

@@ -1,5 +1,9 @@
-import '../../lib/types.js';
-import '../../lib/custom-event/type.js';
-import '../../lib/static-event-target/type.js';
-import '../../lib/typed-event/type.js';
-// coverage
+import { suite, test } from 'mocha-hookup';
+
+suite('static-emitter', () => {
+    test('coverage', async () => {
+        await import('../../lib/types.js');
+        await import('../../lib/static-event-target/type.js');
+        await import('../../lib/typed-event/type.js');
+    });
+});

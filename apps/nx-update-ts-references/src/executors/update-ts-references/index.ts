@@ -1,11 +1,11 @@
-import { readFile, writeFile } from 'fs/promises';
-import { join } from 'node:path';
+import { readFile, writeFile } from 'node:fs/promises';
+import { join, relative } from 'node:path';
 import type { ExecutorContext } from '@nx/devkit';
 import { isCI } from 'ci-info';
 import commentJson from 'comment-json';
+import { formatText } from 'npm-format-file';
 import type { UpdateTsReferencesOptions } from './schema.js';
 import { isTsConfig, type TsConfig } from './tsconfig-validator.js';
-import { relative } from 'path';
 
 interface NormalizedOptions {
     packageRoot: string;
@@ -75,6 +75,13 @@ const safeReadTsConfig = async (path: string): Promise<TsConfigFile | null> => {
     }
 };
 
+/**
+ * Updates the `references` section of `tsconfig.json` for the given project.
+ *
+ * @param options - options passed from client
+ * @param context - nx workspace context
+ * @returns promise of completion
+ */
 export default async (
     options: UpdateTsReferencesOptions,
     context: ExecutorContext
@@ -83,13 +90,8 @@ export default async (
 
     const [packageTsConfig, ...dependencyTsConfigs] = await Promise.all([
         readTsConfigFile(normalized.tsConfig),
-        ...normalized.dependencies.map(path => safeReadTsConfig(path)),
+        ...normalized.dependencies.map(async path => safeReadTsConfig(path)),
     ]);
-
-    if (!packageTsConfig) {
-        console.error('tsconfig.json not found');
-        return { success: false };
-    }
 
     const foundDependencies = dependencyTsConfigs.filter(
         (ts): ts is NonNullable<typeof ts> => !!ts
@@ -101,14 +103,17 @@ export default async (
             path: relative(normalized.packageRoot, join(path, '..')),
         }));
 
-    const dataToWrite =
-        commentJson.stringify(packageTsConfig.json, null, 2) + '\n';
+    const dataToWrite = await formatText(
+        commentJson.stringify(packageTsConfig.json, null, 2),
+        { ext: '.json' }
+    );
 
     if (dataToWrite === packageTsConfig.rawData) {
         return { success: true };
     }
 
     if (normalized.check) {
+        // eslint-disable-next-line no-console
         console.log('tsconfig.json is out of date');
         return { success: false };
     }

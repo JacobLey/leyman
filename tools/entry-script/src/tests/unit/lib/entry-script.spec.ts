@@ -1,9 +1,9 @@
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
-import { afterEach, beforeEach, suite, test } from 'mocha-hookup';
 import { fake, spy, stub, verifyAndRestore } from 'sinon';
 import * as EntryScript from 'entry-script';
+import { afterEach, beforeEach, suite, test } from 'mocha-hookup';
 import { runAsMain } from '#entry-script';
 import EntryScriptMock from '../../data/entry-script-mock.js';
 
@@ -23,7 +23,9 @@ suite('EntryScript', () => {
     suite('runAsMain', () => {
         const withStubbedEntryScript = beforeEach(async () => {
             const entryScript = await EntryScriptMock.create();
-            stub(EntryScriptMock, 'create').callsFake(async () => entryScript);
+            stub(EntryScriptMock, 'create').returns(
+                Promise.resolve(entryScript)
+            );
 
             return { entryScript };
         });
@@ -79,7 +81,7 @@ suite('EntryScript', () => {
 
                     entryScript.on(EntryScript.runtimeError, listenerStub);
 
-                    let caughtError: unknown;
+                    let caughtError: unknown = null;
                     try {
                         await runAsMain(
                             Path.resolve(

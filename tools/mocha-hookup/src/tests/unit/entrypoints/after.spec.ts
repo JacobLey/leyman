@@ -6,13 +6,14 @@ import { after, suite, suiteTeardown } from 'mocha-hookup';
 const order: number[] = [];
 
 suite('after', () => {
-    suite('Inside a suite', function () {
+    suite('Inside a suite', function (this) {
         this.retries(2);
 
         let shouldFail = true;
         mocha.test('Fails first time', done => {
-            done(shouldFail ? new Error('<ERROR>') : null);
+            const isShouldFail = shouldFail;
             shouldFail = false;
+            done(isShouldFail ? new Error('<ERROR>') : null);
         });
 
         suite('Inside another suite', () => {
@@ -21,7 +22,7 @@ suite('after', () => {
                 expectTypeOf(after).toEqualTypeOf(suiteTeardown);
             });
 
-            after(function () {
+            after(function (this) {
                 expect(order).to.deep.equal([]);
                 order.push(1);
 
@@ -34,7 +35,7 @@ suite('after', () => {
             });
         });
 
-        const contextualAfter = after(function () {
+        const contextualAfter = after(function (this) {
             expect(order).to.deep.equal([1]);
             order.push(2);
 
@@ -65,11 +66,10 @@ suite('after', () => {
                 setTimeout(() => {
                     expect(order).to.deep.equal([1, 2, 3]);
                     order.push(4);
-                    console.log('CALLING DONE!!');
                     done();
                 }, 10);
 
-                return Promise.resolve({ efg: true } as const);
+                return { efg: true } as const;
             }
         );
 
@@ -105,7 +105,7 @@ suite('after', () => {
         order.push(7);
     }).suiteTeardown(ctx => {
         expect(ctx).to.deep.equal({});
-        expectTypeOf(ctx).toEqualTypeOf<{}>();
+        expectTypeOf(ctx).toEqualTypeOf<NonNullable<unknown>>();
 
         expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);
         order.push(8);

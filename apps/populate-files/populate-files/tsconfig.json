@@ -7,6 +7,12 @@
   },
   "references": [
     {
+      "path": "../../../leyman/eslint-config"
+    },
+    {
+      "path": "../../../tools/format-file"
+    },
+    {
       "path": "../../../tools/nx-tsc"
     }
   ]

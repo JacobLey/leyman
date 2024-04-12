@@ -1,7 +1,8 @@
-import crypto from '#crypto';
 import { decode } from '#encode';
 import { defaultHash, type HashAlgorithm } from '../lib/types.js';
 import type * as HashMethods from './types.js';
+
+const { crypto } = globalThis;
 
 const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
     if (algorithm === 'SHA1') {

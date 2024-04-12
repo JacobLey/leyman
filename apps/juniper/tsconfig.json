@@ -10,6 +10,9 @@
       "path": "../nx-update-ts-references"
     },
     {
+      "path": "../../leyman/eslint-config"
+    },
+    {
       "path": "../../tools/default-import"
     },
     {

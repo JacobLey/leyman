@@ -1,24 +1,24 @@
-import { bind, createModule, identifier, singletonScope } from 'haystack-di';
-import type { Context as MochaContext, Done, Test as MochaTest } from 'mocha';
+import type { Done, Context as MochaContext, Test as MochaTest } from 'mocha';
+import { bind, createModule, identifier, singletonScope } from 'haywire';
+import { beforeEachIdentifier } from '#mocha-module';
 import {
     type AfterEachChain,
     contextualAfterEachGeneratorIdentifier,
 } from './after-each-hooks.js';
-import { beforeEachIdentifier } from '#mocha-module';
-import {
-    type ContextualTest,
-    contextualTestGeneratorIdentifier,
-    type ExclusiveContextualTest,
-} from './test-hooks.js';
 import {
     type GenericContextualHook,
-    wrapPerTestHookWithContext,
     wrapHookWithEntrypoint,
+    wrapPerTestHookWithContext,
 } from './lib/hook-wrapper.js';
 import type {
     AllowableAdditionalContext,
     MergeContext,
 } from './lib/merge-context.js';
+import {
+    type ContextualTest,
+    contextualTestGeneratorIdentifier,
+    type ExclusiveContextualTest,
+} from './test-hooks.js';
 
 interface ContextualBeforeEachHook<ExistingContext extends object>
     extends GenericContextualHook {
@@ -42,7 +42,7 @@ export interface BeforeEachChain<
     ExistingContext extends object,
     AdditionalContext extends AllowableAdditionalContext,
 > extends AfterEachChain<ExistingContext, AdditionalContext> {
-    // beforeEach
+    // BeforeEach
     beforeEach: ContextualBeforeEachHook<
         MergeContext<ExistingContext, Awaited<AdditionalContext>>
     >;
@@ -50,7 +50,7 @@ export interface BeforeEachChain<
         MergeContext<ExistingContext, Awaited<AdditionalContext>>
     >;
 
-    // test
+    // Test
     it: ContextualTest<
         MergeContext<ExistingContext, Awaited<AdditionalContext>>
     >;
@@ -65,11 +65,9 @@ export interface BeforeEachChain<
     >;
 }
 
-export interface ContextualBeforeEachGenerator {
-    <ExistingContext extends object>(
-        ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
-    ): ContextualBeforeEachHook<ExistingContext>;
-}
+export type ContextualBeforeEachGenerator = <ExistingContext extends object>(
+    ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
+) => ContextualBeforeEachHook<ExistingContext>;
 
 export const contextualBeforeEachGeneratorIdentifier =
     identifier<ContextualBeforeEachGenerator>();
@@ -82,12 +80,14 @@ const contextualBeforeEachBinding = bind(
         contextualAfterEachGeneratorIdentifier,
     ])
     .withProvider((beforeEach, testGenerator, afterEachGenerator) => {
-        const contextualBeforeEach: ContextualBeforeEachGenerator = <
-            ExistingContext extends object,
-        >(
-            ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
-        ) => {
-            return <AdditionalContext extends AllowableAdditionalContext>(
+        const contextualBeforeEach: ContextualBeforeEachGenerator =
+            <ExistingContext extends object>(
+                ctxProm: Pick<
+                    WeakMap<MochaTest, Promise<ExistingContext>>,
+                    'get'
+                >
+            ) =>
+            <AdditionalContext extends AllowableAdditionalContext>(
                 ...args:
                     | [
                           (
@@ -126,7 +126,6 @@ const contextualBeforeEachBinding = bind(
                     teardown: afterEachs,
                 };
             };
-        };
         return contextualBeforeEach;
     })
     .scoped(singletonScope);
@@ -134,11 +133,11 @@ const contextualBeforeEachBinding = bind(
 export interface EntrypointBeforeEachHook {
     <AdditionalContext extends AllowableAdditionalContext>(
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): BeforeEachChain<{}, AdditionalContext>;
+    ): BeforeEachChain<NonNullable<unknown>, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): BeforeEachChain<{}, AdditionalContext>;
+    ): BeforeEachChain<NonNullable<unknown>, AdditionalContext>;
 }
 
 export const entrypointBeforeEachIdentifier =
@@ -147,7 +146,7 @@ const entrypointBeforeEachBinding = bind(entrypointBeforeEachIdentifier)
     .withDependencies([contextualBeforeEachGeneratorIdentifier])
     .withProvider(contextualBeforeEachGenerator => {
         const contextualBeforeEach = contextualBeforeEachGenerator({
-            get: () => Promise.resolve({}),
+            get: async () => ({}),
         });
         return wrapHookWithEntrypoint(
             contextualBeforeEach

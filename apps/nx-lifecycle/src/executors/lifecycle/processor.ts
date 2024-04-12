@@ -1,11 +1,11 @@
-import { identifier } from 'haystack-di';
+import { identifier } from 'haywire';
 import {
+    type AllTargets,
+    type DependsOn,
+    isEmpty,
     type NxJson,
     type ProjectJson,
     type Target,
-    type DependsOn,
-    type AllTargets,
-    isEmpty,
 } from '#schemas';
 import { NOOP_EXECUTOR } from './constants.js';
 import type { NormalizedOptions } from './normalizer.js';
@@ -23,11 +23,11 @@ type LifecycleTarget = {
           previousHook: string;
       } & (
           | {
-                  kind: 'hook';
-              }
-          | {
                   kind: 'base';
                   hasHooks: boolean;
+              }
+          | {
+                  kind: 'hook';
               }
       ))
 );
@@ -149,14 +149,14 @@ const removeDependencyTargets = ({
 }: {
     target: Target;
     lifecycleTargets: LifecycleTargets;
-    targetsToRemove: Set<String>;
+    targetsToRemove: Set<string>;
 }): DependsOn => {
     if (target.dependsOn) {
         return target.dependsOn.filter(dependency => {
-            const target =
+            const dependencyTarget =
                 typeof dependency === 'string' ? dependency : dependency.target;
 
-            const normalized = target.replace(/^\^/, '');
+            const normalized = dependencyTarget.replace(/^\^/u, '');
             if (targetsToRemove.has(normalized)) {
                 return false;
             }
@@ -325,20 +325,18 @@ const processProjectJson = ({
     };
 };
 
-export interface NxAndProjectJsonProcessor {
-    ({
-        nxJson,
-        projectJsons,
-        options,
-    }: {
-        nxJson: NxJson;
-        projectJsons: ProjectJson[];
-        options: ProcessorOptions;
-    }): {
-        processedNxJson: NxJson;
-        processedProjectJsons: ProjectJson[];
-    };
-}
+export type NxAndProjectJsonProcessor = ({
+    nxJson,
+    projectJsons,
+    options,
+}: {
+    nxJson: NxJson;
+    projectJsons: ProjectJson[];
+    options: ProcessorOptions;
+}) => {
+    processedNxJson: NxJson;
+    processedProjectJsons: ProjectJson[];
+};
 export const nxAndProjectJsonProcessorIdentifier =
     identifier<NxAndProjectJsonProcessor>();
 

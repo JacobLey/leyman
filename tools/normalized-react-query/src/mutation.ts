@@ -40,17 +40,15 @@ export abstract class Mutation<
     /**
      * React Hook for data manipulation. Wrapper around `useMutation`.
      *
-     * @param {*} params - method params defined by class.
-     * @returns {object} useMutation response.
+     * @param params - method params defined by class.
+     * @returns useMutation response.
      */
     public useMutation(
         params: Params
     ): UseMutationResult<Data, unknown, Variables> {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const client = useQueryClient();
         const mutationKey = this.getKey(params);
 
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const [mutationFn, onSuccess, onError, onSettled] = useMemo(
             () => [
                 async (variables: Variables) =>
@@ -64,12 +62,10 @@ export abstract class Mutation<
                     error: unknown,
                     variables: Variables
                 ) => this.onSettled(client, params, data, error, variables),
-                // eslint-disable-next-line react-hooks/exhaustive-deps
             ],
             [hashQueryKey(mutationKey)]
         );
 
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         return useMutation<Data, unknown, Variables>(mutationKey, mutationFn, {
             onSuccess,
             onError,
@@ -82,11 +78,11 @@ export abstract class Mutation<
      *
      * Default behavior is NOOP.
      *
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {*} data - response from mutation.
-     * @param {*} variables - variables provided directly to mutation
-     * @returns {Promise} success handled
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @param data - response from mutation.
+     * @param variables - variables provided directly to mutation
+     * @returns success handled
      */
     protected async onSuccess(
         client: QueryClient,
@@ -94,9 +90,7 @@ export abstract class Mutation<
         data: Data,
         variables: Variables
     ): Promise<void>;
-    /**
-     * @override
-     */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     protected async onSuccess(): Promise<void> {}
 
     /**
@@ -116,9 +110,7 @@ export abstract class Mutation<
         error: unknown,
         variables: Variables
     ): Promise<void>;
-    /**
-     * @override
-     */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     protected async onError(): Promise<void> {}
 
     /**
@@ -140,9 +132,7 @@ export abstract class Mutation<
         error: unknown,
         variables: Variables
     ): Promise<void>;
-    /**
-     * @override
-     */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     protected async onSettled(): Promise<void> {}
 
     /**
@@ -178,14 +168,14 @@ export abstract class Mutation<
  *
  * See Mutation class for implementation details.
  *
- * @param {object} params - params
- * @param {Function} params.getKey - getKey
- * @param {Function} params.mutationFn - mutationFn
- * @param {object} [options] - options
- * @param {Function} [options.onSuccess] - onSuccess handler
- * @param {Function} [options.onError] - onError handler
- * @param {Function} [options.onSettled] - onSettled handler
- * @returns {object} typed mutation
+ * @param params - requied parameters
+ * @param params.getKey - method to get key based on parametesr
+ * @param params.mutationFn - method that does actual mutation
+ * @param [options] - optional
+ * @param [options.onSuccess] - onSuccess handler
+ * @param [options.onError] - onError handler
+ * @param [options.onSettled] - onSettled handler
+ * @returns typed mutation
  */
 export const mutation = <
     Data,
@@ -201,7 +191,6 @@ export const mutation = <
         onError?: Mutation<Data, Params, Variables>['onError'];
         onSettled?: Mutation<Data, Params, Variables>['onSettled'];
     } = {}
-    // eslint-disable-next-line jsdoc/require-jsdoc
 ): Mutation<Data, Params, Variables> =>
     new (class extends Mutation<Data, Params, Variables> {
         protected getKey = params.getKey;

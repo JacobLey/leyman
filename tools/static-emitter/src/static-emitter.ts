@@ -55,9 +55,9 @@ export class StaticEmitter<
     /**
      * Mirror EventEmitter syntax. Wraps event data in CustomEvent.
      *
-     * @param {string|symbol} eventName - event name
-     * @param {Function} listener - callback that is called on event
-     * @returns {this} static emitter
+     * @param eventName - event name used as key
+     * @param listener - callback that is called on event
+     * @returns this static emitter
      */
     public on<K extends Types.CustomEventList<this>>(
         eventName: K,
@@ -75,9 +75,9 @@ export class StaticEmitter<
      *
      * Will remove listener after first invocation.
      *
-     * @param {string|symbol} eventName - event name
-     * @param {Function} listener - callback that is called on event
-     * @returns {this} static emitter
+     * @param eventName - event name used as key
+     * @param listener - callback that is called on event
+     * @returns this static emitter
      */
     public once<K extends Types.CustomEventList<this>>(
         eventName: K,
@@ -96,9 +96,9 @@ export class StaticEmitter<
      *
      * Removes listener from emitter. Allows both "native" listeners and static emitter wrappers.
      *
-     * @param {string|symbol} eventName - event name
-     * @param {Function} listener - callback to remove
-     * @returns {this} static emitter
+     * @param eventName - event name used as key
+     * @param listener - callback to remove
+     * @returns this static emitter
      */
     public off<K extends Types.CustomEventList<this> | Types.EventList<this>>(
         eventName: K,
@@ -133,9 +133,9 @@ export class StaticEmitter<
      *
      * Emit event + detail.
      *
-     * @param {string|symbol} eventName - event name
-     * @param {*} detail - event data
-     * @returns {this} static emitter
+     * @param eventName - event name used as key
+     * @param detail - event data
+     * @returns this static emitter
      */
     public emit<K extends Types.CustomEventList<this>>(
         eventName: K,
@@ -153,8 +153,8 @@ export class StaticEmitter<
      * Maps `symbol` and `number` events to a random string for native support.
      * Caches mapping for future consistency.
      *
-     * @param {number|string|symbol} eventName - event name
-     * @returns {string} EventTarget compliant event name
+     * @param eventName - event name used as key
+     * @returns EventTarget compliant event name
      */
     #getEventName<K extends Types.CustomEventList<this>>(eventName: K): string {
         if (typeof eventName === 'string') {
@@ -176,8 +176,8 @@ export class StaticEmitter<
      *
      * Caches result in a WeakMap for future references and automatic cleanup.
      *
-     * @param {Function} listener - user provided listener
-     * @returns {Function} EventTarget listener
+     * @param listener - user provided listener
+     * @returns EventTarget listener
      */
     #getListener<K extends Types.CustomEventList<this>>(
         listener: Types.CustomEventListener<this, K>

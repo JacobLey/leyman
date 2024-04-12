@@ -1,0 +1,43 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/eslint-config",
+  "targets": {
+    "biome": {},
+    "update-ts-references": {
+      "executor": "npm-nx-update-ts-references:update-ts-references"
+    },
+    "tsc": {
+      "executor": "npm-nx-tsc:build",
+      "options": {
+        "tsConfig": "{projectRoot}/tsconfig.json"
+      }
+    },
+    "coverage-reset": {},
+    "mocha-unit-test": {},
+    "mocha-integration-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "c8 --clean=false --reporter=none eslint . './**/*.{c,m,}ts{x,}' './**/*.{c,m,}js'"
+        ],
+        "parallel": true,
+        "color": true,
+        "cwd": "{projectRoot}"
+      }
+    },
+    "coverage-report": {},
+    "analyze:_": {},
+    "analyze:lint": {},
+    "analyze:format": {},
+    "analyze": {},
+    "build:_": {},
+    "build:pre": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "test:_": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {}
+  }
+}

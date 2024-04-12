@@ -1,9 +1,9 @@
 import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
-import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { before, suite, test } from 'mocha-hookup';
+import { defaultImport } from 'default-import';
 import { type SchemaType, stringSchema } from 'juniper';
+import { before, suite, test } from 'mocha-hookup';
 
 const Ajv = defaultImport(DefaultAjv);
 
@@ -129,6 +129,7 @@ suite('StringSchema', () => {
                     .pattern('1')
                     .pattern('2')
                     .if(stringSchema().startsWith('a').nullable(), {
+                        // eslint-disable-next-line unicorn/no-thenable
                         then: stringSchema().endsWith('c'),
                         else: stringSchema().contains('b').nullable(),
                     });
@@ -144,6 +145,7 @@ suite('StringSchema', () => {
                             if: {
                                 pattern: '^a',
                             },
+                            // eslint-disable-next-line unicorn/no-thenable
                             then: {
                                 pattern: 'c$',
                             },
@@ -172,6 +174,7 @@ suite('StringSchema', () => {
                     .pattern('1')
                     .pattern('2')
                     .if(stringSchema().startsWith('a').nullable(), {
+                        // eslint-disable-next-line unicorn/no-thenable
                         then: stringSchema().endsWith('c'),
                         else: stringSchema().contains('b').nullable(),
                     });
@@ -220,6 +223,7 @@ suite('StringSchema', () => {
                 const schema = stringSchema()
                     .contains('b')
                     .if(stringSchema().startsWith('a'), {
+                        // eslint-disable-next-line unicorn/no-thenable
                         then: stringSchema().nullable().endsWith('c'),
                     });
 
@@ -242,6 +246,7 @@ suite('StringSchema', () => {
                             if: {
                                 pattern: '^a',
                             },
+                            // eslint-disable-next-line unicorn/no-thenable
                             then: {
                                 pattern: 'c$',
                             },

@@ -1,5 +1,6 @@
-import { writeFile, mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import { dirname } from 'node:path';
+import { areUint8ArraysEqual } from 'uint8array-extras';
 import { loadRawFile } from './loader.js';
 import type {
     NormalizedFileParams,
@@ -13,9 +14,7 @@ export const formatErrorMessage = ({
 }: {
     filePath: string;
     reason: PopulationResponseUpdateReason;
-}) => {
-    return `File ${filePath} not up to date. Reason: ${reason}`;
-};
+}): string => `File ${filePath} not up to date. Reason: ${reason}`;
 
 const createPathAndWrite = async ({
     filePath,
@@ -23,7 +22,7 @@ const createPathAndWrite = async ({
     dryRun,
 }: {
     filePath: string;
-    content: Buffer;
+    content: Uint8Array;
     dryRun: boolean;
 }): Promise<void> => {
     if (dryRun) {
@@ -57,7 +56,7 @@ export const internalPopulateFile = async ({
         return { filePath, updated: true, reason };
     }
 
-    if (rawFile.equals(content)) {
+    if (areUint8ArraysEqual(rawFile, content)) {
         return { filePath, updated: false };
     }
 

@@ -1,10 +1,10 @@
-import { bind, createModule, identifier, singletonScope } from 'haystack-di';
-import type { Context as MochaContext, Done } from 'mocha';
+import type { Done, Context as MochaContext } from 'mocha';
+import { bind, createModule, identifier, singletonScope } from 'haywire';
 import { afterIdentifier } from '#mocha-module';
 import {
-    GenericContextualHook,
-    wrapOneTimeHookWithContext,
+    type GenericContextualHook,
     wrapHookWithEntrypoint,
+    wrapOneTimeHookWithContext,
 } from './lib/hook-wrapper.js';
 import type {
     AllowableAdditionalContext,
@@ -41,23 +41,20 @@ export interface AfterChain<
     >;
 }
 
-export interface ContextualAfterGenerator {
-    <ExistingContext extends object>(
-        ctxProm: Promise<ExistingContext>
-    ): ContextualAfterHook<ExistingContext>;
-}
+export type ContextualAfterGenerator = <ExistingContext extends object>(
+    ctxProm: Promise<ExistingContext>
+) => ContextualAfterHook<ExistingContext>;
 
 export const contextualAfterGeneratorIdentifier =
     identifier<ContextualAfterGenerator>();
 const contextualAfterBinding = bind(contextualAfterGeneratorIdentifier)
     .withDependencies([afterIdentifier])
     .withProvider(after => {
-        const contextualAfter: ContextualAfterGenerator = <
-            ExistingContext extends object,
-        >(
-            ctxProm: Promise<ExistingContext>
-        ) => {
-            return <AdditionalContext extends AllowableAdditionalContext>(
+        const contextualAfter: ContextualAfterGenerator =
+            <ExistingContext extends object>(
+                ctxProm: Promise<ExistingContext>
+            ) =>
+            <AdditionalContext extends AllowableAdditionalContext>(
                 ...args:
                     | [
                           (
@@ -88,7 +85,6 @@ const contextualAfterBinding = bind(contextualAfterGeneratorIdentifier)
                     suiteTeardown: afters,
                 };
             };
-        };
         return contextualAfter;
     })
     .scoped(singletonScope);
@@ -96,11 +92,11 @@ const contextualAfterBinding = bind(contextualAfterGeneratorIdentifier)
 export interface EntrypointAfterHook {
     <AdditionalContext extends AllowableAdditionalContext>(
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): AfterChain<{}, AdditionalContext>;
+    ): AfterChain<NonNullable<unknown>, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): AfterChain<{}, AdditionalContext>;
+    ): AfterChain<NonNullable<unknown>, AdditionalContext>;
 }
 
 export const entrypointAfterIdentifier = identifier<EntrypointAfterHook>();

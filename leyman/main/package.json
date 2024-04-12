@@ -1,0 +1,26 @@
+{
+  "name": "@leyman/main",
+  "version": "0.0.0",
+  "description": "Package to contain high level monorepo scripts without exposing packages to entire workspace.",
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true,
+  "type": "module",
+  "author": "jacobley",
+  "license": "MIT",
+  "repository": "jacobley/jacobley",
+  "homepage": "https://github.com/jacobley/jacobley#readme",
+  "bugs": {
+    "url": "https://github.com/jacobley/jacobley/issues"
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "@biomejs/biome": "^1.6.4",
+    "@leyman/eslint-config": "workspace:^",
+    "eslint": "^8.57.0",
+    "npm": "^10.5.1",
+    "nx": "18.0.8",
+    "typescript": "^5.4.3"
+  }
+}

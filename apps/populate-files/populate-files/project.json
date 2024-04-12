@@ -3,7 +3,10 @@
   "name": "populate-files",
   "targets": {
     "biome": {},
-    "update-ts-references": {},
+    "eslint": {},
+    "update-ts-references": {
+      "executor": "npm-nx-update-ts-references:update-ts-references"
+    },
     "tsc": {},
     "analyze:_": {},
     "analyze:lint": {},

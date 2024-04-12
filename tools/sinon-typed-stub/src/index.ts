@@ -7,9 +7,7 @@ import {
     stub,
 } from 'sinon';
 
-interface Method {
-    (...args: any[]): unknown;
-}
+type Method = (...args: any[]) => unknown;
 
 interface SpiedMethod<T extends Method> {
     method: T;

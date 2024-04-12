@@ -7,14 +7,15 @@ const order: number[] = [];
 let activeTest = false;
 
 suite('afterEach', () => {
-    suite('Inside a suite', function () {
+    suite('Inside a suite', function (this) {
         this.retries(2);
 
         let shouldFail = true;
         mocha.test('Fails first time', done => {
             activeTest = false;
-            done(shouldFail ? new Error('<ERROR>') : null);
+            const isShouldFail = shouldFail;
             shouldFail = false;
+            done(isShouldFail ? new Error('<ERROR>') : null);
         });
 
         suite('Inside another suite', () => {
@@ -29,7 +30,7 @@ suite('afterEach', () => {
                 order.push(10);
             });
 
-            afterEach(function () {
+            afterEach(function (this) {
                 expect(order).to.deep.equal([]);
                 order.push(1);
 
@@ -39,7 +40,7 @@ suite('afterEach', () => {
             });
         });
 
-        const contextualAfterEach = afterEach(function () {
+        const contextualAfterEach = afterEach(function (this) {
             if (activeTest) {
                 expect(order).to.deep.equal([1]);
                 order.push(2);
@@ -79,7 +80,7 @@ suite('afterEach', () => {
                     done();
                 }, 10);
 
-                return Promise.resolve({ efg: true } as const);
+                return { efg: true } as const;
             }
         );
 
@@ -124,7 +125,7 @@ suite('afterEach', () => {
         done();
     }).teardown(ctx => {
         expect(ctx).to.deep.equal({});
-        expectTypeOf(ctx).toEqualTypeOf<{}>();
+        expectTypeOf(ctx).toEqualTypeOf({});
 
         if (activeTest) {
             expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);

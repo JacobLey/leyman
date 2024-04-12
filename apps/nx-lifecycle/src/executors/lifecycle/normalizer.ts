@@ -11,15 +11,22 @@ export interface NormalizedOptions {
     targets: NonNullable<LifecycleOptions['targets']>;
 }
 
+/**
+ * Standardizes the options passed to this executor,
+ * based on input, reasonable defaults, and project state.
+ */
 export class Normalizer {
-    public constructor(private readonly isCI: boolean) {}
+    readonly #isCI: boolean;
+    public constructor(isCI: boolean) {
+        this.#isCI = isCI;
+    }
 
     public normalizeOptions(
         options: LifecycleOptions,
         context: SimpleExecutorContext
     ): NormalizedOptions {
         return {
-            check: options.check ?? this.isCI,
+            check: options.check ?? this.#isCI,
             dryRun: options.dryRun ?? false,
             nxJsonPath: join(context.root, 'nx.json'),
             packageJsonPaths: Object.values(

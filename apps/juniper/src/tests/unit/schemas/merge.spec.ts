@@ -1,8 +1,7 @@
 import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
-import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha-hookup';
+import { defaultImport } from 'default-import';
 import {
     enumSchema,
     mergeSchema,
@@ -10,6 +9,7 @@ import {
     type SchemaType,
     stringSchema,
 } from 'juniper';
+import { suite, test } from 'mocha-hookup';
 
 const Ajv = defaultImport(DefaultAjv);
 
@@ -139,6 +139,7 @@ suite('MergeSchema', () => {
         test('success', () => {
             const schema = mergeSchema({ title: '<title>' })
                 .if(stringSchema().startsWith('a').nullable(), {
+                    // eslint-disable-next-line unicorn/no-thenable
                     then: stringSchema().endsWith('c'),
                 })
                 .not(enumSchema().enum('abc' as const))
@@ -152,6 +153,7 @@ suite('MergeSchema', () => {
                             pattern: '^a',
                             type: ['string', 'null'],
                         },
+                        // eslint-disable-next-line unicorn/no-thenable
                         then: {
                             pattern: 'c$',
                             type: 'string',
@@ -293,6 +295,7 @@ suite('MergeSchema', () => {
                 ])
                 .ref('/path/to/base')
                 .if(numberSchema(), {
+                    // eslint-disable-next-line unicorn/no-thenable
                     then: numberSchema({ type: 'integer' }),
                 })
                 .allOf(mergeSchema().not(enumSchema({ enum: [null] })));
@@ -304,6 +307,7 @@ suite('MergeSchema', () => {
                         if: {
                             type: 'number',
                         },
+                        // eslint-disable-next-line unicorn/no-thenable
                         then: {
                             type: 'integer',
                         },

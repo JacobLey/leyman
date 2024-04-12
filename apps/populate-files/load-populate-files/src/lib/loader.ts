@@ -1,13 +1,13 @@
-import { PopulateFileParams } from 'populate-files';
 import { defaultImport } from 'default-import';
+import type { PopulateFileParams } from 'populate-files';
 
 export const loadFile = async (
     filePath: string
 ): Promise<PopulateFileParams[]> => {
-    const mod = await import(filePath);
-    const params = defaultImport<PopulateFileParams | PopulateFileParams[]>(
-        mod
-    );
+    const mod = (await import(filePath)) as
+        | PopulateFileParams
+        | PopulateFileParams[];
+    const params = defaultImport(mod);
 
-    return Array.isArray(params) ? params : [params];
+    return [params].flat();
 };

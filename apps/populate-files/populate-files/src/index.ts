@@ -34,7 +34,7 @@ export const populateFiles = async (
     );
 
     const populateResults = await Promise.all(
-        files.map(({ filePath, content }) =>
+        files.map(async ({ filePath, content }) =>
             internalPopulateFile({
                 filePath,
                 content,
@@ -46,8 +46,7 @@ export const populateFiles = async (
 
     if (check) {
         const writes = populateResults.filter(
-            (result): result is PopulationResponseUpdated =>
-                result.updated === true
+            (result): result is PopulationResponseUpdated => result.updated
         );
 
         if (writes.length > 0) {

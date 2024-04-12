@@ -3,8 +3,9 @@
   "name": "nx-plugin-handler",
   "targets": {
     "biome": {},
+    "eslint": {},
     "update-ts-references": {
-      "executor": "nx-update-ts-references@npm:update-ts-references"
+      "executor": "npm-nx-update-ts-references:update-ts-references"
     },
     "tsc": {
       "executor": "npm-nx-tsc:build",
@@ -12,6 +13,7 @@
         "tsConfig": "{projectRoot}/tsconfig.json"
       }
     },
+    "coverage-reset": {},
     "mocha-unit-test": {},
     "coverage-report": {},
     "analyze:_": {},

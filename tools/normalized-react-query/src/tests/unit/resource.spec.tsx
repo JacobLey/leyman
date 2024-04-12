@@ -4,9 +4,9 @@ import {
     type WrapperComponent,
 } from '@testing-library/react-hooks';
 import { expect } from 'chai';
-import { afterEach, beforeEach, suite } from 'mocha-hookup';
 import type { ReactNode } from 'react';
 import { spy, verifyAndRestore } from 'sinon';
+import { afterEach, beforeEach, suite } from 'mocha-hookup';
 import { resource } from '../../resource.js';
 import * as Api from '../data/api.js';
 
@@ -152,7 +152,7 @@ suite('resourece', () => {
     });
 
     suite('fetch', () => {
-        context.test('success', async ({ client, wrapper }) => {
+        context.test('success', async ({ client }) => {
             const onSuccess = spy();
             const onSettled = spy();
 
@@ -203,7 +203,7 @@ suite('resourece', () => {
             ]);
         });
 
-        context.test('onError', async ({ client, wrapper }) => {
+        context.test('onError', async ({ client }) => {
             const onError = spy();
 
             const fetchUser = resource<Api.User, string>(
@@ -242,7 +242,7 @@ suite('resourece', () => {
         });
     });
 
-    context.test('getData', async ({ client, wrapper }) => {
+    context.test('getData', async ({ client }) => {
         const onSuccess = spy();
         const onSettled = spy();
 

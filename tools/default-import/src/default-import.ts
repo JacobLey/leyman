@@ -20,8 +20,8 @@ type ExtractDefault<T> = T extends { __esModule?: boolean; default: infer U }
  * Note there is not "namedImport" equivalent because it is assumed module loaders successfully parse that
  * out for both CJS and ESM.
  *
- * @param {*} mod - "default" export that might be wrapped in another layer
- * @returns {*} unwrapped module
+ * @param mod - "default" export that might be wrapped in another layer
+ * @returns unwrapped module
  */
 export const defaultImport = <T>(mod: T): ExtractDefault<T> => {
     if (typeof mod !== 'object' || mod === null) {

@@ -2,11 +2,11 @@ import { writeFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
-import { afterEach, suite, test } from 'mocha-hookup';
-import { patch, patchKey } from 'named-patch';
 import { stub, verifyAndRestore } from 'sinon';
 import { dedent } from 'ts-dedent';
 import { barrelify } from 'barrelify';
+import { afterEach, suite, test } from 'mocha-hookup';
+import { patch, patchKey } from 'named-patch';
 
 const testDir = Path.join(
     fileURLToPath(import.meta.url),

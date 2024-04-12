@@ -18,8 +18,8 @@ export class EntryScript extends StaticEmitter<{
      *
      * Extendable to provide any "setup" (loading config, initializing connections).
      *
-     * @param {EntryScript} this - child class of EntryScript
-     * @returns {EntryScript} Instance of EntryScript.
+     * @param this - child class of EntryScript
+     * @returns Instance of EntryScript.
      */
     public static async create<I extends typeof EntryScript>(
         this: I
@@ -32,6 +32,7 @@ export class EntryScript extends StaticEmitter<{
      *
      * Extendable to provide any custom logic.
      */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     public async start(): Promise<void> {}
 
     /**
@@ -41,6 +42,7 @@ export class EntryScript extends StaticEmitter<{
      *
      * Extendable to provide any custom logic.
      */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     public async finish(): Promise<void> {}
 
     /**
@@ -79,12 +81,12 @@ export class EntryScript extends StaticEmitter<{
  * Should not be called elsewhere.
  *
  * @private
- * @param {string} url - NodeJS process entry point.
+ * @param url - NodeJS process entry point.
  */
 export const runAsMain = async (url?: string): Promise<void> => {
     if (url) {
         const rawEntryScript = (await import(url).catch(
-            () => {}
+            () => null
         )) as typeof EntryScript;
         const script = defaultImport(rawEntryScript);
 
@@ -94,4 +96,5 @@ export const runAsMain = async (url?: string): Promise<void> => {
     }
 };
 
-void runAsMain(process.argv[1]);
+const urlIndex = 1;
+void runAsMain(process.argv[urlIndex]);

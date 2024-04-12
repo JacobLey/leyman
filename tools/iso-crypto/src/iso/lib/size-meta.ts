@@ -4,8 +4,8 @@ import type { Curve, Encryption } from './types.js';
  * Get input/output sizes for encryption.
  * Sizes are in bytes (e.g. size of 32 -> 256 bits).
  *
- * @param {Encryption} encryption - encryption algorithm
- * @returns {object} size metadata
+ * @param encryption - encryption algorithm
+ * @returns size metadata
  */
 export const encryptionMeta = (
     encryption: Encryption

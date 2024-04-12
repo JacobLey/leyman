@@ -1,2 +1,0 @@
-import '../../types.js';
-// coverage

@@ -3,7 +3,7 @@ import Path from 'node:path';
 import { type Directory, parseCwd } from 'parse-cwd';
 
 // Re-export for convenience
-export type { Directory };
+export type { Directory } from 'parse-cwd';
 
 const require = createRequire(import.meta.url);
 
@@ -13,13 +13,13 @@ const isInside = (parent: string, target: string): boolean =>
 /**
  * Load the first instance of JS/JSON module.
  *
- * @param {string|string[]} fileName - name(s) of file to load
- * @param {object} [options] - options
- * @param {string|URL} [options.cwd] - bottom-most directory for search. See `parse-cwd`
- * @param {string|URL} [options.direction=up] - start searching for files from subdir->parent
- *                                              (up, default) or parent->subdir (down).
- * @param {string|URL} [options.startAt] - top-most directory for searches
- * @returns {object|null} filePath + content pair if found, null if none found
+ * @param fileName - name(s) of file to load
+ * @param [options] - optional
+ * @param [options.cwd] - bottom-most directory for search. See `parse-cwd`
+ * @param [options.direction=up] - start searching for files from subdir->parent
+ * (up, default) or parent->subdir (down).
+ * @param [options.startAt] - top-most directory for searches
+ * @returns filePath + content pair if found, null if none found
  */
 export const findImport = async <T>(
     fileName: string | string[],

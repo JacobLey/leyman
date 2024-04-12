@@ -1,15 +1,16 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { before, suite, test } from 'mocha-hookup';
 import * as IsoCrypto from 'iso-crypto';
+import { before, suite, test } from 'mocha-hookup';
 import type * as Random from '#random';
 import * as BrowserRandom from '../../../iso/random/browser.js';
 import * as NodeRandom from '../../../iso/random/node.js';
 
-// coverage
-import '../../../iso/random/types.js';
-
 suite('Random', () => {
+    test('coverage', async () => {
+        await import('../../../iso/random/types.js');
+    });
+
     test('types', () => {
         expectTypeOf<typeof Random>().toEqualTypeOf(BrowserRandom);
         expectTypeOf<typeof Random>().toEqualTypeOf(NodeRandom);

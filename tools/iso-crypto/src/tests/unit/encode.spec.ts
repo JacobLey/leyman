@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
+import { decode, decodeObject, encodeObject } from 'iso-crypto';
 import { suite, test } from 'mocha-hookup';
-import { decodeObject, encodeObject } from 'iso-crypto';
 
 suite('EncodeObject', () => {
     suite('decodeObject', () => {
@@ -12,8 +12,8 @@ suite('EncodeObject', () => {
             };
             const decoded = decodeObject(myData, 'hex');
             expect(decoded).to.deep.equal({
-                foo: Buffer.from('abcdef', 'hex'),
-                bar: Buffer.from('012345', 'hex'),
+                foo: decode({ text: 'abcdef', encoding: 'hex' }),
+                bar: decode({ text: '012345', encoding: 'hex' }),
             });
             expectTypeOf(decoded).toEqualTypeOf<{
                 foo: Uint8Array;
@@ -28,8 +28,8 @@ suite('EncodeObject', () => {
             };
             const decoded = decodeObject(myData);
             expect(decoded).to.deep.equal({
-                foo: Buffer.from('<foo>'),
-                bar: Buffer.from('<bar>'),
+                foo: decode('<foo>'),
+                bar: decode('<bar>'),
             });
             expectTypeOf(decoded).toEqualTypeOf<Record<string, Uint8Array>>();
         });
@@ -38,8 +38,8 @@ suite('EncodeObject', () => {
     suite('encodeObject', () => {
         test('success', () => {
             const myData = {
-                foo: Buffer.from('abcdef', 'hex'),
-                bar: Buffer.from('012345', 'hex'),
+                foo: decode({ text: 'abcdef', encoding: 'hex' }),
+                bar: decode({ text: '012345', encoding: 'hex' }),
             };
             const encoded = encodeObject(myData, 'hex');
             expect(encoded).to.deep.equal({
@@ -54,8 +54,8 @@ suite('EncodeObject', () => {
 
         test('Default utf8', () => {
             const myData: Record<string, Uint8Array> = {
-                foo: Buffer.from('<foo>'),
-                bar: Buffer.from('<bar>'),
+                foo: decode('<foo>'),
+                bar: decode('<bar>'),
             };
             const encoded = encodeObject(myData);
             expect(encoded).to.deep.equal({

@@ -1,6 +1,6 @@
 {
   "reporter": ["html", "text-summary"],
-  "exclude": ["coverage/**"],
+  "exclude": ["coverage/**", "eslint.config.js", "src/tests/**"],
   "exclude-after-remap": true,
   "extension": [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts", ".tsx", ".jsx"],
 

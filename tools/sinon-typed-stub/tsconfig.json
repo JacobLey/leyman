@@ -9,6 +9,9 @@
   },
   "references": [
     {
+      "path": "../../leyman/eslint-config"
+    },
+    {
       "path": "../mocha-hookup"
     }
   ]

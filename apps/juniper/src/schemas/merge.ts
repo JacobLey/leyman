@@ -63,14 +63,13 @@ export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
     /**
      * Create a new instance of MergeSchema.
      *
-     * @param {void} [this] - this
-     * @param {object|object[]} [options] - schemas or options object
-     * @param {string} [options.title] - Add title to schema
-     * @param {string} [options.description] - Add description to schema
-     * @param {boolean} [options.deprecated] - flag schema as deprecated
-     * @param {boolean} [options.readOnly] - value should not be modified
-     * @param {boolean} [options.writeOnly] - value should be hidden
-     * @returns {ObjectSchema} object schema
+     * @param [options] - schemas or options object
+     * @param [options.title] - Add title to schema
+     * @param [options.description] - Add description to schema
+     * @param [options.deprecated] - flag schema as deprecated
+     * @param [options.readOnly] - value should not be modified
+     * @param [options.writeOnly] - value should be hidden
+     * @returns object schema
      */
     public static override create(
         this: void,

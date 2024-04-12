@@ -3,8 +3,8 @@ import type { Curve, Encryption, InputText } from '../lib/types.js';
 /**
  * Generate a prime256v1 ECC private key.
  *
- * @param {string} [curve] - curve algorithm, defaults to p256
- * @returns {Promise<Uint8Array>} private key
+ * @param [curve] - curve algorithm, defaults to p256
+ * @returns random private key
  */
 export declare const generateEccPrivateKey: (
     curve?: Curve | undefined
@@ -15,9 +15,9 @@ export declare const generateEccPrivateKey: (
  *
  * Returns key in "compressed" format.
  *
- * @param {InputText} privateKey - private key
- * @param {string} [curve] - curve algorithm, defaults to p256
- * @returns {Uint8Array} public key
+ * @param privateKey - private key to compress
+ * @param [curve] - curve algorithm, defaults to p256
+ * @returns public key from private key
  */
 export declare const generateEccPublicKey: (
     privateKey: InputText,
@@ -30,24 +30,39 @@ export declare const generateEccPublicKey: (
  *
  * Performs symmetric encryption under the hood using specified algorithm.
  *
- * @param {object} params - params
- * @param {InputInput} params.data - data to encrypt
- * @param {InputText} params.privateKey - "sender's" private key
- * @param {InputText} params.publicKey - "receiver's" public key
- * @param {object} [options] - options
- * @param {string} [options.curve] - curve algorithm, defaults to p256
- * @param {object} [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-ctr`
- * @returns {Promise<object>} encrypted data and initialization vector.
- *                            Also the "sender's" public key for convenience.
+ * @param params - required parameters
+ * @param params.data - data to encrypt
+ * @param params.privateKey - "sender's" private key
+ * @param params.publicKey - "receiver's" public key
+ * @param [options] - optional
+ * @param [options.curve] - curve algorithm, defaults to p256
+ * @param [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-ctr`
+ * @returns encrypted data and initialization vector.
+ * Also the "sender's" public key for convenience.
  */
 export declare const eccEncrypt: (
     params: {
+        /**
+         * Data to encrypt.
+         */
         data: InputText;
+        /**
+         * "sender's" private key.
+         */
         privateKey: InputText;
+        /**
+         * "receiver's" public key.
+         */
         publicKey: InputText;
     },
     options?: {
+        /**
+         * Curve algorithm, defaults to p256.
+         */
         curve?: Curve | undefined;
+        /**
+         * Symmetric encryption algorithm to use, defaults to `aes-256-ctr`.
+         */
         encryption?: Encryption | undefined;
     }
 ) => Promise<{
@@ -64,25 +79,43 @@ export declare const eccEncrypt: (
  *
  * Ensure that the same encryption algorithm is specified as when originally encrypting the data.
  *
- * @param {object} params - params
- * @param {InputInput} params.encrypted - encrypted data. See output of `eccEncrypt`
- * @param {InputText} params.iv - initialization vector. See output of `eccEncrypt`.
- * @param {InputText} params.privateKey - "receiver's" private key
- * @param {InputText} params.publicKey - "sender's" public key. See output of `eccEncrypt`.
- * @param {object} [options] - options
- * @param {string} [options.curve] - curve algorithm, defaults to p256
- * @param {object} [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-ctr`
- * @returns {Promise<Uint8Array>} decrypted data
+ * @param params - required parameters
+ * @param params.encrypted - encrypted data. See output of `eccEncrypt`
+ * @param params.iv - initialization vector. See output of `eccEncrypt`.
+ * @param params.privateKey - "receiver's" private key
+ * @param params.publicKey - "sender's" public key. See output of `eccEncrypt`.
+ * @param [options] - optional
+ * @param [options.curve] - curve algorithm, defaults to p256
+ * @param [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-ctr`
+ * @returns decrypted data
  */
 export declare const eccDecrypt: (
     params: {
+        /**
+         * Encrypted data. See output of `eccEncrypt`.
+         */
         encrypted: InputText;
+        /**
+         * Initialization vector. See output of `eccEncrypt`.
+         */
         iv: InputText;
+        /**
+         * "receiver's" private key.
+         */
         publicKey: InputText;
+        /**
+         * "sender's" public key. See output of `eccEncrypt`.
+         */
         privateKey: InputText;
     },
     options?: {
+        /**
+         * Curve algorithm, defaults to p256.
+         */
         curve?: Curve | undefined;
+        /**
+         * Symmetric encryption algorithm to use, defaults to `aes-256-ctr`.
+         */
         encryption?: Encryption | undefined;
     }
 ) => Promise<Uint8Array>;

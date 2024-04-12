@@ -1,5 +1,9 @@
 {
-    "eslint.nodePath": "common/temp/node_modules",
+    "biome.lspBin": "leyman/main/node_modules/.bin/biome",
+    "eslint.enable": true,
+    "eslint.run": "onType",
+    "eslint.runtime": "/home/jacobley/.nvm/versions/node/v20.12.0/bin/node",
+    "eslint.nodePath": "leyman/main/node_modules",
     "eslint.probe": [
       "javascript",
       "javascriptreact",
@@ -7,28 +11,47 @@
       "typescriptreact"
     ],
     "eslint.useESLintClass": true,
+    "eslint.validate": [".ts", ".cts", "mts", ".tsx"],
+	  "eslint.experimental.useFlatConfig": true,
+    "eslint.format.enable": false,
+    "eslint.workingDirectories": [{ "mode": "auto" }],
+
     "files.associations": {
         "*.cts": "typescript",
         "*.mts": "typescript"
     },
+
+    "git.ignoreLimitWarning": true,
+
     "javascript.preferences.quoteStyle": "single",
+
     "typescript.preferences.importModuleSpecifierEnding": "js",
     "typescript.preferences.quoteStyle": "single",
-    "typescript.tsdk": "node_modules/vscode-ts/lib",
+    "typescript.tsdk": "leyman/main/node_modules/typescript/lib",
+    "typescript.tsserver.nodePath": "node",
+
     "[javascript]": {
-      "editor.tabSize": 4
+      "editor.defaultFormatter": "biomejs.biome",
+      "editor.tabSize": 4,
+      "files.insertFinalNewline": true
     },
     "[json]": {
-        "editor.tabSize": 2
+      "editor.defaultFormatter": "biomejs.biome",
+      "editor.tabSize": 2,
+      "files.insertFinalNewline": true
     },
     "[jsonc]": {
-        "editor.tabSize": 2
+        "editor.tabSize": 2,
+        "files.insertFinalNewline": true
+    },
+    "[typescript]": {
+      "editor.defaultFormatter": "biomejs.biome",
+      "editor.tabSize": 4,
+      "files.insertFinalNewline": true
     },
     "[yaml]": {
-        "editor.tabSize": 2
+        "editor.tabSize": 2,
+        "files.insertFinalNewline": true
     },
-    "eslint.options": {
-      "overrideConfigFile": "eslint.config.js"
-    },
-    "git.ignoreLimitWarning": true
+    "eslint.debug": true
 }

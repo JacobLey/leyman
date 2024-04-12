@@ -1,4 +1,4 @@
-import { PopulationResponse, populateFiles } from 'populate-files';
+import { populateFiles, type PopulationResponse } from 'populate-files';
 import { loadFile } from './lib/loader.js';
 import { normalizeParams } from './lib/normalize.js';
 import type { RawOptions, RawParams } from './lib/types.js';

@@ -1,14 +1,11 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import type { Context } from 'mocha';
-import { before, suite, test } from 'mocha-hookup';
 import * as IsoCrypto from 'iso-crypto';
+import { before, suite, test } from 'mocha-hookup';
 import type * as Ecc from '#ecc';
 import * as BrowserEcc from '../../../iso/ecc/browser.js';
 import * as NodeEcc from '../../../iso/ecc/node.js';
-
-// coverage
-import '../../../iso/ecc/types.js';
 
 interface EccSourceContext {
     source: typeof Ecc;
@@ -19,6 +16,10 @@ interface EccContext extends EccSourceContext {
 }
 
 suite('Ecc', () => {
+    test('coverage', async () => {
+        await import('../../../iso/ecc/types.js');
+    });
+
     test('types', () => {
         expectTypeOf<typeof Ecc>().toEqualTypeOf(BrowserEcc);
         expectTypeOf<typeof Ecc>().toMatchTypeOf(NodeEcc);

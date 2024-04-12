@@ -219,20 +219,20 @@ export class ArraySchema<
      * const arr2 = ArraySchema({ items: NumberSchema() });
      * const arr3 = ArraySchema(NumberSchema());
      *
-     * @param {void} [this] - this
-     * @param {object} [options] - options or schema
-     * @param {Schema} [options.items] - array items
-     * @param {number} [options.minItems] - minimum items in array (inclusive)
-     * @param {number} [options.maxItems] - maximum items of array (inclusive)
-     * @param {number} [options.minContains] - minimum instances of contained schema (inclusive)
-     * @param {number} [options.maxContains] - maximum instances of contained schema (inclusive)
-     * @param {boolean} [options.uniqueItems] - each item is unique
-     * @param {string} [options.title] - Add title to schema
-     * @param {string} [options.description] - Add description to schema
-     * @param {boolean} [options.deprecated] - flag schema as deprecated
-     * @param {boolean} [options.readOnly] - value should not be modified
-     * @param {boolean} [options.writeOnly] - value should be hidden
-     * @returns {ArraySchema} array schema
+     * @param [this] - this instance
+     * @param [options] - options or schema
+     * @param [options.items] - array items entries
+     * @param [options.minItems] - minimum items in array (inclusive)
+     * @param [options.maxItems] - maximum items of array (inclusive)
+     * @param [options.minContains] - minimum instances of contained schema (inclusive)
+     * @param [options.maxContains] - maximum instances of contained schema (inclusive)
+     * @param [options.uniqueItems] - each item is unique
+     * @param [options.title] - Add title to schema
+     * @param [options.description] - Add description to schema
+     * @param [options.deprecated] - flag schema as deprecated
+     * @param [options.readOnly] - value should not be modified
+     * @param [options.writeOnly] - value should be hidden
+     * @returns array schema instance
      */
     public static override create<T2 = any>(
         this: void,
@@ -250,9 +250,9 @@ export class ArraySchema<
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/array.html#items}
      *
-     * @param {this} this - this instance
-     * @param {Schema} items - items schema
-     * @returns {ArraySchema} - newly typed array schema
+     * @param this - this instance
+     * @param items - items property
+     * @returns newly typed array schema
      */
     public items<T2>(
         this: this,
@@ -280,9 +280,9 @@ export class ArraySchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.1}
      *
-     * @param {this} this - this instance
-     * @param {number} maxItems - max items
-     * @returns {ArraySchema} schema
+     * @param this - this instance
+     * @param maxItems - max items property
+     * @returns cloned schema
      */
     public maxItems(this: this, maxItems: number): this {
         return this.clone({ maxItems });
@@ -297,9 +297,9 @@ export class ArraySchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2}
      *
-     * @param {this} this - this instance
-     * @param {number} minItems - min items
-     * @returns {ArraySchema} schema
+     * @param this - this instance
+     * @param minItems - min items property
+     * @returns cloned schema
      */
     public minItems(this: this, minItems: number): this {
         return this.clone({ minItems });
@@ -314,9 +314,9 @@ export class ArraySchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3}
      *
-     * @param {this} this - this instance
-     * @param {boolean} uniqueItems - unique items
-     * @returns {ArraySchema} schema
+     * @param this - this instance
+     * @param uniqueItems - unique items property
+     * @returns cloned schema
      */
     public uniqueItems(this: this, uniqueItems: boolean): this {
         return this.clone({ uniqueItems });
@@ -331,9 +331,9 @@ export class ArraySchema<
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/array.html#contains}
      *
-     * @param {this} this - this instance
-     * @param {Schema} contains - contains schema
-     * @returns {ArraySchema} - array schema
+     * @param this - this instance
+     * @param contains - contains schema property
+     * @returns cloned schema
      */
     public contains<C2 extends ToBaseType<P[number] | T>>(
         this: this,
@@ -361,9 +361,9 @@ export class ArraySchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4}
      *
-     * @param {this} this - this instance
-     * @param {number} maxContains - max contains
-     * @returns {ArraySchema} schema
+     * @param this - this instance
+     * @param maxContains - max contains property
+     * @returns cloned schema
      */
     public maxContains(this: this, maxContains: number): this {
         return this.clone({ maxContains });
@@ -378,9 +378,9 @@ export class ArraySchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5}
      *
-     * @param {this} this - this instance
-     * @param {number} minContains - min contains
-     * @returns {ArraySchema} schema
+     * @param this - this instance
+     * @param minContains - min contains property
+     * @returns cloned schema
      */
     public minContains(this: this, minContains: number): this {
         return this.clone({ minContains });
@@ -391,9 +391,9 @@ export class ArraySchema<
      *
      * __Not supported by OpenApi 3.0__.
      *
-     * @param {this} this - this instance
-     * @param {Schema} schema - schema of tuple item
-     * @returns {ArraySchema} array schema
+     * @param this - this instance
+     * @param schema - schema of tuple item
+     * @returns cloned schema
      */
     public prefixItem<NewP>(
         this: this,
@@ -409,9 +409,9 @@ export class ArraySchema<
      *
      * __Not supported by OpenApi 3.0__.
      *
-     * @param {this} this - this instance
-     * @param {Schema} schema - schema of tuple item
-     * @returns {ArraySchema} array schema
+     * @param this - this instance
+     * @param schema - schema of tuple item
+     * @returns cloned schema
      */
     public prependPrefixItem<NewP>(
         this: this,

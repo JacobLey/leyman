@@ -10,8 +10,8 @@ export type Directory = string | URL | null | undefined;
  *
  * Validates that directory actually exists.
  *
- * @param {string|URL} cwd - path to resolve to cwd, optionally as an object { cwd: '/path...' }
- * @returns {Promise<string>} full path to cwd
+ * @param cwd - path to resolve to cwd, optionally as an object { cwd: '/path...' }
+ * @returns full path to cwd
  */
 export const parseCwd = async (
     cwd?: Directory | { cwd?: Directory }

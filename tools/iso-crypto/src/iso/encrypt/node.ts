@@ -14,6 +14,15 @@ import type * as Encrypt from './types.js';
 const encryptionToCipher = (encryption: Encryption): string =>
     `${encryption.cipher}-${encryption.size}-${encryption.mode}`;
 
+const mergeUint8Array = (a: Uint8Array, b: Uint8Array): Uint8Array => {
+    const merged = new Uint8Array(a.length + b.length);
+
+    merged.set(a, 0);
+    merged.set(b, a.length);
+
+    return merged;
+};
+
 export const encrypt: (typeof Encrypt)['encrypt'] = async (
     { data, secret },
     { encryption = defaultEncryption, hash: hashAlgorithm = defaultHash } = {}
@@ -32,7 +41,7 @@ export const encrypt: (typeof Encrypt)['encrypt'] = async (
     );
 
     return {
-        encrypted: Buffer.concat([cipher.update(decode(data)), cipher.final()]),
+        encrypted: mergeUint8Array(cipher.update(decode(data)), cipher.final()),
         iv,
     } as const;
 };
@@ -50,8 +59,8 @@ export const decrypt: (typeof Encrypt)['decrypt'] = async (
         decode(iv)
     );
 
-    return Buffer.concat([
+    return mergeUint8Array(
         decipher.update(decode(encrypted)),
-        decipher.final(),
-    ]);
+        decipher.final()
+    );
 };

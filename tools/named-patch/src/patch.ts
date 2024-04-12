@@ -53,7 +53,7 @@ export const patch = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {
         ...args: Parameters<T>
     ): ReturnType<T> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-        return patched[patchKey]!.call(this, ...args);
+        return patched[patchKey].call(this, ...args);
     } as PatchableInterface<T>;
 
     Object.defineProperty(patched, patchKey, {
@@ -75,8 +75,8 @@ export const patch = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {
  *
  * Useful for test-situations where asserting that a patch is performed is part of the test.
  *
- * @param {Function} fn - patchable method
- * @returns {Function} patched method
+ * @param fn - patchable method
+ * @returns patched method
  * @throws when method is either already already patched or unpatched
  */
 export const getPatched = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {

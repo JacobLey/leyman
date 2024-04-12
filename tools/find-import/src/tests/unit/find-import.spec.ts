@@ -2,8 +2,8 @@ import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { before, suite, test } from 'mocha-hookup';
 import * as FindImport from 'find-import';
+import { before, suite, test } from 'mocha-hookup';
 
 suite('findImport', () => {
     const dataDir = Path.join(fileURLToPath(import.meta.url), '../../data');

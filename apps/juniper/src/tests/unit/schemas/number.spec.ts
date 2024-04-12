@@ -1,9 +1,9 @@
 import DefaultAjv from 'ajv/dist/2020.js';
 import { expect } from 'chai';
-import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha-hookup';
+import { defaultImport } from 'default-import';
 import { numberSchema, type SchemaType } from 'juniper';
+import { suite, test } from 'mocha-hookup';
 
 const Ajv = defaultImport(DefaultAjv);
 
@@ -333,6 +333,7 @@ suite('NumberSchema', () => {
                 const schema = numberSchema()
                     .not(numberSchema({ type: 'integer', multipleOf: 5 }))
                     .if(numberSchema({ type: 'integer', minimum: 0 }), {
+                        // eslint-disable-next-line unicorn/no-thenable
                         then: numberSchema({ type: 'integer', maximum: 100 }),
                     })
                     .toJSON();
@@ -345,6 +346,7 @@ suite('NumberSchema', () => {
                                 type: 'integer',
                                 minimum: 0,
                             },
+                            // eslint-disable-next-line unicorn/no-thenable
                             then: {
                                 type: 'integer',
                                 maximum: 100,
@@ -362,6 +364,7 @@ suite('NumberSchema', () => {
                 const schema = numberSchema()
                     .not(numberSchema({ type: 'integer', multipleOf: 5 }))
                     .if(numberSchema({ type: 'integer', minimum: 0 }), {
+                        // eslint-disable-next-line unicorn/no-thenable
                         then: numberSchema({ type: 'integer', maximum: 100 }),
                     })
                     .if(numberSchema({ type: 'integer', minimum: 0 }), {
@@ -376,6 +379,7 @@ suite('NumberSchema', () => {
                             if: {
                                 minimum: 0,
                             },
+                            // eslint-disable-next-line unicorn/no-thenable
                             then: {
                                 maximum: 100,
                             },
@@ -394,6 +398,7 @@ suite('NumberSchema', () => {
                 const schema = numberSchema({ type: 'integer' })
                     .not(numberSchema({ multipleOf: 5 }))
                     .if(numberSchema({ minimum: 0 }), {
+                        // eslint-disable-next-line unicorn/no-thenable
                         then: numberSchema({ maximum: 100 }),
                     })
                     .toJSON();
@@ -405,6 +410,7 @@ suite('NumberSchema', () => {
                             if: {
                                 minimum: 0,
                             },
+                            // eslint-disable-next-line unicorn/no-thenable
                             then: {
                                 maximum: 100,
                             },

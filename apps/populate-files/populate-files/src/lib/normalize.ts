@@ -1,6 +1,8 @@
 import { resolve } from 'node:path';
 import { isCI } from 'ci-info';
 import { parseCwd } from 'npm-parse-cwd';
+import { stringToUint8Array } from 'uint8array-extras';
+import { formatText } from 'format-file';
 import type {
     FileContent,
     NormalizedFileParams,
@@ -9,20 +11,20 @@ import type {
     RawOptions,
 } from './types.js';
 
-const parseContent = (content: FileContent): Buffer => {
-    if (Buffer.isBuffer(content)) {
+const parseContent = async (content: FileContent): Promise<Uint8Array> => {
+    if (content instanceof Uint8Array) {
         return content;
     }
     const str =
-        content instanceof String
+        typeof content === 'string'
             ? content
-            : `${JSON.stringify(content, null, 2)}\n`;
+            : await formatText(JSON.stringify(content), { ext: '.json' });
 
-    return Buffer.from(str, 'utf8');
+    return stringToUint8Array(str);
 };
 
-const normalizeCheck = (check?: boolean) => check || isCI;
-const normalizeDryRun = (dryRun?: boolean) => dryRun || false;
+const normalizeCheck = (check?: boolean): boolean => check ?? isCI;
+const normalizeDryRun = (dryRun?: boolean): boolean => dryRun ?? false;
 
 export const normalizeFileParams = async (
     params: PopulateFileParams,
@@ -35,7 +37,7 @@ export const normalizeFileParams = async (
 
     return {
         filePath: resolve(cwd, params.filePath),
-        content: parseContent(loadedContent),
+        content: await parseContent(loadedContent),
         check: normalizeCheck(options.check),
         dryRun: normalizeDryRun(options.dryRun),
     };
@@ -57,11 +59,15 @@ export const normalizeFilesParams = async (
         loadedContentsPromise,
     ]);
 
-    return {
-        files: loadedContents.map(loadedContent => ({
+    const files = await Promise.all(
+        loadedContents.map(async loadedContent => ({
             filePath: resolve(cwd, loadedContent.filePath),
-            content: parseContent(loadedContent.content),
-        })),
+            content: await parseContent(loadedContent.content),
+        }))
+    );
+
+    return {
+        files,
         check: normalizeCheck(options.check),
         dryRun: normalizeDryRun(options.dryRun),
     };

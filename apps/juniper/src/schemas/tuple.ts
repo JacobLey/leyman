@@ -183,17 +183,16 @@ export class TupleSchema<
     /**
      * Create a new instance of TupleSchema.
      *
-     * @param {void} [this] - this
-     * @param {object} [options] - options or schema
-     * @param {boolean} [options.uniqueItems] - each item is unique
-     * @param {number} [options.minContains] - minimum instances of contained schema (inclusive)
-     * @param {number} [options.maxContains] - maximum instances of contained schema (inclusive)
-     * @param {string} [options.title] - Add title to schema
-     * @param {string} [options.description] - Add description to schema
-     * @param {boolean} [options.deprecated] - flag schema as deprecated
-     * @param {boolean} [options.readOnly] - value should not be modified
-     * @param {boolean} [options.writeOnly] - value should be hidden
-     * @returns {TupleSchema} tuple schema
+     * @param [options] - options or schema
+     * @param [options.uniqueItems] - each item is unique
+     * @param [options.minContains] - minimum instances of contained schema (inclusive)
+     * @param [options.maxContains] - maximum instances of contained schema (inclusive)
+     * @param [options.title] - Add title to schema
+     * @param [options.description] - Add description to schema
+     * @param [options.deprecated] - flag schema as deprecated
+     * @param [options.readOnly] - value should not be modified
+     * @param [options.writeOnly] - value should be hidden
+     * @returns cloned tuple schema
      */
     public static override create(
         this: void,

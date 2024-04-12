@@ -1,21 +1,17 @@
 import { expect } from 'chai';
-import { before, suite } from 'mocha-hookup';
 import { createSandbox, match, type SinonStub } from 'sinon';
+import { before, suite } from 'mocha-hookup';
 
 suite('Pass mocks around in context', () => {
-    const contextualBefore = before(async () => {
-        return {
-            abc: 123,
-            sandbox: createSandbox(),
-        };
-    });
+    const contextualBefore = before(async () => ({
+        abc: 123,
+        sandbox: createSandbox(),
+    }));
 
-    let count = 0;
     const contextualBeforeEach = contextualBefore.beforeEach(({ sandbox }) => {
         const mocked: SinonStub<number[], number> = sandbox.mock();
 
         return {
-            count: count++,
             fakeAdder: sandbox.spy((...nums: number[]): number => {
                 let sum = 0;
                 for (const num of nums) {
@@ -51,7 +47,7 @@ suite('Pass mocks around in context', () => {
 
     contextualBeforeEach.afterEach(
         'Check if fake adder was called',
-        async ({ fakeAdder, mocked, count }, done) => {
+        async ({ fakeAdder, mocked }, done) => {
             expect(fakeAdder.callCount).to.equal(1);
 
             expect(mocked(1, 2, 3)).to.equal(4);

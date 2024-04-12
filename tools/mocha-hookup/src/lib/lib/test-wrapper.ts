@@ -1,18 +1,18 @@
 import type {
-    Context as MochaContext,
     Done,
-    Test as MochaTest,
     ExclusiveTestFunction,
+    Context as MochaContext,
+    Test as MochaTest,
 } from 'mocha';
 import { acquireLock, checkLock } from './execution-lock.js';
 
 export type ValidDoneReturnTypes =
-    | undefined
-    | null
+    | ''
     | 0
     | 0n
     | false
-    | ''
+    | null
+    | undefined
     | void;
 
 /**
@@ -22,31 +22,45 @@ export type ValidDoneReturnTypes =
  * truthy values will trigger a failure (consistent with Mocha).
  *
  * This method returns the actual `Test` object returned by mocha.
+ *
+ * @param test - Test function exposed by mocha
+ * @param existingMap - Map Getter of test instance to promise of context
+ * @param title - Name of test
+ * @param cb - test callback provided by tester
+ * @returns test context returned by mocha
  */
 export const wrapTestWithContext = <ExistingContext extends object>(
     test: ExclusiveTestFunction,
     existingMap: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>,
     title: string,
-    cb: (this: MochaContext, ctx: ExistingContext, done: Done) => void
+    cb: (
+        this: MochaContext,
+        ctx: ExistingContext,
+        done: Done
+    ) => Promise<void> | void
 ): MochaTest => {
     checkLock();
 
-    const doneCb = function (this: MochaContext, done: Done) {
+    const doneCb = function (this: MochaContext, done: Done): void {
         acquireLock(this.runnable());
-        void Promise.resolve().then(async () => {
+        void Promise.resolve().then(async (): Promise<void> => {
             try {
                 const existing = await existingMap.get(this.test as MochaTest)!;
                 const result: unknown = cb.call(this, { ...existing }, done);
                 if (result) {
-                    done(`Test returned truthy value: ${result}`);
+                    // eslint-disable-next-line n/callback-return
+                    done(
+                        `Test returned truthy value: ${JSON.stringify(result)}`
+                    );
                 }
             } catch (err) {
+                // eslint-disable-next-line n/callback-return
                 done(err);
             }
         });
     };
 
-    const asyncCb = async function (this: MochaContext) {
+    const asyncCb = async function (this: MochaContext): Promise<void> {
         acquireLock(this.runnable());
         const existing = await existingMap.get(this.test as MochaTest)!;
         await cb.apply(this, [existing] as unknown as [ExistingContext, Done]);
@@ -66,7 +80,10 @@ export interface GenericContextualTest {
             done: Done
         ) => ValidDoneReturnTypes
     ): MochaTest;
-    (name: string, fn: (this: MochaContext, ctx: object) => void): MochaTest;
+    (
+        name: string,
+        fn: (this: MochaContext, ctx: object) => Promise<void> | void
+    ): MochaTest;
 }
 
 export interface ExclusiveEntrypointTest {
@@ -82,20 +99,21 @@ export interface ExclusiveEntrypointTest {
  * should not provide this empty context to callers for simplicity.
  *
  * Wrap the test with another callback that will strip out the ignored context.
+ *
+ * @param contextualTest - test function built by mocha-hookup that passes context to test
+ * @returns test function that no longer passes a context (because it would always be empty)
  */
-export const wrapTestWithEntrypoint = (
-    contextualTest: GenericContextualTest
-): ExclusiveEntrypointTest => {
-    return (title, cb): MochaTest => {
+export const wrapTestWithEntrypoint =
+    (contextualTest: GenericContextualTest): ExclusiveEntrypointTest =>
+    (title, cb): MochaTest => {
         if (cb.length === 0) {
-            return contextualTest(title, function (this: MochaContext) {
-                return (cb as (this: MochaContext) => void).apply(this);
+            return contextualTest(title, async function (this: MochaContext) {
+                await (cb as (this: MochaContext) => Promise<void>).apply(this);
             });
         }
-        return contextualTest(title, function (ignore, done) {
+        return contextualTest(title, function (this, ignore, done) {
             return (
                 cb as (this: MochaContext, done: Done) => ValidDoneReturnTypes
             ).call(this, done);
         });
     };
-};

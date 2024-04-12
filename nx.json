@@ -1,10 +1,7 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "affected": {
-    "defaultBase": "main"
-  },
-  "installation": {
-    "version": "18.0.4"
+  "cli": {
+    "packageManager": "pnpm"
   },
   "namedInputs": {
     "ts-source": [
@@ -18,38 +15,58 @@
     "biome": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "biome format --write ."
-        ],
-        "description": "Format files in directory",
+        "commands": ["biome format ."],
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "dependsOn": [
-        "analyze:lint"
-      ]
+      "configurations": {
+        "fix": {
+          "commands": ["biome format --write ."]
+        }
+      },
+      "dependsOn": ["analyze:lint"]
+    },
+    "eslint": {
+      "executor": "@nx/eslint:lint",
+      "options": {
+        "lintFilePatterns": [
+          "{projectRoot}/**/*.{c,m,}ts{x,}",
+          "{projectRoot}/**/*.{c,m,}js"
+        ],
+        "cache": true,
+        "cacheLocation": "{projectRoot}/.eslintcache",
+        "cacheStrategy": "content",
+        "hasTypeAwareRules": true
+      },
+      "configurations": {
+        "fix": {
+          "fix": true
+        }
+      },
+      "dependsOn": ["analyze:_"]
+    },
+    "barrelify": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["barrel"],
+        "parallel": true,
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": ["build:_"]
     },
     "update-ts-references": {
       "executor": "nx-update-ts-references:update-ts-references",
-      "dependsOn": [
-        "build:_"
-      ]
+      "dependsOn": ["build:_"]
     },
     "tsc": {
       "executor": "nx-tsc:build",
       "options": {
         "tsConfig": "{projectRoot}/tsconfig.json"
       },
-      "inputs": [
-        "ts-source",
-        "^ts-source"
-      ],
-      "outputs": [
-        "{projectRoot}/dist"
-      ],
-      "dependsOn": [
-        "build:pre"
-      ]
+      "inputs": ["ts-source", "^ts-source"],
+      "outputs": ["{projectRoot}/dist"],
+      "dependsOn": ["build:pre"]
     },
     "populate-files": {
       "executor": "nx-populate-files:populate-files",
@@ -57,147 +74,129 @@
         "filePath": "{projectRoot}/dist/file-content.js",
         "cwd": "{projectRoot}"
       },
-      "dependsOn": [
-        "build:run"
-      ]
+      "dependsOn": ["build:run"]
+    },
+    "coverage-reset": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": ["rm -r ./coverage"],
+        "parallel": true,
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": ["test:_"]
     },
     "mocha-unit-test": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 --reporter=none mocha --recursive './dist/tests/unit/**/*.spec.*js'"
+          "c8 --clean=false --reporter=none mocha --recursive './dist/tests/unit/**/*.spec.*js'"
         ],
         "parallel": true,
-        "description": "Run unit test suite",
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "inputs": [
-        "ts-source",
-        "^ts-source",
-        "^prod-data"
-      ],
-      "outputs": [
-        "{projectRoot}/coverage/tmp"
-      ],
-      "dependsOn": [
-        "test:_"
-      ]
+      "inputs": ["ts-source", "^ts-source", "^prod-data"],
+      "outputs": ["{projectRoot}/coverage/tmp"],
+      "dependsOn": ["test:_", "test:reset"]
+    },
+    "mocha-integration-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "c8 ---clean=false -reporter=none mocha --recursive './dist/tests/integration/**/*.spec.*js'"
+        ],
+        "parallel": true,
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "inputs": ["ts-source", "^ts-source", "^prod-data"],
+      "outputs": ["{projectRoot}/coverage/tmp"],
+      "dependsOn": ["mocha-unit-test", "test:_", "test:reset"]
     },
     "coverage-report": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": [
-          "c8 report --all --check-coverage"
-        ],
-        "description": "Create html report of coverage and report if failing threshold",
+        "commands": ["c8 report --all --check-coverage"],
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "inputs": [
-        "{projectRoot}/coverage"
-      ],
-      "dependsOn": [
-        "test:run"
-      ]
-    },
-    "eslint": {
-      "dependsOn": [
-        "analyze:_"
-      ]
+      "inputs": ["{projectRoot}/coverage"],
+      "dependsOn": ["test:run"]
     },
     "analyze:_": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "^build"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
-    },
-    "analyze:lint": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "analyze:_",
-        "eslint"
-      ],
+      "dependsOn": ["^build", "build"],
       "configurations": {
         "__lifecycle": {}
       }
     },
     "analyze:format": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "analyze:lint",
-        "biome"
-      ],
+      "dependsOn": ["analyze:lint", "biome"],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "analyze:lint": {
+      "executor": "nx:noop",
+      "dependsOn": ["analyze:_", "eslint"],
       "configurations": {
         "__lifecycle": {}
       }
     },
     "analyze": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "analyze:format"
-      ],
+      "dependsOn": ["analyze:format"],
       "configurations": {
         "__lifecycle": {}
       }
     },
     "build:_": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "^build"
-      ],
+      "dependsOn": ["^build"],
       "configurations": {
         "__lifecycle": {}
       }
     },
     "build:pre": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "build:_",
-        "update-ts-references"
-      ],
+      "dependsOn": ["build:_", "barrelify", "update-ts-references"],
       "configurations": {
         "__lifecycle": {}
       }
     },
     "build:run": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "build:pre",
-        "tsc"
-      ],
+      "dependsOn": ["build:pre", "tsc"],
       "configurations": {
         "__lifecycle": {}
       }
     },
     "build:post": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "build:run",
-        "populate-files"
-      ],
+      "dependsOn": ["build:run", "populate-files"],
       "configurations": {
         "__lifecycle": {}
       }
     },
     "build": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "build:post"
-      ],
+      "dependsOn": ["build:post"],
       "configurations": {
         "__lifecycle": {}
       }
     },
     "test:_": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "analyze",
-        "build"
-      ],
+      "dependsOn": ["analyze", "build"],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "test:reset": {
+      "executor": "nx:noop",
+      "dependsOn": ["test:_"],
       "configurations": {
         "__lifecycle": {}
       }
@@ -206,7 +205,9 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test:_",
-        "mocha-unit-test"
+        "test:reset",
+        "mocha-unit-test",
+        "mocha-integration-test"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -214,19 +215,14 @@
     },
     "test:report": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "test:run",
-        "coverage-report"
-      ],
+      "dependsOn": ["test:run", "coverage-report"],
       "configurations": {
         "__lifecycle": {}
       }
     },
     "test": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "test:report"
-      ],
+      "dependsOn": ["test:report"],
       "configurations": {
         "__lifecycle": {}
       }
@@ -236,11 +232,7 @@
     "default": {
       "runner": "nx/tasks-runners/default",
       "options": {
-        "cacheableOperations": [
-          "tsc",
-          "populate-files",
-          "lint"
-        ]
+        "cacheableOperations": ["tsc", "populate-files", "lint"]
       }
     }
   }

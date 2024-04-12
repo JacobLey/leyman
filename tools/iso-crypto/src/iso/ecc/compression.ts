@@ -11,9 +11,9 @@ import { defaultCurve, type InputText } from '../lib/types.js';
  *
  * "Compressed" public keys are effectively ~50% the size of the original key.
  *
- * @param {InputText} publicKey - public key
- * @param {string} [curve] - curve algorithm, defaults to p256
- * @returns {Uin8Array} compressed public key
+ * @param publicKey - public key to compress
+ * @param [curve] - curve algorithm, defaults to p256
+ * @returns compressed public key
  */
 export const compressEccPublicKey = (
     publicKey: InputText,
@@ -35,9 +35,9 @@ export const compressEccPublicKey = (
  *
  * Idempotent, accepts an already "uncompressed" key and will return it unchanged.
  *
- * @param {InputText} publicKey - public key
- * @param {string} [curve] - curve algorithm, defaults to p256
- * @returns {Uin8Array} uncompressed public key
+ * @param publicKey - public key to decompress
+ * @param [curve] - curve algorithm, defaults to p256
+ * @returns uncompressed public key
  */
 export const decompressEccPublicKey = (
     publicKey: InputText,

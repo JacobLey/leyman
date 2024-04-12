@@ -1,18 +1,19 @@
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha-hookup';
 import {
     type JsonSchema,
     numberSchema,
     type Schema,
     type SchemaType,
 } from 'juniper';
+import { suite, test } from 'mocha-hookup';
 import type { ConditionalNullable, ToBaseType } from '../../../lib/types.js';
-
-// coverage
-import '../../../lib/types.js';
 
 // These tests will only fail at compile time (if at all).
 suite('types', () => {
+    test('coverage', async () => {
+        await import('../../../lib/types.js');
+    });
+
     test('SchemaType', () => {
         expectTypeOf<SchemaType<Schema<'a' | 1>>>().toEqualTypeOf<'a' | 1>();
 

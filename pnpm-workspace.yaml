@@ -1,5 +1,5 @@
 packages:
   - apps/**
-  - jacobley
+  - leyman/*
   - tools/*
-  - "!apps/barrelify/src/**"
+  - '!apps/barrelify/src/tests/**'

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha-hookup';
 import * as EnumToArray from 'enum-to-array';
+import { suite, test } from 'mocha-hookup';
 
 /* eslint-disable no-restricted-syntax */
 // This test suite implements multiple enum anti-patterns
@@ -105,7 +105,7 @@ suite('enumToArray', () => {
         ]);
 
         expectTypeOf(EnumToArray.enumToValues(Opposite)).toEqualTypeOf<
-            (Opposite.FOO | Opposite.ABC | Opposite.YES | Opposite.ONE)[]
+            (Opposite.ABC | Opposite.FOO | Opposite.ONE | Opposite.YES)[]
         >();
         expect(EnumToArray.enumToValues(Opposite)).to.deep.equal([
             Opposite.FOO,
@@ -158,7 +158,7 @@ suite('enumToArray', () => {
         ]);
 
         expectTypeOf(EnumToArray.enumToValues(Colors)).toEqualTypeOf<
-            (Colors.WHITE | Colors.BLACK | Colors.BLUE)[]
+            (Colors.BLACK | Colors.BLUE | Colors.WHITE)[]
         >();
         expect(EnumToArray.enumToValues(Colors)).to.deep.equal([
             Colors.WHITE,
@@ -206,7 +206,7 @@ suite('enumToArray', () => {
         ]);
 
         expectTypeOf(EnumToArray.enumToValues(Colors)).toEqualTypeOf<
-            (Colors.WHITE | Colors.BLACK | Colors.BLUE)[]
+            (Colors.BLACK | Colors.BLUE | Colors.WHITE)[]
         >();
 
         expectTypeOf(EnumToArray.enumToKeys(Colors)).toEqualTypeOf<
@@ -219,6 +219,7 @@ suite('enumToArray', () => {
             /* eslint-disable @typescript-eslint/no-duplicate-enum-values */
             ONE = 1,
             WON = 1,
+            // eslint-disable-next-line @typescript-eslint/no-mixed-enums
             TOO = 'TOO',
             TWO = 'TOO',
             FOUR = 'FOR',
@@ -272,13 +273,10 @@ suite('enumToArray', () => {
 
         expectTypeOf(EnumToArray.enumToValues(Duplicates)).toEqualTypeOf<
             (
-                | Duplicates.ONE
-                | Duplicates.WON
-                | Duplicates.TOO
-                | Duplicates.TWO
-                | Duplicates.FOUR
                 | Duplicates.FOR
                 | Duplicates.FORE
+                | Duplicates.ONE
+                | Duplicates.TOO
             )[]
         >();
         expect(
@@ -344,11 +342,10 @@ suite('enumToArray', () => {
 
         expectTypeOf(EnumToArray.enumToValues(Computed)).toEqualTypeOf<
             (
-                | Computed.FIVE
                 | Computed.DOUBLE
-                | Computed.HALF
-                | Computed.NAN
+                | Computed.FIVE
                 | Computed.Infinity
+                | Computed.NAN
             )[]
         >();
         expect(
@@ -408,20 +405,20 @@ suite('enumToArray', () => {
             )[]
         >();
         expect(EnumToArray.enumToArray(Literals)).to.deep.equal([
-            { key: 'SET', value: Literals.SET },
-            { key: 'OBJ', value: Literals.OBJ },
-            { key: 'ARR', value: Literals.ARR },
-            { key: 'NIL', value: Literals.NIL },
-            { key: 'REG', value: Literals.REG },
+            { key: 'SET', value: set },
+            { key: 'OBJ', value: {} },
+            { key: 'ARR', value: [] },
+            { key: 'NIL', value: null },
+            { key: 'REG', value: reg },
         ]);
 
         expectTypeOf(EnumToArray.enumToValues(Literals)).toEqualTypeOf<
             (
-                | Literals.SET
-                | Literals.OBJ
                 | Literals.ARR
                 | Literals.NIL
+                | Literals.OBJ
                 | Literals.REG
+                | Literals.SET
             )[]
         >();
 

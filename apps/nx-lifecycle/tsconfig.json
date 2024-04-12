@@ -10,10 +10,16 @@
       "path": "../juniper"
     },
     {
+      "path": "../nx-update-ts-references"
+    },
+    {
       "path": "../populate-files/load-populate-files"
     },
     {
       "path": "../populate-files/nx-populate-files"
+    },
+    {
+      "path": "../../leyman/eslint-config"
     },
     {
       "path": "../../tools/common-proxy"
@@ -22,7 +28,10 @@
       "path": "../../tools/default-import"
     },
     {
-      "path": "../../tools/haystack-di"
+      "path": "../../tools/format-file"
+    },
+    {
+      "path": "../../tools/haywire"
     },
     {
       "path": "../../tools/mocha-hookup"

@@ -25,32 +25,17 @@
             "type": "array",
             "items": {
               "oneOf": [
-                {
-                  "type": "string"
-                },
+                { "type": "string" },
                 {
                   "type": "object",
                   "oneOf": [
-                    {
-                      "properties": {
-                        "dependencies": {
-                          "type": "boolean"
-                        }
-                      }
-                    },
+                    { "properties": { "dependencies": { "type": "boolean" } } },
                     {
                       "properties": {
                         "projects": {
                           "oneOf": [
-                            {
-                              "type": "array",
-                              "items": {
-                                "type": "string"
-                              }
-                            },
-                            {
-                              "type": "string"
-                            }
+                            { "type": "array", "items": { "type": "string" } },
+                            { "type": "string" }
                           ]
                         }
                       },
@@ -58,24 +43,15 @@
                     }
                   ],
                   "properties": {
-                    "target": {
-                      "type": "string"
-                    },
-                    "params": {
-                      "enum": ["forward", "ignore"]
-                    }
+                    "target": { "type": "string" },
+                    "params": { "enum": ["forward", "ignore"] }
                   },
                   "required": ["target"]
                 }
               ]
             }
           },
-          "hooks": {
-            "type": "array",
-            "items": {
-              "type": "string"
-            }
-          }
+          "hooks": { "type": "array", "items": { "type": "string" } }
         }
       }
     },

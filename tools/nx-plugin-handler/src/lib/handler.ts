@@ -1,19 +1,31 @@
 import type { ExecutorContext } from '@nx/devkit';
 import type { Logger } from './logger.js';
 
-export interface RawHandler<Options> {
-    (options: Options, context: ExecutorContext): Promise<{ success: boolean }>;
+export type RawHandler<Options> = (
+    options: Options,
+    context: ExecutorContext
+) => Promise<{ success: boolean }>;
+
+export interface IHandler {
+    handle: <Options>(
+        this: void,
+        rawHandler: RawHandler<Options>
+    ) => RawHandler<Options>;
 }
 
-export class Handler {
-    #logger: Logger;
+/**
+ * Higher Order Component that wraps the real plugin executor
+ * with some helpers to perform error handling and extra logging.
+ */
+export class Handler implements IHandler {
+    readonly #logger: Logger;
 
-    constructor(logger: Logger) {
+    public constructor(logger: Logger) {
         this.#logger = logger;
+        this.handle = this.handle.bind(this);
     }
 
     public handle<Options>(
-        this: this,
         rawHandler: RawHandler<Options>
     ): RawHandler<Options> {
         return async (options, context) => {

@@ -142,7 +142,6 @@ interface ObjectGenerics<
     params: ObjectParams<P, R, A, X, M, N>;
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-expect-error
 type AnyObjectSchema = ObjectSchema<any, any, any, any, unknown, boolean>;
 
@@ -303,18 +302,17 @@ export class ObjectSchema<
     /**
      * Create a new instance of ObjectSchema.
      *
-     * @param {void} [this] - this
-     * @param {object} [options] - options
-     * @param {boolean} [options.additionalProperties] - allow additional properties
-     * @param {number} [options.minProperties] - minimum properties in object (inclusive)
-     * @param {number} [options.maxProperties] - maximum properties in object (inclusive)
-     * @param {Schema} [options.properties] - dictionary of property schemas
-     * @param {string} [options.title] - Add title to schema
-     * @param {string} [options.description] - Add description to schema
-     * @param {boolean} [options.deprecated] - flag schema as deprecated
-     * @param {boolean} [options.readOnly] - value should not be modified
-     * @param {boolean} [options.writeOnly] - value should be hidden
-     * @returns {ObjectSchema} object schema
+     * @param [options] - optional
+     * @param [options.additionalProperties] - allow additional properties
+     * @param [options.minProperties] - minimum properties in object (inclusive)
+     * @param [options.maxProperties] - maximum properties in object (inclusive)
+     * @param [options.properties] - dictionary of property schemas
+     * @param [options.title] - Add title to schema
+     * @param [options.description] - Add description to schema
+     * @param [options.deprecated] - flag schema as deprecated
+     * @param [options.readOnly] - value should not be modified
+     * @param [options.writeOnly] - value should be hidden
+     * @returns new object schema
      */
     public static override create<
         // eslint-disable-next-line @typescript-eslint/ban-types
@@ -337,9 +335,9 @@ export class ObjectSchema<
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/object.html#properties}
      *
-     * @param {this} this - this instance
-     * @param {object} properties - Schemas keyed by property name
-     * @returns {ObjectSchema} object schema
+     * @param this - this instance
+     * @param properties - Schemas keyed by property name
+     * @returns cloned object schema
      */
     public properties<T extends BaseParameterSchemaObject>(
         this: this,
@@ -370,9 +368,9 @@ export class ObjectSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.1}
      *
-     * @param {this} this - this instance
-     * @param {number} maxProperties - maxProperties
-     * @returns {ObjectSchema} object schema
+     * @param this - this instance
+     * @param maxProperties - maxProperties property
+     * @returns cloned object schema
      */
     public maxProperties(this: this, maxProperties: number): this {
         return this.clone({ maxProperties });
@@ -387,9 +385,9 @@ export class ObjectSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.2}
      *
-     * @param {this} this - this instance
-     * @param {number} minProperties - minProperties
-     * @returns {ObjectSchema} object schema
+     * @param this - this instance
+     * @param minProperties - minProperties property
+     * @returns cloned object schema
      */
     public minProperties(this: this, minProperties: number): this {
         return this.clone({ minProperties });
@@ -403,9 +401,9 @@ export class ObjectSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.3}
      *
-     * @param {this} this - this instance
-     * @param {string|string[]} required - required properties
-     * @returns {ObjectSchema} object schema
+     * @param this - this instance
+     * @param required - required properties
+     * @returns cloned object schema
      */
     public required<K extends StripString<Extract<keyof P, string>>>(
         this: this,
@@ -424,9 +422,9 @@ export class ObjectSchema<
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/object.html#additional-properties}
      *
-     * @param {this} this - this instance
-     * @param {boolean|Schema} additionalProperties - additional properties
-     * @returns {ObjectSchema} object schema
+     * @param this - this instance
+     * @param additionalProperties - additionalProperties property
+     * @returns cloned object schema
      */
     public additionalProperties<
         NewA extends boolean | AbstractSchema<SchemaGenerics<unknown>>,
@@ -462,10 +460,10 @@ export class ObjectSchema<
      * );
      * SchemaType<typeof openApiVendor> // Record<`x-${string}`, unknown>
      *
-     * @param {this} this - this instance
-     * @param {string} pattern - regexp pattern, typed as PatternProperties
-     * @param {Schema} schema - Json Schema
-     * @returns {ObjectSchema} object schema
+     * @param this - this instance
+     * @param pattern - regexp pattern, typed as PatternProperties
+     * @param schema - Json Schema
+     * @returns cloned object schema
      */
     public patternProperties<
         Pattern extends PatternProperties<string>,
@@ -523,10 +521,10 @@ export class ObjectSchema<
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentrequired}
      *
-     * @param {this} this - this instance
-     * @param {string} key - property of object that if exists, `dependents` are required.
-     * @param {string[]} dependents - dependents that are required if `key` exists.
-     * @returns {ObjectSchema} object schema
+     * @param this - this instance
+     * @param key - property of object that if exists, `dependents` are required.
+     * @param dependents - dependents that are required if `key` exists.
+     * @returns cloned object schema
      */
     public dependentRequired<
         K extends Extract<keyof P, string>,
@@ -564,10 +562,10 @@ export class ObjectSchema<
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentschemas}
      *
-     * @param {this} this - this instance
-     * @param {string} key - property of object that if exists, `schema` is applied.
-     * @param {schema} schema - schema that is applied if `key` exists.
-     * @returns {ObjectSchema} object schema
+     * @param this - this instance
+     * @param key - property of object that if exists, `schema` is applied.
+     * @param schema - schema that is applied if `key` exists.
+     * @returns cloned  object schema
      */
     public dependentSchemas<
         K extends Extract<keyof P, string>,
@@ -599,9 +597,9 @@ export class ObjectSchema<
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties}
      *
-     * @param {this} this - this instance
-     * @param {boolean} unevaluatedProperties - allow unevaluated properties
-     * @returns {ObjectSchema} object schema
+     * @param this - this instance
+     * @param unevaluatedProperties - allow unevaluated properties
+     * @returns cloned object schema
      */
     public unevaluatedProperties(
         this: this,

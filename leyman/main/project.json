@@ -7,42 +7,28 @@
       "options": {
         "stages": {
           "analyze": {
-            "hooks": [
-              "lint",
-              "format"
-            ],
-            "dependsOn": [
-              "^build"
-            ]
+            "hooks": ["format", "lint"],
+            "dependsOn": ["^build"]
           },
           "build": {
-            "hooks": [
-              "pre",
-              "run",
-              "post"
-            ],
-            "dependsOn": [
-              "^build"
-            ]
+            "hooks": ["pre", "run", "post"],
+            "dependsOn": ["^build"]
           },
           "test": {
-            "hooks": [
-              "run",
-              "report"
-            ],
-            "dependsOn": [
-              "analyze",
-              "build"
-            ]
+            "hooks": ["reset", "run", "report"],
+            "dependsOn": ["analyze", "build"]
           }
         },
         "targets": {
           "eslint": "analyze:lint",
           "biome": "analyze:format",
+          "barrelify": "build:pre",
           "update-ts-references": "build:pre",
           "tsc": "build:run",
           "populate-files": "build:post",
+          "coverage-reset": "test:reset",
           "mocha-unit-test": "test:run",
+          "mocha-integration-test": "test:run",
           "coverage-report": "test:report"
         }
       }

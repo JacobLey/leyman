@@ -81,7 +81,7 @@ suite('before', () => {
             }
         );
 
-        mergedContextualBefore.afterEach(async function () {
+        mergedContextualBefore.afterEach(async function (this) {
             expect(order).to.deep.equal([1, 2, 3, 4]);
             order.push(5);
 
@@ -90,6 +90,7 @@ suite('before', () => {
     });
 
     suite('Test from before', () => {
+        // eslint-disable-next-line prefer-arrow-callback
         mergedContextualBefore.it('runs test', async function (ctx) {
             expect(order).to.deep.equal([1, 2, 3, 4, 5]);
             order.push(6);

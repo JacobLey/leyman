@@ -1,0 +1,2 @@
+await import('#types');
+// Coverage

@@ -4,9 +4,9 @@ import {
     type WrapperComponent,
 } from '@testing-library/react-hooks';
 import { expect } from 'chai';
-import { afterEach, beforeEach, suite } from 'mocha-hookup';
 import type { ReactNode } from 'react';
 import { spy, verifyAndRestore } from 'sinon';
+import { afterEach, beforeEach, suite } from 'mocha-hookup';
 import { mutation } from 'normalized-react-query';
 import * as Api from '../data/api.js';
 
@@ -41,7 +41,7 @@ suite('useMutation', () => {
         verifyAndRestore();
     });
 
-    context.test('success', async ({ client, wrapper }) => {
+    context.test('success', async ({ wrapper }) => {
         const mutateUser = mutation<Api.User, string, { age: number }>({
             getKey(id) {
                 return ['users', id];
@@ -79,7 +79,7 @@ suite('useMutation', () => {
         expect(error).to.haveOwnProperty('message', 'Age must be >= 0');
     });
 
-    context.test('onSuccess', async ({ client, wrapper }) => {
+    context.test('onSuccess', async ({ wrapper }) => {
         const onSuccess = spy();
         const onSettled = spy();
 
@@ -109,7 +109,7 @@ suite('useMutation', () => {
         expect(onSettled.calledOnce).to.equal(true);
     });
 
-    context.test('onError', async ({ client, wrapper }) => {
+    context.test('onError', async ({ wrapper }) => {
         const onError = spy();
         const onSettled = spy();
 

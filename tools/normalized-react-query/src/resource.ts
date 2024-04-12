@@ -39,32 +39,28 @@ export abstract class Resource<Data, Params = DefaultParams> {
     /**
      * React Hook for data loading. Wrapper around `useQuery`.
      *
-     * @param {this} this - instance
-     * @param {*} params - method params defined by class.
-     * @param {object} [options] - `useQuery` options.
-     * @returns {object} useQuery response.
+     * @param this - instance
+     * @param params - method params defined by class.
+     * @param [options] - passed to `useQuery` options.
+     * @returns useQuery response.
      */
     public useQuery(
         this: this,
         params: Params,
         options?: UseQueryOptions<Data>
     ): UseQueryResult<Data> {
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const client = useQueryClient();
 
         const queryKey = this.getKey(params);
 
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const [queryFn, handlers] = useMemo(
             () => [
                 async () => this.queryFn(params),
                 this.getHandlers(client, params),
-                // eslint-disable-next-line react-hooks/exhaustive-deps
             ],
             [hashQueryKey(queryKey)]
         );
 
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         return useQuery(queryKey, queryFn, {
             ...handlers,
             ...options,
@@ -76,19 +72,17 @@ export abstract class Resource<Data, Params = DefaultParams> {
      *
      * Default behavior is NOOP.
      *
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {*} data - response from query.
-     * @returns {Promise} success handled
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @param data - response from query.
+     * @returns success handled
      */
     protected async onSuccess(
         client: QueryClient,
         params: Params,
         data: Data
     ): Promise<void>;
-    /**
-     * @override
-     */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     protected async onSuccess(): Promise<void> {}
 
     /**
@@ -96,19 +90,17 @@ export abstract class Resource<Data, Params = DefaultParams> {
      *
      * Default behavior is NOOP.
      *
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {*} error - error from query.
-     * @returns {Promise} error handled
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @param error - error from query.
+     * @returns error handled
      */
     protected async onError(
         client: QueryClient,
         params: Params,
         error: unknown
     ): Promise<void>;
-    /**
-     * @override
-     */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     protected async onError(): Promise<void> {}
 
     /**
@@ -116,11 +108,11 @@ export abstract class Resource<Data, Params = DefaultParams> {
      *
      * Default behavior is NOOP.
      *
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {*} data - response from query (if successful).
-     * @param {*} error - error from query (if error).
-     * @returns {Promise} settle handled
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @param data - response from query (if successful).
+     * @param error - error from query (if error).
+     * @returns settle handled
      */
     protected async onSettled(
         client: QueryClient,
@@ -128,17 +120,15 @@ export abstract class Resource<Data, Params = DefaultParams> {
         data: Data | undefined,
         error?: unknown
     ): Promise<void>;
-    /**
-     * @override
-     */
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     protected async onSettled(): Promise<void> {}
 
     /**
      * Create on* handlers given client+params input.
      *
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @returns {object} on* handlers
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @returns on* handlers
      */
     protected getHandlers(
         client: QueryClient,
@@ -158,10 +148,11 @@ export abstract class Resource<Data, Params = DefaultParams> {
      * Wrapper around `fetchQuery`.
      * Can be used to `prefetchQuery` by ignoring result (what React Query does internally for prefetching).
      *
-     * @param {this} this - instance
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {object} [options] - `prefetchQuery` options.
+     * @param this - instance
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @param [options] - `prefetchQuery` options.
+     * @returns data loaded by by `queryFn`
      */
     public async fetch(
         this: this,
@@ -184,20 +175,14 @@ export abstract class Resource<Data, Params = DefaultParams> {
             if (called) {
                 await this.onSuccess(client, params, data);
             }
-            console.log('RETURNING');
             return data;
         } catch (err) {
-            console.log('CAUGHT ERR');
             error = err;
             await this.onError(client, params, err);
         } finally {
-            console.log('FINALLIED');
             if (called) {
-                console.log('FINALLIED CALLED');
                 await this.onSettled(client, params, data, error);
-                console.log('SETTLED');
             }
-            console.log('FINALLIED NOT CALLED');
         }
         throw error;
     }
@@ -205,11 +190,11 @@ export abstract class Resource<Data, Params = DefaultParams> {
     /**
      * Wrapper around `getQueryData`.
      *
-     * @param {this} this - instance
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {object} [filters] - query filters
-     * @returns {*} cached data (if exists)
+     * @param this - instance
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @param [filters] - query filters
+     * @returns cached data (if exists)
      */
     public getData(
         this: this,
@@ -223,10 +208,10 @@ export abstract class Resource<Data, Params = DefaultParams> {
     /**
      * Wrapper around `getQueryState`.
      *
-     * @param {this} this - instance
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @returns {string} query status, null if not exists
+     * @param this - instance
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @returns query status, null if not exists
      */
     public getStatus(
         this: this,
@@ -243,11 +228,11 @@ export abstract class Resource<Data, Params = DefaultParams> {
      * Will fire `onSuccess` and `onSettled` hooks as if query had just
      * successfully executed. Disable via `skipHooks = true`.
      *
-     * @param {this} this - instance
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {*} data - data defined by class.
-     * @param {object} [options] - `setQueryData` options.
+     * @param this - instance
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @param data - data defined by class.
+     * @param [options] - `setQueryData` options.
      */
     public async setData(
         this: this,
@@ -267,10 +252,10 @@ export abstract class Resource<Data, Params = DefaultParams> {
     /**
      * Wrapper around `invalidateQueries`.
      *
-     * @param {this} this - instance
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {object} [options] - `invalidateQueries` options.
+     * @param this - instance
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @param [options] - `invalidateQueries` options.
      */
     public async invalidate(
         this: this,
@@ -284,10 +269,10 @@ export abstract class Resource<Data, Params = DefaultParams> {
     /**
      * Wrapper around `resetQueries`.
      *
-     * @param {this} this - instance
-     * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {object} [options] - `resetQueries` options.
+     * @param this - instance
+     * @param client - query client
+     * @param params - method params defined by class.
+     * @param [options] - `resetQueries` options.
      */
     public async reset(
         this: this,
@@ -333,14 +318,14 @@ export abstract class Resource<Data, Params = DefaultParams> {
  *
  * See Resource class for implementation details.
  *
- * @param {object} params - params
- * @param {Function} params.getKey - getKey
- * @param {Function} params.queryFn - queryFn
- * @param {object} [options] - options
- * @param {Function} [options.onSuccess] - onSuccess handler
- * @param {Function} [options.onError] - onError handler
- * @param {Function} [options.onSettled] - onSettled handler
- * @returns {object} typed resource
+ * @param params - required parameters
+ * @param params.getKey - get key based on parameters
+ * @param params.queryFn - method that does actual data loading
+ * @param [options] - optional
+ * @param [options.onSuccess] - onSuccess handler
+ * @param [options.onError] - onError handler
+ * @param [options.onSettled] - onSettled handler
+ * @returns typed resource
  */
 export const resource = <Data, Params = DefaultParams>(
     params: {

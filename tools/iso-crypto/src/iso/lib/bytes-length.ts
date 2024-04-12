@@ -2,9 +2,9 @@
  * Extend an Uint8Array to be _at least_ `bytes` long.
  * Prepends 0 to beginning as necessary.
  *
- * @param {Uint8Array} arr - byte array
- * @param {number} bytes - desired min length
- * @returns {Uint8Array} properly sized array.
+ * @param arr - byte array
+ * @param bytes - desired min length
+ * @returns properly sized array.
  */
 export const padBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
     if (arr.length >= bytes) {
@@ -24,9 +24,9 @@ export const padBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
  * Restrict an Uint8Array to be _at most_ `bytes` long.
  * Strips bytes from beginning as necessary.
  *
- * @param {Uint8Array} arr - byte array
- * @param {number} bytes - desired max length
- * @returns {Uint8Array} properly sized array.
+ * @param arr - byte array
+ * @param bytes - desired max length
+ * @returns properly sized array.
  */
 export const trimBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
     if (arr.length <= bytes) {
@@ -40,9 +40,9 @@ export const trimBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
  * Restrict an Uint8Array to be _exactly_ `bytes` long.
  * Prepends and strips bytes from beginning as necessary.
  *
- * @param {Uint8Array} arr - byte array
- * @param {number} bytes - desired length
- * @returns {Uint8Array} properly sized array.
+ * @param arr - byte array
+ * @param bytes - desired length
+ * @returns properly sized array.
  */
 export const fixBytes = (arr: Uint8Array, bytes: number): Uint8Array =>
     padBytes(trimBytes(arr, bytes), bytes);

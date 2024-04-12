@@ -2,8 +2,8 @@ import {
     arraySchema,
     booleanSchema,
     objectSchema,
-    stringSchema,
     type SchemaType,
+    stringSchema,
 } from 'juniper';
 import { dependsOnSchema } from '#schemas';
 
@@ -20,6 +20,7 @@ const lifecycleOptionsSchema = objectSchema({
         }),
         stages: objectSchema({
             description: 'Lifecycle stages by name',
+            properties: {},
             additionalProperties: objectSchema({
                 properties: {
                     dependsOn: dependsOnSchema,
@@ -29,6 +30,7 @@ const lifecycleOptionsSchema = objectSchema({
         }),
         targets: objectSchema({
             description: 'Targets that are registered to hooks',
+            properties: {},
             additionalProperties: stringSchema({
                 description: 'Name of hook in `stage:hook` format',
             }),

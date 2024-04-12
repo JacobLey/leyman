@@ -3,9 +3,21 @@
   "name": "barrelify",
   "targets": {
     "biome": {},
+    "eslint": {},
     "update-ts-references": {},
     "tsc": {},
-    "mocha-unit-test": {},
+    "coverage-reset": {},
+    "mocha-unit-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "c8 --clean=false --reporter=none mocha --node-option conditions=patchable --recursive './dist/tests/unit/**/*.spec.*js'"
+        ],
+        "parallel": true,
+        "color": true,
+        "cwd": "{projectRoot}"
+      }
+    },
     "coverage-report": {},
     "analyze:_": {},
     "analyze:lint": {},

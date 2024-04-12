@@ -282,10 +282,10 @@ suite('punycode', () => {
 
         test('Throws RangeError: Illegal input >= 0x80 (not a basic code point)', () => {
             expect(() => Punycode.decode('\u0081-')).to.throw(RangeError);
-        }),
-            test('Throws RangeError: Overflow: input needs wider integers to process', () => {
-                expect(() => Punycode.decode('\u0081')).to.throw(RangeError);
-            });
+        });
+        test('Throws RangeError: Overflow: input needs wider integers to process', () => {
+            expect(() => Punycode.decode('\u0081')).to.throw(RangeError);
+        });
     });
 
     suite('encode', () => {

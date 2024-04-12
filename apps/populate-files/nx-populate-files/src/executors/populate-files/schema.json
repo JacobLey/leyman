@@ -23,7 +23,5 @@
       "description": "Load files and content, but do not write anything."
     }
   },
-  "required": [
-    "filePath"
-  ]
+  "required": ["filePath"]
 }

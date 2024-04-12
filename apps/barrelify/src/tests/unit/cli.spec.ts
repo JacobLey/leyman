@@ -1,8 +1,9 @@
 import Path from 'node:path';
 import { expect } from 'chai';
+import { spy, stub, verifyAndRestore } from 'sinon';
+import { defaultImport } from 'default-import';
 import { afterEach, beforeEach, suite, test } from 'mocha-hookup';
 import { patchKey } from 'named-patch';
-import { spy, stub, verifyAndRestore } from 'sinon';
 import BarrelCli, { yargsOutput } from '../../cli.js';
 import { barrelFiles } from '../../lib/barrel.js';
 
@@ -13,6 +14,11 @@ suite('cli', () => {
 
     afterEach(() => {
         verifyAndRestore();
+    });
+
+    test('Local compatibility', async () => {
+        const localCli = '../../../cli.mjs';
+        expect(BarrelCli).to.deep.equal(defaultImport(await import(localCli)));
     });
 
     suite('create', () => {
@@ -95,13 +101,14 @@ suite('cli', () => {
                 });
 
                 stub(barrelFiles, patchKey).resolves(['<file-path>']);
+                const oldExitCode = process.exitCode;
 
                 await new BarrelCli({
                     argv: ['node', 'barrelify', '--ci'],
                 }).start();
 
                 expect(process.exitCode).to.equal(1);
-                delete process.exitCode;
+                process.exitCode = oldExitCode;
 
                 expect(errorStub.callCount).to.equal(1);
             });

@@ -318,24 +318,6 @@ Type used to represent a specific ECC curve. `string`.
 
 Generally defaults to `p256`.
 
-### atob
-
-[See MDN Docs](https://developer.mozilla.org/en-US/docs/Web/API/atob).
-
-Direct usage is generally discouraged (see `decode`) but has been isomorphically implemented internally, and exposed for potential convenience.
-
-### btoa
-
-[See MDN Docs](https://developer.mozilla.org/en-US/docs/Web/API/btoa).
-
-Direct usage is generally discouraged (see `encode`) but has been isomorphically implemented internally, and exposed for potential convenience.
-
-### crypto
-
-[See MDN Docs](https://developer.mozilla.org/en-US/docs/Web/API/Crypto).
-
-Direct usage is generally discouraged but has been isomorphically implemented internally, and exposed for potential convenience.
-
 ### randomBytes(size: number)
 
 Produces a promise of Uint8Array of length `size` filled with random bytes.

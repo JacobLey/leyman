@@ -39,9 +39,9 @@ type StripNumber<T extends number> = AbstractClean<number, T>;
  * @example
  * gcd(20, 35) === 5
  *
- * @param {number} x - first value
- * @param {number} y - second value
- * @returns {number} Greatest Common Denominator of x and y
+ * @param x - first value
+ * @param y - second value
+ * @returns Greatest Common Denominator of x and y
  */
 const gcd = (x: number, y: number): number => {
     let a = x;
@@ -59,9 +59,9 @@ const gcd = (x: number, y: number): number => {
  * @example
  * lcm(6, 8) === 24
  *
- * @param {number} x - first value
- * @param {number} y - second value
- * @returns {number} Least Common Multiple of x and y
+ * @param x - first value
+ * @param y - second value
+ * @returns Least Common Multiple of x and y
  */
 const lcm = (x: number, y: number): number => (x * y) / gcd(x, y);
 
@@ -163,17 +163,16 @@ export class NumberSchema<
     /**
      * Create a new instance of NumberSchema.
      *
-     * @param {void} [this] - this
-     * @param {object} [options] - options
-     * @param {number|object} [options.minimum] - minimum value of number, defaults to inclusive.
-     * @param {number|object} [options.maximum] - maximum value of number, defaults to inclusive.
-     * @param {number|number[]} [options.multipleOf] - factors of number.
-     * @param {string} [options.title] - Add title to schema
-     * @param {string} [options.description] - Add description to schema
-     * @param {boolean} [options.deprecated] - flag schema as deprecated
-     * @param {boolean} [options.readOnly] - value should not be modified
-     * @param {boolean} [options.writeOnly] - value should be hidden
-     * @returns {NumberSchema} number schema
+     * @param [options] - optional
+     * @param [options.minimum] - minimum value of number, defaults to inclusive.
+     * @param [options.maximum] - maximum value of number, defaults to inclusive.
+     * @param [options.multipleOf] - factors of number.
+     * @param [options.title] - Add title to schema
+     * @param [options.description] - Add description to schema
+     * @param [options.deprecated] - flag schema as deprecated
+     * @param [options.readOnly] - value should not be modified
+     * @param [options.writeOnly] - value should be hidden
+     * @returns new number schema
      */
     public static override create<T2 extends number>(
         this: void,
@@ -189,9 +188,9 @@ export class NumberSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.1}
      *
-     * @param {this} this - this instance
-     * @param {string} type - `integer` or `number`
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param type - `integer` or `number`
+     * @returns cloned schema
      */
     public type(this: this, type: 'integer' | 'number'): this {
         return this.clone({ type });
@@ -204,9 +203,9 @@ export class NumberSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.1}
      *
-     * @param {this} this - this instance
-     * @param {number} multipleOf - multiple of
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param multipleOf - multiple of property
+     * @returns cloned schema
      */
     public multipleOf(this: this, multipleOf: number): this {
         return this.clone({
@@ -224,9 +223,9 @@ export class NumberSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.2}
      *
-     * @param {this} this - this instance
-     * @param {number} maximum - maximum
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param maximum - maximum property
+     * @returns cloned schema
      */
     public maximum(this: this, maximum: number | LimitWithExclusive): this {
         return this.clone({
@@ -243,9 +242,9 @@ export class NumberSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.3}
      *
-     * @param {this} this - this instance
-     * @param {number} exclusiveMaximum - exclusive maximum
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param exclusiveMaximum - exclusive maximum property
+     * @returns cloned schema
      */
     public exclusiveMaximum(this: this, exclusiveMaximum: number): this {
         return this.maximum({ value: exclusiveMaximum, exclusive: true });
@@ -261,9 +260,9 @@ export class NumberSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.4}
      *
-     * @param {this} this - this instance
-     * @param {number} minimum - minimum
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param minimum - minimum property
+     * @returns cloned schema
      */
     public minimum(this: this, minimum: number | LimitWithExclusive): this {
         return this.clone({
@@ -280,9 +279,9 @@ export class NumberSchema<
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.5}
      *
-     * @param {this} this - this instance
-     * @param {number} exclusiveMinimum - exclusive minimum
-     * @returns {StringSchema} schema
+     * @param this - this instance
+     * @param exclusiveMinimum - exclusive minimum property
+     * @returns cloned schema
      */
     public exclusiveMinimum(this: this, exclusiveMinimum: number): this {
         return this.minimum({ value: exclusiveMinimum, exclusive: true });
@@ -377,7 +376,7 @@ export class NumberSchema<
                 floatMultiples.map(multipleOf => ({ multipleOf }))
             );
         } else if (floatMultiples.length > 0) {
-            base.multipleOf = floatMultiples[0];
+            [base.multipleOf] = floatMultiples;
             mergeAllOf(
                 base,
                 floatMultiples.slice(1).map(multipleOf => ({ multipleOf }))

@@ -13,28 +13,25 @@
   "bugs": {
     "url": "https://github.com/jacobley/jacobley/issues"
   },
-  "keywords": [
-    "typescript",
-    "enum",
-    "array"
-  ],
+  "keywords": ["typescript", "enum", "array"],
   "sideEffects": false,
   "types": "./dist/enum-to-array.js",
   "exports": {
     ".": "./dist/enum-to-array.js"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
-    "@types/chai": "^4.3.11",
+    "@biomejs/biome": "^1.6.4",
+    "@leyman/eslint-config": "workspace:^",
+    "@types/chai": "^4.3.12",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.8.10",
-    "c8": "^8.0.1",
+    "@types/node": "^20.11.26",
+    "c8": "^9.1.0",
     "chai": "^5.1.0",
-    "expect-type": "^0.17.3",
-    "mocha": "^10.3.0",
+    "expect-type": "^0.19.0",
+    "mocha": "^10.4.0",
     "mocha-hookup": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.3"
   }
 }

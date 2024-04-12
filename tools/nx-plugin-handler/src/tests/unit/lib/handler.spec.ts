@@ -1,8 +1,8 @@
 import type { ExecutorContext } from '@nx/devkit';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { afterEach, beforeEach, suite } from 'mocha-hookup';
 import { fake, match, verifyAndRestore } from 'sinon';
+import { afterEach, beforeEach, suite } from 'mocha-hookup';
 import { mockMethod } from 'sinon-typed-stub';
 import { Handler, type RawHandler } from '#handler';
 
@@ -36,7 +36,7 @@ suite('Handler', () => {
                         .withArgs({ foo: 123 }, match.same(fakeContext))
                         .resolves({ success: true });
 
-                    const handle = await handler.handle(mockedHandler.method);
+                    const handle = handler.handle(mockedHandler.method);
 
                     expectTypeOf(handle).toEqualTypeOf(mockedHandler.method);
 
@@ -55,7 +55,7 @@ suite('Handler', () => {
                 async ({ handler, errorLogger, mockedHandler }) => {
                     mockedHandler.stub.rejects(new Error('<ERROR>'));
 
-                    const handle = await handler.handle(mockedHandler.method);
+                    const handle = handler.handle(mockedHandler.method);
 
                     const result = await handle({ foo: 123 }, fakeContext);
 
@@ -71,10 +71,11 @@ suite('Handler', () => {
                 'Throws anything but an error',
                 async ({ handler, errorLogger, mockedHandler }) => {
                     mockedHandler.stub.returns(
+                        // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         Promise.reject('<just-some-error-text>')
                     );
 
-                    const handle = await handler.handle(mockedHandler.method);
+                    const handle = handler.handle(mockedHandler.method);
 
                     const result = await handle({ foo: 123 }, fakeContext);
 

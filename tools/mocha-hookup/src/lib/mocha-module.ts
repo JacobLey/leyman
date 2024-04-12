@@ -1,5 +1,5 @@
-import { bind, createModule, identifier } from 'haystack-di';
 import { after, afterEach, before, beforeEach, suite, test } from 'mocha';
+import { bind, createModule, identifier } from 'haywire';
 
 export const afterIdentifier = identifier<typeof after>().named('after');
 export const afterEachIdentifier =

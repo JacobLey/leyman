@@ -7,6 +7,9 @@
   },
   "references": [
     {
+      "path": "../../leyman/eslint-config"
+    },
+    {
       "path": "../../tools/nx-tsc"
     }
   ]

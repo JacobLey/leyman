@@ -1,10 +1,10 @@
-import { bind, createModule, identifier, singletonScope } from 'haystack-di';
 import type {
-    Context as MochaContext,
     Done,
     ExclusiveTestFunction,
+    Context as MochaContext,
     Test as MochaTest,
 } from 'mocha';
+import { bind, createModule, identifier, singletonScope } from 'haywire';
 import { testIdentifier } from '#mocha-module';
 import {
     type ExclusiveEntrypointTest,
@@ -35,11 +35,9 @@ export interface ContextualTest<ExistingContext extends object>
     only: ExclusiveContextualTest<ExistingContext>;
 }
 
-export interface ContextualTestGenerator {
-    <ExistingContext extends object>(
-        ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
-    ): ContextualTest<ExistingContext>;
-}
+export type ContextualTestGenerator = <ExistingContext extends object>(
+    ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
+) => ContextualTest<ExistingContext>;
 
 /**
  * Using incoming promise of context, create the actual test function to be exposed to end-users.
@@ -52,29 +50,32 @@ export const contextualTestGeneratorIdentifier =
     identifier<ContextualTestGenerator>();
 const contextualTestBinding = bind(contextualTestGeneratorIdentifier)
     .withDependencies([testIdentifier])
-    .withProvider(test => {
-        return <ExistingContext extends object>(
-            ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
-        ) => {
-            const withExclusives = (testFn: ExclusiveTestFunction) => {
-                return (
-                    title: string,
-                    cb: (
-                        this: MochaContext,
-                        ctx: ExistingContext,
-                        done: Done
-                    ) => void
-                ): MochaTest => {
-                    return wrapTestWithContext(testFn, ctxProm, title, cb);
-                };
-            };
+    .withProvider(
+        test =>
+            <ExistingContext extends object>(
+                ctxProm: Pick<
+                    WeakMap<MochaTest, Promise<ExistingContext>>,
+                    'get'
+                >
+            ) => {
+                const withExclusives =
+                    (testFn: ExclusiveTestFunction) =>
+                    (
+                        title: string,
+                        cb: (
+                            this: MochaContext,
+                            ctx: ExistingContext,
+                            done: Done
+                        ) => void
+                    ): MochaTest =>
+                        wrapTestWithContext(testFn, ctxProm, title, cb);
 
-            return Object.assign(withExclusives(test), {
-                only: withExclusives(test.only),
-                skip: withExclusives(test.skip),
-            });
-        };
-    })
+                return Object.assign(withExclusives(test), {
+                    only: withExclusives(test.only),
+                    skip: withExclusives(test.skip),
+                });
+            }
+    )
     .scoped(singletonScope);
 
 export interface EntrypointTest extends ExclusiveEntrypointTest {
@@ -91,7 +92,7 @@ const entrypointTestBinding = bind(entrypointTestIdentifier)
     .withDependencies([contextualTestGeneratorIdentifier])
     .withProvider(contextualTestGenerator => {
         const contextualTest = contextualTestGenerator({
-            get: () => Promise.resolve({}),
+            get: async () => ({}),
         });
         return Object.assign(wrapTestWithEntrypoint(contextualTest), {
             only: wrapTestWithEntrypoint(contextualTest.only),

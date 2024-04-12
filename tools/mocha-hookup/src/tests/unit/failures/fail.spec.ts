@@ -1,13 +1,15 @@
 import { expect } from 'chai';
-import { bind, createContainer, createModule } from 'haystack-di';
 import type {
-    Context as MochaContext,
+    AsyncFunc,
     Done,
+    Func,
     HookFunction,
+    Context as MochaContext,
     TestFunction,
 } from 'mocha';
-import { after, afterEach, before, suite, test } from 'mocha-hookup';
 import { match, mock, stub, verifyAndRestore } from 'sinon';
+import { bind, createContainer, createModule } from 'haywire';
+import { after, afterEach, before, suite, test } from 'mocha-hookup';
 import { contextualHookModule } from '#contextual-module';
 import {
     afterEachIdentifier,
@@ -16,8 +18,8 @@ import {
     beforeIdentifier,
     testIdentifier,
 } from '#mocha-module';
-import { entrypointBeforeIdentifier } from '../../../lib/before-hooks.js';
 import { entrypointBeforeEachIdentifier } from '../../../lib/before-each-hooks.js';
+import { entrypointBeforeIdentifier } from '../../../lib/before-hooks.js';
 import { entrypointTestIdentifier } from '../../../lib/test-hooks.js';
 
 suite('Failure cases', () => {
@@ -29,14 +31,11 @@ suite('Failure cases', () => {
         }),
     } as MochaContext;
     const defaultHook: HookFunction = (...args) => {
-        const cb = args.slice().pop() as Mocha.Func | Mocha.AsyncFunc;
+        const cb = [...args].pop() as AsyncFunc | Func;
         cb.call(fakeContext, () => {});
         return {};
     };
-    const defaultBaseTest = (
-        title: string,
-        cb: Mocha.Func | Mocha.AsyncFunc
-    ) => {
+    const defaultBaseTest = (title: string, cb: AsyncFunc | Func) => {
         cb.call(
             {
                 test: fakeCurrentTest,
@@ -68,15 +67,12 @@ suite('Failure cases', () => {
 
         beforeModule.test(
             'Test with done returns truthy',
-            function (ctx, done) {
+            function (this, ctx, done) {
                 // Trick lock into thinking test is complete
                 this.runnable().duration = -1;
 
                 const stubDone = stub();
-                const fakeBaseTest = (
-                    title: string,
-                    cb: Mocha.Func | Mocha.AsyncFunc
-                ) => {
+                const fakeBaseTest = (title: string, cb: AsyncFunc | Func) => {
                     cb.call(fakeContext, stubDone as Done);
                 };
 
@@ -95,7 +91,7 @@ suite('Failure cases', () => {
                             }) as TestFunction
                         )
                     )
-                ).getSync(entrypointTestIdentifier);
+                ).get(entrypointTestIdentifier);
 
                 fakeTest('Will return true', (doneCb): false => {
                     doneCb();
@@ -107,15 +103,12 @@ suite('Failure cases', () => {
 
         beforeModule.test(
             'Test with done throws an error',
-            function (ctx, done) {
+            function (this, ctx, done) {
                 // Trick lock into thinking test is complete
                 this.runnable().duration = -1;
 
                 const mockDone = mock();
-                const fakeBaseTest = (
-                    title: string,
-                    cb: Mocha.Func | Mocha.AsyncFunc
-                ) => {
+                const fakeBaseTest = (title: string, cb: AsyncFunc | Func) => {
                     cb.call(fakeContext, mockDone as Done);
                 };
 
@@ -137,7 +130,7 @@ suite('Failure cases', () => {
                             }) as TestFunction
                         )
                     )
-                ).getSync(entrypointTestIdentifier);
+                ).get(entrypointTestIdentifier);
 
                 fakeTest('Will return true', doneCb => {
                     if (Math.random()) {
@@ -173,12 +166,12 @@ suite('Failure cases', () => {
 
         beforeModule.test(
             'One-time hook with done throws an error',
-            function (ctx, done) {
+            function (this, ctx, done) {
                 // Trick lock into thinking test is complete
                 this.runnable().duration = -1;
 
                 const mockDone = mock();
-                const fakeHook = (cb: Mocha.Func | Mocha.AsyncFunc) => {
+                const fakeHook = (cb: AsyncFunc | Func) => {
                     cb.call(fakeContext, mockDone as Done);
                 };
 
@@ -191,7 +184,7 @@ suite('Failure cases', () => {
                         done();
                     });
 
-                const before = createContainer(
+                const customBefore = createContainer(
                     ctx.module
                         .addBinding(
                             bind(beforeIdentifier).withInstance(
@@ -201,9 +194,9 @@ suite('Failure cases', () => {
                         .addBinding(
                             bind(beforeEachIdentifier).withInstance(defaultHook)
                         )
-                ).getSync(entrypointBeforeIdentifier);
+                ).get(entrypointBeforeIdentifier);
 
-                before(doneCb => {
+                customBefore(doneCb => {
                     if (Math.random()) {
                         throw new Error('<ERROR>');
                     }
@@ -214,12 +207,12 @@ suite('Failure cases', () => {
 
         beforeModule.test(
             'Per-test hook with done throws an error',
-            function (ctx, done) {
+            function (this, ctx, done) {
                 // Trick lock into thinking test is complete
                 this.runnable().duration = -1;
 
                 const mockDone = mock();
-                const fakeHook = (cb: Mocha.Func | Mocha.AsyncFunc) => {
+                const fakeHook = (cb: AsyncFunc | Func) => {
                     cb.call(fakeContext, mockDone as Done);
                 };
 
@@ -242,7 +235,7 @@ suite('Failure cases', () => {
                         .addBinding(
                             bind(beforeIdentifier).withInstance(defaultHook)
                         )
-                ).getSync(entrypointBeforeEachIdentifier);
+                ).get(entrypointBeforeEachIdentifier);
 
                 beforeEach(doneCb => {
                     if (Math.random()) {

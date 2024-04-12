@@ -1,8 +1,7 @@
 import AjvDefault from 'ajv/dist/2020.js';
 import { expect } from 'chai';
-import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha-hookup';
+import { defaultImport } from 'default-import';
 import {
     type EmptyObject,
     numberSchema,
@@ -11,6 +10,7 @@ import {
     type SchemaType,
     stringSchema,
 } from 'juniper';
+import { suite, test } from 'mocha-hookup';
 
 const Ajv = defaultImport(AjvDefault);
 
@@ -303,6 +303,7 @@ suite('ObjectSchema', () => {
                     required: ['bar'],
                 }),
                 {
+                    // eslint-disable-next-line unicorn/no-thenable
                     then: objectSchema({
                         properties: {
                             baz: numberSchema(),
@@ -343,6 +344,7 @@ suite('ObjectSchema', () => {
                     required: ['bar'],
                 }),
                 {
+                    // eslint-disable-next-line unicorn/no-thenable
                     then: objectSchema({
                         properties: {
                             baz: numberSchema(),
@@ -533,7 +535,7 @@ suite('ObjectSchema', () => {
             const subSchemaValidator = new Ajv({ strict: true }).compile(
                 withSubSchema.toJSON()
             );
-            for (const [test, expected, subSchemaExpected] of [
+            for (const [val, expected, subSchemaExpected] of [
                 [{}, true, true],
                 [{ a: 'foobar' }, true, true],
                 [{ b: [null] }, true, false],
@@ -543,8 +545,8 @@ suite('ObjectSchema', () => {
                 [{ abc: 'xyz' }, false, false],
                 [{ z: true }, true, false],
             ] as const) {
-                expect(validator(test)).to.equal(expected);
-                expect(subSchemaValidator(test)).to.equal(subSchemaExpected);
+                expect(validator(val)).to.equal(expected);
+                expect(subSchemaValidator(val)).to.equal(subSchemaExpected);
             }
         });
     });
@@ -601,7 +603,7 @@ suite('ObjectSchema', () => {
                 strict: true,
                 strictRequired: false,
             }).compile(schema.toJSON({ openApi30: true }));
-            for (const [test, expected] of [
+            for (const [val, expected] of [
                 [null, false],
                 [
                     {
@@ -636,8 +638,8 @@ suite('ObjectSchema', () => {
                     false,
                 ],
             ] as const) {
-                expect(validator(test)).to.equal(expected);
-                expect(oaValidator(test)).to.equal(expected);
+                expect(validator(val)).to.equal(expected);
+                expect(oaValidator(val)).to.equal(expected);
             }
 
             const example = {} as unknown as SchemaType<typeof schema>;
@@ -685,6 +687,7 @@ suite('ObjectSchema', () => {
                     },
                 }),
                 {
+                    // eslint-disable-next-line unicorn/no-thenable
                     then: objectSchema({
                         properties: {
                             a: numberSchema({ type: 'integer' }),
@@ -715,6 +718,7 @@ suite('ObjectSchema', () => {
                                 },
                             },
                         },
+                        // eslint-disable-next-line unicorn/no-thenable
                         then: {
                             properties: {
                                 a: { type: 'integer' },
@@ -848,7 +852,7 @@ suite('ObjectSchema', () => {
                 strict: true,
                 strictRequired: false,
             }).compile(schema.toJSON({ openApi30: true }));
-            for (const [test, expected] of [
+            for (const [val, expected] of [
                 [null, true],
                 [
                     {
@@ -894,8 +898,8 @@ suite('ObjectSchema', () => {
                     false,
                 ],
             ] as const) {
-                expect(validator(test)).to.equal(expected);
-                expect(oaValidator(test)).to.equal(expected);
+                expect(validator(val)).to.equal(expected);
+                expect(oaValidator(val)).to.equal(expected);
             }
 
             const example = {} as unknown as NonNullable<

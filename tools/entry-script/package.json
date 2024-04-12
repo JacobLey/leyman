@@ -13,11 +13,7 @@
   "bugs": {
     "url": "https://github.com/jacobley/jacobley/issues"
   },
-  "keywords": [
-    "executable",
-    "entry point",
-    "require main"
-  ],
+  "keywords": ["executable", "entry point", "require main"],
   "sideEffects": false,
   "types": "./dist/index.js",
   "exports": {
@@ -31,18 +27,19 @@
     "static-emitter": "workspace:^"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
-    "@types/chai": "^4.3.11",
+    "@biomejs/biome": "^1.6.4",
+    "@leyman/eslint-config": "workspace:^",
+    "@types/chai": "^4.3.12",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.8.10",
+    "@types/node": "^20.11.26",
     "@types/sinon": "^17.0.3",
-    "c8": "^8.0.1",
+    "c8": "^9.1.0",
     "chai": "^5.1.0",
-    "mocha": "^10.3.0",
+    "mocha": "^10.4.0",
     "mocha-hookup": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "sinon": "^17.0.1",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.3"
   }
 }

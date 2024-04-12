@@ -3,8 +3,10 @@
   "name": "enum-to-array",
   "targets": {
     "biome": {},
+    "eslint": {},
     "update-ts-references": {},
     "tsc": {},
+    "coverage-reset": {},
     "mocha-unit-test": {},
     "coverage-report": {},
     "analyze:_": {},

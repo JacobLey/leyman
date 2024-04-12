@@ -1,0 +1,53 @@
+{
+  "name": "haywire",
+  "version": "0.0.1",
+  "description": "Type safe dependency injection",
+  "engines": {
+    "node": ">=18"
+  },
+  "type": "module",
+  "author": "jacobley",
+  "license": "MIT",
+  "repository": "jacobley/jacobley",
+  "homepage": "https://github.com/JacobLey/jacobley/tree/main/tools/haywire#readme",
+  "bugs": {
+    "url": "https://github.com/jacobley/jacobley/issues"
+  },
+  "keywords": [
+    "typescript",
+    "dependency injection",
+    "inversion of control",
+    "type-safe"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "imports": {
+    "#binding": "./dist/lib/binding.js",
+    "#container": "./dist/lib/container.js",
+    "#errors": "./dist/lib/errors.js",
+    "#identifier": "./dist/lib/identifier.js",
+    "#scopes": "./dist/lib/scopes.js",
+    "#types": "./dist/lib/types.js"
+  },
+  "dependencies": {
+    "p-defer": "^4.0.1"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.6.4",
+    "@leyman/eslint-config": "workspace:^",
+    "@types/chai": "^4.3.12",
+    "@types/chai-as-promised": "^7.1.8",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.26",
+    "c8": "^9.1.0",
+    "chai": "^5.1.0",
+    "chai-as-promised": "^7.1.1",
+    "expect-type": "^0.19.0",
+    "mocha": "^10.4.0",
+    "npm-nx-tsc": "npm:nx-tsc@^0.0.2",
+    "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.1",
+    "typescript": "^5.4.3"
+  }
+}

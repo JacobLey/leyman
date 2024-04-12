@@ -1,4 +1,4 @@
-import crypto from '#crypto';
+import type { webcrypto } from 'node:crypto';
 import { decode, encode } from '#encode';
 import { decrypt, encrypt } from '#encrypt';
 import { padBytes } from '../lib/bytes-length.js';
@@ -13,7 +13,9 @@ import {
 import { decompressEccPublicKey } from './compression.js';
 import type * as Ecc from './types.js';
 
-const curveToKeyParams = (curve: Curve): crypto.EcKeyGenParams => ({
+const { crypto } = globalThis;
+
+const curveToKeyParams = (curve: Curve): webcrypto.EcKeyGenParams => ({
     name: 'ECDH',
     namedCurve: curve.replace('p', 'P-'),
 });
@@ -145,8 +147,8 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
         crypto.subtle.exportKey('jwk', secretKey.privateEc),
     ]);
 
-    // eslint-disable-next-line no-bitwise
     const odd =
+        // eslint-disable-next-line no-bitwise
         decode({ text: jwk.y!, encoding: 'base64url' }).reverse()[0]! & 1;
 
     const publicX = decode({ text: jwk.x!, encoding: 'base64url' });

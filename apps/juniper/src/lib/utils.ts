@@ -3,9 +3,9 @@ import type { JsonSchema } from './types.js';
 /**
  * Check if schemas are deeply equal.
  *
- * @param {*} a - first value to compare
- * @param {*} b - second value to compare
- * @returns {boolean} are deeply equal
+ * @param a - first value to compare
+ * @param b - second value to compare
+ * @returns are deeply equal
  */
 const deepStrictEqual = (a: unknown, b: unknown): boolean => {
     if (typeof a === 'object' && a !== null) {
@@ -52,9 +52,9 @@ const deepStrictEqual = (a: unknown, b: unknown): boolean => {
  *     ]
  * }
  *
- * @param {object} base - base schema object. Modified in place.
- * @param {object[]} allOf - schema objects to append/merge to `allOf`.
- * @returns {object} base object, with `allOf` merged
+ * @param base - base schema object. Modified in place.
+ * @param allOf - schema objects to append/merge to `allOf`.
+ * @returns base object, with `allOf` merged
  */
 export const mergeAllOf = <S extends JsonSchema<any>>(
     base: S,
@@ -96,12 +96,12 @@ export const mergeAllOf = <S extends JsonSchema<any>>(
  * Dedupe attributes between `$ref` and schema.
  * Apply defaults in case of "hidden" properties.
  *
- * @param {object} params - params
- * @param {object} params.baseSchema - schema that includes `$ref`
- * @param {object} params.defaultValues - dictionary of default values (defined per schema)
- * @param {string} params.refPath - path to ref
- * @param {object} params.refSchema - schema pointed to by `$ref`
- * @returns {object} json schema with `$ref`
+ * @param params - required params
+ * @param params.baseSchema - schema that includes `$ref`
+ * @param params.defaultValues - dictionary of default values (defined per schema)
+ * @param params.refPath - path to ref
+ * @param params.refSchema - schema pointed to by `$ref`
+ * @returns json schema with `$ref`
  */
 export const mergeRef = <T>({
     baseSchema,

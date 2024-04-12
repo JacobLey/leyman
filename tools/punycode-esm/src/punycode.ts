@@ -22,9 +22,9 @@ const regexSeparators = /[\u002E\u3002\uFF0E\uFF61]/gu; // RFC 3490 separators
 /**
  * A simple `Array#map`-like wrapper to work with domain name strings or email addresses.
  *
- * @param {string} domain - The domain name or email address.
- * @param {Function} callback - The function that gets called for every character.
- * @returns {string} A new string of characters returned by the callback function.
+ * @param domain - The domain name or email address.
+ * @param callback - The function that gets called for every character.
+ * @returns A new string of characters returned by the callback function.
  */
 const mapDomain = (
     domain: string,
@@ -56,24 +56,24 @@ const mapDomain = (
  *
  * @see {@link https://mathiasbynens.be/notes/javascript-encoding}
  *
- * @param {string} string - The Unicode input string (UCS-2).
- * @returns {number[]} The new array of code points.
+ * @param string - The Unicode input string (UCS-2).
+ * @returns The new array of code points.
  */
 export const ucs2Decode = (string: string): number[] => {
     const output: number[] = [];
     let counter = 0;
     while (counter < string.length) {
         // eslint-disable-next-line unicorn/prefer-code-point
-        const value = string.charCodeAt(counter++)!;
+        const value = string.charCodeAt(counter++);
         if (value >= 0xd800 && value <= 0xdbff && counter < string.length) {
             // It's a high surrogate, and there is a next character.
             // eslint-disable-next-line unicorn/prefer-code-point
-            const extra = string.charCodeAt(counter++)!;
+            const extra = string.charCodeAt(counter++);
             // eslint-disable-next-line no-bitwise
             if ((extra & 0xfc00) === 0xdc00) {
                 // Low surrogate.
-                // eslint-disable-next-line no-bitwise
                 output.push(
+                    // eslint-disable-next-line no-bitwise
                     ((value & 0x3ff) << 10) + (extra & 0x3ff) + 0x10000
                 );
             } else {
@@ -92,8 +92,8 @@ export const ucs2Decode = (string: string): number[] => {
 /**
  * Creates a string based on an array of numeric code points.
  *
- * @param {number[]} codePoints - The array of numeric code points.
- * @returns {string} The new Unicode string (UCS-2).
+ * @param codePoints - The array of numeric code points.
+ * @returns The new Unicode string (UCS-2).
  */
 export const ucs2Encode = (codePoints: readonly number[]): string =>
     String.fromCodePoint(...codePoints);
@@ -101,8 +101,8 @@ export const ucs2Encode = (codePoints: readonly number[]): string =>
 /**
  * Converts a basic code point into a digit/integer.
  *
- * @param {number} codePoint - The basic numeric code point value.
- * @returns {number} The numeric value of a basic code point (for use in
+ * @param codePoint - The basic numeric code point value.
+ * @returns The numeric value of a basic code point (for use in
  * representing integers) in the range `0` to `base - 1`, or `base` if
  * the code point does not represent a value.
  */
@@ -122,8 +122,8 @@ const basicToDigit = (codePoint: number): number => {
 /**
  * Converts a digit/integer into a basic code point.
  *
- * @param {number} digit - The numeric value of a basic code point.
- * @returns {number} The basic code point whose value (when used for
+ * @param digit - The numeric value of a basic code point.
+ * @returns The basic code point whose value (when used for
  * representing integers) is `digit`, which needs to be in the range
  * `0` to `base - 1`. If `flag` is non-zero, the uppercase form is
  * used; else, the lowercase form is used. The behavior is undefined
@@ -141,10 +141,10 @@ const digitToBasic = (digit: number): number => {
  *
  * @see {@link https://tools.ietf.org/html/rfc3492#section-3.4}
  *
- * @param {number} delta - delta
- * @param {number} numPoints - num points
- * @param {boolean} firstTime - first time
- * @returns {number} bias adaptation
+ * @param delta - encoded delta
+ * @param numPoints - number of points points
+ * @param firstTime - is first time
+ * @returns bias adaptation
  */
 const adapt = (
     delta: number,
@@ -167,8 +167,8 @@ const adapt = (
 /**
  * Converts a Punycode string of ASCII-only symbols to a string of Unicode symbols.
  *
- * @param {string} input - The Punycode string of ASCII-only symbols.
- * @returns {string} The resulting string of Unicode symbols.
+ * @param input - The Punycode string of ASCII-only symbols.
+ * @returns The resulting string of Unicode symbols.
  */
 export const decode = (input: string): string => {
     // Don't use UCS-2.
@@ -221,13 +221,8 @@ export const decode = (input: string): string => {
             checkOverflow(digit, Math.floor((maxInt - i) / w));
 
             i += digit * w;
-            const t =
-                k <= bias
-                    ? tMin
-                    : // eslint-disable-next-line @typescript-eslint/no-extra-parens
-                      k >= bias + tMax
-                      ? tMax
-                      : k - bias;
+            // eslint-disable-next-line no-nested-ternary
+            const t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
 
             if (digit < t) {
                 break;
@@ -261,8 +256,8 @@ export const decode = (input: string): string => {
  * Converts a string of Unicode symbols (e.g. a domain name label) to a
  * Punycode string of ASCII-only symbols.
  *
- * @param {string} input - The string of Unicode symbols.
- * @returns {string} The resulting Punycode string of ASCII-only symbols.
+ * @param input - The string of Unicode symbols.
+ * @returns The resulting Punycode string of ASCII-only symbols.
  */
 export const encode = (input: string): string => {
     const output: string[] = [];
@@ -328,12 +323,8 @@ export const encode = (input: string): string => {
                 let k = base;
                 while (true) {
                     const t =
-                        k <= bias
-                            ? tMin
-                            : // eslint-disable-next-line @typescript-eslint/no-extra-parens
-                              k >= bias + tMax
-                              ? tMax
-                              : k - bias;
+                        // eslint-disable-next-line no-nested-ternary
+                        k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
                     if (q < t) {
                         break;
                     }
@@ -371,9 +362,9 @@ export const encode = (input: string): string => {
  * it doesn't matter if you call it on a string that has already been
  * converted to Unicode.
  *
- * @param {string} input - The Punycoded domain name or email address to
+ * @param input - The Punycoded domain name or email address to
  * convert to Unicode.
- * @returns {string} The Unicode representation of the given Punycode
+ * @returns The Unicode representation of the given Punycode
  * string.
  */
 export const toUnicode = (input: string): string =>
@@ -387,9 +378,9 @@ export const toUnicode = (input: string): string =>
  * i.e. it doesn't matter if you call it with a domain that's already in
  * ASCII.
  *
- * @param {string} input - The domain name or email address to convert, as a
+ * @param input - The domain name or email address to convert, as a
  * Unicode string.
- * @returns {string} The Punycode representation of the given domain name or
+ * @returns The Punycode representation of the given domain name or
  * email address.
  */
 export const toASCII = (input: string): string =>

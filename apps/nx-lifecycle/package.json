@@ -13,14 +13,7 @@
   "bugs": {
     "url": "https://github.com/jacobley/jacobley/issues"
   },
-  "keywords": [
-    "nx",
-    "lifecycle",
-    "build",
-    "test",
-    "format",
-    "lint"
-  ],
+  "keywords": ["nx", "lifecycle", "build", "test", "format", "lint"],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {
@@ -40,30 +33,33 @@
     "common-proxy": "workspace:^",
     "default-import": "workspace:^",
     "fast-equals": "^5.0.1",
-    "haystack-di": "workspace:^",
+    "format-file": "workspace:^",
+    "haywire": "workspace:^",
     "juniper": "workspace:^",
     "nx-plugin-handler": "workspace:^"
   },
   "optionalDependencies": {
-    "@nx/devkit": "^18.0.4"
+    "@nx/devkit": "^18.0.8"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
-    "@types/chai": "^4.3.11",
+    "@biomejs/biome": "^1.6.4",
+    "@leyman/eslint-config": "workspace:^",
+    "@types/chai": "^4.3.12",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.8.10",
+    "@types/node": "^20.11.26",
     "@types/sinon": "^17.0.2",
     "chai": "^5.1.0",
-    "chai-as-promised":"^7.1.1",
-    "c8": "^8.0.1",
+    "chai-as-promised": "^7.1.1",
+    "c8": "^9.1.0",
     "load-populate-files": "workspace:^",
-    "mocha": "^10.3.0",
+    "mocha": "^10.4.0",
     "mocha-hookup": "workspace:^",
     "nx-populate-files": "workspace:^",
     "nx-tsc": "workspace:^",
+    "nx-update-ts-references": "workspace:^",
     "sinon": "^17.0.1",
     "sinon-typed-stub": "workspace:^",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.3"
   }
 }

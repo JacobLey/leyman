@@ -49,7 +49,7 @@ suite('beforeEach', () => {
 
         const tested = contextualBeforeEach.test.skip(
             'Can skip test',
-            async function () {
+            async function (this) {
                 expectTypeOf(this).toEqualTypeOf<mocha.Context>();
             }
         );

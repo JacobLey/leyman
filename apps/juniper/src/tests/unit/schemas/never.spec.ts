@@ -1,9 +1,9 @@
 import AjvDefault from 'ajv/dist/2020.js';
 import { expect } from 'chai';
-import { defaultImport } from 'default-import';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha-hookup';
+import { defaultImport } from 'default-import';
 import { neverSchema, type SchemaType } from 'juniper';
+import { suite, test } from 'mocha-hookup';
 
 const Ajv = defaultImport(AjvDefault);
 

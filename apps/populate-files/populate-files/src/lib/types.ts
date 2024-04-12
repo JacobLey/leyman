@@ -1,6 +1,6 @@
 import type { Directory } from 'npm-parse-cwd';
 
-export type FileContent = Buffer | string | object;
+export type FileContent = object | string | Uint8Array;
 
 export interface PopulateFileParams {
     filePath: string;
@@ -8,7 +8,7 @@ export interface PopulateFileParams {
 }
 export interface NormalizedParams {
     filePath: string;
-    content: Buffer;
+    content: Uint8Array;
 }
 
 export interface RawOptions {
@@ -29,8 +29,8 @@ export interface NormalizedFilesParams extends NormalizedOptions {
 }
 
 export type PopulationResponseUpdateReason =
-    | 'file-not-exist'
-    | 'content-changed';
+    | 'content-changed'
+    | 'file-not-exist';
 export interface AbstractPopulationResponse {
     filePath: string;
 }

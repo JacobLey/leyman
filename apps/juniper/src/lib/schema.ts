@@ -1,9 +1,10 @@
-import {
-    type JsonSchema,
-    type ReservedWords,
-    type SchemaType,
-    type ToJsonParams,
-    type typeCache,
+// eslint-disable-next-line @typescript-eslint/consistent-type-imports
+import type {
+    JsonSchema,
+    ReservedWords,
+    SchemaType,
+    ToJsonParams,
+    typeCache,
 } from './types.js';
 import { mergeAllOf, mergeRef } from './utils.js';
 
@@ -86,8 +87,8 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * Child classes MUST implement method with proper typings.
      *
-     * @param {object} options - constructor parameters
-     * @returns {AbstractSchema} schema
+     * @param options - constructor parameters
+     * @returns new schema instance
      */
     protected declare static create: (
         this: void,
@@ -126,15 +127,16 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
     /**
      * Create instance of Schema. See `create` for convenient wrapper.
      *
-     * @param {object} [options] - options
-     * @param {string} [options.title] - Add title to schema
-     * @param {string} [options.description] - Add description to schema
-     * @param {boolean} [options.deprecated] - flag schema as deprecated
-     * @param {boolean} [options.readOnly] - value should not be modified
-     * @param {boolean} [options.writeOnly] - value should be hidden
-     * @returns {AbstractSchema} schema
+     * @param [options] - optional
+     * @param [options.title] - Add title to schema
+     * @param [options.description] - Add description to schema
+     * @param [options.deprecated] - flag schema as deprecated
+     * @param [options.readOnly] - value should not be modified
+     * @param [options.writeOnly] - value should be hidden
+     * @returns new schema instance
      */
     public constructor(options: T['params'] = {}) {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#default = options.default;
         this.#deprecated = options.deprecated ?? false;
         this.#description = options.description ?? null;
@@ -144,12 +146,39 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
         this.#allOf = options[allOfSym] ?? [];
         this.#anyOf = options[anyOfSym] ?? [];
         this.#conditionals = options[conditionalsSym] ?? [];
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#examples = options[examplesSym] ?? [];
         this.#metadata = options[metadataSym] ?? {};
         this.#nots = options[notSym] ?? [];
         this.#nullable = options[nullableSym] ?? false;
         this.#oneOf = options[oneOfSym] ?? [];
         this.#ref = options[refSym] ?? null;
+    }
+
+    /**
+     * A dictionary of "default" values for a schema. Only need to include
+     * those that are omitted from a schema when at a certain value.
+     *
+     * e.g. StringSchema omits `minProperties` when set to `0`.
+     *
+     * Used by `$ref` to ensure defaulted properties are not mistakenly overwritten
+     * by the referenced schema.
+     *
+     * Child classes SHOULD extend this response when implementing default-able properties.
+     *
+     * @returns map of property name -> default value.
+     */
+    protected static getDefaultValues(
+        params: SerializationParams
+    ): Record<string, unknown>;
+    protected static getDefaultValues(): Record<string, unknown> {
+        return {
+            deprecated: false,
+            description: null,
+            readOnly: false,
+            title: null,
+            writeOnly: false,
+        };
     }
 
     /**
@@ -165,18 +194,18 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * const schema = StringSchema.create().enums(['a', 'b'] as const).toJSON();
      * type MyString = SchemaType<typeof schema>; // 'a' | 'b'
      *
-     * @param {object} [options] - options
-     * @param {string} [options.id] - $id of schema
-     * @param {boolean} [options.openApi30=false] - Use syntax complaint with OpenAPI 3.0.
-     * @param {boolean} [options.schema=false] - Include `$schema` keyword for draft 2020-12.
-     * @returns {object} JSON Schema
+     * @param [options] - optional
+     * @param [options.id] - $id property of schema
+     * @param [options.openApi30=false] - Use syntax complaint with OpenAPI 3.0.
+     * @param [options.schema=false] - Include `$schema` keyword for draft 2020-12.
+     * @returns serializable JSON Schema
      */
     public toJSON({
         id,
         openApi30 = false,
         schema = false,
     }: ToJsonParams = {}): JsonSchema<T['type']> {
-        const base = this.getChildSchema({ openApi30 });
+        const base = this.getChildSchema<T['type']>({ openApi30 });
         if (!openApi30) {
             if (id) {
                 base.$id = id;
@@ -194,9 +223,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1}
      *
-     * @param {this} this - this instance
-     * @param {string} title - title
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param title - title property
+     * @returns cloned schema
      */
     public title(this: this, title: string | null): this {
         return this.clone({ title });
@@ -211,9 +240,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1}
      *
-     * @param {this} this - this instance
-     * @param {string} description - description
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param description - description property
+     * @returns cloned schema
      */
     public description(this: this, description: string | null): this {
         return this.clone({ description });
@@ -231,9 +260,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.2}
      *
-     * @param {this} this - this instance
-     * @param {*} [val] - default value of schema
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param [val] - default value of schema
+     * @returns cloned schema
      */
     public default(this: this, val?: T['type']): this {
         return this.clone({ default: val });
@@ -244,9 +273,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.3}
      *
-     * @param {this} this - this instance
-     * @param {boolean} deprecated - deprecated
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param deprecated - deprecated property
+     * @returns cloned schema
      */
     public deprecated(this: this, deprecated: boolean): this {
         return this.clone({ deprecated });
@@ -257,9 +286,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * Convenience method for calling `examples([example])`.
      *
-     * @param {this} this - this instance
-     * @param {*} example - example literal
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param example - example literal
+     * @returns cloned schema
      */
     public example(this: this, example: T['type']): this {
         return this.examples([example]);
@@ -272,9 +301,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.5}
      *
-     * @param {this} this - this instance
-     * @param {*[]} examples - example literal array
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param examples - example literal array
+     * @returns cloned schema
      */
     public examples(this: this, examples: T['type'][]): this {
         return this.clone({
@@ -289,9 +318,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4}
      *
-     * @param {this} this - this instance
-     * @param {boolean} readOnly - read only
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param readOnly - read only property
+     * @returns cloned schema
      */
     public readOnly(this: this, readOnly: boolean): this {
         return this.clone({ readOnly });
@@ -304,9 +333,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4}
      *
-     * @param {this} this - this instance
-     * @param {boolean} writeOnly - write only
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param writeOnly - write only property
+     * @returns cloned schema
      */
     public writeOnly(this: this, writeOnly: boolean): this {
         return this.clone({ writeOnly });
@@ -327,9 +356,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * This method _may_ be used for self-implement missing features
      * but such usage may be disabled at any time (via implementation).
      *
-     * @param {this} this - this instance
-     * @param {object} meta - custom metadata
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param meta - custom metadata
+     * @returns cloned schema
      */
     public metadata<K extends string, V>(
         this: this,
@@ -359,11 +388,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * expected to ignore any sibling properties.
      * Actual implementation is up to user (many `$ref` parsers will merge objects).
      *
-     * @param {this} this - this instance
      * @see {@link https://json-schema.org/understanding-json-schema/structuring.html#ref}
      *
-     * @param {string} path - $ref path
-     * @returns {AbstractSchema} schema
+     * @param this - this instance
+     * @param path - $ref path property
+     * @returns cloned schema
      */
     public ref(this: this, path: string): this {
         return this.clone({
@@ -383,7 +412,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * Convenience method for tacking on custom symbols or attributes
      * that vary by implementation/usage.
      *
-     * @returns {AbstractSchema} typed schema
+     * @returns typed schema
      */
     public cast<NewT extends T['type']>(): Pick<
         AbstractSchema<SchemaGenerics<NewT>>,
@@ -397,8 +426,8 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/combining.html#allof}
      *
-     * @param {object} schema - all of schema must be valid
-     * @returns {object} schema
+     * @param schema - all of schema must be valid
+     * @returns cloned schema
      */
     protected allOf(schema: never): unknown {
         return this.clone({
@@ -411,8 +440,8 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/combining.html#anyof}
      *
-     * @param {object[]} schemas - any of schema must be valid
-     * @returns {object} schema
+     * @param schemas - any of schema must be valid
+     * @returns cloned schema
      */
     protected anyOf(schemas: never[]): unknown {
         return this.clone({
@@ -425,9 +454,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else}
      *
-     * @param {AbstractSchema} schema - "if" schema
-     * @param {object} conditionals - "then" + "else" schemas, at least one is required.
-     * @returns {AbstractSchema} schema.
+     * @param schema - "if" schema property
+     * @param conditionals - "then" + "else" schemas, at least one is required.
+     * @returns cloned schema
      */
     protected if(
         schema: never,
@@ -438,8 +467,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
                 ...this.#conditionals,
                 {
                     if: schema,
-                    // eslint-disable-next-line unicorn/no-thenable
+                    // eslint-disable-next-line unicorn/no-thenable, @typescript-eslint/no-unnecessary-condition
                     then: conditionals.then ?? null,
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
                     else: conditionals.else ?? null,
                 },
             ],
@@ -461,8 +491,8 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/combining.html#not}
      *
-     * @param {AbstractSchema} schema - schema to validate against
-     * @returns {AbstractSchema} schema
+     * @param schema - schema to validate against
+     * @returns cloned schema
      */
     protected not(schema: never): unknown {
         return this.clone({
@@ -474,7 +504,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * Set schema as `nullable`.
      * Allowing `type=null` as well as existing type.
      *
-     * @returns {AbstractSchema} schema
+     * @returns cloned schema
      */
     protected nullable(): unknown {
         return this.clone({
@@ -487,8 +517,8 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/combining.html#oneof}
      *
-     * @param {object[]} schemas - one of schema must be valid
-     * @returns {object} schema
+     * @param schemas - one of schema must be valid
+     * @returns cloned schema
      */
     protected oneOf(schemas: never[]): unknown {
         return this.clone({
@@ -497,58 +527,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
     }
 
     /**
-     * Method to get JSON schema of a internal property (e.g. array item).
-     *
-     * Child classes MUST NOT override.
-     *
-     * @param {AbstractSchema} schema - schema
-     * @param {object} params - serialization params (stripped of composition context)
-     * @param {boolean} params.openApi30 - open api 3.0 compliant
-     * @returns {object} JSON Schema
-     */
-    protected static getSchema<T2>(
-        schema: AbstractSchema<SchemaGenerics<T2>>,
-        { openApi30 }: SerializationParams
-    ): JsonSchema<T2> {
-        return AbstractSchema.#getChildSchema.bind(this.constructor)(schema, {
-            openApi30,
-        });
-    }
-
-    /**
-     * Method to get JSON schema of a child property (e.g. schema within `if`).
-     *
-     * Child classes MUST NOT override.
-     *
-     * @param {AbstractSchema} schema - schema
-     * @param {object} params - serialization params
-     * @returns {object} JSON Schema
-     */
-    static #getChildSchema<T2>(
-        schema: AbstractSchema<SchemaGenerics<T2>>,
-        params: SerializationParams
-    ): JsonSchema<T2> {
-        const baseSchema = schema.toSchema(params);
-        if (schema.#ref) {
-            const refSchema = schema.#ref.schema.toSchema({
-                openApi30: params.openApi30,
-            });
-            return mergeRef<T2>({
-                baseSchema,
-                defaultValues: this.getDefaultValues(params),
-                refPath: schema.#ref.path,
-                refSchema,
-            });
-        }
-        return baseSchema;
-    }
-
-    /**
      * Instance method to call static method (using constructor for inheritance).
      *
-     * @param {AbstractSchema} this - this
-     * @param {object} params - serialization params
-     * @returns {object} JSON Schema
+     * @param this - this instance
+     * @param params - serialization params
+     * @returns JSON Schema
      */
     protected getChildSchema<T2>(
         this: AbstractSchema<SchemaGenerics<T2>>,
@@ -561,41 +544,12 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
     }
 
     /**
-     * A dictionary of "default" values for a schema. Only need to include
-     * those that are omitted from a schema when at a certain value.
-     *
-     * e.g. StringSchema omits `minProperties` when set to `0`.
-     *
-     * Used by `$ref` to ensure defaulted properties are not mistakenly overwritten
-     * by the referenced schema.
-     *
-     * Child classes SHOULD extend this response when implementing default-able properties.
-     *
-     * @returns {object} map of property name -> default value.
-     */
-    protected static getDefaultValues(
-        params: SerializationParams
-    ): Record<string, unknown>;
-    /**
-     * @inheritdoc
-     */
-    protected static getDefaultValues(): Record<string, unknown> {
-        return {
-            deprecated: false,
-            description: null,
-            readOnly: false,
-            title: null,
-            writeOnly: false,
-        };
-    }
-
-    /**
      * Returns default constructor params for child class.
      *
      * Child classes SHOULD implement, and MUST extend response from `super.getCloneParams()`.
      * If no extra parameters are used, do not need to implement.
      *
-     * @returns {object} schema params
+     * @returns schema params based on instance
      */
     protected getCloneParams(): Required<SchemaParams<T['type']>> &
         T['params'] {
@@ -626,8 +580,8 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * Child classes MUST NOT override.
      *
-     * @param {object} overrideParams - override constructor params
-     * @returns {object} schema params
+     * @param overrideParams - override constructor params
+     * @returns schema params
      */
     protected clone(overrideParams: Partial<T['params']>): this {
         return (this.constructor as typeof AbstractSchema).create({
@@ -637,121 +591,13 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
     }
 
     /**
-     * If a schema is declared nullable, but conditions require non-null,
-     * do not flag it as nullable (easier to read + optimization).
-     *
-     * @param {object} params - serialization params
-     * @returns {boolean} nullable
-     */
-    #getNullable(params: SerializationParams): boolean {
-        if (params.composition?.type && !params.composition.nullable) {
-            return this.#ref
-                ? this.#ref.schema.#getNullable({
-                      openApi30: params.openApi30,
-                  })
-                : false;
-        }
-        return (
-            this.#nullable &&
-            this.#conditionals.every(predicate => {
-                if (predicate.if.#getNullable(params)) {
-                    return predicate.then
-                        ? predicate.then.#getNullable(params)
-                        : true;
-                }
-                return predicate.else
-                    ? predicate.else.#getNullable(params)
-                    : true;
-            }) &&
-            this.#nots.every(not => !not.#getNullable(params)) &&
-            this.#allOf.every(allOf => allOf.#getNullable(params)) &&
-            this.#anyOf.every(anyOf =>
-                anyOf.some(any => any.#getNullable(params))
-            ) &&
-            this.#oneOf.every(
-                oneOf =>
-                    oneOf.filter(one => one.#getNullable(params)).length === 1
-            )
-        );
-    }
-
-    /**
-     * Check if schema is "optimizable" for integers.
-     * Ignores non-numeric schemas (always false).
-     *
-     * Returns true when some compositional part of the schema (e.g. every schema of an anyOf)
-     * is an integer thus forcing the entire schema to an integer implicitly.
-     *
-     * @param {object} params - serialization params
-     * @returns {boolean} is optimizable
-     */
-    #canOptimizeInteger(params: SerializationParams): boolean {
-        return (
-            params.composition?.type === 'integer' ||
-            this.#conditionals.some(
-                predicate =>
-                    (predicate.if.#getSchemaType(params) === 'integer' ||
-                        (predicate.then
-                            ? predicate.then.#getSchemaType(params) ===
-                              'integer'
-                            : false)) &&
-                    (predicate.else
-                        ? predicate.else.#getSchemaType(params) === 'integer'
-                        : false)
-            ) ||
-            this.#allOf.some(
-                allOf => allOf.#getSchemaType(params) === 'integer'
-            ) ||
-            this.#anyOf.some(
-                anyOf =>
-                    anyOf.length > 0 &&
-                    anyOf.every(any => any.#getSchemaType(params) === 'integer')
-            ) ||
-            this.#oneOf.some(
-                oneOf =>
-                    oneOf.length > 0 &&
-                    oneOf.every(one => one.#getSchemaType(params) === 'integer')
-            )
-        );
-    }
-
-    /**
-     * Similar to `__getNullable`, if every condition of a `number` is an `integer`
-     * then must be an `integer`.
-     *
-     * `integer` type may come with extra restrictions, so be conservative in type updating.
-     *
-     * Other types will be returned unchanged.
-     *
-     * @param {object} params - serialization params
-     * @returns {string|null} schema type
-     */
-    #getSchemaType(params: SerializationParams): string | null {
-        const { schemaType } = this;
-
-        if (
-            (schemaType === 'integer' || schemaType === 'number') &&
-            this.#canOptimizeInteger(params) &&
-            // Ensure $ref (if exists) is also integer, or else this optimization is worse.
-            (!this.#ref ||
-                this.#ref.schema.#getSchemaType({
-                    openApi30: params.openApi30,
-                }) !== 'number')
-        ) {
-            return 'integer';
-        }
-
-        return schemaType ?? null;
-    }
-
-    /**
      * Generate JSON Schema for this data type.
      *
      * Child classes SHOULD override and extend value of `super.toSchema()`.
      * If no extra schema data is added, do not need to implement.
      *
-     * @param {object} params - serialization params
-     * @returns {object} JSON Schema
+     * @param params - serialization params
+     * @returns JSON Schema
      */
     protected toSchema(
         params: SerializationParams
@@ -803,7 +649,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
 
         if (this.#examples.length > 0) {
             if (params.openApi30) {
-                base.example = this.#examples[0];
+                [base.example] = this.#examples;
             } else {
                 base.examples = this.#examples;
             }
@@ -918,5 +764,160 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
         }
 
         return base;
+    }
+
+    /**
+     * Method to get JSON schema of a internal property (e.g. array item).
+     *
+     * Child classes MUST NOT override.
+     *
+     * @param schema - juniper schema
+     * @param params - serialization params (stripped of composition context)
+     * @param params.openApi30 - open api 3.0 compliant
+     * @returns JSON Schema
+     */
+    protected static getSchema<T2>(
+        schema: AbstractSchema<SchemaGenerics<T2>>,
+        { openApi30 }: SerializationParams
+    ): JsonSchema<T2> {
+        return AbstractSchema.#getChildSchema.bind(this.constructor)(schema, {
+            openApi30,
+        });
+    }
+
+    /**
+     * Method to get JSON schema of a child property (e.g. schema within `if`).
+     *
+     * Child classes MUST NOT override.
+     *
+     * @param schema - juniper schema
+     * @param params - serialization params
+     * @returns JSON Schema
+     */
+    static #getChildSchema<T2>(
+        schema: AbstractSchema<SchemaGenerics<T2>>,
+        params: SerializationParams
+    ): JsonSchema<T2> {
+        const baseSchema = schema.toSchema(params);
+        if (schema.#ref) {
+            const refSchema = schema.#ref.schema.toSchema({
+                openApi30: params.openApi30,
+            });
+            return mergeRef<T2>({
+                baseSchema,
+                defaultValues: this.getDefaultValues(params),
+                refPath: schema.#ref.path,
+                refSchema,
+            });
+        }
+        return baseSchema;
+    }
+
+    /**
+     * If a schema is declared nullable, but conditions require non-null,
+     * do not flag it as nullable (easier to read + optimization).
+     *
+     * @param params - serialization params
+     * @returns nullable
+     */
+    #getNullable(params: SerializationParams): boolean {
+        if (params.composition?.type && !params.composition.nullable) {
+            return this.#ref
+                ? this.#ref.schema.#getNullable({
+                      openApi30: params.openApi30,
+                  })
+                : false;
+        }
+        return (
+            this.#nullable &&
+            this.#conditionals.every(predicate => {
+                if (predicate.if.#getNullable(params)) {
+                    return predicate.then
+                        ? predicate.then.#getNullable(params)
+                        : true;
+                }
+                return predicate.else
+                    ? predicate.else.#getNullable(params)
+                    : true;
+            }) &&
+            this.#nots.every(not => !not.#getNullable(params)) &&
+            this.#allOf.every(allOf => allOf.#getNullable(params)) &&
+            this.#anyOf.every(anyOf =>
+                anyOf.some(any => any.#getNullable(params))
+            ) &&
+            this.#oneOf.every(
+                oneOf =>
+                    oneOf.filter(one => one.#getNullable(params)).length === 1
+            )
+        );
+    }
+
+    /**
+     * Check if schema is "optimizable" for integers.
+     * Ignores non-numeric schemas (always false).
+     *
+     * Returns true when some compositional part of the schema (e.g. every schema of an anyOf)
+     * is an integer thus forcing the entire schema to an integer implicitly.
+     *
+     * @param params - serialization params
+     * @returns is optimizable
+     */
+    #canOptimizeInteger(params: SerializationParams): boolean {
+        return (
+            params.composition?.type === 'integer' ||
+            this.#conditionals.some(
+                predicate =>
+                    (predicate.if.#getSchemaType(params) === 'integer' ||
+                        (predicate.then
+                            ? predicate.then.#getSchemaType(params) ===
+                              'integer'
+                            : false)) &&
+                    (predicate.else
+                        ? predicate.else.#getSchemaType(params) === 'integer'
+                        : false)
+            ) ||
+            this.#allOf.some(
+                allOf => allOf.#getSchemaType(params) === 'integer'
+            ) ||
+            this.#anyOf.some(
+                anyOf =>
+                    anyOf.length > 0 &&
+                    anyOf.every(any => any.#getSchemaType(params) === 'integer')
+            ) ||
+            this.#oneOf.some(
+                oneOf =>
+                    oneOf.length > 0 &&
+                    oneOf.every(one => one.#getSchemaType(params) === 'integer')
+            )
+        );
+    }
+
+    /**
+     * Similar to `__getNullable`, if every condition of a `number` is an `integer`
+     * then must be an `integer`.
+     *
+     * `integer` type may come with extra restrictions, so be conservative in type updating.
+     *
+     * Other types will be returned unchanged.
+     *
+     * @param params - serialization params
+     * @returns schema type
+     */
+    #getSchemaType(params: SerializationParams): string | null {
+        const { schemaType } = this;
+
+        if (
+            (schemaType === 'integer' || schemaType === 'number') &&
+            this.#canOptimizeInteger(params) &&
+            // Ensure $ref (if exists) is also integer, or else this optimization is worse.
+            (!this.#ref ||
+                this.#ref.schema.#getSchemaType({
+                    openApi30: params.openApi30,
+                }) !== 'number')
+        ) {
+            return 'integer';
+        }
+
+        return schemaType ?? null;
     }
 }

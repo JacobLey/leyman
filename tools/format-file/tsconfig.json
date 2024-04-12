@@ -1,0 +1,30 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "importHelpers": true,
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../../apps/barrelify"
+    },
+    {
+      "path": "../../leyman/eslint-config"
+    },
+    {
+      "path": "../haywire"
+    },
+    {
+      "path": "../mocha-hookup"
+    },
+    {
+      "path": "../nx-tsc"
+    },
+    {
+      "path": "../sinon-typed-stub"
+    }
+  ]
+}

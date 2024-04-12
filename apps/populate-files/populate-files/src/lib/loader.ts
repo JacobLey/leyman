@@ -1,6 +1,8 @@
-import { readFile } from 'fs/promises';
+import { readFile } from 'node:fs/promises';
 
-export const loadRawFile = async (filePath: string): Promise<Buffer | null> => {
+export const loadRawFile = async (
+    filePath: string
+): Promise<Uint8Array | null> => {
     try {
         return await readFile(filePath);
     } catch {

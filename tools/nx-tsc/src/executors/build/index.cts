@@ -1,8 +1,3 @@
-const indexProm = import('./index.js');
+import { commonProxy } from 'common-proxy';
 
-export default async (
-    ...args: Parameters<Awaited<typeof indexProm>['default']>
-) => {
-    const index = await indexProm;
-    return index.default(...args);
-};
+export default commonProxy(import('./index.js'));

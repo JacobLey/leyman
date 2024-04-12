@@ -1,9 +1,3 @@
-// @ts-expect-error
-import type { default as foo } from './index.js';
+import { commonProxy } from 'common-proxy';
 
-const indexProm = import('./index.js');
-
-export default async (...args: Parameters<typeof foo>) => {
-    const index = await indexProm;
-    return index.default(...args);
-};
+export default commonProxy(import('./index.js'));

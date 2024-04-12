@@ -3,22 +3,35 @@ import type { Encryption, Hash, InputText } from '../lib/types.js';
 /**
  * Encrypt the incoming content using the specified encryption and hashing algorithms.
  *
- * @param {object} params - params
- * @param {InputText} params.data - content to encrypt
- * @param {InputText} params.secret - secret key for encryption
- * @param {object} [options] - options
- * @param {object} [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
- * @param {object} [options.hash] - hash algorithm to use to fit secret to the required key size.
- *                                  Defaults to SHA256. Set to `'raw'` to avoid hashing.
- * @returns {Promise<object>} - encrypted text and accompanying initialization vector
+ * @param params - required parameters
+ * @param params.data - content to encrypt
+ * @param params.secret - secret key for encryption
+ * @param [options] - optional
+ * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.hash] - Hash algorithm to use to fit secret to the required key size.
+ * Defaults to SHA256. Set to `'raw'` to avoid hashing.
+ * @returns encrypted text and accompanying initialization vector
  */
 export declare const encrypt: (
     params: {
+        /**
+         * Content to encrypt.
+         */
         data: InputText;
+        /**
+         * Secret key for encryption.
+         */
         secret: InputText;
     },
     options?: {
+        /**
+         * Encryption algorithm to use, defaults to `aes-256-ctr`.
+         */
         encryption?: Encryption | undefined;
+        /**
+         * Hash algorithm to use to fit secret to the required key size.
+         * Defaults to SHA256. Set to `'raw'` to avoid hashing.
+         */
         hash?: Hash | undefined;
     }
 ) => Promise<{
@@ -31,24 +44,40 @@ export declare const encrypt: (
  *
  * Ensure that encryption + hashing algorithms used match those used when initially encrypting the data.
  *
- * @param {object} params - params
- * @param {InputText} params.encrypted - encrypted content, see output of `encrypt`
- * @param {InputText} params.iv - initialization vector used during encryption, see output of `encrypt`
- * @param {InputText} params.secret - secret key for encryption
- * @param {object} [options] - options
- * @param {object} [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
- * @param {object} [options.hash] - hash algorithm to use to fit secret to the required key size.
- *                                  Defaults to SHA256. Set to `'raw'` to avoid hashing.
- * @returns {Promise<object>} - encrypted text and accompanying initialization vector
+ * @param params - required parameters
+ * @param params.encrypted - encrypted content, see output of `encrypt`
+ * @param params.iv - initialization vector used during encryption, see output of `encrypt`
+ * @param params.secret - secret key for encryption
+ * @param [options] - optional
+ * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.hash] - hash algorithm to use to fit secret to the required key size.
+ * Defaults to SHA256. Set to `'raw'` to avoid hashing.
+ * @returns encrypted text and accompanying initialization vector
  */
 export declare const decrypt: (
     params: {
+        /**
+         * Encrypted data.
+         */
         encrypted: InputText;
+        /**
+         * Random initialization vector created with original encryption.
+         */
         iv: InputText;
+        /**
+         * Secret key for encryption.
+         */
         secret: InputText;
     },
     options?: {
+        /**
+         * Encryption algorithm to use, defaults to `aes-256-ctr`.
+         */
         encryption?: Encryption | undefined;
+        /**
+         * Hash algorithm to use to fit secret to the required key size.
+         * Defaults to SHA256. Set to `'raw'` to avoid hashing.
+         */
         hash?: Hash | undefined;
     }
 ) => Promise<Uint8Array>;

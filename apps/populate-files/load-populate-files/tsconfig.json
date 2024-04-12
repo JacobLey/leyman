@@ -10,6 +10,9 @@
       "path": "../populate-files"
     },
     {
+      "path": "../../../leyman/eslint-config"
+    },
+    {
       "path": "../../../tools/default-import"
     },
     {

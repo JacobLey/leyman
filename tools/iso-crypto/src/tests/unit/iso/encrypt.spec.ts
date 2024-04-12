@@ -1,15 +1,16 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { before, suite, test } from 'mocha-hookup';
 import * as IsoCrypto from 'iso-crypto';
+import { before, suite, test } from 'mocha-hookup';
 import type * as Encrypt from '#encrypt';
 import * as BrowserEncrypt from '../../../iso/encrypt/browser.js';
 import * as NodeEncrypt from '../../../iso/encrypt/node.js';
 
-// coverage
-import '../../../iso/encrypt/types.js';
-
 suite('Encrypt', () => {
+    test('coverage', async () => {
+        await import('../../../iso/encrypt/types.js');
+    });
+
     test('types', () => {
         expectTypeOf<typeof Encrypt>().toEqualTypeOf(BrowserEncrypt);
         expectTypeOf<typeof Encrypt>().toMatchTypeOf(NodeEncrypt);

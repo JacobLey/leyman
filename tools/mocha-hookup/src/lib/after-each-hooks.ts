@@ -1,17 +1,17 @@
-import { bind, createModule, identifier, singletonScope } from 'haystack-di';
-import type { Context as MochaContext, Done, Test as MochaTest } from 'mocha';
+import type { Done, Context as MochaContext, Test as MochaTest } from 'mocha';
+import { bind, createModule, identifier, singletonScope } from 'haywire';
 import { afterEachIdentifier } from '#mocha-module';
 import {
-    GenericContextualHook,
-    wrapPerTestHookWithContext,
+    type GenericContextualHook,
     wrapHookWithEntrypoint,
+    wrapPerTestHookWithContext,
 } from './lib/hook-wrapper.js';
 import type {
     AllowableAdditionalContext,
     MergeContext,
 } from './lib/merge-context.js';
 
-interface ContextualAfterEachHook<ExistingContext extends object>
+export interface ContextualAfterEachHook<ExistingContext extends object>
     extends GenericContextualHook {
     <AdditionalContext extends AllowableAdditionalContext>(
         fn: (
@@ -41,11 +41,9 @@ export interface AfterEachChain<
     >;
 }
 
-export interface ContextualAfterEachGenerator {
-    <ExistingContext extends object>(
-        ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
-    ): ContextualAfterEachHook<ExistingContext>;
-}
+type ContextualAfterEachGenerator = <ExistingContext extends object>(
+    ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
+) => ContextualAfterEachHook<ExistingContext>;
 
 /**
  * Implement context propagation, to create chain-able hooks.
@@ -59,12 +57,14 @@ export const contextualAfterEachGeneratorIdentifier =
 const contextualAfterEachBinding = bind(contextualAfterEachGeneratorIdentifier)
     .withDependencies([afterEachIdentifier])
     .withProvider(afterEach => {
-        const contextualAfterEach: ContextualAfterEachGenerator = <
-            ExistingContext extends object,
-        >(
-            ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
-        ) => {
-            return <AdditionalContext extends AllowableAdditionalContext>(
+        const contextualAfterEach: ContextualAfterEachGenerator =
+            <ExistingContext extends object>(
+                ctxProm: Pick<
+                    WeakMap<MochaTest, Promise<ExistingContext>>,
+                    'get'
+                >
+            ) =>
+            <AdditionalContext extends AllowableAdditionalContext>(
                 ...args:
                     | [
                           (
@@ -95,7 +95,6 @@ const contextualAfterEachBinding = bind(contextualAfterEachGeneratorIdentifier)
                     teardown: afterEachs,
                 };
             };
-        };
         return contextualAfterEach;
     })
     .scoped(singletonScope);
@@ -103,11 +102,11 @@ const contextualAfterEachBinding = bind(contextualAfterEachGeneratorIdentifier)
 export interface EntrypointAfterEachHook {
     <AdditionalContext extends AllowableAdditionalContext>(
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): AfterEachChain<{}, AdditionalContext>;
+    ): AfterEachChain<NonNullable<unknown>, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): AfterEachChain<{}, AdditionalContext>;
+    ): AfterEachChain<NonNullable<unknown>, AdditionalContext>;
 }
 
 /**
@@ -121,7 +120,7 @@ const entrypointAfterEachBinding = bind(entrypointAfterEachIdentifier)
     .withDependencies([contextualAfterEachGeneratorIdentifier])
     .withProvider(contextualAfterEachGenerator => {
         const contextualAfterEach = contextualAfterEachGenerator({
-            get: () => Promise.resolve({}),
+            get: async () => ({}),
         });
         return wrapHookWithEntrypoint(
             contextualAfterEach

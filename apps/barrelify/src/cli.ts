@@ -1,10 +1,9 @@
+import yargsDefault, { type Argv, type CommandModule } from 'yargs';
+import { hideBin } from 'yargs/helpers';
 import { defaultImport } from 'default-import';
 import { EntryScript } from 'entry-script';
 import { findImport } from 'find-import';
 import { patch } from 'named-patch';
-import yargsDefault, { type Argv, type CommandModule } from 'yargs';
-// eslint-disable-next-line n/file-extension-in-import
-import { hideBin } from 'yargs/helpers';
 import * as Commands from './commands/index.js';
 
 const yargs = defaultImport(yargsDefault) as Argv;
@@ -24,13 +23,13 @@ export const yargsOutput = patch(
  * Uses `yargs` package for command line parsing and logic flow.
  */
 export default class BarrelCli extends EntryScript {
-    #argv: string[];
+    readonly #argv: string[];
 
     /**
      * Create CLI given args.
      *
-     * @param {object} params - params
-     * @param {object} params.argv - args from CLI process
+     * @param params - required parameters
+     * @param params.argv - args from CLI process
      */
     public constructor(params: {
         argv: string[];
@@ -42,7 +41,7 @@ export default class BarrelCli extends EntryScript {
     /**
      * Pass process.argv to cli.
      *
-     * @returns {Promise<BarrelCli>} cli
+     * @returns barrel cli instance
      */
     public static override async create(): Promise<BarrelCli> {
         return new BarrelCli({ argv: process.argv });

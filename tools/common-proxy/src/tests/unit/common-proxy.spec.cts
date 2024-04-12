@@ -1,13 +1,13 @@
 import { setTimeout } from 'node:timers/promises';
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import { commonProxy } from '../../common-proxy.cjs';
 import proxiedHandler from '../fixtures/handler.cjs';
 import * as proxiedMethods from '../fixtures/methods.cjs';
 
-suite('commonProxy', async () => {
+suite('commonProxy', () => {
     test('Handles default import', async () => {
+        const { expect } = await import('chai');
         expect(await proxiedHandler([123])).to.deep.equal({ num: 123 });
         expectTypeOf(proxiedHandler).toEqualTypeOf<
             (val: [number]) => Promise<{ num: number }>
@@ -15,6 +15,7 @@ suite('commonProxy', async () => {
     });
 
     test('Handles methods', async () => {
+        const { expect } = await import('chai');
         expect(await proxiedMethods.addAllNums(1, 2, 3, 4)).to.equal(10);
         expectTypeOf(proxiedMethods.addAllNums).toEqualTypeOf<
             (...nums: number[]) => Promise<number>
@@ -41,6 +42,7 @@ suite('commonProxy', async () => {
     });
 
     test('Dynamic method', async () => {
+        const { expect } = await import('chai');
         const myMethod = (a: string, b: string): number => a.length + b.length;
         const myMethodProxy = commonProxy(myMethod);
         expectTypeOf(myMethodProxy).toEqualTypeOf<

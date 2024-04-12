@@ -1,8 +1,8 @@
 import * as Chai from 'chai';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha-hookup';
 import * as DefaultImport from 'default-import';
+import { suite, test } from 'mocha-hookup';
 import cjs from '../data/cjs.cjs';
 import esm from '../data/esm.js';
 import namedCjs from '../data/named-cjs.cjs';
@@ -46,7 +46,7 @@ suite('defaultImport', () => {
             });
         });
 
-        test('Only default export', async () => {
+        test('Only default export', () => {
             expect(DefaultImport.defaultImport(Chai)).to.eq(Chai);
             expectTypeOf(DefaultImport.defaultImport(Chai)).toEqualTypeOf<
                 typeof Chai
@@ -184,9 +184,11 @@ suite('defaultImport', () => {
     });
 
     test('Handles literals', () => {
-        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression, unicorn/no-useless-undefined
         expect(DefaultImport.defaultImport(undefined)).to.equal(undefined);
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression, unicorn/no-useless-undefined
         expectTypeOf(DefaultImport.defaultImport(undefined)).toEqualTypeOf(
+            // eslint-disable-next-line unicorn/no-useless-undefined
             undefined
         );
 

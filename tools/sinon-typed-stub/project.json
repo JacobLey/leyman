@@ -3,8 +3,17 @@
   "name": "sinon-typed-stub",
   "targets": {
     "biome": {},
-    "update-ts-references": {},
-    "tsc": {},
+    "eslint": {},
+    "update-ts-references": {
+      "executor": "npm-nx-update-ts-references:update-ts-references"
+    },
+    "tsc": {
+      "executor": "npm-nx-tsc:build",
+      "options": {
+        "tsConfig": "{projectRoot}/tsconfig.json"
+      }
+    },
+    "coverage-reset": {},
     "mocha-unit-test": {},
     "coverage-report": {},
     "analyze:_": {},

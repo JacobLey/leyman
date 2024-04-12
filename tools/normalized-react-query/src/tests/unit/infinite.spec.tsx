@@ -4,9 +4,9 @@ import {
     type WrapperComponent,
 } from '@testing-library/react-hooks';
 import { expect } from 'chai';
-import { afterEach, beforeEach, suite } from 'mocha-hookup';
 import type { ReactNode } from 'react';
 import { spy, verifyAndRestore } from 'sinon';
+import { afterEach, beforeEach, suite } from 'mocha-hookup';
 import { type EmptyObject, infinite } from 'normalized-react-query';
 import * as Api from '../data/api.js';
 
@@ -107,7 +107,7 @@ suite('useInfinite', () => {
         expect(result.current.isSuccess).to.equal(true);
     });
 
-    context.test('onSuccess', async ({ client, wrapper }) => {
+    context.test('onSuccess', async ({ wrapper }) => {
         const onSuccess = spy();
         const onSettled = spy();
 
@@ -151,7 +151,7 @@ suite('useInfinite', () => {
         expect(onSettled.calledOnce).to.equal(true);
     });
 
-    context.test('onError', async ({ client, wrapper }) => {
+    context.test('onError', async ({ wrapper }) => {
         const onError = spy();
         const onSettled = spy();
 
@@ -184,7 +184,7 @@ suite('useInfinite', () => {
                     }
                 ),
             {
-                wrapper: wrapper,
+                wrapper,
             }
         );
 

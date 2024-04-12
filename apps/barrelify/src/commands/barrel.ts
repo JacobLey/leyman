@@ -1,5 +1,5 @@
-import { parseCwd } from 'parse-cwd';
 import type { CommandModule } from 'yargs';
+import { parseCwd } from 'parse-cwd';
 import { barrelFiles } from '../lib/barrel.js';
 
 export const barrel: CommandModule<
@@ -45,6 +45,7 @@ export const barrel: CommandModule<
 
         if (options.ci && changed.length > 0) {
             process.exitCode = 1;
+            // eslint-disable-next-line no-console
             console.error('Files are not built');
         }
     },

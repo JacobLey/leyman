@@ -13,24 +13,15 @@
   "bugs": {
     "url": "https://github.com/jacobley/jacobley/issues"
   },
-  "keywords": [
-    "barrel",
-    "index"
-  ],
+  "keywords": ["barrel", "index"],
   "sideEffects": false,
   "types": "./dist/barrelify.js",
   "exports": {
     ".": "./dist/barrelify.js"
   },
   "bin": {
-    "barrel-local": "./cli.mjs",
-    "barrelify-local": "./cli.mjs"
-  },
-  "publishConfig": {
-    "bin": {
-      "barrel": "./dist/cli.js",
-      "barrelify": "./dist/cli.js"
-    }
+    "barrel": "./cli.mjs",
+    "barrelify": "./cli.mjs"
   },
   "dependencies": {
     "default-import": "workspace:^",
@@ -39,24 +30,26 @@
     "globby": "^13.2.2",
     "named-patch": "workspace:^",
     "parse-cwd": "workspace:^",
+    "sinon-typed-stub": "workspace:^",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
-    "@types/chai": "^4.3.11",
+    "@biomejs/biome": "^1.6.4",
+    "@leyman/eslint-config": "workspace:^",
+    "@types/chai": "^4.3.12",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.8.10",
+    "@types/node": "^20.11.26",
     "@types/sinon": "^17.0.3",
     "@types/yargs": "^17.0.29",
-    "c8": "^8.0.1",
+    "c8": "^9.1.0",
     "chai": "^5.1.0",
-    "expect-type": "^0.17.3",
-    "mocha": "^10.3.0",
+    "expect-type": "^0.19.0",
+    "mocha": "^10.4.0",
     "mocha-hookup": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "sinon": "^17.0.1",
     "ts-dedent": "^2.2.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.3"
   }
 }

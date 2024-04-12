@@ -13,12 +13,7 @@
   "bugs": {
     "url": "https://github.com/jacobley/jacobley/issues"
   },
-  "keywords": [
-    "nx",
-    "tsc",
-    "typescript",
-    "build"
-  ],
+  "keywords": ["nx", "tsc", "typescript", "build"],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {
@@ -26,24 +21,29 @@
       "default": "./package.json"
     }
   },
+  "dependencies": {
+    "common-proxy": "workspace:^",
+    "nx-plugin-handler": "workspace:^"
+  },
   "optionalDependencies": {
-    "@nx/devkit": "^18.0.4",
+    "@nx/devkit": "^18.0.8",
     "npm-juniper": "npm:juniper@^1.1.10"
   },
   "peerDependencies": {
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.5.3",
-    "@types/chai": "^4.3.11",
+    "@biomejs/biome": "^1.6.4",
+    "@leyman/eslint-config": "workspace:^",
+    "@types/chai": "^4.3.12",
     "@types/mocha": "^10.0.6",
-    "@types/node": "^20.8.10",
+    "@types/node": "^20.11.26",
     "chai": "^5.1.0",
-    "mocha": "^10.3.0",
+    "mocha": "^10.4.0",
     "npm-load-populate-files": "npm:load-populate-files@^0.0.1",
     "npm-nx-populate-files": "npm:nx-populate-files@^0.0.2",
     "npm-nx-tsc": "npm:nx-tsc@^0.0.2",
     "nyc": "^15.1.0",
-    "typescript": "^5.3.3"
+    "typescript": "^5.4.3"
   }
 }

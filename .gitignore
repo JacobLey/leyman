@@ -1,16 +1,12 @@
 **/*.log*
 **/.DS_Store
 
-**/.nyc-cache/**
-**/.nyc_output/**
-**/node_modules/**
+**/node_modules
 .pnpm-store
 
-/**/coverage/**
-/**/dist/**
-/**/nyc/**
+/**/.eslintcache
+/**/coverage
+/**/dist
 
 .nx/**
 !.nx/package.json
-nx
-nx.bat

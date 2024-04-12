@@ -1,0 +1,55 @@
+{
+  "name": "@leyman/eslint-config",
+  "version": "0.0.0",
+  "description": "Re-usable eslint config.",
+  "engines": {
+    "node": ">=20"
+  },
+  "private": true,
+  "type": "module",
+  "author": "jacobley",
+  "license": "MIT",
+  "repository": "jacobley/jacobley",
+  "homepage": "https://github.com/JacobLey/jacobley/tree/main/leyman/eslint-config#readme",
+  "bugs": {
+    "url": "https://github.com/jacobley/jacobley/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/eslint-config.js"
+  },
+  "dependencies": {
+    "@eslint/js": "^8.57.0",
+    "@typescript-eslint/eslint-plugin": "^7.2.0",
+    "@typescript-eslint/parser": "^7.2.0",
+    "ajv": "^8.12.0",
+    "escape-string-regexp": "^5.0.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-import": "^2.29.1",
+    "eslint-plugin-jsdoc": "^48.2.1",
+    "eslint-plugin-jsx-a11y": "^6.8.0",
+    "eslint-plugin-n": "next",
+    "eslint-plugin-react": "^7.34.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-sonarjs": "^0.24.0",
+    "eslint-plugin-unicorn": "^51.0.1",
+    "npm-default-import": "npm:default-import@^1.1.5",
+    "npm-juniper": "npm:juniper@^1.1.10"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.6.4",
+    "@nx/eslint": "^18.1.1",
+    "@types/eslint": "^8.56.5",
+    "@types/chai": "^4.3.12",
+    "@types/mocha": "^10.0.6",
+    "@types/node": "^20.11.26",
+    "@typescript-eslint/utils": "^7.2.0",
+    "chai": "^5.1.0",
+    "c8": "^9.1.0",
+    "eslint": "^8.57.0",
+    "mocha": "^10.4.0",
+    "npm-nx-tsc": "npm:nx-tsc@^0.0.2",
+    "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.1",
+    "typescript": "^5.4.3"
+  }
+}

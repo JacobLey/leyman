@@ -78,7 +78,7 @@ suite('test', () => {
         });
     });
 
-    suite('With retries', function () {
+    suite('With retries', function (this) {
         this.retries(2);
 
         let shouldFailAsync = true;

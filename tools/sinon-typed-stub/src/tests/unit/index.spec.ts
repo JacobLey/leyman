@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha-hookup';
 import { define, verifyAndRestore } from 'sinon';
+import { afterEach, suite, test } from 'mocha-hookup';
 import { mockMethod, spyMethod, stubMethod } from 'sinon-typed-stub';
 
 suite('Wraps sinon methods', () => {
@@ -9,7 +9,7 @@ suite('Wraps sinon methods', () => {
     const validator = Object.assign(
         (val: unknown): val is number => typeof val === 'number',
         {
-            errors: null as null | unknown[],
+            errors: null as unknown[] | null,
         }
     );
 

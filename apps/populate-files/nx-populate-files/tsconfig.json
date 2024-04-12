@@ -13,6 +13,12 @@
       "path": "../load-populate-files"
     },
     {
+      "path": "../../../leyman/eslint-config"
+    },
+    {
+      "path": "../../../tools/common-proxy"
+    },
+    {
       "path": "../../../tools/nx-tsc"
     }
   ]
