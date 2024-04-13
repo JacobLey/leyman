@@ -6,9 +6,9 @@
     "node": ">=18"
   },
   "type": "module",
-  "author": "jacobley",
+  "author": "JacobLey",
   "license": "MIT",
-  "repository": "jacobley/jacobley",
+  "repository": "JacobLey/leyman",
   "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/nx-plugin-handler#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"

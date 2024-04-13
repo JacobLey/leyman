@@ -1,10 +1,10 @@
 {
 	"$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
-	"name": "JacobLey",
+	"name": "Leyman",
 	"dockerComposeFile": "docker-compose.yml",
 	"service": "app",
 	"workspaceFolder": "/workspace",
-	"remoteUser": "jacobley",
+	"remoteUser": "leyman",
 
 	"customizations": {
     "vscode": {

@@ -9,7 +9,7 @@ RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install vim -y
 
-ARG USER=jacobley
+ARG USER=leyman
 RUN adduser $USER
 USER $USER
 ENV HOME="/home/${USER}"
