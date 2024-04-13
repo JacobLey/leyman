@@ -9,8 +9,7 @@
         "parallel": true,
         "color": true,
         "cwd": "{projectRoot}"
-      },
-      "dependsOn": ["test:_"]
+      }
     },
     "lifecycle": {
       "executor": "nx-lifecycle:lifecycle",
@@ -18,12 +17,9 @@
         "stages": {
           "analyze": {
             "hooks": ["format", "lint"],
-            "dependsOn": ["^build"]
+            "dependsOn": ["^build", "build"]
           },
-          "build": {
-            "hooks": ["pre", "run", "post"],
-            "dependsOn": ["^build"]
-          },
+          "build": { "hooks": ["pre", "run", "post"], "dependsOn": ["^build"] },
           "test": {
             "hooks": ["reset", "run", "report"],
             "dependsOn": ["analyze", "build"]
@@ -41,11 +37,12 @@
           "mocha-integration-test": "test:run",
           "coverage-report": "test:report"
         }
-      }
+      },
+      "dependsOn": ["^build"]
     },
     "analyze:_": {},
-    "analyze:lint": {},
     "analyze:format": {},
+    "analyze:lint": {},
     "analyze": {},
     "build:_": {},
     "build:pre": {},
@@ -53,6 +50,7 @@
     "build:post": {},
     "build": {},
     "test:_": {},
+    "test:reset": {},
     "test:run": {},
     "test:report": {},
     "test": {}

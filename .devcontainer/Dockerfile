@@ -3,6 +3,7 @@ FROM mcr.microsoft.com/devcontainers/base:debian
 ARG NX_VERSION=18.2.4
 ARG NODE_VERSION=20.12.0
 ARG PNPM_VERSION=8.15.6
+ARG CHANGESETS_VERSION=2.27.1
 
 RUN apt-get update \
     && apt-get upgrade -y \
@@ -33,4 +34,4 @@ RUN \. "$NVM_DIR/nvm.sh" && \
 
 # Install packages
 RUN \. "$NVM_DIR/nvm.sh" && \
-    pnpm i -g "nx@${NX_VERSION}"
+    pnpm i -g "nx@${NX_VERSION}" "@changesets/cli@${CHANGESETS_VERSION}"

@@ -1,13 +1,5 @@
-!**/.*.cjs
-
 apps/*/coverage
 apps/*/dist
-apps/*/nyc
-
-root/*/coverage
-root/*/dist
-root/*/nyc
 
 tools/*/coverage
 tools/*/dist
-tools/*/nyc

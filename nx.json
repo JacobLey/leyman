@@ -1,8 +1,6 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "cli": {
-    "packageManager": "pnpm"
-  },
+  "cli": { "packageManager": "pnpm" },
   "namedInputs": {
     "ts-source": [
       "{projectRoot}/src/**/*.{c,m,}ts{x,}",
@@ -19,12 +17,8 @@
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "configurations": {
-        "fix": {
-          "commands": ["biome format --write ."]
-        }
-      },
-      "dependsOn": ["analyze:lint"]
+      "configurations": { "fix": { "commands": ["biome format --write ."] } },
+      "dependsOn": ["analyze:_"]
     },
     "eslint": {
       "executor": "@nx/eslint:lint",
@@ -38,12 +32,8 @@
         "cacheStrategy": "content",
         "hasTypeAwareRules": true
       },
-      "configurations": {
-        "fix": {
-          "fix": true
-        }
-      },
-      "dependsOn": ["analyze:_"]
+      "configurations": { "fix": { "fix": true } },
+      "dependsOn": ["analyze:format"]
     },
     "barrelify": {
       "executor": "nx:run-commands",
@@ -61,9 +51,7 @@
     },
     "tsc": {
       "executor": "nx-tsc:build",
-      "options": {
-        "tsConfig": "{projectRoot}/tsconfig.json"
-      },
+      "options": { "tsConfig": "{projectRoot}/tsconfig.json" },
       "inputs": ["ts-source", "^ts-source"],
       "outputs": ["{projectRoot}/dist"],
       "dependsOn": ["build:pre"]
@@ -98,7 +86,7 @@
       },
       "inputs": ["ts-source", "^ts-source", "^prod-data"],
       "outputs": ["{projectRoot}/coverage/tmp"],
-      "dependsOn": ["test:_", "test:reset"]
+      "dependsOn": ["test:reset"]
     },
     "mocha-integration-test": {
       "executor": "nx:run-commands",
@@ -112,7 +100,7 @@
       },
       "inputs": ["ts-source", "^ts-source", "^prod-data"],
       "outputs": ["{projectRoot}/coverage/tmp"],
-      "dependsOn": ["mocha-unit-test", "test:_", "test:reset"]
+      "dependsOn": ["mocha-unit-test", "test:reset"]
     },
     "coverage-report": {
       "executor": "nx:run-commands",
@@ -127,113 +115,78 @@
     "analyze:_": {
       "executor": "nx:noop",
       "dependsOn": ["^build", "build"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "configurations": { "__lifecycle": {} }
     },
     "analyze:format": {
       "executor": "nx:noop",
-      "dependsOn": ["analyze:lint", "biome"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "dependsOn": ["analyze:_", "biome"],
+      "configurations": { "__lifecycle": {} }
     },
     "analyze:lint": {
       "executor": "nx:noop",
-      "dependsOn": ["analyze:_", "eslint"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "dependsOn": ["analyze:format", "eslint"],
+      "configurations": { "__lifecycle": {} }
     },
     "analyze": {
       "executor": "nx:noop",
-      "dependsOn": ["analyze:format"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "dependsOn": ["analyze:lint"],
+      "configurations": { "__lifecycle": {} }
     },
     "build:_": {
       "executor": "nx:noop",
       "dependsOn": ["^build"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "configurations": { "__lifecycle": {} }
     },
     "build:pre": {
       "executor": "nx:noop",
       "dependsOn": ["build:_", "barrelify", "update-ts-references"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "configurations": { "__lifecycle": {} }
     },
     "build:run": {
       "executor": "nx:noop",
       "dependsOn": ["build:pre", "tsc"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "configurations": { "__lifecycle": {} }
     },
     "build:post": {
       "executor": "nx:noop",
       "dependsOn": ["build:run", "populate-files"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "configurations": { "__lifecycle": {} }
     },
     "build": {
       "executor": "nx:noop",
       "dependsOn": ["build:post"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "configurations": { "__lifecycle": {} }
     },
     "test:_": {
       "executor": "nx:noop",
       "dependsOn": ["analyze", "build"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "configurations": { "__lifecycle": {} }
     },
     "test:reset": {
       "executor": "nx:noop",
-      "dependsOn": ["test:_"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "dependsOn": ["test:_", "coverage-reset"],
+      "configurations": { "__lifecycle": {} }
     },
     "test:run": {
       "executor": "nx:noop",
-      "dependsOn": [
-        "test:_",
-        "test:reset",
-        "mocha-unit-test",
-        "mocha-integration-test"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "dependsOn": ["test:reset", "mocha-unit-test", "mocha-integration-test"],
+      "configurations": { "__lifecycle": {} }
     },
     "test:report": {
       "executor": "nx:noop",
       "dependsOn": ["test:run", "coverage-report"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "configurations": { "__lifecycle": {} }
     },
     "test": {
       "executor": "nx:noop",
       "dependsOn": ["test:report"],
-      "configurations": {
-        "__lifecycle": {}
-      }
+      "configurations": { "__lifecycle": {} }
     }
   },
   "tasksRunnerOptions": {
     "default": {
       "runner": "nx/tasks-runners/default",
-      "options": {
-        "cacheableOperations": ["tsc", "populate-files", "lint"]
-      }
+      "options": { "cacheableOperations": ["tsc", "populate-files", "lint"] }
     }
   }
 }

@@ -8,9 +8,7 @@
     },
     "tsc": {
       "executor": "npm-nx-tsc:build",
-      "options": {
-        "tsConfig": "{projectRoot}/tsconfig.json"
-      }
+      "options": { "tsConfig": "{projectRoot}/tsconfig.json" }
     },
     "coverage-reset": {},
     "mocha-unit-test": {},
@@ -27,8 +25,8 @@
     },
     "coverage-report": {},
     "analyze:_": {},
-    "analyze:lint": {},
     "analyze:format": {},
+    "analyze:lint": {},
     "analyze": {},
     "build:_": {},
     "build:pre": {},
@@ -36,6 +34,7 @@
     "build:post": {},
     "build": {},
     "test:_": {},
+    "test:reset": {},
     "test:run": {},
     "test:report": {},
     "test": {}

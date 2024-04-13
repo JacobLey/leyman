@@ -6,19 +6,15 @@
     "eslint": {},
     "tsc": {
       "executor": "npm-nx-tsc:build",
-      "options": {
-        "tsConfig": "tools/nx-tsc/tsconfig.json"
-      }
+      "options": { "tsConfig": "tools/nx-tsc/tsconfig.json" }
     },
     "populate-files": {
       "executor": "npm-nx-populate-files:populate-files",
-      "options": {
-        "filePath": "{projectRoot}/dist/file-content.js"
-      }
+      "options": { "filePath": "{projectRoot}/dist/file-content.js" }
     },
     "analyze:_": {},
-    "analyze:lint": {},
     "analyze:format": {},
+    "analyze:lint": {},
     "analyze": {},
     "build:_": {},
     "build:pre": {},
@@ -26,6 +22,7 @@
     "build:post": {},
     "build": {},
     "test:_": {},
+    "test:reset": {},
     "test:run": {},
     "test:report": {},
     "test": {}

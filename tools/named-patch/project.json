@@ -17,8 +17,8 @@
     },
     "coverage-report": {},
     "analyze:_": {},
-    "analyze:lint": {},
     "analyze:format": {},
+    "analyze:lint": {},
     "analyze": {},
     "build:_": {},
     "build:pre": {},
@@ -26,6 +26,7 @@
     "build:post": {},
     "build": {},
     "test:_": {},
+    "test:reset": {},
     "test:run": {},
     "test:report": {},
     "test": {}
