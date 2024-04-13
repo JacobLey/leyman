@@ -1,11 +1,9 @@
-# Hello! My name is Jacob Ley
+# Leyman
 
-If you are looking for documentation about this monorepo, [see here](./root/jacobley/).
+An Nx monorepo for various libraries and plugins.
 
-I am primarily a [NodeJS](https://nodejs.org) developer, with a love for open source!
+It is _highly_ recommended when developing locally to use a devcontainer. This will ensure your environment is set up correctly, and not risk interfering with any other settings or packages you may have configured across your desktop.
 
-My main focus is developer experience with fully typed ESM, but am constantly trying out new technologies.
+The [.devcontainer](./.devcontainer) directory is fully set up. If you open this repo in VSCode, you should immediately see an option to open it up in DevContainer.
 
-Most of my personally owned projects are hosted within this monorepo, but also see other projects I have helped maintained:
-
-* [Express OpenAPI Validator](https://github.com/cdimascio/express-openapi-validator)
+See individual packages for documentation.
