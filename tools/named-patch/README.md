@@ -4,8 +4,8 @@
 <p>Enable monkey patching of named ESM exports.</p>
 
 [![npm package](https://badge.fury.io/js/named-patch.svg)](https://www.npmjs.com/package/named-patch)
-[![License](https://img.shields.io/npm/l/named-patch.svg)](https://github.com/JacobLey/jacobley/blob/main/common/config/publish/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/named-patch.svg)](https://github.com/JacobLey/jacobley/blob/main/tools/named-patch)
+[![License](https://img.shields.io/npm/l/named-patch.svg)](https://github.com/JacobLey/leyman/blob/main/common/config/publish/LICENSE)
+[![Quality](https://img.shields.io/npms-io/quality-score/named-patch.svg)](https://github.com/JacobLey/leyman/blob/main/tools/named-patch)
 
 </div>
 

@@ -486,7 +486,7 @@ export default ({
                 'import/dynamic-import-chunkname': 'off',
                 'import/exports-last': 'off',
                 'import/extensions': 'off',
-                'import/first': ['error', 'disable-absolute-first'],
+                'import/first': ['error', 'absolute-first'],
                 'import/group-exports': 'off',
                 'import/max-dependencies': 'off',
                 // TODO https://github.com/import-js/eslint-plugin-import/issues/2556

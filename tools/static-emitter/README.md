@@ -4,8 +4,8 @@
 <p>Statically typed event emitter.</p>
 
 [![npm package](https://badge.fury.io/js/static-emitter.svg)](https://www.npmjs.com/package/static-emitter)
-[![License](https://img.shields.io/npm/l/static-emitter.svg)](https://github.com/JacobLey/jacobley/blob/main/common/config/publish/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/static-emitter.svg)](https://github.com/JacobLey/jacobley/blob/main/tools/static-emitter)
+[![License](https://img.shields.io/npm/l/static-emitter.svg)](https://github.com/JacobLey/leyman/blob/main/common/config/publish/LICENSE)
+[![Quality](https://img.shields.io/npms-io/quality-score/static-emitter.svg)](https://github.com/JacobLey/leyman/blob/main/tools/static-emitter)
 
 </div>
 

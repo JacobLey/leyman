@@ -9,9 +9,9 @@
   "author": "jacobley",
   "license": "MIT",
   "repository": "jacobley/jacobley",
-  "homepage": "https://github.com/JacobLey/jacobley/tree/main/tools/named-patch#readme",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/named-patch#readme",
   "bugs": {
-    "url": "https://github.com/jacobley/jacobley/issues"
+    "url": "https://github.com/JacobLey/leyman/issues"
   },
   "keywords": ["higher order function", "named export", "patch", "stub"],
   "sideEffects": false,

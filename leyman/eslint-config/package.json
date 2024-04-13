@@ -10,9 +10,9 @@
   "author": "jacobley",
   "license": "MIT",
   "repository": "jacobley/jacobley",
-  "homepage": "https://github.com/JacobLey/jacobley/tree/main/leyman/eslint-config#readme",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/leyman/eslint-config#readme",
   "bugs": {
-    "url": "https://github.com/jacobley/jacobley/issues"
+    "url": "https://github.com/JacobLey/leyman/issues"
   },
   "sideEffects": false,
   "exports": {

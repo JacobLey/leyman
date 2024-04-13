@@ -4,8 +4,8 @@
 <p>ESM native version of punycode.js.</p>
 
 [![npm package](https://badge.fury.io/js/punycode-esm.svg)](https://www.npmjs.com/package/punycode-esm)
-[![License](https://img.shields.io/npm/l/punycode-esm.svg)](https://github.com/JacobLey/jacobley/blob/main/common/config/publish/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/punycode-esm.svg)](https://github.com/JacobLey/jacobley/blob/main/tools/punycode-esm)
+[![License](https://img.shields.io/npm/l/punycode-esm.svg)](https://github.com/JacobLey/leyman/blob/main/common/config/publish/LICENSE)
+[![Quality](https://img.shields.io/npms-io/quality-score/punycode-esm.svg)](https://github.com/JacobLey/leyman/blob/main/tools/punycode-esm)
 
 </div>
 

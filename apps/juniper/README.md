@@ -4,8 +4,8 @@
 <p>ESM JSON Schema builder for static Typescript inference</p>
 
 [![npm package](https://badge.fury.io/js/juniper.svg)](https://www.npmjs.com/package/juniper)
-[![License](https://img.shields.io/npm/l/juniper.svg)](https://github.com/JacobLey/jacobley/blob/main/common/config/publish/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/juniper.svg)](https://github.com/JacobLey/jacobley/blob/main/apps/juniper)
+[![License](https://img.shields.io/npm/l/juniper.svg)](https://github.com/JacobLey/leyman/blob/main/common/config/publish/LICENSE)
+[![Quality](https://img.shields.io/npms-io/quality-score/juniper.svg)](https://github.com/JacobLey/leyman/blob/main/apps/juniper)
 
 </div>
 

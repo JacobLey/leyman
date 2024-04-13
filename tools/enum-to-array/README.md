@@ -4,8 +4,8 @@
 <p>Convert Typescript Enums to a strongly typed array.</p>
 
 [![npm package](https://badge.fury.io/js/enum-to-array.svg)](https://www.npmjs.com/package/enum-to-array)
-[![License](https://img.shields.io/npm/l/enum-to-array.svg)](https://github.com/JacobLey/jacobley/blob/main/common/config/publish/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/enum-to-array.svg)](https://github.com/JacobLey/jacobley/blob/main/tools/enum-to-array)
+[![License](https://img.shields.io/npm/l/enum-to-array.svg)](https://github.com/JacobLey/leyman/blob/main/common/config/publish/LICENSE)
+[![Quality](https://img.shields.io/npms-io/quality-score/enum-to-array.svg)](https://github.com/JacobLey/leyman/blob/main/tools/enum-to-array)
 
 </div>
 

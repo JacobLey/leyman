@@ -10,13 +10,14 @@
   "author": "jacobley",
   "license": "MIT",
   "repository": "jacobley/jacobley",
-  "homepage": "https://github.com/jacobley/jacobley#readme",
+  "homepage": "https://github.com/JacobLey/leyman#readme",
   "bugs": {
-    "url": "https://github.com/jacobley/jacobley/issues"
+    "url": "https://github.com/JacobLey/leyman/issues"
   },
   "sideEffects": false,
   "dependencies": {
     "@biomejs/biome": "^1.6.4",
+    "@changesets/cli": "^2.27.1",
     "@leyman/eslint-config": "workspace:^",
     "eslint": "^8.57.0",
     "npm": "^10.5.1",

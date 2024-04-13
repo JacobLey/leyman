@@ -4,8 +4,8 @@
 <p>Modular control for entry script execution.</p>
 
 [![npm package](https://badge.fury.io/js/entry-script.svg)](https://www.npmjs.com/package/entry-script)
-[![License](https://img.shields.io/npm/l/entry-script.svg)](https://github.com/JacobLey/jacobley/blob/main/common/config/publish/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/entry-script.svg)](https://github.com/JacobLey/jacobley/blob/main/tools/entry-script)
+[![License](https://img.shields.io/npm/l/entry-script.svg)](https://github.com/JacobLey/leyman/blob/main/common/config/publish/LICENSE)
+[![Quality](https://img.shields.io/npms-io/quality-score/entry-script.svg)](https://github.com/JacobLey/leyman/blob/main/tools/entry-script)
 
 </div>
 
