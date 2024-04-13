@@ -1,33 +1,11 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as mocha from 'mocha';
-import {
-    context,
-    describe,
-    it,
-    specify,
-    suite,
-    test,
-    xdescribe,
-    xit,
-} from 'mocha-hookup';
+import { it, specify, suite, test, xit } from 'mocha-hookup';
 
 const ranTests = new Set<number>();
 
 suite('test', () => {
-    test.skip('Suite types are consistent', () => {
-        ranTests.add(-1);
-
-        expectTypeOf(describe).toEqualTypeOf(mocha.describe);
-        expectTypeOf(describe).toEqualTypeOf(suite);
-        expectTypeOf(describe).toEqualTypeOf(mocha.suite);
-        expectTypeOf(describe).toEqualTypeOf(context);
-        expectTypeOf(xdescribe).toEqualTypeOf(describe.skip);
-        expectTypeOf(xdescribe).toEqualTypeOf(mocha.xdescribe);
-
-        throw new Error('<ERROR>');
-    });
-
     // @ts-expect-error
     xit('Typed to prevent async + done', async done => {
         ranTests.add(-1);
@@ -45,19 +23,8 @@ suite('test', () => {
         return 0;
     });
 
-    test('Compare describe', async () => {
-        ranTests.add(2);
-
-        expect(describe).to.equal(mocha.describe);
-        expect(describe).to.equal(suite);
-        expect(describe).to.equal(mocha.suite);
-        expect(describe).to.equal(context);
-        expect(xdescribe).to.equal(describe.skip);
-        expect(xdescribe).to.equal(mocha.xdescribe);
-    });
-
     const tested = it('Compare tests', () => {
-        ranTests.add(3);
+        ranTests.add(2);
 
         expect(it).to.equal(test);
         expect(it).to.equal(specify);
@@ -100,6 +67,6 @@ suite('test', () => {
     });
 
     mocha.after(() => {
-        expect(ranTests).to.deep.equal(new Set([1, 2, 3]));
+        expect(ranTests).to.deep.equal(new Set([1, 2]));
     });
 });

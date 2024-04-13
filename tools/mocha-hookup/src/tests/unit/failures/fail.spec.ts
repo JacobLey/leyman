@@ -5,6 +5,8 @@ import type {
     Func,
     HookFunction,
     Context as MochaContext,
+    Suite,
+    SuiteFunction,
     TestFunction,
 } from 'mocha';
 import { match, mock, stub, verifyAndRestore } from 'sinon';
@@ -16,6 +18,7 @@ import {
     afterIdentifier,
     beforeEachIdentifier,
     beforeIdentifier,
+    suiteIdentifier,
     testIdentifier,
 } from '#mocha-module';
 import { entrypointBeforeEachIdentifier } from '../../../lib/before-each-hooks.js';
@@ -30,6 +33,15 @@ suite('Failure cases', () => {
             duration: 1,
         }),
     } as MochaContext;
+    const defaultBaseSuite = (title: string, cb: (this: Suite) => void) => {
+        const suiteContext = {} as Suite;
+        cb.call(suiteContext);
+        return suiteContext;
+    };
+    const defaultSuite = Object.assign(defaultBaseSuite, {
+        skip: defaultBaseSuite,
+        only: defaultBaseSuite,
+    }) as SuiteFunction;
     const defaultHook: HookFunction = (...args) => {
         const cb = [...args].pop() as AsyncFunc | Func;
         cb.call(fakeContext, () => {});
@@ -52,8 +64,9 @@ suite('Failure cases', () => {
     suite('Test failure', () => {
         const beforeModule = before(() => {
             const defaultHooksModule = createModule(
-                bind(beforeIdentifier).withInstance(defaultHook)
+                bind(suiteIdentifier).withInstance(defaultSuite)
             )
+                .addBinding(bind(beforeIdentifier).withInstance(defaultHook))
                 .addBinding(
                     bind(beforeEachIdentifier).withInstance(defaultHook)
                 )
@@ -154,8 +167,9 @@ suite('Failure cases', () => {
     suite('Hooks failure', () => {
         const beforeModule = before(() => {
             const missingBeforeModule = createModule(
-                bind(testIdentifier).withInstance(defaultTest)
+                bind(suiteIdentifier).withInstance(defaultSuite)
             )
+                .addBinding(bind(testIdentifier).withInstance(defaultTest))
                 .addBinding(bind(afterEachIdentifier).withInstance(defaultHook))
                 .addBinding(bind(afterIdentifier).withInstance(defaultHook));
 

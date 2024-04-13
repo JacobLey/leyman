@@ -47,7 +47,7 @@ suite('before', () => {
         return { xyz: 789 };
     });
 
-    suite('Chained with beforeEach', async () => {
+    suite('Chained with beforeEach', () => {
         mergedBeforeEach.xit(
             'No async with done',
             // @ts-expect-error
