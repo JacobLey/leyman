@@ -4,6 +4,9 @@
   "targets": {
     "biome": {},
     "eslint": {},
+    "update-ts-references": {
+      "executor": "npm-nx-update-ts-references:update-ts-references"
+    },
     "tsc": {
       "executor": "npm-nx-tsc:build",
       "options": { "tsConfig": "tools/nx-tsc/tsconfig.json" }

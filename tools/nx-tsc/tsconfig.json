@@ -4,5 +4,19 @@
     "outDir": "dist",
     "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
-  }
+  },
+  "references": [
+    {
+      "path": "../../leyman/eslint-config"
+    },
+    {
+      "path": "../common-proxy"
+    },
+    {
+      "path": "../haywire"
+    },
+    {
+      "path": "../nx-plugin-handler"
+    }
+  ]
 }
