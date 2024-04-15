@@ -7,6 +7,9 @@ import type { ExtendedTsConfig, TsConfigSettings } from './config-loader.js';
 import type { FailureReporter } from './failure-reporter.js';
 import type { NormalizedOptions } from './normalizer.js';
 
+// Pull out into a dynamic string so it isn't accidentally detected
+const sourceMapUrl = ['//# source', 'MappingURL='].join('');
+
 /**
  * Using user-input plus options parsed from `tsconfig.json`, populate the `outDir` with
  * - transpiled code
@@ -127,7 +130,7 @@ export const compilerProvider = (
             file: jsBaseName,
         });
 
-        const attachedSourcedMapUrl = `${transformed.code}//# sourceMappingURL=${basename(
+        const attachedSourcedMapUrl = `${transformed.code}${sourceMapUrl}${basename(
             outputFiles.js.map
         )}\n`;
 
@@ -157,16 +160,18 @@ export const compilerProvider = (
         getOutputtedFiles('', tsConfig.settings);
 
         const outputted = await Promise.all(
-            tsConfig.fileNames.map(async filename => {
-                const outputtedFiles = getOutputtedFiles(filename, tsConfig.settings);
-                await fileTransform(filename, options, outputtedFiles);
-                return [
-                    outputtedFiles.js.file,
-                    outputtedFiles.js.map,
-                    outputtedFiles.types.file,
-                    outputtedFiles.types.map,
-                ];
-            })
+            tsConfig.fileNames
+                .filter(filename => !relative(tsConfig.settings.rootDir, filename).startsWith('..'))
+                .map(async filename => {
+                    const outputtedFiles = getOutputtedFiles(filename, tsConfig.settings);
+                    await fileTransform(filename, options, outputtedFiles);
+                    return [
+                        outputtedFiles.js.file,
+                        outputtedFiles.js.map,
+                        outputtedFiles.types.file,
+                        outputtedFiles.types.map,
+                    ];
+                })
         );
 
         return outputted.flat();

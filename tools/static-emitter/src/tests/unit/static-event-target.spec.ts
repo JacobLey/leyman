@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha-hookup';
-import { events } from 'static-emitter';
+import type { events } from 'static-emitter';
 import { CustomEvent } from 'static-emitter/custom-event';
 import { StaticEventTarget } from 'static-emitter/static-event-target';
 import { ExtendTarget, NativeEvent } from '../data/extend-event-target.js';
