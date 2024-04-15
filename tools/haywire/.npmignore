@@ -11,4 +11,5 @@ dist/tests/**
 
 src/**
 
+.eslintcache
 eslint.config.js

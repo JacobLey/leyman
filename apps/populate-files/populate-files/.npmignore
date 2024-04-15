@@ -5,3 +5,6 @@ dist/tsconfig.tsbuildinfo
 dist/**/*.map
 
 src/**
+
+.eslintcache
+eslint.config.js

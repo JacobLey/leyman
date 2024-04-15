@@ -13,4 +13,5 @@ dist/file-content.d.ts
 dist/executors/update-ts-references/schema.js
 dist/executors/update-ts-references/schema.d.ts
 
+.eslintcache
 eslint.config.js

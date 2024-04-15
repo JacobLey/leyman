@@ -13,3 +13,6 @@ dist/executors/populate-files/schema.js
 dist/executors/populate-files/schema.d.ts
 
 !src/executors/populate-files/schema.json
+
+.eslintcache
+eslint.config.js

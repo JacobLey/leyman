@@ -14,4 +14,5 @@ dist/executors/build/schema.d.ts
 
 !src/executors/build/schema.json
 
+.eslintcache
 eslint.config.js
