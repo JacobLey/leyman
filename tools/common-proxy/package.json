@@ -34,7 +34,7 @@
     "chai": "^5.1.0",
     "expect-type": "^0.19.0",
     "mocha": "^10.4.0",
-    "npm-nx-tsc": "npm:nx-tsc@^0.0.2",
+    "npm-nx-tsc": "npm:nx-tsc@^0.0.3",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.2",
     "tslib": "^2.6.2",
     "typescript": "^5.4.3"

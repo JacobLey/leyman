@@ -13,3 +13,5 @@ dist/executors/build/schema.js
 dist/executors/build/schema.d.ts
 
 !src/executors/build/schema.json
+
+eslint.config.js

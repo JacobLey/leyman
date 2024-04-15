@@ -9,3 +9,5 @@ dist/**/*.map
 dist/tests/**
 
 src/**
+
+eslint.config.js

@@ -15,8 +15,8 @@ importers:
         specifier: npm:nx-populate-files@^0.0.2
         version: /nx-populate-files@0.0.2
       npm-nx-tsc:
-        specifier: npm:nx-tsc@^0.0.2
-        version: /nx-tsc@0.0.2
+        specifier: npm:nx-tsc@^0.0.3
+        version: /nx-tsc@0.0.3(nx@18.2.4)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@^0.0.2
         version: /nx-update-ts-references@0.0.2(nx@18.2.4)
@@ -566,8 +566,8 @@ importers:
         specifier: ^10.4.0
         version: 10.4.0
       npm-nx-tsc:
-        specifier: npm:nx-tsc@^0.0.2
-        version: /nx-tsc@0.0.2(typescript@5.4.5)
+        specifier: npm:nx-tsc@^0.0.3
+        version: /nx-tsc@0.0.3(nx@18.2.4)(typescript@5.4.5)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@^0.0.2
         version: /nx-update-ts-references@0.0.2(@biomejs/biome@1.6.4)(nx@18.2.4)
@@ -636,8 +636,8 @@ importers:
         specifier: ^10.4.0
         version: 10.4.0
       npm-nx-tsc:
-        specifier: npm:nx-tsc@^0.0.2
-        version: /nx-tsc@0.0.2(typescript@5.4.5)
+        specifier: npm:nx-tsc@^0.0.3
+        version: /nx-tsc@0.0.3(nx@18.2.4)(typescript@5.4.5)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@^0.0.2
         version: /nx-update-ts-references@0.0.2(@biomejs/biome@1.6.4)(nx@18.2.4)
@@ -940,8 +940,8 @@ importers:
         specifier: ^10.4.0
         version: 10.4.0
       npm-nx-tsc:
-        specifier: npm:nx-tsc@^0.0.2
-        version: /nx-tsc@0.0.2(typescript@5.4.5)
+        specifier: npm:nx-tsc@^0.0.3
+        version: /nx-tsc@0.0.3(nx@18.2.4)(typescript@5.4.5)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@^0.0.2
         version: /nx-update-ts-references@0.0.2(@biomejs/biome@1.6.4)(nx@18.2.4)
@@ -1040,8 +1040,8 @@ importers:
         specifier: ^10.4.0
         version: 10.4.0
       npm-nx-tsc:
-        specifier: npm:nx-tsc@^0.0.2
-        version: /nx-tsc@0.0.2(typescript@5.4.5)
+        specifier: npm:nx-tsc@^0.0.3
+        version: /nx-tsc@0.0.3(nx@18.2.4)(typescript@5.4.5)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@^0.0.2
         version: /nx-update-ts-references@0.0.2(@biomejs/biome@1.6.4)(nx@18.2.4)
@@ -1216,8 +1216,8 @@ importers:
         specifier: workspace:^
         version: link:../mocha-hookup
       npm-nx-tsc:
-        specifier: npm:nx-tsc@^0.0.2
-        version: /nx-tsc@0.0.2(typescript@5.4.5)
+        specifier: npm:nx-tsc@^0.0.3
+        version: /nx-tsc@0.0.3(nx@18.2.4)(typescript@5.4.5)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@^0.0.2
         version: /nx-update-ts-references@0.0.2(@biomejs/biome@1.6.4)(nx@18.2.4)
@@ -1281,8 +1281,8 @@ importers:
         specifier: npm:nx-populate-files@^0.0.2
         version: /nx-populate-files@0.0.2
       npm-nx-tsc:
-        specifier: npm:nx-tsc@^0.0.2
-        version: /nx-tsc@0.0.2(typescript@5.4.5)
+        specifier: npm:nx-tsc@^0.0.3
+        version: /nx-tsc@0.0.3(nx@18.2.4)(typescript@5.4.5)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@^0.0.2
         version: /nx-update-ts-references@0.0.2(@biomejs/biome@1.6.4)(nx@18.2.4)
@@ -1419,8 +1419,8 @@ importers:
         specifier: workspace:^
         version: link:../mocha-hookup
       npm-nx-tsc:
-        specifier: npm:nx-tsc@^0.0.2
-        version: /nx-tsc@0.0.2(typescript@5.4.5)
+        specifier: npm:nx-tsc@^0.0.3
+        version: /nx-tsc@0.0.3(nx@18.2.4)(typescript@5.4.5)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@^0.0.2
         version: /nx-update-ts-references@0.0.2(@biomejs/biome@1.6.4)(nx@18.2.4)
@@ -4524,6 +4524,13 @@ packages:
     engines: {node: '>= 12.0.0'}
     dev: false
 
+  /common-proxy@0.0.1:
+    resolution: {integrity: sha512-qRvoXLW/Omd+kEgsZZ0ZmIuqjZYyCZDKq4DONtYXKhHGIHRvkqy3heRKrWsg8g1J2Qyx+k9tVEuzwndb4nqb1Q==}
+    engines: {node: '>=18'}
+    dependencies:
+      npm-default-import: /default-import@1.1.5
+    dev: true
+
   /commondir@1.0.1:
     resolution: {integrity: sha512-W9pAhw0ja1Edb5GVdIF1mjZw/ASI0AlShXM83UUGe2DVr5TdAPEA1OA8m/g8zWp9x6On7gqufY+FatDbC3MDQg==}
     dev: true
@@ -6504,6 +6511,17 @@ packages:
       - which
       - write-file-atomic
 
+  /nx-plugin-handler@0.0.1(nx@18.2.4):
+    resolution: {integrity: sha512-UHJ0WYiaoXEhQ80Mf8OhbuTMp748AKUSqkjNCXDXWAav2a3/NK0eoMivGeU3y6IHga7JRv40fmwxZ5ALOKAASA==}
+    engines: {node: '>=18'}
+    dependencies:
+      npm-default-import: /default-import@1.1.5
+    optionalDependencies:
+      '@nx/devkit': 18.2.4(nx@18.2.4)
+    transitivePeerDependencies:
+      - nx
+    dev: true
+
   /nx-populate-files@0.0.2:
     resolution: {integrity: sha512-tnSvw/ucBObSuIgSorsnURup7WOYdeaaaCa7wAykquQ7vqUsHbb5g7Fg95Jcbb66H/eFKeFGJWjo7A1wX6r0aQ==}
     engines: {node: '>=18'}
@@ -6513,20 +6531,37 @@ packages:
       load-populate-files: 0.0.1
     dev: true
 
-  /nx-tsc@0.0.2:
-    resolution: {integrity: sha512-GvRAKHGs2NI3UOGckHoX8U4Y4ji9zYWaH8x0NRMzuJpc5hXZ2t9tim1a1Yj0aUME8bwY4MSneP6QJOKX5ZvfoA==}
+  /nx-tsc@0.0.3(nx@18.2.4):
+    resolution: {integrity: sha512-zi2ss8xVZDXUlXU6sXWOYY1aRkbR3aZwjSHyorTliJ43VU6wfj8rlSwMd3DnmxUrQVQIKQBLu3prn0hM+uCRfA==}
     engines: {node: '>=18'}
     peerDependencies:
-      typescript: ^5.1.6
+      typescript: ^5.4.3
+    dependencies:
+      common-proxy: 0.0.1
+      haywire: 0.0.1
+      nx-plugin-handler: 0.0.1(nx@18.2.4)
+    optionalDependencies:
+      '@nx/devkit': 18.2.4(nx@18.2.4)
+      npm-juniper: /juniper@1.1.10
+    transitivePeerDependencies:
+      - nx
     dev: true
 
-  /nx-tsc@0.0.2(typescript@5.4.5):
-    resolution: {integrity: sha512-GvRAKHGs2NI3UOGckHoX8U4Y4ji9zYWaH8x0NRMzuJpc5hXZ2t9tim1a1Yj0aUME8bwY4MSneP6QJOKX5ZvfoA==}
+  /nx-tsc@0.0.3(nx@18.2.4)(typescript@5.4.5):
+    resolution: {integrity: sha512-zi2ss8xVZDXUlXU6sXWOYY1aRkbR3aZwjSHyorTliJ43VU6wfj8rlSwMd3DnmxUrQVQIKQBLu3prn0hM+uCRfA==}
     engines: {node: '>=18'}
     peerDependencies:
-      typescript: ^5.1.6
+      typescript: ^5.4.3
     dependencies:
+      common-proxy: 0.0.1
+      haywire: 0.0.1
+      nx-plugin-handler: 0.0.1(nx@18.2.4)
       typescript: 5.4.5
+    optionalDependencies:
+      '@nx/devkit': 18.2.4(nx@18.2.4)
+      npm-juniper: /juniper@1.1.10
+    transitivePeerDependencies:
+      - nx
     dev: true
 
   /nx-update-ts-references@0.0.2(@biomejs/biome@1.6.4)(nx@18.2.4):
