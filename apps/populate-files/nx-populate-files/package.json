@@ -1,6 +1,6 @@
 {
   "name": "nx-populate-files",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Dynamically populate file content as an nx executor",
   "engines": {
     "node": ">=18"

@@ -11,7 +11,5 @@
       "description": "The path to the Typescript configuration file."
     }
   },
-  "required": [
-    "tsConfig"
-  ]
+  "required": ["tsConfig"]
 }

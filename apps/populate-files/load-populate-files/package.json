@@ -1,6 +1,6 @@
 {
   "name": "load-populate-files",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Load and dynamically populate file content",
   "engines": {
     "node": ">=18"
@@ -16,15 +16,7 @@
   "keywords": ["content", "write", "build"],
   "sideEffects": false,
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "publishConfig": {
-    "exports": {
-      ".": "./dist/index.js"
-    }
+    ".": "./dist/index.js"
   },
   "dependencies": {
     "default-import": "workspace:^",
