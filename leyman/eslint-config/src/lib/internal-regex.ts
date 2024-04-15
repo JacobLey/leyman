@@ -16,9 +16,7 @@ export const getInternalRegex = (packageJson: PackageJson): RegExp => {
         packageJson.optionalDependencies,
         packageJson.peerDependencies,
     ]) {
-        for (const [packageName, versionSpecifier] of Object.entries(
-            dependencies ?? {}
-        )) {
+        for (const [packageName, versionSpecifier] of Object.entries(dependencies ?? {})) {
             if (versionSpecifier.startsWith('workspace:')) {
                 internalPackages.add(packageName);
             }

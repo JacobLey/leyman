@@ -9,13 +9,14 @@ import type * as Ecc from './types.js';
 const getECDH = (curve: Curve): ECDH =>
     createECDH(curve === 'p256' ? 'prime256v1' : `sec${curve}r1`);
 
-export const generateEccPrivateKey: (typeof Ecc)['generateEccPrivateKey'] =
-    async (curve = defaultCurve): Promise<Uint8Array> => {
-        const ecdh = getECDH(curve);
-        const { bytes } = eccMeta(curve);
-        ecdh.generateKeys();
-        return padBytes(ecdh.getPrivateKey(), bytes);
-    };
+export const generateEccPrivateKey: (typeof Ecc)['generateEccPrivateKey'] = async (
+    curve = defaultCurve
+): Promise<Uint8Array> => {
+    const ecdh = getECDH(curve);
+    const { bytes } = eccMeta(curve);
+    ecdh.generateKeys();
+    return padBytes(ecdh.getPrivateKey(), bytes);
+};
 export const generateEccPublicKey: (typeof Ecc)['generateEccPublicKey'] = (
     privateKey,
     curve = defaultCurve

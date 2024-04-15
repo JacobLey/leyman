@@ -1,17 +1,11 @@
-import {
-    booleanSchema,
-    objectSchema,
-    type SchemaType,
-    stringSchema,
-} from 'juniper';
+import { booleanSchema, objectSchema, type SchemaType, stringSchema } from 'juniper';
 
 const populateFilesOptionsSchema = objectSchema({
     title: 'Populate Files Target',
     description: 'Load and dynamically populate files.',
     properties: {
         filePath: stringSchema({
-            description:
-                'Path to file with content and file paths to populate.',
+            description: 'Path to file with content and file paths to populate.',
         }),
         cwd: stringSchema({
             description:
@@ -33,6 +27,4 @@ const populateFilesOptionsSchema = objectSchema({
 });
 
 export default populateFilesOptionsSchema.toJSON();
-export type PopulateFilesOptions = SchemaType<
-    typeof populateFilesOptionsSchema
->;
+export type PopulateFilesOptions = SchemaType<typeof populateFilesOptionsSchema>;

@@ -52,10 +52,7 @@ suite('Hash', () => {
                     output: '0f9c020a7b773cb718e211c28d6b7a0b8825fc928d885b8d3f08e82ed644882728a21d8a55ca24205d51b5862212ae71f3e8cb3ef33f39946c240641e5a6444c',
                 },
             ] as const) {
-                const hashed = await hash.hash(
-                    'This is some text to hash!',
-                    algorithm
-                );
+                const hashed = await hash.hash('This is some text to hash!', algorithm);
                 expect(IsoCrypto.encode(hashed, 'hex')).to.equal(output);
             }
         };

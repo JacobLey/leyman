@@ -38,10 +38,7 @@ export const getUser = async (id: string): Promise<User> => {
     };
 };
 
-export const updateUser = async (
-    id: string,
-    user: Partial<Omit<User, 'id'>>
-): Promise<User> => {
+export const updateUser = async (id: string, user: Partial<Omit<User, 'id'>>): Promise<User> => {
     await delayImmediate();
 
     return {

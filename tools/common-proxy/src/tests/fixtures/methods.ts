@@ -8,9 +8,7 @@ export const addAllNums = (...nums: number[]): number => {
     return sum;
 };
 
-export const delayForLongestTime = async (
-    ...delays: number[]
-): Promise<void> => {
+export const delayForLongestTime = async (...delays: number[]): Promise<void> => {
     await Promise.all(
         delays.map(async delay => {
             await setTimeout(delay);

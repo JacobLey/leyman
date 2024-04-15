@@ -19,6 +19,4 @@ const updateTsReferencesOptionsSchema = objectSchema({
 });
 
 export default updateTsReferencesOptionsSchema.toJSON();
-export type UpdateTsReferencesOptions = SchemaType<
-    typeof updateTsReferencesOptionsSchema
->;
+export type UpdateTsReferencesOptions = SchemaType<typeof updateTsReferencesOptionsSchema>;

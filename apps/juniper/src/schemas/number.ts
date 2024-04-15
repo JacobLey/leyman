@@ -19,8 +19,7 @@ interface LimitWithExclusive {
     exclusive: boolean;
 }
 
-interface NumberParams<T extends number, N extends boolean>
-    extends SchemaParams<Nullable<T, N>> {
+interface NumberParams<T extends number, N extends boolean> extends SchemaParams<Nullable<T, N>> {
     type?: 'integer' | 'number';
     multipleOf?: number | number[];
     maximum?: number | LimitWithExclusive;
@@ -65,9 +64,7 @@ const gcd = (x: number, y: number): number => {
  */
 const lcm = (x: number, y: number): number => (x * y) / gcd(x, y);
 
-const numToExclusive = (
-    value: number | LimitWithExclusive
-): LimitWithExclusive =>
+const numToExclusive = (value: number | LimitWithExclusive): LimitWithExclusive =>
     typeof value === 'number' ? { value, exclusive: false } : value;
 
 type AnyNumberSchema = NumberSchema<number, boolean>;
@@ -96,18 +93,12 @@ export class NumberSchema<
     public declare allOf: <S extends NumberSchema<number, boolean>>(
         this: AnyNumberSchema,
         schema: S
-    ) => NumberSchema<
-        NonNullable<SchemaType<S>> & T,
-        null extends SchemaType<S> ? N : boolean
-    >;
+    ) => NumberSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     public declare anyOf: <S extends NumberSchema<number, boolean>>(
         this: AnyNumberSchema,
         schemas: S[]
-    ) => NumberSchema<
-        NonNullable<SchemaType<S>> & T,
-        null extends SchemaType<S> ? N : boolean
-    >;
+    ) => NumberSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     public declare if: <
         IfT extends number,
@@ -119,10 +110,7 @@ export class NumberSchema<
     >(
         this: AnyNumberSchema,
         schema: NumberSchema<IfT, IfN>,
-        conditionals: ConditionalResult<
-            NumberSchema<ThenT, ThenN>,
-            NumberSchema<ElseT, ElseN>
-        >
+        conditionals: ConditionalResult<NumberSchema<ThenT, ThenN>, NumberSchema<ElseT, ElseN>>
     ) => NumberSchema<
         StripNumber<T & (ElseT | (IfT & ThenT))>,
         ConditionalNullable<N, IfN, ThenN, ElseN>
@@ -140,10 +128,7 @@ export class NumberSchema<
     public declare oneOf: <S extends NumberSchema<number, boolean>>(
         this: AnyNumberSchema,
         schemas: S[]
-    ) => NumberSchema<
-        NonNullable<SchemaType<S>> & T,
-        null extends SchemaType<S> ? N : boolean
-    >;
+    ) => NumberSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     /**
      * @override
@@ -151,12 +136,8 @@ export class NumberSchema<
     public constructor(options: NumberParams<T, N> = {}) {
         super(options);
         this.schemaType = options.type ?? 'number';
-        this.#maximum = numToExclusive(
-            options.maximum ?? Number.POSITIVE_INFINITY
-        );
-        this.#minimum = numToExclusive(
-            options.minimum ?? Number.NEGATIVE_INFINITY
-        );
+        this.#maximum = numToExclusive(options.maximum ?? Number.POSITIVE_INFINITY);
+        this.#minimum = numToExclusive(options.minimum ?? Number.NEGATIVE_INFINITY);
         this.#multipleOfs = [options.multipleOf ?? []].flat();
     }
 
@@ -328,9 +309,7 @@ export class NumberSchema<
     /**
      * @override
      */
-    protected override toSchema(
-        params: SerializationParams
-    ): JsonSchema<SchemaType<this>> {
+    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         if (this.#minimum.value > Number.NEGATIVE_INFINITY) {
@@ -359,18 +338,12 @@ export class NumberSchema<
             }
         }
 
-        const integerMultiples = this.#multipleOfs.filter(x =>
-            Number.isInteger(x)
-        );
-        const floatMultiples = this.#multipleOfs.filter(
-            x => !Number.isInteger(x)
-        );
+        const integerMultiples = this.#multipleOfs.filter(x => Number.isInteger(x));
+        const floatMultiples = this.#multipleOfs.filter(x => !Number.isInteger(x));
 
         if (integerMultiples.length > 0) {
             // eslint-disable-next-line unicorn/no-array-reduce
-            base.multipleOf = integerMultiples.reduce((acc, val) =>
-                lcm(acc, val)
-            );
+            base.multipleOf = integerMultiples.reduce((acc, val) => lcm(acc, val));
             mergeAllOf(
                 base,
                 floatMultiples.map(multipleOf => ({ multipleOf }))

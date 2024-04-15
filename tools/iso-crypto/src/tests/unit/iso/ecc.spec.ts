@@ -26,10 +26,7 @@ suite('Ecc', () => {
         expectTypeOf(IsoCrypto).toMatchTypeOf<typeof Ecc>();
     });
 
-    const successTest = async function (
-        this: Context,
-        { source, target }: EccContext
-    ) {
+    const successTest = async function (this: Context, { source, target }: EccContext) {
         this.timeout(30_000);
 
         for (const encryption of [
@@ -51,13 +48,7 @@ suite('Ecc', () => {
                 mode: 'CTR',
             },
         ] as const) {
-            for (const curve of [
-                null,
-                undefined,
-                'p256',
-                'p384',
-                'p521',
-            ] as const) {
+            for (const curve of [null, undefined, 'p256', 'p384', 'p521'] as const) {
                 let options: Parameters<(typeof Ecc)['eccEncrypt']>[1];
                 const curveOptions = curve === null ? [] : [curve];
                 if (curve !== null) {
@@ -80,10 +71,7 @@ suite('Ecc', () => {
                     {
                         data,
                         privateKey: sourcePrivateKey,
-                        publicKey: target.generateEccPublicKey(
-                            targetPrivateKey,
-                            ...curveOptions
-                        ),
+                        publicKey: target.generateEccPublicKey(targetPrivateKey, ...curveOptions),
                     },
                     options
                 );
@@ -101,31 +89,18 @@ suite('Ecc', () => {
         }
     };
 
-    const eccDecryptTest = async function (
-        this: Context,
-        { source }: EccSourceContext
-    ) {
+    const eccDecryptTest = async function (this: Context, { source }: EccSourceContext) {
         this.timeout(8000);
 
-        for (const {
-            output,
-            curve,
-            encrypted,
-            iv,
-            privateKey,
-            publicKey,
-            encryption,
-        } of [
+        for (const { output, curve, encrypted, iv, privateKey, publicKey, encryption } of [
             {
                 output: "Hello I have been trying to reach you about your car's extended warranty",
                 encrypted:
                     '2997df9daa3345056517eaa24b635c58caf7317f4ba1517ed50043477cd28def2b2de1f006c392c1fda' +
                     '98f177c95d0cebed5c1e8bd56a57510e4782e6711f1762f5f3feda15080a1',
                 iv: '128e4cea8d498b5651323ff5f3e8d2d8',
-                publicKey:
-                    '02575ccf97b1c75a042b727c943bb06656267fbd3ab802cae990693d69df9f31fd',
-                privateKey:
-                    '77fbbd22556c898c57784f33d50f41e741c2dbc696694f35f891d9a6465cb923',
+                publicKey: '02575ccf97b1c75a042b727c943bb06656267fbd3ab802cae990693d69df9f31fd',
+                privateKey: '77fbbd22556c898c57784f33d50f41e741c2dbc696694f35f891d9a6465cb923',
             },
             {
                 output: 'Erised stra ehru oyt ube cafru oyt on wohsi',
@@ -138,10 +113,8 @@ suite('Ecc', () => {
                     '3f84fdf2775293ccbc3b280430ea05fb1a9bf53841b34f111' +
                     '28c9f75c9d9a202409e353742a0849d3c551f23caf0b997',
                 iv: '8f070f27ff06c8536b3253ad9fe8776f',
-                publicKey:
-                    '02f5cb1d664694b4f78c0ca1b6a2709e1a26633ba329ca22f89a125eb4c2a5cc90',
-                privateKey:
-                    '1c3b0a30fdf86f95e3017f31678833a8ca78dae76a5ce26b21fb4a7803e42747',
+                publicKey: '02f5cb1d664694b4f78c0ca1b6a2709e1a26633ba329ca22f89a125eb4c2a5cc90',
+                privateKey: '1c3b0a30fdf86f95e3017f31678833a8ca78dae76a5ce26b21fb4a7803e42747',
             },
             {
                 output: 'I open at the close',
@@ -163,8 +136,7 @@ suite('Ecc', () => {
             {
                 output: 'What does Bilbo have in his pocket?',
                 curve: 'p521',
-                encrypted:
-                    'da131ad629eaba7ccba366ce1c95fc564a9b4e2e44faa6c240ab2e4e9ce197312b765e',
+                encrypted: 'da131ad629eaba7ccba366ce1c95fc564a9b4e2e44faa6c240ab2e4e9ce197312b765e',
                 iv: '61fa349704fa9e6b9036fb5e3c3da8ca',
                 publicKey:
                     '02006f4f5a519471e0ecd7d036ef7090116cd10650fa49acd12005e930c9efbe' +
@@ -199,19 +171,10 @@ suite('Ecc', () => {
         }
     };
 
-    const compressionTest = function (
-        this: Context,
-        { source }: EccSourceContext
-    ) {
-        for (const {
-            curve,
-            privateKey,
-            compressedPublicKey,
-            decompressedPublicKey,
-        } of [
+    const compressionTest = function (this: Context, { source }: EccSourceContext) {
+        for (const { curve, privateKey, compressedPublicKey, decompressedPublicKey } of [
             {
-                privateKey:
-                    '6b86a3d180945159e8411b6ccd36050deda274452fa6349b3447df91a867d954',
+                privateKey: '6b86a3d180945159e8411b6ccd36050deda274452fa6349b3447df91a867d954',
                 compressedPublicKey:
                     '02b23df7dcbfb6e250065a44a721aa273c49d006121a351bedbf3bdcb02c4e2995',
                 decompressedPublicKey:
@@ -220,8 +183,7 @@ suite('Ecc', () => {
             },
             {
                 curve: 'p256',
-                privateKey:
-                    'b2ddf1f3b903800c757afff4e32c0d760437732a509fbc9d280d5bc8b09f98a2',
+                privateKey: 'b2ddf1f3b903800c757afff4e32c0d760437732a509fbc9d280d5bc8b09f98a2',
                 compressedPublicKey:
                     '02bb83fa7e732c35e90a495f54168b2aada58355d294367e0e2c254595eb67a394',
                 decompressedPublicKey:
@@ -264,27 +226,16 @@ suite('Ecc', () => {
                 curve
             );
 
-            expect(IsoCrypto.encode(publicKey, 'hex')).to.equal(
-                compressedPublicKey
-            );
-            expect(
-                IsoCrypto.compressEccPublicKey(publicKey, curve)
-            ).to.deep.equal(publicKey);
+            expect(IsoCrypto.encode(publicKey, 'hex')).to.equal(compressedPublicKey);
+            expect(IsoCrypto.compressEccPublicKey(publicKey, curve)).to.deep.equal(publicKey);
 
-            const decompressed = IsoCrypto.decompressEccPublicKey(
-                publicKey,
-                curve
+            const decompressed = IsoCrypto.decompressEccPublicKey(publicKey, curve);
+            expect(IsoCrypto.encode(decompressed, 'hex')).to.equal(decompressedPublicKey);
+            expect(IsoCrypto.decompressEccPublicKey(decompressed, curve)).to.deep.equal(
+                decompressed
             );
-            expect(IsoCrypto.encode(decompressed, 'hex')).to.equal(
-                decompressedPublicKey
-            );
-            expect(
-                IsoCrypto.decompressEccPublicKey(decompressed, curve)
-            ).to.deep.equal(decompressed);
 
-            expect(
-                IsoCrypto.compressEccPublicKey(decompressed, curve)
-            ).to.deep.equal(publicKey);
+            expect(IsoCrypto.compressEccPublicKey(decompressed, curve)).to.deep.equal(publicKey);
         }
     };
 

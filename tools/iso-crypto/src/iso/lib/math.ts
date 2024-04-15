@@ -202,9 +202,7 @@ export const derivePublicKey = (privateKey: bigint, curve: Curve): Point => {
     let sum: Point | null = null;
 
     for (const bit of bits) {
-        doublePoint = doublePoint
-            ? addPoints(doublePoint, doublePoint, curve)
-            : curve.g;
+        doublePoint = doublePoint ? addPoints(doublePoint, doublePoint, curve) : curve.g;
         if (bit === '1') {
             sum = sum ? addPoints(sum, doublePoint, curve) : doublePoint;
         }
@@ -293,11 +291,7 @@ const modSqrt = (n: bigint, p: bigint): bigint => {
     return r;
 };
 
-export const deriveYCoordinate = (
-    x: bigint,
-    odd: boolean,
-    curve: Curve
-): bigint => {
+export const deriveYCoordinate = (x: bigint, odd: boolean, curve: Curve): bigint => {
     const y = modSqrt(x ** 3n + curve.a * x + curve.b, curve.p);
     // eslint-disable-next-line no-bitwise
     const isOdd = !!(y & 1n);

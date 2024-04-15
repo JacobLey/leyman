@@ -23,21 +23,9 @@ suite('format-file', () => {
         const tsFileName = 'formatted.ts';
         const jsFileName = 'formatted.js';
         await Promise.all([
-            writeFile(
-                Path.join(tmpDir.path, jsonFileName),
-                formattedFixtures.json.raw,
-                'utf8'
-            ),
-            writeFile(
-                Path.join(tmpDir.path, tsFileName),
-                formattedFixtures.ts.raw,
-                'utf8'
-            ),
-            writeFile(
-                Path.join(tmpDir.path, jsFileName),
-                formattedFixtures.js.raw,
-                'utf8'
-            ),
+            writeFile(Path.join(tmpDir.path, jsonFileName), formattedFixtures.json.raw, 'utf8'),
+            writeFile(Path.join(tmpDir.path, tsFileName), formattedFixtures.ts.raw, 'utf8'),
+            writeFile(Path.join(tmpDir.path, jsFileName), formattedFixtures.js.raw, 'utf8'),
         ]);
 
         await BiomeFormatter.formatFiles([
@@ -59,32 +47,22 @@ suite('format-file', () => {
 
     withTmpFile.test('Formats a single file', async ({ tmpDir }) => {
         const jsonFileName = 'formatted.json';
-        await writeFile(
-            Path.join(tmpDir.path, jsonFileName),
-            formattedFixtures.json.raw,
-            'utf8'
-        );
+        await writeFile(Path.join(tmpDir.path, jsonFileName), formattedFixtures.json.raw, 'utf8');
 
         await BiomeFormatter.formatFile(Path.join(tmpDir.path, jsonFileName));
 
-        const jsonFile = await readFile(
-            Path.join(tmpDir.path, jsonFileName),
-            'utf8'
-        );
+        const jsonFile = await readFile(Path.join(tmpDir.path, jsonFileName), 'utf8');
 
         expect(jsonFile).to.equal(formattedFixtures.json.formatted);
     });
 
     withTmpFile.test('Formats a string', async () => {
-        const formattedJson = await BiomeFormatter.formatText(
-            formattedFixtures.json.raw,
-            { ext: '.json' }
-        );
+        const formattedJson = await BiomeFormatter.formatText(formattedFixtures.json.raw, {
+            ext: '.json',
+        });
         expect(formattedJson).to.equal(formattedFixtures.json.formatted);
 
-        const formattedJs = await BiomeFormatter.formatText(
-            formattedFixtures.js.raw
-        );
+        const formattedJs = await BiomeFormatter.formatText(formattedFixtures.js.raw);
         expect(formattedJs).to.equal(formattedFixtures.js.formatted);
     });
 });

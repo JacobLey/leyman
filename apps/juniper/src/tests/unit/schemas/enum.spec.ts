@@ -41,9 +41,7 @@ suite('EnumSchema', () => {
                     const: 123,
                 });
 
-                const validator = new Ajv({ strict: true }).compile(
-                    schema.toJSON()
-                );
+                const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                 expect(validator(123)).to.equal(true);
                 expect(validator(124)).to.equal(false);
             });

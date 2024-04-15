@@ -17,8 +17,7 @@ suite('suite', () => {
             })
                 .to.throw(Error)
                 .that.contains({
-                    message:
-                        'Cannot create new hook/suite/test while executing a hook/test',
+                    message: 'Cannot create new hook/suite/test while executing a hook/test',
                 });
         });
 

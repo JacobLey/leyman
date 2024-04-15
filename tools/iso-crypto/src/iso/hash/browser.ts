@@ -11,19 +11,13 @@ const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
     return `SHA-${size}`;
 };
 
-export const hash: (typeof HashMethods)['hash'] = async (
-    input,
-    algorithm = defaultHash
-) => {
+export const hash: (typeof HashMethods)['hash'] = async (input, algorithm = defaultHash) => {
     const decoded = decode(input);
 
     if (algorithm === 'raw') {
         return decoded;
     }
 
-    const buffer = await crypto.subtle.digest(
-        hashAlgorithm(algorithm),
-        decoded
-    );
+    const buffer = await crypto.subtle.digest(hashAlgorithm(algorithm), decoded);
     return new Uint8Array(buffer);
 };

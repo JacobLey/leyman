@@ -20,24 +20,16 @@ const packageJsonSchema = objectSchema({
 });
 export type PackageJson = SchemaType<typeof packageJsonSchema>;
 
-const validator = new Ajv({ strict: true }).compile<PackageJson>(
-    packageJsonSchema.toJSON()
-);
+const validator = new Ajv({ strict: true }).compile<PackageJson>(packageJsonSchema.toJSON());
 
-type PackageJsonAsserter = (
-    packageJson: unknown
-) => asserts packageJson is PackageJson;
+type PackageJsonAsserter = (packageJson: unknown) => asserts packageJson is PackageJson;
 export const assertIsPackageJson: PackageJsonAsserter = (
     packageJson: unknown
 ): asserts packageJson is PackageJson => {
     validator(packageJson);
     if (validator.errors) {
         throw new Error(
-            `Not a valid package.json file: ${JSON.stringify(
-                validator.errors,
-                null,
-                2
-            )}`
+            `Not a valid package.json file: ${JSON.stringify(validator.errors, null, 2)}`
         );
     }
 };

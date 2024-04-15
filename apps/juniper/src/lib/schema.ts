@@ -1,11 +1,4 @@
-// eslint-disable-next-line @typescript-eslint/consistent-type-imports
-import type {
-    JsonSchema,
-    ReservedWords,
-    SchemaType,
-    ToJsonParams,
-    typeCache,
-} from './types.js';
+import type { JsonSchema, ReservedWords, SchemaType, ToJsonParams, typeCache } from './types.js';
 import { mergeAllOf, mergeRef } from './utils.js';
 
 const allOfSym = Symbol('allOf');
@@ -90,16 +83,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * @param options - constructor parameters
      * @returns new schema instance
      */
-    protected declare static create: (
-        this: void,
-        options?: any
-    ) => AbstractSchema<any>;
+    protected declare static create: (this: void, options?: any) => AbstractSchema<any>;
 
     readonly #allOf: AbstractSchema<SchemaGenerics<any>>[];
     readonly #anyOf: AbstractSchema<SchemaGenerics<any>>[][];
-    readonly #conditionals: NonNullable<
-        SchemaParams<any>[typeof conditionalsSym]
-    >;
+    readonly #conditionals: NonNullable<SchemaParams<any>[typeof conditionalsSym]>;
     readonly #default: T['type'] | undefined;
     readonly #deprecated: boolean;
     readonly #description: string | null;
@@ -168,9 +156,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @returns map of property name -> default value.
      */
-    protected static getDefaultValues(
-        params: SerializationParams
-    ): Record<string, unknown>;
+    protected static getDefaultValues(params: SerializationParams): Record<string, unknown>;
     protected static getDefaultValues(): Record<string, unknown> {
         return {
             deprecated: false,
@@ -362,8 +348,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      */
     public metadata<K extends string, V>(
         this: this,
-        ...meta: (K & ReservedWords extends never ? unknown[] : [never]) &
-            ([K, V] | [Record<K, V>])
+        ...meta: (K & ReservedWords extends never ? unknown[] : [never]) & ([K, V] | [Record<K, V>])
     ): this {
         const metadata = { ...this.#metadata };
         if (meta.length === 1) {
@@ -458,10 +443,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * @param conditionals - "then" + "else" schemas, at least one is required.
      * @returns cloned schema
      */
-    protected if(
-        schema: never,
-        conditionals: ConditionalResult<never>
-    ): unknown {
+    protected if(schema: never, conditionals: ConditionalResult<never>): unknown {
         return this.clone({
             [conditionalsSym]: [
                 ...this.#conditionals,
@@ -537,10 +519,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
         this: AbstractSchema<SchemaGenerics<T2>>,
         params: SerializationParams
     ): JsonSchema<T2> {
-        return AbstractSchema.#getChildSchema.bind(this.constructor)(
-            this,
-            params
-        );
+        return AbstractSchema.#getChildSchema.bind(this.constructor)(this, params);
     }
 
     /**
@@ -551,8 +530,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @returns schema params based on instance
      */
-    protected getCloneParams(): Required<SchemaParams<T['type']>> &
-        T['params'] {
+    protected getCloneParams(): Required<SchemaParams<T['type']>> & T['params'] {
         return {
             default: this.#default,
             deprecated: this.#deprecated,
@@ -599,9 +577,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * @param params - serialization params
      * @returns JSON Schema
      */
-    protected toSchema(
-        params: SerializationParams
-    ): JsonSchema<SchemaType<this>> {
+    protected toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
         const base: JsonSchema<SchemaType<this>> = { ...this.#metadata };
 
         const nullable = this.#getNullable(params);
@@ -676,16 +652,13 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
         };
 
         if (this.#allOf.length > 0) {
-            base.allOf = this.#allOf.map(schema =>
-                schema.getChildSchema(compositionParams)
-            );
+            base.allOf = this.#allOf.map(schema => schema.getChildSchema(compositionParams));
         }
 
         const [conditional, ...conditionals] = params.openApi30
             ? this.#conditionals.flatMap(condition => {
                   const conditions: JsonSchema<T['type']>[] = [];
-                  const ifSchema =
-                      condition.if.getChildSchema(compositionParams);
+                  const ifSchema = condition.if.getChildSchema(compositionParams);
                   // https://json-schema.org/understanding-json-schema/reference/conditionals.html#implication
                   if (condition.then) {
                       conditions.push({
@@ -697,10 +670,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
                   }
                   if (condition.else) {
                       conditions.push({
-                          anyOf: [
-                              ifSchema,
-                              condition.else.getChildSchema(compositionParams),
-                          ],
+                          anyOf: [ifSchema, condition.else.getChildSchema(compositionParams)],
                       });
                   }
                   return conditions;
@@ -713,12 +683,10 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
                       // This `then` keyword can make an object appear like a "Promise".
                       // So always wrap in `allOf` rather than top level to prevent accidental `await`.
                       // eslint-disable-next-line unicorn/no-thenable
-                      mergeSchema.then =
-                          condition.then.getChildSchema(compositionParams);
+                      mergeSchema.then = condition.then.getChildSchema(compositionParams);
                   }
                   if (condition.else) {
-                      mergeSchema.else =
-                          condition.else.getChildSchema(compositionParams);
+                      mergeSchema.else = condition.else.getChildSchema(compositionParams);
                   }
                   return mergeSchema;
               });
@@ -832,23 +800,14 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
             this.#nullable &&
             this.#conditionals.every(predicate => {
                 if (predicate.if.#getNullable(params)) {
-                    return predicate.then
-                        ? predicate.then.#getNullable(params)
-                        : true;
+                    return predicate.then ? predicate.then.#getNullable(params) : true;
                 }
-                return predicate.else
-                    ? predicate.else.#getNullable(params)
-                    : true;
+                return predicate.else ? predicate.else.#getNullable(params) : true;
             }) &&
             this.#nots.every(not => !not.#getNullable(params)) &&
             this.#allOf.every(allOf => allOf.#getNullable(params)) &&
-            this.#anyOf.every(anyOf =>
-                anyOf.some(any => any.#getNullable(params))
-            ) &&
-            this.#oneOf.every(
-                oneOf =>
-                    oneOf.filter(one => one.#getNullable(params)).length === 1
-            )
+            this.#anyOf.every(anyOf => anyOf.some(any => any.#getNullable(params))) &&
+            this.#oneOf.every(oneOf => oneOf.filter(one => one.#getNullable(params)).length === 1)
         );
     }
 
@@ -869,25 +828,18 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
                 predicate =>
                     (predicate.if.#getSchemaType(params) === 'integer' ||
                         (predicate.then
-                            ? predicate.then.#getSchemaType(params) ===
-                              'integer'
+                            ? predicate.then.#getSchemaType(params) === 'integer'
                             : false)) &&
-                    (predicate.else
-                        ? predicate.else.#getSchemaType(params) === 'integer'
-                        : false)
+                    (predicate.else ? predicate.else.#getSchemaType(params) === 'integer' : false)
             ) ||
-            this.#allOf.some(
-                allOf => allOf.#getSchemaType(params) === 'integer'
-            ) ||
+            this.#allOf.some(allOf => allOf.#getSchemaType(params) === 'integer') ||
             this.#anyOf.some(
                 anyOf =>
-                    anyOf.length > 0 &&
-                    anyOf.every(any => any.#getSchemaType(params) === 'integer')
+                    anyOf.length > 0 && anyOf.every(any => any.#getSchemaType(params) === 'integer')
             ) ||
             this.#oneOf.some(
                 oneOf =>
-                    oneOf.length > 0 &&
-                    oneOf.every(one => one.#getSchemaType(params) === 'integer')
+                    oneOf.length > 0 && oneOf.every(one => one.#getSchemaType(params) === 'integer')
             )
         );
     }

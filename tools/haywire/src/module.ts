@@ -6,12 +6,7 @@ import {
     type SyncContainer,
 } from '#container';
 import { HaystackDuplicateOutputError } from '#errors';
-import type {
-    GenericHaystackId,
-    HaystackId,
-    HaystackIdType,
-    StripAnnotations,
-} from '#identifier';
+import type { GenericHaystackId, HaystackId, HaystackIdType, StripAnnotations } from '#identifier';
 import type { Extendable, InvalidInput, NonExtendable } from '#types';
 
 type ExpandOutputUndefinable<
@@ -46,10 +41,7 @@ type BindingOutputType<T extends GenericHaystackId> = T extends HaystackId<
 type SimplifyDependencyType<T extends readonly GenericHaystackId[]> = {
     [Index in keyof T]: [
         NonExtendable<
-            StripAnnotations<
-                HaystackIdType<T[Index]>,
-                'latebinding' | 'supplier'
-            >,
+            StripAnnotations<HaystackIdType<T[Index]>, 'latebinding' | 'supplier'>,
             T[Index]['annotations']['named']
         >,
     ];
@@ -57,18 +49,10 @@ type SimplifyDependencyType<T extends readonly GenericHaystackId[]> = {
 
 export type GenericModule = Module<[Extendable], [Extendable], boolean>;
 
-type ModuleOutputs<T extends GenericModule> = T extends Module<
-    infer O,
-    [Extendable],
-    boolean
->
+type ModuleOutputs<T extends GenericModule> = T extends Module<infer O, [Extendable], boolean>
     ? O
     : never;
-type ModuleDependencies<T extends GenericModule> = T extends Module<
-    [Extendable],
-    infer D,
-    boolean
->
+type ModuleDependencies<T extends GenericModule> = T extends Module<[Extendable], infer D, boolean>
     ? D
     : never;
 
@@ -116,10 +100,7 @@ export class Module<
     readonly #bindings: ReadonlyMap<GenericHaystackId, GenericBinding>;
     public readonly isAsync: Async;
 
-    private constructor(
-        isAsync: Async,
-        bindings: ReadonlyMap<GenericHaystackId, GenericBinding>
-    ) {
+    private constructor(isAsync: Async, bindings: ReadonlyMap<GenericHaystackId, GenericBinding>) {
         this.isAsync = isAsync;
         this.#bindings = bindings;
     }
@@ -134,11 +115,7 @@ export class Module<
     public static fromBinding<T extends GenericBinding>(
         this: void,
         binding: T
-    ): Module<
-        BindingOutputType<T['outputId']>,
-        SimplifyDependencyType<T['depIds']>,
-        T['isAsync']
-    > {
+    ): Module<BindingOutputType<T['outputId']>, SimplifyDependencyType<T['depIds']>, T['isAsync']> {
         const bindings = new Map<GenericHaystackId, GenericBinding>();
         for (const expandedId of expandOutputId(binding.outputId)) {
             bindings.set(expandedId, binding);
@@ -172,11 +149,7 @@ export class Module<
     public addBinding<T extends GenericBinding>(
         ...[binding]: [
             T,
-            ...(true extends (
-                Outputs extends BindingOutputType<T['outputId']>
-                    ? true
-                    : false
-            )
+            ...(true extends (Outputs extends BindingOutputType<T['outputId']> ? true : false)
                 ? [1]
                 : []),
         ]
@@ -214,13 +187,7 @@ export class Module<
      */
     public mergeModule<T extends GenericModule>(
         mod: T,
-        ...invalidInput: true extends (
-            Outputs extends ModuleOutputs<T>
-                ? true
-                : false
-        )
-            ? [1]
-            : []
+        ...invalidInput: true extends (Outputs extends ModuleOutputs<T> ? true : false) ? [1] : []
     ): Module<
         ModuleOutputs<T> | Outputs,
         Dependencies | ModuleDependencies<T>,
@@ -229,9 +196,7 @@ export class Module<
     public mergeModule<T extends GenericModule>(
         ...[mod]: [
             T,
-            ...(true extends (Outputs extends ModuleOutputs<T> ? true : false)
-                ? [1]
-                : []),
+            ...(true extends (Outputs extends ModuleOutputs<T> ? true : false) ? [1] : []),
         ]
     ): Module<
         ModuleOutputs<T> | Outputs,
@@ -267,18 +232,14 @@ export class Module<
      *
      * Type checking enforces that that the current module setup declares an output for every dependency.
      */
-    public static createContainer<
-        T extends Module<[Extendable], [Extendable], true>,
-    >(
+    public static createContainer<T extends Module<[Extendable], [Extendable], true>>(
         this: void,
         mod: T,
         ...invalidInput: [ModuleDependencies<T>] extends [ModuleOutputs<T>]
             ? []
             : [InvalidInput<'MissingOutput'>]
     ): AsyncContainer<T[typeof typeTracking]['outputs']>;
-    public static createContainer<
-        T extends Module<[Extendable], [Extendable], false>,
-    >(
+    public static createContainer<T extends Module<[Extendable], [Extendable], false>>(
         this: void,
         mod: T,
         ...invalidInput: [ModuleDependencies<T>] extends [ModuleOutputs<T>]

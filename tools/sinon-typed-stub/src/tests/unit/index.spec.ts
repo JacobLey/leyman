@@ -6,12 +6,9 @@ import { mockMethod, spyMethod, stubMethod } from 'sinon-typed-stub';
 
 suite('Wraps sinon methods', () => {
     // Example AJV-esque validator that doesn't map well to Sinon's default breakdown of parameters -> return type
-    const validator = Object.assign(
-        (val: unknown): val is number => typeof val === 'number',
-        {
-            errors: null as unknown[] | null,
-        }
-    );
+    const validator = Object.assign((val: unknown): val is number => typeof val === 'number', {
+        errors: null as unknown[] | null,
+    });
 
     test('spyMethod wraps spy', () => {
         const spy = spyMethod(validator);

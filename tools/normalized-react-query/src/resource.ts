@@ -54,10 +54,7 @@ export abstract class Resource<Data, Params = DefaultParams> {
         const queryKey = this.getKey(params);
 
         const [queryFn, handlers] = useMemo(
-            () => [
-                async () => this.queryFn(params),
-                this.getHandlers(client, params),
-            ],
+            () => [async () => this.queryFn(params), this.getHandlers(client, params)],
             [hashQueryKey(queryKey)]
         );
 
@@ -77,11 +74,7 @@ export abstract class Resource<Data, Params = DefaultParams> {
      * @param data - response from query.
      * @returns success handled
      */
-    protected async onSuccess(
-        client: QueryClient,
-        params: Params,
-        data: Data
-    ): Promise<void>;
+    protected async onSuccess(client: QueryClient, params: Params, data: Data): Promise<void>;
     // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     protected async onSuccess(): Promise<void> {}
 
@@ -95,11 +88,7 @@ export abstract class Resource<Data, Params = DefaultParams> {
      * @param error - error from query.
      * @returns error handled
      */
-    protected async onError(
-        client: QueryClient,
-        params: Params,
-        error: unknown
-    ): Promise<void>;
+    protected async onError(client: QueryClient, params: Params, error: unknown): Promise<void>;
     // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     protected async onError(): Promise<void> {}
 
@@ -133,14 +122,11 @@ export abstract class Resource<Data, Params = DefaultParams> {
     protected getHandlers(
         client: QueryClient,
         params: Params
-    ): Required<
-        Pick<UseQueryOptions<Data>, 'onError' | 'onSettled' | 'onSuccess'>
-    > {
+    ): Required<Pick<UseQueryOptions<Data>, 'onError' | 'onSettled' | 'onSuccess'>> {
         return {
             onSuccess: async data => this.onSuccess(client, params, data),
             onError: async err => this.onError(client, params, err),
-            onSettled: async (data, err) =>
-                this.onSettled(client, params, data, err),
+            onSettled: async (data, err) => this.onSettled(client, params, data, err),
         };
     }
 
@@ -213,11 +199,7 @@ export abstract class Resource<Data, Params = DefaultParams> {
      * @param params - method params defined by class.
      * @returns query status, null if not exists
      */
-    public getStatus(
-        this: this,
-        client: QueryClient,
-        params: Params
-    ): QueryStatus | null {
+    public getStatus(this: this, client: QueryClient, params: Params): QueryStatus | null {
         const state = client.getQueryState(this.getKey(params));
         return state?.status ?? null;
     }
@@ -280,11 +262,7 @@ export abstract class Resource<Data, Params = DefaultParams> {
         params: Params,
         options?: ResetOptions
     ): Promise<void> {
-        await client.resetQueries<Data>(
-            this.getKey(params),
-            { exact: true },
-            options
-        );
+        await client.resetQueries<Data>(this.getKey(params), { exact: true }, options);
     }
 
     /**

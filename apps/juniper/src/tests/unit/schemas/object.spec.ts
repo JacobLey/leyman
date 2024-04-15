@@ -98,9 +98,7 @@ suite('ObjectSchema', () => {
                     additionalProperties: { type: 'number' },
                 });
 
-                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                    Record<string, number>
-                >();
+                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<Record<string, number>>();
             });
 
             test('No options', () => {
@@ -110,9 +108,7 @@ suite('ObjectSchema', () => {
                     type: 'object',
                 });
 
-                expectTypeOf<
-                    SchemaType<typeof schema>
-                >().toEqualTypeOf<EmptyObject>();
+                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<EmptyObject>();
             });
         });
 
@@ -158,21 +154,15 @@ suite('ObjectSchema', () => {
                     | null
                 >();
 
-                const example = {} as unknown as NonNullable<
-                    SchemaType<typeof schema>
-                >;
+                const example = {} as unknown as NonNullable<SchemaType<typeof schema>>;
                 expectTypeOf(example.bar).toEqualTypeOf<number>();
                 expectTypeOf(example.foo).toEqualTypeOf<string | undefined>();
                 expectTypeOf(example.aaabc).toEqualTypeOf<1 | 2 | undefined>();
-                expectTypeOf(example.abccc).toEqualTypeOf<
-                    EmptyObject | null | undefined
-                >();
+                expectTypeOf(example.abccc).toEqualTypeOf<EmptyObject | null | undefined>();
                 expectTypeOf(example.abc).toEqualTypeOf<
                     ((1 | 2) & (EmptyObject | null)) | undefined
                 >();
-                expectTypeOf(example.random).toMatchTypeOf<
-                    { x: number } | undefined
-                >();
+                expectTypeOf(example.random).toMatchTypeOf<{ x: number } | undefined>();
 
                 expect(schema.toJSON()).to.deep.equal({
                     type: ['object', 'null'],
@@ -209,9 +199,7 @@ suite('ObjectSchema', () => {
                     unevaluatedProperties: true,
                 });
 
-                const validator = new Ajv({ strict: true }).compile(
-                    schema.toJSON()
-                );
+                const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                 expect(
                     validator({
                         bar: 123,
@@ -277,9 +265,7 @@ suite('ObjectSchema', () => {
                     .maxProperties(Number.POSITIVE_INFINITY)
                     .additionalProperties(false);
 
-                expectTypeOf<
-                    SchemaType<typeof schema>
-                >().toEqualTypeOf<EmptyObject>();
+                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<EmptyObject>();
 
                 expect(schema.toJSON()).to.deep.equal({
                     type: 'object',
@@ -308,10 +294,7 @@ suite('ObjectSchema', () => {
                         properties: {
                             baz: numberSchema(),
                         },
-                    }).patternProperties(
-                        'xyz' as PatternProperties<`a${string}`>,
-                        numberSchema()
-                    ),
+                    }).patternProperties('xyz' as PatternProperties<`a${string}`>, numberSchema()),
                     else: objectSchema({
                         additionalProperties: true,
                     }),
@@ -420,13 +403,11 @@ suite('ObjectSchema', () => {
             } | null>();
 
             const stillNullableSchema = nullableSchema.not(objectSchema());
-            expectTypeOf<
-                SchemaType<typeof stillNullableSchema>
-            >().toMatchTypeOf<{ x: string } | null>();
+            expectTypeOf<SchemaType<typeof stillNullableSchema>>().toMatchTypeOf<{
+                x: string;
+            } | null>();
 
-            const notNullableSchema = stillNullableSchema.not(
-                objectSchema().nullable()
-            );
+            const notNullableSchema = stillNullableSchema.not(objectSchema().nullable());
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<{
                 x: string;
             }>();
@@ -456,18 +437,9 @@ suite('ObjectSchema', () => {
             const strSchema = stringSchema();
 
             const schema = objectSchema()
-                .patternProperties(
-                    'a' as PatternProperties<`${string}a${string}`>,
-                    numberSchema()
-                )
-                .patternProperties(
-                    'b' as PatternProperties<`${string}b${string}`>,
-                    true
-                )
-                .patternProperties(
-                    'c' as PatternProperties<`${string}c${string}`>,
-                    false
-                )
+                .patternProperties('a' as PatternProperties<`${string}a${string}`>, numberSchema())
+                .patternProperties('b' as PatternProperties<`${string}b${string}`>, true)
+                .patternProperties('c' as PatternProperties<`${string}c${string}`>, false)
                 .patternProperties(
                     // Overwrites
                     'a' as PatternProperties<`${string}abc${string}`>,
@@ -475,18 +447,9 @@ suite('ObjectSchema', () => {
                 );
             const withSubSchema = schema.allOf(
                 objectSchema({ additionalProperties: false })
-                    .patternProperties(
-                        'b' as PatternProperties<`${string}b${string}`>,
-                        false
-                    )
-                    .patternProperties(
-                        'c' as PatternProperties<`${string}c${string}`>,
-                        true
-                    )
-                    .patternProperties(
-                        'a' as PatternProperties<`${string}abc${string}`>,
-                        strSchema
-                    )
+                    .patternProperties('b' as PatternProperties<`${string}b${string}`>, false)
+                    .patternProperties('c' as PatternProperties<`${string}c${string}`>, true)
+                    .patternProperties('a' as PatternProperties<`${string}abc${string}`>, strSchema)
             );
 
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
@@ -529,12 +492,8 @@ suite('ObjectSchema', () => {
                 ],
             });
 
-            const validator = new Ajv({ strict: true }).compile(
-                schema.toJSON()
-            );
-            const subSchemaValidator = new Ajv({ strict: true }).compile(
-                withSubSchema.toJSON()
-            );
+            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
+            const subSchemaValidator = new Ajv({ strict: true }).compile(withSubSchema.toJSON());
             for (const [val, expected, subSchemaExpected] of [
                 [{}, true, true],
                 [{ a: 'foobar' }, true, true],
@@ -596,9 +555,7 @@ suite('ObjectSchema', () => {
                 anyOf: [{ not: { required: ['a'] } }, { required: ['b', 'c'] }],
             });
 
-            const validator = new Ajv({ strict: true }).compile(
-                schema.toJSON()
-            );
+            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
             const oaValidator = new Ajv({
                 strict: true,
                 strictRequired: false,
@@ -755,17 +712,12 @@ suite('ObjectSchema', () => {
                 ],
                 allOf: [
                     {
-                        anyOf: [
-                            { not: { required: ['a'] } },
-                            { required: ['b', 'c'] },
-                        ],
+                        anyOf: [{ not: { required: ['a'] } }, { required: ['b', 'c'] }],
                     },
                 ],
             });
 
-            new Ajv({ strict: true, strictRequired: false }).compile(
-                withIfSchema.toJSON()
-            );
+            new Ajv({ strict: true, strictRequired: false }).compile(withIfSchema.toJSON());
             new Ajv({ strict: true, strictRequired: false }).compile(
                 withIfSchema.toJSON({ openApi30: true })
             );
@@ -845,9 +797,7 @@ suite('ObjectSchema', () => {
                 ],
             });
 
-            const validator = new Ajv({ strict: true }).compile(
-                schema.toJSON()
-            );
+            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
             const oaValidator = new Ajv({
                 strict: true,
                 strictRequired: false,
@@ -902,9 +852,7 @@ suite('ObjectSchema', () => {
                 expect(oaValidator(val)).to.equal(expected);
             }
 
-            const example = {} as unknown as NonNullable<
-                SchemaType<typeof schema>
-            >;
+            const example = {} as unknown as NonNullable<SchemaType<typeof schema>>;
 
             expectTypeOf(example.a).toEqualTypeOf<number | undefined>();
             expectTypeOf(example.b).toEqualTypeOf<number | undefined>();
@@ -965,9 +913,7 @@ suite('ObjectSchema', () => {
             } | null>();
 
             const notNullableSchema = schema.allOf(
-                objectSchema().additionalProperties(
-                    stringSchema().startsWith('a')
-                )
+                objectSchema().additionalProperties(stringSchema().startsWith('a'))
             );
 
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<
@@ -1005,22 +951,15 @@ suite('ObjectSchema', () => {
 
             const notNullableSchema = schema.anyOf([objectSchema()]);
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<
-                { foo?: number } & (
-                    | Record<`abc${string}`, EmptyObject | null>
-                    | { bar: string }
-                )
+                { foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })
             >();
 
             const neverSchema = schema.anyOf([]);
 
-            expectTypeOf<
-                SchemaType<typeof neverSchema>
-            >().toEqualTypeOf<never>();
+            expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
 
             const neverSchema2 = stringSchema().nullable().anyOf([]);
-            expectTypeOf<
-                SchemaType<typeof neverSchema2>
-            >().toEqualTypeOf<never>();
+            expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
         });
 
         test('oneOf', () => {
@@ -1053,22 +992,15 @@ suite('ObjectSchema', () => {
 
             const notNullableSchema = schema.oneOf([objectSchema()]);
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<
-                { foo?: number } & (
-                    | Record<`abc${string}`, EmptyObject | null>
-                    | { bar: string }
-                )
+                { foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })
             >();
 
             const neverSchema = schema.oneOf([]);
 
-            expectTypeOf<
-                SchemaType<typeof neverSchema>
-            >().toEqualTypeOf<never>();
+            expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
 
             const neverSchema2 = stringSchema().nullable().oneOf([]);
-            expectTypeOf<
-                SchemaType<typeof neverSchema2>
-            >().toEqualTypeOf<never>();
+            expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
         });
     });
 

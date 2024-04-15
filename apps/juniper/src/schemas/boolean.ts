@@ -1,8 +1,4 @@
-import {
-    AbstractSchema,
-    type SchemaGenerics,
-    type SchemaParams,
-} from '../lib/schema.js';
+import { AbstractSchema, type SchemaGenerics, type SchemaParams } from '../lib/schema.js';
 import type { Nullable } from '../lib/types.js';
 
 type AnyBooleanSchema = BooleanSchema<boolean>;
@@ -54,10 +50,7 @@ export class BooleanSchema<
      * @param [options.writeOnly] - value should be hidden
      * @returns new boolean schema
      */
-    public static override create(
-        this: void,
-        options?: SchemaParams<boolean>
-    ): BooleanSchema {
+    public static override create(this: void, options?: SchemaParams<boolean>): BooleanSchema {
         return new BooleanSchema(options);
     }
 }

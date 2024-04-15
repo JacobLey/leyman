@@ -3,8 +3,8 @@
   "cli": { "packageManager": "pnpm" },
   "namedInputs": {
     "ts-source": [
-      "{projectRoot}/src/**/*{.*,}.{c,m,}ts{x,}",
-      "{projectRoot}/eslint.config.{c,m,}js",
+      "{projectRoot}/src/**/*.{c,m,}ts{x,}",
+      "{projectRoot}/src/**/*{.config,.spec}.{c,m,}ts{x,}",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json"
     ]

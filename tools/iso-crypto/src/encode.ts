@@ -7,11 +7,7 @@ type Replace<From, To, T extends Record<string, From>> = {
     [k in keyof T]: To;
 };
 type Encoded<T extends Record<string, string>> = Replace<string, Uint8Array, T>;
-type Decoded<T extends Record<string, Uint8Array>> = Replace<
-    Uint8Array,
-    string,
-    T
->;
+type Decoded<T extends Record<string, Uint8Array>> = Replace<Uint8Array, string, T>;
 
 /**
  * Decode every attribute in an object.

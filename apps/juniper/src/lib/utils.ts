@@ -73,9 +73,7 @@ export const mergeAllOf = <S extends JsonSchema<any>>(
                 !(
                     baseAll &&
                     Object.keys(baseAll).some(
-                        key =>
-                            schemaKeys.has(key) &&
-                            !deepStrictEqual(schema[key], baseAll[key])
+                        key => schemaKeys.has(key) && !deepStrictEqual(schema[key], baseAll[key])
                     )
                 )
             ) {

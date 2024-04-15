@@ -23,9 +23,7 @@ suite('EntryScript', () => {
     suite('runAsMain', () => {
         const withStubbedEntryScript = beforeEach(async () => {
             const entryScript = await EntryScriptMock.create();
-            stub(EntryScriptMock, 'create').returns(
-                Promise.resolve(entryScript)
-            );
+            stub(EntryScriptMock, 'create').returns(Promise.resolve(entryScript));
 
             return { entryScript };
         });
@@ -63,42 +61,37 @@ suite('EntryScript', () => {
                 await runAsMain(import.meta.url);
             });
 
-            withStubbedEntryScript.test(
-                'Emits runtime error',
-                async ({ entryScript }) => {
-                    const error = new Error('<ERROR>');
+            withStubbedEntryScript.test('Emits runtime error', async ({ entryScript }) => {
+                const error = new Error('<ERROR>');
 
-                    stub(entryScript, 'start').callsFake(() => {
-                        throw error;
-                    });
-                    const finishSpy = stub(entryScript, 'finish');
-                    const listenerStub = fake(
-                        (err: unknown, event: CustomEvent<unknown>) => [
-                            err,
-                            event,
-                        ]
+                stub(entryScript, 'start').callsFake(() => {
+                    throw error;
+                });
+                const finishSpy = stub(entryScript, 'finish');
+                const listenerStub = fake((err: unknown, event: CustomEvent<unknown>) => [
+                    err,
+                    event,
+                ]);
+
+                entryScript.on(EntryScript.runtimeError, listenerStub);
+
+                let caughtError: unknown = null;
+                try {
+                    await runAsMain(
+                        Path.resolve(
+                            Path.dirname(fileURLToPath(import.meta.url)),
+                            '../../data/entry-script-mock.js'
+                        )
                     );
-
-                    entryScript.on(EntryScript.runtimeError, listenerStub);
-
-                    let caughtError: unknown = null;
-                    try {
-                        await runAsMain(
-                            Path.resolve(
-                                Path.dirname(fileURLToPath(import.meta.url)),
-                                '../../data/entry-script-mock.js'
-                            )
-                        );
-                    } catch (err) {
-                        caughtError = err;
-                    }
-
-                    expect(caughtError).to.eq(error);
-                    expect(finishSpy.callCount).to.equal(1);
-                    expect(listenerStub.callCount).to.equal(1);
-                    expect(listenerStub.getCall(0).args[0]).to.eq(error);
+                } catch (err) {
+                    caughtError = err;
                 }
-            );
+
+                expect(caughtError).to.eq(error);
+                expect(finishSpy.callCount).to.equal(1);
+                expect(listenerStub.callCount).to.equal(1);
+                expect(listenerStub.getCall(0).args[0]).to.eq(error);
+            });
         });
     });
 });

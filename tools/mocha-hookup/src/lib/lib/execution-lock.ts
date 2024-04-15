@@ -8,9 +8,7 @@ export const checkLock = (): void => {
         // From what I can tell, this is the best way to determine if a hook/test is "complete"
         typeof activeRunnable.duration !== 'number'
     ) {
-        throw new Error(
-            'Cannot create new hook/suite/test while executing a hook/test'
-        );
+        throw new Error('Cannot create new hook/suite/test while executing a hook/test');
     }
 };
 

@@ -1,8 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import {
-    renderHook,
-    type WrapperComponent,
-} from '@testing-library/react-hooks';
+import { renderHook, type WrapperComponent } from '@testing-library/react-hooks';
 import { expect } from 'chai';
 import type { ReactNode } from 'react';
 import { spy, verifyAndRestore } from 'sinon';
@@ -23,9 +20,7 @@ suite('useInfinite', () => {
             return {
                 client,
                 wrapper: ({ children }) => (
-                    <QueryClientProvider client={client}>
-                        {children}
-                    </QueryClientProvider>
+                    <QueryClientProvider client={client}>{children}</QueryClientProvider>
                 ),
             };
         }
@@ -36,12 +31,7 @@ suite('useInfinite', () => {
     });
 
     context.test('success', async ({ client, wrapper }) => {
-        const listUsers = infinite<
-            Api.User,
-            { size?: number },
-            number,
-            { total: number }
-        >({
+        const listUsers = infinite<Api.User, { size?: number }, number, { total: number }>({
             getKey({ nextPage, size = 3 }) {
                 return ['users', { nextPage, size }];
             },
@@ -57,12 +47,9 @@ suite('useInfinite', () => {
             },
         });
 
-        const { result, rerender } = renderHook(
-            () => listUsers.useInfinite({ size: 3 }),
-            {
-                wrapper,
-            }
-        );
+        const { result, rerender } = renderHook(() => listUsers.useInfinite({ size: 3 }), {
+            wrapper,
+        });
 
         expect(result.current.data).to.deep.equal([]);
         expect(result.current.isLoading).to.equal(true);
@@ -111,12 +98,7 @@ suite('useInfinite', () => {
         const onSuccess = spy();
         const onSettled = spy();
 
-        const listUsers = infinite<
-            Api.User,
-            EmptyObject,
-            number,
-            { total: number }
-        >(
+        const listUsers = infinite<Api.User, EmptyObject, number, { total: number }>(
             {
                 getKey({ nextPage }) {
                     return ['users', { nextPage }];
@@ -155,12 +137,7 @@ suite('useInfinite', () => {
         const onError = spy();
         const onSettled = spy();
 
-        const listUsers = infinite<
-            Api.User,
-            EmptyObject,
-            number,
-            { total: number }
-        >(
+        const listUsers = infinite<Api.User, EmptyObject, number, { total: number }>(
             {
                 getKey({ nextPage }) {
                     return ['users', { nextPage }];
@@ -195,10 +172,7 @@ suite('useInfinite', () => {
 
         expect(result.current.isError).to.equal(true);
         expect(result.current.data).to.deep.equal([]);
-        expect(result.current.error).to.haveOwnProperty(
-            'message',
-            'Invalid request'
-        );
+        expect(result.current.error).to.haveOwnProperty('message', 'Invalid request');
         expect(onSettled.calledOnce).to.equal(true);
     });
 

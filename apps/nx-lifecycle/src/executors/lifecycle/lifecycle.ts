@@ -59,15 +59,13 @@ export class Lifecycle {
     ): Promise<{ success: boolean }> {
         const normalized = this.#normalizer.normalizeOptions(options, context);
 
-        const { nxJson, projectJsons } =
-            await this.#loadJsonConfigs(normalized);
+        const { nxJson, projectJsons } = await this.#loadJsonConfigs(normalized);
 
-        const { processedNxJson, processedProjectJsons } =
-            this.#processNxAndProjectJsons({
-                nxJson: nxJson.data,
-                projectJsons: projectJsons.map(({ data }) => data),
-                options: normalized,
-            });
+        const { processedNxJson, processedProjectJsons } = this.#processNxAndProjectJsons({
+            nxJson: nxJson.data,
+            projectJsons: projectJsons.map(({ data }) => data),
+            options: normalized,
+        });
 
         await this.#saveJsonConfigs({
             jsons: [
@@ -86,10 +84,7 @@ export class Lifecycle {
         return { success: true };
     }
 
-    async #loadJsonConfigs({
-        nxJsonPath,
-        packageJsonPaths,
-    }: NormalizedOptions): Promise<{
+    async #loadJsonConfigs({ nxJsonPath, packageJsonPaths }: NormalizedOptions): Promise<{
         nxJson: LoadedJsonConfig<NxJson>;
         projectJsons: LoadedJsonConfig<ProjectJson>[];
     }> {
@@ -105,11 +100,7 @@ export class Lifecycle {
         const parsedNxJson: unknown = JSON.parse(rawNxJson);
         if (!this.#isNxJson(parsedNxJson)) {
             throw new Error(
-                `Failed to parse nx.json: ${JSON.stringify(
-                    this.#isNxJson.errors!,
-                    null,
-                    2
-                )}`
+                `Failed to parse nx.json: ${JSON.stringify(this.#isNxJson.errors!, null, 2)}`
             );
         }
 

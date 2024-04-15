@@ -75,10 +75,7 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
      * @param [options.writeOnly] - value should be hidden
      * @returns new enum schema
      */
-    public static override create<T = never>(
-        this: void,
-        options?: EnumParams<T>
-    ): EnumSchema<T> {
+    public static override create<T = never>(this: void, options?: EnumParams<T>): EnumSchema<T> {
         return new EnumSchema(options);
     }
 
@@ -104,10 +101,7 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
      * @param enums - enum literal array
      * @returns cloned schema
      */
-    public enums<EVal>(
-        this: this,
-        enums: readonly EVal[]
-    ): EnumSchema<EVal | T> {
+    public enums<EVal>(this: this, enums: readonly EVal[]): EnumSchema<EVal | T> {
         return this.clone({
             enum: [...this.#enum, ...enums] as T[],
         }) as EnumSchema<EVal | T>;
@@ -126,9 +120,7 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
     /**
      * @override
      */
-    protected override toSchema(
-        params: SerializationParams
-    ): JsonSchema<SchemaType<this>> {
+    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         const enums = [...new Set(this.#enum)];

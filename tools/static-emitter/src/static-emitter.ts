@@ -103,27 +103,14 @@ export class StaticEmitter<
     public off<K extends Types.CustomEventList<this> | Types.EventList<this>>(
         eventName: K,
         listener:
-            | (K extends Types.CustomEventList<this>
-                  ? Types.CustomEventListener<this, K>
-                  : never)
-            | (K extends Types.EventList<this>
-                  ? Types.EventTargetListener<this, K>
-                  : never)
+            | (K extends Types.CustomEventList<this> ? Types.CustomEventListener<this, K> : never)
+            | (K extends Types.EventList<this> ? Types.EventTargetListener<this, K> : never)
     ): this {
         this.removeEventListener(
-            this.#getEventName(
-                eventName as Types.CustomEventList<this>
-            ) as Types.EventList<this>,
+            this.#getEventName(eventName as Types.CustomEventList<this>) as Types.EventList<this>,
             this.#wrappedListeners.get(
-                listener as Types.CustomEventListener<
-                    this,
-                    Types.CustomEventList<this>
-                >
-            ) ??
-                (listener as Types.NullishEventTargetListener<
-                    this,
-                    Types.EventList<this>
-                >)
+                listener as Types.CustomEventListener<this, Types.CustomEventList<this>>
+            ) ?? (listener as Types.NullishEventTargetListener<this, Types.EventList<this>>)
         );
         return this;
     }
@@ -164,8 +151,7 @@ export class StaticEmitter<
         if (existingName) {
             return existingName;
         }
-        const randomName = `STATIC-EMITTER-${Math.random()}-${this
-            .#eventNameId++}`;
+        const randomName = `STATIC-EMITTER-${Math.random()}-${this.#eventNameId++}`;
         this.#eventMap.set(eventName, randomName);
         return randomName;
     }
@@ -183,34 +169,21 @@ export class StaticEmitter<
         listener: Types.CustomEventListener<this, K>
     ): Types.EventTargetListener<Types.IEmitter, string> {
         const existingWrapped = this.#wrappedListeners.get(
-            listener as unknown as Types.CustomEventListener<
-                this,
-                Types.CustomEventList<this>
-            >
+            listener as unknown as Types.CustomEventListener<this, Types.CustomEventList<this>>
         );
 
         if (existingWrapped) {
             return existingWrapped;
         }
 
-        const wrapped = (
-            customEvent: Types.EventType<K, Types.GetEventDetail<this, K>>
-        ): void => {
+        const wrapped = (customEvent: Types.EventType<K, Types.GetEventDetail<this, K>>): void => {
             listener(
-                (
-                    customEvent as CustomEvent<
-                        string,
-                        Types.GetEventDetail<this, K>
-                    >
-                ).detail,
+                (customEvent as CustomEvent<string, Types.GetEventDetail<this, K>>).detail,
                 customEvent
             );
         };
         this.#wrappedListeners.set(
-            listener as unknown as Types.CustomEventListener<
-                this,
-                Types.CustomEventList<this>
-            >,
+            listener as unknown as Types.CustomEventListener<this, Types.CustomEventList<this>>,
             wrapped as Types.EventTargetListener<Types.IEmitter, string>
         );
         return wrapped as Types.EventTargetListener<Types.IEmitter, string>;

@@ -47,26 +47,20 @@ suite('beforeEach', () => {
             }>();
         });
 
-        const tested = contextualBeforeEach.test.skip(
-            'Can skip test',
-            async function (this) {
-                expectTypeOf(this).toEqualTypeOf<mocha.Context>();
-            }
-        );
+        const tested = contextualBeforeEach.test.skip('Can skip test', async function (this) {
+            expectTypeOf(this).toEqualTypeOf<mocha.Context>();
+        });
 
         suite('Inside another suite', () => {
-            contextualBeforeEach.beforeEach(
-                'Runs after outer suite',
-                async (ctx, done) => {
-                    expect(order).to.deep.equal([1, 2, 3, 4]);
-                    order.push(5);
+            contextualBeforeEach.beforeEach('Runs after outer suite', async (ctx, done) => {
+                expect(order).to.deep.equal([1, 2, 3, 4]);
+                order.push(5);
 
-                    expect(ctx).to.deep.equal({ abc: 123 });
-                    expectTypeOf(ctx).toEqualTypeOf<{ readonly abc: 123 }>();
+                expect(ctx).to.deep.equal({ abc: 123 });
+                expectTypeOf(ctx).toEqualTypeOf<{ readonly abc: 123 }>();
 
-                    done();
-                }
-            );
+                done();
+            });
 
             contextualBeforeEach.xit(
                 'Type enforcement on test setup',

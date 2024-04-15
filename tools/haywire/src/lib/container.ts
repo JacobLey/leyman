@@ -24,13 +24,7 @@ import {
     supplierScope,
     transientScope,
 } from '#scopes';
-import type {
-    Extendable,
-    InstanceOfClass,
-    InvalidInput,
-    IsClass,
-    NonExtendable,
-} from '#types';
+import type { Extendable, InstanceOfClass, InvalidInput, IsClass, NonExtendable } from '#types';
 
 /**
  * Used during late-binding instantiations, as a way to provide references to
@@ -122,14 +116,9 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     readonly #singletonCache: ScopeCache = new Map();
     #preloaded: Promise<void> | null = null;
 
-    protected readonly idToBinding: ReadonlyMap<
-        GenericHaystackId,
-        GenericBinding
-    >;
+    protected readonly idToBinding: ReadonlyMap<GenericHaystackId, GenericBinding>;
 
-    protected constructor(
-        idToBinding: ReadonlyMap<GenericHaystackId, GenericBinding>
-    ) {
+    protected constructor(idToBinding: ReadonlyMap<GenericHaystackId, GenericBinding>) {
         this.idToBinding = idToBinding;
         this.#bindings = [...new Set(idToBinding.values())];
         this.#baseIdToBinding = new Map(
@@ -248,24 +237,18 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         this.#preloaded = Promise.resolve()
             .then(async () => {
                 const reqScope: ScopeCache = new Map();
-                const requestSingleton = async (
-                    binding: GenericBinding
-                ): Promise<void> => {
+                const requestSingleton = async (binding: GenericBinding): Promise<void> => {
                     const dependencies = this.#singletonMap.get(binding)!;
                     await Promise.all(
-                        dependencies.map(async dependency =>
-                            requestSingleton(dependency)
-                        )
+                        dependencies.map(async dependency => requestSingleton(dependency))
                     );
                     await this.#getMaybeSync(binding, reqScope, reqScope);
                 };
                 await Promise.all(
-                    [...this.#singletonMap.keys()].map(async binding =>
-                        requestSingleton(binding)
-                    )
+                    [...this.#singletonMap.keys()].map(async binding => requestSingleton(binding))
                 );
             })
-            .catch(async err => {
+            .catch(async (err: unknown) => {
                 this.#preloaded = null;
                 throw err;
             });
@@ -287,23 +270,16 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         id: Id,
         ...invalidInput: [
             NonExtendable<
-                StripAnnotations<
-                    HaystackIdType<Id>,
-                    'latebinding' | 'supplier'
-                >,
+                StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>,
                 Id['annotations']['named']
             >,
         ] extends Outputs
             ? []
             : NoBindingDeclared
-    ): Promise<
-        StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>
-    >;
+    ): Promise<StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>>;
     public getAsync<Constructor extends IsClass>(
         clazz: Constructor,
-        ...invalidInput: [
-            NonExtendable<InstanceOfClass<Constructor>, null>,
-        ] extends Outputs
+        ...invalidInput: [NonExtendable<InstanceOfClass<Constructor>, null>] extends Outputs
             ? []
             : NoBindingDeclared
     ): Promise<InstanceOfClass<Constructor>>;
@@ -312,22 +288,15 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             Id,
             ...([
                 NonExtendable<
-                    StripAnnotations<
-                        HaystackIdType<Id>,
-                        'latebinding' | 'supplier'
-                    >,
+                    StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>,
                     Id['annotations']['named']
                 >,
             ] extends Outputs
                 ? []
                 : NoBindingDeclared),
         ]
-    ): Promise<
-        StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>
-    > {
-        const id = unsafeIdentifier(idOrClass)
-            .supplier(false)
-            .lateBinding(false);
+    ): Promise<StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>> {
+        const id = unsafeIdentifier(idOrClass).supplier(false).lateBinding(false);
         const binding = this.idToBinding.get(id);
         if (!binding) {
             throw new HaystackProviderMissingError([id]);
@@ -335,11 +304,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         await this.preloadAsync();
 
         const requestCache: ScopeCache = new Map();
-        return this.#getMaybeSync(
-            binding,
-            requestCache,
-            requestCache
-        ) as Promise<
+        return this.#getMaybeSync(binding, requestCache, requestCache) as Promise<
             StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>
         >;
     }
@@ -376,9 +341,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         const uniqueDependencyIds = // DepdupeEffectiveBaseId(
             new Set(
                 this.#bindings.flatMap(binding =>
-                    binding.dependencyIds.map(id =>
-                        id.lateBinding(false).supplier(false)
-                    )
+                    binding.dependencyIds.map(id => id.lateBinding(false).supplier(false))
                 )
             );
 
@@ -454,16 +417,11 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     #checkForCircular(): void {
         const safeBindings = new Set<GenericBinding>();
         const circularPaths: GenericHaystackId[][] = [];
-        const singletonScopes = new Set([
-            optimisticSingletonScope,
-            singletonScope,
-        ]);
+        const singletonScopes = new Set([optimisticSingletonScope, singletonScope]);
         const requestScopes = new Set([optimisticRequestScope, requestScope]);
 
         const isChainSafe = (chain: GenericHaystackId[]): boolean => {
-            if (
-                chain.some(dependencyId => dependencyId.annotations.lateBinding)
-            ) {
+            if (chain.some(dependencyId => dependencyId.annotations.lateBinding)) {
                 // Only if there is late binding can circular dependencies be acceptable
                 const bindingChain = chain.map((dependencyId, i) => ({
                     // We want the _next_ dependency in the chain, that is declared by
@@ -472,28 +430,17 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     binding: this.#baseIdToBinding.get(dependencyId.baseId())!,
                 }));
 
-                if (
-                    bindingChain.some(({ binding }) =>
-                        singletonScopes.has(binding.scope)
-                    )
-                ) {
+                if (bindingChain.some(({ binding }) => singletonScopes.has(binding.scope))) {
                     // Singletons will eventually run into cached value, so are safe (regardless of suppliers)
                     return true;
                 }
 
-                if (
-                    bindingChain.some(({ binding }) =>
-                        requestScopes.has(binding.scope)
-                    )
-                ) {
+                if (bindingChain.some(({ binding }) => requestScopes.has(binding.scope))) {
                     // Request scopes are safe _only_ if the scope is propagated the entire way.
                     return bindingChain.every(({ binding, dependencyId }) => {
                         const { supplier } = dependencyId.annotations;
                         if (typeof supplier === 'object') {
-                            return (
-                                supplier.propagateScope &&
-                                binding.scope !== supplierScope
-                            );
+                            return supplier.propagateScope && binding.scope !== supplierScope;
                         }
                         return true;
                     });
@@ -501,8 +448,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
                 // If there are no suppliers, this is safe
                 return bindingChain.every(
-                    ({ dependencyId }) =>
-                        dependencyId.annotations.supplier === false
+                    ({ dependencyId }) => dependencyId.annotations.supplier === false
                 );
             }
             return false;
@@ -536,9 +482,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
             let isSafe = true;
             for (const dependencyId of binding.dependencyIds) {
-                isSafe =
-                    isBindingSafe(dependencyId, new Set(dependencyChain)) &&
-                    isSafe;
+                isSafe = isBindingSafe(dependencyId, new Set(dependencyChain)) && isSafe;
             }
             return isSafe;
         };
@@ -601,10 +545,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             }
             return binding.dependencyIds.every(dependencyId => {
                 const { supplier } = dependencyId.annotations;
-                if (
-                    typeof supplier === 'object' &&
-                    (!supplier.propagateScope || !supplier.sync)
-                ) {
+                if (typeof supplier === 'object' && (!supplier.propagateScope || !supplier.sync)) {
                     // Either async boundary or separate request.
                     // Separate requests are validated in separate iteration
                     return true;
@@ -619,9 +560,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         };
 
         const syncSuppliers = this.#bindings
-            .flatMap(binding =>
-                binding.dependencyIds.map(id => [binding, id] as const)
-            )
+            .flatMap(binding => binding.dependencyIds.map(id => [binding, id] as const))
             .filter(([, dependencyId]) => {
                 const { supplier } = dependencyId.annotations;
                 return typeof supplier === 'object' && supplier.sync;
@@ -667,14 +606,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             [true, true, new Set([optimisticSingletonScope] as const)],
             // Suppliers that are the propagating scope from a parent request _can_ rely on optimistic requests
             // to pre-cache async dependencies.
-            [
-                true,
-                false,
-                new Set([
-                    optimisticRequestScope,
-                    optimisticSingletonScope,
-                ] as const),
-            ],
+            [true, false, new Set([optimisticRequestScope, optimisticSingletonScope] as const)],
         ] as const) {
             const syncBindings = new Set(
                 syncSuppliers
@@ -686,27 +618,13 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                                 }
                             ).propagateScope === propagateScope
                     )
-                    .filter(
-                        ([binding]) =>
-                            (binding.scope === supplierScope) ===
-                            isSupplierScope
-                    )
+                    .filter(([binding]) => (binding.scope === supplierScope) === isSupplierScope)
                     .map(([, id]) => this.#baseIdToBinding.get(id.baseId())!)
-                    .filter(
-                        binding =>
-                            !safeBindings.has(binding) &&
-                            !unsafeBindings.has(binding)
-                    )
+                    .filter(binding => !safeBindings.has(binding) && !unsafeBindings.has(binding))
             );
 
             for (const syncBinding of syncBindings) {
-                if (
-                    isSafeForSyncSupplier(
-                        syncBinding,
-                        new Set(),
-                        optimisticScopes
-                    )
-                ) {
+                if (isSafeForSyncSupplier(syncBinding, new Set(), optimisticScopes)) {
                     safeBindings.add(syncBinding);
                 } else {
                     unsafeBindings.add(syncBinding);
@@ -741,15 +659,10 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             const collected: GenericBinding[] = [];
             for (const dependencyId of binding.dependencyIds) {
                 const { lateBinding, supplier } = dependencyId.annotations;
-                if (
-                    lateBinding ||
-                    (typeof supplier === 'object' && !supplier.sync)
-                ) {
+                if (lateBinding || (typeof supplier === 'object' && !supplier.sync)) {
                     continue;
                 }
-                const dependencyBinding = this.#baseIdToBinding.get(
-                    dependencyId.baseId()
-                )!;
+                const dependencyBinding = this.#baseIdToBinding.get(dependencyId.baseId())!;
                 if (dependencyBinding.scope === optimisticSingletonScope) {
                     collected.push(dependencyBinding);
                 } else {
@@ -767,9 +680,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         for (const binding of this.#bindings.filter(
             bind => bind.scope === optimisticSingletonScope
         )) {
-            this.#singletonMap.set(binding, [
-                ...new Set(collectBindings(binding, new Set())),
-            ]);
+            this.#singletonMap.set(binding, [...new Set(collectBindings(binding, new Set()))]);
         }
     }
 
@@ -795,9 +706,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
             const collected: GenericBinding[] = [];
             for (const dependencyId of binding.dependencyIds) {
-                const dependencyBinding = this.#baseIdToBinding.get(
-                    dependencyId.baseId()
-                )!;
+                const dependencyBinding = this.#baseIdToBinding.get(dependencyId.baseId())!;
                 if (dependencyBinding.scope === optimisticSingletonScope) {
                     continue;
                 } else if (dependencyBinding.scope === optimisticRequestScope) {
@@ -814,9 +723,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             return collected;
         };
         for (const binding of this.#bindings) {
-            this.#requestMap.set(binding, [
-                ...collectBindings(binding, new Set()),
-            ]);
+            this.#requestMap.set(binding, [...collectBindings(binding, new Set())]);
         }
     }
 
@@ -833,14 +740,8 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * but for the actual provider instantiation the request singletons will already exist regardless of context.
      */
     #wireAsyncs(): void {
-        const optimisticScopes = new Set([
-            optimisticRequestScope,
-            optimisticSingletonScope,
-        ]);
-        const isAsync = (
-            binding: GenericBinding,
-            chain = new Set<GenericBinding>()
-        ): boolean => {
+        const optimisticScopes = new Set([optimisticRequestScope, optimisticSingletonScope]);
+        const isAsync = (binding: GenericBinding, chain = new Set<GenericBinding>()): boolean => {
             if (chain.has(binding)) {
                 // Come full circle. If nothing in the chain has forced async yet, we can stay sync
                 return false;
@@ -861,9 +762,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     // Suppliers are resolved "immediately" so that is sync
                     return false;
                 }
-                const dependencyBinding = this.#baseIdToBinding.get(
-                    dependencyId.baseId()
-                )!;
+                const dependencyBinding = this.#baseIdToBinding.get(dependencyId.baseId())!;
                 if (optimisticScopes.has(dependencyBinding.scope)) {
                     // Optimistic values are pre-computed, so the actual request can always rely on cache
                     return false;
@@ -949,84 +848,68 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         // await it until we get the cache setup.
         const outputPromise = (async () => {
             const settled = await Promise.allSettled(
-                binding.dependencyIds.map(
-                    async (dependencyId): Promise<readonly [unknown]> => {
-                        const { lateBinding, supplier } =
-                            dependencyId.annotations;
-                        if (lateBinding) {
-                            const deferred = pDefer();
-                            lateBindingPromises.push(deferred.promise);
-                            const registry: LateCache = new Map();
-                            lateBindingRequests.push({
-                                ...deferred,
-                                binding,
-                                dependencyId,
-                                registry,
-                            });
-                            return [deferred.promise];
-                        }
+                binding.dependencyIds.map(async (dependencyId): Promise<readonly [unknown]> => {
+                    const { lateBinding, supplier } = dependencyId.annotations;
+                    if (lateBinding) {
+                        const deferred = pDefer();
+                        lateBindingPromises.push(deferred.promise);
+                        const registry: LateCache = new Map();
+                        lateBindingRequests.push({
+                            ...deferred,
+                            binding,
+                            dependencyId,
+                            registry,
+                        });
+                        return [deferred.promise];
+                    }
 
-                        const dependencyBinding = this.#baseIdToBinding.get(
-                            dependencyId.baseId()
-                        )!;
+                    const dependencyBinding = this.#baseIdToBinding.get(dependencyId.baseId())!;
 
-                        if (typeof supplier === 'object') {
-                            // If we propagate scope, we need to ensure we are propagating the "selected" scope for this binding
-                            const passedCache: ScopeCache =
-                                binding.scope === supplierScope
-                                    ? supplierCache
-                                    : requestCache;
-                            if (supplier.sync) {
-                                return [
-                                    () => {
-                                        const scopeCache: ScopeCache =
-                                            new Map();
-                                        return this.#getSync(
-                                            dependencyBinding,
-                                            supplier.propagateScope
-                                                ? passedCache
-                                                : scopeCache,
-                                            scopeCache
-                                        );
-                                    },
-                                ];
-                            }
+                    if (typeof supplier === 'object') {
+                        // If we propagate scope, we need to ensure we are propagating the "selected" scope for this binding
+                        const passedCache: ScopeCache =
+                            binding.scope === supplierScope ? supplierCache : requestCache;
+                        if (supplier.sync) {
                             return [
-                                async () => {
+                                () => {
                                     const scopeCache: ScopeCache = new Map();
-                                    return this.#getMaybeSync(
+                                    return this.#getSync(
                                         dependencyBinding,
-                                        supplier.propagateScope
-                                            ? passedCache
-                                            : scopeCache,
+                                        supplier.propagateScope ? passedCache : scopeCache,
                                         scopeCache
                                     );
                                 },
                             ];
                         }
-                        // Attempt to generate dependencies syncronously _if possible_ for both performance optimizations,
-                        // and to help prevent race conditions.
-                        const dependency = this.#isAsyncImplementationMap.get(
-                            dependencyBinding
-                        )!
-                            ? await this.#getImplementation(
-                                  dependencyBinding,
-                                  requestCache,
-                                  supplierCache,
-                                  lateBindingCache
-                              )
-                            : this.#getSyncImplementation(
-                                  dependencyBinding,
-                                  requestCache,
-                                  supplierCache,
-                                  lateBindingCache
-                              );
-                        lateBindingRequests.push(
-                            ...dependency.lateBindingRequests
-                        );
-                        return [dependency.value];
+                        return [
+                            async () => {
+                                const scopeCache: ScopeCache = new Map();
+                                return this.#getMaybeSync(
+                                    dependencyBinding,
+                                    supplier.propagateScope ? passedCache : scopeCache,
+                                    scopeCache
+                                );
+                            },
+                        ];
                     }
-                )
+                    // Attempt to generate dependencies syncronously _if possible_ for both performance optimizations,
+                    // and to help prevent race conditions.
+                    const dependency = this.#isAsyncImplementationMap.get(dependencyBinding)!
+                        ? await this.#getImplementation(
+                              dependencyBinding,
+                              requestCache,
+                              supplierCache,
+                              lateBindingCache
+                          )
+                        : this.#getSyncImplementation(
+                              dependencyBinding,
+                              requestCache,
+                              supplierCache,
+                              lateBindingCache
+                          );
+                    lateBindingRequests.push(...dependency.lateBindingRequests);
+                    return [dependency.value];
+                })
             );
 
             HaystackMultiError.validateAllSettled(settled);
@@ -1048,10 +931,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 binding.outputId.construct &&
                 !(value instanceof binding.outputId.construct)
             ) {
-                throw new HaystackInstanceOfResponseError(
-                    binding.outputId,
-                    value
-                );
+                throw new HaystackInstanceOfResponseError(binding.outputId, value);
             }
 
             for (const { registry } of lateBindingRequests) {
@@ -1072,7 +952,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                         await Promise.all(lateBindingPromises);
                         return [value] as const;
                     })
-                    .catch(err => {
+                    .catch((err: unknown) => {
                         // Failures may occur because of late-bindings,
                         // or because the actual generation promise rejects
                         // (which we still have not actually awaited and checked!)
@@ -1170,29 +1050,23 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     reject: relevantCache
                         ? err => {
                               deferred.reject(err);
-                              if (
-                                  relevantCache.get(binding) === cacheContainer
-                              ) {
+                              if (relevantCache.get(binding) === cacheContainer) {
                                   relevantCache.delete(binding);
                               }
                           }
                         : // https://github.com/sindresorhus/p-defer/pull/9
-                          // eslint-disable-next-line @typescript-eslint/unbound-method
+
                           deferred.reject,
                 });
                 parameters.push(deferred.promise);
                 continue;
             }
 
-            const dependencyBinding = this.#baseIdToBinding.get(
-                dependencyId.baseId()
-            )!;
+            const dependencyBinding = this.#baseIdToBinding.get(dependencyId.baseId())!;
 
             if (typeof supplier === 'object') {
                 const passedCache: ScopeCache =
-                    binding.scope === supplierScope
-                        ? supplierCache
-                        : requestCache;
+                    binding.scope === supplierScope ? supplierCache : requestCache;
                 if (supplier.sync) {
                     parameters.push(() => {
                         const scopeCache: ScopeCache = new Map();
@@ -1233,10 +1107,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             if (!binding.outputId.annotations.undefinable) {
                 throw new HaystackUndefinedResponseError(binding.outputId);
             }
-        } else if (
-            binding.outputId.construct &&
-            !(value instanceof binding.outputId.construct)
-        ) {
+        } else if (binding.outputId.construct && !(value instanceof binding.outputId.construct)) {
             throw new HaystackInstanceOfResponseError(binding.outputId, value);
         }
 
@@ -1325,29 +1196,19 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 this.#requestMap
                     .get(binding)!
                     .map(async optimisticBinding =>
-                        this.#getMaybeSync(
-                            optimisticBinding,
-                            requestCache,
-                            supplierCache
-                        )
+                        this.#getMaybeSync(optimisticBinding, requestCache, supplierCache)
                     )
             );
 
             HaystackMultiError.validateAllSettled(settled);
         }
-        const lateBindCache =
-            lateBindingCache ?? new Map<GenericBinding, { value: unknown }>();
+        const lateBindCache = lateBindingCache ?? new Map<GenericBinding, { value: unknown }>();
 
         // If this instance could be implemented entire synchronously, do it.
         // Note this logic has to come _after_ the optimistic requests, because the async implementation map
         // relies on the logic that these values do already exist.
         if (!this.#isAsyncImplementationMap.get(binding)) {
-            return this.#getSync(
-                binding,
-                requestCache,
-                supplierCache,
-                lateBindCache
-            );
+            return this.#getSync(binding, requestCache, supplierCache, lateBindCache);
         }
 
         // Create the requested value, which creates+validates all dependencies internally.
@@ -1363,8 +1224,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         try {
             const settled = await Promise.allSettled(
                 lateBindingRequests.map(async lateBindingRequest => {
-                    const { supplier } =
-                        lateBindingRequest.dependencyId.annotations;
+                    const { supplier } = lateBindingRequest.dependencyId.annotations;
                     const dependencyBinding = this.#baseIdToBinding.get(
                         lateBindingRequest.dependencyId.baseId()
                     )!;
@@ -1378,9 +1238,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                                 const scopeCache: ScopeCache = new Map();
                                 return this.#getSync(
                                     dependencyBinding,
-                                    supplier.propagateScope
-                                        ? relevantCache
-                                        : scopeCache,
+                                    supplier.propagateScope ? relevantCache : scopeCache,
                                     scopeCache
                                 );
                             });
@@ -1389,9 +1247,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                                 const scopeCache: ScopeCache = new Map();
                                 return this.#getMaybeSync(
                                     dependencyBinding,
-                                    supplier.propagateScope
-                                        ? relevantCache
-                                        : scopeCache,
+                                    supplier.propagateScope ? relevantCache : scopeCache,
                                     scopeCache
                                 );
                             });
@@ -1403,10 +1259,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                             dependencyBinding,
                             requestCache,
                             supplierCache,
-                            new Map([
-                                ...lateBindCache,
-                                ...lateBindingRequest.registry,
-                            ])
+                            new Map([...lateBindCache, ...lateBindingRequest.registry])
                         );
                         lateBindingRequest.resolve(val);
                     }
@@ -1452,8 +1305,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 this.#getSync(optimisticBinding, requestCache, supplierCache);
             }
         }
-        const lateBindCache =
-            lateBindingCache ?? new Map<GenericBinding, { value: unknown }>();
+        const lateBindCache = lateBindingCache ?? new Map<GenericBinding, { value: unknown }>();
 
         const { value, lateBindingRequests } = this.#getSyncImplementation(
             binding,
@@ -1464,8 +1316,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
         try {
             for (const lateBindingRequest of lateBindingRequests) {
-                const { supplier } =
-                    lateBindingRequest.dependencyId.annotations;
+                const { supplier } = lateBindingRequest.dependencyId.annotations;
                 const dependencyBinding = this.#baseIdToBinding.get(
                     lateBindingRequest.dependencyId.baseId()
                 )!;
@@ -1479,9 +1330,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                             const scopeCache: ScopeCache = new Map();
                             return this.#getSync(
                                 dependencyBinding,
-                                supplier.propagateScope
-                                    ? relevantCache
-                                    : scopeCache,
+                                supplier.propagateScope ? relevantCache : scopeCache,
                                 scopeCache
                             );
                         });
@@ -1490,9 +1339,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                             const scopeCache: ScopeCache = new Map();
                             return this.#getMaybeSync(
                                 dependencyBinding,
-                                supplier.propagateScope
-                                    ? relevantCache
-                                    : scopeCache,
+                                supplier.propagateScope ? relevantCache : scopeCache,
                                 scopeCache
                             );
                         });
@@ -1502,10 +1349,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                         dependencyBinding,
                         requestCache,
                         supplierCache,
-                        new Map([
-                            ...lateBindCache,
-                            ...lateBindingRequest.registry,
-                        ])
+                        new Map([...lateBindCache, ...lateBindingRequest.registry])
                     );
                     lateBindingRequest.resolve(val);
                 }
@@ -1542,9 +1386,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
  *
  * @see {@link AsyncContainer} for more documentation
  */
-export class SyncContainer<
-    Outputs extends [Extendable],
-> extends AsyncContainer<Outputs> {
+export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<Outputs> {
     /**
      * Create a synchronous container from module bindings.
      *
@@ -1577,10 +1419,7 @@ export class SyncContainer<
         id: Id,
         ...invalidInput: [
             NonExtendable<
-                StripAnnotations<
-                    HaystackIdType<Id>,
-                    'latebinding' | 'supplier'
-                >,
+                StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>,
                 Id['annotations']['named']
             >,
         ] extends Outputs
@@ -1589,9 +1428,7 @@ export class SyncContainer<
     ): StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>;
     public get<Constructor extends IsClass>(
         clazz: Constructor,
-        ...invalidInput: [
-            NonExtendable<InstanceOfClass<Constructor>, null>,
-        ] extends Outputs
+        ...invalidInput: [NonExtendable<InstanceOfClass<Constructor>, null>] extends Outputs
             ? []
             : [1]
     ): InstanceOfClass<Constructor>;
@@ -1600,10 +1437,7 @@ export class SyncContainer<
             Id,
             ...([
                 NonExtendable<
-                    StripAnnotations<
-                        HaystackIdType<Id>,
-                        'latebinding' | 'supplier'
-                    >,
+                    StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>,
                     Id['annotations']['named']
                 >,
             ] extends Outputs
@@ -1611,29 +1445,22 @@ export class SyncContainer<
                 : [1]),
         ]
     ): StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'> {
-        const id = unsafeIdentifier(idOrClass)
-            .supplier(false)
-            .lateBinding(false);
+        const id = unsafeIdentifier(idOrClass).supplier(false).lateBinding(false);
         const binding = this.idToBinding.get(id);
         if (!binding) {
             throw new HaystackProviderMissingError([id]);
         }
         this[preloadSyncSym]();
         const requestCache: ScopeCache = new Map();
-        return this[getSyncSym](
-            binding,
-            requestCache,
-            requestCache
-        ) as StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>;
+        return this[getSyncSym](binding, requestCache, requestCache) as StripAnnotations<
+            HaystackIdType<Id>,
+            'latebinding' | 'supplier'
+        >;
     }
 }
 
 export const createSyncContainer = SyncContainer[createContainerSym];
-delete (SyncContainer as Record<typeof createContainerSym, unknown>)[
-    createContainerSym
-];
+delete (SyncContainer as Record<typeof createContainerSym, unknown>)[createContainerSym];
 
 export const createAsyncContainer = AsyncContainer[createContainerSym];
-delete (AsyncContainer as Record<typeof createContainerSym, unknown>)[
-    createContainerSym
-];
+delete (AsyncContainer as Record<typeof createContainerSym, unknown>)[createContainerSym];

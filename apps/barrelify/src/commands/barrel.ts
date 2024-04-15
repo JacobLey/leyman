@@ -20,8 +20,7 @@ export const barrel: CommandModule<
         yargs
             .options({
                 ci: {
-                    describe:
-                        'Fail if files are not up to date. Implies --dry-run',
+                    describe: 'Fail if files are not up to date. Implies --dry-run',
                     type: 'boolean',
                     default: false,
                 },

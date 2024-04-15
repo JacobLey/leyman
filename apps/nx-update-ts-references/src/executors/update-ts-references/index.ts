@@ -32,14 +32,12 @@ const normalizeOptions = (
         tsConfig: join(packageRoot, 'tsconfig.json'),
         dependencies: context
             .projectGraph!.dependencies[projectName]!.filter(
-                dependency =>
-                    context.projectsConfigurations!.projects[dependency.target]
+                dependency => context.projectsConfigurations!.projects[dependency.target]
             )
             .map(dependency =>
                 join(
                     context.root,
-                    context.projectsConfigurations!.projects[dependency.target]!
-                        .root,
+                    context.projectsConfigurations!.projects[dependency.target]!.root,
                     'tsconfig.json'
                 )
             ),
@@ -103,10 +101,9 @@ export default async (
             path: relative(normalized.packageRoot, join(path, '..')),
         }));
 
-    const dataToWrite = await formatText(
-        commentJson.stringify(packageTsConfig.json, null, 2),
-        { ext: '.json' }
-    );
+    const dataToWrite = await formatText(commentJson.stringify(packageTsConfig.json, null, 2), {
+        ext: '.json',
+    });
 
     if (dataToWrite === packageTsConfig.rawData) {
         return { success: true };

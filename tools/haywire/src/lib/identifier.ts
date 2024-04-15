@@ -9,44 +9,36 @@ import type {
     Supplier,
 } from '#types';
 
-export type ClassToConstructable<T extends IsClass> = T extends GenericClass<
-    infer U
->
+export type ClassToConstructable<T extends IsClass> = T extends GenericClass<infer U>
     ? HaystackId<U, T, null, false, false, false, false>
     : HaystackId<InstanceOfClass<T>, null, null, false, false, false, false>;
 
-const classToIdCache = new WeakMap<
-    GenericClass,
-    HaystackId<any, any, any, any, any, any, any>
->();
+const classToIdCache = new WeakMap<GenericClass, HaystackId<any, any, any, any, any, any, any>>();
 
 type AllAnnotations = 'latebinding' | 'nullable' | 'supplier' | 'undefinable';
-type StripNullable<
-    T,
-    A extends AllAnnotations = 'nullable',
-> = 'nullable' extends A ? ([T] extends [infer U | null] ? U : T) : T;
-type StripUndefinable<
-    T,
-    A extends AllAnnotations = 'undefinable',
-> = 'undefinable' extends A ? ([T] extends [infer U | undefined] ? U : T) : T;
-type StripSupplier<
-    T,
-    A extends AllAnnotations = 'supplier',
-> = 'supplier' extends A
+type StripNullable<T, A extends AllAnnotations = 'nullable'> = 'nullable' extends A
+    ? [T] extends [infer U | null]
+        ? U
+        : T
+    : T;
+type StripUndefinable<T, A extends AllAnnotations = 'undefinable'> = 'undefinable' extends A
+    ? [T] extends [infer U | undefined]
+        ? U
+        : T
+    : T;
+type StripSupplier<T, A extends AllAnnotations = 'supplier'> = 'supplier' extends A
     ? [T] extends [Supplier<infer U>]
         ? U
         : [T] extends [AsyncSupplier<infer U>]
           ? U
           : T
     : T;
-type StripLateBinding<
-    T,
-    A extends AllAnnotations = 'latebinding',
-> = 'latebinding' extends A ? ([T] extends [LateBinding<infer U>] ? U : T) : T;
-export type StripAnnotations<
-    T,
-    A extends AllAnnotations = AllAnnotations,
-> = StripNullable<
+type StripLateBinding<T, A extends AllAnnotations = 'latebinding'> = 'latebinding' extends A
+    ? [T] extends [LateBinding<infer U>]
+        ? U
+        : T
+    : T;
+export type StripAnnotations<T, A extends AllAnnotations = AllAnnotations> = StripNullable<
     StripUndefinable<StripSupplier<StripLateBinding<T, A>, A>, A>,
     A
 >;
@@ -59,9 +51,7 @@ interface UnsafeIdentifierGenerator {
     // Idempotent
     <T extends GenericHaystackId>(id: T): T;
     <T extends IsClass>(clazz: T): ClassToConstructable<T>;
-    <T>(
-        name?: string
-    ): HaystackId<StripAnnotations<T>, null, null, false, false, false, false>;
+    <T>(name?: string): HaystackId<StripAnnotations<T>, null, null, false, false, false, false>;
 }
 
 type SupplierProp<T extends 'async' | boolean> = T extends false
@@ -137,29 +127,12 @@ export class HaystackId<
     static #pseudoRandTracker = 0;
 
     public declare readonly [idType]: T;
-    #baseId: HaystackId<
-        T,
-        Constructor,
-        Named,
-        false,
-        false,
-        false,
-        false
-    > | null = null;
-    readonly #childIds: Map<
-        string,
-        HaystackId<any, any, any, any, any, any, any>
-    >;
+    #baseId: HaystackId<T, Constructor, Named, false, false, false, false> | null = null;
+    readonly #childIds: Map<string, HaystackId<any, any, any, any, any, any, any>>;
 
     public readonly id: string;
     public readonly construct: Constructor;
-    public readonly annotations: Annotations<
-        Named,
-        Nullable,
-        Undefinable,
-        Supply,
-        LateBind
-    >;
+    public readonly annotations: Annotations<Named, Nullable, Undefinable, Supply, LateBind>;
 
     private constructor(
         id: string,
@@ -171,10 +144,7 @@ export class HaystackId<
             Supply,
             LateBind
         > = defaultAnnotations as typeof annotations,
-        childIds = new Map<
-            string,
-            HaystackId<any, any, any, any, any, any, any>
-        >()
+        childIds = new Map<string, HaystackId<any, any, any, any, any, any, any>>()
     ) {
         this.id = id;
         this.construct = construct;
@@ -195,15 +165,7 @@ export class HaystackId<
      *
      * @returns generic form of identifier
      */
-    public baseId(): HaystackId<
-        T,
-        Constructor,
-        Named,
-        false,
-        false,
-        false,
-        false
-    > {
+    public baseId(): HaystackId<T, Constructor, Named, false, false, false, false> {
         if (!this.#baseId) {
             this.#baseId = this.#extend({
                 ...this.annotations,
@@ -231,27 +193,11 @@ export class HaystackId<
      */
     public named(
         name?: null
-    ): HaystackId<
-        T,
-        Constructor,
-        null,
-        Nullable,
-        Undefinable,
-        Supply,
-        LateBind
-    >;
+    ): HaystackId<T, Constructor, null, Nullable, Undefinable, Supply, LateBind>;
     public named<NewName extends string | symbol>(
         named: NewName,
         ...invalidInput: LiteralStringType<NewName>
-    ): HaystackId<
-        T,
-        Constructor,
-        NewName,
-        Nullable,
-        Undefinable,
-        Supply,
-        LateBind
-    >;
+    ): HaystackId<T, Constructor, NewName, Nullable, Undefinable, Supply, LateBind>;
     public named(named: string | symbol | null = null): GenericHaystackId {
         if (this.annotations.named === named) {
             return this;
@@ -323,15 +269,7 @@ export class HaystackId<
      */
     public supplier(
         supplier: false
-    ): HaystackId<
-        T,
-        Constructor,
-        Named,
-        Nullable,
-        Undefinable,
-        false,
-        LateBind
-    >;
+    ): HaystackId<T, Constructor, Named, Nullable, Undefinable, false, LateBind>;
     public supplier(
         supplier?:
             | true
@@ -347,15 +285,7 @@ export class HaystackId<
                   sync: false;
                   propagateScope: boolean;
               }
-    ): HaystackId<
-        T,
-        Constructor,
-        Named,
-        Nullable,
-        Undefinable,
-        'async',
-        LateBind
-    >;
+    ): HaystackId<T, Constructor, Named, Nullable, Undefinable, 'async', LateBind>;
     public supplier(
         supplier:
             | 'async'
@@ -434,43 +364,28 @@ export class HaystackId<
 
         if (typeof idOrNameOrClass === 'string') {
             if (idOrNameOrClass) {
-                return new HaystackId<
-                    T2,
-                    Constructor2,
-                    Named2,
-                    false,
-                    false,
-                    false,
-                    false
-                >(idOrNameOrClass, null as Constructor2);
+                return new HaystackId<T2, Constructor2, Named2, false, false, false, false>(
+                    idOrNameOrClass,
+                    null as Constructor2
+                );
             }
         } else if (idOrNameOrClass) {
             const cachedId = classToIdCache.get(idOrNameOrClass);
             if (cachedId) {
                 return cachedId;
             }
-            const id = new HaystackId<
-                T2,
-                Constructor2,
-                Named2,
-                false,
-                false,
-                false,
-                false
-            >(idOrNameOrClass.name, idOrNameOrClass as Constructor2);
+            const id = new HaystackId<T2, Constructor2, Named2, false, false, false, false>(
+                idOrNameOrClass.name,
+                idOrNameOrClass as Constructor2
+            );
             classToIdCache.set(idOrNameOrClass, id);
             return id;
         }
 
-        return new HaystackId<
-            T2,
-            Constructor2,
-            Named2,
-            false,
-            false,
-            false,
-            false
-        >('haystack-id', null as Constructor2);
+        return new HaystackId<T2, Constructor2, Named2, false, false, false, false>(
+            'haystack-id',
+            null as Constructor2
+        );
     };
 
     /**
@@ -521,20 +436,8 @@ export class HaystackId<
         undefinable,
         supplier,
         lateBinding,
-    }: Annotations<
-        string | symbol | null,
-        boolean,
-        boolean,
-        'async' | boolean,
-        boolean
-    >): string {
-        const key = JSON.stringify([
-            named,
-            nullable,
-            undefinable,
-            supplier,
-            lateBinding,
-        ]);
+    }: Annotations<string | symbol | null, boolean, boolean, 'async' | boolean, boolean>): string {
+        const key = JSON.stringify([named, nullable, undefinable, supplier, lateBinding]);
         if (typeof named === 'symbol') {
             // Stringified symbols becomes null, so need to attach extra metadata to account for symbol value
             return this.#getSymRand(named) + key;
@@ -556,36 +459,15 @@ export class HaystackId<
         Supply2 extends 'async' | boolean,
         LateBind2 extends boolean,
     >(
-        annotations: Annotations<
-            Named2,
-            Nullable2,
-            Undefinable2,
-            Supply2,
-            LateBind2
-        >
-    ): HaystackId<
-        T,
-        Constructor,
-        Named2,
-        Nullable2,
-        Undefinable2,
-        Supply2,
-        LateBind2
-    > {
-        const existing = this.#childIds.get(
-            HaystackId.#annotationKey(annotations)
-        );
+        annotations: Annotations<Named2, Nullable2, Undefinable2, Supply2, LateBind2>
+    ): HaystackId<T, Constructor, Named2, Nullable2, Undefinable2, Supply2, LateBind2> {
+        const existing = this.#childIds.get(HaystackId.#annotationKey(annotations));
         if (existing) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
             return existing;
         }
 
-        return new HaystackId(
-            this.id,
-            this.construct,
-            annotations,
-            this.#childIds
-        );
+        return new HaystackId(this.id, this.construct, annotations, this.#childIds);
     }
 }
 
@@ -612,35 +494,33 @@ export type GenericOutputHaystackId = HaystackId<
 >;
 
 type HaystackIdTypeNullable<Id extends GenericHaystackId> =
-    Id['annotations']['nullable'] extends true
-        ? Id[typeof idType] | null
-        : Id[typeof idType];
+    Id['annotations']['nullable'] extends true ? Id[typeof idType] | null : Id[typeof idType];
 type HaystackIdTypeUndefinable<Id extends GenericHaystackId> =
     Id['annotations']['undefinable'] extends true
         ? HaystackIdTypeNullable<Id> | undefined
         : HaystackIdTypeNullable<Id>;
-type HaystackIdTypeSupplier<Id extends GenericHaystackId> =
-    Id['annotations']['supplier'] extends { sync: infer U }
-        ? U extends true
-            ? Supplier<HaystackIdTypeUndefinable<Id>>
-            : AsyncSupplier<HaystackIdTypeUndefinable<Id>>
-        : HaystackIdTypeUndefinable<Id>;
+type HaystackIdTypeSupplier<Id extends GenericHaystackId> = Id['annotations']['supplier'] extends {
+    sync: infer U;
+}
+    ? U extends true
+        ? Supplier<HaystackIdTypeUndefinable<Id>>
+        : AsyncSupplier<HaystackIdTypeUndefinable<Id>>
+    : HaystackIdTypeUndefinable<Id>;
 export type HaystackIdType<Id extends GenericHaystackId> =
     Id['annotations']['lateBinding'] extends true
         ? LateBinding<HaystackIdTypeSupplier<Id>>
         : HaystackIdTypeSupplier<Id>;
 
-export type HaystackIdConstructor<Id extends GenericHaystackId> =
-    Id extends HaystackId<
-        unknown,
-        infer U,
-        string | symbol | null,
-        boolean,
-        boolean,
-        'async' | boolean,
-        boolean
-    >
-        ? U extends GenericClass
-            ? U
-            : null
-        : null;
+export type HaystackIdConstructor<Id extends GenericHaystackId> = Id extends HaystackId<
+    unknown,
+    infer U,
+    string | symbol | null,
+    boolean,
+    boolean,
+    'async' | boolean,
+    boolean
+>
+    ? U extends GenericClass
+        ? U
+        : null
+    : null;

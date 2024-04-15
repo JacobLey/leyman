@@ -1,8 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import {
-    renderHook,
-    type WrapperComponent,
-} from '@testing-library/react-hooks';
+import { renderHook, type WrapperComponent } from '@testing-library/react-hooks';
 import { expect } from 'chai';
 import type { ReactNode } from 'react';
 import { spy, verifyAndRestore } from 'sinon';
@@ -29,9 +26,7 @@ suite('resourece', () => {
             return {
                 client,
                 wrapper: ({ children }) => (
-                    <QueryClientProvider client={client}>
-                        {children}
-                    </QueryClientProvider>
+                    <QueryClientProvider client={client}>{children}</QueryClientProvider>
                 ),
             };
         }
@@ -52,13 +47,10 @@ suite('resourece', () => {
                 },
             });
 
-            const { result, rerender } = renderHook(
-                ({ id }) => fetchUser.useQuery(id),
-                {
-                    wrapper,
-                    initialProps: { id: 'abc' },
-                }
-            );
+            const { result, rerender } = renderHook(({ id }) => fetchUser.useQuery(id), {
+                wrapper,
+                initialProps: { id: 'abc' },
+            });
 
             expect(result.current.data).to.equal(undefined);
             expect(result.current.isLoading).to.equal(true);
@@ -91,13 +83,10 @@ suite('resourece', () => {
                 }
             );
 
-            const { result, rerender } = renderHook(
-                ({ id }) => fetchUser.useQuery(id),
-                {
-                    wrapper,
-                    initialProps: { id: 'abc' },
-                }
-            );
+            const { result, rerender } = renderHook(({ id }) => fetchUser.useQuery(id), {
+                wrapper,
+                initialProps: { id: 'abc' },
+            });
 
             while (!onSuccess.calledOnce) {
                 await Api.delayImmediate();
@@ -143,10 +132,7 @@ suite('resourece', () => {
 
             expect(result.current.isError).to.equal(true);
             expect(result.current.data).to.equal(undefined);
-            expect(result.current.error).to.haveOwnProperty(
-                'message',
-                'Invalid id: abc'
-            );
+            expect(result.current.error).to.haveOwnProperty('message', 'Invalid id: abc');
             expect(onSettled.calledOnce).to.equal(true);
         });
     });
@@ -177,18 +163,14 @@ suite('resourece', () => {
             const user = await fetchUser.fetch(client, 'abc');
             expect(user).to.contain({ id: 'abc' });
 
-            expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([
-                1, 1,
-            ]);
+            expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([1, 1]);
 
             const cachedUser = await fetchUser.fetch(client, 'abc', {
                 staleTime: Number.POSITIVE_INFINITY,
             });
             expect(user).to.eq(cachedUser);
 
-            expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([
-                1, 1,
-            ]);
+            expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([1, 1]);
 
             let error: unknown;
             try {
@@ -198,9 +180,7 @@ suite('resourece', () => {
             }
             expect(error).to.haveOwnProperty('message', 'Invalid id: xyz');
 
-            expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([
-                1, 2,
-            ]);
+            expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([1, 2]);
         });
 
         context.test('onError', async ({ client }) => {
@@ -264,25 +244,19 @@ suite('resourece', () => {
         expect(fetchSum.getStatus(client, [1, 2])).to.equal(null);
 
         await fetchSum.setData(client, [1, 2], 4);
-        expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([
-            1, 1,
-        ]);
+        expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([1, 1]);
 
         expect(fetchSum.getStatus(client, [1, 2])).to.equal('success');
 
         await fetchSum.fetch(client, [1, 2], {
             staleTime: Number.POSITIVE_INFINITY,
         });
-        expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([
-            1, 1,
-        ]);
+        expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([1, 1]);
 
         await fetchSum.setData(client, [3, 4], 10, {
             skipHooks: true,
         });
-        expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([
-            1, 1,
-        ]);
+        expect([onSuccess.callCount, onSettled.callCount]).to.deep.equal([1, 1]);
 
         expect(fetchSum.getData(client, [1, 2])).to.equal(4);
         expect(fetchSum.getData(client, [2, 3])).to.equal(undefined);

@@ -6,10 +6,7 @@ import { beforeEach, suite } from 'mocha-hookup';
 import { mockMethod, stubMethod } from 'sinon-typed-stub';
 import type { isNxJson, isProjectJson } from '#schemas';
 import { Lifecycle } from '../../../../executors/lifecycle/lifecycle.js';
-import {
-    type NormalizedOptions,
-    Normalizer,
-} from '../../../../executors/lifecycle/normalizer.js';
+import { type NormalizedOptions, Normalizer } from '../../../../executors/lifecycle/normalizer.js';
 import type { NxAndProjectJsonProcessor } from '../../../../executors/lifecycle/processor.js';
 import type { LifecycleOptions } from '../../../../executors/lifecycle/schema.js';
 import type { SimpleExecutorContext } from '../../../../executors/lifecycle/types.js';
@@ -76,12 +73,8 @@ suite('lifecycle', () => {
                 .resolves(JSON.stringify(fakeBarProjectJson));
 
             ctx.stubbedIsNxJson.withArgs(match(fakeNxJson)).returns(true);
-            ctx.stubbedIsProjectJson
-                .withArgs(match(fakeFooProjectJson))
-                .returns(true);
-            ctx.stubbedIsProjectJson
-                .withArgs(match(fakeBarProjectJson))
-                .returns(true);
+            ctx.stubbedIsProjectJson.withArgs(match(fakeFooProjectJson)).returns(true);
+            ctx.stubbedIsProjectJson.withArgs(match(fakeBarProjectJson)).returns(true);
         });
 
         stubs.test('Writes updated files', async ctx => {
@@ -147,11 +140,7 @@ suite('lifecycle', () => {
 
             expect(ctx.stubbedFormatFiles.callCount).to.equal(1);
             expect(
-                ctx.stubbedFormatFiles.calledWith([
-                    '<nx-json-path>',
-                    '<foo-path>',
-                    '<bar-path>',
-                ])
+                ctx.stubbedFormatFiles.calledWith(['<nx-json-path>', '<foo-path>', '<bar-path>'])
             );
         });
 
@@ -262,10 +251,7 @@ suite('lifecycle', () => {
                 )
                 .returns({
                     processedNxJson: fakeNxJson,
-                    processedProjectJsons: [
-                        fakeProcessedFooProjectJson,
-                        fakeBarProjectJson,
-                    ],
+                    processedProjectJsons: [fakeProcessedFooProjectJson, fakeBarProjectJson],
                 });
 
             ctx.stubbedWriteFile.resolves();
@@ -344,13 +330,9 @@ suite('lifecycle', () => {
                 .resolves(JSON.stringify(fakeBarProjectJson));
 
             ctx.stubbedIsNxJson.withArgs(match(fakeNxJson)).returns(true);
-            ctx.stubbedIsProjectJson
-                .withArgs(match(fakeFooProjectJson))
-                .returns(true);
+            ctx.stubbedIsProjectJson.withArgs(match(fakeFooProjectJson)).returns(true);
 
-            ctx.stubbedIsProjectJson
-                .withArgs(match(fakeBarProjectJson))
-                .returns(false);
+            ctx.stubbedIsProjectJson.withArgs(match(fakeBarProjectJson)).returns(false);
             define(ctx.stubbedIsProjectJson, 'errors', ['<ERROR>']);
 
             await expect(ctx.lifecycle.lifecycle(mockOptions, mockContext))

@@ -74,29 +74,18 @@ suite('bind', () => {
     const thingId = identifier<Thing>();
     const thingBind = bind(thingId);
 
-    const kindaThingId = thingId
-        .named('<name>')
-        .nullable()
-        .undefinable()
-        .supplier()
-        .lateBinding();
+    const kindaThingId = thingId.named('<name>').nullable().undefinable().supplier().lateBinding();
     const kindaThingBind = bind(kindaThingId);
 
     const promisishId = identifier<789 | Promise<123>>();
     const promisishBind = bind(promisishId);
 
     test('Strips annotations', () => {
-        expectTypeOf(
-            bind(identifier(Foo).supplier().lateBinding())
-        ).toEqualTypeOf(fooBind);
-        expectTypeOf(
-            bind(identifier(Foo).supplier('async').lateBinding())
-        ).toEqualTypeOf(fooBind);
+        expectTypeOf(bind(identifier(Foo).supplier().lateBinding())).toEqualTypeOf(fooBind);
+        expectTypeOf(bind(identifier(Foo).supplier('async').lateBinding())).toEqualTypeOf(fooBind);
 
         expectTypeOf(kindaThingBind).toEqualTypeOf<
-            BindingBuilder<
-                HaystackId<Thing, null, '<name>', true, true, false, false>
-            >
+            BindingBuilder<HaystackId<Thing, null, '<name>', true, true, false, false>>
         >();
     });
 
@@ -110,24 +99,15 @@ suite('bind', () => {
 
         barBind.withInstance(null);
 
-        const extendsBarBinding = extendsBarBind.withInstance(
-            new ExtendsBar(123)
-        );
+        const extendsBarBinding = extendsBarBind.withInstance(new ExtendsBar(123));
         expectTypeOf(
-            new Binding(
-                identifier(ExtendsBar),
-                [],
-                false,
-                () => new ExtendsBar(456)
-            ).undefinable()
+            new Binding(identifier(ExtendsBar), [], false, () => new ExtendsBar(456)).undefinable()
         ).toEqualTypeOf(extendsBarBinding);
 
         const thingBinding = thingBind.withInstance({
             stuff: () => [],
         });
-        expectTypeOf(thingBinding).toEqualTypeOf<
-            Binding<typeof thingId, [], false>
-        >();
+        expectTypeOf(thingBinding).toEqualTypeOf<Binding<typeof thingId, [], false>>();
         expect(thingBinding.scope).to.equal(optimisticSingletonScope);
 
         kindaThingBind.withInstance({
@@ -176,9 +156,7 @@ suite('bind', () => {
         fooBind.withConstructorProvider();
 
         const extendsFooProvider = extendsFooBind.withConstructorProvider();
-        expect(
-            extendsFooProvider.withDependencies([]).provider()
-        ).to.be.an.instanceOf(ExtendsFoo);
+        expect(extendsFooProvider.withDependencies([]).provider()).to.be.an.instanceOf(ExtendsFoo);
         // @ts-expect-error
         extendsFooProvider.withDependencies([Bar]);
 
@@ -209,11 +187,7 @@ suite('bind', () => {
     test('generator', () => {
         const fooBinding = fooBind.withGenerator(() => new ExtendsFoo());
         expectTypeOf(fooBinding).toEqualTypeOf<
-            Binding<
-                HaystackId<Foo, null, null, false, false, false, false>,
-                [],
-                false
-            >
+            Binding<HaystackId<Foo, null, null, false, false, false, false>, [], false>
         >();
         // @ts-expect-error
         fooBind.withGenerator(() => new ExtendsBar());
@@ -234,11 +208,7 @@ suite('bind', () => {
     test('async generator', () => {
         const fooBinding = fooBind.withAsyncGenerator(() => new ExtendsFoo());
         expectTypeOf(fooBinding).toEqualTypeOf<
-            Binding<
-                HaystackId<Foo, null, null, false, false, false, false>,
-                [],
-                true
-            >
+            Binding<HaystackId<Foo, null, null, false, false, false, false>, [], true>
         >();
         // @ts-expect-error
         fooBind.withAsyncGenerator(async () => new ExtendsBar());
@@ -261,11 +231,7 @@ suite('bind', () => {
     test('provider', () => {
         const fooProvider = fooBind.withProvider(() => new ExtendsFoo());
         expectTypeOf(fooProvider.withDependencies([])).toEqualTypeOf<
-            Binding<
-                HaystackId<Foo, null, null, false, false, false, false>,
-                [],
-                false
-            >
+            Binding<HaystackId<Foo, null, null, false, false, false, false>, [], false>
         >();
         // @ts-expect-error
         fooProvider.withDependencies([Foo]);
@@ -289,36 +255,22 @@ suite('bind', () => {
             // @ts-expect-error
             .withDependencies([identifier(ExtendsBar).supplier()]);
 
-        const bindingDependsOnNumberMaker = bind(
-            identifier<number>()
-        ).withProvider((makeNumber: () => number) => makeNumber());
-        bindingDependsOnNumberMaker.withDependencies([
-            identifier<() => number>(),
-        ]);
+        const bindingDependsOnNumberMaker = bind(identifier<number>()).withProvider(
+            (makeNumber: () => number) => makeNumber()
+        );
+        bindingDependsOnNumberMaker.withDependencies([identifier<() => number>()]);
         // @ts-expect-error
-        bindingDependsOnNumberMaker.withDependencies([
-            identifier<() => number>().supplier(),
-        ]);
+        bindingDependsOnNumberMaker.withDependencies([identifier<() => number>().supplier()]);
 
         const extendsBarProvider = extendsBarBind.withProvider(
             (val: string | null) => new ExtendsBar((val ?? 'abc').length)
         );
         extendsBarProvider.withDependencies([identifier<string>()]);
         expectTypeOf(
-            extendsBarProvider.withDependencies([
-                identifier<string>().nullable(),
-            ])
+            extendsBarProvider.withDependencies([identifier<string>().nullable()])
         ).toEqualTypeOf<
             Binding<
-                HaystackId<
-                    ExtendsBar,
-                    typeof ExtendsBar,
-                    null,
-                    false,
-                    true,
-                    false,
-                    false
-                >,
+                HaystackId<ExtendsBar, typeof ExtendsBar, null, false, true, false, false>,
                 [HaystackId<string, null, null, true, false, false, false>],
                 false
             >
@@ -332,11 +284,7 @@ suite('bind', () => {
     test('async provider', () => {
         const fooProvider = fooBind.withAsyncProvider(() => new ExtendsFoo());
         expectTypeOf(fooProvider.withDependencies([])).toEqualTypeOf<
-            Binding<
-                HaystackId<Foo, null, null, false, false, false, false>,
-                [],
-                true
-            >
+            Binding<HaystackId<Foo, null, null, false, false, false, false>, [], true>
         >();
         // @ts-expect-error
         fooProvider.withDependencies([Foo]);
@@ -344,9 +292,7 @@ suite('bind', () => {
         // @ts-expect-error
         extendsFooBind.withAsyncProvider(async () => ({}) as Foo);
 
-        barBind
-            .withAsyncProvider(async (bar: Bar) => bar)
-            .withDependencies([ExtendsBar]);
+        barBind.withAsyncProvider(async (bar: Bar) => bar).withDependencies([ExtendsBar]);
         barBind
             .withAsyncProvider(async (extendsBar: ExtendsBar) => extendsBar)
             // @ts-expect-error
@@ -360,38 +306,22 @@ suite('bind', () => {
             // @ts-expect-error
             .withDependencies([identifier(ExtendsBar).lateBinding()]);
 
-        const bindingDependsOnStringProm = bind(
-            identifier<string>()
-        ).withAsyncProvider(
+        const bindingDependsOnStringProm = bind(identifier<string>()).withAsyncProvider(
             async (resolveString: Promise<string>) => resolveString
         );
-        bindingDependsOnStringProm.withDependencies([
-            identifier<Promise<string>>(),
-        ]);
+        bindingDependsOnStringProm.withDependencies([identifier<Promise<string>>()]);
         // @ts-expect-error
-        bindingDependsOnStringProm.withDependencies([
-            identifier<Promise<string>>().lateBinding(),
-        ]);
+        bindingDependsOnStringProm.withDependencies([identifier<Promise<string>>().lateBinding()]);
 
         const extendsBarProvider = extendsBarBind.withAsyncProvider(
             async (val: string | undefined) => new ExtendsBar(val?.length ?? 0)
         );
         extendsBarProvider.withDependencies([identifier<string>()]);
         expectTypeOf(
-            extendsBarProvider.withDependencies([
-                identifier<string>().undefinable(),
-            ])
+            extendsBarProvider.withDependencies([identifier<string>().undefinable()])
         ).toEqualTypeOf<
             Binding<
-                HaystackId<
-                    ExtendsBar,
-                    typeof ExtendsBar,
-                    null,
-                    false,
-                    true,
-                    false,
-                    false
-                >,
+                HaystackId<ExtendsBar, typeof ExtendsBar, null, false, true, false, false>,
                 [HaystackId<string, null, null, false, true, false, false>],
                 true
             >
@@ -404,9 +334,7 @@ suite('bind', () => {
     });
 
     suite('dependencies', () => {
-        const fooDependencies = fooBind.withDependencies([
-            identifier<'ignored'>(),
-        ]);
+        const fooDependencies = fooBind.withDependencies([identifier<'ignored'>()]);
         const extendsFooDependencies = extendsFooBind.withDependencies([]);
 
         class OtherBar extends ExtendsBar {
@@ -425,23 +353,16 @@ suite('bind', () => {
             identifier<boolean>().supplier('async'),
         ]);
 
-        const eggDependencies = eggBind.withDependencies([
-            identifier(Egg).lateBinding(),
-        ]);
+        const eggDependencies = eggBind.withDependencies([identifier(Egg).lateBinding()]);
         const chickenDependencies = chickenBind.withDependencies([Egg]);
 
-        const thingDependencies = thingBind.withDependencies([
-            identifier<string[]>(),
-        ]);
+        const thingDependencies = thingBind.withDependencies([identifier<string[]>()]);
 
         const promisishDependencies = promisishBind.withDependencies([]);
 
         test('constructor provider', () => {
-            const extendsFooBinding =
-                extendsFooDependencies.withConstructorProvider();
-            expect(extendsFooBinding.provider()).to.be.an.instanceOf(
-                ExtendsFoo
-            );
+            const extendsFooBinding = extendsFooDependencies.withConstructorProvider();
+            expect(extendsFooBinding.provider()).to.be.an.instanceOf(ExtendsFoo);
 
             // @ts-expect-error
             fooDependencies.withConstructorProvider();
@@ -450,14 +371,9 @@ suite('bind', () => {
 
             // @ts-expect-error
             extendsBarDependencies.withConstructorProvider();
+            extendsBarBind.withDependencies([identifier<number>()]).withConstructorProvider();
             extendsBarBind
-                .withDependencies([identifier<number>()])
-                .withConstructorProvider();
-            extendsBarBind
-                .withDependencies([
-                    identifier<number>(),
-                    identifier<'ignore'>(),
-                ])
+                .withDependencies([identifier<number>(), identifier<'ignore'>()])
                 .withConstructorProvider();
 
             eggDependencies.withConstructorProvider();
@@ -473,9 +389,7 @@ suite('bind', () => {
         });
 
         test('provider', () => {
-            const fooBinding = fooDependencies.withProvider(
-                () => new ExtendsFoo()
-            );
+            const fooBinding = fooDependencies.withProvider(() => new ExtendsFoo());
             expectTypeOf(
                 fooDependencies.withProvider(ignored => {
                     expectTypeOf(ignored).toEqualTypeOf<'ignored'>();
@@ -494,18 +408,12 @@ suite('bind', () => {
                 (val: ExtendsFoo) => val
             );
 
-            const barBinding = barDependencies.withProvider(
-                (aOrB, asyncAOrB) => {
-                    expectTypeOf(aOrB).toEqualTypeOf<Supplier<'a' | 'b'>>();
-                    expectTypeOf(asyncAOrB).toEqualTypeOf<
-                        AsyncSupplier<'a' | 'b'>
-                    >();
-                    return Math.random() < 1 ? new ExtendsBar(123) : null;
-                }
-            );
-            expect(
-                barBinding.provider(aOrBSupplier, aOrBAsyncSupplier)!.val
-            ).to.equal('123');
+            const barBinding = barDependencies.withProvider((aOrB, asyncAOrB) => {
+                expectTypeOf(aOrB).toEqualTypeOf<Supplier<'a' | 'b'>>();
+                expectTypeOf(asyncAOrB).toEqualTypeOf<AsyncSupplier<'a' | 'b'>>();
+                return Math.random() < 1 ? new ExtendsBar(123) : null;
+            });
+            expect(barBinding.provider(aOrBSupplier, aOrBAsyncSupplier)!.val).to.equal('123');
             expectTypeOf(
                 barBinding.provider(aOrBSupplier, aOrBAsyncSupplier)
             ).toEqualTypeOf<Bar | null>();
@@ -519,12 +427,8 @@ suite('bind', () => {
                     expectTypeOf(lateNullable).toEqualTypeOf<
                         LateBinding<[number, number] | null>
                     >();
-                    expectTypeOf(undefinedSupplier).toEqualTypeOf<
-                        Supplier<number | undefined>
-                    >();
-                    expectTypeOf(asyncSupplier).toEqualTypeOf<
-                        AsyncSupplier<boolean>
-                    >();
+                    expectTypeOf(undefinedSupplier).toEqualTypeOf<Supplier<number | undefined>>();
+                    expectTypeOf(asyncSupplier).toEqualTypeOf<AsyncSupplier<boolean>>();
                     return otherBar;
                 }
             );
@@ -545,9 +449,7 @@ suite('bind', () => {
         });
 
         test('async provider', async () => {
-            expectTypeOf(
-                fooDependencies.withAsyncProvider(() => ({}) as ExtendsFoo)
-            ).toEqualTypeOf(
+            expectTypeOf(fooDependencies.withAsyncProvider(() => ({}) as ExtendsFoo)).toEqualTypeOf(
                 fooDependencies.withAsyncProvider(async ignored => {
                     expectTypeOf(ignored).toEqualTypeOf<'ignored'>();
                     return {} as Foo;
@@ -558,34 +460,23 @@ suite('bind', () => {
                 async () => 123
             );
 
-            extendsFooDependencies.withAsyncProvider(
-                async () => new ExtendsFoo()
-            );
+            extendsFooDependencies.withAsyncProvider(async () => new ExtendsFoo());
             extendsFooDependencies.withAsyncProvider(
                 // @ts-expect-error
                 async (val: ExtendsFoo) => val
             );
 
-            const barBinding = barDependencies.withAsyncProvider(
-                async (aOrB, asyncAOrB) => {
-                    expectTypeOf(aOrB).toEqualTypeOf<Supplier<'a' | 'b'>>();
-                    expectTypeOf(asyncAOrB).toEqualTypeOf<
-                        AsyncSupplier<'a' | 'b'>
-                    >();
-                    return Math.random() < 1
-                        ? Promise.resolve(new ExtendsBar(123))
-                        : null;
-                }
+            const barBinding = barDependencies.withAsyncProvider(async (aOrB, asyncAOrB) => {
+                expectTypeOf(aOrB).toEqualTypeOf<Supplier<'a' | 'b'>>();
+                expectTypeOf(asyncAOrB).toEqualTypeOf<AsyncSupplier<'a' | 'b'>>();
+                return Math.random() < 1 ? Promise.resolve(new ExtendsBar(123)) : null;
+            });
+            expect((await barBinding.provider(aOrBSupplier, aOrBAsyncSupplier))!.val).to.equal(
+                '123'
             );
-            expect(
-                (await barBinding.provider(aOrBSupplier, aOrBAsyncSupplier))!
-                    .val
-            ).to.equal('123');
 
             eggDependencies.withAsyncProvider(lateEgg => new Egg(lateEgg));
-            chickenDependencies.withAsyncProvider(
-                async () => new Chicken({} as Egg)
-            );
+            chickenDependencies.withAsyncProvider(async () => new Chicken({} as Egg));
 
             thingDependencies.withAsyncProvider(async stuff => ({
                 other: true,
@@ -613,29 +504,17 @@ suite('binding', () => {
         Undefinable extends boolean,
         Async extends boolean,
     > = Binding<
-        HaystackId<
-            '2' | 1 | true,
-            null,
-            Name,
-            Nullable,
-            Undefinable,
-            false,
-            false
-        >,
+        HaystackId<'2' | 1 | true, null, Name, Nullable, Undefinable, false, false>,
         [HaystackId<boolean, null, null, false, false, false, false>],
         Async
     >;
 
-    expectTypeOf(binding).toEqualTypeOf<
-        BindingImplementation<null, false, false, false>
-    >();
+    expectTypeOf(binding).toEqualTypeOf<BindingImplementation<null, false, false, false>>();
 
     const namedBinding = binding.named('name');
     expect(namedBinding).to.not.equal(binding);
 
-    expectTypeOf(namedBinding).toEqualTypeOf<
-        BindingImplementation<'name', false, false, false>
-    >();
+    expectTypeOf(namedBinding).toEqualTypeOf<BindingImplementation<'name', false, false, false>>();
 
     expectTypeOf(namedBinding.named()).toEqualTypeOf(binding);
     expectTypeOf(namedBinding.named()).toEqualTypeOf(namedBinding.named(null));
@@ -649,9 +528,7 @@ suite('binding', () => {
     binding.named(Symbol.for('abc'));
 
     const nullableBinding = binding.nullable();
-    expectTypeOf(nullableBinding).toEqualTypeOf<
-        BindingImplementation<null, true, false, false>
-    >();
+    expectTypeOf(nullableBinding).toEqualTypeOf<BindingImplementation<null, true, false, false>>();
     expectTypeOf(nullableBinding).toEqualTypeOf(binding.nullable(true));
     expect(nullableBinding).to.not.equal(binding);
     // @ts-expect-error
@@ -666,29 +543,25 @@ suite('binding', () => {
     // @ts-expect-error
     binding.undefinable(false);
 
-    expectTypeOf(
-        binding.named('other-name').nullable().undefinable()
-    ).toEqualTypeOf<BindingImplementation<'other-name', true, true, false>>();
-    expect(
-        binding.named('other-name').nullable().undefinable().outputId
-    ).to.equal(binding.outputId.named('other-name').nullable().undefinable());
-    expectTypeOf(
-        binding.named('other-name').nullable().undefinable().outputId
-    ).toEqualTypeOf(
+    expectTypeOf(binding.named('other-name').nullable().undefinable()).toEqualTypeOf<
+        BindingImplementation<'other-name', true, true, false>
+    >();
+    expect(binding.named('other-name').nullable().undefinable().outputId).to.equal(
+        binding.outputId.named('other-name').nullable().undefinable()
+    );
+    expectTypeOf(binding.named('other-name').nullable().undefinable().outputId).toEqualTypeOf(
         binding.outputId.named('other-name').nullable().undefinable()
     );
 
-    expectTypeOf(
-        binding.named(uniqueSym).nullable().undefinable()
-    ).toEqualTypeOf<
+    expectTypeOf(binding.named(uniqueSym).nullable().undefinable()).toEqualTypeOf<
         BindingImplementation<typeof uniqueSym, true, true, false>
     >();
     expect(binding.named(uniqueSym).nullable().undefinable().outputId).to.equal(
         binding.outputId.named(uniqueSym).nullable().undefinable()
     );
-    expectTypeOf(
-        binding.named(uniqueSym).nullable().undefinable().outputId
-    ).toEqualTypeOf(binding.outputId.named(uniqueSym).nullable().undefinable());
+    expectTypeOf(binding.named(uniqueSym).nullable().undefinable().outputId).toEqualTypeOf(
+        binding.outputId.named(uniqueSym).nullable().undefinable()
+    );
 
     expect(binding.scope).to.equal(transientScope);
     expect(binding.scoped(requestScope).scope).to.equal(requestScope);
@@ -697,8 +570,6 @@ suite('binding', () => {
 
     test('dependencyIds', () => {
         expect(binding.dependencyIds).to.equal(binding.depIds);
-        expectTypeOf(binding.dependencyIds).toEqualTypeOf<
-            readonly GenericHaystackId[]
-        >();
+        expectTypeOf(binding.dependencyIds).toEqualTypeOf<readonly GenericHaystackId[]>();
     });
 });

@@ -32,17 +32,15 @@ suite('cli', () => {
     suite('commands', () => {
         suite('default', () => {
             test('success', async () => {
-                const buildStub = stub(barrelFiles, patchKey).callsFake(
-                    async params => {
-                        expect(params).to.deep.equal({
-                            cwd: process.cwd(),
-                            dryRun: true,
-                            ignore: ['foo'],
-                            logger: console,
-                        });
-                        return [];
-                    }
-                );
+                const buildStub = stub(barrelFiles, patchKey).callsFake(async params => {
+                    expect(params).to.deep.equal({
+                        cwd: process.cwd(),
+                        dryRun: true,
+                        ignore: ['foo'],
+                        logger: console,
+                    });
+                    return [];
+                });
 
                 await new BarrelCli({
                     argv: ['node', 'barrelify', '--dry-run', '--ignore', 'foo'],
@@ -54,14 +52,9 @@ suite('cli', () => {
             stubbedOutput.test('failure', async ({ outputStub }) => {
                 const buildSpy = spy(barrelFiles, patchKey);
                 outputStub.callsFake((err, argv, log) => {
-                    expect(err).to.have.property(
-                        'message',
-                        'Unknown arguments: unknown, option'
-                    );
+                    expect(err).to.have.property('message', 'Unknown arguments: unknown, option');
                     expect(log.startsWith('barrelify')).to.equal(true);
-                    expect(
-                        log.endsWith('Unknown arguments: unknown, option')
-                    ).to.equal(true);
+                    expect(log.endsWith('Unknown arguments: unknown, option')).to.equal(true);
                 });
 
                 await new BarrelCli({
@@ -75,17 +68,15 @@ suite('cli', () => {
 
         suite('ci', () => {
             test('success', async () => {
-                const buildStub = stub(barrelFiles, patchKey).callsFake(
-                    async params => {
-                        expect(params).to.deep.equal({
-                            cwd: Path.resolve('..'),
-                            dryRun: true,
-                            ignore: undefined,
-                            logger: console,
-                        });
-                        return [];
-                    }
-                );
+                const buildStub = stub(barrelFiles, patchKey).callsFake(async params => {
+                    expect(params).to.deep.equal({
+                        cwd: Path.resolve('..'),
+                        dryRun: true,
+                        ignore: undefined,
+                        logger: console,
+                    });
+                    return [];
+                });
 
                 await new BarrelCli({
                     argv: ['node', 'barrelify', '--ci', '--cwd', '..'],

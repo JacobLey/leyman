@@ -6,63 +6,37 @@ import {
     wrapHookWithEntrypoint,
     wrapOneTimeHookWithContext,
 } from './lib/hook-wrapper.js';
-import type {
-    AllowableAdditionalContext,
-    MergeContext,
-} from './lib/merge-context.js';
+import type { AllowableAdditionalContext, MergeContext } from './lib/merge-context.js';
 
-interface ContextualAfterHook<ExistingContext extends object>
-    extends GenericContextualHook {
+interface ContextualAfterHook<ExistingContext extends object> extends GenericContextualHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (
-            this: MochaContext,
-            ctx: ExistingContext,
-            done: Done
-        ) => AdditionalContext
+        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
     ): AfterChain<ExistingContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (
-            this: MochaContext,
-            ctx: ExistingContext,
-            done: Done
-        ) => AdditionalContext
+        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
     ): AfterChain<ExistingContext, AdditionalContext>;
 }
 export interface AfterChain<
     ExistingContext extends object,
     AdditionalContext extends AllowableAdditionalContext,
 > {
-    after: ContextualAfterHook<
-        MergeContext<ExistingContext, Awaited<AdditionalContext>>
-    >;
-    suiteTeardown: ContextualAfterHook<
-        MergeContext<ExistingContext, Awaited<AdditionalContext>>
-    >;
+    after: ContextualAfterHook<MergeContext<ExistingContext, Awaited<AdditionalContext>>>;
+    suiteTeardown: ContextualAfterHook<MergeContext<ExistingContext, Awaited<AdditionalContext>>>;
 }
 
 export type ContextualAfterGenerator = <ExistingContext extends object>(
     ctxProm: Promise<ExistingContext>
 ) => ContextualAfterHook<ExistingContext>;
 
-export const contextualAfterGeneratorIdentifier =
-    identifier<ContextualAfterGenerator>();
+export const contextualAfterGeneratorIdentifier = identifier<ContextualAfterGenerator>();
 const contextualAfterBinding = bind(contextualAfterGeneratorIdentifier)
     .withDependencies([afterIdentifier])
     .withProvider(after => {
         const contextualAfter: ContextualAfterGenerator =
-            <ExistingContext extends object>(
-                ctxProm: Promise<ExistingContext>
-            ) =>
+            <ExistingContext extends object>(ctxProm: Promise<ExistingContext>) =>
             <AdditionalContext extends AllowableAdditionalContext>(
                 ...args:
-                    | [
-                          (
-                              this: MochaContext,
-                              ctx: ExistingContext,
-                              done: Done
-                          ) => AdditionalContext,
-                      ]
                     | [
                           string,
                           (
@@ -71,12 +45,9 @@ const contextualAfterBinding = bind(contextualAfterGeneratorIdentifier)
                               done: Done
                           ) => AdditionalContext,
                       ]
+                    | [(this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext]
             ): AfterChain<ExistingContext, AdditionalContext> => {
-                const mergedContext = wrapOneTimeHookWithContext(
-                    after,
-                    ctxProm,
-                    args
-                );
+                const mergedContext = wrapOneTimeHookWithContext(after, ctxProm, args);
 
                 const afters = contextualAfter(mergedContext);
 
@@ -108,6 +79,4 @@ const entrypointAfterBinding = bind(entrypointAfterIdentifier)
     })
     .scoped(singletonScope);
 
-export const afterModule = createModule(contextualAfterBinding).addBinding(
-    entrypointAfterBinding
-);
+export const afterModule = createModule(contextualAfterBinding).addBinding(entrypointAfterBinding);

@@ -8,14 +8,12 @@ import * as Commands from './commands/index.js';
 
 const yargs = defaultImport(yargsDefault) as Argv;
 
-export const yargsOutput = patch(
-    (e: unknown, argv: unknown, log: string): void => {
-        if (log) {
-            // eslint-disable-next-line no-console
-            console.log(log);
-        }
+export const yargsOutput = patch((e: unknown, argv: unknown, log: string): void => {
+    if (log) {
+        // eslint-disable-next-line no-console
+        console.log(log);
     }
-);
+});
 
 /**
  * Barrelify CLI. Run `./cli.mjs --help` for options.
@@ -79,10 +77,7 @@ export default class BarrelCli extends EntryScript {
             .version(pkg!.content.version);
 
         for (const command of Object.values(Commands)) {
-            const typedCommand: typeof command extends CommandModule<
-                infer T,
-                any
-            >
+            const typedCommand: typeof command extends CommandModule<infer T, any>
                 ? typeof yarg extends Argv<T>
                     ? CommandModule<T, any>
                     : never

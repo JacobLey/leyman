@@ -24,18 +24,13 @@ const dependencyObject = objectSchema({
     }),
     objectSchema({
         properties: {
-            projects: mergeSchema().oneOf([
-                arraySchema(stringSchema()),
-                stringSchema(),
-            ]),
+            projects: mergeSchema().oneOf([arraySchema(stringSchema()), stringSchema()]),
         },
         required: ['projects'],
     }),
 ]);
 export type DependencyObject = SchemaType<typeof dependencyObject>;
 
-export const dependsOnSchema = arraySchema(
-    mergeSchema().oneOf([stringSchema(), dependencyObject])
-);
+export const dependsOnSchema = arraySchema(mergeSchema().oneOf([stringSchema(), dependencyObject]));
 
 export type DependsOn = SchemaType<typeof dependsOnSchema>;

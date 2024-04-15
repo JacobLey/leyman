@@ -18,16 +18,9 @@ export interface ExclusiveContextualTest<ExistingContext extends object>
     extends GenericContextualTest {
     (
         name: string,
-        fn: (
-            this: MochaContext,
-            ctx: ExistingContext,
-            done: Done
-        ) => ValidDoneReturnTypes
+        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => ValidDoneReturnTypes
     ): MochaTest;
-    (
-        name: string,
-        fn: (this: MochaContext, ctx: ExistingContext) => void
-    ): MochaTest;
+    (name: string, fn: (this: MochaContext, ctx: ExistingContext) => void): MochaTest;
 }
 export interface ContextualTest<ExistingContext extends object>
     extends ExclusiveContextualTest<ExistingContext> {
@@ -46,27 +39,19 @@ export type ContextualTestGenerator = <ExistingContext extends object>(
  *
  * Return-type is raw test instance from mocha.
  */
-export const contextualTestGeneratorIdentifier =
-    identifier<ContextualTestGenerator>();
+export const contextualTestGeneratorIdentifier = identifier<ContextualTestGenerator>();
 const contextualTestBinding = bind(contextualTestGeneratorIdentifier)
     .withDependencies([testIdentifier])
     .withProvider(
         test =>
             <ExistingContext extends object>(
-                ctxProm: Pick<
-                    WeakMap<MochaTest, Promise<ExistingContext>>,
-                    'get'
-                >
+                ctxProm: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>
             ) => {
                 const withExclusives =
                     (testFn: ExclusiveTestFunction) =>
                     (
                         title: string,
-                        cb: (
-                            this: MochaContext,
-                            ctx: ExistingContext,
-                            done: Done
-                        ) => void
+                        cb: (this: MochaContext, ctx: ExistingContext, done: Done) => void
                     ): MochaTest =>
                         wrapTestWithContext(testFn, ctxProm, title, cb);
 
@@ -101,6 +86,4 @@ const entrypointTestBinding = bind(entrypointTestIdentifier)
     })
     .scoped(singletonScope);
 
-export const testModule = createModule(contextualTestBinding).addBinding(
-    entrypointTestBinding
-);
+export const testModule = createModule(contextualTestBinding).addBinding(entrypointTestBinding);

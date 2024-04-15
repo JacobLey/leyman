@@ -15,9 +15,7 @@ suite('NeverSchema', () => {
             expect(schema).to.deep.equal({
                 not: {},
             });
-            const validator = new Ajv({ strict: true }).compile<
-                SchemaType<typeof schema>
-            >(schema);
+            const validator = new Ajv({ strict: true }).compile<SchemaType<typeof schema>>(schema);
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<never>();
             expect(validator(null)).to.equal(false);
         });

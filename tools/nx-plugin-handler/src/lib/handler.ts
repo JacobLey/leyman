@@ -7,10 +7,7 @@ export type RawHandler<Options> = (
 ) => Promise<{ success: boolean }>;
 
 export interface IHandler {
-    handle: <Options>(
-        this: void,
-        rawHandler: RawHandler<Options>
-    ) => RawHandler<Options>;
+    handle: <Options>(this: void, rawHandler: RawHandler<Options>) => RawHandler<Options>;
 }
 
 /**
@@ -25,9 +22,7 @@ export class Handler implements IHandler {
         this.handle = this.handle.bind(this);
     }
 
-    public handle<Options>(
-        rawHandler: RawHandler<Options>
-    ): RawHandler<Options> {
+    public handle<Options>(rawHandler: RawHandler<Options>): RawHandler<Options> {
         return async (options, context) => {
             try {
                 return await rawHandler(options, context);

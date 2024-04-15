@@ -8,10 +8,7 @@ import { barrelify } from 'barrelify';
 import { afterEach, suite, test } from 'mocha-hookup';
 import { patch, patchKey } from 'named-patch';
 
-const testDir = Path.join(
-    fileURLToPath(import.meta.url),
-    '../../../../src/tests/data'
-);
+const testDir = Path.join(fileURLToPath(import.meta.url), '../../../../src/tests/data');
 
 suite('barrelify', () => {
     afterEach(() => {

@@ -2,13 +2,7 @@ import AjvDefault from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { defaultImport } from 'default-import';
-import {
-    type JsonSchema,
-    NumberSchema,
-    numberSchema,
-    type Schema,
-    type SchemaType,
-} from 'juniper';
+import { type JsonSchema, NumberSchema, numberSchema, type Schema, type SchemaType } from 'juniper';
 import { suite, test } from 'mocha-hookup';
 
 const Ajv = defaultImport(AjvDefault);
@@ -158,13 +152,9 @@ suite('schema', () => {
             };
 
             const schema = numberSchema().cast<CustomNumber>();
-            expectTypeOf<
-                SchemaType<typeof schema>
-            >().toEqualTypeOf<CustomNumber>();
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<CustomNumber>();
             const json = schema.toJSON();
-            expectTypeOf<
-                SchemaType<typeof json>
-            >().toEqualTypeOf<CustomNumber>();
+            expectTypeOf<SchemaType<typeof json>>().toEqualTypeOf<CustomNumber>();
         });
 
         suite('With subschemas', () => {
@@ -176,9 +166,7 @@ suite('schema', () => {
                         })
                         .not(numberSchema().minimum(15));
 
-                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                        -1 | 4 | 12
-                    >();
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<-1 | 4 | 12>();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'number',
@@ -192,9 +180,7 @@ suite('schema', () => {
                             minimum: 15,
                         },
                     });
-                    const validator = new Ajv({ strict: true }).compile(
-                        schema.toJSON()
-                    );
+                    const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                     expect(validator(4.5)).to.equal(true);
                     expect(validator(12)).to.equal(true);
                     expect(validator(null)).to.equal(false);
@@ -224,10 +210,7 @@ suite('schema', () => {
                         JsonSchema<-1 | 4 | 12 | null>
                     >();
                     expectTypeOf(
-                        schema
-                            .not(numberSchema().nullable())
-                            .nullable()
-                            .toJSON()
+                        schema.not(numberSchema().nullable()).nullable().toJSON()
                     ).toEqualTypeOf<JsonSchema<-1 | 4 | 12>>();
                 });
 
@@ -241,9 +224,7 @@ suite('schema', () => {
                         }
                     );
 
-                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                        -1 | 4 | 12
-                    >();
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<-1 | 4 | 12>();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'number',
@@ -262,9 +243,7 @@ suite('schema', () => {
                             },
                         ],
                     });
-                    const validator = new Ajv({ strict: true }).compile(
-                        schema.toJSON()
-                    );
+                    const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                     expect(validator(4)).to.equal(true);
                     expect(validator(4.5)).to.equal(false);
                     expect(validator(7)).to.equal(false);
@@ -326,9 +305,7 @@ suite('schema', () => {
                             },
                         ],
                     });
-                    expect(
-                        schema.nullable().toJSON({ openApi30: true })
-                    ).to.deep.equal({
+                    expect(schema.nullable().toJSON({ openApi30: true })).to.deep.equal({
                         type: 'number',
                         nullable: true,
                         anyOf: [
@@ -358,13 +335,9 @@ suite('schema', () => {
                 });
 
                 test('Not is nullable', () => {
-                    const schema = numberSchema().not(
-                        numberSchema({ type: 'integer' }).nullable()
-                    );
+                    const schema = numberSchema().not(numberSchema({ type: 'integer' }).nullable());
 
-                    expectTypeOf<
-                        SchemaType<typeof schema>
-                    >().toEqualTypeOf<number>();
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<number>();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'number',
@@ -372,9 +345,7 @@ suite('schema', () => {
                             type: 'integer',
                         },
                     });
-                    const validator = new Ajv({ strict: true }).compile(
-                        schema.toJSON()
-                    );
+                    const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                     expect(validator(4.5)).to.equal(true);
                     expect(validator(12)).to.equal(false);
                     expect(validator(null)).to.equal(false);
@@ -417,17 +388,13 @@ suite('schema', () => {
                                 minimum: 10,
                             },
                         });
-                        const validator = new Ajv({ strict: true }).compile(
-                            schema.toJSON()
-                        );
+                        const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                         expect(validator(4.5)).to.equal(true);
                         expect(validator(7)).to.equal(false);
                         expect(validator(12)).to.equal(true);
                         expect(validator(null)).to.equal(true);
 
-                        expect(
-                            schema.toJSON({ openApi30: true })
-                        ).to.deep.equal({
+                        expect(schema.toJSON({ openApi30: true })).to.deep.equal({
                             type: 'number',
                             nullable: true,
                             anyOf: [
@@ -478,17 +445,13 @@ suite('schema', () => {
                                 },
                             ],
                         });
-                        const validator = new Ajv({ strict: true }).compile(
-                            schema.toJSON()
-                        );
+                        const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                         expect(validator(4)).to.equal(true);
                         expect(validator(4.5)).to.equal(false);
                         expect(validator(7)).to.equal(true);
                         expect(validator(null)).to.equal(true);
 
-                        expect(
-                            schema.toJSON({ openApi30: true })
-                        ).to.deep.equal({
+                        expect(schema.toJSON({ openApi30: true })).to.deep.equal({
                             type: 'number',
                             nullable: true,
                             anyOf: [
@@ -544,17 +507,13 @@ suite('schema', () => {
                                 },
                             ],
                         });
-                        const validator = new Ajv({ strict: true }).compile(
-                            schema.toJSON()
-                        );
+                        const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                         expect(validator(4)).to.equal(true);
                         expect(validator(4.5)).to.equal(false);
                         expect(validator(12)).to.equal(true);
                         expect(validator(null)).to.equal(true);
 
-                        expect(
-                            schema.toJSON({ openApi30: true })
-                        ).to.deep.equal({
+                        expect(schema.toJSON({ openApi30: true })).to.deep.equal({
                             type: 'number',
                             nullable: true,
                             anyOf: [
@@ -603,9 +562,7 @@ suite('schema', () => {
                         }
                     );
 
-                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                        -1 | 4 | 12
-                    >();
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<-1 | 4 | 12>();
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'number',
                         if: {
@@ -647,9 +604,7 @@ suite('schema', () => {
                     expect(oaValidator(null)).to.equal(false);
 
                     const nullable = schema.nullable();
-                    expectTypeOf<SchemaType<typeof nullable>>().toEqualTypeOf<
-                        -1 | 4 | 12 | null
-                    >();
+                    expectTypeOf<SchemaType<typeof nullable>>().toEqualTypeOf<-1 | 4 | 12 | null>();
 
                     expect(nullable.toJSON()).to.deep.equal({
                         type: ['number', 'null'],
@@ -699,27 +654,18 @@ suite('schema', () => {
                 test('Subschemas are not nullable', () => {
                     const schema = numberSchema<-1 | 4 | 7 | 12>({
                         type: 'integer',
-                    }).if(
-                        numberSchema<-1 | 4>({ type: 'integer' }).maximum(5),
-                        {
-                            else: numberSchema<12>({ type: 'integer' }).minimum(
-                                10
-                            ),
-                        }
-                    );
+                    }).if(numberSchema<-1 | 4>({ type: 'integer' }).maximum(5), {
+                        else: numberSchema<12>({ type: 'integer' }).minimum(10),
+                    });
 
-                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<-1 | 4 | 12>();
+
+                    const stillNotNullable = schema.nullable();
+                    expectTypeOf<SchemaType<typeof stillNotNullable>>().toEqualTypeOf<
                         -1 | 4 | 12
                     >();
 
-                    const stillNotNullable = schema.nullable();
-                    expectTypeOf<
-                        SchemaType<typeof stillNotNullable>
-                    >().toEqualTypeOf<-1 | 4 | 12>();
-
-                    expect(schema.toJSON()).to.deep.equal(
-                        stillNotNullable.toJSON()
-                    );
+                    expect(schema.toJSON()).to.deep.equal(stillNotNullable.toJSON());
                     expect(schema.toJSON({ openApi30: true })).to.deep.equal(
                         stillNotNullable.toJSON({ openApi30: true })
                     );
@@ -771,9 +717,7 @@ suite('schema', () => {
                             }
                         );
 
-                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                        -1 | 4 | 12
-                    >();
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<-1 | 4 | 12>();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'number',
@@ -846,9 +790,7 @@ suite('schema', () => {
                         .nullable()
                         .not(numberSchema({ type: 'integer' }).nullable());
 
-                    expectTypeOf<
-                        SchemaType<typeof schema>
-                    >().toEqualTypeOf<number>();
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<number>();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'number',
@@ -856,9 +798,7 @@ suite('schema', () => {
                             type: 'integer',
                         },
                     });
-                    const validator = new Ajv({ strict: true }).compile(
-                        schema.toJSON()
-                    );
+                    const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                     expect(validator(3.5)).to.equal(true);
                     expect(validator(11)).to.equal(false);
                     expect(validator(null)).to.equal(false);
@@ -888,9 +828,7 @@ suite('schema', () => {
                             },
                         ],
                     });
-                    expectTypeOf<
-                        SchemaType<typeof stillNotNullable>
-                    >().toEqualTypeOf<number>();
+                    expectTypeOf<SchemaType<typeof stillNotNullable>>().toEqualTypeOf<number>();
 
                     const stillNotNullableValidator = new Ajv({
                         strict: true,
@@ -905,9 +843,7 @@ suite('schema', () => {
                         .nullable()
                         .not(numberSchema({ type: 'integer' }));
 
-                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                        number | null
-                    >();
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<number | null>();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: ['number', 'null'],
@@ -915,9 +851,7 @@ suite('schema', () => {
                             type: 'integer',
                         },
                     });
-                    const validator = new Ajv({ strict: true }).compile(
-                        schema.toJSON()
-                    );
+                    const validator = new Ajv({ strict: true }).compile(schema.toJSON());
                     expect(validator(3.5)).to.equal(true);
                     expect(validator(11)).to.equal(false);
                     expect(validator(null)).to.equal(true);
@@ -946,9 +880,7 @@ suite('schema', () => {
                                 .not(numberSchema().nullable().minimum(5))
                         );
 
-                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                        number | null
-                    >();
+                    expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<number | null>();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: ['number', 'null'],
@@ -991,12 +923,9 @@ suite('schema', () => {
 
             suite('Base is number', () => {
                 test('If + Else are integer', () => {
-                    const schema = numberSchema().if(
-                        numberSchema({ type: 'integer' }),
-                        {
-                            else: numberSchema({ type: 'integer' }),
-                        }
-                    );
+                    const schema = numberSchema().if(numberSchema({ type: 'integer' }), {
+                        else: numberSchema({ type: 'integer' }),
+                    });
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'integer',
@@ -1006,14 +935,11 @@ suite('schema', () => {
                 });
 
                 test('Then + Else are integer', () => {
-                    const schema = numberSchema().if(
-                        numberSchema().maximum(5),
-                        {
-                            // eslint-disable-next-line unicorn/no-thenable
-                            then: numberSchema({ type: 'integer' }),
-                            else: numberSchema({ type: 'integer' }),
-                        }
-                    );
+                    const schema = numberSchema().if(numberSchema().maximum(5), {
+                        // eslint-disable-next-line unicorn/no-thenable
+                        then: numberSchema({ type: 'integer' }),
+                        else: numberSchema({ type: 'integer' }),
+                    });
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'integer',
@@ -1098,11 +1024,7 @@ suite('schema', () => {
     suite('not', () => {
         test('success', () => {
             const schema = numberSchema()
-                .not(
-                    numberSchema({ minimum: 1 }).not(
-                        numberSchema({ maximum: 12 })
-                    )
-                )
+                .not(numberSchema({ minimum: 1 }).not(numberSchema({ maximum: 12 })))
                 .not(numberSchema({ maximum: 10 }))
                 .toJSON();
 
@@ -1134,9 +1056,7 @@ suite('schema', () => {
         test('success', () => {
             const schema = numberSchema().nullable().toJSON();
 
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                number | null
-            >();
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<number | null>();
             expect(schema).to.deep.equal({
                 type: ['number', 'null'],
             });
@@ -1164,9 +1084,7 @@ suite('schema', () => {
                     .minimum(Number.NEGATIVE_INFINITY)
                     .type('number');
 
-                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                    number | null
-                >();
+                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<number | null>();
                 expect(schema.toJSON()).to.deep.equal({
                     $ref: '/path/to/ref',
                     type: ['number', 'null'],
@@ -1233,10 +1151,7 @@ suite('schema', () => {
             });
 
             test('Overrides type', () => {
-                const schema = numberSchema()
-                    .ref('/path/to/base')
-                    .nullable()
-                    .type('integer');
+                const schema = numberSchema().ref('/path/to/base').nullable().type('integer');
 
                 expect(schema.toJSON()).to.deep.equal({
                     $ref: '/path/to/base',
@@ -1296,9 +1211,7 @@ suite('schema', () => {
                     ],
                 });
 
-                expect(
-                    nullableRefThenNull.toJSON({ openApi30: true })
-                ).to.deep.equal({
+                expect(nullableRefThenNull.toJSON({ openApi30: true })).to.deep.equal({
                     type: 'number',
                     nullable: true,
                     allOf: [
@@ -1340,9 +1253,7 @@ suite('schema', () => {
                         },
                     ],
                 });
-                expect(
-                    nullableNullThenRef.toJSON({ openApi30: true })
-                ).to.deep.equal({
+                expect(nullableNullThenRef.toJSON({ openApi30: true })).to.deep.equal({
                     type: 'number',
                     nullable: true,
                     allOf: [
@@ -1373,9 +1284,7 @@ suite('schema', () => {
                     ],
                 });
 
-                expect(
-                    integerToNumber.toJSON({ openApi30: true })
-                ).to.deep.equal({
+                expect(integerToNumber.toJSON({ openApi30: true })).to.deep.equal({
                     type: 'number',
                     nullable: true,
                     allOf: [
@@ -1387,8 +1296,7 @@ suite('schema', () => {
                     ],
                 });
 
-                const integerToNumberInsideInteger =
-                    integerToNumber.type('integer');
+                const integerToNumberInsideInteger = integerToNumber.type('integer');
 
                 expect(integerToNumberInsideInteger.toJSON()).to.deep.equal({
                     type: ['integer', 'null'],
@@ -1400,9 +1308,7 @@ suite('schema', () => {
                     ],
                 });
 
-                expect(
-                    integerToNumberInsideInteger.toJSON({ openApi30: true })
-                ).to.deep.equal({
+                expect(integerToNumberInsideInteger.toJSON({ openApi30: true })).to.deep.equal({
                     type: 'integer',
                     nullable: true,
                     allOf: [
@@ -1425,9 +1331,7 @@ suite('schema', () => {
                     type: ['number', 'null'],
                 });
 
-                expect(
-                    integerToNumber.toJSON({ openApi30: true })
-                ).to.deep.equal({
+                expect(integerToNumber.toJSON({ openApi30: true })).to.deep.equal({
                     $ref: '/path/to/base',
                     type: 'number',
                 });
@@ -1435,9 +1339,7 @@ suite('schema', () => {
                 const inComposite = numberSchema()
                     .ref('/path/to/base')
                     .if(numberSchema({ type: 'integer' }).nullable(), {
-                        else: numberSchema({ type: 'integer' })
-                            .ref('/path/to/else')
-                            .type('number'),
+                        else: numberSchema({ type: 'integer' }).ref('/path/to/else').type('number'),
                     });
 
                 expect(inComposite.toJSON()).to.deep.equal({
@@ -1465,9 +1367,7 @@ suite('schema', () => {
 
             test('Strict schemas', () => {
                 const schema = numberSchema().allOf(
-                    numberSchema({ type: 'integer' })
-                        .ref('/path/to/first')
-                        .type('number')
+                    numberSchema({ type: 'integer' }).ref('/path/to/first').type('number')
                 );
 
                 expect(schema.toJSON()).to.deep.equal({
@@ -1480,9 +1380,7 @@ suite('schema', () => {
                     ],
                 });
 
-                const stillNumber = numberSchema().allOf(
-                    schema.ref('/path/to/second')
-                );
+                const stillNumber = numberSchema().allOf(schema.ref('/path/to/second'));
 
                 expect(stillNumber.toJSON()).to.deep.equal({
                     type: 'number',

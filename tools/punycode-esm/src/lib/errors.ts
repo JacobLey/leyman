@@ -26,9 +26,7 @@ export const checkOverflow = (
 ): void => {
     if (gte ? lower >= upper : lower > upper) {
         throw new RangeError(
-            error
-                ? errors[error]
-                : 'Overflow: input needs wider integers to process'
+            error ? errors[error] : 'Overflow: input needs wider integers to process'
         );
     }
 };

@@ -1,8 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import {
-    renderHook,
-    type WrapperComponent,
-} from '@testing-library/react-hooks';
+import { renderHook, type WrapperComponent } from '@testing-library/react-hooks';
 import { expect } from 'chai';
 import type { ReactNode } from 'react';
 import { spy, verifyAndRestore } from 'sinon';
@@ -29,9 +26,7 @@ suite('useMutation', () => {
             return {
                 client,
                 wrapper: ({ children }) => (
-                    <QueryClientProvider client={client}>
-                        {children}
-                    </QueryClientProvider>
+                    <QueryClientProvider client={client}>{children}</QueryClientProvider>
                 ),
             };
         }
@@ -54,13 +49,10 @@ suite('useMutation', () => {
             },
         });
 
-        const { result, rerender } = renderHook(
-            ({ id }) => mutateUser.useMutation(id),
-            {
-                wrapper,
-                initialProps: { id: 'abc' },
-            }
-        );
+        const { result, rerender } = renderHook(({ id }) => mutateUser.useMutation(id), {
+            wrapper,
+            initialProps: { id: 'abc' },
+        });
 
         expect(result.current.isIdle).to.equal(true);
         const user = await result.current.mutateAsync({ age: 42 });
@@ -128,13 +120,10 @@ suite('useMutation', () => {
             }
         );
 
-        const { result, rerender } = renderHook(
-            ({ id }) => mutateUser.useMutation(id),
-            {
-                wrapper,
-                initialProps: { id: 'abc' },
-            }
-        );
+        const { result, rerender } = renderHook(({ id }) => mutateUser.useMutation(id), {
+            wrapper,
+            initialProps: { id: 'abc' },
+        });
 
         expect(result.current.isIdle).to.equal(true);
 
@@ -149,10 +138,7 @@ suite('useMutation', () => {
         rerender();
 
         expect(result.current.isError).to.equal(true);
-        expect(result.current.error).to.haveOwnProperty(
-            'message',
-            'Invalid body'
-        );
+        expect(result.current.error).to.haveOwnProperty('message', 'Invalid body');
 
         expect(onError.calledOnce).to.equal(true);
         expect(onSettled.calledOnce).to.equal(true);

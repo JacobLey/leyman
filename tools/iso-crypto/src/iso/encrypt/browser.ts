@@ -4,18 +4,12 @@ import { hash } from '#hash';
 import { randomBytes } from '#random';
 import { fixBytes } from '../lib/bytes-length.js';
 import { encryptionMeta } from '../lib/size-meta.js';
-import {
-    defaultEncryption,
-    defaultHash,
-    type Encryption,
-} from '../lib/types.js';
+import { defaultEncryption, defaultHash, type Encryption } from '../lib/types.js';
 import type * as Encrypt from './types.js';
 
 const { crypto } = globalThis;
 
-const encryptionToAlgorithm = (
-    encryption: Encryption
-): webcrypto.AesDerivedKeyParams => ({
+const encryptionToAlgorithm = (encryption: Encryption): webcrypto.AesDerivedKeyParams => ({
     name: `${encryption.cipher}-${encryption.mode}`,
     length: encryption.size / 2,
 });

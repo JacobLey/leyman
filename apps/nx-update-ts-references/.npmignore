@@ -1,10 +1,11 @@
 project.json
 tsconfig.json
 
+src/**
+!src/executors/update-ts-references/schema.json
+
 dist/tsconfig.tsbuildinfo
 dist/**/*.map
-
-src/**
 
 dist/file-content.js
 dist/file-content.d.ts
@@ -12,4 +13,4 @@ dist/file-content.d.ts
 dist/executors/update-ts-references/schema.js
 dist/executors/update-ts-references/schema.d.ts
 
-!src/executors/update-ts-references/schema.json
+eslint.config.js

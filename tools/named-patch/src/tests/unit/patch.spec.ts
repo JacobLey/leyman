@@ -50,9 +50,7 @@ suite('namedPatch', () => {
         });
 
         test('With async', async () => {
-            const asyncMethod = Patch.patch(
-                async (a: number): Promise<number> => a * 2
-            );
+            const asyncMethod = Patch.patch(async (a: number): Promise<number> => a * 2);
 
             expect(await asyncMethod(2)).to.equal(4);
 
@@ -69,9 +67,7 @@ suite('namedPatch', () => {
                 decrement: () => counter--,
             };
 
-            const contextMethod = Patch.patch(function (
-                this: typeof context
-            ): void {
+            const contextMethod = Patch.patch(function (this: typeof context): void {
                 this.increment();
             });
 
@@ -85,9 +81,7 @@ suite('namedPatch', () => {
             container.contextMethod();
             expect(counter).to.equal(2);
 
-            stub(contextMethod, Patch.patchKey).callsFake(function (
-                this: typeof context
-            ) {
+            stub(contextMethod, Patch.patchKey).callsFake(function (this: typeof context) {
                 this.decrement();
             });
 
@@ -106,10 +100,7 @@ suite('namedPatch', () => {
 
         suite('failure', () => {
             test('Never patched', () => {
-                expect(() => Patch.getPatched(() => {})).to.throw(
-                    Error,
-                    'Method is un-patched'
-                );
+                expect(() => Patch.getPatched(() => {})).to.throw(Error, 'Method is un-patched');
             });
 
             test('Already patched', () => {

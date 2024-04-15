@@ -11,7 +11,4 @@ export interface TextFormatterOptions {
      */
     ext?: string;
 }
-export type TextFormatter = (
-    text: string,
-    options?: TextFormatterOptions
-) => Promise<string>;
+export type TextFormatter = (text: string, options?: TextFormatterOptions) => Promise<string>;

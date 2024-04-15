@@ -71,13 +71,10 @@ suite('findImport', () => {
         });
 
         context.test('directory', async ({ subJs }) => {
-            const found = await FindImport.findImport(
-                [Path.join('sub', 'sub.cjs'), 'root.js'],
-                {
-                    cwd: Path.join(dataDir, 'sub'),
-                    direction: 'down',
-                }
-            );
+            const found = await FindImport.findImport([Path.join('sub', 'sub.cjs'), 'root.js'], {
+                cwd: Path.join(dataDir, 'sub'),
+                direction: 'down',
+            });
 
             expect(found).to.deep.equal({
                 filePath: Path.join(dataDir, 'sub/sub.cjs'),
@@ -87,10 +84,9 @@ suite('findImport', () => {
     });
 
     test('Load json', async () => {
-        const found = await FindImport.findImport<{ kind: string }>(
-            ['root.json', 'sub.json'],
-            { cwd: Path.join(originalDataDir, 'sub') }
-        );
+        const found = await FindImport.findImport<{ kind: string }>(['root.json', 'sub.json'], {
+            cwd: Path.join(originalDataDir, 'sub'),
+        });
 
         expect(found).to.deep.equal({
             filePath: Path.join(originalDataDir, 'root.json'),

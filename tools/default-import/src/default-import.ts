@@ -31,9 +31,8 @@ export const defaultImport = <T>(mod: T): ExtractDefault<T> => {
     // Webpack provides a Module tag to match NodeJS' Module module
     const defaultVal =
         Symbol.toStringTag in mod &&
-        (mod as unknown as { [Symbol.toStringTag]: string; default: T })[
-            Symbol.toStringTag
-        ] === 'Module'
+        (mod as unknown as { [Symbol.toStringTag]: string; default: T })[Symbol.toStringTag] ===
+            'Module'
             ? (
                   mod as unknown as {
                       [Symbol.toStringTag]: 'Module';
@@ -47,11 +46,9 @@ export const defaultImport = <T>(mod: T): ExtractDefault<T> => {
         '__esModule' in defaultVal &&
         // eslint-disable-next-line @typescript-eslint/naming-convention
         (defaultVal as unknown as { __esModule?: boolean }).__esModule &&
-        (defaultVal as unknown as { default?: ExtractDefault<T> | undefined })
-            .default !== undefined
+        (defaultVal as unknown as { default?: ExtractDefault<T> | undefined }).default !== undefined
     ) {
-        return (defaultVal as unknown as { default: ExtractDefault<T> })
-            .default;
+        return (defaultVal as unknown as { default: ExtractDefault<T> }).default;
     }
     return defaultVal as ExtractDefault<T>;
 };

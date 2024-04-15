@@ -4,11 +4,7 @@ import { hash } from '#hash';
 import { randomBytes } from '#random';
 import { fixBytes } from '../lib/bytes-length.js';
 import { encryptionMeta } from '../lib/size-meta.js';
-import {
-    defaultEncryption,
-    defaultHash,
-    type Encryption,
-} from '../lib/types.js';
+import { defaultEncryption, defaultHash, type Encryption } from '../lib/types.js';
 import type * as Encrypt from './types.js';
 
 const encryptionToCipher = (encryption: Encryption): string =>
@@ -59,8 +55,5 @@ export const decrypt: (typeof Encrypt)['decrypt'] = async (
         decode(iv)
     );
 
-    return mergeUint8Array(
-        decipher.update(decode(encrypted)),
-        decipher.final()
-    );
+    return mergeUint8Array(decipher.update(decode(encrypted)), decipher.final());
 };

@@ -48,10 +48,7 @@ export const patch = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {
         return fn as PatchableInterface<T>;
     }
 
-    const patched = function (
-        this: unknown,
-        ...args: Parameters<T>
-    ): ReturnType<T> {
+    const patched = function (this: unknown, ...args: Parameters<T>): ReturnType<T> {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-return
         return patched[patchKey].call(this, ...args);
     } as PatchableInterface<T>;

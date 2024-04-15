@@ -31,13 +31,8 @@ export type ArrayType<T, P extends any[], M, N extends boolean> = Nullable<
     N
 >;
 
-export interface ArrayParams<
-    T,
-    P extends any[],
-    C extends P[number] | T,
-    M,
-    N extends boolean,
-> extends SchemaParams<ArrayType<T, P, M, N>> {
+export interface ArrayParams<T, P extends any[], C extends P[number] | T, M, N extends boolean>
+    extends SchemaParams<ArrayType<T, P, M, N>> {
     items?: AbstractSchema<SchemaGenerics<T>> | null;
     maxContains?: number;
     maxItems?: number;
@@ -48,13 +43,8 @@ export interface ArrayParams<
     [prefixItemsSym]?: AbstractSchema<SchemaGenerics<P[number]>>[];
 }
 
-interface ArrayGenerics<
-    T,
-    P extends any[],
-    C extends P[number] | T,
-    M,
-    N extends boolean,
-> extends SchemaGenerics<ArrayType<T, P, M, N>> {
+interface ArrayGenerics<T, P extends any[], C extends P[number] | T, M, N extends boolean>
+    extends SchemaGenerics<ArrayType<T, P, M, N>> {
     params: ArrayParams<T, P, C, M, N>;
 }
 
@@ -107,9 +97,7 @@ export class ArraySchema<
 
     protected override readonly schemaType = 'array';
 
-    public declare allOf: <
-        S extends ArraySchema<any, any[], any, unknown, boolean>,
-    >(
+    public declare allOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
         this: AnyArraySchema,
         schema: S
     ) => ArraySchema<
@@ -120,9 +108,7 @@ export class ArraySchema<
         null extends SchemaType<S> ? N : boolean
     >;
 
-    public declare anyOf: <
-        S extends ArraySchema<any, any[], any, unknown, boolean>,
-    >(
+    public declare anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
         this: AnyArraySchema,
         schemas: S[]
     ) => ArraySchema<
@@ -152,8 +138,7 @@ export class ArraySchema<
         M &
             (
                 | NonNullable<SchemaType<Else>>
-                | (ArrayType<IfT, IfP, IfM, false> &
-                      NonNullable<SchemaType<Then>>)
+                | (ArrayType<IfT, IfP, IfM, false> & NonNullable<SchemaType<Then>>)
             ),
         ConditionalNullable<
             N,
@@ -172,9 +157,7 @@ export class ArraySchema<
         this: AnyArraySchema
     ) => ArraySchema<T, P, C, unknown, boolean extends N ? boolean : true>;
 
-    public declare oneOf: <
-        S extends ArraySchema<any, any[], any, unknown, boolean>,
-    >(
+    public declare oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
         this: AnyArraySchema,
         schemas: S[]
     ) => ArraySchema<
@@ -188,11 +171,7 @@ export class ArraySchema<
     /**
      * @override
      */
-    public constructor(
-        items:
-            | AbstractSchema<SchemaGenerics<T>>
-            | ArrayParams<T, P, C, M, N> = {}
-    ) {
+    public constructor(items: AbstractSchema<SchemaGenerics<T>> | ArrayParams<T, P, C, M, N> = {}) {
         const options = items instanceof AbstractSchema ? { items } : items;
         super(options);
         this.#items = options.items ?? null;
@@ -236,9 +215,7 @@ export class ArraySchema<
      */
     public static override create<T2 = any>(
         this: void,
-        options?:
-            | AbstractSchema<SchemaGenerics<T2>>
-            | ArrayParams<T2, [], never, unknown, false>
+        options?: AbstractSchema<SchemaGenerics<T2>> | ArrayParams<T2, [], never, unknown, false>
     ): ArraySchema<T2> {
         return new ArraySchema(options);
     }
@@ -481,30 +458,20 @@ export class ArraySchema<
                     ? false
                     : ArraySchema.getSchema(this.#items, params);
         }
-        const prefixItems = this.#prefixItems.map(schema =>
-            ArraySchema.getSchema(schema, params)
-        );
+        const prefixItems = this.#prefixItems.map(schema => ArraySchema.getSchema(schema, params));
 
         if (params.openApi30) {
             if (items !== null) {
                 if (items === false) {
                     if (prefixItems.length > 0) {
                         base.items =
-                            prefixItems.length === 1
-                                ? prefixItems[0]
-                                : { anyOf: prefixItems };
+                            prefixItems.length === 1 ? prefixItems[0] : { anyOf: prefixItems };
                     } else {
-                        base.items = ArraySchema.getSchema(
-                            ArraySchema.falseItems,
-                            params
-                        );
+                        base.items = ArraySchema.getSchema(ArraySchema.falseItems, params);
                     }
                 } else {
                     const allItems = [items, ...prefixItems];
-                    base.items =
-                        allItems.length === 1
-                            ? allItems[0]
-                            : { anyOf: allItems };
+                    base.items = allItems.length === 1 ? allItems[0] : { anyOf: allItems };
                 }
             }
             const minItems = this.#contains
@@ -550,16 +517,12 @@ export declare class IArraySchemaOverride<
 > extends ArraySchema<T, P, C, M, N> {
     public declare static create: any;
 
-    public declare allOf: <
-        S extends ArraySchema<any, any[], any, unknown, boolean>,
-    >(
+    public declare allOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
         this: any,
         schema: S
     ) => any;
 
-    public declare anyOf: <
-        S extends ArraySchema<any, any[], any, unknown, boolean>,
-    >(
+    public declare anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
         this: any,
         schemas: S[]
     ) => any;
@@ -582,9 +545,7 @@ export declare class IArraySchemaOverride<
 
     public declare nullable: (this: any) => any;
 
-    public declare oneOf: <
-        S extends ArraySchema<any, any[], any, unknown, boolean>,
-    >(
+    public declare oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
         this: any,
         schemas: S[]
     ) => any;

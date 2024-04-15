@@ -43,10 +43,7 @@ export const findImport = async <T>(
 
     const allDirectories = [directory];
 
-    while (
-        directory !== parentDirectory &&
-        isInside(startAt, parentDirectory)
-    ) {
+    while (directory !== parentDirectory && isInside(startAt, parentDirectory)) {
         allDirectories.push(parentDirectory);
 
         directory = parentDirectory;

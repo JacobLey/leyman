@@ -18,9 +18,7 @@ declare abstract class ProtectedConstructable {
 }
 export type IsClass = typeof Constructable | typeof ProtectedConstructable;
 export type GenericClass<T = unknown> = new (...args: any) => T;
-export type DepsClass<T, Deps extends readonly [...unknown[]]> = new (
-    ...args: Deps
-) => T;
+export type DepsClass<T, Deps extends readonly [...unknown[]]> = new (...args: Deps) => T;
 export type InstanceOfClass<T extends IsClass> = InstanceType<
     // Order Matters!
     // eslint-disable-next-line @typescript-eslint/sort-type-constituents
@@ -91,8 +89,7 @@ export interface Extendable {
     [nonExtendable]: true;
     (val: never): unknown;
 }
-export interface NonExtendable<T, Named extends string | symbol | null>
-    extends Extendable {
+export interface NonExtendable<T, Named extends string | symbol | null> extends Extendable {
     name: Named;
     (val: T): T;
 }

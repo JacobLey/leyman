@@ -31,13 +31,9 @@ suite('Pass mocks around in context', () => {
         });
 
         contextualBeforeEach.afterEach(async ctx => {
-            expect(ctx.fakeAdder.calledWith(1, match(2), match(3), 4)).to.equal(
-                true
-            );
+            expect(ctx.fakeAdder.calledWith(1, match(2), match(3), 4)).to.equal(true);
 
-            expect(ctx.fakeAdder.calledWith(match(4), 3, match(2), 1)).to.equal(
-                false
-            );
+            expect(ctx.fakeAdder.calledWith(match(4), 3, match(2), 1)).to.equal(false);
         });
     });
 

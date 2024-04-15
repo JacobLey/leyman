@@ -38,9 +38,7 @@ const toHex = (buf: Uint8Array): string =>
 const fromHex = (str: string): Uint8Array => {
     const length = str.length % 2 ? str.length + 1 : str.length;
     return new Uint8Array(
-        (str.padStart(length, '0').match(/.{2}/gu) ?? []).map(byte =>
-            Number.parseInt(byte, 16)
-        )
+        (str.padStart(length, '0').match(/.{2}/gu) ?? []).map(byte => Number.parseInt(byte, 16))
     );
 };
 

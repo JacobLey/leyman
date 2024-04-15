@@ -8,9 +8,7 @@ import { entrypointBeforeIdentifier } from './lib/before-hooks.js';
 import { contextualSuiteIdentifier } from './lib/suite-hooks.js';
 import { entrypointTestIdentifier } from './lib/test-hooks.js';
 
-const container = createContainer(
-    mochaModule.mergeModule(contextualHookModule)
-);
+const container = createContainer(mochaModule.mergeModule(contextualHookModule));
 
 export const suite = container.get(contextualSuiteIdentifier);
 

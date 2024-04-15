@@ -23,8 +23,7 @@ export interface IEmitter {
 /**
  * List of all registered events for an emitter.
  */
-export type AllEventTypes<Emitter extends IEmitter> =
-    keyof Emitter[typeof events];
+export type AllEventTypes<Emitter extends IEmitter> = keyof Emitter[typeof events];
 
 /**
  * Helper type to access "detail" of event given "type".
@@ -39,10 +38,7 @@ export type GetEventDetail<
  *
  * Restricted to `string` as that is native implementation requirement.
  */
-export type EventList<Emitter extends IEmitter> = Extract<
-    AllEventTypes<Emitter>,
-    string
->;
+export type EventList<Emitter extends IEmitter> = Extract<AllEventTypes<Emitter>, string>;
 
 /**
  * List of events that support being wrapped by custom event.
@@ -52,9 +48,7 @@ export type EventList<Emitter extends IEmitter> = Extract<
  * Events that declare explicit Event types are not allowed and must use native methods.
  */
 export type CustomEventList<Emitter extends IEmitter> = {
-    [K in AllEventTypes<Emitter>]: GetEventDetail<Emitter, K> extends Event
-        ? never
-        : K;
+    [K in AllEventTypes<Emitter>]: GetEventDetail<Emitter, K> extends Event ? never : K;
 }[AllEventTypes<Emitter>] &
     (string | symbol);
 
@@ -63,10 +57,7 @@ export type CustomEventList<Emitter extends IEmitter> = {
  *
  * If `type` is declared as a symbol | number, it will be typed as a generic `string`.
  */
-export type EventType<
-    Type extends number | string | symbol,
-    Detail,
-> = Detail extends Event
+export type EventType<Type extends number | string | symbol, Detail> = Detail extends Event
     ? Detail
     : CustomEvent<Type extends string ? Type : string, Detail>;
 
@@ -78,28 +69,21 @@ export type EventListenerParam<
 /**
  * Native EventTarget listener, with additional types for event + detail.
  */
-type EventTargetCallback<
-    Emitter extends IEmitter,
-    EventName extends EventList<Emitter>,
-> = (event: EventListenerParam<Emitter, EventName>) => void;
+type EventTargetCallback<Emitter extends IEmitter, EventName extends EventList<Emitter>> = (
+    event: EventListenerParam<Emitter, EventName>
+) => void;
 
 /**
  * Native EventTarget listeners can also be an object with `handleEvent` method.
  */
-interface EventTargetHandler<
-    Emitter extends IEmitter,
-    EventName extends EventList<Emitter>,
-> {
+interface EventTargetHandler<Emitter extends IEmitter, EventName extends EventList<Emitter>> {
     handleEvent: EventTargetCallback<Emitter, EventName>;
 }
 
 /**
  * Convenience union of both allowed native listener signatures.
  */
-export type EventTargetListener<
-    Emitter extends IEmitter,
-    EventName extends EventList<Emitter>,
-> =
+export type EventTargetListener<Emitter extends IEmitter, EventName extends EventList<Emitter>> =
     | EventTargetCallback<Emitter, EventName>
     | EventTargetHandler<Emitter, EventName>;
 

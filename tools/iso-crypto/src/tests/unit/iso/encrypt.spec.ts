@@ -91,8 +91,7 @@ suite('Encrypt', () => {
                 secret: 'O, Draconian devil! Oh, lame saint!',
                 encryption: { cipher: 'AES', size: 192, mode: 'CTR' },
                 hash: { algorithm: 'SHA2', size: 384 },
-                encrypted:
-                    '5525b239904a6ab41d7b1f041da96f8be655650179c8d953f52a301e3905ee9f',
+                encrypted: '5525b239904a6ab41d7b1f041da96f8be655650179c8d953f52a301e3905ee9f',
                 iv: '5b69237c4128b17c53387bf07b3d073f',
             },
             {
@@ -100,8 +99,7 @@ suite('Encrypt', () => {
                 secret: 'So Dark the Con of Man',
                 encryption: { cipher: 'AES', size: 256, mode: 'CBC' },
                 hash: { algorithm: 'SHA1', size: 160 },
-                encrypted:
-                    '2bc1108106011c5fbe0015dfc6737c14e3b33038856b07a1f0490eb64e8fbbae',
+                encrypted: '2bc1108106011c5fbe0015dfc6737c14e3b33038856b07a1f0490eb64e8fbbae',
                 iv: '5fe63b2f7cca6145497d00cc368cca2b',
             },
             {
@@ -124,8 +122,7 @@ suite('Encrypt', () => {
                     'in front of the house of Pass and Stow.',
                 encryption: { cipher: 'AES', size: 192, mode: 'CBC' },
                 hash: 'raw',
-                encrypted:
-                    'cca33059a64e376493d855321b352616466d23c726fff6be7cd9cd6dec4a9dd2',
+                encrypted: 'cca33059a64e376493d855321b352616466d23c726fff6be7cd9cd6dec4a9dd2',
                 iv: '2be4b60e9b83352a31ca278a4eae5e42',
             },
         ] as const) {

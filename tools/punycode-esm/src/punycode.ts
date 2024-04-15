@@ -26,10 +26,7 @@ const regexSeparators = /[\u002E\u3002\uFF0E\uFF61]/gu; // RFC 3490 separators
  * @param callback - The function that gets called for every character.
  * @returns A new string of characters returned by the callback function.
  */
-const mapDomain = (
-    domain: string,
-    callback: (input: string) => string
-): string => {
+const mapDomain = (domain: string, callback: (input: string) => string): string => {
     const [first, ...rest] = domain.split('@');
     let result: string;
     let toEncode: string;
@@ -146,11 +143,7 @@ const digitToBasic = (digit: number): number => {
  * @param firstTime - is first time
  * @returns bias adaptation
  */
-const adapt = (
-    delta: number,
-    numPoints: number,
-    firstTime: boolean
-): number => {
+const adapt = (delta: number, numPoints: number, firstTime: boolean): number => {
     let k = 0;
     // eslint-disable-next-line no-bitwise
     let newDelta = firstTime ? Math.floor(delta / damp) : delta >> 1;
@@ -305,10 +298,7 @@ export const encode = (input: string): string => {
         // Increase `delta` enough to advance the decoder's <n,i> state to <m,0>,
         // but guard against overflow.
         const handledCPCountPlusOne = handledCPCount + 1;
-        checkOverflow(
-            m - n,
-            Math.floor((maxInt - delta) / handledCPCountPlusOne)
-        );
+        checkOverflow(m - n, Math.floor((maxInt - delta) / handledCPCountPlusOne));
 
         delta += (m - n) * handledCPCountPlusOne;
         n = m;
@@ -330,21 +320,13 @@ export const encode = (input: string): string => {
                     }
                     const qMinusT = q - t;
                     const baseMinusT = base - t;
-                    output.push(
-                        String.fromCodePoint(
-                            digitToBasic(t + (qMinusT % baseMinusT))
-                        )
-                    );
+                    output.push(String.fromCodePoint(digitToBasic(t + (qMinusT % baseMinusT))));
                     q = Math.floor(qMinusT / baseMinusT);
                     k += base;
                 }
 
                 output.push(String.fromCodePoint(digitToBasic(q)));
-                bias = adapt(
-                    delta,
-                    handledCPCountPlusOne,
-                    handledCPCount === basicLength
-                );
+                bias = adapt(delta, handledCPCountPlusOne, handledCPCount === basicLength);
                 delta = 0;
                 ++handledCPCount;
             }

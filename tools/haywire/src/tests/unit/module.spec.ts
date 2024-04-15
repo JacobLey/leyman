@@ -13,10 +13,7 @@ import {
 } from 'haywire';
 
 suite('module', () => {
-    const aOrBId = identifier<'a' | 'b'>('<custom-name>')
-        .named('AorB')
-        .nullable()
-        .undefinable();
+    const aOrBId = identifier<'a' | 'b'>('<custom-name>').named('AorB').nullable().undefinable();
     const numberId = identifier<number>().named('num');
     abstract class Foo {
         // eslint-disable-next-line @typescript-eslint/class-methods-use-this
@@ -46,9 +43,7 @@ suite('module', () => {
         .withDependencies([aOrBId.lateBinding()])
         .withProvider(() => 'a');
     const numberBinding = bind(numberId).withInstance(123);
-    const fooBinding = bind(
-        identifier(Foo).nullable().undefinable().named(uniqueSym)
-    )
+    const fooBinding = bind(identifier(Foo).nullable().undefinable().named(uniqueSym))
         .withDependencies([identifier(Bar).nullable()])
         .withProvider(bar => bar);
     const barBinding = bind(Bar).withGenerator(() => {
@@ -79,9 +74,7 @@ suite('module', () => {
         createContainer(bazModule);
 
         test('addBinding', () => {
-            const module = aOrBModule
-                .addBinding(numberBinding)
-                .addBinding(fooBinding);
+            const module = aOrBModule.addBinding(numberBinding).addBinding(fooBinding);
             expectTypeOf(module).toEqualTypeOf(
                 fooModule.addBinding(numberBinding).addBinding(aOrBBinding)
             );
@@ -91,29 +84,17 @@ suite('module', () => {
 
             const withBarModule = module.addBinding(barBinding);
 
-            expect(createContainer(withBarModule)).to.be.an.instanceOf(
-                SyncContainer
-            );
+            expect(createContainer(withBarModule)).to.be.an.instanceOf(SyncContainer);
             expectTypeOf(createContainer(withBarModule)).toHaveProperty('get');
 
             const withBazModule = withBarModule.addBinding(bazBinding);
 
-            expect(createContainer(withBazModule)).to.be.an.instanceOf(
-                AsyncContainer
-            );
-            expect(createContainer(withBazModule)).to.not.be.an.instanceOf(
-                SyncContainer
-            );
-            expectTypeOf(createContainer(withBazModule)).not.toHaveProperty(
-                'getSync'
-            );
+            expect(createContainer(withBazModule)).to.be.an.instanceOf(AsyncContainer);
+            expect(createContainer(withBazModule)).to.not.be.an.instanceOf(SyncContainer);
+            expectTypeOf(createContainer(withBazModule)).not.toHaveProperty('getSync');
 
             const dupeNumberBinding = bind(
-                identifier<number>()
-                    .nullable()
-                    .undefinable()
-                    .supplier()
-                    .lateBinding()
+                identifier<number>().nullable().undefinable().supplier().lateBinding()
             ).withInstance(4);
             numberModule.addBinding(dupeNumberBinding);
             // @ts-expect-error
@@ -133,13 +114,10 @@ suite('module', () => {
             })
                 .to.throw(HaystackModuleValidationError)
                 .contains({
-                    message:
-                        'Duplicate output identifier for module: <custom-name>(named: AorB)',
+                    message: 'Duplicate output identifier for module: <custom-name>(named: AorB)',
                 });
 
-            const symNumberBinding = bind(
-                numberId.named(uniqueSym)
-            ).withInstance(123);
+            const symNumberBinding = bind(numberId.named(uniqueSym)).withInstance(123);
             expect(() => {
                 module
                     .addBinding(numberBinding.named(uniqueSym))
@@ -155,9 +133,7 @@ suite('module', () => {
             expect(() => {
                 // @ts-expect-error
                 barModule.addBinding(
-                    bind(identifier(Bar).nullable().undefinable()).withInstance(
-                        {} as Bar
-                    )
+                    bind(identifier(Bar).nullable().undefinable()).withInstance({} as Bar)
                 );
             })
                 .to.throw(HaystackModuleValidationError)
@@ -176,38 +152,22 @@ suite('module', () => {
 
         test('mergeModule', () => {
             const module = numberModule.mergeModule(aOrBModule);
-            expectTypeOf(module).toEqualTypeOf(
-                aOrBModule.mergeModule(numberModule)
-            );
+            expectTypeOf(module).toEqualTypeOf(aOrBModule.mergeModule(numberModule));
 
             createContainer(module);
 
-            const withFooModule = module.mergeModule(
-                fooModule.mergeModule(barModule)
-            );
+            const withFooModule = module.mergeModule(fooModule.mergeModule(barModule));
 
-            expect(createContainer(withFooModule)).to.be.an.instanceOf(
-                SyncContainer
-            );
+            expect(createContainer(withFooModule)).to.be.an.instanceOf(SyncContainer);
             expectTypeOf(createContainer(withFooModule)).toHaveProperty('get');
 
             const withBazModule = withFooModule.mergeModule(bazModule);
-            expect(createContainer(withBazModule)).to.be.an.instanceOf(
-                AsyncContainer
-            );
-            expect(createContainer(withBazModule)).to.not.be.an.instanceOf(
-                SyncContainer
-            );
-            expectTypeOf(createContainer(withBazModule)).not.toHaveProperty(
-                'getSync'
-            );
+            expect(createContainer(withBazModule)).to.be.an.instanceOf(AsyncContainer);
+            expect(createContainer(withBazModule)).to.not.be.an.instanceOf(SyncContainer);
+            expectTypeOf(createContainer(withBazModule)).not.toHaveProperty('getSync');
 
             const dupNumBinding = bind(
-                identifier<number>()
-                    .nullable()
-                    .undefinable()
-                    .supplier()
-                    .lateBinding()
+                identifier<number>().nullable().undefinable().supplier().lateBinding()
             ).withInstance(4);
 
             module.mergeModule(createModule(dupNumBinding));
@@ -233,13 +193,10 @@ suite('module', () => {
             })
                 .to.throw(HaystackModuleValidationError)
                 .contains({
-                    message:
-                        'Duplicate output identifier for module: haystack-id(named: num)',
+                    message: 'Duplicate output identifier for module: haystack-id(named: num)',
                 });
 
-            const symNumberModule = createModule(
-                bind(numberId.named(uniqueSym)).withInstance(123)
-            );
+            const symNumberModule = createModule(bind(numberId.named(uniqueSym)).withInstance(123));
             expect(() => {
                 module
                     .addBinding(numberBinding.named(uniqueSym))

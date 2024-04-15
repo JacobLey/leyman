@@ -15,9 +15,7 @@ suite('BooleanSchema', () => {
             expect(schema).to.deep.equal({
                 type: ['boolean', 'null'],
             });
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                boolean | null
-            >();
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<boolean | null>();
             const validator = new Ajv({ strict: true }).compile(schema);
             expect(validator(true)).to.equal(true);
             expect(validator(null)).to.equal(true);

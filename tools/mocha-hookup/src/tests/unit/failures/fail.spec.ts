@@ -67,9 +67,7 @@ suite('Failure cases', () => {
                 bind(suiteIdentifier).withInstance(defaultSuite)
             )
                 .addBinding(bind(beforeIdentifier).withInstance(defaultHook))
-                .addBinding(
-                    bind(beforeEachIdentifier).withInstance(defaultHook)
-                )
+                .addBinding(bind(beforeEachIdentifier).withInstance(defaultHook))
                 .addBinding(bind(afterEachIdentifier).withInstance(defaultHook))
                 .addBinding(bind(afterIdentifier).withInstance(defaultHook));
 
@@ -78,88 +76,79 @@ suite('Failure cases', () => {
             };
         });
 
-        beforeModule.test(
-            'Test with done returns truthy',
-            function (this, ctx, done) {
-                // Trick lock into thinking test is complete
-                this.runnable().duration = -1;
+        beforeModule.test('Test with done returns truthy', function (this, ctx, done) {
+            // Trick lock into thinking test is complete
+            this.runnable().duration = -1;
 
-                const stubDone = stub();
-                const fakeBaseTest = (title: string, cb: AsyncFunc | Func) => {
-                    cb.call(fakeContext, stubDone as Done);
-                };
+            const stubDone = stub();
+            const fakeBaseTest = (title: string, cb: AsyncFunc | Func) => {
+                cb.call(fakeContext, stubDone as Done);
+            };
 
-                stubDone.withArgs().returns(null);
-                stubDone.withArgs(match.string).callsFake(arg => {
-                    expect(arg).to.equal('Test returned truthy value: true');
-                    done();
-                });
+            stubDone.withArgs().returns(null);
+            stubDone.withArgs(match.string).callsFake(arg => {
+                expect(arg).to.equal('Test returned truthy value: true');
+                done();
+            });
 
-                const fakeTest = createContainer(
-                    ctx.module.addBinding(
-                        bind(testIdentifier).withInstance(
-                            Object.assign(fakeBaseTest, {
-                                skip: fakeBaseTest,
-                                only: fakeBaseTest,
-                            }) as TestFunction
-                        )
+            const fakeTest = createContainer(
+                ctx.module.addBinding(
+                    bind(testIdentifier).withInstance(
+                        Object.assign(fakeBaseTest, {
+                            skip: fakeBaseTest,
+                            only: fakeBaseTest,
+                        }) as TestFunction
                     )
-                ).get(entrypointTestIdentifier);
+                )
+            ).get(entrypointTestIdentifier);
 
-                fakeTest('Will return true', (doneCb): false => {
-                    doneCb();
+            fakeTest('Will return true', (doneCb): false => {
+                doneCb();
 
-                    return true as false;
+                return true as false;
+            });
+        });
+
+        beforeModule.test('Test with done throws an error', function (this, ctx, done) {
+            // Trick lock into thinking test is complete
+            this.runnable().duration = -1;
+
+            const mockDone = mock();
+            const fakeBaseTest = (title: string, cb: AsyncFunc | Func) => {
+                cb.call(fakeContext, mockDone as Done);
+            };
+
+            mockDone.withArgs(match(err => err instanceof Error)).callsFake(arg => {
+                expect(arg).to.be.an.instanceOf(Error).that.contains({
+                    message: '<ERROR>',
                 });
-            }
-        );
+                done();
+            });
 
-        beforeModule.test(
-            'Test with done throws an error',
-            function (this, ctx, done) {
-                // Trick lock into thinking test is complete
-                this.runnable().duration = -1;
-
-                const mockDone = mock();
-                const fakeBaseTest = (title: string, cb: AsyncFunc | Func) => {
-                    cb.call(fakeContext, mockDone as Done);
-                };
-
-                mockDone
-                    .withArgs(match(err => err instanceof Error))
-                    .callsFake(arg => {
-                        expect(arg).to.be.an.instanceOf(Error).that.contains({
-                            message: '<ERROR>',
-                        });
-                        done();
-                    });
-
-                const fakeTest = createContainer(
-                    ctx.module.addBinding(
-                        bind(testIdentifier).withInstance(
-                            Object.assign(fakeBaseTest, {
-                                skip: fakeBaseTest,
-                                only: fakeBaseTest,
-                            }) as TestFunction
-                        )
+            const fakeTest = createContainer(
+                ctx.module.addBinding(
+                    bind(testIdentifier).withInstance(
+                        Object.assign(fakeBaseTest, {
+                            skip: fakeBaseTest,
+                            only: fakeBaseTest,
+                        }) as TestFunction
                     )
-                ).get(entrypointTestIdentifier);
+                )
+            ).get(entrypointTestIdentifier);
 
-                fakeTest('Will return true', doneCb => {
-                    if (Math.random()) {
-                        throw new Error('<ERROR>');
-                    }
-                    doneCb();
-                });
-            }
-        );
+            fakeTest('Will return true', doneCb => {
+                if (Math.random()) {
+                    throw new Error('<ERROR>');
+                }
+                doneCb();
+            });
+        });
 
         test('Test declared inside a test', () => {
             expect(() => test('This will never run', () => {}))
                 .to.throw(Error)
                 .that.contains({
-                    message:
-                        'Cannot create new hook/suite/test while executing a hook/test',
+                    message: 'Cannot create new hook/suite/test while executing a hook/test',
                 });
         });
     });
@@ -178,94 +167,71 @@ suite('Failure cases', () => {
             };
         });
 
-        beforeModule.test(
-            'One-time hook with done throws an error',
-            function (this, ctx, done) {
-                // Trick lock into thinking test is complete
-                this.runnable().duration = -1;
+        beforeModule.test('One-time hook with done throws an error', function (this, ctx, done) {
+            // Trick lock into thinking test is complete
+            this.runnable().duration = -1;
 
-                const mockDone = mock();
-                const fakeHook = (cb: AsyncFunc | Func) => {
-                    cb.call(fakeContext, mockDone as Done);
-                };
+            const mockDone = mock();
+            const fakeHook = (cb: AsyncFunc | Func) => {
+                cb.call(fakeContext, mockDone as Done);
+            };
 
-                mockDone
-                    .withArgs(match(err => err instanceof Error))
-                    .callsFake(arg => {
-                        expect(arg).to.be.an.instanceOf(Error).that.contains({
-                            message: '<ERROR>',
-                        });
-                        done();
-                    });
-
-                const customBefore = createContainer(
-                    ctx.module
-                        .addBinding(
-                            bind(beforeIdentifier).withInstance(
-                                fakeHook as HookFunction
-                            )
-                        )
-                        .addBinding(
-                            bind(beforeEachIdentifier).withInstance(defaultHook)
-                        )
-                ).get(entrypointBeforeIdentifier);
-
-                customBefore(doneCb => {
-                    if (Math.random()) {
-                        throw new Error('<ERROR>');
-                    }
-                    doneCb();
+            mockDone.withArgs(match(err => err instanceof Error)).callsFake(arg => {
+                expect(arg).to.be.an.instanceOf(Error).that.contains({
+                    message: '<ERROR>',
                 });
-            }
-        );
+                done();
+            });
 
-        beforeModule.test(
-            'Per-test hook with done throws an error',
-            function (this, ctx, done) {
-                // Trick lock into thinking test is complete
-                this.runnable().duration = -1;
+            const customBefore = createContainer(
+                ctx.module
+                    .addBinding(bind(beforeIdentifier).withInstance(fakeHook as HookFunction))
+                    .addBinding(bind(beforeEachIdentifier).withInstance(defaultHook))
+            ).get(entrypointBeforeIdentifier);
 
-                const mockDone = mock();
-                const fakeHook = (cb: AsyncFunc | Func) => {
-                    cb.call(fakeContext, mockDone as Done);
-                };
+            customBefore(doneCb => {
+                if (Math.random()) {
+                    throw new Error('<ERROR>');
+                }
+                doneCb();
+            });
+        });
 
-                mockDone
-                    .withArgs(match(err => err instanceof Error))
-                    .callsFake(arg => {
-                        expect(arg).to.be.an.instanceOf(Error).that.contains({
-                            message: '<ERROR>',
-                        });
-                        done();
-                    });
+        beforeModule.test('Per-test hook with done throws an error', function (this, ctx, done) {
+            // Trick lock into thinking test is complete
+            this.runnable().duration = -1;
 
-                const beforeEach = createContainer(
-                    ctx.module
-                        .addBinding(
-                            bind(beforeEachIdentifier).withInstance(
-                                fakeHook as HookFunction
-                            )
-                        )
-                        .addBinding(
-                            bind(beforeIdentifier).withInstance(defaultHook)
-                        )
-                ).get(entrypointBeforeEachIdentifier);
+            const mockDone = mock();
+            const fakeHook = (cb: AsyncFunc | Func) => {
+                cb.call(fakeContext, mockDone as Done);
+            };
 
-                beforeEach(doneCb => {
-                    if (Math.random()) {
-                        throw new Error('<ERROR>');
-                    }
-                    doneCb();
+            mockDone.withArgs(match(err => err instanceof Error)).callsFake(arg => {
+                expect(arg).to.be.an.instanceOf(Error).that.contains({
+                    message: '<ERROR>',
                 });
-            }
-        );
+                done();
+            });
+
+            const beforeEach = createContainer(
+                ctx.module
+                    .addBinding(bind(beforeEachIdentifier).withInstance(fakeHook as HookFunction))
+                    .addBinding(bind(beforeIdentifier).withInstance(defaultHook))
+            ).get(entrypointBeforeEachIdentifier);
+
+            beforeEach(doneCb => {
+                if (Math.random()) {
+                    throw new Error('<ERROR>');
+                }
+                doneCb();
+            });
+        });
 
         after('Test declared inside a hook', () => {
             expect(() => test('This will never run', () => {}))
                 .to.throw(Error)
                 .that.contains({
-                    message:
-                        'Cannot create new hook/suite/test while executing a hook/test',
+                    message: 'Cannot create new hook/suite/test while executing a hook/test',
                 });
         });
     });

@@ -49,44 +49,35 @@ suite('after', () => {
             order.push(3);
         });
 
-        const mergedContextualAfter = contextualAfter.suiteTeardown(
-            async (ctx, done) => {
-                expect(ctx).to.deep.equal({ abc: 123 });
-                expectTypeOf(ctx).toEqualTypeOf<{
-                    abc: number;
-                }>();
-                Object.assign(ctx, { ignored: [] });
-                expect(contextualAfter.after).to.equal(
-                    contextualAfter.suiteTeardown
-                );
-                expectTypeOf(contextualAfter.after).toEqualTypeOf(
-                    contextualAfter.suiteTeardown
-                );
+        const mergedContextualAfter = contextualAfter.suiteTeardown(async (ctx, done) => {
+            expect(ctx).to.deep.equal({ abc: 123 });
+            expectTypeOf(ctx).toEqualTypeOf<{
+                abc: number;
+            }>();
+            Object.assign(ctx, { ignored: [] });
+            expect(contextualAfter.after).to.equal(contextualAfter.suiteTeardown);
+            expectTypeOf(contextualAfter.after).toEqualTypeOf(contextualAfter.suiteTeardown);
 
-                setTimeout(() => {
-                    expect(order).to.deep.equal([1, 2, 3]);
-                    order.push(4);
-                    done();
-                }, 10);
-
-                return { efg: true } as const;
-            }
-        );
-
-        contextualAfter.suiteTeardown(
-            'Contextual suite teardown',
-            (ctx, done) => {
-                expect(ctx).to.deep.equal({ abc: 123 });
-                expectTypeOf(ctx).toEqualTypeOf<{
-                    abc: number;
-                }>();
-
-                expect(order).to.deep.equal([1, 2, 3, 4]);
-                order.push(5);
-
+            setTimeout(() => {
+                expect(order).to.deep.equal([1, 2, 3]);
+                order.push(4);
                 done();
-            }
-        );
+            }, 10);
+
+            return { efg: true } as const;
+        });
+
+        contextualAfter.suiteTeardown('Contextual suite teardown', (ctx, done) => {
+            expect(ctx).to.deep.equal({ abc: 123 });
+            expectTypeOf(ctx).toEqualTypeOf<{
+                abc: number;
+            }>();
+
+            expect(order).to.deep.equal([1, 2, 3, 4]);
+            order.push(5);
+
+            done();
+        });
 
         mergedContextualAfter.after(async ctx => {
             expect(ctx).to.deep.equal({ abc: 123, efg: true });

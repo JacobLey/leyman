@@ -13,9 +13,7 @@ const stringifyId = (id: GenericHaystackId): string => {
     let text = id.id;
     const { annotations } = id;
     const annotationsText = [
-        annotations.named === null
-            ? null
-            : (`named: ${String(annotations.named)}` as const),
+        annotations.named === null ? null : (`named: ${String(annotations.named)}` as const),
         annotations.nullable && ('nullable' as const),
         annotations.undefinable && ('undefinable' as const),
         typeof annotations.supplier === 'object' &&
@@ -57,9 +55,7 @@ export abstract class HaystackModuleValidationError extends HaystackError {}
 export class HaystackDuplicateOutputError extends HaystackModuleValidationError {
     public readonly outputIds: GenericHaystackId[];
     public constructor(outputIds: GenericHaystackId[]) {
-        super(
-            `Duplicate output identifier for module: ${stringifyIds(outputIds)}`
-        );
+        super(`Duplicate output identifier for module: ${stringifyIds(outputIds)}`);
         this.name = 'HaystackDuplicateOutputError';
         this.outputIds = outputIds;
     }
@@ -85,10 +81,8 @@ export abstract class HaystackContainerValidationError extends HaystackError {}
 export class HaystackCircularDependencyError extends HaystackContainerValidationError {
     public readonly circularChains: GenericHaystackId[][];
     public constructor(circularChains: GenericHaystackId[][]) {
-        const uniqueChains =
-            HaystackCircularDependencyError.#uniqueChains(circularChains);
-        const sortedChains =
-            HaystackCircularDependencyError.#sortChains(uniqueChains);
+        const uniqueChains = HaystackCircularDependencyError.#uniqueChains(circularChains);
+        const sortedChains = HaystackCircularDependencyError.#sortChains(uniqueChains);
         super(
             `Circular dependencies detected in container: ${sortedChains
                 .map(({ message }) => message)
@@ -98,9 +92,7 @@ export class HaystackCircularDependencyError extends HaystackContainerValidation
         this.circularChains = sortedChains.map(({ chain }) => chain);
     }
 
-    static #uniqueChains(
-        circularChains: GenericHaystackId[][]
-    ): Set<GenericHaystackId>[] {
+    static #uniqueChains(circularChains: GenericHaystackId[][]): Set<GenericHaystackId>[] {
         const uniqueChains: Set<GenericHaystackId>[] = [];
         for (const circularChain of circularChains) {
             const circularSet = new Set(circularChain);
@@ -145,9 +137,7 @@ export class HaystackCircularDependencyError extends HaystackContainerValidation
                 return permutations
                     .map(permutation => ({
                         chain: permutation.map(({ id }) => id),
-                        message: permutation
-                            .map(({ idStr }) => idStr)
-                            .join('->'),
+                        message: permutation.map(({ idStr }) => idStr).join('->'),
                     }))
                     .sort((a, b) => a.message.localeCompare(b.message))[0]!;
             })
@@ -177,9 +167,7 @@ export class HaystackSyncSupplierError extends HaystackContainerValidationError 
                 unsafeBinding,
                 `[output id: ${stringifyId(
                     unsafeBinding.bindingOutputId
-                )}, dependency supplier id: ${stringifyId(
-                    unsafeBinding.supplierId
-                )}]`,
+                )}, dependency supplier id: ${stringifyId(unsafeBinding.supplierId)}]`,
             ])
         );
         unsafeSupplierBindings.sort((a, b) =>
@@ -203,12 +191,8 @@ export class HaystackSyncSupplierError extends HaystackContainerValidationError 
  */
 export class HaystackProviderMissingError extends HaystackContainerValidationError {
     public readonly dependencyIds: GenericHaystackId[];
-    public constructor(
-        dependencyIds: HaystackProviderMissingError['dependencyIds']
-    ) {
-        super(
-            `Providers missing for container: ${stringifyIds(dependencyIds)}`
-        );
+    public constructor(dependencyIds: HaystackProviderMissingError['dependencyIds']) {
+        super(`Providers missing for container: ${stringifyIds(dependencyIds)}`);
         this.name = 'HaystackProviderMissingError';
         this.dependencyIds = dependencyIds;
     }
@@ -228,11 +212,7 @@ export abstract class HaystackInstanceValidationError extends HaystackError {}
 export class HaystackNullResponseError extends HaystackInstanceValidationError {
     public readonly outputId: GenericHaystackId;
     public constructor(outputId: HaystackNullResponseError['outputId']) {
-        super(
-            `Null value returned for non-nullable provider: ${stringifyId(
-                outputId
-            )}`
-        );
+        super(`Null value returned for non-nullable provider: ${stringifyId(outputId)}`);
         this.name = 'HaystackNullResponseError';
         this.outputId = outputId;
     }
@@ -244,11 +224,7 @@ export class HaystackNullResponseError extends HaystackInstanceValidationError {
 export class HaystackUndefinedResponseError extends HaystackInstanceValidationError {
     public readonly outputId: GenericHaystackId;
     public constructor(outputId: HaystackUndefinedResponseError['outputId']) {
-        super(
-            `Undefined value returned for non-undefinable provider: ${stringifyId(
-                outputId
-            )}`
-        );
+        super(`Undefined value returned for non-undefinable provider: ${stringifyId(outputId)}`);
         this.name = 'HaystackUndefinedResponseError';
         this.outputId = outputId;
     }
@@ -264,9 +240,7 @@ export class HaystackInstanceOfResponseError extends HaystackInstanceValidationE
         super(
             `Value ${HaystackInstanceOfResponseError.#stringify(
                 value
-            )} returned by provider is not instance of class: ${stringifyId(
-                outputId
-            )}`
+            )} returned by provider is not instance of class: ${stringifyId(outputId)}`
         );
         this.name = 'HaystackInstanceOfResponseError';
         this.outputId = outputId;
@@ -313,15 +287,12 @@ export class HaystackMultiError extends HaystackInstanceValidationError {
         settled: PromiseSettledResult<T>[]
     ): asserts settled is PromiseFulfilledResult<T>[] {
         const rejected = settled.filter(
-            (settle): settle is PromiseRejectedResult =>
-                settle.status === 'rejected'
+            (settle): settle is PromiseRejectedResult => settle.status === 'rejected'
         );
         if (rejected.length > 0) {
             throw rejected.length === 1
                 ? rejected[0]!.reason
-                : new HaystackMultiError(
-                      rejected.map(err => err.reason as unknown)
-                  );
+                : new HaystackMultiError(rejected.map(err => err.reason as unknown));
         }
     }
 }

@@ -2,10 +2,7 @@ import type { Done, Context as MochaContext } from 'mocha';
 import { bind, createModule, identifier, singletonScope } from 'haywire';
 import { beforeIdentifier } from '#mocha-module';
 import { contextualAfterEachGeneratorIdentifier } from './after-each-hooks.js';
-import {
-    type AfterChain,
-    contextualAfterGeneratorIdentifier,
-} from './after-hooks.js';
+import { type AfterChain, contextualAfterGeneratorIdentifier } from './after-hooks.js';
 import {
     type BeforeEachChain,
     contextualBeforeEachGeneratorIdentifier,
@@ -15,28 +12,16 @@ import {
     wrapHookWithEntrypoint,
     wrapOneTimeHookWithContext,
 } from './lib/hook-wrapper.js';
-import type {
-    AllowableAdditionalContext,
-    MergeContext,
-} from './lib/merge-context.js';
+import type { AllowableAdditionalContext, MergeContext } from './lib/merge-context.js';
 import { contextualTestGeneratorIdentifier } from './test-hooks.js';
 
-interface ContextualBeforeHook<ExistingContext extends object>
-    extends GenericContextualHook {
+interface ContextualBeforeHook<ExistingContext extends object> extends GenericContextualHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (
-            this: MochaContext,
-            ctx: ExistingContext,
-            done: Done
-        ) => AdditionalContext
+        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
     ): BeforeChain<ExistingContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (
-            this: MochaContext,
-            ctx: ExistingContext,
-            done: Done
-        ) => AdditionalContext
+        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
     ): BeforeChain<ExistingContext, AdditionalContext>;
 }
 interface BeforeChain<
@@ -44,20 +29,15 @@ interface BeforeChain<
     AdditionalContext extends AllowableAdditionalContext,
 > extends AfterChain<ExistingContext, AdditionalContext>,
         BeforeEachChain<ExistingContext, AdditionalContext> {
-    before: ContextualBeforeHook<
-        MergeContext<ExistingContext, Awaited<AdditionalContext>>
-    >;
-    suiteSetup: ContextualBeforeHook<
-        MergeContext<ExistingContext, Awaited<AdditionalContext>>
-    >;
+    before: ContextualBeforeHook<MergeContext<ExistingContext, Awaited<AdditionalContext>>>;
+    suiteSetup: ContextualBeforeHook<MergeContext<ExistingContext, Awaited<AdditionalContext>>>;
 }
 
 export type ContextualBeforeGenerator = <ExistingContext extends object>(
     ctxProm: Promise<ExistingContext>
 ) => ContextualBeforeHook<ExistingContext>;
 
-export const contextualBeforeGeneratorIdentifier =
-    identifier<ContextualBeforeGenerator>();
+export const contextualBeforeGeneratorIdentifier = identifier<ContextualBeforeGenerator>();
 const contextualBeforeBinding = bind(contextualBeforeGeneratorIdentifier)
     .withDependencies([
         beforeIdentifier,
@@ -67,17 +47,9 @@ const contextualBeforeBinding = bind(contextualBeforeGeneratorIdentifier)
         contextualAfterGeneratorIdentifier,
     ])
     .withProvider(
-        (
-            before,
-            beforeEachGenerator,
-            testGenerator,
-            afterEachGenerator,
-            afterGenerator
-        ) => {
+        (before, beforeEachGenerator, testGenerator, afterEachGenerator, afterGenerator) => {
             const contextualBefore: ContextualBeforeGenerator =
-                <ExistingContext extends object>(
-                    ctxProm: Promise<ExistingContext>
-                ) =>
+                <ExistingContext extends object>(ctxProm: Promise<ExistingContext>) =>
                 <AdditionalContext extends AllowableAdditionalContext>(
                     ...args:
                         | [
@@ -96,11 +68,7 @@ const contextualBeforeBinding = bind(contextualBeforeGeneratorIdentifier)
                               ) => AdditionalContext,
                           ]
                 ): BeforeChain<ExistingContext, AdditionalContext> => {
-                    const mergedContext = wrapOneTimeHookWithContext(
-                        before,
-                        ctxProm,
-                        args
-                    );
+                    const mergedContext = wrapOneTimeHookWithContext(before, ctxProm, args);
 
                     const fakeWeakMap = {
                         get: async () => mergedContext,
@@ -150,6 +118,5 @@ const entrypointBeforeBinding = bind(entrypointBeforeIdentifier)
     })
     .scoped(singletonScope);
 
-export const beforeModule = createModule(contextualBeforeBinding).addBinding(
-    entrypointBeforeBinding
-);
+export const beforeModule =
+    createModule(contextualBeforeBinding).addBinding(entrypointBeforeBinding);

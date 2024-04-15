@@ -15,9 +15,7 @@ suite('NullSchema', () => {
             expect(schema).to.deep.equal({
                 type: 'null',
             });
-            const validator = new Ajv({ strict: true }).compile<
-                SchemaType<typeof schema>
-            >(schema);
+            const validator = new Ajv({ strict: true }).compile<SchemaType<typeof schema>>(schema);
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<null>();
             expect(validator(null)).to.equal(true);
         });
@@ -31,9 +29,7 @@ suite('NullSchema', () => {
                 enum: [null],
                 description: 'type null is not supported',
             });
-            const validator = new Ajv({ strict: true }).compile<
-                SchemaType<typeof schema>
-            >(schema);
+            const validator = new Ajv({ strict: true }).compile<SchemaType<typeof schema>>(schema);
             expect(validator(null)).to.equal(true);
         });
     });

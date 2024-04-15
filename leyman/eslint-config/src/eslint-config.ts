@@ -21,18 +21,10 @@ import {
 
 interface PluginRules {
     rules?:
-        | Record<
-              string,
-              | Rule.OldStyleRule
-              | Rule.RuleModule
-              | RuleModule<string, unknown[]>
-          >
+        | Record<string, Rule.OldStyleRule | Rule.RuleModule | RuleModule<string, unknown[]>>
         | undefined;
 }
-export const nonDeprecatedRules = (
-    name: string,
-    plugin: PluginRules
-): Linter.RulesRecord => {
+export const nonDeprecatedRules = (name: string, plugin: PluginRules): Linter.RulesRecord => {
     const rules: Linter.RulesRecord = {};
     for (const [ruleName, rule] of Object.entries(plugin.rules!)) {
         if (typeof rule === 'object' && rule.meta?.deprecated !== true) {
@@ -191,8 +183,7 @@ export default ({
                 reportUnusedDisableDirectives: true,
             },
             plugins: {
-                '@typescript-eslint':
-                    typescriptPlugin as unknown as ESLint.Plugin,
+                '@typescript-eslint': typescriptPlugin as unknown as ESLint.Plugin,
                 import: importPlugin,
                 jsdoc: jsDocPlugin,
                 'jsx-a11y': jsxA11yPlugin,
@@ -226,11 +217,7 @@ export default ({
                 complexity: 'off',
                 'consistent-this': ['error', 'self'],
                 'func-names': ['error', 'never'],
-                'func-style': [
-                    'error',
-                    'expression',
-                    { allowArrowFunctions: true },
-                ],
+                'func-style': ['error', 'expression', { allowArrowFunctions: true }],
                 'id-blacklist': 'off',
                 'id-length': 'off',
                 'id-match': 'off',
@@ -350,15 +337,9 @@ export default ({
                         ],
                     },
                 ],
-                '@typescript-eslint/naming-convention': [
-                    'error',
-                    ...baseNamingConvention,
-                ],
+                '@typescript-eslint/naming-convention': ['error', ...baseNamingConvention],
                 '@typescript-eslint/no-dynamic-delete': 'off',
-                '@typescript-eslint/no-empty-interface': [
-                    'error',
-                    { allowSingleExtends: true },
-                ],
+                '@typescript-eslint/no-empty-interface': ['error', { allowSingleExtends: true }],
                 '@typescript-eslint/no-explicit-any': 'off',
                 '@typescript-eslint/no-extraneous-class': [
                     'error',
@@ -463,10 +444,7 @@ export default ({
                         allowTernary: true,
                     },
                 ],
-                '@typescript-eslint/no-unused-vars': [
-                    'error',
-                    { ignoreRestSiblings: true },
-                ],
+                '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
                 '@typescript-eslint/no-use-before-define': [
                     'error',
                     {
@@ -510,16 +488,10 @@ export default ({
                 'import/no-named-export': 'off',
                 'import/no-namespace': 'off',
                 'import/no-nodejs-modules': 'off',
-                'import/no-unassigned-import': [
-                    'error',
-                    { allow: ['**/*.css'] },
-                ],
+                'import/no-unassigned-import': ['error', { allow: ['**/*.css'] }],
                 'import/no-unresolved': 'off',
                 'import/no-unused-modules': 'off',
-                'import/no-useless-path-segments': [
-                    'error',
-                    { commonjs: true },
-                ],
+                'import/no-useless-path-segments': ['error', { commonjs: true }],
                 'import/order': [
                     'error',
                     {
@@ -645,10 +617,7 @@ export default ({
 
                 // Node
                 ...nonDeprecatedRules('n', nodePlugin),
-                'n/callback-return': [
-                    'error',
-                    ['callback', 'cb', 'next', 'done'],
-                ],
+                'n/callback-return': ['error', ['callback', 'cb', 'next', 'done']],
                 'n/no-missing-import': 'off', // Fails to detect .ts extension
                 'n/no-missing-require': 'off', // Same
                 'n/no-sync': ['error', { allowAtRootLevel: true }],
@@ -657,10 +626,7 @@ export default ({
 
                 // React
                 ...nonDeprecatedRules('react', reactPlugin),
-                'react/boolean-prop-naming': [
-                    'error',
-                    { validateNested: true },
-                ],
+                'react/boolean-prop-naming': ['error', { validateNested: true }],
                 'react/destructuring-assignment': 'off',
                 'react/display-name': 'off',
                 'react/forbid-dom-props': 'off',
@@ -673,10 +639,7 @@ export default ({
                     },
                 ],
                 'react/hook-use-state': 'off',
-                'react/jsx-filename-extension': [
-                    'error',
-                    { extensions: ['.tsx'] },
-                ],
+                'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
                 'react/jsx-key': ['error', { checkFragmentShorthand: true }],
                 'react/jsx-max-depth': 'off',
                 'react/jsx-no-literals': 'off',
@@ -684,10 +647,7 @@ export default ({
                     'error',
                     { allowReferrer: false, enforceDynamicLinks: 'always' },
                 ],
-                'react/jsx-props-no-spreading': [
-                    'error',
-                    { exceptions: ['App', 'Component'] },
-                ],
+                'react/jsx-props-no-spreading': ['error', { exceptions: ['App', 'Component'] }],
                 'react/jsx-sort-props': [
                     'error',
                     {
@@ -751,10 +711,7 @@ export default ({
                 'react/prop-types': 'off',
                 'react/react-in-jsx-scope': 'off',
                 'react/require-default-props': 'off',
-                'react/static-property-placement': [
-                    'error',
-                    'static public field',
-                ],
+                'react/static-property-placement': ['error', 'static public field'],
 
                 // React Hooks
                 ...nonDeprecatedRules('react-hooks', reactHooksPlugin),
@@ -779,10 +736,7 @@ export default ({
 
                 // Unicorn
                 ...nonDeprecatedRules('unicorn', unicornPlugin),
-                'unicorn/catch-error-name': [
-                    'error',
-                    { ignore: [/^error$/u], name: 'err' },
-                ],
+                'unicorn/catch-error-name': ['error', { ignore: [/^error$/u], name: 'err' }],
                 'unicorn/no-keyword-prefix': 'off',
                 'unicorn/no-null': 'off',
                 'unicorn/numeric-separators-style': [
@@ -793,10 +747,7 @@ export default ({
                         },
                     },
                 ],
-                'unicorn/prefer-export-from': [
-                    'error',
-                    { ignoreUsedVariables: true },
-                ],
+                'unicorn/prefer-export-from': ['error', { ignoreUsedVariables: true }],
                 'unicorn/prefer-ternary': ['error', 'only-single-line'],
                 'unicorn/prevent-abbreviations': 'off',
                 'unicorn/template-indent': ['error', { indent: 4 }],
@@ -810,9 +761,7 @@ export default ({
             rules: (() => {
                 const rules: Linter.FlatConfig['rules'] = {};
 
-                for (const [ruleName, ruleSettings] of Object.entries(
-                    typescriptPlugin.rules
-                )) {
+                for (const [ruleName, ruleSettings] of Object.entries(typescriptPlugin.rules)) {
                     if (ruleSettings.meta.docs!.requiresTypeChecking) {
                         rules[`@typescript-eslint/${ruleName}`] = 'off';
                         const { extendsBaseRule } = ruleSettings.meta.docs!;
@@ -843,15 +792,9 @@ export default ({
                 const rules: Linter.FlatConfig['rules'] = {};
 
                 for (const ruleName of [
-                    ...Object.keys(jsxA11yPlugin.rules!).map(
-                        rule => `jsx-a11y/${rule}`
-                    ),
-                    ...Object.keys(reactPlugin.rules!).map(
-                        rule => `react/${rule}`
-                    ),
-                    ...Object.keys(reactHooksPlugin.rules!).map(
-                        rule => `react-hooks/${rule}`
-                    ),
+                    ...Object.keys(jsxA11yPlugin.rules!).map(rule => `jsx-a11y/${rule}`),
+                    ...Object.keys(reactPlugin.rules!).map(rule => `react/${rule}`),
+                    ...Object.keys(reactHooksPlugin.rules!).map(rule => `react-hooks/${rule}`),
                 ]) {
                     rules[ruleName] = 'off';
                 }

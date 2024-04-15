@@ -1,9 +1,4 @@
-import type {
-    DefaultPage,
-    EmptyObject,
-    PaginatedData,
-    PaginatedParams,
-} from './lib/types.js';
+import type { DefaultPage, EmptyObject, PaginatedData, PaginatedParams } from './lib/types.js';
 import { Resource, resource } from './resource.js';
 
 /**
@@ -17,10 +12,7 @@ declare abstract class IPaginated<
     Params extends object = EmptyObject,
     Page = DefaultPage,
     Meta = EmptyObject,
-> extends Resource<
-    PaginatedData<Data, Page, Meta>,
-    PaginatedParams<Params, Page>
-> {}
+> extends Resource<PaginatedData<Data, Page, Meta>, PaginatedParams<Params, Page>> {}
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const Paginated = Resource as typeof IPaginated;
 
@@ -36,9 +28,6 @@ export const paginated = resource as <
     Meta = EmptyObject,
 >(
     ...params: Parameters<
-        typeof resource<
-            PaginatedData<Data, Page, Meta>,
-            PaginatedParams<Params, Page>
-        >
+        typeof resource<PaginatedData<Data, Page, Meta>, PaginatedParams<Params, Page>>
     >
 ) => IPaginated<Data, Params, Page, Meta>;

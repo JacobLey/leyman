@@ -69,11 +69,7 @@ export type AbstractClean<
     Stripped = Check extends Base & infer U ? U : Check,
 > = Stripped extends Base ? Stripped : Check;
 
-export type AbstractStrip<
-    Base,
-    ToStrip,
-    Replacement = never,
-> = Base extends infer U & ToStrip
+export type AbstractStrip<Base, ToStrip, Replacement = never> = Base extends infer U & ToStrip
     ? IsUnknown<U> extends true
         ? Replacement
         : U

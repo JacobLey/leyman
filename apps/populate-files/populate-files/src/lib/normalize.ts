@@ -30,10 +30,7 @@ export const normalizeFileParams = async (
     params: PopulateFileParams,
     options: RawOptions = {}
 ): Promise<NormalizedFileParams> => {
-    const [cwd, loadedContent] = await Promise.all([
-        parseCwd(options.cwd),
-        params.content,
-    ]);
+    const [cwd, loadedContent] = await Promise.all([parseCwd(options.cwd), params.content]);
 
     return {
         filePath: resolve(cwd, params.filePath),
@@ -54,10 +51,7 @@ export const normalizeFilesParams = async (
         }))
     );
 
-    const [cwd, loadedContents] = await Promise.all([
-        parseCwd(options.cwd),
-        loadedContentsPromise,
-    ]);
+    const [cwd, loadedContents] = await Promise.all([parseCwd(options.cwd), loadedContentsPromise]);
 
     const files = await Promise.all(
         loadedContents.map(async loadedContent => ({

@@ -17,9 +17,7 @@ suite('CustomSchema', () => {
         const schema = customSchema<'abc' | number>(externalSchema);
 
         expect(schema.toJSON()).to.deep.equal(externalSchema);
-        expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-            'abc' | number
-        >();
+        expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<'abc' | number>();
     });
 
     test('Default empty object', () => {
@@ -33,9 +31,7 @@ suite('CustomSchema', () => {
         test('Blocked methods', () => {
             const schema = customSchema();
 
-            expectTypeOf<AvailableProperties<typeof schema>>().toEqualTypeOf<
-                'cast' | 'toJSON'
-            >();
+            expectTypeOf<AvailableProperties<typeof schema>>().toEqualTypeOf<'cast' | 'toJSON'>();
         });
     });
 });

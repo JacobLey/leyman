@@ -6,9 +6,7 @@ export type { RawHandler } from '#handler';
 
 const handlerInstance: IHandler = createContainer(
     createModule(
-        bind(Handler)
-            .withConstructorProvider()
-            .withDependencies([loggerIdentifier])
+        bind(Handler).withConstructorProvider().withDependencies([loggerIdentifier])
     ).addBinding(bind(loggerIdentifier).withInstance(console))
 ).get(Handler);
 

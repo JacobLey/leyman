@@ -17,15 +17,11 @@ suite('StaticEventTarget', () => {
             test('Generic parameter', () => {
                 const extendTarget = new ExtendTarget();
                 extendTarget.addEventListener('foo', event => {
-                    expectTypeOf(event).toEqualTypeOf<
-                        CustomEvent<'foo', 123>
-                    >();
+                    expectTypeOf(event).toEqualTypeOf<CustomEvent<'foo', 123>>();
                 });
                 extendTarget.addEventListener('foo', {
                     handleEvent: event => {
-                        expectTypeOf(event).toEqualTypeOf<
-                            CustomEvent<'foo', 123>
-                        >();
+                        expectTypeOf(event).toEqualTypeOf<CustomEvent<'foo', 123>>();
                     },
                 });
                 extendTarget.addEventListener('bar', event => {
@@ -35,12 +31,8 @@ suite('StaticEventTarget', () => {
                     expectTypeOf(event).toEqualTypeOf<NativeEvent>();
                 });
 
-                extendTarget.dispatchEvent(
-                    new CustomEvent('foo', { detail: 123 })
-                );
-                extendTarget.dispatchEvent(
-                    new ServerEvent('bar', '<server-data>')
-                );
+                extendTarget.dispatchEvent(new CustomEvent('foo', { detail: 123 }));
+                extendTarget.dispatchEvent(new ServerEvent('bar', '<server-data>'));
                 extendTarget.dispatchEvent(new NativeEvent('onStuff'));
                 extendTarget.dispatchEvent(
                     // @ts-expect-error
@@ -49,9 +41,7 @@ suite('StaticEventTarget', () => {
 
                 // eslint-disable-next-line unicorn/no-invalid-remove-event-listener
                 extendTarget.removeEventListener('foo', event => {
-                    expectTypeOf(event).toEqualTypeOf<
-                        CustomEvent<'foo', 123>
-                    >();
+                    expectTypeOf(event).toEqualTypeOf<CustomEvent<'foo', 123>>();
                 });
                 extendTarget.removeEventListener('bar', {
                     handleEvent: event => {

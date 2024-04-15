@@ -57,19 +57,14 @@ export class NeverSchema extends AbstractSchema<SchemaGenerics<never>> {
      * @param [options.writeOnly] - value should be hidden
      * @returns impossible schema
      */
-    public static override create(
-        this: void,
-        options?: SchemaParams<never>
-    ): NeverSchema {
+    public static override create(this: void, options?: SchemaParams<never>): NeverSchema {
         return new NeverSchema(options);
     }
 
     /**
      * @override
      */
-    protected override toSchema(
-        params: SerializationParams
-    ): JsonSchema<SchemaType<this>> {
+    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         base.not = {};

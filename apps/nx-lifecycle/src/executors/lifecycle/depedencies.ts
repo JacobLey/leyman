@@ -14,9 +14,7 @@ export const formatFileIdentifier = identifier<FilesFormatter>();
 export const isCiIdentifier = identifier<boolean>().named('isCI');
 export const loggerIdentifier = identifier<Logger>();
 
-export const dependenciesModule = createModule(
-    bind(readFileIdentifier).withInstance(readFile)
-)
+export const dependenciesModule = createModule(bind(readFileIdentifier).withInstance(readFile))
     .addBinding(bind(writeFileIdentifier).withInstance(writeFile))
     .addBinding(bind(formatFileIdentifier).withInstance(formatFiles))
     .addBinding(bind(isCiIdentifier).withInstance(isCI))

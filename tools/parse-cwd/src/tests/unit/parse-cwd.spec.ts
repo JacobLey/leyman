@@ -15,10 +15,7 @@ suite('parseCwd', () => {
 
     test('Resolves relative to process.cwd()', async () => {
         const cwd = await ParseCwd.parseCwd(
-            Path.relative(
-                process.cwd(),
-                Path.dirname(fileURLToPath(import.meta.url))
-            )
+            Path.relative(process.cwd(), Path.dirname(fileURLToPath(import.meta.url)))
         );
         expect(cwd).to.equal(Path.dirname(fileURLToPath(import.meta.url)));
     });
@@ -39,18 +36,14 @@ suite('parseCwd', () => {
                 const cwd = await ParseCwd.parseCwd({
                     cwd: import.meta.url,
                 });
-                expect(cwd).to.equal(
-                    Path.dirname(fileURLToPath(import.meta.url))
-                );
+                expect(cwd).to.equal(Path.dirname(fileURLToPath(import.meta.url)));
             });
 
             test('As URL', async () => {
                 const cwd = await ParseCwd.parseCwd({
                     cwd: new URL(import.meta.url),
                 });
-                expect(cwd).to.equal(
-                    Path.dirname(fileURLToPath(import.meta.url))
-                );
+                expect(cwd).to.equal(Path.dirname(fileURLToPath(import.meta.url)));
             });
 
             test('As Empty', async () => {

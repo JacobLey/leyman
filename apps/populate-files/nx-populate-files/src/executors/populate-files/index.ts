@@ -23,9 +23,7 @@ export default async (
                 cwd: resolve(
                     context.root,
                     options.cwd ??
-                        context.projectsConfigurations!.projects[
-                            context.projectName!
-                        ]!.root
+                        context.projectsConfigurations!.projects[context.projectName!]!.root
                 ),
                 check: options.check,
                 dryRun: options.dryRun,

@@ -131,17 +131,10 @@ suite('Encode', () => {
         });
 
         test('raw', () => {
-            for (const arr of [
-                [1, 2, 3, 4],
-                [97, 98, 99, 49, 50, 51],
-                [0, 0, 0],
-                [],
-            ]) {
+            for (const arr of [[1, 2, 3, 4], [97, 98, 99, 49, 50, 51], [0, 0, 0], []]) {
                 const buf = Uint8Array.from(arr);
                 expect(Encode.decode(buf)).to.eq(buf);
-                expect(Encode.decode({ text: buf, encoding: 'raw' })).to.eq(
-                    buf
-                );
+                expect(Encode.decode({ text: buf, encoding: 'raw' })).to.eq(buf);
             }
         });
     });
@@ -182,9 +175,7 @@ suite('Encode', () => {
                     output: '',
                 },
             ]) {
-                expect(
-                    Encode.encode(Uint8Array.from(input), 'base64')
-                ).to.equal(output);
+                expect(Encode.encode(Uint8Array.from(input), 'base64')).to.equal(output);
             }
         });
 
@@ -223,9 +214,7 @@ suite('Encode', () => {
                     output: '',
                 },
             ]) {
-                expect(
-                    Encode.encode(Uint8Array.from(input), 'base64url')
-                ).to.equal(output);
+                expect(Encode.encode(Uint8Array.from(input), 'base64url')).to.equal(output);
             }
         });
 
@@ -248,9 +237,7 @@ suite('Encode', () => {
                     output: '',
                 },
             ]) {
-                expect(Encode.encode(Uint8Array.from(input), 'hex')).to.equal(
-                    output
-                );
+                expect(Encode.encode(Uint8Array.from(input), 'hex')).to.equal(output);
             }
         });
 

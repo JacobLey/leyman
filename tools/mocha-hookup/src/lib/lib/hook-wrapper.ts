@@ -1,9 +1,4 @@
-import type {
-    Done,
-    HookFunction,
-    Context as MochaContext,
-    Test as MochaTest,
-} from 'mocha';
+import type { Done, HookFunction, Context as MochaContext, Test as MochaTest } from 'mocha';
 import pDefer from 'p-defer';
 import { acquireLock, checkLock } from './execution-lock.js';
 import {
@@ -70,11 +65,7 @@ export const wrapOneTimeHookWithContext = async <
         acquireLock(this.runnable());
         void Promise.resolve().then(async () => {
             try {
-                const additional = await cb.call(
-                    this,
-                    { ...(await existing) },
-                    done
-                );
+                const additional = await cb.call(this, { ...(await existing) }, done);
                 deferred.resolve(additional);
             } catch (err) {
                 // eslint-disable-next-line n/callback-return
@@ -85,9 +76,10 @@ export const wrapOneTimeHookWithContext = async <
 
     const asyncCb = async function (this: MochaContext): Promise<void> {
         acquireLock(this.runnable());
-        const additional = await cb.apply(this, [
-            { ...(await existing) },
-        ] as unknown as [ExistingContext, Done]);
+        const additional = await cb.apply(this, [{ ...(await existing) }] as unknown as [
+            ExistingContext,
+            Done,
+        ]);
         deferred.resolve(additional);
     };
 
@@ -153,10 +145,7 @@ export const wrapPerTestHookWithContext = <
                   done: Done
               ) => AdditionalContext | Promise<AdditionalContext>,
           ]
-): WeakMap<
-    MochaTest,
-    Promise<MergeContext<ExistingContext, Awaited<AdditionalContext>>>
-> => {
+): WeakMap<MochaTest, Promise<MergeContext<ExistingContext, Awaited<AdditionalContext>>>> => {
     checkLock();
 
     const cb = args.length === 1 ? args[0] : args[1];
@@ -177,12 +166,7 @@ export const wrapPerTestHookWithContext = <
             try {
                 const existing = await existingMap.get(this.currentTest!)!;
                 const deferred =
-                    pDefer<
-                        MergeContext<
-                            ExistingContext,
-                            Awaited<AdditionalContext>
-                        >
-                    >();
+                    pDefer<MergeContext<ExistingContext, Awaited<AdditionalContext>>>();
                 testToPromise.set(this.currentTest!, deferred.promise);
                 const additional = await cb.call(this, { ...existing }, done);
                 deferred.resolve(await mergeContexts(existing, additional));
@@ -196,13 +180,11 @@ export const wrapPerTestHookWithContext = <
     const asyncCb = async function (this: MochaContext): Promise<void> {
         acquireLock(this.runnable());
         const existing = await existingMap.get(this.currentTest!)!;
-        const additional = await cb.apply(this, [
-            { ...existing },
-        ] as unknown as [ExistingContext, Done]);
-        testToPromise.set(
-            this.currentTest!,
-            mergeContexts(existing, additional)
-        );
+        const additional = await cb.apply(this, [{ ...existing }] as unknown as [
+            ExistingContext,
+            Done,
+        ]);
+        testToPromise.set(this.currentTest!, mergeContexts(existing, additional));
     };
 
     const wrappedCb = cb.length > 1 ? doneCb : asyncCb;
@@ -243,14 +225,8 @@ export const wrapHookWithEntrypoint =
         contextualHook: ContextualHook
     ): ((
         ...args:
-            | [
-                  string,
-                  (
-                      this: MochaContext,
-                      done: Done
-                  ) => AllowableAdditionalContext,
-              ]
             | [(this: MochaContext, done: Done) => AllowableAdditionalContext]
+            | [string, (this: MochaContext, done: Done) => AllowableAdditionalContext]
     ) => object) =>
     (...args) => {
         const cb = args.length === 1 ? args[0] : args[1];

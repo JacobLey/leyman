@@ -15,14 +15,10 @@ suite('StaticEmitter', () => {
             test('Generic parameter', () => {
                 const customEmitter = new CustomEmitter();
                 customEmitter.on('foo', (...args) => {
-                    expectTypeOf(args).toEqualTypeOf<
-                        [123, CustomEvent<'foo', 123>]
-                    >();
+                    expectTypeOf(args).toEqualTypeOf<[123, CustomEvent<'foo', 123>]>();
                 });
                 customEmitter.addListener('foo', (...args) => {
-                    expectTypeOf(args).toEqualTypeOf<
-                        [123, CustomEvent<'foo', 123>]
-                    >();
+                    expectTypeOf(args).toEqualTypeOf<[123, CustomEvent<'foo', 123>]>();
                 });
                 // @ts-expect-error
                 customEmitter.on('bar', () => {});
@@ -44,9 +40,7 @@ suite('StaticEmitter', () => {
                 });
                 customEmitter.off('foo', {
                     handleEvent: detail => {
-                        expectTypeOf(detail).toEqualTypeOf<
-                            CustomEvent<'foo', 123>
-                        >();
+                        expectTypeOf(detail).toEqualTypeOf<CustomEvent<'foo', 123>>();
                     },
                 });
                 customEmitter.off('bar', event => {
@@ -57,10 +51,7 @@ suite('StaticEmitter', () => {
                 });
                 customEmitter.removeListener(eventSym, (...args) => {
                     expectTypeOf(args).toEqualTypeOf<
-                        [
-                            { myData: string },
-                            CustomEvent<string, { myData: string }>,
-                        ]
+                        [{ myData: string }, CustomEvent<string, { myData: string }>]
                     >();
                 });
             });
@@ -106,10 +97,7 @@ suite('StaticEmitter', () => {
 
             const customEmitter = new CustomEmitter();
 
-            const listener = (
-                detail: number,
-                event: CustomEvent<string, number>
-            ): void => {
+            const listener = (detail: number, event: CustomEvent<string, number>): void => {
                 expect(++order).to.equal(1);
                 expect(detail).to.equal(123);
                 expect(event).to.be.an.instanceOf(CustomEvent);

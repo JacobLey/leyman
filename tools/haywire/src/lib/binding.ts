@@ -20,9 +20,7 @@ import type {
     Supplier,
 } from '#types';
 
-export type DependencyIdTypes<
-    Dependencies extends readonly [...GenericHaystackId[]],
-> = {
+export type DependencyIdTypes<Dependencies extends readonly [...GenericHaystackId[]]> = {
     [Index in keyof Dependencies]: HaystackIdType<Dependencies[Index]>;
 };
 export type GenericBinding = Binding<GenericOutputHaystackId, any, boolean>;
@@ -97,13 +95,7 @@ export class Binding<
      * @returns new binding with scope
      */
     public scoped(scope: Scopes): Binding<OutputId, Dependencies, Async> {
-        return new Binding(
-            this.outputId,
-            this.depIds,
-            this.isAsync,
-            this.provider,
-            scope
-        );
+        return new Binding(this.outputId, this.depIds, this.isAsync, this.provider, scope);
     }
 
     /**
@@ -163,15 +155,7 @@ export class Binding<
                 false,
                 false
             >
-                ? HaystackId<
-                      U,
-                      V,
-                      string | symbol | null,
-                      Nullable,
-                      Undefinable,
-                      false,
-                      false
-                  >
+                ? HaystackId<U, V, string | symbol | null, Nullable, Undefinable, false, false>
                 : never,
             Dependencies,
             Async
@@ -203,12 +187,7 @@ export class Binding<
         Async
     >;
     public nullable(): GenericBinding {
-        return new Binding(
-            this.outputId.nullable(),
-            this.depIds,
-            this.isAsync,
-            this.provider
-        );
+        return new Binding(this.outputId.nullable(), this.depIds, this.isAsync, this.provider);
     }
 
     /**
@@ -236,18 +215,11 @@ export class Binding<
         Async
     >;
     public undefinable(): GenericBinding {
-        return new Binding(
-            this.outputId.undefinable(),
-            this.depIds,
-            this.isAsync,
-            this.provider
-        );
+        return new Binding(this.outputId.undefinable(), this.depIds, this.isAsync, this.provider);
     }
 }
 
-type IdOrClassToIds<
-    Dependencies extends readonly (GenericHaystackId | IsClass)[],
-> = {
+type IdOrClassToIds<Dependencies extends readonly (GenericHaystackId | IsClass)[]> = {
     [Index in keyof Dependencies]: Dependencies[Index] extends IsClass
         ? ClassToConstructable<Dependencies[Index]>
         : Dependencies[Index] extends GenericHaystackId
@@ -256,19 +228,16 @@ type IdOrClassToIds<
 };
 
 type ExtendsPromise<T> = T extends Promise<unknown> ? true : false;
-type AsyncPromiseOutput<OutputId extends GenericHaystackId> =
-    true extends ExtendsPromise<HaystackIdType<OutputId>>
-        ? [InvalidInput<'AsyncPromiseResponse'>]
-        : [];
+type AsyncPromiseOutput<OutputId extends GenericHaystackId> = true extends ExtendsPromise<
+    HaystackIdType<OutputId>
+>
+    ? [InvalidInput<'AsyncPromiseResponse'>]
+    : [];
 
-const idOrClassToIds = <
-    Dependencies extends readonly (GenericHaystackId | IsClass)[],
->(
+const idOrClassToIds = <Dependencies extends readonly (GenericHaystackId | IsClass)[]>(
     ids: [...Dependencies]
 ): IdOrClassToIds<Dependencies> =>
-    ids.map(id =>
-        unsafeIdentifier(id as GenericHaystackId)
-    ) as IdOrClassToIds<Dependencies>;
+    ids.map(id => unsafeIdentifier(id as GenericHaystackId)) as IdOrClassToIds<Dependencies>;
 
 /**
  * Binding builder that has output + dependencies, and needs the provider.
@@ -292,10 +261,7 @@ export class DepsBindingBuilder<
     public withConstructorProvider(
         ...invalidInput: ExtendsType<
             HaystackIdConstructor<OutputId>,
-            DepsClass<
-                HaystackIdType<OutputId>,
-                DependencyIdTypes<DependencyIds>
-            >
+            DepsClass<HaystackIdType<OutputId>, DependencyIdTypes<DependencyIds>>
         >
     ): Binding<OutputId, DependencyIds, false>;
     public withConstructorProvider(): Binding<OutputId, DependencyIds, false> {
@@ -314,9 +280,7 @@ export class DepsBindingBuilder<
     }
 
     public withProvider(
-        provider: (
-            ...deps: DependencyIdTypes<DependencyIds>
-        ) => HaystackIdType<OutputId>
+        provider: (...deps: DependencyIdTypes<DependencyIds>) => HaystackIdType<OutputId>
     ): Binding<OutputId, DependencyIds, false> {
         return new Binding(this.#outputId, this.#depIds, false, provider);
     }
@@ -344,22 +308,13 @@ type DependenciesToIds<Dependencies extends readonly unknown[]> = {
         StripAnnotations<Dependencies[Index]>,
         GenericClass<StripAnnotations<Dependencies[Index]>> | null,
         string | symbol | null,
-        null extends StripAnnotations<
-            Dependencies[Index],
-            'latebinding' | 'supplier'
-        >
+        null extends StripAnnotations<Dependencies[Index], 'latebinding' | 'supplier'>
             ? boolean
             : false,
-        undefined extends StripAnnotations<
-            Dependencies[Index],
-            'latebinding' | 'supplier'
-        >
+        undefined extends StripAnnotations<Dependencies[Index], 'latebinding' | 'supplier'>
             ? boolean
             : false,
-        StripAnnotations<
-            Dependencies[Index],
-            'latebinding'
-        > extends Supplier<unknown>
+        StripAnnotations<Dependencies[Index], 'latebinding'> extends Supplier<unknown>
             ? true
             : false,
         Dependencies[Index] extends LateBinding<unknown> ? true : false
@@ -384,9 +339,7 @@ export class ProviderBindingBuilder<
     Dependencies extends readonly unknown[],
 > {
     readonly #outputId: OutputId;
-    readonly #provider: (
-        ...deps: [...Dependencies]
-    ) => HaystackIdType<OutputId>;
+    readonly #provider: (...deps: [...Dependencies]) => HaystackIdType<OutputId>;
 
     public constructor(
         outputId: OutputId,
@@ -396,9 +349,7 @@ export class ProviderBindingBuilder<
         this.#provider = provider;
     }
 
-    public withDependencies<
-        DependencyIds extends readonly (GenericHaystackId | IsClass)[],
-    >(
+    public withDependencies<DependencyIds extends readonly (GenericHaystackId | IsClass)[]>(
         ...[depIds]: [
             [...DependencyIds],
             ...invalidInput: DependenciesMisMatch<DependencyIds, Dependencies>,
@@ -440,9 +391,7 @@ export class AsyncProviderBindingBuilder<
         this.#provider = provider;
     }
 
-    public withDependencies<
-        DependencyIds extends readonly (GenericHaystackId | IsClass)[],
-    >(
+    public withDependencies<DependencyIds extends readonly (GenericHaystackId | IsClass)[]>(
         ...[depIds]: [
             [...DependencyIds],
             ...invalidInput: DependenciesMisMatch<DependencyIds, Dependencies>,
@@ -460,8 +409,9 @@ export class AsyncProviderBindingBuilder<
 }
 
 type MissingConstructorInput = [InvalidInput<'MissingConstructorInput'>];
-type MissingConstructorType<T extends GenericHaystackId> =
-    null extends HaystackIdConstructor<T> ? MissingConstructorInput : [];
+type MissingConstructorType<T extends GenericHaystackId> = null extends HaystackIdConstructor<T>
+    ? MissingConstructorInput
+    : [];
 
 /**
  * Binding builder that only has the output id.
@@ -477,16 +427,8 @@ export class BindingBuilder<OutputId extends GenericOutputHaystackId> {
         this.#outputId = outputId;
     }
 
-    public withInstance(
-        value: HaystackIdType<OutputId>
-    ): Binding<OutputId, [], false> {
-        return new Binding(
-            this.#outputId,
-            [],
-            false,
-            () => value,
-            optimisticSingletonScope
-        );
+    public withInstance(value: HaystackIdType<OutputId>): Binding<OutputId, [], false> {
+        return new Binding(this.#outputId, [], false, () => value, optimisticSingletonScope);
     }
 
     public withConstructor(
@@ -500,26 +442,16 @@ export class BindingBuilder<OutputId extends GenericOutputHaystackId> {
             this.#outputId,
             [],
             false,
-            () =>
-                new (
-                    this.#outputId.construct as DepsClass<
-                        HaystackIdType<OutputId>,
-                        []
-                    >
-                )()
+            () => new (this.#outputId.construct as DepsClass<HaystackIdType<OutputId>, []>)()
         );
     }
 
-    public withGenerator(
-        provider: () => HaystackIdType<OutputId>
-    ): Binding<OutputId, [], false> {
+    public withGenerator(provider: () => HaystackIdType<OutputId>): Binding<OutputId, [], false> {
         return new Binding(this.#outputId, [], false, provider);
     }
 
     public withAsyncGenerator(
-        provider: () =>
-            | HaystackIdType<OutputId>
-            | Promise<HaystackIdType<OutputId>>,
+        provider: () => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>,
         ...invalidInput: AsyncPromiseOutput<OutputId>
     ): Binding<OutputId, [], true>;
     public withAsyncGenerator(
@@ -531,15 +463,10 @@ export class BindingBuilder<OutputId extends GenericOutputHaystackId> {
         return new Binding(this.#outputId, [], true, provider);
     }
 
-    public withDependencies<
-        Dependencies extends readonly (GenericHaystackId | IsClass)[],
-    >(
+    public withDependencies<Dependencies extends readonly (GenericHaystackId | IsClass)[]>(
         dependencyIds: [...Dependencies]
     ): DepsBindingBuilder<OutputId, IdOrClassToIds<Dependencies>> {
-        return new DepsBindingBuilder(
-            this.#outputId,
-            idOrClassToIds(dependencyIds)
-        );
+        return new DepsBindingBuilder(this.#outputId, idOrClassToIds(dependencyIds));
     }
 
     public withConstructorProvider(
@@ -555,12 +482,9 @@ export class BindingBuilder<OutputId extends GenericOutputHaystackId> {
         return new ProviderBindingBuilder(
             this.#outputId,
             (...args) =>
-                new (
-                    this.#outputId.construct as DepsClass<
-                        HaystackIdType<OutputId>,
-                        unknown[]
-                    >
-                )(...args)
+                new (this.#outputId.construct as DepsClass<HaystackIdType<OutputId>, unknown[]>)(
+                    ...args
+                )
         );
     }
 

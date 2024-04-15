@@ -1,21 +1,21 @@
 {
-	"$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
-	"name": "Leyman",
-	"dockerComposeFile": "docker-compose.yml",
-	"service": "app",
-	"workspaceFolder": "/workspace",
-	"remoteUser": "leyman",
+  "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
+  "name": "Leyman",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "remoteUser": "leyman",
 
-	"customizations": {
+  "customizations": {
     "vscode": {
       "extensions": [
-				"ms-azuretools.vscode-docker",
-				"ritwickdey.LiveServer",
-				"biomejs.biome",
-				"dbaeumer.vscode-eslint"
-			]
+        "ms-azuretools.vscode-docker",
+        "ritwickdey.LiveServer",
+        "biomejs.biome",
+        "dbaeumer.vscode-eslint"
+      ]
     }
   },
 
-	"features": {}
+  "features": {}
 }

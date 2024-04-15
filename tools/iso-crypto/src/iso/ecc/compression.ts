@@ -15,10 +15,7 @@ import { defaultCurve, type InputText } from '../lib/types.js';
  * @param [curve] - curve algorithm, defaults to p256
  * @returns compressed public key
  */
-export const compressEccPublicKey = (
-    publicKey: InputText,
-    curve = defaultCurve
-): Uint8Array => {
+export const compressEccPublicKey = (publicKey: InputText, curve = defaultCurve): Uint8Array => {
     const decoded = decode(publicKey);
     const { bytes } = eccMeta(curve);
     if (decoded.length <= bytes + 1) {
@@ -39,10 +36,7 @@ export const compressEccPublicKey = (
  * @param [curve] - curve algorithm, defaults to p256
  * @returns uncompressed public key
  */
-export const decompressEccPublicKey = (
-    publicKey: InputText,
-    curve = defaultCurve
-): Uint8Array => {
+export const decompressEccPublicKey = (publicKey: InputText, curve = defaultCurve): Uint8Array => {
     const decoded = decode(publicKey);
     const { bytes } = eccMeta(curve);
     if (decoded.length > bytes + 1) {
@@ -52,11 +46,7 @@ export const decompressEccPublicKey = (
     // eslint-disable-next-line no-bitwise
     const odd = !!(decoded[0]! & 1);
 
-    const y = deriveYCoordinate(
-        BigInt(`0x${encode(x, 'hex')}`),
-        odd,
-        curves[curve]
-    );
+    const y = deriveYCoordinate(BigInt(`0x${encode(x, 'hex')}`), odd, curves[curve]);
 
     return new Uint8Array([
         4,

@@ -18,9 +18,7 @@ suite('Generate identifier', () => {
         }
 
         const id = identifier<Foo>();
-        expectTypeOf(id).toEqualTypeOf<
-            HaystackId<Foo, null, null, false, false, false, false>
-        >();
+        expectTypeOf(id).toEqualTypeOf<HaystackId<Foo, null, null, false, false, false, false>>();
         expect(id.id).to.equal('haystack-id');
         expect(id.construct).to.equal(null);
 
@@ -170,9 +168,7 @@ suite('annotations', () => {
 
     test('nullable', () => {
         const nullable = id.nullable();
-        expectTypeOf<
-            HaystackIdType<typeof nullable>
-        >().toEqualTypeOf<Foo | null>();
+        expectTypeOf<HaystackIdType<typeof nullable>>().toEqualTypeOf<Foo | null>();
 
         expectTypeOf(nullable.annotations.nullable).toEqualTypeOf(true);
         expect(nullable.annotations.nullable).to.equal(true);
@@ -193,9 +189,7 @@ suite('annotations', () => {
 
     test('undefinable', () => {
         const undefinable = id.undefinable();
-        expectTypeOf<HaystackIdType<typeof undefinable>>().toEqualTypeOf<
-            Foo | undefined
-        >();
+        expectTypeOf<HaystackIdType<typeof undefinable>>().toEqualTypeOf<Foo | undefined>();
 
         expectTypeOf(undefinable.annotations.undefinable).toEqualTypeOf(true);
         expect(undefinable.annotations.undefinable).to.equal(true);
@@ -216,9 +210,7 @@ suite('annotations', () => {
 
     test('supplier', () => {
         const supplier = id.supplier();
-        expectTypeOf<HaystackIdType<typeof supplier>>().toEqualTypeOf<
-            Supplier<Foo>
-        >();
+        expectTypeOf<HaystackIdType<typeof supplier>>().toEqualTypeOf<Supplier<Foo>>();
 
         expectTypeOf(supplier.annotations.supplier).toEqualTypeOf<{
             sync: true;
@@ -230,9 +222,7 @@ suite('annotations', () => {
         });
 
         const asyncSupplier = id.supplier('async');
-        expectTypeOf<HaystackIdType<typeof asyncSupplier>>().toEqualTypeOf<
-            AsyncSupplier<Foo>
-        >();
+        expectTypeOf<HaystackIdType<typeof asyncSupplier>>().toEqualTypeOf<AsyncSupplier<Foo>>();
 
         expectTypeOf(asyncSupplier.annotations.supplier).toEqualTypeOf<{
             sync: false;
@@ -263,9 +253,7 @@ suite('annotations', () => {
 
     test('lateBinding', () => {
         const lateBinding = id.lateBinding();
-        expectTypeOf<HaystackIdType<typeof lateBinding>>().toEqualTypeOf<
-            LateBinding<Foo>
-        >();
+        expectTypeOf<HaystackIdType<typeof lateBinding>>().toEqualTypeOf<LateBinding<Foo>>();
 
         expectTypeOf(lateBinding.annotations.lateBinding).toEqualTypeOf(true);
         expect(lateBinding.annotations.lateBinding).to.equal(true);
@@ -298,18 +286,8 @@ suite('annotations', () => {
     });
 
     test('all', () => {
-        const all = id
-            .named('<name>')
-            .nullable()
-            .undefinable()
-            .supplier()
-            .lateBinding();
-        const allOrder = id
-            .lateBinding()
-            .supplier()
-            .undefinable()
-            .nullable()
-            .named('<name>');
+        const all = id.named('<name>').nullable().undefinable().supplier().lateBinding();
+        const allOrder = id.lateBinding().supplier().undefinable().nullable().named('<name>');
         expectTypeOf(allOrder).toEqualTypeOf(all);
         expect(allOrder).to.equal(all);
 
@@ -318,12 +296,7 @@ suite('annotations', () => {
         >();
 
         expect(
-            all
-                .named()
-                .nullable(false)
-                .undefinable(false)
-                .supplier(false)
-                .lateBinding(false)
+            all.named().nullable(false).undefinable(false).supplier(false).lateBinding(false)
         ).to.equal(id);
     });
 });

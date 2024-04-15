@@ -1,10 +1,4 @@
-import {
-    arraySchema,
-    booleanSchema,
-    objectSchema,
-    type SchemaType,
-    stringSchema,
-} from 'juniper';
+import { arraySchema, booleanSchema, objectSchema, type SchemaType, stringSchema } from 'juniper';
 import { dependsOnSchema } from '#schemas';
 
 const lifecycleOptionsSchema = objectSchema({

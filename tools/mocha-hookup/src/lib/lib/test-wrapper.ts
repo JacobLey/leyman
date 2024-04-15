@@ -6,14 +6,7 @@ import type {
 } from 'mocha';
 import { acquireLock, checkLock } from './execution-lock.js';
 
-export type ValidDoneReturnTypes =
-    | ''
-    | 0
-    | 0n
-    | false
-    | null
-    | undefined
-    | void;
+export type ValidDoneReturnTypes = '' | 0 | 0n | false | null | undefined | void;
 
 /**
  * Tests will load the context from the map, and pass that onto the provided test callback.
@@ -33,11 +26,7 @@ export const wrapTestWithContext = <ExistingContext extends object>(
     test: ExclusiveTestFunction,
     existingMap: Pick<WeakMap<MochaTest, Promise<ExistingContext>>, 'get'>,
     title: string,
-    cb: (
-        this: MochaContext,
-        ctx: ExistingContext,
-        done: Done
-    ) => Promise<void> | void
+    cb: (this: MochaContext, ctx: ExistingContext, done: Done) => Promise<void> | void
 ): MochaTest => {
     checkLock();
 
@@ -49,9 +38,7 @@ export const wrapTestWithContext = <ExistingContext extends object>(
                 const result: unknown = cb.call(this, { ...existing }, done);
                 if (result) {
                     // eslint-disable-next-line n/callback-return
-                    done(
-                        `Test returned truthy value: ${JSON.stringify(result)}`
-                    );
+                    done(`Test returned truthy value: ${JSON.stringify(result)}`);
                 }
             } catch (err) {
                 // eslint-disable-next-line n/callback-return
@@ -74,23 +61,13 @@ export const wrapTestWithContext = <ExistingContext extends object>(
 export interface GenericContextualTest {
     (
         name: string,
-        fn: (
-            this: MochaContext,
-            ctx: object,
-            done: Done
-        ) => ValidDoneReturnTypes
+        fn: (this: MochaContext, ctx: object, done: Done) => ValidDoneReturnTypes
     ): MochaTest;
-    (
-        name: string,
-        fn: (this: MochaContext, ctx: object) => Promise<void> | void
-    ): MochaTest;
+    (name: string, fn: (this: MochaContext, ctx: object) => Promise<void> | void): MochaTest;
 }
 
 export interface ExclusiveEntrypointTest {
-    (
-        name: string,
-        fn: (this: MochaContext, done: Done) => ValidDoneReturnTypes
-    ): MochaTest;
+    (name: string, fn: (this: MochaContext, done: Done) => ValidDoneReturnTypes): MochaTest;
     (name: string, fn: (this: MochaContext) => void): MochaTest;
 }
 
@@ -112,8 +89,9 @@ export const wrapTestWithEntrypoint =
             });
         }
         return contextualTest(title, function (this, ignore, done) {
-            return (
-                cb as (this: MochaContext, done: Done) => ValidDoneReturnTypes
-            ).call(this, done);
+            return (cb as (this: MochaContext, done: Done) => ValidDoneReturnTypes).call(
+                this,
+                done
+            );
         });
     };

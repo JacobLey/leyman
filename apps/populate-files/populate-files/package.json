@@ -41,7 +41,7 @@
     "chai": "^5.1.0",
     "format-file": "workspace:^",
     "mocha": "^10.4.0",
-    "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.1",
+    "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.2",
     "nx-tsc": "workspace:^",
     "nyc": "^15.1.0",
     "typescript": "^5.4.3"

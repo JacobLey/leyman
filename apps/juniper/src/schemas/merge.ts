@@ -41,14 +41,9 @@ export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
         this: AnyMergeSchema,
         schema: If,
         conditionals: ConditionalResult<Then, Else>
-    ) => MergeSchema<
-        T & (SchemaType<Else> | (SchemaType<If> & SchemaType<Then>))
-    >;
+    ) => MergeSchema<T & (SchemaType<Else> | (SchemaType<If> & SchemaType<Then>))>;
 
-    public declare not: (
-        this: AnyMergeSchema,
-        schemas: Schema<unknown>
-    ) => this;
+    public declare not: (this: AnyMergeSchema, schemas: Schema<unknown>) => this;
 
     /**
      * Not applicable.

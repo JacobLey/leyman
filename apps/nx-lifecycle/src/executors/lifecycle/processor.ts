@@ -34,10 +34,7 @@ type LifecycleTarget = {
 
 type LifecycleTargets = Map<string, LifecycleTarget>;
 
-type LifecycleTargetWithHooks = Extract<
-    LifecycleTarget,
-    { previousHook: string }
->;
+type LifecycleTargetWithHooks = Extract<LifecycleTarget, { previousHook: string }>;
 type RegisteredTargets = Map<string, LifecycleTargetWithHooks>;
 
 const calculateTargets = ({ stages }: ProcessorOptions): LifecycleTargets => {
@@ -87,20 +84,14 @@ const registerTargets = ({
     const registeredTargets: RegisteredTargets = new Map();
     for (const [targetName, hookName] of Object.entries(options.targets)) {
         if (lifecycleTargets.has(targetName)) {
-            throw new Error(
-                `Overlap in lifecycle hook and target: ${targetName}`
-            );
+            throw new Error(`Overlap in lifecycle hook and target: ${targetName}`);
         }
         const hook = lifecycleTargets.get(hookName);
         if (!hook) {
-            throw new Error(
-                `Hook for target ${targetName} not found: ${hookName}`
-            );
+            throw new Error(`Hook for target ${targetName} not found: ${hookName}`);
         }
         if (hook.kind === 'anchor') {
-            throw new Error(
-                `Target ${targetName} cannot be part of anchor hook ${hook.name}`
-            );
+            throw new Error(`Target ${targetName} cannot be part of anchor hook ${hook.name}`);
         }
         if (hook.kind === 'base' && hook.hasHooks) {
             throw new Error(
@@ -128,13 +119,8 @@ const calculateTargetsToRemove = ({
         }
     }
 
-    for (const [targetName, target] of Object.entries(
-        nxJson.targetDefaults ?? {}
-    )) {
-        if (
-            !lifecycleTargets.has(targetName) &&
-            '__lifecycle' in (target.configurations ?? {})
-        ) {
+    for (const [targetName, target] of Object.entries(nxJson.targetDefaults ?? {})) {
+        if (!lifecycleTargets.has(targetName) && '__lifecycle' in (target.configurations ?? {})) {
             targetsToRemove.add(targetName);
         }
     }
@@ -188,9 +174,7 @@ const validateLifecycleDependencies = ({
             });
 
             if (filtered.length !== dependsOn.length) {
-                throw new Error(
-                    `Invalid dependency detected on lifecycle stage ${stageName}`
-                );
+                throw new Error(`Invalid dependency detected on lifecycle stage ${stageName}`);
             }
         }
     }
@@ -221,16 +205,11 @@ const processNxJson = ({
     }
 
     for (const [targetName, originalTarget] of Object.entries(targetDefaults)) {
-        if (
-            targetsToRemove.has(targetName) ||
-            lifecycleTargets.has(targetName)
-        ) {
+        if (targetsToRemove.has(targetName) || lifecycleTargets.has(targetName)) {
             if ('__lifecycle' in (originalTarget.configurations ?? {})) {
                 delete targetDefaults[targetName];
             } else {
-                throw new Error(
-                    `Overlap in lifecycle hook and target: ${targetName}`
-                );
+                throw new Error(`Overlap in lifecycle hook and target: ${targetName}`);
             }
         } else {
             targetDefaults[targetName] = {
@@ -289,10 +268,7 @@ const processProjectJson = ({
     }
 
     for (const [targetName, target] of Object.entries(targets)) {
-        if (
-            targetsToRemove.has(targetName) ||
-            lifecycleTargets.has(targetName)
-        ) {
+        if (targetsToRemove.has(targetName) || lifecycleTargets.has(targetName)) {
             delete targets[targetName];
         } else if (target.dependsOn) {
             const processedTarget = { ...target };
@@ -337,8 +313,7 @@ export type NxAndProjectJsonProcessor = ({
     processedNxJson: NxJson;
     processedProjectJsons: ProjectJson[];
 };
-export const nxAndProjectJsonProcessorIdentifier =
-    identifier<NxAndProjectJsonProcessor>();
+export const nxAndProjectJsonProcessorIdentifier = identifier<NxAndProjectJsonProcessor>();
 
 export const processNxAndProjectJsons: NxAndProjectJsonProcessor = ({
     nxJson,
@@ -386,10 +361,7 @@ export const processNxAndProjectJsons: NxAndProjectJsonProcessor = ({
         processedProjectJsons,
     };
 
-    if (
-        !('targetDefaults' in nxJson) &&
-        isEmpty(processedNxJson.targetDefaults)
-    ) {
+    if (!('targetDefaults' in nxJson) && isEmpty(processedNxJson.targetDefaults)) {
         delete response.processedNxJson.targetDefaults;
     }
 

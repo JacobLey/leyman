@@ -21,9 +21,7 @@ export class EntryScript extends StaticEmitter<{
      * @param this - child class of EntryScript
      * @returns Instance of EntryScript.
      */
-    public static async create<I extends typeof EntryScript>(
-        this: I
-    ): Promise<I['prototype']> {
+    public static async create<I extends typeof EntryScript>(this: I): Promise<I['prototype']> {
         return new this();
     }
 
@@ -85,9 +83,7 @@ export class EntryScript extends StaticEmitter<{
  */
 export const runAsMain = async (url?: string): Promise<void> => {
     if (url) {
-        const rawEntryScript = (await import(url).catch(
-            () => null
-        )) as typeof EntryScript;
+        const rawEntryScript = (await import(url).catch(() => null)) as typeof EntryScript;
         const script = defaultImport(rawEntryScript);
 
         if (Object.prototype.isPrototypeOf.call(EntryScript, script)) {

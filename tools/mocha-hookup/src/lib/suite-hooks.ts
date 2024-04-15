@@ -15,10 +15,7 @@ export interface ExclusiveContextualSuite {
         fn: (this: MochaSuite) => Promise<unknown>,
         illegalArgs: InvalidInput<'NoAsyncSuite'>
     ): MochaSuite;
-    (
-        title: string,
-        fn: (this: MochaSuite) => null | undefined | void
-    ): MochaSuite;
+    (title: string, fn: (this: MochaSuite) => null | undefined | void): MochaSuite;
 }
 
 export interface ContextualSuite extends ExclusiveContextualSuite {
@@ -46,9 +43,7 @@ const contextualSuiteBinding = bind(contextualSuiteIdentifier)
                 return suiteFn(title, function (this: MochaSuite): void {
                     const result = fn.call(this);
                     if (result instanceof Promise) {
-                        throw new TypeError(
-                            'Suite callback must be synchronous'
-                        );
+                        throw new TypeError('Suite callback must be synchronous');
                     }
                 });
             };

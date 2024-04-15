@@ -12,8 +12,7 @@ const getExtensions = async (path: string): Promise<string> => {
     });
 
     const isModule = pkg?.content.type === 'module';
-    const fileIsModule =
-        path.endsWith('.mts') || (path.endsWith('.ts') && isModule);
+    const fileIsModule = path.endsWith('.mts') || (path.endsWith('.ts') && isModule);
 
     if (fileIsModule) {
         return '?(c|m)ts';

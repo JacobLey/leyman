@@ -16,8 +16,7 @@ import type {
 } from '../lib/types.js';
 import { mergeAllOf } from '../lib/utils.js';
 
-interface StringParams<T extends string, N extends boolean>
-    extends SchemaParams<Nullable<T, N>> {
+interface StringParams<T extends string, N extends boolean> extends SchemaParams<Nullable<T, N>> {
     /**
      * Content encoding.
      */
@@ -63,18 +62,12 @@ export class StringSchema<
     public declare allOf: <S extends StringSchema<string, boolean>>(
         this: AnyStringSchema,
         schema: S
-    ) => StringSchema<
-        NonNullable<SchemaType<S>> & T,
-        null extends SchemaType<S> ? N : boolean
-    >;
+    ) => StringSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     public declare anyOf: <S extends StringSchema<string, boolean>>(
         this: AnyStringSchema,
         schemas: S[]
-    ) => StringSchema<
-        NonNullable<SchemaType<S>> & T,
-        null extends SchemaType<S> ? N : boolean
-    >;
+    ) => StringSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     public declare if: <
         IfT extends string,
@@ -86,10 +79,7 @@ export class StringSchema<
     >(
         this: AnyStringSchema,
         schema: StringSchema<IfT, IfN>,
-        conditionals: ConditionalResult<
-            StringSchema<ThenT, ThenN>,
-            StringSchema<ElseT, ElseN>
-        >
+        conditionals: ConditionalResult<StringSchema<ThenT, ThenN>, StringSchema<ElseT, ElseN>>
     ) => StringSchema<
         StripString<T & (ElseT | (IfT & ThenT))>,
         ConditionalNullable<N, IfN, ThenN, ElseN>
@@ -107,10 +97,7 @@ export class StringSchema<
     public declare oneOf: <S extends StringSchema<string, boolean>>(
         this: AnyStringSchema,
         schemas: S[]
-    ) => StringSchema<
-        NonNullable<SchemaType<S>> & T,
-        null extends SchemaType<S> ? N : boolean
-    >;
+    ) => StringSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     /**
      * @override
@@ -235,9 +222,7 @@ export class StringSchema<
         this: this,
         start: Start
     ): StringSchema<StripString<`${Start}${string}` & T>, N> {
-        return this.pattern<`${Start}${string}`>(
-            `^${escapeStringRegexp(start)}`
-        );
+        return this.pattern<`${Start}${string}`>(`^${escapeStringRegexp(start)}`);
     }
 
     /**
@@ -265,9 +250,7 @@ export class StringSchema<
         this: this,
         contain: Contain
     ): StringSchema<StripString<`${string}${Contain}${string}` & T>, N> {
-        return this.pattern<`${string}${Contain}${string}`>(
-            escapeStringRegexp(contain)
-        );
+        return this.pattern<`${string}${Contain}${string}`>(escapeStringRegexp(contain));
     }
 
     /**
@@ -342,9 +325,7 @@ export class StringSchema<
     /**
      * @override
      */
-    protected override toSchema(
-        params: SerializationParams
-    ): JsonSchema<SchemaType<this>> {
+    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         if (this.#format) {

@@ -23,8 +23,7 @@ const testData = {
         'long string with both ASCII and non-ASCII characters': {
             decoded:
                 'Willst du die Bl\u00FCthe des fr\u00FChen, die Fr\u00FCchte des sp\u00E4teren Jahres',
-            encoded:
-                'Willst du die Blthe des frhen, die Frchte des spteren Jahres-x9e96lkal',
+            encoded: 'Willst du die Blthe des frhen, die Frchte des spteren Jahres-x9e96lkal',
         },
         // https://tools.ietf.org/html/rfc3492#section-7.1
         'Arabic (Egyptian)': {
@@ -62,8 +61,7 @@ const testData = {
         'Korean (Hangul syllables)': {
             decoded:
                 '\uC138\uACC4\uC758\uBAA8\uB4E0\uC0AC\uB78C\uB4E4\uC774\uD55C\uAD6D\uC5B4\uB97C\uC774\uD574\uD55C\uB2E4\uBA74\uC5BC\uB9C8\uB098\uC88B\uC744\uAE4C',
-            encoded:
-                '989aomsvi5e83db1d2a355cv1e0vak1dwrv93d5xbh15a0dt30a5jpsd879ccm6fea98c',
+            encoded: '989aomsvi5e83db1d2a355cv1e0vak1dwrv93d5xbh15a0dt30a5jpsd879ccm6fea98c',
         },
         /**
          * As there's no way to do it in JavaScript, Punycode.js doesn't support
@@ -84,8 +82,7 @@ const testData = {
             encoded: 'PorqunopuedensimplementehablarenEspaol-fmd56a',
         },
         Vietnamese: {
-            decoded:
-                'T\u1EA1isaoh\u1ECDkh\u00F4ngth\u1EC3ch\u1EC9n\u00F3iti\u1EBFngVi\u1EC7t',
+            decoded: 'T\u1EA1isaoh\u1ECDkh\u00F4ngth\u1EC3ch\u1EC9n\u00F3iti\u1EBFngVi\u1EC7t',
             encoded: 'TisaohkhngthchnitingVit-kjcr8268qyxafd2f1b9g',
         },
         '3B-ww4c5e180e575a65lsy2b': {
@@ -97,8 +94,7 @@ const testData = {
             encoded: '-with-SUPER-MONKEYS-pc58ag80a8qai00g7n9n',
         },
         'Hello-Another-Way--fc4qua05auwb3674vfr0b': {
-            decoded:
-                'Hello-Another-Way-\u305D\u308C\u305E\u308C\u306E\u5834\u6240',
+            decoded: 'Hello-Another-Way-\u305D\u308C\u305E\u308C\u306E\u5834\u6240',
             encoded: 'Hello-Another-Way--fc4qua05auwb3674vfr0b',
         },
         '2-u9tlzr9756bt3uc0v': {
@@ -198,8 +194,7 @@ const testData = {
         'Email address': {
             decoded:
                 '\u0434\u0436\u0443\u043C\u043B\u0430@\u0434\u0436p\u0443\u043C\u043B\u0430\u0442\u0435\u0441\u0442.b\u0440\u0444a',
-            encoded:
-                '\u0434\u0436\u0443\u043C\u043B\u0430@xn--p-8sbkgc5ag7bhce.xn--ba-lmcq',
+            encoded: '\u0434\u0436\u0443\u043C\u043B\u0430@xn--p-8sbkgc5ag7bhce.xn--ba-lmcq',
         },
     },
     separators: {
@@ -224,27 +219,23 @@ const testData = {
 
 suite('punycode', () => {
     suite('ucs2Decode', () => {
-        for (const [description, { decoded, encoded }] of Object.entries(
-            testData.ucs2
-        )) {
+        for (const [description, { decoded, encoded }] of Object.entries(testData.ucs2)) {
             suite(description, () => {
                 test('success', () => {
                     expect(Punycode.ucs2Decode(encoded)).to.deep.equal(decoded);
                 });
 
                 test('idempotent', () => {
-                    expect(
-                        Punycode.ucs2Decode(String.fromCodePoint(...decoded))
-                    ).to.deep.equal(decoded);
+                    expect(Punycode.ucs2Decode(String.fromCodePoint(...decoded))).to.deep.equal(
+                        decoded
+                    );
                 });
             });
         }
     });
 
     suite('ucs2Encode', () => {
-        for (const [description, { decoded, encoded }] of Object.entries(
-            testData.ucs2
-        )) {
+        for (const [description, { decoded, encoded }] of Object.entries(testData.ucs2)) {
             suite(description, () => {
                 test('success', () => {
                     expect(Punycode.ucs2Encode(decoded)).to.equal(encoded);
@@ -252,9 +243,7 @@ suite('punycode', () => {
 
                 test('idempotent', () => {
                     expect(
-                        Punycode.ucs2Encode(
-                            [...encoded].map(txt => txt.codePointAt(0)!)
-                        )
+                        Punycode.ucs2Encode([...encoded].map(txt => txt.codePointAt(0)!))
                     ).to.equal(encoded);
                 });
             });
@@ -268,9 +257,7 @@ suite('punycode', () => {
     });
 
     suite('decode', () => {
-        for (const [description, { decoded, encoded }] of Object.entries(
-            testData.strings
-        )) {
+        for (const [description, { decoded, encoded }] of Object.entries(testData.strings)) {
             test(description, () => {
                 expect(Punycode.decode(encoded)).to.equal(decoded);
             });
@@ -289,9 +276,7 @@ suite('punycode', () => {
     });
 
     suite('encode', () => {
-        for (const [description, { decoded, encoded }] of Object.entries(
-            testData.strings
-        )) {
+        for (const [description, { decoded, encoded }] of Object.entries(testData.strings)) {
             test(description, () => {
                 expect(Punycode.encode(decoded)).to.equal(encoded);
             });
@@ -299,9 +284,7 @@ suite('punycode', () => {
     });
 
     suite('toUnicode', () => {
-        for (const [description, { decoded, encoded }] of Object.entries(
-            testData.domains
-        )) {
+        for (const [description, { decoded, encoded }] of Object.entries(testData.domains)) {
             suite(description, () => {
                 test('success', () => {
                     expect(Punycode.toUnicode(encoded)).to.equal(decoded);
@@ -313,35 +296,23 @@ suite('punycode', () => {
             });
         }
 
-        suite(
-            "Does not convert names (or other strings) that don't start with `xn--`",
-            () => {
-                for (const [
-                    description,
-                    { decoded, encoded },
-                ] of Object.entries(testData.strings)) {
-                    suite(description, () => {
-                        test('decoded', () => {
-                            expect(Punycode.toUnicode(decoded)).to.equal(
-                                decoded
-                            );
-                        });
-
-                        test('encoded', () => {
-                            expect(Punycode.toUnicode(encoded)).to.equal(
-                                encoded
-                            );
-                        });
+        suite("Does not convert names (or other strings) that don't start with `xn--`", () => {
+            for (const [description, { decoded, encoded }] of Object.entries(testData.strings)) {
+                suite(description, () => {
+                    test('decoded', () => {
+                        expect(Punycode.toUnicode(decoded)).to.equal(decoded);
                     });
-                }
+
+                    test('encoded', () => {
+                        expect(Punycode.toUnicode(encoded)).to.equal(encoded);
+                    });
+                });
             }
-        );
+        });
     });
 
     suite('toASCII', () => {
-        for (const [description, { decoded, encoded }] of Object.entries(
-            testData.domains
-        )) {
+        for (const [description, { decoded, encoded }] of Object.entries(testData.domains)) {
             suite(description, () => {
                 test('success', () => {
                     expect(Punycode.toASCII(decoded)).to.equal(encoded);
@@ -353,31 +324,20 @@ suite('punycode', () => {
             });
         }
 
-        suite(
-            'Does not convert domain names (or other strings) that are already in ASCII',
-            () => {
-                for (const [description, { encoded }] of Object.entries(
-                    testData.strings
-                )) {
-                    test(description, () => {
-                        expect(Punycode.toASCII(encoded)).to.equal(encoded);
-                    });
-                }
+        suite('Does not convert domain names (or other strings) that are already in ASCII', () => {
+            for (const [description, { encoded }] of Object.entries(testData.strings)) {
+                test(description, () => {
+                    expect(Punycode.toASCII(encoded)).to.equal(encoded);
+                });
             }
-        );
+        });
 
-        suite(
-            'Supports IDNA2003 separators for backwards compatibility',
-            () => {
-                for (const [
-                    description,
-                    { decoded, encoded },
-                ] of Object.entries(testData.separators)) {
-                    test(description, () => {
-                        expect(Punycode.toASCII(decoded)).to.equal(encoded);
-                    });
-                }
+        suite('Supports IDNA2003 separators for backwards compatibility', () => {
+            for (const [description, { decoded, encoded }] of Object.entries(testData.separators)) {
+                test(description, () => {
+                    expect(Punycode.toASCII(decoded)).to.equal(encoded);
+                });
             }
-        );
+        });
     });
 });

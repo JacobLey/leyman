@@ -1,5 +1,5 @@
 {
-  "$schema": "./node_modules/root-biome/configuration_schema.json",
+  "$schema": "./leyman/main/node_modules/@biomejs/biome/configuration_schema.json",
   "vcs": {
     "clientKind": "git",
     "enabled": true,
@@ -10,7 +10,7 @@
     "formatWithErrors": true,
     "indentStyle": "space",
     "lineEnding": "lf",
-    "lineWidth": 80
+    "lineWidth": 100
   },
   "javascript": {
     "formatter": {

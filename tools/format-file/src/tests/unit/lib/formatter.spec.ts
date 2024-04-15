@@ -33,60 +33,40 @@ suite('Formatter', () => {
 
     suite('formatFiles', () => {
         suite('Ignores empty input', () => {
-            withStubbedFormatter.test(
-                'Missing input',
-                async ({ stubbedExec, formatter }) => {
-                    await formatter.formatFiles();
+            withStubbedFormatter.test('Missing input', async ({ stubbedExec, formatter }) => {
+                await formatter.formatFiles();
 
-                    expect(stubbedExec.notCalled).to.equal(true);
-                }
-            );
+                expect(stubbedExec.notCalled).to.equal(true);
+            });
 
-            withStubbedFormatter.test(
-                'Empty input',
-                async ({ stubbedExec, formatter }) => {
-                    await formatter.formatFiles([]);
+            withStubbedFormatter.test('Empty input', async ({ stubbedExec, formatter }) => {
+                await formatter.formatFiles([]);
 
-                    expect(stubbedExec.notCalled).to.equal(true);
-                }
-            );
+                expect(stubbedExec.notCalled).to.equal(true);
+            });
         });
 
-        withStubbedFormatter.test(
-            'Properly bound',
-            async ({ formatter, stubbedExec }) => {
-                stubbedExec.resolves();
+        withStubbedFormatter.test('Properly bound', async ({ formatter, stubbedExec }) => {
+            stubbedExec.resolves();
 
-                await formatter.formatFiles.call(null, ['<filename>']);
+            await formatter.formatFiles.call(null, ['<filename>']);
 
-                expect(
-                    stubbedExec.calledWith('<biome-path>', [
-                        'format',
-                        '--write',
-                        '<filename>',
-                    ])
-                ).to.equal(true);
-            }
-        );
+            expect(
+                stubbedExec.calledWith('<biome-path>', ['format', '--write', '<filename>'])
+            ).to.equal(true);
+        });
     });
 
     suite('formatFile', () => {
-        withStubbedFormatter.test(
-            'Properly bound',
-            async ({ formatter, stubbedExec }) => {
-                stubbedExec.resolves();
+        withStubbedFormatter.test('Properly bound', async ({ formatter, stubbedExec }) => {
+            stubbedExec.resolves();
 
-                await formatter.formatFile.call(null, '<filename>');
+            await formatter.formatFile.call(null, '<filename>');
 
-                expect(
-                    stubbedExec.calledWith('<biome-path>', [
-                        'format',
-                        '--write',
-                        '<filename>',
-                    ])
-                ).to.equal(true);
-            }
-        );
+            expect(
+                stubbedExec.calledWith('<biome-path>', ['format', '--write', '<filename>'])
+            ).to.equal(true);
+        });
     });
 
     suite('formatText', () => {
@@ -109,9 +89,7 @@ suite('Formatter', () => {
                 stubbedExec.resolves();
                 stubbedReadFile.resolves('<formatted>');
 
-                expect(
-                    await formatter.formatText.call(null, '<content>')
-                ).to.equal('<formatted>');
+                expect(await formatter.formatText.call(null, '<content>')).to.equal('<formatted>');
 
                 expect(
                     stubbedTmpFileFactory.calledWith({
@@ -119,15 +97,9 @@ suite('Formatter', () => {
                         postfix: '.js',
                     })
                 ).to.equal(true);
+                expect(stubbedWriteFile.calledWith('<path>', '<content>', 'utf8')).to.equal(true);
                 expect(
-                    stubbedWriteFile.calledWith('<path>', '<content>', 'utf8')
-                ).to.equal(true);
-                expect(
-                    stubbedExec.calledWith('<biome-path>', [
-                        'format',
-                        '--write',
-                        '<path>',
-                    ])
+                    stubbedExec.calledWith('<biome-path>', ['format', '--write', '<path>'])
                 ).to.equal(true);
                 expect(fakeCleanup.calledAfter(stubbedReadFile)).to.equal(true);
             }

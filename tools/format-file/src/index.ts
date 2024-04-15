@@ -23,11 +23,7 @@ const container = createContainer(
                 ])
                 .withConstructorProvider()
         )
-        .addBinding(
-            bind(lib.biomePathId)
-                .withGenerator(lib.biomePath)
-                .scoped(singletonScope)
-        )
+        .addBinding(bind(lib.biomePathId).withGenerator(lib.biomePath).scoped(singletonScope))
 );
 
 const formatter = await container.getAsync(formatterId);

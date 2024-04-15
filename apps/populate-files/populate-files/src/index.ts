@@ -1,8 +1,5 @@
 import { normalizeFileParams, normalizeFilesParams } from './lib/normalize.js';
-import {
-    formatErrorMessage,
-    internalPopulateFile,
-} from './lib/populate-file.js';
+import { formatErrorMessage, internalPopulateFile } from './lib/populate-file.js';
 import type {
     PopulateFileParams,
     PopulationResponse,
@@ -28,10 +25,7 @@ export const populateFiles = async (
     params: PopulateFileParams[],
     options: RawOptions
 ): Promise<PopulationResponse[]> => {
-    const { files, check, dryRun } = await normalizeFilesParams(
-        params,
-        options
-    );
+    const { files, check, dryRun } = await normalizeFilesParams(params, options);
 
     const populateResults = await Promise.all(
         files.map(async ({ filePath, content }) =>
@@ -50,9 +44,7 @@ export const populateFiles = async (
         );
 
         if (writes.length > 0) {
-            throw new Error(
-                writes.map(write => formatErrorMessage(write)).join(', ')
-            );
+            throw new Error(writes.map(write => formatErrorMessage(write)).join(', '));
         }
     }
 

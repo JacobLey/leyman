@@ -108,11 +108,7 @@ suite('Processor', () => {
                             },
                             standalone: {
                                 executor: 'nx:noop',
-                                dependsOn: [
-                                    'standalone:_',
-                                    'withStage',
-                                    'withStage2',
-                                ],
+                                dependsOn: ['standalone:_', 'withStage', 'withStage2'],
                                 configurations: { __lifecycle: {} },
                             },
                             'second:_': {
@@ -140,12 +136,7 @@ suite('Processor', () => {
                         {
                             targets: {
                                 withStage2: {
-                                    dependsOn: [
-                                        'some',
-                                        'other',
-                                        'tasks',
-                                        'standalone:_',
-                                    ],
+                                    dependsOn: ['some', 'other', 'tasks', 'standalone:_'],
                                 },
                                 'standalone:_': {},
                                 standalone: {},
@@ -230,10 +221,7 @@ suite('Processor', () => {
                             },
                             'secondStage:only': {
                                 executor: 'nx:noop',
-                                dependsOn: [
-                                    'secondStage:_',
-                                    'withSecondStage1',
-                                ],
+                                dependsOn: ['secondStage:_', 'withSecondStage1'],
                                 configurations: { __lifecycle: {} },
                             },
                             secondStage: {
@@ -285,10 +273,7 @@ suite('Processor', () => {
                                 configurations: {
                                     __lifecycle: {},
                                 },
-                                dependsOn: [
-                                    'oldStage:oldHook',
-                                    'ignoredTarget',
-                                ],
+                                dependsOn: ['oldStage:oldHook', 'ignoredTarget'],
                             },
                         },
                     },
@@ -649,9 +634,7 @@ suite('Processor', () => {
                             projectJsons: [{}],
                         })
                     );
-                }).to.throw(
-                    'Target myTarget cannot be part of anchor hook myStage:_'
-                );
+                }).to.throw('Target myTarget cannot be part of anchor hook myStage:_');
             });
 
             test('Registered stage is has hooks', () => {
@@ -694,9 +677,7 @@ suite('Processor', () => {
                             projectJsons: [{}],
                         })
                     );
-                }).to.throw(
-                    'Invalid dependency detected on lifecycle stage secondStage'
-                );
+                }).to.throw('Invalid dependency detected on lifecycle stage secondStage');
             });
         });
     });

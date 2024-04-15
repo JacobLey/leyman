@@ -17,10 +17,7 @@ export {
 interface IdentifierGenerator {
     // Idempotent
     <T extends GenericHaystackId>(id: T): T;
-    <T extends IsClass>(
-        clazz: T,
-        ...invalidInput: UnknownType<T>
-    ): ClassToConstructable<T>;
+    <T extends IsClass>(clazz: T, ...invalidInput: UnknownType<T>): ClassToConstructable<T>;
     <T>(
         name: string,
         ...invalidInput: [...ExtraAnnotations<T>, ...UnknownType<T>]

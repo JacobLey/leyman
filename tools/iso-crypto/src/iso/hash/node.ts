@@ -10,10 +10,7 @@ const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
     return `sha${size}`;
 };
 
-export const hash: (typeof HashMethods)['hash'] = async (
-    input,
-    algorithm = defaultHash
-) => {
+export const hash: (typeof HashMethods)['hash'] = async (input, algorithm = defaultHash) => {
     const decoded = decode(input);
 
     if (algorithm === 'raw') {

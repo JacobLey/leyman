@@ -53,19 +53,14 @@ export class NullSchema extends AbstractSchema<SchemaGenerics<null>> {
      * @param [options.writeOnly] - value should be hidden
      * @returns new null schema
      */
-    public static override create(
-        this: void,
-        options?: SchemaParams<null>
-    ): NullSchema {
+    public static override create(this: void, options?: SchemaParams<null>): NullSchema {
         return new NullSchema(options);
     }
 
     /**
      * @override
      */
-    protected override toSchema(
-        params: SerializationParams
-    ): JsonSchema<SchemaType<this>> {
+    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         if (params.openApi30) {

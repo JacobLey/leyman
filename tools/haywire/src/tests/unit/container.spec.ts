@@ -93,12 +93,8 @@ suite('container', () => {
     test('SyncContainer', async () => {
         const c = new C();
 
-        const module = createModule(
-            bind(A).withDependencies([B, D]).withConstructorProvider()
-        )
-            .addBinding(
-                bind(B).withDependencies([C, D]).withConstructorProvider()
-            )
+        const module = createModule(bind(A).withDependencies([B, D]).withConstructorProvider())
+            .addBinding(bind(B).withDependencies([C, D]).withConstructorProvider())
             .addBinding(bind(C).withInstance(c))
             .addBinding(bind(D).withConstructor().scoped(requestScope));
 
@@ -131,9 +127,7 @@ suite('container', () => {
     });
 
     test('AsyncContainer', async () => {
-        const module = createModule(
-            bind(A).withDependencies([B, D]).withConstructorProvider()
-        )
+        const module = createModule(bind(A).withDependencies([B, D]).withConstructorProvider())
             .addBinding(
                 bind(B)
                     .withDependencies([C, D])
@@ -157,9 +151,7 @@ suite('container', () => {
         expect(a1.params[0]).to.be.an.instanceOf(B);
         expect(a1.params[1]).to.be.an.instanceOf(D);
 
-        const c = await container.getAsync(
-            identifier(C).nullable().undefinable()
-        );
+        const c = await container.getAsync(identifier(C).nullable().undefinable());
         expectTypeOf(c).toEqualTypeOf<C | null | undefined>();
         expect(c).to.be.an.instanceOf(C);
 
@@ -201,9 +193,7 @@ suite('container', () => {
 
             const container = createContainer(
                 createModule(
-                    bind(Different)
-                        .withConstructorProvider()
-                        .withDependencies([Similar])
+                    bind(Different).withConstructorProvider().withDependencies([Similar])
                 ).addBinding(bind(Simple).withConstructor())
             );
 
@@ -220,28 +210,14 @@ suite('container', () => {
                 const container = createContainer(
                     createModule(
                         bind(identifier(LinkedList).undefinable())
-                            .withDependencies([
-                                identifier(LinkedList).nullable().undefinable(),
-                            ])
-                            .withAsyncProvider(
-                                async next => new LinkedList(next)
-                            )
+                            .withDependencies([identifier(LinkedList).nullable().undefinable()])
+                            .withAsyncProvider(async next => new LinkedList(next))
                     )
                         .addBinding(
-                            bind(Chicken)
-                                .withDependencies([Egg, B])
-                                .withConstructorProvider()
+                            bind(Chicken).withDependencies([Egg, B]).withConstructorProvider()
                         )
-                        .addBinding(
-                            bind(Egg)
-                                .withDependencies([Chicken])
-                                .withConstructorProvider()
-                        )
-                        .addBinding(
-                            bind(A)
-                                .withDependencies([Chicken])
-                                .withConstructorProvider()
-                        )
+                        .addBinding(bind(Egg).withDependencies([Chicken]).withConstructorProvider())
+                        .addBinding(bind(A).withDependencies([Chicken]).withConstructorProvider())
                         .addBinding(bind(B).withConstructor())
                 );
                 expect(() => {
@@ -251,10 +227,7 @@ suite('container', () => {
                     .that.contains({
                         message: [
                             'Circular dependencies detected in container:',
-                            [
-                                'Chicken->Egg',
-                                'LinkedList(nullable, undefinable)',
-                            ].join(', '),
+                            ['Chicken->Egg', 'LinkedList(nullable, undefinable)'].join(', '),
                         ].join(' '),
                     });
             });
@@ -278,34 +251,25 @@ suite('container', () => {
                                     (chickenSupplier: Supplier<Chicken>) =>
                                         new Egg(chickenSupplier())
                                 )
-                                .withDependencies([
-                                    identifier(Chicken).supplier(),
-                                ])
+                                .withDependencies([identifier(Chicken).supplier()])
                                 .scoped(singletonScope)
                         )
                         .addBinding(
-                            bind(Chicken)
-                                .withDependencies([Egg, B])
-                                .withConstructorProvider()
+                            bind(Chicken).withDependencies([Egg, B]).withConstructorProvider()
                         )
                         .addBinding(
                             bind(Chicken)
                                 .withDependencies([
-                                    identifier(Egg)
-                                        .supplier('async')
-                                        .named('AsyncSupplier'),
+                                    identifier(Egg).supplier('async').named('AsyncSupplier'),
                                 ])
                                 .withAsyncProvider(
-                                    async eggSupplier =>
-                                        new Chicken(await eggSupplier())
+                                    async eggSupplier => new Chicken(await eggSupplier())
                                 )
                                 .named('AsyncSupplier')
                         )
                         .addBinding(
                             bind(identifier(Egg).named('AsyncSupplier'))
-                                .withDependencies([
-                                    identifier(Chicken).named('AsyncSupplier'),
-                                ])
+                                .withDependencies([identifier(Chicken).named('AsyncSupplier')])
                                 .withConstructorProvider()
                         )
                         .addBinding(
@@ -379,11 +343,7 @@ suite('container', () => {
                                 .withConstructorProvider()
                                 .scoped(supplierScope)
                         )
-                        .addBinding(
-                            bind(E)
-                                .withDependencies([A, F])
-                                .withConstructorProvider()
-                        )
+                        .addBinding(bind(E).withDependencies([A, F]).withConstructorProvider())
                         .addBinding(
                             bind(F)
                                 .withDependencies([A])
@@ -416,11 +376,7 @@ suite('container', () => {
                             .withConstructorProvider()
                             .scoped(singletonScope)
                     )
-                        .addBinding(
-                            bind(B)
-                                .withDependencies([C])
-                                .withConstructorProvider()
-                        )
+                        .addBinding(bind(B).withDependencies([C]).withConstructorProvider())
                         .addBinding(
                             bind(C)
                                 .withDependencies([
@@ -430,11 +386,7 @@ suite('container', () => {
                                 ])
                                 .withConstructorProvider()
                         )
-                        .addBinding(
-                            bind(D)
-                                .withDependencies([A])
-                                .withConstructorProvider()
-                        )
+                        .addBinding(bind(D).withDependencies([A]).withConstructorProvider())
                         .addBinding(
                             bind(E)
                                 .withDependencies([
@@ -473,11 +425,7 @@ suite('container', () => {
                                 .withDependencies([])
                                 .withAsyncProvider(async () => new B())
                         )
-                        .addBinding(
-                            bind(C)
-                                .withDependencies([D])
-                                .withConstructorProvider()
-                        )
+                        .addBinding(bind(C).withDependencies([D]).withConstructorProvider())
                         .addBinding(
                             bind(D)
                                 .withAsyncProvider(() => new D())
@@ -513,11 +461,7 @@ suite('container', () => {
 
             test('Singletons are not optimistic', async () => {
                 const container = createContainer(
-                    createModule(
-                        bind(A)
-                            .withDependencies([B, C, D, E])
-                            .withConstructorProvider()
-                    )
+                    createModule(bind(A).withDependencies([B, C, D, E]).withConstructorProvider())
                         .addBinding(
                             bind(B)
                                 .withDependencies([])
@@ -596,15 +540,13 @@ suite('container', () => {
                 expect(() => container.get(A))
                     .to.throw(HaystackNullResponseError)
                     .that.contains({
-                        message:
-                            'Null value returned for non-nullable provider: B',
+                        message: 'Null value returned for non-nullable provider: B',
                     });
 
                 await expect(container.getAsync(A))
                     .to.eventually.be.rejectedWith(HaystackNullResponseError)
                     .that.contain({
-                        message:
-                            'Null value returned for non-nullable provider: B',
+                        message: 'Null value returned for non-nullable provider: B',
                     });
 
                 const asyncContainer = createContainer(
@@ -620,8 +562,7 @@ suite('container', () => {
                 await expect(asyncContainer.preloadAsync())
                     .to.eventually.be.rejectedWith(HaystackNullResponseError)
                     .that.contain({
-                        message:
-                            'Null value returned for non-nullable provider: D(undefinable)',
+                        message: 'Null value returned for non-nullable provider: D(undefinable)',
                     });
             });
 
@@ -639,9 +580,7 @@ suite('container', () => {
                         .addBinding(
                             bind(B)
                                 .withDependencies([])
-                                .withAsyncProvider(
-                                    async () => undefined as unknown as B
-                                )
+                                .withAsyncProvider(async () => undefined as unknown as B)
                         )
                         .addBinding(
                             bind(B)
@@ -650,10 +589,7 @@ suite('container', () => {
                         )
                         .addBinding(
                             bind(C)
-                                .withDependencies([
-                                    identifier(D).undefinable(),
-                                    E,
-                                ])
+                                .withDependencies([identifier(D).undefinable(), E])
                                 .withConstructorProvider()
                                 .scoped(singletonScope)
                         )
@@ -667,7 +603,7 @@ suite('container', () => {
                             bind(E)
                                 .withDependencies([])
                                 .withAsyncProvider(async () => {
-                                    // eslint-disable-next-line @typescript-eslint/no-throw-literal
+                                    // eslint-disable-next-line @typescript-eslint/only-throw-error
                                     throw '<ERROR>';
                                 })
                                 .scoped(singletonScope)
@@ -697,27 +633,16 @@ suite('container', () => {
                     createModule(
                         bind(A)
                             .withDependencies([
-                                identifier(B)
-                                    .nullable()
-                                    .undefinable()
-                                    .supplier({
-                                        sync: false,
-                                        propagateScope: true,
-                                    }),
+                                identifier(B).nullable().undefinable().supplier({
+                                    sync: false,
+                                    propagateScope: true,
+                                }),
                             ])
                             .withConstructorProvider()
                             .scoped(singletonScope)
                     )
-                        .addBinding(
-                            bind(B)
-                                .withDependencies([C, D])
-                                .withConstructorProvider()
-                        )
-                        .addBinding(
-                            bind(C)
-                                .withDependencies([D])
-                                .withConstructorProvider()
-                        )
+                        .addBinding(bind(B).withDependencies([C, D]).withConstructorProvider())
+                        .addBinding(bind(C).withDependencies([D]).withConstructorProvider())
                         .addBinding(
                             bind(D)
                                 .withDependencies([])
@@ -729,40 +654,27 @@ suite('container', () => {
                 await container.preloadAsync();
 
                 const a = container.get(A);
-                const bSupplier = a.params[0] as AsyncSupplier<
-                    B | null | undefined
-                >;
+                const bSupplier = a.params[0] as AsyncSupplier<B | null | undefined>;
 
-                const settled = await Promise.allSettled([
-                    bSupplier(),
-                    bSupplier(),
-                ] as const);
+                const settled = await Promise.allSettled([bSupplier(), bSupplier()] as const);
                 expect(settled.every(result => result.status === 'rejected'));
-                const failures = settled as [
-                    PromiseRejectedResult,
-                    PromiseRejectedResult,
-                ];
+                const failures = settled as [PromiseRejectedResult, PromiseRejectedResult];
                 expect(failures[0].reason)
                     .to.be.an.instanceOf(HaystackInstanceOfResponseError)
                     .that.contains({
-                        message:
-                            'Value E returned by provider is not instance of class: D',
+                        message: 'Value E returned by provider is not instance of class: D',
                     });
                 expect(failures[0].reason === failures[1].reason);
 
                 await expect(bSupplier())
-                    .to.eventually.be.rejectedWith(
-                        HaystackInstanceOfResponseError
-                    )
+                    .to.eventually.be.rejectedWith(HaystackInstanceOfResponseError)
                     .that.does.not.equal(failures[0].reason);
 
                 const failedContainer = createContainer(
                     createModule(
                         bind(D)
                             .withDependencies([E])
-                            .withAsyncProvider(
-                                () => ({ d: false }) as unknown as D
-                            )
+                            .withAsyncProvider(() => ({ d: false }) as unknown as D)
                             .scoped(optimisticSingletonScope)
                     ).addBinding(bind(E).withConstructor())
                 );
@@ -788,9 +700,9 @@ suite('container', () => {
                     .that.contains({
                         message: 'Providers missing for container: custom-name',
                     });
-                await expect(
-                    container.getAsync(identifier<123>())
-                ).to.eventually.be.rejectedWith(HaystackProviderMissingError);
+                await expect(container.getAsync(identifier<123>())).to.eventually.be.rejectedWith(
+                    HaystackProviderMissingError
+                );
             });
         });
     });
@@ -842,9 +754,7 @@ suite('container', () => {
                 container.getAsync(C),
             ]);
 
-            expect(
-                settled.every(settle => settle.status === 'rejected')
-            ).to.equal(true);
+            expect(settled.every(settle => settle.status === 'rejected')).to.equal(true);
             const errors = (settled as PromiseRejectedResult[]).map(
                 ({ reason }) => reason as Error
             );
@@ -856,23 +766,17 @@ suite('container', () => {
             const { causes } = errors[0] as HaystackMultiError;
 
             // Causes are related to B + C failures
-            expect(causes[0])
-                .to.be.an.instanceOf(HaystackInstanceOfResponseError)
-                .that.contains({
-                    message:
-                        'Value 123 returned by provider is not instance of class: B',
-                });
+            expect(causes[0]).to.be.an.instanceOf(HaystackInstanceOfResponseError).that.contains({
+                message: 'Value 123 returned by provider is not instance of class: B',
+            });
             expect(causes[1]).to.be.an.instanceOf(Error).that.contains({
                 message: 'Bad C',
             });
 
             // Invoking B + C result in same looking errors
-            expect(errors[2])
-                .to.be.an.instanceOf(HaystackInstanceOfResponseError)
-                .that.contains({
-                    message:
-                        'Value 123 returned by provider is not instance of class: B',
-                });
+            expect(errors[2]).to.be.an.instanceOf(HaystackInstanceOfResponseError).that.contains({
+                message: 'Value 123 returned by provider is not instance of class: B',
+            });
             expect(errors[3]).to.be.an.instanceOf(Error).that.contains({
                 message: 'Bad C',
             });
@@ -882,14 +786,9 @@ suite('container', () => {
             // C is cached because it is async
             expect(causes[1]).to.equal(errors[3]);
 
-            const secondSettled = await Promise.allSettled([
-                supply(),
-                container.getAsync(C),
-            ]);
+            const secondSettled = await Promise.allSettled([supply(), container.getAsync(C)]);
 
-            expect(
-                secondSettled.every(settle => settle.status === 'rejected')
-            ).to.equal(true);
+            expect(secondSettled.every(settle => settle.status === 'rejected')).to.equal(true);
             const secondErrors = (secondSettled as PromiseRejectedResult[]).map(
                 ({ reason }) => reason as Error
             );
@@ -911,9 +810,7 @@ suite('container', () => {
                             .withConstructorProvider()
                             .scoped(singletonScope)
                     )
-                        .addBinding(
-                            bind(B).withConstructor().scoped(singletonScope)
-                        )
+                        .addBinding(bind(B).withConstructor().scoped(singletonScope))
                         .addBinding(
                             bind(C)
                                 .withDependencies([identifier(D).lateBinding()])
@@ -948,12 +845,9 @@ suite('container', () => {
                 expect(throwns[0])
                     .to.be.an.instanceOf(HaystackInstanceOfResponseError)
                     .that.contains({
-                        message:
-                            'Value {} returned by provider is not instance of class: F',
+                        message: 'Value {} returned by provider is not instance of class: F',
                     });
-                expect(throwns[1]).to.be.an.instanceOf(
-                    HaystackInstanceOfResponseError
-                );
+                expect(throwns[1]).to.be.an.instanceOf(HaystackInstanceOfResponseError);
                 expect(throwns[0]).to.not.equal(throwns[1]);
                 expect(() => container.get(A))
                     .to.throw(HaystackInstanceOfResponseError)
@@ -1058,15 +952,10 @@ suite('container', () => {
                             .scoped(optimisticRequestScope)
                     )
                     .addBinding(
-                        bind(B)
-                            .withDependencies([D])
-                            .withConstructorProvider()
-                            .scoped(requestScope)
+                        bind(B).withDependencies([D]).withConstructorProvider().scoped(requestScope)
                     )
                     .addBinding(bind(C).withConstructor().scoped(requestScope))
-                    .addBinding(
-                        bind(D).withConstructor().scoped(optimisticRequestScope)
-                    )
+                    .addBinding(bind(D).withConstructor().scoped(optimisticRequestScope))
             );
 
             const supplier = await container.getAsync(supplierId);
@@ -1138,23 +1027,16 @@ suite('container', () => {
                             .scoped(optimisticRequestScope)
                     )
                     .addBinding(
-                        bind(D)
-                            .withDependencies([E])
-                            .withConstructorProvider()
-                            .scoped(requestScope)
+                        bind(D).withDependencies([E]).withConstructorProvider().scoped(requestScope)
                     )
-                    .addBinding(
-                        bind(E).withDependencies([F]).withConstructorProvider()
-                    )
+                    .addBinding(bind(E).withDependencies([F]).withConstructorProvider())
                     .addBinding(bind(F).withConstructor().scoped(supplierScope))
             );
 
             const supplier = await container.getAsync(supplierId);
 
             expect(supplier.supplyA()).to.not.equal(supplier.supplyA());
-            expect(await supplier.supplyB()).to.not.equal(
-                await supplier.supplyB()
-            );
+            expect(await supplier.supplyB()).to.not.equal(await supplier.supplyB());
 
             const aParams = supplier.supplyA().params as [C, E, F];
             expect(aParams[0]).to.equal(supplier.c);
@@ -1185,13 +1067,11 @@ suite('container', () => {
                                 identifier(B).supplier(),
                                 identifier(C).supplier(),
                             ])
-                            .withAsyncProvider(
-                                (aSupplier, bSupplier, cSupplier) => ({
-                                    aSupplier,
-                                    bSupplier,
-                                    cSupplier,
-                                })
-                            )
+                            .withAsyncProvider((aSupplier, bSupplier, cSupplier) => ({
+                                aSupplier,
+                                bSupplier,
+                                cSupplier,
+                            }))
                     )
                         .addBinding(
                             bind(A)
@@ -1211,10 +1091,7 @@ suite('container', () => {
                                     identifier(C).supplier(),
                                     identifier(B).lateBinding(),
                                 ])
-                                .withAsyncProvider(
-                                    (cSupplier, lateB) =>
-                                        new B(cSupplier(), lateB)
-                                )
+                                .withAsyncProvider((cSupplier, lateB) => new B(cSupplier(), lateB))
                                 .scoped(optimisticSingletonScope)
                         )
                         .addBinding(
@@ -1225,32 +1102,16 @@ suite('container', () => {
                 );
 
                 const supplier = await container.getAsync(supplierId);
-                expect(await container.getAsync(supplierId)).to.not.equal(
-                    supplier
-                );
+                expect(await container.getAsync(supplierId)).to.not.equal(supplier);
 
-                expect(supplier.aSupplier()).to.equal(
-                    await container.getAsync(A)
-                );
-                expect(supplier.bSupplier()).to.equal(
-                    await container.getAsync(B)
-                );
-                expect(supplier.cSupplier()).to.equal(
-                    await container.getAsync(C)
-                );
+                expect(supplier.aSupplier()).to.equal(await container.getAsync(A));
+                expect(supplier.bSupplier()).to.equal(await container.getAsync(B));
+                expect(supplier.cSupplier()).to.equal(await container.getAsync(C));
 
-                expect(supplier.aSupplier().params[0]).to.equal(
-                    supplier.bSupplier()
-                );
-                expect(supplier.aSupplier().params[1]).to.equal(
-                    supplier.cSupplier()
-                );
-                expect(supplier.bSupplier().params[0]).to.equal(
-                    supplier.cSupplier()
-                );
-                expect(await supplier.bSupplier().params[1]).to.equal(
-                    await container.getAsync(B)
-                );
+                expect(supplier.aSupplier().params[0]).to.equal(supplier.bSupplier());
+                expect(supplier.aSupplier().params[1]).to.equal(supplier.cSupplier());
+                expect(supplier.bSupplier().params[0]).to.equal(supplier.cSupplier());
+                expect(await supplier.bSupplier().params[1]).to.equal(await container.getAsync(B));
             });
 
             test('Sync component', async () => {
@@ -1268,13 +1129,11 @@ suite('container', () => {
                                 identifier(B).supplier('async'),
                                 identifier(C).supplier('async'),
                             ])
-                            .withProvider(
-                                (aSupplier, bSupplier, cSupplier) => ({
-                                    aSupplier,
-                                    bSupplier,
-                                    cSupplier,
-                                })
-                            )
+                            .withProvider((aSupplier, bSupplier, cSupplier) => ({
+                                aSupplier,
+                                bSupplier,
+                                cSupplier,
+                            }))
                     )
                         .addBinding(
                             bind(A)
@@ -1319,17 +1178,11 @@ suite('container', () => {
                 expect(await supplier.cSupplier()).to.equal(container.get(C));
 
                 const suppliedA1 = await supplier.aSupplier();
-                expect(suppliedA1.params[0]).to.equal(
-                    await supplier.bSupplier()
-                );
+                expect(suppliedA1.params[0]).to.equal(await supplier.bSupplier());
                 const suppliedA2 = await supplier.aSupplier();
-                expect(suppliedA2.params[1]).to.equal(
-                    await supplier.cSupplier()
-                );
+                expect(suppliedA2.params[1]).to.equal(await supplier.cSupplier());
                 const suppliedB = await supplier.bSupplier();
-                expect(suppliedB.params[0]).to.equal(
-                    await supplier.cSupplier()
-                );
+                expect(suppliedB.params[0]).to.equal(await supplier.cSupplier());
             });
         });
 
@@ -1357,13 +1210,11 @@ suite('container', () => {
                                 propagateScope: true,
                             }),
                         ])
-                        .withAsyncProvider(
-                            (aSupplier, bSupplier, cSupplier) => ({
-                                aSupplier,
-                                bSupplier,
-                                cSupplier,
-                            })
-                        )
+                        .withAsyncProvider((aSupplier, bSupplier, cSupplier) => ({
+                            aSupplier,
+                            bSupplier,
+                            cSupplier,
+                        }))
                 )
                     .addBinding(
                         bind(A)
@@ -1378,8 +1229,7 @@ suite('container', () => {
                                 }),
                             ])
                             .withAsyncProvider(
-                                (bSupplier, cSupplier) =>
-                                    new A(bSupplier(), cSupplier())
+                                (bSupplier, cSupplier) => new A(bSupplier(), cSupplier())
                             )
                             .scoped(optimisticRequestScope)
                     )
@@ -1412,15 +1262,9 @@ suite('container', () => {
             expect(supplier.bSupplier()).to.equal(supplier.bSupplier());
             expect(supplier.cSupplier()).to.equal(supplier.cSupplier());
 
-            expect(supplier.aSupplier().params[0]).to.equal(
-                supplier.bSupplier()
-            );
-            expect(supplier.aSupplier().params[1]).to.equal(
-                supplier.cSupplier()
-            );
-            expect(supplier.bSupplier().params[0]).to.equal(
-                supplier.cSupplier()
-            );
+            expect(supplier.aSupplier().params[0]).to.equal(supplier.bSupplier());
+            expect(supplier.aSupplier().params[1]).to.equal(supplier.cSupplier());
+            expect(supplier.bSupplier().params[0]).to.equal(supplier.cSupplier());
         });
 
         test('Request singletons are available before async supplier', async () => {
@@ -1485,11 +1329,9 @@ suite('container', () => {
                     )
             );
 
-            await expect(container.getAsync(A))
-                .to.eventually.be.rejectedWith(Error)
-                .that.contain({
-                    message: '<ERROR>',
-                });
+            await expect(container.getAsync(A)).to.eventually.be.rejectedWith(Error).that.contain({
+                message: '<ERROR>',
+            });
 
             const { dSupplier } = await container.getAsync(dSupplierIdentifier);
             const d = await dSupplier();
@@ -1546,8 +1388,7 @@ suite('container', () => {
                         )
                 );
 
-                const { aSupplier, aSupplierAsync } =
-                    await container.getAsync(supplierIdentifier);
+                const { aSupplier, aSupplierAsync } = await container.getAsync(supplierIdentifier);
 
                 for (const supplier of [aSupplier, aSupplierAsync]) {
                     const a1 = await supplier();
@@ -1590,16 +1431,12 @@ suite('container', () => {
                         .addBinding(
                             bind(A)
                                 .withDependencies([B, C, D])
-                                .withAsyncProvider(
-                                    (...params) => new A(...params)
-                                )
+                                .withAsyncProvider((...params) => new A(...params))
                         )
                         .addBinding(
                             bind(B)
                                 .withDependencies([C, D])
-                                .withAsyncProvider(
-                                    (...params) => new B(...params)
-                                )
+                                .withAsyncProvider((...params) => new B(...params))
                         )
                         .addBinding(
                             bind(C)
@@ -1613,8 +1450,7 @@ suite('container', () => {
                         )
                 );
 
-                const { aSupplierAsync } =
-                    await container.getAsync(supplierIdentifier);
+                const { aSupplierAsync } = await container.getAsync(supplierIdentifier);
 
                 const a = await aSupplierAsync();
                 const b = a.params[0] as B;
@@ -1667,9 +1503,7 @@ suite('container', () => {
                                 ])
                                 .withConstructorProvider()
                         )
-                        .addBinding(
-                            bind(B).withConstructor().scoped(requestScope)
-                        )
+                        .addBinding(bind(B).withConstructor().scoped(requestScope))
                         .addBinding(
                             bind(cSupplierIdentifier)
                                 .withDependencies([
@@ -1692,9 +1526,7 @@ suite('container', () => {
                                 .withProvider(cSupplier => ({ cSupplier }))
                                 .scoped(requestScope)
                         )
-                        .addBinding(
-                            bind(C).withConstructor().scoped(requestScope)
-                        )
+                        .addBinding(bind(C).withConstructor().scoped(requestScope))
                 );
 
                 for (const { aSupplier, viaASupplier } of [
@@ -1718,16 +1550,13 @@ suite('container', () => {
                         expect(b).to.not.equal(aSupplier().params[0]);
                     }
 
-                    const { cSupplier: cSupplier1 } = a
-                        .params[2] as HaystackIdType<
+                    const { cSupplier: cSupplier1 } = a.params[2] as HaystackIdType<
                         typeof cSupplierIdentifier
                     >;
-                    const { cSupplier: cSupplier2 } = a
-                        .params[3] as HaystackIdType<
+                    const { cSupplier: cSupplier2 } = a.params[3] as HaystackIdType<
                         typeof cSupplierIdentifier
                     >;
-                    const { cSupplier: cSupplier3 } = a
-                        .params[4] as HaystackIdType<
+                    const { cSupplier: cSupplier3 } = a.params[4] as HaystackIdType<
                         typeof cSupplierIdentifier
                     >;
 
@@ -1782,9 +1611,7 @@ suite('container', () => {
                                     cSupplierIdentifier,
                                     cSupplierIdentifier.named('request'),
                                 ])
-                                .withAsyncProvider(
-                                    (...params) => new A(...params)
-                                )
+                                .withAsyncProvider((...params) => new A(...params))
                         )
                         .addBinding(
                             bind(B)
@@ -1824,8 +1651,7 @@ suite('container', () => {
 
                 for (const { aSupplier, viaASupplier } of [
                     await (async () => {
-                        const val =
-                            await container.getAsync(aSupplierIdentifier);
+                        const val = await container.getAsync(aSupplierIdentifier);
                         return {
                             aSupplier: val.aSupplier,
                             viaASupplier: true,
@@ -1851,16 +1677,13 @@ suite('container', () => {
                         expect(b).to.not.equal(a4.params[0]);
                     }
 
-                    const { cSupplier: cSupplier1 } = a1
-                        .params[2] as HaystackIdType<
+                    const { cSupplier: cSupplier1 } = a1.params[2] as HaystackIdType<
                         typeof cSupplierIdentifier
                     >;
-                    const { cSupplier: cSupplier2 } = a1
-                        .params[3] as HaystackIdType<
+                    const { cSupplier: cSupplier2 } = a1.params[3] as HaystackIdType<
                         typeof cSupplierIdentifier
                     >;
-                    const { cSupplier: cSupplier3 } = a1
-                        .params[4] as HaystackIdType<
+                    const { cSupplier: cSupplier3 } = a1.params[4] as HaystackIdType<
                         typeof cSupplierIdentifier
                     >;
 
@@ -1871,9 +1694,7 @@ suite('container', () => {
                     expect(await cSupplier1()).to.equal(await cSupplier1());
                     expect(await cSupplier1()).to.equal(await cSupplier2());
                     if (viaASupplier) {
-                        expect(await cSupplier1()).to.not.equal(
-                            await cSupplier3()
-                        );
+                        expect(await cSupplier1()).to.not.equal(await cSupplier3());
                         expect(await cSupplier1()).to.not.equal(a1.params[1]);
                     } else {
                         expect(await cSupplier1()).to.equal(await cSupplier3());
@@ -1968,40 +1789,30 @@ suite('container', () => {
                         .addBinding(
                             bind(B)
                                 .withDependencies([C])
-                                .withAsyncProvider(async () =>
-                                    addToOrder(new B())
-                                )
+                                .withAsyncProvider(async () => addToOrder(new B()))
                                 .scoped(optimisticRequestScope)
                         )
                         .addBinding(
                             bind(C)
                                 .withDependencies([D])
-                                .withAsyncProvider(async () =>
-                                    addToOrder(new C())
-                                )
+                                .withAsyncProvider(async () => addToOrder(new C()))
                                 .scoped(transientScope)
                         )
                         .addBinding(
                             bind(D)
                                 .withDependencies([E])
-                                .withAsyncProvider(async () =>
-                                    addToOrder(new D())
-                                )
+                                .withAsyncProvider(async () => addToOrder(new D()))
                                 .scoped(optimisticSingletonScope)
                         )
                         .addBinding(
                             bind(E)
                                 .withDependencies([identifier(E).lateBinding()])
-                                .withAsyncProvider(async () =>
-                                    addToOrder(new E())
-                                )
+                                .withAsyncProvider(async () => addToOrder(new E()))
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(F)
-                                .withAsyncGenerator(async () =>
-                                    addToOrder(new F())
-                                )
+                                .withAsyncGenerator(async () => addToOrder(new F()))
                                 .scoped(optimisticSingletonScope)
                         )
                 );
@@ -2028,20 +1839,14 @@ suite('container', () => {
             suite('Sync container', () => {
                 test('Propagate request scope', async () => {
                     interface LateSupplier {
-                        lateSupplier: LateBinding<
-                            Supplier<LateSupplier | null | undefined>
-                        >;
+                        lateSupplier: LateBinding<Supplier<LateSupplier | null | undefined>>;
                         asyncLateSupplier: LateBinding<
                             AsyncSupplier<LateSupplier | null | undefined>
                         >;
                     }
                     const lateBindingProvider = (
-                        supplier: LateBinding<
-                            Supplier<LateSupplier | null | undefined>
-                        >,
-                        asyncSupplier: LateBinding<
-                            AsyncSupplier<LateSupplier | null | undefined>
-                        >
+                        supplier: LateBinding<Supplier<LateSupplier | null | undefined>>,
+                        asyncSupplier: LateBinding<AsyncSupplier<LateSupplier | null | undefined>>
                     ): LateSupplier => ({
                         lateSupplier: supplier,
                         asyncLateSupplier: asyncSupplier,
@@ -2051,9 +1856,7 @@ suite('container', () => {
 
                     const container = createContainer(
                         createModule(
-                            bind(
-                                lateSupplierIdentifier.lateBinding().supplier()
-                            )
+                            bind(lateSupplierIdentifier.lateBinding().supplier())
                                 .withDependencies([
                                     lateSupplierIdentifier
                                         .named('A')
@@ -2078,48 +1881,30 @@ suite('container', () => {
                                 .scoped(requestScope)
                         )
                             .addBinding(
-                                bind(
-                                    lateSupplierIdentifier
-                                        .named('A')
-                                        .nullable()
-                                        .undefinable()
-                                )
+                                bind(lateSupplierIdentifier.named('A').nullable().undefinable())
                                     .withDependencies([
-                                        lateSupplierIdentifier
-                                            .lateBinding()
-                                            .supplier({
-                                                sync: true,
-                                                propagateScope: true,
-                                            }),
-                                        lateSupplierIdentifier
-                                            .lateBinding()
-                                            .supplier({
-                                                sync: false,
-                                                propagateScope: true,
-                                            }),
+                                        lateSupplierIdentifier.lateBinding().supplier({
+                                            sync: true,
+                                            propagateScope: true,
+                                        }),
+                                        lateSupplierIdentifier.lateBinding().supplier({
+                                            sync: false,
+                                            propagateScope: true,
+                                        }),
                                     ])
                                     .withProvider(lateBindingProvider)
                             )
                             .addBinding(
-                                bind(
-                                    lateSupplierIdentifier
-                                        .named('B')
-                                        .nullable()
-                                        .undefinable()
-                                )
+                                bind(lateSupplierIdentifier.named('B').nullable().undefinable())
                                     .withDependencies([
-                                        lateSupplierIdentifier
-                                            .lateBinding()
-                                            .supplier({
-                                                sync: true,
-                                                propagateScope: true,
-                                            }),
-                                        lateSupplierIdentifier
-                                            .lateBinding()
-                                            .supplier({
-                                                sync: false,
-                                                propagateScope: true,
-                                            }),
+                                        lateSupplierIdentifier.lateBinding().supplier({
+                                            sync: true,
+                                            propagateScope: true,
+                                        }),
+                                        lateSupplierIdentifier.lateBinding().supplier({
+                                            sync: false,
+                                            propagateScope: true,
+                                        }),
                                     ])
                                     .withProvider(lateBindingProvider)
                             )
@@ -2127,55 +1912,37 @@ suite('container', () => {
 
                     const lateSupplier = container.get(lateSupplierIdentifier);
 
-                    const syncLateSupplier = (
-                        await lateSupplier.lateSupplier
-                    )()!;
-                    const asyncLateSupplier = (await (
-                        await lateSupplier.asyncLateSupplier
-                    )())!;
+                    const syncLateSupplier = (await lateSupplier.lateSupplier)()!;
+                    const asyncLateSupplier = (await (await lateSupplier.asyncLateSupplier)())!;
 
                     expect(lateSupplier).to.not.equal(syncLateSupplier);
                     expect(lateSupplier).to.not.equal(asyncLateSupplier);
-                    expect(lateSupplier).to.not.equal(
-                        container.get(lateSupplierIdentifier)
-                    );
+                    expect(lateSupplier).to.not.equal(container.get(lateSupplierIdentifier));
                     expect(syncLateSupplier).to.not.equal(asyncLateSupplier);
-                    expect(syncLateSupplier).to.not.equal(
-                        (await lateSupplier.lateSupplier)()
-                    );
+                    expect(syncLateSupplier).to.not.equal((await lateSupplier.lateSupplier)());
                     expect(asyncLateSupplier).to.not.equal(
                         await (await lateSupplier.asyncLateSupplier)()
                     );
 
-                    expect((await syncLateSupplier.lateSupplier)()).to.equal(
+                    expect((await syncLateSupplier.lateSupplier)()).to.equal(lateSupplier);
+                    expect(await (await syncLateSupplier.asyncLateSupplier)()).to.equal(
                         lateSupplier
                     );
-                    expect(
-                        await (await syncLateSupplier.asyncLateSupplier)()
-                    ).to.equal(lateSupplier);
 
-                    expect((await asyncLateSupplier.lateSupplier)()).to.equal(
+                    expect((await asyncLateSupplier.lateSupplier)()).to.equal(lateSupplier);
+                    expect(await (await asyncLateSupplier.asyncLateSupplier)()).to.equal(
                         lateSupplier
                     );
-                    expect(
-                        await (await asyncLateSupplier.asyncLateSupplier)()
-                    ).to.equal(lateSupplier);
                 });
 
                 test('No propagation supplier scope', async () => {
                     interface LateSupplier {
-                        lateSupplier: LateBinding<
-                            Supplier<A | null | undefined>
-                        >;
-                        asyncLateSupplier: LateBinding<
-                            AsyncSupplier<B | null | undefined>
-                        >;
+                        lateSupplier: LateBinding<Supplier<A | null | undefined>>;
+                        asyncLateSupplier: LateBinding<AsyncSupplier<B | null | undefined>>;
                     }
                     const lateBindingProvider = (
                         supplier: LateBinding<Supplier<A | null | undefined>>,
-                        asyncSupplier: LateBinding<
-                            AsyncSupplier<B | null | undefined>
-                        >
+                        asyncSupplier: LateBinding<AsyncSupplier<B | null | undefined>>
                     ): LateSupplier => ({
                         lateSupplier: supplier,
                         asyncLateSupplier: asyncSupplier,
@@ -2186,11 +1953,7 @@ suite('container', () => {
                     const baseModule = createModule(
                         bind(lateSupplierIdentifier.lateBinding().supplier())
                             .withDependencies([
-                                identifier(A)
-                                    .nullable()
-                                    .undefinable()
-                                    .lateBinding()
-                                    .supplier(),
+                                identifier(A).nullable().undefinable().lateBinding().supplier(),
                                 identifier(B)
                                     .nullable()
                                     .undefinable()
@@ -2230,17 +1993,11 @@ suite('container', () => {
                         baseModule.mergeModule(
                             createModule(
                                 bind(identifier(A).nullable())
-                                    .withDependencies([
-                                        identifier(B)
-                                            .lateBinding()
-                                            .undefinable(),
-                                    ])
+                                    .withDependencies([identifier(B).lateBinding().undefinable()])
                                     .withConstructorProvider()
                             ).addBinding(
                                 bind(identifier(B).undefinable())
-                                    .withDependencies([
-                                        identifier(A).lateBinding().nullable(),
-                                    ])
+                                    .withDependencies([identifier(A).lateBinding().nullable()])
                                     .withConstructorProvider()
                             )
                         )
@@ -2254,26 +2011,18 @@ suite('container', () => {
                     expect(aSupplier()).to.be.an.instanceOf(A);
                     expect(await bSupplier()).to.be.an.instanceOf(B);
 
-                    expect(
-                        container.get(identifier(A).nullable())
-                    ).to.not.equal(aSupplier());
-                    expect(
-                        container.get(identifier(B).undefinable())
-                    ).to.not.equal(await bSupplier());
+                    expect(container.get(identifier(A).nullable())).to.not.equal(aSupplier());
+                    expect(container.get(identifier(B).undefinable())).to.not.equal(
+                        await bSupplier()
+                    );
 
                     expect(aSupplier()).to.not.equal(aSupplier());
                     expect(await bSupplier()).to.not.equal(await bSupplier());
 
                     expect(await aSupplier()!.params[0]).to.be.an.instanceOf(B);
-                    expect(await aSupplier()!.params[0]).to.not.equal(
-                        await bSupplier()
-                    );
-                    expect(
-                        await (await bSupplier())!.params[0]
-                    ).to.be.an.instanceOf(A);
-                    expect(await (await bSupplier())!.params[0]).to.not.equal(
-                        aSupplier()
-                    );
+                    expect(await aSupplier()!.params[0]).to.not.equal(await bSupplier());
+                    expect(await (await bSupplier())!.params[0]).to.be.an.instanceOf(A);
+                    expect(await (await bSupplier())!.params[0]).to.not.equal(aSupplier());
                 });
             });
 
@@ -2281,21 +2030,15 @@ suite('container', () => {
                 test('Propagate request scope', async () => {
                     interface LateSupplier {
                         lateSupplier?:
-                            | LateBinding<
-                                  Supplier<LateSupplier | null | undefined>
-                              >
+                            | LateBinding<Supplier<LateSupplier | null | undefined>>
                             | undefined;
                         asyncLateSupplier: LateBinding<
                             AsyncSupplier<LateSupplier | null | undefined>
                         >;
                     }
                     const lateBindingProvider = async (
-                        asyncSupplier: LateBinding<
-                            AsyncSupplier<LateSupplier | null | undefined>
-                        >,
-                        supplier?: LateBinding<
-                            Supplier<LateSupplier | null | undefined>
-                        >
+                        asyncSupplier: LateBinding<AsyncSupplier<LateSupplier | null | undefined>>,
+                        supplier?: LateBinding<Supplier<LateSupplier | null | undefined>>
                     ): Promise<LateSupplier> => ({
                         lateSupplier: supplier,
                         asyncLateSupplier: asyncSupplier,
@@ -2305,9 +2048,7 @@ suite('container', () => {
 
                     const container = createContainer(
                         createModule(
-                            bind(
-                                lateSupplierIdentifier.lateBinding().supplier()
-                            )
+                            bind(lateSupplierIdentifier.lateBinding().supplier())
                                 .withDependencies([
                                     lateSupplierIdentifier
                                         .named('A')
@@ -2322,37 +2063,24 @@ suite('container', () => {
                                 .withAsyncProvider(lateBindingProvider)
                                 .scoped(optimisticRequestScope)
                         ).addBinding(
-                            bind(
-                                lateSupplierIdentifier
-                                    .named('A')
-                                    .nullable()
-                                    .undefinable()
-                            )
+                            bind(lateSupplierIdentifier.named('A').nullable().undefinable())
                                 .withDependencies([
-                                    lateSupplierIdentifier
-                                        .lateBinding()
-                                        .supplier({
-                                            sync: false,
-                                            propagateScope: true,
-                                        }),
-                                    lateSupplierIdentifier
-                                        .lateBinding()
-                                        .supplier({
-                                            sync: true,
-                                            propagateScope: true,
-                                        }),
+                                    lateSupplierIdentifier.lateBinding().supplier({
+                                        sync: false,
+                                        propagateScope: true,
+                                    }),
+                                    lateSupplierIdentifier.lateBinding().supplier({
+                                        sync: true,
+                                        propagateScope: true,
+                                    }),
                                 ])
                                 .withAsyncProvider(lateBindingProvider)
                         )
                     );
 
-                    const lateSupplier = await container.getAsync(
-                        lateSupplierIdentifier
-                    );
+                    const lateSupplier = await container.getAsync(lateSupplierIdentifier);
 
-                    const asyncLateSupplier = (await (
-                        await lateSupplier.asyncLateSupplier
-                    )())!;
+                    const asyncLateSupplier = (await (await lateSupplier.asyncLateSupplier)())!;
 
                     expect(lateSupplier).to.not.equal(asyncLateSupplier);
                     expect(lateSupplier).to.not.equal(
@@ -2362,28 +2090,20 @@ suite('container', () => {
                         await (await lateSupplier.asyncLateSupplier)()
                     );
 
-                    expect((await asyncLateSupplier.lateSupplier!)()).to.equal(
+                    expect((await asyncLateSupplier.lateSupplier!)()).to.equal(lateSupplier);
+                    expect(await (await asyncLateSupplier.asyncLateSupplier)()).to.equal(
                         lateSupplier
                     );
-                    expect(
-                        await (await asyncLateSupplier.asyncLateSupplier)()
-                    ).to.equal(lateSupplier);
                 });
 
                 test('No propagation supplier scope', async () => {
                     interface LateSupplier {
-                        lateSupplier: LateBinding<
-                            Supplier<A | null | undefined>
-                        >;
-                        asyncLateSupplier: LateBinding<
-                            AsyncSupplier<B | null | undefined>
-                        >;
+                        lateSupplier: LateBinding<Supplier<A | null | undefined>>;
+                        asyncLateSupplier: LateBinding<AsyncSupplier<B | null | undefined>>;
                     }
                     const lateBindingProvider = async (
                         supplier: LateBinding<Supplier<A | null | undefined>>,
-                        asyncSupplier: LateBinding<
-                            AsyncSupplier<B | null | undefined>
-                        >
+                        asyncSupplier: LateBinding<AsyncSupplier<B | null | undefined>>
                     ): Promise<LateSupplier> => ({
                         lateSupplier: supplier,
                         asyncLateSupplier: asyncSupplier,
@@ -2394,11 +2114,7 @@ suite('container', () => {
                     const baseModule = createModule(
                         bind(lateSupplierIdentifier.lateBinding().supplier())
                             .withDependencies([
-                                identifier(A)
-                                    .nullable()
-                                    .undefinable()
-                                    .lateBinding()
-                                    .supplier(),
+                                identifier(A).nullable().undefinable().lateBinding().supplier(),
                                 identifier(B)
                                     .nullable()
                                     .undefinable()
@@ -2425,9 +2141,7 @@ suite('container', () => {
                                         lateSupplierIdentifier.lateBinding(),
                                         lateSupplierIdentifier.lateBinding(),
                                     ])
-                                    .withAsyncProvider(
-                                        async (...params) => new B(...params)
-                                    )
+                                    .withAsyncProvider(async (...params) => new B(...params))
                                     .scoped(optimisticRequestScope)
                             )
                         )
@@ -2440,25 +2154,17 @@ suite('container', () => {
                         baseModule.mergeModule(
                             createModule(
                                 bind(identifier(A).nullable())
-                                    .withDependencies([
-                                        identifier(B)
-                                            .lateBinding()
-                                            .undefinable(),
-                                    ])
+                                    .withDependencies([identifier(B).lateBinding().undefinable()])
                                     .withConstructorProvider()
                             ).addBinding(
                                 bind(identifier(B).undefinable())
-                                    .withDependencies([
-                                        identifier(A).lateBinding().nullable(),
-                                    ])
+                                    .withDependencies([identifier(A).lateBinding().nullable()])
                                     .withConstructorProvider()
                             )
                         )
                     );
 
-                    const lateSupplier = await container.getAsync(
-                        lateSupplierIdentifier
-                    );
+                    const lateSupplier = await container.getAsync(lateSupplierIdentifier);
 
                     const aSupplier = await lateSupplier.lateSupplier;
                     const bSupplier = await lateSupplier.asyncLateSupplier;
@@ -2466,45 +2172,31 @@ suite('container', () => {
                     expect(aSupplier()).to.be.an.instanceOf(A);
                     expect(await bSupplier()).to.be.an.instanceOf(B);
 
-                    expect(
-                        await container.getAsync(identifier(A).nullable())
-                    ).to.not.equal(aSupplier());
-                    expect(
-                        await container.getAsync(identifier(B).undefinable())
-                    ).to.not.equal(await bSupplier());
+                    expect(await container.getAsync(identifier(A).nullable())).to.not.equal(
+                        aSupplier()
+                    );
+                    expect(await container.getAsync(identifier(B).undefinable())).to.not.equal(
+                        await bSupplier()
+                    );
 
                     expect(aSupplier()).to.not.equal(aSupplier());
                     expect(await bSupplier()).to.not.equal(bSupplier());
 
                     expect(await aSupplier()!.params[0]).to.be.an.instanceOf(B);
-                    expect(await aSupplier()!.params[0]).to.not.equal(
-                        await bSupplier()
-                    );
-                    expect(
-                        await (await bSupplier())!.params[0]
-                    ).to.be.an.instanceOf(A);
-                    expect(await (await bSupplier())!.params[0]).to.not.equal(
-                        aSupplier()
-                    );
+                    expect(await aSupplier()!.params[0]).to.not.equal(await bSupplier());
+                    expect(await (await bSupplier())!.params[0]).to.be.an.instanceOf(A);
+                    expect(await (await bSupplier())!.params[0]).to.not.equal(aSupplier());
                 });
             });
         });
 
         test('Resolves circular dependencies', async () => {
             const container = createContainer(
-                createModule(
-                    bind(A).withDependencies([B]).withConstructorProvider()
-                )
-                    .addBinding(
-                        bind(B)
-                            .withDependencies([C, D])
-                            .withConstructorProvider()
-                    )
+                createModule(bind(A).withDependencies([B]).withConstructorProvider())
+                    .addBinding(bind(B).withDependencies([C, D]).withConstructorProvider())
                     .addBinding(
                         bind(C)
-                            .withDependencies([
-                                identifier(A).lateBinding().nullable(),
-                            ])
+                            .withDependencies([identifier(A).lateBinding().nullable()])
                             .withConstructorProvider()
                     )
                     .addBinding(
@@ -2524,11 +2216,7 @@ suite('container', () => {
                             ])
                             .withConstructorProvider()
                     )
-                    .addBinding(
-                        bind(F)
-                            .withDependencies([A, D, E])
-                            .withConstructorProvider()
-                    )
+                    .addBinding(bind(F).withDependencies([A, D, E]).withConstructorProvider())
             );
 
             await container.getAsync(A);
@@ -2567,10 +2255,7 @@ suite('container', () => {
                         )
                         .addBinding(
                             bind(D)
-                                .withDependencies([
-                                    identifier(A).lateBinding(),
-                                    E,
-                                ])
+                                .withDependencies([identifier(A).lateBinding(), E])
                                 .withConstructorProvider()
                                 .scoped(requestScope)
                         )
@@ -2605,14 +2290,11 @@ suite('container', () => {
                     expect(() => container.get(A)).to.throw(CustomError);
                     expect(() => container.get(D)).to.throw(CustomError);
 
-                    const { aSupplier, dSupplier } =
-                        container.get(supplierIdentifier);
+                    const { aSupplier, dSupplier } = container.get(supplierIdentifier);
                     for (let j = 0; j < 2; ++j) {
                         expect(() => aSupplier()).to.throw(CustomError);
                         rejectionExpectations.push(
-                            expect(dSupplier()).to.eventually.be.rejectedWith(
-                                CustomError
-                            )
+                            expect(dSupplier()).to.eventually.be.rejectedWith(CustomError)
                         );
                     }
                 }
@@ -2651,10 +2333,7 @@ suite('container', () => {
                         )
                         .addBinding(
                             bind(D)
-                                .withDependencies([
-                                    identifier(A).lateBinding(),
-                                    E,
-                                ])
+                                .withDependencies([identifier(A).lateBinding(), E])
                                 .withAsyncProvider(() => new D())
                                 .scoped(requestScope)
                         )
@@ -2686,26 +2365,17 @@ suite('container', () => {
                 const rejectionExpectations: PromiseLike<unknown>[] = [];
                 // Perform twice, to guarantee no successful caching
                 for (let i = 0; i < 2; ++i) {
-                    const { aSupplier, dSupplier } =
-                        await container.getAsync(supplierIdentifier);
+                    const { aSupplier, dSupplier } = await container.getAsync(supplierIdentifier);
 
-                    await expect(
-                        container.getAsync(A)
-                    ).to.eventually.be.rejectedWith(CustomError);
+                    await expect(container.getAsync(A)).to.eventually.be.rejectedWith(CustomError);
                     rejectionExpectations.push(
-                        expect(
-                            container.getAsync(D)
-                        ).to.eventually.be.rejectedWith(CustomError)
+                        expect(container.getAsync(D)).to.eventually.be.rejectedWith(CustomError)
                     );
 
                     for (let j = 0; j < 2; ++j) {
                         rejectionExpectations.push(
-                            expect(aSupplier()).to.eventually.be.rejectedWith(
-                                CustomError
-                            ),
-                            expect(dSupplier()).to.eventually.be.rejectedWith(
-                                CustomError
-                            )
+                            expect(aSupplier()).to.eventually.be.rejectedWith(CustomError),
+                            expect(dSupplier()).to.eventually.be.rejectedWith(CustomError)
                         );
                     }
                     await Promise.all(rejectionExpectations);
@@ -2719,9 +2389,7 @@ suite('container', () => {
             const container = createContainer(
                 createModule(
                     bind(LinkedList)
-                        .withDependencies([
-                            identifier(LinkedList).lateBinding(),
-                        ])
+                        .withDependencies([identifier(LinkedList).lateBinding()])
                         .withAsyncProvider(async late => {
                             const linkedList = new LinkedList(null);
                             void late.then(val => {
@@ -2745,8 +2413,7 @@ suite('container', () => {
                 b: LateBinding<B>;
             }
 
-            const promiseIdentifier =
-                identifier<SpecialPromise>().named('promise');
+            const promiseIdentifier = identifier<SpecialPromise>().named('promise');
             const promiseSupplierIdentifier = identifier<{
                 prom: SpecialPromise;
                 promSupplier: Supplier<SpecialPromise>;
@@ -2780,9 +2447,7 @@ suite('container', () => {
                                 .withAsyncProvider(pId => new A(pId))
                                 .scoped(optimisticSingletonScope)
                         ).addBinding(
-                            bind(B)
-                                .withDependencies([promiseIdentifier])
-                                .withConstructorProvider()
+                            bind(B).withDependencies([promiseIdentifier]).withConstructorProvider()
                         )
                     )
                     .addBinding(
@@ -2794,12 +2459,7 @@ suite('container', () => {
                                 promiseIdentifier.lateBinding(),
                             ])
                             .withAsyncProvider(
-                                (
-                                    prom,
-                                    promSupplier,
-                                    promAsyncSupplier,
-                                    lateProm
-                                ) => ({
+                                (prom, promSupplier, promAsyncSupplier, lateProm) => ({
                                     prom,
                                     promSupplier,
                                     promAsyncSupplier,
@@ -2809,9 +2469,7 @@ suite('container', () => {
                     )
             );
 
-            const promiseSupplier = await container.getAsync(
-                promiseSupplierIdentifier
-            );
+            const promiseSupplier = await container.getAsync(promiseSupplierIdentifier);
             expect(promiseSupplier.prom).to.be.an.instanceOf(Promise);
             expect(promiseSupplier.prom.specialValue).to.equal(true);
 

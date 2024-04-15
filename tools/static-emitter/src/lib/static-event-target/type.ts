@@ -3,9 +3,7 @@ import * as Types from '../types.js';
 /**
  * Type-only cast of EventTarget.
  */
-export declare class StaticEventTarget<
-        InterfaceEvents extends Types.EventDict = Types.EmptyObject,
-    >
+export declare class StaticEventTarget<InterfaceEvents extends Types.EventDict = Types.EmptyObject>
     extends EventTarget
     implements Types.IEmitter
 {

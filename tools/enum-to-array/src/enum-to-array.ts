@@ -1,9 +1,6 @@
 type Values<T> = T[Extract<keyof T, string>];
 
-type IfEmpty<Enum extends Record<string, unknown>, Else> = Record<
-    never,
-    string
-> extends Enum
+type IfEmpty<Enum extends Record<string, unknown>, Else> = Record<never, string> extends Enum
     ? []
     : Else;
 
@@ -26,9 +23,7 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
 ): IfEmpty<
     Enum,
     Values<{
-        [key in keyof Enum]: number extends key
-            ? never
-            : { key: key; value: Enum[key] };
+        [key in keyof Enum]: number extends key ? never : { key: key; value: Enum[key] };
     }>[]
 > => {
     const knownValues: {
@@ -55,9 +50,7 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
     return knownValues as IfEmpty<
         Enum,
         Values<{
-            [key in keyof Enum]: number extends key
-                ? never
-                : { key: key; value: Enum[key] };
+            [key in keyof Enum]: number extends key ? never : { key: key; value: Enum[key] };
         }>[]
     >;
 };

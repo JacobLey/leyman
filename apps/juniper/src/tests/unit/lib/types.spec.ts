@@ -1,10 +1,5 @@
 import { expectTypeOf } from 'expect-type';
-import {
-    type JsonSchema,
-    numberSchema,
-    type Schema,
-    type SchemaType,
-} from 'juniper';
+import { type JsonSchema, numberSchema, type Schema, type SchemaType } from 'juniper';
 import { suite, test } from 'mocha-hookup';
 import type { ConditionalNullable, ToBaseType } from '../../../lib/types.js';
 
@@ -17,9 +12,7 @@ suite('types', () => {
     test('SchemaType', () => {
         expectTypeOf<SchemaType<Schema<'a' | 1>>>().toEqualTypeOf<'a' | 1>();
 
-        expectTypeOf<
-            SchemaType<JsonSchema<boolean>>
-        >().toEqualTypeOf<boolean>();
+        expectTypeOf<SchemaType<JsonSchema<boolean>>>().toEqualTypeOf<boolean>();
 
         const schema = numberSchema();
         expectTypeOf(schema).toMatchTypeOf<Schema<number>>();
@@ -29,21 +22,15 @@ suite('types', () => {
     suite('ConditionalNullable', () => {
         suite('Output is nullable', () => {
             test('If + Then are nullable', () => {
-                expectTypeOf<
-                    ConditionalNullable<true, true, true, true>
-                >().toEqualTypeOf<true>();
-                expectTypeOf<
-                    ConditionalNullable<true, true, true, false>
-                >().toEqualTypeOf<true>();
+                expectTypeOf<ConditionalNullable<true, true, true, true>>().toEqualTypeOf<true>();
+                expectTypeOf<ConditionalNullable<true, true, true, false>>().toEqualTypeOf<true>();
                 expectTypeOf<
                     ConditionalNullable<true, true, true, boolean>
                 >().toEqualTypeOf<true>();
             });
 
             test('Else is nullable', () => {
-                expectTypeOf<
-                    ConditionalNullable<true, false, false, true>
-                >().toEqualTypeOf<true>();
+                expectTypeOf<ConditionalNullable<true, false, false, true>>().toEqualTypeOf<true>();
                 expectTypeOf<
                     ConditionalNullable<true, false, boolean, true>
                 >().toEqualTypeOf<true>();
@@ -53,17 +40,13 @@ suite('types', () => {
                 expectTypeOf<
                     ConditionalNullable<true, boolean, boolean, true>
                 >().toEqualTypeOf<true>();
-                expectTypeOf<
-                    ConditionalNullable<true, false, true, true>
-                >().toEqualTypeOf<true>();
+                expectTypeOf<ConditionalNullable<true, false, true, true>>().toEqualTypeOf<true>();
             });
         });
 
         suite('Output is not yet nullable', () => {
             test('If + Then are nullable', () => {
-                expectTypeOf<
-                    ConditionalNullable<false, true, true, true>
-                >().toEqualTypeOf<false>();
+                expectTypeOf<ConditionalNullable<false, true, true, true>>().toEqualTypeOf<false>();
                 expectTypeOf<
                     ConditionalNullable<false, true, true, false>
                 >().toEqualTypeOf<false>();
@@ -303,15 +286,11 @@ suite('types', () => {
             expectTypeOf<ToBaseType<string>>().toEqualTypeOf<string>();
             expectTypeOf<ToBaseType<'abc'>>().toEqualTypeOf<string>();
             expectTypeOf<ToBaseType<string[]>>().toEqualTypeOf<string[]>();
-            expectTypeOf<ToBaseType<[1, 'a']>>().toEqualTypeOf<
-                (number | string)[]
-            >();
+            expectTypeOf<ToBaseType<[1, 'a']>>().toEqualTypeOf<(number | string)[]>();
             expectTypeOf<ToBaseType<Record<string, unknown>>>().toEqualTypeOf<
                 Record<string, unknown>
             >();
-            expectTypeOf<ToBaseType<{ foo?: 'bar' }>>().toEqualTypeOf<
-                Record<string, unknown>
-            >();
+            expectTypeOf<ToBaseType<{ foo?: 'bar' }>>().toEqualTypeOf<Record<string, unknown>>();
         });
 
         test('unions', () => {
@@ -322,9 +301,9 @@ suite('types', () => {
             expectTypeOf<ToBaseType<typeof arr>>().toEqualTypeOf<
                 (number | Record<string, unknown> | null)[]
             >();
-            expectTypeOf<
-                ToBaseType<[{ a: 1 }, Record<string, never>]>
-            >().toEqualTypeOf<Record<string, unknown>[]>();
+            expectTypeOf<ToBaseType<[{ a: 1 }, Record<string, never>]>>().toEqualTypeOf<
+                Record<string, unknown>[]
+            >();
         });
     });
 });

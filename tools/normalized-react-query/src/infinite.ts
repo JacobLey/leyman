@@ -7,12 +7,7 @@ import {
 } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useForceRerender } from './lib/hooks.js';
-import type {
-    DefaultPage,
-    EmptyObject,
-    PaginatedData,
-    PaginatedParams,
-} from './lib/types.js';
+import type { DefaultPage, EmptyObject, PaginatedData, PaginatedParams } from './lib/types.js';
 import { Paginated } from './paginated.js';
 
 /**
@@ -48,14 +43,7 @@ export abstract class Infinite<
               ]
             | [Omit<PaginatedParams<Params, Page>, 'nextPage'>]
             | (EmptyObject extends Params
-                  ?
-                          | [
-                                  null | undefined,
-                                  UseQueryOptions<
-                                      PaginatedData<Data, Page, Meta>
-                                  >,
-                              ]
-                          | []
+                  ? [] | [null | undefined, UseQueryOptions<PaginatedData<Data, Page, Meta>>]
                   : never)
     ): Omit<UseQueryResult<PaginatedData<Data, Page, Meta>>, 'data'> & {
         lastData: UseQueryResult<PaginatedData<Data, Page, Meta>>['data'];
@@ -88,12 +76,7 @@ export abstract class Infinite<
             const baseQueries: Required<
                 Pick<
                     UseQueryOptions<PaginatedData<Data, Page, Meta>>,
-                    | 'onError'
-                    | 'onSettled'
-                    | 'onSuccess'
-                    | 'queryFn'
-                    | 'queryHash'
-                    | 'queryKey'
+                    'onError' | 'onSettled' | 'onSuccess' | 'queryFn' | 'queryHash' | 'queryKey'
                 >
             >[] = [
                 {
@@ -105,9 +88,7 @@ export abstract class Infinite<
             ];
             const queryHashSet = new Set([hashedDefaultKey]);
             // Mutate array internally (so `useMemo` response stays "immutable")
-            const appendToBaseQuery = (
-                query: (typeof baseQueries)[number]
-            ): void => {
+            const appendToBaseQuery = (query: (typeof baseQueries)[number]): void => {
                 if (!queryHashSet.has(query.queryHash)) {
                     // Only append if unique (dedupe `fetchNextPage` calls).
                     baseQueries.push(query);
@@ -159,8 +140,7 @@ export abstract class Infinite<
                             const nextPageKey = this.getKey(nextPageParams);
                             appendQuery({
                                 queryKey: nextPageKey,
-                                queryFn: async () =>
-                                    this.queryFn(nextPageParams),
+                                queryFn: async () => this.queryFn(nextPageParams),
                                 queryHash: queryKeyHashFn(nextPageKey),
                                 ...this.getHandlers(client, nextPageParams),
                             });

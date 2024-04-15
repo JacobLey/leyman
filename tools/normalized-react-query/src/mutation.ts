@@ -20,11 +20,7 @@ declare const typeCached: typeof typeCache;
  * - Optionally implement handlers `onSuccess`, `onError`, and `onSettled`
  * - Create a single instance ("singleton") of class and export it.
  */
-export abstract class Mutation<
-    Data,
-    Params = DefaultParams,
-    Variables = DefaultParams,
-> {
+export abstract class Mutation<Data, Params = DefaultParams, Variables = DefaultParams> {
     /**
      * Used to access type parameters.
      * See `QueryData`, `QueryParams`, and `QueryVariables`.
@@ -43,25 +39,19 @@ export abstract class Mutation<
      * @param params - method params defined by class.
      * @returns useMutation response.
      */
-    public useMutation(
-        params: Params
-    ): UseMutationResult<Data, unknown, Variables> {
+    public useMutation(params: Params): UseMutationResult<Data, unknown, Variables> {
         const client = useQueryClient();
         const mutationKey = this.getKey(params);
 
         const [mutationFn, onSuccess, onError, onSettled] = useMemo(
             () => [
-                async (variables: Variables) =>
-                    this.mutationFn(params, variables),
+                async (variables: Variables) => this.mutationFn(params, variables),
                 async (data: Data, variables: Variables) =>
                     this.onSuccess(client, params, data, variables),
                 async (error: unknown, variables: Variables) =>
                     this.onError(client, params, error, variables),
-                async (
-                    data: Data | undefined,
-                    error: unknown,
-                    variables: Variables
-                ) => this.onSettled(client, params, data, error, variables),
+                async (data: Data | undefined, error: unknown, variables: Variables) =>
+                    this.onSettled(client, params, data, error, variables),
             ],
             [hashQueryKey(mutationKey)]
         );
@@ -157,10 +147,7 @@ export abstract class Mutation<
      * @param {*} params - method params defined by class.
      * @returns {Promise<*>} function that will be called by React Query for data loading.
      */
-    protected abstract mutationFn(
-        params: Params,
-        variables: Variables
-    ): Promise<Data>;
+    protected abstract mutationFn(params: Params, variables: Variables): Promise<Data>;
 }
 
 /**
@@ -177,11 +164,7 @@ export abstract class Mutation<
  * @param [options.onSettled] - onSettled handler
  * @returns typed mutation
  */
-export const mutation = <
-    Data,
-    Params = DefaultParams,
-    Variables = DefaultParams,
->(
+export const mutation = <Data, Params = DefaultParams, Variables = DefaultParams>(
     params: {
         getKey: Mutation<Data, Params, Variables>['getKey'];
         mutationFn: Mutation<Data, Params, Variables>['mutationFn'];

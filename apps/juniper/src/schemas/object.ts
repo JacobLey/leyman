@@ -33,10 +33,7 @@ export type PatternProperties<T extends string> = string & {
 };
 
 type BaseSchemaObject = Record<string, AbstractSchema<SchemaGenerics<unknown>>>;
-type BaseParameterSchemaObject = Record<
-    string,
-    boolean | AbstractSchema<SchemaGenerics<unknown>>
->;
+type BaseParameterSchemaObject = Record<string, boolean | AbstractSchema<SchemaGenerics<unknown>>>;
 
 type StripBoolean<S extends boolean | Schema<unknown>> = S extends boolean
     ? S extends false
@@ -63,10 +60,7 @@ type ObjectType<
     M,
     // Nullable
     N extends boolean,
-    Stripped extends AbstractStrip<P, EmptyIndex> = AbstractStrip<
-        P,
-        EmptyObject
-    >,
+    Stripped extends AbstractStrip<P, EmptyIndex> = AbstractStrip<P, EmptyObject>,
 > = Nullable<
     AbstractStrip<
         AbstractStrip<
@@ -74,9 +68,7 @@ type ObjectType<
                 EmptyObject &
                 M &
                 ([A] extends [true] ? Record<string, unknown> : unknown) &
-                (A extends AbstractSchema<SchemaGenerics<infer V>>
-                    ? Record<string, V>
-                    : unknown) &
+                (A extends AbstractSchema<SchemaGenerics<infer V>> ? Record<string, V> : unknown) &
                 (IsNever<Stripped> extends true
                     ? unknown
                     : Partial<{
@@ -85,9 +77,7 @@ type ObjectType<
                           Required<
                               Pick<
                                   {
-                                      [K in keyof Stripped]: SchemaType<
-                                          Stripped[K]
-                                      >;
+                                      [K in keyof Stripped]: SchemaType<Stripped[K]>;
                                   },
                                   R
                               >
@@ -109,9 +99,7 @@ interface ObjectParams<
     X extends Record<string, unknown>,
     M,
     N extends boolean,
-> extends SchemaParams<
-        ObjectType<StripBooleanParameterSchemaObject<P>, R, A, X, M, N>
-    > {
+> extends SchemaParams<ObjectType<StripBooleanParameterSchemaObject<P>, R, A, X, M, N>> {
     additionalProperties?: A;
     minProperties?: number;
     maxProperties?: number;
@@ -123,10 +111,7 @@ interface ObjectParams<
         string,
         AbstractSchema<SchemaGenerics<Record<string, unknown> | null>>
     >;
-    [patternPropertiesSym]?: Record<
-        string,
-        AbstractSchema<SchemaGenerics<unknown>>
-    >;
+    [patternPropertiesSym]?: Record<string, AbstractSchema<SchemaGenerics<unknown>>>;
 }
 
 interface ObjectGenerics<
@@ -136,9 +121,7 @@ interface ObjectGenerics<
     X extends Record<string, unknown>,
     M,
     N extends boolean,
-> extends SchemaGenerics<
-        ObjectType<StripBooleanParameterSchemaObject<P>, R, A, X, M, N>
-    > {
+> extends SchemaGenerics<ObjectType<StripBooleanParameterSchemaObject<P>, R, A, X, M, N>> {
     params: ObjectParams<P, R, A, X, M, N>;
 }
 
@@ -169,17 +152,12 @@ export class ObjectSchema<
         string,
         AbstractSchema<SchemaGenerics<Record<string, unknown> | null>>
     >;
-    readonly #patternProperties: Record<
-        string,
-        AbstractSchema<SchemaGenerics<unknown>>
-    >;
+    readonly #patternProperties: Record<string, AbstractSchema<SchemaGenerics<unknown>>>;
     readonly #properties: BaseSchemaObject;
     readonly #maxProperties: number;
     readonly #minProperties: number;
     readonly #required: R[];
-    readonly #unevaluatedProperties:
-        | boolean
-        | typeof ignoreUnevaluatedProperties;
+    readonly #unevaluatedProperties: boolean | typeof ignoreUnevaluatedProperties;
 
     protected override readonly schemaType = 'object';
 
@@ -229,14 +207,7 @@ export class ObjectSchema<
             (
                 | NonNullable<SchemaType<Else>>
                 | (NonNullable<SchemaType<Then>> &
-                      ObjectType<
-                          StripBooleanParameterSchemaObject<IfP>,
-                          IfR,
-                          IfA,
-                          IfX,
-                          IfM,
-                          false
-                      >)
+                      ObjectType<StripBooleanParameterSchemaObject<IfP>, IfR, IfA, IfX, IfM, false>)
             ),
         ConditionalNullable<
             N,
@@ -292,8 +263,7 @@ export class ObjectSchema<
             }
         }
         this.#required = options.required ?? [];
-        this.#unevaluatedProperties =
-            options.unevaluatedProperties ?? ignoreUnevaluatedProperties;
+        this.#unevaluatedProperties = options.unevaluatedProperties ?? ignoreUnevaluatedProperties;
         this.#dependentRequired = options[dependentRequiredSym] ?? {};
         this.#dependentSchemas = options[dependentSchemasSym] ?? {};
         this.#patternProperties = options[patternPropertiesSym] ?? {};
@@ -426,9 +396,7 @@ export class ObjectSchema<
      * @param additionalProperties - additionalProperties property
      * @returns cloned object schema
      */
-    public additionalProperties<
-        NewA extends boolean | AbstractSchema<SchemaGenerics<unknown>>,
-    >(
+    public additionalProperties<NewA extends boolean | AbstractSchema<SchemaGenerics<unknown>>>(
         this: this,
         additionalProperties: NewA
     ): ObjectSchema<P, R, NewA, X, M, N> {
@@ -477,10 +445,7 @@ export class ObjectSchema<
         R,
         A,
         AbstractStrip<X, EmptyIndex, unknown> &
-            Record<
-                NonNullable<Pattern[typeof patternPropertiesSym]>,
-                SchemaType<StripBoolean<S>>
-            >,
+            Record<NonNullable<Pattern[typeof patternPropertiesSym]>, SchemaType<StripBoolean<S>>>,
         M,
         N
     > {
@@ -541,9 +506,7 @@ export class ObjectSchema<
         M &
             (
                 | {
-                      [k in D]: SchemaType<
-                          StripBooleanParameterSchemaObject<P>[k]
-                      >;
+                      [k in D]: SchemaType<StripBooleanParameterSchemaObject<P>[k]>;
                   }
                 | { [k in K]?: never }
             ),
@@ -569,21 +532,12 @@ export class ObjectSchema<
      */
     public dependentSchemas<
         K extends Extract<keyof P, string>,
-        S extends AbstractSchema<
-            SchemaGenerics<Record<string, unknown> | null>
-        >,
+        S extends AbstractSchema<SchemaGenerics<Record<string, unknown> | null>>,
     >(
         this: this,
         key: K,
         schema: S
-    ): ObjectSchema<
-        P,
-        R,
-        A,
-        X,
-        M & (NonNullable<SchemaType<S>> | { [k in K]?: never }),
-        N
-    > {
+    ): ObjectSchema<P, R, A, X, M & (NonNullable<SchemaType<S>> | { [k in K]?: never }), N> {
         return this.clone({
             [dependentSchemasSym]: {
                 ...this.#dependentSchemas,
@@ -601,10 +555,7 @@ export class ObjectSchema<
      * @param unevaluatedProperties - allow unevaluated properties
      * @returns cloned object schema
      */
-    public unevaluatedProperties(
-        this: this,
-        unevaluatedProperties: boolean
-    ): this {
+    public unevaluatedProperties(this: this, unevaluatedProperties: boolean): this {
         return this.clone({
             unevaluatedProperties,
         });
@@ -613,9 +564,7 @@ export class ObjectSchema<
     /**
      * @override
      */
-    protected override getCloneParams(): Required<
-        ObjectParams<P, R, A, X, M, N>
-    > {
+    protected override getCloneParams(): Required<ObjectParams<P, R, A, X, M, N>> {
         return {
             ...super.getCloneParams(),
             additionalProperties: this.#additionalProperties!,
@@ -646,19 +595,14 @@ export class ObjectSchema<
     /**
      * @override
      */
-    protected override toSchema(
-        params: SerializationParams
-    ): JsonSchema<SchemaType<this>> {
+    protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
         if (this.#additionalProperties !== null) {
             base.additionalProperties =
                 typeof this.#additionalProperties === 'boolean'
                     ? this.#additionalProperties
-                    : ObjectSchema.getSchema(
-                          this.#additionalProperties,
-                          params
-                      );
+                    : ObjectSchema.getSchema(this.#additionalProperties, params);
         }
         if (this.#minProperties > 0) {
             base.minProperties = this.#minProperties;
@@ -681,8 +625,7 @@ export class ObjectSchema<
 
         const propertyEntries = Object.entries(this.#properties);
         if (propertyEntries.length > 0) {
-            const properties: Record<string, boolean | JsonSchema<unknown>> =
-                {};
+            const properties: Record<string, boolean | JsonSchema<unknown>> = {};
             for (const [key, val] of propertyEntries) {
                 properties[key] = schemaToProperty(val);
             }
@@ -693,9 +636,7 @@ export class ObjectSchema<
             base.required = [...new Set(this.#required)];
         }
 
-        const dependentRequiredEntries = Object.entries(
-            this.#dependentRequired
-        );
+        const dependentRequiredEntries = Object.entries(this.#dependentRequired);
         const compositionParams = {
             ...params,
             composition: {
@@ -703,22 +644,14 @@ export class ObjectSchema<
                 nullable: false,
             },
         };
-        const dependentSchemasEntries = Object.entries(
-            this.#dependentSchemas
-        ).map(
+        const dependentSchemasEntries = Object.entries(this.#dependentSchemas).map(
             ([key, schema]) =>
-                [
-                    key,
-                    (schema as ObjectSchema).getChildSchema(compositionParams),
-                ] as const
+                [key, (schema as ObjectSchema).getChildSchema(compositionParams)] as const
         );
         if (params.openApi30) {
             const [anyOf, ...anyOfs] = [
                 ...dependentRequiredEntries.map(([key, dependent]) => ({
-                    anyOf: [
-                        { not: { required: [key] } },
-                        { required: dependent },
-                    ],
+                    anyOf: [{ not: { required: [key] } }, { required: dependent }],
                 })),
                 ...dependentSchemasEntries.map(([key, dependent]) => ({
                     anyOf: [{ not: { required: [key] } }, dependent],
@@ -749,10 +682,7 @@ export class ObjectSchema<
 
             const patternEntries = Object.entries(this.#patternProperties);
             if (patternEntries.length > 0) {
-                const patternProperties: Record<
-                    string,
-                    boolean | JsonSchema<unknown>
-                > = {};
+                const patternProperties: Record<string, boolean | JsonSchema<unknown>> = {};
                 for (const [key, val] of patternEntries) {
                     patternProperties[key] = schemaToProperty(val);
                 }

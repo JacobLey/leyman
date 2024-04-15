@@ -36,11 +36,7 @@ export class Formatter {
         if (files.length === 0) {
             return;
         }
-        await this.#executor(this.#getBiomePath(), [
-            'format',
-            '--write',
-            ...files,
-        ]);
+        await this.#executor(this.#getBiomePath(), ['format', '--write', ...files]);
     }
     public get formatFiles(): FilesFormatter {
         return this.#formatFiles.bind(this);
@@ -53,10 +49,7 @@ export class Formatter {
         return this.#formatFile.bind(this);
     }
 
-    async #formatText(
-        text: string,
-        options: TextFormatterOptions = {}
-    ): Promise<string> {
+    async #formatText(text: string, options: TextFormatterOptions = {}): Promise<string> {
         const tmpFile = await this.#tmpFileFactory({
             prefix: 'format-file',
             postfix: options.ext ?? '.js',

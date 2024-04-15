@@ -31,16 +31,10 @@ export const mergeContexts = async <
      */
     additionalProm: Additional | Promise<Additional>
 ): Promise<MergeContext<Existing, Awaited<Additional>>> => {
-    const [existing, additional] = await Promise.all([
-        existingProm,
-        additionalProm,
-    ]);
+    const [existing, additional] = await Promise.all([existingProm, additionalProm]);
 
     if (!additional) {
         return existing as MergeContext<Existing, Awaited<Additional>>;
     }
-    return { ...existing, ...additional } as MergeContext<
-        Existing,
-        Awaited<Additional>
-    >;
+    return { ...existing, ...additional } as MergeContext<Existing, Awaited<Additional>>;
 };

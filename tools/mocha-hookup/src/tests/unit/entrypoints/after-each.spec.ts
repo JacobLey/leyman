@@ -58,31 +58,25 @@ suite('afterEach', () => {
             }
         });
 
-        const mergedContextualAfterEach = contextualAfterEach.teardown(
-            async (ctx, done) => {
-                expect(ctx).to.deep.equal({ abc: 123 });
-                expectTypeOf(ctx).toEqualTypeOf<{
-                    abc: number;
-                }>();
-                Object.assign(ctx, { ignored: [] });
-                expect(contextualAfterEach.afterEach).to.equal(
-                    contextualAfterEach.teardown
-                );
-                expectTypeOf(contextualAfterEach.afterEach).toEqualTypeOf(
-                    contextualAfterEach.teardown
-                );
+        const mergedContextualAfterEach = contextualAfterEach.teardown(async (ctx, done) => {
+            expect(ctx).to.deep.equal({ abc: 123 });
+            expectTypeOf(ctx).toEqualTypeOf<{
+                abc: number;
+            }>();
+            Object.assign(ctx, { ignored: [] });
+            expect(contextualAfterEach.afterEach).to.equal(contextualAfterEach.teardown);
+            expectTypeOf(contextualAfterEach.afterEach).toEqualTypeOf(contextualAfterEach.teardown);
 
-                setTimeout(() => {
-                    if (activeTest) {
-                        expect(order).to.deep.equal([1, 2, 3]);
-                        order.push(4);
-                    }
-                    done();
-                }, 10);
+            setTimeout(() => {
+                if (activeTest) {
+                    expect(order).to.deep.equal([1, 2, 3]);
+                    order.push(4);
+                }
+                done();
+            }, 10);
 
-                return { efg: true } as const;
-            }
-        );
+            return { efg: true } as const;
+        });
 
         contextualAfterEach.teardown('Contextual teardown', (ctx, done) => {
             expect(ctx).to.deep.equal({ abc: 123 });

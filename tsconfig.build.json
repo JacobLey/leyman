@@ -30,7 +30,7 @@
         "noUnusedParameters": false,
         "pretty": true,
         "preserveConstEnums": false,
-        "removeComments": true,
+        "removeComments": false,
         "resolveJsonModule": true,
         "skipLibCheck": true,
         "sourceMap": true,

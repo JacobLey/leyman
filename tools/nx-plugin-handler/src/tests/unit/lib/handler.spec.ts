@@ -50,22 +50,17 @@ suite('Handler', () => {
         });
 
         suite('failure', () => {
-            context.test(
-                'Throws error',
-                async ({ handler, errorLogger, mockedHandler }) => {
-                    mockedHandler.stub.rejects(new Error('<ERROR>'));
+            context.test('Throws error', async ({ handler, errorLogger, mockedHandler }) => {
+                mockedHandler.stub.rejects(new Error('<ERROR>'));
 
-                    const handle = handler.handle(mockedHandler.method);
+                const handle = handler.handle(mockedHandler.method);
 
-                    const result = await handle({ foo: 123 }, fakeContext);
+                const result = await handle({ foo: 123 }, fakeContext);
 
-                    expect(result).to.deep.equal({ success: false });
-                    expect(errorLogger.callCount).to.equal(1);
-                    expect(errorLogger.firstCall.args).to.deep.equal([
-                        '<ERROR>',
-                    ]);
-                }
-            );
+                expect(result).to.deep.equal({ success: false });
+                expect(errorLogger.callCount).to.equal(1);
+                expect(errorLogger.firstCall.args).to.deep.equal(['<ERROR>']);
+            });
 
             context.test(
                 'Throws anything but an error',
