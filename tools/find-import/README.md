@@ -4,7 +4,7 @@
 <p>Find and load first instance of js/json in parent directories.</p>
 
 [![npm package](https://badge.fury.io/js/find-import.svg)](https://www.npmjs.com/package/find-import)
-[![License](https://img.shields.io/npm/l/find-import.svg)](https://github.com/JacobLey/leyman/blob/main/common/config/publish/LICENSE)
+[![License](https://img.shields.io/npm/l/find-import.svg)](https://github.com/JacobLey/leyman/blob/main/tools/find-import/LICENSE)
 [![Quality](https://img.shields.io/npms-io/quality-score/find-import.svg)](https://github.com/JacobLey/leyman/blob/main/tools/find-import)
 
 </div>

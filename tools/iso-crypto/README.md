@@ -4,7 +4,7 @@
 <p>Cryptographic methods that work in isomorphic (Browser + NodeJS) environments.</p>
 
 [![npm package](https://badge.fury.io/js/iso-crypto.svg)](https://www.npmjs.com/package/iso-crypto)
-[![License](https://img.shields.io/npm/l/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/common/config/publish/LICENSE)
+[![License](https://img.shields.io/npm/l/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/tools/iso-crypto/LICENSE)
 [![Quality](https://img.shields.io/npms-io/quality-score/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/tools/iso-crypto)
 
 </div>
