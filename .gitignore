@@ -9,4 +9,3 @@
 **/dist
 
 .nx/**
-!.nx/package.json
