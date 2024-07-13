@@ -13,7 +13,12 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["typescript", "references", "pnpm", "dependencies"],
+  "keywords": [
+    "typescript",
+    "references",
+    "pnpm",
+    "dependencies"
+  ],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {
@@ -22,30 +27,30 @@
     }
   },
   "dependencies": {
-    "ajv": "^8.12.0",
+    "ajv": "^8.17.1",
     "ci-info": "^4.0.0",
-    "comment-json": "^4.2.3",
+    "comment-json": "^4.2.4",
     "common-proxy": "workspace:^",
-    "npm-default-import": "npm:default-import@^1.1.5",
-    "npm-format-file": "npm:format-file@^0.0.4",
-    "npm-juniper": "npm:juniper@^1.1.10"
+    "npm-default-import": "npm:default-import@latest",
+    "npm-format-file": "npm:format-file@latest",
+    "npm-juniper": "npm:juniper@latest"
   },
   "optionalDependencies": {
-    "@nx/devkit": "^18.0.8"
+    "@nx/devkit": "^19.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.6.4",
+    "@biomejs/biome": "^1.8.3",
     "@leyman/eslint-config": "workspace:^",
-    "@types/chai": "^4.3.12",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.26",
-    "chai": "^5.1.0",
-    "mocha": "^10.4.0",
-    "npm-load-populate-files": "npm:load-populate-files@^0.0.2",
-    "npm-nx-populate-files": "npm:nx-populate-files@^0.0.3",
-    "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.2",
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.10",
+    "chai": "^5.1.1",
+    "mocha": "^10.6.0",
+    "npm-load-populate-files": "npm:load-populate-files@latest",
+    "npm-nx-populate-files": "npm:nx-populate-files@latest",
+    "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "nx-tsc": "workspace:^",
-    "nyc": "^15.1.0",
-    "typescript": "^5.4.3"
+    "nyc": "^17.0.0",
+    "typescript": "^5.5.3"
   }
 }

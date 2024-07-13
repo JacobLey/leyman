@@ -1,17 +1,20 @@
 project.json
 tsconfig.json
 
-src/**
-!src/executors/update-ts-references/schema.json
+coverage/**
+.c8rc.json
+.eslintcache
+eslint.config.js
 
 dist/tsconfig.tsbuildinfo
 dist/**/*.map
+dist/tests
+
+src/**
+!src/executors/update-ts-references/schema.json
 
 dist/file-content.js
 dist/file-content.d.ts
 
 dist/executors/update-ts-references/schema.js
 dist/executors/update-ts-references/schema.d.ts
-
-.eslintcache
-eslint.config.js

@@ -13,27 +13,31 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["content", "write", "build"],
+  "keywords": [
+    "content",
+    "write",
+    "build"
+  ],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js"
   },
   "dependencies": {
     "default-import": "workspace:^",
-    "npm-parse-cwd": "npm:parse-cwd@^1.0.8",
+    "npm-parse-cwd": "npm:parse-cwd@latest",
     "populate-files": "workspace:^"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.6.4",
+    "@biomejs/biome": "^1.8.3",
     "@leyman/eslint-config": "workspace:^",
-    "@types/chai": "^4.3.12",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.26",
-    "chai": "^5.1.0",
-    "mocha": "^10.4.0",
-    "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.2",
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.10",
+    "chai": "^5.1.1",
+    "mocha": "^10.6.0",
+    "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "nx-tsc": "workspace:^",
-    "nyc": "^15.1.0",
-    "typescript": "^5.4.3"
+    "nyc": "^17.0.0",
+    "typescript": "^5.5.3"
   }
 }

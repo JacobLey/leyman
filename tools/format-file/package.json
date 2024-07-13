@@ -13,7 +13,12 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["biome", "prettier", "format", "api"],
+  "keywords": [
+    "biome",
+    "prettier",
+    "format",
+    "api"
+  ],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js"
@@ -29,25 +34,25 @@
     "@biomejs/biome": "^1.6.4"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.6.4",
+    "@biomejs/biome": "^1.8.3",
     "@leyman/eslint-config": "workspace:^",
-    "@types/chai": "^4.3.14",
+    "@types/chai": "^4.3.16",
     "@types/chai-as-promised": "^7.1.8",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.26",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.10",
     "@types/sinon": "^17.0.3",
     "@types/tmp": "^0.2.6",
     "barrelify": "workspace:^",
-    "c8": "^9.1.0",
-    "chai": "^5.1.0",
+    "c8": "^10.1.2",
+    "chai": "^5.1.1",
     "expect-type": "^0.19.0",
-    "mocha": "^10.4.0",
+    "mocha": "^10.6.0",
     "mocha-hookup": "workspace:^",
     "nx-tsc": "workspace:^",
-    "sinon": "^17.0.1",
+    "sinon": "^18.0.0",
     "sinon-typed-stub": "workspace:^",
     "ts-dedent": "^2.2.0",
-    "tslib": "^2.6.2",
-    "typescript": "^5.4.3"
+    "tslib": "^2.6.3",
+    "typescript": "^5.5.3"
   }
 }

@@ -13,7 +13,12 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["commonjs", "async", "handler", "import"],
+  "keywords": [
+    "commonjs",
+    "async",
+    "handler",
+    "import"
+  ],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js"
@@ -36,20 +41,20 @@
     }
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.6.4",
+    "@biomejs/biome": "^1.8.3",
     "@leyman/eslint-config": "workspace:^",
-    "@types/chai": "^4.3.12",
+    "@types/chai": "^4.3.16",
     "@types/chai-as-promised": "^7.1.8",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.26",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.10",
     "@types/sinon": "^17.0.3",
-    "c8": "^9.1.0",
-    "chai": "^5.1.0",
+    "c8": "^10.1.2",
+    "chai": "^5.1.1",
     "expect-type": "^0.19.0",
-    "mocha": "^10.4.0",
-    "npm-nx-tsc": "npm:nx-tsc@^0.0.5",
-    "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.2",
-    "sinon": "^17.0.1",
-    "typescript": "^5.4.3"
+    "mocha": "^10.6.0",
+    "npm-nx-tsc": "npm:nx-tsc@latest",
+    "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
+    "sinon": "^18.0.0",
+    "typescript": "^5.5.3"
   }
 }

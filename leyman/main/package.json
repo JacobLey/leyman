@@ -16,12 +16,12 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@biomejs/biome": "^1.6.4",
+    "@biomejs/biome": "^1.8.3",
     "@leyman/eslint-config": "workspace:^",
-    "eslint": "^8.57.0",
-    "npm": "^10.5.1",
-    "nx": "18.0.8",
+    "eslint": "^9.7.0",
+    "npm": "^10.8.2",
+    "nx": "19.4.3",
     "nx-lifecycle": "workspace:^",
-    "typescript": "^5.4.3"
+    "typescript": "^5.5.3"
   }
 }

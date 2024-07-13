@@ -3,12 +3,11 @@ tsconfig.json
 
 coverage/**
 .c8rc.json
+.eslintcache
+eslint.config.js
 
 dist/tsconfig.tsbuildinfo
 dist/**/*.map
-dist/tests/**
+dist/tests
 
 src/**
-
-.eslintcache
-eslint.config.js

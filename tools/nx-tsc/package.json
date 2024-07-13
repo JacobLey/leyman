@@ -13,7 +13,12 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["nx", "tsc", "typescript", "build"],
+  "keywords": [
+    "nx",
+    "tsc",
+    "typescript",
+    "build"
+  ],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {
@@ -27,26 +32,26 @@
     "nx-plugin-handler": "workspace:^"
   },
   "optionalDependencies": {
-    "@nx/devkit": "^18.0.8",
-    "npm-juniper": "npm:juniper@^1.1.10"
+    "@nx/devkit": "^19.4.3",
+    "npm-juniper": "npm:juniper@latest"
   },
   "peerDependencies": {
     "typescript": "^5.4.3"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.6.4",
+    "@biomejs/biome": "^1.8.3",
     "@leyman/eslint-config": "workspace:^",
-    "@swc/core": "^1.4.13",
-    "@types/chai": "^4.3.12",
-    "@types/mocha": "^10.0.6",
-    "@types/node": "^20.11.26",
-    "chai": "^5.1.0",
-    "mocha": "^10.4.0",
-    "npm-load-populate-files": "npm:load-populate-files@^0.0.2",
-    "npm-nx-populate-files": "npm:nx-populate-files@^0.0.3",
-    "npm-nx-update-ts-references": "npm:nx-update-ts-references@^0.0.2",
-    "npm-nx-tsc": "npm:nx-tsc@^0.0.5",
-    "nyc": "^15.1.0",
-    "typescript": "^5.4.3"
+    "@swc/core": "1.6.13",
+    "@types/chai": "^4.3.16",
+    "@types/mocha": "^10.0.7",
+    "@types/node": "^20.14.10",
+    "chai": "^5.1.1",
+    "mocha": "^10.6.0",
+    "npm-load-populate-files": "npm:load-populate-files@latest",
+    "npm-nx-populate-files": "npm:nx-populate-files@latest",
+    "npm-nx-tsc": "npm:nx-tsc@latest",
+    "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
+    "nyc": "^17.0.0",
+    "typescript": "^5.5.3"
   }
 }

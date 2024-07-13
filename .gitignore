@@ -4,9 +4,9 @@
 **/node_modules
 .pnpm-store
 
-/**/.eslintcache
-/**/coverage
-/**/dist
+**/.eslintcache
+**/coverage
+**/dist
 
 .nx/**
 !.nx/package.json

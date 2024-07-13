@@ -1,9 +1,14 @@
 project.json
 tsconfig.json
 
+coverage/**
+.c8rc.json
+.eslintcache
+eslint.config.js
+
 dist/tsconfig.tsbuildinfo
 dist/**/*.map
-dist/**/*.spec.*js
+dist/tests
 
 src/**
 !src/executors/lifecycle/schema.json

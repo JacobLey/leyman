@@ -1,18 +1,20 @@
 project.json
 tsconfig.json
 
+coverage/**
+.c8rc.json
+.eslintcache
+eslint.config.js
+
 dist/tsconfig.tsbuildinfo
 dist/**/*.map
+dist/tests
 
 src/**
+!src/executors/populate-files/schema.json
 
 dist/file-content.js
 dist/file-content.d.ts
 
 dist/executors/populate-files/schema.js
 dist/executors/populate-files/schema.d.ts
-
-!src/executors/populate-files/schema.json
-
-.eslintcache
-eslint.config.js
