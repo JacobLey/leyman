@@ -1,6 +1,5 @@
 import type { readFile, writeFile } from 'node:fs/promises';
-import { expect } from 'chai';
-import { createStubInstance, define, fake, match } from 'sinon';
+import { createStubInstance, define, fake, match, verifyAndRestore } from 'sinon';
 import type { FilesFormatter } from 'format-file';
 import { beforeEach, suite } from 'mocha-hookup';
 import { mockMethod, stubMethod } from 'sinon-typed-stub';
@@ -10,6 +9,7 @@ import { type NormalizedOptions, Normalizer } from '../../../../executors/lifecy
 import type { NxAndProjectJsonProcessor } from '../../../../executors/lifecycle/processor.js';
 import type { LifecycleOptions } from '../../../../executors/lifecycle/schema.js';
 import type { SimpleExecutorContext } from '../../../../executors/lifecycle/types.js';
+import { expect } from '../../../chai-hooks.js';
 
 suite('lifecycle', () => {
     const mockOptions = {} as LifecycleOptions;
@@ -50,6 +50,10 @@ suite('lifecycle', () => {
                 }
             ),
         };
+    });
+
+    stubs.afterEach(() => {
+        verifyAndRestore();
     });
 
     const fakeNxJson = { nxJson: true };

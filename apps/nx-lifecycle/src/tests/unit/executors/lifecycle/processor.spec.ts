@@ -1,6 +1,6 @@
-import { expect } from 'chai';
 import { suite, test } from 'mocha-hookup';
 import * as Processor from '../../../../executors/lifecycle/processor.js';
+import { expect } from '../../../chai-hooks.js';
 
 /**
  * Ensure inputs are never modified.

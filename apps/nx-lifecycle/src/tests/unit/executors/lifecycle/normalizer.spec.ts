@@ -1,6 +1,6 @@
-import { expect } from 'chai';
 import { suite, test } from 'mocha-hookup';
 import { Normalizer } from '../../../../executors/lifecycle/normalizer.js';
+import { expect } from '../../../chai-hooks.js';
 
 suite('Normalizer', () => {
     suite('normalizeOptions', () => {
