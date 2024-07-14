@@ -3,7 +3,7 @@
   "version": "0.0.3",
   "description": "Dynamically populate file content as an nx executor",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,13 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "nx",
-    "executor",
-    "content",
-    "write",
-    "build"
-  ],
+  "keywords": ["nx", "executor", "content", "write", "build"],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {

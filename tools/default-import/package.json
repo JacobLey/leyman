@@ -3,7 +3,7 @@
   "version": "1.1.5",
   "description": "Properly handle CJS imports in ESM.",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,13 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "default",
-    "import",
-    "esm",
-    "cjs",
-    "module"
-  ],
+  "keywords": ["default", "import", "esm", "cjs", "module"],
   "sideEffects": false,
   "types": "./dist/default-import.js",
   "exports": {

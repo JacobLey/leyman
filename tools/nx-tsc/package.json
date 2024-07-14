@@ -3,7 +3,7 @@
   "version": "0.0.5",
   "description": "Build typescript package as nx executor",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,12 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "nx",
-    "tsc",
-    "typescript",
-    "build"
-  ],
+  "keywords": ["nx", "tsc", "typescript", "build"],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {

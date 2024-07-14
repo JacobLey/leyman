@@ -3,7 +3,7 @@
   "version": "2.1.1",
   "description": "Modular control for entry script execution.",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,11 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "executable",
-    "entry point",
-    "require main"
-  ],
+  "keywords": ["executable", "entry point", "require main"],
   "sideEffects": false,
   "types": "./dist/index.js",
   "exports": {

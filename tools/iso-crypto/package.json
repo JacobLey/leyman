@@ -3,7 +3,7 @@
   "version": "1.1.0",
   "description": "Isomorphic cryptographic functions for browser and NodeJS.",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",

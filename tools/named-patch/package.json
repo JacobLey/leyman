@@ -3,7 +3,7 @@
   "version": "1.0.8",
   "description": "Higher order function for patching named export functions.",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,12 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "higher order function",
-    "named export",
-    "patch",
-    "stub"
-  ],
+  "keywords": ["higher order function", "named export", "patch", "stub"],
   "sideEffects": false,
   "exports": {
     ".": {

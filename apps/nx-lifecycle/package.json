@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Keep high level nx lifecycle targets in sync",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,14 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "nx",
-    "lifecycle",
-    "build",
-    "test",
-    "format",
-    "lint"
-  ],
+  "keywords": ["nx", "lifecycle", "build", "test", "format", "lint"],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {

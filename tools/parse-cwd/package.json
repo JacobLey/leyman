@@ -3,7 +3,7 @@
   "version": "1.0.8",
   "description": "Convert relative path or URL to full path",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,11 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "cwd",
-    "resolve",
-    "file path"
-  ],
+  "keywords": ["cwd", "resolve", "file path"],
   "sideEffects": false,
   "types": "./dist/parse-cwd.js",
   "exports": {

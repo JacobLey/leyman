@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Utility methods to better typed sinon stubs",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,11 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "sinon",
-    "stub",
-    "typed"
-  ],
+  "keywords": ["sinon", "stub", "typed"],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js"

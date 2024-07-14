@@ -3,7 +3,7 @@
   "version": "1.0.6",
   "description": "Typescript + ESM version of punycode.js",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,12 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "punycode",
-    "esm",
-    "encode",
-    "decode"
-  ],
+  "keywords": ["punycode", "esm", "encode", "decode"],
   "sideEffects": false,
   "types": "./dist/punycode.js",
   "exports": {

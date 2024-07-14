@@ -3,7 +3,7 @@
   "version": "1.1.8",
   "description": "Auto-generate TS barrel files.",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,10 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "barrel",
-    "index"
-  ],
+  "keywords": ["barrel", "index"],
   "sideEffects": false,
   "types": "./dist/barrelify.js",
   "exports": {

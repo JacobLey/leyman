@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Type safe dependency injection",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,12 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "typescript",
-    "dependency injection",
-    "inversion of control",
-    "type-safe"
-  ],
+  "keywords": ["typescript", "dependency injection", "inversion of control", "type-safe"],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js"

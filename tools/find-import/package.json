@@ -3,7 +3,7 @@
   "version": "1.0.6",
   "description": "Find and load first instance of js/json in parent directories.",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,11 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "first",
-    "parent",
-    "load"
-  ],
+  "keywords": ["first", "parent", "load"],
   "sideEffects": false,
   "types": "./dist/find-import.js",
   "exports": {

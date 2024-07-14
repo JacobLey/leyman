@@ -3,7 +3,7 @@
   "version": "0.0.4",
   "description": "Utility API to format files via biome",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,12 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "biome",
-    "prettier",
-    "format",
-    "api"
-  ],
+  "keywords": ["biome", "prettier", "format", "api"],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js"

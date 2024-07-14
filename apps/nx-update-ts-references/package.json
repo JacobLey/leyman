@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "Update references in tsconfig based on local dependencies",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,12 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "typescript",
-    "references",
-    "pnpm",
-    "dependencies"
-  ],
+  "keywords": ["typescript", "references", "pnpm", "dependencies"],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {

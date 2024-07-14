@@ -3,7 +3,7 @@
   "version": "0.0.2",
   "description": "Load and dynamically populate file content",
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "type": "module",
   "author": "JacobLey",
@@ -13,11 +13,7 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": [
-    "content",
-    "write",
-    "build"
-  ],
+  "keywords": ["content", "write", "build"],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js"
