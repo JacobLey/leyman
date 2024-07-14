@@ -22,7 +22,7 @@
       "quoteProperties": "asNeeded",
       "quoteStyle": "single",
       "semicolons": "always",
-      "trailingComma": "es5"
+      "trailingCommas": "es5"
     },
     "parser": {
       "unsafeParameterDecoratorsEnabled": false
