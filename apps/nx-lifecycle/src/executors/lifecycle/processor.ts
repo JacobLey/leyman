@@ -10,7 +10,7 @@ import {
 import { NOOP_EXECUTOR } from './constants.js';
 import type { NormalizedOptions } from './normalizer.js';
 
-type ProcessorOptions = Pick<NormalizedOptions, 'stages' | 'targets'>;
+type ProcessorOptions = Pick<NormalizedOptions, 'bindings' | 'stages'>;
 
 type LifecycleTarget = {
     name: string;
@@ -82,7 +82,7 @@ const registerTargets = ({
     options: ProcessorOptions;
 }): RegisteredTargets => {
     const registeredTargets: RegisteredTargets = new Map();
-    for (const [targetName, hookName] of Object.entries(options.targets)) {
+    for (const [targetName, hookName] of Object.entries(options.bindings)) {
         if (lifecycleTargets.has(targetName)) {
             throw new Error(`Overlap in lifecycle hook and target: ${targetName}`);
         }

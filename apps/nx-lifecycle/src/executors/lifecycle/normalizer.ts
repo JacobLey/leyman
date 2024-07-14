@@ -8,7 +8,7 @@ export interface NormalizedOptions {
     nxJsonPath: string;
     packageJsonPaths: { name: string; path: string }[];
     stages: NonNullable<LifecycleOptions['stages']>;
-    targets: NonNullable<LifecycleOptions['targets']>;
+    bindings: NonNullable<LifecycleOptions['bindings']>;
 }
 
 /**
@@ -36,7 +36,7 @@ export class Normalizer {
                 })
             ),
             stages: options.stages ?? {},
-            targets: options.targets ?? {},
+            bindings: options.bindings ?? {},
         };
     }
 }

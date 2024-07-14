@@ -62,7 +62,7 @@ suite('Processor', () => {
                                 dependsOn: ['standalone'],
                             },
                         },
-                        targets: {
+                        bindings: {
                             withStage: 'standalone',
                             withStage2: 'standalone',
                         },
@@ -168,7 +168,7 @@ suite('Processor', () => {
                                 dependsOn: ['firstStage'],
                             },
                         },
-                        targets: {
+                        bindings: {
                             withStage1: 'firstStage:first',
                             withStage2: 'firstStage:second',
                             withSecondStage1: 'secondStage:only',
@@ -257,7 +257,7 @@ suite('Processor', () => {
                                 hooks: ['newHook'],
                             },
                         },
-                        targets: {
+                        bindings: {
                             myTarget: 'newStage:newHook',
                         },
                     },
@@ -346,7 +346,7 @@ suite('Processor', () => {
                     params: {
                         options: {
                             stages: {},
-                            targets: {},
+                            bindings: {},
                         },
                         nxJson: {
                             foo: 'bar',
@@ -379,7 +379,7 @@ suite('Processor', () => {
                                     dependsOn: [],
                                 },
                             },
-                            targets: {},
+                            bindings: {},
                         },
                         nxJson: {
                             foo: 'bar',
@@ -429,7 +429,7 @@ suite('Processor', () => {
                     params: {
                         options: {
                             stages: {},
-                            targets: {},
+                            bindings: {},
                         },
                         nxJson: {
                             foo: 'bar',
@@ -462,7 +462,7 @@ suite('Processor', () => {
                             stages: {
                                 standalone: {},
                             },
-                            targets: {
+                            bindings: {
                                 withHook: 'standalone',
                             },
                         },
@@ -567,7 +567,7 @@ suite('Processor', () => {
                                 stages: {
                                     overlap: {},
                                 },
-                                targets: {},
+                                bindings: {},
                             },
                             nxJson: {
                                 targetDefaults: {
@@ -588,7 +588,7 @@ suite('Processor', () => {
                                 stages: {
                                     overlap: {},
                                 },
-                                targets: {
+                                bindings: {
                                     overlap: 'overlap',
                                 },
                             },
@@ -607,7 +607,7 @@ suite('Processor', () => {
                                 stages: {
                                     myStage: {},
                                 },
-                                targets: {
+                                bindings: {
                                     myTarget: 'doesNotExist',
                                 },
                             },
@@ -626,7 +626,7 @@ suite('Processor', () => {
                                 stages: {
                                     myStage: {},
                                 },
-                                targets: {
+                                bindings: {
                                     myTarget: 'myStage:_',
                                 },
                             },
@@ -647,7 +647,7 @@ suite('Processor', () => {
                                         hooks: ['hookName'],
                                     },
                                 },
-                                targets: {
+                                bindings: {
                                     myTarget: 'myStage',
                                 },
                             },
@@ -671,7 +671,7 @@ suite('Processor', () => {
                                         dependsOn: ['firstStage:_'],
                                     },
                                 },
-                                targets: {},
+                                bindings: {},
                             },
                             nxJson: {},
                             projectJsons: [{}],

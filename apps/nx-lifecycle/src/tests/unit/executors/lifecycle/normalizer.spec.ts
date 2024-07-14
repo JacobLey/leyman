@@ -15,7 +15,7 @@ suite('Normalizer', () => {
                         stages: {
                             myStage: {},
                         },
-                        targets: {
+                        bindings: {
                             myTarget: 'myStage',
                         },
                     },

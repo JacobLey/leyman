@@ -16,7 +16,7 @@ suite('lifecycle', () => {
     const mockContext = {} as SimpleExecutorContext;
 
     const fakeStages: NormalizedOptions['stages'] = {};
-    const fakeTargets: NormalizedOptions['targets'] = {};
+    const fakeBindings: NormalizedOptions['bindings'] = {};
 
     const stubs = beforeEach(() => {
         const stubbedNormalizer = createStubInstance(Normalizer);
@@ -87,7 +87,7 @@ suite('lifecycle', () => {
                     { name: '<bar>', path: '<bar-path>' },
                 ],
                 stages: fakeStages,
-                targets: fakeTargets,
+                bindings: fakeBindings,
             };
 
             ctx.stubbedNormalizer.normalizeOptions
@@ -154,7 +154,7 @@ suite('lifecycle', () => {
                     { name: '<bar>', path: '<bar-path>' },
                 ],
                 stages: fakeStages,
-                targets: fakeTargets,
+                bindings: fakeBindings,
             };
 
             ctx.stubbedNormalizer.normalizeOptions
@@ -192,7 +192,7 @@ suite('lifecycle', () => {
                     { name: '<bar>', path: '<bar-path>' },
                 ],
                 stages: fakeStages,
-                targets: fakeTargets,
+                bindings: fakeBindings,
             };
 
             ctx.stubbedNormalizer.normalizeOptions
@@ -234,7 +234,7 @@ suite('lifecycle', () => {
                     { name: '<bar>', path: '<bar-path>' },
                 ],
                 stages: fakeStages,
-                targets: fakeTargets,
+                bindings: fakeBindings,
             };
 
             ctx.stubbedNormalizer.normalizeOptions
@@ -281,7 +281,7 @@ suite('lifecycle', () => {
                     { name: '<bar>', path: '<bar-path>' },
                 ],
                 stages: fakeStages,
-                targets: fakeTargets,
+                bindings: fakeBindings,
             };
 
             ctx.stubbedNormalizer.normalizeOptions
@@ -312,7 +312,7 @@ suite('lifecycle', () => {
                     { name: '<bar>', path: '<bar-path>' },
                 ],
                 stages: fakeStages,
-                targets: fakeTargets,
+                bindings: fakeBindings,
             };
 
             ctx.stubbedNormalizer.normalizeOptions

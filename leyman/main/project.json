@@ -25,7 +25,7 @@
             "dependsOn": ["analyze", "build"]
           }
         },
-        "targets": {
+        "bindings": {
           "eslint": "analyze:lint",
           "biome": "analyze:format",
           "barrelify": "build:pre",
