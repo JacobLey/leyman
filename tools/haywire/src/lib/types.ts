@@ -63,8 +63,8 @@ export type LiteralStringType<T extends string | symbol> = ToTuple<T> extends {
         ? LiteralStringInput
         : [T] extends [symbol]
           ? symbol extends T
-                ? LiteralStringInput
-                : []
+              ? LiteralStringInput
+              : []
           : []
     : LiteralStringInput;
 

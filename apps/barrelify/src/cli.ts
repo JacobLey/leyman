@@ -51,9 +51,7 @@ export default class BarrelCli extends EntryScript {
      * Sets high level Yargs settings. Command/options logic is implemented in individual command modules.
      */
     public override async start(): Promise<void> {
-        const pkg = await findImport<{
-            version: string;
-        }>('package.json', {
+        const pkg = await findImport('package.json', {
             cwd: import.meta.url,
         });
 
@@ -74,7 +72,7 @@ export default class BarrelCli extends EntryScript {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(pkg!.content.version);
+            .version((pkg!.content as { version: string }).version);
 
         for (const command of Object.values(Commands)) {
             const typedCommand: typeof command extends CommandModule<infer T, any>

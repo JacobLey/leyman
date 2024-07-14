@@ -199,12 +199,10 @@ export const wrapPerTestHookWithContext = <
 };
 
 export interface GenericContextualHook {
-    <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (this: MochaContext, ctx: object, done: Done) => AdditionalContext
-    ): object;
-    <AdditionalContext extends AllowableAdditionalContext>(
+    (fn: (this: MochaContext, ctx: object, done: Done) => AllowableAdditionalContext): object;
+    (
         name: string,
-        fn: (this: MochaContext, ctx: object, done: Done) => AdditionalContext
+        fn: (this: MochaContext, ctx: object, done: Done) => AllowableAdditionalContext
     ): object;
 }
 
@@ -218,11 +216,11 @@ export interface GenericContextualHook {
  * @returns hook function that no longer passes a context, but can still generate context for chained methods
  */
 export const wrapHookWithEntrypoint =
-    <ContextualHook extends GenericContextualHook>(
+    (
         /**
          * Hook that contains "propagated" empty context.
          */
-        contextualHook: ContextualHook
+        contextualHook: GenericContextualHook
     ): ((
         ...args:
             | [(this: MochaContext, done: Done) => AllowableAdditionalContext]

@@ -1,4 +1,4 @@
-import { dirname, isAbsolute, resolve } from 'node:path';
+import Path from 'node:path';
 import ts from 'typescript';
 import { identifier } from 'haywire';
 import type { NormalizedOptions } from './normalizer.js';
@@ -31,7 +31,7 @@ const assertIsAbsolutePath: AbsolutePathAsserter = (
     if (!dir) {
         throw new Error(`Setting \`${name}\` is not provided`);
     }
-    if (!isAbsolute(dir)) {
+    if (!Path.isAbsolute(dir)) {
         throw new Error(`Setting \`${name}\` is not an absolute path: \`${dir}\``);
     }
 };
@@ -56,14 +56,14 @@ export const configLoaderProvider = (
         const parsed = parseJsonConfigFileContent(
             configResponse.config,
             ts.sys,
-            dirname(tscOptions.tsConfig)
+            Path.dirname(tscOptions.tsConfig)
         );
         if (parsed.errors.length > 0) {
             throw new Error(parsed.errors.map(err => flattenMessage(err.messageText)).join('\n'));
         }
 
         const options = {
-            typeRoots: [resolve(tscOptions.projectDir, 'node_modules', '@types')],
+            typeRoots: [Path.resolve(tscOptions.projectDir, 'node_modules', '@types')],
             ...defaultCompilerOptions,
             ...parsed.options,
         };

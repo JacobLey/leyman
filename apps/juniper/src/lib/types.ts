@@ -62,6 +62,10 @@ export type IsUnknown<T> = [unknown] extends [T] ? Not<IsAny<T>> : false;
  * Generally used for "prettifying" types, not actual logic changing.
  *
  * e.g. AbstractClean<number, number & 123> => 123
+ *
+ * @template Base Base type to strip out
+ * @template Check Type to be stripped of Base
+ * @template Stripped convenience value for caching stripped, do not provide
  */
 export type AbstractClean<
     Base,
@@ -80,6 +84,9 @@ export type AbstractStrip<Base, ToStrip, Replacement = never> = Base extends inf
  * `true` = add `| null`. Calling `nullable()` is NOOP.
  * `false` = Do not add `| null`. Calling `nullable()` should append `| null`.
  * `boolean` = Do not add `| null`. Calling `nullable()` should not append `| null`.
+ *
+ * @template T value to have `| null` attached
+ * @template N if `true` literal, attach null
  */
 export type Nullable<T, N extends boolean> = [N] extends [true] ? T | null : T;
 
@@ -101,14 +108,14 @@ export type ToBaseType<T> = T extends never
     : T extends boolean
       ? boolean
       : T extends number
-          ? number
-          : T extends string
-              ? string
-              : T extends readonly unknown[]
-                  ? ToBaseType<T[number]>[]
-                  : T extends Record<string, unknown>
-                      ? Record<string, unknown>
-                      : T;
+        ? number
+        : T extends string
+          ? string
+          : T extends readonly unknown[]
+            ? ToBaseType<T[number]>[]
+            : T extends Record<string, unknown>
+              ? Record<string, unknown>
+              : T;
 
 declare const reservedWords: [
     // Generic

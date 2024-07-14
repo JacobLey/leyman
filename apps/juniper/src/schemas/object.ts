@@ -85,7 +85,7 @@ type ObjectType<
             EmptyObject,
             EmptyObject
         >,
-        // eslint-disable-next-line @typescript-eslint/ban-types
+        // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-empty-object-type
         {},
         EmptyObject
     >,
@@ -133,7 +133,7 @@ type AnyObjectSchema = ObjectSchema<any, any, any, any, unknown, boolean>;
  */
 export class ObjectSchema<
     // Properties
-    // eslint-disable-next-line @typescript-eslint/ban-types
+    // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-empty-object-type
     P extends BaseParameterSchemaObject = {},
     // Required
     R extends StripString<Extract<keyof P, string>> = never,
@@ -285,7 +285,7 @@ export class ObjectSchema<
      * @returns new object schema
      */
     public static override create<
-        // eslint-disable-next-line @typescript-eslint/ban-types
+        // eslint-disable-next-line @typescript-eslint/ban-types, @typescript-eslint/no-empty-object-type
         P2 extends BaseParameterSchemaObject = {},
         R2 extends StripString<Extract<keyof P2, string>> = never,
         A2 extends boolean | AbstractSchema<SchemaGenerics<unknown>> = boolean,

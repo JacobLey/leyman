@@ -1,5 +1,5 @@
 import { readFile, writeFile } from 'node:fs/promises';
-import { join, relative } from 'node:path';
+import Path from 'node:path';
 import type { ExecutorContext } from '@nx/devkit';
 import { isCI } from 'ci-info';
 import commentJson from 'comment-json';
@@ -20,7 +20,7 @@ const normalizeOptions = (
     context: ExecutorContext
 ): NormalizedOptions => {
     const projectName = context.projectName!;
-    const packageRoot = join(
+    const packageRoot = Path.join(
         context.root,
         context.projectsConfigurations!.projects[projectName]!.root
     );
@@ -29,13 +29,13 @@ const normalizeOptions = (
         check: options.check ?? isCI,
         dryRun: options.dryRun ?? false,
         packageRoot,
-        tsConfig: join(packageRoot, 'tsconfig.json'),
+        tsConfig: Path.join(packageRoot, 'tsconfig.json'),
         dependencies: context
             .projectGraph!.dependencies[projectName]!.filter(
                 dependency => context.projectsConfigurations!.projects[dependency.target]
             )
             .map(dependency =>
-                join(
+                Path.join(
                     context.root,
                     context.projectsConfigurations!.projects[dependency.target]!.root,
                     'tsconfig.json'
@@ -80,10 +80,10 @@ const safeReadTsConfig = async (path: string): Promise<TsConfigFile | null> => {
  * @param context - nx workspace context
  * @returns promise of completion
  */
-export default async (
+export default async function updateTsReferences(
     options: UpdateTsReferencesOptions,
     context: ExecutorContext
-): Promise<{ success: boolean }> => {
+): Promise<{ success: boolean }> {
     const normalized = normalizeOptions(options, context);
 
     const [packageTsConfig, ...dependencyTsConfigs] = await Promise.all([
@@ -98,7 +98,7 @@ export default async (
     packageTsConfig.json.references = foundDependencies
         .sort((a, b) => a.path.localeCompare(b.path))
         .map(({ path }) => ({
-            path: relative(normalized.packageRoot, join(path, '..')),
+            path: Path.relative(normalized.packageRoot, Path.join(path, '..')),
         }));
 
     const dataToWrite = await formatText(commentJson.stringify(packageTsConfig.json, null, 2), {
@@ -119,4 +119,4 @@ export default async (
     }
 
     return { success: true };
-};
+}

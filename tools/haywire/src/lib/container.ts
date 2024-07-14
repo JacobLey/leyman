@@ -1054,9 +1054,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                                   relevantCache.delete(binding);
                               }
                           }
-                        : // https://github.com/sindresorhus/p-defer/pull/9
-
-                          deferred.reject,
+                        : deferred.reject,
                 });
                 parameters.push(deferred.promise);
                 continue;

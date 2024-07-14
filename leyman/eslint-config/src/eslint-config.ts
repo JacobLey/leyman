@@ -140,7 +140,7 @@ export const baseNamingConvention = [
  * @param params.packageJson - Loaded `package.json` file
  * @returns Generated flat config for most rules and plugins. Can be extended as necessary via normal Flat Config extension.
  */
-export default ({
+export default function makeEslintConfigForPackage({
     configUrl,
     packageJson,
 }: {
@@ -152,7 +152,7 @@ export default ({
      * Loaded `package.json` file
      */
     packageJson: unknown;
-}): Linter.FlatConfig[] => {
+}): Linter.FlatConfig[] {
     assertIsPackageJson(packageJson);
 
     const projectUrl = Path.dirname(fileURLToPath(configUrl));
@@ -212,7 +212,7 @@ export default ({
                     {
                         ignoreConsecutiveComments: true,
                         ignoreInlineComments: true,
-                        ignorePattern: '\\w+:',
+                        ignorePattern: String.raw`\w+:`,
                     },
                 ],
                 'class-methods-use-this': 'off',
@@ -510,7 +510,7 @@ export default ({
                         'newlines-between': 'never',
                         pathGroups: [
                             {
-                                pattern: '\\#*',
+                                pattern: String.raw`\#*`,
                                 group: 'internal',
                                 position: 'after',
                             },
@@ -531,6 +531,7 @@ export default ({
                         disableMissingParamChecks: true,
                     },
                 ],
+                'jsdoc/convert-to-jsdoc-comments': 'off',
                 'jsdoc/match-name': 'off',
                 'jsdoc/no-defaults': 'off',
                 'jsdoc/no-missing-syntax': 'off',
@@ -625,6 +626,12 @@ export default ({
                 'n/no-sync': ['error', { allowAtRootLevel: true }],
                 'n/no-unpublished-import': 'off',
                 'n/no-unpublished-require': 'off',
+                'n/no-unsupported-features/node-builtins': [
+                    'error',
+                    {
+                        allowExperimental: true,
+                    },
+                ],
 
                 // React
                 ...nonDeprecatedRules('react', reactPlugin),
@@ -820,4 +827,4 @@ export default ({
         // Disable all formatting rules
         prettierConfig as unknown as Linter.FlatConfig,
     ] satisfies Linter.FlatConfig[];
-};
+}

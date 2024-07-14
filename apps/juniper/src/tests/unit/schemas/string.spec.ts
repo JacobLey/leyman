@@ -77,10 +77,10 @@ suite('StringSchema', () => {
                         pattern: 'f$',
                     },
                     {
-                        pattern: '\\$c',
+                        pattern: String.raw`\$c`,
                     },
                     {
-                        pattern: 'd\\^',
+                        pattern: String.raw`d\^`,
                     },
                 ],
             });

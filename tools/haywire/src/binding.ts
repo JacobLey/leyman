@@ -36,7 +36,7 @@ interface Bind {
         clazz: Constructor
     ): BindingBuilder<ClassToConstructable<Constructor>>;
 }
-export const bind = (<OutputId extends GenericHaystackId>(outputIdentifier: OutputId) =>
+export const bind = ((outputIdentifier: GenericHaystackId) =>
     new BindingBuilder(
         unsafeIdentifier(outputIdentifier).supplier(false).lateBinding(false)
     )) as Bind;

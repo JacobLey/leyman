@@ -21,7 +21,7 @@ const isInside = (parent: string, target: string): boolean =>
  * @param [options.startAt] - top-most directory for searches
  * @returns filePath + content pair if found, null if none found
  */
-export const findImport = async <T>(
+export const findImport = async (
     fileName: string | string[],
     options: {
         cwd?: Directory;
@@ -30,7 +30,7 @@ export const findImport = async <T>(
     } = {}
 ): Promise<{
     filePath: string;
-    content: T;
+    content: unknown;
 } | null> => {
     const fileNames = Array.isArray(fileName) ? fileName : [fileName];
 
@@ -61,18 +61,16 @@ export const findImport = async <T>(
 
                 // In future could parallel `import` json (once experimental warnings disabled)
                 if (file.endsWith('.json')) {
-                    // eslint-disable-next-line import/no-dynamic-require
-                    const json = require(filePath) as T;
                     return {
                         filePath,
-                        content: json,
+                        // eslint-disable-next-line import/no-dynamic-require
+                        content: require(filePath),
                     };
                 }
 
-                const js = (await import(filePath)) as T;
                 return {
                     filePath,
-                    content: js,
+                    content: await import(filePath),
                 };
             } catch {}
         }

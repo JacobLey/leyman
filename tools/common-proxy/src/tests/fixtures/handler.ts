@@ -1,7 +1,7 @@
 /**
  * @param value
  */
-export default (value: [number]): { num: number } => {
+export default function wrapNum(value: [number]): { num: number } {
     const [num] = value;
     return { num };
-};
+}

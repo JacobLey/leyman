@@ -143,7 +143,7 @@ export class StaticEmitter<
      * @param eventName - event name used as key
      * @returns EventTarget compliant event name
      */
-    #getEventName<K extends Types.CustomEventList<this>>(eventName: K): string {
+    #getEventName(eventName: Types.CustomEventList<this>): string {
         if (typeof eventName === 'string') {
             return eventName;
         }

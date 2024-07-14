@@ -1,5 +1,5 @@
 import { mkdir, writeFile } from 'node:fs/promises';
-import { dirname } from 'node:path';
+import Path from 'node:path';
 import { areUint8ArraysEqual } from 'uint8array-extras';
 import { loadRawFile } from './loader.js';
 import type {
@@ -29,7 +29,7 @@ const createPathAndWrite = async ({
         return;
     }
 
-    await mkdir(dirname(filePath), {
+    await mkdir(Path.dirname(filePath), {
         recursive: true,
     });
 

@@ -5,7 +5,7 @@ import * as Types from '../types.js';
  */
 export declare class StaticEventTarget<InterfaceEvents extends Types.EventDict = Types.EmptyObject>
     extends EventTarget
-    implements Types.IEmitter
+    implements Types.IEmitter<InterfaceEvents>
 {
     /**
      * Child classes _should_ declare types using this property.

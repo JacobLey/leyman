@@ -1,5 +1,5 @@
 import type fs from 'node:fs/promises';
-import { join, resolve } from 'node:path';
+import Path from 'node:path';
 import type { ExecutorContext } from '@nx/devkit';
 import { identifier } from 'haywire';
 import type { BuildOptions } from './schema.js';
@@ -25,17 +25,17 @@ const isPackageJson = (content: unknown): content is PackageJson =>
 export const normalizeOptionsProvider =
     (readFile: typeof fs.readFile): NormalizeOptions =>
     async (options, context) => {
-        const projectDir = resolve(
+        const projectDir = Path.resolve(
             context.root,
             context.projectsConfigurations!.projects[context.projectName!]!.root
         );
 
-        const file = await readFile(join(projectDir, 'package.json'), 'utf8');
+        const file = await readFile(Path.join(projectDir, 'package.json'), 'utf8');
 
         const rawPackageJson: unknown = JSON.parse(file);
         if (isPackageJson(rawPackageJson)) {
             return {
-                tsConfig: resolve(context.root, options.tsConfig),
+                tsConfig: Path.resolve(context.root, options.tsConfig),
                 projectDir,
                 isModule: rawPackageJson.type === 'module',
             };

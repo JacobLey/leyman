@@ -84,7 +84,7 @@ suite('findImport', () => {
     });
 
     test('Load json', async () => {
-        const found = await FindImport.findImport<{ kind: string }>(['root.json', 'sub.json'], {
+        const found = await FindImport.findImport(['root.json', 'sub.json'], {
             cwd: Path.join(originalDataDir, 'sub'),
         });
 
@@ -94,10 +94,6 @@ suite('findImport', () => {
                 kind: 'root-json',
             },
         });
-        expectTypeOf(found).toEqualTypeOf<{
-            filePath: string;
-            content: { kind: string };
-        } | null>();
     });
 
     test('Not found', async () => {

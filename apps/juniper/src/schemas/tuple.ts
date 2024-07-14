@@ -8,8 +8,10 @@ import {
     prefixItemsSym,
 } from './array.js';
 
-interface TupleParams<T, P extends any[], C extends P[number], M, N extends boolean>
-    extends Omit<ArrayParams<T, P, C, M, N>, 'items' | 'maxItems' | 'minItems'> {}
+type TupleParams<T, P extends any[], C extends P[number], M, N extends boolean> = Omit<
+    ArrayParams<T, P, C, M, N>,
+    'items' | 'maxItems' | 'minItems'
+>;
 
 type AnyTupleSchema = TupleSchema<never, any[], any, unknown, boolean>;
 

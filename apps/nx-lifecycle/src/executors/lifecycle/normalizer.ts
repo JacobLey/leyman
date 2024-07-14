@@ -1,4 +1,4 @@
-import { join } from 'node:path';
+import Path from 'node:path';
 import type { LifecycleOptions } from './schema.js';
 import type { SimpleExecutorContext } from './types.js';
 
@@ -28,11 +28,11 @@ export class Normalizer {
         return {
             check: options.check ?? this.#isCI,
             dryRun: options.dryRun ?? false,
-            nxJsonPath: join(context.root, 'nx.json'),
+            nxJsonPath: Path.join(context.root, 'nx.json'),
             packageJsonPaths: Object.values(context.projectsConfigurations!.projects).map(
                 projectConfig => ({
                     name: projectConfig.name!,
-                    path: join(context.root, projectConfig.root, 'project.json'),
+                    path: Path.join(context.root, projectConfig.root, 'project.json'),
                 })
             ),
             stages: options.stages ?? {},

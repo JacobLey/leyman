@@ -1,5 +1,5 @@
 import type fs from 'node:fs/promises';
-import { basename, dirname, join, relative } from 'node:path';
+import Path from 'node:path';
 import type swc from '@swc/core';
 import type ts from 'typescript';
 import { identifier } from 'haywire';
@@ -43,17 +43,17 @@ interface OutputFiles {
     };
 }
 const getOutputtedFiles = (filename: string, settings: TsConfigSettings): OutputFiles => {
-    const relativePath = relative(settings.rootDir, filename);
+    const relativePath = Path.relative(settings.rootDir, filename);
 
     // Remove the `x` from jsx file
-    const outputTypeName = basename(filename).replace(/\.[cm]?tsx$/u, val => val.slice(0, -1));
+    const outputTypeName = Path.basename(filename).replace(/\.[cm]?tsx$/u, val => val.slice(0, -1));
     const outputTypeDeclaration = outputTypeName.replace(/\.[cm]?ts$/u, val => `.d${val}`);
     // Swap the `t` with a `j`
     const outputFileName = outputTypeName.replace(/\.[cm]?ts$/u, val => val.replace('t', 'j'));
 
-    const baseOutputPath = join(settings.outDir, relativePath, '..');
-    const outputPath = join(baseOutputPath, outputFileName);
-    const outputTypesPath = join(baseOutputPath, outputTypeDeclaration);
+    const baseOutputPath = Path.join(settings.outDir, relativePath, '..');
+    const outputPath = Path.join(baseOutputPath, outputFileName);
+    const outputTypesPath = Path.join(baseOutputPath, outputTypeDeclaration);
 
     return {
         js: {
@@ -79,14 +79,14 @@ export const compilerProvider = (
         options: NormalizedOptions,
         outputFiles: OutputFiles
     ): Promise<void> => {
-        const jsBaseName = basename(outputFiles.js.file);
+        const jsBaseName = Path.basename(outputFiles.js.file);
 
         const transformed = await transformFile(filename, {
             filename,
             isModule: true,
             // Force emitting source maps
             sourceMaps: true,
-            sourceFileName: relative(dirname(outputFiles.js.map), filename),
+            sourceFileName: Path.relative(Path.dirname(outputFiles.js.map), filename),
             inlineSourcesContent: false,
             sourceRoot: '',
             // All settings provided here, don't try to load from elsewhere
@@ -130,7 +130,7 @@ export const compilerProvider = (
             file: jsBaseName,
         });
 
-        const attachedSourcedMapUrl = `${transformed.code}${sourceMapUrl}${basename(
+        const attachedSourcedMapUrl = `${transformed.code}${sourceMapUrl}${Path.basename(
             outputFiles.js.map
         )}\n`;
 
@@ -161,7 +161,9 @@ export const compilerProvider = (
 
         const outputted = await Promise.all(
             tsConfig.fileNames
-                .filter(filename => !relative(tsConfig.settings.rootDir, filename).startsWith('..'))
+                .filter(
+                    filename => !Path.relative(tsConfig.settings.rootDir, filename).startsWith('..')
+                )
                 .map(async filename => {
                     const outputtedFiles = getOutputtedFiles(filename, tsConfig.settings);
                     await fileTransform(filename, options, outputtedFiles);

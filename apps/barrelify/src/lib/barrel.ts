@@ -5,13 +5,11 @@ import { findImport } from 'find-import';
 import { patch } from 'named-patch';
 
 const getExtensions = async (path: string): Promise<string> => {
-    const pkg = await findImport<{
-        type?: string;
-    }>('package.json', {
+    const pkg = await findImport('package.json', {
         cwd: path,
     });
 
-    const isModule = pkg?.content.type === 'module';
+    const isModule = (pkg?.content as { type?: string }).type === 'module';
     const fileIsModule = path.endsWith('.mts') || (path.endsWith('.ts') && isModule);
 
     if (fileIsModule) {

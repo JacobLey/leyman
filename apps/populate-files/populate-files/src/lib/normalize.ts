@@ -1,4 +1,4 @@
-import { resolve } from 'node:path';
+import Path from 'node:path';
 import { isCI } from 'ci-info';
 import { parseCwd } from 'npm-parse-cwd';
 import { stringToUint8Array } from 'uint8array-extras';
@@ -33,7 +33,7 @@ export const normalizeFileParams = async (
     const [cwd, loadedContent] = await Promise.all([parseCwd(options.cwd), params.content]);
 
     return {
-        filePath: resolve(cwd, params.filePath),
+        filePath: Path.resolve(cwd, params.filePath),
         content: await parseContent(loadedContent),
         check: normalizeCheck(options.check),
         dryRun: normalizeDryRun(options.dryRun),
@@ -55,7 +55,7 @@ export const normalizeFilesParams = async (
 
     const files = await Promise.all(
         loadedContents.map(async loadedContent => ({
-            filePath: resolve(cwd, loadedContent.filePath),
+            filePath: Path.resolve(cwd, loadedContent.filePath),
             content: await parseContent(loadedContent.content),
         }))
     );

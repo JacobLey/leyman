@@ -23,12 +23,12 @@ type LifecycleTarget = {
           previousHook: string;
       } & (
           | {
-                  kind: 'base';
-                  hasHooks: boolean;
-              }
+                kind: 'base';
+                hasHooks: boolean;
+            }
           | {
-                  kind: 'hook';
-              }
+                kind: 'hook';
+            }
       ))
 );
 

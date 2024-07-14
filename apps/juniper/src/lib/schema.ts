@@ -18,21 +18,21 @@ export interface SchemaParams<T> {
     readOnly?: boolean;
     writeOnly?: boolean;
     title?: string | null;
-    [allOfSym]?: AbstractSchema<SchemaGenerics<any>>[];
-    [anyOfSym]?: AbstractSchema<SchemaGenerics<any>>[][];
+    [allOfSym]?: AbstractSchema<SchemaGenerics<T>>[];
+    [anyOfSym]?: AbstractSchema<SchemaGenerics<T>>[][];
     [conditionalsSym]?: {
-        if: AbstractSchema<SchemaGenerics<any>>;
-        then: AbstractSchema<SchemaGenerics<any>> | null;
-        else: AbstractSchema<SchemaGenerics<any>> | null;
+        if: AbstractSchema<SchemaGenerics<T>>;
+        then: AbstractSchema<SchemaGenerics<T>> | null;
+        else: AbstractSchema<SchemaGenerics<T>> | null;
     }[];
     [examplesSym]?: T[];
     [metadataSym]?: Record<string, unknown>;
-    [notSym]?: AbstractSchema<SchemaGenerics<any>>[];
+    [notSym]?: AbstractSchema<SchemaGenerics<T>>[];
     [nullableSym]?: boolean;
-    [oneOfSym]?: AbstractSchema<SchemaGenerics<any>>[][];
+    [oneOfSym]?: AbstractSchema<SchemaGenerics<T>>[][];
     [refSym]?: {
         path: string;
-        schema: AbstractSchema<SchemaGenerics<any>>;
+        schema: AbstractSchema<SchemaGenerics<T>>;
     } | null;
 }
 
@@ -85,21 +85,21 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      */
     protected declare static create: (this: void, options?: any) => AbstractSchema<any>;
 
-    readonly #allOf: AbstractSchema<SchemaGenerics<any>>[];
-    readonly #anyOf: AbstractSchema<SchemaGenerics<any>>[][];
+    readonly #allOf: AbstractSchema<T>[];
+    readonly #anyOf: AbstractSchema<T>[][];
     readonly #conditionals: NonNullable<SchemaParams<any>[typeof conditionalsSym]>;
     readonly #default: T['type'] | undefined;
     readonly #deprecated: boolean;
     readonly #description: string | null;
     readonly #examples: T['type'][];
     readonly #metadata: Record<string, unknown>;
-    readonly #nots: AbstractSchema<SchemaGenerics<any>>[];
+    readonly #nots: AbstractSchema<T>[];
     readonly #nullable: boolean;
-    readonly #oneOf: AbstractSchema<SchemaGenerics<any>>[][];
+    readonly #oneOf: AbstractSchema<T>[][];
     readonly #readOnly: boolean;
     readonly #ref: {
         path: string;
-        schema: AbstractSchema<SchemaGenerics<any>>;
+        schema: AbstractSchema<T>;
     } | null;
     readonly #title: string | null;
     readonly #writeOnly: boolean;
@@ -131,16 +131,19 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
         this.#readOnly = options.readOnly ?? false;
         this.#title = options.title ?? null;
         this.#writeOnly = options.writeOnly ?? false;
-        this.#allOf = options[allOfSym] ?? [];
-        this.#anyOf = options[anyOfSym] ?? [];
+        this.#allOf = (options[allOfSym] ?? []) as AbstractSchema<T>[];
+        this.#anyOf = (options[anyOfSym] ?? []) as AbstractSchema<T>[][];
         this.#conditionals = options[conditionalsSym] ?? [];
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
         this.#examples = options[examplesSym] ?? [];
         this.#metadata = options[metadataSym] ?? {};
-        this.#nots = options[notSym] ?? [];
+        this.#nots = (options[notSym] ?? []) as AbstractSchema<T>[];
         this.#nullable = options[nullableSym] ?? false;
-        this.#oneOf = options[oneOfSym] ?? [];
-        this.#ref = options[refSym] ?? null;
+        this.#oneOf = (options[oneOfSym] ?? []) as AbstractSchema<T>[][];
+        this.#ref = (options[refSym] ?? null) as {
+            path: string;
+            schema: AbstractSchema<T>;
+        } | null;
     }
 
     /**

@@ -517,9 +517,9 @@ export declare class IArraySchemaOverride<
 > extends ArraySchema<T, P, C, M, N> {
     public declare static create: any;
 
-    public declare allOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    public declare allOf: (
         this: any,
-        schema: S
+        schema: ArraySchema<any, any[], any, unknown, boolean>
     ) => any;
 
     public declare anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(

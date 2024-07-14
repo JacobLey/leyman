@@ -1,4 +1,4 @@
-import { resolve } from 'node:path';
+import Path from 'node:path';
 import type { ExecutorContext } from '@nx/devkit';
 import { loadAndPopulateFiles } from 'load-populate-files';
 import type { PopulateFilesOptions } from './schema.js';
@@ -10,17 +10,17 @@ import type { PopulateFilesOptions } from './schema.js';
  * @param context - nx workspace context
  * @returns success
  */
-export default async (
+export default async function nxPopulateFiles(
     options: PopulateFilesOptions,
     context: ExecutorContext
-): Promise<{ success: boolean }> => {
+): Promise<{ success: boolean }> {
     try {
         await loadAndPopulateFiles(
             {
-                filePath: resolve(context.root, options.filePath),
+                filePath: Path.resolve(context.root, options.filePath),
             },
             {
-                cwd: resolve(
+                cwd: Path.resolve(
                     context.root,
                     options.cwd ??
                         context.projectsConfigurations!.projects[context.projectName!]!.root
@@ -41,4 +41,4 @@ export default async (
         }
         return { success: false };
     }
-};
+}
