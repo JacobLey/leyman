@@ -160,7 +160,7 @@ export default ({
 
     return [
         {
-            ignores: ['coverage', 'dist', 'node_modules'].map(directory =>
+            ignores: ['coverage', 'dist', 'node_modules', '.eslintcache'].map(directory =>
                 Path.join(relativePath, directory, '**')
             ),
         },
@@ -171,7 +171,9 @@ export default ({
                 parser: typescriptParser,
                 parserOptions: {
                     ecmaVersion: 'latest',
-                    EXPERIMENTAL_useProjectService: true,
+                    EXPERIMENTAL_useProjectService: {
+                        allowDefaultProjectForFiles: ['./*.js'],
+                    },
                 },
                 globals: {
                     console: 'readonly',

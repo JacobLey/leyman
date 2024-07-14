@@ -1,5 +1,0 @@
-apps/*/coverage
-apps/*/dist
-
-tools/*/coverage
-tools/*/dist
