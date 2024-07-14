@@ -4,11 +4,13 @@
   "targets": {
     "biome": {},
     "update-ts-references": {
-      "executor": "npm-nx-update-ts-references:update-ts-references"
+      "executor": "npm-nx-update-ts-references:update-ts-references",
+      "dependsOn": ["build:_"]
     },
     "tsc": {
       "executor": "npm-nx-tsc:build",
-      "options": { "tsConfig": "{projectRoot}/tsconfig.json" }
+      "options": { "tsConfig": "{projectRoot}/tsconfig.json" },
+      "dependsOn": ["build:pre"]
     },
     "coverage-reset": {},
     "mocha-unit-test": {},
@@ -21,7 +23,8 @@
         "parallel": true,
         "color": true,
         "cwd": "{projectRoot}"
-      }
+      },
+      "dependsOn": ["mocha-unit-test", "test:reset"]
     },
     "coverage-report": {},
     "analyze:_": {},

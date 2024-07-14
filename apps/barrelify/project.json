@@ -16,7 +16,8 @@
         "parallel": true,
         "color": true,
         "cwd": "{projectRoot}"
-      }
+      },
+      "dependsOn": ["test:reset"]
     },
     "coverage-report": {},
     "analyze:_": {},
