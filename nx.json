@@ -67,7 +67,7 @@
     "coverage-reset": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["rm -r ./coverage"],
+        "commands": ["rm -rf ./coverage"],
         "parallel": true,
         "color": true,
         "cwd": "{projectRoot}"
