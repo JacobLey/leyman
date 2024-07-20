@@ -22,6 +22,7 @@
     "#handler": "./dist/lib/handler.js"
   },
   "dependencies": {
+    "haywire": "workspace:^",
     "npm-default-import": "npm:default-import@latest"
   },
   "optionalDependencies": {
@@ -38,7 +39,6 @@
     "c8": "^10.1.2",
     "chai": "^5.1.1",
     "expect-type": "^0.19.0",
-    "haywire": "workspace:^",
     "mocha": "^10.6.0",
     "mocha-hookup": "workspace:^",
     "npm-nx-tsc": "npm:nx-tsc@latest",
