@@ -11,7 +11,8 @@
         "forceConsistentCasingInFileNames": true,
         "importsNotUsedAsValues": "remove",
         "incremental": true,
-        "isolatedModules": false,
+        "isolatedDeclarations": false,
+        "isolatedModules": true,
         "jsx": "react-jsx",
         "lib": [
             "DOM",
@@ -29,7 +30,7 @@
         "noUnusedLocals": true,
         "noUnusedParameters": false,
         "pretty": true,
-        "preserveConstEnums": false,
+        "preserveConstEnums": true,
         "removeComments": false,
         "resolveJsonModule": true,
         "skipLibCheck": true,
