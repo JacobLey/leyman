@@ -347,7 +347,7 @@ export class HaystackId<
         });
     }
 
-    public static [unsafeIdSym]: UnsafeIdentifierGenerator = <
+    public static [unsafeIdSym]?: UnsafeIdentifierGenerator = <
         T2,
         Constructor2 extends GenericClass<T2> | null = null,
         Named2 extends string | symbol | null = null,
@@ -471,7 +471,7 @@ export class HaystackId<
     }
 }
 
-export const unsafeIdentifier = HaystackId[unsafeIdSym];
+export const unsafeIdentifier = HaystackId[unsafeIdSym]!;
 delete (HaystackId as Record<typeof unsafeIdSym, unknown>)[unsafeIdSym];
 
 export type GenericHaystackId = HaystackId<
@@ -511,6 +511,16 @@ export type HaystackIdType<Id extends GenericHaystackId> =
         ? LateBinding<HaystackIdTypeSupplier<Id>>
         : HaystackIdTypeSupplier<Id>;
 
+export type OutputHaystackId<Id extends GenericHaystackId> = HaystackId<
+    Id[typeof idType],
+    Id['construct'],
+    Id['annotations']['named'],
+    Id['annotations']['nullable'],
+    Id['annotations']['undefinable'],
+    false,
+    false
+>;
+
 export type HaystackIdConstructor<Id extends GenericHaystackId> = Id extends HaystackId<
     unknown,
     infer U,
@@ -524,3 +534,54 @@ export type HaystackIdConstructor<Id extends GenericHaystackId> = Id extends Hay
         ? U
         : null
     : null;
+
+/**
+ * Given the output id of a declared binding, produce the set of all output ids.
+ *
+ * e.g. If the provided output is `A + nullable + lateBinding`,
+ * then the output ids would be:
+ * > `A + nullable`
+ * > `A + nullable + undefinable`
+ *
+ * It would omit the lateBinding (and supplier) totally.
+ * It would also not be able to produce _just_ `A` or `A + undefinable`
+ *
+ * @template OutputId output declared binding
+ */
+export type ExpandOutputId<OutputId extends GenericHaystackId> = HaystackId<
+    OutputId[typeof idType],
+    OutputId['construct'],
+    OutputId['annotations']['named'],
+    true | OutputId['annotations']['nullable'],
+    true | OutputId['annotations']['undefinable'],
+    false,
+    false
+>;
+
+/**
+ * Expand an output id (no supplier or late binding) into all possible versions of output id
+ * that can be requested and satisfied by the original.
+ *
+ * @param id - output id that is the _strictest_ of the result set
+ * @returns set of output ids
+ */
+export const expandOutputId = <OutputId extends GenericHaystackId>(
+    id: OutputId
+): Set<ExpandOutputId<OutputId>> => {
+    const expandedIds = new Set<ExpandOutputId<OutputId>>();
+    const outputId = id.supplier(false).lateBinding(false);
+
+    for (const nullable of [false, true]) {
+        for (const undefinable of [false, true]) {
+            let expandedId = outputId;
+            if (nullable) {
+                expandedId = expandedId.nullable();
+            }
+            if (undefinable) {
+                expandedId = expandedId.undefinable();
+            }
+            expandedIds.add(expandedId);
+        }
+    }
+    return expandedIds;
+};

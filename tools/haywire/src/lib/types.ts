@@ -88,8 +88,36 @@ declare const nonExtendable: unique symbol;
 export interface Extendable {
     [nonExtendable]: true;
     (val: never): unknown;
+    c: (val: never) => unknown;
 }
-export interface NonExtendable<T, Named extends string | symbol | null> extends Extendable {
-    name: Named;
+export interface NonExtendable<
+    T,
+    Construct extends GenericClass<any> | IsClass | null,
+    Named extends string | symbol | null,
+> extends Extendable {
     (val: T): T;
+    construct: (val: Construct) => Construct;
+    mame: (val: Named) => Named;
 }
+
+type ExpandOutputUndefinable<
+    T,
+    Construct extends GenericClass<any> | IsClass | null,
+    Named extends string | symbol | null,
+    Undefinable extends boolean,
+> = true extends Undefinable
+    ? [NonExtendable<T | undefined, Construct, Named>]
+    : [NonExtendable<T | undefined, Construct, Named>] | [NonExtendable<T, Construct, Named>];
+type ExpandOutputNullable<
+    T,
+    Construct extends GenericClass<any> | IsClass | null,
+    Named extends string | symbol | null,
+    Nullable extends boolean,
+    Undefinable extends boolean,
+> = true extends Nullable
+    ? ExpandOutputUndefinable<T | null, Construct, Named, Undefinable>
+    :
+          | ExpandOutputUndefinable<T | null, Construct, Named, Undefinable>
+          | ExpandOutputUndefinable<T, Construct, Named, Undefinable>;
+
+export type { ExpandOutputNullable as ExpandOutput };

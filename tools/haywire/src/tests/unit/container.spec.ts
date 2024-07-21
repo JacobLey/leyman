@@ -1,6 +1,4 @@
 import { setTimeout } from 'node:timers/promises';
-import { expect, use } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import {
@@ -11,7 +9,9 @@ import {
     createModule,
     HaystackContainerValidationError,
     type HaystackIdType,
+    HaystackModuleValidationError,
     identifier,
+    isSyncContainer,
     type LateBinding,
     optimisticRequestScope,
     optimisticSingletonScope,
@@ -22,6 +22,8 @@ import {
     SyncContainer,
     transientScope,
 } from 'haywire';
+import { InstanceBinding, TempBinding } from '#binding';
+import { addBoundInstances } from '#container';
 import {
     HaystackCircularDependencyError,
     HaystackInstanceOfResponseError,
@@ -29,9 +31,8 @@ import {
     HaystackNullResponseError,
     HaystackProviderMissingError,
     HaystackSyncSupplierError,
-} from '../../lib/errors.js';
-
-use(chaiAsPromised);
+} from '#errors';
+import { expect } from '../chai-hooks.js';
 
 const catchThrown = async (fn: () => unknown): Promise<unknown> => {
     try {
@@ -100,6 +101,7 @@ suite('container', () => {
 
         const container = createContainer(module);
         expect(container).to.be.an.instanceOf(SyncContainer);
+        expect(isSyncContainer(container)).to.equal(true);
 
         const a = container.get(A);
         expectTypeOf(a).toEqualTypeOf<A>();
@@ -144,6 +146,7 @@ suite('container', () => {
         expect(container).to.be.an.instanceOf(AsyncContainer);
         expect(container).to.not.be.an.instanceOf(SyncContainer);
         expectTypeOf(container).not.toHaveProperty('getSync');
+        expect(isSyncContainer(container)).to.equal(false);
 
         const a1 = await container.getAsync(A);
         expectTypeOf(a1).toEqualTypeOf<A>();
@@ -203,6 +206,54 @@ suite('container', () => {
                 HaystackContainerValidationError,
                 'Providers missing for container: Similar'
             );
+        });
+
+        suite('Non-existent output is requested', () => {
+            const aId = identifier<A>();
+            const module = createModule(bind(aId).withGenerator(() => new A())).addBinding(
+                bind(identifier(B)).withGenerator(() => new B())
+            );
+
+            test('sync', () => {
+                const syncContainer = createContainer(module);
+                syncContainer.preload();
+
+                expect(() => {
+                    // @ts-expect-error
+                    syncContainer.get(A);
+                }).to.throw(HaystackContainerValidationError, 'Providers missing for container: A');
+
+                expect(() => {
+                    // @ts-expect-error
+                    syncContainer.get(identifier<B>());
+                }).to.throw(
+                    HaystackContainerValidationError,
+                    'Providers missing for container: haystack-id'
+                );
+            });
+
+            test('async', async () => {
+                const asyncContainer = createContainer(
+                    module.addBinding(bind(C).withAsyncGenerator(() => new C()))
+                );
+                await asyncContainer.preloadAsync();
+
+                await expect(
+                    // @ts-expect-error
+                    asyncContainer.getAsync(A)
+                ).to.eventually.be.rejectedWith(
+                    HaystackContainerValidationError,
+                    'Providers missing for container: A'
+                );
+
+                await expect(
+                    // @ts-expect-error
+                    asyncContainer.getAsync(identifier<B>())
+                ).to.eventually.be.rejectedWith(
+                    HaystackContainerValidationError,
+                    'Providers missing for container: haystack-id'
+                );
+            });
         });
 
         suite('Circular dependencies', () => {
@@ -2487,5 +2538,96 @@ suite('container', () => {
             const b = await promiseSupplier.prom.b;
             expect(b.params[0]).to.equal(promiseSupplier.prom);
         });
+    });
+
+    suite('addBoundInstances', () => {
+        const module = createModule(
+            bind(A)
+                .withDependencies([B, C])
+                .withProvider(() => new A())
+        )
+            .addBinding(
+                bind(B)
+                    .withDependencies([C, identifier(D).nullable()])
+                    .withProvider(() => new B())
+                    .scoped(optimisticRequestScope)
+            )
+            .addBinding(
+                bind(C)
+                    .withDependencies([
+                        identifier(D).undefinable(),
+                        identifier(E).lateBinding(),
+                        identifier(F).undefinable().nullable(),
+                    ])
+                    .withProvider(() => new C())
+                    .scoped(optimisticSingletonScope)
+            )
+            .addBinding(new TempBinding(identifier(D)))
+            .addBinding(new TempBinding(identifier(E)))
+            .addBinding(new TempBinding(identifier(F).undefinable().nullable()));
+
+        const extraId = identifier<123>().named('A').nullable();
+
+        for (const sync of [false, true]) {
+            suite(sync ? 'sync' : 'async', () => {
+                for (const action of ['unchecked', 'checked', 'wired'] as const) {
+                    suite(action, () => {
+                        const container = sync
+                            ? createContainer(module)
+                            : createContainer(
+                                  module.addBinding(
+                                      bind(F)
+                                          .withAsyncGenerator(() => new F())
+                                          .named('async')
+                                  )
+                              );
+
+                        if (action === 'checked') {
+                            container.check();
+                        } else if (action === 'wired') {
+                            container.wire();
+                        }
+
+                        test('Add valid bindings', async () => {
+                            const cloned = addBoundInstances(container, [
+                                new InstanceBinding(identifier(D), new D()),
+                                new InstanceBinding(identifier(E), new E()),
+                                new InstanceBinding(identifier(F).nullable(), new F()),
+                            ]);
+
+                            expect(cloned).to.not.equal(container);
+                            expect(await cloned.getAsync(A)).to.be.an.instanceOf(A);
+                            expect(await cloned.getAsync(D)).to.be.an.instanceOf(D);
+                            expect(
+                                await cloned.getAsync(identifier(F).nullable().undefinable())
+                            ).to.be.an.instanceOf(F);
+
+                            const cloned2 = addBoundInstances(cloned, [
+                                new InstanceBinding(extraId, 123),
+                            ]);
+                            expect(await cloned2.getAsync(extraId)).to.equal(123);
+                        });
+
+                        test('Add extra bindings', async () => {
+                            const cloned = addBoundInstances(container, [
+                                new InstanceBinding(extraId, 123),
+                            ]);
+
+                            await expect(
+                                cloned.getAsync(extraId.undefinable())
+                            ).to.eventually.be.rejectedWith(HaystackProviderMissingError);
+                        });
+
+                        test('Throw on duplicate binding', () => {
+                            expect(() => {
+                                addBoundInstances(container, [
+                                    new InstanceBinding(identifier(A), new A()),
+                                ]);
+                            }).to.throw(HaystackModuleValidationError);
+                        });
+                    });
+                }
+            });
+        }
     });
 });

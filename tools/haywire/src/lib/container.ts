@@ -1,7 +1,13 @@
 import pDefer, { type DeferredPromise } from 'p-defer';
-import type { GenericBinding } from '#binding';
+import {
+    type BindingOutputType,
+    type GenericBinding,
+    type InstanceBinding,
+    TempBinding,
+} from '#binding';
 import {
     HaystackCircularDependencyError,
+    HaystackDuplicateOutputError,
     HaystackInstanceOfResponseError,
     HaystackMultiError,
     HaystackNullResponseError,
@@ -10,8 +16,11 @@ import {
     HaystackUndefinedResponseError,
 } from '#errors';
 import {
+    expandOutputId,
     type GenericHaystackId,
+    type GenericOutputHaystackId,
     type HaystackIdType,
+    type OutputHaystackId,
     type StripAnnotations,
     unsafeIdentifier,
 } from '#identifier';
@@ -67,12 +76,23 @@ interface LateBindingRequest extends DeferredPromise<unknown> {
     registry: LateCache;
 }
 
+export type Container<Outputs extends [Extendable], Async extends boolean> = Async extends true
+    ? AsyncContainer<Outputs>
+    : SyncContainer<Outputs>;
+
+export type ExpandedContainer<
+    Outputs extends [Extendable],
+    Bindings extends GenericBinding,
+    Async extends boolean,
+> = Container<BindingOutputType<Bindings['outputId']> | Outputs, Async>;
+
 type NoBindingDeclared = [InvalidInput<'NoBindingDeclared'>];
 
 declare const typeTracking: unique symbol;
 const createContainerSym = Symbol('createContainer');
 const preloadSyncSym = Symbol('preloadSync');
 const getSyncSym = Symbol('getSync');
+const addBoundInstancesSym = Symbol('addBoundInstances');
 
 /**
  * Container that will be wired to generate instances on demand.
@@ -106,25 +126,66 @@ const getSyncSym = Symbol('getSync');
 export class AsyncContainer<Outputs extends [Extendable]> {
     private declare [typeTracking]: Outputs;
     readonly #isSync: boolean;
-    readonly #bindings: readonly GenericBinding[];
-    readonly #baseIdToBinding: ReadonlyMap<GenericHaystackId, GenericBinding>;
-    #checked = false;
-    #wired = false;
-    readonly #singletonMap = new Map<GenericBinding, GenericBinding[]>();
-    readonly #requestMap = new Map<GenericBinding, GenericBinding[]>();
-    readonly #isAsyncImplementationMap = new Map<GenericBinding, boolean>();
+    readonly #bindings: ReadonlySet<GenericBinding>;
+    readonly #baseIdToBinding: ReadonlyMap<GenericOutputHaystackId, GenericBinding>;
+    readonly #upstreamDependents: Map<GenericBinding, Set<GenericBinding>>;
+    #checked: boolean;
+    #wired: boolean;
+    readonly #singletonMap: Map<GenericBinding, readonly GenericBinding[]>;
+    readonly #requestMap: Map<GenericBinding, readonly GenericBinding[]>;
+    readonly #isAsyncImplementationMap: Map<GenericBinding, boolean>;
     readonly #singletonCache: ScopeCache = new Map();
     #preloaded: Promise<void> | null = null;
 
-    protected readonly idToBinding: ReadonlyMap<GenericHaystackId, GenericBinding>;
+    protected readonly idToBinding: ReadonlyMap<GenericOutputHaystackId, GenericBinding>;
 
-    protected constructor(idToBinding: ReadonlyMap<GenericHaystackId, GenericBinding>) {
-        this.idToBinding = idToBinding;
-        this.#bindings = [...new Set(idToBinding.values())];
-        this.#baseIdToBinding = new Map(
-            this.#bindings.map(binding => [binding.outputId.baseId(), binding])
-        );
-        this.#isSync = this.#bindings.every(binding => !binding.isAsync);
+    /**
+     * Create a container based on a map of bindings (coming from a module)
+     * or from another container to be cloned.
+     *
+     * If input is map of bindings, populate datasets with binding data and defer to future user interaction for
+     * checking/wiring/preloading.
+     *
+     * If input is exiting container, shallow copy all internal datasets _except_ singleton caches.
+     * So if a wired container will remain wired after clone.
+     * Note that in order to properly clone a SyncContainer, the SyncContainer constructor must be called first.
+     *
+     * @param idToBinding - map of id->binding or container
+     */
+    protected constructor(
+        idToBinding: AsyncContainer<Outputs> | ReadonlyMap<GenericOutputHaystackId, GenericBinding>
+    ) {
+        if (idToBinding instanceof AsyncContainer) {
+            const container = idToBinding;
+            this.idToBinding = new Map(container.idToBinding);
+            this.#bindings = new Set(container.#bindings);
+            this.#baseIdToBinding = new Map(container.#baseIdToBinding);
+            this.#upstreamDependents = new Map(container.#upstreamDependents);
+
+            this.#isSync = container.#isSync;
+            this.#checked = container.#checked;
+            this.#wired = container.#wired;
+
+            this.#singletonMap = new Map(container.#singletonMap);
+            this.#requestMap = new Map(container.#requestMap);
+            this.#isAsyncImplementationMap = new Map(container.#isAsyncImplementationMap);
+        } else {
+            this.idToBinding = new Map(idToBinding);
+            this.#bindings = new Set(idToBinding.values());
+            const bindingsArr = [...this.#bindings];
+            this.#baseIdToBinding = new Map(
+                bindingsArr.map(binding => [binding.outputId.baseId(), binding])
+            );
+            this.#upstreamDependents = new Map();
+
+            this.#isSync = bindingsArr.every(binding => !binding.isAsync);
+            this.#checked = false;
+            this.#wired = false;
+
+            this.#singletonMap = new Map();
+            this.#requestMap = new Map();
+            this.#isAsyncImplementationMap = new Map();
+        }
     }
 
     /**
@@ -133,10 +194,102 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * @param bindings - module bindings
      * @returns type-safe async container
      */
-    public static [createContainerSym]<Outputs extends [Extendable]>(
-        bindings: ReadonlyMap<GenericHaystackId, GenericBinding>
+    public static [createContainerSym]?<Outputs extends [Extendable]>(
+        bindings: AsyncContainer<Outputs> | ReadonlyMap<GenericOutputHaystackId, GenericBinding>
     ): AsyncContainer<Outputs> {
         return new AsyncContainer<Outputs>(bindings);
+    }
+
+    /**
+     * Attach a set of bindings to a factory-managed container.
+     *
+     * A container may have `TempBinding`s included, which are enough to pass checks + wires, but will fail to
+     * actually instantiate the necessary instances.
+     *
+     * The factory will then collect these actual bindings later on, and pass them to the container.
+     * The container is cloned internally first (to avoid accidental mutations of the original) then the `TempBinding`s
+     * are replaced with `InstanceBindings` (guaranteed to be sync and have no other dependencies).
+     *
+     * Each `InstanceBinding` is internally spread over the possible outputIds, so callers should only provide a single
+     * binding for each output.
+     *
+     * The existing wiring (_if_ already wired) is updated to point to these new bindings.
+     *
+     * @param container - Container (both sync or async) with temp bindings
+     * @param bindings - list of instance bindings to
+     * @returns cloned container with bindings attached
+     * @throws {HaystackDuplicateOutputError} When incoming bindings overlap with existing declarations
+     */
+    public static [addBoundInstancesSym]?<
+        Outputs extends [Extendable],
+        Bindings extends InstanceBinding<GenericOutputHaystackId>,
+        Async extends boolean,
+    >(
+        container: Container<Outputs, Async>,
+        bindings: Bindings[]
+    ): ExpandedContainer<Outputs, Bindings, Async> {
+        const cloned = new (container.constructor as typeof AsyncContainer | typeof SyncContainer)(
+            container
+        ) as ExpandedContainer<Outputs, Bindings, Async>;
+
+        for (const binding of bindings) {
+            const existingBinding = cloned.#baseIdToBinding.get(binding.outputId.baseId());
+            if (existingBinding) {
+                if (existingBinding instanceof TempBinding) {
+                    (cloned.#bindings as Set<GenericBinding>).delete(existingBinding);
+
+                    if (cloned.#wired) {
+                        cloned.#singletonMap.delete(existingBinding);
+                        cloned.#isAsyncImplementationMap.delete(existingBinding);
+
+                        const upstreamDependents = cloned.#upstreamDependents.get(existingBinding)!;
+                        cloned.#upstreamDependents.set(binding, upstreamDependents);
+                        const replaceBinding = (arr: readonly GenericBinding[]): GenericBinding[] =>
+                            arr.map(bind => {
+                                if (bind === existingBinding) {
+                                    return binding;
+                                }
+                                return bind;
+                            });
+                        for (const dependent of upstreamDependents) {
+                            cloned.#singletonMap.set(
+                                dependent,
+                                replaceBinding(cloned.#singletonMap.get(dependent)!)
+                            );
+                        }
+                    }
+
+                    cloned.#upstreamDependents.delete(existingBinding);
+                } else {
+                    throw new HaystackDuplicateOutputError([binding.outputId.baseId()]);
+                }
+            } else if (cloned.#wired) {
+                cloned.#upstreamDependents.set(binding, new Set());
+            }
+
+            for (const outputId of expandOutputId(binding.outputId)) {
+                // @ts-expect-error
+                (cloned.idToBinding as Map<GenericOutputHaystackId, GenericBinding>).set(
+                    outputId,
+                    binding
+                );
+            }
+
+            (cloned.#bindings as Set<GenericBinding>).add(binding);
+            (cloned.#baseIdToBinding as Map<GenericOutputHaystackId, GenericBinding>).set(
+                binding.outputId.baseId(),
+                binding
+            );
+            cloned.#upstreamDependents.set(binding, new Set());
+
+            if (container.#wired) {
+                cloned.#singletonMap.set(binding, []);
+                cloned.#requestMap.set(binding, []);
+                cloned.#isAsyncImplementationMap.set(binding, false);
+            }
+        }
+
+        return cloned;
     }
 
     /**
@@ -168,6 +321,9 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
         this.check();
 
+        for (const binding of this.#bindings) {
+            this.#upstreamDependents.set(binding, new Set());
+        }
         this.#wireSingletons();
         this.#wireRequests();
         this.#wireAsyncs();
@@ -268,33 +424,26 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      */
     public getAsync<Id extends GenericHaystackId>(
         id: Id,
-        ...invalidInput: [
-            NonExtendable<
-                StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>,
-                Id['annotations']['named']
-            >,
-        ] extends Outputs
-            ? []
-            : NoBindingDeclared
-    ): Promise<StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>>;
-    public getAsync<Constructor extends IsClass>(
-        clazz: Constructor,
-        ...invalidInput: [NonExtendable<InstanceOfClass<Constructor>, null>] extends Outputs
-            ? []
-            : NoBindingDeclared
-    ): Promise<InstanceOfClass<Constructor>>;
-    public async getAsync<Id extends GenericHaystackId>(
-        ...[idOrClass]: [
-            Id,
-            ...([
+        ...invalidInput: [] &
+            ([
                 NonExtendable<
                     StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>,
+                    Id['construct'],
                     Id['annotations']['named']
                 >,
             ] extends Outputs
                 ? []
-                : NoBindingDeclared),
-        ]
+                : NoBindingDeclared)
+    ): Promise<StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>>;
+    public getAsync<Constructor extends IsClass>(
+        clazz: Constructor,
+        ...invalidInput: [] &
+            ([NonExtendable<InstanceOfClass<Constructor>, Constructor, null>] extends Outputs
+                ? []
+                : NoBindingDeclared)
+    ): Promise<InstanceOfClass<Constructor>>;
+    public async getAsync<Id extends GenericHaystackId>(
+        idOrClass: Id
     ): Promise<StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>> {
         const id = unsafeIdentifier(idOrClass).supplier(false).lateBinding(false);
         const binding = this.idToBinding.get(id);
@@ -340,12 +489,12 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     #checkForDependenciesOutput(): void {
         const uniqueDependencyIds = // DepdupeEffectiveBaseId(
             new Set(
-                this.#bindings.flatMap(binding =>
+                [...this.#bindings].flatMap(binding =>
                     binding.dependencyIds.map(id => id.lateBinding(false).supplier(false))
                 )
             );
 
-        const noProviderFoundIds: GenericHaystackId[] = [];
+        const noProviderFoundIds: GenericOutputHaystackId[] = [];
 
         for (const dependencyId of uniqueDependencyIds) {
             if (!this.idToBinding.has(dependencyId)) {
@@ -525,7 +674,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     #checkForAsyncSupplier(): void {
         const isSafeForSyncSupplier = (
             binding: GenericBinding,
-            chain: Set<GenericHaystackId>,
+            chain: Set<GenericOutputHaystackId>,
             optimisticScopes: Set<Scopes>
         ): boolean => {
             const baseId = binding.outputId.baseId();
@@ -559,7 +708,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             });
         };
 
-        const syncSuppliers = this.#bindings
+        const syncSuppliers = [...this.#bindings]
             .flatMap(binding => binding.dependencyIds.map(id => [binding, id] as const))
             .filter(([, dependencyId]) => {
                 const { supplier } = dependencyId.annotations;
@@ -569,7 +718,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         const safeBindings = new Set<GenericBinding>();
         const unsafeBindings = new Set<GenericBinding>();
         const unsafeSupplierBindings: {
-            bindingOutputId: GenericHaystackId;
+            bindingOutputId: GenericOutputHaystackId;
             supplierId: GenericHaystackId;
         }[] = [];
         const addUnsafePair = (
@@ -650,7 +799,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     #wireSingletons(): void {
         const collectBindings = (
             binding: GenericBinding,
-            stack: Set<GenericHaystackId>
+            stack: Set<GenericOutputHaystackId>
         ): GenericBinding[] => {
             if (stack.has(binding.outputId.baseId())) {
                 return [];
@@ -677,10 +826,14 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             return collected;
         };
 
-        for (const binding of this.#bindings.filter(
+        for (const binding of [...this.#bindings].filter(
             bind => bind.scope === optimisticSingletonScope
         )) {
-            this.#singletonMap.set(binding, [...new Set(collectBindings(binding, new Set()))]);
+            const singletonBindings = [...new Set(collectBindings(binding, new Set()))];
+            this.#singletonMap.set(binding, singletonBindings);
+            for (const singletonBinding of singletonBindings) {
+                this.#upstreamDependents.get(singletonBinding)!.add(binding);
+            }
         }
     }
 
@@ -698,7 +851,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     #wireRequests(): void {
         const collectBindings = (
             binding: GenericBinding,
-            stack: Set<GenericHaystackId>
+            stack: Set<GenericOutputHaystackId>
         ): GenericBinding[] => {
             if (stack.has(binding.outputId.baseId())) {
                 return [];
@@ -1391,8 +1544,8 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
      * @param bindings - module bindings to create container from
      * @returns synchronous container (that also supports async)
      */
-    public static [createContainerSym]<Outputs extends [Extendable]>(
-        bindings: ReadonlyMap<GenericHaystackId, GenericBinding>
+    public static [createContainerSym]?<Outputs extends [Extendable]>(
+        bindings: ReadonlyMap<GenericOutputHaystackId, GenericBinding> | SyncContainer<Outputs>
     ): SyncContainer<Outputs> {
         return new SyncContainer<Outputs>(bindings);
     }
@@ -1415,34 +1568,25 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
      */
     public get<Id extends GenericHaystackId>(
         id: Id,
-        ...invalidInput: [
-            NonExtendable<
-                StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>,
-                Id['annotations']['named']
-            >,
-        ] extends Outputs
-            ? []
-            : [1]
-    ): StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>;
-    public get<Constructor extends IsClass>(
-        clazz: Constructor,
-        ...invalidInput: [NonExtendable<InstanceOfClass<Constructor>, null>] extends Outputs
-            ? []
-            : [1]
-    ): InstanceOfClass<Constructor>;
-    public get<Id extends GenericHaystackId>(
-        ...[idOrClass]: [
-            Id,
-            ...([
+        ...invalidInput: [] &
+            ([
                 NonExtendable<
-                    StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>,
+                    HaystackIdType<OutputHaystackId<Id>>,
+                    Id['construct'],
                     Id['annotations']['named']
                 >,
             ] extends Outputs
                 ? []
-                : [1]),
-        ]
-    ): StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'> {
+                : [InvalidInput<'NoBindingExists'>])
+    ): HaystackIdType<OutputHaystackId<Id>>;
+    public get<Constructor extends IsClass>(
+        clazz: Constructor,
+        ...invalidInput: [] &
+            ([NonExtendable<InstanceOfClass<Constructor>, Constructor, null>] extends Outputs
+                ? []
+                : [InvalidInput<'NoBindingExists'>])
+    ): InstanceOfClass<Constructor>;
+    public get<Id extends GenericHaystackId>(idOrClass: Id): HaystackIdType<OutputHaystackId<Id>> {
         const id = unsafeIdentifier(idOrClass).supplier(false).lateBinding(false);
         const binding = this.idToBinding.get(id);
         if (!binding) {
@@ -1450,15 +1594,21 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
         }
         this[preloadSyncSym]();
         const requestCache: ScopeCache = new Map();
-        return this[getSyncSym](binding, requestCache, requestCache) as StripAnnotations<
-            HaystackIdType<Id>,
-            'latebinding' | 'supplier'
+        return this[getSyncSym](binding, requestCache, requestCache) as HaystackIdType<
+            OutputHaystackId<Id>
         >;
     }
 }
 
-export const createSyncContainer = SyncContainer[createContainerSym];
-delete (SyncContainer as Record<typeof createContainerSym, unknown>)[createContainerSym];
+export const isSyncContainer = <Outputs extends [Extendable]>(
+    container: AsyncContainer<Outputs>
+): container is SyncContainer<Outputs> => container instanceof SyncContainer;
 
-export const createAsyncContainer = AsyncContainer[createContainerSym];
-delete (AsyncContainer as Record<typeof createContainerSym, unknown>)[createContainerSym];
+export const createSyncContainer = SyncContainer[createContainerSym]!;
+delete SyncContainer[createContainerSym];
+
+export const createAsyncContainer = AsyncContainer[createContainerSym]!;
+delete AsyncContainer[createContainerSym];
+
+export const addBoundInstances = AsyncContainer[addBoundInstancesSym]!;
+delete AsyncContainer[addBoundInstancesSym];

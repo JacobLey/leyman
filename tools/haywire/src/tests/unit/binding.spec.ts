@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import {
@@ -6,6 +5,7 @@ import {
     bind,
     Binding,
     type GenericHaystackId,
+    HaystackContainerValidationError,
     type HaystackId,
     identifier,
     type LateBinding,
@@ -14,7 +14,8 @@ import {
     type Supplier,
     transientScope,
 } from 'haywire';
-import type { BindingBuilder } from '#binding';
+import { type BindingBuilder, TempBinding } from '#binding';
+import { expect } from '../chai-hooks.js';
 
 suite('bind', () => {
     abstract class Foo {
@@ -242,18 +243,17 @@ suite('bind', () => {
         extendsFooBind.withProvider(async () => new ExtendsFoo());
 
         barBind.withProvider((bar: Bar) => bar).withDependencies([ExtendsBar]);
-        barBind
-            .withProvider((extendsBar: ExtendsBar) => extendsBar)
-            // @ts-expect-error
-            .withDependencies([Bar]);
-        barBind
-            .withProvider((bar: Bar) => bar)
-            // @ts-expect-error
-            .withDependencies([identifier(ExtendsBar).nullable()]);
-        barBind
-            .withProvider((bar: Bar) => bar)
-            // @ts-expect-error
-            .withDependencies([identifier(ExtendsBar).supplier()]);
+
+        const extendsBarProviderBinding = barBind.withProvider(
+            (extendsBar: ExtendsBar) => extendsBar
+        );
+        // @ts-expect-error
+        extendsBarProviderBinding.withDependencies([Bar]);
+        const barProviderBinding = barBind.withProvider((bar: Bar) => bar);
+        // @ts-expect-error
+        barProviderBinding.withDependencies([identifier(ExtendsBar).nullable()]);
+        // @ts-expect-error
+        barProviderBinding.withDependencies([identifier(ExtendsBar).supplier()]);
 
         const bindingDependsOnNumberMaker = bind(identifier<number>()).withProvider(
             (makeNumber: () => number) => makeNumber()
@@ -292,19 +292,19 @@ suite('bind', () => {
         // @ts-expect-error
         extendsFooBind.withAsyncProvider(async () => ({}) as Foo);
 
-        barBind.withAsyncProvider(async (bar: Bar) => bar).withDependencies([ExtendsBar]);
-        barBind
-            .withAsyncProvider(async (extendsBar: ExtendsBar) => extendsBar)
-            // @ts-expect-error
-            .withDependencies([Bar]);
-        barBind
-            .withAsyncProvider(async (bar: Bar) => bar)
-            // @ts-expect-error
-            .withDependencies([identifier(ExtendsBar).undefinable()]);
-        barBind
-            .withAsyncProvider(async (bar: Bar) => bar)
-            // @ts-expect-error
-            .withDependencies([identifier(ExtendsBar).lateBinding()]);
+        const barProviderBinding = barBind.withAsyncProvider(async (bar: Bar) => bar);
+        const extendsBarProviderBinding = barBind.withAsyncProvider(
+            async (extendsBar: ExtendsBar) => extendsBar
+        );
+
+        barProviderBinding.withDependencies([ExtendsBar]);
+        // @ts-expect-error
+        extendsBarProviderBinding.withDependencies([identifier(ExtendsBar).undefinable()]);
+        // @ts-expect-error
+        extendsBarProviderBinding.withDependencies([identifier(ExtendsBar).lateBinding()]);
+
+        // @ts-expect-error
+        extendsBarProviderBinding.withDependencies([Bar]);
 
         const bindingDependsOnStringProm = bind(identifier<string>()).withAsyncProvider(
             async (resolveString: Promise<string>) => resolveString
@@ -572,4 +572,16 @@ suite('binding', () => {
         expect(binding.dependencyIds).to.equal(binding.depIds);
         expectTypeOf(binding.dependencyIds).toEqualTypeOf<readonly GenericHaystackId[]>();
     });
+});
+
+suite('TempBinding', () => {
+    const id = identifier<number>();
+
+    const binding = new TempBinding(id);
+
+    expectTypeOf(binding).toEqualTypeOf(bind(id).withGenerator(() => 123));
+
+    expect(() => {
+        binding.provider();
+    }).to.throw(HaystackContainerValidationError);
 });

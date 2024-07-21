@@ -1,0 +1,1 @@
+export { Factory } from '#factory';

@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import {
@@ -9,6 +8,7 @@ import {
     type LateBinding,
     type Supplier,
 } from 'haywire';
+import { expect } from '../chai-hooks.js';
 
 suite('Generate identifier', () => {
     test('From type parameter', () => {

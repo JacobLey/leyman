@@ -1,3 +1,4 @@
+import { HaystackProviderMissingError } from '#errors';
 import {
     type ClassToConstructable,
     type GenericHaystackId,
@@ -5,12 +6,14 @@ import {
     type HaystackId,
     type HaystackIdConstructor,
     type HaystackIdType,
+    type OutputHaystackId,
     type StripAnnotations,
     unsafeIdentifier,
 } from '#identifier';
 import { optimisticSingletonScope, type Scopes, transientScope } from '#scopes';
 import type {
     DepsClass,
+    ExpandOutput,
     ExtendsType,
     GenericClass,
     InvalidInput,
@@ -26,6 +29,31 @@ export type DependencyIdTypes<Dependencies extends readonly [...GenericHaystackI
 export type GenericBinding = Binding<GenericOutputHaystackId, any, boolean>;
 
 /**
+ * Given the output id of a declared binding, produce the set of all output types.
+ *
+ * e.g. If the provided output is `A + nullable + lateBinding`,
+ * then the output types would be:
+ * > `A + nullable`
+ * > `A + nullable + undefinable`
+ *
+ * It would omit the lateBinding (and supplier) totally.
+ * It would also not be able to produce _just_ `A` or `A + undefinable`
+ *
+ * @template OutputId output declared binding
+ */
+export type BindingOutputType<OutputId extends GenericHaystackId> = OutputId extends HaystackId<
+    infer BaseType,
+    infer Construct,
+    infer Named,
+    infer Nullable,
+    infer Undefinable,
+    'async' | boolean,
+    boolean
+>
+    ? ExpandOutput<BaseType, Construct, Named, Nullable, Undefinable>
+    : never;
+
+/**
  * A provider that declares it's dependencies and output type.
  * Both dependencies and outputs are declared as identifiers, _or_ a class constructor.
  *
@@ -39,18 +67,20 @@ export type GenericBinding = Binding<GenericOutputHaystackId, any, boolean>;
  * container validation will fail.
  */
 export class Binding<
-    OutputId extends GenericOutputHaystackId,
+    OutputId extends GenericHaystackId,
     Dependencies extends readonly [...GenericHaystackId[]],
     Async extends boolean,
 > {
-    public readonly outputId: OutputId;
+    public readonly outputId: OutputHaystackId<OutputId>;
     public readonly depIds: readonly [...Dependencies];
     public readonly isAsync: Async;
     public readonly provider: (
         ...deps: DependencyIdTypes<Dependencies>
     ) => Async extends true
-        ? HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>
-        : HaystackIdType<OutputId>;
+        ?
+              | HaystackIdType<OutputHaystackId<OutputId>>
+              | Promise<HaystackIdType<OutputHaystackId<OutputId>>>
+        : HaystackIdType<OutputHaystackId<OutputId>>;
     public readonly scope: Scopes = transientScope;
 
     /**
@@ -67,11 +97,13 @@ export class Binding<
         provider: (
             ...deps: DependencyIdTypes<Dependencies>
         ) => Async extends true
-            ? HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>
-            : HaystackIdType<OutputId>,
+            ?
+                  | HaystackIdType<OutputHaystackId<OutputId>>
+                  | Promise<HaystackIdType<OutputHaystackId<OutputId>>>
+            : HaystackIdType<OutputHaystackId<OutputId>>,
         scope: Scopes = transientScope
     ) {
-        this.outputId = outputId;
+        this.outputId = outputId.supplier(false).lateBinding(false);
         this.depIds = depIds;
         this.isAsync = isAsync;
         this.provider = provider;
@@ -219,6 +251,41 @@ export class Binding<
     }
 }
 
+/**
+ * Temporary binding used internally by factor to appease container validation
+ * until actual instance can be bound.
+ */
+export class TempBinding<OutputId extends GenericOutputHaystackId> extends Binding<
+    OutputId,
+    [],
+    false
+> {
+    public constructor(outputId: OutputId) {
+        super(
+            outputId,
+            [],
+            false,
+            () => {
+                throw new HaystackProviderMissingError([outputId]);
+            },
+            optimisticSingletonScope
+        );
+    }
+}
+
+/**
+ * Actual binding used to replace TempBinding.
+ */
+export class InstanceBinding<OutputId extends GenericOutputHaystackId> extends Binding<
+    OutputId,
+    [],
+    false
+> {
+    public constructor(outputId: OutputId, instance: HaystackIdType<OutputId>) {
+        super(outputId, [], false, () => instance, optimisticSingletonScope);
+    }
+}
+
 type IdOrClassToIds<Dependencies extends readonly (GenericHaystackId | IsClass)[]> = {
     [Index in keyof Dependencies]: Dependencies[Index] extends IsClass
         ? ClassToConstructable<Dependencies[Index]>
@@ -289,15 +356,12 @@ export class DepsBindingBuilder<
         provider: (
             ...deps: DependencyIdTypes<DependencyIds>
         ) => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>,
-        ...invalidInput: AsyncPromiseOutput<OutputId>
+        ...invalidInput: AsyncPromiseOutput<OutputId> & []
     ): Binding<OutputId, DependencyIds, true>;
     public withAsyncProvider(
-        ...[provider]: [
-            (
-                ...deps: DependencyIdTypes<DependencyIds>
-            ) => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>,
-            ...AsyncPromiseOutput<OutputId>,
-        ]
+        provider: (
+            ...deps: DependencyIdTypes<DependencyIds>
+        ) => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>
     ): Binding<OutputId, DependencyIds, true> {
         return new Binding(this.#outputId, this.#depIds, true, provider);
     }
@@ -350,10 +414,11 @@ export class ProviderBindingBuilder<
     }
 
     public withDependencies<DependencyIds extends readonly (GenericHaystackId | IsClass)[]>(
-        ...[depIds]: [
-            [...DependencyIds],
-            ...invalidInput: DependenciesMisMatch<DependencyIds, Dependencies>,
-        ]
+        depIds: [...DependencyIds],
+        ...invalidInput: DependenciesMisMatch<DependencyIds, Dependencies> & []
+    ): Binding<OutputId, IdOrClassToIds<DependencyIds>, false>;
+    public withDependencies<DependencyIds extends readonly (GenericHaystackId | IsClass)[]>(
+        depIds: [...DependencyIds]
     ): Binding<OutputId, IdOrClassToIds<DependencyIds>, false> {
         return new Binding(
             this.#outputId,
@@ -392,10 +457,11 @@ export class AsyncProviderBindingBuilder<
     }
 
     public withDependencies<DependencyIds extends readonly (GenericHaystackId | IsClass)[]>(
-        ...[depIds]: [
-            [...DependencyIds],
-            ...invalidInput: DependenciesMisMatch<DependencyIds, Dependencies>,
-        ]
+        depIds: [...DependencyIds],
+        ...invalidInput: DependenciesMisMatch<DependencyIds, Dependencies> & []
+    ): Binding<OutputId, IdOrClassToIds<DependencyIds>, true>;
+    public withDependencies<DependencyIds extends readonly (GenericHaystackId | IsClass)[]>(
+        depIds: [...DependencyIds]
     ): Binding<OutputId, IdOrClassToIds<DependencyIds>, true> {
         return new Binding(
             this.#outputId,
@@ -452,13 +518,10 @@ export class BindingBuilder<OutputId extends GenericOutputHaystackId> {
 
     public withAsyncGenerator(
         provider: () => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>,
-        ...invalidInput: AsyncPromiseOutput<OutputId>
+        ...invalidInput: AsyncPromiseOutput<OutputId> & []
     ): Binding<OutputId, [], true>;
     public withAsyncGenerator(
-        ...[provider]: [
-            () => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>,
-            ...AsyncPromiseOutput<OutputId>,
-        ]
+        provider: () => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>
     ): Binding<OutputId, [], true> {
         return new Binding(this.#outputId, [], true, provider);
     }
@@ -498,15 +561,12 @@ export class BindingBuilder<OutputId extends GenericOutputHaystackId> {
         provider: (
             ...deps: [...Dependencies]
         ) => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>,
-        ...invalidInput: AsyncPromiseOutput<OutputId>
+        ...invalidInput: AsyncPromiseOutput<OutputId> & []
     ): AsyncProviderBindingBuilder<OutputId, Dependencies>;
     public withAsyncProvider<Dependencies extends readonly unknown[]>(
-        ...[provider]: [
-            (
-                ...deps: [...Dependencies]
-            ) => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>,
-            ...AsyncPromiseOutput<OutputId>,
-        ]
+        provider: (
+            ...deps: [...Dependencies]
+        ) => HaystackIdType<OutputId> | Promise<HaystackIdType<OutputId>>
     ): AsyncProviderBindingBuilder<OutputId, Dependencies> {
         return new AsyncProviderBindingBuilder(this.#outputId, provider);
     }

@@ -2,7 +2,7 @@ import { BindingBuilder } from '#binding';
 import {
     type ClassToConstructable,
     type GenericHaystackId,
-    type HaystackId,
+    type OutputHaystackId,
     unsafeIdentifier,
 } from '#identifier';
 import type { IsClass } from '#types';
@@ -16,22 +16,10 @@ export {
     type ProviderBindingBuilder,
 } from '#binding';
 
-type BaseHaystackId<Id extends GenericHaystackId> = Id extends HaystackId<
-    infer T,
-    infer Constructor,
-    infer Named,
-    infer Nullable,
-    infer Undefinable,
-    'async' | boolean,
-    boolean
->
-    ? HaystackId<T, Constructor, Named, Nullable, Undefinable, false, false>
-    : never;
-
 interface Bind {
     <OutputId extends GenericHaystackId>(
         outputIdentifier: OutputId
-    ): BindingBuilder<BaseHaystackId<OutputId>>;
+    ): BindingBuilder<OutputHaystackId<OutputId>>;
     <Constructor extends IsClass>(
         clazz: Constructor
     ): BindingBuilder<ClassToConstructable<Constructor>>;

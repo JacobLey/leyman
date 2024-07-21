@@ -22,7 +22,9 @@
     "#binding": "./dist/lib/binding.js",
     "#container": "./dist/lib/container.js",
     "#errors": "./dist/lib/errors.js",
+    "#factory": "./dist/lib/factory.js",
     "#identifier": "./dist/lib/identifier.js",
+    "#module": "./dist/lib/module.js",
     "#scopes": "./dist/lib/scopes.js",
     "#types": "./dist/lib/types.js"
   },
