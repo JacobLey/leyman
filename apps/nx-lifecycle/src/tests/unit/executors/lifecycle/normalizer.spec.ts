@@ -53,7 +53,7 @@ suite('Normalizer', () => {
                 stages: {
                     myStage: {},
                 },
-                targets: {
+                bindings: {
                     myTarget: 'myStage',
                 },
             });
@@ -97,7 +97,7 @@ suite('Normalizer', () => {
                     },
                 ],
                 stages: {},
-                targets: {},
+                bindings: {},
             });
         });
     });
