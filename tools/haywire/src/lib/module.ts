@@ -5,22 +5,22 @@ import {
     createAsyncContainer,
     createSyncContainer,
 } from '#container';
-import { HaystackDuplicateOutputError } from '#errors';
+import { HaywireDuplicateOutputError } from '#errors';
 import { type Factory, wireFactory } from '#factory';
 import {
     expandOutputId,
-    type GenericHaystackId,
-    type GenericOutputHaystackId,
-    type HaystackIdType,
-    type OutputHaystackId,
+    type GenericHaywireId,
+    type GenericOutputHaywireId,
+    type HaywireIdType,
+    type OutputHaywireId,
     type StripAnnotations,
 } from '#identifier';
 import type { ExpandOutput, Extendable, InvalidInput, NonExtendable } from '#types';
 
-type SimplifyDependencyType<T extends readonly GenericHaystackId[]> = {
+type SimplifyDependencyType<T extends readonly GenericHaywireId[]> = {
     [Index in keyof T]: [
         NonExtendable<
-            HaystackIdType<OutputHaystackId<T[Index]>>,
+            HaywireIdType<OutputHaywireId<T[Index]>>,
             T[Index]['construct'],
             T[Index]['annotations']['named']
         >,
@@ -187,12 +187,12 @@ export class Module<
         dependencies: Dependencies;
     };
 
-    readonly #bindings: ReadonlyMap<GenericOutputHaystackId, GenericBinding>;
+    readonly #bindings: ReadonlyMap<GenericOutputHaywireId, GenericBinding>;
     public readonly isAsync: Async;
 
     private constructor(
         isAsync: Async,
-        bindings: ReadonlyMap<GenericOutputHaystackId, GenericBinding>
+        bindings: ReadonlyMap<GenericOutputHaywireId, GenericBinding>
     ) {
         this.isAsync = isAsync;
         this.#bindings = bindings;
@@ -213,7 +213,7 @@ export class Module<
         this: void,
         binding: T
     ): Module<BindingOutputType<T['outputId']>, SimplifyDependencyType<T['depIds']>, T['isAsync']> {
-        const bindings = new Map<GenericOutputHaystackId, GenericBinding>();
+        const bindings = new Map<GenericOutputHaywireId, GenericBinding>();
         for (const expandedId of expandOutputId(binding.outputId)) {
             bindings.set(expandedId, binding);
         }
@@ -253,7 +253,7 @@ export class Module<
 
         for (const expandedId of expandOutputId(binding.outputId)) {
             if (bindings.has(expandedId)) {
-                throw new HaystackDuplicateOutputError([expandedId.baseId()]);
+                throw new HaywireDuplicateOutputError([expandedId.baseId()]);
             }
             bindings.set(expandedId, binding);
         }
@@ -291,7 +291,7 @@ export class Module<
         Dependencies | ModuleDependencies<T>,
         T['isAsync'] extends true ? true : Async
     > {
-        const duplicateOutputIds = new Set<GenericHaystackId>();
+        const duplicateOutputIds = new Set<GenericHaywireId>();
         for (const outputId of mod.#bindings.keys()) {
             if (this.#bindings.has(outputId)) {
                 duplicateOutputIds.add(outputId.baseId());
@@ -299,7 +299,7 @@ export class Module<
         }
 
         if (duplicateOutputIds.size > 0) {
-            throw new HaystackDuplicateOutputError([...duplicateOutputIds]);
+            throw new HaywireDuplicateOutputError([...duplicateOutputIds]);
         }
 
         return new Module(

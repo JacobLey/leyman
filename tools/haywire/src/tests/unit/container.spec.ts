@@ -7,9 +7,9 @@ import {
     bind,
     createContainer,
     createModule,
-    HaystackContainerValidationError,
-    type HaystackIdType,
-    HaystackModuleValidationError,
+    HaywireContainerValidationError,
+    type HaywireIdType,
+    HaywireModuleValidationError,
     identifier,
     isSyncContainer,
     type LateBinding,
@@ -25,12 +25,12 @@ import {
 import { InstanceBinding, TempBinding } from '#binding';
 import { addBoundInstances } from '#container';
 import {
-    HaystackCircularDependencyError,
-    HaystackInstanceOfResponseError,
-    HaystackMultiError,
-    HaystackNullResponseError,
-    HaystackProviderMissingError,
-    HaystackSyncSupplierError,
+    HaywireCircularDependencyError,
+    HaywireInstanceOfResponseError,
+    HaywireMultiError,
+    HaywireNullResponseError,
+    HaywireProviderMissingError,
+    HaywireSyncSupplierError,
 } from '#errors';
 import { expect } from '../chai-hooks.js';
 
@@ -203,7 +203,7 @@ suite('container', () => {
             expect(() => {
                 container.wire();
             }).to.throw(
-                HaystackContainerValidationError,
+                HaywireContainerValidationError,
                 'Providers missing for container: Similar'
             );
         });
@@ -221,14 +221,14 @@ suite('container', () => {
                 expect(() => {
                     // @ts-expect-error
                     syncContainer.get(A);
-                }).to.throw(HaystackContainerValidationError, 'Providers missing for container: A');
+                }).to.throw(HaywireContainerValidationError, 'Providers missing for container: A');
 
                 expect(() => {
                     // @ts-expect-error
                     syncContainer.get(identifier<B>());
                 }).to.throw(
-                    HaystackContainerValidationError,
-                    'Providers missing for container: haystack-id'
+                    HaywireContainerValidationError,
+                    'Providers missing for container: haywire-id'
                 );
             });
 
@@ -242,7 +242,7 @@ suite('container', () => {
                     // @ts-expect-error
                     asyncContainer.getAsync(A)
                 ).to.eventually.be.rejectedWith(
-                    HaystackContainerValidationError,
+                    HaywireContainerValidationError,
                     'Providers missing for container: A'
                 );
 
@@ -250,8 +250,8 @@ suite('container', () => {
                     // @ts-expect-error
                     asyncContainer.getAsync(identifier<B>())
                 ).to.eventually.be.rejectedWith(
-                    HaystackContainerValidationError,
-                    'Providers missing for container: haystack-id'
+                    HaywireContainerValidationError,
+                    'Providers missing for container: haywire-id'
                 );
             });
         });
@@ -274,7 +274,7 @@ suite('container', () => {
                 expect(() => {
                     container.wire();
                 })
-                    .to.throw(HaystackCircularDependencyError)
+                    .to.throw(HaywireCircularDependencyError)
                     .that.contains({
                         message: [
                             'Circular dependencies detected in container:',
@@ -337,7 +337,7 @@ suite('container', () => {
                 expect(() => {
                     container.wire();
                 })
-                    .to.throw(HaystackCircularDependencyError)
+                    .to.throw(HaywireCircularDependencyError)
                     .that.contains({
                         message: [
                             'Circular dependencies detected in container:',
@@ -406,7 +406,7 @@ suite('container', () => {
                 expect(() => {
                     container.wire();
                 })
-                    .to.throw(HaystackCircularDependencyError)
+                    .to.throw(HaywireCircularDependencyError)
                     .that.contains({
                         message: [
                             'Circular dependencies detected in container:',
@@ -451,7 +451,7 @@ suite('container', () => {
                 expect(() => {
                     container.wire();
                 })
-                    .to.throw(HaystackCircularDependencyError)
+                    .to.throw(HaywireCircularDependencyError)
                     .that.contains({
                         message:
                             'Circular dependencies detected in container: B(undefinable)->C->E(supplier(sync))',
@@ -497,7 +497,7 @@ suite('container', () => {
                 expect(() => {
                     container.wire();
                 })
-                    .to.throw(HaystackSyncSupplierError)
+                    .to.throw(HaywireSyncSupplierError)
                     .that.contains({
                         message: [
                             'Binding has dependency on syncronous supplier that must be async:',
@@ -551,7 +551,7 @@ suite('container', () => {
                 expect(() => {
                     container.wire();
                 })
-                    .to.throw(HaystackSyncSupplierError)
+                    .to.throw(HaywireSyncSupplierError)
                     .that.contains({
                         message: [
                             'Binding has dependency on syncronous supplier that must be async:',
@@ -589,13 +589,13 @@ suite('container', () => {
                 container.preload();
 
                 expect(() => container.get(A))
-                    .to.throw(HaystackNullResponseError)
+                    .to.throw(HaywireNullResponseError)
                     .that.contains({
                         message: 'Null value returned for non-nullable provider: B',
                     });
 
                 await expect(container.getAsync(A))
-                    .to.eventually.be.rejectedWith(HaystackNullResponseError)
+                    .to.eventually.be.rejectedWith(HaywireNullResponseError)
                     .that.contain({
                         message: 'Null value returned for non-nullable provider: B',
                     });
@@ -611,7 +611,7 @@ suite('container', () => {
                 asyncContainer.wire();
 
                 await expect(asyncContainer.preloadAsync())
-                    .to.eventually.be.rejectedWith(HaystackNullResponseError)
+                    .to.eventually.be.rejectedWith(HaywireNullResponseError)
                     .that.contain({
                         message: 'Null value returned for non-nullable provider: D(undefinable)',
                     });
@@ -664,7 +664,7 @@ suite('container', () => {
                 await container.preloadAsync();
 
                 await expect(container.getAsync(A))
-                    .to.eventually.be.rejectedWith(HaystackMultiError)
+                    .to.eventually.be.rejectedWith(HaywireMultiError)
                     .that.contain({
                         message: [
                             'Multiple errors: [',
@@ -711,14 +711,14 @@ suite('container', () => {
                 expect(settled.every(result => result.status === 'rejected'));
                 const failures = settled as [PromiseRejectedResult, PromiseRejectedResult];
                 expect(failures[0].reason)
-                    .to.be.an.instanceOf(HaystackInstanceOfResponseError)
+                    .to.be.an.instanceOf(HaywireInstanceOfResponseError)
                     .that.contains({
                         message: 'Value E returned by provider is not instance of class: D',
                     });
                 expect(failures[0].reason === failures[1].reason);
 
                 await expect(bSupplier())
-                    .to.eventually.be.rejectedWith(HaystackInstanceOfResponseError)
+                    .to.eventually.be.rejectedWith(HaywireInstanceOfResponseError)
                     .that.does.not.equal(failures[0].reason);
 
                 const failedContainer = createContainer(
@@ -731,13 +731,13 @@ suite('container', () => {
                 );
                 failedContainer.wire();
                 await expect(failedContainer.preloadAsync())
-                    .to.be.rejectedWith(HaystackInstanceOfResponseError)
+                    .to.be.rejectedWith(HaywireInstanceOfResponseError)
                     .that.eventually.contain({
                         message:
                             'Value {"d":false} returned by provider is not instance of class: D',
                     });
                 await expect(failedContainer.getAsync(E)).to.be.rejectedWith(
-                    HaystackInstanceOfResponseError
+                    HaywireInstanceOfResponseError
                 );
             });
 
@@ -747,12 +747,12 @@ suite('container', () => {
                 );
 
                 expect(() => container.get(identifier<123>('custom-name')))
-                    .to.throw(HaystackProviderMissingError)
+                    .to.throw(HaywireProviderMissingError)
                     .that.contains({
                         message: 'Providers missing for container: custom-name',
                     });
                 await expect(container.getAsync(identifier<123>())).to.eventually.be.rejectedWith(
-                    HaystackProviderMissingError
+                    HaywireProviderMissingError
                 );
             });
         });
@@ -811,13 +811,13 @@ suite('container', () => {
             );
 
             // First two errors are the exact same, because A was temporarily cached
-            expect(errors[0]).to.be.an.instanceOf(HaystackMultiError);
+            expect(errors[0]).to.be.an.instanceOf(HaywireMultiError);
             expect(errors[0]).to.eq(errors[1]);
 
-            const { causes } = errors[0] as HaystackMultiError;
+            const { causes } = errors[0] as HaywireMultiError;
 
             // Causes are related to B + C failures
-            expect(causes[0]).to.be.an.instanceOf(HaystackInstanceOfResponseError).that.contains({
+            expect(causes[0]).to.be.an.instanceOf(HaywireInstanceOfResponseError).that.contains({
                 message: 'Value 123 returned by provider is not instance of class: B',
             });
             expect(causes[1]).to.be.an.instanceOf(Error).that.contains({
@@ -825,7 +825,7 @@ suite('container', () => {
             });
 
             // Invoking B + C result in same looking errors
-            expect(errors[2]).to.be.an.instanceOf(HaystackInstanceOfResponseError).that.contains({
+            expect(errors[2]).to.be.an.instanceOf(HaywireInstanceOfResponseError).that.contains({
                 message: 'Value 123 returned by provider is not instance of class: B',
             });
             expect(errors[3]).to.be.an.instanceOf(Error).that.contains({
@@ -894,14 +894,14 @@ suite('container', () => {
                     catchThrown(() => container.get(A)),
                 ]);
                 expect(throwns[0])
-                    .to.be.an.instanceOf(HaystackInstanceOfResponseError)
+                    .to.be.an.instanceOf(HaywireInstanceOfResponseError)
                     .that.contains({
                         message: 'Value {} returned by provider is not instance of class: F',
                     });
-                expect(throwns[1]).to.be.an.instanceOf(HaystackInstanceOfResponseError);
+                expect(throwns[1]).to.be.an.instanceOf(HaywireInstanceOfResponseError);
                 expect(throwns[0]).to.not.equal(throwns[1]);
                 expect(() => container.get(A))
-                    .to.throw(HaystackInstanceOfResponseError)
+                    .to.throw(HaywireInstanceOfResponseError)
                     .that.does.not.equal(throwns[0]);
 
                 expect(container.get(B)).to.equal(b);
@@ -1601,13 +1601,13 @@ suite('container', () => {
                         expect(b).to.not.equal(aSupplier().params[0]);
                     }
 
-                    const { cSupplier: cSupplier1 } = a.params[2] as HaystackIdType<
+                    const { cSupplier: cSupplier1 } = a.params[2] as HaywireIdType<
                         typeof cSupplierIdentifier
                     >;
-                    const { cSupplier: cSupplier2 } = a.params[3] as HaystackIdType<
+                    const { cSupplier: cSupplier2 } = a.params[3] as HaywireIdType<
                         typeof cSupplierIdentifier
                     >;
-                    const { cSupplier: cSupplier3 } = a.params[4] as HaystackIdType<
+                    const { cSupplier: cSupplier3 } = a.params[4] as HaywireIdType<
                         typeof cSupplierIdentifier
                     >;
 
@@ -1728,13 +1728,13 @@ suite('container', () => {
                         expect(b).to.not.equal(a4.params[0]);
                     }
 
-                    const { cSupplier: cSupplier1 } = a1.params[2] as HaystackIdType<
+                    const { cSupplier: cSupplier1 } = a1.params[2] as HaywireIdType<
                         typeof cSupplierIdentifier
                     >;
-                    const { cSupplier: cSupplier2 } = a1.params[3] as HaystackIdType<
+                    const { cSupplier: cSupplier2 } = a1.params[3] as HaywireIdType<
                         typeof cSupplierIdentifier
                     >;
-                    const { cSupplier: cSupplier3 } = a1.params[4] as HaystackIdType<
+                    const { cSupplier: cSupplier3 } = a1.params[4] as HaywireIdType<
                         typeof cSupplierIdentifier
                     >;
 
@@ -2038,7 +2038,7 @@ suite('container', () => {
                     );
                     expect(() => {
                         circularContainer.wire();
-                    }).to.throw(HaystackCircularDependencyError);
+                    }).to.throw(HaywireCircularDependencyError);
 
                     const container = createContainer(
                         baseModule.mergeModule(
@@ -2199,7 +2199,7 @@ suite('container', () => {
                     );
                     expect(() => {
                         circularContainer.wire();
-                    }).to.throw(HaystackCircularDependencyError);
+                    }).to.throw(HaywireCircularDependencyError);
 
                     const container = createContainer(
                         baseModule.mergeModule(
@@ -2615,7 +2615,7 @@ suite('container', () => {
 
                             await expect(
                                 cloned.getAsync(extraId.undefinable())
-                            ).to.eventually.be.rejectedWith(HaystackProviderMissingError);
+                            ).to.eventually.be.rejectedWith(HaywireProviderMissingError);
                         });
 
                         test('Throw on duplicate binding', () => {
@@ -2623,7 +2623,7 @@ suite('container', () => {
                                 addBoundInstances(container, [
                                     new InstanceBinding(identifier(A), new A()),
                                 ]);
-                            }).to.throw(HaystackModuleValidationError);
+                            }).to.throw(HaywireModuleValidationError);
                         });
                     });
                 }

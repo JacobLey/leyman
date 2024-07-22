@@ -1,15 +1,15 @@
-import type { GenericHaystackId } from '#identifier';
+import type { GenericHaywireId } from '#identifier';
 
 /**
- * Generic class to represent errors explicitly thrown by Haystack
+ * Generic class to represent errors explicitly thrown by Haywire
  * rather than a provider or other javascript failure.
  *
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
 // eslint-disable-next-line unicorn/custom-error-definition
-export abstract class HaystackError extends Error {}
+export abstract class HaywireError extends Error {}
 
-const stringifyId = (id: GenericHaystackId): string => {
+const stringifyId = (id: GenericHaywireId): string => {
     let text = id.id;
     const { annotations } = id;
     const annotationsText = [
@@ -30,7 +30,7 @@ const stringifyId = (id: GenericHaystackId): string => {
     }
     return text;
 };
-const stringifyIds = (ids: GenericHaystackId[]): string =>
+const stringifyIds = (ids: GenericHaywireId[]): string =>
     ids
         .map(id => stringifyId(id))
         .sort()
@@ -38,25 +38,25 @@ const stringifyIds = (ids: GenericHaystackId[]): string =>
 
 /**
  * Generic class to represent validation failures when setting up the
- * bindings and module for Haystack.
+ * bindings and module for Haywire.
  *
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
 // eslint-disable-next-line unicorn/custom-error-definition
-export abstract class HaystackModuleValidationError extends HaystackError {}
+export abstract class HaywireModuleValidationError extends HaywireError {}
 
 /**
  * Error thrown when two different bindings both provide the same output value.
- * Haystack will not be able to determine which is the correct provider for the requested type
+ * Haywire will not be able to determine which is the correct provider for the requested type
  * so rejects when merging the bindings in the module.
  *
- * Using Haystack with Typescript should avoid getting this error, as duplicates are caught as compile time.
+ * Using Haywire with Typescript should avoid getting this error, as duplicates are caught as compile time.
  */
-export class HaystackDuplicateOutputError extends HaystackModuleValidationError {
-    public readonly outputIds: GenericHaystackId[];
-    public constructor(outputIds: GenericHaystackId[]) {
+export class HaywireDuplicateOutputError extends HaywireModuleValidationError {
+    public readonly outputIds: GenericHaywireId[];
+    public constructor(outputIds: GenericHaywireId[]) {
         super(`Duplicate output identifier for module: ${stringifyIds(outputIds)}`);
-        this.name = 'HaystackDuplicateOutputError';
+        this.name = 'HaywireDuplicateOutputError';
         this.outputIds = outputIds;
     }
 }
@@ -67,7 +67,7 @@ export class HaystackDuplicateOutputError extends HaystackModuleValidationError 
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
 // eslint-disable-next-line unicorn/custom-error-definition
-export abstract class HaystackContainerValidationError extends HaystackError {}
+export abstract class HaywireContainerValidationError extends HaywireError {}
 
 /**
  * Error thrown when a circular dependency is discovered in the container.
@@ -78,22 +78,22 @@ export abstract class HaystackContainerValidationError extends HaystackError {}
  * If that is not possible, use `identifier.lateBinding()` for one of the dependencies, to generate a promise
  * that will be resolved later with the circularly generated value.
  */
-export class HaystackCircularDependencyError extends HaystackContainerValidationError {
-    public readonly circularChains: GenericHaystackId[][];
-    public constructor(circularChains: GenericHaystackId[][]) {
-        const uniqueChains = HaystackCircularDependencyError.#uniqueChains(circularChains);
-        const sortedChains = HaystackCircularDependencyError.#sortChains(uniqueChains);
+export class HaywireCircularDependencyError extends HaywireContainerValidationError {
+    public readonly circularChains: GenericHaywireId[][];
+    public constructor(circularChains: GenericHaywireId[][]) {
+        const uniqueChains = HaywireCircularDependencyError.#uniqueChains(circularChains);
+        const sortedChains = HaywireCircularDependencyError.#sortChains(uniqueChains);
         super(
             `Circular dependencies detected in container: ${sortedChains
                 .map(({ message }) => message)
                 .join(', ')}`
         );
-        this.name = 'HaystackCircularDependencyError';
+        this.name = 'HaywireCircularDependencyError';
         this.circularChains = sortedChains.map(({ chain }) => chain);
     }
 
-    static #uniqueChains(circularChains: GenericHaystackId[][]): Set<GenericHaystackId>[] {
-        const uniqueChains: Set<GenericHaystackId>[] = [];
+    static #uniqueChains(circularChains: GenericHaywireId[][]): Set<GenericHaywireId>[] {
+        const uniqueChains: Set<GenericHaywireId>[] = [];
         for (const circularChain of circularChains) {
             const circularSet = new Set(circularChain);
             if (
@@ -115,8 +115,8 @@ export class HaystackCircularDependencyError extends HaystackContainerValidation
         return uniqueChains;
     }
 
-    static #sortChains(chains: Set<GenericHaystackId>[]): {
-        chain: GenericHaystackId[];
+    static #sortChains(chains: Set<GenericHaywireId>[]): {
+        chain: GenericHaywireId[];
         message: string;
     }[] {
         return chains
@@ -154,13 +154,13 @@ export class HaystackCircularDependencyError extends HaystackContainerValidation
  * - Refactor the dependency providers to become synchronous
  * - Use optimistic scoping to pre-compute an async dependency to be available synchronously.
  */
-export class HaystackSyncSupplierError extends HaystackContainerValidationError {
+export class HaywireSyncSupplierError extends HaywireContainerValidationError {
     public readonly unsafeSupplierBindings: {
-        bindingOutputId: GenericHaystackId;
-        supplierId: GenericHaystackId;
+        bindingOutputId: GenericHaywireId;
+        supplierId: GenericHaywireId;
     }[];
     public constructor(
-        unsafeSupplierBindings: HaystackSyncSupplierError['unsafeSupplierBindings']
+        unsafeSupplierBindings: HaywireSyncSupplierError['unsafeSupplierBindings']
     ) {
         const bindingToMessage = new Map(
             unsafeSupplierBindings.map(unsafeBinding => [
@@ -178,7 +178,7 @@ export class HaystackSyncSupplierError extends HaystackContainerValidationError 
                 .map(unsafeBinding => bindingToMessage.get(unsafeBinding)!)
                 .join(', ')}`
         );
-        this.name = 'HaystackSyncSupplierError';
+        this.name = 'HaywireSyncSupplierError';
         this.unsafeSupplierBindings = unsafeSupplierBindings;
     }
 }
@@ -187,13 +187,13 @@ export class HaystackSyncSupplierError extends HaystackContainerValidationError 
  * Error thrown when a container is constructed with declared dependencies that do not exist in the
  * the module's providers.
  *
- * Using Haystack with Typescript should avoid getting this error, as missing providers are caught as compile time.
+ * Using Haywire with Typescript should avoid getting this error, as missing providers are caught as compile time.
  */
-export class HaystackProviderMissingError extends HaystackContainerValidationError {
-    public readonly dependencyIds: GenericHaystackId[];
-    public constructor(dependencyIds: HaystackProviderMissingError['dependencyIds']) {
+export class HaywireProviderMissingError extends HaywireContainerValidationError {
+    public readonly dependencyIds: GenericHaywireId[];
+    public constructor(dependencyIds: HaywireProviderMissingError['dependencyIds']) {
         super(`Providers missing for container: ${stringifyIds(dependencyIds)}`);
-        this.name = 'HaystackProviderMissingError';
+        this.name = 'HaywireProviderMissingError';
         this.dependencyIds = dependencyIds;
     }
 }
@@ -204,16 +204,16 @@ export class HaystackProviderMissingError extends HaystackContainerValidationErr
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
 // eslint-disable-next-line unicorn/custom-error-definition
-export abstract class HaystackInstanceValidationError extends HaystackError {}
+export abstract class HaywireInstanceValidationError extends HaywireError {}
 
 /**
  * Thrown when the provider returns `null`, when the output is not explicitly declared to be `.nullable()`.
  */
-export class HaystackNullResponseError extends HaystackInstanceValidationError {
-    public readonly outputId: GenericHaystackId;
-    public constructor(outputId: HaystackNullResponseError['outputId']) {
+export class HaywireNullResponseError extends HaywireInstanceValidationError {
+    public readonly outputId: GenericHaywireId;
+    public constructor(outputId: HaywireNullResponseError['outputId']) {
         super(`Null value returned for non-nullable provider: ${stringifyId(outputId)}`);
-        this.name = 'HaystackNullResponseError';
+        this.name = 'HaywireNullResponseError';
         this.outputId = outputId;
     }
 }
@@ -221,11 +221,11 @@ export class HaystackNullResponseError extends HaystackInstanceValidationError {
 /**
  * Thrown when the provider returns `undefined`, when the output is not explicitly declared to be `.undefinable()`.
  */
-export class HaystackUndefinedResponseError extends HaystackInstanceValidationError {
-    public readonly outputId: GenericHaystackId;
-    public constructor(outputId: HaystackUndefinedResponseError['outputId']) {
+export class HaywireUndefinedResponseError extends HaywireInstanceValidationError {
+    public readonly outputId: GenericHaywireId;
+    public constructor(outputId: HaywireUndefinedResponseError['outputId']) {
         super(`Undefined value returned for non-undefinable provider: ${stringifyId(outputId)}`);
-        this.name = 'HaystackUndefinedResponseError';
+        this.name = 'HaywireUndefinedResponseError';
         this.outputId = outputId;
     }
 }
@@ -233,16 +233,16 @@ export class HaystackUndefinedResponseError extends HaystackInstanceValidationEr
 /**
  * Thrown when the provider returns an instance that is not an `instanceof` the declared output.
  */
-export class HaystackInstanceOfResponseError extends HaystackInstanceValidationError {
-    public readonly outputId: GenericHaystackId;
+export class HaywireInstanceOfResponseError extends HaywireInstanceValidationError {
+    public readonly outputId: GenericHaywireId;
     public readonly value: unknown;
-    public constructor(outputId: GenericHaystackId, value: unknown) {
+    public constructor(outputId: GenericHaywireId, value: unknown) {
         super(
-            `Value ${HaystackInstanceOfResponseError.#stringify(
+            `Value ${HaywireInstanceOfResponseError.#stringify(
                 value
             )} returned by provider is not instance of class: ${stringifyId(outputId)}`
         );
-        this.name = 'HaystackInstanceOfResponseError';
+        this.name = 'HaywireInstanceOfResponseError';
         this.outputId = outputId;
         this.value = value;
     }
@@ -262,16 +262,16 @@ export class HaystackInstanceOfResponseError extends HaystackInstanceValidationE
 /**
  * Thrown when multiple providers fail to generate the required value.
  * These errors may have been thrown explicitly by the provider itself, or as part of other validations
- * that are `HaystackInstanceValidationError`.
+ * that are `HaywireInstanceValidationError`.
  *
- * Will always contain >1 `causes`, which are never themselves `HaystackMultiError`s.
+ * Will always contain >1 `causes`, which are never themselves `HaywireMultiError`s.
  */
-export class HaystackMultiError extends HaystackInstanceValidationError {
+export class HaywireMultiError extends HaywireInstanceValidationError {
     public readonly causes: unknown[];
 
     public constructor(errors: unknown[]) {
         const causes = errors.flatMap(err =>
-            err instanceof HaystackMultiError ? err.causes : [err]
+            err instanceof HaywireMultiError ? err.causes : [err]
         );
         super(
             `Multiple errors: [${causes
@@ -279,7 +279,7 @@ export class HaystackMultiError extends HaystackInstanceValidationError {
                 .join(', ')}]`,
             { cause: causes[0] }
         );
-        this.name = 'HaystackMultiError';
+        this.name = 'HaywireMultiError';
         this.causes = causes;
     }
 
@@ -292,7 +292,7 @@ export class HaystackMultiError extends HaystackInstanceValidationError {
         if (rejected.length > 0) {
             throw rejected.length === 1
                 ? rejected[0]!.reason
-                : new HaystackMultiError(rejected.map(err => err.reason as unknown));
+                : new HaywireMultiError(rejected.map(err => err.reason as unknown));
         }
     }
 }

@@ -5,8 +5,8 @@ import {
     bind,
     createContainer,
     createModule,
-    HaystackContainerValidationError,
-    HaystackModuleValidationError,
+    HaywireContainerValidationError,
+    HaywireModuleValidationError,
     identifier,
     Module,
     SyncContainer,
@@ -140,7 +140,7 @@ suite('module', () => {
                     // @ts-expect-error
                     aOrBModule.addBinding(aOrBBinding);
                 })
-                    .to.throw(HaystackModuleValidationError)
+                    .to.throw(HaywireModuleValidationError)
                     .contains({
                         message:
                             'Duplicate output identifier for module: <custom-name>(named: AorB)',
@@ -152,10 +152,10 @@ suite('module', () => {
                     // @ts-expect-error
                     hasUniqueNumberModule.addBinding(symNumberBinding);
                 })
-                    .to.throw(HaystackModuleValidationError)
+                    .to.throw(HaywireModuleValidationError)
                     .contains({
                         message:
-                            'Duplicate output identifier for module: haystack-id(named: Symbol(abc))',
+                            'Duplicate output identifier for module: haywire-id(named: Symbol(abc))',
                     });
 
                 expect(() => {
@@ -164,7 +164,7 @@ suite('module', () => {
                         bind(identifier(Bar).nullable().undefinable()).withInstance({} as Bar)
                     );
                 })
-                    .to.throw(HaystackModuleValidationError)
+                    .to.throw(HaywireModuleValidationError)
                     .contains({
                         message: 'Duplicate output identifier for module: Bar',
                     });
@@ -178,10 +178,10 @@ suite('module', () => {
                     // @ts-expect-error
                     createContainer(invalidModule).check();
                 })
-                    .to.throw(HaystackContainerValidationError)
+                    .to.throw(HaywireContainerValidationError)
                     .contains({
                         message:
-                            'Providers missing for container: <custom-name>(named: AorB, nullable, undefinable), haystack-id(named: num)',
+                            'Providers missing for container: <custom-name>(named: AorB, nullable, undefinable), haywire-id(named: num)',
                     });
             });
 
@@ -194,10 +194,10 @@ suite('module', () => {
                     // @ts-expect-error
                     createContainer(invalidModule).check();
                 })
-                    .to.throw(HaystackContainerValidationError)
+                    .to.throw(HaywireContainerValidationError)
                     .contains({
                         message:
-                            'Providers missing for container: <custom-name>(named: AorB, nullable, undefinable), haystack-id(named: num)',
+                            'Providers missing for container: <custom-name>(named: AorB, nullable, undefinable), haywire-id(named: num)',
                     });
             });
         });
@@ -245,11 +245,11 @@ suite('module', () => {
                     // @ts-expect-error
                     module.mergeModule(module);
                 })
-                    .to.throw(HaystackModuleValidationError)
+                    .to.throw(HaywireModuleValidationError)
                     .contains({
                         message: [
                             'Duplicate output identifier for module: <custom-name>(named: AorB)',
-                            'haystack-id(named: num)',
+                            'haywire-id(named: num)',
                         ].join(', '),
                     });
 
@@ -257,9 +257,9 @@ suite('module', () => {
                     // @ts-expect-error
                     module.mergeModule(fooModule.mergeModule(numberModule));
                 })
-                    .to.throw(HaystackModuleValidationError)
+                    .to.throw(HaywireModuleValidationError)
                     .contains({
-                        message: 'Duplicate output identifier for module: haystack-id(named: num)',
+                        message: 'Duplicate output identifier for module: haywire-id(named: num)',
                     });
 
                 const symNumberModule = createModule(
@@ -270,10 +270,10 @@ suite('module', () => {
                     // @ts-expect-error
                     hasUniqueNumberodule.mergeModule(symNumberModule);
                 })
-                    .to.throw(HaystackModuleValidationError)
+                    .to.throw(HaywireModuleValidationError)
                     .contains({
                         message:
-                            'Duplicate output identifier for module: haystack-id(named: Symbol(abc))',
+                            'Duplicate output identifier for module: haywire-id(named: Symbol(abc))',
                     });
             });
 
@@ -291,7 +291,7 @@ suite('module', () => {
                     // @ts-expect-error
                     createContainer(invalidModule).check();
                 })
-                    .to.throw(HaystackContainerValidationError)
+                    .to.throw(HaywireContainerValidationError)
                     .contains({
                         message: 'Providers missing for container: Foo(named: Symbol(abc))',
                     });
@@ -306,7 +306,7 @@ suite('module', () => {
                     // @ts-expect-error
                     createContainer(invalidModule).check();
                 })
-                    .to.throw(HaystackContainerValidationError)
+                    .to.throw(HaywireContainerValidationError)
                     .contains({
                         message: 'Providers missing for container: Bar(nullable)',
                     });

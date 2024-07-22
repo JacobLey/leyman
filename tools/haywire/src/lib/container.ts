@@ -6,21 +6,21 @@ import {
     TempBinding,
 } from '#binding';
 import {
-    HaystackCircularDependencyError,
-    HaystackDuplicateOutputError,
-    HaystackInstanceOfResponseError,
-    HaystackMultiError,
-    HaystackNullResponseError,
-    HaystackProviderMissingError,
-    HaystackSyncSupplierError,
-    HaystackUndefinedResponseError,
+    HaywireCircularDependencyError,
+    HaywireDuplicateOutputError,
+    HaywireInstanceOfResponseError,
+    HaywireMultiError,
+    HaywireNullResponseError,
+    HaywireProviderMissingError,
+    HaywireSyncSupplierError,
+    HaywireUndefinedResponseError,
 } from '#errors';
 import {
     expandOutputId,
-    type GenericHaystackId,
-    type GenericOutputHaystackId,
-    type HaystackIdType,
-    type OutputHaystackId,
+    type GenericHaywireId,
+    type GenericOutputHaywireId,
+    type HaywireIdType,
+    type OutputHaywireId,
     type StripAnnotations,
     unsafeIdentifier,
 } from '#identifier';
@@ -72,7 +72,7 @@ type ScopeCache = Map<
  */
 interface LateBindingRequest extends DeferredPromise<unknown> {
     binding: GenericBinding;
-    dependencyId: GenericHaystackId;
+    dependencyId: GenericHaywireId;
     registry: LateCache;
 }
 
@@ -127,7 +127,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     private declare [typeTracking]: Outputs;
     readonly #isSync: boolean;
     readonly #bindings: ReadonlySet<GenericBinding>;
-    readonly #baseIdToBinding: ReadonlyMap<GenericOutputHaystackId, GenericBinding>;
+    readonly #baseIdToBinding: ReadonlyMap<GenericOutputHaywireId, GenericBinding>;
     readonly #upstreamDependents: Map<GenericBinding, Set<GenericBinding>>;
     #checked: boolean;
     #wired: boolean;
@@ -137,7 +137,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     readonly #singletonCache: ScopeCache = new Map();
     #preloaded: Promise<void> | null = null;
 
-    protected readonly idToBinding: ReadonlyMap<GenericOutputHaystackId, GenericBinding>;
+    protected readonly idToBinding: ReadonlyMap<GenericOutputHaywireId, GenericBinding>;
 
     /**
      * Create a container based on a map of bindings (coming from a module)
@@ -153,7 +153,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * @param idToBinding - map of id->binding or container
      */
     protected constructor(
-        idToBinding: AsyncContainer<Outputs> | ReadonlyMap<GenericOutputHaystackId, GenericBinding>
+        idToBinding: AsyncContainer<Outputs> | ReadonlyMap<GenericOutputHaywireId, GenericBinding>
     ) {
         if (idToBinding instanceof AsyncContainer) {
             const container = idToBinding;
@@ -195,7 +195,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * @returns type-safe async container
      */
     public static [createContainerSym]?<Outputs extends [Extendable]>(
-        bindings: AsyncContainer<Outputs> | ReadonlyMap<GenericOutputHaystackId, GenericBinding>
+        bindings: AsyncContainer<Outputs> | ReadonlyMap<GenericOutputHaywireId, GenericBinding>
     ): AsyncContainer<Outputs> {
         return new AsyncContainer<Outputs>(bindings);
     }
@@ -218,11 +218,11 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * @param container - Container (both sync or async) with temp bindings
      * @param bindings - list of instance bindings to
      * @returns cloned container with bindings attached
-     * @throws {HaystackDuplicateOutputError} When incoming bindings overlap with existing declarations
+     * @throws {HaywireDuplicateOutputError} When incoming bindings overlap with existing declarations
      */
     public static [addBoundInstancesSym]?<
         Outputs extends [Extendable],
-        Bindings extends InstanceBinding<GenericOutputHaystackId>,
+        Bindings extends InstanceBinding<GenericOutputHaywireId>,
         Async extends boolean,
     >(
         container: Container<Outputs, Async>,
@@ -261,7 +261,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
                     cloned.#upstreamDependents.delete(existingBinding);
                 } else {
-                    throw new HaystackDuplicateOutputError([binding.outputId.baseId()]);
+                    throw new HaywireDuplicateOutputError([binding.outputId.baseId()]);
                 }
             } else if (cloned.#wired) {
                 cloned.#upstreamDependents.set(binding, new Set());
@@ -269,14 +269,14 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
             for (const outputId of expandOutputId(binding.outputId)) {
                 // @ts-expect-error
-                (cloned.idToBinding as Map<GenericOutputHaystackId, GenericBinding>).set(
+                (cloned.idToBinding as Map<GenericOutputHaywireId, GenericBinding>).set(
                     outputId,
                     binding
                 );
             }
 
             (cloned.#bindings as Set<GenericBinding>).add(binding);
-            (cloned.#baseIdToBinding as Map<GenericOutputHaystackId, GenericBinding>).set(
+            (cloned.#baseIdToBinding as Map<GenericOutputHaywireId, GenericBinding>).set(
                 binding.outputId.baseId(),
                 binding
             );
@@ -420,21 +420,21 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      *
      * Will attempt to preload any optimistic singletons, if not already done.
      *
-     * @param id - {@link HaystackId} to instantiate
+     * @param id - {@link HaywireId} to instantiate
      */
-    public getAsync<Id extends GenericHaystackId>(
+    public getAsync<Id extends GenericHaywireId>(
         id: Id,
         ...invalidInput: [] &
             ([
                 NonExtendable<
-                    StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>,
+                    StripAnnotations<HaywireIdType<Id>, 'latebinding' | 'supplier'>,
                     Id['construct'],
                     Id['annotations']['named']
                 >,
             ] extends Outputs
                 ? []
                 : NoBindingDeclared)
-    ): Promise<StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>>;
+    ): Promise<StripAnnotations<HaywireIdType<Id>, 'latebinding' | 'supplier'>>;
     public getAsync<Constructor extends IsClass>(
         clazz: Constructor,
         ...invalidInput: [] &
@@ -442,19 +442,19 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 ? []
                 : NoBindingDeclared)
     ): Promise<InstanceOfClass<Constructor>>;
-    public async getAsync<Id extends GenericHaystackId>(
+    public async getAsync<Id extends GenericHaywireId>(
         idOrClass: Id
-    ): Promise<StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>> {
+    ): Promise<StripAnnotations<HaywireIdType<Id>, 'latebinding' | 'supplier'>> {
         const id = unsafeIdentifier(idOrClass).supplier(false).lateBinding(false);
         const binding = this.idToBinding.get(id);
         if (!binding) {
-            throw new HaystackProviderMissingError([id]);
+            throw new HaywireProviderMissingError([id]);
         }
         await this.preloadAsync();
 
         const requestCache: ScopeCache = new Map();
         return this.#getMaybeSync(binding, requestCache, requestCache) as Promise<
-            StripAnnotations<HaystackIdType<Id>, 'latebinding' | 'supplier'>
+            StripAnnotations<HaywireIdType<Id>, 'latebinding' | 'supplier'>
         >;
     }
 
@@ -482,7 +482,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      *     // Legal!
      *     const x: Foo = new Bar();
      *     ```
-     *     As a result, haystack cannot tell the difference between `identifier(Foo)` and `identifier(Bar)`.
+     *     As a result, haywire cannot tell the difference between `identifier(Foo)` and `identifier(Bar)`.
      *
      * @throws when a binding declares a dependency that is not found within the container
      */
@@ -494,7 +494,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 )
             );
 
-        const noProviderFoundIds: GenericOutputHaystackId[] = [];
+        const noProviderFoundIds: GenericOutputHaywireId[] = [];
 
         for (const dependencyId of uniqueDependencyIds) {
             if (!this.idToBinding.has(dependencyId)) {
@@ -503,7 +503,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         }
 
         if (noProviderFoundIds.length > 0) {
-            throw new HaystackProviderMissingError(noProviderFoundIds);
+            throw new HaywireProviderMissingError(noProviderFoundIds);
         }
     }
 
@@ -511,7 +511,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * Flag any instances of "illegal" circular dependencies, and throw an error.
      *
      * Circular bindings are defined as cases where in order to create dependency `A`,
-     * Haystack must first provide it with an instance of `A` (either directly, or via the chain of sub-dependencies)
+     * Haywire must first provide it with an instance of `A` (either directly, or via the chain of sub-dependencies)
      *
      * This is naively impossible, and results in infinite requests for `A`, even if using a scope that
      * can take advantage of caching (because the original request can never return to populate the cache).
@@ -565,11 +565,11 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      */
     #checkForCircular(): void {
         const safeBindings = new Set<GenericBinding>();
-        const circularPaths: GenericHaystackId[][] = [];
+        const circularPaths: GenericHaywireId[][] = [];
         const singletonScopes = new Set([optimisticSingletonScope, singletonScope]);
         const requestScopes = new Set([optimisticRequestScope, requestScope]);
 
-        const isChainSafe = (chain: GenericHaystackId[]): boolean => {
+        const isChainSafe = (chain: GenericHaywireId[]): boolean => {
             if (chain.some(dependencyId => dependencyId.annotations.lateBinding)) {
                 // Only if there is late binding can circular dependencies be acceptable
                 const bindingChain = chain.map((dependencyId, i) => ({
@@ -604,8 +604,8 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         };
 
         const isBindingSafe = (
-            outputId: GenericHaystackId,
-            dependencyChain: Set<GenericHaystackId>
+            outputId: GenericHaywireId,
+            dependencyChain: Set<GenericHaywireId>
         ): boolean => {
             const binding = this.#baseIdToBinding.get(outputId.baseId())!;
 
@@ -643,7 +643,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         }
 
         if (circularPaths.length > 0) {
-            throw new HaystackCircularDependencyError(circularPaths);
+            throw new HaywireCircularDependencyError(circularPaths);
         }
     }
 
@@ -674,7 +674,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     #checkForAsyncSupplier(): void {
         const isSafeForSyncSupplier = (
             binding: GenericBinding,
-            chain: Set<GenericOutputHaystackId>,
+            chain: Set<GenericOutputHaywireId>,
             optimisticScopes: Set<Scopes>
         ): boolean => {
             const baseId = binding.outputId.baseId();
@@ -718,8 +718,8 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         const safeBindings = new Set<GenericBinding>();
         const unsafeBindings = new Set<GenericBinding>();
         const unsafeSupplierBindings: {
-            bindingOutputId: GenericOutputHaystackId;
-            supplierId: GenericHaystackId;
+            bindingOutputId: GenericOutputHaywireId;
+            supplierId: GenericHaywireId;
         }[] = [];
         const addUnsafePair = (
             dependencyBinding: GenericBinding,
@@ -783,7 +783,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         }
 
         if (unsafeSupplierBindings.length > 0) {
-            throw new HaystackSyncSupplierError(unsafeSupplierBindings);
+            throw new HaywireSyncSupplierError(unsafeSupplierBindings);
         }
     }
 
@@ -799,7 +799,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     #wireSingletons(): void {
         const collectBindings = (
             binding: GenericBinding,
-            stack: Set<GenericOutputHaystackId>
+            stack: Set<GenericOutputHaywireId>
         ): GenericBinding[] => {
             if (stack.has(binding.outputId.baseId())) {
                 return [];
@@ -851,7 +851,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     #wireRequests(): void {
         const collectBindings = (
             binding: GenericBinding,
-            stack: Set<GenericOutputHaystackId>
+            stack: Set<GenericOutputHaywireId>
         ): GenericBinding[] => {
             if (stack.has(binding.outputId.baseId())) {
                 return [];
@@ -1065,7 +1065,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 })
             );
 
-            HaystackMultiError.validateAllSettled(settled);
+            HaywireMultiError.validateAllSettled(settled);
 
             const dependencies = settled.flatMap(settle => settle.value);
             const value = binding.isAsync
@@ -1074,17 +1074,17 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
             if (value === null) {
                 if (!binding.outputId.annotations.nullable) {
-                    throw new HaystackNullResponseError(binding.outputId);
+                    throw new HaywireNullResponseError(binding.outputId);
                 }
             } else if (value === undefined) {
                 if (!binding.outputId.annotations.undefinable) {
-                    throw new HaystackUndefinedResponseError(binding.outputId);
+                    throw new HaywireUndefinedResponseError(binding.outputId);
                 }
             } else if (
                 binding.outputId.construct &&
                 !(value instanceof binding.outputId.construct)
             ) {
-                throw new HaystackInstanceOfResponseError(binding.outputId, value);
+                throw new HaywireInstanceOfResponseError(binding.outputId, value);
             }
 
             for (const { registry } of lateBindingRequests) {
@@ -1252,14 +1252,14 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
         if (value === null) {
             if (!binding.outputId.annotations.nullable) {
-                throw new HaystackNullResponseError(binding.outputId);
+                throw new HaywireNullResponseError(binding.outputId);
             }
         } else if (value === undefined) {
             if (!binding.outputId.annotations.undefinable) {
-                throw new HaystackUndefinedResponseError(binding.outputId);
+                throw new HaywireUndefinedResponseError(binding.outputId);
             }
         } else if (binding.outputId.construct && !(value instanceof binding.outputId.construct)) {
-            throw new HaystackInstanceOfResponseError(binding.outputId, value);
+            throw new HaywireInstanceOfResponseError(binding.outputId, value);
         }
 
         for (const { registry } of lateBindingRequests) {
@@ -1351,7 +1351,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     )
             );
 
-            HaystackMultiError.validateAllSettled(settled);
+            HaywireMultiError.validateAllSettled(settled);
         }
         const lateBindCache = lateBindingCache ?? new Map<GenericBinding, { value: unknown }>();
 
@@ -1417,7 +1417,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 })
             );
 
-            HaystackMultiError.validateAllSettled(settled);
+            HaywireMultiError.validateAllSettled(settled);
         } catch (err) {
             // Generally speaking, the failure to invoke any late-binding value means the entire dependency chain failed.
             // e.g. A depends on late bindings of B + C.
@@ -1545,7 +1545,7 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
      * @returns synchronous container (that also supports async)
      */
     public static [createContainerSym]?<Outputs extends [Extendable]>(
-        bindings: ReadonlyMap<GenericOutputHaystackId, GenericBinding> | SyncContainer<Outputs>
+        bindings: ReadonlyMap<GenericOutputHaywireId, GenericBinding> | SyncContainer<Outputs>
     ): SyncContainer<Outputs> {
         return new SyncContainer<Outputs>(bindings);
     }
@@ -1566,19 +1566,19 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
      *
      * Will preload all singletons if not already done.
      */
-    public get<Id extends GenericHaystackId>(
+    public get<Id extends GenericHaywireId>(
         id: Id,
         ...invalidInput: [] &
             ([
                 NonExtendable<
-                    HaystackIdType<OutputHaystackId<Id>>,
+                    HaywireIdType<OutputHaywireId<Id>>,
                     Id['construct'],
                     Id['annotations']['named']
                 >,
             ] extends Outputs
                 ? []
                 : [InvalidInput<'NoBindingExists'>])
-    ): HaystackIdType<OutputHaystackId<Id>>;
+    ): HaywireIdType<OutputHaywireId<Id>>;
     public get<Constructor extends IsClass>(
         clazz: Constructor,
         ...invalidInput: [] &
@@ -1586,16 +1586,16 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
                 ? []
                 : [InvalidInput<'NoBindingExists'>])
     ): InstanceOfClass<Constructor>;
-    public get<Id extends GenericHaystackId>(idOrClass: Id): HaystackIdType<OutputHaystackId<Id>> {
+    public get<Id extends GenericHaywireId>(idOrClass: Id): HaywireIdType<OutputHaywireId<Id>> {
         const id = unsafeIdentifier(idOrClass).supplier(false).lateBinding(false);
         const binding = this.idToBinding.get(id);
         if (!binding) {
-            throw new HaystackProviderMissingError([id]);
+            throw new HaywireProviderMissingError([id]);
         }
         this[preloadSyncSym]();
         const requestCache: ScopeCache = new Map();
-        return this[getSyncSym](binding, requestCache, requestCache) as HaystackIdType<
-            OutputHaystackId<Id>
+        return this[getSyncSym](binding, requestCache, requestCache) as HaywireIdType<
+            OutputHaywireId<Id>
         >;
     }
 }

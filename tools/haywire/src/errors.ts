@@ -1,6 +1,6 @@
 export {
-    HaystackError,
-    HaystackContainerValidationError,
-    HaystackInstanceValidationError,
-    HaystackModuleValidationError,
+    HaywireError,
+    HaywireContainerValidationError,
+    HaywireInstanceValidationError,
+    HaywireModuleValidationError,
 } from '#errors';

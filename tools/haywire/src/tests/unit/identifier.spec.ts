@@ -2,8 +2,8 @@ import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import {
     type AsyncSupplier,
-    type HaystackId,
-    type HaystackIdType,
+    type HaywireId,
+    type HaywireIdType,
     identifier,
     type LateBinding,
     type Supplier,
@@ -18,8 +18,8 @@ suite('Generate identifier', () => {
         }
 
         const id = identifier<Foo>();
-        expectTypeOf(id).toEqualTypeOf<HaystackId<Foo, null, null, false, false, false, false>>();
-        expect(id.id).to.equal('haystack-id');
+        expectTypeOf(id).toEqualTypeOf<HaywireId<Foo, null, null, false, false, false, false>>();
+        expect(id.id).to.equal('haywire-id');
         expect(id.construct).to.equal(null);
 
         const aliasedId = identifier<string>('<custom-name>');
@@ -76,7 +76,7 @@ suite('Generate identifier', () => {
 
         const fooId = identifier(Foo);
         expectTypeOf(fooId).toEqualTypeOf<
-            HaystackId<Foo, typeof Foo, null, false, false, false, false>
+            HaywireId<Foo, typeof Foo, null, false, false, false, false>
         >();
         expect(fooId.id).to.equal('Foo');
         expect(fooId.construct).to.equal(Foo);
@@ -91,7 +91,7 @@ suite('Generate identifier', () => {
         identifier<typeof Foo>(PrivateBar);
         expect(privateBarId.construct).to.equal(PrivateBar);
         expectTypeOf(privateBarId).toEqualTypeOf<
-            HaystackId<PrivateBar, null, null, false, false, false, false>
+            HaywireId<PrivateBar, null, null, false, false, false, false>
         >();
 
         identifier(ExtraBar);
@@ -168,7 +168,7 @@ suite('annotations', () => {
 
     test('nullable', () => {
         const nullable = id.nullable();
-        expectTypeOf<HaystackIdType<typeof nullable>>().toEqualTypeOf<Foo | null>();
+        expectTypeOf<HaywireIdType<typeof nullable>>().toEqualTypeOf<Foo | null>();
 
         expectTypeOf(nullable.annotations.nullable).toEqualTypeOf(true);
         expect(nullable.annotations.nullable).to.equal(true);
@@ -189,7 +189,7 @@ suite('annotations', () => {
 
     test('undefinable', () => {
         const undefinable = id.undefinable();
-        expectTypeOf<HaystackIdType<typeof undefinable>>().toEqualTypeOf<Foo | undefined>();
+        expectTypeOf<HaywireIdType<typeof undefinable>>().toEqualTypeOf<Foo | undefined>();
 
         expectTypeOf(undefinable.annotations.undefinable).toEqualTypeOf(true);
         expect(undefinable.annotations.undefinable).to.equal(true);
@@ -210,7 +210,7 @@ suite('annotations', () => {
 
     test('supplier', () => {
         const supplier = id.supplier();
-        expectTypeOf<HaystackIdType<typeof supplier>>().toEqualTypeOf<Supplier<Foo>>();
+        expectTypeOf<HaywireIdType<typeof supplier>>().toEqualTypeOf<Supplier<Foo>>();
 
         expectTypeOf(supplier.annotations.supplier).toEqualTypeOf<{
             sync: true;
@@ -222,7 +222,7 @@ suite('annotations', () => {
         });
 
         const asyncSupplier = id.supplier('async');
-        expectTypeOf<HaystackIdType<typeof asyncSupplier>>().toEqualTypeOf<AsyncSupplier<Foo>>();
+        expectTypeOf<HaywireIdType<typeof asyncSupplier>>().toEqualTypeOf<AsyncSupplier<Foo>>();
 
         expectTypeOf(asyncSupplier.annotations.supplier).toEqualTypeOf<{
             sync: false;
@@ -253,7 +253,7 @@ suite('annotations', () => {
 
     test('lateBinding', () => {
         const lateBinding = id.lateBinding();
-        expectTypeOf<HaystackIdType<typeof lateBinding>>().toEqualTypeOf<LateBinding<Foo>>();
+        expectTypeOf<HaywireIdType<typeof lateBinding>>().toEqualTypeOf<LateBinding<Foo>>();
 
         expectTypeOf(lateBinding.annotations.lateBinding).toEqualTypeOf(true);
         expect(lateBinding.annotations.lateBinding).to.equal(true);
@@ -291,7 +291,7 @@ suite('annotations', () => {
         expectTypeOf(allOrder).toEqualTypeOf(all);
         expect(allOrder).to.equal(all);
 
-        expectTypeOf<HaystackIdType<typeof all>>().toEqualTypeOf<
+        expectTypeOf<HaywireIdType<typeof all>>().toEqualTypeOf<
             LateBinding<Supplier<Foo | null | undefined>>
         >();
 

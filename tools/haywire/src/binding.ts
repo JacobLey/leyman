@@ -1,8 +1,8 @@
 import { BindingBuilder } from '#binding';
 import {
     type ClassToConstructable,
-    type GenericHaystackId,
-    type OutputHaystackId,
+    type GenericHaywireId,
+    type OutputHaywireId,
     unsafeIdentifier,
 } from '#identifier';
 import type { IsClass } from '#types';
@@ -17,14 +17,14 @@ export {
 } from '#binding';
 
 interface Bind {
-    <OutputId extends GenericHaystackId>(
+    <OutputId extends GenericHaywireId>(
         outputIdentifier: OutputId
-    ): BindingBuilder<OutputHaystackId<OutputId>>;
+    ): BindingBuilder<OutputHaywireId<OutputId>>;
     <Constructor extends IsClass>(
         clazz: Constructor
     ): BindingBuilder<ClassToConstructable<Constructor>>;
 }
-export const bind = ((outputIdentifier: GenericHaystackId) =>
+export const bind = ((outputIdentifier: GenericHaywireId) =>
     new BindingBuilder(
         unsafeIdentifier(outputIdentifier).supplier(false).lateBinding(false)
     )) as Bind;

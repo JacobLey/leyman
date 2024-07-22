@@ -1,7 +1,7 @@
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import { bind, createContainer, createFactory, createModule, identifier } from 'haywire';
-import { HaystackDuplicateOutputError, HaystackProviderMissingError } from '#errors';
+import { HaywireDuplicateOutputError, HaywireProviderMissingError } from '#errors';
 import { expect } from '../chai-hooks.js';
 
 suite('factory', () => {
@@ -59,7 +59,7 @@ suite('factory', () => {
         expect(() => {
             // @ts-expect-error
             factory.toContainer();
-        }).to.throw(HaystackProviderMissingError);
+        }).to.throw(HaywireProviderMissingError);
     });
 
     suite('sync', () => {
@@ -96,11 +96,11 @@ suite('factory', () => {
                 expect(() => {
                     // @ts-expect-error
                     container.get(fId);
-                }).to.throw(HaystackProviderMissingError);
+                }).to.throw(HaywireProviderMissingError);
                 expect(() => {
                     // @ts-expect-error
                     extrasContainer.get(extraId);
-                }).to.throw(HaystackProviderMissingError);
+                }).to.throw(HaywireProviderMissingError);
             });
 
             test('Do not duplicate outputs', () => {
@@ -108,13 +108,13 @@ suite('factory', () => {
                 expect(() => {
                     // @ts-expect-error
                     factory.register(aId, new A());
-                }).to.throw(HaystackDuplicateOutputError);
+                }).to.throw(HaywireDuplicateOutputError);
 
                 // Duplicate register
                 expect(() => {
                     // @ts-expect-error
                     factory.register(dId, new D()).register(dId, new D());
-                }).to.throw(HaystackDuplicateOutputError);
+                }).to.throw(HaywireDuplicateOutputError);
             });
 
             test('Bound instances does not match type', () => {
@@ -130,7 +130,7 @@ suite('factory', () => {
                 expect(() => {
                     // @ts-expect-error
                     factory.register(eId.nullable(), new E());
-                }).to.throw(HaystackProviderMissingError);
+                }).to.throw(HaywireProviderMissingError);
             });
         });
     });
@@ -173,11 +173,11 @@ suite('factory', () => {
                 await expect(
                     // @ts-expect-error
                     container.getAsync(fId)
-                ).to.eventually.be.rejectedWith(HaystackProviderMissingError);
+                ).to.eventually.be.rejectedWith(HaywireProviderMissingError);
                 await expect(
                     // @ts-expect-error
                     extrasContainer.getAsync(extraId)
-                ).to.eventually.be.rejectedWith(HaystackProviderMissingError);
+                ).to.eventually.be.rejectedWith(HaywireProviderMissingError);
             });
         });
     });
