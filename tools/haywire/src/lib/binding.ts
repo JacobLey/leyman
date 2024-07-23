@@ -497,13 +497,13 @@ export class BindingBuilder<OutputId extends GenericOutputHaywireId> {
         return new Binding(this.#outputId, [], false, () => value, optimisticSingletonScope);
     }
 
-    public withConstructor(
+    public withConstructorGenerator(
         ...invalidInput: ExtendsType<
             HaywireIdConstructor<OutputId>,
             DepsClass<HaywireIdType<OutputId>, []>
         >
     ): Binding<OutputId, [], false>;
-    public withConstructor(): GenericBinding {
+    public withConstructorGenerator(): GenericBinding {
         return new Binding(
             this.#outputId,
             [],

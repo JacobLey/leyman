@@ -97,7 +97,7 @@ suite('container', () => {
         const module = createModule(bind(A).withDependencies([B, D]).withConstructorProvider())
             .addBinding(bind(B).withDependencies([C, D]).withConstructorProvider())
             .addBinding(bind(C).withInstance(c))
-            .addBinding(bind(D).withConstructor().scoped(requestScope));
+            .addBinding(bind(D).withConstructorGenerator().scoped(requestScope));
 
         const container = createContainer(module);
         expect(container).to.be.an.instanceOf(SyncContainer);
@@ -140,7 +140,7 @@ suite('container', () => {
                     .withAsyncGenerator(() => new C())
                     .scoped(singletonScope)
             )
-            .addBinding(bind(D).withConstructor().scoped(requestScope));
+            .addBinding(bind(D).withConstructorGenerator().scoped(requestScope));
 
         const container = createContainer(module);
         expect(container).to.be.an.instanceOf(AsyncContainer);
@@ -197,7 +197,7 @@ suite('container', () => {
             const container = createContainer(
                 createModule(
                     bind(Different).withConstructorProvider().withDependencies([Similar])
-                ).addBinding(bind(Simple).withConstructor())
+                ).addBinding(bind(Simple).withConstructorGenerator())
             );
 
             expect(() => {
@@ -269,7 +269,7 @@ suite('container', () => {
                         )
                         .addBinding(bind(Egg).withDependencies([Chicken]).withConstructorProvider())
                         .addBinding(bind(A).withDependencies([Chicken]).withConstructorProvider())
-                        .addBinding(bind(B).withConstructor())
+                        .addBinding(bind(B).withConstructorGenerator())
                 );
                 expect(() => {
                     container.wire();
@@ -332,7 +332,7 @@ suite('container', () => {
                                 ])
                                 .withConstructorProvider()
                         )
-                        .addBinding(bind(B).withConstructor())
+                        .addBinding(bind(B).withConstructorGenerator())
                 );
                 expect(() => {
                     container.wire();
@@ -727,7 +727,7 @@ suite('container', () => {
                             .withDependencies([E])
                             .withAsyncProvider(() => ({ d: false }) as unknown as D)
                             .scoped(optimisticSingletonScope)
-                    ).addBinding(bind(E).withConstructor())
+                    ).addBinding(bind(E).withConstructorGenerator())
                 );
                 failedContainer.wire();
                 await expect(failedContainer.preloadAsync())
@@ -861,7 +861,7 @@ suite('container', () => {
                             .withConstructorProvider()
                             .scoped(singletonScope)
                     )
-                        .addBinding(bind(B).withConstructor().scoped(singletonScope))
+                        .addBinding(bind(B).withConstructorGenerator().scoped(singletonScope))
                         .addBinding(
                             bind(C)
                                 .withDependencies([identifier(D).lateBinding()])
@@ -1005,8 +1005,8 @@ suite('container', () => {
                     .addBinding(
                         bind(B).withDependencies([D]).withConstructorProvider().scoped(requestScope)
                     )
-                    .addBinding(bind(C).withConstructor().scoped(requestScope))
-                    .addBinding(bind(D).withConstructor().scoped(optimisticRequestScope))
+                    .addBinding(bind(C).withConstructorGenerator().scoped(requestScope))
+                    .addBinding(bind(D).withConstructorGenerator().scoped(optimisticRequestScope))
             );
 
             const supplier = await container.getAsync(supplierId);
@@ -1081,7 +1081,7 @@ suite('container', () => {
                         bind(D).withDependencies([E]).withConstructorProvider().scoped(requestScope)
                     )
                     .addBinding(bind(E).withDependencies([F]).withConstructorProvider())
-                    .addBinding(bind(F).withConstructor().scoped(supplierScope))
+                    .addBinding(bind(F).withConstructorGenerator().scoped(supplierScope))
             );
 
             const supplier = await container.getAsync(supplierId);
@@ -1554,7 +1554,7 @@ suite('container', () => {
                                 ])
                                 .withConstructorProvider()
                         )
-                        .addBinding(bind(B).withConstructor().scoped(requestScope))
+                        .addBinding(bind(B).withConstructorGenerator().scoped(requestScope))
                         .addBinding(
                             bind(cSupplierIdentifier)
                                 .withDependencies([
@@ -1577,7 +1577,7 @@ suite('container', () => {
                                 .withProvider(cSupplier => ({ cSupplier }))
                                 .scoped(requestScope)
                         )
-                        .addBinding(bind(C).withConstructor().scoped(requestScope))
+                        .addBinding(bind(C).withConstructorGenerator().scoped(requestScope))
                 );
 
                 for (const { aSupplier, viaASupplier } of [

@@ -129,9 +129,9 @@ suite('bind', () => {
 
     test('constructor', () => {
         // @ts-expect-error
-        fooBind.withConstructor();
+        fooBind.withConstructorGenerator();
 
-        const extendsFooBinding = extendsFooBind.withConstructor();
+        const extendsFooBinding = extendsFooBind.withConstructorGenerator();
         expect(extendsFooBinding.scope).to.deep.equal(transientScope);
         expect(extendsFooBinding.depIds).to.deep.equal([]);
         expectTypeOf(extendsFooBinding.depIds).toEqualTypeOf<readonly []>();
@@ -139,17 +139,17 @@ suite('bind', () => {
         expectTypeOf(extendsFooBinding.provider()).toEqualTypeOf<ExtendsFoo>();
 
         // @ts-expect-error
-        barBind.withConstructor();
+        barBind.withConstructorGenerator();
         // @ts-expect-error
-        extendsBarBind.withConstructor();
+        extendsBarBind.withConstructorGenerator();
         // @ts-expect-error
-        eggBind.withConstructor();
+        eggBind.withConstructorGenerator();
         // @ts-expect-error
-        chickenBind.withConstructor();
+        chickenBind.withConstructorGenerator();
         // @ts-expect-error
-        thingBind.withConstructor();
+        thingBind.withConstructorGenerator();
         // @ts-expect-error
-        promisishBind.withConstructor();
+        promisishBind.withConstructorGenerator();
     });
 
     test('constructor provider', () => {
