@@ -9,30 +9,9 @@ import type { GenericHaywireId } from '#identifier';
 // eslint-disable-next-line unicorn/custom-error-definition
 export abstract class HaywireError extends Error {}
 
-const stringifyId = (id: GenericHaywireId): string => {
-    let text = id.id;
-    const { annotations } = id;
-    const annotationsText = [
-        annotations.named === null ? null : (`named: ${String(annotations.named)}` as const),
-        annotations.nullable && ('nullable' as const),
-        annotations.undefinable && ('undefinable' as const),
-        typeof annotations.supplier === 'object' &&
-            (`supplier(${[
-                annotations.supplier.sync ? 'sync' : 'async',
-                annotations.supplier.propagateScope && 'propagating',
-            ]
-                .filter(Boolean)
-                .join(', ')})` as const),
-        annotations.lateBinding && ('late-binding' as const),
-    ].filter(Boolean);
-    if (annotationsText.length > 0) {
-        text += `(${annotationsText.join(', ')})`;
-    }
-    return text;
-};
 const stringifyIds = (ids: GenericHaywireId[]): string =>
     ids
-        .map(id => stringifyId(id))
+        .map(id => id.toString())
         .sort()
         .join(', ');
 
@@ -123,7 +102,7 @@ export class HaywireCircularDependencyError extends HaywireContainerValidationEr
             .map(chain => {
                 const chainWithMessage = [...chain].map(id => ({
                     id,
-                    idStr: stringifyId(id),
+                    idStr: id.toString(),
                 }));
                 const permutations: (typeof chainWithMessage)[] = [];
 
@@ -159,15 +138,11 @@ export class HaywireSyncSupplierError extends HaywireContainerValidationError {
         bindingOutputId: GenericHaywireId;
         supplierId: GenericHaywireId;
     }[];
-    public constructor(
-        unsafeSupplierBindings: HaywireSyncSupplierError['unsafeSupplierBindings']
-    ) {
+    public constructor(unsafeSupplierBindings: HaywireSyncSupplierError['unsafeSupplierBindings']) {
         const bindingToMessage = new Map(
             unsafeSupplierBindings.map(unsafeBinding => [
                 unsafeBinding,
-                `[output id: ${stringifyId(
-                    unsafeBinding.bindingOutputId
-                )}, dependency supplier id: ${stringifyId(unsafeBinding.supplierId)}]`,
+                `[output id: ${unsafeBinding.bindingOutputId.toString()}, dependency supplier id: ${unsafeBinding.supplierId.toString()}]`,
             ])
         );
         unsafeSupplierBindings.sort((a, b) =>
@@ -212,7 +187,7 @@ export abstract class HaywireInstanceValidationError extends HaywireError {}
 export class HaywireNullResponseError extends HaywireInstanceValidationError {
     public readonly outputId: GenericHaywireId;
     public constructor(outputId: HaywireNullResponseError['outputId']) {
-        super(`Null value returned for non-nullable provider: ${stringifyId(outputId)}`);
+        super(`Null value returned for non-nullable provider: ${outputId.toString()}`);
         this.name = 'HaywireNullResponseError';
         this.outputId = outputId;
     }
@@ -224,7 +199,7 @@ export class HaywireNullResponseError extends HaywireInstanceValidationError {
 export class HaywireUndefinedResponseError extends HaywireInstanceValidationError {
     public readonly outputId: GenericHaywireId;
     public constructor(outputId: HaywireUndefinedResponseError['outputId']) {
-        super(`Undefined value returned for non-undefinable provider: ${stringifyId(outputId)}`);
+        super(`Undefined value returned for non-undefinable provider: ${outputId.toString()}`);
         this.name = 'HaywireUndefinedResponseError';
         this.outputId = outputId;
     }
@@ -240,7 +215,7 @@ export class HaywireInstanceOfResponseError extends HaywireInstanceValidationErr
         super(
             `Value ${HaywireInstanceOfResponseError.#stringify(
                 value
-            )} returned by provider is not instance of class: ${stringifyId(outputId)}`
+            )} returned by provider is not instance of class: ${outputId.toString()}`
         );
         this.name = 'HaywireInstanceOfResponseError';
         this.outputId = outputId;

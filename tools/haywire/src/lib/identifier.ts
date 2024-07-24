@@ -153,6 +153,28 @@ export class HaywireId<
         this.#childIds.set(HaywireId.#annotationKey(annotations), this);
     }
 
+    public toString(): string {
+        let text = this.id;
+        const { annotations } = this;
+        const annotationsText = [
+            annotations.named === null ? null : (`named: ${String(annotations.named)}` as const),
+            annotations.nullable && ('nullable' as const),
+            annotations.undefinable && ('undefinable' as const),
+            typeof annotations.supplier === 'object' &&
+                (`supplier(${[
+                    annotations.supplier.sync ? 'sync' : 'async',
+                    annotations.supplier.propagateScope && 'propagating',
+                ]
+                    .filter(Boolean)
+                    .join(', ')})` as const),
+            annotations.lateBinding && ('late-binding' as const),
+        ].filter(Boolean);
+        if (annotationsText.length > 0) {
+            text += `(${annotationsText.join(', ')})`;
+        }
+        return text;
+    }
+
     /**
      * Get the most generic form of the identifier, which is just the unique identifier instance,
      * possibly with the class constructor attached.
@@ -493,8 +515,9 @@ export type GenericOutputHaywireId = HaywireId<
     false
 >;
 
-type HaywireIdTypeNullable<Id extends GenericHaywireId> =
-    Id['annotations']['nullable'] extends true ? Id[typeof idType] | null : Id[typeof idType];
+type HaywireIdTypeNullable<Id extends GenericHaywireId> = Id['annotations']['nullable'] extends true
+    ? Id[typeof idType] | null
+    : Id[typeof idType];
 type HaywireIdTypeUndefinable<Id extends GenericHaywireId> =
     Id['annotations']['undefinable'] extends true
         ? HaywireIdTypeNullable<Id> | undefined
