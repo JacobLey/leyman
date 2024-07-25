@@ -1,7 +1,7 @@
 <div style="text-align:center">
 
-<h1>iso-crypto</h1>
-<p>Cryptographic methods that work in isomorphic (Browser + NodeJS) environments.</p>
+# iso-crypto
+Cryptographic methods that work in isomorphic (Browser + NodeJS) environments.
 
 [![npm package](https://badge.fury.io/js/iso-crypto.svg)](https://www.npmjs.com/package/iso-crypto)
 [![License](https://img.shields.io/npm/l/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/tools/iso-crypto/LICENSE)
@@ -18,14 +18,12 @@
 - [Implementation Details](#implementation-details)
 - [API](#api)
 
-<a name="Introduction"></a>
 ## Introduction
 
 IsoCrypto provides a common interface for cryptographic methods for both NodeJS and Browser environments. On NodeJS it generally relies on the [`node:crypto`](https://nodejs.org/api/crypto.html) module, and on Browser based on [`window.crypto.subtle`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto).
 
 Some lower level isomorphic utilities are also provided, such as text encoding and random byte generation.
 
-<a name="Supported Algorithms"></a>
 ## Supported Algorithms
 
 ### Hash
@@ -50,14 +48,12 @@ Some lower level isomorphic utilities are also provided, such as text encoding a
 * ✅ secp384r1
 * ✅ secp521r1
 
-<a name="Install"></a>
 ## Install
 
 ```sh
 npm i iso-crypto
 ```
 
-<a name="Example"></a>
 ## Example
 
 ### Encoding
@@ -188,7 +184,6 @@ const fromBobDecrypted = encode(await eccDecrypt(
 )); // 'I am more of a coffee drinker myself'
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 iso-crypto is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { eccEncrypt } = await import('iso-crypto');`.
@@ -232,7 +227,6 @@ As such, if you intend to combine encryption with compression, it is important t
 
 Many methods in this module deal with "private" or "secret" values. Proper handling of those values are not explicitly covered by this module. Make sure you understand how to securely transfer and access these values before deploying encryption in production, as improper handling and data leaks can effectively render even the most secure encryption algorithms moot.
 
-<a name="Implementation Details"></a>
 ## Implementation Details
 
 These are far from thorough explanations of cryptographic functions, but hopefully serve as enough to justify design decisions and explain method interfaces.
@@ -281,7 +275,6 @@ Since the secret is determined by the private key + public key combination, it c
 
 Any public keys returned by this module will use the compressed form of a public key by default, however both forms are accepted as input.
 
-<a name="Api"></a>
 ## API
 
 ### Types
