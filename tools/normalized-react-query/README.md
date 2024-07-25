@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>normalized-react-query</h1>
-<p>Wrapper around React Query to enforce type-safe, consistent key-query mappings.</p>
+# >normalized-react-query
+Wrapper around React Query to enforce type-safe, consistent key-query mappings.
 
 [![npm package](https://badge.fury.io/js/normalized-react-query.svg)](https://www.npmjs.com/package/normalized-react-query)
 [![License](https://img.shields.io/npm/l/normalized-react-query.svg)](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/normalized-react-query.svg)](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query)
 
 </div>
 
@@ -15,8 +14,17 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+  - [Resource](#resource)
+  - [Paginated](#paginated)
+  - [Infinite](#infinite)
+  - [Mutation](#mutation)
+- [Types](#types)
+  - [QueryData](#querydata)
+  - [QueryParams](#queryparams)
+  - [QueryVariables](#queryvariables)
+  - [EmptyObject](#emptyobject)
 
-<a name="Introduction"></a>
+
 ## Introduction
 
 [React Query](https://tanstack.com/query/v4) provides powerful API state management, with caching, pre-fetching, SSR, and hook support.
@@ -68,14 +76,12 @@ This package attempts to solve this discrepancy by forcing pairing of keys and f
 
 Ideally any implementations of the wrapper classes can offload any API and business logic so that actual React functions can simply access the data as it becomes available.
 
-<a name="Install"></a>
 ## Install
 
 ```sh
 npm i normalized-react-query
 ```
 
-<a name="Example"></a>
 ## Example
 
 ```ts
@@ -142,7 +148,6 @@ const useExample = () => {
 };
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 `normalized-react-query` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { Resource } = await import('normalized-react-query');`.
@@ -189,10 +194,9 @@ const getUser = resource<User, string>(
 );
 ```
 
-<a name="Api"></a>
 ## API
 
-## Resource
+### Resource
 
 The `Resource` class is the most basic wrapper around `useQuery`. When in doubt, a method that asynchronously loads data (a "resource") should extend the `Resource` class.
 
@@ -202,21 +206,21 @@ The query function can be as simple as a direct API call, but supports side effe
 
 These side-effects should _most likely_ be placed in lifecycle hooks, like `onSuccess`.
 
-## Paginated
+### Paginated
 
 The `Paginated` class is a typed extension `Resource`. It provides some default typing to support pagination, which React Query supports natively with [keepPreviousData](https://tanstack.com/query/v4/docs/guides/paginated-queries).
 
-## Infinite
+### Infinite
 
 The `Infinite` class wraps the `Paginated` class further, providing "infinite" queries where all pages are loaded and available in parallel. It is built off multiple individual queries, so any refetching, caching, invalidation, and de-duplication is handled smoothy.
 
-### Why not native `useInfinite`?
+#### Why not native `useInfinite`?
 
 React Query exports a `useInfinite` natively, which provides _very_ similar behavior out of the box. The decision to not use it is based on that hook conflicting with `useQuery`'s cache. `useInfinite` queries cannot share a `queryKey` with `useQuery`, and therefore cannot benefit from the powerful functionality React Query defines.
 
 Therefore, a custom `useInfinite` hook was implemented using React Query's `useQueries` hook. That ensures any using of `Infinite`s `useQuery` hook can benefit from `useInfinite` and vice versa. Remember `Infinite` is a child class of `Paginated` and therefore supports normal query behavior as well.
 
-## Mutation
+### Mutation
 
 The `Mutation` class is a wrapper around [React Query `useMutation`](https://tanstack.com/query/v4/docs/reference/useMutation). "Mutations" aren't fetching data, but rather changing the server state, and handling side effects accordingly.
 

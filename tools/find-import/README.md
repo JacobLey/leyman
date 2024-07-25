@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>find-import</h1>
-<p>Find and load first instance of js/json in parent directories.</p>
+# find-import
+Find and load first instance of js/json in parent directories.
 
 [![npm package](https://badge.fury.io/js/find-import.svg)](https://www.npmjs.com/package/find-import)
 [![License](https://img.shields.io/npm/l/find-import.svg)](https://github.com/JacobLey/leyman/blob/main/tools/find-import/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/find-import.svg)](https://github.com/JacobLey/leyman/blob/main/tools/find-import)
 
 </div>
 
@@ -15,8 +14,8 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+  - [findImport](#findimportfilenames-options)
 
-<a name="Introduction"></a>
 ## Introduction
 
 Load the first instance of a found module.
@@ -27,14 +26,12 @@ Supports `.json`, `.cjs`, `.mjs`, and `.js`.
 
 Returns the path and contents of the found module.
 
-<a name="Install"></a>
 ## Install
 
 ```sh
 npm i find-import
 ```
 
-<a name="Example"></a>
 ## Example
 
 Given file structure
@@ -75,12 +72,10 @@ found = await findImport(['my-file.cjs', 'my-file.json'], {
 found.filePath // /root/my-package/my-file.cjs
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 `find-import` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { findImport } = await import('find-import');`.
 
-<a name="Api"></a>
 ## API
 
 ### findImport(fileNames, options?)

@@ -5,7 +5,6 @@
 
 [![npm package](https://badge.fury.io/js/enum-to-array.svg)](https://www.npmjs.com/package/enum-to-array)
 [![License](https://img.shields.io/npm/l/enum-to-array.svg)](https://github.com/JacobLey/leyman/blob/main/tools/enum-to-array/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/enum-to-array.svg)](https://github.com/JacobLey/leyman/blob/main/tools/enum-to-array)
 
 </div>
 
@@ -15,22 +14,22 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+  - [enumToArray](#enumtoarray)
+  - [enumToValues](#enumtovalues)
+  - [enumToKeys](#enumtokeys)
 
-<a name="Introduction"></a>
 ## Introduction
 
 Enum to array is a light module for converting a typescript enum to an array of keys or values.
 
 Thanks to [reverse mappings](https://www.typescriptlang.org/docs/handbook/enums.html#reverse-mappings) this is a little bit trickier than `Object.keys` or `Object.values`
 
-<a name="Install"></a>
 ## Install
 
 ```sh
 npm i enum-to-array
 ```
 
-<a name="Example"></a>
 ## Example
 
 ```ts
@@ -44,7 +43,6 @@ console.log(enumToArray(MyEnum));
 // [{ key: 'FOO', value: 'BAR' }, { key: 'ABC', value: 123 }]
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 enum-to-array is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { enumToArray } = await import('enum-to-array');`.
@@ -53,7 +51,6 @@ Due to the nature of `const enum`s, those are not usable with this library as th
 
 This can be partially resolved by using [preserveConstEnums](https://www.typescriptlang.org/tsconfig#preserveConstEnums).
 
-<a name="Api"></a>
 ## API
 
 enum-to-array exports three functions:

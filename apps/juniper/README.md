@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>Juniper</h1>
-<p>ESM JSON Schema builder for static Typescript inference</p>
+# Juniper
+ESM JSON Schema builder for static Typescript inference
 
 [![npm package](https://badge.fury.io/js/juniper.svg)](https://www.npmjs.com/package/juniper)
 [![License](https://img.shields.io/npm/l/juniper.svg)](https://github.com/JacobLey/leyman/blob/main/apps/juniper/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/juniper.svg)](https://github.com/JacobLey/leyman/blob/main/apps/juniper)
 
 </div>
 
@@ -22,7 +21,6 @@
 - [Limitations](#limitations)
 - [Comparisons](#comparisons)
 
-<a name="Introduction"></a>
 ## Introduction
 
 Juniper is a JSON Schema generator that focuses on solving two problems:
@@ -33,14 +31,12 @@ Juniper primarily supports [Draft 2020-12](https://json-schema.org/draft/2020-12
 
 Juniper does not provide any JSON Schema validation. Please use a validation library such as [Ajv](https://www.npmjs.com/package/ajv) for any validation. All examples in this documentation will use Ajv.
 
-<a name="install"></a>
 ## Install
 
 ```sh
 npm i juniper
 ```
 
-<a name="example"></a>
 ## Example
 
 ```ts
@@ -97,7 +93,6 @@ if (validator(unknownUserInput)) {
 }
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 Juniper is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { stringSchema } = await import('juniper');`.
@@ -156,7 +151,6 @@ const obj = objectSchema({
 ```
 The above code will fail Typescript validation for a number of reasons. However it will not necessarily fail when executed as plain Javascript. The resulting JSON Schema may be equally nonsensical.
 
-<a name="schemas"></a>
 ## Schemas
 
 Juniper exports the following Schema classes, with their provided JSON Schema/Typescript equivalent.
@@ -183,7 +177,6 @@ Schemas come with a couple caveats:
 * `CustomSchema` is used to break out of the Juniper environment. It's usage is discouraged, but may be the best solution when dealing with instances where some JSON Schemas + typings already exist, and for gradual adoption of Juniper.
 * There is no `any` schema, as `any` is discouraged in favor of `unknown` (`MergeSchema`). If `any` is truly required, `CustomSchema` may be used (default output is "always valid" empty JSON Schema)
 
-<a name="Api"></a>
 ## API
 
 ### Helper Types
@@ -415,7 +408,6 @@ TupleSchema | [(prepend)prefixItem](https://json-schema.org/understanding-json-s
     type IndexedObject = SchemaType<typeof indexed>;
     ```
 
-<a name="recipes"></a>
 ## Recipes
 
 Some helpful schema recipes to get started and provide inspiration of how to proceed.
@@ -439,7 +431,6 @@ enumSchema({
 // { enum: ['BAR', 123] }
 ```
 
-<a name="motivation-the-json-schema-problem"></a>
 ## Motivation (The JSON Schema Problem)
 
 [Json Schema](https://json-schema.org/) is a powerful vocabulary for describing data formats that is both human and machine readable.
@@ -484,7 +475,6 @@ However, when it comes to generating and using these schemas, a few issues pop u
   * By generating the JSON Schema dynamically, Juniper is able to adjust the outputted schema to fit the environment.
     * Presently Juniper supports Draft 2020-12 (default) and OpenAPI 3.0.
 
-<a name="objectives"></a>
 ## Objectives
 
 Juniper has the following goals for generating JSON Schema:
@@ -556,7 +546,6 @@ The following are non-goals for Juniper.
 * Performance
   * While Juniper should not be a runtime bottleneck, it optimizes functionality over speed for schema generation. Schemas should (as much as possible) be generated only once, and at the start of the process.
 
-<a name="limitations"></a>
 ## Limitations
 
 Juniper tries to emit Typescript types for related JSON Schemas. These types are generally best effort, and have some limitations.
@@ -573,7 +562,6 @@ Juniper tries to emit Typescript types for related JSON Schemas. These types are
     ```
   * The general exception is enforcement that a schema cannot be null.
 
-<a name="comparisons"></a>
 ## Comparisons
 
 There are many other tools available for dealing with JSON Schema in a Typescript environment. While this list is not exhaustive, it provides insight to potential alternatives and feature disparity.

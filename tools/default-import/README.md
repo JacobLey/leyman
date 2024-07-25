@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>default-import</h1>
-<p>Properly handle CJS default imports in ESM.</p>
+# default-import
+Properly handle CJS default imports in ESM.
 
 [![npm package](https://badge.fury.io/js/default-import.svg)](https://www.npmjs.com/package/default-import)
 [![License](https://img.shields.io/npm/l/default-import.svg)](https://github.com/JacobLey/leyman/blob/main/tools/default-import/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/default-import.svg)](https://github.com/JacobLey/leyman/blob/main/tools/default-import)
 
 </div>
 
@@ -15,9 +14,8 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-- [Related Issues](#related-issues)
+  - [defaultImport](#defaultimport)
 
-<a name="Introduction"></a>
 ## Introduction
 
 Handle importing unknown/CJS modules in ESM that do not properly export a default value.
@@ -28,14 +26,12 @@ Some libraries improperly mix "default" and "named" exports in CommonJS, which r
 
 This library intends to provide the most basic instrumentation to properly access the default import.
 
-<a name="Install"></a>
 ## Install
 
 ```sh
 npm i default-import
 ```
 
-<a name="Example"></a>
 ## Example
 
 ```ts
@@ -74,7 +70,6 @@ console.log(defaultImport(dynamicA)) // 123
 console.log(defaultImport(dynamicA.default)) // 123
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 `default-import` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { defaultImport } = await import('default-import');`.
@@ -83,7 +78,6 @@ console.log(defaultImport(dynamicA.default)) // 123
 
 It is best used when the runtime/source is not entirely in control, such as NextJS (ESM on server, "commonjs" on browser).
 
-<a name="Api"></a>
 ## API
 
 ### defaultImport(*)

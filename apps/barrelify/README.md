@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>barrelify</h1>
-<p>Auto-generate TS barrel files.</p>
+# barrelify
+Auto-generate TS barrel files.
 
 [![npm package](https://badge.fury.io/js/barrelify.svg)](https://www.npmjs.com/package/barrelify)
 [![License](https://img.shields.io/npm/l/barrelify.svg)](https://github.com/JacobLey/leyman/blob/main/apps/barrelify/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/barrelify.svg)](https://github.com/JacobLey/leyman/blob/main/apps/barrelify)
 
 </div>
 
@@ -15,8 +14,8 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+  - [barrelify](#barrelifyoptions)
 
-<a name="Introduction"></a>
 ## Introduction
 
 Auto-generate barrel files for typescript.
@@ -28,14 +27,12 @@ Respects CommonJS/ESM compatibilities. Always ignores `.gitignore`-d and `node_m
 
 Barrel files _should_ be checked into version control.
 
-<a name="install"></a>
 ## Install
 
 ```sh
 npm i barrelify --save-dev
 ```
 
-<a name="example"></a>
 ## Example
 
 Given file structure
@@ -79,7 +76,6 @@ export * from './esm.mjs';
 
 Note that the `// AUTO-BARREL` comment is preserved, so future `npx barrelify` will continue to keep files in sync.
 
-<a name="Usage"></a>
 ## Usage
 
 `barrelify` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { barrelify } = await import('barrelify');`.
@@ -94,7 +90,6 @@ Make sure your index files are flagged with `// AUTO-BARREL` as the very first c
 
 `npx barrel --ci` will execute a special "dry-run" version, that throws an error if any files are found out of sync. This can ensure barrel files are properly generated _before_ checking into version control, or during CI tests.
 
-<a name="Api"></a>
 ## API
 
 ### barrelify(options?)

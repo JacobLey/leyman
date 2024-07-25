@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>punycode-esm</h1>
-<p>ESM native version of punycode.js.</p>
+# punycode-esm<
+ESM native version of punycode.js.
 
 [![npm package](https://badge.fury.io/js/punycode-esm.svg)](https://www.npmjs.com/package/punycode-esm)
 [![License](https://img.shields.io/npm/l/punycode-esm.svg)](https://github.com/JacobLey/leyman/blob/main/tools/punycode-esm/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/punycode-esm.svg)](https://github.com/JacobLey/leyman/blob/main/tools/punycode-esm)
 
 </div>
 
@@ -15,8 +14,13 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+  - [decode](#decodestring)
+  - [encode](#encodestring)
+  - [toUnicode](#tounicodestring)
+  - [toASCII](#toasciistring)
+  - [ucs2Decode](#ucs2decodestring)
+  - [ucs2Encode](#ucs2encodecodepoints)
 
-<a name="Introduction"></a>
 ## Introduction
 
 ESM/Typescript native version of [punycode.js](https://www.npmjs.com/package/punycode).
@@ -27,14 +31,12 @@ Logically this package _should_ be the same as punycode.js. The only advantage o
 
 Credit goes to [Mathias Bynens](https://mathiasbynens.be/) for original implementation of this logic.
 
-<a name="Install"></a>
 ## Install
 
 ```sh
 npm i punycode-esm
 ```
 
-<a name="Example"></a>
 ## Example
 
 ```ts
@@ -49,12 +51,10 @@ toUnicode('xn--maana-pta.com'); // 'mañana.com'
 toUnicode('xn----dqo34k.com'); // '☃-⌘.com'
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 `punycode-esm` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { encode } = await import('punycode-esm');`.
 
-<a name="Api"></a>
 ## API
 
 ### `decode(string)`

@@ -5,18 +5,46 @@ Cryptographic methods that work in isomorphic (Browser + NodeJS) environments.
 
 [![npm package](https://badge.fury.io/js/iso-crypto.svg)](https://www.npmjs.com/package/iso-crypto)
 [![License](https://img.shields.io/npm/l/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/tools/iso-crypto/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/tools/iso-crypto)
 
 </div>
 
 ## Contents
 - [Introduction](#introduction)
 - [Supported Algorithms](#supported-algorithms)
+  - [Hash](#hash)
+  - [Symmetric Encryption](#asymmetric-encryption)
+  - [ECDH (Asymmetric)](#ecdh-asymmetric)
 - [Install](#install)
 - [Example](#example)
+  - [Encoding](#encoding)
+  - [Random](#random)
+  - [Hash](#hash-1)
+  - [Symmetric Encryption](#symmetric-encryption-1)
+  - [ECC](#ecc)
 - [Usage](#usage)
 - [Implementation Details](#implementation-details)
+  - [Hashing](#hashing)
+  - [Symmetric Encryption](#symmetric-encryption-2)
 - [API](#api)
+  - [randomBytes](#randombytessize-number)
+  - [decode](#decodeinput-inputtext)
+  - [encode](#encodeinput-inputtext-outputencoding-string)
+  - [decodeObject](#decodeobjectinput-recordstring-string)
+  - [encodeObject](#encodeobjectinput-recordstring-uint8array)
+  - [hash](#hashinput-inputtext-algorithm-algorithm)
+  - [decrypt](#decryptparams--encrypted-inputtext-iv-inputtext-secret-inputtext--options--hash-hash-encryption-encryption-)
+  - [encrypt](#encryptparams--data-inputtext-secret-inputtext--options--hash-hash-encryption-encryption-)
+  - [generateEccPrivateKey](#generateeccprivatekeycurve-curve)
+  - [generateEccPublicKey](#generateeccpublickeyprivatekey-inputtext-curve-curve)
+  - [compressEccPublicKey](#compresseccpublickeypublickey-inputtext-curve-curve)
+  - [decompressEccPublicKey](#decompresseccpublickeypublickey-inputtext-curve-curve)
+  - [eccEncrypt](#eccencryptparams--data-inputtext-privatekey-inputtext-publickey-inputtext--options--curve-curve-encryption-encryption-)
+  - [eccDecrypt](#eccdecryptparams--encrypted-inputtext-iv-inputtext-privatekey-inputtext-publickey-inputtext--options--curve-curve-encryption-encryption-)
+- [Types](#types)
+  - [InputType](#inputtype)
+  - [Hash](#hash-2)
+  - [Encryption](#encryption)
+  - [Curve](#curve)
 
 ## Introduction
 
@@ -277,40 +305,6 @@ Any public keys returned by this module will use the compressed form of a public
 
 ## API
 
-### Types
-
-#### InputType
-
-Type used to represent allowed text/data input.
-
-`string | Uint8Array | { text: string; encoding: string }`.
-
-To verify the "buffer" input, pass the text to `decode` (which is done internally).
-
-A plain string is inferred to be `UTF8` encoded.
-
-### Hash
-
-Type used to represent a specific hash algorithm.
-
-`{ algorithm: string; size: number } | 'raw'`.
-
-To avoid hashing (as it is sometimes used internally by algorithms) provide the `'raw'` option to return the input unchanged.
-
-Generally defaults to `{ cipher: 'AES', size: 256, mode: 'CTR' }`.
-
-### Encryption
-
-Type used to represent a specific symmetric encryption algorithm.
-
-`{ cipher: string; size: number; mode: string }`.
-
-### Curve
-
-Type used to represent a specific ECC curve. `string`.
-
-Generally defaults to `p256`.
-
 ### randomBytes(size: number)
 
 Produces a promise of Uint8Array of length `size` filled with random bytes.
@@ -392,3 +386,37 @@ Returns both the `encrypted` + `iv` data (see `encrypt`) as well as the `publicK
 Asynchronously decrypts the data from `eccEncrypt` using the _receiver's_ `privateKey` and the _sender's_ `publicKey`.
 
 Ensure that the provided curve + encryption algorithm is the same as used to encrypt.
+
+## Types
+
+### InputType
+
+Type used to represent allowed text/data input.
+
+`string | Uint8Array | { text: string; encoding: string }`.
+
+To verify the "buffer" input, pass the text to `decode` (which is done internally).
+
+A plain string is inferred to be `UTF8` encoded.
+
+### Hash
+
+Type used to represent a specific hash algorithm.
+
+`{ algorithm: string; size: number } | 'raw'`.
+
+To avoid hashing (as it is sometimes used internally by algorithms) provide the `'raw'` option to return the input unchanged.
+
+Generally defaults to `{ cipher: 'AES', size: 256, mode: 'CTR' }`.
+
+### Encryption
+
+Type used to represent a specific symmetric encryption algorithm.
+
+`{ cipher: string; size: number; mode: string }`.
+
+### Curve
+
+Type used to represent a specific ECC curve. `string`.
+
+Generally defaults to `p256`.

@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>named-patch</h1>
-<p>Enable monkey patching of named ESM exports.</p>
+# >named-patch
+Enable monkey patching of named ESM exports.
 
 [![npm package](https://badge.fury.io/js/named-patch.svg)](https://www.npmjs.com/package/named-patch)
 [![License](https://img.shields.io/npm/l/named-patch.svg)](https://github.com/JacobLey/leyman/blob/main/tools/named-patch/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/named-patch.svg)](https://github.com/JacobLey/leyman/blob/main/tools/named-patch)
 
 </div>
 
@@ -15,8 +14,10 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+  - [patch](#patchfn)
+  - [patchKey](#patchkey)
+  - [getPatched](#getpatchedfn)
 
-<a name="Introduction"></a>
 ## Introduction
 
 Enables monkey patching of a named ESM export.
@@ -90,7 +91,6 @@ rand[patchKey] = () => '<custom>';
 rand(['foo', 'bar']); // '<custom>'
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 `named-patch` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { patch } = await import('named-patch');`.

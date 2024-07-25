@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>entry-script</h1>
-<p>Modular control for entry script execution.</p>
+# entry-script
+Modular control for entry script execution.
 
 [![npm package](https://badge.fury.io/js/entry-script.svg)](https://www.npmjs.com/package/entry-script)
 [![License](https://img.shields.io/npm/l/entry-script.svg)](https://github.com/JacobLey/leyman/blob/main/tools/entry-script/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/entry-script.svg)](https://github.com/JacobLey/leyman/blob/main/tools/entry-script)
 
 </div>
 
@@ -16,7 +15,6 @@
 - [Usage](#usage)
 - [API](#api)
 
-<a name="Introduction"></a>
 ## Introduction
 
 Modular control for entry script execution.
@@ -43,14 +41,12 @@ This file is not testable, extendable, or modular because it executes the moment
 
 But during a test environment where it is _not_ the top-level script, nothing is executed! That allows you to mock and inspect methods as necessary to fully test your code.
 
-<a name="Install"></a>
 ## Install
 
 ```sh
 npm i entry-script
 ```
 
-<a name="Example"></a>
 ## Example
 
 ```ts
@@ -120,7 +116,6 @@ Now executing `node ./my-app.js` will start the server as expected!
 
 But `import MyApp from './my-app.js';` will return the app class that is ripe for unit/integration testing!
 
-<a name="Usage"></a>
 ## Usage
 
 `entry-script` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { EntryScript } = await import('entry-script');`.
@@ -129,7 +124,6 @@ Any class that extends `EntryScript` must export itself as the `default` export.
 
 The `EntryScript` itself extends [StaticEmitter](https://www.npmjs.com/package/static-emitter) for event emitting convenience.
 
-<a name="Api"></a>
 ## API
 
 ### EntryScript

@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>parse-cwd</h1>
-<p>Parse full current working directory from relative path or URL.</p>
+# >parse-cwd
+Parse full current working directory from relative path or URL.
 
 [![npm package](https://badge.fury.io/js/parse-cwd.svg)](https://www.npmjs.com/package/parse-cwd)
 [![License](https://img.shields.io/npm/l/parse-cwd.svg)](https://github.com/JacobLey/leyman/blob/main/tools/parse-cwd/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/parse-cwd.svg)](https://github.com/JacobLey/leyman/blob/main/tools/parse-cwd)
 
 </div>
 
@@ -15,22 +14,20 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+  - [parseCwd](#parsecwdcwd)
 
-<a name="Introduction"></a>
 ## Introduction
 
 Parses the full path to current working directory.
 
 Validates that directory actually exists.
 
-<a name="Install"></a>
 ## Install
 
 ```sh
 npm i parse-cwd
 ```
 
-<a name="Example"></a>
 ## Example
 
 ```ts
@@ -51,12 +48,10 @@ console.log(await parseCwd({ cwd: 'foo/bar/my-file.js' })); // /path/to/cwd/foo/
 await parseCwd('does/not/exist');
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 `parse-cwd` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { parseCwd } = await import('parse-cwd');`.
 
-<a name="Api"></a>
 ## API
 
 ### parseCwd(cwd)

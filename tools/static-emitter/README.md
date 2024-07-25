@@ -1,11 +1,10 @@
 <div style="text-align:center">
 
-<h1>static-emitter</h1>
-<p>Statically typed event emitter.</p>
+# static-emitter
+Statically typed event emitter.
 
 [![npm package](https://badge.fury.io/js/static-emitter.svg)](https://www.npmjs.com/package/static-emitter)
 [![License](https://img.shields.io/npm/l/static-emitter.svg)](https://github.com/JacobLey/leyman/blob/main/tools/static-emitter/LICENSE)
-[![Quality](https://img.shields.io/npms-io/quality-score/static-emitter.svg)](https://github.com/JacobLey/leyman/blob/main/tools/static-emitter)
 
 </div>
 
@@ -15,8 +14,12 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+  - [TypedEvents](#typedevent)
+  - [CustomEvent](#customevent)
+  - [events](#events)
+  - [StaticEventTarget](#staticeventtarget)
+  - [StaticEmitter](#staticemitter)
 
-<a name="Introduction"></a>
 ## Introduction
 
 EventTarget with support for static type enforcement of events.
@@ -29,14 +32,12 @@ A type-only wrapper of `EventTarget` is also available, `StaticEventTarget`.
 
 StaticEmitter works in both NodeJS and the browser.
 
-<a name="Install"></a>
 ## Install
 
 ```sh
 npm i static-emitter
 ```
 
-<a name="Example"></a>
 ## Example
 
 ```ts
@@ -61,7 +62,6 @@ myEmitter.emit('foo', [123]); // success!
 myEmitter.emit('bar', { wrong: null }); // Typescript error!
 ```
 
-<a name="Usage"></a>
 ## Usage
 
 static-emitter is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { StaticEmitter, StaticEventTarget } = await import('static-emitter');`.
@@ -70,7 +70,6 @@ The `StaticEventTarget` is a type-cast of [EventTarget](https://developer.mozill
 
 The `StaticEmitter` is an extension of `StaticEventTarget`. It includes support for symbol events, non-event bodies, and EventEmitter-esque syntax.
 
-<a name="Api"></a>
 ## API
 
 ### TypedEvent
