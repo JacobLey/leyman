@@ -91,14 +91,3 @@ It is best used when the runtime/source is not entirely in control, such as Next
 Extracts the _proper_ default import from a CJS import.
 
 Idempotent, and correctly handles proper default exports (e.g. default import from ESM .mjs file).
-
-## Related Issues
-
-* NextJS
-  * https://github.com/vercel/next.js/issues/30402
-  * https://github.com/vercel/next.js/issues/32213
-* Styled Components
-  * https://github.com/styled-components/styled-components/issues/3437
-  * https://github.com/styled-components/styled-components/issues/3601
-* Typescript
-  * https://github.com/microsoft/TypeScript/issues/49160#issuecomment-1137482639
