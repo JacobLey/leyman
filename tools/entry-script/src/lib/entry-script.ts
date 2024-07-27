@@ -27,7 +27,7 @@ export abstract class EntryScript {
      * Method called at the "start" of execution, if default export is the class.
      *
      * Must be extended with any custom logic if exporting the class.
-     * 
+     *
      * @param argv - parameters to script, _after_ the node executable and file name.
      * `node ./foo-bar.js --bing bong` -> `['--bing', 'bong']`
      * Based off process.argv

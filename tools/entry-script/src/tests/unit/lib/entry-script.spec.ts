@@ -1,8 +1,8 @@
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MainNotImplementedError } from 'entry-script';
 import { beforeEach, suite, test } from 'mocha-hookup';
 import { runAsMain } from '#entry-script';
+import { MainNotImplementedError } from '#not-implemented-error';
 import { expect } from '../../chai-hooks.js';
 import entryScriptInstance from '../../data/entry-script-instance.js';
 import EntryScriptStatic from '../../data/entry-script-static.js';
