@@ -1,75 +1,46 @@
 import { defaultImport } from 'default-import';
-import { StaticEmitter } from 'static-emitter';
-
-export const runtimeError = Symbol('runtimeError');
+import { MainNotImplementedError } from '#not-implemented-error';
 
 /**
  * Base class for all entry script executable files.
  * Extend this class and export the result as "default"
  * to run automatically, when that file is NodeJS' entry point.
- *
- * Extends StaticEmitter to emit error events.
  */
-export class EntryScript extends StaticEmitter<{
-    [runtimeError]: unknown;
-}> {
+export abstract class EntryScript {
     /**
-     * Creates an instance of EntryScript's child class.
+     * Method called at the "start" of execution, if default export is an instance.
      *
-     * Extendable to provide any "setup" (loading config, initializing connections).
+     * Must be extended with any custom logic if exporting an instance.
      *
-     * @param this - child class of EntryScript
-     * @returns Instance of EntryScript.
+     * @param argv - parameters to script, _after_ the node executable and file name.
+     * `node ./foo-bar.js --bing bong` -> `['--bing', 'bong']`
+     * Based off process.argv
+     * @throws {MainNotImplementedError} when not implemented
      */
-    public static async create<I extends typeof EntryScript>(this: I): Promise<I['prototype']> {
-        return new this();
+    public async main(argv: string[]): Promise<void>;
+    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+    public async main(): Promise<void> {
+        throw new MainNotImplementedError(true);
     }
 
     /**
-     * Method called at the "start" of execution (after setup).
+     * Method called at the "start" of execution, if default export is the class.
      *
-     * Extendable to provide any custom logic.
+     * Must be extended with any custom logic if exporting the class.
+     * 
+     * @param argv - parameters to script, _after_ the node executable and file name.
+     * `node ./foo-bar.js --bing bong` -> `['--bing', 'bong']`
+     * Based off process.argv
+     * @throws {MainNotImplementedError} when not implemented
      */
-    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-    public async start(): Promise<void> {}
-
-    /**
-     * Method called at the "end" of execution (after start).
-     *
-     * Will be called even if `start` throws an error.
-     *
-     * Extendable to provide any custom logic.
-     */
-    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
-    public async finish(): Promise<void> {}
-
-    /**
-     * Create and execute script lifecycle.
-     *
-     * Called implicitly by default-exported classes, but can be called explicitly
-     * as necessary.
-     */
-    public static async run(): Promise<void> {
-        const script = await this.create();
-        await script.run();
-    }
-
-    /**
-     * Execute lifecycle of script.
-     *
-     * Called implicitly by static `run()` but can be called explicitly as necessary.
-     */
-    public async run(): Promise<void> {
-        try {
-            await this.start();
-        } catch (err) {
-            (this as EntryScript).emit(runtimeError, err);
-            throw err;
-        } finally {
-            await this.finish();
-        }
+    public static async main(argv: string[]): Promise<void>;
+    public static async main(): Promise<void> {
+        throw new MainNotImplementedError(false);
     }
 }
+
+const isEntryScript = (x: object): x is typeof EntryScript =>
+    Object.prototype.isPrototypeOf.call(EntryScript, x);
 
 /**
  * Method to load entry point module, and execute it if
@@ -83,14 +54,13 @@ export class EntryScript extends StaticEmitter<{
  */
 export const runAsMain = async (url?: string): Promise<void> => {
     if (url) {
-        const rawEntryScript = (await import(url).catch(() => null)) as typeof EntryScript;
+        const rawEntryScript: unknown = await import(url).catch(() => null);
         const script = defaultImport(rawEntryScript);
 
-        if (Object.prototype.isPrototypeOf.call(EntryScript, script)) {
-            await script.run();
+        if (script && (script instanceof EntryScript || isEntryScript(script))) {
+            await script.main(process.argv.slice(2));
         }
     }
 };
 
-const urlIndex = 1;
-void runAsMain(process.argv[urlIndex]);
+void runAsMain(process.argv[1]);

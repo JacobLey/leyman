@@ -1,50 +1,71 @@
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { expect } from 'chai';
-import { fake, spy, stub, verifyAndRestore } from 'sinon';
-import * as EntryScript from 'entry-script';
-import { afterEach, beforeEach, suite, test } from 'mocha-hookup';
+import { MainNotImplementedError } from 'entry-script';
+import { beforeEach, suite, test } from 'mocha-hookup';
 import { runAsMain } from '#entry-script';
-import EntryScriptMock from '../../data/entry-script-mock.js';
+import { expect } from '../../chai-hooks.js';
+import entryScriptInstance from '../../data/entry-script-instance.js';
+import EntryScriptStatic from '../../data/entry-script-static.js';
+import { tracker } from '../../data/tracker.js';
 
 suite('EntryScript', () => {
-    afterEach(() => {
-        verifyAndRestore();
-    });
-
-    suite('create', () => {
-        test('success', async () => {
-            expect(await EntryScript.EntryScript.create()).to.be.an.instanceOf(
-                EntryScript.EntryScript
-            );
-        });
-    });
-
     suite('runAsMain', () => {
-        const withStubbedEntryScript = beforeEach(async () => {
-            const entryScript = await EntryScriptMock.create();
-            stub(EntryScriptMock, 'create').returns(Promise.resolve(entryScript));
-
-            return { entryScript };
+        beforeEach(() => {
+            delete tracker.value;
+            expect(tracker.value).to.equal(undefined);
         });
 
-        withStubbedEntryScript.test('success', async ({ entryScript }) => {
-            const startSpy = spy(entryScript, 'start');
-            const finishSpy = spy(entryScript, 'finish');
-
+        test('static', async () => {
             await runAsMain(
                 Path.resolve(
                     Path.dirname(fileURLToPath(import.meta.url)),
-                    '../../data/entry-script-mock.js'
+                    '../../data/entry-script-static.js'
                 )
             );
 
-            expect(startSpy.callCount).to.equal(1);
-            expect(startSpy.calledBefore(finishSpy)).to.equal(true);
-            expect(finishSpy.callCount).to.equal(1);
+            expect(tracker.value).to.equal(EntryScriptStatic);
+        });
+
+        test('success', async () => {
+            await runAsMain(
+                Path.resolve(
+                    Path.dirname(fileURLToPath(import.meta.url)),
+                    '../../data/entry-script-instance.js'
+                )
+            );
+
+            expect(tracker.value).to.equal(entryScriptInstance);
         });
 
         suite('failure', () => {
+            test('Static method not implemented', async () => {
+                await expect(
+                    runAsMain(
+                        Path.resolve(
+                            Path.dirname(fileURLToPath(import.meta.url)),
+                            '../../data/entry-script-static-invalid.js'
+                        )
+                    )
+                ).to.eventually.be.rejectedWith(
+                    MainNotImplementedError,
+                    '"main" not implemented on EntryScript child class.'
+                );
+            });
+
+            test('Instance method not implemented', async () => {
+                await expect(
+                    runAsMain(
+                        Path.resolve(
+                            Path.dirname(fileURLToPath(import.meta.url)),
+                            '../../data/entry-script-instance-invalid.js'
+                        )
+                    )
+                ).to.eventually.be.rejectedWith(
+                    MainNotImplementedError,
+                    '"main" not implemented on EntryScript child instance.'
+                );
+            });
+
             test('No URL exists', async () => {
                 await runAsMain();
             });
@@ -59,38 +80,6 @@ suite('EntryScript', () => {
 
             test('Entry module is not EntryScript', async () => {
                 await runAsMain(import.meta.url);
-            });
-
-            withStubbedEntryScript.test('Emits runtime error', async ({ entryScript }) => {
-                const error = new Error('<ERROR>');
-
-                stub(entryScript, 'start').callsFake(() => {
-                    throw error;
-                });
-                const finishSpy = stub(entryScript, 'finish');
-                const listenerStub = fake((err: unknown, event: CustomEvent<unknown>) => [
-                    err,
-                    event,
-                ]);
-
-                entryScript.on(EntryScript.runtimeError, listenerStub);
-
-                let caughtError: unknown = null;
-                try {
-                    await runAsMain(
-                        Path.resolve(
-                            Path.dirname(fileURLToPath(import.meta.url)),
-                            '../../data/entry-script-mock.js'
-                        )
-                    );
-                } catch (err) {
-                    caughtError = err;
-                }
-
-                expect(caughtError).to.eq(error);
-                expect(finishSpy.callCount).to.equal(1);
-                expect(listenerStub.callCount).to.equal(1);
-                expect(listenerStub.getCall(0).args[0]).to.eq(error);
             });
         });
     });

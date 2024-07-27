@@ -20,9 +20,6 @@
     },
     {
       "path": "../nx-tsc"
-    },
-    {
-      "path": "../static-emitter"
     }
   ]
 }

@@ -695,9 +695,6 @@ importers:
       default-import:
         specifier: workspace:^
         version: link:../default-import
-      static-emitter:
-        specifier: workspace:^
-        version: link:../static-emitter
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.8.3
@@ -708,6 +705,9 @@ importers:
       '@types/chai':
         specifier: ^4.3.16
         version: 4.3.16
+      '@types/chai-as-promised':
+        specifier: ^7.1.8
+        version: 7.1.8
       '@types/mocha':
         specifier: ^10.0.7
         version: 10.0.7
@@ -723,6 +723,9 @@ importers:
       chai:
         specifier: ^5.1.1
         version: 5.1.1
+      chai-as-promised:
+        specifier: ^8.0.0
+        version: 8.0.0(chai@5.1.1)
       mocha:
         specifier: ^10.6.0
         version: 10.6.0
@@ -735,9 +738,6 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
-      sinon:
-        specifier: ^18.0.0
-        version: 18.0.0
       typescript:
         specifier: ^5.5.3
         version: 5.5.3

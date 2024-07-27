@@ -1,1 +1,1 @@
-export { EntryScript, runtimeError } from '#entry-script';
+export { EntryScript, EntryScript as default } from '#entry-script';

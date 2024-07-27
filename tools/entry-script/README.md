@@ -14,6 +14,9 @@ Modular control for entry script execution.
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+  - [EntryScript](#entryscript)
+    - [main(argv: string[]): Promise<void>](#mainargv-string-promise)
+- [References](#references)
 
 ## Introduction
 
@@ -51,65 +54,46 @@ npm i entry-script
 
 ```ts
 // my-app.ts
-import { EntryScript, runtimeError } from 'entry-script';
-import express from 'express';
+import { EntryScript } from 'entry-script';
+import express, { type Application } from 'express';
 import { database } from './my-database.js';
 import { middleware } from './my-middleware.js';
 
 /**
- * All method overrides are optional!
- * Only fill in what you need
+ * Class will be picked up by unit/integration tests to
+ * provide mock dependencies
  */
-export default MyApp extends EntryScript {
+export class MyApp extends EntryScript {
 
-    /**
-     * Override this method to provide async setup/loading logic
-     */
-    public static async create() {
+    #app: Application;
+    #database: typeof database;
+
+    constructor(application = express(), db = database) {
+        this.#app = application;
+        this.#database = db;
+    }
+
+    // node ./my-app.js --port 8080
+    public override async main([, port = '8080']: string[]): Promise<void> {
         await database.connect();
-        return new MyApp(process.env.PORT);
-    }
 
-    /**
-     * Attach any custom parameters to instance
-     */
-    constructor(port) {
-        super();
-        this.port = port;
-
-        // Handle uncaught errors
-        this.on(runtimeError, () => {
-            process.exitCode = 1;
-        });
-    }
-
-    /**
-     * Override this method for core app logic.
-     */
-    public async start() {
-        const app = express();
         app.use(middleware);
 
-        app.listen(this.port);
+        app.listen(parseInt(port));
 
-        // Also an event emitter!
-        this.emit('Listening!', this.port);
-
-        return new Promise((resolve, reject) => {
+        await new Promise((resolve, reject) => {
             // Graceful shutdown
             process.once('SIGTERM', () => {
                 resolve();
             });
         });
-    }
 
-    /**
-     * Override this method to perform any cleanup logic, regardless if `start` threw an error.
-     */
-    public async finish() {
         await database.disconnect();
     }
 }
+
+// Instance will be picked up when this file is executed directly!
+export default new MyApp();
 ```
 
 Now executing `node ./my-app.js` will start the server as expected!
@@ -120,9 +104,9 @@ But `import MyApp from './my-app.js';` will return the app class that is ripe fo
 
 `entry-script` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { EntryScript } = await import('entry-script');`.
 
-Any class that extends `EntryScript` must export itself as the `default` export.
+Any class that extends `EntryScript` must export either the class itself or an instance of the class as the `default` export.
 
-The `EntryScript` itself extends [StaticEmitter](https://www.npmjs.com/package/static-emitter) for event emitting convenience.
+Depending on class/instance export, either the static or instance version of `main(argv: string[]): Promise<void>` must be implemented.
 
 ## API
 
@@ -130,65 +114,31 @@ The `EntryScript` itself extends [StaticEmitter](https://www.npmjs.com/package/s
 
 Extendable class that control logic flow of an entry point. Will not perform any execution if the entry point for nodejs does not export a child class of EntryScript as `default`.
 
-#### run
+This class is exported both as the default export of this package, and as a named export.
 
-Available on both the class and instance. Controls script lifecycle.
+#### main(argv: string[]): Promise<void>
 
-In general this method should not be called directly, as it is called implicitly by the internal EntryScript lifecycle.
+Available as both a static and instance method.
 
-May be called manually when the script is not exposed as the top-level default export.
+If a class is exported, will call the static method, if an instance is exported will call the instance method. Only one will be called, and it _must_ be implemented.
+
+In general this method should not be called directly during production, as it is called implicitly by the internal EntryScript lifecycle, although it may be called as part of your unit/integration tests (thats the whole idea!).
+
+The array of parameters passed to it are the command line arguments. T
+hey are the same as `process.argv`, minus the node executable and filename:
+
+`node ./foo-bar.js --port 8080` -> `argv = ['--port', '8080']`.
+
+## References
+
+See the [haywire](https://www.npmjs.com/package/haywire) package as a way to help manage dependency injection alongside instance creation.
 
 ```ts
-class MyScript extends EntryScript {
-    public start() {
-        // Do stuff...
-    }
-}
+import { EntryScript } from 'entry-script';
+import { bind, createContainer } from 'haywire'; 
+import { myModule } from './module.js';
 
-// Creates the script and executes
-await MyScript.run();
+const container = createContainer(myModule);
 
-// Create the script manually and execute.
-const myScript = await MyScript.create();
-await myScript.run();
+export default container.get(EntryScript);
 ```
-
-#### Methods to override
-
-Each method can call `super.<method>()` as desired, but the base methods are very basic, often NOOP, logic.
-
-##### create
-
-Async static method.
-
-Perform any "pre-execution" logic here, such as loading configs or connecting to databases.
-
-Must return an instance of the class, either by calling `return new MyClass()` directly, or `return super.create()`.
-
-##### constructor
-
-Normal class constructor.
-
-Customize the properties of the class as appropriate.
-
-##### start
-
-Async instance method.
-
-Perform most of the business logic here. Once this promise resolves, cleanup will be initialized.
-
-So long-running tasks like servers should return a dangling promise, one that is perhaps only resolved on signal interrupts.
-
-##### finish
-
-Async instance method.
-
-Perform any "post-execution" logic here, such as disconnecting from databases, or writing final data to disk.
-
-This will be called regardless of the "success" of the `start` script.
-
-### runtimeError
-
-Symbol that will be used as event key on the `EntryScript` instance whenever `start` throws an error.
-
-Listening on this event is optional, but recommended for handling unexpected cleanup, or taking options such as setting a failing exit code.
