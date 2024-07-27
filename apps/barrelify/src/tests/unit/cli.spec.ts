@@ -34,9 +34,7 @@ suite('cli', () => {
                     return [];
                 });
 
-                await new BarrelCli({
-                    argv: ['node', 'barrelify', '--dry-run', '--ignore', 'foo'],
-                }).main();
+                await new BarrelCli().main(['--dry-run', '--ignore', 'foo']);
 
                 expect(buildStub.callCount).to.equal(1);
             });
@@ -49,9 +47,7 @@ suite('cli', () => {
                     expect(log.endsWith('Unknown arguments: unknown, option')).to.equal(true);
                 });
 
-                await new BarrelCli({
-                    argv: ['node', 'barrelify', '--unknown', '--option'],
-                }).main();
+                await new BarrelCli().main(['--unknown', '--option']);
 
                 expect(buildSpy.callCount).to.equal(0);
                 expect(outputStub.callCount).to.equal(1);
@@ -70,9 +66,7 @@ suite('cli', () => {
                     return [];
                 });
 
-                await new BarrelCli({
-                    argv: ['node', 'barrelify', '--ci', '--cwd', '..'],
-                }).main();
+                await new BarrelCli().main(['--ci', '--cwd', '..']);
 
                 expect(buildStub.callCount).to.equal(1);
                 expect(process.exitCode).to.equal(undefined);
@@ -86,9 +80,7 @@ suite('cli', () => {
                 stub(barrelFiles, patchKey).resolves(['<file-path>']);
                 const oldExitCode = process.exitCode;
 
-                await new BarrelCli({
-                    argv: ['node', 'barrelify', '--ci'],
-                }).main();
+                await new BarrelCli().main(['--ci']);
 
                 expect(process.exitCode).to.equal(1);
                 process.exitCode = oldExitCode;

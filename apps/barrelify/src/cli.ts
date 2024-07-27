@@ -1,5 +1,4 @@
 import yargsDefault, { type Argv, type CommandModule } from 'yargs';
-import { hideBin } from 'yargs/helpers';
 import { defaultImport } from 'default-import';
 import { EntryScript } from 'entry-script';
 import { findImport } from 'find-import';
@@ -21,32 +20,19 @@ export const yargsOutput = patch((e: unknown, argv: unknown, log: string): void 
  * Uses `yargs` package for command line parsing and logic flow.
  */
 export class BarrelCli extends EntryScript {
-    readonly #argv: string[];
-
-    /**
-     * Create CLI given args.
-     *
-     * @param params - required parameters
-     * @param params.argv - args from CLI process
-     */
-    public constructor(params: {
-        argv: string[];
-    }) {
-        super();
-        this.#argv = hideBin(params.argv);
-    }
-
     /**
      * Entry point to CLI script.
      *
      * Sets high level Yargs settings. Command/options logic is implemented in individual command modules.
+     *
+     * @param argv - process arguments
      */
-    public override async main(): Promise<void> {
+    public override async main(argv: string[]): Promise<void> {
         const pkg = await findImport('package.json', {
             cwd: import.meta.url,
         });
 
-        const yarg = (yargs() as unknown as Argv)
+        const yarg = yargs()
             .scriptName('barrelify')
             .option({
                 cwd: {
@@ -75,8 +61,8 @@ export class BarrelCli extends EntryScript {
             yarg.command(typedCommand);
         }
 
-        await yarg.parseAsync(this.#argv, {}, yargsOutput);
+        await yarg.parseAsync(argv, {}, yargsOutput);
     }
 }
 
-export default new BarrelCli({ argv: process.argv });
+export default new BarrelCli();
