@@ -1,1 +1,1 @@
-export { EntryScript, EntryScript as default } from '#entry-script';
+export { EntryScript, EntryScript as default, type Main } from '#entry-script';

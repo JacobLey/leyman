@@ -1,12 +1,25 @@
 import { defaultImport } from 'default-import';
 import { MainNotImplementedError } from '#not-implemented-error';
+import { args, bin } from '#process-argv';
+
+export interface Main {
+    /**
+     * Method called at the "start" of execution, if default export is an instance.
+     *
+     * Must be extended with any custom logic if exporting an instance.
+     *
+     * @param argv - parameters to script, _after_ the node executable and file name.
+     * `node ./foo-bar.js --bing bong` -> `['--bing', 'bong']`
+     */
+    main: (argv: string[]) => Promise<void>;
+}
 
 /**
  * Base class for all entry script executable files.
  * Extend this class and export the result as "default"
  * to run automatically, when that file is NodeJS' entry point.
  */
-export abstract class EntryScript {
+export abstract class EntryScript implements Main {
     /**
      * Method called at the "start" of execution, if default export is an instance.
      *
@@ -18,7 +31,6 @@ export abstract class EntryScript {
      * @throws {MainNotImplementedError} when not implemented
      */
     public async main(argv: string[]): Promise<void>;
-    // eslint-disable-next-line @typescript-eslint/class-methods-use-this
     public async main(): Promise<void> {
         throw new MainNotImplementedError(true);
     }
@@ -52,15 +64,15 @@ const isEntryScript = (x: object): x is typeof EntryScript =>
  * @private
  * @param url - NodeJS process entry point.
  */
-export const runAsMain = async (url?: string): Promise<void> => {
+export const runAsMain = async (url?: string | undefined): Promise<void> => {
     if (url) {
         const rawEntryScript: unknown = await import(url).catch(() => null);
         const script = defaultImport(rawEntryScript);
 
         if (script && (script instanceof EntryScript || isEntryScript(script))) {
-            await script.main(process.argv.slice(2));
+            await script.main(args);
         }
     }
 };
 
-void runAsMain(process.argv[1]);
+void runAsMain(bin);

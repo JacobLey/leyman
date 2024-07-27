@@ -21,7 +21,8 @@
   },
   "imports": {
     "#entry-script": "./dist/lib/entry-script.js",
-    "#not-implemented-error": "./dist/lib/not-implemented-error.js"
+    "#not-implemented-error": "./dist/lib/not-implemented-error.js",
+    "#process-argv": "./dist/lib/process-argv.js"
   },
   "dependencies": {
     "default-import": "workspace:^"
