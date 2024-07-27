@@ -20,7 +20,7 @@ export const yargsOutput = patch((e: unknown, argv: unknown, log: string): void 
  *
  * Uses `yargs` package for command line parsing and logic flow.
  */
-export default class BarrelCli extends EntryScript {
+export class BarrelCli extends EntryScript {
     readonly #argv: string[];
 
     /**
@@ -37,20 +37,11 @@ export default class BarrelCli extends EntryScript {
     }
 
     /**
-     * Pass process.argv to cli.
-     *
-     * @returns barrel cli instance
-     */
-    public static override async create(): Promise<BarrelCli> {
-        return new BarrelCli({ argv: process.argv });
-    }
-
-    /**
      * Entry point to CLI script.
      *
      * Sets high level Yargs settings. Command/options logic is implemented in individual command modules.
      */
-    public override async start(): Promise<void> {
+    public override async main(): Promise<void> {
         const pkg = await findImport('package.json', {
             cwd: import.meta.url,
         });
@@ -87,3 +78,5 @@ export default class BarrelCli extends EntryScript {
         await yarg.parseAsync(this.#argv, {}, yargsOutput);
     }
 }
+
+export default new BarrelCli({ argv: process.argv });

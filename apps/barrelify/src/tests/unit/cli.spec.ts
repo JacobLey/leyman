@@ -4,7 +4,7 @@ import { spy, stub, verifyAndRestore } from 'sinon';
 import { defaultImport } from 'default-import';
 import { afterEach, beforeEach, suite, test } from 'mocha-hookup';
 import { patchKey } from 'named-patch';
-import BarrelCli, { yargsOutput } from '../../cli.js';
+import { BarrelCli, yargsOutput } from '../../cli.js';
 import { barrelFiles } from '../../lib/barrel.js';
 
 suite('cli', () => {
@@ -18,15 +18,7 @@ suite('cli', () => {
 
     test('Local compatibility', async () => {
         const localCli = '../../../cli.mjs';
-        expect(BarrelCli).to.deep.equal(defaultImport(await import(localCli)));
-    });
-
-    suite('create', () => {
-        test('success', async () => {
-            const barrel = await BarrelCli.create();
-
-            expect(barrel).to.be.an.instanceOf(BarrelCli);
-        });
+        expect(defaultImport(await import(localCli))).to.be.an.instanceOf(BarrelCli);
     });
 
     suite('commands', () => {
@@ -44,7 +36,7 @@ suite('cli', () => {
 
                 await new BarrelCli({
                     argv: ['node', 'barrelify', '--dry-run', '--ignore', 'foo'],
-                }).start();
+                }).main();
 
                 expect(buildStub.callCount).to.equal(1);
             });
@@ -59,7 +51,7 @@ suite('cli', () => {
 
                 await new BarrelCli({
                     argv: ['node', 'barrelify', '--unknown', '--option'],
-                }).start();
+                }).main();
 
                 expect(buildSpy.callCount).to.equal(0);
                 expect(outputStub.callCount).to.equal(1);
@@ -80,7 +72,7 @@ suite('cli', () => {
 
                 await new BarrelCli({
                     argv: ['node', 'barrelify', '--ci', '--cwd', '..'],
-                }).start();
+                }).main();
 
                 expect(buildStub.callCount).to.equal(1);
                 expect(process.exitCode).to.equal(undefined);
@@ -96,7 +88,7 @@ suite('cli', () => {
 
                 await new BarrelCli({
                     argv: ['node', 'barrelify', '--ci'],
-                }).start();
+                }).main();
 
                 expect(process.exitCode).to.equal(1);
                 process.exitCode = oldExitCode;
