@@ -15,6 +15,7 @@ import {
     transientScope,
 } from 'haywire';
 import { type BindingBuilder, TempBinding } from '#binding';
+import type { AbstractPrivateClass } from '#identifier';
 import { expect } from '../chai-hooks.js';
 
 suite('bind', () => {
@@ -23,7 +24,7 @@ suite('bind', () => {
     }
     const fooBind = bind(Foo);
     expectTypeOf(fooBind).toEqualTypeOf<
-        BindingBuilder<HaywireId<Foo, null, null, false, false, false, false>>
+        BindingBuilder<HaywireId<Foo, AbstractPrivateClass, null, false, false, false, false>>
     >();
 
     class ExtendsFoo extends Foo {
@@ -42,7 +43,7 @@ suite('bind', () => {
     }
     const barBind = bind(identifier(Bar).nullable());
     expectTypeOf(barBind).toEqualTypeOf<
-        BindingBuilder<HaywireId<Bar, null, null, true, false, false, false>>
+        BindingBuilder<HaywireId<Bar, AbstractPrivateClass, null, true, false, false, false>>
     >();
 
     class ExtendsBar extends Bar {
@@ -188,7 +189,11 @@ suite('bind', () => {
     test('generator', () => {
         const fooBinding = fooBind.withGenerator(() => new ExtendsFoo());
         expectTypeOf(fooBinding).toEqualTypeOf<
-            Binding<HaywireId<Foo, null, null, false, false, false, false>, [], false>
+            Binding<
+                HaywireId<Foo, AbstractPrivateClass, null, false, false, false, false>,
+                [],
+                false
+            >
         >();
         // @ts-expect-error
         fooBind.withGenerator(() => new ExtendsBar());
@@ -209,7 +214,11 @@ suite('bind', () => {
     test('async generator', () => {
         const fooBinding = fooBind.withAsyncGenerator(() => new ExtendsFoo());
         expectTypeOf(fooBinding).toEqualTypeOf<
-            Binding<HaywireId<Foo, null, null, false, false, false, false>, [], true>
+            Binding<
+                HaywireId<Foo, AbstractPrivateClass, null, false, false, false, false>,
+                [],
+                true
+            >
         >();
         // @ts-expect-error
         fooBind.withAsyncGenerator(async () => new ExtendsBar());
@@ -232,7 +241,11 @@ suite('bind', () => {
     test('provider', () => {
         const fooProvider = fooBind.withProvider(() => new ExtendsFoo());
         expectTypeOf(fooProvider.withDependencies([])).toEqualTypeOf<
-            Binding<HaywireId<Foo, null, null, false, false, false, false>, [], false>
+            Binding<
+                HaywireId<Foo, AbstractPrivateClass, null, false, false, false, false>,
+                [],
+                false
+            >
         >();
         // @ts-expect-error
         fooProvider.withDependencies([Foo]);
@@ -284,7 +297,11 @@ suite('bind', () => {
     test('async provider', () => {
         const fooProvider = fooBind.withAsyncProvider(() => new ExtendsFoo());
         expectTypeOf(fooProvider.withDependencies([])).toEqualTypeOf<
-            Binding<HaywireId<Foo, null, null, false, false, false, false>, [], true>
+            Binding<
+                HaywireId<Foo, AbstractPrivateClass, null, false, false, false, false>,
+                [],
+                true
+            >
         >();
         // @ts-expect-error
         fooProvider.withDependencies([Foo]);

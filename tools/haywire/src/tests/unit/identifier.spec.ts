@@ -8,6 +8,7 @@ import {
     type LateBinding,
     type Supplier,
 } from 'haywire';
+import type { AbstractPrivateClass } from '#identifier';
 import { expect } from '../chai-hooks.js';
 
 suite('Generate identifier', () => {
@@ -91,7 +92,7 @@ suite('Generate identifier', () => {
         identifier<typeof Foo>(PrivateBar);
         expect(privateBarId.construct).to.equal(PrivateBar);
         expectTypeOf(privateBarId).toEqualTypeOf<
-            HaywireId<PrivateBar, null, null, false, false, false, false>
+            HaywireId<PrivateBar, AbstractPrivateClass, null, false, false, false, false>
         >();
 
         identifier(ExtraBar);
