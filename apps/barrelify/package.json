@@ -30,7 +30,6 @@
     "globby": "^14.0.2",
     "named-patch": "workspace:^",
     "parse-cwd": "workspace:^",
-    "sinon-typed-stub": "workspace:^",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
@@ -49,6 +48,7 @@
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "sinon": "^18.0.0",
+    "sinon-typed-stub": "workspace:^",
     "ts-dedent": "^2.2.0",
     "typescript": "^5.5.3"
   }
