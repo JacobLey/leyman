@@ -1,7 +1,12 @@
 import { createContainer as createFactoryContainer, Factory, type GenericFactory } from '#factory';
 import { createContainer as createModuleContainer, type GenericModule } from '#module';
 
-export { AsyncContainer, isSyncContainer, SyncContainer } from '#container';
+export {
+    AsyncContainer,
+    type GenericContainer,
+    isSyncContainer,
+    SyncContainer,
+} from '#container';
 
 type CreateContainer = typeof createFactoryContainer & typeof createModuleContainer;
 export const createContainer: CreateContainer = ((

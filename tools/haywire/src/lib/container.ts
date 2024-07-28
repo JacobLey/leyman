@@ -124,7 +124,7 @@ const addBoundInstancesSym = Symbol('addBoundInstances');
  *    - Will perform preload, if not explicitly performed already.
  */
 export class AsyncContainer<Outputs extends [Extendable]> {
-    private declare [typeTracking]: Outputs;
+    public declare [typeTracking]: Outputs;
     readonly #isSync: boolean;
     readonly #bindings: ReadonlySet<GenericBinding>;
     readonly #baseIdToBinding: ReadonlyMap<GenericOutputHaywireId, GenericBinding>;
@@ -1599,6 +1599,8 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
         >;
     }
 }
+
+export type GenericContainer = AsyncContainer<[Extendable]>;
 
 export const isSyncContainer = <Outputs extends [Extendable]>(
     container: AsyncContainer<Outputs>

@@ -9,9 +9,11 @@ import {
 import type { IsClass, UnknownType } from '#types';
 
 export {
+    type ClassToConstructable,
     type GenericHaywireId,
     HaywireId,
     type HaywireIdType,
+    type OutputHaywireId,
 } from '#identifier';
 
 interface IdentifierGenerator {
