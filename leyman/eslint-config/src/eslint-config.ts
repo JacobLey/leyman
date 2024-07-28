@@ -20,9 +20,7 @@ import {
 } from './lib/plugins.js';
 
 interface PluginRules {
-    rules?:
-        | Record<string, Rule.RuleModule | RuleModule<string, unknown[]>>
-        | undefined;
+    rules?: Record<string, Rule.RuleModule | RuleModule<string, unknown[]>> | undefined;
 }
 export const nonDeprecatedRules = (name: string, plugin: PluginRules): Linter.RulesRecord => {
     const rules: Linter.RulesRecord = {};
