@@ -156,9 +156,6 @@ export const compilerProvider = (
 
         failureReporter(results);
 
-        // Ignore
-        getOutputtedFiles('', tsConfig.settings);
-
         const outputted = await Promise.all(
             tsConfig.fileNames
                 .filter(
