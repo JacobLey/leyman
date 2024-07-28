@@ -28,12 +28,12 @@
     "@leyman/eslint-config": "workspace:^",
     "@types/chai": "^4.3.16",
     "@types/mocha": "^10.0.7",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.12",
     "chai": "^5.1.1",
-    "mocha": "^10.6.0",
+    "mocha": "^10.7.0",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "nx-tsc": "workspace:^",
     "nyc": "^17.0.0",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.4"
   }
 }

@@ -27,26 +27,26 @@
     "nx-plugin-handler": "workspace:^"
   },
   "optionalDependencies": {
-    "@nx/devkit": "19.5.2",
+    "@nx/devkit": "19.5.3",
     "npm-juniper": "npm:juniper@latest"
   },
   "peerDependencies": {
-    "typescript": "^5.4.3"
+    "typescript": "^5.5.4"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
     "@leyman/eslint-config": "workspace:^",
-    "@swc/core": "1.6.13",
+    "@swc/core": "1.7.3",
     "@types/chai": "^4.3.16",
     "@types/mocha": "^10.0.7",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.12",
     "chai": "^5.1.1",
-    "mocha": "^10.6.0",
+    "mocha": "^10.7.0",
     "npm-load-populate-files": "npm:load-populate-files@latest",
     "npm-nx-populate-files": "npm:nx-populate-files@latest",
     "npm-nx-tsc": "npm:nx-tsc@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "nyc": "^17.0.0",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.4"
   }
 }

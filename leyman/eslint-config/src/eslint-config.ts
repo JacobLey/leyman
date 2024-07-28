@@ -21,7 +21,7 @@ import {
 
 interface PluginRules {
     rules?:
-        | Record<string, Rule.OldStyleRule | Rule.RuleModule | RuleModule<string, unknown[]>>
+        | Record<string, Rule.RuleModule | RuleModule<string, unknown[]>>
         | undefined;
 }
 export const nonDeprecatedRules = (name: string, plugin: PluginRules): Linter.RulesRecord => {

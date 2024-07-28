@@ -26,7 +26,7 @@
     "npm-default-import": "npm:default-import@latest"
   },
   "optionalDependencies": {
-    "@nx/devkit": "19.5.2"
+    "@nx/devkit": "19.5.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
@@ -34,17 +34,17 @@
     "@types/chai": "^4.3.16",
     "@types/chai-as-promised": "^7.1.8",
     "@types/mocha": "^10.0.7",
-    "@types/node": "^20.14.10",
+    "@types/node": "^20.14.12",
     "@types/sinon": "^17.0.3",
     "c8": "^10.1.2",
     "chai": "^5.1.1",
     "expect-type": "^0.19.0",
-    "mocha": "^10.6.0",
+    "mocha": "^10.7.0",
     "mocha-hookup": "workspace:^",
     "npm-nx-tsc": "npm:nx-tsc@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "sinon": "^18.0.0",
     "sinon-typed-stub": "workspace:^",
-    "typescript": "^5.5.3"
+    "typescript": "^5.5.4"
   }
 }
