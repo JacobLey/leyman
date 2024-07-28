@@ -949,6 +949,64 @@ importers:
         specifier: ^5.5.4
         version: 5.5.4
 
+  tools/haywire-launcher:
+    dependencies:
+      entry-script:
+        specifier: workspace:^
+        version: link:../entry-script
+    devDependencies:
+      '@biomejs/biome':
+        specifier: ^1.8.3
+        version: 1.8.3
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: link:../../leyman/eslint-config
+      '@types/chai':
+        specifier: ^4.3.16
+        version: 4.3.16
+      '@types/chai-as-promised':
+        specifier: ^7.1.8
+        version: 7.1.8
+      '@types/mocha':
+        specifier: ^10.0.7
+        version: 10.0.7
+      '@types/node':
+        specifier: ^20.14.12
+        version: 20.14.12
+      '@types/sinon':
+        specifier: ^17.0.3
+        version: 17.0.3
+      c8:
+        specifier: ^10.1.2
+        version: 10.1.2
+      chai:
+        specifier: ^5.1.1
+        version: 5.1.1
+      chai-as-promised:
+        specifier: ^8.0.0
+        version: 8.0.0(chai@5.1.1)
+      haywire:
+        specifier: workspace:^
+        version: link:../haywire
+      mocha:
+        specifier: ^10.7.0
+        version: 10.7.0
+      mocha-hookup:
+        specifier: workspace:^
+        version: link:../mocha-hookup
+      nx-tsc:
+        specifier: workspace:^
+        version: link:../nx-tsc
+      nx-update-ts-references:
+        specifier: workspace:^
+        version: link:../../apps/nx-update-ts-references
+      sinon:
+        specifier: ^18.0.0
+        version: 18.0.0
+      typescript:
+        specifier: ^5.5.4
+        version: 5.5.4
+
   tools/iso-crypto:
     devDependencies:
       '@biomejs/biome':

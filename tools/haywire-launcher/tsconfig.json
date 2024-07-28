@@ -1,0 +1,28 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../../apps/nx-update-ts-references"
+    },
+    {
+      "path": "../../leyman/eslint-config"
+    },
+    {
+      "path": "../entry-script"
+    },
+    {
+      "path": "../haywire"
+    },
+    {
+      "path": "../mocha-hookup"
+    },
+    {
+      "path": "../nx-tsc"
+    }
+  ]
+}

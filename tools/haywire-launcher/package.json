@@ -1,0 +1,47 @@
+{
+  "name": "haywire-launcher",
+  "version": "0.0.1",
+  "description": "Instantiate and execute your script in one line.",
+  "engines": {
+    "node": ">=20"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/haywire-launcher#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": ["dependency injection", "main", "initialize", "script"],
+  "sideEffects": false,
+  "types": "./dist/launch.js",
+  "exports": {
+    ".": "./dist/launch.js"
+  },
+  "dependencies": {
+    "entry-script": "workspace:^"
+  },
+  "peerDependencies": {
+    "haywire": "workspace:^"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.8.3",
+    "@leyman/eslint-config": "workspace:^",
+    "@types/chai": "^4.3.16",
+    "@types/chai-as-promised": "^7.1.8",
+    "@types/mocha": "^10.0.7",
+    "@types/sinon": "^17.0.3",
+    "@types/node": "^20.14.12",
+    "c8": "^10.1.2",
+    "chai": "^5.1.1",
+    "chai-as-promised": "^8.0.0",
+    "haywire": "workspace:^",
+    "mocha": "^10.7.0",
+    "mocha-hookup": "workspace:^",
+    "nx-tsc": "workspace:^",
+    "nx-update-ts-references": "workspace:^",
+    "sinon": "^18.0.0",
+    "typescript": "^5.5.4"
+  }
+}
