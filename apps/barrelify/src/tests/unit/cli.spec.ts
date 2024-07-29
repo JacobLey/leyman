@@ -2,7 +2,7 @@ import Path from 'node:path';
 import { expect } from 'chai';
 import { spy, stub, verifyAndRestore } from 'sinon';
 import { defaultImport } from 'default-import';
-import { afterEach, beforeEach, suite, test } from 'mocha-hookup';
+import { afterEach, beforeEach, suite, test } from 'mocha-chain';
 import { patchKey } from 'named-patch';
 import { BarrelCli, yargsOutput } from '../../cli.js';
 import { barrelFiles } from '../../lib/barrel.js';

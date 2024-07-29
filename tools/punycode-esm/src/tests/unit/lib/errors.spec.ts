@@ -1,5 +1,5 @@
 import { expect } from 'chai';
-import { suite, test } from 'mocha-hookup';
+import { suite, test } from 'mocha-chain';
 import * as Errors from '#errors';
 
 suite('errors', () => {

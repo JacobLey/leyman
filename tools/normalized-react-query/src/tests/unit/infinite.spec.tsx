@@ -3,7 +3,7 @@ import { renderHook, type WrapperComponent } from '@testing-library/react-hooks'
 import { expect } from 'chai';
 import type { ReactNode } from 'react';
 import { spy, verifyAndRestore } from 'sinon';
-import { afterEach, beforeEach, suite } from 'mocha-hookup';
+import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { type EmptyObject, infinite } from 'normalized-react-query';
 import * as Api from '../data/api.js';
 

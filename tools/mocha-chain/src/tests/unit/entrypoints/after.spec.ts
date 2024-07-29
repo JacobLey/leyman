@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as mocha from 'mocha';
-import { after, suite, suiteTeardown } from 'mocha-hookup';
+import { after, suite, suiteTeardown } from 'mocha-chain';
 
 const order: number[] = [];
 

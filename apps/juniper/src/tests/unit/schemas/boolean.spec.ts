@@ -3,7 +3,7 @@ import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { defaultImport } from 'default-import';
 import { booleanSchema, type SchemaType } from 'juniper';
-import { suite, test } from 'mocha-hookup';
+import { suite, test } from 'mocha-chain';
 
 const Ajv = defaultImport(DefaultAjv);
 

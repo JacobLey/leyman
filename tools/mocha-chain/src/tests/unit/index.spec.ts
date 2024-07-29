@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { createSandbox, match, type SinonStub } from 'sinon';
-import { before, suite } from 'mocha-hookup';
+import { before, suite } from 'mocha-chain';
 
 suite('Pass mocks around in context', () => {
     const contextualBefore = before(async () => ({

@@ -2,7 +2,7 @@ import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import type { Context } from 'mocha';
 import * as IsoCrypto from 'iso-crypto';
-import { before, suite, test } from 'mocha-hookup';
+import { before, suite, test } from 'mocha-chain';
 import type * as Ecc from '#ecc';
 import * as BrowserEcc from '../../../iso/ecc/browser.js';
 import * as NodeEcc from '../../../iso/ecc/node.js';

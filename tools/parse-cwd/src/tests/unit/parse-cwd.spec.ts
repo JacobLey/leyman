@@ -2,7 +2,7 @@ import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
-import { suite, test } from 'mocha-hookup';
+import { suite, test } from 'mocha-chain';
 import * as ParseCwd from 'parse-cwd';
 
 use(chaiAsPromised);

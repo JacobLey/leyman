@@ -3,7 +3,7 @@ import Path from 'node:path';
 import { expect } from 'chai';
 import { dir } from 'tmp-promise';
 import * as BiomeFormatter from 'format-file';
-import { beforeEach, suite } from 'mocha-hookup';
+import { beforeEach, suite } from 'mocha-chain';
 import formattedFixtures from './fixtures/formatted.js';
 
 suite('format-file', () => {

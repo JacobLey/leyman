@@ -47,7 +47,7 @@
     "chai": "^5.1.1",
     "expect-type": "^0.19.0",
     "mocha": "^10.7.0",
-    "mocha-hookup": "workspace:^",
+    "mocha-chain": "workspace:^",
     "npm-nx-tsc": "npm:nx-tsc@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "sinon": "^18.0.0",

@@ -5,7 +5,7 @@ import { expect } from 'chai';
 import { stub, verifyAndRestore } from 'sinon';
 import { dedent } from 'ts-dedent';
 import { barrelify } from 'barrelify';
-import { afterEach, suite, test } from 'mocha-hookup';
+import { afterEach, suite, test } from 'mocha-chain';
 import { patch, patchKey } from 'named-patch';
 
 const testDir = Path.join(fileURLToPath(import.meta.url), '../../../../src/tests/data');

@@ -1,5 +1,5 @@
 {
-  "name": "mocha-hookup",
+  "name": "mocha-chain",
   "version": "0.0.1",
   "description": "Utility methods to help manage and expose nx plugins",
   "engines": {
@@ -9,7 +9,7 @@
   "author": "JacobLey",
   "license": "MIT",
   "repository": "JacobLey/leyman",
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/mocha-hookup#readme",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/mocha-chain#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

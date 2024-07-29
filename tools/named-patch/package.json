@@ -38,7 +38,7 @@
     "chai": "^5.1.1",
     "expect-type": "^0.19.0",
     "mocha": "^10.7.0",
-    "mocha-hookup": "workspace:^",
+    "mocha-chain": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "sinon": "^18.0.0",

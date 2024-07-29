@@ -93,9 +93,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../../tools/mocha-hookup
+        version: link:../../tools/mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../../tools/nx-tsc
@@ -157,9 +157,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../../tools/mocha-hookup
+        version: link:../../tools/mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../../tools/nx-tsc
@@ -243,9 +243,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../../tools/mocha-hookup
+        version: link:../../tools/mocha-chain
       nx-populate-files:
         specifier: workspace:^
         version: link:../populate-files/nx-populate-files
@@ -677,9 +677,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -726,9 +726,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -768,9 +768,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -814,9 +814,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -875,9 +875,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -991,9 +991,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -1039,9 +1039,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -1055,7 +1055,7 @@ importers:
         specifier: ^5.5.4
         version: 5.5.4
 
-  tools/mocha-hookup:
+  tools/mocha-chain:
     dependencies:
       haywire:
         specifier: workspace:^
@@ -1142,9 +1142,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -1199,9 +1199,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -1270,9 +1270,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
         version: nx-tsc@0.0.6(nx@19.5.3)(typescript@5.5.4)
@@ -1383,9 +1383,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -1425,9 +1425,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
@@ -1473,9 +1473,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
         version: nx-tsc@0.0.6(nx@19.5.3)(typescript@5.5.4)
@@ -1518,9 +1518,9 @@ importers:
       mocha:
         specifier: ^10.7.0
         version: 10.7.0
-      mocha-hookup:
+      mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-hookup
+        version: link:../mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc

@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { stub, verifyAndRestore } from 'sinon';
-import { afterEach, suite, test } from 'mocha-hookup';
+import { afterEach, suite, test } from 'mocha-chain';
 import * as Patch from 'named-patch';
 
 suite('namedPatch', () => {

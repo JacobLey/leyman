@@ -11,7 +11,7 @@ import type {
 } from 'mocha';
 import { match, mock, stub, verifyAndRestore } from 'sinon';
 import { bind, createContainer, createModule } from 'haywire';
-import { after, afterEach, before, suite, test } from 'mocha-hookup';
+import { after, afterEach, before, suite, test } from 'mocha-chain';
 import { contextualHookModule } from '#contextual-module';
 import {
     afterEachIdentifier,

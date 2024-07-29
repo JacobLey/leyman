@@ -2,7 +2,7 @@ import type fs from 'node:fs/promises';
 import { expect } from 'chai';
 import { fake, verifyAndRestore } from 'sinon';
 import type { file } from 'tmp-promise';
-import { afterEach, beforeEach, suite } from 'mocha-hookup';
+import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { type Executor, Formatter } from '#lib';
 

@@ -12,7 +12,7 @@
 "enum-to-array": patch
 "common-proxy": patch
 "entry-script": patch
-"mocha-hookup": patch
+"mocha-chain": patch
 "punycode-esm": patch
 "nx-lifecycle": patch
 "find-import": patch

@@ -77,7 +77,7 @@ export interface ExclusiveEntrypointTest {
  *
  * Wrap the test with another callback that will strip out the ignored context.
  *
- * @param contextualTest - test function built by mocha-hookup that passes context to test
+ * @param contextualTest - test function built by mocha-chain that passes context to test
  * @returns test function that no longer passes a context (because it would always be empty)
  */
 export const wrapTestWithEntrypoint =

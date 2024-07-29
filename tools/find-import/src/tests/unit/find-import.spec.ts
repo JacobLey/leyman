@@ -3,7 +3,7 @@ import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as FindImport from 'find-import';
-import { before, suite, test } from 'mocha-hookup';
+import { before, suite, test } from 'mocha-chain';
 
 suite('findImport', () => {
     const dataDir = Path.join(fileURLToPath(import.meta.url), '../../data');

@@ -1,7 +1,7 @@
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { loadAndPopulateFiles } from 'load-populate-files';
-import { suite, test } from 'mocha-hookup';
+import { suite, test } from 'mocha-chain';
 
 const filePath = fileURLToPath(import.meta.url);
 

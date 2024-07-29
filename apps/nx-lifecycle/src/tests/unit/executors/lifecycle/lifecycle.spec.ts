@@ -1,7 +1,7 @@
 import type { readFile, writeFile } from 'node:fs/promises';
 import { createStubInstance, define, fake, match, verifyAndRestore } from 'sinon';
 import type { FilesFormatter } from 'format-file';
-import { beforeEach, suite } from 'mocha-hookup';
+import { beforeEach, suite } from 'mocha-chain';
 import { mockMethod, stubMethod } from 'sinon-typed-stub';
 import type { isNxJson, isProjectJson } from '#schemas';
 import { Lifecycle } from '../../../../executors/lifecycle/lifecycle.js';

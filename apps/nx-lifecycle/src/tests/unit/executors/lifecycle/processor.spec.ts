@@ -1,4 +1,4 @@
-import { suite, test } from 'mocha-hookup';
+import { suite, test } from 'mocha-chain';
 import * as Processor from '../../../../executors/lifecycle/processor.js';
 import { expect } from '../../../chai-hooks.js';
 

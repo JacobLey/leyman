@@ -42,7 +42,7 @@
     "chai": "^5.1.1",
     "chai-as-promised": "^8.0.0",
     "mocha": "^10.7.0",
-    "mocha-hookup": "workspace:^",
+    "mocha-chain": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "typescript": "^5.5.4"

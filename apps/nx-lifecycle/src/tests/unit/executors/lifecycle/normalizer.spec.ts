@@ -1,4 +1,4 @@
-import { suite, test } from 'mocha-hookup';
+import { suite, test } from 'mocha-chain';
 import { Normalizer } from '../../../../executors/lifecycle/normalizer.js';
 import { expect } from '../../../chai-hooks.js';
 

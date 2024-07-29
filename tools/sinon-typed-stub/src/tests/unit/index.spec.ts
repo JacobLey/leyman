@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { define, verifyAndRestore } from 'sinon';
-import { afterEach, suite, test } from 'mocha-hookup';
+import { afterEach, suite, test } from 'mocha-chain';
 import { mockMethod, spyMethod, stubMethod } from 'sinon-typed-stub';
 
 suite('Wraps sinon methods', () => {

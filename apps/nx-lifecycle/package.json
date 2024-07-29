@@ -61,7 +61,7 @@
     "chai-as-promised": "^8.0.0",
     "load-populate-files": "workspace:^",
     "mocha": "^10.7.0",
-    "mocha-hookup": "workspace:^",
+    "mocha-chain": "workspace:^",
     "nx-populate-files": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",

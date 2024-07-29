@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { decode, decodeObject, encodeObject } from 'iso-crypto';
-import { suite, test } from 'mocha-hookup';
+import { suite, test } from 'mocha-chain';
 
 suite('EncodeObject', () => {
     suite('decodeObject', () => {

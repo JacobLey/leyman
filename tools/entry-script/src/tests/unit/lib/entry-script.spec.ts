@@ -1,6 +1,6 @@
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { beforeEach, suite, test } from 'mocha-hookup';
+import { beforeEach, suite, test } from 'mocha-chain';
 import { runAsMain } from '#entry-script';
 import { MainNotImplementedError } from '#not-implemented-error';
 import { expect } from '../../chai-hooks.js';

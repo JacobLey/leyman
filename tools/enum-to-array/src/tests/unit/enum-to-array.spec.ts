@@ -1,7 +1,7 @@
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as EnumToArray from 'enum-to-array';
-import { suite, test } from 'mocha-hookup';
+import { suite, test } from 'mocha-chain';
 
 /* eslint-disable no-restricted-syntax */
 // This test suite implements multiple enum anti-patterns

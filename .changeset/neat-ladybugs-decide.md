@@ -15,7 +15,7 @@
 "format-file": patch
 "haywire": patch
 "iso-crypto": patch
-"mocha-hookup": patch
+"mocha-chain": patch
 "named-patch": patch
 "normalized-react-query": patch
 "nx-plugin-handler": patch

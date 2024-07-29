@@ -2,7 +2,7 @@ import type { ExecutorContext } from '@nx/devkit';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { fake, match, verifyAndRestore } from 'sinon';
-import { afterEach, beforeEach, suite } from 'mocha-hookup';
+import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { mockMethod } from 'sinon-typed-stub';
 import { Handler, type RawHandler } from '#handler';
 

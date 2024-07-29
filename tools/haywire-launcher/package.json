@@ -43,7 +43,7 @@
     "chai-as-promised": "^8.0.0",
     "haywire": "workspace:^",
     "mocha": "^10.7.0",
-    "mocha-hookup": "workspace:^",
+    "mocha-chain": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "sinon": "^18.0.0",

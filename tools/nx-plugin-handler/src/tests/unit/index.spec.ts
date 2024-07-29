@@ -1,4 +1,4 @@
-import { suite, test } from 'mocha-hookup';
+import { suite, test } from 'mocha-chain';
 
 suite('nx-plugin-handler', () => {
     test('coverage', async () => {
