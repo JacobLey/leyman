@@ -14,9 +14,19 @@ export default {
         }),
         formatted: dedent`
             {
-              "foo": [1, 2],
+              "foo": [
+                1,
+                2
+              ],
               "bar": "<bar>",
-              "baz": { "bing": true, "bong": false, "bingbong": ["bong", "bing"] }
+              "baz": {
+                "bing": true,
+                "bong": false,
+                "bingbong": [
+                  "bong",
+                  "bing"
+                ]
+              }
             }
 
         `,
@@ -32,7 +42,7 @@ export default {
         `,
         formatted: dedent`
             export type { Bing } from 'bong';
-            
+
             export const radix: number = 16;
             const foo: IFoo = (param: number): string => param.toString(radix);
 
@@ -49,7 +59,7 @@ export default {
         `,
         formatted: dedent`
             export { Bing } from 'bong';
-            
+
             export const radix = 16;
             const foo = param => param.toString(radix);
 
