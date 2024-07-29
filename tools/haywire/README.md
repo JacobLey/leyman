@@ -50,6 +50,7 @@ A fully type-safe dependency injection library using native javascript.
         * [HaywireModuleValidationError](#haywiremodulevalidationerror)
         * [HaywireContainerValidationError](#haywirecontainervalidationerror)
         * [HaywireInstanceValidationError](#haywireinstancevalidationerror)
+* [Also See](#also-see)
 
 ## Introduction
 
@@ -1128,3 +1129,16 @@ Specific instances may report circular dependencies, or sync supplier that are i
 Error thrown during request time, during `preload()` or `get()` (or will be rejected when using async versions).
 
 Specific instances may report a value that is `null` for an id that is not declared as `.nullable()`, or the response is not an `instanceof` the requested class.
+
+## Also See
+
+### [haywire-launcher](https://www.npmjs.com/package/haywire-launcher)
+
+Manage dependency injection alongside entrypoint handling!
+
+```ts
+import { launch } from 'haywire-launcher';
+import { myContainer } from './container.js';
+
+export default launch(myContainer);
+```

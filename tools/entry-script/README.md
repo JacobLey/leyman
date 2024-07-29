@@ -16,7 +16,7 @@ Modular control for entry script execution.
 - [API](#api)
   - [EntryScript](#entryscript)
     - [main(argv: string[]): Promise<void>](#mainargv-string-promise)
-- [References](#references)
+- [Also See](#also-see)
 
 ## Introduction
 
@@ -129,16 +129,15 @@ hey are the same as `process.argv`, minus the node executable and filename:
 
 `node ./foo-bar.js --port 8080` -> `argv = ['--port', '8080']`.
 
-## References
+## Also See
 
-See the [haywire](https://www.npmjs.com/package/haywire) package as a way to help manage dependency injection alongside instance creation.
+### [haywire-launcher](https://www.npmjs.com/package/haywire-launcher)
+
+Manage dependency injection alongside entrypoint handling!
 
 ```ts
-import { EntryScript } from 'entry-script';
-import { bind, createContainer } from 'haywire'; 
-import { myModule } from './module.js';
+import { launch } from 'haywire-launcher';
+import { myContainer } from './container.js';
 
-const container = createContainer(myModule);
-
-export default container.get(EntryScript);
+export default launch(myContainer);
 ```
