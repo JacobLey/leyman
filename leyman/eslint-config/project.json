@@ -3,15 +3,8 @@
   "name": "@leyman/eslint-config",
   "targets": {
     "biome": {},
-    "update-ts-references": {
-      "executor": "npm-nx-update-ts-references:update-ts-references",
-      "dependsOn": ["build:_"]
-    },
-    "tsc": {
-      "executor": "npm-nx-tsc:build",
-      "options": { "tsConfig": "{projectRoot}/tsconfig.json" },
-      "dependsOn": ["build:pre"]
-    },
+    "npm-update-ts-references": {},
+    "npm-tsc": {},
     "coverage-reset": {},
     "mocha-unit-test": {},
     "mocha-integration-test": {
@@ -24,7 +17,18 @@
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "dependsOn": ["mocha-unit-test", "test:reset"]
+      "dependsOn": [
+        "mocha-unit-test",
+        "test:reset"
+      ],
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output"
+      ],
+      "outputs": [
+        "{projectRoot}/coverage/tmp"
+      ]
     },
     "coverage-report": {},
     "analyze:_": {},

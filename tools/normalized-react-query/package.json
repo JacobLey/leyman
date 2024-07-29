@@ -13,7 +13,12 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["react-query", "map", "consistent", "normalizr"],
+  "keywords": [
+    "react-query",
+    "map",
+    "consistent",
+    "normalizr"
+  ],
   "sideEffects": false,
   "types": "./dist/index.js",
   "exports": {

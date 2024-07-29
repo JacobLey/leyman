@@ -13,7 +13,12 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["dependency injection", "main", "initialize", "script"],
+  "keywords": [
+    "dependency injection",
+    "main",
+    "initialize",
+    "script"
+  ],
   "sideEffects": false,
   "types": "./dist/launch.js",
   "exports": {

@@ -17,7 +17,17 @@
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "dependsOn": ["test:reset"]
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output"
+      ],
+      "outputs": [
+        "{projectRoot}/coverage/tmp"
+      ],
+      "dependsOn": [
+        "test:reset"
+      ]
     },
     "coverage-report": {},
     "analyze:_": {},

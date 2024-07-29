@@ -13,7 +13,13 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["nx", "executor", "content", "write", "build"],
+  "keywords": [
+    "nx",
+    "executor",
+    "content",
+    "write",
+    "build"
+  ],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {

@@ -13,7 +13,11 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["typescript", "enum", "array"],
+  "keywords": [
+    "typescript",
+    "enum",
+    "array"
+  ],
   "sideEffects": false,
   "types": "./dist/enum-to-array.js",
   "exports": {

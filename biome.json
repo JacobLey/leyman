@@ -30,7 +30,8 @@
   },
   "json": {
     "formatter": {
-      "indentWidth": 2
+      "indentWidth": 2,
+      "lineWidth": 1
     }
   },
   "linter": {

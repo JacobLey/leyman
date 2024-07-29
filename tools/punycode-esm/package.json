@@ -13,7 +13,12 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["punycode", "esm", "encode", "decode"],
+  "keywords": [
+    "punycode",
+    "esm",
+    "encode",
+    "decode"
+  ],
   "sideEffects": false,
   "types": "./dist/punycode.js",
   "exports": {

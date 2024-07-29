@@ -13,7 +13,11 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["sinon", "stub", "typed"],
+  "keywords": [
+    "sinon",
+    "stub",
+    "typed"
+  ],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js"

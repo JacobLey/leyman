@@ -13,7 +13,11 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["first", "parent", "load"],
+  "keywords": [
+    "first",
+    "parent",
+    "load"
+  ],
   "sideEffects": false,
   "types": "./dist/find-import.js",
   "exports": {

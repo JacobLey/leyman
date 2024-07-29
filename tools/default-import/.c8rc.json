@@ -1,9 +1,27 @@
 {
-  "reporter": ["html", "text-summary"],
-  "include": ["src/**"],
-  "exclude": ["coverage/**", "eslint.config.js", "src/tests/**"],
+  "reporter": [
+    "html",
+    "text-summary"
+  ],
+  "include": [
+    "src/**"
+  ],
+  "exclude": [
+    "coverage/**",
+    "eslint.config.js",
+    "src/tests/**"
+  ],
   "exclude-after-remap": true,
-  "extension": [".js", ".cjs", ".mjs", ".ts", ".cts", ".mts", ".tsx", ".jsx"],
+  "extension": [
+    ".js",
+    ".cjs",
+    ".mjs",
+    ".ts",
+    ".cts",
+    ".mts",
+    ".tsx",
+    ".jsx"
+  ],
 
   "lines": 100,
   "statements": 100,
@@ -11,9 +29,21 @@
   "branches": 100,
 
   "watermarks": {
-    "lines": [100, 95],
-    "functions": [100, 95],
-    "branches": [100, 95],
-    "statements": [100, 95]
+    "lines": [
+      100,
+      95
+    ],
+    "functions": [
+      100,
+      95
+    ],
+    "branches": [
+      100,
+      95
+    ],
+    "statements": [
+      100,
+      95
+    ]
   }
 }

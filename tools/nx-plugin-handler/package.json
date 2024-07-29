@@ -13,7 +13,11 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["nx", "plugin", "hoc"],
+  "keywords": [
+    "nx",
+    "plugin",
+    "hoc"
+  ],
   "sideEffects": false,
   "exports": {
     ".": "./dist/index.js"

@@ -1,24 +1,54 @@
 {
   "$schema": "./node_modules/nx/schemas/nx-schema.json",
-  "cli": { "packageManager": "pnpm" },
+  "cli": {
+    "packageManager": "pnpm"
+  },
   "namedInputs": {
     "ts-source": [
-      "{projectRoot}/src/**/*.{c,m,}ts{x,}",
-      "{projectRoot}/src/**/*{.config,.spec}.{c,m,}ts{x,}",
       "{projectRoot}/package.json",
-      "{projectRoot}/tsconfig.json"
+      "{projectRoot}/tsconfig.json",
+      "{workspaceRoot}/tsconfig.build.json",
+      "{projectRoot}/src/**/*.{c,m,}ts{x,}",
+      "{projectRoot}/src/**/*.spec.{c,m,}ts{x,}"
+    ],
+    "ts-output": [
+      "{projectRoot}/package.json",
+      "{projectRoot}/dist/**/*.{c,m,}js{.map,}",
+      "{projectRoot}/dist/**/*.d.{c,m,}ts{.map,}",
+      "!{projectRoot}/dist/tests"
     ]
   },
   "targetDefaults": {
     "biome": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["biome format ."],
+        "commands": [
+          "biome format ."
+        ],
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "configurations": { "fix": { "commands": ["biome format --write ."] } },
-      "dependsOn": ["analyze:_"]
+      "configurations": {
+        "fix": {
+          "commands": [
+            "biome format --write ."
+          ]
+        }
+      },
+      "dependsOn": [
+        "analyze:_"
+      ],
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/*.{c,m,}js{on,}",
+        "{projectRoot}/src/**/*.{c,m,}ts{x,}",
+        "{projectRoot}/src/**/*.json"
+      ],
+      "outputs": [
+        "{projectRoot}/*.{c,m,}js{on,}",
+        "{projectRoot}/src/**/*.{c,m,}ts{x,}",
+        "{projectRoot}/src/**/*.json"
+      ]
     },
     "eslint": {
       "executor": "@nx/eslint:lint",
@@ -32,18 +62,35 @@
         "cacheStrategy": "content",
         "hasTypeAwareRules": true
       },
-      "configurations": { "fix": { "fix": true } },
-      "dependsOn": ["analyze:format"]
+      "configurations": {
+        "fix": {
+          "fix": true
+        }
+      },
+      "dependsOn": [
+        "analyze:format"
+      ]
     },
     "barrelify": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["barrel"],
+        "commands": [
+          "barrel"
+        ],
         "parallel": true,
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "dependsOn": ["build:_"]
+      "dependsOn": [
+        "build:_"
+      ],
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/index.{c,m,}ts"
+      ],
+      "outputs": [
+        "{projectRoot}/**/index.{c,m,}ts"
+      ]
     },
     "update-ts-references": {
       "executor": "nx-update-ts-references:update-ts-references",
@@ -130,12 +177,19 @@
     "coverage-reset": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["rm -rf ./coverage"],
+        "commands": [
+          "rm -rf ./coverage"
+        ],
         "parallel": true,
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "dependsOn": ["test:_"]
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "dependsOn": [
+        "test:_"
+      ]
     },
     "mocha-unit-test": {
       "executor": "nx:run-commands",
@@ -147,9 +201,17 @@
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "inputs": ["ts-source", "^ts-source", "^prod-data"],
-      "outputs": ["{projectRoot}/coverage/tmp"],
-      "dependsOn": ["test:reset"]
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output"
+      ],
+      "outputs": [
+        "{projectRoot}/coverage/tmp"
+      ],
+      "dependsOn": [
+        "test:reset"
+      ]
     },
     "mocha-integration-test": {
       "executor": "nx:run-commands",
@@ -161,89 +223,175 @@
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "inputs": ["ts-source", "^ts-source", "^prod-data"],
-      "outputs": ["{projectRoot}/coverage/tmp"],
-      "dependsOn": ["mocha-unit-test", "test:reset"]
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output"
+      ],
+      "outputs": [
+        "{projectRoot}/coverage/tmp"
+      ],
+      "dependsOn": [
+        "mocha-unit-test",
+        "test:reset"
+      ]
     },
     "coverage-report": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["c8 report --all --check-coverage"],
+        "commands": [
+          "c8 report --all --check-coverage"
+        ],
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "inputs": ["{projectRoot}/coverage"],
-      "dependsOn": ["test:run"]
+      "inputs": [
+        "{projectRoot}/coverage"
+      ],
+      "dependsOn": [
+        "test:run"
+      ]
     },
     "analyze:_": {
       "executor": "nx:noop",
-      "dependsOn": ["^build", "build"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "^build",
+        "build"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "analyze:format": {
       "executor": "nx:noop",
-      "dependsOn": ["analyze:_", "biome"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "analyze:_",
+        "biome"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "analyze:lint": {
       "executor": "nx:noop",
-      "dependsOn": ["analyze:format", "eslint"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "analyze:format",
+        "eslint"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "analyze": {
       "executor": "nx:noop",
-      "dependsOn": ["analyze:lint"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "analyze:lint"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "build:_": {
       "executor": "nx:noop",
-      "dependsOn": ["^build"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "^build"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "build:pre": {
       "executor": "nx:noop",
-      "dependsOn": ["build:_", "barrelify", "update-ts-references"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "build:_",
+        "barrelify",
+        "update-ts-references",
+        "npm-update-ts-references"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "build:run": {
       "executor": "nx:noop",
-      "dependsOn": ["build:pre", "tsc"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "build:pre",
+        "tsc",
+        "npm-tsc"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "build:post": {
       "executor": "nx:noop",
-      "dependsOn": ["build:run", "populate-files"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "build:run",
+        "populate-files",
+        "npm-populate-files"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "build": {
       "executor": "nx:noop",
-      "dependsOn": ["build:post"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "build:post"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "test:_": {
       "executor": "nx:noop",
-      "dependsOn": ["analyze", "build"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "analyze",
+        "build"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "test:reset": {
       "executor": "nx:noop",
-      "dependsOn": ["test:_", "coverage-reset"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "test:_",
+        "coverage-reset"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "test:run": {
       "executor": "nx:noop",
-      "dependsOn": ["test:reset", "mocha-unit-test", "mocha-integration-test"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "test:reset",
+        "mocha-unit-test",
+        "mocha-integration-test"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "test:report": {
       "executor": "nx:noop",
-      "dependsOn": ["test:run", "coverage-report"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "test:run",
+        "coverage-report"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     },
     "test": {
       "executor": "nx:noop",
-      "dependsOn": ["test:report"],
-      "configurations": { "__lifecycle": {} }
+      "dependsOn": [
+        "test:report"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
     }
   },
   "tasksRunnerOptions": {

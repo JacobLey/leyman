@@ -13,7 +13,10 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["barrel", "index"],
+  "keywords": [
+    "barrel",
+    "index"
+  ],
   "sideEffects": false,
   "types": "./dist/barrelify.js",
   "exports": {

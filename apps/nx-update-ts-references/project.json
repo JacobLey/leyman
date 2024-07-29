@@ -4,14 +4,9 @@
   "targets": {
     "biome": {},
     "eslint": {},
-    "update-ts-references": {
-      "executor": "npm-nx-update-ts-references:update-ts-references"
-    },
+    "npm-update-ts-references": {},
     "tsc": {},
-    "populate-files": {
-      "executor": "npm-nx-populate-files:populate-files",
-      "options": { "filePath": "{projectRoot}/dist/file-content.js" }
-    },
+    "npm-populate-files": {},
     "analyze:_": {},
     "analyze:format": {},
     "analyze:lint": {},

@@ -13,7 +13,12 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["nx", "tsc", "typescript", "build"],
+  "keywords": [
+    "nx",
+    "tsc",
+    "typescript",
+    "build"
+  ],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {

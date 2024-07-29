@@ -13,7 +13,11 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["cwd", "resolve", "file path"],
+  "keywords": [
+    "cwd",
+    "resolve",
+    "file path"
+  ],
   "sideEffects": false,
   "types": "./dist/parse-cwd.js",
   "exports": {

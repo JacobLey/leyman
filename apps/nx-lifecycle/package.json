@@ -13,7 +13,14 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
-  "keywords": ["nx", "lifecycle", "build", "test", "format", "lint"],
+  "keywords": [
+    "nx",
+    "lifecycle",
+    "build",
+    "test",
+    "format",
+    "lint"
+  ],
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {
