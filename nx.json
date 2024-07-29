@@ -47,14 +47,65 @@
     },
     "update-ts-references": {
       "executor": "nx-update-ts-references:update-ts-references",
-      "dependsOn": ["build:_"]
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/package.json",
+        "{projectRoot}/tsconfig.json"
+      ],
+      "outputs": [
+        "{projectRoot}/tsconfig.json"
+      ],
+      "dependsOn": [
+        "build:_"
+      ]
+    },
+    "npm-update-ts-references": {
+      "executor": "npm-nx-update-ts-references:update-ts-references",
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/package.json",
+        "{projectRoot}/tsconfig.json"
+      ],
+      "outputs": [
+        "{projectRoot}/tsconfig.json"
+      ],
+      "dependsOn": [
+        "build:_"
+      ]
     },
     "tsc": {
       "executor": "nx-tsc:build",
-      "options": { "tsConfig": "{projectRoot}/tsconfig.json" },
-      "inputs": ["ts-source", "^ts-source"],
-      "outputs": ["{projectRoot}/dist"],
-      "dependsOn": ["build:pre"]
+      "options": {
+        "tsConfig": "{projectRoot}/tsconfig.json"
+      },
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "dependsOn": [
+        "build:pre"
+      ]
+    },
+    "npm-tsc": {
+      "executor": "npm-nx-tsc:build",
+      "options": {
+        "tsConfig": "{projectRoot}/tsconfig.json"
+      },
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "dependsOn": [
+        "build:pre"
+      ]
     },
     "populate-files": {
       "executor": "nx-populate-files:populate-files",
@@ -62,7 +113,19 @@
         "filePath": "{projectRoot}/dist/file-content.js",
         "cwd": "{projectRoot}"
       },
-      "dependsOn": ["build:run"]
+      "dependsOn": [
+        "build:run"
+      ]
+    },
+    "npm-populate-files": {
+      "executor": "npm-nx-populate-files:populate-files",
+      "options": {
+        "filePath": "{projectRoot}/dist/file-content.js",
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "build:run"
+      ]
     },
     "coverage-reset": {
       "executor": "nx:run-commands",
@@ -185,8 +248,7 @@
   },
   "tasksRunnerOptions": {
     "default": {
-      "runner": "nx/tasks-runners/default",
-      "options": { "cacheableOperations": ["tsc", "populate-files", "lint"] }
+      "runner": "nx/tasks-runners/default"
     }
   }
 }

@@ -5,15 +5,8 @@
     "barrelify": {},
     "biome": {},
     "eslint": {},
-    "update-ts-references": {
-      "executor": "npm-nx-update-ts-references:update-ts-references",
-      "dependsOn": ["build:_"]
-    },
-    "tsc": {
-      "executor": "npm-nx-tsc:build",
-      "options": { "tsConfig": "{projectRoot}/tsconfig.json" },
-      "dependsOn": ["build:pre"]
-    },
+    "npm-update-ts-references": {},
+    "npm-tsc": {},
     "coverage-reset": {},
     "mocha-unit-test": {},
     "coverage-report": {},

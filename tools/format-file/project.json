@@ -6,9 +6,7 @@
     "biome": {},
     "eslint": {},
     "barrelify": {},
-    "update-ts-references": {
-      "executor": "npm-nx-update-ts-references:update-ts-references"
-    },
+    "npm-update-ts-references": {},
     "tsc": {},
     "coverage-reset": {},
     "mocha-unit-test": {},
