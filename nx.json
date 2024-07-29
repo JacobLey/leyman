@@ -9,7 +9,7 @@
       "{projectRoot}/tsconfig.json",
       "{workspaceRoot}/tsconfig.build.json",
       "{projectRoot}/src/**/*.{c,m,}ts{x,}",
-      "{projectRoot}/src/**/*.spec.{c,m,}ts{x,}"
+      "{projectRoot}/src/tests"
     ],
     "ts-output": [
       "{projectRoot}/package.json",
