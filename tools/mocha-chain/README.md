@@ -221,9 +221,7 @@ before(() => {
 
 ## API
 
-### Methods
-
-#### `suite`
+### `suite`
 
 Aliases `describe` and `context`. Mirrors `mocha` method of the same name.
 
