@@ -24,14 +24,25 @@
     ".": "./dist/index.js"
   },
   "imports": {
-    "#lib": "./dist/lib/index.js"
+    "#lib": "./dist/lib/index.js",
+    "#types": "./dist/lib/lib/types.js"
   },
   "dependencies": {
+    "find-up": "^7.0.0",
     "haywire": "workspace:^",
     "tmp-promise": "^3.0.3"
   },
   "peerDependencies": {
-    "@biomejs/biome": "^1.6.4"
+    "@biomejs/biome": "^1.8.3",
+    "prettier": "^3.3.3"
+  },
+  "peerDependenciesMeta": {
+    "@biomejs/biome": {
+      "optional": true
+    },
+    "prettier": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
@@ -49,6 +60,7 @@
     "mocha": "^10.7.0",
     "mocha-chain": "workspace:^",
     "nx-tsc": "workspace:^",
+    "prettier": "^3.3.3",
     "sinon": "^18.0.0",
     "sinon-typed-stub": "workspace:^",
     "ts-dedent": "^2.2.0",
