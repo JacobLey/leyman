@@ -33,7 +33,7 @@
     "load-populate-files": "workspace:^"
   },
   "optionalDependencies": {
-    "@nx/devkit": "19.5.3",
+    "@nx/devkit": "19.5.4",
     "juniper": "workspace:^"
   },
   "devDependencies": {

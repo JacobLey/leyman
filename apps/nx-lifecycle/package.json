@@ -46,7 +46,7 @@
     "nx-plugin-handler": "workspace:^"
   },
   "optionalDependencies": {
-    "@nx/devkit": "19.5.3"
+    "@nx/devkit": "19.5.4"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
