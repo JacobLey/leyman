@@ -5,17 +5,19 @@
   },
   "namedInputs": {
     "ts-source": [
+      "{workspaceRoot}/tsconfig.build.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
-      "{workspaceRoot}/tsconfig.build.json",
-      "{projectRoot}/src/**/*.{c,m,}ts{x,}",
+      "{projectRoot}/src/**/*.(c|m)?tsx?",
+      "{projectRoot}/src/**/*.json",
       "{projectRoot}/src/tests"
     ],
     "ts-output": [
       "{projectRoot}/package.json",
-      "{projectRoot}/dist/**/*.{c,m,}js{.map,}",
-      "{projectRoot}/dist/**/*.d.{c,m,}ts{.map,}",
-      "!{projectRoot}/dist/tests"
+      "{projectRoot}/dist/**/*.(c|m)?js",
+      "{projectRoot}/dist/**/*.d.(c|m)?ts",
+      "{projectRoot}/(dist|src)/**/*.json",
+      "!{projectRoot}/(dist|src)/tests"
     ]
   },
   "targetDefaults": {
@@ -38,15 +40,17 @@
       "dependsOn": [
         "analyze:_"
       ],
-      "cache": true,
+      "cache": false,
       "inputs": [
-        "{projectRoot}/*.{c,m,}js{on,}",
-        "{projectRoot}/src/**/*.{c,m,}ts{x,}",
+        "{projectRoot}/*.json",
+        "{projectRoot}/*.(c|m)?js",
+        "{projectRoot}/src/**/*.(c|m)?tsx?",
         "{projectRoot}/src/**/*.json"
       ],
       "outputs": [
-        "{projectRoot}/*.{c,m,}js{on,}",
-        "{projectRoot}/src/**/*.{c,m,}ts{x,}",
+        "{projectRoot}/*.json",
+        "{projectRoot}/*.(c|m)?js",
+        "{projectRoot}/src/**/*.(c|m)?tsx?",
         "{projectRoot}/src/**/*.json"
       ]
     },
@@ -54,8 +58,8 @@
       "executor": "@nx/eslint:lint",
       "options": {
         "lintFilePatterns": [
-          "{projectRoot}/**/*.{c,m,}ts{x,}",
-          "{projectRoot}/**/*.{c,m,}js"
+          "{projectRoot}/src/**/*.{c,m,}ts{x,}",
+          "{projectRoot}/*.{c,m,}js"
         ],
         "cache": true,
         "cacheLocation": "{projectRoot}/.eslintcache",
@@ -67,6 +71,12 @@
           "fix": true
         }
       },
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output"
+      ],
+      "outputs": [],
       "dependsOn": [
         "analyze:format"
       ]
@@ -86,10 +96,10 @@
       ],
       "cache": true,
       "inputs": [
-        "{projectRoot}/**/index.{c,m,}ts"
+        "{projectRoot}/**/index.(c|m)?ts"
       ],
       "outputs": [
-        "{projectRoot}/**/index.{c,m,}ts"
+        "{projectRoot}/**/index.(c|m)?ts"
       ]
     },
     "update-ts-references": {
