@@ -5,7 +5,7 @@ export type Executor = (typeof execFile)['__promisify__'];
 export interface FileFormatterOptions {
     /**
      * Formatter to use.
-     * Defaults to `inherit`, which will iterate through formatters until success, 
+     * Defaults to `inherit`, which will iterate through formatters until success,
      * or else will return the content unchanged.
      */
     formatter?: 'biome' | 'inherit' | 'prettier' | undefined;

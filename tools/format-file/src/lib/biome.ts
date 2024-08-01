@@ -1,22 +1,20 @@
-import { findUp } from 'find-up';
+import type { findUp } from 'find-up';
 import type { CanUseFormatter, Executor } from '#types';
 
 /**
  * Biome formatter.
  */
 export class Biome {
-
     readonly #executor: Executor;
+    readonly #findUp: typeof findUp;
     readonly #getBiomePath: () => string;
 
     public readonly canUseBiome: () => Promise<CanUseFormatter>;
-    public readonly formatBiomeFiles: (files: string[]) => Promise<void>
+    public readonly formatBiomeFiles: (files: string[]) => Promise<void>;
 
-    public constructor(
-        executor: Executor,
-        getBiomePath: () => string
-    ) {
+    public constructor(executor: Executor, find: typeof findUp, getBiomePath: () => string) {
         this.#executor = executor;
+        this.#findUp = find;
         this.#getBiomePath = getBiomePath;
 
         this.canUseBiome = this.#canUseBiome.bind(this);
@@ -30,7 +28,7 @@ export class Biome {
             return 0;
         }
 
-        const file = await findUp(['biome.json', 'biome.jsonc']);
+        const file = await this.#findUp(['biome.json', 'biome.jsonc']);
         if (file) {
             return 2;
         }
