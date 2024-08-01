@@ -13,7 +13,7 @@
       "path": "../../leyman/eslint-config"
     },
     {
-      "path": "../mocha-hookup"
+      "path": "../mocha-chain"
     },
     {
       "path": "../nx-tsc"

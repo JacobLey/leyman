@@ -157,7 +157,7 @@ suite('Example Database Test', () => {
 
 ## Usage
 
-`mocha-hookup` exports hook and test methods mirroring `mocha`. As stated above, this is not a _replacement_ of mocha as these methods will invoke the native `mocha` methods under the hood.
+`mocha-chain` exports hook and test methods mirroring `mocha`. As stated above, this is not a _replacement_ of mocha as these methods will invoke the native `mocha` methods under the hood.
 
 However they provide the extra benefit of chaining the methods so any values returned by that hook (and any previous hooks) will be available to following hooks and tests. The values are returned as an object, with all keys merged with existing context object.
 
@@ -177,7 +177,7 @@ suite('FooBar', () => {
     });
 });
 ```
-`mocha-hookup` will also enforce that the `Does bar` test above will immediately throw an error, causing `Does foo` to fail. 
+`mocha-chain` will also enforce that the `Does bar` test above will immediately throw an error, causing `Does foo` to fail. 
 
 Native mocha behavior does not support embedding tests (or hooks, or suites...), but also does not enforce against it.
 

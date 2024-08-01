@@ -15,7 +15,7 @@
       "path": "../haywire"
     },
     {
-      "path": "../mocha-hookup"
+      "path": "../mocha-chain"
     },
     {
       "path": "../sinon-typed-stub"

@@ -22,7 +22,7 @@
       "path": "../../tools/find-import"
     },
     {
-      "path": "../../tools/mocha-hookup"
+      "path": "../../tools/mocha-chain"
     },
     {
       "path": "../../tools/named-patch"

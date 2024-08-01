@@ -16,7 +16,7 @@
       "path": "../../tools/default-import"
     },
     {
-      "path": "../../tools/mocha-hookup"
+      "path": "../../tools/mocha-chain"
     },
     {
       "path": "../../tools/nx-tsc"

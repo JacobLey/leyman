@@ -34,7 +34,7 @@
       "path": "../../tools/haywire"
     },
     {
-      "path": "../../tools/mocha-hookup"
+      "path": "../../tools/mocha-chain"
     },
     {
       "path": "../../tools/nx-plugin-handler"
