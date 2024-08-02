@@ -21,6 +21,8 @@ interface EnumGenerics<T> extends SchemaGenerics<T> {
  *
  * @example
  * const schema = EnumSchema.create({ enums: [1, 2] as const }).enum(3 as const);
+ *
+ * @template T
  */
 export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
     readonly #enum: readonly T[];

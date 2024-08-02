@@ -44,6 +44,9 @@ type AnyStringSchema = StringSchema<string, boolean>;
  * likely end typescript result will just be `string`.
  *
  * Supports multiple `patterns`.
+ *
+ * @template T
+ * @template N
  */
 export class StringSchema<
     T extends string,

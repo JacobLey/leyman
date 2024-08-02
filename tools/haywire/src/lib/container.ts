@@ -122,6 +122,8 @@ const addBoundInstancesSym = Symbol('addBoundInstances');
  * 4) Get
  *    - Main use case of container. Used for actual instantiation, and can be used to continue to create more instances.
  *    - Will perform preload, if not explicitly performed already.
+ *
+ * @template Outputs
  */
 export class AsyncContainer<Outputs extends [Extendable]> {
     public declare [typeTracking]: Outputs;
@@ -1536,6 +1538,8 @@ export class AsyncContainer<Outputs extends [Extendable]> {
  * Also supports async for general consistency, although all computation is fundamentally synchronous under the hood.
  *
  * @see {@link AsyncContainer} for more documentation
+ *
+ * @template Outputs
  */
 export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<Outputs> {
     /**

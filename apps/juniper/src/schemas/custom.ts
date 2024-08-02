@@ -10,6 +10,8 @@ import type { JsonSchema, SchemaType } from '../lib/types.js';
  * adoption of Juniper.
  *
  * Provided schema is returned as a shallow clone.
+ *
+ * @template T
  */
 export class CustomSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
     readonly #schema: unknown;

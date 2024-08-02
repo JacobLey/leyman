@@ -118,6 +118,14 @@ const defaultAnnotations: Annotations<null, false, false, false, false> = {
  * or `latebinding` (a promise that will _eventually_ resolve into the requested value, or reject if issues arise).
  * Note that the implemention of both these annotations is internal to Haywire. If the requested value is in fact a function or a promise,
  * declare that on the type itself.
+ *
+ * @template T
+ * @template Constructor
+ * @template Named
+ * @template Nullable
+ * @template Undefinable
+ * @template Supply
+ * @template LateBind
  */
 export class HaywireId<
     T,

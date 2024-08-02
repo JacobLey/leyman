@@ -66,6 +66,12 @@ export type AnyArraySchema = ArraySchema<any, any[], any, unknown, boolean>;
  * If generating a schema for OpenApi 3.0, the result will just be an array
  * where any item can be in any location.
  * `contains` will be ignored altogether.
+ *
+ * @template T
+ * @template P
+ * @template C
+ * @template M
+ * @template N
  */
 export class ArraySchema<
     T = any,
@@ -507,6 +513,12 @@ export class ArraySchema<
 
 /**
  * Used by TupleSchema to allow overriding declarations.
+ *
+ * @template T
+ * @template P
+ * @template C
+ * @template M
+ * @template N
  */
 export declare class IArraySchemaOverride<
     T,

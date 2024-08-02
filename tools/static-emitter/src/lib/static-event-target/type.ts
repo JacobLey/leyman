@@ -2,6 +2,8 @@ import * as Types from '../types.js';
 
 /**
  * Type-only cast of EventTarget.
+ *
+ * @template InterfaceEvents
  */
 export declare class StaticEventTarget<InterfaceEvents extends Types.EventDict = Types.EmptyObject>
     extends EventTarget

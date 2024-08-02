@@ -130,6 +130,13 @@ type AnyObjectSchema = ObjectSchema<any, any, any, any, unknown, boolean>;
 
 /**
  * Schema for defining `object` types.
+ *
+ * @template P
+ * @template R
+ * @template A
+ * @template X
+ * @template M
+ * @template N
  */
 export class ObjectSchema<
     // Properties

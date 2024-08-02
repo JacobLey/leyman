@@ -5,6 +5,8 @@ type AnyBooleanSchema = BooleanSchema<boolean>;
 
 /**
  * Schema for defining boolean type.
+ *
+ * @template N
  */
 export class BooleanSchema<
     // Nullable

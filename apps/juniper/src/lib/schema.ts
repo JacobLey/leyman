@@ -73,6 +73,8 @@ export interface SerializationParams {
 
 /**
  * Base class for JSON Schema generation and serialization.
+ *
+ * @template T
  */
 export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
     /**

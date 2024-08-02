@@ -78,6 +78,9 @@ type AnyNumberSchema = NumberSchema<number, boolean>;
  * likely end typescript result will just be `string`.
  *
  * Supports multiple `multipleOf`s.
+ *
+ * @template T
+ * @template N
  */
 export class NumberSchema<
     T extends number,

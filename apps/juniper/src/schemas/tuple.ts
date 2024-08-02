@@ -27,6 +27,12 @@ type AnyTupleSchema = TupleSchema<never, any[], any, unknown, boolean>;
  *
  * If generating a schema for OpenApi 3.0, the result will just be an array
  * where any item can be in any location.
+ *
+ * @template T
+ * @template P
+ * @template C
+ * @template M
+ * @template N
  */
 export class TupleSchema<
     T = never,

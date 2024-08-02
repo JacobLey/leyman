@@ -176,6 +176,10 @@ declare const idType: unique symbol;
  * Since it is incomplete, it cannot yet be used to generate a requested instance.
  * Once all necessary bindings are present, can use `createContainer` to perform final validations
  * and start generating instances.
+ *
+ * @template Outputs
+ * @template Dependencies
+ * @template Async
  */
 export class Module<
     Outputs extends [Extendable],

@@ -26,6 +26,9 @@ declare const typeCached: typeof typeCache;
  * - Implement `queryFn` method
  * - Optionally implement handlers `onSuccess`, `onError`, and `onSettled`
  * - Create a single instance ("singleton") of class and export it.
+ *
+ * @template Data
+ * @template Params
  */
 export abstract class Resource<Data, Params = DefaultParams> {
     /**

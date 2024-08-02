@@ -2,6 +2,7 @@ import { TypedEvent } from '../../typed-event.js';
 
 /**
  * @override
+ * @template T
  */
 export class ServerEvent<T extends string> extends TypedEvent<T> {
     public readonly serverData: string;

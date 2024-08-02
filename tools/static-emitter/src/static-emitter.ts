@@ -27,6 +27,8 @@ import type * as Types from './lib/types.js';
  * myEmitter.emit('foo', true, [123]); // success!
  *
  * myEmitter.emit('bar', { wrong: null }); // Typescript error!
+ *
+ * @template InterfaceEvents
  */
 export class StaticEmitter<
     InterfaceEvents extends Types.EventDict = Types.EmptyObject,

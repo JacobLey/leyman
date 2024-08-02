@@ -6,6 +6,11 @@ import { Resource, resource } from './resource.js';
  * Ensures that results are returned as arrays, and respect pagination parameters.
  *
  * See `Resource` for implementation details.
+ *
+ * @template Data
+ * @template Params
+ * @template Page
+ * @template Meta
  */
 declare abstract class IPaginated<
     Data,

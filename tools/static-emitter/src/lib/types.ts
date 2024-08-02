@@ -15,6 +15,8 @@ export type EmptyObject = {};
  *
  * `events` indicates events declared explicitly (e.g. via class extensions),
  * and via generic parameters.
+ *
+ * @template T
  */
 export interface IEmitter<T extends EventDict = EventDict> {
     [events]: T;
@@ -90,6 +92,9 @@ type EventTargetCallback<Emitter extends IEmitter, EventName extends EventList<E
 
 /**
  * Native EventTarget listeners can also be an object with `handleEvent` method.
+ *
+ * @template Emitter
+ * @template EventName
  */
 interface EventTargetHandler<Emitter extends IEmitter, EventName extends EventList<Emitter>> {
     handleEvent: EventTargetCallback<Emitter, EventName>;

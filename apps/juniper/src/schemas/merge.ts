@@ -21,6 +21,8 @@ type AnyMergeSchema = MergeSchema<any>;
  *
  * This schema without any conditions is effectively an `unknown` schema, allowing everything
  * to validate.
+ *
+ * @template T
  */
 export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
     public declare allOf: <S extends Schema<unknown>>(

@@ -65,6 +65,10 @@ export type BindingOutputType<OutputId extends GenericHaywireId> = OutputId exte
  *
  * Similarly any dependencies should be declared as nullable/undefinable in order to handle the possible values, or else
  * container validation will fail.
+ *
+ * @template OutputId
+ * @template Dependencies
+ * @template Async
  */
 export class Binding<
     OutputId extends GenericHaywireId,
@@ -254,6 +258,8 @@ export class Binding<
 /**
  * Temporary binding used internally by factor to appease container validation
  * until actual instance can be bound.
+ *
+ * @template OutputId
  */
 export class TempBinding<OutputId extends GenericOutputHaywireId> extends Binding<
     OutputId,
@@ -275,6 +281,8 @@ export class TempBinding<OutputId extends GenericOutputHaywireId> extends Bindin
 
 /**
  * Actual binding used to replace TempBinding.
+ *
+ * @template OutputId
  */
 export class InstanceBinding<OutputId extends GenericOutputHaywireId> extends Binding<
     OutputId,
@@ -309,6 +317,9 @@ const idOrClassToIds = <Dependencies extends readonly (GenericHaywireId | IsClas
 /**
  * Binding builder that has output + dependencies, and needs the provider.
  * Contains optional helper methods to auto-generate the provider, or flag it as async.
+ *
+ * @template OutputId
+ * @template DependencyIds
  */
 export class DepsBindingBuilder<
     OutputId extends GenericOutputHaywireId,
@@ -397,6 +408,9 @@ type DependenciesMisMatch<
  *
  * Note that despite the fact that _typescript_ knows the dependency types, _javascript_ does not.
  * So it is always necessary to provide the dependency ids or classes, in the order they will be passed to the provider.
+ *
+ * @template OutputId
+ * @template Dependencies
  */
 export class ProviderBindingBuilder<
     OutputId extends GenericOutputHaywireId,
@@ -436,6 +450,9 @@ export class ProviderBindingBuilder<
  *
  * Note that despite the fact that _typescript_ knows the dependency types, _javascript_ does not.
  * So it is always necessary to provide the dependency ids or classes, in the order they will be passed to the provider.
+ *
+ * @template OutputId
+ * @template Dependencies
  */
 export class AsyncProviderBindingBuilder<
     OutputId extends GenericOutputHaywireId,
@@ -485,6 +502,8 @@ type MissingConstructorType<T extends GenericHaywireId> = null extends HaywireId
  * Contains helper methods to chain the dependency ids and providers with strong typing.
  * Can optionally omit dependency ids and providers in special cases such as no dependencies
  * or using the constructor as the provider.
+ *
+ * @template OutputId
  */
 export class BindingBuilder<OutputId extends GenericOutputHaywireId> {
     readonly #outputId: OutputId;

@@ -19,6 +19,10 @@ declare const typeCached: typeof typeCache;
  * - Implement `mutationFn` method.
  * - Optionally implement handlers `onSuccess`, `onError`, and `onSettled`
  * - Create a single instance ("singleton") of class and export it.
+ *
+ * @template Data
+ * @template Params
+ * @template Variables
  */
 export abstract class Mutation<Data, Params = DefaultParams, Variables = DefaultParams> {
     /**
