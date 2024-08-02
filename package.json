@@ -1,11 +1,11 @@
 {
   "type": "module",
   "devDependencies": {
-    "@nx/eslint": "19.5.4",
+    "@nx/eslint": "19.5.6",
     "npm-nx-populate-files": "npm:nx-populate-files@latest",
     "npm-nx-tsc": "npm:nx-tsc@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
-    "nx": "19.5.4",
+    "nx": "19.5.6",
     "nx-lifecycle": "workspace:^",
     "nx-populate-files": "workspace:^",
     "nx-tsc": "workspace:^",

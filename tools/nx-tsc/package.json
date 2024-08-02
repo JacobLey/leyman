@@ -32,7 +32,7 @@
     "nx-plugin-handler": "workspace:^"
   },
   "optionalDependencies": {
-    "@nx/devkit": "19.5.4",
+    "@nx/devkit": "19.5.6",
     "npm-juniper": "npm:juniper@latest"
   },
   "peerDependencies": {
@@ -42,9 +42,9 @@
     "@biomejs/biome": "^1.8.3",
     "@leyman/eslint-config": "workspace:^",
     "@swc/core": "1.7.3",
-    "@types/chai": "^4.3.16",
+    "@types/chai": "^4.3.17",
     "@types/mocha": "^10.0.7",
-    "@types/node": "^20.14.12",
+    "@types/node": "^20.14.13",
     "chai": "^5.1.1",
     "mocha": "^10.7.0",
     "npm-load-populate-files": "npm:load-populate-files@latest",
