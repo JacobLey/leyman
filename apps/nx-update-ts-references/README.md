@@ -29,7 +29,7 @@ Nx already manages a dependency graph of your local typescript packages based on
 `npm i nx-update-ts-references`
 
 Register it as a target in your `project.json`:
-```
+```json
 {
     "targets": {
         "update-ts-references": {
@@ -43,7 +43,7 @@ Register it as a target in your `project.json`:
 
 Due to Nx deriving the dependency graph from your `package.json`, and the rest of the fields of `tsconfig.json` being maintained, those are the only two inputs, and the `tsconfig.json` file is the out, this is a trivially cacheable operation:
 
-```
+```json
 {
     "targets": {
         "update-ts-references": {
