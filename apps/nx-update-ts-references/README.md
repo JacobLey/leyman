@@ -10,11 +10,11 @@ An [Nx](https://nx.dev/) plugin that updates your [tsconfig.json references](htt
 
 ## Table of Contents
 
-* [Introduction](#introduction)
-* [Usage](#usage)
-* [API](#api)
-    * [check](#check)
-    * [dryRun](#dryrun)
+- [Introduction](#introduction)
+- [Usage](#usage)
+- [API](#api)
+    - [check](#check)
+    - [dryRun](#dryrun)
 
 ## Introduction
 

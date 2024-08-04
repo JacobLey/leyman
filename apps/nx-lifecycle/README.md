@@ -10,11 +10,11 @@ An [Nx](https://nx.dev/) plugin that injects specific targets into high level wo
 
 ## Table of Contents
 
-* [Introduction](#introduction)
-* [Usage](#usage)
-* [API](#api)
-    * [check](#check)
-    * [dryRun](#dryrun)
+- [Introduction](#introduction)
+- [Usage](#usage)
+- [API](#api)
+    - [check](#check)
+    - [dryRun](#dryrun)
 
 ## Introduction
 
@@ -139,10 +139,10 @@ This is the [high level tasks](#high-level-tasks) logic as described above. Decl
 
 It is an object, where every key is the name of a stage. The value is another object that optionally has two fields:
 
-* `steps`
-  * A list of "sub-stages" to be executed in order. The resulting name of the target will be delimeted by a colon: `stage:step`.
-* `dependsOn`
-  * Accepts the same values as normal Nx [dependsOn](https://nx.dev/reference/project-configuration#dependson). Used to define relationship between stages, and their dependencies.
+- `steps`
+  - A list of "sub-stages" to be executed in order. The resulting name of the target will be delimeted by a colon: `stage:step`.
+- `dependsOn`
+  - Accepts the same values as normal Nx [dependsOn](https://nx.dev/reference/project-configuration#dependson). Used to define relationship between stages, and their dependencies.
 
 #### configuration.bindings
 

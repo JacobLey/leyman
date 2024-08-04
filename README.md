@@ -31,12 +31,12 @@ From there, run `nx run <package-name>:<task> --parallel=1`. See [Nx documetatio
 Many tasks are broken down into subtasks to manage the various steps required. For example a typescript build script may perform some codegen before generating the final `.js` files. See the [nx-lifecyle](./apps/nx-lifecycle) package to see how we manage this!
 
 Some standard tasks are:
-* build
-  * Generates executable output code
-* analyze
-  * Applies linters/formatters
-* test
-  * Runs full test suite for package
+- build
+  - Generates executable output code
+- analyze
+  - Applies linters/formatters
+- test
+  - Runs full test suite for package
 
 Try running `nx run-many -t test --parallel=1` to build, analyze, and test the entire package!
 
@@ -46,9 +46,9 @@ See individual packages for documentation.
 
 There are a few known issues that impact this monorepo as a whole (per-package issues are tracked separately):
 
-* Nx is not able to run more than one task in parallel
-  * https://github.com/nrwl/nx/issues/22574
-  * Workaround is to amend `--parallel=1` to all executions
-* Nx does not maintain dependency graph for target overloads
-  * https://github.com/nrwl/nx/issues/26928
-  * Workaround is to explicitly copy `dependsOn` to all targets
+- Nx is not able to run more than one task in parallel
+  - https://github.com/nrwl/nx/issues/22574
+  - Workaround is to amend `--parallel=1` to all executions
+- Nx does not maintain dependency graph for target overloads
+  - https://github.com/nrwl/nx/issues/26928
+  - Workaround is to explicitly copy `dependsOn` to all targets

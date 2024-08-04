@@ -10,47 +10,47 @@ A fully type-safe dependency injection library using native javascript.
 
 ## Table of Contents
 
-* [Introduction](#introduction)
-* [Installation](#installation)
-* [Example](#example)
-* [Concepts](#concepts)
-    * [Type tracking](#type-tracking)
-    * [Binding an implementation to an id](#binding-an-implementation-to-an-id)
-    * [Supplying a value](#supplying-a-value)
-    * [Circular dependencies](#circular-dependencies)
-    * [Collecting bindings in modules](#collecting-bindings-in-modules)
-    * [Requesting instances from a container](#requesting-instances-from-a-container)
-    * [Combining containers with dynamic runtime values](#combining-containers-with-dynamic-runtime-values)
-    * [Scope Gotchas](#scope-gotchas)
-    * [Validation using types](#validation-using-types)
-    * [Typescript configuration](#typescript-configuration)
-    * [Generics on classes and methods](#generics-on-classes-and-methods)
-* [API](#api)
-    * [Methods](#methods)
-        * [identifier](#identifier)
-        * [bind](#bind)
-        * [createModule](#createmodule)
-        * [createContainer](#createcontainer)
-        * [isSyncContainer](#issynccontainer)
-        * [createFactory](#createfactory)
-    * [Classes](#classes)
-        * [HaywireId](#haywireid)
-        * [Binding](#binding)
-        * [Module](#module)
-        * [AsyncContainer](#asynccontainer)
-        * [SyncContainer](#synccontainer)
-        * [Factory](#factory)
-    * [Types](#types)
-        * [HaywireIdType](#haywireidtype)
-        * [AsyncSupplier](#asyncsupplier)
-        * [Supplier](#supplier)
-        * [LateBinding](#latebinding)
-    * [Errors](#errors)
-        * [HaywireError](#haywireerror)
-        * [HaywireModuleValidationError](#haywiremodulevalidationerror)
-        * [HaywireContainerValidationError](#haywirecontainervalidationerror)
-        * [HaywireInstanceValidationError](#haywireinstancevalidationerror)
-* [Also See](#also-see)
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Example](#example)
+- [Concepts](#concepts)
+    - [Type tracking](#type-tracking)
+    - [Binding an implementation to an id](#binding-an-implementation-to-an-id)
+    - [Supplying a value](#supplying-a-value)
+    - [Circular dependencies](#circular-dependencies)
+    - [Collecting bindings in modules](#collecting-bindings-in-modules)
+    - [Requesting instances from a container](#requesting-instances-from-a-container)
+    - [Combining containers with dynamic runtime values](#combining-containers-with-dynamic-runtime-values)
+    - [Scope Gotchas](#scope-gotchas)
+    - [Validation using types](#validation-using-types)
+    - [Typescript configuration](#typescript-configuration)
+    - [Generics on classes and methods](#generics-on-classes-and-methods)
+- [API](#api)
+    - [Methods](#methods)
+        - [identifier](#identifier)
+        - [bind](#bind)
+        - [createModule](#createmodule)
+        - [createContainer](#createcontainer)
+        - [isSyncContainer](#issynccontainer)
+        - [createFactory](#createfactory)
+    - [Classes](#classes)
+        - [HaywireId](#haywireid)
+        - [Binding](#binding)
+        - [Module](#module)
+        - [AsyncContainer](#asynccontainer)
+        - [SyncContainer](#synccontainer)
+        - [Factory](#factory)
+    - [Types](#types)
+        - [HaywireIdType](#haywireidtype)
+        - [AsyncSupplier](#asyncsupplier)
+        - [Supplier](#supplier)
+        - [LateBinding](#latebinding)
+    - [Errors](#errors)
+        - [HaywireError](#haywireerror)
+        - [HaywireModuleValidationError](#haywiremodulevalidationerror)
+        - [HaywireContainerValidationError](#haywirecontainervalidationerror)
+        - [HaywireInstanceValidationError](#haywireinstancevalidationerror)
+- [Also See](#also-see)
 
 ## Introduction
 
@@ -60,27 +60,27 @@ Unfortunately, Javascript as a language lacks a DI framework on the level of qua
 
 There are some existing solutions, but none satisfy all of the following requirements:
 
-* Native JS support
-  * Decorators (Annotations in other languages) are a common way to annotate injections. There is a [proposal](https://github.com/tc39/proposal-decorators) but until that merges, will require additional tooling to transpile typescript. Until then, it is required to not depend on annotations. Furthermore decorators do not mutate the type of the value being decorated, so it can be tricky to write type-safe injection.
-* Constructor only injection
-  * An alternative is property injection. This is both type unsafe (fields are marked as non-optional, but not written during constructor) and does not support private fields.
-* Circular dependencies
-  * In general circular dependencies are an antipattern, but the reality is that it is not always possible. Being able to opt into circular depdencies (while maintaining all other requirements) is occasionally a necessity.
-* Singleton, Request, and Transient scopes
-  * It is important that some values are shared across resources, like a database client (singleton). Sometimes values need to be shared for the particular instantiation like a context object (request). Everything else should be created as requested (transient).
-* Optional asynchronous support
-  * Some resources _need_ be asynchronous, like a secret loaded from an external store. Other resources can be synchronous, like loading a local environment variable or constructing a class.
-  * Individual bindings should not concern themselves with how other dependencies are loaded, and should be able to synchronously supply values that internally depend on asynchronous values.
-* No global state or types
-  * Mutating global state or overloading namespaces is not type safe. It mutates every other library that may be using dependency injection. It also makes it impossible to create more than one injector in an app (e.g. one for production, and one for local testing).
-* Identify dependencies by their types, not names
-  * Types do not exist at runtime in Javascript. Therefore most implementations rely on strings to identify on dependencies. In larger applications though, how many different instances can be named something like `Logger`, `EndpointUrl`, `ApiClient`, and `UserService`?
-* Immutable data structures
-  * When adding new bindings or editing ids, it is crucial that the original data structure is unchanged. Otherwise the data becomes type-unsafe and has unintended side effects.
-* Ability to dynamically create containers based on runtime values
-  * Most DI frameworks are used to wire an entire app at the start, and are not used to generate values much beyond that. What if we wanted to declare a dependency on a `Request` object from an incoming request? Or on a `User` object loaded from our database?
-* Type safety
-  * Last but absolutely not least. Type safety is about making invalid states impossible. Therefore it should be impossible to request or inject invalid data, and issues should be raised at build time. When the code runs, there should be a 100% guarantee of success (barring runtime issues like bad permissions).
+- Native JS support
+  - Decorators (Annotations in other languages) are a common way to annotate injections. There is a [proposal](https://github.com/tc39/proposal-decorators) but until that merges, will require additional tooling to transpile typescript. Until then, it is required to not depend on annotations. Furthermore decorators do not mutate the type of the value being decorated, so it can be tricky to write type-safe injection.
+- Constructor only injection
+  - An alternative is property injection. This is both type unsafe (fields are marked as non-optional, but not written during constructor) and does not support private fields.
+- Circular dependencies
+  - In general circular dependencies are an antipattern, but the reality is that it is not always possible. Being able to opt into circular depdencies (while maintaining all other requirements) is occasionally a necessity.
+- Singleton, Request, and Transient scopes
+  - It is important that some values are shared across resources, like a database client (singleton). Sometimes values need to be shared for the particular instantiation like a context object (request). Everything else should be created as requested (transient).
+- Optional asynchronous support
+  - Some resources _need_ be asynchronous, like a secret loaded from an external store. Other resources can be synchronous, like loading a local environment variable or constructing a class.
+  - Individual bindings should not concern themselves with how other dependencies are loaded, and should be able to synchronously supply values that internally depend on asynchronous values.
+- No global state or types
+  - Mutating global state or overloading namespaces is not type safe. It mutates every other library that may be using dependency injection. It also makes it impossible to create more than one injector in an app (e.g. one for production, and one for local testing).
+- Identify dependencies by their types, not names
+  - Types do not exist at runtime in Javascript. Therefore most implementations rely on strings to identify on dependencies. In larger applications though, how many different instances can be named something like `Logger`, `EndpointUrl`, `ApiClient`, and `UserService`?
+- Immutable data structures
+  - When adding new bindings or editing ids, it is crucial that the original data structure is unchanged. Otherwise the data becomes type-unsafe and has unintended side effects.
+- Ability to dynamically create containers based on runtime values
+  - Most DI frameworks are used to wire an entire app at the start, and are not used to generate values much beyond that. What if we wanted to declare a dependency on a `Request` object from an incoming request? Or on a `User` object loaded from our database?
+- Type safety
+  - Last but absolutely not least. Type safety is about making invalid states impossible. Therefore it should be impossible to request or inject invalid data, and issues should be raised at build time. When the code runs, there should be a 100% guarantee of success (barring runtime issues like bad permissions).
 
 Haywire is a solution that checks every box above.
 
@@ -291,11 +291,11 @@ See the full api for `HaywireId` below.
 
 Now that we have our types declared in haywire, we need to tell Haywire how to construct a type. While there are a couple ways to write a binding, the information that is necessary is:
 
-* What dependencies does this binding have?
-* Can the instance be constructed synchronously?
-* How often (and when) should this value be constructed?
-* Is it acceptable to return `null`/`undefined`?
-* How to generate the type?
+- What dependencies does this binding have?
+- Can the instance be constructed synchronously?
+- How often (and when) should this value be constructed?
+- Is it acceptable to return `null`/`undefined`?
+- How to generate the type?
 
 Haywire cannot implicitly reference a constructor, nor will it infer how to bind interfaces to implementations. Haywire requires explicit instruction, but there are some shorthands to support instantiation.
 
@@ -424,18 +424,18 @@ Every call to `container.get()` is a new "request". Any calls to a supplier are 
 A request scope means a single value is created and shared for all values instantiated during that request. On a separate future request, a new value will be instantiated.
 
 Scope options are:
-* `transientScope`
-  * This is the simplest, and the default. If X is transient and a binding declares it as a dependency, it is create a new X. If there is more than one dependent, both will receive unique instances. There is no "optimistic" version.
-* `singletonScope`
-  * A single value is created the first time it is requested. All future requests and dependencies will receive this same value.
-* `optimisticSingletonScope`
-  * Similar behavior as `singletonScope`, except this value is instantiated immediately during the "preload" stage.
-* `requestScope`
-  * A single value is created the first time it is requested for a single call to `container.get()`. All future dependencies will share this same value. Future requests will reinstantiate a new value.
-* `optimisticReqeustScope`
-  * Similar behavior as `requestScope`, expect this value is instantiated at the very beginning of a request before any other values.
-* `supplierScope`
-  * Similar to `requestScope`, but "opts out" of propagated scope from a supplier (if the current reqeust is inside a supplier). This is an uncommonly used scope for ensuring a new value is used every request including suppliers, but still can take advantage of caching. All dependencies on this binding will also be opted out of the parent request's scope.
+- `transientScope`
+  - This is the simplest, and the default. If X is transient and a binding declares it as a dependency, it is create a new X. If there is more than one dependent, both will receive unique instances. There is no "optimistic" version.
+- `singletonScope`
+  - A single value is created the first time it is requested. All future requests and dependencies will receive this same value.
+- `optimisticSingletonScope`
+  - Similar behavior as `singletonScope`, except this value is instantiated immediately during the "preload" stage.
+- `requestScope`
+  - A single value is created the first time it is requested for a single call to `container.get()`. All future dependencies will share this same value. Future requests will reinstantiate a new value.
+- `optimisticReqeustScope`
+  - Similar behavior as `requestScope`, expect this value is instantiated at the very beginning of a request before any other values.
+- `supplierScope`
+  - Similar to `requestScope`, but "opts out" of propagated scope from a supplier (if the current reqeust is inside a supplier). This is an uncommonly used scope for ensuring a new value is used every request including suppliers, but still can take advantage of caching. All dependencies on this binding will also be opted out of the parent request's scope.
 
 ### Supplying a value
 
@@ -651,9 +651,9 @@ cModule.mergeModule(BModule);
 ### Requesting instances from a container
 
 So far we have:
-* Defined the type with identifiers
-* Bind providers based on dependencies
-* Collected these bindings in a Module
+- Defined the type with identifiers
+- Bind providers based on dependencies
+- Collected these bindings in a Module
 
 A module by itself is not guaranteed to be a complete set of bindings, and may be missing some bindings. This is a feature, as it allows you to mix and match partial modules at will, such as an `envModule`, a `databaseModule`, and a `servicesModule` which have inter-related dependencies.
 
@@ -675,10 +675,10 @@ createContainer(
 The container is the final goal of Haywire, and exposes an API to finally instantiate the types and bindings you defined earlier.
 
 There are two types of Containers: 
-* `AsyncContainer`
-  * The default, which only supports instantiating values asynchronously `container.getAsync(<identifier>)`
-* `SyncContainer`
-  * Only created if _every_ binding in the module is synchronous. Supports the full async API for consistency, but also a `container.get(<identifier>)` which synchronously instantiates a value.
+- `AsyncContainer`
+  - The default, which only supports instantiating values asynchronously `container.getAsync(<identifier>)`
+- `SyncContainer`
+  - Only created if _every_ binding in the module is synchronous. Supports the full async API for consistency, but also a `container.get(<identifier>)` which synchronously instantiates a value.
 
 If you _need_ synchronous access, but have promises internally you have two options:
 1. Use synchronous suppliers internally to take advantage of cached optimistic promises.
@@ -687,23 +687,23 @@ If you _need_ synchronous access, but have promises internally you have two opti
 The container lifecylce happens in 4 stages. They may be explicitly activated or skipped, and internally any previous steps will be executed (and cached).
 
 1. Checking: `container.check()`
-    * Confirms the bindings from the module are complete and satisfy eachother.
-    * This both reenforces any type checking that has been performed earlier, as well as additional checks like detecting circular dependencies and synchronous suppliers that have to be async.
-    * It is highly recommended to expose this container to your test suite and call the check method to make sure the container will work at runtime.
+    - Confirms the bindings from the module are complete and satisfy eachother.
+    - This both reenforces any type checking that has been performed earlier, as well as additional checks like detecting circular dependencies and synchronous suppliers that have to be async.
+    - It is highly recommended to expose this container to your test suite and call the check method to make sure the container will work at runtime.
 2. Wiring: `container.wire()`
-    * Links up bindings to their dependencies bindings. Ensures that later requests to the container execute with high performance.
-    * Includes logic such as linking bindings to their internal optimistic dependencies which need to before they are actually requested.
-    * Safe to also run in tests, but shouldn't any additional validations.
-    * Recommended to run during startup, to perform any expensive compute ahead of time.
+    - Links up bindings to their dependencies bindings. Ensures that later requests to the container execute with high performance.
+    - Includes logic such as linking bindings to their internal optimistic dependencies which need to before they are actually requested.
+    - Safe to also run in tests, but shouldn't any additional validations.
+    - Recommended to run during startup, to perform any expensive compute ahead of time.
 3. Preloading: `container.preloadAsync()` or `container.preload()` (SyncContainer only)
-    * Initializes all optimistic singletons in the container.
-    * The "request" to initialize is always unique to normal `.get()` requests, even if this step is invoked as part of a `get()`.
-    * Unsafe to run at test time, since it instantiates real instances.
-    * Recommended to run during startup, to perform any expensive compute ahead of time.
+    - Initializes all optimistic singletons in the container.
+    - The "request" to initialize is always unique to normal `.get()` requests, even if this step is invoked as part of a `get()`.
+    - Unsafe to run at test time, since it instantiates real instances.
+    - Recommended to run during startup, to perform any expensive compute ahead of time.
 4. Instantiation: `container.getAsync(<identifer>)` or `container.get(<identifer>)` (SyncContainer only)
-    * Initializes the requested value, respecting all dependencies, scopes, and bindings that have been declared up until this point.
-    * Like other APIs, accepts both an identifier or a class.
-    * Type checking enforces that the requested value is bound in the container. Requesting a non-declared identifier, or a value that is stricter than the binding (e.g. requesting `T` when binding is for `T | null`) will both raise a type failure and throw an error.
+    - Initializes the requested value, respecting all dependencies, scopes, and bindings that have been declared up until this point.
+    - Like other APIs, accepts both an identifier or a class.
+    - Type checking enforces that the requested value is bound in the container. Requesting a non-declared identifier, or a value that is stricter than the binding (e.g. requesting `T` when binding is for `T | null`) will both raise a type failure and throw an error.
 
 ### Combining containers with dynamic runtime values
 
@@ -887,9 +887,9 @@ Due to the type safety requirements of Haywire, it is highly recommended to conf
 Haywire is 100% compatible with vanilla javascript, so using a laxer version of typescript _may_ work as intended. However it is only tested and maintained with the strictest settings.
 
 These settings include:
-* [strict](https://www.typescriptlang.org/tsconfig/#strict) `= true`
-  * And all additional "strict" settings that are included in this
-* [exactOptionalPropertyTypes](https://www.typescriptlang.org/tsconfig/#exactOptionalPropertyTypes) `= true`
+- [strict](https://www.typescriptlang.org/tsconfig/#strict) `= true`
+  - And all additional "strict" settings that are included in this
+- [exactOptionalPropertyTypes](https://www.typescriptlang.org/tsconfig/#exactOptionalPropertyTypes) `= true`
 
 ### Generics on classes and methods
 
@@ -912,8 +912,8 @@ This means it may be tricky to use haywire instances as either the parameters or
 Any sort of "conditional" and "DRY" logic should be handled by mixing and matching modules based on your environment.
 
 The two exceptions to this rule are:
-* `identifier<T>()` allows a generic to define a type
-* All types publically exposed in the [Types](#types) section of API.
+- `identifier<T>()` allows a generic to define a type
+- All types publically exposed in the [Types](#types) section of API.
 
 ## API
 
@@ -924,14 +924,14 @@ The two exceptions to this rule are:
 Returns a `HaywireId` to be used as a type tracker in all Haywire APIs.
 
 Method signatures:
-* `identifier<T>(name?: string)`
-  * Returns an id for an arbitrary type `T`. It will produce a _new and unique_ id every time it is called, so it is critical to only instantiate once!
-  * Optionally provide a `name` to be included whenever the id is stringified in debug logs or errors. Default is `'haywire-id'`.
-  * If the type is optionally `null` or `undefined`, will throw a type error. Those are special cases that should be handled via the `nullable()` and `undefinable()` methods respectively.
-* `identifier(Foo)`
-  * Returns an id for the class `Foo`. It will return the _same_ id every time, and is generally interchangable with providing the `Foo` class directly to APIs if necessary.
-* `identifier(id)`
-  * If a HaywireId is provided as input, the id is return unchanged.
+- `identifier<T>(name?: string)`
+  - Returns an id for an arbitrary type `T`. It will produce a _new and unique_ id every time it is called, so it is critical to only instantiate once!
+  - Optionally provide a `name` to be included whenever the id is stringified in debug logs or errors. Default is `'haywire-id'`.
+  - If the type is optionally `null` or `undefined`, will throw a type error. Those are special cases that should be handled via the `nullable()` and `undefinable()` methods respectively.
+- `identifier(Foo)`
+  - Returns an id for the class `Foo`. It will return the _same_ id every time, and is generally interchangable with providing the `Foo` class directly to APIs if necessary.
+- `identifier(id)`
+  - If a HaywireId is provided as input, the id is return unchanged.
 
 #### `bind`
 

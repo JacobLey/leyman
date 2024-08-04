@@ -10,13 +10,13 @@ Populate static files with dynamic content, and make sure they stay in sync.
 
 ## Table of Contents
 
-* [Introduction](#introduction)
-* [Installation](#installation)
-* [Usage](#usage)
-* [API](#api)
-    * [populateFile](#populatefileparams-options)
-    * [populateFiles](#populatefilesparams-options)
-* [Also See](#also-see)
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API](#api)
+    - [populateFile](#populatefileparams-options)
+    - [populateFiles](#populatefilesparams-options)
+- [Also See](#also-see)
 
 ## Introduction
 

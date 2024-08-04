@@ -1,6 +1,6 @@
 {
   "name": "sinon-typed-stub",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Utility methods to better typed sinon stubs",
   "engines": {
     "node": ">=20"

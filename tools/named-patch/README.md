@@ -102,9 +102,9 @@ Using a [Condition](https://nodejs.org/dist/latest/docs/api/packages.html#resolv
 This enforces a best practice that _by default_ monkey patching and stubbing is a testing-specific pattern that should be omitted in production.
 
 Conditions may be set a number of ways:
-* `node --conditions=patchable ./my-script.js`
-* `NODE_OPTIONS='--conditions=patchable' node ./my-script.js`
-    * Frameworks like `mocha` provide setting these conditions via config's [`node-option`](https://mochajs.org/#-node-option-name-n-name).
+- `node --conditions=patchable ./my-script.js`
+- `NODE_OPTIONS='--conditions=patchable' node ./my-script.js`
+    - Frameworks like `mocha` provide setting these conditions via config's [`node-option`](https://mochajs.org/#-node-option-name-n-name).
 
 <a name="Api"></a>
 ## API

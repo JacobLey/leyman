@@ -1,12 +1,33 @@
 # Change Log
 
-## [2.1.0] - 2022-08-03
+## 3.0.0
+
+### Major Changes
+
+- f9e63fa: Single run method instead of lifecycle management
+
+### Patch Changes
+
+- 4cbcb04: Handle electron argv
+- 6467d6f: Expose error type for failure to implement main()
+- 31f81fa: Internal dependency updates
+- 3e7ee18: Dependency bumps
+- f6a4729: Update year in LICENSE
+- 9c786d0: Update dependencies
+- 5984ed5: Add references to haywire-launcher
+- Updated dependencies [31f81fa]
+- Updated dependencies [3e7ee18]
+- Updated dependencies [f6a4729]
+- Updated dependencies [9c786d0]
+  - default-import@1.1.6
+
+## 2.1.0
 
 ### Added
 
 Expose `run()` method for executing script lifecycle directly, in cases where the "executable" is not actually exported at the top-level.
 
-## [2.0.0] - 2022-07-05
+## 2.0.0
 
 ### Changed
 

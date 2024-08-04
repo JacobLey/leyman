@@ -10,12 +10,12 @@ Chain mocha BDD methods together for determinstic and type safe tests.
 
 ## Table of Contents
 
-* [Introduction](#introduction)
-* [Installation](#installation)
-* [Example](#example)
-* [Usage](#usage)
-* [Chaining hooks](#chaining-hooks)
-* [API](#api)
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Example](#example)
+- [Usage](#usage)
+- [Chaining hooks](#chaining-hooks)
+- [API](#api)
 
 ## Introduction
 

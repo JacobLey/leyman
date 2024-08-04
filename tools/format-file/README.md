@@ -10,13 +10,13 @@ Format files based on existing formatter configs like Biome.
 
 ## Table of Contents
 
-* [Introduction](#introduction)
-* [Installation](#installation)
-* [Example](#example)
-* [API](#api)
-  * [formatFile](#formatfilefilepath-options)
-  * [formatFiles](#formatfilesfilepath-options)
-  * [formatText](#formattextcontent-options)
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Example](#example)
+- [API](#api)
+  - [formatFile](#formatfilefilepath-options)
+  - [formatFiles](#formatfilesfilepath-options)
+  - [formatText](#formattextcontent-options)
 
 ## Introduction
 

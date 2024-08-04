@@ -56,9 +56,9 @@ await parseCwd('does/not/exist');
 
 ### parseCwd(cwd)
 
-* cwd
-  * file path to resolve to URL
-  * Type: `string` or `URL` or `null`
-  * optional, defaults to `process.cwd()`
-  * Optionally wrap as an object, e.g. `{ cwd: '/foo/bar' }`
-    * Convenient for directly passing higher level `options` object
+- cwd
+  - file path to resolve to URL
+  - Type: `string` or `URL` or `null`
+  - optional, defaults to `process.cwd()`
+  - Optionally wrap as an object, e.g. `{ cwd: '/foo/bar' }`
+    - Convenient for directly passing higher level `options` object

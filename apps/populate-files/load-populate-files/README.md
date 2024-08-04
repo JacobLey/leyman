@@ -10,14 +10,14 @@ Load and dynamically populate file content based on a single files config.
 
 ## Table of Contents
 
-* [Introduction](#introduction)
-* [Installation](#installation)
-* [Usage](#usage)
-* [API](#api)
-    * [loadAndPopulateFiles](#loadandpopulatefilesfilepath-options)
-* [Types](#types)
-    * [PopulateFileParams](#populatefileparams)
-* [Also See](#also-see)
+- [Introduction](#introduction)
+- [Installation](#installation)
+- [Usage](#usage)
+- [API](#api)
+    - [loadAndPopulateFiles](#loadandpopulatefilesfilepath-options)
+- [Types](#types)
+    - [PopulateFileParams](#populatefileparams)
+- [Also See](#also-see)
 
 ## Introduction
 

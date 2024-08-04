@@ -56,25 +56,25 @@ Some lower level isomorphic utilities are also provided, such as text encoding a
 
 ### Hash
 
-* ✅ sha1
-* ✅ sha256
-* ✅ sha384
-* ✅ sha512
+- ✅ sha1
+- ✅ sha256
+- ✅ sha384
+- ✅ sha512
 
 ### Symmetric Encryption
 
-* ✅ aes-128-cbc
-* ✅ aes-192-cbc
-* ✅ aes-256-cbc
-* ✅ aes-128-ctr
-* ✅ aes-192-ctr
-* ✅ aes-256-ctr
+- ✅ aes-128-cbc
+- ✅ aes-192-cbc
+- ✅ aes-256-cbc
+- ✅ aes-128-ctr
+- ✅ aes-192-ctr
+- ✅ aes-256-ctr
 
 ### ECDH (Asymmetric)
 
-* ✅ prime256v1
-* ✅ secp384r1
-* ✅ secp521r1
+- ✅ prime256v1
+- ✅ secp384r1
+- ✅ secp521r1
 
 ## Install
 
@@ -219,10 +219,10 @@ iso-crypto is an ESM module. That means it _must_ be `import`ed. To load from a 
 Most cryptographic methods return instances of [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array), instead of strings. Those can encoded as text via the `encode` method. In NodeJS the response is often actually a [`Buffer`](https://nodejs.org/api/buffer.html) which extends `Uint8Array`.
 
 Any method that takes input "text" allows 3 formats:
-* string - inferred as `UTF8` encoding
-* Uint8Array - "raw" encoding
-* { text: string; encoding: string } - text with a custom encoding
-    * Supported encodings: `hex`, `base64`, `base64url`, `utf8`
+- string - inferred as `UTF8` encoding
+- Uint8Array - "raw" encoding
+- { text: string; encoding: string } - text with a custom encoding
+    - Supported encodings: `hex`, `base64`, `base64url`, `utf8`
 
 Any method that performs hashing can take the Hash algorithm as an option. The default algorithm is `SHA256`. In any case where hashing _should not_ be used (e.g. custom hashing already implemented), declare the `raw` option.
 

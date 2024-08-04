@@ -7,5 +7,5 @@
   "access": "restricted",
   "baseBranch": "main",
   "updateInternalDependencies": "patch",
-  "ignore": ["@leyman/main"]
+  "ignore": ["@leyman/main", "@leyman/eslint-config"]
 }

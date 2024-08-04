@@ -10,12 +10,12 @@ Nx plugin to dynamically populate file content.
 
 ## Table of Contents
 
-* [Introduction](#introduction)
-* [Usage](#usage)
-* [API](#api)
-    * [populateFile](#populatefileparams-options)
-    * [populateFiles](#populatefilesparams-options)
-* [Also See](#also-see)
+- [Introduction](#introduction)
+- [Usage](#usage)
+- [API](#api)
+    - [populateFile](#populatefileparams-options)
+    - [populateFiles](#populatefilesparams-options)
+- [Also See](#also-see)
 
 ## Introduction
 

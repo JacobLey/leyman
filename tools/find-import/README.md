@@ -92,19 +92,19 @@ List of file names to search for in each directory.
 
 #### options
 
-* cwd
-  * Type: `string` or `URL`
-  * optional, defaults to `process.cwd()`
-  * Directory to use as base directory.
-  * See [`parse-cwd`](https://www.npmjs.com/package/parse-cwd).
+- cwd
+  - Type: `string` or `URL`
+  - optional, defaults to `process.cwd()`
+  - Directory to use as base directory.
+  - See [`parse-cwd`](https://www.npmjs.com/package/parse-cwd).
 
-* direction
-  * `'up'`(default) or `'down'`
-  * direction to search for files.
-    * `'up'` indicates `/foo/bar` -> `/foo` -> `/`
-    * `'down'` is opposite, `/` -> `/foo` -> `/foo/bar`
+- direction
+  - `'up'`(default) or `'down'`
+  - direction to search for files.
+    - `'up'` indicates `/foo/bar` -> `/foo` -> `/`
+    - `'down'` is opposite, `/` -> `/foo` -> `/foo/bar`
 
-* startAt
-  * Type: `string` or `URL`
-  * optional, defaults to `/`
-  * Top-most "root" directory to limit search.
+- startAt
+  - Type: `string` or `URL`
+  - optional, defaults to `/`
+  - Top-most "root" directory to limit search.
