@@ -1,7 +1,7 @@
 {
   "name": "nx-populate-files",
   "version": "0.0.3",
-  "description": "Dynamically populate file content as an nx executor",
+  "description": "Nx plugin to dynamically populate file content",
   "engines": {
     "node": ">=20"
   },
@@ -23,6 +23,7 @@
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {
+    ".": "./dist/index.js",
     "./package.json": {
       "default": "./package.json"
     }

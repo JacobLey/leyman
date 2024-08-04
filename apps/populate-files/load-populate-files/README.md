@@ -15,6 +15,8 @@ Load and dynamically populate file content based on a single files config.
 * [Usage](#usage)
 * [API](#api)
     * [loadAndPopulateFiles](#loadandpopulatefilesfilepath-options)
+* [Types](#types)
+    * [PopulateFileParams](#populatefileparams)
 * [Also See](#also-see)
 
 ## Introduction
@@ -73,6 +75,23 @@ An optional object as the secondary parameter. Passed to underlying `populateFil
 | check | `boolean` | `true` if in a CI environment. Else `false` | If `true`, will fail if writing the file would result in changing the files content. Useful for CI environments to make sure the version-controlled code is up to date before deployment. |
 | dryRun | `boolean` | `false` | If `true`, will not write file regardless of changes. Can still fail if `check` is `true`. |
 | cwd | `string \| URL` | `process.env.PWD` | Used as the current working directory if `filePath` is a relative file. Will be re-used in filePaths derived from loaded config |
+
+## Types
+
+### PopulateFileParams
+
+Type of the exported config at the specified file. Represents the parametesr to `populateFiles()`. It is highly recommended to combine with the `satisfies` keyword to ensure your exported config will succeed.
+
+```ts
+import type { PopulateFileParams } from 'load-populate-files';
+
+export default {
+    filePath: './foo.json',
+    content: { bar: 123 },
+} satisfies PopulateFileParams;
+```
+
+Note this type can also be imported from [populate-files](https://www.npmjs.com/package/populate-files) directly.
 
 ## Also See
 
