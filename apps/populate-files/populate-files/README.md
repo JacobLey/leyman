@@ -11,10 +11,12 @@ Populate static files with dynamic content, and make sure they stay in sync.
 ## Table of Contents
 
 * [Introduction](#introduction)
+* [Installation](#installation)
 * [Usage](#usage)
 * [API](#api)
-    * [check](#check)
-    * [dryRun](#dryrun)
+    * [populateFile](#populatefileparams-options)
+    * [populateFiles](#populatefilesparams-options)
+* [Also See](#also-see)
 
 ## Introduction
 
@@ -104,3 +106,7 @@ Used internally to pretty-print stringified file content.
 ### [parse-cwd](https://www.npmjs.com/package/parse-cwd)
 
 Used internally to interpret `cwd` option.
+
+### [nx-populate-files](https://www.npmjs.com/package/nx-populate-files)
+
+Load and populate files as an nx target.
