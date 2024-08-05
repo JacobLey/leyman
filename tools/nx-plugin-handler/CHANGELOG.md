@@ -1,5 +1,12 @@
 # nx-plugin-handler
 
+## 0.0.4
+
+### Patch Changes
+
+- Updated dependencies
+  - haywire@0.1.1
+
 ## 0.0.3
 
 ### Patch Changes

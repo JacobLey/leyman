@@ -3,8 +3,8 @@
 # haywire
 A fully type-safe dependency injection library using native javascript.
 
-[![npm package](https://badge.fury.io/js/hayire.svg)](https://www.npmjs.com/package/hayire)
-[![License](https://img.shields.io/npm/l/hayire.svg)](https://github.com/JacobLey/leyman/blob/main/tools/hayire/LICENSE)
+[![npm package](https://badge.fury.io/js/haywire.svg)](https://www.npmjs.com/package/haywire)
+[![License](https://img.shields.io/npm/l/haywire.svg)](https://github.com/JacobLey/leyman/blob/main/tools/haywire/LICENSE)
 
 </div>
 

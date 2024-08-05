@@ -1,5 +1,16 @@
 # nx-lifecycle
 
+## 0.0.3
+
+### Patch Changes
+
+- Updated dependencies
+  - haywire@0.1.1
+  - format-file@0.0.6
+  - nx-plugin-handler@0.0.4
+  - juniper@1.1.11
+  - default-import@1.1.6
+
 ## 0.0.2
 
 ### Patch Changes

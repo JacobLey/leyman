@@ -1,5 +1,13 @@
 # haywire-launcher
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies
+  - haywire@0.1.1
+  - entry-script@3.0.0
+
 ## 1.0.0
 
 ### Patch Changes

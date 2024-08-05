@@ -1,5 +1,12 @@
 # load-populate-files
 
+## 0.0.4
+
+### Patch Changes
+
+- populate-files@0.0.4
+- default-import@1.1.6
+
 ## 0.0.3
 
 ### Patch Changes

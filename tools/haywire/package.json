@@ -1,6 +1,6 @@
 {
   "name": "haywire",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Type safe dependency injection",
   "engines": {
     "node": ">=20"
