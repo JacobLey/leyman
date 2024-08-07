@@ -1,6 +1,6 @@
 <div style="text-align:center">
 
-# punycode-esm<
+# punycode-esm
 ESM native version of punycode.js.
 
 [![npm package](https://badge.fury.io/js/punycode-esm.svg)](https://www.npmjs.com/package/punycode-esm)
