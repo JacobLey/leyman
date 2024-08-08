@@ -1,5 +1,14 @@
 # nx-lifecycle
 
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [2bef161]
+  - default-import@2.0.0
+  - juniper@1.1.11
+  - format-file@0.0.6
+
 ## 0.0.4
 
 ### Patch Changes

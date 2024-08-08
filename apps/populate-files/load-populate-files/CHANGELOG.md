@@ -1,5 +1,12 @@
 # load-populate-files
 
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [2bef161]
+  - default-import@2.0.0
+
 ## 0.0.5
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # barrelify
 
+## 1.1.11
+
+### Patch Changes
+
+- Updated dependencies [2bef161]
+  - default-import@2.0.0
+  - entry-script@3.0.2
+
 ## 1.1.10
 
 ### Patch Changes

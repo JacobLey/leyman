@@ -1,5 +1,12 @@
 # Change Log
 
+## 3.0.2
+
+### Patch Changes
+
+- Updated dependencies [2bef161]
+  - default-import@2.0.0
+
 ## 3.0.1
 
 ### Patch Changes
