@@ -1,5 +1,20 @@
 # nx-lifecycle
 
+## 0.0.6
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - juniper@1.1.12
+  - common-proxy@0.0.3
+  - default-import@2.0.1
+  - format-file@0.0.7
+  - haywire@0.1.2
+  - nx-plugin-handler@0.0.5
+
 ## 0.0.5
 
 ### Patch Changes

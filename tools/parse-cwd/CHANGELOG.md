@@ -1,5 +1,12 @@
 # parse-cwd
 
+## 1.0.10
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+
 ## 1.0.9
 
 ### Patch Changes

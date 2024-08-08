@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.0.3
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - default-import@2.0.1
+
 ## 3.0.2
 
 ### Patch Changes

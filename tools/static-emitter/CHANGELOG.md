@@ -1,5 +1,12 @@
 # Change Log
 
+## 2.0.3
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+
 ## 2.0.2
 
 ### Patch Changes
@@ -28,7 +35,7 @@ Declaring event structure has also been updated. There are now two methods for i
 The first is similar to original implementation, of explicitly declaring the `events` property of the emitter.
 
 ```ts
-import { events, StaticEmitter } from 'static-emitter';
+import { events, StaticEmitter } from "static-emitter";
 
 class MyEmitter extends StaticEmitter {
   declare [events]: {
@@ -36,16 +43,19 @@ class MyEmitter extends StaticEmitter {
   };
 }
 
-new MyEmitter().emit('foo', 123);
+new MyEmitter().emit("foo", 123);
 ```
+
 Note that the attributes are no longer arrays, as `EventTarget` does not allow for arbitrary lengths of events.
 
 The second is passing the event syntax via generic parameters. This can be done either when extending the class, or when instantiating the class directly.
 
 ```ts
-import { StaticEmitter } from 'static-emitter';
+import { StaticEmitter } from "static-emitter";
 
-new StaticEmitter<{ foo: 123 }>().on('foo', (data: 123) => console.log('My Data', data));
+new StaticEmitter<{ foo: 123 }>().on("foo", (data: 123) =>
+  console.log("My Data", data)
+);
 ```
 
 `StaticEventTarget` follows the same patterns.

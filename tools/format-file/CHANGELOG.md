@@ -1,5 +1,15 @@
 # format-file
 
+## 0.0.7
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - haywire@0.1.2
+
 ## 0.0.6
 
 ### Patch Changes

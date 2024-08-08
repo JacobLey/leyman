@@ -1,5 +1,16 @@
 # load-populate-files
 
+## 0.0.7
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - populate-files@0.0.5
+  - default-import@2.0.1
+
 ## 0.0.6
 
 ### Patch Changes

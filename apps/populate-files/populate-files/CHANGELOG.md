@@ -1,5 +1,15 @@
 # populate-files
 
+## 0.0.5
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - format-file@0.0.7
+
 ## 0.0.4
 
 ### Patch Changes

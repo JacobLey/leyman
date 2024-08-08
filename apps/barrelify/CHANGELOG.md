@@ -1,5 +1,19 @@
 # barrelify
 
+## 1.1.12
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - default-import@2.0.1
+  - entry-script@3.0.3
+  - find-import@1.0.8
+  - named-patch@1.0.10
+  - parse-cwd@1.0.10
+
 ## 1.1.11
 
 ### Patch Changes

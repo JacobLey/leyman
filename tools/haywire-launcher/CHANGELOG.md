@@ -1,5 +1,16 @@
 # haywire-launcher
 
+## 0.1.4
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - entry-script@3.0.3
+  - haywire@0.1.2
+
 ## 0.1.3
 
 ### Patch Changes

@@ -1,5 +1,12 @@
 # sinon-typed-stub
 
+## 0.0.3
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+
 ## 0.0.2
 
 ### Patch Changes

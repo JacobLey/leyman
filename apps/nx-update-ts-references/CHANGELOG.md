@@ -1,5 +1,15 @@
 # nx-update-ts-references
 
+## 0.0.4
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - common-proxy@0.0.3
+
 ## 0.0.3
 
 ### Patch Changes

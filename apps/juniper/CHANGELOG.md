@@ -1,5 +1,12 @@
 # juniper
 
+## 1.1.12
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+
 ## 1.1.11
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # nx-populate-files
 
+## 0.0.8
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - load-populate-files@0.0.7
+  - common-proxy@0.0.3
+
 ## 0.0.7
 
 ### Patch Changes

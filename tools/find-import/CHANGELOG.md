@@ -1,5 +1,15 @@
 # find-import
 
+## 1.0.8
+
+### Patch Changes
+
+- 1de1659: Omit CHANGELOG from publish
+- 725510a: Include npmignore ignore file
+- Updated dependencies [1de1659]
+- Updated dependencies [725510a]
+  - parse-cwd@1.0.10
+
 ## 1.0.7
 
 ### Patch Changes
