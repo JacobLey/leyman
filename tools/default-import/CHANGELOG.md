@@ -1,5 +1,12 @@
 # Change Log
 
+## 1.1.7
+
+### Patch Changes
+
+- c5b98b0: Revert node engines to original value
+  https://github.com/JacobLey/leyman/issues/1
+
 ## 1.1.6
 
 ### Patch Changes
