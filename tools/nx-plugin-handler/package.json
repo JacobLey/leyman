@@ -30,7 +30,7 @@
     "npm-default-import": "npm:default-import@latest"
   },
   "optionalDependencies": {
-    "@nx/devkit": "19.5.6"
+    "@nx/devkit": "19.5.7"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
