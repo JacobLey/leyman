@@ -1,0 +1,56 @@
+name: Test
+
+env:
+  NODE_VERSION: 22.5.1
+  NX_VERSION: 19.5.7
+  PNPM_VERSION: 9.7.0
+
+on:
+  - push
+
+jobs:
+  install-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+
+      - name: Install dependencies
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+          run_install: |
+            args: [-g, nx@${{ env.NX_VERSION }}]
+
+      # https://github.com/pnpm/action-setup/tree/v4/?tab=readme-ov-file#use-cache-to-reduce-installation-time
+      - name: Get pnpm store directory
+        shell: bash
+        run: |
+          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
+  
+      - uses: actions/cache@v4
+        name: Setup pnpm cache
+        with:
+          path: ${{ env.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+  
+      - name: Install dependencies
+        run: |
+          pnpm install
+
+      - name: Test
+        run: |
+          nx run-many -t test
+
+      - name: Verify Targets
+        run: |
+          nx run @leyman/main:lifecycle
