@@ -11,5 +11,5 @@
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^"
   },
-  "packageManager": "pnpm@9.7.0"
+  "packageManager": "pnpm@9.7.1"
 }

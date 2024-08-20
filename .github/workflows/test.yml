@@ -3,7 +3,7 @@ name: Test
 env:
   NODE_VERSION: 22.5.1
   NX_VERSION: 19.6.1
-  PNPM_VERSION: 9.7.0
+  PNPM_VERSION: 9.7.1
 
 on:
   - push
