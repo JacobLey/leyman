@@ -9,20 +9,20 @@ importers:
   .:
     devDependencies:
       '@nx/eslint':
-        specifier: 19.5.7
-        version: 19.5.7(nx@19.5.7)
+        specifier: 19.6.1
+        version: 19.6.1(nx@19.6.1)
       npm-nx-populate-files:
         specifier: npm:nx-populate-files@latest
-        version: nx-populate-files@0.0.8(nx@19.5.7)
+        version: nx-populate-files@0.0.8(nx@19.6.1)
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.9(nx@19.5.7)
+        version: nx-tsc@0.0.9(nx@19.6.1)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.4(nx@19.5.7)
+        version: nx-update-ts-references@0.0.4(nx@19.6.1)
       nx:
-        specifier: 19.5.7
-        version: 19.5.7
+        specifier: 19.6.1
+        version: 19.6.1
       nx-lifecycle:
         specifier: workspace:^
         version: link:apps/nx-lifecycle
@@ -204,8 +204,8 @@ importers:
         version: link:../../tools/nx-plugin-handler
     optionalDependencies:
       '@nx/devkit':
-        specifier: 19.5.7
-        version: 19.5.7(nx@19.5.7)
+        specifier: 19.6.1
+        version: 19.6.1(nx@19.6.1)
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.8.3
@@ -290,8 +290,8 @@ importers:
         version: juniper@1.1.11
     optionalDependencies:
       '@nx/devkit':
-        specifier: 19.5.7
-        version: 19.5.7(nx@19.5.7)
+        specifier: 19.6.1
+        version: 19.6.1(nx@19.6.1)
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.8.3
@@ -319,10 +319,10 @@ importers:
         version: load-populate-files@0.0.3(@biomejs/biome@1.8.3)
       npm-nx-populate-files:
         specifier: npm:nx-populate-files@latest
-        version: nx-populate-files@0.0.4(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-populate-files@0.0.4(@biomejs/biome@1.8.3)(nx@19.6.1)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       nx-tsc:
         specifier: workspace:^
         version: link:../../tools/nx-tsc
@@ -368,7 +368,7 @@ importers:
         version: 10.7.0
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       nx-tsc:
         specifier: workspace:^
         version: link:../../../tools/nx-tsc
@@ -392,8 +392,8 @@ importers:
         version: link:../load-populate-files
     optionalDependencies:
       '@nx/devkit':
-        specifier: 19.5.7
-        version: 19.5.7(nx@19.5.7)
+        specifier: 19.6.1
+        version: 19.6.1(nx@19.6.1)
       juniper:
         specifier: workspace:^
         version: link:../../juniper
@@ -421,7 +421,7 @@ importers:
         version: 10.7.0
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       nx-tsc:
         specifier: workspace:^
         version: link:../../../tools/nx-tsc
@@ -470,7 +470,7 @@ importers:
         version: 10.7.0
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       nx-tsc:
         specifier: workspace:^
         version: link:../../../tools/nx-tsc
@@ -536,8 +536,8 @@ importers:
         specifier: ^1.8.3
         version: 1.8.3
       '@nx/eslint':
-        specifier: 19.5.7
-        version: 19.5.7(@types/node@22.1.0)(eslint@9.8.0)(nx@19.5.7)
+        specifier: 19.6.1
+        version: 19.6.1(@types/node@22.1.0)(eslint@9.8.0)(nx@19.6.1)
       '@types/chai':
         specifier: ^4.3.17
         version: 4.3.17
@@ -567,10 +567,10 @@ importers:
         version: 10.7.0
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.7(nx@19.5.7)(typescript@5.5.4)
+        version: nx-tsc@0.0.7(nx@19.6.1)(typescript@5.5.4)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       typescript:
         specifier: ^5.5.4
         version: 5.5.4
@@ -590,8 +590,8 @@ importers:
         specifier: ^10.8.2
         version: 10.8.2
       nx:
-        specifier: 19.5.7
-        version: 19.5.7
+        specifier: 19.6.1
+        version: 19.6.1
       nx-lifecycle:
         specifier: workspace:^
         version: link:../../apps/nx-lifecycle
@@ -637,10 +637,10 @@ importers:
         version: 10.7.0
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.7(nx@19.5.7)(typescript@5.5.4)
+        version: nx-tsc@0.0.7(nx@19.6.1)(typescript@5.5.4)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       tslib:
         specifier: ^2.6.3
         version: 2.6.3
@@ -947,10 +947,10 @@ importers:
         version: barrelify@1.1.9
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.7(nx@19.5.7)(typescript@5.5.4)
+        version: nx-tsc@0.0.7(nx@19.6.1)(typescript@5.5.4)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       typescript:
         specifier: ^5.5.4
         version: 5.5.4
@@ -1105,10 +1105,10 @@ importers:
         version: 10.7.0
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.7(nx@19.5.7)(typescript@5.5.4)
+        version: nx-tsc@0.0.7(nx@19.6.1)(typescript@5.5.4)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       sinon:
         specifier: ^18.0.0
         version: 18.0.0
@@ -1240,8 +1240,8 @@ importers:
         version: default-import@1.1.6
     optionalDependencies:
       '@nx/devkit':
-        specifier: 19.5.7
-        version: 19.5.7(nx@19.5.7)
+        specifier: 19.6.1
+        version: 19.6.1(nx@19.6.1)
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.8.3
@@ -1281,10 +1281,10 @@ importers:
         version: link:../mocha-chain
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.7(nx@19.5.7)(typescript@5.5.4)
+        version: nx-tsc@0.0.7(nx@19.6.1)(typescript@5.5.4)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       sinon:
         specifier: ^18.0.0
         version: 18.0.0
@@ -1308,8 +1308,8 @@ importers:
         version: link:../nx-plugin-handler
     optionalDependencies:
       '@nx/devkit':
-        specifier: 19.5.7
-        version: 19.5.7(nx@19.5.7)
+        specifier: 19.6.1
+        version: 19.6.1(nx@19.6.1)
       npm-juniper:
         specifier: npm:juniper@latest
         version: juniper@1.1.11
@@ -1343,13 +1343,13 @@ importers:
         version: load-populate-files@0.0.3(@biomejs/biome@1.8.3)
       npm-nx-populate-files:
         specifier: npm:nx-populate-files@latest
-        version: nx-populate-files@0.0.4(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-populate-files@0.0.4(@biomejs/biome@1.8.3)(nx@19.6.1)
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.7(nx@19.5.7)(typescript@5.5.4)
+        version: nx-tsc@0.0.7(nx@19.6.1)(typescript@5.5.4)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       nyc:
         specifier: ^17.0.0
         version: 17.0.0
@@ -1484,10 +1484,10 @@ importers:
         version: link:../mocha-chain
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.7(nx@19.5.7)(typescript@5.5.4)
+        version: nx-tsc@0.0.7(nx@19.6.1)(typescript@5.5.4)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7)
+        version: nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1)
       sinon:
         specifier: ^18.0.0
         version: 18.0.0
@@ -2319,31 +2319,31 @@ packages:
   '@nrwl/devkit@19.5.6':
     resolution: {integrity: sha512-H7LGlwAktfL2GR4scwCfehuppmzcHJJt4C2PpiGEsfA74MKBw2/VGX15b29Mf36XbGS+Bx9vjvooZEt5HPCusw==}
 
-  '@nrwl/devkit@19.5.7':
-    resolution: {integrity: sha512-sTEwqsAT6bMturU14o/0O6v509OkwGOglxpbiL/zIYO/fDkMoNgnhlHBIT87i4YVuofMz2Z+hTfjDskzDPRSYw==}
+  '@nrwl/devkit@19.6.1':
+    resolution: {integrity: sha512-aoS5RwtUqd8gUWgubOtQ4kzqO8UVjYxtecutvSnDN6gKyG2ylZcDR2OnWL+AB7HbVgRjm/6/QALdcaev9Ljd8w==}
 
-  '@nrwl/js@19.5.7':
-    resolution: {integrity: sha512-Hb8ZBQYI7X5YsV573jCDm+3rn+htVqf0GEaDJGRmhzPe9PE/rlquti07gO5ao9+SeLcB34g6kAhR8PO+3sz0pw==}
+  '@nrwl/js@19.6.1':
+    resolution: {integrity: sha512-CVYjdH8nAqJXRKYm3liZKejDE/WHSt3Gx3YeF1m5kxwtPvhyWxTxnsdQLEOjonIPeHntGZ+aEIKt2FWNPUhldw==}
 
-  '@nrwl/tao@19.5.7':
-    resolution: {integrity: sha512-c1rN6HY97+cEwoM5Q9412399Ac1rw7pI/3IS5iJSYkeI5TTGOobIpdCavJPZVcfqo4+wegXPA3F/OmulgbOUJA==}
+  '@nrwl/tao@19.6.1':
+    resolution: {integrity: sha512-nl/NcBRkHr5r0drCq9ROPcKx/Q7SioPvNMl7edo/PdjdKcmJ3gXqvgTxPjwbYH2/ScNX2yjm353qrNyffSs6Rw==}
     hasBin: true
 
-  '@nrwl/workspace@19.5.7':
-    resolution: {integrity: sha512-VzQmG+de1DvQnmWy2acMkxBrRPxFdvQ06Tja6tThn3UWMB9RwK2wKIEERttRhjBLGjGlr6ARi9Bd8zYTgpW0Lw==}
+  '@nrwl/workspace@19.6.1':
+    resolution: {integrity: sha512-o+Yx1kRtn9RtdMs9add5IWF7GzWuXJ2RRX0DMIaaoIeCLemQIE22589/N7+c5IfXsY06ZMDzEBlNS0Iapt2Zyg==}
 
   '@nx/devkit@19.5.6':
     resolution: {integrity: sha512-zSToXLkhbAOQmqVTgUNHdLO0uOZz/iGwqEK4tuAhU5hhqTcpN1TZUI9BlINvtFJBLvbNroGrnIh0gTq9CPzVHw==}
     peerDependencies:
       nx: '>= 17 <= 20'
 
-  '@nx/devkit@19.5.7':
-    resolution: {integrity: sha512-mUtZQcdqbF0Q9HfyG14jmpPCtZ1GnVaLNIADZv5SLpFyfh4ZjaBw6wdjPj7Sp3imLoyqMrcd9nCRNO2hlem8bw==}
+  '@nx/devkit@19.6.1':
+    resolution: {integrity: sha512-FGfPM9R7QdEGllNr7Jlx81QbiufNNRHehrJ/4aqftzHWT5ptYmH45bPnd/Wu0qDK4rg1c4PMrjEOLpyCAFXg1Q==}
     peerDependencies:
       nx: '>= 17 <= 20'
 
-  '@nx/eslint@19.5.7':
-    resolution: {integrity: sha512-xqCiwWWuG1rRUE3rno7PUqAoZK3HHhxE5POKh4zf9BzOSaQwu8G3i6wRMoaVeEBqxfxIbgs2Uf6j9A5XyLW1Hw==}
+  '@nx/eslint@19.6.1':
+    resolution: {integrity: sha512-XhBdOztiIAdl0xXUjWHkQ2oVo5Xk9VR6+mvgHsN7FGvww9/tJluGeK16D9aaimXTToLMJxb+/5LAohFwHQ5MoQ==}
     peerDependencies:
       '@zkochan/js-yaml': 0.0.7
       eslint: ^8.0.0 || ^9.0.0
@@ -2351,79 +2351,79 @@ packages:
       '@zkochan/js-yaml':
         optional: true
 
-  '@nx/js@19.5.7':
-    resolution: {integrity: sha512-DlZHz6nWIFyr+43T0g/FfISXETfKuLwg22clQGwTlsmal9ShMOt7uTNl18BzK1cnvxE+cwbFUQ8pCL1DcrYKsA==}
+  '@nx/js@19.6.1':
+    resolution: {integrity: sha512-FlQcSpGWbS7D8FDKFTyVQ2RnZ0qkwkMgjG1wVjh17/0OvcALrIV87wDjgpoTz4chiaVlsZQbNeIDLFMS7duuyw==}
     peerDependencies:
       verdaccio: ^5.0.4
     peerDependenciesMeta:
       verdaccio:
         optional: true
 
-  '@nx/linter@19.5.7':
-    resolution: {integrity: sha512-4DXi17d11xEbrffNDOS+qoC9wIZJPxiyf88x6pRIhPyUb/NNMCT4hLnpEGnJvhqGb8LXF/c48UkJZqda/6p4qA==}
+  '@nx/linter@19.6.1':
+    resolution: {integrity: sha512-gTTNJn5vM0zWnxw7780Fl8YVy5D/ZibSXDjSyA4shMXOyY7XgySJ4dN7qHY1FxNInrPDNqbnQEPEj/n/0vXoCA==}
 
-  '@nx/nx-darwin-arm64@19.5.7':
-    resolution: {integrity: sha512-5jFAZSfV8QVNoxOXayZw4/jNJbxMMctNOYZW8Qj4eU8Ti+OmhsLgouxz/9enCh5SDITriOMZ7IHZ9rhrlGQoig==}
+  '@nx/nx-darwin-arm64@19.6.1':
+    resolution: {integrity: sha512-xxAdyIUckvsIID0BnYCHM86s35n0tDsBYuoqpOFG+22PEk0bzoSVOyxeJQ5UKDCvXe5wa2MbcgyhbHKhj7Osnw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@nx/nx-darwin-x64@19.5.7':
-    resolution: {integrity: sha512-Ss+rF2+MQxyKrNnSYAeEGhtdE9hUHiTqyjJo4n1lvIWJ++TairOCtk5QRHrYLgAxE1XTf0OabcsDzegxv7yk3Q==}
+  '@nx/nx-darwin-x64@19.6.1':
+    resolution: {integrity: sha512-ISwb09KKtAydrAbyxwOjce8pdVzOSuzC068Uo8TcHp2Xao2b+N9zmkQquLzC+G4dgwxDxxVYoZcuZ6urRFV7Cg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [darwin]
 
-  '@nx/nx-freebsd-x64@19.5.7':
-    resolution: {integrity: sha512-FMLXcUr3mw/v4LvmNqHMAXy2k+T/hp2YpdBUq9ExteMfRywFsnKNlm39n/quniFsgKthEMdvvzxSQppRKaVwIw==}
+  '@nx/nx-freebsd-x64@19.6.1':
+    resolution: {integrity: sha512-IzR+K0tW8A6kl95V6k8Pp8tknjiDGOUB+E2p8YN7UlYPP7gaBK+rojERF4V7jD5pEvSxrKMwuJoD+WH/b52TNA==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [freebsd]
 
-  '@nx/nx-linux-arm-gnueabihf@19.5.7':
-    resolution: {integrity: sha512-LhJ342HutpR258lBLVTkXd6x2Uj4ZPJ6xKdfEm+FYQvG1byPr2L0TlNXcfSBkYtd7wRn0qg9eQZoCV/5+w415Q==}
+  '@nx/nx-linux-arm-gnueabihf@19.6.1':
+    resolution: {integrity: sha512-8mHceXwpBIp1gF+hSKGg7XRYpcB9QN8YROSn4dzvDoUMEusOE27jzXKKS9dRkjdULYENKDkv0NbuhcoxoWx+KA==}
     engines: {node: '>= 10'}
     cpu: [arm]
     os: [linux]
 
-  '@nx/nx-linux-arm64-gnu@19.5.7':
-    resolution: {integrity: sha512-Q6gN+VNLisg7mYPTXC5JuGCP/s9tLjJFclKdH6FoP5K1Hgy88KK1uUoivDIfI8xaEgyLqphD1AAqokiFWZNWsg==}
+  '@nx/nx-linux-arm64-gnu@19.6.1':
+    resolution: {integrity: sha512-eqxWqhUrFEz3Rnoz9RKhMlrCY6AF0AVGgTGto5TdB16kIgTA53i18bf9jaq2MSBZQHE1kySVUgPfxQQxPzWKaA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@nx/nx-linux-arm64-musl@19.5.7':
-    resolution: {integrity: sha512-BsYNcYujNKb+uE7PrJp4PrX8a3G9oy+THaUr0t5+L435HjuZDBiK+tK9JzYGvM0bR5FOYm5K99I1DVD/Hv0snw==}
+  '@nx/nx-linux-arm64-musl@19.6.1':
+    resolution: {integrity: sha512-3lfazErzsJgO8G2dEcuGmtJoi9fQ3CPvLA+RiE7CKBQ4a/5Zb1o2rqlZ1YTfnfiUcOh4knt7gWcXm16eSKbLoQ==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
-  '@nx/nx-linux-x64-gnu@19.5.7':
-    resolution: {integrity: sha512-ILaLU8b5lUokYVF3vxAVj62qFok1hexiNzBdLGJPI1OkPGELtLyb8RymI3939iJoNMk1DS3/6dqK7NHXvHX8Mw==}
+  '@nx/nx-linux-x64-gnu@19.6.1':
+    resolution: {integrity: sha512-Rt4NkuJZpRyVunRoCC5shaUqPk6wrMH3x55WEb0HBzlKjkItgrFpPInPS4hp9hFsJ8vX2AkBX2qrTWRaLMbOyQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@nx/nx-linux-x64-musl@19.5.7':
-    resolution: {integrity: sha512-LfTnO4JZebLugioMk+GTptv3N38Wj2i2Pko0bdRZaKba+INGSlUgFqoRuO0KqZEmVIUGrxfkfqIN3HghVQ4D/Q==}
+  '@nx/nx-linux-x64-musl@19.6.1':
+    resolution: {integrity: sha512-P0RnxCfcgb6t4l+WWVNlTDzqpcM/Du77EfgvNc3Z1mRLQMP4E5TkLt8J/aTTjh2GwtnP95oxQSOYBzg+sJwNPQ==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
-  '@nx/nx-win32-arm64-msvc@19.5.7':
-    resolution: {integrity: sha512-cCTttdbf1AKuDU8j108SpIMWs53A/0mOVDPOPpa+oKkvBaI8ruZkxOceMjWZjWULd2gi1nS+5nJePpbrdQ8mkg==}
+  '@nx/nx-win32-arm64-msvc@19.6.1':
+    resolution: {integrity: sha512-CFaRqK+Sv7Gi7d+WUJqFLV0t4D2ImnO7BoeZWnT6oEfIl94hikCtbu4693Fsu7eg37JMa+4xwdAUvOOq1rFhJg==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [win32]
 
-  '@nx/nx-win32-x64-msvc@19.5.7':
-    resolution: {integrity: sha512-EqSnjpq1PNR/C8/YkL+Gn79dDfQ+HwJM8VJOt4qoCOQ9gQZqNJphjW2hg0H8WxLYezMScx3fbL99mvJO7ab2Cw==}
+  '@nx/nx-win32-x64-msvc@19.6.1':
+    resolution: {integrity: sha512-l2vAK0/2c9oEAqI0KdeJkkkZlr72LeWV5zds/FIuFHBRyweJanplRelhD7t199BnGr2FfulOpFrc1TyYzvntkg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [win32]
 
-  '@nx/workspace@19.5.7':
-    resolution: {integrity: sha512-HtyRP0358QxKCpRkEffG0SAvZ9aIWvazMX6vlyHoJt8fkUuxN/wkkR80TTmTurqt87OpJK67ylUx0eOzzzm8Lw==}
+  '@nx/workspace@19.6.1':
+    resolution: {integrity: sha512-uYUEDC6WXIvv0rmsNIYzuHzn7T3CQ8MVbX6uXvTMZL7xn6HQS6rVeFfeagoNslKMmUJYBr0yciQ+Z88wc47MmQ==}
 
   '@pkgjs/parseargs@0.11.0':
     resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
@@ -2842,8 +2842,8 @@ packages:
     resolution: {integrity: sha512-Mr2ZakwQ7XUAjp7pAwQWRhhK8mQQ6JAaNWSjmjxil0R8BPioMtQsTLOolGYkji1rcL++3dCqZA3zWqpT+9Ew6g==}
     engines: {node: '>=4'}
 
-  axios@1.7.3:
-    resolution: {integrity: sha512-Ar7ND9pU99eJ9GpoGQKhKf58GpUOgnzuaB7ueNQ5BMi0p+LZ5oaEnfF999fAArcTIBwXTCHAmGcHOZJaWPq9Nw==}
+  axios@1.7.4:
+    resolution: {integrity: sha512-DukmaFRnY6AzAALSH4J2M3k6PkaC+MfaAGdEERRWcC9q3/TWQwLpHR8ZRLKTdQ3aBDL64EdluRDjJqKw+BPZEw==}
 
   axobject-query@3.1.1:
     resolution: {integrity: sha512-goKlv8DZrK9hUh975fnHzhNIO4jUnFCfv/dszV5VwUGDFjI6vQ2VwoyjYjYNEbBE8AH87TduWP5uyDR1D+Iteg==}
@@ -4324,8 +4324,8 @@ packages:
     resolution: {integrity: sha512-wnquc/ls0QC0MSiHqs4J5HEsZ6M0MP6uk0t2HLFS/OeYwCcWyaT8ZFDlh4RN2T6AQauPkByHglDPbmJZ4ROKcQ==}
     engines: {node: '>=20'}
 
-  nx@19.5.7:
-    resolution: {integrity: sha512-AUmGgE19NB4m/7oHYQVdzZHtclVevD8w0/nNzzjDJE823T8oeoNhmc9MfCLz+/2l2KOp+Wqm+8LiG9/xWpXk0g==}
+  nx@19.6.1:
+    resolution: {integrity: sha512-F7NH8/lMwd2ogPjvjMDGUJMaRuEc60DEmpd8U/3R7WgFRHWuF5ily1AKQiLfQg6V5ArQUrkBJesulTAnlHR7+g==}
     hasBin: true
     peerDependencies:
       '@swc-node/register': ^1.8.0
@@ -6167,22 +6167,22 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.17.1
 
-  '@nrwl/devkit@19.5.6(nx@19.5.7)':
+  '@nrwl/devkit@19.5.6(nx@19.6.1)':
     dependencies:
-      '@nx/devkit': 19.5.6(nx@19.5.7)
+      '@nx/devkit': 19.5.6(nx@19.6.1)
     transitivePeerDependencies:
       - nx
     optional: true
 
-  '@nrwl/devkit@19.5.7(nx@19.5.7)':
+  '@nrwl/devkit@19.6.1(nx@19.6.1)':
     dependencies:
-      '@nx/devkit': 19.5.7(nx@19.5.7)
+      '@nx/devkit': 19.6.1(nx@19.6.1)
     transitivePeerDependencies:
       - nx
 
-  '@nrwl/js@19.5.7(@types/node@22.1.0)(nx@19.5.7)(typescript@5.4.5)':
+  '@nrwl/js@19.6.1(@types/node@22.1.0)(nx@19.6.1)(typescript@5.4.5)':
     dependencies:
-      '@nx/js': 19.5.7(@types/node@22.1.0)(nx@19.5.7)(typescript@5.4.5)
+      '@nx/js': 19.6.1(@types/node@22.1.0)(nx@19.6.1)(typescript@5.4.5)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -6195,9 +6195,9 @@ snapshots:
       - typescript
       - verdaccio
 
-  '@nrwl/js@19.5.7(nx@19.5.7)(typescript@5.4.5)':
+  '@nrwl/js@19.6.1(nx@19.6.1)(typescript@5.4.5)':
     dependencies:
-      '@nx/js': 19.5.7(nx@19.5.7)(typescript@5.4.5)
+      '@nx/js': 19.6.1(nx@19.6.1)(typescript@5.4.5)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -6210,55 +6210,55 @@ snapshots:
       - typescript
       - verdaccio
 
-  '@nrwl/tao@19.5.7':
+  '@nrwl/tao@19.6.1':
     dependencies:
-      nx: 19.5.7
+      nx: 19.6.1
       tslib: 2.6.3
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
 
-  '@nrwl/workspace@19.5.7':
+  '@nrwl/workspace@19.6.1':
     dependencies:
-      '@nx/workspace': 19.5.7
+      '@nx/workspace': 19.6.1
     transitivePeerDependencies:
       - '@swc-node/register'
       - '@swc/core'
       - debug
 
-  '@nx/devkit@19.5.6(nx@19.5.7)':
+  '@nx/devkit@19.5.6(nx@19.6.1)':
     dependencies:
-      '@nrwl/devkit': 19.5.6(nx@19.5.7)
+      '@nrwl/devkit': 19.5.6(nx@19.6.1)
       ejs: 3.1.10
       enquirer: 2.3.6
       ignore: 5.3.1
       minimatch: 9.0.3
-      nx: 19.5.7
+      nx: 19.6.1
       semver: 7.6.3
       tmp: 0.2.3
       tslib: 2.6.3
       yargs-parser: 21.1.1
     optional: true
 
-  '@nx/devkit@19.5.7(nx@19.5.7)':
+  '@nx/devkit@19.6.1(nx@19.6.1)':
     dependencies:
-      '@nrwl/devkit': 19.5.7(nx@19.5.7)
+      '@nrwl/devkit': 19.6.1(nx@19.6.1)
       ejs: 3.1.10
       enquirer: 2.3.6
       ignore: 5.3.1
       minimatch: 9.0.3
-      nx: 19.5.7
+      nx: 19.6.1
       semver: 7.6.3
       tmp: 0.2.3
       tslib: 2.6.3
       yargs-parser: 21.1.1
 
-  '@nx/eslint@19.5.7(@types/node@22.1.0)(eslint@9.8.0)(nx@19.5.7)':
+  '@nx/eslint@19.6.1(@types/node@22.1.0)(eslint@9.8.0)(nx@19.6.1)':
     dependencies:
-      '@nx/devkit': 19.5.7(nx@19.5.7)
-      '@nx/js': 19.5.7(@types/node@22.1.0)(nx@19.5.7)(typescript@5.4.5)
-      '@nx/linter': 19.5.7(@types/node@22.1.0)(eslint@9.8.0)(nx@19.5.7)
+      '@nx/devkit': 19.6.1(nx@19.6.1)
+      '@nx/js': 19.6.1(@types/node@22.1.0)(nx@19.6.1)(typescript@5.4.5)
+      '@nx/linter': 19.6.1(@types/node@22.1.0)(eslint@9.8.0)(nx@19.6.1)
       eslint: 9.8.0
       semver: 7.6.3
       tslib: 2.6.3
@@ -6274,11 +6274,11 @@ snapshots:
       - supports-color
       - verdaccio
 
-  '@nx/eslint@19.5.7(nx@19.5.7)':
+  '@nx/eslint@19.6.1(nx@19.6.1)':
     dependencies:
-      '@nx/devkit': 19.5.7(nx@19.5.7)
-      '@nx/js': 19.5.7(nx@19.5.7)(typescript@5.4.5)
-      '@nx/linter': 19.5.7(nx@19.5.7)
+      '@nx/devkit': 19.6.1(nx@19.6.1)
+      '@nx/js': 19.6.1(nx@19.6.1)(typescript@5.4.5)
+      '@nx/linter': 19.6.1(nx@19.6.1)
       semver: 7.6.3
       tslib: 2.6.3
       typescript: 5.4.5
@@ -6293,7 +6293,7 @@ snapshots:
       - supports-color
       - verdaccio
 
-  '@nx/js@19.5.7(@types/node@22.1.0)(nx@19.5.7)(typescript@5.4.5)':
+  '@nx/js@19.6.1(@types/node@22.1.0)(nx@19.6.1)(typescript@5.4.5)':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/plugin-proposal-decorators': 7.24.7(@babel/core@7.25.2)
@@ -6302,9 +6302,9 @@ snapshots:
       '@babel/preset-env': 7.25.3(@babel/core@7.25.2)
       '@babel/preset-typescript': 7.24.7(@babel/core@7.25.2)
       '@babel/runtime': 7.25.0
-      '@nrwl/js': 19.5.7(@types/node@22.1.0)(nx@19.5.7)(typescript@5.4.5)
-      '@nx/devkit': 19.5.7(nx@19.5.7)
-      '@nx/workspace': 19.5.7
+      '@nrwl/js': 19.6.1(@types/node@22.1.0)(nx@19.6.1)(typescript@5.4.5)
+      '@nx/devkit': 19.6.1(nx@19.6.1)
+      '@nx/workspace': 19.6.1
       babel-plugin-const-enum: 1.2.0(@babel/core@7.25.2)
       babel-plugin-macros: 2.8.0
       babel-plugin-transform-typescript-metadata: 0.3.2(@babel/core@7.25.2)
@@ -6335,7 +6335,7 @@ snapshots:
       - supports-color
       - typescript
 
-  '@nx/js@19.5.7(nx@19.5.7)(typescript@5.4.5)':
+  '@nx/js@19.6.1(nx@19.6.1)(typescript@5.4.5)':
     dependencies:
       '@babel/core': 7.25.2
       '@babel/plugin-proposal-decorators': 7.24.7(@babel/core@7.25.2)
@@ -6344,9 +6344,9 @@ snapshots:
       '@babel/preset-env': 7.25.3(@babel/core@7.25.2)
       '@babel/preset-typescript': 7.24.7(@babel/core@7.25.2)
       '@babel/runtime': 7.25.0
-      '@nrwl/js': 19.5.7(nx@19.5.7)(typescript@5.4.5)
-      '@nx/devkit': 19.5.7(nx@19.5.7)
-      '@nx/workspace': 19.5.7
+      '@nrwl/js': 19.6.1(nx@19.6.1)(typescript@5.4.5)
+      '@nx/devkit': 19.6.1(nx@19.6.1)
+      '@nx/workspace': 19.6.1
       babel-plugin-const-enum: 1.2.0(@babel/core@7.25.2)
       babel-plugin-macros: 2.8.0
       babel-plugin-transform-typescript-metadata: 0.3.2(@babel/core@7.25.2)
@@ -6377,9 +6377,9 @@ snapshots:
       - supports-color
       - typescript
 
-  '@nx/linter@19.5.7(@types/node@22.1.0)(eslint@9.8.0)(nx@19.5.7)':
+  '@nx/linter@19.6.1(@types/node@22.1.0)(eslint@9.8.0)(nx@19.6.1)':
     dependencies:
-      '@nx/eslint': 19.5.7(@types/node@22.1.0)(eslint@9.8.0)(nx@19.5.7)
+      '@nx/eslint': 19.6.1(@types/node@22.1.0)(eslint@9.8.0)(nx@19.6.1)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -6393,9 +6393,9 @@ snapshots:
       - supports-color
       - verdaccio
 
-  '@nx/linter@19.5.7(nx@19.5.7)':
+  '@nx/linter@19.6.1(nx@19.6.1)':
     dependencies:
-      '@nx/eslint': 19.5.7(nx@19.5.7)
+      '@nx/eslint': 19.6.1(nx@19.6.1)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -6409,43 +6409,43 @@ snapshots:
       - supports-color
       - verdaccio
 
-  '@nx/nx-darwin-arm64@19.5.7':
+  '@nx/nx-darwin-arm64@19.6.1':
     optional: true
 
-  '@nx/nx-darwin-x64@19.5.7':
+  '@nx/nx-darwin-x64@19.6.1':
     optional: true
 
-  '@nx/nx-freebsd-x64@19.5.7':
+  '@nx/nx-freebsd-x64@19.6.1':
     optional: true
 
-  '@nx/nx-linux-arm-gnueabihf@19.5.7':
+  '@nx/nx-linux-arm-gnueabihf@19.6.1':
     optional: true
 
-  '@nx/nx-linux-arm64-gnu@19.5.7':
+  '@nx/nx-linux-arm64-gnu@19.6.1':
     optional: true
 
-  '@nx/nx-linux-arm64-musl@19.5.7':
+  '@nx/nx-linux-arm64-musl@19.6.1':
     optional: true
 
-  '@nx/nx-linux-x64-gnu@19.5.7':
+  '@nx/nx-linux-x64-gnu@19.6.1':
     optional: true
 
-  '@nx/nx-linux-x64-musl@19.5.7':
+  '@nx/nx-linux-x64-musl@19.6.1':
     optional: true
 
-  '@nx/nx-win32-arm64-msvc@19.5.7':
+  '@nx/nx-win32-arm64-msvc@19.6.1':
     optional: true
 
-  '@nx/nx-win32-x64-msvc@19.5.7':
+  '@nx/nx-win32-x64-msvc@19.6.1':
     optional: true
 
-  '@nx/workspace@19.5.7':
+  '@nx/workspace@19.6.1':
     dependencies:
-      '@nrwl/workspace': 19.5.7
-      '@nx/devkit': 19.5.7(nx@19.5.7)
+      '@nrwl/workspace': 19.6.1
+      '@nx/devkit': 19.6.1(nx@19.6.1)
       chalk: 4.1.2
       enquirer: 2.3.6
-      nx: 19.5.7
+      nx: 19.6.1
       tslib: 2.6.3
       yargs-parser: 21.1.1
     transitivePeerDependencies:
@@ -6865,7 +6865,7 @@ snapshots:
 
   axe-core@4.10.0: {}
 
-  axios@1.7.3:
+  axios@1.7.4:
     dependencies:
       follow-redirects: 1.15.6
       form-data: 4.0.0
@@ -8429,74 +8429,74 @@ snapshots:
 
   npm@10.8.2: {}
 
-  nx-plugin-handler@0.0.3(nx@19.5.7):
+  nx-plugin-handler@0.0.3(nx@19.6.1):
     dependencies:
       haywire: 0.1.0
       npm-default-import: default-import@1.1.6
     optionalDependencies:
-      '@nx/devkit': 19.5.6(nx@19.5.7)
+      '@nx/devkit': 19.5.6(nx@19.6.1)
     transitivePeerDependencies:
       - nx
 
-  nx-plugin-handler@0.0.5(nx@19.5.7):
+  nx-plugin-handler@0.0.5(nx@19.6.1):
     dependencies:
       haywire: 0.1.2
       npm-default-import: default-import@2.0.1
     optionalDependencies:
-      '@nx/devkit': 19.5.6(nx@19.5.7)
+      '@nx/devkit': 19.5.6(nx@19.6.1)
     transitivePeerDependencies:
       - nx
 
-  nx-populate-files@0.0.4(@biomejs/biome@1.8.3)(nx@19.5.7):
+  nx-populate-files@0.0.4(@biomejs/biome@1.8.3)(nx@19.6.1):
     dependencies:
       ci-info: 4.0.0
       common-proxy: 0.0.2
       load-populate-files: 0.0.3(@biomejs/biome@1.8.3)
     optionalDependencies:
-      '@nx/devkit': 19.5.6(nx@19.5.7)
+      '@nx/devkit': 19.5.6(nx@19.6.1)
       juniper: 1.1.11
     transitivePeerDependencies:
       - '@biomejs/biome'
       - nx
       - prettier
 
-  nx-populate-files@0.0.8(nx@19.5.7):
+  nx-populate-files@0.0.8(nx@19.6.1):
     dependencies:
       ci-info: 4.0.0
       common-proxy: 0.0.3
       load-populate-files: 0.0.7
     optionalDependencies:
-      '@nx/devkit': 19.5.6(nx@19.5.7)
+      '@nx/devkit': 19.5.6(nx@19.6.1)
       juniper: 1.1.12
     transitivePeerDependencies:
       - '@biomejs/biome'
       - nx
       - prettier
 
-  nx-tsc@0.0.7(nx@19.5.7)(typescript@5.5.4):
+  nx-tsc@0.0.7(nx@19.6.1)(typescript@5.5.4):
     dependencies:
       common-proxy: 0.0.2
       haywire: 0.1.0
-      nx-plugin-handler: 0.0.3(nx@19.5.7)
+      nx-plugin-handler: 0.0.3(nx@19.6.1)
       typescript: 5.5.4
     optionalDependencies:
-      '@nx/devkit': 19.5.6(nx@19.5.7)
+      '@nx/devkit': 19.5.6(nx@19.6.1)
       npm-juniper: juniper@1.1.11
     transitivePeerDependencies:
       - nx
 
-  nx-tsc@0.0.9(nx@19.5.7):
+  nx-tsc@0.0.9(nx@19.6.1):
     dependencies:
       common-proxy: 0.0.3
       haywire: 0.1.2
-      nx-plugin-handler: 0.0.5(nx@19.5.7)
+      nx-plugin-handler: 0.0.5(nx@19.6.1)
     optionalDependencies:
-      '@nx/devkit': 19.5.6(nx@19.5.7)
+      '@nx/devkit': 19.5.6(nx@19.6.1)
       npm-juniper: juniper@1.1.12
     transitivePeerDependencies:
       - nx
 
-  nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.5.7):
+  nx-update-ts-references@0.0.3(@biomejs/biome@1.8.3)(nx@19.6.1):
     dependencies:
       ajv: 8.17.1
       ci-info: 4.0.0
@@ -8506,13 +8506,13 @@ snapshots:
       npm-format-file: format-file@0.0.5(@biomejs/biome@1.8.3)
       npm-juniper: juniper@1.1.11
     optionalDependencies:
-      '@nx/devkit': 19.5.6(nx@19.5.7)
+      '@nx/devkit': 19.5.6(nx@19.6.1)
     transitivePeerDependencies:
       - '@biomejs/biome'
       - nx
       - prettier
 
-  nx-update-ts-references@0.0.4(nx@19.5.7):
+  nx-update-ts-references@0.0.4(nx@19.6.1):
     dependencies:
       ajv: 8.17.1
       ci-info: 4.0.0
@@ -8522,20 +8522,20 @@ snapshots:
       npm-format-file: format-file@0.0.7
       npm-juniper: juniper@1.1.12
     optionalDependencies:
-      '@nx/devkit': 19.5.6(nx@19.5.7)
+      '@nx/devkit': 19.5.6(nx@19.6.1)
     transitivePeerDependencies:
       - '@biomejs/biome'
       - nx
       - prettier
 
-  nx@19.5.7:
+  nx@19.6.1:
     dependencies:
       '@napi-rs/wasm-runtime': 0.2.4
-      '@nrwl/tao': 19.5.7
+      '@nrwl/tao': 19.6.1
       '@yarnpkg/lockfile': 1.1.0
       '@yarnpkg/parsers': 3.0.0-rc.46
       '@zkochan/js-yaml': 0.0.7
-      axios: 1.7.3
+      axios: 1.7.4
       chalk: 4.1.2
       cli-cursor: 3.1.0
       cli-spinners: 2.6.1
@@ -8566,16 +8566,16 @@ snapshots:
       yargs: 17.7.2
       yargs-parser: 21.1.1
     optionalDependencies:
-      '@nx/nx-darwin-arm64': 19.5.7
-      '@nx/nx-darwin-x64': 19.5.7
-      '@nx/nx-freebsd-x64': 19.5.7
-      '@nx/nx-linux-arm-gnueabihf': 19.5.7
-      '@nx/nx-linux-arm64-gnu': 19.5.7
-      '@nx/nx-linux-arm64-musl': 19.5.7
-      '@nx/nx-linux-x64-gnu': 19.5.7
-      '@nx/nx-linux-x64-musl': 19.5.7
-      '@nx/nx-win32-arm64-msvc': 19.5.7
-      '@nx/nx-win32-x64-msvc': 19.5.7
+      '@nx/nx-darwin-arm64': 19.6.1
+      '@nx/nx-darwin-x64': 19.6.1
+      '@nx/nx-freebsd-x64': 19.6.1
+      '@nx/nx-linux-arm-gnueabihf': 19.6.1
+      '@nx/nx-linux-arm64-gnu': 19.6.1
+      '@nx/nx-linux-arm64-musl': 19.6.1
+      '@nx/nx-linux-x64-gnu': 19.6.1
+      '@nx/nx-linux-x64-musl': 19.6.1
+      '@nx/nx-win32-arm64-msvc': 19.6.1
+      '@nx/nx-win32-x64-msvc': 19.6.1
     transitivePeerDependencies:
       - debug
 

@@ -32,7 +32,7 @@
     "nx-plugin-handler": "workspace:^"
   },
   "optionalDependencies": {
-    "@nx/devkit": "19.5.7",
+    "@nx/devkit": "19.6.1",
     "npm-juniper": "npm:juniper@latest"
   },
   "peerDependencies": {
