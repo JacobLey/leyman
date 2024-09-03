@@ -20,7 +20,7 @@
     "@leyman/eslint-config": "workspace:^",
     "eslint": "^9.8.0",
     "npm": "^10.8.2",
-    "nx": "19.6.1",
+    "nx": "19.6.4",
     "nx-lifecycle": "workspace:^",
     "typescript": "^5.5.4"
   }
