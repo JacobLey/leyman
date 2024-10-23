@@ -27,6 +27,7 @@
         "noFallthroughCasesInSwitch": true,
         "noPropertyAccessFromIndexSignature": false,
         "noUncheckedIndexedAccess": true,
+        "noUncheckedSideEffectImports": true,
         "noUnusedLocals": true,
         "noUnusedParameters": false,
         "pretty": true,
