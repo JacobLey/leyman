@@ -530,6 +530,7 @@ export default function makeEslintConfigForPackage({
                         disableMissingParamChecks: true,
                     },
                 ],
+                'jsdoc/lines-before-block': 'off',
                 'jsdoc/convert-to-jsdoc-comments': 'off',
                 'jsdoc/match-name': 'off',
                 'jsdoc/no-defaults': 'off',
