@@ -51,7 +51,6 @@
     "npm-nx-populate-files": "npm:nx-populate-files@latest",
     "npm-nx-tsc": "npm:nx-tsc@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
-    "nyc": "^17.0.0",
     "typescript": "^5.5.4"
   }
 }
