@@ -4,6 +4,24 @@ import { globby } from 'globby';
 import { findImport } from 'find-import';
 import { patch } from 'named-patch';
 
+const parseTypeOnly = (data: string): Set<string> => {
+    const matches = data.matchAll(
+        /^export type \* from '(?<filename>.+)\.(?<extension>[cm]?[tj]s)';$/gmu
+    );
+
+    const result = new Set<string>();
+
+    for (const match of matches) {
+        const { filename, extension } = match.groups!;
+
+        result.add(`${filename!}.${extension!}`);
+        result.add(`${filename!}.${extension!.replace('j', 't')}`);
+        result.add(`${filename!}.${extension!.replace('t', 'j')}`);
+    }
+
+    return result;
+};
+
 const getExtensions = async (path: string): Promise<string> => {
     const pkg = await findImport('package.json', {
         cwd: path,
@@ -21,23 +39,24 @@ const getExtensions = async (path: string): Promise<string> => {
     return '?(c)ts';
 };
 
-const generateBarrelFile = async (path: string): Promise<string> => {
-    const extensions = await getExtensions(path);
-    const files = await globby([`*.${extensions}`, '!index.?(c|m)ts'], {
-        cwd: Path.dirname(path),
-        gitignore: true,
-    });
+export const generateBarrelFile = (files: string[], data: string): string => {
+    const typeOnlys = parseTypeOnly(data);
 
     return [
         // Idempotent
         '// AUTO-BARREL',
         '',
-        ...files.map(file => {
-            const ext = Path.extname(file);
-            const base = Path.basename(file, ext);
+        ...files
+            .map(file => {
+                const ext = Path.extname(file);
+                const base = Path.basename(file, ext);
 
-            return `export * from './${base}${ext.replace('t', 'j')}';`;
-        }),
+                return `./${base}${ext.replace('t', 'j')}`;
+            })
+            .sort()
+            .map(
+                filename => `export ${typeOnlys.has(filename) ? 'type ' : ''}* from '${filename}';`
+            ),
         '',
     ].join('\n');
 };
@@ -78,7 +97,13 @@ export const barrelFiles = patch(
                     return;
                 }
 
-                const barrel = await generateBarrelFile(filePath);
+                const extensions = await getExtensions(filePath);
+                const files = await globby([`*.${extensions}`, '!index.?(c|m)ts'], {
+                    cwd: Path.dirname(filePath),
+                    gitignore: true,
+                });
+
+                const barrel = generateBarrelFile(files, data);
 
                 if (barrel !== data) {
                     mismatchFiles.push(filePath);
