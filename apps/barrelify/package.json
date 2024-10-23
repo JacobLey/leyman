@@ -36,7 +36,7 @@
     "yargs": "^17.7.2"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.8.3",
+    "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
     "@types/chai": "^4.3.17",
     "@types/mocha": "^10.0.7",

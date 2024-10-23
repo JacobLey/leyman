@@ -16,7 +16,7 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@biomejs/biome": "^1.8.3",
+    "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
     "eslint": "^9.8.0",
     "npm": "^10.8.2",

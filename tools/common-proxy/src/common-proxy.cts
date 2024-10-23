@@ -1,3 +1,4 @@
+// biome-ignore lint: Doesn't support being disabled directly
 import type * as DefaultImport from 'npm-default-import' with { 'resolution-mode': 'import' };
 
 type ImportableHandler<Handler extends (...args: any[]) => unknown> =

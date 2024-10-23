@@ -37,7 +37,7 @@
     "npm-juniper": "npm:juniper@latest"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.8.3",
+    "@biomejs/biome": "^1.9.4",
     "@nx/eslint": "19.6.4",
     "@types/chai": "^4.3.17",
     "@types/eslint": "^9.6.0",

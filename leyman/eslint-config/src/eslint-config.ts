@@ -211,7 +211,7 @@ export default function makeEslintConfigForPackage({
                     {
                         ignoreConsecutiveComments: true,
                         ignoreInlineComments: true,
-                        ignorePattern: String.raw`\w+:`,
+                        ignorePattern: String.raw`\w+:|^ biome-ignore (?:format|lint):`,
                     },
                 ],
                 'class-methods-use-this': 'off',

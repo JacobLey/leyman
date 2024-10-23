@@ -39,7 +39,7 @@
     "typescript": "^5.5.4"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.8.3",
+    "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
     "@swc/core": "1.7.3",
     "@types/chai": "^4.3.17",

@@ -33,12 +33,12 @@ export const defaultImport = <T>(mod: T): ExtractDefault<T> => {
         Symbol.toStringTag in mod &&
         (mod as unknown as { [Symbol.toStringTag]: string; default: T })[Symbol.toStringTag] ===
             'Module'
-            ? (
+            ? ((
                   mod as unknown as {
                       [Symbol.toStringTag]: 'Module';
                       default?: T;
                   }
-              ).default ?? mod
+              ).default ?? mod)
             : mod;
 
     if (
