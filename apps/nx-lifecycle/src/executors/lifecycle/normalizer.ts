@@ -29,7 +29,7 @@ export class Normalizer {
             check: options.check ?? this.#isCI,
             dryRun: options.dryRun ?? false,
             nxJsonPath: Path.join(context.root, 'nx.json'),
-            packageJsonPaths: Object.values(context.projectsConfigurations!.projects).map(
+            packageJsonPaths: Object.values(context.projectsConfigurations.projects).map(
                 projectConfig => ({
                     name: projectConfig.name!,
                     path: Path.join(context.root, projectConfig.root, 'project.json'),

@@ -22,7 +22,7 @@ const normalizeOptions = (
     const projectName = context.projectName!;
     const packageRoot = Path.join(
         context.root,
-        context.projectsConfigurations!.projects[projectName]!.root
+        context.projectsConfigurations.projects[projectName]!.root
     );
 
     return {
@@ -30,17 +30,15 @@ const normalizeOptions = (
         dryRun: options.dryRun ?? false,
         packageRoot,
         tsConfig: Path.join(packageRoot, 'tsconfig.json'),
-        dependencies: context
-            .projectGraph!.dependencies[projectName]!.filter(
-                dependency => context.projectsConfigurations!.projects[dependency.target]
+        dependencies: context.projectGraph.dependencies[projectName]!.filter(
+            dependency => context.projectsConfigurations.projects[dependency.target]
+        ).map(dependency =>
+            Path.join(
+                context.root,
+                context.projectsConfigurations.projects[dependency.target]!.root,
+                'tsconfig.json'
             )
-            .map(dependency =>
-                Path.join(
-                    context.root,
-                    context.projectsConfigurations!.projects[dependency.target]!.root,
-                    'tsconfig.json'
-                )
-            ),
+        ),
     };
 };
 

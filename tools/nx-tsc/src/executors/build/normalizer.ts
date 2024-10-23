@@ -27,7 +27,7 @@ export const normalizeOptionsProvider =
     async (options, context) => {
         const projectDir = Path.resolve(
             context.root,
-            context.projectsConfigurations!.projects[context.projectName!]!.root
+            context.projectsConfigurations.projects[context.projectName!]!.root
         );
 
         const file = await readFile(Path.join(projectDir, 'package.json'), 'utf8');

@@ -5,11 +5,11 @@
     "npm-nx-populate-files": "npm:nx-populate-files@latest",
     "npm-nx-tsc": "npm:nx-tsc@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
-    "nx": "19.6.4",
+    "nx": "20.0.3",
     "nx-lifecycle": "workspace:^",
     "nx-populate-files": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^"
   },
-  "packageManager": "pnpm@9.9.0"
+  "packageManager": "pnpm@9.12.2"
 }

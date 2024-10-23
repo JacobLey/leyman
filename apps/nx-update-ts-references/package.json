@@ -36,7 +36,7 @@
     "npm-juniper": "npm:juniper@latest"
   },
   "optionalDependencies": {
-    "@nx/devkit": "19.6.4"
+    "@nx/devkit": "^20.0.3"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.8.3",
