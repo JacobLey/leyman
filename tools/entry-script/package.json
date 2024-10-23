@@ -45,6 +45,6 @@
     "mocha-chain": "workspace:^",
     "nx-tsc": "workspace:^",
     "nx-update-ts-references": "workspace:^",
-    "typescript": "^5.5.4"
+    "typescript": "^5.6.3"
   }
 }

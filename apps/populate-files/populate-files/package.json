@@ -47,6 +47,6 @@
     "mocha": "^10.7.0",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "nx-tsc": "workspace:^",
-    "typescript": "^5.5.4"
+    "typescript": "^5.6.3"
   }
 }

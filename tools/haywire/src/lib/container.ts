@@ -1548,7 +1548,7 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
      * @param bindings - module bindings to create container from
      * @returns synchronous container (that also supports async)
      */
-    public static [createContainerSym]?<Outputs extends [Extendable]>(
+    public static override [createContainerSym]?<Outputs extends [Extendable]>(
         bindings: ReadonlyMap<GenericOutputHaywireId, GenericBinding> | SyncContainer<Outputs>
     ): SyncContainer<Outputs> {
         return new SyncContainer<Outputs>(bindings);

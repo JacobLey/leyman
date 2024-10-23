@@ -50,6 +50,6 @@
     "npm-nx-populate-files": "npm:nx-populate-files@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "nx-tsc": "workspace:^",
-    "typescript": "^5.5.4"
+    "typescript": "^5.6.3"
   }
 }
