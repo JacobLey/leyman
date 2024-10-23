@@ -1,4 +1,11 @@
-import type { JsonSchema, ReservedWords, SchemaType, ToJsonParams, typeCache } from './types.js';
+import {
+    type JsonSchema,
+    reservedWords,
+    type ReservedWords,
+    type SchemaType,
+    type ToJsonParams,
+    type typeCache,
+} from './types.js';
 import { mergeAllOf, mergeRef } from './utils.js';
 
 const allOfSym = Symbol('allOf');
@@ -350,6 +357,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * @param this - this instance
      * @param meta - custom metadata
      * @returns cloned schema
+     * @throws when reserved word is used as keyword
      */
     public metadata<K extends string, V>(
         this: this,
@@ -357,9 +365,18 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
     ): this {
         const metadata = { ...this.#metadata };
         if (meta.length === 1) {
+            for (const key of Object.keys(meta[0])) {
+                if (reservedWords.has(key)) {
+                    throw new Error(`Illegal use of reserved word: ${key}`);
+                }
+            }
             Object.assign(metadata, meta[0]);
         } else {
-            metadata[meta[0]] = meta[1];
+            const key = meta[0];
+            if (reservedWords.has(key)) {
+                throw new Error(`Illegal use of reserved word: ${key}`);
+            }
+            metadata[key] = meta[1];
         }
         return this.clone({
             [metadataSym]: metadata,

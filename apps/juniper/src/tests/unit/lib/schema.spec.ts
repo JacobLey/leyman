@@ -1426,15 +1426,20 @@ suite('schema', () => {
         test('Reserved metadata keywords', () => {
             const schema = numberSchema();
 
-            schema.metadata(
-                // @ts-expect-error
-                'if',
-                {}
-            );
-            schema.metadata(
-                // @ts-expect-error
-                { properties: 123 }
-            );
+            expect(() => {
+                schema.metadata(
+                    // @ts-expect-error
+                    'if',
+                    {}
+                );
+            }).to.throw('Illegal use of reserved word: if');
+
+            expect(() => {
+                schema.metadata(
+                    // @ts-expect-error
+                    { properties: 123 }
+                );
+            }).to.throw('Illegal use of reserved word: properties');
         });
     });
 });

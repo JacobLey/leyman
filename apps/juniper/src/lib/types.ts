@@ -117,7 +117,7 @@ export type ToBaseType<T> = T extends never
               ? Record<string, unknown>
               : T;
 
-declare const reservedWords: [
+const reservedWordsArr = [
     // Generic
     '$schema',
     '$id',
@@ -167,5 +167,6 @@ declare const reservedWords: [
     'maxLength',
     'minLength',
     'pattern',
-];
-export type ReservedWords = (typeof reservedWords)[number];
+] as const;
+export const reservedWords = new Set<string>(reservedWordsArr);
+export type ReservedWords = (typeof reservedWordsArr)[number];
