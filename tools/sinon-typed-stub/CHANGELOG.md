@@ -1,5 +1,13 @@
 # sinon-typed-stub
 
+## 0.0.4
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+
 ## 0.0.3
 
 ### Patch Changes

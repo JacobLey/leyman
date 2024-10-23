@@ -1,5 +1,21 @@
 # format-file
 
+## 0.0.8
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+- 231acc9: Bump eslint import. Apply/ignore changes
+- Updated dependencies [3b3f77f]
+- Updated dependencies [3285cb6]
+- Updated dependencies [7d6f471]
+- Updated dependencies [9b58c82]
+- Updated dependencies [231acc9]
+- Updated dependencies [ff72123]
+  - haywire@0.1.3
+
 ## 0.0.7
 
 ### Patch Changes

@@ -1,5 +1,29 @@
 # nx-tsc
 
+## 0.0.10
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 806edcb: Bump Nx Version
+- bef3833: Bump Nx+pnpm, remove unnecessary non-null assertions
+- 9b58c82: Bump typescript version
+- 8d18262: Update dependencies
+- 41a9b84: Remove unused nyc dependency
+- Updated dependencies [3b3f77f]
+- Updated dependencies [3285cb6]
+- Updated dependencies [7d6f471]
+- Updated dependencies [806edcb]
+- Updated dependencies [bef3833]
+- Updated dependencies [9b58c82]
+- Updated dependencies [8d18262]
+- Updated dependencies [231acc9]
+- Updated dependencies [ff72123]
+  - nx-plugin-handler@0.0.6
+  - common-proxy@0.0.4
+  - haywire@0.1.3
+
 ## 0.0.9
 
 ### Patch Changes

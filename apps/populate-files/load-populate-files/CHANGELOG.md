@@ -1,5 +1,20 @@
 # load-populate-files
 
+## 0.0.8
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+- 41a9b84: Remove unused nyc dependency
+- Updated dependencies [3b3f77f]
+- Updated dependencies [3285cb6]
+- Updated dependencies [9b58c82]
+- Updated dependencies [41a9b84]
+  - populate-files@0.0.6
+  - default-import@2.0.2
+
 ## 0.0.7
 
 ### Patch Changes

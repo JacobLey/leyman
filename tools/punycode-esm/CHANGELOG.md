@@ -1,5 +1,13 @@
 # punycode-esm
 
+## 1.0.10
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+
 ## 1.0.9
 
 ### Patch Changes

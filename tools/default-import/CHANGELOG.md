@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.0.2
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+
 ## 2.0.1
 
 ### Patch Changes

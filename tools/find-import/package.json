@@ -1,6 +1,6 @@
 {
   "name": "find-import",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "description": "Find and load first instance of js/json in parent directories.",
   "engines": {
     "node": ">=20"

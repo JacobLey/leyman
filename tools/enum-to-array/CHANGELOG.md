@@ -1,5 +1,13 @@
 # enum-to-array
 
+## 1.1.11
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+
 ## 1.1.10
 
 ### Patch Changes

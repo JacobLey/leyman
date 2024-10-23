@@ -1,5 +1,21 @@
 # haywire-launcher
 
+## 0.1.5
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+- Updated dependencies [3b3f77f]
+- Updated dependencies [3285cb6]
+- Updated dependencies [7d6f471]
+- Updated dependencies [9b58c82]
+- Updated dependencies [231acc9]
+- Updated dependencies [ff72123]
+  - entry-script@3.0.4
+  - haywire@0.1.3
+
 ## 0.1.4
 
 ### Patch Changes

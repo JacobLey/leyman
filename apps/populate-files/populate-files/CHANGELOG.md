@@ -1,5 +1,19 @@
 # populate-files
 
+## 0.0.6
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+- 41a9b84: Remove unused nyc dependency
+- Updated dependencies [3b3f77f]
+- Updated dependencies [3285cb6]
+- Updated dependencies [9b58c82]
+- Updated dependencies [231acc9]
+  - format-file@0.0.8
+
 ## 0.0.5
 
 ### Patch Changes

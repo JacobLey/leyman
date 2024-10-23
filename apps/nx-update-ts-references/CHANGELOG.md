@@ -1,5 +1,22 @@
 # nx-update-ts-references
 
+## 0.0.5
+
+### Patch Changes
+
+- 233f0b6: Fix variable naming
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 806edcb: Bump Nx Version
+- bef3833: Bump Nx+pnpm, remove unnecessary non-null assertions
+- 9b58c82: Bump typescript version
+- 8d18262: Update dependencies
+- 41a9b84: Remove unused nyc dependency
+- Updated dependencies [3b3f77f]
+- Updated dependencies [3285cb6]
+- Updated dependencies [9b58c82]
+  - common-proxy@0.0.4
+
 ## 0.0.4
 
 ### Patch Changes

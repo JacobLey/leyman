@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.0.4
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 7d6f471: Add support for type-only exports to barrels
+- 9b58c82: Bump typescript version
+- ff72123: Bump typescript eslint, apply/ignore rules
+
 ## 2.0.3
 
 ### Patch Changes

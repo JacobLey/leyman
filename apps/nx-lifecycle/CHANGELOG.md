@@ -1,5 +1,32 @@
 # nx-lifecycle
 
+## 0.0.7
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 806edcb: Bump Nx Version
+- bef3833: Bump Nx+pnpm, remove unnecessary non-null assertions
+- 9b58c82: Bump typescript version
+- 8d18262: Update dependencies
+- Updated dependencies [3b3f77f]
+- Updated dependencies [3285cb6]
+- Updated dependencies [1489f68]
+- Updated dependencies [7d6f471]
+- Updated dependencies [806edcb]
+- Updated dependencies [bef3833]
+- Updated dependencies [9b58c82]
+- Updated dependencies [8d18262]
+- Updated dependencies [231acc9]
+- Updated dependencies [ff72123]
+  - nx-plugin-handler@0.0.6
+  - default-import@2.0.2
+  - common-proxy@0.0.4
+  - format-file@0.0.8
+  - haywire@0.1.3
+  - juniper@1.2.0
+
 ## 0.0.6
 
 ### Patch Changes

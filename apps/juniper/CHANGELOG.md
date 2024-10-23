@@ -1,5 +1,18 @@
 # juniper
 
+## 1.2.0
+
+### Minor Changes
+
+- 1489f68: Enforce reserved words at runtime
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+- ff72123: Bump typescript eslint, apply/ignore rules
+
 ## 1.1.12
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # parse-cwd
 
+## 1.0.11
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+- 41a9b84: Remove unused nyc dependency
+
 ## 1.0.10
 
 ### Patch Changes

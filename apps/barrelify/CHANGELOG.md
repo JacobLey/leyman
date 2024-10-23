@@ -1,5 +1,27 @@
 # barrelify
 
+## 1.2.0
+
+### Minor Changes
+
+- 7d6f471: Add support for type-only exports to barrels
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+- Updated dependencies [3b3f77f]
+- Updated dependencies [3285cb6]
+- Updated dependencies [9b58c82]
+- Updated dependencies [41a9b84]
+- Updated dependencies [ff72123]
+  - default-import@2.0.2
+  - entry-script@3.0.4
+  - find-import@1.0.9
+  - named-patch@1.0.11
+  - parse-cwd@1.0.11
+
 ## 1.1.12
 
 ### Patch Changes

@@ -1,5 +1,14 @@
 # iso-crypto
 
+## 1.1.3
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 9b58c82: Bump typescript version
+- ff72123: Bump typescript eslint, apply/ignore rules
+
 ## 1.1.2
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "juniper",
-  "version": "1.1.12",
+  "version": "1.2.0",
   "description": "ESM JSON Schema builder for static Typescript inference.",
   "engines": {
     "node": ">=20"

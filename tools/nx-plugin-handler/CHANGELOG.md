@@ -1,5 +1,23 @@
 # nx-plugin-handler
 
+## 0.0.6
+
+### Patch Changes
+
+- 3b3f77f: Bump dependencies
+- 3285cb6: Bump biome version
+- 806edcb: Bump Nx Version
+- bef3833: Bump Nx+pnpm, remove unnecessary non-null assertions
+- 9b58c82: Bump typescript version
+- 8d18262: Update dependencies
+- Updated dependencies [3b3f77f]
+- Updated dependencies [3285cb6]
+- Updated dependencies [7d6f471]
+- Updated dependencies [9b58c82]
+- Updated dependencies [231acc9]
+- Updated dependencies [ff72123]
+  - haywire@0.1.3
+
 ## 0.0.5
 
 ### Patch Changes
