@@ -1,3 +1,4 @@
+// eslint-disable-next-line import/unambiguous
 declare module '@eslint/js' {
     const configs: {
         all: {
