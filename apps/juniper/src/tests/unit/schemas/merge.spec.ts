@@ -114,6 +114,7 @@ suite('MergeSchema', () => {
             expect(numValidator(123.456)).to.equal(false);
             expect(numValidator(123)).to.equal(true);
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const neverSchema = numSchema.anyOf([]);
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
         });
@@ -250,6 +251,7 @@ suite('MergeSchema', () => {
             expect(numValidator(123.456)).to.equal(false);
             expect(numValidator(123)).to.equal(true);
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const neverSchema = numSchema.oneOf([]);
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
         });
@@ -324,6 +326,7 @@ suite('MergeSchema', () => {
 
     suite('Invalid types', () => {
         test('Blocked methods', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schema = mergeSchema();
 
             expectTypeOf<(typeof schema)['nullable']>().toBeNever();

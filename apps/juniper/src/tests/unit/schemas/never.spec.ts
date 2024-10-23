@@ -23,6 +23,7 @@ suite('NeverSchema', () => {
 
     suite('Invalid types', () => {
         test('Blocked methods', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schema = neverSchema();
 
             expectTypeOf<(typeof schema)['allOf']>().toBeNever();

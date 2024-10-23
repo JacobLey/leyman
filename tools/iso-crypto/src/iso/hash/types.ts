@@ -15,5 +15,5 @@ export declare const hash: (
     /**
      * Hash algorithm to use, defaults to SHA256.
      */
-    algorithm?: Hash | undefined
+    algorithm?: Hash
 ) => Promise<Uint8Array>;

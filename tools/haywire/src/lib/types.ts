@@ -12,7 +12,7 @@ export declare abstract class Constructable {
  * @see {@link https://github.com/microsoft/TypeScript/issues/57412} why this is necessary
  *
  */
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unused-vars
 declare abstract class ProtectedConstructable {
     protected constructor(...args: unknown[]);
 }

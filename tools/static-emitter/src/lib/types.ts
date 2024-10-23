@@ -7,7 +7,7 @@ export declare const events: unique symbol;
  */
 export type EventDict = Record<string | symbol, unknown>;
 
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/ban-types, @typescript-eslint/no-empty-object-type
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type
 export type EmptyObject = {};
 
 /**

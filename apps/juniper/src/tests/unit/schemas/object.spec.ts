@@ -277,6 +277,7 @@ suite('ObjectSchema', () => {
 
     suite('if', () => {
         test('Then + else', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schema = objectSchema({
                 properties: {
                     foo: numberSchema(),
@@ -315,6 +316,7 @@ suite('ObjectSchema', () => {
         });
 
         test('Only then', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schema = objectSchema({
                 properties: {
                     foo: numberSchema(),
@@ -349,6 +351,7 @@ suite('ObjectSchema', () => {
         });
 
         test('Only else', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schema = objectSchema({
                 properties: {
                     foo: numberSchema(),
@@ -407,6 +410,7 @@ suite('ObjectSchema', () => {
                 x: string;
             } | null>();
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const notNullableSchema = stillNullableSchema.not(objectSchema().nullable());
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<{
                 x: string;
@@ -912,6 +916,7 @@ suite('ObjectSchema', () => {
                 bar: string;
             } | null>();
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const notNullableSchema = schema.allOf(
                 objectSchema().additionalProperties(stringSchema().startsWith('a'))
             );
@@ -949,15 +954,18 @@ suite('ObjectSchema', () => {
                 | null
             >();
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const notNullableSchema = schema.anyOf([objectSchema()]);
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<
                 { foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })
             >();
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const neverSchema = schema.anyOf([]);
 
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const neverSchema2 = stringSchema().nullable().anyOf([]);
             expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
         });
@@ -990,15 +998,18 @@ suite('ObjectSchema', () => {
                 | null
             >();
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const notNullableSchema = schema.oneOf([objectSchema()]);
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toMatchTypeOf<
                 { foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })
             >();
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const neverSchema = schema.oneOf([]);
 
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const neverSchema2 = stringSchema().nullable().oneOf([]);
             expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
         });

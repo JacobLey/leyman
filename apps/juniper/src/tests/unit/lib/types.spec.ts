@@ -297,8 +297,8 @@ suite('types', () => {
             expectTypeOf<ToBaseType<'abc' | 123 | true>>().toEqualTypeOf<
                 boolean | number | string
             >();
-            const arr = [12, null, {}] as const;
-            expectTypeOf<ToBaseType<typeof arr>>().toEqualTypeOf<
+            type Arr = [12, null, { z: 1 }];
+            expectTypeOf<ToBaseType<Arr>>().toEqualTypeOf<
                 (number | Record<string, unknown> | null)[]
             >();
             expectTypeOf<ToBaseType<[{ a: 1 }, Record<string, never>]>>().toEqualTypeOf<

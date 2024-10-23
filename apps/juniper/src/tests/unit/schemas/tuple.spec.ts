@@ -316,11 +316,11 @@ suite('TupleSchema', () => {
 
     suite('Invalid types', () => {
         test('Blocked methods', () => {
-            const schema = tupleSchema();
+            type Schema = ReturnType<typeof tupleSchema>;
 
-            expectTypeOf<(typeof schema)['items']>().toBeNever();
-            expectTypeOf<(typeof schema)['maxItems']>().toBeNever();
-            expectTypeOf<(typeof schema)['minItems']>().toBeNever();
+            expectTypeOf<Schema['items']>().toBeNever();
+            expectTypeOf<Schema['maxItems']>().toBeNever();
+            expectTypeOf<Schema['minItems']>().toBeNever();
         });
 
         test('Contains only set once', () => {

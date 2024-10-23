@@ -36,6 +36,7 @@ suite('NullSchema', () => {
 
     suite('Invalid types', () => {
         test('Blocked methods', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schema = nullSchema();
 
             expectTypeOf<(typeof schema)['if']>().toBeNever();

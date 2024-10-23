@@ -469,6 +469,7 @@ suite('StringSchema', () => {
                 ],
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const neverSchema2 = stringSchema().nullable().anyOf([]);
             expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
         });
@@ -528,6 +529,7 @@ suite('StringSchema', () => {
                 ],
             });
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const neverSchema2 = stringSchema().nullable().oneOf([]);
             expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
 

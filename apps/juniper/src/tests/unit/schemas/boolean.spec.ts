@@ -38,6 +38,7 @@ suite('BooleanSchema', () => {
 
     suite('Invalid types', () => {
         test('Blocked methods', () => {
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schema = booleanSchema();
 
             expectTypeOf<(typeof schema)['allOf']>().toBeNever();

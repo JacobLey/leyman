@@ -30,6 +30,6 @@ export declare class StaticEventTarget<InterfaceEvents extends Types.EventDict =
     public declare removeEventListener: <K extends Types.EventList<this>>(
         type: K,
         listener: Types.NullishEventTargetListener<this, K>,
-        options?: boolean | EventListenerOptions | undefined
+        options?: boolean | EventListenerOptions
     ) => void;
 }

@@ -35,7 +35,7 @@ export const nonDeprecatedRules = (name: string, plugin: PluginRules): Linter.Ru
 const disableReplacedTypeRules = (): Linter.RulesRecord => {
     const rules: Linter.RulesRecord = {};
     for (const [ruleName, rule] of Object.entries(typescriptPlugin.rules)) {
-        const { extendsBaseRule } = rule.meta.docs!;
+        const { extendsBaseRule } = rule.meta.docs;
         if (typeof extendsBaseRule === 'string') {
             rules[extendsBaseRule] = 'off';
         } else if (extendsBaseRule) {
@@ -169,9 +169,10 @@ export default function makeEslintConfigForPackage({
                 parser: typescriptParser,
                 parserOptions: {
                     ecmaVersion: 'latest',
-                    EXPERIMENTAL_useProjectService: {
-                        allowDefaultProjectForFiles: ['./*.js'],
+                    projectService: {
+                        allowDefaultProject: ['*.{c,m,}js'],
                     },
+                    tsconfigRootDir: projectUrl,
                 },
                 globals: {
                     console: 'readonly',
@@ -766,12 +767,12 @@ export default function makeEslintConfigForPackage({
             // Attempt to re-enable original rule as well.
             files: ['**/*.{c,m,}js'],
             rules: (() => {
-                const rules: Linter.FlatConfig['rules'] = {};
+                const rules: Linter.Config['rules'] = {};
 
                 for (const [ruleName, ruleSettings] of Object.entries(typescriptPlugin.rules)) {
-                    if (ruleSettings.meta.docs!.requiresTypeChecking) {
+                    if (ruleSettings.meta.docs.requiresTypeChecking) {
                         rules[`@typescript-eslint/${ruleName}`] = 'off';
-                        const { extendsBaseRule } = ruleSettings.meta.docs!;
+                        const { extendsBaseRule } = ruleSettings.meta.docs;
                         if (typeof extendsBaseRule === 'string') {
                             rules[extendsBaseRule] = 'error';
                         } else if (extendsBaseRule) {

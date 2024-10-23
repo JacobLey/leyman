@@ -153,6 +153,7 @@ suite('schema', () => {
 
             const schema = numberSchema().cast<CustomNumber>();
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<CustomNumber>();
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const json = schema.toJSON();
             expectTypeOf<SchemaType<typeof json>>().toEqualTypeOf<CustomNumber>();
         });

@@ -64,7 +64,7 @@ const isEntryScript = (x: object): x is typeof EntryScript =>
  * @private
  * @param url - NodeJS process entry point.
  */
-export const runAsMain = async (url?: string | undefined): Promise<void> => {
+export const runAsMain = async (url?: string): Promise<void> => {
     if (url) {
         const rawEntryScript: unknown = await import(url).catch(() => null);
         const script = defaultImport(rawEntryScript);

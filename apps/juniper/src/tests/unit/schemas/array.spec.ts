@@ -271,6 +271,7 @@ suite('ArraySchema', () => {
             const stillNullableSchema = nullableSchema.not(arraySchema());
             expectTypeOf<SchemaType<typeof stillNullableSchema>>().toEqualTypeOf<[] | null>();
 
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const notNullableSchema = stillNullableSchema.not(arraySchema().nullable());
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<[]>();
         });
