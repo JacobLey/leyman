@@ -19,7 +19,7 @@
     ".": "./dist/eslint-config.js"
   },
   "dependencies": {
-    "@eslint/js": "^9.8.0",
+    "@eslint/js": "^9.13.0",
     "@typescript-eslint/eslint-plugin": "^8.10.0",
     "@typescript-eslint/parser": "^8.10.0",
     "ajv": "^8.17.1",
@@ -38,15 +38,15 @@
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
-    "@nx/eslint": "19.6.4",
+    "@nx/eslint": "20.0.3",
     "@types/chai": "^4.3.17",
-    "@types/eslint": "^9.6.0",
+    "@types/eslint": "^9.6.1",
     "@types/mocha": "^10.0.7",
     "@types/node": "^22.1.0",
     "@typescript-eslint/utils": "^8.10.0",
     "c8": "^10.1.2",
     "chai": "^5.1.1",
-    "eslint": "^9.8.0",
+    "eslint": "^9.13.0",
     "mocha": "^10.7.0",
     "npm-nx-tsc": "npm:nx-tsc@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",

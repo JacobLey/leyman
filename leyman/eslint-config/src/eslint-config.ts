@@ -150,7 +150,7 @@ export default function makeEslintConfigForPackage({
      * Loaded `package.json` file
      */
     packageJson: unknown;
-}): Linter.FlatConfig[] {
+}): Linter.Config[] {
     assertIsPackageJson(packageJson);
 
     const projectUrl = Path.dirname(fileURLToPath(configUrl));
@@ -797,7 +797,7 @@ export default function makeEslintConfigForPackage({
             // Disable JSX rules for non-JSX files
             files: ['**/*.{c,m,}ts'],
             rules: (() => {
-                const rules: Linter.FlatConfig['rules'] = {};
+                const rules: Linter.Config['rules'] = {};
 
                 for (const ruleName of [
                     ...Object.keys(jsxA11yPlugin.rules!).map(rule => `jsx-a11y/${rule}`),
@@ -824,6 +824,6 @@ export default function makeEslintConfigForPackage({
             },
         },
         // Disable all formatting rules
-        prettierConfig as unknown as Linter.FlatConfig,
-    ] satisfies Linter.FlatConfig[];
+        prettierConfig as unknown as Linter.Config,
+    ] satisfies Linter.Config[];
 }

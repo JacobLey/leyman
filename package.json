@@ -1,7 +1,7 @@
 {
   "type": "module",
   "devDependencies": {
-    "@nx/eslint": "19.6.4",
+    "@nx/eslint": "20.0.3",
     "npm-nx-populate-files": "npm:nx-populate-files@latest",
     "npm-nx-tsc": "npm:nx-tsc@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
