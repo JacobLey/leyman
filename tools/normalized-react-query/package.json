@@ -25,23 +25,23 @@
     ".": "./dist/index.js"
   },
   "peerDependencies": {
-    "@tanstack/react-query": "^4.0.10 && <5",
+    "@tanstack/react-query": "4.33.0 && <5",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
-    "@tanstack/react-query": "^4.36.1",
+    "@tanstack/react-query": "4.33.0",
     "@testing-library/react-hooks": "^8.0.1",
-    "@types/chai": "^4.3.17",
-    "@types/mocha": "^10.0.7",
-    "@types/node": "^22.1.0",
-    "@types/react": "^18.3.3",
+    "@types/chai": "^5.0.0",
+    "@types/mocha": "^10.0.9",
+    "@types/node": "^22.7.7",
+    "@types/react": "^18.3.11",
     "@types/sinon": "^17.0.3",
     "c8": "^10.1.2",
     "chai": "^5.1.1",
-    "expect-type": "^0.19.0",
+    "expect-type": "^1.1.0",
     "mocha": "^10.7.0",
     "mocha-chain": "workspace:^",
     "nx-tsc": "workspace:^",
@@ -49,7 +49,7 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-test-renderer": "^18.3.1",
-    "sinon": "^18.0.0",
+    "sinon": "^19.0.2",
     "typescript": "^5.6.3"
   }
 }
