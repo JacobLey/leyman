@@ -7,6 +7,9 @@
   },
   "references": [
     {
+      "path": "../../apps/barrelify"
+    },
+    {
       "path": "../../apps/nx-update-ts-references"
     },
     {

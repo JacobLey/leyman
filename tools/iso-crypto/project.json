@@ -4,6 +4,7 @@
   "targets": {
     "biome": {},
     "eslint": {},
+    "barrelify": {},
     "update-ts-references": {},
     "tsc": {},
     "coverage-reset": {},
