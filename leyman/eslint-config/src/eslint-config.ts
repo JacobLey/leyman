@@ -843,10 +843,12 @@ export default function makeEslintConfigForPackage({
         },
         {
             // Disable "best practice" rules for tests
-            files: [Path.join(relativePath, 'src/tests/**/*.{c,m,}ts')],
+            files: [Path.join(relativePath, 'src/tests/**/*.{c,m,}ts{x,}')],
             rules: {
                 'no-magic-numbers': 'off',
                 '@typescript-eslint/explicit-function-return-type': 'off',
+                '@typescript-eslint/no-magic-numbers': 'off',
+                '@typescript-eslint/only-throw-error': 'off',
                 'jsdoc/require-description': 'off',
                 'jsdoc/require-jsdoc': 'off',
                 'jsdoc/require-param-description': 'off',
