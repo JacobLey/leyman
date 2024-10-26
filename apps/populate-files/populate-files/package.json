@@ -41,10 +41,10 @@
     "@leyman/eslint-config": "workspace:^",
     "@types/chai": "^5.0.0",
     "@types/mocha": "^10.0.9",
-    "@types/node": "^22.7.8",
-    "chai": "^5.1.1",
+    "@types/node": "^22.8.1",
+    "chai": "^5.1.2",
     "format-file": "workspace:^",
-    "mocha": "^10.7.0",
+    "mocha": "^10.7.3",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "nx-tsc": "workspace:^",
     "typescript": "^5.6.3"
