@@ -479,32 +479,21 @@ export default function makeEslintConfigForPackage({
                 // Import
                 ...nonDeprecatedRules('import', importPlugin),
                 'import/consistent-type-specifier-style': 'off',
-                // TODO https://github.com/import-js/eslint-plugin-import/issues/2556
-                'import/default': 'off',
                 'import/dynamic-import-chunkname': 'off',
                 'import/exports-last': 'off',
                 'import/extensions': 'off',
                 'import/first': ['error', 'absolute-first'],
                 'import/group-exports': 'off',
                 'import/max-dependencies': 'off',
-                // TODO https://github.com/import-js/eslint-plugin-import/issues/2556
-                'import/namespace': 'off',
-                // TODO https://github.com/import-js/eslint-plugin-import/issues/2948
-                // 'import/newline-after-import': ['error', { count: 1 }],
-                'import/newline-after-import': 'off',
-                // TODO https://github.com/import-js/eslint-plugin-import/issues/2948
-                'import/no-amd': 'off',
+                'import/named': 'off',
+                'import/newline-after-import': ['error', { count: 1 }],
                 'import/no-anonymous-default-export': 'off',
                 'import/no-commonjs': 'off',
                 'import/no-default-export': 'off',
-                // TODO https://github.com/import-js/eslint-plugin-import/issues/2556
-                'import/no-deprecated': 'off',
                 'import/no-extraneous-dependencies': 'off',
                 'import/no-internal-modules': 'off',
                 'import/no-mutable-exports': 'off',
                 'import/no-named-as-default-member': 'off',
-                // TODO https://github.com/import-js/eslint-plugin-import/issues/2948
-                'import/no-named-as-default': 'off',
                 'import/no-named-export': 'off',
                 'import/no-namespace': 'off',
                 'import/no-nodejs-modules': 'off',
@@ -666,7 +655,6 @@ export default function makeEslintConfigForPackage({
                         unnamedComponents: 'arrow-function',
                     },
                 ],
-                'react/hook-use-state': 'off',
                 'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
                 'react/jsx-key': ['error', { checkFragmentShorthand: true }],
                 'react/jsx-max-depth': 'off',
@@ -817,7 +805,7 @@ export default function makeEslintConfigForPackage({
         },
         {
             // Disable rules that expect ESM syntax
-            files: ['**/*.c{j,t}s'],
+            files: ['**/*.c{j,t}s{x,}'],
             rules: {
                 '@typescript-eslint/no-require-imports': 'off',
                 '@typescript-eslint/no-var-requires': 'off',
