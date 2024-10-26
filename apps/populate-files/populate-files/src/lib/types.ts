@@ -12,9 +12,9 @@ export interface NormalizedParams {
 }
 
 export interface RawOptions {
-    check?: boolean | undefined;
-    dryRun?: boolean | undefined;
-    cwd?: Directory | undefined;
+    check?: boolean | null | undefined;
+    dryRun?: boolean | null | undefined;
+    cwd?: Directory | null | undefined;
 }
 export interface NormalizedOptions {
     check: boolean;

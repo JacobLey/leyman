@@ -23,8 +23,8 @@ const parseContent = async (content: FileContent): Promise<Uint8Array> => {
     return stringToUint8Array(str);
 };
 
-const normalizeCheck = (check?: boolean): boolean => check ?? isCI;
-const normalizeDryRun = (dryRun?: boolean): boolean => dryRun ?? false;
+const normalizeCheck = (check?: boolean | null): boolean => check ?? isCI;
+const normalizeDryRun = (dryRun?: boolean | null): boolean => dryRun ?? false;
 
 export const normalizeFileParams = async (
     params: PopulateFileParams,
