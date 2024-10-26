@@ -1,4 +1,7 @@
-await import('../../events.js');
-// Coverage
+import { suite, test } from 'mocha-chain';
 
-export {};
+suite('types', () => {
+    test('coverage', async () => {
+        await import('../../events.js');
+    });
+});

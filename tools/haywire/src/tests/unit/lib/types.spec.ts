@@ -1,4 +1,7 @@
-await import('#types');
-// Coverage
+import { suite, test } from 'mocha';
 
-export {};
+suite('types', () => {
+    test('coverage', async () => {
+        await import('#types');
+    });
+});
