@@ -33,7 +33,7 @@ suite('Failure cases', () => {
             duration: 1,
         }),
     } as MochaContext;
-    const defaultBaseSuite = (title: string, cb: (this: Suite) => void) => {
+    const defaultBaseSuite = (_title: string, cb: (this: Suite) => void) => {
         const suiteContext = {} as Suite;
         cb.call(suiteContext);
         return suiteContext;
@@ -47,7 +47,7 @@ suite('Failure cases', () => {
         cb.call(fakeContext, () => {});
         return {};
     };
-    const defaultBaseTest = (title: string, cb: AsyncFunc | Func) => {
+    const defaultBaseTest = (_title: string, cb: AsyncFunc | Func) => {
         cb.call(
             {
                 test: fakeCurrentTest,
@@ -81,7 +81,7 @@ suite('Failure cases', () => {
             this.runnable().duration = -1;
 
             const stubDone = stub();
-            const fakeBaseTest = (title: string, cb: AsyncFunc | Func) => {
+            const fakeBaseTest = (_title: string, cb: AsyncFunc | Func) => {
                 cb.call(fakeContext, stubDone as Done);
             };
 
@@ -114,7 +114,7 @@ suite('Failure cases', () => {
             this.runnable().duration = -1;
 
             const mockDone = mock();
-            const fakeBaseTest = (title: string, cb: AsyncFunc | Func) => {
+            const fakeBaseTest = (_title: string, cb: AsyncFunc | Func) => {
                 cb.call(fakeContext, mockDone as Done);
             };
 

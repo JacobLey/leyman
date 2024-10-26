@@ -88,7 +88,7 @@ export const wrapTestWithEntrypoint =
                 await (cb as (this: MochaContext) => Promise<void>).apply(this);
             });
         }
-        return contextualTest(title, function (this, ignore, done) {
+        return contextualTest(title, function (this, _, done) {
             return (cb as (this: MochaContext, done: Done) => ValidDoneReturnTypes).call(
                 this,
                 done

@@ -41,7 +41,7 @@ suite('cli', () => {
 
             stubbedOutput.test('failure', async ({ outputStub }) => {
                 const buildSpy = spy(barrelFiles, patchKey);
-                outputStub.callsFake((err, argv, log) => {
+                outputStub.callsFake((err, _argv, log) => {
                     expect(err).to.have.property('message', 'Unknown arguments: unknown, option');
                     expect(log.startsWith('barrelify')).to.equal(true);
                     expect(log.endsWith('Unknown arguments: unknown, option')).to.equal(true);

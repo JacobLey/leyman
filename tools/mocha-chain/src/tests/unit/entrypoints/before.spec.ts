@@ -38,7 +38,7 @@ suite('before', () => {
     );
 
     let firstRun = true;
-    const mergedBeforeEach = mergedContextualBefore.beforeEach((ctx, done) => {
+    const mergedBeforeEach = mergedContextualBefore.beforeEach((_ctx, done) => {
         expect(order).to.deep.equal(firstRun ? [1, 2, 3] : [1, 2, 3, 4, 5]);
         firstRun = false;
 

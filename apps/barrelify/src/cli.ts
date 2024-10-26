@@ -7,7 +7,7 @@ import * as Commands from './commands/index.js';
 
 const yargs = defaultImport(yargsDefault) as Argv;
 
-export const yargsOutput = patch((e: unknown, argv: unknown, log: string): void => {
+export const yargsOutput = patch((_e: unknown, _argv: unknown, log: string): void => {
     if (log) {
         // eslint-disable-next-line no-console
         console.log(log);

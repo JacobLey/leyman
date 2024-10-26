@@ -230,7 +230,7 @@ export const wrapHookWithEntrypoint =
         const cb = args.length === 1 ? args[0] : args[1];
         if (typeof args[0] === 'string') {
             if (cb.length > 0) {
-                return contextualHook(args[0], function (this, ignore, done) {
+                return contextualHook(args[0], function (this, _, done) {
                     return cb.call(this, done);
                 });
             }
@@ -240,7 +240,7 @@ export const wrapHookWithEntrypoint =
         }
 
         if (cb.length > 0) {
-            return contextualHook(function (this, ignore, done) {
+            return contextualHook(function (this, _, done) {
                 return cb.call(this, done);
             });
         }

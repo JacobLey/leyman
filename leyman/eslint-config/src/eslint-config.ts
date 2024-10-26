@@ -110,6 +110,12 @@ export const baseNamingConvention = [
         format: ['PascalCase'],
     },
     {
+        selector: 'parameter',
+        modifiers: ['unused'],
+        format: ['camelCase'],
+        leadingUnderscore: 'require',
+    },
+    {
         selector: 'import',
         modifiers: ['default'],
         format: ['camelCase', 'PascalCase'],
