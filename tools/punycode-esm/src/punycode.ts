@@ -63,11 +63,13 @@ export const ucs2Decode = (string: string): number[] => {
     let counter = 0;
     while (counter < string.length) {
         // eslint-disable-next-line unicorn/prefer-code-point
-        const value = string.charCodeAt(counter++);
+        const value = string.charCodeAt(counter);
+        ++counter;
         if (value >= 0xd800 && value <= 0xdbff && counter < string.length) {
             // It's a high surrogate, and there is a next character.
             // eslint-disable-next-line unicorn/prefer-code-point
-            const extra = string.charCodeAt(counter++);
+            const extra = string.charCodeAt(counter);
+            ++counter;
             // eslint-disable-next-line no-bitwise
             if ((extra & 0xfc00) === 0xdc00) {
                 // Low surrogate.
@@ -79,7 +81,7 @@ export const ucs2Decode = (string: string): number[] => {
                 // It's an unmatched surrogate; only append this code unit, in case the
                 // next code unit is the high surrogate of a surrogate pair.
                 output.push(value);
-                counter--;
+                --counter;
             }
         } else {
             output.push(value);
@@ -210,13 +212,14 @@ export const decode = (input: string): string => {
                 error: 'invalid-input',
             });
 
-            const digit = basicToDigit(input.codePointAt(index++)!);
+            const digit = basicToDigit(input.codePointAt(index)!);
+            ++index;
 
             checkOverflow(digit, base, { gte: true });
             checkOverflow(digit, Math.floor((maxInt - i) / w));
 
             i += digit * w;
-            // eslint-disable-next-line no-nested-ternary
+            // eslint-disable-next-line no-nested-ternary, sonarjs/no-nested-conditional
             const t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
 
             if (digit < t) {
@@ -241,7 +244,8 @@ export const decode = (input: string): string => {
         i %= out;
 
         // Insert `n` at position `i` of the output.
-        output.splice(i++, 0, n);
+        output.splice(i, 0, n);
+        ++i;
     }
 
     return String.fromCodePoint(...output);
@@ -307,7 +311,8 @@ export const encode = (input: string): string => {
 
         for (const currentValue of decodedInput) {
             if (currentValue < n) {
-                checkOverflow(++delta, maxInt);
+                ++delta;
+                checkOverflow(delta, maxInt);
             }
             if (currentValue === n) {
                 // Represent delta as a generalized variable-length integer.
@@ -315,7 +320,7 @@ export const encode = (input: string): string => {
                 let k = base;
                 while (true) {
                     const t =
-                        // eslint-disable-next-line no-nested-ternary
+                        // eslint-disable-next-line no-nested-ternary, sonarjs/no-nested-conditional
                         k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
                     if (q < t) {
                         break;

@@ -35,8 +35,8 @@ export const normalizeOptionsProvider =
         const rawPackageJson: unknown = JSON.parse(file);
         if (isPackageJson(rawPackageJson)) {
             return {
-                tsConfig: Path.resolve(context.root, options.tsConfig),
                 projectDir,
+                tsConfig: Path.resolve(context.root, options.tsConfig),
                 isModule: rawPackageJson.type === 'module',
             };
         }

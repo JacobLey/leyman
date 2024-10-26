@@ -795,9 +795,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
             });
             return mergeRef<T2>({
                 baseSchema,
+                refSchema,
                 defaultValues: this.getDefaultValues(params),
                 refPath: schema.#ref.path,
-                refSchema,
             });
         }
         return baseSchema;

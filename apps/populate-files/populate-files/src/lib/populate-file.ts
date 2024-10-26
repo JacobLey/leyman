@@ -53,7 +53,7 @@ export const internalPopulateFile = async ({
         }
 
         await createPathAndWrite({ filePath, content, dryRun });
-        return { filePath, updated: true, reason };
+        return { filePath, reason, updated: true };
     }
 
     if (areUint8ArraysEqual(rawFile, content)) {
@@ -67,5 +67,5 @@ export const internalPopulateFile = async ({
     }
     await createPathAndWrite({ filePath, content, dryRun });
 
-    return { filePath, updated: true, reason };
+    return { filePath, reason, updated: true };
 };

@@ -72,10 +72,13 @@ export abstract class Infinite<
         // to check if `params` has changed in a meaningful way.
         const hashedDefaultKey = queryKeyHashFn(defaultKey);
 
+        // eslint-disable-next-line sonarjs/rules-of-hooks
         const client = useQueryClient();
 
+        // eslint-disable-next-line sonarjs/rules-of-hooks
         const forceRerender = useForceRerender();
 
+        // eslint-disable-next-line sonarjs/rules-of-hooks
         const [queries, appendQuery] = useMemo(() => {
             // Array of queries is initialized in a `useMemo` hook so it immediately reset on changed dependencies.
             const baseQueries: Required<
@@ -104,6 +107,7 @@ export abstract class Infinite<
             return [baseQueries, appendToBaseQuery];
         }, [hashedDefaultKey]);
 
+        // eslint-disable-next-line sonarjs/rules-of-hooks
         const results = useQueries({
             queries: queries.map(x => ({ ...x, ...options })),
         });
@@ -131,6 +135,7 @@ export abstract class Infinite<
             }
         }
 
+        // eslint-disable-next-line sonarjs/rules-of-hooks
         const [hasNextPage, fetchNextPage] = useMemo(() => {
             if (last.isSuccess) {
                 const { nextPage } = last.data;

@@ -66,8 +66,8 @@ const calculateTargets = ({ stages }: ProcessorOptions): LifecycleTargets => {
             name: stageName,
             kind: 'base',
             dependsOn: [previousHook],
-            previousHook,
             hasHooks: hooks.length > 0,
+            previousHook,
         });
     }
 

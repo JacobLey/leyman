@@ -346,7 +346,7 @@ export class NumberSchema<
 
         if (integerMultiples.length > 0) {
             // eslint-disable-next-line unicorn/no-array-reduce
-            base.multipleOf = integerMultiples.reduce((acc, val) => lcm(acc, val));
+            base.multipleOf = integerMultiples.reduce((acc, val) => lcm(acc, val), 1);
             mergeAllOf(
                 base,
                 floatMultiples.map(multipleOf => ({ multipleOf }))

@@ -53,7 +53,7 @@ export const generateBarrelFile = (files: string[], data: string): string => {
 
                 return `./${base}${ext.replace('t', 'j')}`;
             })
-            .sort()
+            .sort((a, b) => a.localeCompare(b, 'en'))
             .map(
                 filename => `export ${typeOnlys.has(filename) ? 'type ' : ''}* from '${filename}';`
             ),

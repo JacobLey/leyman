@@ -153,7 +153,8 @@ export class StaticEmitter<
         if (existingName) {
             return existingName;
         }
-        const randomName = `STATIC-EMITTER-${Math.random()}-${this.#eventNameId++}`;
+        ++this.#eventNameId;
+        const randomName = `STATIC-EMITTER-${this.#eventNameId}`;
         this.#eventMap.set(eventName, randomName);
         return randomName;
     }

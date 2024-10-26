@@ -26,9 +26,9 @@ const normalizeOptions = (
     );
 
     return {
+        packageRoot,
         check: options.check ?? isCI,
         dryRun: options.dryRun ?? false,
-        packageRoot,
         tsConfig: Path.join(packageRoot, 'tsconfig.json'),
         dependencies: context.projectGraph.dependencies[projectName]!.filter(
             dependency => context.projectsConfigurations.projects[dependency.target]
@@ -89,11 +89,8 @@ export default async function updateTsReferences(
         ...normalized.dependencies.map(async path => safeReadTsConfig(path)),
     ]);
 
-    const foundDependencies = dependencyTsConfigs.filter(
-        (ts): ts is NonNullable<typeof ts> => !!ts
-    );
-
-    packageTsConfig.json.references = foundDependencies
+    packageTsConfig.json.references = dependencyTsConfigs
+        .filter((ts): ts is NonNullable<typeof ts> => !!ts)
         .sort((a, b) => a.path.localeCompare(b.path))
         .map(({ path }) => ({
             path: Path.relative(normalized.packageRoot, Path.join(path, '..')),

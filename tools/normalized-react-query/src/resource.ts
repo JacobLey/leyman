@@ -52,15 +52,18 @@ export abstract class Resource<Data, Params = DefaultParams> {
         params: Params,
         options?: UseQueryOptions<Data>
     ): UseQueryResult<Data> {
+        // eslint-disable-next-line sonarjs/rules-of-hooks
         const client = useQueryClient();
 
         const queryKey = this.getKey(params);
 
+        // eslint-disable-next-line sonarjs/rules-of-hooks
         const [queryFn, handlers] = useMemo(
             () => [async () => this.queryFn(params), this.getHandlers(client, params)],
             [hashQueryKey(queryKey)]
         );
 
+        // eslint-disable-next-line sonarjs/rules-of-hooks
         return useQuery(queryKey, queryFn, {
             ...handlers,
             ...options,
@@ -127,9 +130,15 @@ export abstract class Resource<Data, Params = DefaultParams> {
         params: Params
     ): Required<Pick<UseQueryOptions<Data>, 'onError' | 'onSettled' | 'onSuccess'>> {
         return {
-            onSuccess: async data => this.onSuccess(client, params, data),
-            onError: async err => this.onError(client, params, err),
-            onSettled: async (data, err) => this.onSettled(client, params, data, err),
+            onSuccess: data => {
+                void this.onSuccess(client, params, data);
+            },
+            onError: err => {
+                void this.onError(client, params, err);
+            },
+            onSettled: (data, err) => {
+                void this.onSettled(client, params, data, err);
+            },
         };
     }
 

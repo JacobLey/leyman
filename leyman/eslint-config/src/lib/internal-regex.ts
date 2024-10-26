@@ -24,7 +24,7 @@ export const getInternalRegex = (packageJson: PackageJson): RegExp => {
     }
 
     const packageRegexUnion = [...internalPackages]
-        .sort()
+        .sort((a, b) => a.localeCompare(b, 'en'))
         .map(packageName => packageRegex(packageName))
         .join('|');
 

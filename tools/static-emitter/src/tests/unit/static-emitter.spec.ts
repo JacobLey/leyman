@@ -98,7 +98,8 @@ suite('StaticEmitter', () => {
             const customEmitter = new CustomEmitter();
 
             const listener = (detail: number, event: CustomEvent<string, number>): void => {
-                expect(++order).to.equal(1);
+                ++order;
+                expect(order).to.equal(1);
                 expect(detail).to.equal(123);
                 expect(event).to.be.an.instanceOf(CustomEvent);
                 expect(event.type).to.equal('foo');
@@ -111,7 +112,8 @@ suite('StaticEmitter', () => {
 
             const handler = {
                 handleEvent: (event: CustomEvent<'foo', 123>): void => {
-                    expect(++order).to.equal(2);
+                    ++order;
+                    expect(order).to.equal(2);
                     expect(event).to.be.an.instanceOf(CustomEvent);
                     expect(event.type).to.equal('foo');
                     expect(event.detail).to.equal(123);
@@ -124,7 +126,8 @@ suite('StaticEmitter', () => {
             customEmitter.emit('foo', 123);
 
             customEmitter.addListener(eventSym, (detail, event) => {
-                expect(++order).to.equal(3);
+                ++order;
+                expect(order).to.equal(3);
                 expect(detail).to.deep.equal({ myData: '<my-data>' });
                 expect(event).to.be.an.instanceOf(CustomEvent);
                 expect(event.detail).to.deep.equal({ myData: '<my-data>' });
@@ -133,7 +136,8 @@ suite('StaticEmitter', () => {
 
             customEmitter.off(eventSym, () => {});
 
-            expect(++order).to.equal(4);
+            ++order;
+            expect(order).to.equal(4);
         });
     });
 });

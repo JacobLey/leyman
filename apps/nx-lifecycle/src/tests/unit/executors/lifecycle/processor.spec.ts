@@ -9,7 +9,7 @@ import { expect } from '../../../chai-hooks.js';
  */
 const deepFreeze = <T>(obj: T): T => {
     if (obj && typeof obj === 'object' && !Object.isFrozen(obj)) {
-        // eslint-disable-next-line guard-for-in
+        // eslint-disable-next-line guard-for-in, sonarjs/for-in
         for (const key in obj) {
             deepFreeze(obj[key]);
         }

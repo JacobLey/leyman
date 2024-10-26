@@ -12,7 +12,7 @@ export abstract class HaywireError extends Error {}
 const stringifyIds = (ids: GenericHaywireId[]): string =>
     ids
         .map(id => id.toString())
-        .sort()
+        .sort((a, b) => a.localeCompare(b, 'en'))
         .join(', ');
 
 /**
@@ -225,8 +225,8 @@ export class HaywireInstanceOfResponseError extends HaywireInstanceValidationErr
     static #stringify(value: unknown): string {
         const getConstructor = (): { name?: string } | null => {
             if (value && typeof value === 'object') {
-                const { constructor } = value;
-                return constructor === Object ? null : constructor;
+                const construct = value.constructor;
+                return construct === Object ? null : construct;
             }
             return null;
         };

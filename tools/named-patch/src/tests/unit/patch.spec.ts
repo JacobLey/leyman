@@ -14,7 +14,7 @@ suite('namedPatch', () => {
             const syncMethod = <A extends string, B = [123]>(
                 a: A,
                 b: B[]
-            ): { a: [A]; b: B[]; c: boolean } => ({ a: [a], b, c: true });
+            ): { a: [A]; b: B[]; c: boolean } => ({ a: [a], c: true, b });
 
             const patched = Patch.patch(syncMethod);
             expect(patched[Patch.patchKey]).to.eq(syncMethod);
@@ -63,8 +63,12 @@ suite('namedPatch', () => {
             let counter = 0;
 
             const context = {
-                increment: () => counter++,
-                decrement: () => counter--,
+                increment: () => {
+                    ++counter;
+                },
+                decrement: () => {
+                    counter--;
+                },
             };
 
             const contextMethod = Patch.patch(function (this: typeof context): void {

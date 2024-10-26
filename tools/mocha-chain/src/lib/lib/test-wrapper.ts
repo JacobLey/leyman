@@ -68,7 +68,7 @@ export interface GenericContextualTest {
 
 export interface ExclusiveEntrypointTest {
     (name: string, fn: (this: MochaContext, done: Done) => ValidDoneReturnTypes): MochaTest;
-    (name: string, fn: (this: MochaContext) => void): MochaTest;
+    (name: string, fn: (this: MochaContext) => Promise<void> | void): MochaTest;
 }
 
 /**

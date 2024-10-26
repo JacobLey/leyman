@@ -383,7 +383,7 @@ export class HaywireId<
         });
     }
 
-    public static [unsafeIdSym]?: UnsafeIdentifierGenerator = <
+    public static readonly [unsafeIdSym]?: UnsafeIdentifierGenerator = <
         T2,
         Constructor2 extends GenericClass<T2> | null = null,
         Named2 extends string | symbol | null = null,
