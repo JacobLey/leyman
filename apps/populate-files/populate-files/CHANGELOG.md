@@ -1,5 +1,21 @@
 # populate-files
 
+## 0.1.0
+
+### Minor Changes
+
+- 374c2ec: Support null for populate files options
+
+### Patch Changes
+
+- 4e564e5: Bump Nx version
+- bcd9e61: Bump dependencies
+- 1387a8c: Bump sonarjs eslint and fix/ignore issues
+- Updated dependencies [bcd9e61]
+- Updated dependencies [24d8e87]
+- Updated dependencies [c4af482]
+  - format-file@0.1.0
+
 ## 0.0.6
 
 ### Patch Changes

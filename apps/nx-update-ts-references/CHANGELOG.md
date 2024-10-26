@@ -1,5 +1,14 @@
 # nx-update-ts-references
 
+## 0.0.6
+
+### Patch Changes
+
+- 4e564e5: Bump Nx version
+- bcd9e61: Bump dependencies
+- Updated dependencies [bcd9e61]
+  - common-proxy@0.0.5
+
 ## 0.0.5
 
 ### Patch Changes

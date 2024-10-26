@@ -1,5 +1,16 @@
 # iso-crypto
 
+## 1.2.0
+
+### Minor Changes
+
+- 24d8e87: Enforce no-magic numbers/strings
+
+### Patch Changes
+
+- 1bd9dc0: Add barrelify to iso-crypto
+- bcd9e61: Bump dependencies
+
 ## 1.1.3
 
 ### Patch Changes

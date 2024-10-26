@@ -1,5 +1,28 @@
 # nx-lifecycle
 
+## 0.0.8
+
+### Patch Changes
+
+- 4e564e5: Bump Nx version
+- 19d5289: Fix missing test assertions
+- bcd9e61: Bump dependencies
+- 1387a8c: Bump sonarjs eslint and fix/ignore issues
+- Updated dependencies [4e564e5]
+- Updated dependencies [19d5289]
+- Updated dependencies [784035c]
+- Updated dependencies [bcd9e61]
+- Updated dependencies [cbb9ef5]
+- Updated dependencies [24d8e87]
+- Updated dependencies [1387a8c]
+- Updated dependencies [c4af482]
+  - nx-plugin-handler@0.0.7
+  - haywire@0.1.4
+  - default-import@2.0.3
+  - common-proxy@0.0.5
+  - format-file@0.1.0
+  - juniper@1.2.1
+
 ## 0.0.7
 
 ### Patch Changes

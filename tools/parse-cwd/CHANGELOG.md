@@ -1,5 +1,11 @@
 # parse-cwd
 
+## 1.0.12
+
+### Patch Changes
+
+- bcd9e61: Bump dependencies
+
 ## 1.0.11
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "normalized-react-query",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Wrapper around React Query to enforce type-safe, consistent key-query mappings.",
   "engines": {
     "node": ">=20"

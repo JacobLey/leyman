@@ -1,5 +1,12 @@
 # normalized-react-query
 
+## 1.0.5
+
+### Patch Changes
+
+- bcd9e61: Bump dependencies
+- 1387a8c: Bump sonarjs eslint and fix/ignore issues
+
 ## 1.0.4
 
 ### Patch Changes

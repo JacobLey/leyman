@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.0.5
+
+### Patch Changes
+
+- bcd9e61: Bump dependencies
+- 1387a8c: Bump sonarjs eslint and fix/ignore issues
+- c4af482: Enforce type-file coverage via explicit test suite
+
 ## 2.0.4
 
 ### Patch Changes

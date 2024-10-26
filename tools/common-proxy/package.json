@@ -1,6 +1,6 @@
 {
   "name": "common-proxy",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Utility methods to help manage and expose nx plugins",
   "engines": {
     "node": ">=20"

@@ -1,5 +1,17 @@
 # load-populate-files
 
+## 0.0.9
+
+### Patch Changes
+
+- bcd9e61: Bump dependencies
+- Updated dependencies [4e564e5]
+- Updated dependencies [374c2ec]
+- Updated dependencies [bcd9e61]
+- Updated dependencies [1387a8c]
+  - populate-files@0.1.0
+  - default-import@2.0.3
+
 ## 0.0.8
 
 ### Patch Changes

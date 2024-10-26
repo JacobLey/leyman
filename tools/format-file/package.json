@@ -1,6 +1,6 @@
 {
   "name": "format-file",
-  "version": "0.0.8",
+  "version": "0.1.0",
   "description": "Utility API to format files via biome",
   "engines": {
     "node": ">=20"

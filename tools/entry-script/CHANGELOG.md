@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.0.5
+
+### Patch Changes
+
+- bcd9e61: Bump dependencies
+- Updated dependencies [bcd9e61]
+  - default-import@2.0.3
+
 ## 3.0.4
 
 ### Patch Changes

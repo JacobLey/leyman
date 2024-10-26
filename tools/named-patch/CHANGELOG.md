@@ -1,5 +1,13 @@
 # named-patch
 
+## 1.0.12
+
+### Patch Changes
+
+- 19d5289: Fix missing test assertions
+- bcd9e61: Bump dependencies
+- 1387a8c: Bump sonarjs eslint and fix/ignore issues
+
 ## 1.0.11
 
 ### Patch Changes

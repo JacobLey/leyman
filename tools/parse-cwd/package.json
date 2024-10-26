@@ -1,6 +1,6 @@
 {
   "name": "parse-cwd",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "Convert relative path or URL to full path",
   "engines": {
     "node": ">=20"

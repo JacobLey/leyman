@@ -1,6 +1,6 @@
 {
   "name": "iso-crypto",
-  "version": "1.1.3",
+  "version": "1.2.0",
   "description": "Isomorphic cryptographic functions for browser and NodeJS.",
   "engines": {
     "node": ">=20"

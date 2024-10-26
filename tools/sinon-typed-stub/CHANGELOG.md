@@ -1,5 +1,11 @@
 # sinon-typed-stub
 
+## 0.0.5
+
+### Patch Changes
+
+- bcd9e61: Bump dependencies
+
 ## 0.0.4
 
 ### Patch Changes

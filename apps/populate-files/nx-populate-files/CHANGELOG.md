@@ -1,5 +1,14 @@
 # nx-populate-files
 
+## 0.0.10
+
+### Patch Changes
+
+- bcd9e61: Bump dependencies
+- Updated dependencies [bcd9e61]
+  - load-populate-files@0.0.9
+  - common-proxy@0.0.5
+
 ## 0.0.9
 
 ### Patch Changes

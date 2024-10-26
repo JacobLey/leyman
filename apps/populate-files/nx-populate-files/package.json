@@ -1,6 +1,6 @@
 {
   "name": "nx-populate-files",
-  "version": "0.0.9",
+  "version": "0.0.10",
   "description": "Nx plugin to dynamically populate file content",
   "engines": {
     "node": ">=20"

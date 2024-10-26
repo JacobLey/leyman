@@ -1,5 +1,24 @@
 # nx-tsc
 
+## 0.0.11
+
+### Patch Changes
+
+- 4e564e5: Bump Nx version
+- bcd9e61: Bump dependencies
+- 1387a8c: Bump sonarjs eslint and fix/ignore issues
+- Updated dependencies [4e564e5]
+- Updated dependencies [19d5289]
+- Updated dependencies [784035c]
+- Updated dependencies [bcd9e61]
+- Updated dependencies [cbb9ef5]
+- Updated dependencies [24d8e87]
+- Updated dependencies [1387a8c]
+- Updated dependencies [c4af482]
+  - nx-plugin-handler@0.0.7
+  - haywire@0.1.4
+  - common-proxy@0.0.5
+
 ## 0.0.10
 
 ### Patch Changes

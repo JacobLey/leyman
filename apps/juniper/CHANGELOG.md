@@ -1,5 +1,12 @@
 # juniper
 
+## 1.2.1
+
+### Patch Changes
+
+- bcd9e61: Bump dependencies
+- 1387a8c: Bump sonarjs eslint and fix/ignore issues
+
 ## 1.2.0
 
 ### Minor Changes

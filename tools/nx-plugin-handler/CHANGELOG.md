@@ -1,5 +1,20 @@
 # nx-plugin-handler
 
+## 0.0.7
+
+### Patch Changes
+
+- 4e564e5: Bump Nx version
+- bcd9e61: Bump dependencies
+- Updated dependencies [19d5289]
+- Updated dependencies [784035c]
+- Updated dependencies [bcd9e61]
+- Updated dependencies [cbb9ef5]
+- Updated dependencies [24d8e87]
+- Updated dependencies [1387a8c]
+- Updated dependencies [c4af482]
+  - haywire@0.1.4
+
 ## 0.0.6
 
 ### Patch Changes

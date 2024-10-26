@@ -1,5 +1,21 @@
 # barrelify
 
+## 1.2.1
+
+### Patch Changes
+
+- 2267d42: Ignored parameters should start with \_
+- bcd9e61: Bump dependencies
+- 1387a8c: Bump sonarjs eslint and fix/ignore issues
+- Updated dependencies [19d5289]
+- Updated dependencies [bcd9e61]
+- Updated dependencies [1387a8c]
+  - named-patch@1.0.12
+  - default-import@2.0.3
+  - entry-script@3.0.5
+  - find-import@1.0.10
+  - parse-cwd@1.0.12
+
 ## 1.2.0
 
 ### Minor Changes

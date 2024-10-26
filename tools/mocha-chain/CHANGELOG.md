@@ -1,5 +1,21 @@
 # mocha-chain
 
+## 0.0.6
+
+### Patch Changes
+
+- 2267d42: Ignored parameters should start with \_
+- 19d5289: Fix missing test assertions
+- bcd9e61: Bump dependencies
+- Updated dependencies [19d5289]
+- Updated dependencies [784035c]
+- Updated dependencies [bcd9e61]
+- Updated dependencies [cbb9ef5]
+- Updated dependencies [24d8e87]
+- Updated dependencies [1387a8c]
+- Updated dependencies [c4af482]
+  - haywire@0.1.4
+
 ## 0.0.5
 
 ### Patch Changes

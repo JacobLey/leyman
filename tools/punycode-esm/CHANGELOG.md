@@ -1,5 +1,13 @@
 # punycode-esm
 
+## 1.0.11
+
+### Patch Changes
+
+- bcd9e61: Bump dependencies
+- 24d8e87: Enforce no-magic numbers/strings
+- 1387a8c: Bump sonarjs eslint and fix/ignore issues
+
 ## 1.0.10
 
 ### Patch Changes
