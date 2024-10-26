@@ -6,6 +6,7 @@ import type {
     IsClass,
     LateBinding,
     LiteralStringType,
+    Names,
     Supplier,
 } from '#types';
 
@@ -67,7 +68,7 @@ type SupplierProp<T extends 'async' | boolean> = T extends false
       };
 
 interface Annotations<
-    Named extends string | symbol | null,
+    Named extends Names,
     Nullable extends boolean,
     Undefinable extends boolean,
     Supply extends 'async' | boolean,
@@ -131,7 +132,7 @@ const MAX_NUMBER_RADIX = 36;
 export class HaywireId<
     T,
     Constructor extends GenericClass<T> | null,
-    Named extends string | symbol | null,
+    Named extends Names,
     Nullable extends boolean,
     Undefinable extends boolean,
     Supply extends 'async' | boolean,
@@ -386,7 +387,7 @@ export class HaywireId<
     public static readonly [unsafeIdSym]?: UnsafeIdentifierGenerator = <
         T2,
         Constructor2 extends GenericClass<T2> | null = null,
-        Named2 extends string | symbol | null = null,
+        Named2 extends Names = null,
     >(
         idOrNameOrClass?:
             | string
@@ -490,7 +491,7 @@ export class HaywireId<
      * @returns new id with supplied annotation properties
      */
     #extend<
-        Named2 extends string | symbol | null,
+        Named2 extends Names,
         Nullable2 extends boolean,
         Undefinable2 extends boolean,
         Supply2 extends 'async' | boolean,

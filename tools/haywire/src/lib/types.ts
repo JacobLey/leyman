@@ -84,6 +84,8 @@ export interface LateBinding<T> extends Promise<T> {
     [lateBinding]: true;
 }
 
+export type Names = string | symbol | null;
+
 declare const nonExtendable: unique symbol;
 export interface Extendable {
     [nonExtendable]: true;
@@ -93,7 +95,7 @@ export interface Extendable {
 export interface NonExtendable<
     T,
     Construct extends GenericClass<any> | IsClass | null,
-    Named extends string | symbol | null,
+    Named extends Names,
 > extends Extendable {
     (val: T): T;
     construct: (val: Construct) => Construct;
@@ -103,7 +105,7 @@ export interface NonExtendable<
 type ExpandOutputUndefinable<
     T,
     Construct extends GenericClass<any> | IsClass | null,
-    Named extends string | symbol | null,
+    Named extends Names,
     Undefinable extends boolean,
 > = true extends Undefinable
     ? [NonExtendable<T | undefined, Construct, Named>]
@@ -111,7 +113,7 @@ type ExpandOutputUndefinable<
 type ExpandOutputNullable<
     T,
     Construct extends GenericClass<any> | IsClass | null,
-    Named extends string | symbol | null,
+    Named extends Names,
     Nullable extends boolean,
     Undefinable extends boolean,
 > = true extends Nullable

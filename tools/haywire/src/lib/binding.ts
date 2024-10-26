@@ -20,6 +20,7 @@ import type {
     IsClass,
     LateBinding,
     LiteralStringType,
+    Names,
     Supplier,
 } from '#types';
 
@@ -146,7 +147,7 @@ export class Binding<
         this['outputId'] extends HaywireId<
             infer U,
             infer V,
-            string | symbol | null,
+            Names,
             infer Nullable,
             infer Undefinable,
             false,
@@ -164,7 +165,7 @@ export class Binding<
         this['outputId'] extends HaywireId<
             infer U,
             infer V,
-            string | symbol | null,
+            Names,
             infer Nullable,
             infer Undefinable,
             false,
@@ -175,7 +176,7 @@ export class Binding<
         Dependencies,
         Async
     >;
-    public named(named: string | symbol | null = null): GenericBinding {
+    public named(named: Names = null): GenericBinding {
         return new Binding(
             this.outputId.named(named as ''),
             this.depIds,
