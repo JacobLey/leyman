@@ -708,14 +708,20 @@ suite('container', () => {
                 const bSupplier = a.params[0] as AsyncSupplier<B | null | undefined>;
 
                 const settled = await Promise.allSettled([bSupplier(), bSupplier()] as const);
-                expect(settled.every(result => result.status === 'rejected'));
+                expect(settled.every(result => result.status === 'rejected')).to.equal(true);
                 const failures = settled as [PromiseRejectedResult, PromiseRejectedResult];
                 expect(failures[0].reason)
                     .to.be.an.instanceOf(HaywireInstanceOfResponseError)
                     .that.contains({
                         message: 'Value E returned by provider is not instance of class: D',
                     });
-                expect(failures[0].reason === failures[1].reason);
+                expect(failures[1].reason)
+                    .to.be.an.instanceOf(HaywireInstanceOfResponseError)
+                    .that.contains({
+                        message: 'Value E returned by provider is not instance of class: D',
+                    });
+                // Sync error -> no caching
+                expect(failures[0].reason !== failures[1].reason).to.equal(true);
 
                 await expect(bSupplier())
                     .to.eventually.be.rejectedWith(HaywireInstanceOfResponseError)

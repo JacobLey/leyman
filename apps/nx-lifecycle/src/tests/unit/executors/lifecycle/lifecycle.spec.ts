@@ -145,7 +145,7 @@ suite('lifecycle', () => {
             expect(ctx.stubbedFormatFiles.callCount).to.equal(1);
             expect(
                 ctx.stubbedFormatFiles.calledWith(['<nx-json-path>', '<foo-path>', '<bar-path>'])
-            );
+            ).to.equal(true);
         });
 
         stubs.test('Dry run skips writing files', async ctx => {

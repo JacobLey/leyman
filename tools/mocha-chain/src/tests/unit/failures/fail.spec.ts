@@ -228,11 +228,10 @@ suite('Failure cases', () => {
         });
 
         after('Test declared inside a hook', () => {
-            expect(() => test('This will never run', () => {}))
-                .to.throw(Error)
-                .that.contains({
-                    message: 'Cannot create new hook/suite/test while executing a hook/test',
-                });
+            expect(() => test('This will never run', () => {})).to.throw(
+                Error,
+                'Cannot create new hook/suite/test while executing a hook/test'
+            );
         });
     });
 

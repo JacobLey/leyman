@@ -10,6 +10,6 @@ suite('noop', () => {
         ): { a: [A]; b: B[]; c: boolean } => ({ a: [a], c: true, b });
         Object.freeze(original);
         const patched = Noop.patch(original);
-        expect(patched).to.equal(patched);
+        expect(patched).to.equal(original);
     });
 });
