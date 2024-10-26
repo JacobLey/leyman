@@ -6,6 +6,7 @@ import { before, suite, test } from 'mocha-chain';
 import type * as Ecc from '#ecc';
 import * as BrowserEcc from '../../../iso/ecc/browser.js';
 import * as NodeEcc from '../../../iso/ecc/node.js';
+import { Ciphers, Curves, Encodings, Modes } from '../../../types.js';
 
 interface EccSourceContext {
     source: typeof Ecc;
@@ -33,22 +34,22 @@ suite('Ecc', () => {
             null,
             undefined,
             {
-                cipher: 'AES',
+                cipher: Ciphers.AES,
                 size: 128,
-                mode: 'CBC',
+                mode: Modes.CBC,
             },
             {
-                cipher: 'AES',
+                cipher: Ciphers.AES,
                 size: 256,
-                mode: 'CBC',
+                mode: Modes.CBC,
             },
             {
-                cipher: 'AES',
+                cipher: Ciphers.AES,
                 size: 192,
-                mode: 'CTR',
+                mode: Modes.CTR,
             },
         ] as const) {
-            for (const curve of [null, undefined, 'p256', 'p384', 'p521'] as const) {
+            for (const curve of [null, undefined, Curves.P256, Curves.P384, Curves.P521] as const) {
                 let options: Parameters<(typeof Ecc)['eccEncrypt']>[1];
                 const curveOptions = curve === null ? [] : [curve];
                 if (curve !== null) {
@@ -155,13 +156,13 @@ suite('Ecc', () => {
                                 iv,
                                 privateKey,
                             },
-                            'hex'
+                            Encodings.HEX
                         ),
                         publicKey: compressed
-                            ? { text: publicKey, encoding: 'hex' }
+                            ? { text: publicKey, encoding: Encodings.HEX }
                             : IsoCrypto.decompressEccPublicKey({
                                   text: publicKey,
-                                  encoding: 'hex',
+                                  encoding: Encodings.HEX,
                               }),
                     },
                     { curve, encryption }

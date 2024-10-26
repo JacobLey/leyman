@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
@@ -437,7 +439,18 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint/typedef': 'off',
                 '@typescript-eslint/init-declarations': 'off',
                 '@typescript-eslint/no-empty-function': 'off',
-                '@typescript-eslint/no-magic-numbers': 'off',
+                '@typescript-eslint/no-magic-numbers': [
+                    'error',
+                    {
+                        detectObjects: true,
+                        enforceConst: true,
+                        ignore: [-1, 0, '0n', 1, '1n', 2, '2n', 10],
+                        ignoreArrayIndexes: true,
+                        ignoreTypeIndexes: true,
+                        ignoreReadonlyClassProperties: true,
+                        ignoreEnums: true,
+                    },
+                ],
                 '@typescript-eslint/no-unused-expressions': [
                     'error',
                     {

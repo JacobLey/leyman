@@ -105,6 +105,7 @@ const defaultAnnotations: Annotations<null, false, false, false, false> = {
     supplier: false,
     lateBinding: false,
 };
+const MAX_NUMBER_RADIX = 36;
 
 /**
  * Class to contain a reference to a "type".
@@ -446,7 +447,8 @@ export class HaywireId<
             return existing;
         }
         // Increment a global val and transform to a string, and save for future uses
-        const val = (++this.#pseudoRandTracker).toString(36);
+        ++this.#pseudoRandTracker;
+        const val = this.#pseudoRandTracker.toString(MAX_NUMBER_RADIX);
         this.#symToRand.set(named, val);
         return val;
     }

@@ -2,13 +2,25 @@ import type { execFile } from 'node:child_process';
 
 export type Executor = (typeof execFile)['__promisify__'];
 
+/**
+ * Allows string literals in place of enum.
+ *
+ * @template E - either entire enum or single value
+ */
+type EnumToString<E extends string> = `${E}`;
+
+export const enum Formatters {
+    BIOME = 'biome',
+    PRETTIER = 'prettier',
+    INHERIT = 'inherit',
+}
 export interface FileFormatterOptions {
     /**
      * Formatter to use.
      * Defaults to `inherit`, which will iterate through formatters until success,
      * or else will return the content unchanged.
      */
-    formatter?: 'biome' | 'inherit' | 'prettier' | undefined;
+    formatter?: EnumToString<Formatters> | null | undefined;
 }
 
 export type FilesFormatter = (files: string[], options?: FileFormatterOptions) => Promise<void>;

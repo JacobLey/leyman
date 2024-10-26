@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+
 // This module provides the basic ECC functionality of transforming a private key into a public key.
 
 // _Ideally_ built-in modules implement most of the crypto logic for us. However in the case of

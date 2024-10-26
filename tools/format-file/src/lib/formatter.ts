@@ -1,4 +1,9 @@
-import type { CanUseFormatter, FileFormatterOptions, FilesFormatter } from '#types';
+import {
+    type CanUseFormatter,
+    type FileFormatterOptions,
+    type FilesFormatter,
+    Formatters,
+} from '#types';
 
 /**
  * Core formatting logic using injecting formatter-specific handlers.
@@ -25,13 +30,11 @@ export class Formatter {
         this.formatFiles = this.#formatFiles.bind(this);
     }
 
-    async #formatFiles(
-        files: string[],
-        { formatter = 'inherit' }: FileFormatterOptions = {}
-    ): Promise<void> {
+    async #formatFiles(files: string[], options: FileFormatterOptions = {}): Promise<void> {
         if (files.length === 0) {
             return;
         }
+        const formatter = options.formatter ?? Formatters.INHERIT;
 
         const [biomeUsability, prettierUsability] = await Promise.all([
             this.#canUseBiome(),
@@ -40,18 +43,18 @@ export class Formatter {
 
         const formatters = [
             {
-                name: 'biome' as const,
+                name: Formatters.BIOME,
                 usable: biomeUsability,
                 format: this.#formatBiomeFiles,
             },
             {
-                name: 'prettier' as const,
+                name: Formatters.PRETTIER,
                 usable: prettierUsability,
                 format: this.#formatPrettierFiles,
             },
         ]
             .filter(({ name }) => {
-                if (formatter === 'inherit') {
+                if (formatter === Formatters.INHERIT) {
                     return true;
                 }
                 return formatter === name;

@@ -2,7 +2,7 @@ import { bind, createContainer, identifier, singletonScope } from 'haywire';
 import * as lib from '#lib';
 import type { FilesFormatter } from '#types';
 
-export type { FileFormatter, FilesFormatter, TextFormatter } from '#types';
+export { type FileFormatter, type FilesFormatter, Formatters, type TextFormatter } from '#types';
 
 const formatterId = identifier(lib.Formatter);
 const formatterWrapperId = identifier(lib.FormatterWrapper);

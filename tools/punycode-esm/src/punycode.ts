@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers */
+
 import { checkOverflow, rangeError } from '#errors';
 
 /** Highest positive signed 32-bit float value */

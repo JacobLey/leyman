@@ -2,7 +2,10 @@ import { decode, encode } from '#encode';
 import { padBytes } from '../lib/bytes-length.js';
 import { curves, deriveYCoordinate } from '../lib/math.js';
 import { eccMeta } from '../lib/size-meta.js';
-import { defaultCurve, type InputText } from '../lib/types.js';
+import { defaultCurve, Encodings, type InputText } from '../lib/types.js';
+
+const HEX_SIZE = 16;
+const DECOMPRESSED_KEY_PREFIX = 4;
 
 /**
  * Compress an ECC Public Key.
@@ -45,12 +48,10 @@ export const decompressEccPublicKey = (publicKey: InputText, curve = defaultCurv
     const x = decoded.slice(1);
     // eslint-disable-next-line no-bitwise
     const odd = !!(decoded[0]! & 1);
-
-    const y = deriveYCoordinate(BigInt(`0x${encode(x, 'hex')}`), odd, curves[curve]);
-
+    const y = deriveYCoordinate(BigInt(`0x${encode(x, Encodings.HEX)}`), odd, curves[curve]);
     return new Uint8Array([
-        4,
+        DECOMPRESSED_KEY_PREFIX,
         ...x,
-        ...padBytes(decode({ text: y.toString(16), encoding: 'hex' }), bytes),
+        ...padBytes(decode({ text: y.toString(HEX_SIZE), encoding: Encodings.HEX }), bytes),
     ]);
 };

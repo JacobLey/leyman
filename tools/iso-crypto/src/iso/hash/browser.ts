@@ -1,11 +1,11 @@
 import { decode } from '#encode';
-import { defaultHash, type HashAlgorithm } from '../lib/types.js';
+import { Algorithms, defaultHash, type HashAlgorithm } from '../lib/types.js';
 import type * as HashMethods from './types.js';
 
 const { crypto } = globalThis;
 
 const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
-    if (algorithm === 'SHA1') {
+    if (algorithm === Algorithms.SHA1) {
         return 'SHA-1';
     }
     return `SHA-${size}`;
@@ -14,7 +14,7 @@ const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
 export const hash: (typeof HashMethods)['hash'] = async (input, algorithm = defaultHash) => {
     const decoded = decode(input);
 
-    if (algorithm === 'raw') {
+    if (algorithm === Algorithms.RAW) {
         return decoded;
     }
 

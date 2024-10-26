@@ -1,5 +1,8 @@
 import { inputToEncoding } from './lib/input-to-encoding.js';
-import { defaultEncoding, type Encoding, type InputText } from './lib/types.js';
+import { defaultEncoding, type Encoding, Encodings, type InputText } from './lib/types.js';
+
+const BITS_PER_HEX = 4;
+const HEX_SIZE = 16;
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -15,6 +18,7 @@ const { atob, btoa } = globalThis;
 const base64url = (text: string): string =>
     text.replaceAll('=', '').replaceAll('+', '-').replaceAll('/', '_');
 
+const EXTRA_EQUALS = '====';
 /**
  * Convert a base64url-encoded string to base64.
  * Idempotent.
@@ -24,8 +28,12 @@ const base64url = (text: string): string =>
  */
 const base64standard = (text: string): string => {
     const charReplaced = text.replaceAll('-', '+').replaceAll('_', '/');
-    const appendEquals = charReplaced + '='.repeat((4 - (text.length % 4)) % 4);
-    return appendEquals.replace(/(?:={4})+$/u, '');
+    let appendEquals =
+        charReplaced + '='.repeat((BITS_PER_HEX - (text.length % BITS_PER_HEX)) % BITS_PER_HEX);
+    while (appendEquals.endsWith(EXTRA_EQUALS)) {
+        appendEquals = appendEquals.slice(0, -EXTRA_EQUALS.length);
+    }
+    return appendEquals;
 };
 
 const toBase64 = (buf: ArrayBuffer | number[] | Uint8Array): string =>
@@ -34,11 +42,13 @@ const fromBase64 = (str: string): Uint8Array =>
     Uint8Array.from(atob(base64standard(str)), x => x.codePointAt(0)!);
 
 const toHex = (buf: Uint8Array): string =>
-    [...buf].map(x => x.toString(16).padStart(2, '0')).join('');
+    [...buf].map(x => x.toString(HEX_SIZE).padStart(2, '0')).join('');
 const fromHex = (str: string): Uint8Array => {
     const length = str.length % 2 ? str.length + 1 : str.length;
     return new Uint8Array(
-        (str.padStart(length, '0').match(/.{2}/gu) ?? []).map(byte => Number.parseInt(byte, 16))
+        (str.padStart(length, '0').match(/.{2}/gu) ?? []).map(byte =>
+            Number.parseInt(byte, HEX_SIZE)
+        )
     );
 };
 
@@ -53,13 +63,13 @@ const fromHex = (str: string): Uint8Array => {
 export const decode = (input: InputText): Uint8Array => {
     const { encoding, text } = inputToEncoding(input);
 
-    if (encoding === 'raw') {
+    if (encoding === Encodings.RAW) {
         return text;
     }
-    if (encoding === 'utf8') {
+    if (encoding === Encodings.UTF8) {
         return encoder.encode(text);
     }
-    if (encoding === 'hex') {
+    if (encoding === Encodings.HEX) {
         return fromHex(text);
     }
 
@@ -79,15 +89,15 @@ export const encode = (
 ): string => {
     const buffer = decode(input);
 
-    if (encoding === 'utf8') {
+    if (encoding === Encodings.UTF8) {
         return decoder.decode(buffer);
     }
-    if (encoding === 'hex') {
+    if (encoding === Encodings.HEX) {
         return toHex(buffer);
     }
 
     const url = toBase64(buffer);
-    if (encoding === 'base64') {
+    if (encoding === Encodings.BASE64) {
         return base64standard(url);
     }
 

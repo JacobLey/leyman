@@ -1,5 +1,8 @@
 import type { Curve, Encryption } from './types.js';
 
+const BITS_PER_BYTE = 8;
+const BYTE_PAIR = BITS_PER_BYTE * 2;
+
 /**
  * Get input/output sizes for encryption.
  * Sizes are in bytes (e.g. size of 32 -> 256 bits).
@@ -13,8 +16,8 @@ export const encryptionMeta = (
     secret: number;
     iv: number;
 } => ({
-    secret: encryption.size / 8,
-    iv: 16,
+    secret: encryption.size / BITS_PER_BYTE,
+    iv: BYTE_PAIR,
 });
 
 export const eccMeta = (
@@ -22,6 +25,6 @@ export const eccMeta = (
 ): {
     bytes: number;
 } => {
-    const bytePairs = Number.parseInt(curve.slice(1), 10) / 16;
+    const bytePairs = Number.parseInt(curve.slice(1), 10) / BYTE_PAIR;
     return { bytes: Math.ceil(bytePairs) * 2 };
 };

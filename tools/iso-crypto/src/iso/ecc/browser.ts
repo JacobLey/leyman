@@ -4,9 +4,19 @@ import { decrypt, encrypt } from '#encrypt';
 import { padBytes } from '../lib/bytes-length.js';
 import { curves, derivePublicKey, type Point } from '../lib/math.js';
 import { eccMeta } from '../lib/size-meta.js';
-import { type Curve, defaultCurve, defaultEncryption, type InputText } from '../lib/types.js';
+import {
+    Algorithms,
+    type Curve,
+    defaultCurve,
+    defaultEncryption,
+    Encodings,
+    type InputText,
+} from '../lib/types.js';
 import { decompressEccPublicKey } from './compression.js';
 import type * as Ecc from './types.js';
+
+const BITS_PER_BYTE = 8;
+const HEX_SIZE = 16;
 
 const { crypto } = globalThis;
 
@@ -20,16 +30,19 @@ export const generateEccPrivateKey: (typeof Ecc)['generateEccPrivateKey'] = asyn
 ) => {
     const ecdh = await crypto.subtle.generateKey(curveToKeyParams(curve), true, ['deriveKey']);
     const key = await crypto.subtle.exportKey('jwk', ecdh.privateKey);
-    return padBytes(decode({ text: key.d!, encoding: 'base64url' }), eccMeta(curve).bytes);
+    return padBytes(decode({ text: key.d!, encoding: Encodings.BASE64URL }), eccMeta(curve).bytes);
 };
 
 const getPublicKey = (privateKey: InputText, curve: Curve): Point => {
-    const hex = encode(decode(privateKey), 'hex');
+    const hex = encode(decode(privateKey), Encodings.HEX);
 
     return derivePublicKey(BigInt(`0x${hex}`), curves[curve]);
 };
 const bigIntToBase64Url = (x: bigint, bytes: number): string =>
-    encode(padBytes(decode({ text: x.toString(16), encoding: 'hex' }), bytes), 'base64url');
+    encode(
+        padBytes(decode({ text: x.toString(HEX_SIZE), encoding: Encodings.HEX }), bytes),
+        Encodings.BASE64URL
+    );
 const derivePublicKeyBase64 = (privateKey: InputText, curve: Curve): { x: string; y: string } => {
     const { x, y } = getPublicKey(privateKey, curve);
     const { bytes } = eccMeta(curve);
@@ -49,7 +62,7 @@ export const generateEccPublicKey: (typeof Ecc)['generateEccPublicKey'] = (
     return new Uint8Array([
         // eslint-disable-next-line no-bitwise
         2 + Number(y & 1n),
-        ...padBytes(decode({ text: x.toString(16), encoding: 'hex' }), bytes),
+        ...padBytes(decode({ text: x.toString(HEX_SIZE), encoding: Encodings.HEX }), bytes),
     ]);
 };
 
@@ -74,7 +87,7 @@ const eccSecret = async ({
             {
                 crv: curveParams.namedCurve,
                 kty: 'EC',
-                d: encode(bufferPrivateKey, 'base64url'),
+                d: encode(bufferPrivateKey, Encodings.BASE64URL),
                 ...derivePublicKeyBase64(bufferPrivateKey, curve),
             },
             curveParams,
@@ -100,7 +113,7 @@ const eccSecret = async ({
         {
             name: 'HMAC',
             hash: 'SHA-256',
-            length: bytes * 8,
+            length: bytes * BITS_PER_BYTE,
         },
         true,
         ['sign']
@@ -125,16 +138,16 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
                 data,
                 secret: secretKey.secret,
             },
-            { encryption, hash: 'raw' }
+            { encryption, hash: Algorithms.RAW }
         ),
         crypto.subtle.exportKey('jwk', secretKey.privateEc),
     ]);
 
     const odd =
         // eslint-disable-next-line no-bitwise
-        decode({ text: jwk.y!, encoding: 'base64url' }).reverse()[0]! & 1;
+        decode({ text: jwk.y!, encoding: Encodings.BASE64URL }).reverse()[0]! & 1;
 
-    const publicX = decode({ text: jwk.x!, encoding: 'base64url' });
+    const publicX = decode({ text: jwk.x!, encoding: Encodings.BASE64URL });
     const { bytes } = eccMeta(curve);
 
     return {
@@ -154,6 +167,6 @@ export const eccDecrypt: (typeof Ecc)['eccDecrypt'] = async (
             iv,
             secret,
         },
-        { encryption, hash: 'raw' }
+        { encryption, hash: Algorithms.RAW }
     );
 };
