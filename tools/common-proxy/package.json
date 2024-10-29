@@ -32,7 +32,6 @@
     "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
     "@types/chai": "^5.0.0",
-    "@types/chai-as-promised": "^8.0.1",
     "@types/mocha": "^10.0.9",
     "@types/node": "^22.8.1",
     "c8": "^10.1.2",
