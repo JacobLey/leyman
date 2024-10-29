@@ -10,7 +10,7 @@ import {
     type OutputHaywireId,
 } from 'haywire';
 
-interface WrapperMain extends Main {
+export interface WrapperMain extends Main {
     getOriginal: () => Promise<Main>;
 }
 
