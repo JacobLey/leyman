@@ -1,5 +1,14 @@
 # haywire-launcher
 
+## 0.1.8
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- Updated dependencies [e718f38]
+  - entry-script@3.0.6
+  - haywire@0.1.5
+
 ## 0.1.7
 
 ### Patch Changes

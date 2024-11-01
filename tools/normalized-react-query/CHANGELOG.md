@@ -1,5 +1,11 @@
 # normalized-react-query
 
+## 1.0.6
+
+### Patch Changes
+
+- e718f38: Update dependencies
+
 ## 1.0.5
 
 ### Patch Changes

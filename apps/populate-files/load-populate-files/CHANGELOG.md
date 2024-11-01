@@ -1,5 +1,14 @@
 # load-populate-files
 
+## 0.0.11
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- Updated dependencies [e718f38]
+  - populate-files@0.1.2
+  - default-import@2.0.4
+
 ## 0.0.10
 
 ### Patch Changes

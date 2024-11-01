@@ -1,5 +1,19 @@
 # nx-lifecycle
 
+## 0.0.10
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- Updated dependencies [e718f38]
+- Updated dependencies [a7248af]
+  - nx-plugin-handler@0.0.9
+  - default-import@2.0.4
+  - common-proxy@0.0.7
+  - format-file@0.1.2
+  - haywire@0.1.5
+  - juniper@1.2.2
+
 ## 0.0.9
 
 ### Patch Changes

@@ -1,6 +1,6 @@
 {
   "name": "@leyman/eslint-config",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Re-usable eslint config.",
   "engines": {
     "node": ">=20"

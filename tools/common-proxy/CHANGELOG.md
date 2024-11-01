@@ -1,5 +1,11 @@
 # common-proxy
 
+## 0.0.7
+
+### Patch Changes
+
+- e718f38: Update dependencies
+
 ## 0.0.6
 
 ### Patch Changes

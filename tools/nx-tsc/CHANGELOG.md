@@ -1,5 +1,15 @@
 # nx-tsc
 
+## 0.0.13
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- Updated dependencies [e718f38]
+  - nx-plugin-handler@0.0.9
+  - common-proxy@0.0.7
+  - haywire@0.1.5
+
 ## 0.0.12
 
 ### Patch Changes

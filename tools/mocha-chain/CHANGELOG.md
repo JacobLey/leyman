@@ -1,5 +1,13 @@
 # mocha-chain
 
+## 0.0.8
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- Updated dependencies [e718f38]
+  - haywire@0.1.5
+
 ## 0.0.7
 
 ### Patch Changes

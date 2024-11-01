@@ -1,5 +1,21 @@
 # barrelify
 
+## 1.2.3
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- d020dd1: Remove rogue console.log, fix test for ci
+- Updated dependencies [e718f38]
+- Updated dependencies [a7248af]
+  - haywire-launcher@0.1.8
+  - default-import@2.0.4
+  - entry-script@3.0.6
+  - find-import@1.0.11
+  - parse-cwd@1.0.13
+  - haywire@0.1.5
+  - juniper@1.2.2
+
 ## 1.2.2
 
 ### Patch Changes

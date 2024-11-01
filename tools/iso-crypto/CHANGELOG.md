@@ -1,5 +1,11 @@
 # iso-crypto
 
+## 1.2.1
+
+### Patch Changes
+
+- e718f38: Update dependencies
+
 ## 1.2.0
 
 ### Minor Changes

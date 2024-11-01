@@ -1,5 +1,13 @@
 # find-import
 
+## 1.0.11
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- Updated dependencies [e718f38]
+  - parse-cwd@1.0.13
+
 ## 1.0.10
 
 ### Patch Changes

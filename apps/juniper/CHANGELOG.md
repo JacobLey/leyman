@@ -1,5 +1,12 @@
 # juniper
 
+## 1.2.2
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- a7248af: Use consistent record type
+
 ## 1.2.1
 
 ### Patch Changes

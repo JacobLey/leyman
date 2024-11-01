@@ -1,5 +1,11 @@
 # punycode-esm
 
+## 1.0.12
+
+### Patch Changes
+
+- e718f38: Update dependencies
+
 ## 1.0.11
 
 ### Patch Changes

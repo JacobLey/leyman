@@ -1,5 +1,11 @@
 # haywire
 
+## 0.1.5
+
+### Patch Changes
+
+- e718f38: Update dependencies
+
 ## 0.1.4
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # nx-update-ts-references
 
+## 0.0.8
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- Updated dependencies [e718f38]
+  - common-proxy@0.0.7
+
 ## 0.0.7
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # format-file
 
+## 0.1.2
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- Updated dependencies [e718f38]
+  - haywire@0.1.5
+
 ## 0.1.1
 
 ### Patch Changes

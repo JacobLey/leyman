@@ -1,5 +1,11 @@
 # named-patch
 
+## 1.0.13
+
+### Patch Changes
+
+- e718f38: Update dependencies
+
 ## 1.0.12
 
 ### Patch Changes

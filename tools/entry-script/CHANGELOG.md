@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.0.6
+
+### Patch Changes
+
+- e718f38: Update dependencies
+- Updated dependencies [e718f38]
+  - default-import@2.0.4
+
 ## 3.0.5
 
 ### Patch Changes

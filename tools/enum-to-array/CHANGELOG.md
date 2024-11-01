@@ -1,5 +1,11 @@
 # enum-to-array
 
+## 1.1.13
+
+### Patch Changes
+
+- e718f38: Update dependencies
+
 ## 1.1.12
 
 ### Patch Changes

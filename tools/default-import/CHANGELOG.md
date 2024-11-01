@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.4
+
+### Patch Changes
+
+- e718f38: Update dependencies
+
 ## 2.0.3
 
 ### Patch Changes
