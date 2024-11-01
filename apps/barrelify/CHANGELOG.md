@@ -1,5 +1,19 @@
 # barrelify
 
+## 1.2.2
+
+### Patch Changes
+
+- c252212: Use haywire DI instead of named-patch
+- Updated dependencies [98dba6a]
+  - haywire-launcher@0.1.7
+  - juniper@1.2.1
+  - default-import@2.0.3
+  - entry-script@3.0.5
+  - find-import@1.0.10
+  - parse-cwd@1.0.12
+  - haywire@0.1.4
+
 ## 1.2.1
 
 ### Patch Changes

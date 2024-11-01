@@ -1,5 +1,13 @@
 # nx-plugin-handler
 
+## 0.0.8
+
+### Patch Changes
+
+- 57f2da8: Bump pnpm + nx versions
+- f04c4fe: Remove unused type dependencies
+  - haywire@0.1.4
+
 ## 0.0.7
 
 ### Patch Changes

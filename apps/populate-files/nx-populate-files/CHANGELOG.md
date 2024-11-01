@@ -1,5 +1,14 @@
 # nx-populate-files
 
+## 0.0.11
+
+### Patch Changes
+
+- 57f2da8: Bump pnpm + nx versions
+- Updated dependencies [f04c4fe]
+  - common-proxy@0.0.6
+  - load-populate-files@0.0.10
+
 ## 0.0.10
 
 ### Patch Changes

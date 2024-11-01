@@ -1,5 +1,19 @@
 # nx-lifecycle
 
+## 0.0.9
+
+### Patch Changes
+
+- 57f2da8: Bump pnpm + nx versions
+- Updated dependencies [57f2da8]
+- Updated dependencies [f04c4fe]
+  - nx-plugin-handler@0.0.8
+  - common-proxy@0.0.6
+  - format-file@0.1.1
+  - juniper@1.2.1
+  - default-import@2.0.3
+  - haywire@0.1.4
+
 ## 0.0.8
 
 ### Patch Changes

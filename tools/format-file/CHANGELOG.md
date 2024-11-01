@@ -1,5 +1,12 @@
 # format-file
 
+## 0.1.1
+
+### Patch Changes
+
+- f04c4fe: Remove unused type dependencies
+  - haywire@0.1.4
+
 ## 0.1.0
 
 ### Minor Changes

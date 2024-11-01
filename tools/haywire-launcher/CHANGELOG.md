@@ -1,5 +1,13 @@
 # haywire-launcher
 
+## 0.1.7
+
+### Patch Changes
+
+- 98dba6a: Expose main wrapper type
+  - entry-script@3.0.5
+  - haywire@0.1.4
+
 ## 0.1.6
 
 ### Patch Changes

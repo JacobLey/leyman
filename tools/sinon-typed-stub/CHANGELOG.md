@@ -1,5 +1,11 @@
 # sinon-typed-stub
 
+## 0.0.6
+
+### Patch Changes
+
+- f04c4fe: Remove unused type dependencies
+
 ## 0.0.5
 
 ### Patch Changes

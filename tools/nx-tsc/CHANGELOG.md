@@ -1,5 +1,16 @@
 # nx-tsc
 
+## 0.0.12
+
+### Patch Changes
+
+- 57f2da8: Bump pnpm + nx versions
+- Updated dependencies [57f2da8]
+- Updated dependencies [f04c4fe]
+  - nx-plugin-handler@0.0.8
+  - common-proxy@0.0.6
+  - haywire@0.1.4
+
 ## 0.0.11
 
 ### Patch Changes
