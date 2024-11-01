@@ -13,13 +13,13 @@ importers:
         version: 20.0.7(nx@20.0.7)
       npm-nx-populate-files:
         specifier: npm:nx-populate-files@latest
-        version: nx-populate-files@0.0.11(nx@20.0.7)
+        version: nx-populate-files@0.0.12(nx@20.0.7)
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.12(nx@20.0.7)
+        version: nx-tsc@0.0.13(nx@20.0.7)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(nx@20.0.7)
       nx:
         specifier: 20.0.7
         version: 20.0.7
@@ -299,13 +299,13 @@ importers:
         version: link:../../tools/common-proxy
       npm-default-import:
         specifier: npm:default-import@latest
-        version: default-import@2.0.3
+        version: default-import@2.0.4
       npm-format-file:
         specifier: npm:format-file@latest
-        version: format-file@0.1.1(@biomejs/biome@1.9.4)
+        version: format-file@0.1.2(@biomejs/biome@1.9.4)
       npm-juniper:
         specifier: npm:juniper@latest
-        version: juniper@1.2.1
+        version: juniper@1.2.2
     optionalDependencies:
       '@nx/devkit':
         specifier: ^20.0.7
@@ -334,13 +334,13 @@ importers:
         version: 10.8.2
       npm-load-populate-files:
         specifier: npm:load-populate-files@latest
-        version: load-populate-files@0.0.10(@biomejs/biome@1.9.4)
+        version: load-populate-files@0.0.11(@biomejs/biome@1.9.4)
       npm-nx-populate-files:
         specifier: npm:nx-populate-files@latest
-        version: nx-populate-files@0.0.11(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-populate-files@0.0.12(@biomejs/biome@1.9.4)(nx@20.0.7)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       nx-tsc:
         specifier: workspace:^
         version: link:../../tools/nx-tsc
@@ -355,7 +355,7 @@ importers:
         version: link:../../../tools/default-import
       npm-parse-cwd:
         specifier: npm:parse-cwd@latest
-        version: parse-cwd@1.0.12
+        version: parse-cwd@1.0.13
       populate-files:
         specifier: workspace:^
         version: link:../populate-files
@@ -383,7 +383,7 @@ importers:
         version: 10.8.2
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       nx-tsc:
         specifier: workspace:^
         version: link:../../../tools/nx-tsc
@@ -433,7 +433,7 @@ importers:
         version: 10.8.2
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       nx-tsc:
         specifier: workspace:^
         version: link:../../../tools/nx-tsc
@@ -451,7 +451,7 @@ importers:
         version: link:../../../tools/format-file
       npm-parse-cwd:
         specifier: npm:parse-cwd@latest
-        version: parse-cwd@1.0.12
+        version: parse-cwd@1.0.13
       uint8array-extras:
         specifier: ^1.4.0
         version: 1.4.0
@@ -479,7 +479,7 @@ importers:
         version: 10.8.2
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       nx-tsc:
         specifier: workspace:^
         version: link:../../../tools/nx-tsc
@@ -533,10 +533,10 @@ importers:
         version: 56.0.0(eslint@9.13.0)
       npm-default-import:
         specifier: npm:default-import@latest
-        version: default-import@2.0.3
+        version: default-import@2.0.4
       npm-juniper:
         specifier: npm:juniper@latest
-        version: juniper@1.2.1
+        version: juniper@1.2.2
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -573,10 +573,10 @@ importers:
         version: 10.8.2
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.12(nx@20.0.7)(typescript@5.6.3)
+        version: nx-tsc@0.0.13(nx@20.0.7)(typescript@5.6.3)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -609,7 +609,7 @@ importers:
     dependencies:
       npm-default-import:
         specifier: npm:default-import@latest
-        version: default-import@2.0.3
+        version: default-import@2.0.4
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -640,10 +640,10 @@ importers:
         version: 10.8.2
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.12(nx@20.0.7)(typescript@5.6.3)
+        version: nx-tsc@0.0.13(nx@20.0.7)(typescript@5.6.3)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -941,13 +941,13 @@ importers:
         version: 10.8.2
       npm-barrelify:
         specifier: npm:barrelify@latest
-        version: barrelify@1.2.2
+        version: barrelify@1.2.3
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.12(nx@20.0.7)(typescript@5.6.3)
+        version: nx-tsc@0.0.13(nx@20.0.7)(typescript@5.6.3)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -1102,10 +1102,10 @@ importers:
         version: 10.8.2
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.12(nx@20.0.7)(typescript@5.6.3)
+        version: nx-tsc@0.0.13(nx@20.0.7)(typescript@5.6.3)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -1234,7 +1234,7 @@ importers:
         version: link:../haywire
       npm-default-import:
         specifier: npm:default-import@latest
-        version: default-import@2.0.3
+        version: default-import@2.0.4
     optionalDependencies:
       '@nx/devkit':
         specifier: ^20.0.7
@@ -1275,10 +1275,10 @@ importers:
         version: link:../mocha-chain
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.12(nx@20.0.7)(typescript@5.6.3)
+        version: nx-tsc@0.0.13(nx@20.0.7)(typescript@5.6.3)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -1306,7 +1306,7 @@ importers:
         version: 20.0.7(nx@20.0.7)
       npm-juniper:
         specifier: npm:juniper@latest
-        version: juniper@1.2.1
+        version: juniper@1.2.2
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -1334,16 +1334,16 @@ importers:
         version: 10.8.2
       npm-load-populate-files:
         specifier: npm:load-populate-files@latest
-        version: load-populate-files@0.0.10(@biomejs/biome@1.9.4)
+        version: load-populate-files@0.0.11(@biomejs/biome@1.9.4)
       npm-nx-populate-files:
         specifier: npm:nx-populate-files@latest
-        version: nx-populate-files@0.0.11(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-populate-files@0.0.12(@biomejs/biome@1.9.4)(nx@20.0.7)
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.12(nx@20.0.7)(typescript@5.6.3)
+        version: nx-tsc@0.0.13(nx@20.0.7)(typescript@5.6.3)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -1469,10 +1469,10 @@ importers:
         version: link:../mocha-chain
       npm-nx-tsc:
         specifier: npm:nx-tsc@latest
-        version: nx-tsc@0.0.12(nx@20.0.7)(typescript@5.6.3)
+        version: nx-tsc@0.0.13(nx@20.0.7)(typescript@5.6.3)
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7)
+        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -2970,8 +2970,8 @@ packages:
   balanced-match@1.0.2:
     resolution: {integrity: sha512-3oSeUO0TMV67hN1AmbXsK4yaqU7tjiHlbxRDZOpH0KW9+CeX4bRAaX0Anxt0tx2MrpRpWwQaPwIlISEJhYU5Pw==}
 
-  barrelify@1.2.2:
-    resolution: {integrity: sha512-eGNBoHGTU+rWaz7/83sSq9WGcgW3hADBMX6nW+iJWfJLpAMnYe4fowmjg9omHXeRgKp7QIcWQRw3iKWR7/WLlA==}
+  barrelify@1.2.3:
+    resolution: {integrity: sha512-aIFH6PkoFMIepU6alzN6FBAY0oQ9NXN9eyH74xzQfk17NtiBCzGtkxgOslVMqI0jlS4BbQ4nE3l8p/Im+70tuQ==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -3113,8 +3113,8 @@ packages:
     resolution: {integrity: sha512-buhp5kePrmda3vhc5B9t7pUQXAb2Tnd0qgpkIhPhkHXxJpiPJ11H0ZEU0oBpJ2QztSbzG/ZxMj/CHsYJqRHmyg==}
     engines: {node: '>= 12.0.0'}
 
-  common-proxy@0.0.6:
-    resolution: {integrity: sha512-Wie3cd+/vuNualGl53HMSkGqHkKybFRw0tEMTD33c+el6Zn7WVQiO1fwBHWv/VoakNlmDPrMo9dgjV2zwb2smw==}
+  common-proxy@0.0.7:
+    resolution: {integrity: sha512-uorWDFSKTXMW+bZzM5kqKoyRAoXwOfl7g+ddB0fQe5iCxs3bYhX/LguioRsYvDnd8x4jLZsgmGg0O96ojtUaoQ==}
     engines: {node: '>=20'}
 
   concat-map@0.0.1:
@@ -3190,8 +3190,8 @@ packages:
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
-  default-import@2.0.3:
-    resolution: {integrity: sha512-e+Rf3wnQvI/GD7enhXWg7IHP/KA3N0PzSxIV4vosuvLKXW24mr+ShF/VIzW8DM0WYHtf7gr6lzMrFGtRxJgdxA==}
+  default-import@2.0.4:
+    resolution: {integrity: sha512-Yjy+E8BDSNHhfuBs3/+67IAtFETF+z3Nzp/HW5Tup+Bqq4HlTDIXn/d8QrO77vQsDC77vi+80pMatOA0Z0AXuw==}
     engines: {node: '>=20'}
 
   defaults@1.0.4:
@@ -3278,8 +3278,8 @@ packages:
     resolution: {integrity: sha512-yjNnPr315/FjS4zIsUxYguYUPP2e1NK4d7E7ZOLiyYCcbFBiTMyID+2wvm2w6+pZ/odMA7cRkjhsPbltwBOrLg==}
     engines: {node: '>=8.6'}
 
-  entry-script@3.0.5:
-    resolution: {integrity: sha512-Mfx0VnyoLQOHoAhdLE1lbF/PAg9G+RY2l/AG1xFfpebShgCYUrU4m08KbX7LfMWBmLvmh23Xoqh1J+abP2fMZw==}
+  entry-script@3.0.6:
+    resolution: {integrity: sha512-rPnYof1nADD6I0uQTWiZPsXRrrnhxVasn1ziA4inF0Jx3TQmk5dtiAVbHDTjofV3q3NmYVFaii9JNUs8KI4C4A==}
     engines: {node: '>=20'}
 
   error-ex@1.3.2:
@@ -3576,8 +3576,8 @@ packages:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
     engines: {node: '>=8'}
 
-  find-import@1.0.10:
-    resolution: {integrity: sha512-qtKy8IbJrXy1RaAAHRl+OQ4qVKdkbkBBjRCBHQKBlMjslzRL6nOX/BLlbIpqZSpWSLt8Vc0pV08c+hfb525jTQ==}
+  find-import@1.0.11:
+    resolution: {integrity: sha512-wkojYiu92F2heLBDMdHxxPT6jwqJ7IA4x47W0VQwBiwJxNtDWawcHGA6tv0O2eUOXEUJnGyYiiQMA2vQgf209Q==}
     engines: {node: '>=20'}
 
   find-up@4.1.0:
@@ -3623,8 +3623,8 @@ packages:
     resolution: {integrity: sha512-tzN8e4TX8+kkxGPK8D5u0FNmjPUjw3lwC9lSLxxoB/+GtsJG91CO8bSWy73APlgAZzZbXEYZJuxjkHH2w+Ezhw==}
     engines: {node: '>= 6'}
 
-  format-file@0.1.1:
-    resolution: {integrity: sha512-GS/Y7eT3IiJPNW/zfENYYNuZqB5wlBeKNOddL9en36YR7GeKZmC/HHkTeJ851nMs84xxzFDK47r6At9fBQyymA==}
+  format-file@0.1.2:
+    resolution: {integrity: sha512-U2GwRhiLmBsMQ+6zjP/znFFJjqCwO6OVUJE8oyWYRbSV/8Y0oKUX1cdatCFKc2oypY30s8kgrxGnkOkFsezH+w==}
     engines: {node: '>=20'}
     peerDependencies:
       '@biomejs/biome': ^1.9.4
@@ -3761,14 +3761,14 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  haywire-launcher@0.1.7:
-    resolution: {integrity: sha512-RWhye2EhM5gSJ0YqxWrVoSe0qXueld/fSaE/SLsbn1Kb6uFdmmEYkNM1N23Y+70fyxvUEdd3HXBVUWw7dA6d4w==}
+  haywire-launcher@0.1.8:
+    resolution: {integrity: sha512-8q2PDGBUh6ytMXBhNcZB/Bpslcazqmsu6fXNzH6llFD8E1Zeq09zM7s6CPkRu6g95dQPo8fUWp1AVr83J79wkA==}
     engines: {node: '>=20'}
     peerDependencies:
-      haywire: ^0.1.4
+      haywire: ^0.1.5
 
-  haywire@0.1.4:
-    resolution: {integrity: sha512-v1a0TUTkuAc0F5x7RTrUH+mGhFgt8l1YGfms8TTGhInwTpwPHdrFc8fcBjI+acYUD2XVrEibCQKjfQUom8UsrA==}
+  haywire@0.1.5:
+    resolution: {integrity: sha512-huLKbTGswLZXNJADcw7aSaLeiASmtPjdE4PZY0ebHDk8z6u/qV3AIQXBLo6rejut/XM6wbf7FO5A4MJkye2qvA==}
     engines: {node: '>=20'}
 
   he@1.2.0:
@@ -4045,8 +4045,8 @@ packages:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
     engines: {node: '>=4.0'}
 
-  juniper@1.2.1:
-    resolution: {integrity: sha512-r/174cb5dj6xdnNUrMEg8Y64oBFTvzSlnXr9GT2PvY0UmDlhD+MMZfAXEkWby3+8g7WbpQX5iP5SqWtVSwpfew==}
+  juniper@1.2.2:
+    resolution: {integrity: sha512-roeH/Su+ztvc6K+XaT/WsPhVXqLtAdRfHPsx7Z/8kEXYo9EgzCAULTKVQPgudFiGua1afC8xPjKKugrenyY/Lg==}
     engines: {node: '>=20'}
 
   just-extend@6.2.0:
@@ -4073,8 +4073,8 @@ packages:
     resolution: {integrity: sha512-cNOjgCnLB+FnvWWtyRTzmB3POJ+cXxTA81LoW7u8JdmhfXzriropYwpjShnz1QLLWsQwY7nIxoDmcPTwphDK9w==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  load-populate-files@0.0.10:
-    resolution: {integrity: sha512-SYQVhkZJBSjbVX9J/jjai8a0Z1IuIW4c6J/O4/tpIAlVY/4AUbewjoMSxiBqkbTOB5V8BmBjK8nIVbz528hCbw==}
+  load-populate-files@0.0.11:
+    resolution: {integrity: sha512-I8FzrinK/Jg1A8ZV14SsO+aW1khNXh3cq+9mFsShA3AsVA4vUnDPMecgWa3Q1YAYVB6pxKd84DAkqMRqKU0gww==}
     engines: {node: '>=20'}
 
   locate-path@5.0.0:
@@ -4284,22 +4284,22 @@ packages:
       - which
       - write-file-atomic
 
-  nx-plugin-handler@0.0.8:
-    resolution: {integrity: sha512-8q7HeCZRmOfABD82vjOq2IVZZiDQh1zwtFukGy4vROaW8LcrdVub25ecXYw5TrwkFniSqjH858zq+x9+b85Wig==}
+  nx-plugin-handler@0.0.9:
+    resolution: {integrity: sha512-BV301fYFMhzw2GJuD7PPteTbH96pil0kzlBojK8dg0qgACgbjeYGSyHVWumegbOWsKTcc9PuME4t48TACMuHKw==}
     engines: {node: '>=20'}
 
-  nx-populate-files@0.0.11:
-    resolution: {integrity: sha512-GMvagi+9+G660emBQ16G4s1Znl2J7uXOZWIdaroBZTXi2QqBXG6yDl5sl59O2X5vm2gXAtSjm5ekPy0bbM5dpA==}
+  nx-populate-files@0.0.12:
+    resolution: {integrity: sha512-Z+aD1jT12Krnd/a9N/WTVHjH3Rw+bMWoMAEJMOPpqADAW1JVyqeJZuHNFWIKJhFtxFrTjzfUoOM9VZoghCPWrA==}
     engines: {node: '>=20'}
 
-  nx-tsc@0.0.12:
-    resolution: {integrity: sha512-NDk4qVLRLuAOI0nXFxkIU36k/e9jjuPxM1opGDvziN1gYMZdr3u6Co/5Uyricms4ZbZd3WjjufNB1mJmUfGZQg==}
+  nx-tsc@0.0.13:
+    resolution: {integrity: sha512-930kvK6MurnY0ystwZZgtYwsoOaTmfB8KsBJLU9HBZp7b9oy+/pWMynSiYsR2IZTDCAyEp1VOB3W3A4Yz5MwKg==}
     engines: {node: '>=20'}
     peerDependencies:
       typescript: ^5.6.3
 
-  nx-update-ts-references@0.0.7:
-    resolution: {integrity: sha512-bL7gFR2cRS98XriAz4EGxSeyFUWOvL25yOa/byH/Wf34vV1JCo/PiTXGdI5mJThxCcwPK+EnvHGHVFbTh4gh4w==}
+  nx-update-ts-references@0.0.8:
+    resolution: {integrity: sha512-D1dQWegQ6J/WJS+DbOhIfzR7fgY1KNkfrbOa7CiE9N2bn/Hi6YPoF0hVCRPIcjUgX50Ae78xt15abp93StWLDw==}
     engines: {node: '>=20'}
 
   nx@20.0.7:
@@ -4408,8 +4408,8 @@ packages:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
 
-  parse-cwd@1.0.12:
-    resolution: {integrity: sha512-PUD7Zmm/t35K5nyXe+qw6rDHm7GZlVPBz+4/izWwVefQ8rr+x44sun2dJeLN14mRT3yxw/Nq1CwvaYZxaODEoQ==}
+  parse-cwd@1.0.13:
+    resolution: {integrity: sha512-iF+lMfQkvPADt9mxFp8aecoTzJ54WXWqO33Fz2LpVMZg2hw588NBPRZyHJTUOA2JiiMx+NX6teuJWbRTGx9w2A==}
     engines: {node: '>=20'}
 
   parse-imports@2.2.1:
@@ -4466,8 +4466,8 @@ packages:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
 
-  populate-files@0.1.1:
-    resolution: {integrity: sha512-TACfAcFWzgSdGnVCm8MJV13y3Zlr5k7hMSVDqZX2kFnupoCgbVsmJayf12deXz5Qp1tv1IQhsYaLIveGDu+6+A==}
+  populate-files@0.1.2:
+    resolution: {integrity: sha512-aDQHh5d9DGYtMa/u8F7yQixJM0oxX43FD/i1b5pbjSZE7pV01QK0WOtI33+Dq0TYT9zj18KzZl520dDa4RtHIA==}
     engines: {node: '>=20'}
 
   possible-typed-array-names@1.0.0:
@@ -7400,18 +7400,18 @@ snapshots:
 
   balanced-match@1.0.2: {}
 
-  barrelify@1.2.2:
+  barrelify@1.2.3:
     dependencies:
       ajv: 8.17.1
       ci-info: 4.0.0
-      default-import: 2.0.3
-      entry-script: 3.0.5
-      find-import: 1.0.10
+      default-import: 2.0.4
+      entry-script: 3.0.6
+      find-import: 1.0.11
       globby: 14.0.2
-      haywire: 0.1.4
-      haywire-launcher: 0.1.7(haywire@0.1.4)
-      juniper: 1.2.1
-      parse-cwd: 1.0.12
+      haywire: 0.1.5
+      haywire-launcher: 0.1.8(haywire@0.1.5)
+      juniper: 1.2.2
+      parse-cwd: 1.0.13
       yargs: 17.7.2
 
   base64-js@1.5.1: {}
@@ -7568,9 +7568,9 @@ snapshots:
 
   comment-parser@1.4.1: {}
 
-  common-proxy@0.0.6:
+  common-proxy@0.0.7:
     dependencies:
-      npm-default-import: default-import@2.0.3
+      npm-default-import: default-import@2.0.4
 
   concat-map@0.0.1: {}
 
@@ -7661,7 +7661,7 @@ snapshots:
 
   deep-is@0.1.4: {}
 
-  default-import@2.0.3: {}
+  default-import@2.0.4: {}
 
   defaults@1.0.4:
     dependencies:
@@ -7737,9 +7737,9 @@ snapshots:
     dependencies:
       ansi-colors: 4.1.3
 
-  entry-script@3.0.5:
+  entry-script@3.0.6:
     dependencies:
-      default-import: 2.0.3
+      default-import: 2.0.4
 
   error-ex@1.3.2:
     dependencies:
@@ -8264,9 +8264,9 @@ snapshots:
     dependencies:
       to-regex-range: 5.0.1
 
-  find-import@1.0.10:
+  find-import@1.0.11:
     dependencies:
-      parse-cwd: 1.0.12
+      parse-cwd: 1.0.13
 
   find-up@4.1.0:
     dependencies:
@@ -8310,16 +8310,16 @@ snapshots:
       combined-stream: 1.0.8
       mime-types: 2.1.35
 
-  format-file@0.1.1:
+  format-file@0.1.2:
     dependencies:
       find-up: 7.0.0
-      haywire: 0.1.4
+      haywire: 0.1.5
       tmp-promise: 3.0.3
 
-  format-file@0.1.1(@biomejs/biome@1.9.4):
+  format-file@0.1.2(@biomejs/biome@1.9.4):
     dependencies:
       find-up: 7.0.0
-      haywire: 0.1.4
+      haywire: 0.1.5
       tmp-promise: 3.0.3
     optionalDependencies:
       '@biomejs/biome': 1.9.4
@@ -8454,12 +8454,12 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  haywire-launcher@0.1.7(haywire@0.1.4):
+  haywire-launcher@0.1.8(haywire@0.1.5):
     dependencies:
-      entry-script: 3.0.5
-      haywire: 0.1.4
+      entry-script: 3.0.6
+      haywire: 0.1.5
 
-  haywire@0.1.4:
+  haywire@0.1.5:
     dependencies:
       p-defer: 4.0.1
 
@@ -8707,7 +8707,7 @@ snapshots:
       object.assign: 4.1.5
       object.values: 1.2.0
 
-  juniper@1.2.1:
+  juniper@1.2.2:
     dependencies:
       escape-string-regexp: 5.0.0
 
@@ -8732,20 +8732,20 @@ snapshots:
 
   lines-and-columns@2.0.3: {}
 
-  load-populate-files@0.0.10:
+  load-populate-files@0.0.11:
     dependencies:
-      default-import: 2.0.3
-      npm-parse-cwd: parse-cwd@1.0.12
-      populate-files: 0.1.1
+      default-import: 2.0.4
+      npm-parse-cwd: parse-cwd@1.0.13
+      populate-files: 0.1.2
     transitivePeerDependencies:
       - '@biomejs/biome'
       - prettier
 
-  load-populate-files@0.0.10(@biomejs/biome@1.9.4):
+  load-populate-files@0.0.11(@biomejs/biome@1.9.4):
     dependencies:
-      default-import: 2.0.3
-      npm-parse-cwd: parse-cwd@1.0.12
-      populate-files: 0.1.1(@biomejs/biome@1.9.4)
+      default-import: 2.0.4
+      npm-parse-cwd: parse-cwd@1.0.13
+      populate-files: 0.1.2(@biomejs/biome@1.9.4)
     transitivePeerDependencies:
       - '@biomejs/biome'
       - prettier
@@ -8895,73 +8895,73 @@ snapshots:
 
   npm@10.9.0: {}
 
-  nx-plugin-handler@0.0.8(nx@20.0.7):
+  nx-plugin-handler@0.0.9(nx@20.0.7):
     dependencies:
-      haywire: 0.1.4
-      npm-default-import: default-import@2.0.3
+      haywire: 0.1.5
+      npm-default-import: default-import@2.0.4
     optionalDependencies:
       '@nx/devkit': 20.0.7(nx@20.0.7)
     transitivePeerDependencies:
       - nx
 
-  nx-populate-files@0.0.11(@biomejs/biome@1.9.4)(nx@20.0.7):
+  nx-populate-files@0.0.12(@biomejs/biome@1.9.4)(nx@20.0.7):
     dependencies:
       ci-info: 4.0.0
-      common-proxy: 0.0.6
-      load-populate-files: 0.0.10(@biomejs/biome@1.9.4)
+      common-proxy: 0.0.7
+      load-populate-files: 0.0.11(@biomejs/biome@1.9.4)
     optionalDependencies:
       '@nx/devkit': 20.0.7(nx@20.0.7)
-      juniper: 1.2.1
+      juniper: 1.2.2
     transitivePeerDependencies:
       - '@biomejs/biome'
       - nx
       - prettier
 
-  nx-populate-files@0.0.11(nx@20.0.7):
+  nx-populate-files@0.0.12(nx@20.0.7):
     dependencies:
       ci-info: 4.0.0
-      common-proxy: 0.0.6
-      load-populate-files: 0.0.10
+      common-proxy: 0.0.7
+      load-populate-files: 0.0.11
     optionalDependencies:
       '@nx/devkit': 20.0.7(nx@20.0.7)
-      juniper: 1.2.1
+      juniper: 1.2.2
     transitivePeerDependencies:
       - '@biomejs/biome'
       - nx
       - prettier
 
-  nx-tsc@0.0.12(nx@20.0.7):
+  nx-tsc@0.0.13(nx@20.0.7):
     dependencies:
-      common-proxy: 0.0.6
-      haywire: 0.1.4
-      nx-plugin-handler: 0.0.8(nx@20.0.7)
+      common-proxy: 0.0.7
+      haywire: 0.1.5
+      nx-plugin-handler: 0.0.9(nx@20.0.7)
     optionalDependencies:
       '@nx/devkit': 20.0.7(nx@20.0.7)
-      npm-juniper: juniper@1.2.1
+      npm-juniper: juniper@1.2.2
     transitivePeerDependencies:
       - nx
 
-  nx-tsc@0.0.12(nx@20.0.7)(typescript@5.6.3):
+  nx-tsc@0.0.13(nx@20.0.7)(typescript@5.6.3):
     dependencies:
-      common-proxy: 0.0.6
-      haywire: 0.1.4
-      nx-plugin-handler: 0.0.8(nx@20.0.7)
+      common-proxy: 0.0.7
+      haywire: 0.1.5
+      nx-plugin-handler: 0.0.9(nx@20.0.7)
       typescript: 5.6.3
     optionalDependencies:
       '@nx/devkit': 20.0.7(nx@20.0.7)
-      npm-juniper: juniper@1.2.1
+      npm-juniper: juniper@1.2.2
     transitivePeerDependencies:
       - nx
 
-  nx-update-ts-references@0.0.7(@biomejs/biome@1.9.4)(nx@20.0.7):
+  nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7):
     dependencies:
       ajv: 8.17.1
       ci-info: 4.0.0
       comment-json: 4.2.5
-      common-proxy: 0.0.6
-      npm-default-import: default-import@2.0.3
-      npm-format-file: format-file@0.1.1(@biomejs/biome@1.9.4)
-      npm-juniper: juniper@1.2.1
+      common-proxy: 0.0.7
+      npm-default-import: default-import@2.0.4
+      npm-format-file: format-file@0.1.2(@biomejs/biome@1.9.4)
+      npm-juniper: juniper@1.2.2
     optionalDependencies:
       '@nx/devkit': 20.0.7(nx@20.0.7)
     transitivePeerDependencies:
@@ -8969,15 +8969,15 @@ snapshots:
       - nx
       - prettier
 
-  nx-update-ts-references@0.0.7(nx@20.0.7):
+  nx-update-ts-references@0.0.8(nx@20.0.7):
     dependencies:
       ajv: 8.17.1
       ci-info: 4.0.0
       comment-json: 4.2.5
-      common-proxy: 0.0.6
-      npm-default-import: default-import@2.0.3
-      npm-format-file: format-file@0.1.1
-      npm-juniper: juniper@1.2.1
+      common-proxy: 0.0.7
+      npm-default-import: default-import@2.0.4
+      npm-format-file: format-file@0.1.2
+      npm-juniper: juniper@1.2.2
     optionalDependencies:
       '@nx/devkit': 20.0.7(nx@20.0.7)
     transitivePeerDependencies:
@@ -9144,7 +9144,7 @@ snapshots:
     dependencies:
       callsites: 3.1.0
 
-  parse-cwd@1.0.12: {}
+  parse-cwd@1.0.13: {}
 
   parse-imports@2.2.1:
     dependencies:
@@ -9185,21 +9185,21 @@ snapshots:
 
   pluralize@8.0.0: {}
 
-  populate-files@0.1.1:
+  populate-files@0.1.2:
     dependencies:
       ci-info: 4.0.0
-      format-file: 0.1.1
-      npm-parse-cwd: parse-cwd@1.0.12
+      format-file: 0.1.2
+      npm-parse-cwd: parse-cwd@1.0.13
       uint8array-extras: 1.4.0
     transitivePeerDependencies:
       - '@biomejs/biome'
       - prettier
 
-  populate-files@0.1.1(@biomejs/biome@1.9.4):
+  populate-files@0.1.2(@biomejs/biome@1.9.4):
     dependencies:
       ci-info: 4.0.0
-      format-file: 0.1.1(@biomejs/biome@1.9.4)
-      npm-parse-cwd: parse-cwd@1.0.12
+      format-file: 0.1.2(@biomejs/biome@1.9.4)
+      npm-parse-cwd: parse-cwd@1.0.13
       uint8array-extras: 1.4.0
     transitivePeerDependencies:
       - '@biomejs/biome'
