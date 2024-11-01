@@ -18,20 +18,24 @@
     "index"
   ],
   "sideEffects": false,
-  "types": "./dist/barrelify.js",
+  "types": "./dist/index.js",
   "exports": {
-    ".": "./dist/barrelify.js"
+    ".": "./dist/index.js"
   },
   "bin": {
-    "barrel": "./cli.mjs",
-    "barrelify": "./cli.mjs"
+    "barrel": "./bin.mjs",
+    "barrelify": "./bin.mjs"
   },
   "dependencies": {
+    "ajv": "^8.17.1",
+    "ci-info": "^4.0.0",
     "default-import": "workspace:^",
     "entry-script": "workspace:^",
     "find-import": "workspace:^",
     "globby": "^14.0.2",
-    "named-patch": "workspace:^",
+    "haywire": "workspace:^",
+    "haywire-launcher": "workspace:^",
+    "juniper": "workspace:^",
     "parse-cwd": "workspace:^",
     "yargs": "^17.7.2"
   },
@@ -39,12 +43,14 @@
     "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
     "@types/chai": "^5.0.0",
+    "@types/chai-as-promised": "^8.0.1",
     "@types/mocha": "^10.0.9",
     "@types/node": "^22.8.1",
     "@types/sinon": "^17.0.3",
     "@types/yargs": "^17.0.33",
     "c8": "^10.1.2",
     "chai": "^5.1.2",
+    "chai-as-promised": "^8.0.0",
     "expect-type": "^1.1.0",
     "mocha": "^10.7.3",
     "mocha-chain": "workspace:^",

@@ -1,25 +1,39 @@
-import yargsDefault, { type Argv, type CommandModule } from 'yargs';
+import yargsDefault, { type Argv } from 'yargs';
 import { defaultImport } from 'default-import';
 import { EntryScript } from 'entry-script';
-import { findImport } from 'find-import';
-import { patch } from 'named-patch';
-import * as Commands from './commands/index.js';
+import type { Supplier } from 'haywire';
+import type { AbstractCommand } from './commands/lib/types.js';
+import type { ConsoleLog, ExitCode } from './lib/dependencies.js';
 
 const yargs = defaultImport(yargsDefault) as Argv;
 
-export const yargsOutput = patch((_e: unknown, _argv: unknown, log: string): void => {
-    if (log) {
-        // eslint-disable-next-line no-console
-        console.log(log);
-    }
-});
-
 /**
- * Barrelify CLI. Run `./cli.mjs --help` for options.
+ * Barrelify CLI. Run `./bin.mjs --help` for options.
  *
  * Uses `yargs` package for command line parsing and logic flow.
  */
 export class BarrelCli extends EntryScript {
+    readonly #getCommands: Supplier<AbstractCommand[]>;
+    readonly #logger: ConsoleLog;
+    readonly #errorLogger: ConsoleLog;
+    readonly #packageJsonVersion: string;
+    readonly #exitCode: ExitCode;
+
+    public constructor(
+        getCommands: Supplier<AbstractCommand[]>,
+        logger: ConsoleLog,
+        errorLogger: ConsoleLog,
+        packageJsonVersion: string,
+        exitCode: ExitCode
+    ) {
+        super();
+        this.#getCommands = getCommands;
+        this.#logger = logger;
+        this.#errorLogger = errorLogger;
+        this.#packageJsonVersion = packageJsonVersion;
+        this.#exitCode = exitCode;
+    }
+
     /**
      * Entry point to CLI script.
      *
@@ -28,10 +42,6 @@ export class BarrelCli extends EntryScript {
      * @param argv - process arguments
      */
     public override async main(argv: string[]): Promise<void> {
-        const pkg = await findImport('package.json', {
-            cwd: import.meta.url,
-        });
-
         const yarg = yargs()
             .scriptName('barrelify')
             .option({
@@ -49,20 +59,23 @@ export class BarrelCli extends EntryScript {
             .strict()
             .help()
             .alias('help', 'info')
-            .version((pkg!.content as { version: string }).version);
+            .version(this.#packageJsonVersion);
 
-        for (const command of Object.values(Commands)) {
-            const typedCommand: typeof command extends CommandModule<infer T, any>
-                ? typeof yarg extends Argv<T>
-                    ? CommandModule<T, any>
-                    : never
-                : never = command;
-
-            yarg.command(typedCommand);
+        for (const command of this.#getCommands()) {
+            yarg.command(command);
         }
 
-        await yarg.parseAsync(argv, {}, yargsOutput);
+        await yarg.parseAsync(argv, {}, this.#yargsOutput.bind(this));
+    }
+
+    #yargsOutput(e: unknown, _argv: unknown, log: string): void {
+        if (e) {
+            this.#exitCode(1);
+            if (log) {
+                this.#errorLogger(log);
+            }
+        } else if (log) {
+            this.#logger(log);
+        }
     }
 }
-
-export default new BarrelCli();

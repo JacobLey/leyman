@@ -1,18 +1,168 @@
-import { expect } from 'chai';
+import { createStubInstance, stub, verifyAndRestore } from 'sinon';
 import { dedent } from 'ts-dedent';
-import { suite, test } from 'mocha-chain';
-import { generateBarrelFile } from '../../../lib/barrel.js';
+import { afterEach, beforeEach, suite, test } from 'mocha-chain';
+import { stubMethod } from 'sinon-typed-stub';
+import { Barrel } from '../../../lib/barrel.js';
+import type { ReadFile, WriteFile } from '../../../lib/dependencies.js';
+import { Glob } from '../../../lib/glob.js';
+import { expect } from '../../chai-hooks.js';
 
 suite('barrel', () => {
+    afterEach(() => {
+        verifyAndRestore();
+    });
+
+    const withStubs = beforeEach(() => {
+        const stubbedReadFile = stubMethod<ReadFile>();
+        const stubbedWriteFile = stubMethod<WriteFile>();
+        const stubbedGlob = createStubInstance(Glob);
+        return {
+            stubbedGlob,
+            stubbedReadFile: stubbedReadFile.stub,
+            stubbedWriteFile: stubbedWriteFile.stub,
+            barrel: stub(new Barrel(stubbedReadFile.method, stubbedWriteFile.method, stubbedGlob)),
+        };
+    });
+
+    suite('barrelFiles', () => {
+        withStubs.beforeEach(ctx => {
+            ctx.barrel.barrelFiles.callThrough();
+        });
+
+        withStubs.test('Reports updated files', async ctx => {
+            ctx.stubbedGlob.findIndexFiles.resolves(['foo/file.ts', 'bar/file.ts']);
+
+            ctx.barrel.barrelFile
+                .withArgs({
+                    dryRun: false,
+                    filePath: '/root/dir/foo/file.ts',
+                })
+                .resolves(false);
+
+            ctx.barrel.barrelFile
+                .withArgs({
+                    dryRun: false,
+                    filePath: '/root/dir/bar/file.ts',
+                })
+                .resolves(true);
+
+            const response = await ctx.barrel.barrelFiles({
+                cwd: '/root/dir',
+                dryRun: false,
+                ignore: ['<to>', '<ignore>'],
+            });
+            expect(response).to.deep.equal(['/root/dir/bar/file.ts']);
+
+            expect(
+                ctx.stubbedGlob.findIndexFiles.calledOnceWithExactly({
+                    dir: '/root/dir',
+                    ignore: ['<to>', '<ignore>'],
+                })
+            ).to.equal(true);
+            expect(ctx.barrel.barrelFile.calledTwice).to.equal(true);
+            expect(
+                ctx.barrel.barrelFile.calledWithExactly({
+                    dryRun: false,
+                    filePath: '/root/dir/foo/file.ts',
+                })
+            ).to.equal(true);
+            expect(
+                ctx.barrel.barrelFile.calledWithExactly({
+                    dryRun: false,
+                    filePath: '/root/dir/bar/file.ts',
+                })
+            ).to.equal(true);
+        });
+    });
+
+    suite('barrelFile', () => {
+        withStubs.beforeEach(ctx => {
+            ctx.barrel.barrelFile.callThrough();
+        });
+
+        withStubs.test('Populates file with header', async ctx => {
+            ctx.stubbedReadFile.resolves(dedent`
+                // AUTO-BARREL
+            `);
+            ctx.stubbedGlob.findFilesForIndex.resolves(['/foo/a.ts', '/foo/b.ts']);
+            ctx.stubbedWriteFile.resolves();
+
+            expect(
+                await ctx.barrel.barrelFile({ dryRun: false, filePath: '<file-path>' })
+            ).to.equal(true);
+
+            expect(ctx.stubbedReadFile.calledOnceWithExactly('<file-path>', 'utf8')).to.equal(true);
+            expect(ctx.stubbedGlob.findFilesForIndex.calledOnceWithExactly('<file-path>')).to.equal(
+                true
+            );
+            expect(
+                ctx.stubbedWriteFile.calledOnceWithExactly(
+                    '<file-path>',
+                    dedent`
+                    // AUTO-BARREL
+
+                    export * from './a.js';
+                    export * from './b.js';
+
+                `,
+                    'utf8'
+                )
+            ).to.equal(true);
+        });
+
+        withStubs.test('Skips files without header', async ctx => {
+            ctx.stubbedReadFile.resolves('Literally anything else');
+
+            expect(
+                await ctx.barrel.barrelFile({ dryRun: false, filePath: '<file-path>' })
+            ).to.equal(false);
+
+            expect(ctx.stubbedGlob.findFilesForIndex.notCalled).to.equal(true);
+            expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
+        });
+
+        withStubs.test('Skips write when dryRun', async ctx => {
+            ctx.stubbedReadFile.resolves(dedent`
+                // AUTO-BARREL
+            `);
+            ctx.stubbedGlob.findFilesForIndex.resolves(['/foo/a.ts', '/foo/b.ts']);
+
+            expect(await ctx.barrel.barrelFile({ dryRun: true, filePath: '<file-path>' })).to.equal(
+                true
+            );
+
+            expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
+        });
+
+        withStubs.test('Skips write when unchanged', async ctx => {
+            ctx.stubbedReadFile.resolves(dedent`
+                // AUTO-BARREL
+    
+                export * from './a.js';
+                export * from './b.js';
+    
+            `);
+            ctx.stubbedGlob.findFilesForIndex.resolves(['/foo/a.ts', '/foo/b.ts']);
+
+            expect(await ctx.barrel.barrelFile({ dryRun: true, filePath: '<file-path>' })).to.equal(
+                false
+            );
+
+            expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
+        });
+    });
+
+    suite('parseTypes', () => {
+        // TODO
+    });
+
     suite('generateBarrelFile', () => {
         test('empty file', () => {
             expect(
-                generateBarrelFile(
-                    ['foo.ts', 'bar.mts', 'baz.cts'],
-                    dedent`
-                        // AUTO-BARREL
-                    `
-                )
+                Barrel.generateBarrelFile({
+                    files: ['foo.ts', 'bar.mts', 'baz.cts'],
+                    types: new Set(),
+                })
             ).to.equal(
                 dedent`
                     // AUTO-BARREL
@@ -27,18 +177,10 @@ suite('barrel', () => {
 
         test('Files declared with types', () => {
             expect(
-                generateBarrelFile(
-                    ['foo.ts', 'bar.mts', 'baz.cts'],
-                    dedent`
-                        // AUTO-BARREL
-
-                        export * from './bar.mjs';
-                        export type * from './baz.cjs';
-                        export type * from './ignore.js';
-                        export type * from './foo.ts';
-
-                    `
-                )
+                Barrel.generateBarrelFile({
+                    files: ['foo.ts', 'bar.mts', 'baz.cts'],
+                    types: new Set(['./foo.js', './ignore.js', './baz.cjs']),
+                })
             ).to.equal(
                 dedent`
                     // AUTO-BARREL
@@ -49,10 +191,6 @@ suite('barrel', () => {
 
                 `
             );
-        });
-
-        test('foo', async () => {
-            await import('../../data/commonjs/types.cjs');
         });
     });
 });

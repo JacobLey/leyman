@@ -7,6 +7,9 @@
   },
   "references": [
     {
+      "path": "../juniper"
+    },
+    {
       "path": "../nx-update-ts-references"
     },
     {
@@ -22,10 +25,13 @@
       "path": "../../tools/find-import"
     },
     {
-      "path": "../../tools/mocha-chain"
+      "path": "../../tools/haywire-launcher"
     },
     {
-      "path": "../../tools/named-patch"
+      "path": "../../tools/haywire"
+    },
+    {
+      "path": "../../tools/mocha-chain"
     },
     {
       "path": "../../tools/nx-tsc"

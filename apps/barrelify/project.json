@@ -7,28 +7,8 @@
     "update-ts-references": {},
     "tsc": {},
     "coverage-reset": {},
-    "mocha-unit-test": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "c8 --clean=false --reporter=none mocha --node-option conditions=patchable --recursive './dist/tests/unit/**/*.spec.*js'"
-        ],
-        "parallel": true,
-        "color": true,
-        "cwd": "{projectRoot}"
-      },
-      "cache": true,
-      "inputs": [
-        "ts-source",
-        "^ts-output"
-      ],
-      "outputs": [
-        "{projectRoot}/coverage/tmp"
-      ],
-      "dependsOn": [
-        "test:reset"
-      ]
-    },
+    "mocha-unit-test": {},
+    "mocha-integration-test": {},
     "coverage-report": {},
     "analyze:_": {},
     "analyze:format": {},
