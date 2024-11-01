@@ -85,8 +85,6 @@ export class Barrel {
         const barrel = Barrel.generateBarrelFile({ files, types: existingTypes });
 
         if (barrel !== data) {
-            // eslint-disable-next-line no-console
-            console.log({ filePath, barrel, data, files, existingTypes });
             if (!dryRun) {
                 await this.#writeFile(filePath, barrel, 'utf8');
             }

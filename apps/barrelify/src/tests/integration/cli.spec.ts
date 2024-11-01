@@ -23,7 +23,7 @@ suite('cli', () => {
     suite('commands', () => {
         suite('default/barrel', () => {
             test('success', async () => {
-                const result = await execAsync('./bin.mjs --dry-run --ignore=foo');
+                const result = await execAsync('./bin.mjs --ci=false --dry-run --ignore=foo');
 
                 expect(result.stdout).to.contain('');
                 expect(result.stderr).to.equal('');
