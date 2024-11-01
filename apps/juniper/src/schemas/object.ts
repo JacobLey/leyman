@@ -499,7 +499,7 @@ export class ObjectSchema<
      * @returns cloned object schema
      */
     public dependentRequired<
-        K extends Extract<keyof P, string>,
+        K extends string & Extract<keyof P, string>,
         D extends Exclude<Extract<keyof P, string>, K>,
     >(
         this: this,
@@ -512,10 +512,10 @@ export class ObjectSchema<
         X,
         M &
             (
+                | Partial<Record<K, never>>
                 | {
                       [k in D]: SchemaType<StripBooleanParameterSchemaObject<P>[k]>;
                   }
-                | { [k in K]?: never }
             ),
         N
     > {
@@ -538,13 +538,13 @@ export class ObjectSchema<
      * @returns cloned  object schema
      */
     public dependentSchemas<
-        K extends Extract<keyof P, string>,
+        K extends string & Extract<keyof P, string>,
         S extends AbstractSchema<SchemaGenerics<Record<string, unknown> | null>>,
     >(
         this: this,
         key: K,
         schema: S
-    ): ObjectSchema<P, R, A, X, M & (NonNullable<SchemaType<S>> | { [k in K]?: never }), N> {
+    ): ObjectSchema<P, R, A, X, M & (NonNullable<SchemaType<S>> | Partial<Record<K, never>>), N> {
         return this.clone({
             [dependentSchemasSym]: {
                 ...this.#dependentSchemas,
