@@ -42,14 +42,6 @@ Try running `nx run-many -t test` to build, analyze, and test the entire package
 
 See individual packages for documentation.
 
-## Known issues
-
-There are a few known issues that impact this monorepo as a whole (per-package issues are tracked separately):
-
-- Nx does not maintain dependency graph for target overloads
-  - https://github.com/nrwl/nx/issues/26929
-  - Workaround is to explicitly copy `dependsOn` to all targets
-
 ## Contributing
 
 All changes should include a [changeset](https://www.npmjs.com/package/@changesets/cli) file that reports how packages are impacted.
