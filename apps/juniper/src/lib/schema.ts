@@ -425,7 +425,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
         AbstractSchema<SchemaGenerics<NewT>>,
         'toJSON' | typeof typeCache
     > {
-        return this as AbstractSchema<SchemaGenerics<NewT>>;
+        return this satisfies AbstractSchema<SchemaGenerics<NewT>>;
     }
 
     /**

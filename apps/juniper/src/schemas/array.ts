@@ -570,4 +570,4 @@ export declare class IArraySchemaOverride<
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
-export const ArraySchemaOverride = ArraySchema as typeof IArraySchemaOverride;
+export const ArraySchemaOverride: typeof IArraySchemaOverride = ArraySchema;
