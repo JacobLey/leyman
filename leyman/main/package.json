@@ -18,7 +18,7 @@
   "dependencies": {
     "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
-    "eslint": "^9.13.0",
+    "eslint": "^9.14.0",
     "npm": "^10.9.0",
     "nx": "20.0.7",
     "nx-lifecycle": "workspace:^",
