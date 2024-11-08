@@ -1,5 +1,11 @@
 # populate-files
 
+## 0.2.0
+
+### Minor Changes
+
+- b77dd42: Export type of methods alongside method
+
 ## 0.1.2
 
 ### Patch Changes
