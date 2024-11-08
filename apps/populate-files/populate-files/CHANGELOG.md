@@ -1,5 +1,11 @@
 # populate-files
 
+## 0.2.1
+
+### Patch Changes
+
+- Rebuilt package before publish
+
 ## 0.2.0
 
 ### Minor Changes
