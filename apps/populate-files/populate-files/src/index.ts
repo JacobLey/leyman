@@ -13,7 +13,11 @@ export type {
     PopulationResponse,
 } from './lib/types.js';
 
-export const populateFile = async (
+export type PopulateFile = (
+    params: PopulateFileParams,
+    options: RawOptions
+) => Promise<PopulationResponse>;
+export const populateFile: PopulateFile = async (
     params: PopulateFileParams,
     options: RawOptions
 ): Promise<PopulationResponse> => {
@@ -21,7 +25,11 @@ export const populateFile = async (
     return internalPopulateFile(normalized);
 };
 
-export const populateFiles = async (
+export type PopulateFiles = (
+    params: PopulateFileParams[],
+    options: RawOptions
+) => Promise<PopulationResponse[]>;
+export const populateFiles: PopulateFiles = async (
     params: PopulateFileParams[],
     options: RawOptions
 ): Promise<PopulationResponse[]> => {
