@@ -1,5 +1,6 @@
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile } from 'node:fs/promises';
 import { globby, type Options as GlobbyOptions } from 'globby';
+import { type PopulateFile, populateFile } from 'npm-populate-files';
 import { findImport } from 'find-import';
 import { bind, createModule, identifier } from 'haywire';
 import { type Directory, parseCwd } from 'parse-cwd';
@@ -10,9 +11,6 @@ export const consoleErrorId = identifier<ConsoleLog>().named('error');
 
 export type ReadFile = typeof readFile;
 export const readFileId = identifier<ReadFile>();
-export type WriteFile = typeof writeFile;
-export const writeFileId = identifier<WriteFile>();
-
 export type ExitCode = (code: number) => void;
 export const exitCodeId = identifier<ExitCode>();
 
@@ -27,6 +25,8 @@ export const globbyId = identifier<Globby>();
 
 export type ParseCwd = (dir?: Directory) => Promise<string>;
 export const parseCwdId = identifier<ParseCwd>();
+
+export const populateFileId = identifier<PopulateFile>();
 
 export const dependenciesModule = createModule(
     bind(consoleLogId).withInstance(
@@ -46,7 +46,7 @@ export const dependenciesModule = createModule(
         })
     )
     .addBinding(bind(readFileId).withInstance(readFile))
-    .addBinding(bind(writeFileId).withInstance(writeFile))
     .addBinding(bind(findImportId).withInstance(findImport))
     .addBinding(bind(globbyId).withInstance(globby))
-    .addBinding(bind(parseCwdId).withInstance(parseCwd));
+    .addBinding(bind(parseCwdId).withInstance(parseCwd))
+    .addBinding(bind(populateFileId).withInstance(populateFile));

@@ -1,9 +1,10 @@
+import type { PopulateFile } from 'npm-populate-files';
 import { createStubInstance, stub, verifyAndRestore } from 'sinon';
 import { dedent } from 'ts-dedent';
 import { afterEach, beforeEach, suite, test } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { Barrel } from '../../../lib/barrel.js';
-import type { ReadFile, WriteFile } from '../../../lib/dependencies.js';
+import type { ReadFile } from '../../../lib/dependencies.js';
 import { Glob } from '../../../lib/glob.js';
 import { expect } from '../../chai-hooks.js';
 
@@ -14,13 +15,15 @@ suite('barrel', () => {
 
     const withStubs = beforeEach(() => {
         const stubbedReadFile = stubMethod<ReadFile>();
-        const stubbedWriteFile = stubMethod<WriteFile>();
+        const stubbedPopulateFile = stubMethod<PopulateFile>();
         const stubbedGlob = createStubInstance(Glob);
         return {
             stubbedGlob,
             stubbedReadFile: stubbedReadFile.stub,
-            stubbedWriteFile: stubbedWriteFile.stub,
-            barrel: stub(new Barrel(stubbedReadFile.method, stubbedWriteFile.method, stubbedGlob)),
+            stubbedPopulateFile: stubbedPopulateFile.stub,
+            barrel: stub(
+                new Barrel(stubbedReadFile.method, stubbedPopulateFile.method, stubbedGlob)
+            ),
         };
     });
 
@@ -85,7 +88,11 @@ suite('barrel', () => {
                 // AUTO-BARREL
             `);
             ctx.stubbedGlob.findFilesForIndex.resolves(['/foo/a.ts', '/foo/b.ts']);
-            ctx.stubbedWriteFile.resolves();
+            ctx.stubbedPopulateFile.resolves({
+                updated: true,
+                filePath: '<file-path>',
+                reason: 'file-not-exist',
+            });
 
             expect(
                 await ctx.barrel.barrelFile({ dryRun: false, filePath: '<file-path>' })
@@ -96,59 +103,65 @@ suite('barrel', () => {
                 true
             );
             expect(
-                ctx.stubbedWriteFile.calledOnceWithExactly(
-                    '<file-path>',
-                    dedent`
-                    // AUTO-BARREL
+                ctx.stubbedPopulateFile.calledOnceWithExactly(
+                    {
+                        filePath: '<file-path>',
+                        content: dedent`
+                        // AUTO-BARREL
 
-                    export * from './a.js';
-                    export * from './b.js';
+                        export * from './a.js';
+                        export * from './b.js';
 
-                `,
-                    'utf8'
+                    `,
+                    },
+                    { dryRun: false }
                 )
             ).to.equal(true);
         });
 
         withStubs.test('Skips files without header', async ctx => {
             ctx.stubbedReadFile.resolves('Literally anything else');
+            ctx.stubbedPopulateFile.resolves({
+                updated: false,
+                filePath: '<file-path>',
+            });
 
             expect(
                 await ctx.barrel.barrelFile({ dryRun: false, filePath: '<file-path>' })
             ).to.equal(false);
 
             expect(ctx.stubbedGlob.findFilesForIndex.notCalled).to.equal(true);
-            expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
         });
 
-        withStubs.test('Skips write when dryRun', async ctx => {
+        withStubs.test('Passes dryRun to populateFile', async ctx => {
             ctx.stubbedReadFile.resolves(dedent`
                 // AUTO-BARREL
             `);
             ctx.stubbedGlob.findFilesForIndex.resolves(['/foo/a.ts', '/foo/b.ts']);
+            ctx.stubbedPopulateFile.resolves({
+                updated: true,
+                filePath: '<file-path>',
+                reason: 'file-not-exist',
+            });
 
             expect(await ctx.barrel.barrelFile({ dryRun: true, filePath: '<file-path>' })).to.equal(
                 true
             );
+            expect(
+                ctx.stubbedPopulateFile.calledOnceWithExactly(
+                    {
+                        filePath: '<file-path>',
+                        content: dedent`
+                        // AUTO-BARREL
 
-            expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
-        });
+                        export * from './a.js';
+                        export * from './b.js';
 
-        withStubs.test('Skips write when unchanged', async ctx => {
-            ctx.stubbedReadFile.resolves(dedent`
-                // AUTO-BARREL
-    
-                export * from './a.js';
-                export * from './b.js';
-    
-            `);
-            ctx.stubbedGlob.findFilesForIndex.resolves(['/foo/a.ts', '/foo/b.ts']);
-
-            expect(await ctx.barrel.barrelFile({ dryRun: true, filePath: '<file-path>' })).to.equal(
-                false
-            );
-
-            expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
+                    `,
+                    },
+                    { dryRun: true }
+                )
+            ).to.equal(true);
         });
     });
 

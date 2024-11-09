@@ -4,8 +4,8 @@ import {
     dependenciesModule,
     findImportId,
     globbyId,
+    populateFileId,
     readFileId,
-    writeFileId,
 } from './dependencies.js';
 import { FindPackageJson, isExplicitlyModuleDirectoryId } from './find-package-json.js';
 import { Glob } from './glob.js';
@@ -13,7 +13,7 @@ import { Glob } from './glob.js';
 export const barrelModule = dependenciesModule
     .addBinding(
         bind(Barrel)
-            .withDependencies([readFileId, writeFileId, Glob])
+            .withDependencies([readFileId, populateFileId, Glob])
             .withConstructorProvider()
             .scoped(singletonScope)
     )

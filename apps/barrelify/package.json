@@ -37,6 +37,7 @@
     "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
     "parse-cwd": "workspace:^",
+    "npm-populate-files": "npm:populate-files@latest",
     "yargs": "^17.7.2"
   },
   "devDependencies": {

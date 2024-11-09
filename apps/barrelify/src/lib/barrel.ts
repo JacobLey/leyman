@@ -1,5 +1,6 @@
 import Path from 'node:path';
-import type { ReadFile, WriteFile } from './dependencies.js';
+import type { PopulateFile } from 'npm-populate-files';
+import type { ReadFile } from './dependencies.js';
 import type { Glob } from './glob.js';
 
 /**
@@ -7,12 +8,12 @@ import type { Glob } from './glob.js';
  */
 export class Barrel {
     readonly #readFile: ReadFile;
-    readonly #writeFile: WriteFile;
+    readonly #populateFile: PopulateFile;
     readonly #glob: Glob;
 
-    public constructor(readFile: ReadFile, writeFile: WriteFile, glob: Glob) {
+    public constructor(readFile: ReadFile, populateFile: PopulateFile, glob: Glob) {
         this.#readFile = readFile;
-        this.#writeFile = writeFile;
+        this.#populateFile = populateFile;
         this.#glob = glob;
     }
 
@@ -84,13 +85,14 @@ export class Barrel {
 
         const barrel = Barrel.generateBarrelFile({ files, types: existingTypes });
 
-        if (barrel !== data) {
-            if (!dryRun) {
-                await this.#writeFile(filePath, barrel, 'utf8');
-            }
-            return true;
-        }
-        return false;
+        const { updated } = await this.#populateFile(
+            {
+                filePath,
+                content: barrel,
+            },
+            { dryRun }
+        );
+        return updated;
     }
 
     public static generateBarrelFile({
