@@ -4,7 +4,7 @@ import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { BarrelCommand } from '../../../commands/barrel-command.js';
 import { Barrel } from '../../../lib/barrel.js';
-import type { ConsoleLog, ExitCode, ParseCwd } from '../../../lib/dependencies.js';
+import type { ConsoleLog, ParseCwd } from '../../../lib/dependencies.js';
 
 suite('BarrelCommand', () => {
     afterEach(() => {
@@ -14,20 +14,14 @@ suite('BarrelCommand', () => {
     const withStubs = beforeEach(() => {
         const stubbedBarrel = createStubInstance(Barrel);
         const stubbedLogger = stubMethod<ConsoleLog>();
-        const stubbedError = stubMethod<ConsoleLog>();
-        const stubbedExitCode = stubMethod<ExitCode>();
         const stubbedParseCwd = stubMethod<ParseCwd>();
         return {
             stubbedBarrel,
             stubbedLogger: stubbedLogger.stub,
-            stubbedError: stubbedError.stub,
             stubbedParseCwd: stubbedParseCwd.stub,
-            stubbedExitCode: stubbedExitCode.stub,
             barrelCommand: new BarrelCommand(
                 stubbedBarrel,
                 stubbedLogger.method,
-                stubbedError.method,
-                stubbedExitCode.method,
                 stubbedParseCwd.method
             ),
         };
@@ -56,8 +50,6 @@ suite('BarrelCommand', () => {
             expect(ctx.stubbedLogger.calledTwice).to.equal(true);
             expect(ctx.stubbedLogger.calledWith('<file-1>')).to.equal(true);
             expect(ctx.stubbedLogger.calledWith('<file-2>')).to.equal(true);
-            expect(ctx.stubbedExitCode.notCalled).to.equal(true);
-            expect(ctx.stubbedError.notCalled).to.equal(true);
         });
 
         withStubs.test('Nothing logged when no changes', async ctx => {
@@ -72,24 +64,22 @@ suite('BarrelCommand', () => {
             });
 
             expect(ctx.stubbedLogger.notCalled).to.equal(true);
-            expect(ctx.stubbedExitCode.notCalled).to.equal(true);
-            expect(ctx.stubbedError.notCalled).to.equal(true);
         });
 
         withStubs.test('Reports failure during ci', async ctx => {
             ctx.stubbedParseCwd.resolves('<resolved-cwd>');
             ctx.stubbedBarrel.barrelFiles.resolves(['<file>']);
 
-            await ctx.barrelCommand.handler({
-                cwd: '<cwd>',
-                ci: true,
-                dryRun: false,
-                ignore: ['<ignore>'],
-            });
+            await expect(
+                ctx.barrelCommand.handler({
+                    cwd: '<cwd>',
+                    ci: true,
+                    dryRun: false,
+                    ignore: ['<ignore>'],
+                })
+            ).to.eventually.be.rejectedWith(Error, 'Files are not built');
 
             expect(ctx.stubbedLogger.calledOnceWithExactly('<file>')).to.equal(true);
-            expect(ctx.stubbedExitCode.calledOnceWithExactly(1)).to.equal(true);
-            expect(ctx.stubbedError.calledOnceWithExactly('Files are not built')).to.equal(true);
         });
 
         withStubs.test('Options are optional', async ctx => {
