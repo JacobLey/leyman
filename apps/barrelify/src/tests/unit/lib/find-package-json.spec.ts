@@ -61,46 +61,4 @@ suite('FindPackageJson', () => {
             );
         });
     });
-
-    suite('getPackageJsonVersion', () => {
-        withStubs.test('Parses version from json', async ctx => {
-            ctx.stubbedFindImport.resolves({
-                content: {
-                    name: '<name>',
-                    version: '<version>',
-                },
-            });
-
-            expect(await ctx.findPackageJson.getPackageJsonVersion()).to.equal('<version>');
-
-            expect(
-                ctx.stubbedFindImport.calledOnceWithExactly('package.json', {
-                    cwd: import.meta.resolve('../../../lib/find-package-json.js'),
-                })
-            ).to.equal(true);
-        });
-
-        withStubs.test('Cannot parse version from json', async ctx => {
-            ctx.stubbedFindImport.resolves({
-                content: {
-                    name: '<name>',
-                    type: 'module',
-                },
-            });
-
-            await expect(ctx.findPackageJson.getPackageJsonVersion()).to.eventually.be.rejectedWith(
-                Error,
-                'Unable to load package.json'
-            );
-        });
-
-        withStubs.test('Cannot find package.json', async ctx => {
-            ctx.stubbedFindImport.resolves(null);
-
-            await expect(ctx.findPackageJson.getPackageJsonVersion()).to.eventually.be.rejectedWith(
-                Error,
-                'Unable to load package.json'
-            );
-        });
-    });
 });

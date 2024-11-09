@@ -6,31 +6,23 @@ import type { FindImport } from './dependencies.js';
 
 const Ajv = defaultImport(AjvDefault);
 
-const packageSchema = objectSchema({
+const modulePackageSchema = objectSchema({
     properties: {
         type: enumSchema().enum('module'),
         version: stringSchema(),
     },
-});
+    required: ['type'],
+}).toJSON();
 
-const modulePackageSchema = packageSchema.required(['type']).toJSON();
 const isModulePackage = new Ajv({ strict: true }).compile<SchemaType<typeof modulePackageSchema>>(
     modulePackageSchema
 );
 
-const versionedPackageSchema = packageSchema.required(['version']).toJSON();
-const isVersionedPackage = new Ajv({ strict: true }).compile<
-    SchemaType<typeof versionedPackageSchema>
->(versionedPackageSchema);
-
 export type IsExplicitlyModuleDirectory = (file: string) => Promise<boolean>;
 export const isExplicitlyModuleDirectoryId = identifier<IsExplicitlyModuleDirectory>();
 
-export const packageJsonVersionId = identifier<string>().named('package-json-version');
-
 interface IFindPackageJson {
     isExplicitlyModuleDirectory: IsExplicitlyModuleDirectory;
-    getPackageJsonVersion: () => Promise<string>;
 }
 /**
  * Package for loading the package.json of a given file.
@@ -60,17 +52,5 @@ export class FindPackageJson implements IFindPackageJson {
         }
 
         return false;
-    }
-
-    public async getPackageJsonVersion(): Promise<string> {
-        const pkg = await this.#findImport('package.json', {
-            cwd: import.meta.url,
-        });
-
-        if (pkg && isVersionedPackage(pkg.content)) {
-            return pkg.content.version;
-        }
-
-        throw new Error('Unable to load package.json');
     }
 }

@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import yargsDefault, { type Argv } from 'yargs';
 import { defaultImport } from 'default-import';
 import { EntryScript } from 'entry-script';
@@ -5,6 +6,7 @@ import type { Supplier } from 'haywire';
 import type { AbstractCommand } from './commands/lib/types.js';
 import type { ConsoleLog, ExitCode } from './lib/dependencies.js';
 
+const packageJson = createRequire(import.meta.url)('../package.json') as { version: string };
 const yargs = defaultImport(yargsDefault) as Argv;
 
 /**
@@ -16,21 +18,18 @@ export class BarrelCli extends EntryScript {
     readonly #getCommands: Supplier<AbstractCommand[]>;
     readonly #logger: ConsoleLog;
     readonly #errorLogger: ConsoleLog;
-    readonly #packageJsonVersion: string;
     readonly #exitCode: ExitCode;
 
     public constructor(
         getCommands: Supplier<AbstractCommand[]>,
         logger: ConsoleLog,
         errorLogger: ConsoleLog,
-        packageJsonVersion: string,
         exitCode: ExitCode
     ) {
         super();
         this.#getCommands = getCommands;
         this.#logger = logger;
         this.#errorLogger = errorLogger;
-        this.#packageJsonVersion = packageJsonVersion;
         this.#exitCode = exitCode;
     }
 
@@ -59,7 +58,7 @@ export class BarrelCli extends EntryScript {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(this.#packageJsonVersion);
+            .version(packageJson.version);
 
         for (const command of this.#getCommands()) {
             yarg.command(command);

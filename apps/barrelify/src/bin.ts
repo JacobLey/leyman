@@ -4,7 +4,6 @@ import { launch } from 'haywire-launcher';
 import { BarrelCli } from './cli.js';
 import { commandsId, commandsModule } from './commands/index.js';
 import { consoleErrorId, consoleLogId, exitCodeId } from './lib/dependencies.js';
-import { FindPackageJson, packageJsonVersionId } from './lib/find-package-json.js';
 import { barrelModule } from './lib/index.js';
 
 export default launch(
@@ -18,20 +17,8 @@ export default launch(
         )
         .addBinding(
             bind(BarrelCli)
-                .withDependencies([
-                    commandsId.supplier(),
-                    consoleLogId,
-                    consoleErrorId,
-                    packageJsonVersionId,
-                    exitCodeId,
-                ])
+                .withDependencies([commandsId.supplier(), consoleLogId, consoleErrorId, exitCodeId])
                 .withConstructorProvider()
-                .scoped(singletonScope)
-        )
-        .addBinding(
-            bind(packageJsonVersionId)
-                .withDependencies([FindPackageJson])
-                .withAsyncProvider(async findPackageJson => findPackageJson.getPackageJsonVersion())
                 .scoped(singletonScope)
         )
         .toContainer()
