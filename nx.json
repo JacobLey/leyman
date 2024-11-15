@@ -8,6 +8,7 @@
       "{workspaceRoot}/tsconfig.build.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
+      "{projectRoot}/.pnpm-lock",
       "{projectRoot}/src/**/*.(c|m)?tsx?",
       "{projectRoot}/src/**/*.json",
       "{projectRoot}/src/tests"
@@ -261,6 +262,28 @@
       "dependsOn": [
         "test:run"
       ]
+    },
+    "pnpm-dedicated-lockfile": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pnpm-dedicated-lockfile --omitHash --lockfileName=.pnpm-lock"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": []
+    },
+    "npm-pnpm-dedicated-lockfile": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "npm-pnpm-dedicated-lockfile --omitHash --lockfileName=.pnpm-lock"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": []
     },
     "analyze:_": {
       "executor": "nx:noop",

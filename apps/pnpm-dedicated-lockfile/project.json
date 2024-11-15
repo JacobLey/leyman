@@ -1,0 +1,28 @@
+{
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "name": "pnpm-dedicated-lockfile",
+  "targets": {
+    "biome": {},
+    "eslint": {},
+    "update-ts-references": {},
+    "tsc": {},
+    "coverage-reset": {},
+    "mocha-unit-test": {},
+    "mocha-integration-test": {},
+    "coverage-report": {},
+    "analyze:_": {},
+    "analyze:format": {},
+    "analyze:lint": {},
+    "analyze": {},
+    "build:_": {},
+    "build:pre": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "test:_": {},
+    "test:reset": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {}
+  }
+}

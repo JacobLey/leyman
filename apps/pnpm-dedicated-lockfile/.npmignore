@@ -1,0 +1,15 @@
+CHANGELOG.md
+project.json
+tsconfig.json
+
+coverage/**
+.c8rc.json
+.eslintcache
+eslint.config.js
+.pnpm-lock-hash
+
+dist/tsconfig.tsbuildinfo
+dist/**/*.map
+dist/tests
+
+src/**
