@@ -166,7 +166,37 @@ suite('barrel', () => {
     });
 
     suite('parseTypes', () => {
-        // TODO
+        test('Detects javascript files', () => {
+            expect(
+                Barrel.parseTypes(dedent`
+                    // AUTO BARREL
+
+                    export type * from './bar.mjs';
+                    export type * from './baz.cjs';
+                    export type * from './foo.js';
+                    export * from './ignore.js';
+
+                `)
+            ).to.deep.equal(
+                new Set(['bar.mjs', 'bar.mts', 'baz.cjs', 'baz.cts', 'foo.js', 'foo.ts'])
+            );
+        });
+
+        test('Detects typescript files', () => {
+            expect(
+                Barrel.parseTypes(dedent`
+                    // AUTO BARREL
+
+                    export type * from './bar.mts';
+                    export type * from './baz.cts';
+                    export type * from './foo.ts';
+                    export * from './ignore.ts';
+
+                `)
+            ).to.deep.equal(
+                new Set(['bar.mjs', 'bar.mts', 'baz.cjs', 'baz.cts', 'foo.js', 'foo.ts'])
+            );
+        });
     });
 
     suite('generateBarrelFile', () => {
@@ -192,7 +222,7 @@ suite('barrel', () => {
             expect(
                 Barrel.generateBarrelFile({
                     files: ['foo.ts', 'bar.mts', 'baz.cts'],
-                    types: new Set(['./foo.js', './ignore.js', './baz.cjs']),
+                    types: new Set(['foo.js', 'ignore.js', 'baz.cjs']),
                 })
             ).to.equal(
                 dedent`

@@ -111,11 +111,12 @@ export class Barrel {
                     const ext = Path.extname(file);
                     const base = Path.basename(file, ext);
 
-                    return `./${base}${ext.replace('t', 'j')}`;
+                    return `${base}${ext.replace('t', 'j')}`;
                 })
                 .sort((a, b) => a.localeCompare(b, 'en'))
                 .map(
-                    filename => `export ${types.has(filename) ? 'type ' : ''}* from '${filename}';`
+                    filename =>
+                        `export ${types.has(filename) ? 'type ' : ''}* from './${filename}';`
                 ),
             '',
         ].join('\n');
@@ -123,7 +124,7 @@ export class Barrel {
 
     public static parseTypes(file: string): Set<string> {
         const matches = file.matchAll(
-            /^export type \* from '(?<filename>.+)\.(?<extension>[cm]?[tj]s)';$/gmu
+            /^export type \* from '\.\/(?<filename>.+)\.(?<extension>[cm]?[tj]s)';$/gmu
         );
 
         const result = new Set<string>();
