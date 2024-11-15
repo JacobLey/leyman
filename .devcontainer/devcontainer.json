@@ -2,7 +2,7 @@
   "$schema": "https://raw.githubusercontent.com/devcontainers/spec/main/schemas/devContainer.base.schema.json",
   "name": "Leyman",
   "dockerComposeFile": "docker-compose.yml",
-  "service": "app",
+  "service": "leyman",
   "workspaceFolder": "/workspace",
   "remoteUser": "leyman",
 
@@ -17,5 +17,7 @@
     }
   },
 
-  "features": {}
+  "features": {
+    "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+  }
 }

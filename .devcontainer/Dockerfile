@@ -10,8 +10,9 @@ RUN apt-get update \
     && apt-get install vim -y
 
 ARG USER=leyman
-RUN adduser $USER
-USER $USER
+RUN adduser $USER && \
+    echo "${USER}:${USER}" | chpasswd && \
+    adduser $USER sudo
 ENV HOME="/home/${USER}"
 
 # Install node
