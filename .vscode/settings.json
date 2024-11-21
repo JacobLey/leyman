@@ -1,56 +1,64 @@
 {
-    "biome.lspBin": "leyman/main/node_modules/.bin/biome",
-    "eslint.enable": true,
-    "eslint.run": "onType",
-    "eslint.runtime": "/home/leyman/.nvm/versions/node/v22.11.0/bin/node",
-    "eslint.nodePath": "leyman/main/node_modules",
-    "eslint.probe": [
-      "javascript",
-      "javascriptreact",
-      "typescript",
-      "typescriptreact"
-    ],
-    "eslint.useESLintClass": true,
-    "eslint.validate": [".ts", ".cts", "mts", ".tsx"],
-    "eslint.format.enable": false,
-    "eslint.workingDirectories": [{ "mode": "auto" }],
+  "biome.lspBin": "leyman/main/node_modules/.bin/biome",
+  "eslint.enable": true,
+  "eslint.run": "onType",
+  "eslint.runtime": "/home/leyman/.nvm/versions/node/v22.11.0/bin/node",
+  "eslint.nodePath": "leyman/main/node_modules",
+  "eslint.probe": [
+    "javascript",
+    "javascriptreact",
+    "typescript",
+    "typescriptreact"
+  ],
+  "eslint.useESLintClass": true,
+  "eslint.validate": [
+    ".ts",
+    ".cts",
+    "mts",
+    ".tsx"
+  ],
+  "eslint.format.enable": false,
+  "eslint.workingDirectories": [
+    {
+      "mode": "auto"
+    }
+  ],
 
-    "files.associations": {
-        "*.cts": "typescript",
-        "*.mts": "typescript"
-    },
+  "files.associations": {
+    "*.cts": "typescript",
+    "*.mts": "typescript"
+  },
 
-    "git.ignoreLimitWarning": true,
+  "git.ignoreLimitWarning": true,
 
-    "javascript.preferences.quoteStyle": "single",
+  "javascript.preferences.quoteStyle": "single",
 
-    "typescript.preferences.importModuleSpecifierEnding": "js",
-    "typescript.preferences.quoteStyle": "single",
-    "typescript.tsdk": "leyman/main/node_modules/typescript/lib",
-    "typescript.tsserver.nodePath": "node",
+  "typescript.preferences.importModuleSpecifierEnding": "js",
+  "typescript.preferences.quoteStyle": "single",
+  "typescript.tsdk": "leyman/main/node_modules/typescript/lib",
+  "typescript.tsserver.nodePath": "node",
 
-    "[javascript]": {
-      "editor.defaultFormatter": "biomejs.biome",
-      "editor.tabSize": 4,
-      "files.insertFinalNewline": true
-    },
-    "[json]": {
-      "editor.defaultFormatter": "biomejs.biome",
-      "editor.tabSize": 2,
-      "files.insertFinalNewline": true
-    },
-    "[jsonc]": {
-        "editor.tabSize": 2,
-        "files.insertFinalNewline": true
-    },
-    "[typescript]": {
-      "editor.defaultFormatter": "biomejs.biome",
-      "editor.tabSize": 4,
-      "files.insertFinalNewline": true
-    },
-    "[yaml]": {
-        "editor.tabSize": 2,
-        "files.insertFinalNewline": true
-    },
-    "eslint.debug": true
+  "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.tabSize": 4,
+    "files.insertFinalNewline": true
+  },
+  "[json]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.tabSize": 2,
+    "files.insertFinalNewline": true
+  },
+  "[jsonc]": {
+    "editor.tabSize": 2,
+    "files.insertFinalNewline": true
+  },
+  "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.tabSize": 4,
+    "files.insertFinalNewline": true
+  },
+  "[yaml]": {
+    "editor.tabSize": 2,
+    "files.insertFinalNewline": true
+  }
 }
