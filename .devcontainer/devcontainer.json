@@ -12,7 +12,8 @@
         "ms-azuretools.vscode-docker",
         "ritwickdey.LiveServer",
         "biomejs.biome",
-        "dbaeumer.vscode-eslint"
+        "dbaeumer.vscode-eslint",
+        "golang.go"
       ]
     }
   },

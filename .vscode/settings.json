@@ -60,5 +60,9 @@
   "[yaml]": {
     "editor.tabSize": 2,
     "files.insertFinalNewline": true
+  },
+
+  "gopls": {
+    "ui.semanticTokens": true
   }
 }
