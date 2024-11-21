@@ -30,10 +30,8 @@ ENV PATH="$HOME/.nvm/versions/node/v$NODE_VERSION/bin:$PATH"
 # Install pnpm
 ENV PNPM_HOME="$HOME/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN \. "$NVM_DIR/nvm.sh" && \
-    corepack enable && \
+RUN corepack enable && \
     corepack prepare "pnpm@$PNPM_VERSION" --activate
 
 # Install packages
-RUN \. "$NVM_DIR/nvm.sh" && \
-    pnpm i -g "nx@$NX_VERSION" "@changesets/cli@$CHANGESETS_VERSION"
+RUN pnpm i -g "nx@${NX_VERSION}" "@changesets/cli@${CHANGESETS_VERSION}"
