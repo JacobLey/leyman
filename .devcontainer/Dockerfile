@@ -11,9 +11,9 @@ RUN apt-get update \
 
 ARG USER=leyman
 RUN adduser $USER && \
-    echo "${USER}:${USER}" | chpasswd && \
+    echo $USER:$USER | chpasswd && \
     adduser $USER sudo
-ENV HOME="/home/${USER}"
+ENV HOME="/home/$USER"
 
 # Install node
 ENV NVM_DIR="$HOME/.nvm"
@@ -25,14 +25,15 @@ RUN curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/master/install.sh | ba
     nvm use $NODE_VERSION && \
     # Remove default npm
     npm uninstall -g npm
+ENV PATH="$HOME/.nvm/versions/node/v$NODE_VERSION/bin:$PATH"
 
 # Install pnpm
-ENV PNPM_HOME="${HOME}/.local/share/pnpm"
-ENV PATH="${PNPM_HOME}:${PATH}"
+ENV PNPM_HOME="$HOME/.local/share/pnpm"
+ENV PATH="$PNPM_HOME:$PATH"
 RUN \. "$NVM_DIR/nvm.sh" && \
     corepack enable && \
-    corepack prepare "pnpm@${PNPM_VERSION}" --activate
+    corepack prepare "pnpm@$PNPM_VERSION" --activate
 
 # Install packages
 RUN \. "$NVM_DIR/nvm.sh" && \
-    pnpm i -g "nx@${NX_VERSION}" "@changesets/cli@${CHANGESETS_VERSION}"
+    pnpm i -g "nx@$NX_VERSION" "@changesets/cli@$CHANGESETS_VERSION"
