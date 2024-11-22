@@ -90,7 +90,10 @@ export class Barrel {
                 filePath,
                 content: barrel,
             },
-            { dryRun }
+            {
+                dryRun,
+                check: false,
+            }
         );
         return updated;
     }

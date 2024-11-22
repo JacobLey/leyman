@@ -114,7 +114,10 @@ suite('barrel', () => {
 
                     `,
                     },
-                    { dryRun: false }
+                    {
+                        check: false,
+                        dryRun: false,
+                    }
                 )
             ).to.equal(true);
         });
@@ -159,7 +162,10 @@ suite('barrel', () => {
 
                     `,
                     },
-                    { dryRun: true }
+                    {
+                        check: false,
+                        dryRun: true,
+                    }
                 )
             ).to.equal(true);
         });
