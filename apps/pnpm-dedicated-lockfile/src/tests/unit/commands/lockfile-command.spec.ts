@@ -72,6 +72,7 @@ suite('LockfileCommand', () => {
                     {
                         cwd: '<resolved-cwd>',
                         dryRun: false,
+                        check: false,
                     }
                 )
             ).to.equal(true);
@@ -107,6 +108,7 @@ suite('LockfileCommand', () => {
                     {
                         cwd: '<resolved-cwd>',
                         dryRun: false,
+                        check: false,
                     }
                 )
             ).to.equal(true);
@@ -140,6 +142,7 @@ suite('LockfileCommand', () => {
                     {
                         cwd: '<resolved-cwd>',
                         dryRun: false,
+                        check: false,
                     }
                 )
             ).to.equal(true);
@@ -176,6 +179,7 @@ suite('LockfileCommand', () => {
                     {
                         cwd: '<resolved-cwd>',
                         dryRun: true,
+                        check: false,
                     }
                 )
             ).to.equal(true);

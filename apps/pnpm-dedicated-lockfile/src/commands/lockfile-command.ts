@@ -100,6 +100,7 @@ export class LockfileCommand implements Command<LockfileCommandExtendedInput> {
             {
                 cwd,
                 dryRun: options.ci || options.dryRun,
+                check: false,
             }
         );
 
