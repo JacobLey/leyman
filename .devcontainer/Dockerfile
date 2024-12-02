@@ -32,8 +32,7 @@ ENV PATH="$HOME/.nvm/versions/node/v$NODE_VERSION/bin:$PATH"
 # Install pnpm
 ENV PNPM_HOME="$HOME/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
-RUN corepack enable && \
-    corepack prepare "pnpm@$PNPM_VERSION" --activate
+RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=$PNPM_VERSION SHELL=bash sh -
 
 # Install packages
 RUN pnpm i -g "nx@${NX_VERSION}" "@changesets/cli@${CHANGESETS_VERSION}"
