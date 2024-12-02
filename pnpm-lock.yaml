@@ -12,13 +12,13 @@ importers:
         specifier: 20.0.7
         version: 20.0.7(nx@20.0.7)
       npm-nx-populate-files:
-        specifier: npm:nx-populate-files@latest
+        specifier: npm:nx-populate-files@0.0.12
         version: nx-populate-files@0.0.12(nx@20.0.7)
       npm-nx-tsc:
-        specifier: npm:nx-tsc@latest
+        specifier: npm:nx-tsc@0.0.13
         version: nx-tsc@0.0.13(nx@20.0.7)
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
+        specifier: npm:nx-update-ts-references@0.0.8
         version: nx-update-ts-references@0.0.8(nx@20.0.7)
       nx:
         specifier: 20.0.7
