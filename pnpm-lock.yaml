@@ -288,6 +288,9 @@ importers:
 
   apps/nx-update-ts-references:
     dependencies:
+      '@nx/devkit':
+        specifier: ^20.0.7
+        version: 20.0.7(nx@20.0.7)
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -303,19 +306,33 @@ importers:
       npm-default-import:
         specifier: npm:default-import@latest
         version: default-import@2.0.4
+      npm-entry-script:
+        specifier: npm:entry-script@latest
+        version: entry-script@3.0.6
       npm-format-file:
         specifier: npm:format-file@latest
         version: format-file@0.1.2(@biomejs/biome@1.9.4)
+      npm-haywire:
+        specifier: npm:haywire@latest
+        version: haywire@0.1.5
+      npm-haywire-launcher:
+        specifier: npm:haywire-launcher@latest
+        version: haywire-launcher@0.1.8(haywire@0.1.5)
       npm-juniper:
         specifier: npm:juniper@latest
         version: juniper@1.2.2
+      npm-parse-cwd:
+        specifier: npm:parse-cwd@latest
+        version: parse-cwd@1.0.13
+      npm-populate-files:
+        specifier: npm:populate-files@latest
+        version: populate-files@0.2.1(@biomejs/biome@1.9.4)
       nx-plugin-handler:
         specifier: workspace:^
         version: link:../../tools/nx-plugin-handler
-    optionalDependencies:
-      '@nx/devkit':
-        specifier: ^20.0.7
-        version: 20.0.7(nx@20.0.7)
+      yargs:
+        specifier: ^17.7.2
+        version: 17.7.2
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -332,6 +349,9 @@ importers:
       '@types/node':
         specifier: ^22.8.6
         version: 22.8.6
+      '@types/yargs':
+        specifier: ^17.0.33
+        version: 17.0.33
       chai:
         specifier: ^5.1.2
         version: 5.1.2

@@ -26,18 +26,25 @@
       "default": "./package.json"
     }
   },
+  "bin": {
+    "update-ts-references": "./bin.mjs"
+  },
   "dependencies": {
+    "@nx/devkit": "^20.0.7",
     "ajv": "^8.17.1",
     "ci-info": "^4.0.0",
     "comment-json": "^4.2.5",
     "common-proxy": "workspace:^",
+    "npm-entry-script": "npm:entry-script@latest",
     "npm-default-import": "npm:default-import@latest",
     "npm-format-file": "npm:format-file@latest",
+    "npm-haywire": "npm:haywire@latest",
+    "npm-haywire-launcher": "npm:haywire-launcher@latest",
     "npm-juniper": "npm:juniper@latest",
-    "nx-plugin-handler": "workspace:^"
-  },
-  "optionalDependencies": {
-    "@nx/devkit": "^20.0.7"
+    "npm-parse-cwd": "npm:parse-cwd@latest",
+    "npm-populate-files": "npm:populate-files@latest",
+    "nx-plugin-handler": "workspace:^",
+    "yargs": "^17.7.2"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
@@ -45,6 +52,7 @@
     "@types/chai": "^5.0.1",
     "@types/mocha": "^10.0.9",
     "@types/node": "^22.8.6",
+    "@types/yargs": "^17.0.33",
     "chai": "^5.1.2",
     "mocha": "^10.8.2",
     "npm-load-populate-files": "npm:load-populate-files@latest",
