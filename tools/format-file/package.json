@@ -58,6 +58,7 @@
     "mocha": "^10.8.2",
     "mocha-chain": "workspace:^",
     "nx-tsc": "workspace:^",
+    "nx-update-ts-references": "workspace:^",
     "prettier": "^3.3.3",
     "sinon": "^19.0.2",
     "sinon-typed-stub": "workspace:^",

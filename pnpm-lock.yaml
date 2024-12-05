@@ -580,12 +580,12 @@ importers:
       mocha:
         specifier: ^10.8.2
         version: 10.8.2
-      npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
       nx-tsc:
         specifier: workspace:^
         version: link:../../../tools/nx-tsc
+      nx-update-ts-references:
+        specifier: workspace:^
+        version: link:../../nx-update-ts-references
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -984,6 +984,9 @@ importers:
       nx-tsc:
         specifier: workspace:^
         version: link:../nx-tsc
+      nx-update-ts-references:
+        specifier: workspace:^
+        version: link:../../apps/nx-update-ts-references
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
