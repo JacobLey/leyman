@@ -1,117 +1,15 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import Path from 'node:path';
-import type { ExecutorContext } from '@nx/devkit';
-import { isCI } from 'ci-info';
-import commentJson from 'comment-json';
-import { formatText } from 'npm-format-file';
-import type { UpdateTsReferencesOptions } from './schema.js';
-import { isTsConfig, type TsConfig } from './tsconfig-validator.js';
+import { bind, createContainer } from 'npm-haywire';
+import { handler } from 'nx-plugin-handler';
+import { dependenciesModule } from '../../lib/dependencies-module.js';
+import { updateTsReferencesId } from '../../lib/update-ts-references.js';
+import { NxUpdateTsReferencesExecutorFactory } from './executor.js';
 
-interface NormalizedOptions {
-    packageRoot: string;
-    tsConfig: string;
-    check: boolean;
-    dryRun: boolean;
-    dependencies: string[];
-}
+const executorFactory = createContainer(
+    dependenciesModule.addBinding(
+        bind(NxUpdateTsReferencesExecutorFactory)
+            .withDependencies([updateTsReferencesId])
+            .withConstructorProvider()
+    )
+).get(NxUpdateTsReferencesExecutorFactory);
 
-const normalizeOptions = (
-    options: UpdateTsReferencesOptions,
-    context: ExecutorContext
-): NormalizedOptions => {
-    const projectName = context.projectName!;
-    const packageRoot = Path.join(
-        context.root,
-        context.projectsConfigurations.projects[projectName]!.root
-    );
-
-    return {
-        packageRoot,
-        check: options.check ?? isCI,
-        dryRun: options.dryRun ?? false,
-        tsConfig: Path.join(packageRoot, 'tsconfig.json'),
-        dependencies: context.projectGraph.dependencies[projectName]!.filter(
-            dependency => context.projectsConfigurations.projects[dependency.target]
-        ).map(dependency =>
-            Path.join(
-                context.root,
-                context.projectsConfigurations.projects[dependency.target]!.root,
-                'tsconfig.json'
-            )
-        ),
-    };
-};
-
-interface TsConfigFile {
-    path: string;
-    rawData: string;
-    json: TsConfig;
-}
-
-const readTsConfigFile = async (path: string): Promise<TsConfigFile> => {
-    const rawData = await readFile(path, 'utf8');
-
-    const json = commentJson.parse(rawData);
-
-    if (isTsConfig(json)) {
-        return {
-            path,
-            rawData,
-            json,
-        };
-    }
-    throw new Error('tsconfig.json did not contain expected data');
-};
-
-const safeReadTsConfig = async (path: string): Promise<TsConfigFile | null> => {
-    try {
-        return await readTsConfigFile(path);
-    } catch {
-        return null;
-    }
-};
-
-/**
- * Updates the `references` section of `tsconfig.json` for the given project.
- *
- * @param options - options passed from client
- * @param context - nx workspace context
- * @returns promise of completion
- */
-export default async function updateTsReferences(
-    options: UpdateTsReferencesOptions,
-    context: ExecutorContext
-): Promise<{ success: boolean }> {
-    const normalized = normalizeOptions(options, context);
-
-    const [packageTsConfig, ...dependencyTsConfigs] = await Promise.all([
-        readTsConfigFile(normalized.tsConfig),
-        ...normalized.dependencies.map(async path => safeReadTsConfig(path)),
-    ]);
-
-    packageTsConfig.json.references = dependencyTsConfigs
-        .filter((ts): ts is NonNullable<typeof ts> => !!ts)
-        .sort((a, b) => a.path.localeCompare(b.path))
-        .map(({ path }) => ({
-            path: Path.relative(normalized.packageRoot, Path.join(path, '..')),
-        }));
-
-    const dataToWrite = await formatText(commentJson.stringify(packageTsConfig.json, null, 2), {
-        ext: '.json',
-    });
-
-    if (dataToWrite === packageTsConfig.rawData) {
-        return { success: true };
-    }
-
-    if (normalized.check) {
-        // eslint-disable-next-line no-console
-        console.log('tsconfig.json is out of date');
-        return { success: false };
-    }
-    if (!normalized.dryRun) {
-        await writeFile(normalized.tsConfig, dataToWrite, 'utf8');
-    }
-
-    return { success: true };
-}
+export default handler(executorFactory.execute.bind(executorFactory));

@@ -309,6 +309,9 @@ importers:
       npm-juniper:
         specifier: npm:juniper@latest
         version: juniper@1.2.2
+      nx-plugin-handler:
+        specifier: workspace:^
+        version: link:../../tools/nx-plugin-handler
     optionalDependencies:
       '@nx/devkit':
         specifier: ^20.0.7

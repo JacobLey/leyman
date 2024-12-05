@@ -33,7 +33,8 @@
     "common-proxy": "workspace:^",
     "npm-default-import": "npm:default-import@latest",
     "npm-format-file": "npm:format-file@latest",
-    "npm-juniper": "npm:juniper@latest"
+    "npm-juniper": "npm:juniper@latest",
+    "nx-plugin-handler": "workspace:^"
   },
   "optionalDependencies": {
     "@nx/devkit": "^20.0.7"

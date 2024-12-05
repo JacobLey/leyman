@@ -13,6 +13,9 @@
       "path": "../../tools/common-proxy"
     },
     {
+      "path": "../../tools/nx-plugin-handler"
+    },
+    {
       "path": "../../tools/nx-tsc"
     }
   ]
