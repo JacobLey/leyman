@@ -288,8 +288,7 @@
     "analyze:_": {
       "executor": "nx:noop",
       "dependsOn": [
-        "^build",
-        "build"
+        "^build"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -327,7 +326,8 @@
     "build:_": {
       "executor": "nx:noop",
       "dependsOn": [
-        "^build"
+        "^build",
+        "analyze"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -379,6 +379,7 @@
     "test:_": {
       "executor": "nx:noop",
       "dependsOn": [
+        "^test",
         "analyze",
         "build"
       ],

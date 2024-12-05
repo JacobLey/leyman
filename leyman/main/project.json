@@ -17,12 +17,12 @@
         "stages": {
           "analyze": {
             "hooks": ["format", "lint"],
-            "dependsOn": ["^build", "build"]
+            "dependsOn": ["^build"]
           },
-          "build": { "hooks": ["pre", "run", "post"], "dependsOn": ["^build"] },
+          "build": { "hooks": ["pre", "run", "post"], "dependsOn": ["^build", "analyze"] },
           "test": {
             "hooks": ["reset", "run", "report"],
-            "dependsOn": ["analyze", "build"]
+            "dependsOn": ["^test", "analyze", "build"]
           }
         },
         "bindings": {
