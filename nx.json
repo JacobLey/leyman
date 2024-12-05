@@ -427,10 +427,5 @@
         "__lifecycle": {}
       }
     }
-  },
-  "tasksRunnerOptions": {
-    "default": {
-      "runner": "nx/tasks-runners/default"
-    }
   }
 }
