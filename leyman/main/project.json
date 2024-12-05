@@ -5,7 +5,9 @@
     "changesets": {
       "executor": "nx:run-commands",
       "options": {
-        "commands": ["changeset"],
+        "commands": [
+          "changeset"
+        ],
         "parallel": true,
         "color": true,
         "cwd": "{projectRoot}"
@@ -16,13 +18,36 @@
       "options": {
         "stages": {
           "analyze": {
-            "hooks": ["format", "lint"],
-            "dependsOn": ["^build"]
+            "hooks": [
+              "format",
+              "lint"
+            ],
+            "dependsOn": [
+              "^build"
+            ]
           },
-          "build": { "hooks": ["pre", "run", "post"], "dependsOn": ["^build", "analyze"] },
+          "build": {
+            "hooks": [
+              "pre",
+              "run",
+              "post"
+            ],
+            "dependsOn": [
+              "^build",
+              "analyze"
+            ]
+          },
           "test": {
-            "hooks": ["reset", "run", "report"],
-            "dependsOn": ["^test", "analyze", "build"]
+            "hooks": [
+              "reset",
+              "run",
+              "report"
+            ],
+            "dependsOn": [
+              "^test",
+              "analyze",
+              "build"
+            ]
           }
         },
         "bindings": {
@@ -41,7 +66,9 @@
           "coverage-report": "test:report"
         }
       },
-      "dependsOn": ["^build"]
+      "dependsOn": [
+        "^build"
+      ]
     },
     "analyze:_": {},
     "analyze:format": {},
