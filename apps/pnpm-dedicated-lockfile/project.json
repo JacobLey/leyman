@@ -4,7 +4,7 @@
   "targets": {
     "biome": {},
     "eslint": {},
-    "update-ts-references": {},
+    "npm-update-ts-references": {},
     "tsc": {},
     "coverage-reset": {},
     "mocha-unit-test": {},
