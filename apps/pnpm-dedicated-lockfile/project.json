@@ -5,7 +5,7 @@
     "biome": {},
     "eslint": {},
     "npm-update-ts-references": {},
-    "tsc": {},
+    "npm-tsc": {},
     "coverage-reset": {},
     "mocha-unit-test": {},
     "mocha-integration-test": {},
