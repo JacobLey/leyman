@@ -228,7 +228,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 ---clean=false -reporter=none mocha --recursive './dist/tests/integration/**/*.spec.*js'"
+          "c8 ---clean=false --reporter=none mocha --recursive './dist/tests/integration/**/*.spec.*js'"
         ],
         "parallel": true,
         "color": true,
