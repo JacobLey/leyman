@@ -13,10 +13,16 @@
       "path": "../../tools/common-proxy"
     },
     {
+      "path": "../../tools/mocha-chain"
+    },
+    {
       "path": "../../tools/nx-plugin-handler"
     },
     {
       "path": "../../tools/nx-tsc"
+    },
+    {
+      "path": "../../tools/sinon-typed-stub"
     }
   ]
 }

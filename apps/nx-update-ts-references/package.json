@@ -50,15 +50,22 @@
     "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
     "@types/chai": "^5.0.1",
+    "@types/chai-as-promised": "^8.0.1",
     "@types/mocha": "^10.0.9",
     "@types/node": "^22.8.6",
+    "@types/sinon": "^17.0.3",
     "@types/yargs": "^17.0.33",
+    "c8": "^10.1.2",
     "chai": "^5.1.2",
+    "chai-as-promised": "^8.0.0",
     "mocha": "^10.8.2",
+    "mocha-chain": "workspace:^",
     "npm-load-populate-files": "npm:load-populate-files@latest",
     "npm-nx-populate-files": "npm:nx-populate-files@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "nx-tsc": "workspace:^",
+    "sinon": "^19.0.2",
+    "sinon-typed-stub": "workspace:^",
     "typescript": "^5.6.3"
   }
 }

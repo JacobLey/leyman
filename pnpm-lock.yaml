@@ -343,21 +343,36 @@ importers:
       '@types/chai':
         specifier: ^5.0.1
         version: 5.0.1
+      '@types/chai-as-promised':
+        specifier: ^8.0.1
+        version: 8.0.1
       '@types/mocha':
         specifier: ^10.0.9
         version: 10.0.9
       '@types/node':
         specifier: ^22.8.6
         version: 22.8.6
+      '@types/sinon':
+        specifier: ^17.0.3
+        version: 17.0.3
       '@types/yargs':
         specifier: ^17.0.33
         version: 17.0.33
+      c8:
+        specifier: ^10.1.2
+        version: 10.1.2
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      chai-as-promised:
+        specifier: ^8.0.0
+        version: 8.0.0(chai@5.1.2)
       mocha:
         specifier: ^10.8.2
         version: 10.8.2
+      mocha-chain:
+        specifier: workspace:^
+        version: link:../../tools/mocha-chain
       npm-load-populate-files:
         specifier: npm:load-populate-files@latest
         version: load-populate-files@0.0.11(@biomejs/biome@1.9.4)
@@ -370,6 +385,12 @@ importers:
       nx-tsc:
         specifier: workspace:^
         version: link:../../tools/nx-tsc
+      sinon:
+        specifier: ^19.0.2
+        version: 19.0.2
+      sinon-typed-stub:
+        specifier: workspace:^
+        version: link:../../tools/sinon-typed-stub
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
