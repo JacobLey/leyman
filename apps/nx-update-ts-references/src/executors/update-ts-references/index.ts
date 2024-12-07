@@ -2,14 +2,17 @@ import { bind, createContainer } from 'npm-haywire';
 import { handler } from 'nx-plugin-handler';
 import { dependenciesModule } from '../../lib/dependencies-module.js';
 import { updateTsReferencesId } from '../../lib/update-ts-references.js';
-import { NxUpdateTsReferencesExecutorFactory } from './executor.js';
+import { NxUpdateTsReferencesExecutor } from './executor.js';
+import { errorLoggerId, executorDependenciesModule, isCiId } from './lib/dependencies.js';
 
-const executorFactory = createContainer(
-    dependenciesModule.addBinding(
-        bind(NxUpdateTsReferencesExecutorFactory)
-            .withDependencies([updateTsReferencesId])
-            .withConstructorProvider()
-    )
-).get(NxUpdateTsReferencesExecutorFactory);
+const executor = createContainer(
+    dependenciesModule
+        .mergeModule(executorDependenciesModule)
+        .addBinding(
+            bind(NxUpdateTsReferencesExecutor)
+                .withDependencies([isCiId, updateTsReferencesId, errorLoggerId])
+                .withConstructorProvider()
+        )
+).get(NxUpdateTsReferencesExecutor);
 
-export default handler(executorFactory.execute.bind(executorFactory));
+export default handler(executor.execute.bind(executor));

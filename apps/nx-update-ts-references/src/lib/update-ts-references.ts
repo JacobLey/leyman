@@ -14,10 +14,6 @@ import { isTsConfig, type TsConfig } from './tsconfig-validator.js';
  */
 export type IUpdateTsReferences = (params: {
     /**
-     * Path to root of package with tsconfig.json
-     */
-    packageRoot: string;
-    /**
      * List of paths to root of dependencies
      */
     dependencyRootPaths: string[];
@@ -60,7 +56,6 @@ export class UpdateTsReferencesFactory implements IUpdateTsReferencesFactory {
     }
 
     public async updateTsReferences({
-        packageRoot,
         dependencyRootPaths,
         tsConfigPath,
         dryRun,
@@ -75,7 +70,7 @@ export class UpdateTsReferencesFactory implements IUpdateTsReferencesFactory {
             .sort((a, b) => a.path.localeCompare(b.path))
             .map(({ path }) => ({
                 path: UpdateTsReferencesFactory.#transformTsConfigPath(
-                    Path.relative(packageRoot, path)
+                    Path.relative(Path.join(tsConfigPath, '..'), path)
                 ),
             }));
 

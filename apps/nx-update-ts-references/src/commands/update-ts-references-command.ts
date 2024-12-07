@@ -24,18 +24,18 @@ export class UpdateTsReferencesCommand implements Command<UpdateTsReferencesComm
 
     readonly #updateTsReferences: IUpdateTsReferences;
     readonly #parseCwd: ParseCwd;
-    readonly #projectGraph: AsyncSupplier<ProjectGraph>;
+    readonly #getProjectGraph: AsyncSupplier<ProjectGraph>;
     readonly #readFile: typeof ReadFile;
 
     public constructor(
         updateTsReferences: IUpdateTsReferences,
         parseCwd: ParseCwd,
-        projectGraph: AsyncSupplier<ProjectGraph>,
+        getProjectGraph: AsyncSupplier<ProjectGraph>,
         readFile: typeof ReadFile
     ) {
         this.#updateTsReferences = updateTsReferences;
         this.#parseCwd = parseCwd;
-        this.#projectGraph = projectGraph;
+        this.#getProjectGraph = getProjectGraph;
         this.#readFile = readFile;
 
         this.handler = this.handler.bind(this);
@@ -67,10 +67,9 @@ export class UpdateTsReferencesCommand implements Command<UpdateTsReferencesComm
         const dependencyRootPaths = await this.#getDependencyRootPaths(packageRoot);
 
         const changed = await this.#updateTsReferences({
-            packageRoot,
             dependencyRootPaths,
             dryRun: options.ci || options.dryRun,
-            tsConfigPath: Path.resolve(packageRoot, 'tsconfig.json'),
+            tsConfigPath: Path.join(packageRoot, 'tsconfig.json'),
         });
 
         if (options.ci && changed) {
@@ -80,7 +79,7 @@ export class UpdateTsReferencesCommand implements Command<UpdateTsReferencesComm
 
     async #getDependencyRootPaths(packageRoot: string): Promise<string[]> {
         const [projectGraph, rawProjectJson] = await Promise.all([
-            this.#projectGraph(),
+            this.#getProjectGraph(),
             this.#readFile(Path.join(packageRoot, 'project.json'), 'utf8'),
         ]);
 
@@ -97,6 +96,6 @@ export class UpdateTsReferencesCommand implements Command<UpdateTsReferencesComm
         )
             .filter(node => !!node)
             .map(node => Path.relative(root, node.data.root))
-            .map(path => Path.resolve(packageRoot, path, 'tsconfig.json'));
+            .map(path => Path.join(packageRoot, path, 'tsconfig.json'));
     }
 }
