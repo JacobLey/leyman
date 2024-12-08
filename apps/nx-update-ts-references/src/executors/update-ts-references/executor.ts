@@ -63,7 +63,7 @@ export class NxUpdateTsReferencesExecutor {
         const projectName = context.projectName!;
         const packageRoot = Path.join(
             context.root,
-            context.projectsConfigurations.projects[projectName]!.root
+            context.projectGraph.nodes[projectName]!.data.root
         );
 
         return {
@@ -71,10 +71,10 @@ export class NxUpdateTsReferencesExecutor {
             dryRun: options.dryRun ?? false,
             tsConfig: Path.join(packageRoot, 'tsconfig.json'),
             dependencies: context.projectGraph.dependencies[projectName]!.map(
-                dependency => context.projectsConfigurations.projects[dependency.target]
+                dependency => context.projectGraph.nodes[dependency.target]
             )
                 .filter(config => !!config)
-                .map(config => Path.join(context.root, config.root, 'tsconfig.json')),
+                .map(config => Path.join(context.root, config.data.root, 'tsconfig.json')),
         };
     }
 }

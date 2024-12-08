@@ -34,20 +34,7 @@ suite('NxUpdateTsReferencesExecutor', () => {
                     projectName: 'projectName',
                     root: '/path/to/workspace',
                     projectsConfigurations: {
-                        projects: {
-                            projectName: {
-                                root: '/path/to/package-name',
-                            },
-                            dependency1: {
-                                root: '/path/to/dependency-1',
-                            },
-                            dependency2: {
-                                root: '/path/to/dependency/2',
-                            },
-                            ignore: {
-                                root: '<ignore>',
-                            },
-                        },
+                        projects: {},
                         version: 123,
                     },
                     projectGraph: {
@@ -72,7 +59,36 @@ suite('NxUpdateTsReferencesExecutor', () => {
                                 },
                             ],
                         },
-                        nodes: {},
+                        nodes: {
+                            projectName: {
+                                type: 'app',
+                                name: 'projectName',
+                                data: {
+                                    root: '/path/to/package-name',
+                                },
+                            },
+                            dependency1: {
+                                type: 'lib',
+                                name: 'dependency1',
+                                data: {
+                                    root: '/path/to/dependency-1',
+                                },
+                            },
+                            dependency2: {
+                                type: 'lib',
+                                name: 'dependency1',
+                                data: {
+                                    root: '/path/to/dependency/2',
+                                },
+                            },
+                            ignore: {
+                                type: 'lib',
+                                name: 'ignore',
+                                data: {
+                                    root: '<ignore>',
+                                },
+                            },
+                        },
                     },
                     nxJsonConfiguration: {},
                     cwd: '<cwd>',
@@ -104,14 +120,7 @@ suite('NxUpdateTsReferencesExecutor', () => {
                     projectName: 'projectName',
                     root: '/path/to/workspace',
                     projectsConfigurations: {
-                        projects: {
-                            projectName: {
-                                root: '/path/to/package-name',
-                            },
-                            dependency1: {
-                                root: '/path/to/dependency-1',
-                            },
-                        },
+                        projects: {},
                         version: 123,
                     },
                     projectGraph: {
@@ -129,7 +138,22 @@ suite('NxUpdateTsReferencesExecutor', () => {
                                 },
                             ],
                         },
-                        nodes: {},
+                        nodes: {
+                            projectName: {
+                                type: 'app',
+                                name: 'projectName',
+                                data: {
+                                    root: '/path/to/package-name',
+                                },
+                            },
+                            dependency1: {
+                                type: 'lib',
+                                name: 'dependency1',
+                                data: {
+                                    root: '/path/to/dependency-1',
+                                },
+                            },
+                        },
                     },
                     nxJsonConfiguration: {},
                     cwd: '<cwd>',
@@ -158,14 +182,7 @@ suite('NxUpdateTsReferencesExecutor', () => {
                     projectName: 'projectName',
                     root: '/path/to/workspace',
                     projectsConfigurations: {
-                        projects: {
-                            projectName: {
-                                root: '/path/to/package-name',
-                            },
-                            dependency1: {
-                                root: '/path/to/dependency-1',
-                            },
-                        },
+                        projects: {},
                         version: 123,
                     },
                     projectGraph: {
@@ -183,7 +200,22 @@ suite('NxUpdateTsReferencesExecutor', () => {
                                 },
                             ],
                         },
-                        nodes: {},
+                        nodes: {
+                            projectName: {
+                                type: 'app',
+                                name: 'projectName',
+                                data: {
+                                    root: '/path/to/package-name',
+                                },
+                            },
+                            dependency1: {
+                                type: 'lib',
+                                name: 'dependency1',
+                                data: {
+                                    root: '/path/to/dependency-1',
+                                },
+                            },
+                        },
                     },
                     nxJsonConfiguration: {},
                     cwd: '<cwd>',
