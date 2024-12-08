@@ -88,6 +88,7 @@ export class UpdateTsReferencesFactory implements IUpdateTsReferencesFactory {
             },
             {
                 dryRun,
+                check: false,
             }
         );
         return updated;

@@ -65,6 +65,7 @@ suite('UpdateTsReferencesFactory', () => {
                     },
                     {
                         dryRun: false,
+                        check: false,
                     }
                 )
                 .resolves({ updated: true, filePath: '<file-path>', reason: 'content-changed' });
