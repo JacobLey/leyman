@@ -1,6 +1,7 @@
 import { exec } from 'node:child_process';
 import Path from 'node:path';
 import { promisify } from 'node:util';
+import type { Context } from 'mocha';
 import { suite, test } from 'mocha-chain';
 import { expect } from '../chai-hooks.js';
 
@@ -26,7 +27,10 @@ suite('cli', () => {
 
     suite('commands', () => {
         suite('default/update-ts-references', () => {
-            test('success', async () => {
+            test('success', async function (this: Context) {
+                // Generating task graph is especially slow on CI
+                this.timeout(5000);
+
                 const result = await execAsync(`./bin.mjs --project-root ${projectRoot} --ci`);
 
                 expect(result.stdout).to.contain('');
