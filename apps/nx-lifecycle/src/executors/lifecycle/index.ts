@@ -34,4 +34,4 @@ const pluginModule = createModule(
 
 const lifecycle = createContainer(dependenciesModule.mergeModule(pluginModule)).get(Lifecycle);
 
-export default handler(lifecycle.lifecycle.bind(lifecycle));
+export default handler(lifecycle.lifecycle);

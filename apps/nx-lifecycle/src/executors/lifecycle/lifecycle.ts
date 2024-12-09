@@ -33,6 +33,12 @@ export class Lifecycle {
     readonly #isNxJson: IsNxJson;
     readonly #isProjectJson: IsProjectJson;
     readonly #logger: Logger;
+
+    public readonly lifecycle: (
+        options: LifecycleOptions,
+        context: SimpleExecutorContext
+    ) => Promise<{ success: boolean }>;
+
     public constructor(
         normalizer: Normalizer,
         readFile: (typeof fs)['readFile'],
@@ -51,9 +57,11 @@ export class Lifecycle {
         this.#isNxJson = isNxJson;
         this.#isProjectJson = isProjectJson;
         this.#logger = logger;
+
+        this.lifecycle = this.#lifecycle.bind(this);
     }
 
-    public async lifecycle(
+    async #lifecycle(
         options: LifecycleOptions,
         context: SimpleExecutorContext
     ): Promise<{ success: boolean }> {
