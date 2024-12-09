@@ -1,6 +1,5 @@
-import type { Directory } from 'parse-cwd';
+import type { Directory, ParseCwd } from 'parse-cwd';
 import type { Barrel } from './lib/barrel.js';
-import type { ParseCwd } from './lib/dependencies.js';
 
 /**
  * Programatically invoke barrelify.
