@@ -4,6 +4,8 @@ import { fileURLToPath } from 'node:url';
 
 export type Directory = string | URL | null | undefined;
 
+export type ParseCwd = (cwd?: Directory | { cwd?: Directory }) => Promise<string>;
+
 /**
  * Parse `cwd` from optional relative path or URL.
  * Resolves relative to `process.cwd()`.
@@ -13,7 +15,9 @@ export type Directory = string | URL | null | undefined;
  * @param cwd - path to resolve to cwd, optionally as an object { cwd: '/path...' }
  * @returns full path to cwd
  */
-export const parseCwd = async (cwd?: Directory | { cwd?: Directory }): Promise<string> => {
+export const parseCwd: ParseCwd = async (
+    cwd?: Directory | { cwd?: Directory }
+): Promise<string> => {
     let rawCwd: Directory;
 
     if (typeof cwd === 'string' || cwd instanceof URL) {
