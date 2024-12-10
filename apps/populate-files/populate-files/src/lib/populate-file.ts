@@ -1,71 +1,94 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import type { mkdir as Mkdir, writeFile as WriteFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { areUint8ArraysEqual } from 'uint8array-extras';
-import { loadRawFile } from './loader.js';
+import { formatErrorMessage } from './lib/errors.js';
 import type {
     NormalizedFileParams,
     PopulationResponse,
     PopulationResponseUpdateReason,
-} from './types.js';
+} from './lib/types.js';
+import type { SafeLoadFile } from './loader.js';
 
-export const formatErrorMessage = ({
-    filePath,
-    reason,
-}: {
-    filePath: string;
-    reason: PopulationResponseUpdateReason;
-}): string => `File ${filePath} not up to date. Reason: ${reason}`;
-
-const createPathAndWrite = async ({
-    filePath,
-    content,
-    dryRun,
-}: {
-    filePath: string;
-    content: Uint8Array;
-    dryRun: boolean;
-}): Promise<void> => {
-    if (dryRun) {
-        return;
-    }
-
-    await mkdir(Path.dirname(filePath), {
-        recursive: true,
-    });
-
-    await writeFile(filePath, content);
-};
-
-export const internalPopulateFile = async ({
+export type InternalPopulateFile = ({
     filePath,
     content,
     check,
     dryRun,
-}: NormalizedFileParams): Promise<PopulationResponse> => {
-    const rawFile = await loadRawFile(filePath);
+}: NormalizedFileParams) => Promise<PopulationResponse>;
 
-    let reason: PopulationResponseUpdateReason;
+/**
+ * Container for internal file population logic
+ */
+export class PopulateFile {
+    readonly #safeLoadFile: SafeLoadFile;
+    readonly #mkdir: typeof Mkdir;
+    readonly #writeFile: typeof WriteFile;
 
-    if (rawFile === null) {
-        reason = 'file-not-exist';
+    public readonly internalPopulateFile: InternalPopulateFile;
+
+    public constructor(
+        safeLoadFile: SafeLoadFile,
+        mkdir: typeof Mkdir,
+        writeFile: typeof WriteFile
+    ) {
+        this.#safeLoadFile = safeLoadFile;
+        this.#mkdir = mkdir;
+        this.#writeFile = writeFile;
+
+        this.internalPopulateFile = this.#internalPopulateFile.bind(this);
+    }
+
+    async #internalPopulateFile({
+        filePath,
+        content,
+        check,
+        dryRun,
+    }: NormalizedFileParams): Promise<PopulationResponse> {
+        const rawFile = await this.#safeLoadFile(filePath);
+
+        let reason: PopulationResponseUpdateReason;
+
+        if (rawFile === null) {
+            reason = 'file-not-exist';
+            if (check) {
+                throw new Error(formatErrorMessage({ filePath, reason }));
+            }
+
+            await this.#createPathAndWrite({ filePath, content, dryRun });
+            return { filePath, reason, updated: true };
+        }
+
+        if (areUint8ArraysEqual(rawFile, content)) {
+            return { filePath, updated: false };
+        }
+
+        reason = 'content-changed';
+
         if (check) {
             throw new Error(formatErrorMessage({ filePath, reason }));
         }
+        await this.#createPathAndWrite({ filePath, content, dryRun });
 
-        await createPathAndWrite({ filePath, content, dryRun });
         return { filePath, reason, updated: true };
     }
 
-    if (areUint8ArraysEqual(rawFile, content)) {
-        return { filePath, updated: false };
+    async #createPathAndWrite({
+        filePath,
+        content,
+        dryRun,
+    }: {
+        filePath: string;
+        content: Uint8Array;
+        dryRun: boolean;
+    }): Promise<void> {
+        if (dryRun) {
+            return;
+        }
+
+        await this.#mkdir(Path.dirname(filePath), {
+            recursive: true,
+        });
+
+        await this.#writeFile(filePath, content);
     }
-
-    reason = 'content-changed';
-
-    if (check) {
-        throw new Error(formatErrorMessage({ filePath, reason }));
-    }
-    await createPathAndWrite({ filePath, content, dryRun });
-
-    return { filePath, reason, updated: true };
-};
+}

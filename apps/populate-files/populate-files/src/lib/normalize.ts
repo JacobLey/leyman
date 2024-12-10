@@ -1,68 +1,92 @@
 import Path from 'node:path';
-import { isCI } from 'ci-info';
-import { parseCwd } from 'npm-parse-cwd';
 import { stringToUint8Array } from 'uint8array-extras';
-import { formatText } from 'format-file';
+import type { TextFormatter } from 'format-file';
+import type { ParseCwd } from 'parse-cwd';
 import type {
     FileContent,
     NormalizedFileParams,
     NormalizedFilesParams,
     PopulateFileParams,
     RawOptions,
-} from './types.js';
+} from './lib/types.js';
 
-const parseContent = async (content: FileContent): Promise<Uint8Array> => {
-    if (content instanceof Uint8Array) {
-        return content;
+/**
+ * Container class for normalizing and standardizing user input
+ */
+export class Normalize {
+    readonly #isCi: boolean;
+    readonly #parseCwd: ParseCwd;
+    readonly #textFormatter: TextFormatter;
+
+    public constructor(isCi: boolean, parseCwd: ParseCwd, textFormatter: TextFormatter) {
+        this.#isCi = isCi;
+        this.#parseCwd = parseCwd;
+        this.#textFormatter = textFormatter;
     }
-    const str =
-        typeof content === 'string'
-            ? content
-            : await formatText(JSON.stringify(content), { ext: '.json' });
 
-    return stringToUint8Array(str);
-};
+    public async normalizeFileParams(
+        params: PopulateFileParams,
+        options: RawOptions = {}
+    ): Promise<NormalizedFileParams> {
+        const [cwd, loadedContent] = await Promise.all([
+            this.#parseCwd(options.cwd),
+            params.content,
+        ]);
 
-const normalizeCheck = (check?: boolean | null): boolean => check ?? isCI;
-const normalizeDryRun = (dryRun?: boolean | null): boolean => dryRun ?? false;
+        return {
+            filePath: Path.resolve(cwd, params.filePath),
+            content: await this.#parseContent(loadedContent),
+            check: this.#normalizeCheck(options.check),
+            dryRun: Normalize.#normalizeDryRun(options.dryRun),
+        };
+    }
 
-export const normalizeFileParams = async (
-    params: PopulateFileParams,
-    options: RawOptions = {}
-): Promise<NormalizedFileParams> => {
-    const [cwd, loadedContent] = await Promise.all([parseCwd(options.cwd), params.content]);
+    public async normalizeFilesParams(
+        params: PopulateFileParams[],
+        options: RawOptions = {}
+    ): Promise<NormalizedFilesParams> {
+        const loadedContentsPromise = Promise.all(
+            params.map(async param => ({
+                filePath: param.filePath,
+                content: await param.content,
+            }))
+        );
 
-    return {
-        filePath: Path.resolve(cwd, params.filePath),
-        content: await parseContent(loadedContent),
-        check: normalizeCheck(options.check),
-        dryRun: normalizeDryRun(options.dryRun),
-    };
-};
+        const [cwd, loadedContents] = await Promise.all([
+            this.#parseCwd(options.cwd),
+            loadedContentsPromise,
+        ]);
 
-export const normalizeFilesParams = async (
-    params: PopulateFileParams[],
-    options: RawOptions = {}
-): Promise<NormalizedFilesParams> => {
-    const loadedContentsPromise = Promise.all(
-        params.map(async param => ({
-            filePath: param.filePath,
-            content: await param.content,
-        }))
-    );
+        const files = await Promise.all(
+            loadedContents.map(async loadedContent => ({
+                filePath: Path.resolve(cwd, loadedContent.filePath),
+                content: await this.#parseContent(loadedContent.content),
+            }))
+        );
 
-    const [cwd, loadedContents] = await Promise.all([parseCwd(options.cwd), loadedContentsPromise]);
+        return {
+            files,
+            check: this.#normalizeCheck(options.check),
+            dryRun: Normalize.#normalizeDryRun(options.dryRun),
+        };
+    }
 
-    const files = await Promise.all(
-        loadedContents.map(async loadedContent => ({
-            filePath: Path.resolve(cwd, loadedContent.filePath),
-            content: await parseContent(loadedContent.content),
-        }))
-    );
+    async #parseContent(content: FileContent): Promise<Uint8Array> {
+        if (content instanceof Uint8Array) {
+            return content;
+        }
+        const str =
+            typeof content === 'string'
+                ? content
+                : await this.#textFormatter(JSON.stringify(content), { ext: '.json' });
 
-    return {
-        files,
-        check: normalizeCheck(options.check),
-        dryRun: normalizeDryRun(options.dryRun),
-    };
-};
+        return stringToUint8Array(str);
+    }
+
+    #normalizeCheck(check?: boolean | null): boolean {
+        return check ?? this.#isCi;
+    }
+    static #normalizeDryRun(dryRun?: boolean | null): boolean {
+        return dryRun ?? false;
+    }
+}
