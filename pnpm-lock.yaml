@@ -1031,6 +1031,9 @@ importers:
       '@types/sinon':
         specifier: ^17.0.3
         version: 17.0.3
+      '@types/tmp':
+        specifier: ^0.2.6
+        version: 0.2.6
       barrelify:
         specifier: workspace:^
         version: link:../../apps/barrelify
