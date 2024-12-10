@@ -6,6 +6,8 @@
     "eslint": {},
     "npm-update-ts-references": {},
     "tsc": {},
+    "coverage-reset": {},
+    "mocha-integration-test": {},
     "analyze:_": {},
     "analyze:format": {},
     "analyze:lint": {},
