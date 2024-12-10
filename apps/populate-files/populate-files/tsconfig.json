@@ -16,7 +16,19 @@
       "path": "../../../tools/format-file"
     },
     {
+      "path": "../../../tools/haywire"
+    },
+    {
+      "path": "../../../tools/mocha-chain"
+    },
+    {
       "path": "../../../tools/nx-tsc"
+    },
+    {
+      "path": "../../../tools/parse-cwd"
+    },
+    {
+      "path": "../../../tools/sinon-typed-stub"
     }
   ]
 }

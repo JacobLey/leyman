@@ -596,9 +596,12 @@ importers:
       format-file:
         specifier: workspace:^
         version: link:../../../tools/format-file
-      npm-parse-cwd:
-        specifier: npm:parse-cwd@latest
-        version: parse-cwd@1.0.13
+      haywire:
+        specifier: workspace:^
+        version: link:../../../tools/haywire
+      parse-cwd:
+        specifier: workspace:^
+        version: link:../../../tools/parse-cwd
       uint8array-extras:
         specifier: ^1.4.0
         version: 1.4.0
@@ -612,24 +615,45 @@ importers:
       '@types/chai':
         specifier: ^5.0.1
         version: 5.0.1
+      '@types/chai-as-promised':
+        specifier: ^8.0.1
+        version: 8.0.1
       '@types/mocha':
         specifier: ^10.0.9
         version: 10.0.9
       '@types/node':
         specifier: ^22.8.6
         version: 22.8.6
+      '@types/tmp':
+        specifier: ^0.2.6
+        version: 0.2.6
+      c8:
+        specifier: ^10.1.2
+        version: 10.1.2
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      chai-as-promised:
+        specifier: ^8.0.0
+        version: 8.0.0(chai@5.1.2)
       mocha:
         specifier: ^10.8.2
         version: 10.8.2
+      mocha-chain:
+        specifier: workspace:^
+        version: link:../../../tools/mocha-chain
       nx-tsc:
         specifier: workspace:^
         version: link:../../../tools/nx-tsc
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../nx-update-ts-references
+      sinon-typed-stub:
+        specifier: workspace:^
+        version: link:../../../tools/sinon-typed-stub
+      tmp-promise:
+        specifier: ^3.0.3
+        version: 3.0.3
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -2948,6 +2972,9 @@ packages:
 
   '@types/sinonjs__fake-timers@8.1.5':
     resolution: {integrity: sha512-mQkU2jY8jJEF7YHjHvsQO8+3ughTL1mcnn96igfhONmR+fUPSKIkefQYpSe8bsly2Ep7oQbn/6VG5/9/0qcArQ==}
+
+  '@types/tmp@0.2.6':
+    resolution: {integrity: sha512-chhaNf2oKHlRkDGt+tiKE2Z5aJ6qalm7Z9rlLdBwmOiAAf09YQvvoLXjWK4HWPF1xU/fqvMgfNfpVoBscA/tKA==}
 
   '@types/yargs-parser@21.0.3':
     resolution: {integrity: sha512-I4q9QU9MQv4oEOz4tAHJtNz1cwuLxn2F3xcc2iV5WdqLPpUnj30aUuxt1mAxYTG+oe8CZMV/+6rU4S4gRDzqtQ==}
@@ -7664,6 +7691,8 @@ snapshots:
       '@types/sinonjs__fake-timers': 8.1.5
 
   '@types/sinonjs__fake-timers@8.1.5': {}
+
+  '@types/tmp@0.2.6': {}
 
   '@types/yargs-parser@21.0.3': {}
 
