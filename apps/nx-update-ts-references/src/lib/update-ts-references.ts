@@ -28,10 +28,6 @@ export type IUpdateTsReferences = (params: {
 }) => Promise<boolean>;
 export const updateTsReferencesId = identifier<IUpdateTsReferences>();
 
-interface IUpdateTsReferencesFactory {
-    updateTsReferences: IUpdateTsReferences;
-}
-
 interface TsConfigFile {
     path: string;
     json: TsConfig;
@@ -40,10 +36,12 @@ interface TsConfigFile {
 /**
  * Factory for UpdateTsReferences
  */
-export class UpdateTsReferencesFactory implements IUpdateTsReferencesFactory {
+export class UpdateTsReferencesFactory {
     readonly #readFile: typeof ReadFile;
     readonly #formatText: TextFormatter;
     readonly #populateFile: PopulateFile;
+
+    public readonly updateTsReferences: IUpdateTsReferences;
 
     public constructor(
         readFile: typeof ReadFile,
@@ -53,9 +51,11 @@ export class UpdateTsReferencesFactory implements IUpdateTsReferencesFactory {
         this.#readFile = readFile;
         this.#formatText = formatText;
         this.#populateFile = populateFile;
+
+        this.updateTsReferences = this.#updateTsReferences.bind(this);
     }
 
-    public async updateTsReferences({
+    async #updateTsReferences({
         dependencyRootPaths,
         tsConfigPath,
         dryRun,

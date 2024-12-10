@@ -15,4 +15,4 @@ const executor = createContainer(
         )
 ).get(NxUpdateTsReferencesExecutor);
 
-export default handler(executor.execute.bind(executor));
+export default handler(executor.execute);

@@ -19,6 +19,6 @@ export const dependenciesModule = createModule(bind(readFileId).withInstance(rea
     .addBinding(
         bind(updateTsReferencesId)
             .withDependencies([UpdateTsReferencesFactory])
-            .withProvider(factory => factory.updateTsReferences.bind(factory))
+            .withProvider(factory => factory.updateTsReferences)
             .scoped(optimisticSingletonScope)
     );

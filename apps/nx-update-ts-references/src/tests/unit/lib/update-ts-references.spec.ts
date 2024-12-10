@@ -20,11 +20,11 @@ suite('UpdateTsReferencesFactory', () => {
             stubbedReadFile: stubbedReadFile.stub,
             stubbedTextFormatter: stubbedTextFormatter.stub,
             stubbedPopulateFile: stubbedPopulateFile.stub,
-            updateTsReferencesFactory: new UpdateTsReferencesFactory(
+            updateTsReferences: new UpdateTsReferencesFactory(
                 stubbedReadFile.method,
                 stubbedTextFormatter.method,
                 stubbedPopulateFile.method
-            ),
+            ).updateTsReferences,
         };
     });
 
@@ -71,7 +71,7 @@ suite('UpdateTsReferencesFactory', () => {
                 .resolves({ updated: true, filePath: '<file-path>', reason: 'content-changed' });
 
             expect(
-                await ctx.updateTsReferencesFactory.updateTsReferences({
+                await ctx.updateTsReferences({
                     tsConfigPath: '/path/to/ts/config/tsconfig.json',
                     dependencyRootPaths: [
                         '/path/to/depdendency-1/tsconfig.json',
@@ -125,7 +125,7 @@ suite('UpdateTsReferencesFactory', () => {
             ctx.stubbedPopulateFile.resolves({ updated: false, filePath: '<file-path>' });
 
             expect(
-                await ctx.updateTsReferencesFactory.updateTsReferences({
+                await ctx.updateTsReferences({
                     tsConfigPath: '/path/to/ts/config/tsconfig.other.json',
                     dependencyRootPaths: ['/path/to/depdendency-1/tsconfig.other.json'],
                     dryRun: false,
@@ -171,7 +171,7 @@ suite('UpdateTsReferencesFactory', () => {
             });
 
             expect(
-                await ctx.updateTsReferencesFactory.updateTsReferences({
+                await ctx.updateTsReferences({
                     tsConfigPath: '/path/to/ts/config/tsconfig.json',
                     dependencyRootPaths: [
                         '/path/to/depdendency-1/tsconfig.json',

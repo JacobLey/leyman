@@ -19,6 +19,11 @@ export class NxUpdateTsReferencesExecutor {
     readonly #updateTsReferences: IUpdateTsReferences;
     readonly #logger: ErrorLogger;
 
+    public readonly execute: (
+        options: UpdateTsReferencesOptions,
+        context: ExecutorContext
+    ) => Promise<{ success: boolean }>;
+
     public constructor(
         isCI: boolean,
         updateTsReferences: IUpdateTsReferences,
@@ -27,6 +32,8 @@ export class NxUpdateTsReferencesExecutor {
         this.#isCI = isCI;
         this.#updateTsReferences = updateTsReferences;
         this.#logger = logger;
+
+        this.execute = this.#execute.bind(this);
     }
 
     /**
@@ -36,7 +43,7 @@ export class NxUpdateTsReferencesExecutor {
      * @param context - nx workspace context
      * @returns promise of completion
      */
-    public async execute(
+    async #execute(
         options: UpdateTsReferencesOptions,
         context: ExecutorContext
     ): Promise<{ success: boolean }> {

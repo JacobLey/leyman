@@ -16,11 +16,11 @@ suite('NxUpdateTsReferencesExecutor', () => {
         return {
             stubbedUpdateTsReferences: stubbedUpdateTsReferences.stub,
             stubbedLogger: stubbedLogger.stub,
-            nxUpdateTsReferencesExecutor: new NxUpdateTsReferencesExecutor(
+            executor: new NxUpdateTsReferencesExecutor(
                 true,
                 stubbedUpdateTsReferences.method,
                 stubbedLogger.method
-            ),
+            ).execute,
         };
     });
 
@@ -28,7 +28,7 @@ suite('NxUpdateTsReferencesExecutor', () => {
         ctx.stubbedUpdateTsReferences.resolves(true);
 
         expect(
-            await ctx.nxUpdateTsReferencesExecutor.execute(
+            await ctx.executor(
                 { check: false, dryRun: false },
                 {
                     projectName: 'projectName',
@@ -114,7 +114,7 @@ suite('NxUpdateTsReferencesExecutor', () => {
         ctx.stubbedUpdateTsReferences.resolves(false);
 
         expect(
-            await ctx.nxUpdateTsReferencesExecutor.execute(
+            await ctx.executor(
                 {},
                 {
                     projectName: 'projectName',
@@ -176,7 +176,7 @@ suite('NxUpdateTsReferencesExecutor', () => {
         ctx.stubbedUpdateTsReferences.resolves(true);
 
         expect(
-            await ctx.nxUpdateTsReferencesExecutor.execute(
+            await ctx.executor(
                 { check: true, dryRun: true },
                 {
                     projectName: 'projectName',
