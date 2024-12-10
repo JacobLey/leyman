@@ -26,9 +26,7 @@ export const barrelModule = dependenciesModule
     .addBinding(
         bind(isExplicitlyModuleDirectoryId)
             .withDependencies([FindPackageJson])
-            .withProvider(findPackageJson =>
-                findPackageJson.isExplicitlyModuleDirectory.bind(findPackageJson)
-            )
+            .withProvider(findPackageJson => findPackageJson.isExplicitlyModuleDirectory)
             .scoped(singletonScope)
     )
     .addBinding(

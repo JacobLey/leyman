@@ -17,32 +17,32 @@ const modulePackageSchema = objectSchema({
 const isModulePackage = new Ajv({ strict: true }).compile<SchemaType<typeof modulePackageSchema>>(
     modulePackageSchema
 );
-
+/**
+ * Returns true if the given file has a package.json that _explicitly_ sets `"type": "module"`.
+ *
+ * @param file - filename
+ * @returns true if module
+ */
 export type IsExplicitlyModuleDirectory = (file: string) => Promise<boolean>;
 export const isExplicitlyModuleDirectoryId = identifier<IsExplicitlyModuleDirectory>();
 
-interface IFindPackageJson {
-    isExplicitlyModuleDirectory: IsExplicitlyModuleDirectory;
-}
 /**
  * Package for loading the package.json of a given file.
  *
  * Can use this file to determine the "type" of packages by default (module vs commonjs).
  */
-export class FindPackageJson implements IFindPackageJson {
+export class FindPackageJson {
     readonly #findImport: FindImport;
+
+    public readonly isExplicitlyModuleDirectory: IsExplicitlyModuleDirectory;
 
     public constructor(findImport: FindImport) {
         this.#findImport = findImport;
+
+        this.isExplicitlyModuleDirectory = this.#isExplicitlyModuleDirectory.bind(this);
     }
 
-    /**
-     * Returns true if the given file has a package.json that _explicitly_ sets `"type": "module"`.
-     *
-     * @param file - filename
-     * @returns true if module
-     */
-    public async isExplicitlyModuleDirectory(file: string): Promise<boolean> {
+    async #isExplicitlyModuleDirectory(file: string): Promise<boolean> {
         const pkg = await this.#findImport('package.json', {
             cwd: file,
         });
