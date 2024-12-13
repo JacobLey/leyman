@@ -59,7 +59,7 @@ suite('Integration test', () => {
             expect(data).to.equal(prettyJson(content));
         });
 
-        withTmpFiles.test('Updates file out of sync', async ctx => {
+        withTmpFiles.test('Updates file out of sync, then skips future updates', async ctx => {
             const content = new Uint8Array([12, 34, 56, 78, 90]);
 
             expect(
@@ -78,6 +78,19 @@ suite('Integration test', () => {
 
             const data = await readFile(ctx.tmpJsonFile.path);
             expect(new Uint8Array(data)).to.deep.equal(content);
+
+            expect(
+                await populateFile(
+                    {
+                        filePath: ctx.tmpJsonFile.path,
+                        content,
+                    },
+                    { check: false }
+                )
+            ).to.deep.equal({
+                updated: false,
+                filePath: ctx.tmpJsonFile.path,
+            });
         });
 
         withTmpFiles.test('Does not update file during dry run', async ctx => {
@@ -120,6 +133,29 @@ suite('Integration test', () => {
             const data = await readFile(ctx.tmpJsonFile.path, 'utf8');
             expect(data).to.not.deep.equal(content);
         });
+
+        withTmpFiles.test('Errors when file is created during check', async ctx => {
+            const content = 'File will not exist';
+            const txtPath = Path.join(ctx.tmpDir.path, 'new-txt-file.txt');
+
+            await expect(
+                populateFile(
+                    {
+                        filePath: txtPath,
+                        content: Promise.resolve(content),
+                    },
+                    { check: true, dryRun: true }
+                )
+            ).to.eventually.be.rejectedWith(
+                Error,
+                `File ${txtPath} not up to date. Reason: file-not-exist`
+            );
+
+            await expect(readFile(txtPath, 'utf8')).to.eventually.be.rejectedWith(
+                Error,
+                'ENOENT: no such file or director'
+            );
+        });
     });
 
     suite('populateFiles', () => {
@@ -161,6 +197,31 @@ suite('Integration test', () => {
             ]);
             expect(jsonData).to.equal(prettyJson(content));
             expect(txtData).to.equal(content.foo);
+
+            expect(
+                await populateFiles(
+                    [
+                        {
+                            filePath: jsonFilePath,
+                            content,
+                        },
+                        {
+                            filePath: txtFilePath,
+                            content: content.foo,
+                        },
+                    ],
+                    { check: false }
+                )
+            ).to.deep.equal([
+                {
+                    updated: false,
+                    filePath: jsonFilePath,
+                },
+                {
+                    updated: false,
+                    filePath: txtFilePath,
+                },
+            ]);
         });
 
         withTmpFiles.test('Updates file out of sync', async ctx => {
