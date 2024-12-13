@@ -27,6 +27,8 @@
     }
   },
   "dependencies": {
+    "@swc/core": "^1.7.42",
+    "@swc/helpers": "^0.5.15",
     "common-proxy": "workspace:^",
     "haywire": "workspace:^",
     "nx-plugin-handler": "workspace:^"
@@ -41,7 +43,6 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
-    "@swc/core": "^1.7.42",
     "@types/chai": "^5.0.1",
     "@types/mocha": "^10.0.9",
     "@types/node": "^22.8.6",
