@@ -3,6 +3,7 @@
   "name": "format-file",
   "type": "module",
   "targets": {
+    "pnpm-dedicated-lockfile": {},
     "biome": {},
     "eslint": {},
     "barrelify": {},

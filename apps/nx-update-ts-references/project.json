@@ -2,6 +2,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "name": "nx-update-ts-references",
   "targets": {
+    "pnpm-dedicated-lockfile": {},
     "biome": {},
     "eslint": {},
     "npm-update-ts-references": {},

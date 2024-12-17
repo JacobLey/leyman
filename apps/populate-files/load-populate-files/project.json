@@ -2,6 +2,7 @@
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "name": "load-populate-files",
   "targets": {
+    "pnpm-dedicated-lockfile": {},
     "biome": {},
     "eslint": {},
     "update-ts-references": {},

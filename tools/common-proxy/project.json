@@ -3,6 +3,7 @@
   "name": "common-proxy",
   "type": "commonjs",
   "targets": {
+    "pnpm-dedicated-lockfile": {},
     "biome": {},
     "eslint": {},
     "npm-update-ts-references": {},
