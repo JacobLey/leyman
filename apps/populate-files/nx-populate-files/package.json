@@ -48,6 +48,7 @@
     "chai": "^5.1.2",
     "mocha": "^10.8.2",
     "nx-update-ts-references": "workspace:^",
+    "pnpm-dedicated-lockfile": "workspace:^",
     "typescript": "^5.6.3"
   }
 }

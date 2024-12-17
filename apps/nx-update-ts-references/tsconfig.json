@@ -7,6 +7,9 @@
   },
   "references": [
     {
+      "path": "../pnpm-dedicated-lockfile"
+    },
+    {
       "path": "../../leyman/eslint-config"
     },
     {

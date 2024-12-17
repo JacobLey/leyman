@@ -47,6 +47,7 @@
     "mocha": "^10.8.2",
     "mocha-chain": "workspace:^",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
+    "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "^19.0.2",
     "sinon-typed-stub": "workspace:^",
     "typescript": "^5.6.3"

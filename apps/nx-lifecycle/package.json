@@ -66,6 +66,7 @@
     "mocha-chain": "workspace:^",
     "nx-populate-files": "workspace:^",
     "nx-update-ts-references": "workspace:^",
+    "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "^19.0.2",
     "sinon-typed-stub": "workspace:^",
     "typescript": "^5.6.3"

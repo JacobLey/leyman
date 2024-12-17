@@ -36,8 +36,8 @@
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
-    "parse-cwd": "workspace:^",
     "npm-populate-files": "npm:populate-files@latest",
+    "parse-cwd": "workspace:^",
     "yargs": "^17.7.2"
   },
   "devDependencies": {
@@ -58,6 +58,7 @@
     "mocha": "^10.8.2",
     "mocha-chain": "workspace:^",
     "nx-update-ts-references": "workspace:^",
+    "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "^19.0.2",
     "sinon-typed-stub": "workspace:^",
     "ts-dedent": "^2.2.0",

@@ -120,6 +120,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -187,6 +190,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -279,6 +285,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -391,6 +400,9 @@ importers:
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
         version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -470,6 +482,9 @@ importers:
       '@types/sinon':
         specifier: ^17.0.3
         version: 17.0.3
+      '@types/tmp':
+        specifier: ^0.2.6
+        version: 0.2.6
       '@types/yargs':
         specifier: ^17.0.33
         version: 17.0.33
@@ -497,6 +512,9 @@ importers:
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
+      tmp-promise:
+        specifier: ^3.0.3
+        version: 3.0.3
       ts-dedent:
         specifier: ^2.2.0
         version: 2.2.0
@@ -546,6 +564,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -599,6 +620,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -666,6 +690,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../pnpm-dedicated-lockfile
       sinon-typed-stub:
         specifier: workspace:^
         version: link:../../../tools/sinon-typed-stub
@@ -842,6 +869,9 @@ importers:
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
         version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       tslib:
         specifier: ^2.8.1
         version: 2.8.1
@@ -890,6 +920,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -942,6 +975,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -987,6 +1023,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -1036,6 +1075,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -1100,6 +1142,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       prettier:
         specifier: ^3.3.3
         version: 3.3.3
@@ -1170,6 +1215,9 @@ importers:
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
         version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -1228,6 +1276,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -1282,6 +1333,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -1337,6 +1391,9 @@ importers:
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
         version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -1388,6 +1445,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -1448,6 +1508,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       react:
         specifier: ^18.3.1
         version: 18.3.1
@@ -1519,6 +1582,9 @@ importers:
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
         version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -1587,6 +1653,9 @@ importers:
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
         version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -1635,6 +1704,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -1677,6 +1749,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
@@ -1728,6 +1803,9 @@ importers:
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
         version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
         specifier: ^19.0.2
         version: 19.0.2
@@ -1776,6 +1854,9 @@ importers:
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../apps/nx-update-ts-references
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.6.3
         version: 5.6.3
