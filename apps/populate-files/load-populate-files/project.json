@@ -17,6 +17,8 @@
     "build:run": {},
     "build:post": {},
     "build": {},
+    "install:_": {},
+    "install": {},
     "test:_": {},
     "test:reset": {},
     "test:run": {},

@@ -291,7 +291,16 @@
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "dependsOn": []
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/pnpm-lock.yaml"
+      ],
+      "outputs": [
+        "{projectRoot}/.pnpm-lock"
+      ],
+      "dependsOn": [
+        "install:_"
+      ]
     },
     "npm-pnpm-dedicated-lockfile": {
       "executor": "nx:run-commands",
@@ -302,12 +311,22 @@
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "dependsOn": []
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/pnpm-lock.yaml"
+      ],
+      "outputs": [
+        "{projectRoot}/.pnpm-lock"
+      ],
+      "dependsOn": [
+        "install:_"
+      ]
     },
     "analyze:_": {
       "executor": "nx:noop",
       "dependsOn": [
-        "^build"
+        "^build",
+        "install"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -346,7 +365,8 @@
       "executor": "nx:noop",
       "dependsOn": [
         "^build",
-        "analyze"
+        "analyze",
+        "install"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -396,12 +416,33 @@
         "__lifecycle": {}
       }
     },
+    "install:_": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "^build"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "install": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "install:_",
+        "pnpm-dedicated-lockfile",
+        "npm-pnpm-dedicated-lockfile"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
     "test:_": {
       "executor": "nx:noop",
       "dependsOn": [
         "^test",
         "analyze",
-        "build"
+        "build",
+        "install"
       ],
       "configurations": {
         "__lifecycle": {}

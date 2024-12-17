@@ -23,7 +23,8 @@
               "lint"
             ],
             "dependsOn": [
-              "^build"
+              "^build",
+              "install"
             ]
           },
           "build": {
@@ -34,7 +35,13 @@
             ],
             "dependsOn": [
               "^build",
-              "analyze"
+              "analyze",
+              "install"
+            ]
+          },
+          "install": {
+            "dependsOn": [
+              "^build"
             ]
           },
           "test": {
@@ -46,11 +53,14 @@
             "dependsOn": [
               "^test",
               "analyze",
-              "build"
+              "build",
+              "install"
             ]
           }
         },
         "bindings": {
+          "pnpm-dedicated-lockfile": "install",
+          "npm-pnpm-dedicated-lockfile": "install",
           "eslint": "analyze:lint",
           "biome": "analyze:format",
           "barrelify": "build:pre",
@@ -80,6 +90,8 @@
     "build:run": {},
     "build:post": {},
     "build": {},
+    "install:_": {},
+    "install": {},
     "test:_": {},
     "test:reset": {},
     "test:run": {},
