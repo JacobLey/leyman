@@ -20,9 +20,6 @@
     },
     {
       "path": "../mocha-chain"
-    },
-    {
-      "path": "../nx-tsc"
     }
   ]
 }

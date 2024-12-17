@@ -17,9 +17,6 @@
     },
     {
       "path": "../../tools/mocha-chain"
-    },
-    {
-      "path": "../../tools/nx-tsc"
     }
   ]
 }

@@ -16,9 +16,6 @@
       "path": "../mocha-chain"
     },
     {
-      "path": "../nx-tsc"
-    },
-    {
       "path": "../parse-cwd"
     }
   ]

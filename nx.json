@@ -8,6 +8,7 @@
       "{workspaceRoot}/tsconfig.build.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
+      "{projectRoot}/.swcrc",
       "{projectRoot}/.pnpm-lock",
       "{projectRoot}/src/**/*.(c|m)?tsx?",
       "{projectRoot}/src/**/*.json",
@@ -103,6 +104,33 @@
         "{projectRoot}/**/index.(c|m)?ts"
       ]
     },
+    "delete-dist": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "rm -rf ./dist"
+        ],
+        "parallel": true,
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "build:_"
+      ]
+    },
+    "populate-static": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "cp ./.swcrc.jsonc {projectRoot}/.swcrc"
+        ],
+        "parallel": true,
+        "color": true
+      },
+      "dependsOn": [
+        "build:_"
+      ]
+    },
     "update-ts-references": {
       "executor": "nx-update-ts-references:update-ts-references",
       "cache": true,
@@ -132,26 +160,17 @@
       ]
     },
     "tsc": {
-      "executor": "nx-tsc:build",
+      "executor": "nx:run-commands",
       "options": {
-        "tsConfig": "{projectRoot}/tsconfig.json"
-      },
-      "cache": true,
-      "inputs": [
-        "ts-source",
-        "^ts-output"
-      ],
-      "outputs": [
-        "{projectRoot}/dist"
-      ],
-      "dependsOn": [
-        "build:pre"
-      ]
-    },
-    "npm-tsc": {
-      "executor": "npm-nx-tsc:build",
-      "options": {
-        "tsConfig": "{projectRoot}/tsconfig.json"
+        "commands": [
+          "swc ./src -d ./dist --copy-files --config-file .swcrc --strip-leading-paths --only '**/*.ts?(x)'",
+          "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
+          "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true --only '**/*.cts?(x)' --out-file-extension cjs",
+          "tsc"
+        ],
+        "parallel": true,
+        "color": true,
+        "cwd": "{projectRoot}"
       },
       "cache": true,
       "inputs": [
@@ -338,6 +357,8 @@
       "dependsOn": [
         "build:_",
         "barrelify",
+        "delete-dist",
+        "populate-static",
         "update-ts-references",
         "npm-update-ts-references"
       ],
@@ -349,8 +370,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "build:pre",
-        "tsc",
-        "npm-tsc"
+        "tsc"
       ],
       "configurations": {
         "__lifecycle": {}

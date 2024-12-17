@@ -17,9 +17,6 @@
     },
     {
       "path": "../../../tools/default-import"
-    },
-    {
-      "path": "../../../tools/nx-tsc"
     }
   ]
 }

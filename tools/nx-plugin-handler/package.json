@@ -35,6 +35,8 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
+    "@swc/cli": "^0.5.2",
+    "@swc/core": "^1.10.1",
     "@types/chai": "^5.0.1",
     "@types/mocha": "^10.0.9",
     "@types/node": "^22.8.6",
@@ -44,7 +46,6 @@
     "expect-type": "^1.1.0",
     "mocha": "^10.8.2",
     "mocha-chain": "workspace:^",
-    "npm-nx-tsc": "npm:nx-tsc@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "sinon": "^19.0.2",
     "sinon-typed-stub": "workspace:^",

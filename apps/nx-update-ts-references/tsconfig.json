@@ -19,9 +19,6 @@
       "path": "../../tools/nx-plugin-handler"
     },
     {
-      "path": "../../tools/nx-tsc"
-    },
-    {
       "path": "../../tools/sinon-typed-stub"
     }
   ]

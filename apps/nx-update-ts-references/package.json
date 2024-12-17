@@ -49,6 +49,8 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
+    "@swc/cli": "^0.5.2",
+    "@swc/core": "^1.10.1",
     "@types/chai": "^5.0.1",
     "@types/chai-as-promised": "^8.0.1",
     "@types/mocha": "^10.0.9",
@@ -63,7 +65,6 @@
     "npm-load-populate-files": "npm:load-populate-files@latest",
     "npm-nx-populate-files": "npm:nx-populate-files@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
-    "nx-tsc": "workspace:^",
     "sinon": "^19.0.2",
     "sinon-typed-stub": "workspace:^",
     "typescript": "^5.6.3"

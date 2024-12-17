@@ -100,7 +100,7 @@ Register it as a target in a `project.json`:
                     }
                 },
                 "bindings": {
-                    "nx-tsc": "build:run",
+                    "tsc": "build:run",
                     "mocha": "test:run"
                 }
             }
@@ -170,7 +170,7 @@ __\*\*NOTE\*\*__ If the bound stage has `steps` defined, then you must bind to a
                     }
                 },
                 "bindings": {
-                    "nx-tsc": "build",
+                    "tsc": "build",
                     "mocha": "test:run"
                 }
             }

@@ -20,9 +20,6 @@
     },
     {
       "path": "../../../tools/common-proxy"
-    },
-    {
-      "path": "../../../tools/nx-tsc"
     }
   ]
 }
