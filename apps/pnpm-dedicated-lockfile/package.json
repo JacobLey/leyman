@@ -26,7 +26,7 @@
     ".": "./dist/index.js"
   },
   "bin": {
-    "pnpm-workspace-lockfile-hash": "./bin.mjs"
+    "pnpm-dedicated-lockfile": "./bin.mjs"
   },
   "dependencies": {
     "@pnpm/find-workspace-dir": "^7.0.2",
@@ -53,6 +53,7 @@
     "@types/mocha": "^10.0.9",
     "@types/node": "^22.8.6",
     "@types/sinon": "^17.0.3",
+    "@types/tmp": "^0.2.6",
     "@types/yargs": "^17.0.33",
     "c8": "^10.1.2",
     "chai": "^5.1.2",
@@ -62,6 +63,7 @@
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "npm-sinon-typed-stub": "npm:sinon-typed-stub@latest",
     "sinon": "^19.0.2",
+    "tmp-promise": "^3.0.3",
     "ts-dedent": "^2.2.0",
     "typescript": "^5.6.3"
   }

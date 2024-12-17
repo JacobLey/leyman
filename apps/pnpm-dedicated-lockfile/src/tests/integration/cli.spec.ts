@@ -1,6 +1,8 @@
 import { exec } from 'node:child_process';
+import Path from 'node:path';
 import { promisify } from 'node:util';
 import { suite, test } from 'npm-mocha-chain';
+import { file } from 'tmp-promise';
 import { expect } from '../chai-hooks.js';
 
 const execAsync = promisify(exec);
@@ -38,11 +40,28 @@ suite('cli', () => {
                     .that.contain('Unknown arguments: unknown, option');
             });
 
-            test('ci', async () => {
-                const result = await execAsync('./bin.mjs --ci --lockfile-name=.pnpm-lock');
+            suite('ci', () => {
+                for (const hash of [false, true]) {
+                    test(`With hash=${hash}`, async () => {
+                        const tmpFile = await file({
+                            prefix: 'pnpm-lock-file',
+                            postfix: '.txt',
+                        });
+                        const relativePath = Path.relative(process.cwd(), tmpFile.path);
 
-                expect(result.stdout).to.equal('');
-                expect(result.stderr).to.equal('');
+                        await execAsync(
+                            `./bin.mjs --no-ci --hash=${hash} --lockfile-name=${relativePath}`
+                        );
+                        const result = await execAsync(
+                            `./bin.mjs --ci --hash=${hash} --lockfile-name=${relativePath}`
+                        );
+
+                        expect(result.stdout).to.equal('');
+                        expect(result.stderr).to.equal('');
+
+                        await tmpFile.cleanup();
+                    });
+                }
             });
 
             test('failure', async () => {

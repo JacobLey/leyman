@@ -286,7 +286,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "pnpm-dedicated-lockfile --omitHash --lockfileName=.pnpm-lock"
+          "pnpm-dedicated-lockfile --lockfileName=.pnpm-lock-hash --hash --no-ci"
         ],
         "color": true,
         "cwd": "{projectRoot}"
@@ -297,7 +297,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "npm-pnpm-dedicated-lockfile --omitHash --lockfileName=.pnpm-lock"
+          "npm-pnpm-dedicated-lockfile --lockfileName=.pnpm-lock-hash --hash --no-ci"
         ],
         "color": true,
         "cwd": "{projectRoot}"
