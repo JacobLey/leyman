@@ -2,11 +2,12 @@ CHANGELOG.md
 project.json
 tsconfig.json
 
-coverage/**
 .c8rc.json
 .eslintcache
-eslint.config.js
 .pnpm-lock-hash
+.swcrc
+coverage/**
+eslint.config.js
 
 dist/tsconfig.tsbuildinfo
 dist/**/*.map
