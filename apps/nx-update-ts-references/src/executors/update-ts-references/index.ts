@@ -1,5 +1,4 @@
 import { bind, createContainer } from 'npm-haywire';
-import { handler } from 'nx-plugin-handler';
 import { dependenciesModule } from '../../lib/dependencies-module.js';
 import { updateTsReferencesId } from '../../lib/update-ts-references.js';
 import { NxUpdateTsReferencesExecutor } from './executor.js';
@@ -15,4 +14,4 @@ const executor = createContainer(
         )
 ).get(NxUpdateTsReferencesExecutor);
 
-export default handler(executor.execute);
+export default executor.execute;

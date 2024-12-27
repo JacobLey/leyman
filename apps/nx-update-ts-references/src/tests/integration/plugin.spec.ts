@@ -1,11 +1,12 @@
 import Path from 'node:path';
 import { createProjectGraphAsync, type ExecutorContext } from '@nx/devkit';
 import type { Context } from 'mocha';
+import { defaultImport } from 'npm-default-import';
 import { before, suite } from 'mocha-chain';
 import executor from '../../executors/update-ts-references/index.cjs';
 import { expect } from '../chai-hooks.js';
 
-const handler = executor.default;
+const handler = defaultImport(executor);
 
 suite('plugin', () => {
     const withExecutorContext = before(async function (this: Context) {
