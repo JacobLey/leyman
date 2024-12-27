@@ -1,0 +1,5 @@
+{
+  "fake-executor": {
+    "implementation": "../../../../dist/tests/data/implementation/index.cjs"
+  }
+}

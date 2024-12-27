@@ -1,0 +1,7 @@
+{
+  "name": "fake-plugin",
+  "executors": "./executors.json",
+  "exports": {
+    "./package.json": "./package.json"
+  }
+}

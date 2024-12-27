@@ -1,13 +1,35 @@
-import { bind, createContainer, createModule } from 'haywire';
-import { Handler, type IHandler } from '#handler';
-import { loggerIdentifier } from './lib/logger.js';
+import { bind, createContainer, identifier } from 'haywire';
+import {
+    createRequireId,
+    dependenciesModule,
+    importIdentifier,
+    loggerIdentifier,
+} from './lib/dependencies.js';
+import { ForwardedHandler, type GetForwardedHandler } from './lib/forwarded-handler.js';
+import { Handler } from './lib/handler.js';
 
-export type { RawHandler } from '#handler';
+export type { PluginContext, RawHandler } from './lib/forwarded-handler.js';
+export type { HandlerWrapper } from './lib/handler.js';
 
-const handlerInstance: IHandler = createContainer(
-    createModule(
-        bind(Handler).withConstructorProvider().withDependencies([loggerIdentifier])
-    ).addBinding(bind(loggerIdentifier).withInstance(console))
+const getForwardedHandlerId = identifier<GetForwardedHandler>();
+
+const handlerInstance = createContainer(
+    dependenciesModule
+        .addBinding(
+            bind(Handler)
+                .withConstructorProvider()
+                .withDependencies([loggerIdentifier, getForwardedHandlerId])
+        )
+        .addBinding(
+            bind(ForwardedHandler)
+                .withConstructorProvider()
+                .withDependencies([createRequireId, importIdentifier])
+        )
+        .addBinding(
+            bind(getForwardedHandlerId)
+                .withDependencies([ForwardedHandler])
+                .withProvider(x => x.getForwardedHandler)
+        )
 ).get(Handler);
 
 export const handler = handlerInstance.handle;

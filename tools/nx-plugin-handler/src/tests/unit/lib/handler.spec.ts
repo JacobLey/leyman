@@ -1,47 +1,75 @@
 import type { ExecutorContext } from '@nx/devkit';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { fake, match, verifyAndRestore } from 'sinon';
+import { fake, verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
-import { mockMethod } from 'sinon-typed-stub';
-import { Handler, type RawHandler } from '#handler';
+import { stubMethod } from 'sinon-typed-stub';
+import type { GetForwardedHandler, RawHandler } from '../../../lib/forwarded-handler.js';
+import { Handler } from '../../../lib/handler.js';
 
 suite('Handler', () => {
     afterEach(() => {
         verifyAndRestore();
     });
 
-    const context = beforeEach(() => {
+    const withContext = beforeEach(() => {
         const errorLogger = fake<unknown[], void>();
-        const handler = new Handler({
-            error: errorLogger,
-        });
-        const mockedHandler = mockMethod<RawHandler<{ foo: number }>>();
+        const getForwardedHandler = stubMethod<GetForwardedHandler>();
+        const stubbedHandler = stubMethod<RawHandler<unknown>>();
 
         return {
             errorLogger,
-            handler,
-            mockedHandler,
+            stubbedHandler,
+            getForwardedHandler: getForwardedHandler.stub,
+            handler: new Handler(errorLogger, getForwardedHandler.method),
         };
     });
 
-    const fakeContext = {} as ExecutorContext;
+    const fakeContext = { root: '<root>' } as ExecutorContext;
 
     suite('handle', () => {
         suite('success', () => {
-            context.test(
+            withContext.test(
                 'Proxies request to handler',
-                async ({ handler, errorLogger, mockedHandler }) => {
-                    mockedHandler.stub
-                        .withArgs({ foo: 123 }, match.same(fakeContext))
-                        .resolves({ success: true });
+                async ({ handler, errorLogger, getForwardedHandler, stubbedHandler }) => {
+                    getForwardedHandler.resolves(null);
+                    stubbedHandler.stub.resolves({ success: true });
 
-                    const handle = handler.handle(mockedHandler.method);
+                    const handle = handler.handle(stubbedHandler.method);
 
-                    expectTypeOf(handle).toEqualTypeOf(mockedHandler.method);
+                    expectTypeOf(handle).toEqualTypeOf(stubbedHandler.method);
 
                     const result = await handle({ foo: 123 }, fakeContext);
 
+                    expect(getForwardedHandler.callCount).to.equal(1);
+                    expect(getForwardedHandler.getCall(0).args).to.deep.equal([fakeContext]);
+                    expect(stubbedHandler.stub.callCount).to.equal(1);
+                    expect(stubbedHandler.stub.getCall(0).args).to.deep.equal([
+                        { foo: 123 },
+                        { root: '<root>', forwardedToProject: true },
+                    ]);
+                    expect(result).to.deep.equal({ success: true });
+                    expectTypeOf(result).toEqualTypeOf<{ success: boolean }>();
+                    expect(errorLogger.called).to.equal(false);
+                }
+            );
+
+            withContext.test(
+                'Uses forwarded handler',
+                async ({ handler, errorLogger, getForwardedHandler, stubbedHandler }) => {
+                    getForwardedHandler.resolves(stubbedHandler.method);
+                    stubbedHandler.stub.resolves({ success: true });
+
+                    const result = await handler.handle(async () => ({ success: false }))(
+                        { foo: 123 },
+                        fakeContext
+                    );
+
+                    expect(stubbedHandler.stub.callCount).to.equal(1);
+                    expect(stubbedHandler.stub.getCall(0).args).to.deep.equal([
+                        { foo: 123 },
+                        { root: '<root>', forwardedToProject: true },
+                    ]);
                     expect(result).to.deep.equal({ success: true });
                     expectTypeOf(result).toEqualTypeOf<{ success: boolean }>();
                     expect(errorLogger.called).to.equal(false);
@@ -50,27 +78,31 @@ suite('Handler', () => {
         });
 
         suite('failure', () => {
-            context.test('Throws error', async ({ handler, errorLogger, mockedHandler }) => {
-                mockedHandler.stub.rejects(new Error('<ERROR>'));
+            withContext.test(
+                'Throws error',
+                async ({ handler, errorLogger, getForwardedHandler, stubbedHandler }) => {
+                    getForwardedHandler.resolves(null);
+                    stubbedHandler.stub.rejects(new Error('<ERROR>'));
 
-                const handle = handler.handle(mockedHandler.method);
+                    const handle = handler.handle(stubbedHandler.method);
 
-                const result = await handle({ foo: 123 }, fakeContext);
+                    const result = await handle({ foo: 123 }, fakeContext);
 
-                expect(result).to.deep.equal({ success: false });
-                expect(errorLogger.callCount).to.equal(1);
-                expect(errorLogger.firstCall.args).to.deep.equal(['<ERROR>']);
-            });
+                    expect(result).to.deep.equal({ success: false });
+                    expect(errorLogger.callCount).to.equal(1);
+                    expect(errorLogger.firstCall.args).to.deep.equal(['<ERROR>']);
+                }
+            );
 
-            context.test(
+            withContext.test(
                 'Throws anything but an error',
-                async ({ handler, errorLogger, mockedHandler }) => {
-                    mockedHandler.stub.returns(
+                async ({ handler, errorLogger, stubbedHandler }) => {
+                    stubbedHandler.stub.returns(
                         // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
                         Promise.reject('<just-some-error-text>')
                     );
 
-                    const handle = handler.handle(mockedHandler.method);
+                    const handle = handler.handle(stubbedHandler.method);
 
                     const result = await handle({ foo: 123 }, fakeContext);
 
