@@ -1535,12 +1535,21 @@ importers:
 
   tools/nx-plugin-handler:
     dependencies:
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
+      common-proxy:
+        specifier: workspace:^
+        version: link:../common-proxy
       haywire:
         specifier: workspace:^
         version: link:../haywire
       npm-default-import:
         specifier: npm:default-import@latest
         version: default-import@2.0.4
+      npm-juniper:
+        specifier: npm:juniper@latest
+        version: juniper@1.2.2
     optionalDependencies:
       '@nx/devkit':
         specifier: ^20.0.7

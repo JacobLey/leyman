@@ -26,8 +26,11 @@
     "#handler": "./dist/lib/handler.js"
   },
   "dependencies": {
+    "common-proxy": "workspace:^",
     "haywire": "workspace:^",
-    "npm-default-import": "npm:default-import@latest"
+    "npm-default-import": "npm:default-import@latest",
+    "npm-juniper": "npm:juniper@latest",
+    "ajv": "^8.17.1"
   },
   "optionalDependencies": {
     "@nx/devkit": "^20.0.7"

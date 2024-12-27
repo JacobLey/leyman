@@ -13,6 +13,9 @@
       "path": "../../leyman/eslint-config"
     },
     {
+      "path": "../common-proxy"
+    },
+    {
       "path": "../haywire"
     },
     {
