@@ -1,19 +1,17 @@
 import { setTimeout } from 'node:timers/promises';
+import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha';
+import { suite, test } from 'mocha-chain';
 import { commonProxy } from '../../common-proxy.cjs';
-import proxiedHandler from '../fixtures/handler.cjs';
-import * as proxiedMethods from '../fixtures/methods.cjs';
+import { proxiedHandler, proxiedMethods } from '../fixtures/fixtures.cjs';
 
 suite('commonProxy', () => {
     test('Handles default import', async () => {
-        const { expect } = await import('chai');
         expect(await proxiedHandler([123])).to.deep.equal({ num: 123 });
         expectTypeOf(proxiedHandler).toEqualTypeOf<(val: [number]) => Promise<{ num: number }>>();
     });
 
     test('Handles methods', async () => {
-        const { expect } = await import('chai');
         expect(await proxiedMethods.addAllNums(1, 2, 3, 4)).to.equal(10);
         expectTypeOf(proxiedMethods.addAllNums).toEqualTypeOf<
             (...nums: number[]) => Promise<number>
@@ -33,7 +31,6 @@ suite('commonProxy', () => {
     });
 
     test('Dynamic method', async () => {
-        const { expect } = await import('chai');
         const myMethod = (a: string, b: string): number => a.length + b.length;
         const myMethodProxy = commonProxy(myMethod);
         expectTypeOf(myMethodProxy).toEqualTypeOf<(a: string, b: string) => Promise<number>>();
@@ -47,5 +44,21 @@ suite('commonProxy', () => {
             (a: number, ...rest: string[]) => Promise<string>
         >();
         expect(await proxiedPromise(3, 'abc', 'xyz', '123', '789')).to.equal('abc-xyz-123');
+    });
+
+    test('Persists async generic', async () => {
+        const genericAsyncMethod = async <T>(a: T): Promise<{ foo: T }> => ({ foo: a });
+        const genericAsyncMethodProxy = commonProxy(Promise.resolve(genericAsyncMethod));
+
+        expectTypeOf(genericAsyncMethodProxy).toEqualTypeOf(genericAsyncMethod);
+
+        const genericMethod = <T>(a: T): { foo: T } => ({ foo: a });
+        const genericMethodProxy = commonProxy(genericMethod);
+
+        expectTypeOf(genericMethodProxy).toEqualTypeOf<
+            (a: unknown) => Promise<{
+                foo: unknown;
+            }>
+        >();
     });
 });

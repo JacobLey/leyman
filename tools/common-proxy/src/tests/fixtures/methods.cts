@@ -1,4 +1,4 @@
-import { commonProxy } from '../../common-proxy.cjs';
+import { commonProxy } from 'common-proxy';
 
 const methodsProm = import('./methods.js');
 
