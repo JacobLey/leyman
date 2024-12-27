@@ -866,6 +866,12 @@ importers:
       mocha:
         specifier: ^10.8.2
         version: 10.8.2
+      mocha-chain:
+        specifier: workspace:^
+        version: link:../mocha-chain
+      npm-barrelify:
+        specifier: npm:barrelify@latest
+        version: barrelify@1.2.3
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
         version: nx-update-ts-references@0.0.8(@biomejs/biome@1.9.4)(nx@20.0.7)

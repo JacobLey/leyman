@@ -11,6 +11,9 @@
     },
     {
       "path": "../../leyman/eslint-config"
+    },
+    {
+      "path": "../mocha-chain"
     }
   ]
 }
