@@ -1,5 +1,4 @@
 import { bind, createContainer, createModule } from 'haywire';
-import { handler } from 'nx-plugin-handler';
 import { isNxJson, isNxJsonIdentifier, isProjectJson, isProjectJsonIdentifier } from '#schemas';
 import {
     dependenciesModule,
@@ -34,4 +33,4 @@ const pluginModule = createModule(
 
 const lifecycle = createContainer(dependenciesModule.mergeModule(pluginModule)).get(Lifecycle);
 
-export default handler(lifecycle.lifecycle);
+export default lifecycle.lifecycle;

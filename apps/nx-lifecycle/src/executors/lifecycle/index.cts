@@ -1,3 +1,4 @@
 import { commonProxy } from 'common-proxy';
+import { handler } from 'nx-plugin-handler';
 
-export default commonProxy(import('./index.js'));
+export default handler(commonProxy(import('./index.js')));
