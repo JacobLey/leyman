@@ -21,7 +21,7 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/common-proxy.cjs"
+    ".": "./dist/index.cjs"
   },
   "dependencies": {
     "npm-default-import": "npm:default-import@latest"

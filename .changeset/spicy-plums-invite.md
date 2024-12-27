@@ -1,5 +1,5 @@
 ---
-"common-proxy": minor
+"common-proxy": patch
 ---
 
 Maintain proxied type if possible
