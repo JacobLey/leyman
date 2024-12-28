@@ -2,7 +2,15 @@ import AjvDefault from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { defaultImport } from 'default-import';
-import { type JsonSchema, NumberSchema, numberSchema, type Schema, type SchemaType } from 'juniper';
+import {
+    type JsonSchema,
+    mergeSchema,
+    numberSchema,
+    NumberSchema,
+    type Schema,
+    type SchemaType,
+    stringSchema,
+} from 'juniper';
 import { suite, test } from 'mocha-chain';
 
 const Ajv = defaultImport(AjvDefault);
@@ -150,12 +158,25 @@ suite('schema', () => {
             type CustomNumber = number & {
                 [sym]?: typeof sym;
             };
+            type CustomString = string & {
+                [sym]?: typeof sym;
+            };
 
-            const schema = numberSchema().cast<CustomNumber>();
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<CustomNumber>();
+            // @ts-expect-error
+            stringSchema().startsWith('abc').cast<CustomString>();
+
+            const schema = mergeSchema().oneOf([
+                numberSchema().cast<CustomNumber>(),
+                stringSchema().minLength(5).startsWith('abc').cast<`abc${string}` & CustomString>(),
+            ]);
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                CustomNumber | (`abc${string}` & CustomString)
+            >();
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const json = schema.toJSON();
-            expectTypeOf<SchemaType<typeof json>>().toEqualTypeOf<CustomNumber>();
+            expectTypeOf<SchemaType<typeof json>>().toEqualTypeOf<
+                CustomNumber | (`abc${string}` & CustomString)
+            >();
         });
 
         suite('With subschemas', () => {

@@ -421,10 +421,8 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      *
      * @returns typed schema
      */
-    public cast<NewT extends T['type']>(): Pick<
-        AbstractSchema<SchemaGenerics<NewT>>,
-        'toJSON' | typeof typeCache
-    > {
+    // eslint-disable-next-line @typescript-eslint/prefer-return-this-type
+    public cast<NewT extends T['type']>(): AbstractSchema<SchemaGenerics<NewT>> {
         return this satisfies AbstractSchema<SchemaGenerics<NewT>>;
     }
 
