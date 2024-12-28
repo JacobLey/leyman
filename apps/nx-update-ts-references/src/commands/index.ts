@@ -21,5 +21,5 @@ export const commandsModule = dependenciesModule
                 projectGraphId.supplier('async'),
                 readFileId,
             ])
-            .withProvider((...args) => new UpdateTsReferencesCommand(...args))
+            .withConstructorProvider()
     );
