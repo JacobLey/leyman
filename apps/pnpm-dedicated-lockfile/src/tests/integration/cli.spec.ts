@@ -29,7 +29,7 @@ suite('cli', () => {
                     './bin.mjs --ci=false --dry-run --lockfile-name=does-not-exist'
                 );
 
-                expect(result.stdout).to.contain('');
+                expect(result.stdout).to.equal('');
                 expect(result.stderr).to.equal('');
             });
 

@@ -33,7 +33,7 @@ suite('cli', () => {
 
                 const result = await execAsync(`./bin.mjs --project-root ${projectRoot} --ci`);
 
-                expect(result.stdout).to.contain('');
+                expect(result.stdout).to.equal('');
                 // https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#default-environment-variables
                 // eslint-disable-next-line n/no-process-env
                 if (process.env.GITHUB_ACTIONS === 'true') {

@@ -1,4 +1,5 @@
 import { exec } from 'node:child_process';
+import Path from 'node:path';
 import { promisify } from 'node:util';
 import { suite, test } from 'mocha-chain';
 import { expect } from '../chai-hooks.js';
@@ -25,7 +26,9 @@ suite('cli', () => {
             test('success', async () => {
                 const result = await execAsync('./bin.mjs --ci=false --dry-run --ignore=foo');
 
-                expect(result.stdout).to.contain('');
+                expect(result.stdout).to.equal(
+                    Path.join(import.meta.dirname, '../../../src/tests/data/wrong/index.ts\n')
+                );
                 expect(result.stderr).to.equal('');
             });
 
