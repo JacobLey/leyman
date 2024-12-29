@@ -524,15 +524,36 @@ importers:
 
   apps/populate-files/load-populate-files:
     dependencies:
+      ajv:
+        specifier: ^8.17.1
+        version: 8.17.1
+      ci-info:
+        specifier: ^4.0.0
+        version: 4.0.0
       default-import:
         specifier: workspace:^
         version: link:../../../tools/default-import
-      npm-parse-cwd:
-        specifier: npm:parse-cwd@latest
-        version: parse-cwd@1.0.13
+      entry-script:
+        specifier: workspace:^
+        version: link:../../../tools/entry-script
+      haywire:
+        specifier: workspace:^
+        version: link:../../../tools/haywire
+      haywire-launcher:
+        specifier: workspace:^
+        version: link:../../../tools/haywire-launcher
+      juniper:
+        specifier: workspace:^
+        version: link:../../juniper
+      parse-cwd:
+        specifier: workspace:^
+        version: link:../../../tools/parse-cwd
       populate-files:
         specifier: workspace:^
         version: link:../populate-files
+      yargs:
+        specifier: ^17.7.2
+        version: 17.7.2
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -549,18 +570,33 @@ importers:
       '@types/chai':
         specifier: ^5.0.1
         version: 5.0.1
+      '@types/chai-as-promised':
+        specifier: ^8.0.1
+        version: 8.0.1
       '@types/mocha':
         specifier: ^10.0.9
         version: 10.0.9
       '@types/node':
         specifier: ^22.8.6
         version: 22.8.6
+      '@types/yargs':
+        specifier: ^17.0.33
+        version: 17.0.33
+      c8:
+        specifier: ^10.1.2
+        version: 10.1.2
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      chai-as-promised:
+        specifier: ^8.0.0
+        version: 8.0.0(chai@5.1.2)
       mocha:
         specifier: ^10.8.2
         version: 10.8.2
+      mocha-chain:
+        specifier: workspace:^
+        version: link:../../../tools/mocha-chain
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../../nx-update-ts-references

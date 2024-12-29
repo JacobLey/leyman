@@ -7,6 +7,9 @@
   },
   "references": [
     {
+      "path": "../../juniper"
+    },
+    {
       "path": "../../nx-update-ts-references"
     },
     {
@@ -20,6 +23,21 @@
     },
     {
       "path": "../../../tools/default-import"
+    },
+    {
+      "path": "../../../tools/entry-script"
+    },
+    {
+      "path": "../../../tools/haywire-launcher"
+    },
+    {
+      "path": "../../../tools/haywire"
+    },
+    {
+      "path": "../../../tools/mocha-chain"
+    },
+    {
+      "path": "../../../tools/parse-cwd"
     }
   ]
 }
