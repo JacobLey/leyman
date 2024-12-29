@@ -23,9 +23,6 @@ importers:
       nx-lifecycle:
         specifier: workspace:^
         version: link:apps/nx-lifecycle
-      nx-populate-files:
-        specifier: workspace:^
-        version: link:apps/populate-files/nx-populate-files
       nx-update-ts-references:
         specifier: workspace:^
         version: link:apps/nx-update-ts-references

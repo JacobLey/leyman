@@ -6,7 +6,6 @@
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@0.0.8",
     "nx": "20.0.7",
     "nx-lifecycle": "workspace:^",
-    "nx-populate-files": "workspace:^",
     "nx-update-ts-references": "workspace:^"
   }
 }
