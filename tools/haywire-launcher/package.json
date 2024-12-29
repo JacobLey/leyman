@@ -24,10 +24,8 @@
   "exports": {
     ".": "./dist/launch.js"
   },
-  "dependencies": {
-    "entry-script": "workspace:^"
-  },
   "peerDependencies": {
+    "entry-script": "workspace:^",
     "haywire": "workspace:^"
   },
   "devDependencies": {
@@ -43,6 +41,7 @@
     "c8": "^10.1.2",
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.0",
+    "entry-script": "workspace:^",
     "haywire": "workspace:^",
     "mocha": "^10.8.2",
     "mocha-chain": "workspace:^",

@@ -1259,10 +1259,6 @@ importers:
         version: 5.6.3
 
   tools/haywire-launcher:
-    dependencies:
-      entry-script:
-        specifier: workspace:^
-        version: link:../entry-script
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -1300,6 +1296,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.0
         version: 8.0.0(chai@5.1.2)
+      entry-script:
+        specifier: workspace:^
+        version: link:../entry-script
       haywire:
         specifier: workspace:^
         version: link:../haywire
