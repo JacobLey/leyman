@@ -25,6 +25,7 @@ export class LoadPopulateFilesCommand implements Command<LoadPopulateFilesComman
     }
 
     public builder(
+        this: void,
         yargs: Argv<LoadPopulateFilesCommandInput>
     ): Argv<LoadPopulateFilesCommandExtendedInput> {
         return yargs

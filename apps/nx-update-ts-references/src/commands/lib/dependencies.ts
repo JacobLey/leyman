@@ -33,7 +33,5 @@ export const dependenciesModule = createModule(
     )
     .addBinding(bind(parseCwdId).withInstance(parseCwd))
     .addBinding(
-        bind(projectGraphId)
-            .withAsyncGenerator(createProjectGraphAsync)
-            .scoped(singletonScope)
+        bind(projectGraphId).withAsyncGenerator(createProjectGraphAsync).scoped(singletonScope)
     );

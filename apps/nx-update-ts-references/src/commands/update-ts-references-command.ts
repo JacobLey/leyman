@@ -42,6 +42,7 @@ export class UpdateTsReferencesCommand implements Command<UpdateTsReferencesComm
     }
 
     public builder(
+        this: void,
         yargs: Argv<UpdateTsReferencesCommandInput>
     ): Argv<UpdateTsReferencesCommandExtendedInput> {
         return yargs

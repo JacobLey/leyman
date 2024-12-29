@@ -40,7 +40,10 @@ export class LockfileCommand implements Command<LockfileCommandExtendedInput> {
         this.handler = this.handler.bind(this);
     }
 
-    public builder(yargs: Argv<LockfileCommandInput>): Argv<LockfileCommandExtendedInput> {
+    public builder(
+        this: void,
+        yargs: Argv<LockfileCommandInput>
+    ): Argv<LockfileCommandExtendedInput> {
         return yargs
             .options({
                 ci: {

@@ -29,7 +29,7 @@ export class BarrelCommand implements Command<BarrelCommandExtendedInput> {
         this.handler = this.handler.bind(this);
     }
 
-    public builder(yargs: Argv<BarrelCommandInput>): Argv<BarrelCommandExtendedInput> {
+    public builder(this: void, yargs: Argv<BarrelCommandInput>): Argv<BarrelCommandExtendedInput> {
         return yargs
             .options({
                 ci: {
