@@ -1,0 +1,63 @@
+{
+  "$schema": "../../apps/nx-lifecycle/src/lifecycle/schema.json",
+  "stages": {
+    "analyze": {
+      "hooks": [
+        "format",
+        "lint"
+      ],
+      "dependsOn": [
+        "^build",
+        "install"
+      ]
+    },
+    "build": {
+      "hooks": [
+        "pre",
+        "run",
+        "post"
+      ],
+      "dependsOn": [
+        "^build",
+        "analyze",
+        "install"
+      ]
+    },
+    "install": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "test": {
+      "hooks": [
+        "reset",
+        "run",
+        "report"
+      ],
+      "dependsOn": [
+        "^test",
+        "analyze",
+        "build",
+        "install"
+      ]
+    }
+  },
+  "bindings": {
+    "pnpm-dedicated-lockfile": "install",
+    "npm-pnpm-dedicated-lockfile": "install",
+    "eslint": "analyze:lint",
+    "biome": "analyze:format",
+    "barrelify": "build:pre",
+    "delete-dist": "build:pre",
+    "populate-static": "build:pre",
+    "update-ts-references": "build:pre",
+    "npm-update-ts-references": "build:pre",
+    "tsc": "build:run",
+    "populate-files": "build:post",
+    "npm-populate-files": "build:post",
+    "coverage-reset": "test:reset",
+    "mocha-unit-test": "test:run",
+    "mocha-integration-test": "test:run",
+    "coverage-report": "test:report"
+  }
+}
