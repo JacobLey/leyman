@@ -1,4 +1,4 @@
-import type { Directory } from 'npm-parse-cwd';
+import type { Directory } from 'parse-cwd';
 
 export interface RawParams {
     filePath: string;

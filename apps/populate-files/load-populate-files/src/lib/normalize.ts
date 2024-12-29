@@ -1,19 +1,23 @@
 import Path from 'node:path';
-import { parseCwd } from 'npm-parse-cwd';
+import type { ParseCwd } from 'parse-cwd';
 import type { NormalizedParams, RawOptions, RawParams } from './types.js';
 
-export const normalizeParams = async (
+export type NormalizeParams = (
     params: RawParams,
-    options: RawOptions = {}
-): Promise<NormalizedParams> => {
-    const cwd = await parseCwd(options.cwd);
+    options?: RawOptions
+) => Promise<NormalizedParams>;
 
-    return {
-        filePath: Path.resolve(cwd, params.filePath),
-        options: {
-            cwd,
-            check: options.check,
-            dryRun: options.dryRun,
-        },
+export const normalizeParamsProvider =
+    (parseCwd: ParseCwd): NormalizeParams =>
+    async (params, options = {}) => {
+        const cwd = await parseCwd(options.cwd);
+
+        return {
+            filePath: Path.resolve(cwd, params.filePath),
+            options: {
+                cwd,
+                check: options.check,
+                dryRun: options.dryRun,
+            },
+        };
     };
-};
