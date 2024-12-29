@@ -211,6 +211,9 @@ importers:
       default-import:
         specifier: workspace:^
         version: link:../../tools/default-import
+      entry-script:
+        specifier: workspace:^
+        version: link:../../tools/entry-script
       fast-equals:
         specifier: ^5.0.1
         version: 5.0.1
@@ -220,6 +223,9 @@ importers:
       haywire:
         specifier: workspace:^
         version: link:../../tools/haywire
+      haywire-launcher:
+        specifier: workspace:^
+        version: link:../../tools/haywire-launcher
       juniper:
         specifier: workspace:^
         version: link:../juniper
@@ -229,6 +235,9 @@ importers:
       parse-cwd:
         specifier: workspace:^
         version: link:../../tools/parse-cwd
+      yargs:
+        specifier: ^17.7.2
+        version: 17.7.2
     optionalDependencies:
       '@nx/devkit':
         specifier: ^20.0.7
@@ -261,6 +270,9 @@ importers:
       '@types/sinon':
         specifier: ^17.0.3
         version: 17.0.3
+      '@types/yargs':
+        specifier: ^17.0.33
+        version: 17.0.33
       c8:
         specifier: ^10.1.2
         version: 10.1.2

@@ -28,7 +28,13 @@
       "path": "../../tools/default-import"
     },
     {
+      "path": "../../tools/entry-script"
+    },
+    {
       "path": "../../tools/format-file"
+    },
+    {
+      "path": "../../tools/haywire-launcher"
     },
     {
       "path": "../../tools/haywire"

@@ -34,17 +34,23 @@
       "default": "./dist/schemas/index.js"
     }
   },
+  "bin": {
+    "lifecycle": "./bin.mjs"
+  },
   "dependencies": {
     "ajv": "^8.17.1",
     "ci-info": "^4.0.0",
     "common-proxy": "workspace:^",
     "default-import": "workspace:^",
+    "entry-script": "workspace:^",
     "fast-equals": "^5.0.1",
     "format-file": "workspace:^",
     "haywire": "workspace:^",
+    "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
     "nx-plugin-handler": "workspace:^",
-    "parse-cwd": "workspace:^"
+    "parse-cwd": "workspace:^",
+    "yargs": "^17.7.2"
   },
   "optionalDependencies": {
     "@nx/devkit": "^20.0.7"
@@ -59,6 +65,7 @@
     "@types/mocha": "^10.0.9",
     "@types/node": "^22.8.6",
     "@types/sinon": "^17.0.3",
+    "@types/yargs": "^17.0.33",
     "c8": "^10.1.2",
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.0",
