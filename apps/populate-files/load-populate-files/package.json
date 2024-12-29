@@ -22,6 +22,9 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "bin": {
+    "load-populate-files": "./bin.mjs"
+  },
   "dependencies": {
     "ajv": "^8.17.1",
     "ci-info": "^4.0.0",
