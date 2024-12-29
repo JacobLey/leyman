@@ -185,9 +185,13 @@
       ]
     },
     "populate-files": {
-      "executor": "nx-populate-files:populate-files",
+      "executor": "nx:run-commands",
       "options": {
-        "filePath": "{projectRoot}/dist/file-content.js",
+        "commands": [
+          "load-populate-files --filePath ./dist/file-content.js"
+        ],
+        "parallel": true,
+        "color": true,
         "cwd": "{projectRoot}"
       },
       "dependsOn": [

@@ -64,7 +64,6 @@
     "load-populate-files": "workspace:^",
     "mocha": "^10.8.2",
     "mocha-chain": "workspace:^",
-    "nx-populate-files": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "^19.0.2",

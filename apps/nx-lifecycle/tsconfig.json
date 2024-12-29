@@ -19,9 +19,6 @@
       "path": "../populate-files/load-populate-files"
     },
     {
-      "path": "../populate-files/nx-populate-files"
-    },
-    {
       "path": "../../leyman/eslint-config"
     },
     {

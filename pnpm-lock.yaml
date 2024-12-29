@@ -279,9 +279,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/mocha-chain
-      nx-populate-files:
-        specifier: workspace:^
-        version: link:../populate-files/nx-populate-files
       nx-update-ts-references:
         specifier: workspace:^
         version: link:../nx-update-ts-references
