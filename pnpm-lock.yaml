@@ -226,6 +226,9 @@ importers:
       nx-plugin-handler:
         specifier: workspace:^
         version: link:../../tools/nx-plugin-handler
+      parse-cwd:
+        specifier: workspace:^
+        version: link:../../tools/parse-cwd
     optionalDependencies:
       '@nx/devkit':
         specifier: ^20.0.7

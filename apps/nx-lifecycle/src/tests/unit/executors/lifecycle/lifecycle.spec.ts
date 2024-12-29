@@ -1,353 +1,74 @@
-import type { readFile, writeFile } from 'node:fs/promises';
-import { createStubInstance, define, fake, match, verifyAndRestore } from 'sinon';
-import type { FilesFormatter } from 'format-file';
-import { beforeEach, suite } from 'mocha-chain';
-import { mockMethod, stubMethod } from 'sinon-typed-stub';
-import type { isNxJson, isProjectJson } from '#schemas';
+import { verifyAndRestore } from 'sinon';
+import { afterEach, beforeEach, suite } from 'mocha-chain';
+import { mockMethod } from 'sinon-typed-stub';
 import { Lifecycle } from '../../../../executors/lifecycle/lifecycle.js';
-import { type NormalizedOptions, Normalizer } from '../../../../executors/lifecycle/normalizer.js';
-import type { NxAndProjectJsonProcessor } from '../../../../executors/lifecycle/processor.js';
-import type { LifecycleOptions } from '../../../../executors/lifecycle/schema.js';
-import type { SimpleExecutorContext } from '../../../../executors/lifecycle/types.js';
+import type { ILifecycleInternal } from '../../../../lifecycle/lifecycle-internal.js';
+import type { LifecycleOptionsOrConfig } from '../../../../lifecycle/schema.js';
 import { expect } from '../../../chai-hooks.js';
 
-suite('lifecycle', () => {
-    const mockOptions = {} as LifecycleOptions;
-    const mockContext = {} as SimpleExecutorContext;
-
-    const fakeStages: NormalizedOptions['stages'] = {};
-    const fakeBindings: NormalizedOptions['bindings'] = {};
-
+suite('Lifecycle', () => {
     const stubs = beforeEach(() => {
-        const stubbedNormalizer = createStubInstance(Normalizer);
-
-        const stubbedReadFile = stubMethod<typeof readFile>();
-        const stubbedWriteFile = stubMethod<typeof writeFile>();
-        const stubbedFormatFiles = stubMethod<FilesFormatter>();
-        const mockedProcessor = mockMethod<NxAndProjectJsonProcessor>();
-        const stubbedIsNxJson = stubMethod<typeof isNxJson>();
-        const stubbedIsProjectJson = stubMethod<typeof isProjectJson>();
+        const mockedLifecycleInternal = mockMethod<ILifecycleInternal>();
 
         return {
-            stubbedNormalizer,
-            stubbedReadFile: stubbedReadFile.stub,
-            stubbedWriteFile: stubbedWriteFile.stub,
-            stubbedFormatFiles: stubbedFormatFiles.stub,
-            mockedProcessor: mockedProcessor.mock,
-            stubbedIsNxJson: stubbedIsNxJson.stub,
-            stubbedIsProjectJson: stubbedIsProjectJson.stub,
-            lifecycle: new Lifecycle(
-                stubbedNormalizer,
-                stubbedReadFile.method,
-                stubbedWriteFile.method,
-                stubbedFormatFiles.method,
-                mockedProcessor.method,
-                stubbedIsNxJson.method,
-                stubbedIsProjectJson.method,
-                {
-                    info: fake(),
-                    error: fake(),
-                }
-            ),
+            mockedLifecycleInternal: mockedLifecycleInternal.mock,
+            lifecycle: new Lifecycle(mockedLifecycleInternal.method),
         };
     });
 
-    stubs.afterEach(() => {
+    afterEach(() => {
         verifyAndRestore();
     });
 
-    const fakeNxJson = { nxJson: true };
-    const fakeFooProjectJson = { foo: true };
-    const fakeBarProjectJson = { bar: true };
+    suite('lifecycle', () => {
+        stubs.test('Maps nx context to internal', async ctx => {
+            ctx.mockedLifecycleInternal.resolves();
 
-    suite('Processing files results in changes', () => {
-        const fakeProcessedNxJson = { processedNxJson: true };
-        const fakeProcessedFooProjectJson = { processedFoo: true };
-        const fakeProcessedBarProjectJson = { processedBar: true };
+            const fakeOptions = {
+                stages: {
+                    stage: {},
+                },
+                bindings: {
+                    bind: '',
+                },
+            } satisfies LifecycleOptionsOrConfig;
 
-        stubs.beforeEach(ctx => {
-            ctx.stubbedReadFile
-                .withArgs('<nx-json-path>', 'utf8')
-                .resolves(JSON.stringify(fakeNxJson));
-            ctx.stubbedReadFile
-                .withArgs('<foo-path>', 'utf8')
-                .resolves(JSON.stringify(fakeFooProjectJson));
-            ctx.stubbedReadFile
-                .withArgs('<bar-path>', 'utf8')
-                .resolves(JSON.stringify(fakeBarProjectJson));
+            expect(
+                await ctx.lifecycle.lifecycle(fakeOptions, {
+                    root: '<root>',
+                    projectsConfigurations: {
+                        version: 123,
+                        projects: {
+                            foo: {
+                                root: '<foo-root>',
+                                name: '<foo>',
+                            },
+                            bar: {
+                                root: '<bar-root>',
+                                name: '<bar>',
+                            },
+                        },
+                    },
+                })
+            ).to.deep.equal({ success: true });
 
-            ctx.stubbedIsNxJson.withArgs(match(fakeNxJson)).returns(true);
-            ctx.stubbedIsProjectJson.withArgs(match(fakeFooProjectJson)).returns(true);
-            ctx.stubbedIsProjectJson.withArgs(match(fakeBarProjectJson)).returns(true);
-        });
-
-        stubs.test('Writes updated files', async ctx => {
-            const options = {
-                check: false,
-                dryRun: false,
-                nxJsonPath: '<nx-json-path>',
-                packageJsonPaths: [
-                    { name: '<foo>', path: '<foo-path>' },
-                    { name: '<bar>', path: '<bar-path>' },
-                ],
-                stages: fakeStages,
-                bindings: fakeBindings,
-            };
-
-            ctx.stubbedNormalizer.normalizeOptions
-                .withArgs(mockOptions, mockContext)
-                .returns(options);
-
-            ctx.mockedProcessor
-                .withArgs(
-                    match({
-                        nxJson: fakeNxJson,
-                        projectJsons: [fakeFooProjectJson, fakeBarProjectJson],
-                        options,
-                    })
-                )
-                .returns({
-                    processedNxJson: fakeProcessedNxJson,
-                    processedProjectJsons: [
-                        fakeProcessedFooProjectJson,
-                        fakeProcessedBarProjectJson,
+            expect(ctx.mockedLifecycleInternal.callCount).to.equal(1);
+            expect(ctx.mockedLifecycleInternal.getCall(0).args).to.deep.equal([
+                fakeOptions,
+                {
+                    root: '<root>',
+                    projects: [
+                        {
+                            root: '<foo-root>',
+                            name: '<foo>',
+                        },
+                        {
+                            root: '<bar-root>',
+                            name: '<bar>',
+                        },
                     ],
-                });
-
-            ctx.stubbedWriteFile.resolves();
-            ctx.stubbedFormatFiles.resolves();
-
-            await ctx.lifecycle.lifecycle(mockOptions, mockContext);
-
-            expect(ctx.stubbedWriteFile.callCount).to.equal(3);
-            expect(
-                ctx.stubbedWriteFile.calledWith(
-                    '<nx-json-path>',
-                    JSON.stringify(fakeProcessedNxJson),
-                    'utf8'
-                )
-            ).to.equal(true);
-            expect(
-                ctx.stubbedWriteFile.calledWith(
-                    '<foo-path>',
-                    JSON.stringify(fakeProcessedFooProjectJson),
-                    'utf8'
-                )
-            ).to.equal(true);
-            expect(
-                ctx.stubbedWriteFile.calledWith(
-                    '<bar-path>',
-                    JSON.stringify(fakeProcessedBarProjectJson),
-                    'utf8'
-                )
-            ).to.equal(true);
-
-            expect(ctx.stubbedFormatFiles.callCount).to.equal(1);
-            expect(
-                ctx.stubbedFormatFiles.calledWith(['<nx-json-path>', '<foo-path>', '<bar-path>'])
-            ).to.equal(true);
-        });
-
-        stubs.test('Dry run skips writing files', async ctx => {
-            const options = {
-                check: false,
-                dryRun: true,
-                nxJsonPath: '<nx-json-path>',
-                packageJsonPaths: [
-                    { name: '<foo>', path: '<foo-path>' },
-                    { name: '<bar>', path: '<bar-path>' },
-                ],
-                stages: fakeStages,
-                bindings: fakeBindings,
-            };
-
-            ctx.stubbedNormalizer.normalizeOptions
-                .withArgs(mockOptions, mockContext)
-                .returns(options);
-
-            ctx.mockedProcessor
-                .withArgs(
-                    match({
-                        nxJson: fakeNxJson,
-                        projectJsons: [fakeFooProjectJson, fakeBarProjectJson],
-                        options,
-                    })
-                )
-                .returns({
-                    processedNxJson: fakeProcessedNxJson,
-                    processedProjectJsons: [
-                        fakeProcessedFooProjectJson,
-                        fakeProcessedBarProjectJson,
-                    ],
-                });
-
-            await ctx.lifecycle.lifecycle(mockOptions, mockContext);
-
-            expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
-        });
-
-        stubs.test('Check reports a failure', async ctx => {
-            const options = {
-                check: true,
-                dryRun: false,
-                nxJsonPath: '<nx-json-path>',
-                packageJsonPaths: [
-                    { name: '<foo>', path: '<foo-path>' },
-                    { name: '<bar>', path: '<bar-path>' },
-                ],
-                stages: fakeStages,
-                bindings: fakeBindings,
-            };
-
-            ctx.stubbedNormalizer.normalizeOptions
-                .withArgs(mockOptions, mockContext)
-                .returns(options);
-
-            ctx.mockedProcessor
-                .withArgs(
-                    match({
-                        nxJson: fakeNxJson,
-                        projectJsons: [fakeFooProjectJson, fakeBarProjectJson],
-                        options,
-                    })
-                )
-                .returns({
-                    processedNxJson: fakeProcessedNxJson,
-                    processedProjectJsons: [
-                        fakeProcessedFooProjectJson,
-                        fakeProcessedBarProjectJson,
-                    ],
-                });
-
-            await expect(ctx.lifecycle.lifecycle(mockOptions, mockContext))
-                .eventually.be.rejectedWith(Error)
-                .that.contain({
-                    message: 'File <nx-json-path> is not up to date',
-                });
-
-            expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
-        });
-
-        stubs.test('Skips files with no updates', async ctx => {
-            const options = {
-                check: false,
-                dryRun: false,
-                nxJsonPath: '<nx-json-path>',
-                packageJsonPaths: [
-                    { name: '<foo>', path: '<foo-path>' },
-                    { name: '<bar>', path: '<bar-path>' },
-                ],
-                stages: fakeStages,
-                bindings: fakeBindings,
-            };
-
-            ctx.stubbedNormalizer.normalizeOptions
-                .withArgs(mockOptions, mockContext)
-                .returns(options);
-
-            ctx.mockedProcessor
-                .withArgs(
-                    match({
-                        nxJson: fakeNxJson,
-                        projectJsons: [fakeFooProjectJson, fakeBarProjectJson],
-                        options,
-                    })
-                )
-                .returns({
-                    processedNxJson: fakeNxJson,
-                    processedProjectJsons: [fakeProcessedFooProjectJson, fakeBarProjectJson],
-                });
-
-            ctx.stubbedWriteFile.resolves();
-            ctx.stubbedFormatFiles.resolves();
-
-            await ctx.lifecycle.lifecycle(mockOptions, mockContext);
-
-            expect(
-                ctx.stubbedWriteFile.calledWith(
-                    '<foo-path>',
-                    JSON.stringify(fakeProcessedFooProjectJson),
-                    'utf8'
-                )
-            ).to.equal(true);
-            expect(ctx.stubbedWriteFile.callCount).to.equal(1);
-        });
-    });
-
-    suite('Invalid loaded data throws errors', () => {
-        stubs.test('Invalid nx.json', async ctx => {
-            const options = {
-                check: false,
-                dryRun: false,
-                nxJsonPath: '<nx-json-path>',
-                packageJsonPaths: [
-                    { name: '<foo>', path: '<foo-path>' },
-                    { name: '<bar>', path: '<bar-path>' },
-                ],
-                stages: fakeStages,
-                bindings: fakeBindings,
-            };
-
-            ctx.stubbedNormalizer.normalizeOptions
-                .withArgs(mockOptions, mockContext)
-                .returns(options);
-
-            ctx.stubbedReadFile
-                .withArgs('<nx-json-path>', 'utf8')
-                .resolves(JSON.stringify(fakeNxJson));
-
-            ctx.stubbedIsNxJson.withArgs(match(fakeNxJson)).returns(false);
-            define(ctx.stubbedIsNxJson, 'errors', ['<ERROR>']);
-
-            await expect(ctx.lifecycle.lifecycle(mockOptions, mockContext))
-                .eventually.be.rejectedWith(Error)
-                .that.contain({
-                    message: 'Failed to parse nx.json: [\n  "<ERROR>"\n]',
-                });
-        });
-
-        stubs.test('Invalid project.json', async ctx => {
-            const options = {
-                check: false,
-                dryRun: false,
-                nxJsonPath: '<nx-json-path>',
-                packageJsonPaths: [
-                    { name: '<foo>', path: '<foo-path>' },
-                    { name: '<bar>', path: '<bar-path>' },
-                ],
-                stages: fakeStages,
-                bindings: fakeBindings,
-            };
-
-            ctx.stubbedNormalizer.normalizeOptions
-                .withArgs(mockOptions, mockContext)
-                .returns(options);
-
-            ctx.stubbedReadFile
-                .withArgs('<nx-json-path>', 'utf8')
-                .resolves(JSON.stringify(fakeNxJson));
-            ctx.stubbedReadFile
-                .withArgs('<foo-path>', 'utf8')
-                .resolves(JSON.stringify(fakeFooProjectJson));
-            ctx.stubbedReadFile
-                .withArgs('<bar-path>', 'utf8')
-                .resolves(JSON.stringify(fakeBarProjectJson));
-
-            ctx.stubbedIsNxJson.withArgs(match(fakeNxJson)).returns(true);
-            ctx.stubbedIsProjectJson.withArgs(match(fakeFooProjectJson)).returns(true);
-
-            ctx.stubbedIsProjectJson.withArgs(match(fakeBarProjectJson)).returns(false);
-            define(ctx.stubbedIsProjectJson, 'errors', ['<ERROR>']);
-
-            await expect(ctx.lifecycle.lifecycle(mockOptions, mockContext))
-                .eventually.be.rejectedWith(Error)
-                .that.contain({
-                    message: 'Failed to parse <bar-path>: [\n  "<ERROR>"\n]',
-                });
-        });
-
-        stubs.afterEach(ctx => {
-            ctx.mockedProcessor.never();
+                },
+            ]);
         });
     });
 });

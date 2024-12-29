@@ -1,0 +1,140 @@
+{
+  "version": 1,
+  "outputCapture": "direct-nodejs",
+  "cli": "nx",
+  "oneOf": [
+    {
+      "type": "object",
+      "title": "lifecycle",
+      "description": "Inject Nx targets as high level workflows",
+      "additionalProperties": false,
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "examples": [
+            "https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-lifecycle/src/lifecycle/schema.json"
+          ],
+          "format": "uri"
+        },
+        "check": {
+          "type": "boolean",
+          "description": "Fails if references are not already updated, will not overwrite. Defaults to true during CI, false otherwise."
+        },
+        "dryRun": {
+          "type": "boolean",
+          "description": "Load files and content, but do not write anything."
+        },
+        "stages": {
+          "type": "object",
+          "description": "Lifecycle stages by name",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "dependsOn": {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "object",
+                      "oneOf": [
+                        {
+                          "properties": {
+                            "dependencies": {
+                              "type": "boolean"
+                            }
+                          }
+                        },
+                        {
+                          "properties": {
+                            "projects": {
+                              "oneOf": [
+                                {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "string"
+                                  }
+                                },
+                                {
+                                  "type": "string"
+                                }
+                              ]
+                            }
+                          },
+                          "required": [
+                            "projects"
+                          ]
+                        }
+                      ],
+                      "properties": {
+                        "target": {
+                          "type": "string"
+                        },
+                        "params": {
+                          "enum": [
+                            "forward",
+                            "ignore"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "target"
+                      ]
+                    }
+                  ]
+                }
+              },
+              "hooks": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "bindings": {
+          "type": "object",
+          "description": "Bind targets to hooks",
+          "additionalProperties": {
+            "type": "string",
+            "description": "Name of hook in `stage:hook` format"
+          }
+        }
+      },
+      "required": [
+        "stages",
+        "bindings"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "examples": [
+            "https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-lifecycle/src/lifecycle/schema.json"
+          ],
+          "format": "uri"
+        },
+        "check": {
+          "type": "boolean",
+          "description": "Fails if references are not already updated, will not overwrite. Defaults to true during CI, false otherwise."
+        },
+        "dryRun": {
+          "type": "boolean",
+          "description": "Load files and content, but do not write anything."
+        },
+        "configFile": {
+          "type": "string"
+        },
+        "cwd": {
+          "type": "string"
+        }
+      }
+    }
+  ]
+}

@@ -40,6 +40,9 @@
       "path": "../../tools/nx-plugin-handler"
     },
     {
+      "path": "../../tools/parse-cwd"
+    },
+    {
       "path": "../../tools/sinon-typed-stub"
     }
   ]

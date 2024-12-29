@@ -43,7 +43,8 @@
     "format-file": "workspace:^",
     "haywire": "workspace:^",
     "juniper": "workspace:^",
-    "nx-plugin-handler": "workspace:^"
+    "nx-plugin-handler": "workspace:^",
+    "parse-cwd": "workspace:^"
   },
   "optionalDependencies": {
     "@nx/devkit": "^20.0.7"

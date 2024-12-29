@@ -3,4 +3,4 @@ import { defaultImport } from 'default-import';
 
 const Ajv = defaultImport(AjvDefault);
 
-export const ajv = new Ajv({ strict: true });
+export const ajv = new Ajv({ strict: true, formats: { uri: true } });
