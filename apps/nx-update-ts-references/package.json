@@ -22,6 +22,7 @@
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {
+    ".": "https://github.com/nrwl/nx/issues/29486",
     "./package.json": {
       "default": "./package.json"
     }
