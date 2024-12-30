@@ -34,27 +34,7 @@ suite('cli', () => {
                 const result = await execAsync(`./bin.mjs --project-root ${projectRoot} --ci`);
 
                 expect(result.stdout).to.equal('');
-                // https://docs.github.com/en/actions/writing-workflows/choosing-what-your-workflow-does/store-information-in-variables#default-environment-variables
-                // eslint-disable-next-line n/no-process-env
-                if (process.env.GITHUB_ACTIONS === 'true') {
-                    // Github Actions installs pnpm with a version of node that includes inspector.
-                    expect(result.stderr).to.equal('');
-                } else {
-                    // https://github.com/nrwl/nx/issues/29244
-                    expect(result.stderr).to.contain(
-                        'The inspector is disabled, coverage could not be collected'
-                    );
-                    const stdErrWithoutWarning = result.stderr
-                        .replace(
-                            /\(node:\d+\) Warning: The inspector is disabled, coverage could not be collected\n/u,
-                            ''
-                        )
-                        .replace(
-                            /\(Use `pnpm --trace-warnings ...` to show where the warning was created\)\n/u,
-                            ''
-                        );
-                    expect(stdErrWithoutWarning).to.equal('');
-                }
+                expect(result.stderr).to.equal('');
             });
 
             test('unknown options', async () => {
