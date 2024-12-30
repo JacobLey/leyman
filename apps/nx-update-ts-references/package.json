@@ -30,7 +30,7 @@
     "update-ts-references": "./bin.mjs"
   },
   "dependencies": {
-    "@nx/devkit": "^20.0.7",
+    "@nx/devkit": "^20.3.0",
     "ajv": "^8.17.1",
     "ci-info": "^4.0.0",
     "comment-json": "^4.2.5",

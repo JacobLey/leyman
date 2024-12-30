@@ -2,8 +2,8 @@ name: Test
 
 env:
   NODE_VERSION: 22.12.0
-  NX_VERSION: 20.0.7
-  PNPM_VERSION: 9.13.2
+  NX_VERSION: 20.3.0
+  PNPM_VERSION: 9.15.2
 
 on:
   - push
