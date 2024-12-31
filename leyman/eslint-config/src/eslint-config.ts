@@ -457,6 +457,7 @@ export default function makeEslintConfigForPackage({
                         ignoreEnums: true,
                     },
                 ],
+                '@typescript-eslint/no-unsafe-type-assertion': 'off',
                 '@typescript-eslint/no-unused-expressions': [
                     'error',
                     {
@@ -742,6 +743,8 @@ export default function makeEslintConfigForPackage({
                 'sonarjs/expression-complexity': 'off',
                 'sonarjs/file-header': 'off',
                 'sonarjs/function-return-type': 'off',
+                'sonarjs/max-lines': 'off',
+                'sonarjs/max-lines-per-function': 'off',
                 'sonarjs/max-union-size': 'off',
                 'sonarjs/nested-control-flow': 'off',
                 'sonarjs/no-duplicate-string': 'off',
