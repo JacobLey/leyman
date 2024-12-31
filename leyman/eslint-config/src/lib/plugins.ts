@@ -29,5 +29,5 @@ export const jsxA11yPlugin: ESLint.Plugin = rawJsxA11yPlugin;
 export const nodePlugin: ESLint.Plugin = rawNodePlugin;
 export const reactPlugin: ESLint.Plugin = rawReactPlugin;
 export const reactHooksPlugin: ESLint.Plugin = rawReactHooksPlugin;
-export const sonarPlugin: ESLint.Plugin = rawSonarPlugin as unknown as ESLint.Plugin;
+export const sonarPlugin: ESLint.Plugin = rawSonarPlugin;
 export const unicornPlugin: ESLint.Plugin = rawUnicornPlugin;
