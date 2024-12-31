@@ -44,11 +44,9 @@ export abstract class Mutation<Data, Params = DefaultParams, Variables = Default
      * @returns useMutation response.
      */
     public useMutation(params: Params): UseMutationResult<Data, unknown, Variables> {
-        // eslint-disable-next-line sonarjs/rules-of-hooks
         const client = useQueryClient();
         const mutationKey = this.getKey(params);
 
-        // eslint-disable-next-line sonarjs/rules-of-hooks
         const [mutationFn, onSuccess, onError, onSettled] = useMemo(
             () => [
                 async (variables: Variables) => this.mutationFn(params, variables),
@@ -62,7 +60,6 @@ export abstract class Mutation<Data, Params = DefaultParams, Variables = Default
             [hashQueryKey(mutationKey)]
         );
 
-        // eslint-disable-next-line sonarjs/rules-of-hooks
         return useMutation<Data, unknown, Variables>(mutationKey, mutationFn, {
             onSuccess,
             onError,
