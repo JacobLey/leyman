@@ -1,13 +1,8 @@
-import { createRequire } from 'node:module';
-import { defaultImport } from 'npm-default-import';
 import { EntryScript } from 'npm-entry-script';
 import type { Supplier } from 'npm-haywire';
-import yargsDefault, { type Argv } from 'yargs';
+import yargs from 'yargs';
 import type { AbstractCommand } from './commands/lib/types.js';
 import type { ConsoleLog, ExitCode } from './lib/dependencies.js';
-
-const packageJson = createRequire(import.meta.url)('../package.json') as { version: string };
-const yargs = defaultImport(yargsDefault) as Argv;
 
 /**
  * Lockfile CLI. Run `./bin.mjs --help` for options.
@@ -41,6 +36,9 @@ export class LockfileCli extends EntryScript {
      * @param argv - process arguments
      */
     public override async main(argv: string[]): Promise<void> {
+        // eslint-disable-next-line import/no-relative-parent-imports
+        const packageJson = await import('../package.json', { with: { type: 'json' } });
+
         const yarg = yargs()
             .scriptName('pnpm-dedicated-lockfile')
             .option({
@@ -54,7 +52,7 @@ export class LockfileCli extends EntryScript {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(packageJson.version);
+            .version(packageJson.default.version);
 
         for (const command of this.#getCommands()) {
             yarg.command(command);
