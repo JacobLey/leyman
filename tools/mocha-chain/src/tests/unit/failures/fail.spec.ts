@@ -3,6 +3,7 @@ import type {
     AsyncFunc,
     Done,
     Func,
+    Hook,
     HookFunction,
     Context as MochaContext,
     Suite,
@@ -42,10 +43,10 @@ suite('Failure cases', () => {
         skip: defaultBaseSuite,
         only: defaultBaseSuite,
     }) as SuiteFunction;
-    const defaultHook: HookFunction = (...args) => {
+    const defaultHook: HookFunction<Hook> = (...args) => {
         const cb = [...args].pop() as AsyncFunc | Func;
         cb.call(fakeContext, () => {});
-        return {};
+        return {} as Hook;
     };
     const defaultBaseTest = (_title: string, cb: AsyncFunc | Func) => {
         cb.call(
@@ -174,6 +175,7 @@ suite('Failure cases', () => {
             const mockDone = mock();
             const fakeHook = (cb: AsyncFunc | Func) => {
                 cb.call(fakeContext, mockDone as Done);
+                return {} as Hook;
             };
 
             mockDone.withArgs(match(err => err instanceof Error)).callsFake(arg => {
@@ -185,7 +187,7 @@ suite('Failure cases', () => {
 
             const customBefore = createContainer(
                 ctx.module
-                    .addBinding(bind(beforeIdentifier).withInstance(fakeHook as HookFunction))
+                    .addBinding(bind(beforeIdentifier).withInstance(fakeHook as HookFunction<Hook>))
                     .addBinding(bind(beforeEachIdentifier).withInstance(defaultHook))
             ).get(entrypointBeforeIdentifier);
 
@@ -215,7 +217,9 @@ suite('Failure cases', () => {
 
             const beforeEach = createContainer(
                 ctx.module
-                    .addBinding(bind(beforeEachIdentifier).withInstance(fakeHook as HookFunction))
+                    .addBinding(
+                        bind(beforeEachIdentifier).withInstance(fakeHook as HookFunction<Hook>)
+                    )
                     .addBinding(bind(beforeIdentifier).withInstance(defaultHook))
             ).get(entrypointBeforeEachIdentifier);
 
