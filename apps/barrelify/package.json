@@ -15,7 +15,8 @@
   },
   "keywords": [
     "barrel",
-    "index"
+    "index",
+    "cli"
   ],
   "sideEffects": false,
   "types": "./dist/index.js",

@@ -18,8 +18,7 @@
     "lifecycle",
     "build",
     "test",
-    "format",
-    "lint"
+    "cli"
   ],
   "sideEffects": false,
   "executors": "./executors.json",

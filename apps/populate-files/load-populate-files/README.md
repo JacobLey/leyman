@@ -58,6 +58,11 @@ export default [
 await loadAndPopulateFiles('./config.js');
 ```
 
+This is also exposed as a CLI:
+
+`pnpx load-populate-files --help`
+`pnpx load-populate-files --file-path ./config.js`
+
 ## API
 
 ### loadAndPopulateFiles(filePath, options)
@@ -66,15 +71,19 @@ Loads the config specified at `filePath`, and passes that to [populateFiles()](h
 
 The loaded file may either be a single object config, or an array of separate configs.
 
+If using the CLI, the `--file-path` parameter is required.
+
 #### options
 
 An optional object as the secondary parameter. Passed to underlying `populateFiles()` call.
 
-| property | type | default | description |
-|----------|------|---------|-------------|
-| check | `boolean` | `true` if in a CI environment. Else `false` | If `true`, will fail if writing the file would result in changing the files content. Useful for CI environments to make sure the version-controlled code is up to date before deployment. |
-| dryRun | `boolean` | `false` | If `true`, will not write file regardless of changes. Can still fail if `check` is `true`. |
-| cwd | `string \| URL` | `process.env.PWD` | Used as the current working directory if `filePath` is a relative file. Will be re-used in filePaths derived from loaded config |
+They are also available as optional flags in the CLI.
+
+| property | CLI flag | type | default | description |
+|----------|----------|------|---------|-------------|
+| check | `--ci` | `boolean` | `true` if in a CI environment. Else `false` | If `true`, will fail if writing the file would result in changing the files content. Useful for CI environments to make sure the version-controlled code is up to date before deployment. |
+| dryRun | `--dry-run` | | `boolean` | `false` | If `true`, will not write file regardless of changes. Can still fail if `check` is `true`. |
+| cwd | `--cwd` | `string \| URL` | `process.env.PWD` | Used as the current working directory if `filePath` is a relative file. Will be re-used in filePaths derived from loaded config |
 
 ## Types
 

@@ -17,7 +17,8 @@
     "typescript",
     "references",
     "pnpm",
-    "dependencies"
+    "dependencies",
+    "cli"
   ],
   "sideEffects": false,
   "executors": "./executors.json",

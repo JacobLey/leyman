@@ -18,7 +18,8 @@
     "workspace",
     "separate",
     "lockfile",
-    "deploy"
+    "deploy",
+    "cli"
   ],
   "sideEffects": false,
   "types": "./dist/index.js",

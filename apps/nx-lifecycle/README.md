@@ -89,6 +89,8 @@ Register it as a target in a `project.json`:
         "lifecycle": {
             "executor": "nx-lifecycle:lifecycle",
             "options": {
+                "cwd": "{projectRoot}",
+                "configFile": "lifecycle.json"
                 "stages": {
                     "build": { 
                         "hooks": ["pre", "run", "post"], 
@@ -109,29 +111,79 @@ Register it as a target in a `project.json`:
 }
 ```
 
-Note that this target only needs to be run once (not once per project) so it is recommended to put this somewhere like a root `project.json` to own this.
+Note that this target only needs to be run once (not once per project) so it is recommended to put this somewhere like a root `project.json` to own this. [Nx-lifecycle's own monorepo is managed in a non-published "main" package](https://github.com/JacobLey/leyman/blob/main/leyman/main/lifecycle.json).
 
 ## Usage
 
-Because the `lifecycle` executor manages target dependencies itself, it probably should not be executed along with targets that are normally executed, like the `build` and `test` targets in the example above.
+Because `lifecycle` manages target dependencies itself, it probably should not be executed along with targets that are normally executed, like the `build` and `test` targets in the example above.
 
 For example, this project's use of `nx-lifecycle` is part of a [local-only project](https://github.com/JacobLey/leyman/blob/main/leyman/main/project.json#L15) that is never deployed anywhere, and exists only to manage the repo itself.
 
-`nx-lifecycle` will produce additional targets in your `nx.json` and `project.json`s. These will all be backed by the [noop](https://nx.dev/nx-api/nx/executors/noop) executor, and have no need to invoke caching. In fact, you should never directly manage these commands, their dependencies, or their configurations.
+`nx-lifecycle` will produce additional targets in your `nx.json` and `project.json`s. These will all be backed by the [noop](https://nx.dev/nx-api/nx/executors/noop) executor, and have no need to invoke caching. In fact, you should never directly manage these commands, their dependencies, or their configurations. These changes should be included in your version control.
 
 You may declare one-off targets that _depend_ on these targets though, that is the whole point! You should able to declare a target depends on the build step, without having to explicitly manage how the build script is implemented.
 
 `nx-lifecycle` will use the `nx.json` to assign defaults, and will assign defaults to your targets that are assigned there. However that does not guarantee every target is actually executable by every project. You must declare the target in your `project.json` as well. Do not worry about copying `nx-lifecycle`'s targets over.
 
-## Executors
+Instead of providing all the stages and bindings in the package.json file, it is also possible to manage that in a separate file, and point the plugin at it.
 
-### lifecycle
+### As a plugin
 
-Will update all `project.json`s and the `nx.json` with declared stages, and wire up dependencies to your bound targets, ensuring that you can reference your abstract targets, Nx will invoke the required targets in dependency order as necessary.
+Specify `nx-lifecycle:lifecycle` as the executor. You can pass the `lifecycle.json` config file there, or may provide the config JSON directly inline as the options.
 
-Requires configuration to execute.
+```json
+// project.json
+{
+    "targets": {
+        "lifecycle": {
+            "executor": "nx-lifecycle:lifecycle",
+            "options": {
+                "cwd": "{projectRoot}",
+                "configFile": "my-lifecycle-config.json" // defaults to "lifecycle.json"
+            }
+        }
+    }
+}
+```
 
-#### configuration.stages
+Where the file is the options object
+
+```json
+// lifecycle.json
+{
+    "stages": {
+        "build": { 
+            "hooks": ["pre", "run", "post"], 
+            "dependsOn": ["^build"]
+        },
+        "test": {
+            "hooks": ["run", "report"],
+            "dependsOn": ["build"]
+        }
+    },
+    "bindings": {
+        "tsc": "build:run",
+        "mocha": "test:run"
+    }
+}
+```
+
+### As a CLI
+
+Alternatively, you may invoke this plugin as a CLI command. Similar to above, it is _recommended_ to include this dependency in some project that is outside the scope of your "normal" packages. Although it could conceptually be installed globally as well.
+
+`pnpx nx-lifecycle --help`
+`pnpx nx-lifecycle --config-file ./my-lifecycle.json --dry-run`
+
+It is not possible to pass the configuration directly to the CLI, and must use a config file.
+
+## Configuration
+
+Both the CLI and the plugin support providing a config file to manage lifecycle options. This file (defaults to `lifecycle.json`) contains configuraiton that specifies the different stages and bindings for your projects.
+
+The lifecycle executor can also provide all these options directly in the `project.json` if preferred.
+
+### configuration.stages
 
 Required. No default value.
 
@@ -144,7 +196,7 @@ It is an object, where every key is the name of a stage. The value is another ob
 - `dependsOn`
   - Accepts the same values as normal Nx [dependsOn](https://nx.dev/reference/project-configuration#dependson). Used to define relationship between stages, and their dependencies.
 
-#### configuration.bindings
+### configuration.bindings
 
 Required. No default value.
 
@@ -154,32 +206,26 @@ The value is an object mapping, where the key is the name of your specific targe
 
 __\*\*NOTE\*\*__ If the bound stage has `steps` defined, then you must bind to a specific step. If there are no steps, then you reference the stage directly.
 
-```
+```json
+// lifecycle.json
 {
-    "targets": {
-        "lifecycle": {
-            "executor": "nx-lifecycle:lifecycle",
-            "options": {
-                "stages": {
-                    "build": { 
-                        "dependsOn": ["^build"]
-                    },
-                    "test": {
-                        "hooks": ["run", "report"],
-                        "dependsOn": ["build"]
-                    }
-                },
-                "bindings": {
-                    "tsc": "build",
-                    "mocha": "test:run"
-                }
-            }
+    "stages": {
+        "build": { 
+            "dependsOn": ["^build"]
+        },
+        "test": {
+            "hooks": ["run", "report"],
+            "dependsOn": ["build"]
         }
+    },
+    "bindings": {
+        "tsc": "build",
+        "mocha": "test:run"
     }
 }
 ```
 
-#### configuration.check
+### configuration.check
 
 `boolean`. Default `true` in CI environments, otherwise `false`.
 
@@ -187,10 +233,16 @@ If `true`, the executor will fail if the `nx.json` or any `project.json` is out 
 
 Useful for ensuring that generated configs are up to date in version control before proceeding with deployments.
 
-#### configuration.dryRun
+### configuration.dryRun
 
 `boolean`. Default `false`.
 
 If `true`, will do everything except actually write the updated config files.
 
 Can still fail if `check` is `true`.
+
+## Executors
+
+### lifecycle
+
+Will update all `project.json`s and the `nx.json` with declared stages, and wire up dependencies to your bound targets, ensuring that you can reference your abstract targets, Nx will invoke the required targets in dependency order as necessary.

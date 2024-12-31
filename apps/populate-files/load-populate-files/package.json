@@ -16,7 +16,8 @@
   "keywords": [
     "content",
     "write",
-    "build"
+    "build",
+    "cli"
   ],
   "sideEffects": false,
   "exports": {
