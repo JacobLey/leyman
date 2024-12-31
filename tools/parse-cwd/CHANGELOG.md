@@ -1,5 +1,18 @@
 # parse-cwd
 
+## 1.1.0
+
+### Minor Changes
+
+- 687a26a: Publish type of ParseCwd
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- efd163f: Remove local files from publishing
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+
 ## 1.0.13
 
 ### Patch Changes

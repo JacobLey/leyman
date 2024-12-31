@@ -1,5 +1,33 @@
 # nx-populate-files
 
+## 0.0.13
+
+### Patch Changes
+
+- 93cdd8a: Use local version of dependency
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- efd163f: Remove local files from publishing
+- 3e72e79: Bump container-level dependencies
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+- Updated dependencies [e5209ca]
+- Updated dependencies [93cdd8a]
+- Updated dependencies [18cfe17]
+- Updated dependencies [2e2c63f]
+- Updated dependencies [bc9c9e1]
+- Updated dependencies [9ad3555]
+- Updated dependencies [0de94ee]
+- Updated dependencies [efd163f]
+- Updated dependencies [7f6d058]
+- Updated dependencies [19244cd]
+- Updated dependencies [f5ed1b6]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [4c71310]
+- Updated dependencies [36d1c12]
+- Updated dependencies [25d162d]
+  - load-populate-files@0.1.0
+  - common-proxy@0.1.0
+
 ## 0.0.12
 
 ### Patch Changes

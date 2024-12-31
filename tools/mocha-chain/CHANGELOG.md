@@ -1,5 +1,19 @@
 # mocha-chain
 
+## 0.0.9
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- efd163f: Remove local files from publishing
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+- Updated dependencies [18cfe17]
+- Updated dependencies [efd163f]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+  - haywire@0.1.6
+
 ## 0.0.8
 
 ### Patch Changes

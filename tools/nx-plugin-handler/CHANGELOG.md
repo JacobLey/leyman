@@ -1,5 +1,32 @@
 # nx-plugin-handler
 
+## 0.1.0
+
+### Minor Changes
+
+- f7ad651: Proxy requests to local install if possible, allow loading on commonjs
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- b086047: Update dependencies
+- efd163f: Remove local files from publishing
+- 3e72e79: Bump container-level dependencies
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+- 25d162d: Remove unused tsconfig settings
+- Updated dependencies [18cfe17]
+- Updated dependencies [9ad3555]
+- Updated dependencies [0de94ee]
+- Updated dependencies [efd163f]
+- Updated dependencies [19244cd]
+- Updated dependencies [f5ed1b6]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+- Updated dependencies [25d162d]
+  - common-proxy@0.1.0
+  - haywire@0.1.6
+
 ## 0.0.9
 
 ### Patch Changes

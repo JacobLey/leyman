@@ -1,5 +1,15 @@
 # normalized-react-query
 
+## 1.0.7
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- efd163f: Remove local files from publishing
+- fc8beb5: Remove outdated eslint rule ignores
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+
 ## 1.0.6
 
 ### Patch Changes

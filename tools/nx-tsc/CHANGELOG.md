@@ -1,5 +1,31 @@
 # nx-tsc
 
+## 0.0.14
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- 1c8d928: Include swc+helper as prod dependency
+- efd163f: Remove local files from publishing
+- 3e72e79: Bump container-level dependencies
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+- Updated dependencies [18cfe17]
+- Updated dependencies [b086047]
+- Updated dependencies [9ad3555]
+- Updated dependencies [f7ad651]
+- Updated dependencies [0de94ee]
+- Updated dependencies [efd163f]
+- Updated dependencies [3e72e79]
+- Updated dependencies [19244cd]
+- Updated dependencies [f5ed1b6]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+- Updated dependencies [25d162d]
+  - nx-plugin-handler@0.1.0
+  - common-proxy@0.1.0
+  - haywire@0.1.6
+
 ## 0.0.13
 
 ### Patch Changes

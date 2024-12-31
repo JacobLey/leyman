@@ -1,5 +1,22 @@
 # format-file
 
+## 0.1.3
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- 2c49726: Use local dependency of nx-update-ts-references
+- b69df1e: Include internal dev dependency on tmp types
+- efd163f: Remove local files from publishing
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+- 25d162d: Remove unused tsconfig settings
+- Updated dependencies [18cfe17]
+- Updated dependencies [efd163f]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+  - haywire@0.1.6
+
 ## 0.1.2
 
 ### Patch Changes

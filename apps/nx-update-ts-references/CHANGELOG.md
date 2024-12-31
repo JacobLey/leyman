@@ -1,5 +1,47 @@
 # nx-update-ts-references
 
+## 0.1.0
+
+### Minor Changes
+
+- 2085677: Support CLI usage
+
+### Patch Changes
+
+- 7da1ce6: Pre-bind property internally
+- 1efe6a6: Use constructor provider
+- ced2bb5: Use plugin handler in commonjs
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- b5800d8: Derive metadata purely from project graph
+- 004cba3: Pass supplier method directly
+- 81baeb5: Refactor to use more DI, bug fixes
+- 2d61c91: Refactor to use haywire DI
+- efd163f: Remove local files from publishing
+- 7bb3633: Add dependencies for tests
+- 7f6d058: Fix command builder type to not require this
+- 3e72e79: Bump container-level dependencies
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 76e9596: Add placeholder export to workaround issue
+- 4c71310: Use native import to load package.json
+- 36d1c12: Bump dependencies
+- 08e5a2a: Update dependencies to support CLI
+- 5d0eaa7: Implement test suite
+- b01a704: Explicitly disable checking from populate-files
+- Updated dependencies [18cfe17]
+- Updated dependencies [b086047]
+- Updated dependencies [9ad3555]
+- Updated dependencies [f7ad651]
+- Updated dependencies [0de94ee]
+- Updated dependencies [efd163f]
+- Updated dependencies [3e72e79]
+- Updated dependencies [19244cd]
+- Updated dependencies [f5ed1b6]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+- Updated dependencies [25d162d]
+  - nx-plugin-handler@0.1.0
+  - common-proxy@0.1.0
+
 ## 0.0.8
 
 ### Patch Changes

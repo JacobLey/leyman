@@ -1,5 +1,50 @@
 # nx-lifecycle
 
+## 0.1.0
+
+### Minor Changes
+
+- 83964af: Add CLI version of plugin
+- f531fa5: Refactor to re-use method for CLI, support loading config from file
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- 875d420: Use plugin handler in commonjs
+- efd163f: Remove local files from publishing
+- 77e247b: Pre-bind property internally
+- 3e72e79: Bump container-level dependencies
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 4c71310: Use native import to load package.json
+- 36d1c12: Bump dependencies
+- Updated dependencies [066d66b]
+- Updated dependencies [32f4953]
+- Updated dependencies [18cfe17]
+- Updated dependencies [2c49726]
+- Updated dependencies [b086047]
+- Updated dependencies [0ff2dac]
+- Updated dependencies [687a26a]
+- Updated dependencies [b69df1e]
+- Updated dependencies [9ad3555]
+- Updated dependencies [f7ad651]
+- Updated dependencies [0de94ee]
+- Updated dependencies [efd163f]
+- Updated dependencies [3e72e79]
+- Updated dependencies [19244cd]
+- Updated dependencies [f5ed1b6]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+- Updated dependencies [25d162d]
+  - juniper@1.2.3
+  - nx-plugin-handler@0.1.0
+  - haywire-launcher@0.1.9
+  - default-import@2.0.5
+  - common-proxy@0.1.0
+  - entry-script@3.0.7
+  - format-file@0.1.3
+  - parse-cwd@1.1.0
+  - haywire@0.1.6
+
 ## 0.0.10
 
 ### Patch Changes

@@ -1,5 +1,21 @@
 # haywire-launcher
 
+## 0.1.9
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- 0ff2dac: Move entry-script to peer dependency
+- efd163f: Remove local files from publishing
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+- Updated dependencies [18cfe17]
+- Updated dependencies [efd163f]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+  - entry-script@3.0.7
+  - haywire@0.1.6
+
 ## 0.1.8
 
 ### Patch Changes

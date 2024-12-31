@@ -1,6 +1,6 @@
 {
   "name": "nx-plugin-handler",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "description": "Utility methods to help manage and expose nx plugins",
   "engines": {
     "node": ">=20"

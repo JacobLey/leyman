@@ -1,5 +1,20 @@
 # find-import
 
+## 1.0.12
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- efd163f: Remove local files from publishing
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+- Updated dependencies [18cfe17]
+- Updated dependencies [687a26a]
+- Updated dependencies [efd163f]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+  - parse-cwd@1.1.0
+
 ## 1.0.11
 
 ### Patch Changes

@@ -1,5 +1,22 @@
 # common-proxy
 
+## 0.1.0
+
+### Minor Changes
+
+- 19244cd: Add proxy for decorator methods
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- 9ad3555: Build index via barrelify
+- 0de94ee: Allow module to be loadable from ESM
+- efd163f: Remove local files from publishing
+- f5ed1b6: Maintain proxied type if possible
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+- 25d162d: Remove unused tsconfig settings
+
 ## 0.0.7
 
 ### Patch Changes

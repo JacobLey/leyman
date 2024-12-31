@@ -1,5 +1,43 @@
 # load-populate-files
 
+## 0.1.0
+
+### Minor Changes
+
+- bc9c9e1: Add CLI version
+
+### Patch Changes
+
+- e5209ca: Refactor to use DI, add tests
+- 93cdd8a: Use local version of dependency
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- 2e2c63f: Update dependencies
+- efd163f: Remove local files from publishing
+- 7f6d058: Fix command builder type to not require this
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 4c71310: Use native import to load package.json
+- 36d1c12: Bump dependencies
+- Updated dependencies [066d66b]
+- Updated dependencies [51d0c08]
+- Updated dependencies [32f4953]
+- Updated dependencies [18cfe17]
+- Updated dependencies [e3697e0]
+- Updated dependencies [2c49726]
+- Updated dependencies [0ff2dac]
+- Updated dependencies [687a26a]
+- Updated dependencies [761204f]
+- Updated dependencies [5705fa7]
+- Updated dependencies [efd163f]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+  - juniper@1.2.3
+  - populate-files@0.2.2
+  - haywire-launcher@0.1.9
+  - default-import@2.0.5
+  - entry-script@3.0.7
+  - parse-cwd@1.1.0
+  - haywire@0.1.6
+
 ## 0.0.11
 
 ### Patch Changes

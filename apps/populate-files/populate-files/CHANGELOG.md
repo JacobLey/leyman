@@ -1,5 +1,30 @@
 # populate-files
 
+## 0.2.2
+
+### Patch Changes
+
+- 51d0c08: Add unit tests w/full test coverage
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- e3697e0: Add integration test
+- 2c49726: Use local dependency of nx-update-ts-references
+- 761204f: Refactor to use DI
+- 5705fa7: Include test packages
+- efd163f: Remove local files from publishing
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+- Updated dependencies [18cfe17]
+- Updated dependencies [2c49726]
+- Updated dependencies [687a26a]
+- Updated dependencies [b69df1e]
+- Updated dependencies [efd163f]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+- Updated dependencies [25d162d]
+  - format-file@0.1.3
+  - parse-cwd@1.1.0
+  - haywire@0.1.6
+
 ## 0.2.1
 
 ### Patch Changes

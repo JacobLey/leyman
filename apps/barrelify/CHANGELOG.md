@@ -1,5 +1,41 @@
 # barrelify
 
+## 1.3.0
+
+### Minor Changes
+
+- 3aa19b1: Use populate-files instead of managing check manually
+
+### Patch Changes
+
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- 88efb22: Update type detection for barrelify
+- 8bdcb2e: Pre-bind property internally
+- 4a7f64e: Load ParseCwd type directly from source
+- efd163f: Remove local files from publishing
+- 7f6d058: Fix command builder type to not require this
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 5dabcd6: Load package.json directly
+- 84be94c: Fix CI enforcement
+- 4c71310: Use native import to load package.json
+- 36d1c12: Bump dependencies
+- 1b92daa: Throw error instead of setting exit code and log
+- Updated dependencies [066d66b]
+- Updated dependencies [32f4953]
+- Updated dependencies [18cfe17]
+- Updated dependencies [0ff2dac]
+- Updated dependencies [687a26a]
+- Updated dependencies [efd163f]
+- Updated dependencies [37b2ec5]
+- Updated dependencies [36d1c12]
+  - juniper@1.2.3
+  - haywire-launcher@0.1.9
+  - default-import@2.0.5
+  - entry-script@3.0.7
+  - find-import@1.0.12
+  - parse-cwd@1.1.0
+  - haywire@0.1.6
+
 ## 1.2.3
 
 ### Patch Changes

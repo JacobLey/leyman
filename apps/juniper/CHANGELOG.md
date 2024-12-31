@@ -1,5 +1,16 @@
 # juniper
 
+## 1.2.3
+
+### Patch Changes
+
+- 066d66b: Cast schemas comply fully with schema type
+- 32f4953: Update TS assertions
+- 18cfe17: Add dev dependency on pnpm-dedicated-lockfile
+- efd163f: Remove local files from publishing
+- 37b2ec5: Move from nx-tsc to swc + tsc CLI
+- 36d1c12: Bump dependencies
+
 ## 1.2.2
 
 ### Patch Changes
