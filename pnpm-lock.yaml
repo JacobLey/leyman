@@ -441,9 +441,6 @@ importers:
       ci-info:
         specifier: ^4.1.0
         version: 4.1.0
-      npm-default-import:
-        specifier: npm:default-import@latest
-        version: default-import@2.0.6
       npm-entry-script:
         specifier: npm:entry-script@latest
         version: entry-script@3.0.7

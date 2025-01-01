@@ -35,7 +35,6 @@
     "@pnpm/lockfile.pruner": "^0.0.6",
     "@pnpm/logger": "^5.2.0",
     "ci-info": "^4.1.0",
-    "npm-default-import": "npm:default-import@latest",
     "npm-entry-script": "npm:entry-script@latest",
     "npm-haywire": "npm:haywire@latest",
     "npm-haywire-launcher": "npm:haywire-launcher@latest",
