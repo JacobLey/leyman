@@ -23,11 +23,11 @@
     ".": "./dist/index.cjs"
   },
   "dependencies": {
+    "ajv": "^8.17.1",
     "common-proxy": "workspace:^",
     "haywire": "workspace:^",
     "npm-default-import": "npm:default-import@latest",
-    "npm-juniper": "npm:juniper@latest",
-    "ajv": "^8.17.1"
+    "npm-juniper": "npm:juniper@latest"
   },
   "optionalDependencies": {
     "@nx/devkit": "^20.3.0"
