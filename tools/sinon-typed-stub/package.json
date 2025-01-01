@@ -28,7 +28,7 @@
   },
   "peerDependencies": {
     "@types/sinon": "^17.0.3",
-    "sinon": "^17.0.1"
+    "sinon": "^19.0.2"
   },
   "peerDependenciesMeta": {
     "@types/sinon": {
