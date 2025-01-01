@@ -2,8 +2,8 @@
   "type": "module",
   "devDependencies": {
     "@nx/eslint": "20.3.0",
-    "npm-nx-populate-files": "npm:nx-populate-files@0.0.12",
-    "npm-nx-update-ts-references": "npm:nx-update-ts-references@0.0.8",
+    "npm-nx-populate-files": "npm:nx-populate-files@0.0.14",
+    "npm-nx-update-ts-references": "npm:nx-update-ts-references@0.1.2",
     "nx": "20.3.0",
     "nx-lifecycle": "workspace:^",
     "nx-update-ts-references": "workspace:^"
