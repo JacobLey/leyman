@@ -9,7 +9,7 @@
     "delete-dist": {},
     "populate-static": {},
     "tsc": {},
-    "npm-populate-files": {},
+    "populate-files": {},
     "analyze:_": {},
     "analyze:format": {},
     "analyze:lint": {},

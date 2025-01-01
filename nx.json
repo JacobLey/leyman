@@ -198,16 +198,6 @@
         "build:run"
       ]
     },
-    "npm-populate-files": {
-      "executor": "npm-nx-populate-files:populate-files",
-      "options": {
-        "filePath": "{projectRoot}/dist/file-content.js",
-        "cwd": "{projectRoot}"
-      },
-      "dependsOn": [
-        "build:run"
-      ]
-    },
     "coverage-reset": {
       "executor": "nx:run-commands",
       "options": {
@@ -404,8 +394,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "build:run",
-        "populate-files",
-        "npm-populate-files"
+        "populate-files"
       ],
       "configurations": {
         "__lifecycle": {}

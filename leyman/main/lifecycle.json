@@ -54,7 +54,6 @@
     "npm-update-ts-references": "build:pre",
     "tsc": "build:run",
     "populate-files": "build:post",
-    "npm-populate-files": "build:post",
     "coverage-reset": "test:reset",
     "mocha-unit-test": "test:run",
     "mocha-integration-test": "test:run",
