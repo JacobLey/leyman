@@ -1,5 +1,20 @@
 # nx-lifecycle
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [5c09944]
+  - common-proxy@0.1.1
+  - juniper@1.2.3
+  - default-import@2.0.6
+  - entry-script@3.0.7
+  - format-file@0.1.3
+  - haywire@0.1.6
+  - haywire-launcher@0.1.9
+  - nx-plugin-handler@0.1.1
+  - parse-cwd@1.1.0
+
 ## 0.1.0
 
 ### Minor Changes

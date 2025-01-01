@@ -1,5 +1,13 @@
 # nx-populate-files
 
+## 0.0.14
+
+### Patch Changes
+
+- Updated dependencies [5c09944]
+  - common-proxy@0.1.1
+  - load-populate-files@0.1.0
+
 ## 0.0.13
 
 ### Patch Changes

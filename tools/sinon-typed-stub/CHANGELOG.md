@@ -1,5 +1,11 @@
 # sinon-typed-stub
 
+## 0.0.9
+
+### Patch Changes
+
+- 4f5ae27: Update peer dependency to match dev dependency
+
 ## 0.0.8
 
 ### Patch Changes

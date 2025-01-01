@@ -1,5 +1,13 @@
 # nx-update-ts-references
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [5c09944]
+  - common-proxy@0.1.1
+  - nx-plugin-handler@0.1.1
+
 ## 0.1.0
 
 ### Minor Changes

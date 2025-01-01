@@ -1,5 +1,11 @@
 # normalized-react-query
 
+## 1.0.8
+
+### Patch Changes
+
+- 568a84d: Bump dependencies
+
 ## 1.0.7
 
 ### Patch Changes

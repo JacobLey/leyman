@@ -1,6 +1,6 @@
 {
   "name": "nx-update-ts-references",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "An Nx plugin to update references in tsconfig based on local dependencies",
   "engines": {
     "node": ">=20"
