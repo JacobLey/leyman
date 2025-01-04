@@ -3,6 +3,7 @@
   "name": "@leyman/eslint-config",
   "targets": {
     "biome": {},
+    "eslint": {},
     "npm-update-ts-references": {},
     "delete-dist": {},
     "populate-static": {},
