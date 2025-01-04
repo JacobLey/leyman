@@ -58,6 +58,7 @@
     "c8": "^10.1.3",
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.1",
+    "eslint": "^9.17.0",
     "mocha": "^11.0.1",
     "npm-mocha-chain": "npm:mocha-chain@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",

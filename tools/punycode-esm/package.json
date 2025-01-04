@@ -37,6 +37,7 @@
     "@types/node": "^22.10.2",
     "c8": "^10.1.3",
     "chai": "^5.1.2",
+    "eslint": "^9.17.0",
     "mocha": "^11.0.1",
     "mocha-chain": "workspace:^",
     "nx-update-ts-references": "workspace:^",

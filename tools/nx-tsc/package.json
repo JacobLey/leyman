@@ -49,6 +49,7 @@
     "@types/mocha": "^10.0.10",
     "@types/node": "^22.10.2",
     "chai": "^5.1.2",
+    "eslint": "^9.17.0",
     "mocha": "^11.0.1",
     "npm-load-populate-files": "npm:load-populate-files@latest",
     "npm-nx-populate-files": "npm:nx-populate-files@latest",

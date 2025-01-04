@@ -107,6 +107,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.1
         version: 8.0.1(chai@5.1.2)
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -177,6 +180,9 @@ importers:
       default-import:
         specifier: workspace:^
         version: link:../../tools/default-import
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -284,6 +290,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.1
         version: 8.0.1(chai@5.1.2)
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       load-populate-files:
         specifier: workspace:^
         version: link:../populate-files/load-populate-files
@@ -396,6 +405,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.1
         version: 8.0.1(chai@5.1.2)
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -505,6 +517,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.1
         version: 8.0.1(chai@5.1.2)
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -599,6 +614,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.1
         version: 8.0.1(chai@5.1.2)
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -658,6 +676,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -725,6 +746,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.1
         version: 8.0.1(chai@5.1.2)
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -852,9 +876,6 @@ importers:
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../eslint-config
-      eslint:
-        specifier: ^9.17.0
-        version: 9.17.0
       npm:
         specifier: ^11.0.0
         version: 11.0.0
@@ -904,6 +925,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -958,6 +982,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1016,6 +1043,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.1
         version: 8.0.1(chai@5.1.2)
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -1061,6 +1091,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1113,6 +1146,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1180,6 +1216,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1253,6 +1292,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.1
         version: 8.0.1(chai@5.1.2)
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1313,6 +1355,9 @@ importers:
       entry-script:
         specifier: workspace:^
         version: link:../entry-script
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       haywire:
         specifier: workspace:^
         version: link:../haywire
@@ -1370,6 +1415,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1431,6 +1479,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1482,6 +1533,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1545,6 +1599,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1628,6 +1685,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1699,6 +1759,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -1753,6 +1816,9 @@ importers:
       chai-as-promised:
         specifier: ^8.0.1
         version: 8.0.1(chai@5.1.2)
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -1798,6 +1864,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       mocha:
         specifier: ^11.0.1
         version: 11.0.1
@@ -1846,6 +1915,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0
@@ -1900,6 +1972,9 @@ importers:
       chai:
         specifier: ^5.1.2
         version: 5.1.2
+      eslint:
+        specifier: ^9.17.0
+        version: 9.17.0
       expect-type:
         specifier: ^1.1.0
         version: 1.1.0

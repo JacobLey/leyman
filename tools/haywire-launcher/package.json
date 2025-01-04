@@ -42,6 +42,7 @@
     "chai": "^5.1.2",
     "chai-as-promised": "^8.0.1",
     "entry-script": "workspace:^",
+    "eslint": "^9.17.0",
     "haywire": "workspace:^",
     "mocha": "^11.0.1",
     "mocha-chain": "workspace:^",
