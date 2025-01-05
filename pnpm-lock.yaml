@@ -629,67 +629,6 @@ importers:
         specifier: ^5.7.2
         version: 5.7.2
 
-  apps/populate-files/nx-populate-files:
-    dependencies:
-      '@nx/devkit':
-        specifier: ^20.3.0
-        version: 20.3.0(nx@20.3.0(@swc/core@1.10.4))
-      ci-info:
-        specifier: ^4.1.0
-        version: 4.1.0
-      common-proxy:
-        specifier: workspace:^
-        version: link:../../../tools/common-proxy
-      juniper:
-        specifier: workspace:^
-        version: link:../../juniper
-      load-populate-files:
-        specifier: workspace:^
-        version: link:../load-populate-files
-      nx:
-        specifier: ^20.3.0
-        version: 20.3.0(@swc/core@1.10.4)
-    devDependencies:
-      '@biomejs/biome':
-        specifier: ^1.9.4
-        version: 1.9.4
-      '@leyman/eslint-config':
-        specifier: workspace:^
-        version: link:../../../leyman/eslint-config
-      '@swc/cli':
-        specifier: ^0.5.2
-        version: 0.5.2(@swc/core@1.10.4)
-      '@swc/core':
-        specifier: ^1.10.4
-        version: 1.10.4
-      '@types/chai':
-        specifier: ^5.0.1
-        version: 5.0.1
-      '@types/mocha':
-        specifier: ^10.0.10
-        version: 10.0.10
-      '@types/node':
-        specifier: ^22.10.5
-        version: 22.10.5
-      chai:
-        specifier: ^5.1.2
-        version: 5.1.2
-      eslint:
-        specifier: ^9.17.0
-        version: 9.17.0
-      mocha:
-        specifier: ^11.0.1
-        version: 11.0.1
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../nx-update-ts-references
-      pnpm-dedicated-lockfile:
-        specifier: workspace:^
-        version: link:../../pnpm-dedicated-lockfile
-      typescript:
-        specifier: ^5.7.2
-        version: 5.7.2
-
   apps/populate-files/populate-files:
     dependencies:
       ci-info:
@@ -1706,76 +1645,6 @@ importers:
       sinon-typed-stub:
         specifier: workspace:^
         version: link:../sinon-typed-stub
-      typescript:
-        specifier: ^5.7.2
-        version: 5.7.2
-
-  tools/nx-tsc:
-    dependencies:
-      '@swc/core':
-        specifier: ^1.10.4
-        version: 1.10.4(@swc/helpers@0.5.15)
-      '@swc/helpers':
-        specifier: ^0.5.15
-        version: 0.5.15
-      common-proxy:
-        specifier: workspace:^
-        version: link:../common-proxy
-      haywire:
-        specifier: workspace:^
-        version: link:../haywire
-      npm-juniper:
-        specifier: npm:juniper@latest
-        version: juniper@1.2.4
-      nx-plugin-handler:
-        specifier: workspace:^
-        version: link:../nx-plugin-handler
-    devDependencies:
-      '@biomejs/biome':
-        specifier: ^1.9.4
-        version: 1.9.4
-      '@leyman/eslint-config':
-        specifier: workspace:^
-        version: link:../../leyman/eslint-config
-      '@nx/devkit':
-        specifier: ^20.3.0
-        version: 20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
-      '@swc/cli':
-        specifier: ^0.5.2
-        version: 0.5.2(@swc/core@1.10.4(@swc/helpers@0.5.15))
-      '@types/chai':
-        specifier: ^5.0.1
-        version: 5.0.1
-      '@types/mocha':
-        specifier: ^10.0.10
-        version: 10.0.10
-      '@types/node':
-        specifier: ^22.10.5
-        version: 22.10.5
-      chai:
-        specifier: ^5.1.2
-        version: 5.1.2
-      eslint:
-        specifier: ^9.17.0
-        version: 9.17.0
-      mocha:
-        specifier: ^11.0.1
-        version: 11.0.1
-      npm-load-populate-files:
-        specifier: npm:load-populate-files@latest
-        version: load-populate-files@0.1.1(@biomejs/biome@1.9.4)
-      npm-nx-populate-files:
-        specifier: npm:nx-populate-files@latest
-        version: nx-populate-files@0.1.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4(@swc/helpers@0.5.15))
-      npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4(@swc/helpers@0.5.15))
-      nx:
-        specifier: ^20.3.0
-        version: 20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))
-      pnpm-dedicated-lockfile:
-        specifier: workspace:^
-        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -9241,21 +9110,6 @@ snapshots:
       npm-juniper: juniper@1.2.4
     optionalDependencies:
       '@nx/devkit': 20.3.0(nx@20.3.0)
-
-  nx-populate-files@0.1.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4(@swc/helpers@0.5.15)):
-    dependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
-      ci-info: 4.1.0
-      common-proxy: 0.1.2
-      juniper: 1.2.4
-      load-populate-files: 0.1.1(@biomejs/biome@1.9.4)
-      nx: 20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - '@swc-node/register'
-      - '@swc/core'
-      - debug
-      - prettier
 
   nx-populate-files@0.1.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4):
     dependencies:

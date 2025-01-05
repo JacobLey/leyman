@@ -1,9 +1,0 @@
-{
-  "executors": {
-    "build": {
-      "implementation": "./dist/executors/build/index.cjs",
-      "schema": "./src/executors/build/schema.json",
-      "description": "Build a project using TypeScript."
-    }
-  }
-}
