@@ -3,7 +3,6 @@
   "name": "@leyman/eslint-config",
   "targets": {
     "biome": {},
-    "eslint": {},
     "npm-update-ts-references": {},
     "delete-dist": {},
     "populate-static": {},
@@ -14,7 +13,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 --clean=false --reporter=none eslint . './**/*.{c,m,}ts{x,}' './**/*.{c,m,}js'"
+          "c8 --clean=false --reporter=none eslint . --cache --cache-strategy content --color"
         ],
         "parallel": true,
         "color": true,
