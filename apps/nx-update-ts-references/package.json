@@ -57,7 +57,7 @@
     "@types/chai": "^5.0.1",
     "@types/chai-as-promised": "^8.0.1",
     "@types/mocha": "^10.0.10",
-    "@types/node": "^22.10.2",
+    "@types/node": "^22.10.5",
     "@types/sinon": "^17.0.3",
     "@types/yargs": "^17.0.33",
     "c8": "^10.1.3",
