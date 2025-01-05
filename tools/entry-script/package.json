@@ -1,6 +1,6 @@
 {
   "name": "entry-script",
-  "version": "3.0.7",
+  "version": "3.0.8",
   "description": "Modular control for entry script execution.",
   "engines": {
     "node": ">=20"

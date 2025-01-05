@@ -1,5 +1,15 @@
 # find-import
 
+## 1.0.13
+
+### Patch Changes
+
+- 282a5b7: Bump license version
+- 75d9ae4: Migrate to using per-package eslint CLI instead of Nx plugin
+- Updated dependencies [282a5b7]
+- Updated dependencies [75d9ae4]
+  - parse-cwd@1.1.1
+
 ## 1.0.12
 
 ### Patch Changes

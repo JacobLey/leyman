@@ -1,5 +1,12 @@
 # Change Log
 
+## 2.0.7
+
+### Patch Changes
+
+- 282a5b7: Bump license version
+- 75d9ae4: Migrate to using per-package eslint CLI instead of Nx plugin
+
 ## 2.0.5
 
 ### Patch Changes

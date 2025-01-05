@@ -1,6 +1,6 @@
 {
   "name": "pnpm-dedicated-lockfile",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Write a deterministic lockfile per workspace, based on currently installed dependencies.",
   "engines": {
     "node": ">=20"

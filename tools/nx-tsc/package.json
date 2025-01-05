@@ -1,6 +1,6 @@
 {
   "name": "nx-tsc",
-  "version": "0.0.15",
+  "version": "0.1.0",
   "description": "Build typescript package as nx executor",
   "engines": {
     "node": ">=20"

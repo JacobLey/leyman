@@ -1,5 +1,21 @@
 # nx-plugin-handler
 
+## 0.2.0
+
+### Minor Changes
+
+- 0f55ca6: Move nx devkit to peer dependencies
+
+### Patch Changes
+
+- 1ad9f51: Fix alphabetical order of dependencies
+- 282a5b7: Bump license version
+- 75d9ae4: Migrate to using per-package eslint CLI instead of Nx plugin
+- Updated dependencies [282a5b7]
+- Updated dependencies [75d9ae4]
+  - common-proxy@0.1.2
+  - haywire@0.1.7
+
 ## 0.1.1
 
 ### Patch Changes

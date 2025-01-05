@@ -1,6 +1,6 @@
 {
   "name": "barrelify",
-  "version": "1.3.1",
+  "version": "1.3.2",
   "description": "Auto-generate TS barrel files.",
   "engines": {
     "node": ">=20"

@@ -1,5 +1,17 @@
 # populate-files
 
+## 0.2.3
+
+### Patch Changes
+
+- 282a5b7: Bump license version
+- 75d9ae4: Migrate to using per-package eslint CLI instead of Nx plugin
+- Updated dependencies [282a5b7]
+- Updated dependencies [75d9ae4]
+  - format-file@0.1.4
+  - parse-cwd@1.1.1
+  - haywire@0.1.7
+
 ## 0.2.2
 
 ### Patch Changes

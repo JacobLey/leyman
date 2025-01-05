@@ -1,5 +1,29 @@
 # nx-lifecycle
 
+## 0.2.0
+
+### Minor Changes
+
+- 0f55ca6: Move nx devkit to peer dependencies
+
+### Patch Changes
+
+- 282a5b7: Bump license version
+- 75d9ae4: Migrate to using per-package eslint CLI instead of Nx plugin
+- Updated dependencies [1ad9f51]
+- Updated dependencies [0f55ca6]
+- Updated dependencies [282a5b7]
+- Updated dependencies [75d9ae4]
+  - nx-plugin-handler@0.2.0
+  - haywire-launcher@0.1.10
+  - default-import@2.0.7
+  - common-proxy@0.1.2
+  - entry-script@3.0.8
+  - format-file@0.1.4
+  - parse-cwd@1.1.1
+  - haywire@0.1.7
+  - juniper@1.2.4
+
 ## 0.1.1
 
 ### Patch Changes
