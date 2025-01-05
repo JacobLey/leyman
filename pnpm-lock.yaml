@@ -10,9 +10,6 @@ importers:
 
   .:
     devDependencies:
-      npm-nx-populate-files:
-        specifier: npm:nx-populate-files@0.1.0
-        version: nx-populate-files@0.1.0
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@0.2.0
         version: nx-update-ts-references@0.2.0
@@ -9023,22 +9020,6 @@ snapshots:
 
   lines-and-columns@2.0.3: {}
 
-  load-populate-files@0.1.1:
-    dependencies:
-      ajv: 8.17.1
-      ci-info: 4.1.0
-      default-import: 2.0.7
-      entry-script: 3.0.8
-      haywire: 0.1.7
-      haywire-launcher: 0.1.10(entry-script@3.0.8)(haywire@0.1.7)
-      juniper: 1.2.4
-      parse-cwd: 1.1.1
-      populate-files: 0.2.3
-      yargs: 17.7.2
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - prettier
-
   load-populate-files@0.1.1(@biomejs/biome@1.9.4):
     dependencies:
       ajv: 8.17.1
@@ -9260,21 +9241,6 @@ snapshots:
       npm-juniper: juniper@1.2.4
     optionalDependencies:
       '@nx/devkit': 20.3.0(nx@20.3.0)
-
-  nx-populate-files@0.1.0:
-    dependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0)
-      ci-info: 4.1.0
-      common-proxy: 0.1.2
-      juniper: 1.2.4
-      load-populate-files: 0.1.1
-      nx: 20.3.0
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - '@swc-node/register'
-      - '@swc/core'
-      - debug
-      - prettier
 
   nx-populate-files@0.1.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4(@swc/helpers@0.5.15)):
     dependencies:
