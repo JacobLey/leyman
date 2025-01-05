@@ -10,9 +10,6 @@ importers:
 
   .:
     devDependencies:
-      '@nx/eslint':
-        specifier: 20.3.0
-        version: 20.3.0(nx@20.3.0)
       npm-nx-populate-files:
         specifier: npm:nx-populate-files@0.0.14
         version: nx-populate-files@0.0.14(nx@20.3.0)
@@ -207,6 +204,9 @@ importers:
 
   apps/nx-lifecycle:
     dependencies:
+      '@nx/devkit':
+        specifier: ^20.3.0
+        version: 20.3.0(nx@20.3.0(@swc/core@1.10.4))
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -237,6 +237,9 @@ importers:
       juniper:
         specifier: workspace:^
         version: link:../juniper
+      nx:
+        specifier: ^20.3.0
+        version: 20.3.0(@swc/core@1.10.4)
       nx-plugin-handler:
         specifier: workspace:^
         version: link:../../tools/nx-plugin-handler
@@ -246,10 +249,6 @@ importers:
       yargs:
         specifier: ^17.7.2
         version: 17.7.2
-    optionalDependencies:
-      '@nx/devkit':
-        specifier: ^20.3.0
-        version: 20.3.0(nx@20.3.0)
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -322,7 +321,7 @@ importers:
     dependencies:
       '@nx/devkit':
         specifier: ^20.3.0
-        version: 20.3.0(nx@20.3.0)
+        version: 20.3.0(nx@20.3.0(@swc/core@1.10.4))
       ajv:
         specifier: ^8.17.1
         version: 8.17.1
@@ -359,6 +358,9 @@ importers:
       npm-populate-files:
         specifier: npm:populate-files@latest
         version: populate-files@0.2.2(@biomejs/biome@1.9.4)
+      nx:
+        specifier: ^20.3.0
+        version: 20.3.0(@swc/core@1.10.4)
       nx-plugin-handler:
         specifier: workspace:^
         version: link:../../tools/nx-plugin-handler
@@ -419,10 +421,10 @@ importers:
         version: load-populate-files@0.1.0(@biomejs/biome@1.9.4)
       npm-nx-populate-files:
         specifier: npm:nx-populate-files@latest
-        version: nx-populate-files@0.0.14(@biomejs/biome@1.9.4)(nx@20.3.0)
+        version: nx-populate-files@0.0.14(@biomejs/biome@1.9.4)(nx@20.3.0(@swc/core@1.10.4))
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.1.2(@biomejs/biome@1.9.4)(nx@20.3.0)
+        version: nx-update-ts-references@0.1.2(@biomejs/biome@1.9.4)(nx@20.3.0(@swc/core@1.10.4))
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
@@ -635,22 +637,24 @@ importers:
 
   apps/populate-files/nx-populate-files:
     dependencies:
+      '@nx/devkit':
+        specifier: ^20.3.0
+        version: 20.3.0(nx@20.3.0(@swc/core@1.10.4))
       ci-info:
         specifier: ^4.1.0
         version: 4.1.0
       common-proxy:
         specifier: workspace:^
         version: link:../../../tools/common-proxy
-      load-populate-files:
-        specifier: workspace:^
-        version: link:../load-populate-files
-    optionalDependencies:
-      '@nx/devkit':
-        specifier: ^20.3.0
-        version: 20.3.0(nx@20.3.0)
       juniper:
         specifier: workspace:^
         version: link:../../juniper
+      load-populate-files:
+        specifier: workspace:^
+        version: link:../load-populate-files
+      nx:
+        specifier: ^20.3.0
+        version: 20.3.0(@swc/core@1.10.4)
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -1650,10 +1654,6 @@ importers:
       npm-juniper:
         specifier: npm:juniper@latest
         version: juniper@1.2.3
-    optionalDependencies:
-      '@nx/devkit':
-        specifier: ^20.3.0
-        version: 20.3.0(nx@20.3.0)
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -1661,6 +1661,9 @@ importers:
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
+      '@nx/devkit':
+        specifier: ^20.3.0
+        version: 20.3.0(nx@20.3.0(@swc/core@1.10.4))
       '@swc/cli':
         specifier: ^0.5.2
         version: 0.5.2(@swc/core@1.10.4)
@@ -1699,7 +1702,10 @@ importers:
         version: link:../mocha-chain
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.1.2(@biomejs/biome@1.9.4)(nx@20.3.0)
+        version: nx-update-ts-references@0.1.2(@biomejs/biome@1.9.4)(nx@20.3.0(@swc/core@1.10.4))
+      nx:
+        specifier: ^20.3.0
+        version: 20.3.0(@swc/core@1.10.4)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -1727,16 +1733,12 @@ importers:
       haywire:
         specifier: workspace:^
         version: link:../haywire
-      nx-plugin-handler:
-        specifier: workspace:^
-        version: link:../nx-plugin-handler
-    optionalDependencies:
-      '@nx/devkit':
-        specifier: ^20.3.0
-        version: 20.3.0(nx@20.3.0)
       npm-juniper:
         specifier: npm:juniper@latest
         version: juniper@1.2.3
+      nx-plugin-handler:
+        specifier: workspace:^
+        version: link:../nx-plugin-handler
     devDependencies:
       '@biomejs/biome':
         specifier: ^1.9.4
@@ -1744,6 +1746,9 @@ importers:
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
+      '@nx/devkit':
+        specifier: ^20.3.0
+        version: 20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
       '@swc/cli':
         specifier: ^0.5.2
         version: 0.5.2(@swc/core@1.10.4(@swc/helpers@0.5.15))
@@ -1770,10 +1775,13 @@ importers:
         version: load-populate-files@0.1.0(@biomejs/biome@1.9.4)
       npm-nx-populate-files:
         specifier: npm:nx-populate-files@latest
-        version: nx-populate-files@0.0.14(@biomejs/biome@1.9.4)(nx@20.3.0)
+        version: nx-populate-files@0.0.14(@biomejs/biome@1.9.4)(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
       npm-nx-update-ts-references:
         specifier: npm:nx-update-ts-references@latest
-        version: nx-update-ts-references@0.1.2(@biomejs/biome@1.9.4)(nx@20.3.0)
+        version: nx-update-ts-references@0.1.2(@biomejs/biome@1.9.4)(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
+      nx:
+        specifier: ^20.3.0
+        version: 20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -7076,6 +7084,30 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.18.0
 
+  '@nx/devkit@20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))':
+    dependencies:
+      ejs: 3.1.10
+      enquirer: 2.3.6
+      ignore: 5.3.2
+      minimatch: 9.0.3
+      nx: 20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))
+      semver: 7.6.3
+      tmp: 0.2.3
+      tslib: 2.8.1
+      yargs-parser: 21.1.1
+
+  '@nx/devkit@20.3.0(nx@20.3.0(@swc/core@1.10.4))':
+    dependencies:
+      ejs: 3.1.10
+      enquirer: 2.3.6
+      ignore: 5.3.2
+      minimatch: 9.0.3
+      nx: 20.3.0(@swc/core@1.10.4)
+      semver: 7.6.3
+      tmp: 0.2.3
+      tslib: 2.8.1
+      yargs-parser: 21.1.1
+
   '@nx/devkit@20.3.0(nx@20.3.0)':
     dependencies:
       ejs: 3.1.10
@@ -7093,24 +7125,6 @@ snapshots:
       '@nx/devkit': 20.3.0(nx@20.3.0)
       '@nx/js': 20.3.0(@swc/core@1.10.4)(@types/node@22.10.3)(nx@20.3.0)(typescript@5.6.3)
       eslint: 9.17.0
-      semver: 7.6.3
-      tslib: 2.8.1
-      typescript: 5.6.3
-    transitivePeerDependencies:
-      - '@babel/traverse'
-      - '@swc-node/register'
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - debug
-      - nx
-      - supports-color
-      - verdaccio
-
-  '@nx/eslint@20.3.0(nx@20.3.0)':
-    dependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0)
-      '@nx/js': 20.3.0(nx@20.3.0)(typescript@5.6.3)
       semver: 7.6.3
       tslib: 2.8.1
       typescript: 5.6.3
@@ -7168,49 +7182,6 @@ snapshots:
       - supports-color
       - typescript
 
-  '@nx/js@20.3.0(nx@20.3.0)(typescript@5.6.3)':
-    dependencies:
-      '@babel/core': 7.26.0
-      '@babel/plugin-proposal-decorators': 7.25.9(@babel/core@7.26.0)
-      '@babel/plugin-transform-class-properties': 7.25.9(@babel/core@7.26.0)
-      '@babel/plugin-transform-runtime': 7.25.9(@babel/core@7.26.0)
-      '@babel/preset-env': 7.26.0(@babel/core@7.26.0)
-      '@babel/preset-typescript': 7.26.0(@babel/core@7.26.0)
-      '@babel/runtime': 7.26.0
-      '@nx/devkit': 20.3.0(nx@20.3.0)
-      '@nx/workspace': 20.3.0
-      '@zkochan/js-yaml': 0.0.7
-      babel-plugin-const-enum: 1.2.0(@babel/core@7.26.0)
-      babel-plugin-macros: 2.8.0
-      babel-plugin-transform-typescript-metadata: 0.3.2(@babel/core@7.26.0)
-      chalk: 4.1.2
-      columnify: 1.6.0
-      detect-port: 1.6.1
-      enquirer: 2.3.6
-      ignore: 5.3.2
-      js-tokens: 4.0.0
-      jsonc-parser: 3.2.0
-      minimatch: 9.0.3
-      npm-package-arg: 11.0.1
-      npm-run-path: 4.0.1
-      ora: 5.3.0
-      semver: 7.6.3
-      source-map-support: 0.5.19
-      tinyglobby: 0.2.10
-      ts-node: 10.9.1(typescript@5.6.3)
-      tsconfig-paths: 4.2.0
-      tslib: 2.8.1
-    transitivePeerDependencies:
-      - '@babel/traverse'
-      - '@swc-node/register'
-      - '@swc/core'
-      - '@swc/wasm'
-      - '@types/node'
-      - debug
-      - nx
-      - supports-color
-      - typescript
-
   '@nx/nx-darwin-arm64@20.3.0':
     optional: true
 
@@ -7240,19 +7211,6 @@ snapshots:
 
   '@nx/nx-win32-x64-msvc@20.3.0':
     optional: true
-
-  '@nx/workspace@20.3.0':
-    dependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0)
-      chalk: 4.1.2
-      enquirer: 2.3.6
-      nx: 20.3.0
-      tslib: 2.8.1
-      yargs-parser: 21.1.1
-    transitivePeerDependencies:
-      - '@swc-node/register'
-      - '@swc/core'
-      - debug
 
   '@nx/workspace@20.3.0(@swc/core@1.10.4)':
     dependencies:
@@ -9641,6 +9599,30 @@ snapshots:
 
   npm@11.0.0: {}
 
+  nx-plugin-handler@0.1.1(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))):
+    dependencies:
+      ajv: 8.17.1
+      common-proxy: 0.1.1
+      haywire: 0.1.6
+      npm-default-import: default-import@2.0.6
+      npm-juniper: juniper@1.2.3
+    optionalDependencies:
+      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
+    transitivePeerDependencies:
+      - nx
+
+  nx-plugin-handler@0.1.1(nx@20.3.0(@swc/core@1.10.4)):
+    dependencies:
+      ajv: 8.17.1
+      common-proxy: 0.1.1
+      haywire: 0.1.6
+      npm-default-import: default-import@2.0.6
+      npm-juniper: juniper@1.2.3
+    optionalDependencies:
+      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4))
+    transitivePeerDependencies:
+      - nx
+
   nx-plugin-handler@0.1.1(nx@20.3.0):
     dependencies:
       ajv: 8.17.1
@@ -9653,13 +9635,26 @@ snapshots:
     transitivePeerDependencies:
       - nx
 
-  nx-populate-files@0.0.14(@biomejs/biome@1.9.4)(nx@20.3.0):
+  nx-populate-files@0.0.14(@biomejs/biome@1.9.4)(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))):
     dependencies:
       ci-info: 4.1.0
       common-proxy: 0.1.1
       load-populate-files: 0.1.0(@biomejs/biome@1.9.4)
     optionalDependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0)
+      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
+      juniper: 1.2.3
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - nx
+      - prettier
+
+  nx-populate-files@0.0.14(@biomejs/biome@1.9.4)(nx@20.3.0(@swc/core@1.10.4)):
+    dependencies:
+      ci-info: 4.1.0
+      common-proxy: 0.1.1
+      load-populate-files: 0.1.0(@biomejs/biome@1.9.4)
+    optionalDependencies:
+      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4))
       juniper: 1.2.3
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -9692,6 +9687,54 @@ snapshots:
       npm-juniper: juniper@1.2.3
     transitivePeerDependencies:
       - nx
+
+  nx-update-ts-references@0.1.2(@biomejs/biome@1.9.4)(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))):
+    dependencies:
+      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
+      ajv: 8.17.1
+      ci-info: 4.1.0
+      comment-json: 4.2.5
+      common-proxy: 0.1.1
+      entry-script: 3.0.7
+      haywire: 0.1.6
+      npm-default-import: default-import@2.0.6
+      npm-entry-script: entry-script@3.0.7
+      npm-format-file: format-file@0.1.3(@biomejs/biome@1.9.4)
+      npm-haywire: haywire@0.1.6
+      npm-haywire-launcher: haywire-launcher@0.1.9(entry-script@3.0.7)(haywire@0.1.6)
+      npm-juniper: juniper@1.2.3
+      npm-parse-cwd: parse-cwd@1.1.0
+      npm-populate-files: populate-files@0.2.2(@biomejs/biome@1.9.4)
+      nx-plugin-handler: 0.1.1(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - nx
+      - prettier
+
+  nx-update-ts-references@0.1.2(@biomejs/biome@1.9.4)(nx@20.3.0(@swc/core@1.10.4)):
+    dependencies:
+      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4))
+      ajv: 8.17.1
+      ci-info: 4.1.0
+      comment-json: 4.2.5
+      common-proxy: 0.1.1
+      entry-script: 3.0.7
+      haywire: 0.1.6
+      npm-default-import: default-import@2.0.6
+      npm-entry-script: entry-script@3.0.7
+      npm-format-file: format-file@0.1.3(@biomejs/biome@1.9.4)
+      npm-haywire: haywire@0.1.6
+      npm-haywire-launcher: haywire-launcher@0.1.9(entry-script@3.0.7)(haywire@0.1.6)
+      npm-juniper: juniper@1.2.3
+      npm-parse-cwd: parse-cwd@1.1.0
+      npm-populate-files: populate-files@0.2.2(@biomejs/biome@1.9.4)
+      nx-plugin-handler: 0.1.1(nx@20.3.0(@swc/core@1.10.4))
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - nx
+      - prettier
 
   nx-update-ts-references@0.1.2(@biomejs/biome@1.9.4)(nx@20.3.0):
     dependencies:
@@ -9788,6 +9831,57 @@ snapshots:
       '@nx/nx-linux-x64-musl': 20.3.0
       '@nx/nx-win32-arm64-msvc': 20.3.0
       '@nx/nx-win32-x64-msvc': 20.3.0
+    transitivePeerDependencies:
+      - debug
+
+  nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)):
+    dependencies:
+      '@napi-rs/wasm-runtime': 0.2.4
+      '@yarnpkg/lockfile': 1.1.0
+      '@yarnpkg/parsers': 3.0.2
+      '@zkochan/js-yaml': 0.0.7
+      axios: 1.7.9
+      chalk: 4.1.2
+      cli-cursor: 3.1.0
+      cli-spinners: 2.6.1
+      cliui: 8.0.1
+      dotenv: 16.4.7
+      dotenv-expand: 11.0.7
+      enquirer: 2.3.6
+      figures: 3.2.0
+      flat: 5.0.2
+      front-matter: 4.0.2
+      ignore: 5.3.2
+      jest-diff: 29.7.0
+      jsonc-parser: 3.2.0
+      lines-and-columns: 2.0.3
+      minimatch: 9.0.3
+      node-machine-id: 1.1.12
+      npm-run-path: 4.0.1
+      open: 8.4.2
+      ora: 5.3.0
+      resolve.exports: 2.0.3
+      semver: 7.6.3
+      string-width: 4.2.3
+      tar-stream: 2.2.0
+      tmp: 0.2.3
+      tsconfig-paths: 4.2.0
+      tslib: 2.8.1
+      yaml: 2.7.0
+      yargs: 17.7.2
+      yargs-parser: 21.1.1
+    optionalDependencies:
+      '@nx/nx-darwin-arm64': 20.3.0
+      '@nx/nx-darwin-x64': 20.3.0
+      '@nx/nx-freebsd-x64': 20.3.0
+      '@nx/nx-linux-arm-gnueabihf': 20.3.0
+      '@nx/nx-linux-arm64-gnu': 20.3.0
+      '@nx/nx-linux-arm64-musl': 20.3.0
+      '@nx/nx-linux-x64-gnu': 20.3.0
+      '@nx/nx-linux-x64-musl': 20.3.0
+      '@nx/nx-win32-arm64-msvc': 20.3.0
+      '@nx/nx-win32-x64-msvc': 20.3.0
+      '@swc/core': 1.10.4(@swc/helpers@0.5.15)
     transitivePeerDependencies:
       - debug
 
@@ -10625,23 +10719,6 @@ snapshots:
       yn: 3.1.1
     optionalDependencies:
       '@swc/core': 1.10.4
-
-  ts-node@10.9.1(typescript@5.6.3):
-    dependencies:
-      '@cspotcode/source-map-support': 0.8.1
-      '@tsconfig/node10': 1.0.11
-      '@tsconfig/node12': 1.0.11
-      '@tsconfig/node14': 1.0.3
-      '@tsconfig/node16': 1.0.4
-      acorn: 8.14.0
-      acorn-walk: 8.3.4
-      arg: 4.1.3
-      create-require: 1.1.1
-      diff: 4.0.2
-      make-error: 1.3.6
-      typescript: 5.6.3
-      v8-compile-cache-lib: 3.0.1
-      yn: 3.1.1
 
   tsconfig-paths@3.15.0:
     dependencies:

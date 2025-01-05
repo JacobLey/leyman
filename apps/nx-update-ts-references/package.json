@@ -45,6 +45,7 @@
     "npm-juniper": "npm:juniper@latest",
     "npm-parse-cwd": "npm:parse-cwd@latest",
     "npm-populate-files": "npm:populate-files@latest",
+    "nx": "^20.3.0",
     "nx-plugin-handler": "workspace:^",
     "yargs": "^17.7.2"
   },

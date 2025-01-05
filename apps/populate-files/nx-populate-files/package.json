@@ -29,13 +29,12 @@
     }
   },
   "dependencies": {
+    "@nx/devkit": "^20.3.0",
     "ci-info": "^4.1.0",
     "common-proxy": "workspace:^",
-    "load-populate-files": "workspace:^"
-  },
-  "optionalDependencies": {
-    "@nx/devkit": "^20.3.0",
-    "juniper": "workspace:^"
+    "load-populate-files": "workspace:^",
+    "juniper": "workspace:^",
+    "nx": "^20.3.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",

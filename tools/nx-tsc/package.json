@@ -31,11 +31,8 @@
     "@swc/helpers": "^0.5.15",
     "common-proxy": "workspace:^",
     "haywire": "workspace:^",
+    "npm-juniper": "npm:juniper@latest",
     "nx-plugin-handler": "workspace:^"
-  },
-  "optionalDependencies": {
-    "@nx/devkit": "^20.3.0",
-    "npm-juniper": "npm:juniper@latest"
   },
   "peerDependencies": {
     "typescript": "^5.7.2"
@@ -43,6 +40,7 @@
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
     "@leyman/eslint-config": "workspace:^",
+    "@nx/devkit": "^20.3.0",
     "@swc/cli": "^0.5.2",
     "@swc/core": "^1.10.4",
     "@types/chai": "^5.0.1",
@@ -54,6 +52,7 @@
     "npm-load-populate-files": "npm:load-populate-files@latest",
     "npm-nx-populate-files": "npm:nx-populate-files@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
+    "nx": "^20.3.0",
     "pnpm-dedicated-lockfile": "workspace:^",
     "typescript": "^5.7.2"
   }

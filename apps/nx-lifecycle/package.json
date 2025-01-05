@@ -37,6 +37,7 @@
     "lifecycle": "./bin.mjs"
   },
   "dependencies": {
+    "@nx/devkit": "^20.3.0",
     "ajv": "^8.17.1",
     "ci-info": "^4.1.0",
     "common-proxy": "workspace:^",
@@ -47,12 +48,10 @@
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
+    "nx": "^20.3.0",
     "nx-plugin-handler": "workspace:^",
     "parse-cwd": "workspace:^",
     "yargs": "^17.7.2"
-  },
-  "optionalDependencies": {
-    "@nx/devkit": "^20.3.0"
   },
   "devDependencies": {
     "@biomejs/biome": "^1.9.4",
