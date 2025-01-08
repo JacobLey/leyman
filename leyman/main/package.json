@@ -19,7 +19,6 @@
     "@biomejs/biome": "catalog:",
     "@leyman/eslint-config": "workspace:^",
     "npm": "catalog:",
-    "nx": "catalog:",
     "nx-lifecycle": "workspace:^",
     "typescript": "catalog:"
   }

@@ -1042,9 +1042,6 @@ importers:
       npm:
         specifier: 'catalog:'
         version: 11.0.0
-      nx:
-        specifier: 'catalog:'
-        version: 20.3.0
       nx-lifecycle:
         specifier: workspace:^
         version: link:../../apps/nx-lifecycle
