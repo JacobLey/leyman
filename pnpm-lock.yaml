@@ -880,9 +880,6 @@ importers:
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
-      tslib:
-        specifier: ^2.8.1
-        version: 2.8.1
       typescript:
         specifier: ^5.7.2
         version: 5.7.2
@@ -1180,9 +1177,6 @@ importers:
       ts-dedent:
         specifier: ^2.2.0
         version: 2.2.0
-      tslib:
-        specifier: ^2.8.1
-        version: 2.8.1
       typescript:
         specifier: ^5.7.2
         version: 5.7.2

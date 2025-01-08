@@ -44,7 +44,6 @@
     "npm-barrelify": "npm:barrelify@latest",
     "npm-nx-update-ts-references": "npm:nx-update-ts-references@latest",
     "pnpm-dedicated-lockfile": "workspace:^",
-    "tslib": "^2.8.1",
     "typescript": "^5.7.2"
   }
 }
