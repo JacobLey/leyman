@@ -18,6 +18,7 @@
   "dependencies": {
     "@biomejs/biome": "catalog:",
     "@leyman/eslint-config": "workspace:^",
+    "eslint": "catalog:",
     "npm": "catalog:",
     "nx-lifecycle": "workspace:^",
     "typescript": "catalog:"

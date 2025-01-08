@@ -1039,6 +1039,9 @@ importers:
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../eslint-config
+      eslint:
+        specifier: 'catalog:'
+        version: 9.17.0
       npm:
         specifier: 'catalog:'
         version: 11.0.0
