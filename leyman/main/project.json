@@ -2,17 +2,7 @@
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "name": "@leyman/main",
   "targets": {
-    "changesets": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "changeset"
-        ],
-        "parallel": true,
-        "color": true,
-        "cwd": "{projectRoot}"
-      }
-    },
+    "biome": {},
     "lifecycle": {
       "executor": "nx-lifecycle:lifecycle",
       "options": {
