@@ -1,7 +1,7 @@
 {
   "type": "module",
   "devDependencies": {
-    "npm-nx-update-ts-references": "npm:nx-update-ts-references@0.2.0",
+    "npm-nx-update-ts-references": "catalog:leyman",
     "nx-lifecycle": "workspace:^",
     "nx-update-ts-references": "workspace:^"
   }

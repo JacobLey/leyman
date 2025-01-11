@@ -185,46 +185,46 @@ catalogs:
       version: 17.7.2
   leyman:
     npm-barrelify:
-      specifier: npm:barrelify@latest
+      specifier: npm:barrelify@^1.3.2
       version: 1.3.2
     npm-default-import:
-      specifier: npm:default-import@latest
+      specifier: npm:default-import@^2.0.7
       version: 2.0.7
     npm-entry-script:
-      specifier: npm:entry-script@latest
+      specifier: npm:entry-script@^3.0.8
       version: 3.0.8
     npm-format-file:
-      specifier: npm:format-file@latest
+      specifier: npm:format-file@^0.1.4
       version: 0.1.4
     npm-haywire:
-      specifier: npm:haywire@latest
+      specifier: npm:haywire@^0.1.7
       version: 0.1.7
     npm-haywire-launcher:
-      specifier: npm:haywire-launcher@latest
+      specifier: npm:haywire-launcher@^0.1.10
       version: 0.1.10
     npm-iso-crypto:
-      specifier: npm:iso-crypto@latest
+      specifier: npm:iso-crypto@^1.2.3
       version: 1.2.3
     npm-juniper:
-      specifier: npm:juniper@latest
+      specifier: npm:juniper@^1.2.4
       version: 1.2.4
     npm-load-populate-files:
-      specifier: npm:load-populate-files@latest
+      specifier: npm:load-populate-files@^0.1.1
       version: 0.1.1
     npm-mocha-chain:
-      specifier: npm:mocha-chain@latest
+      specifier: npm:mocha-chain@0.0.10
       version: 0.0.10
     npm-nx-update-ts-references:
-      specifier: npm:nx-update-ts-references@latest
+      specifier: npm:nx-update-ts-references@^0.2.0
       version: 0.2.0
     npm-parse-cwd:
-      specifier: npm:parse-cwd@latest
+      specifier: npm:parse-cwd@^1.1.1
       version: 1.1.1
     npm-populate-files:
-      specifier: npm:populate-files@latest
+      specifier: npm:populate-files@^0.2.3
       version: 0.2.3
     npm-sinon-typed-stub:
-      specifier: npm:sinon-typed-stub@latest
+      specifier: npm:sinon-typed-stub@0.0.10
       version: 0.0.10
 
 pnpmfileChecksum: vnhesjhjqefwt6f7zg4clydr6q
@@ -234,7 +234,7 @@ importers:
   .:
     devDependencies:
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@0.2.0
+        specifier: catalog:leyman
         version: nx-update-ts-references@0.2.0
       nx-lifecycle:
         specifier: workspace:^
