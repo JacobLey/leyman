@@ -67,7 +67,6 @@
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "npm-load-populate-files": "catalog:leyman",
-    "npm-nx-populate-files": "catalog:leyman",
     "npm-nx-update-ts-references": "catalog:leyman",
     "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "catalog:",

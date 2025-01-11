@@ -50,7 +50,6 @@
     "expect-type": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "npm-nx-tsc": "catalog:leyman",
     "npm-nx-update-ts-references": "catalog:leyman",
     "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "catalog:",

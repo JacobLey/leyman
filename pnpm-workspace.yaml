@@ -17,8 +17,6 @@ catalogs:
     npm-juniper: npm:juniper@latest
     npm-load-populate-files: npm:load-populate-files@latest
     npm-mocha-chain: npm:mocha-chain@latest
-    npm-nx-populate-files: npm:nx-populate-files@latest
-    npm-nx-tsc: npm:nx-tsc@latest
     npm-nx-update-ts-references: npm:nx-update-ts-references@latest
     npm-parse-cwd: npm:parse-cwd@latest
     npm-populate-files: npm:populate-files@latest
