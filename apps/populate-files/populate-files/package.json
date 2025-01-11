@@ -31,33 +31,33 @@
     }
   },
   "dependencies": {
-    "ci-info": "^4.1.0",
+    "ci-info": "catalog:",
     "format-file": "workspace:^",
     "haywire": "workspace:^",
     "parse-cwd": "workspace:^",
-    "uint8array-extras": "^1.4.0"
+    "uint8array-extras": "catalog:"
   },
   "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
+    "@biomejs/biome": "catalog:",
     "@leyman/eslint-config": "workspace:^",
-    "@swc/cli": "^0.5.2",
-    "@swc/core": "^1.10.4",
-    "@types/chai": "^5.0.1",
-    "@types/chai-as-promised": "^8.0.1",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^22.10.5",
-    "@types/tmp": "^0.2.6",
-    "c8": "^10.1.3",
-    "chai": "^5.1.2",
-    "chai-as-promised": "^8.0.1",
-    "eslint": "^9.17.0",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/chai": "catalog:",
+    "@types/chai-as-promised": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/tmp": "catalog:",
+    "c8": "catalog:",
+    "chai": "catalog:",
+    "chai-as-promised": "catalog:",
+    "eslint": "catalog:",
     "format-file": "workspace:^",
-    "mocha": "^11.0.1",
+    "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "pnpm-dedicated-lockfile": "workspace:^",
     "sinon-typed-stub": "workspace:^",
-    "tmp-promise": "^3.0.3",
-    "typescript": "^5.7.2"
+    "tmp-promise": "catalog:",
+    "typescript": "catalog:"
   }
 }

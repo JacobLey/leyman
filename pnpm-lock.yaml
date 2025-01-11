@@ -4,6 +4,235 @@ settings:
   autoInstallPeers: false
   excludeLinksFromLockfile: false
 
+catalogs:
+  default:
+    '@biomejs/biome':
+      specifier: ^1.9.4
+      version: 1.9.4
+    '@eslint/js':
+      specifier: ^9.17.0
+      version: 9.17.0
+    '@nx/devkit':
+      specifier: ^20.3.0
+      version: 20.3.0
+    '@pnpm/find-workspace-dir':
+      specifier: ^7.0.3
+      version: 7.0.3
+    '@pnpm/lockfile.fs':
+      specifier: ^1.1.0
+      version: 1.1.0
+    '@pnpm/lockfile.pruner':
+      specifier: ^0.0.6
+      version: 0.0.6
+    '@pnpm/logger':
+      specifier: ^5.2.0
+      version: 5.2.0
+    '@swc/cli':
+      specifier: ^0.5.2
+      version: 0.5.2
+    '@swc/core':
+      specifier: ^1.10.4
+      version: 1.10.4
+    '@swc/helpers':
+      specifier: ^0.5.15
+      version: 0.5.15
+    '@tanstack/react-query':
+      specifier: ^4.36.1
+      version: 4.36.1
+    '@testing-library/react-hooks':
+      specifier: ^8.0.1
+      version: 8.0.1
+    '@types/chai':
+      specifier: ^5.0.1
+      version: 5.0.1
+    '@types/chai-as-promised':
+      specifier: ^8.0.1
+      version: 8.0.1
+    '@types/eslint':
+      specifier: ^9.6.1
+      version: 9.6.1
+    '@types/mocha':
+      specifier: ^10.0.10
+      version: 10.0.10
+    '@types/node':
+      specifier: ^22.10.5
+      version: 22.10.5
+    '@types/react':
+      specifier: ^18.3.18
+      version: 18.3.18
+    '@types/sinon':
+      specifier: ^17.0.3
+      version: 17.0.3
+    '@types/tmp':
+      specifier: ^0.2.6
+      version: 0.2.6
+    '@types/yargs':
+      specifier: ^17.0.33
+      version: 17.0.33
+    '@typescript-eslint/eslint-plugin':
+      specifier: ^8.19.0
+      version: 8.19.0
+    '@typescript-eslint/parser':
+      specifier: ^8.19.0
+      version: 8.19.0
+    '@typescript-eslint/utils':
+      specifier: ^8.19.0
+      version: 8.19.0
+    ajv:
+      specifier: ^8.17.1
+      version: 8.17.1
+    c8:
+      specifier: ^10.1.3
+      version: 10.1.3
+    chai:
+      specifier: ^5.1.2
+      version: 5.1.2
+    chai-as-promised:
+      specifier: ^8.0.1
+      version: 8.0.1
+    ci-info:
+      specifier: ^4.1.0
+      version: 4.1.0
+    comment-json:
+      specifier: ^4.2.5
+      version: 4.2.5
+    escape-string-regexp:
+      specifier: ^5.0.0
+      version: 5.0.0
+    eslint:
+      specifier: ^9.17.0
+      version: 9.17.0
+    eslint-config-prettier:
+      specifier: ^9.1.0
+      version: 9.1.0
+    eslint-plugin-import:
+      specifier: ^2.31.0
+      version: 2.31.0
+    eslint-plugin-jsdoc:
+      specifier: ^50.6.1
+      version: 50.6.1
+    eslint-plugin-jsx-a11y:
+      specifier: ^6.10.2
+      version: 6.10.2
+    eslint-plugin-n:
+      specifier: ^17.15.1
+      version: 17.15.1
+    eslint-plugin-react:
+      specifier: ^7.37.3
+      version: 7.37.3
+    eslint-plugin-react-hooks:
+      specifier: ^5.1.0
+      version: 5.1.0
+    eslint-plugin-sonarjs:
+      specifier: ^3.0.1
+      version: 3.0.1
+    eslint-plugin-unicorn:
+      specifier: ^56.0.1
+      version: 56.0.1
+    expect-type:
+      specifier: ^1.1.0
+      version: 1.1.0
+    fast-equals:
+      specifier: ^5.1.3
+      version: 5.1.3
+    find-up:
+      specifier: ^7.0.0
+      version: 7.0.0
+    globby:
+      specifier: ^14.0.2
+      version: 14.0.2
+    mocha:
+      specifier: ^11.0.1
+      version: 11.0.1
+    npm:
+      specifier: ^11.0.0
+      version: 11.0.0
+    nx:
+      specifier: ^20.3.0
+      version: 20.3.0
+    p-defer:
+      specifier: ^4.0.1
+      version: 4.0.1
+    prettier:
+      specifier: ^3.4.2
+      version: 3.4.2
+    react:
+      specifier: ^18.3.1
+      version: 18.3.1
+    react-dom:
+      specifier: ^18.3.1
+      version: 18.3.1
+    react-test-renderer:
+      specifier: ^18.3.1
+      version: 18.3.1
+    sinon:
+      specifier: ^19.0.2
+      version: 19.0.2
+    tmp-promise:
+      specifier: ^3.0.3
+      version: 3.0.3
+    ts-dedent:
+      specifier: ^2.2.0
+      version: 2.2.0
+    typescript:
+      specifier: ^5.7.2
+      version: 5.7.2
+    uint8array-extras:
+      specifier: ^1.4.0
+      version: 1.4.0
+    yargs:
+      specifier: ^17.7.2
+      version: 17.7.2
+  leyman:
+    npm-barrelify:
+      specifier: npm:barrelify@latest
+      version: 1.3.2
+    npm-default-import:
+      specifier: npm:default-import@latest
+      version: 2.0.7
+    npm-entry-script:
+      specifier: npm:entry-script@latest
+      version: 3.0.8
+    npm-format-file:
+      specifier: npm:format-file@latest
+      version: 0.1.4
+    npm-haywire:
+      specifier: npm:haywire@latest
+      version: 0.1.7
+    npm-haywire-launcher:
+      specifier: npm:haywire-launcher@latest
+      version: 0.1.10
+    npm-iso-crypto:
+      specifier: npm:iso-crypto@latest
+      version: 1.2.3
+    npm-juniper:
+      specifier: npm:juniper@latest
+      version: 1.2.4
+    npm-load-populate-files:
+      specifier: npm:load-populate-files@latest
+      version: 0.1.1
+    npm-mocha-chain:
+      specifier: npm:mocha-chain@latest
+      version: 0.0.10
+    npm-nx-populate-files:
+      specifier: npm:nx-populate-files@latest
+      version: 0.1.0
+    npm-nx-tsc:
+      specifier: npm:nx-tsc@latest
+      version: 0.1.0
+    npm-nx-update-ts-references:
+      specifier: npm:nx-update-ts-references@latest
+      version: 0.2.0
+    npm-parse-cwd:
+      specifier: npm:parse-cwd@latest
+      version: 1.1.1
+    npm-populate-files:
+      specifier: npm:populate-files@latest
+      version: 0.2.3
+    npm-sinon-typed-stub:
+      specifier: npm:sinon-typed-stub@latest
+      version: 0.0.10
+
 pnpmfileChecksum: vnhesjhjqefwt6f7zg4clydr6q
 
 importers:
@@ -23,10 +252,10 @@ importers:
   apps/barrelify:
     dependencies:
       ajv:
-        specifier: ^8.17.1
+        specifier: 'catalog:'
         version: 8.17.1
       ci-info:
-        specifier: ^4.1.0
+        specifier: 'catalog:'
         version: 4.1.0
       default-import:
         specifier: workspace:^
@@ -38,7 +267,7 @@ importers:
         specifier: workspace:^
         version: link:../../tools/find-import
       globby:
-        specifier: ^14.0.2
+        specifier: 'catalog:'
         version: 14.0.2
       haywire:
         specifier: workspace:^
@@ -50,62 +279,62 @@ importers:
         specifier: workspace:^
         version: link:../juniper
       npm-populate-files:
-        specifier: npm:populate-files@latest
+        specifier: catalog:leyman
         version: populate-files@0.2.3(@biomejs/biome@1.9.4)
       parse-cwd:
         specifier: workspace:^
         version: link:../../tools/parse-cwd
       yargs:
-        specifier: ^17.7.2
+        specifier: 'catalog:'
         version: 17.7.2
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       '@types/yargs':
-        specifier: ^17.0.33
+        specifier: 'catalog:'
         version: 17.0.33
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -117,68 +346,68 @@ importers:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       sinon-typed-stub:
         specifier: workspace:^
         version: link:../../tools/sinon-typed-stub
       ts-dedent:
-        specifier: ^2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   apps/juniper:
     dependencies:
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.0.0
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       ajv:
-        specifier: ^8.17.1
+        specifier: 'catalog:'
         version: 8.17.1
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       default-import:
         specifier: workspace:^
         version: link:../../tools/default-import
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -190,22 +419,22 @@ importers:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   apps/nx-lifecycle:
     dependencies:
       '@nx/devkit':
-        specifier: ^20.3.0
+        specifier: 'catalog:'
         version: 20.3.0(nx@20.3.0(@swc/core@1.10.4))
       ajv:
-        specifier: ^8.17.1
+        specifier: 'catalog:'
         version: 8.17.1
       ci-info:
-        specifier: ^4.1.0
+        specifier: 'catalog:'
         version: 4.1.0
       common-proxy:
         specifier: workspace:^
@@ -217,7 +446,7 @@ importers:
         specifier: workspace:^
         version: link:../../tools/entry-script
       fast-equals:
-        specifier: ^5.1.3
+        specifier: 'catalog:'
         version: 5.1.3
       format-file:
         specifier: workspace:^
@@ -232,7 +461,7 @@ importers:
         specifier: workspace:^
         version: link:../juniper
       nx:
-        specifier: ^20.3.0
+        specifier: 'catalog:'
         version: 20.3.0(@swc/core@1.10.4)
       nx-plugin-handler:
         specifier: workspace:^
@@ -241,56 +470,56 @@ importers:
         specifier: workspace:^
         version: link:../../tools/parse-cwd
       yargs:
-        specifier: ^17.7.2
+        specifier: 'catalog:'
         version: 17.7.2
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       '@types/yargs':
-        specifier: ^17.0.33
+        specifier: 'catalog:'
         version: 17.0.33
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       load-populate-files:
         specifier: workspace:^
         version: link:../populate-files/load-populate-files
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -302,252 +531,252 @@ importers:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       sinon-typed-stub:
         specifier: workspace:^
         version: link:../../tools/sinon-typed-stub
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   apps/nx-update-ts-references:
     dependencies:
       '@nx/devkit':
-        specifier: ^20.3.0
+        specifier: 'catalog:'
         version: 20.3.0(nx@20.3.0(@swc/core@1.10.4))
       ajv:
-        specifier: ^8.17.1
+        specifier: 'catalog:'
         version: 8.17.1
       ci-info:
-        specifier: ^4.1.0
+        specifier: 'catalog:'
         version: 4.1.0
       comment-json:
-        specifier: ^4.2.5
+        specifier: 'catalog:'
         version: 4.2.5
       common-proxy:
         specifier: workspace:^
         version: link:../../tools/common-proxy
       npm-default-import:
-        specifier: npm:default-import@latest
+        specifier: catalog:leyman
         version: default-import@2.0.7
       npm-entry-script:
-        specifier: npm:entry-script@latest
+        specifier: catalog:leyman
         version: entry-script@3.0.8
       npm-format-file:
-        specifier: npm:format-file@latest
+        specifier: catalog:leyman
         version: format-file@0.1.4(@biomejs/biome@1.9.4)
       npm-haywire:
-        specifier: npm:haywire@latest
+        specifier: catalog:leyman
         version: haywire@0.1.7
       npm-haywire-launcher:
-        specifier: npm:haywire-launcher@latest
+        specifier: catalog:leyman
         version: haywire-launcher@0.1.10(entry-script@3.0.8)(haywire@0.1.7)
       npm-juniper:
-        specifier: npm:juniper@latest
+        specifier: catalog:leyman
         version: juniper@1.2.4
       npm-parse-cwd:
-        specifier: npm:parse-cwd@latest
+        specifier: catalog:leyman
         version: parse-cwd@1.1.1
       npm-populate-files:
-        specifier: npm:populate-files@latest
+        specifier: catalog:leyman
         version: populate-files@0.2.3(@biomejs/biome@1.9.4)
       nx:
-        specifier: ^20.3.0
+        specifier: 'catalog:'
         version: 20.3.0(@swc/core@1.10.4)
       nx-plugin-handler:
         specifier: workspace:^
         version: link:../../tools/nx-plugin-handler
       yargs:
-        specifier: ^17.7.2
+        specifier: 'catalog:'
         version: 17.7.2
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       '@types/yargs':
-        specifier: ^17.0.33
+        specifier: 'catalog:'
         version: 17.0.33
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/mocha-chain
       npm-load-populate-files:
-        specifier: npm:load-populate-files@latest
+        specifier: catalog:leyman
         version: load-populate-files@0.1.1(@biomejs/biome@1.9.4)
       npm-nx-populate-files:
-        specifier: npm:nx-populate-files@latest
+        specifier: catalog:leyman
         version: nx-populate-files@0.1.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4)
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
+        specifier: catalog:leyman
         version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       sinon-typed-stub:
         specifier: workspace:^
         version: link:../../tools/sinon-typed-stub
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   apps/pnpm-dedicated-lockfile:
     dependencies:
       '@pnpm/find-workspace-dir':
-        specifier: ^7.0.3
+        specifier: 'catalog:'
         version: 7.0.3
       '@pnpm/lockfile.fs':
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0(@pnpm/logger@5.2.0)
       '@pnpm/lockfile.pruner':
-        specifier: ^0.0.6
+        specifier: 'catalog:'
         version: 0.0.6
       '@pnpm/logger':
-        specifier: ^5.2.0
+        specifier: 'catalog:'
         version: 5.2.0
       ci-info:
-        specifier: ^4.1.0
+        specifier: 'catalog:'
         version: 4.1.0
       npm-entry-script:
-        specifier: npm:entry-script@latest
+        specifier: catalog:leyman
         version: entry-script@3.0.8
       npm-haywire:
-        specifier: npm:haywire@latest
+        specifier: catalog:leyman
         version: haywire@0.1.7
       npm-haywire-launcher:
-        specifier: npm:haywire-launcher@latest
+        specifier: catalog:leyman
         version: haywire-launcher@0.1.10(entry-script@3.0.8)(haywire@0.1.7)
       npm-iso-crypto:
-        specifier: npm:iso-crypto@latest
+        specifier: catalog:leyman
         version: iso-crypto@1.2.3
       npm-parse-cwd:
-        specifier: npm:parse-cwd@latest
+        specifier: catalog:leyman
         version: parse-cwd@1.1.1
       npm-populate-files:
-        specifier: npm:populate-files@latest
+        specifier: catalog:leyman
         version: populate-files@0.2.3(@biomejs/biome@1.9.4)
       yargs:
-        specifier: ^17.7.2
+        specifier: 'catalog:'
         version: 17.7.2
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       '@types/tmp':
-        specifier: ^0.2.6
+        specifier: 'catalog:'
         version: 0.2.6
       '@types/yargs':
-        specifier: ^17.0.33
+        specifier: 'catalog:'
         version: 17.0.33
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       npm-mocha-chain:
-        specifier: npm:mocha-chain@latest
+        specifier: catalog:leyman
         version: mocha-chain@0.0.10(@types/mocha@10.0.10)(mocha@11.0.1)
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
+        specifier: catalog:leyman
         version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4)
       npm-sinon-typed-stub:
-        specifier: npm:sinon-typed-stub@latest
+        specifier: catalog:leyman
         version: sinon-typed-stub@0.0.10(@types/sinon@17.0.3)(sinon@19.0.2)
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       tmp-promise:
-        specifier: ^3.0.3
+        specifier: 'catalog:'
         version: 3.0.3
       ts-dedent:
-        specifier: ^2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   apps/populate-files/load-populate-files:
     dependencies:
       ajv:
-        specifier: ^8.17.1
+        specifier: 'catalog:'
         version: 8.17.1
       ci-info:
-        specifier: ^4.1.0
+        specifier: 'catalog:'
         version: 4.1.0
       default-import:
         specifier: workspace:^
@@ -571,50 +800,50 @@ importers:
         specifier: workspace:^
         version: link:../populate-files
       yargs:
-        specifier: ^17.7.2
+        specifier: 'catalog:'
         version: 17.7.2
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/yargs':
-        specifier: ^17.0.33
+        specifier: 'catalog:'
         version: 17.0.33
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -626,13 +855,13 @@ importers:
         specifier: workspace:^
         version: link:../../pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   apps/populate-files/populate-files:
     dependencies:
       ci-info:
-        specifier: ^4.1.0
+        specifier: 'catalog:'
         version: 4.1.0
       format-file:
         specifier: workspace:^
@@ -644,50 +873,50 @@ importers:
         specifier: workspace:^
         version: link:../../../tools/parse-cwd
       uint8array-extras:
-        specifier: ^1.4.0
+        specifier: 'catalog:'
         version: 1.4.0
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/tmp':
-        specifier: ^0.2.6
+        specifier: 'catalog:'
         version: 0.2.6
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -702,225 +931,225 @@ importers:
         specifier: workspace:^
         version: link:../../../tools/sinon-typed-stub
       tmp-promise:
-        specifier: ^3.0.3
+        specifier: 'catalog:'
         version: 3.0.3
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   leyman/eslint-config:
     dependencies:
       '@eslint/js':
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       '@typescript-eslint/eslint-plugin':
-        specifier: ^8.19.0
+        specifier: 'catalog:'
         version: 8.19.0(@typescript-eslint/parser@8.19.0(eslint@9.17.0)(typescript@5.7.2))(eslint@9.17.0)(typescript@5.7.2)
       '@typescript-eslint/parser':
-        specifier: ^8.19.0
+        specifier: 'catalog:'
         version: 8.19.0(eslint@9.17.0)(typescript@5.7.2)
       ajv:
-        specifier: ^8.17.1
+        specifier: 'catalog:'
         version: 8.17.1
       escape-string-regexp:
-        specifier: ^5.0.0
+        specifier: 'catalog:'
         version: 5.0.0
       eslint-config-prettier:
-        specifier: ^9.1.0
+        specifier: 'catalog:'
         version: 9.1.0(eslint@9.17.0)
       eslint-plugin-import:
-        specifier: ^2.31.0
+        specifier: 'catalog:'
         version: 2.31.0(@typescript-eslint/parser@8.19.0(eslint@9.17.0)(typescript@5.7.2))(eslint@9.17.0)
       eslint-plugin-jsdoc:
-        specifier: ^50.6.1
+        specifier: 'catalog:'
         version: 50.6.1(eslint@9.17.0)
       eslint-plugin-jsx-a11y:
-        specifier: ^6.10.2
+        specifier: 'catalog:'
         version: 6.10.2(eslint@9.17.0)
       eslint-plugin-n:
-        specifier: ^17.15.1
+        specifier: 'catalog:'
         version: 17.15.1(eslint@9.17.0)
       eslint-plugin-react:
-        specifier: ^7.37.3
+        specifier: 'catalog:'
         version: 7.37.3(eslint@9.17.0)
       eslint-plugin-react-hooks:
-        specifier: ^5.1.0
+        specifier: 'catalog:'
         version: 5.1.0(eslint@9.17.0)
       eslint-plugin-sonarjs:
-        specifier: ^3.0.1
+        specifier: 'catalog:'
         version: 3.0.1(eslint@9.17.0)
       eslint-plugin-unicorn:
-        specifier: ^56.0.1
+        specifier: 'catalog:'
         version: 56.0.1(eslint@9.17.0)
       npm-default-import:
-        specifier: npm:default-import@latest
+        specifier: catalog:leyman
         version: default-import@2.0.7
       npm-juniper:
-        specifier: npm:juniper@latest
+        specifier: catalog:leyman
         version: juniper@1.2.4
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/eslint':
-        specifier: ^9.6.1
+        specifier: 'catalog:'
         version: 9.6.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@typescript-eslint/utils':
-        specifier: ^8.19.0
+        specifier: 'catalog:'
         version: 8.19.0(eslint@9.17.0)(typescript@5.7.2)
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
+        specifier: catalog:leyman
         version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4)
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   leyman/main:
     dependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../eslint-config
       npm:
-        specifier: ^11.0.0
+        specifier: 'catalog:'
         version: 11.0.0
       nx:
-        specifier: 20.3.0
+        specifier: 'catalog:'
         version: 20.3.0
       nx-lifecycle:
         specifier: workspace:^
         version: link:../../apps/nx-lifecycle
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/common-proxy:
     dependencies:
       '@swc/helpers':
-        specifier: ^0.5.15
+        specifier: 'catalog:'
         version: 0.5.15
       npm-default-import:
-        specifier: npm:default-import@latest
+        specifier: catalog:leyman
         version: default-import@2.0.7
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4(@swc/helpers@0.5.15))
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4(@swc/helpers@0.5.15)
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
       npm-barrelify:
-        specifier: npm:barrelify@latest
+        specifier: catalog:leyman
         version: barrelify@1.3.2(@biomejs/biome@1.9.4)
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
+        specifier: catalog:leyman
         version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4(@swc/helpers@0.5.15))
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/default-import:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -932,7 +1161,7 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/entry-script:
@@ -942,43 +1171,43 @@ importers:
         version: link:../default-import
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -990,46 +1219,46 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/enum-to-array:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1041,7 +1270,7 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/find-import:
@@ -1051,40 +1280,40 @@ importers:
         version: link:../parse-cwd
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1096,65 +1325,65 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/format-file:
     dependencies:
       find-up:
-        specifier: ^7.0.0
+        specifier: 'catalog:'
         version: 7.0.0
       haywire:
         specifier: workspace:^
         version: link:../haywire
       tmp-promise:
-        specifier: ^3.0.3
+        specifier: 'catalog:'
         version: 3.0.3
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       '@types/tmp':
-        specifier: ^0.2.6
+        specifier: 'catalog:'
         version: 0.2.6
       barrelify:
         specifier: workspace:^
         version: link:../../apps/barrelify
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1166,131 +1395,131 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       prettier:
-        specifier: ^3.4.2
+        specifier: 'catalog:'
         version: 3.4.2
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       sinon-typed-stub:
         specifier: workspace:^
         version: link:../sinon-typed-stub
       ts-dedent:
-        specifier: ^2.2.0
+        specifier: 'catalog:'
         version: 2.2.0
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/haywire:
     dependencies:
       p-defer:
-        specifier: ^4.0.1
+        specifier: 'catalog:'
         version: 4.0.1
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       npm-barrelify:
-        specifier: npm:barrelify@latest
+        specifier: catalog:leyman
         version: barrelify@1.3.2(@biomejs/biome@1.9.4)
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
+        specifier: catalog:leyman
         version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/haywire-launcher:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       entry-script:
         specifier: workspace:^
         version: link:../entry-script
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       haywire:
         specifier: workspace:^
         version: link:../haywire
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1302,55 +1531,55 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/iso-crypto:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       barrelify:
         specifier: workspace:^
         version: link:../../apps/barrelify
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1362,10 +1591,10 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/mocha-chain:
@@ -1374,101 +1603,101 @@ importers:
         specifier: workspace:^
         version: link:../haywire
       p-defer:
-        specifier: ^4.0.1
+        specifier: 'catalog:'
         version: 4.0.1
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
+        specifier: catalog:leyman
         version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/named-patch:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1480,61 +1709,61 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/normalized-react-query:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@tanstack/react-query':
-        specifier: ^4.36.1
+        specifier: 'catalog:'
         version: 4.36.1(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@testing-library/react-hooks':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(@types/react@18.3.18)(react-dom@18.3.1(react@18.3.1))(react-test-renderer@18.3.1(react@18.3.1))(react@18.3.1)
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/react':
-        specifier: ^18.3.18
+        specifier: 'catalog:'
         version: 18.3.18
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1546,25 +1775,25 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       react:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1
       react-dom:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-test-renderer:
-        specifier: ^18.3.1
+        specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/nx-plugin-handler:
     dependencies:
       ajv:
-        specifier: ^8.17.1
+        specifier: 'catalog:'
         version: 8.17.1
       common-proxy:
         specifier: workspace:^
@@ -1573,116 +1802,116 @@ importers:
         specifier: workspace:^
         version: link:../haywire
       npm-default-import:
-        specifier: npm:default-import@latest
+        specifier: catalog:leyman
         version: default-import@2.0.7
       npm-juniper:
-        specifier: npm:juniper@latest
+        specifier: catalog:leyman
         version: juniper@1.2.4
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@nx/devkit':
-        specifier: ^20.3.0
+        specifier: 'catalog:'
         version: 20.3.0(nx@20.3.0(@swc/core@1.10.4))
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
+        specifier: catalog:leyman
         version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4)
       nx:
-        specifier: ^20.3.0
+        specifier: 'catalog:'
         version: 20.3.0(@swc/core@1.10.4)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       sinon-typed-stub:
         specifier: workspace:^
         version: link:../sinon-typed-stub
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/parse-cwd:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/chai-as-promised':
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       chai-as-promised:
-        specifier: ^8.0.1
+        specifier: 'catalog:'
         version: 8.0.1(chai@5.1.2)
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1694,43 +1923,43 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/punycode-esm:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1742,106 +1971,106 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/sinon-typed-stub:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       '@types/sinon':
-        specifier: ^17.0.3
+        specifier: 'catalog:'
         version: 17.0.3
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
       npm-nx-tsc:
-        specifier: npm:nx-tsc@latest
+        specifier: catalog:leyman
         version: nx-tsc@0.1.0(typescript@5.7.2)
       npm-nx-update-ts-references:
-        specifier: npm:nx-update-ts-references@latest
+        specifier: catalog:leyman
         version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       sinon:
-        specifier: ^19.0.2
+        specifier: 'catalog:'
         version: 19.0.2
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
   tools/static-emitter:
     devDependencies:
       '@biomejs/biome':
-        specifier: ^1.9.4
+        specifier: 'catalog:'
         version: 1.9.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../leyman/eslint-config
       '@swc/cli':
-        specifier: ^0.5.2
+        specifier: 'catalog:'
         version: 0.5.2(@swc/core@1.10.4)
       '@swc/core':
-        specifier: ^1.10.4
+        specifier: 'catalog:'
         version: 1.10.4
       '@types/chai':
-        specifier: ^5.0.1
+        specifier: 'catalog:'
         version: 5.0.1
       '@types/mocha':
-        specifier: ^10.0.10
+        specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: ^22.10.5
+        specifier: 'catalog:'
         version: 22.10.5
       c8:
-        specifier: ^10.1.3
+        specifier: 'catalog:'
         version: 10.1.3
       chai:
-        specifier: ^5.1.2
+        specifier: 'catalog:'
         version: 5.1.2
       eslint:
-        specifier: ^9.17.0
+        specifier: 'catalog:'
         version: 9.17.0
       expect-type:
-        specifier: ^1.1.0
+        specifier: 'catalog:'
         version: 1.1.0
       mocha:
-        specifier: ^11.0.1
+        specifier: 'catalog:'
         version: 11.0.1
       mocha-chain:
         specifier: workspace:^
@@ -1853,7 +2082,7 @@ importers:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
-        specifier: ^5.7.2
+        specifier: 'catalog:'
         version: 5.7.2
 
 packages:
@@ -6933,7 +7162,7 @@ snapshots:
 
   '@pnpm/network.proxy-agent@2.0.0':
     dependencies:
-      '@pnpm/error': 6.0.2
+      '@pnpm/error': 6.0.3
       http-proxy-agent: 5.0.0
       https-proxy-agent: 5.0.1
       lru-cache: 7.10.1

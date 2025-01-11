@@ -3,3 +3,84 @@ packages:
   - leyman/*
   - tools/*
   - '!**/src/tests/**'
+
+catalogs:
+  # Local packages that are instead installed from npm to avoid circular dependencies
+  leyman:
+    npm-barrelify: npm:barrelify@latest
+    npm-default-import: npm:default-import@latest
+    npm-entry-script: npm:entry-script@latest
+    npm-format-file: npm:format-file@latest
+    npm-haywire: npm:haywire@latest
+    npm-haywire-launcher: npm:haywire-launcher@latest
+    npm-iso-crypto: npm:iso-crypto@latest
+    npm-juniper: npm:juniper@latest
+    npm-load-populate-files: npm:load-populate-files@latest
+    npm-mocha-chain: npm:mocha-chain@latest
+    npm-nx-populate-files: npm:nx-populate-files@latest
+    npm-nx-tsc: npm:nx-tsc@latest
+    npm-nx-update-ts-references: npm:nx-update-ts-references@latest
+    npm-parse-cwd: npm:parse-cwd@latest
+    npm-populate-files: npm:populate-files@latest
+    npm-sinon-typed-stub: npm:sinon-typed-stub@latest
+
+catalog:
+  '@biomejs/biome': ^1.9.4
+  '@eslint/js': ^9.17.0
+  '@nx/devkit': ^20.3.0
+  '@pnpm/find-workspace-dir': ^7.0.3
+  '@pnpm/lockfile.fs': ^1.1.0
+  '@pnpm/lockfile.pruner': ^0.0.6
+  '@pnpm/logger': ^5.2.0
+  '@swc/cli': ^0.5.2
+  '@swc/core': ^1.10.4
+  '@swc/helpers': ^0.5.15
+  '@tanstack/react-query': ^4.36.1
+  '@testing-library/react-hooks': ^8.0.1
+  '@types/chai': ^5.0.1
+  '@types/chai-as-promised': ^8.0.1
+  '@types/eslint': ^9.6.1
+  '@types/mocha': ^10.0.10
+  '@types/node': ^22.10.5
+  '@types/react': ^18.3.18
+  '@types/sinon': ^17.0.3
+  '@types/tmp': ^0.2.6
+  '@types/yargs': ^17.0.33
+  '@typescript-eslint/eslint-plugin': ^8.19.0
+  '@typescript-eslint/parser': ^8.19.0
+  '@typescript-eslint/utils': ^8.19.0
+  ajv: ^8.17.1
+  c8: ^10.1.3
+  chai: ^5.1.2
+  chai-as-promised: ^8.0.1
+  ci-info: ^4.1.0
+  comment-json: ^4.2.5
+  escape-string-regexp: ^5.0.0
+  eslint: ^9.17.0
+  eslint-config-prettier: ^9.1.0
+  eslint-plugin-import: ^2.31.0
+  eslint-plugin-jsdoc: ^50.6.1
+  eslint-plugin-jsx-a11y: ^6.10.2
+  eslint-plugin-n: ^17.15.1
+  eslint-plugin-react: ^7.37.3
+  eslint-plugin-react-hooks: ^5.1.0
+  eslint-plugin-sonarjs: ^3.0.1
+  eslint-plugin-unicorn: ^56.0.1
+  expect-type: ^1.1.0
+  fast-equals: ^5.1.3
+  find-up: ^7.0.0
+  globby: ^14.0.2
+  mocha: ^11.0.1
+  npm: ^11.0.0
+  nx: ^20.3.0
+  p-defer: ^4.0.1
+  prettier: ^3.4.2
+  react: ^18.3.1
+  react-dom: ^18.3.1
+  react-test-renderer: ^18.3.1
+  sinon: ^19.0.2
+  tmp-promise: ^3.0.3
+  ts-dedent: ^2.2.0
+  typescript: ^5.7.2
+  uint8array-extras: ^1.4.0
+  yargs: ^17.7.2
