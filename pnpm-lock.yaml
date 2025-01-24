@@ -1036,6 +1036,9 @@ importers:
       npm:
         specifier: 'catalog:'
         version: 11.0.0
+      nx:
+        specifier: 'catalog:'
+        version: 20.3.2
       nx-lifecycle:
         specifier: workspace:^
         version: link:../../apps/nx-lifecycle
@@ -2909,32 +2912,15 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nx/devkit@20.3.0':
-    resolution: {integrity: sha512-u9oRd2F33DLNWPbzpYGW7xuMEYUAOwO9DLP9nGYpxbZXy6Z4AdoKeqhN+KBTyg8+DyQGuKUSEXcWriDyLLgcHw==}
-    peerDependencies:
-      nx: '>= 19 <= 21'
-
   '@nx/devkit@20.3.2':
     resolution: {integrity: sha512-VhbxEsSTCZlOVgjuQC+6HQmb9Oz9VoHUeo4001Pw6BFBcSXZUi5q37C/lxbAgQPnMKLkFcLva3WKZ+fOLwhGIg==}
     peerDependencies:
       nx: '>= 19 <= 21'
 
-  '@nx/nx-darwin-arm64@20.3.0':
-    resolution: {integrity: sha512-9PqSe1Sh7qNqA4GL0cZH0t3S0EZzb2Xn14XY9au7yf0+eoxyag1oETjjULrxLeUmSoXW2hDxzNtoqKFE9zF07Q==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [darwin]
-
   '@nx/nx-darwin-arm64@20.3.2':
     resolution: {integrity: sha512-lQOXMIPmE9o36TuZ+SX6iq7PPWa3s1fjNRqCujlviExX69245NNCMxd754gXlLrsxC1onrx/zmJciKmmEWDIiw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
-    os: [darwin]
-
-  '@nx/nx-darwin-x64@20.3.0':
-    resolution: {integrity: sha512-gsGGhJVvi5QZVVTZie5sNMo1zOAU+A2edm6DGegObdFRLV41Ju/Yrm/gTaSp4yUtywd3UU4S/30C/nI2c55adA==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
     os: [darwin]
 
   '@nx/nx-darwin-x64@20.3.2':
@@ -2943,23 +2929,11 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-  '@nx/nx-freebsd-x64@20.3.0':
-    resolution: {integrity: sha512-DiymYZBBu0upbiskdfn9KRyoXdyvKohezJiV3j4VkeRE8KR2p04NgwRQviDFbeD1cjWrDy9wk8y+G5PabLlqAA==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [freebsd]
-
   '@nx/nx-freebsd-x64@20.3.2':
     resolution: {integrity: sha512-KBDTyGn1evlZ17pupwRUDh2wrCMuHhP2j8cOCdgF5cl7vRki8BOK9yyL6jD11d/d/6DgXzy1jmQEX4Xx+AGCug==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [freebsd]
-
-  '@nx/nx-linux-arm-gnueabihf@20.3.0':
-    resolution: {integrity: sha512-Aksx66e8jmt/4rGJ/5z34SWXbPcYr9Ht52UonEeuCdQdoEvAOs7yBUbllYOjIcUsfZikEyZgvqfiQslsggSJdQ==}
-    engines: {node: '>= 10'}
-    cpu: [arm]
-    os: [linux]
 
   '@nx/nx-linux-arm-gnueabihf@20.3.2':
     resolution: {integrity: sha512-mW+OcOnJEMvs7zD3aSwEG3z5M9bI4CuUU5Q/ePmnNzWIucRHpoAMNt/Sd+yu6L4+QttvoUf967uwcMsX8l4nrw==}
@@ -2967,20 +2941,8 @@ packages:
     cpu: [arm]
     os: [linux]
 
-  '@nx/nx-linux-arm64-gnu@20.3.0':
-    resolution: {integrity: sha512-Y5wmYEwF1bl014Ps8QjagI911VbViQSFHSTVOCNSObdAzig9E5o6NOkoWe+doT1UZLrrInnlkrggQUsbtdKjOg==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [linux]
-
   '@nx/nx-linux-arm64-gnu@20.3.2':
     resolution: {integrity: sha512-hbXpZqUvGY5aeEWvh0SNsiYjP1ytSM30XOT6qN6faLO2CL/7j9D2UB69SKOqF3TJOvuNU6cweFgZCxyGfXBYIQ==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [linux]
-
-  '@nx/nx-linux-arm64-musl@20.3.0':
-    resolution: {integrity: sha512-yGcIkmImyOMfPkQSYH2EVjPmFE0VkLcO71Bbkpr3RlJ1N/vjYxsGbdnqPiBb8Wshib/hmwpiMHf/yzQtKH0SQw==}
     engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
@@ -2991,20 +2953,8 @@ packages:
     cpu: [arm64]
     os: [linux]
 
-  '@nx/nx-linux-x64-gnu@20.3.0':
-    resolution: {integrity: sha512-nkA2DLI+rpmiuiy7dyXP4l9s7dgHkQWDX7lG1XltiT41RzAReJF1h8qBE6XrsAYE1CtI76DRWVphnc93+iZr+A==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [linux]
-
   '@nx/nx-linux-x64-gnu@20.3.2':
     resolution: {integrity: sha512-HhgHqOUT05H45zuQL+XPywQbRNFttd7Rkkr7dZnpCRdp4W8GDjfyKCoCS5qVyowAyNh9Vc7VEq9qmiLMlvf6Zg==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [linux]
-
-  '@nx/nx-linux-x64-musl@20.3.0':
-    resolution: {integrity: sha512-sPMtTt9iTrCmFEIp9Qv27UX9PeL1aqKck2dz2TAFbXKVtF6+djOdTcNnTYw45KIP6izcUcOXXAq4G0QSQE7CLg==}
     engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
@@ -3015,22 +2965,10 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@nx/nx-win32-arm64-msvc@20.3.0':
-    resolution: {integrity: sha512-ppfNa/8OfpWA9o26Pz3vArN4ulAC+Hx70/ghPRCP7ed1Mb3Z6yR2Ry9KfBRImbqajvuAExM0TePKMGq9LCdXmg==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [win32]
-
   '@nx/nx-win32-arm64-msvc@20.3.2':
     resolution: {integrity: sha512-yLjacZND7C1XmsC0jfRLSgeLWZUw2Oz+u3nXNvj5JX6YHtYTVLFnRbTAcI+pG2Y6v0Otf2GKb3VT5d1mQb8JvA==}
     engines: {node: '>= 10'}
     cpu: [arm64]
-    os: [win32]
-
-  '@nx/nx-win32-x64-msvc@20.3.0':
-    resolution: {integrity: sha512-8FOejZ4emtLSVn3pYWs4PIc3n4//qMbwMDPVxmPE8us3ir91Qh0bzr5zRj7Q8sEdSgvneXRXqtBp2grY2KMJsw==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
     os: [win32]
 
   '@nx/nx-win32-x64-msvc@20.3.2':
@@ -5129,18 +5067,6 @@ packages:
     engines: {node: '>=20'}
     hasBin: true
 
-  nx@20.3.0:
-    resolution: {integrity: sha512-Nzi4k7tV22zwO2iBLk+pHxorLEWPJpPrVCACtz0SQ63j/LiAgfhoqruJO+VU+V+E9qdyPsvmqIL/Iaf/GRQlqA==}
-    hasBin: true
-    peerDependencies:
-      '@swc-node/register': ^1.8.0
-      '@swc/core': ^1.3.85
-    peerDependenciesMeta:
-      '@swc-node/register':
-        optional: true
-      '@swc/core':
-        optional: true
-
   nx@20.3.2:
     resolution: {integrity: sha512-VWUHX0uCn8ACFbpBTpgucDzwe4q/a/UU3AYOhzKCvTzb3kQiyvoxLjORSze93ZNEqgor0PMkCQgcoMBUjxJfzQ==}
     hasBin: true
@@ -6994,37 +6920,13 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.18.0
 
-  '@nx/devkit@20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))':
+  '@nx/devkit@20.3.2(nx@20.3.2(@swc/core@1.10.4(@swc/helpers@0.5.15)))':
     dependencies:
       ejs: 3.1.10
       enquirer: 2.3.6
       ignore: 5.3.2
       minimatch: 9.0.3
-      nx: 20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))
-      semver: 7.6.3
-      tmp: 0.2.3
-      tslib: 2.8.1
-      yargs-parser: 21.1.1
-
-  '@nx/devkit@20.3.0(nx@20.3.0(@swc/core@1.10.4))':
-    dependencies:
-      ejs: 3.1.10
-      enquirer: 2.3.6
-      ignore: 5.3.2
-      minimatch: 9.0.3
-      nx: 20.3.0(@swc/core@1.10.4)
-      semver: 7.6.3
-      tmp: 0.2.3
-      tslib: 2.8.1
-      yargs-parser: 21.1.1
-
-  '@nx/devkit@20.3.0(nx@20.3.0)':
-    dependencies:
-      ejs: 3.1.10
-      enquirer: 2.3.6
-      ignore: 5.3.2
-      minimatch: 9.0.3
-      nx: 20.3.0
+      nx: 20.3.2(@swc/core@1.10.4(@swc/helpers@0.5.15))
       semver: 7.6.3
       tmp: 0.2.3
       tslib: 2.8.1
@@ -7042,61 +6944,43 @@ snapshots:
       tslib: 2.8.1
       yargs-parser: 21.1.1
 
-  '@nx/nx-darwin-arm64@20.3.0':
-    optional: true
+  '@nx/devkit@20.3.2(nx@20.3.2)':
+    dependencies:
+      ejs: 3.1.10
+      enquirer: 2.3.6
+      ignore: 5.3.2
+      minimatch: 9.0.3
+      nx: 20.3.2
+      semver: 7.6.3
+      tmp: 0.2.3
+      tslib: 2.8.1
+      yargs-parser: 21.1.1
 
   '@nx/nx-darwin-arm64@20.3.2':
-    optional: true
-
-  '@nx/nx-darwin-x64@20.3.0':
     optional: true
 
   '@nx/nx-darwin-x64@20.3.2':
     optional: true
 
-  '@nx/nx-freebsd-x64@20.3.0':
-    optional: true
-
   '@nx/nx-freebsd-x64@20.3.2':
-    optional: true
-
-  '@nx/nx-linux-arm-gnueabihf@20.3.0':
     optional: true
 
   '@nx/nx-linux-arm-gnueabihf@20.3.2':
     optional: true
 
-  '@nx/nx-linux-arm64-gnu@20.3.0':
-    optional: true
-
   '@nx/nx-linux-arm64-gnu@20.3.2':
-    optional: true
-
-  '@nx/nx-linux-arm64-musl@20.3.0':
     optional: true
 
   '@nx/nx-linux-arm64-musl@20.3.2':
     optional: true
 
-  '@nx/nx-linux-x64-gnu@20.3.0':
-    optional: true
-
   '@nx/nx-linux-x64-gnu@20.3.2':
-    optional: true
-
-  '@nx/nx-linux-x64-musl@20.3.0':
     optional: true
 
   '@nx/nx-linux-x64-musl@20.3.2':
     optional: true
 
-  '@nx/nx-win32-arm64-msvc@20.3.0':
-    optional: true
-
   '@nx/nx-win32-arm64-msvc@20.3.2':
-    optional: true
-
-  '@nx/nx-win32-x64-msvc@20.3.0':
     optional: true
 
   '@nx/nx-win32-x64-msvc@20.3.2':
@@ -9393,7 +9277,7 @@ snapshots:
 
   npm@11.0.0: {}
 
-  nx-plugin-handler@0.2.0(@nx/devkit@20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))):
+  nx-plugin-handler@0.2.0(@nx/devkit@20.3.2(nx@20.3.2(@swc/core@1.10.4(@swc/helpers@0.5.15)))):
     dependencies:
       ajv: 8.17.1
       common-proxy: 0.1.2
@@ -9401,9 +9285,9 @@ snapshots:
       npm-default-import: default-import@2.0.7
       npm-juniper: juniper@1.2.4
     optionalDependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
+      '@nx/devkit': 20.3.2(nx@20.3.2(@swc/core@1.10.4(@swc/helpers@0.5.15)))
 
-  nx-plugin-handler@0.2.0(@nx/devkit@20.3.0(nx@20.3.0(@swc/core@1.10.4))):
+  nx-plugin-handler@0.2.0(@nx/devkit@20.3.2(nx@20.3.2(@swc/core@1.10.4))):
     dependencies:
       ajv: 8.17.1
       common-proxy: 0.1.2
@@ -9411,9 +9295,9 @@ snapshots:
       npm-default-import: default-import@2.0.7
       npm-juniper: juniper@1.2.4
     optionalDependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4))
+      '@nx/devkit': 20.3.2(nx@20.3.2(@swc/core@1.10.4))
 
-  nx-plugin-handler@0.2.0(@nx/devkit@20.3.0(nx@20.3.0)):
+  nx-plugin-handler@0.2.0(@nx/devkit@20.3.2(nx@20.3.2)):
     dependencies:
       ajv: 8.17.1
       common-proxy: 0.1.2
@@ -9421,11 +9305,11 @@ snapshots:
       npm-default-import: default-import@2.0.7
       npm-juniper: juniper@1.2.4
     optionalDependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0)
+      '@nx/devkit': 20.3.2(nx@20.3.2)
 
   nx-update-ts-references@0.2.0:
     dependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0)
+      '@nx/devkit': 20.3.2(nx@20.3.2)
       ajv: 8.17.1
       ci-info: 4.1.0
       comment-json: 4.2.5
@@ -9440,8 +9324,8 @@ snapshots:
       npm-juniper: juniper@1.2.4
       npm-parse-cwd: parse-cwd@1.1.1
       npm-populate-files: populate-files@0.2.3
-      nx: 20.3.0
-      nx-plugin-handler: 0.2.0(@nx/devkit@20.3.0(nx@20.3.0))
+      nx: 20.3.2
+      nx-plugin-handler: 0.2.0(@nx/devkit@20.3.2(nx@20.3.2))
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -9452,7 +9336,7 @@ snapshots:
 
   nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4(@swc/helpers@0.5.15)):
     dependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)))
+      '@nx/devkit': 20.3.2(nx@20.3.2(@swc/core@1.10.4(@swc/helpers@0.5.15)))
       ajv: 8.17.1
       ci-info: 4.1.0
       comment-json: 4.2.5
@@ -9467,8 +9351,8 @@ snapshots:
       npm-juniper: juniper@1.2.4
       npm-parse-cwd: parse-cwd@1.1.1
       npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
-      nx: 20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))
-      nx-plugin-handler: 0.2.0(@nx/devkit@20.3.0(nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15))))
+      nx: 20.3.2(@swc/core@1.10.4(@swc/helpers@0.5.15))
+      nx-plugin-handler: 0.2.0(@nx/devkit@20.3.2(nx@20.3.2(@swc/core@1.10.4(@swc/helpers@0.5.15))))
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -9479,7 +9363,7 @@ snapshots:
 
   nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.4):
     dependencies:
-      '@nx/devkit': 20.3.0(nx@20.3.0(@swc/core@1.10.4))
+      '@nx/devkit': 20.3.2(nx@20.3.2(@swc/core@1.10.4))
       ajv: 8.17.1
       ci-info: 4.1.0
       comment-json: 4.2.5
@@ -9494,8 +9378,8 @@ snapshots:
       npm-juniper: juniper@1.2.4
       npm-parse-cwd: parse-cwd@1.1.1
       npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
-      nx: 20.3.0(@swc/core@1.10.4)
-      nx-plugin-handler: 0.2.0(@nx/devkit@20.3.0(nx@20.3.0(@swc/core@1.10.4)))
+      nx: 20.3.2(@swc/core@1.10.4)
+      nx-plugin-handler: 0.2.0(@nx/devkit@20.3.2(nx@20.3.2(@swc/core@1.10.4)))
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -9504,7 +9388,7 @@ snapshots:
       - debug
       - prettier
 
-  nx@20.3.0:
+  nx@20.3.2:
     dependencies:
       '@napi-rs/wasm-runtime': 0.2.4
       '@yarnpkg/lockfile': 1.1.0
@@ -9541,20 +9425,20 @@ snapshots:
       yargs: 17.7.2
       yargs-parser: 21.1.1
     optionalDependencies:
-      '@nx/nx-darwin-arm64': 20.3.0
-      '@nx/nx-darwin-x64': 20.3.0
-      '@nx/nx-freebsd-x64': 20.3.0
-      '@nx/nx-linux-arm-gnueabihf': 20.3.0
-      '@nx/nx-linux-arm64-gnu': 20.3.0
-      '@nx/nx-linux-arm64-musl': 20.3.0
-      '@nx/nx-linux-x64-gnu': 20.3.0
-      '@nx/nx-linux-x64-musl': 20.3.0
-      '@nx/nx-win32-arm64-msvc': 20.3.0
-      '@nx/nx-win32-x64-msvc': 20.3.0
+      '@nx/nx-darwin-arm64': 20.3.2
+      '@nx/nx-darwin-x64': 20.3.2
+      '@nx/nx-freebsd-x64': 20.3.2
+      '@nx/nx-linux-arm-gnueabihf': 20.3.2
+      '@nx/nx-linux-arm64-gnu': 20.3.2
+      '@nx/nx-linux-arm64-musl': 20.3.2
+      '@nx/nx-linux-x64-gnu': 20.3.2
+      '@nx/nx-linux-x64-musl': 20.3.2
+      '@nx/nx-win32-arm64-msvc': 20.3.2
+      '@nx/nx-win32-x64-msvc': 20.3.2
     transitivePeerDependencies:
       - debug
 
-  nx@20.3.0(@swc/core@1.10.4(@swc/helpers@0.5.15)):
+  nx@20.3.2(@swc/core@1.10.4(@swc/helpers@0.5.15)):
     dependencies:
       '@napi-rs/wasm-runtime': 0.2.4
       '@yarnpkg/lockfile': 1.1.0
@@ -9591,68 +9475,17 @@ snapshots:
       yargs: 17.7.2
       yargs-parser: 21.1.1
     optionalDependencies:
-      '@nx/nx-darwin-arm64': 20.3.0
-      '@nx/nx-darwin-x64': 20.3.0
-      '@nx/nx-freebsd-x64': 20.3.0
-      '@nx/nx-linux-arm-gnueabihf': 20.3.0
-      '@nx/nx-linux-arm64-gnu': 20.3.0
-      '@nx/nx-linux-arm64-musl': 20.3.0
-      '@nx/nx-linux-x64-gnu': 20.3.0
-      '@nx/nx-linux-x64-musl': 20.3.0
-      '@nx/nx-win32-arm64-msvc': 20.3.0
-      '@nx/nx-win32-x64-msvc': 20.3.0
+      '@nx/nx-darwin-arm64': 20.3.2
+      '@nx/nx-darwin-x64': 20.3.2
+      '@nx/nx-freebsd-x64': 20.3.2
+      '@nx/nx-linux-arm-gnueabihf': 20.3.2
+      '@nx/nx-linux-arm64-gnu': 20.3.2
+      '@nx/nx-linux-arm64-musl': 20.3.2
+      '@nx/nx-linux-x64-gnu': 20.3.2
+      '@nx/nx-linux-x64-musl': 20.3.2
+      '@nx/nx-win32-arm64-msvc': 20.3.2
+      '@nx/nx-win32-x64-msvc': 20.3.2
       '@swc/core': 1.10.4(@swc/helpers@0.5.15)
-    transitivePeerDependencies:
-      - debug
-
-  nx@20.3.0(@swc/core@1.10.4):
-    dependencies:
-      '@napi-rs/wasm-runtime': 0.2.4
-      '@yarnpkg/lockfile': 1.1.0
-      '@yarnpkg/parsers': 3.0.2
-      '@zkochan/js-yaml': 0.0.7
-      axios: 1.7.9
-      chalk: 4.1.2
-      cli-cursor: 3.1.0
-      cli-spinners: 2.6.1
-      cliui: 8.0.1
-      dotenv: 16.4.7
-      dotenv-expand: 11.0.7
-      enquirer: 2.3.6
-      figures: 3.2.0
-      flat: 5.0.2
-      front-matter: 4.0.2
-      ignore: 5.3.2
-      jest-diff: 29.7.0
-      jsonc-parser: 3.2.0
-      lines-and-columns: 2.0.3
-      minimatch: 9.0.3
-      node-machine-id: 1.1.12
-      npm-run-path: 4.0.1
-      open: 8.4.2
-      ora: 5.3.0
-      resolve.exports: 2.0.3
-      semver: 7.6.3
-      string-width: 4.2.3
-      tar-stream: 2.2.0
-      tmp: 0.2.3
-      tsconfig-paths: 4.2.0
-      tslib: 2.8.1
-      yaml: 2.7.0
-      yargs: 17.7.2
-      yargs-parser: 21.1.1
-    optionalDependencies:
-      '@nx/nx-darwin-arm64': 20.3.0
-      '@nx/nx-darwin-x64': 20.3.0
-      '@nx/nx-freebsd-x64': 20.3.0
-      '@nx/nx-linux-arm-gnueabihf': 20.3.0
-      '@nx/nx-linux-arm64-gnu': 20.3.0
-      '@nx/nx-linux-arm64-musl': 20.3.0
-      '@nx/nx-linux-x64-gnu': 20.3.0
-      '@nx/nx-linux-x64-musl': 20.3.0
-      '@nx/nx-win32-arm64-msvc': 20.3.0
-      '@nx/nx-win32-x64-msvc': 20.3.0
-      '@swc/core': 1.10.4
     transitivePeerDependencies:
       - debug
 

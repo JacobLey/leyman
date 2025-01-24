@@ -20,6 +20,7 @@
     "@leyman/eslint-config": "workspace:^",
     "eslint": "catalog:",
     "npm": "catalog:",
+    "nx": "catalog:",
     "nx-lifecycle": "workspace:^",
     "typescript": "catalog:"
   }
