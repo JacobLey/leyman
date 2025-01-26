@@ -1,4 +1,5 @@
-FROM mcr.microsoft.com/devcontainers/base:debian
+# https://github.com/devcontainers/images/blob/main/src/base-debian/history
+FROM mcr.microsoft.com/devcontainers/base:1.0.9-debian12
 
 ARG NX_VERSION=20.3.2
 ARG NODE_VERSION=22.13.1
