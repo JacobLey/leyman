@@ -16,9 +16,6 @@
       "path": "../../leyman/eslint-config"
     },
     {
-      "path": "../../tools/default-import"
-    },
-    {
       "path": "../../tools/mocha-chain"
     }
   ]

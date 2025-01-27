@@ -1,9 +1,7 @@
-import AjvDefault from 'ajv/dist/2020.js';
-import { defaultImport } from 'npm-default-import';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { objectSchema, type SchemaType, stringSchema } from 'npm-juniper';
 
-const Ajv = defaultImport(AjvDefault);
-const ajv = new Ajv({ strict: true });
+const ajv = new Ajv2020({ strict: true });
 
 const packageJsonSchema = objectSchema({
     properties: {

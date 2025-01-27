@@ -33,7 +33,6 @@
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-sonarjs": "catalog:",
     "eslint-plugin-unicorn": "catalog:",
-    "npm-default-import": "catalog:leyman",
     "npm-juniper": "catalog:leyman"
   },
   "devDependencies": {

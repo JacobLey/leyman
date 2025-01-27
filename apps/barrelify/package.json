@@ -30,7 +30,6 @@
   "dependencies": {
     "ajv": "catalog:",
     "ci-info": "catalog:",
-    "default-import": "workspace:^",
     "entry-script": "workspace:^",
     "find-import": "workspace:^",
     "globby": "catalog:",

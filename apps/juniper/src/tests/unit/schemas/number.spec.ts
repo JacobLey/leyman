@@ -1,11 +1,8 @@
-import DefaultAjv from 'ajv/dist/2020.js';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { defaultImport } from 'default-import';
 import { numberSchema, type SchemaType } from 'juniper';
 import { suite, test } from 'mocha-chain';
-
-const Ajv = defaultImport(DefaultAjv);
 
 suite('NumberSchema', () => {
     suite('keywords', () => {
@@ -39,7 +36,7 @@ suite('NumberSchema', () => {
                 exclusiveMinimum: -5,
             });
 
-            const validator = new Ajv({ strict: true }).compile(schema);
+            const validator = new Ajv2020({ strict: true }).compile(schema);
             expect(validator(10)).to.equal(true);
             expect(validator(20)).to.equal(false);
             expect(validator(1.5)).to.equal(false);
@@ -224,7 +221,7 @@ suite('NumberSchema', () => {
                     },
                 ],
             });
-            new Ajv({ strict: true }).compile(integerSchema.toJSON({ openApi30: true }));
+            new Ajv2020({ strict: true }).compile(integerSchema.toJSON({ openApi30: true }));
 
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
 
@@ -284,7 +281,7 @@ suite('NumberSchema', () => {
                     },
                 ],
             });
-            new Ajv({ strict: true }).compile(integerSchema.toJSON({ openApi30: true }));
+            new Ajv2020({ strict: true }).compile(integerSchema.toJSON({ openApi30: true }));
 
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
 

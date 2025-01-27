@@ -1,11 +1,8 @@
-import DefaultAjv from 'ajv/dist/2020.js';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { defaultImport } from 'default-import';
 import { booleanSchema, type SchemaType } from 'juniper';
 import { suite, test } from 'mocha-chain';
-
-const Ajv = defaultImport(DefaultAjv);
 
 suite('BooleanSchema', () => {
     suite('nullable', () => {
@@ -16,7 +13,7 @@ suite('BooleanSchema', () => {
                 type: ['boolean', 'null'],
             });
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<boolean | null>();
-            const validator = new Ajv({ strict: true }).compile(schema);
+            const validator = new Ajv2020({ strict: true }).compile(schema);
             expect(validator(true)).to.equal(true);
             expect(validator(null)).to.equal(true);
         });
@@ -30,7 +27,7 @@ suite('BooleanSchema', () => {
                 type: 'boolean',
             });
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<boolean>();
-            const validator = new Ajv({ strict: true }).compile(schema);
+            const validator = new Ajv2020({ strict: true }).compile(schema);
             expect(validator(true)).to.equal(true);
             expect(validator(null)).to.equal(false);
         });

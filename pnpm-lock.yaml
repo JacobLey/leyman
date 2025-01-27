@@ -257,9 +257,6 @@ importers:
       ci-info:
         specifier: 'catalog:'
         version: 4.1.0
-      default-import:
-        specifier: workspace:^
-        version: link:../../tools/default-import
       entry-script:
         specifier: workspace:^
         version: link:../../tools/entry-script
@@ -397,9 +394,6 @@ importers:
       chai:
         specifier: 'catalog:'
         version: 5.1.2
-      default-import:
-        specifier: workspace:^
-        version: link:../../tools/default-import
       eslint:
         specifier: 'catalog:'
         version: 9.17.0
@@ -678,9 +672,6 @@ importers:
       common-proxy:
         specifier: workspace:^
         version: link:../../tools/common-proxy
-      npm-default-import:
-        specifier: catalog:leyman
-        version: default-import@2.0.7
       npm-entry-script:
         specifier: catalog:leyman
         version: entry-script@3.0.8
@@ -760,6 +751,9 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/mocha-chain
+      npm-default-import:
+        specifier: catalog:leyman
+        version: default-import@2.0.7
       npm-load-populate-files:
         specifier: catalog:leyman
         version: load-populate-files@0.1.1(@biomejs/biome@1.9.4)
@@ -1099,9 +1093,6 @@ importers:
       eslint-plugin-unicorn:
         specifier: 'catalog:'
         version: 56.0.1(eslint@9.17.0)
-      npm-default-import:
-        specifier: catalog:leyman
-        version: default-import@2.0.7
       npm-juniper:
         specifier: catalog:leyman
         version: juniper@1.2.4

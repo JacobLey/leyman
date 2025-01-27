@@ -1,8 +1,5 @@
-import DefaultAjv from 'ajv/dist/2020.js';
-import { defaultImport } from 'npm-default-import';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { objectSchema, type SchemaType, stringSchema } from 'npm-juniper';
-
-const Ajv = defaultImport(DefaultAjv);
 
 const dependenciesSchema = objectSchema({
     additionalProperties: stringSchema(),
@@ -20,7 +17,7 @@ const packageJsonSchema = objectSchema({
 });
 export type PackageJson = SchemaType<typeof packageJsonSchema>;
 
-const validator = new Ajv({ strict: true }).compile<PackageJson>(packageJsonSchema.toJSON());
+const validator = new Ajv2020({ strict: true }).compile<PackageJson>(packageJsonSchema.toJSON());
 
 type PackageJsonAsserter = (packageJson: unknown) => asserts packageJson is PackageJson;
 export const assertIsPackageJson: PackageJsonAsserter = (

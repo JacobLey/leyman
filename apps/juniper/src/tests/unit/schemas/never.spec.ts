@@ -1,11 +1,8 @@
-import AjvDefault from 'ajv/dist/2020.js';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { defaultImport } from 'default-import';
 import { neverSchema, type SchemaType } from 'juniper';
 import { suite, test } from 'mocha-chain';
-
-const Ajv = defaultImport(AjvDefault);
 
 suite('NeverSchema', () => {
     suite('toJSON', () => {
@@ -15,7 +12,9 @@ suite('NeverSchema', () => {
             expect(schema).to.deep.equal({
                 not: {},
             });
-            const validator = new Ajv({ strict: true }).compile<SchemaType<typeof schema>>(schema);
+            const validator = new Ajv2020({ strict: true }).compile<SchemaType<typeof schema>>(
+                schema
+            );
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<never>();
             expect(validator(null)).to.equal(false);
         });

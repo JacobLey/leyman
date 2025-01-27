@@ -19,9 +19,6 @@
       "path": "../../leyman/eslint-config"
     },
     {
-      "path": "../../tools/default-import"
-    },
-    {
       "path": "../../tools/entry-script"
     },
     {

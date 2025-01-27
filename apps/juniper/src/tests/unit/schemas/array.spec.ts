@@ -1,11 +1,8 @@
-import DefaultAjv from 'ajv/dist/2020.js';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { defaultImport } from 'default-import';
 import { arraySchema, neverSchema, type SchemaType, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
-
-const Ajv = defaultImport(DefaultAjv);
 
 suite('ArraySchema', () => {
     suite('keywords', () => {
@@ -153,7 +150,7 @@ suite('ArraySchema', () => {
                 ],
             });
 
-            const validator = new Ajv({
+            const validator = new Ajv2020({
                 strict: true,
                 strictTuples: false,
             }).compile(schema.toJSON());
@@ -206,7 +203,7 @@ suite('ArraySchema', () => {
                 schema.toJSON({ openApi30: true })
             );
 
-            const oaValidator = new Ajv({ strict: true }).compile(
+            const oaValidator = new Ajv2020({ strict: true }).compile(
                 schema.toJSON({ openApi30: true })
             );
             expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abbc']])).to.equal(true);

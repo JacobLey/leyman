@@ -43,7 +43,6 @@
     "ajv": "catalog:",
     "c8": "catalog:",
     "chai": "catalog:",
-    "default-import": "workspace:^",
     "eslint": "catalog:",
     "expect-type": "catalog:",
     "mocha": "catalog:",

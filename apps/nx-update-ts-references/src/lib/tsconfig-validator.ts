@@ -1,8 +1,5 @@
-import DefaultAjv from 'ajv/dist/2020.js';
-import { defaultImport } from 'npm-default-import';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { arraySchema, objectSchema, type SchemaType, stringSchema } from 'npm-juniper';
-
-const Ajv = defaultImport(DefaultAjv);
 
 const tsConfigSchema = objectSchema({
     properties: {
@@ -19,6 +16,6 @@ const tsConfigSchema = objectSchema({
 
 export type TsConfig = SchemaType<typeof tsConfigSchema>;
 
-export const isTsConfig = new Ajv({
+export const isTsConfig = new Ajv2020({
     strict: true,
 }).compile<TsConfig>(tsConfigSchema.toJSON());

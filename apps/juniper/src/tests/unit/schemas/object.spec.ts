@@ -1,7 +1,6 @@
-import AjvDefault from 'ajv/dist/2020.js';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { defaultImport } from 'default-import';
 import {
     type EmptyObject,
     numberSchema,
@@ -11,8 +10,6 @@ import {
     stringSchema,
 } from 'juniper';
 import { suite, test } from 'mocha-chain';
-
-const Ajv = defaultImport(AjvDefault);
 
 suite('ObjectSchema', () => {
     suite('keywords', () => {
@@ -199,7 +196,7 @@ suite('ObjectSchema', () => {
                     unevaluatedProperties: true,
                 });
 
-                const validator = new Ajv({ strict: true }).compile(schema.toJSON());
+                const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
                 expect(
                     validator({
                         bar: 123,
@@ -496,8 +493,10 @@ suite('ObjectSchema', () => {
                 ],
             });
 
-            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
-            const subSchemaValidator = new Ajv({ strict: true }).compile(withSubSchema.toJSON());
+            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const subSchemaValidator = new Ajv2020({ strict: true }).compile(
+                withSubSchema.toJSON()
+            );
             for (const [val, expected, subSchemaExpected] of [
                 [{}, true, true],
                 [{ a: 'foobar' }, true, true],
@@ -559,8 +558,8 @@ suite('ObjectSchema', () => {
                 anyOf: [{ not: { required: ['a'] } }, { required: ['b', 'c'] }],
             });
 
-            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
-            const oaValidator = new Ajv({
+            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const oaValidator = new Ajv2020({
                 strict: true,
                 strictRequired: false,
             }).compile(schema.toJSON({ openApi30: true }));
@@ -721,8 +720,8 @@ suite('ObjectSchema', () => {
                 ],
             });
 
-            new Ajv({ strict: true, strictRequired: false }).compile(withIfSchema.toJSON());
-            new Ajv({ strict: true, strictRequired: false }).compile(
+            new Ajv2020({ strict: true, strictRequired: false }).compile(withIfSchema.toJSON());
+            new Ajv2020({ strict: true, strictRequired: false }).compile(
                 withIfSchema.toJSON({ openApi30: true })
             );
         });
@@ -801,8 +800,8 @@ suite('ObjectSchema', () => {
                 ],
             });
 
-            const validator = new Ajv({ strict: true }).compile(schema.toJSON());
-            const oaValidator = new Ajv({
+            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const oaValidator = new Ajv2020({
                 strict: true,
                 strictRequired: false,
             }).compile(schema.toJSON({ openApi30: true }));

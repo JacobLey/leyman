@@ -1,10 +1,7 @@
-import AjvDefault from 'ajv/dist/2020.js';
-import { defaultImport } from 'default-import';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { identifier } from 'haywire';
 import { enumSchema, objectSchema, type SchemaType, stringSchema } from 'juniper';
 import type { FindImport } from './dependencies.js';
-
-const Ajv = defaultImport(AjvDefault);
 
 const modulePackageSchema = objectSchema({
     properties: {
@@ -14,9 +11,9 @@ const modulePackageSchema = objectSchema({
     required: ['type'],
 }).toJSON();
 
-const isModulePackage = new Ajv({ strict: true }).compile<SchemaType<typeof modulePackageSchema>>(
-    modulePackageSchema
-);
+const isModulePackage = new Ajv2020({ strict: true }).compile<
+    SchemaType<typeof modulePackageSchema>
+>(modulePackageSchema);
 /**
  * Returns true if the given file has a package.json that _explicitly_ sets `"type": "module"`.
  *

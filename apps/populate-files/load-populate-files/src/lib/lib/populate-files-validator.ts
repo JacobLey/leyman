@@ -1,9 +1,6 @@
-import AjvDefault from 'ajv/dist/2020.js';
-import { defaultImport } from 'default-import';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { arraySchema, mergeSchema, objectSchema, type SchemaType, stringSchema } from 'juniper';
 import type { PopulateFileParams } from 'populate-files';
-
-const Ajv = defaultImport(AjvDefault);
 
 const populateFileParam = objectSchema({
     properties: {
@@ -18,6 +15,6 @@ const populateFileParams = mergeSchema().oneOf([
     arraySchema({ items: populateFileParam }),
 ]);
 
-export const isPopulateFileParams = new Ajv({ strict: true }).compile<
+export const isPopulateFileParams = new Ajv2020({ strict: true }).compile<
     SchemaType<typeof populateFileParams>
 >(populateFileParams.toJSON());

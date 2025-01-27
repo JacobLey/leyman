@@ -1,11 +1,8 @@
-import AjvDefault from 'ajv/dist/2020.js';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { defaultImport } from 'default-import';
 import { enumSchema, type SchemaType } from 'juniper';
 import { before, suite, test } from 'mocha-chain';
-
-const Ajv = defaultImport(AjvDefault);
 
 suite('EnumSchema', () => {
     suite('toJSON', () => {
@@ -23,7 +20,7 @@ suite('EnumSchema', () => {
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                 'a' | 'z' | 1 | 5 | readonly [false] | null
             >();
-            const validator = new Ajv({ strict: true }).compile(schema);
+            const validator = new Ajv2020({ strict: true }).compile(schema);
             expect(validator([false])).to.equal(true);
             expect(validator(1)).to.equal(true);
             expect(validator('b')).to.equal(false);
@@ -41,7 +38,7 @@ suite('EnumSchema', () => {
                     const: 123,
                 });
 
-                const validator = new Ajv({ strict: true }).compile(schema.toJSON());
+                const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
                 expect(validator(123)).to.equal(true);
                 expect(validator(124)).to.equal(false);
             });
@@ -51,7 +48,7 @@ suite('EnumSchema', () => {
                     enum: [123],
                 });
 
-                const validator = new Ajv({ strict: true }).compile(
+                const validator = new Ajv2020({ strict: true }).compile(
                     schema.toJSON({ openApi30: true })
                 );
                 expect(validator(123)).to.equal(true);

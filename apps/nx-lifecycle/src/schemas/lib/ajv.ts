@@ -1,6 +1,3 @@
-import AjvDefault from 'ajv/dist/2020.js';
-import { defaultImport } from 'default-import';
+import { Ajv2020 } from 'ajv/dist/2020.js';
 
-const Ajv = defaultImport(AjvDefault);
-
-export const ajv = new Ajv({ strict: true, formats: { 'uri-reference': true } });
+export const ajv = new Ajv2020({ strict: true, formats: { 'uri-reference': true } });
