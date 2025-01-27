@@ -1,0 +1,52 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../juniper"
+    },
+    {
+      "path": "../nx-update-ts-references"
+    },
+    {
+      "path": "../pnpm-dedicated-lockfile"
+    },
+    {
+      "path": "../populate-files/load-populate-files"
+    },
+    {
+      "path": "../populate-files/populate-files"
+    },
+    {
+      "path": "../../leyman/eslint-config"
+    },
+    {
+      "path": "../../tools/common-proxy"
+    },
+    {
+      "path": "../../tools/entry-script"
+    },
+    {
+      "path": "../../tools/haywire-launcher"
+    },
+    {
+      "path": "../../tools/haywire"
+    },
+    {
+      "path": "../../tools/mocha-chain"
+    },
+    {
+      "path": "../../tools/nx-plugin-handler"
+    },
+    {
+      "path": "../../tools/parse-cwd"
+    },
+    {
+      "path": "../../tools/sinon-typed-stub"
+    }
+  ]
+}

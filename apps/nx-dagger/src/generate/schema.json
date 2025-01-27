@@ -1,0 +1,161 @@
+{
+  "version": 1,
+  "outputCapture": "direct-nodejs",
+  "cli": "nx",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "examples": [
+            "https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-dagger/src/generate/schema.json"
+          ],
+          "format": "uri-reference"
+        },
+        "check": {
+          "type": "boolean",
+          "description": "Fails if dagger module is not already updated, will not overwrite. Defaults to true during CI, false otherwise."
+        },
+        "dryRun": {
+          "type": "boolean",
+          "description": "Load files and content, but do not write anything."
+        },
+        "constructorArguments": {
+          "type": "object",
+          "additionalProperties": {
+            "enum": [
+              "string",
+              "int"
+            ]
+          }
+        },
+        "dagger": {
+          "type": "object",
+          "properties": {
+            "directory": {
+              "type": "string"
+            },
+            "name": {
+              "type": "string"
+            }
+          },
+          "required": [
+            "directory",
+            "name"
+          ]
+        },
+        "runtimes": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "preBuild": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "constructorArguments": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "constructorArguments"
+                ]
+              },
+              "postBuild": {
+                "type": "object",
+                "properties": {
+                  "name": {
+                    "type": "string"
+                  },
+                  "constructorArguments": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    }
+                  }
+                },
+                "required": [
+                  "name",
+                  "constructorArguments"
+                ]
+              }
+            },
+            "required": [
+              "preBuild",
+              "postBuild"
+            ]
+          }
+        },
+        "targets": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "object",
+            "properties": {
+              "methodName": {
+                "type": "string"
+              },
+              "constructorArguments": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
+              },
+              "kind": {
+                "enum": [
+                  "ci",
+                  "transform"
+                ]
+              }
+            },
+            "required": [
+              "constructorArguments",
+              "kind"
+            ]
+          }
+        }
+      },
+      "required": [
+        "constructorArguments",
+        "dagger",
+        "runtimes",
+        "targets"
+      ]
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "$schema": {
+          "type": "string",
+          "examples": [
+            "https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-dagger/src/generate/schema.json"
+          ],
+          "format": "uri-reference"
+        },
+        "check": {
+          "type": "boolean",
+          "description": "Fails if dagger module is not already updated, will not overwrite. Defaults to true during CI, false otherwise."
+        },
+        "dryRun": {
+          "type": "boolean",
+          "description": "Load files and content, but do not write anything."
+        },
+        "cwd": {
+          "type": "string"
+        },
+        "configFile": {
+          "type": "string"
+        }
+      }
+    }
+  ]
+}

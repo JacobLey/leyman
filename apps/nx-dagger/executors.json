@@ -1,0 +1,9 @@
+{
+  "executors": {
+    "generate": {
+      "implementation": "./dist/executors/generate/index.cjs",
+      "schema": "./src/generate/schema.json",
+      "description": "Generate dagger function for running Nx targets."
+    }
+  }
+}

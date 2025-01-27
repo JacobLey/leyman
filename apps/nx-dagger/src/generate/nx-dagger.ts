@@ -1,0 +1,192 @@
+import Path from 'node:path';
+import type { ProjectConfiguration, ProjectGraph, TargetConfiguration } from '@nx/devkit';
+import type { PopulateFile } from 'populate-files';
+import type { GetGitIgnore } from './git-ignore.js';
+import type { GenerateGoFile } from './go-generator.js';
+import type { TemplateContext } from './lib/types.js';
+import type { NormalizeOptions } from './normalizer.js';
+import type { DaggerOptions, DaggerOptionsOrConfig } from './schema.js';
+
+export type NxDagger = (
+    projectGraph: ProjectGraph,
+    configOptions: DaggerOptionsOrConfig
+) => Promise<void>;
+
+export const constructContext = (
+    params: Pick<DaggerOptions, 'constructorArguments' | 'dagger' | 'runtimes' | 'targets'> & {
+        gitIgnore: string[];
+        projectGraph: {
+            dependencies: Record<string, { target: string }[]>;
+            nodes: Record<
+                string,
+                {
+                    data: {
+                        root: string;
+                        targets?: Record<string, TargetConfiguration>;
+                        metadata?: ProjectConfiguration['metadata'] | Record<string, string>;
+                    };
+                }
+            >;
+        };
+    }
+): TemplateContext => {
+    const constructorArguments: TemplateContext['constructorArguments'] = new Map();
+    for (const [key, val] of Object.entries(params.constructorArguments)) {
+        constructorArguments.set(key, {
+            name: key,
+            type: val,
+        });
+    }
+
+    const runtimes: TemplateContext['runtimes'] = new Map();
+    for (const [key, val] of Object.entries(params.runtimes)) {
+        runtimes.set(key, {
+            name: key,
+            preBuild: val.preBuild,
+            postBuild: val.postBuild,
+        });
+    }
+
+    const targets: TemplateContext['targets'] = new Map();
+    for (const [key, val] of Object.entries(params.targets)) {
+        targets.set(key, {
+            name: key,
+            methodName: val.methodName ?? key,
+            constructorArguments: val.constructorArguments,
+            isCi: val.kind === 'ci',
+        });
+    }
+
+    const projectDirectDependencies = new Map<string, Set<string>>();
+    for (const projectName of Object.keys(params.projectGraph.nodes)) {
+        const directDependencies = params.projectGraph.dependencies[projectName]!.map(
+            dependency => dependency.target
+        ).filter(target => target in params.projectGraph.nodes);
+        projectDirectDependencies.set(projectName, new Set(directDependencies));
+    }
+    const projectDependencies = new Map<string, Set<string>>();
+    const computeDependencies = (projectName: string): Set<string> => {
+        if (projectDependencies.has(projectName)) {
+            return projectDependencies.get(projectName)!;
+        }
+        const directDependencies = projectDirectDependencies.get(projectName)!;
+        let dependencies = directDependencies;
+        for (const directDependency of directDependencies) {
+            dependencies = dependencies.union(computeDependencies(directDependency));
+        }
+        projectDependencies.set(projectName, dependencies);
+        return dependencies;
+    };
+    for (const projectName of Object.keys(params.projectGraph.nodes)) {
+        computeDependencies(projectName);
+    }
+
+    const projects: TemplateContext['projects'] = new Map();
+    for (const [projectName, projectNode] of Object.entries(params.projectGraph.nodes)) {
+        const runtime = (projectNode.data.metadata as Record<string, string>).daggerRuntime;
+        if (!runtime) {
+            continue;
+        }
+
+        const projectTargetDependencies = new Map(
+            Object.entries(projectNode.data.targets!).map(([targetName, targetConfig]) => {
+                const targetDependencies = (targetConfig.dependsOn ?? [])
+                    .map(dependsOn => {
+                        if (typeof dependsOn === 'string') {
+                            if (dependsOn.startsWith('^')) {
+                                return null;
+                            }
+                            return dependsOn;
+                        }
+                        if (dependsOn.dependencies || 'projects' in dependsOn) {
+                            return null;
+                        }
+                        return dependsOn.target;
+                    })
+                    .filter(
+                        (dependencyTargetName: string | null): dependencyTargetName is string =>
+                            !!dependencyTargetName
+                    );
+
+                return [targetName, targetDependencies];
+            })
+        );
+        const computedTargets = new Set<string>();
+        const projectTargets: string[] = [];
+        // eslint-disable-next-line unicorn/consistent-function-scoping
+        const computeAndAddTarget = (projectTarget: string): void => {
+            if (computedTargets.has(projectTarget)) {
+                return;
+            }
+            for (const dependency of projectTargetDependencies.get(projectTarget) ?? []) {
+                computeAndAddTarget(dependency);
+            }
+            computedTargets.add(projectTarget);
+            if (projectTargetDependencies.has(projectTarget) && targets.has(projectTarget)) {
+                projectTargets.push(projectTarget);
+            }
+        };
+        const inOrderTargets = [...projectTargetDependencies.keys()].sort((a, b) =>
+            a.localeCompare(b, 'en')
+        );
+        for (const projectTarget of inOrderTargets) {
+            computeAndAddTarget(projectTarget);
+        }
+
+        projects.set(projectName, {
+            runtime,
+            name: projectName.replaceAll(/[@\\]/gu, ''),
+            directory: projectNode.data.root,
+            directDependencies: [...projectDirectDependencies.get(projectName)!].sort((a, b) =>
+                a.localeCompare(b, 'en')
+            ),
+            dependencies: [...projectDependencies.get(projectName)!].sort((a, b) =>
+                a.localeCompare(b, 'en')
+            ),
+            targets: projectTargets,
+        });
+    }
+
+    return {
+        constructorArguments,
+        runtimes,
+        targets,
+        projects,
+        dagger: params.dagger,
+        gitIgnore: params.gitIgnore,
+    };
+};
+
+export const nxDaggerProvider =
+    (
+        nxWorkspace: string,
+        getGitIgnore: GetGitIgnore,
+        normalizeOptions: NormalizeOptions,
+        generateGoFile: GenerateGoFile,
+        populateFile: PopulateFile
+    ): NxDagger =>
+    async (projectGraph: ProjectGraph, configOptions: DaggerOptionsOrConfig): Promise<void> => {
+        const [gitIgnore, normalizedOptions] = await Promise.all([
+            getGitIgnore(),
+            normalizeOptions(configOptions),
+        ]);
+
+        const goFile = await generateGoFile(
+            constructContext({
+                ...normalizedOptions,
+                gitIgnore,
+                projectGraph,
+            })
+        );
+
+        await populateFile(
+            {
+                filePath: Path.join(nxWorkspace, normalizedOptions.dagger.directory, 'main.go'),
+                content: goFile,
+            },
+            {
+                check: normalizedOptions.check,
+                dryRun: normalizedOptions.dryRun,
+            }
+        );
+    };
