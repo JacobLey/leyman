@@ -1,6 +1,9 @@
 {
   "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "nx-lifecycle",
+  "metadata": {
+    "daggerRuntime": "node"
+  },
   "targets": {
     "pnpm-dedicated-lockfile": {},
     "biome": {},

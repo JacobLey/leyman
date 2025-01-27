@@ -1,6 +1,9 @@
 {
   "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "pnpm-dedicated-lockfile",
+  "metadata": {
+    "daggerRuntime": "node"
+  },
   "targets": {
     "biome": {},
     "eslint": {},
