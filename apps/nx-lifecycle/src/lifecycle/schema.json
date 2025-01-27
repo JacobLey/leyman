@@ -14,7 +14,7 @@
           "examples": [
             "https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-lifecycle/src/lifecycle/schema.json"
           ],
-          "format": "uri"
+          "format": "uri-reference"
         },
         "check": {
           "type": "boolean",
@@ -118,7 +118,7 @@
           "examples": [
             "https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-lifecycle/src/lifecycle/schema.json"
           ],
-          "format": "uri"
+          "format": "uri-reference"
         },
         "check": {
           "type": "boolean",

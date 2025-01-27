@@ -13,7 +13,7 @@ const checkAndDryRunSchema = objectSchema({
     properties: {
         $schema: stringSchema({
             description: '',
-            format: 'uri',
+            format: 'uri-reference',
         }).example(
             'https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-lifecycle/src/lifecycle/schema.json'
         ),
