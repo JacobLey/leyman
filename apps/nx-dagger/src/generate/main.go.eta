@@ -81,7 +81,8 @@ var nxConfig = map[NxProjectDir]NxProject{
 <% } %>
 }
 
-// Returns a container that echoes whatever string argument is provided
+// Execute Nx targets over all projects in dependency order
+// and return the fully built monorepo directory
 func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) Build(
 	ctx context.Context,
 <% for (const arg of [...it.constructorArguments.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>

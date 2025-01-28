@@ -92,7 +92,8 @@ var nxConfig = map[NxProjectDir]NxProject{
 	},
 }
 
-// Returns a container that echoes whatever string argument is provided
+// Execute Nx targets over all projects in dependency order
+// and return the fully built monorepo directory
 func (m *MonorepoFn) Build(
 	ctx context.Context,
 	barArg int,
