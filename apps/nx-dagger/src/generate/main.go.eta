@@ -31,7 +31,7 @@ type NxProjectRuntime string
 
 const (
 <% for (const runtime of [...it.runtimes.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
-	<%= it.changeCase.camelCase(runtime.name) %> NxProjectRuntime = "<%= runtime.name %>"
+	_runtime_<%= it.changeCase.camelCase(runtime.name) %> NxProjectRuntime = "<%= runtime.name %>"
 <% } %>
 )
 
@@ -39,7 +39,7 @@ type NxProjectDir string
 
 const (
 <% for (const project of [...it.projects.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
-	<%= it.changeCase.camelCase(project.name) %> NxProjectDir = "<%= project.directory %>"
+	_project_<%= it.changeCase.camelCase(project.name) %> NxProjectDir = "<%= project.directory %>"
 <% } %>
 )
 
@@ -47,7 +47,7 @@ type NxTarget string
 
 const (
 <% for (const target of [...it.targets.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
-	<%= it.changeCase.camelCase(target.name) %> NxTarget = "<%= target.name %>"
+	_target_<%= it.changeCase.camelCase(target.name) %> NxTarget = "<%= target.name %>"
 <% } %>
 )
 
@@ -60,21 +60,21 @@ type NxProject struct {
 
 var nxConfig = map[NxProjectDir]NxProject{
 <% for (const project of [...it.projects.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
-	<%= it.changeCase.camelCase(project.name) %>: {
-		runtime:                     <%= it.changeCase.camelCase(project.runtime) %>,
+	_project_<%= it.changeCase.camelCase(project.name) %>: {
+		runtime:                     _runtime_<%= it.changeCase.camelCase(it.runtimes.get(project.runtime).name) %>,
 		dependencyProjectDirs:       []NxProjectDir{
 		<% for (const dependency of project.dependencies) { %>
-			<%= it.changeCase.camelCase(it.projects.get(dependency).name) %>,
+			_project_<%= it.changeCase.camelCase(it.projects.get(dependency).name) %>,
 		<% } %>
 		},
 		directDependencyProjectDirs: []NxProjectDir{
 		<% for (const dependency of project.directDependencies) { %>
-			<%= it.changeCase.camelCase(it.projects.get(dependency).name) %>,
+			_project_<%= it.changeCase.camelCase(it.projects.get(dependency).name) %>,
 		<% } %>
 		},
 		targets:                     []NxTarget{
 		<% for (const target of project.targets) { %>
-			<%= it.changeCase.camelCase(it.targets.get(target).name) %>,
+			_target_<%= it.changeCase.camelCase(it.targets.get(target).name) %>,
 		<% } %>
 		},
 	},
@@ -195,7 +195,7 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 	var built *dagger.Directory
 	switch nxConfig[projectDir].runtime {
 	<% for (const runtime of [...it.runtimes.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
-		case <%= it.changeCase.camelCase(runtime.name) %>:
+		case _runtime_<%= it.changeCase.camelCase(runtime.name) %>:
 			built = dag.<%= it.changeCase.pascalCase(runtime.preBuild.name) %>(
 				<% for (const arg of runtime.preBuild.constructorArguments) { %>
 					<%= it.constructorArguments.get(arg).name %>,
@@ -217,7 +217,7 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 
 		switch target {
 		<% for (const target of [...it.targets.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
-			case <%= it.changeCase.camelCase(target.name) %>:
+			case _target_<%= it.changeCase.camelCase(target.name) %>:
 			<% if (target.isCi) { %>
 				ciErrors.Go(func() error {
 					return dag.<%= it.changeCase.pascalCase(target.methodName) %>(
@@ -256,7 +256,7 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 
 	switch nxConfig[projectDir].runtime {
 	<% for (const runtime of [...it.runtimes.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
-		case <%= it.changeCase.camelCase(runtime.name) %>:
+		case _runtime_<%= it.changeCase.camelCase(runtime.name) %>:
 			built = dag.<%= it.changeCase.pascalCase(runtime.postBuild.name) %>(
 				<% for (const arg of runtime.postBuild.constructorArguments) { %>
 					<%= it.constructorArguments.get(arg).name %>,

@@ -30,22 +30,22 @@ func New(
 type NxProjectRuntime string
 
 const (
-	node NxProjectRuntime = "node"
+	_runtime_node NxProjectRuntime = "node"
 )
 
 type NxProjectDir string
 
 const (
-	a NxProjectDir = "path/to/a"
-	b NxProjectDir = "path/to/b"
-	c NxProjectDir = "path/to/c"
+	_project_a NxProjectDir = "path/to/a"
+	_project_b NxProjectDir = "path/to/b"
+	_project_c NxProjectDir = "path/to/c"
 )
 
 type NxTarget string
 
 const (
-	build NxTarget = "build"
-	test  NxTarget = "test"
+	_target_build NxTarget = "build"
+	_target_test  NxTarget = "test"
 )
 
 type NxProject struct {
@@ -56,38 +56,38 @@ type NxProject struct {
 }
 
 var nxConfig = map[NxProjectDir]NxProject{
-	a: {
-		runtime:                     node,
+	_project_a: {
+		runtime:                     _runtime_node,
 		dependencyProjectDirs:       []NxProjectDir{},
 		directDependencyProjectDirs: []NxProjectDir{},
 		targets: []NxTarget{
-			build,
-			test,
+			_target_build,
+			_target_test,
 		},
 	},
-	b: {
-		runtime: node,
+	_project_b: {
+		runtime: _runtime_node,
 		dependencyProjectDirs: []NxProjectDir{
-			a,
+			_project_a,
 		},
 		directDependencyProjectDirs: []NxProjectDir{
-			a,
+			_project_a,
 		},
 		targets: []NxTarget{
-			build,
+			_target_build,
 		},
 	},
-	c: {
-		runtime: node,
+	_project_c: {
+		runtime: _runtime_node,
 		dependencyProjectDirs: []NxProjectDir{
-			a,
-			b,
+			_project_a,
+			_project_b,
 		},
 		directDependencyProjectDirs: []NxProjectDir{
-			b,
+			_project_b,
 		},
 		targets: []NxTarget{
-			test,
+			_target_test,
 		},
 	},
 }
@@ -202,7 +202,7 @@ func (m *MonorepoFn) buildProject(
 
 	var built *dagger.Directory
 	switch nxConfig[projectDir].runtime {
-	case node:
+	case _runtime_node:
 		built = dag.NodeInstall(
 			fooArg,
 		).Run(
@@ -220,7 +220,7 @@ func (m *MonorepoFn) buildProject(
 	for _, target := range nxConfig[projectDir].targets {
 
 		switch target {
-		case build:
+		case _target_build:
 			built = dag.Tsc(
 				fooArg,
 			).Run(
@@ -229,7 +229,7 @@ func (m *MonorepoFn) buildProject(
 				string(projectDir),
 				dependencyProjectDirs,
 			)
-		case test:
+		case _target_test:
 			ciErrors.Go(func() error {
 				return dag.Test(
 					fooArg,
@@ -252,7 +252,7 @@ func (m *MonorepoFn) buildProject(
 	}
 
 	switch nxConfig[projectDir].runtime {
-	case node:
+	case _runtime_node:
 		built = dag.NodeDeploy(
 			barArg,
 		).Run(
