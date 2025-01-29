@@ -125,10 +125,10 @@ func (m *MonorepoFn) Build(
 			// Syncronously wait for each dependency to build,
 			// because top-level has already kicked off each project
 			triggerProjectBuildGroup(dependencyProjectDir)
-			dependencyDirs[projectDir] = builtProjects[projectDir].directory
-		}
-		if buildError != nil {
-			return buildError
+			if buildError != nil {
+				return buildError
+			}
+			dependencyDirs[dependencyProjectDir] = builtProjects[dependencyProjectDir].directory
 		}
 
 		directory, err := m.buildProject(
