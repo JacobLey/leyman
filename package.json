@@ -2,6 +2,7 @@
   "type": "module",
   "devDependencies": {
     "npm-nx-update-ts-references": "catalog:leyman",
+    "nx-dagger": "workspace:^",
     "nx-lifecycle": "workspace:^",
     "nx-update-ts-references": "workspace:^"
   }

@@ -12,6 +12,15 @@
         "^build"
       ]
     },
+    "dagger": {
+      "executor": "nx-dagger:generate",
+      "options": {
+        "configFile": "{projectRoot}/nx-dagger.json"
+      },
+      "dependsOn": [
+        "^build"
+      ]
+    },
     "analyze:_": {},
     "analyze:format": {},
     "analyze:lint": {},

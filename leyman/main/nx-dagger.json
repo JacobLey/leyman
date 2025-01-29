@@ -1,0 +1,78 @@
+{
+  "$schema": "../../apps/nx-dagger/src/generate/schema.json",
+  "dagger": {
+    "directory": "dagger/monorepo",
+    "name": "monorepo"
+  },
+  "constructorArguments": {
+    "nodeVersion": "string",
+    "pnpmVersion": "string"
+  },
+  "runtimes": {
+    "node": {
+      "preBuild": {
+        "name": "node-install",
+        "constructorArguments": [
+          "nodeVersion",
+          "pnpmVersion"
+        ]
+      },
+      "postBuild": {
+        "name": "node-deploy",
+        "constructorArguments": [
+          "nodeVersion",
+          "pnpmVersion"
+        ]
+      }
+    }
+  },
+  "targets": {
+    "barrelify": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci"
+    },
+    "biome": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci"
+    },
+    "eslint": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci"
+    },
+    "coverage-report": {
+      "methodName": "mocha-c8",
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci"
+    },
+    "populate-files": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci"
+    },
+    "populate-static": {
+      "constructorArguments": [],
+      "kind": "transform"
+    },
+    "tsc": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "transform"
+    },
+    "update-ts-references": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci"
+    }
+  }
+}
