@@ -160,7 +160,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "swc ./src -d ./dist --copy-files --config-file .swcrc --strip-leading-paths --only '**/*.ts?(x)'",
+          "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --only '**/*.ts?(x)'",
           "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
           "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
           "tsc"
