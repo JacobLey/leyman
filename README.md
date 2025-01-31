@@ -42,6 +42,25 @@ Try running `nx run-many -t test` to build, analyze, and test the entire package
 
 See individual packages for documentation.
 
+## Executing Dagger
+
+This repository is currently undergoing a migration to [Dagger](https://dagger.io/) for CI builds. It will continue to use Nx locally, but will use that metadata to produce much more reliable builds.
+
+All dagger functions are contained in the [/dagger](./dagger) directory.
+
+To get started, run `dagger call --mod ./dagger/test-and-build/ run --source .`
+
+To replicate local Nx builds (build project -> test it -> build dependents -> ...)
+the [nx-dagger](./apps/nx-dagger/) executor is used to autogenerate a [monorepo Dagger function](./dagger/monorepo/main.go).
+
+To re-generate that file, edit any relevant settings in [nx-dagger.json](./leyman/main/nx-dagger.json), and run `nx run @leyman/main:dagger`.
+
+You may hook up your own Dagger cloud account (`dagger login`) for better view of execution pipeline and debugging.
+
+It is still highly recommended to run `nx run-many -t test` _before_ trying to execute dagger.
+Any issues like linter or build failures will materialize much faster with Nx, at the cost of greater dependency on global installations and less deterministic caching.
+If it works on Nx, it _isn't_ guaranteed to work in CI, but if it works in Dagger it will work on CI!
+
 ## Contributing
 
 All changes should include a [changeset](https://www.npmjs.com/package/@changesets/cli) file that reports how packages are impacted.
