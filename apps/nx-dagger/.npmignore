@@ -16,7 +16,7 @@ dist/tests
 
 src/**
 !src/executors/generate/schema.json
-!src/generate/main.go.ejs
+!src/generate/main.go.eta
 
 dist/file-content.js
 dist/file-content.d.ts
