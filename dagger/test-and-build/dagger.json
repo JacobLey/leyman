@@ -1,0 +1,20 @@
+{
+  "$schema": "https://docs.dagger.io/reference/dagger.schema.json",
+  "name": "test-and-build",
+  "engineVersion": "v0.15.3",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "monorepo",
+      "source": "../monorepo"
+    },
+    {
+      "name": "node",
+      "source": "../modules/node"
+    }
+  ],
+  "source": ".",
+  "codegen": {
+    "automaticGitignore": false
+  }
+}

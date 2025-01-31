@@ -1,0 +1,60 @@
+{
+  "$schema": "https://docs.dagger.io/reference/dagger.schema.json",
+  "name": "monorepo",
+  "engineVersion": "v0.15.3",
+  "sdk": "go",
+  "dependencies": [
+    {
+      "name": "barrelify",
+      "source": "../executors/barrelify"
+    },
+    {
+      "name": "biome",
+      "source": "../executors/biome"
+    },
+    {
+      "name": "debian",
+      "source": "../modules/debian"
+    },
+    {
+      "name": "eslint",
+      "source": "../executors/eslint"
+    },
+    {
+      "name": "mocha-c8",
+      "source": "../executors/mocha-c8"
+    },
+    {
+      "name": "node-deploy",
+      "source": "../executors/node-deploy"
+    },
+    {
+      "name": "node-install",
+      "source": "../executors/node-install"
+    },
+    {
+      "name": "pnpm",
+      "source": "../modules/pnpm"
+    },
+    {
+      "name": "populate-files",
+      "source": "../executors/populate-files"
+    },
+    {
+      "name": "populate-static",
+      "source": "../executors/populate-static"
+    },
+    {
+      "name": "tsc",
+      "source": "../executors/tsc"
+    },
+    {
+      "name": "update-ts-references",
+      "source": "../executors/update-ts-references"
+    }
+  ],
+  "source": ".",
+  "codegen": {
+    "automaticGitignore": false
+  }
+}

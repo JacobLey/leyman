@@ -1,0 +1,10 @@
+{
+  "$schema": "https://docs.dagger.io/reference/dagger.schema.json",
+  "name": "debian",
+  "engineVersion": "v0.15.3",
+  "sdk": "go",
+  "source": ".",
+  "codegen": {
+    "automaticGitignore": false
+  }
+}
