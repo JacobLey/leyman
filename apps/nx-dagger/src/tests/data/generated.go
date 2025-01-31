@@ -195,10 +195,10 @@ func (m *MonorepoFn) buildProject(
 
 	for i, directory := range nxConfig[projectDir].dependencyProjectDirs {
 		dependencyProjectDirs[i] = string(directory)
+		output = output.WithDirectory(string(directory), dependencyDirectories[directory])
 	}
 	for i, directory := range nxConfig[projectDir].directDependencyProjectDirs {
 		directDependencyProjectDirs[i] = string(directory)
-		output = output.WithDirectory(string(directory), dependencyDirectories[directory])
 	}
 
 	var built *dagger.Directory
@@ -208,7 +208,7 @@ func (m *MonorepoFn) buildProject(
 			fooArg,
 		).Run(
 			m.Source,
-			output.WithDirectory(string(projectDir), m.Source.Directory(string(projectDir))),
+			output,
 			string(projectDir),
 			dependencyProjectDirs,
 		)
