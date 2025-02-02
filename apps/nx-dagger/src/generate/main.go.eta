@@ -25,7 +25,17 @@ func New(
 	source *dagger.Directory,
 ) *<%= it.changeCase.pascalCase(it.dagger.name) %> {
 	return &<%= it.changeCase.pascalCase(it.dagger.name) %>{
-		Source: source,
+		Source: dag.Directory().WithDirectory(
+			".",
+			source,
+			dagger.DirectoryWithDirectoryOpts{
+				Exclude: []string{
+				<% for (const ignored of it.gitIgnore) { %>
+					"<%= ignored %>",
+				<% } %>
+				},
+			},
+		),
 	}
 }
 

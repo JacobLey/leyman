@@ -23,7 +23,17 @@ func New(
 	source *dagger.Directory,
 ) *MonorepoFn {
 	return &MonorepoFn{
-		Source: source,
+		Source: dag.Directory().WithDirectory(
+			".",
+			source,
+			dagger.DirectoryWithDirectoryOpts{
+				Exclude: []string{
+					"ignore",
+					"stuff/**",
+					"!allowed",
+				},
+			},
+		),
 	}
 }
 

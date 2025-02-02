@@ -22,7 +22,28 @@ func New(
 	source *dagger.Directory,
 ) *Monorepo {
 	return &Monorepo{
-		Source: source,
+		Source: dag.Directory().WithDirectory(
+			".",
+			source,
+			dagger.DirectoryWithDirectoryOpts{
+				Exclude: []string{
+					".git",
+					"**/*.log*",
+					"**/.DS_Store",
+					"**/node_modules",
+					".pnpm-store",
+					"**/.eslintcache",
+					"**/coverage",
+					"**/dist",
+					"**/.pnpm-lock-hash",
+					"**/.swcrc",
+					".nx",
+					"dagger/**/.gitattributes",
+					"dagger/**/dagger.gen.go",
+					"dagger/**/internal",
+				},
+			},
+		),
 	}
 }
 
