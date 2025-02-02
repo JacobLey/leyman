@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"dagger/mocha-c-8/internal/dagger"
-	"nxexecutor"
 )
 
 type MochaC8 struct {
@@ -28,11 +27,10 @@ func (m *MochaC8) node() *dagger.Node {
 // and achieves required code coverage.
 func (m *MochaC8) CI(
 	ctx context.Context,
+	// +ignore=["*","!pnpm-lock.yaml","!pnpm-workspace.yaml"]
 	source *dagger.Directory,
-	output *dagger.Directory,
 	projectDir string,
-	dependencyDirs []string,
-	directDependencyDirs []string,
+	projectOutput *dagger.Directory,
 ) error {
 
 	nodeContainer := m.node().NodeContainer()
@@ -47,7 +45,7 @@ func (m *MochaC8) CI(
 	nodeContainer = nodeContainer.
 		WithDirectory(
 			projectDir,
-			output.Directory(projectDir),
+			projectOutput,
 		).
 		WithWorkdir(projectDir).
 		WithEnvVariable("PATH", "node_modules/.bin:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true})
@@ -57,5 +55,3 @@ func (m *MochaC8) CI(
 		Sync(ctx)
 	return err
 }
-
-var _ nxexecutor.NxExecutorCI[dagger.Directory] = &MochaC8{}

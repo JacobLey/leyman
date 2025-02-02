@@ -37,11 +37,10 @@ func (m *Tsc) Run(
 
 	for _, dir := range directDependencyDirs {
 		pathToTsConfig := path.Join(dir, "tsconfig.json")
-		nodeContainer = nodeContainer.
-			WithFile(
-				pathToTsConfig,
-				source.File(pathToTsConfig),
-			)
+		nodeContainer = nodeContainer.WithFile(
+			pathToTsConfig,
+			source.File(pathToTsConfig),
+		)
 	}
 
 	nodeContainer = nodeContainer.

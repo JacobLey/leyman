@@ -3,7 +3,7 @@ package main
 import (
 	"context"
 	"dagger/eslint/internal/dagger"
-	"nxexecutor"
+	"path"
 )
 
 type Eslint struct {
@@ -27,19 +27,20 @@ func (m *Eslint) node() *dagger.Node {
 // Asserts that projectDir is passing linter config
 func (m *Eslint) CI(
 	ctx context.Context,
+	// +ignore=["*","!tsconfig.build.json", "!**/tsconfig.json"]
 	source *dagger.Directory,
-	output *dagger.Directory,
 	projectDir string,
-	dependencyDirs []string,
+	projectOutput *dagger.Directory,
 	directDependencyDirs []string,
 ) error {
 
 	nodeContainer := m.node().NodeContainer()
 
 	for _, dir := range directDependencyDirs {
-		nodeContainer = nodeContainer.WithDirectory(
-			dir,
-			output.Directory(dir),
+		pathToTsConfig := path.Join(dir, "tsconfig.json")
+		nodeContainer = nodeContainer.WithFile(
+			pathToTsConfig,
+			source.File(pathToTsConfig),
 		)
 	}
 
@@ -47,7 +48,7 @@ func (m *Eslint) CI(
 		WithFile("tsconfig.build.json", source.File("tsconfig.build.json")).
 		WithDirectory(
 			projectDir,
-			output.Directory(projectDir),
+			projectOutput,
 		).
 		WithWorkdir(projectDir).
 		WithEnvVariable("PATH", "node_modules/.bin:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true}).
@@ -57,5 +58,3 @@ func (m *Eslint) CI(
 
 	return err
 }
-
-var _ nxexecutor.NxExecutorCI[dagger.Directory] = &Eslint{}

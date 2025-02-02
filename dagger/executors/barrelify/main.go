@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"dagger/barrelify/internal/dagger"
-	"nxexecutor"
 )
 
 type Barrelify struct {
@@ -28,11 +27,10 @@ func (m *Barrelify) node() *dagger.Node {
 // Meaning files are not only up to date, but also properly checked into version-control.
 func (m *Barrelify) CI(
 	ctx context.Context,
+	// +ignore=["*","!biome.json"]
 	source *dagger.Directory,
-	output *dagger.Directory,
 	projectDir string,
-	dependencyDirs []string,
-	directDependencyDirs []string,
+	projectOutput *dagger.Directory,
 ) error {
 
 	nodeContainer := m.node().NodeContainer()
@@ -40,7 +38,7 @@ func (m *Barrelify) CI(
 	nodeContainer = nodeContainer.
 		WithDirectory(
 			projectDir,
-			output.Directory(projectDir),
+			projectOutput,
 		).
 		WithFile(
 			"biome.json",
@@ -52,5 +50,3 @@ func (m *Barrelify) CI(
 	_, err := nodeContainer.WithExec([]string{"barrel"}).Sync(ctx)
 	return err
 }
-
-var _ nxexecutor.NxExecutorCI[dagger.Directory] = &Barrelify{}

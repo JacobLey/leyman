@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"dagger/biome/internal/dagger"
-	"nxexecutor"
 )
 
 type Biome struct {
@@ -27,17 +26,16 @@ func (m *Biome) node() *dagger.Node {
 // Asserts that projectDir is formatted according to biome configuration.
 func (m *Biome) CI(
 	ctx context.Context,
+	// +ignore=["*","!.gitignore","!biome.json"]
 	source *dagger.Directory,
-	output *dagger.Directory,
 	projectDir string,
-	dependencyDirs []string,
-	directDependencyDirs []string,
+	projectOutput *dagger.Directory,
 ) error {
 
 	nodeContainer := m.node().NodeContainer().
 		WithDirectory(
 			projectDir,
-			output.Directory(projectDir),
+			projectOutput,
 		).
 		WithFiles(
 			".",
@@ -52,5 +50,3 @@ func (m *Biome) CI(
 	_, err := nodeContainer.WithExec([]string{"biome", "format", "."}).Sync(ctx)
 	return err
 }
-
-var _ nxexecutor.NxExecutorCI[dagger.Directory] = &Biome{}

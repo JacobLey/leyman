@@ -15,7 +15,6 @@ use (
 	./dagger/modules/pnpm
 	./dagger/monorepo
 	./dagger/test-and-build
-	./dagger/utils/nx-executor
 )
 
 replace go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc => go.opentelemetry.io/otel/exporters/otlp/otlplog/otlploggrpc v0.8.0

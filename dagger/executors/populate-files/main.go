@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"dagger/populate-files/internal/dagger"
-	"nxexecutor"
 )
 
 type PopulateFiles struct {
@@ -28,11 +27,10 @@ func (m *PopulateFiles) node() *dagger.Node {
 // and properly checked into version control.
 func (m *PopulateFiles) CI(
 	ctx context.Context,
+	// +ignore=["*","!biome.json"]
 	source *dagger.Directory,
-	output *dagger.Directory,
 	projectDir string,
-	dependencyDirs []string,
-	directDependencyDirs []string,
+	projectOutput *dagger.Directory,
 ) error {
 
 	nodeContainer := m.node().NodeContainer()
@@ -40,7 +38,7 @@ func (m *PopulateFiles) CI(
 	nodeContainer = nodeContainer.
 		WithDirectory(
 			projectDir,
-			output.Directory(projectDir),
+			projectOutput,
 		).
 		WithFile(
 			"biome.json",
@@ -54,5 +52,3 @@ func (m *PopulateFiles) CI(
 
 	return err
 }
-
-var _ nxexecutor.NxExecutorCI[dagger.Directory] = &PopulateFiles{}

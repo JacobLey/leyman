@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"dagger/update-ts-references/internal/dagger"
-	"nxexecutor"
 )
 
 type UpdateTsReferences struct {
@@ -28,9 +27,8 @@ func (m *UpdateTsReferences) node() *dagger.Node {
 func (m *UpdateTsReferences) CI(
 	ctx context.Context,
 	source *dagger.Directory,
-	output *dagger.Directory,
 	projectDir string,
-	dependencyDirs []string,
+	projectOutput *dagger.Directory,
 	directDependencyDirs []string,
 ) error {
 
@@ -42,18 +40,19 @@ func (m *UpdateTsReferences) CI(
 	for _, dir := range directDependencyDirs {
 		nodeContainer = nodeContainer.WithDirectory(
 			dir,
-			output.Directory(dir),
+			source.Directory(dir),
 			dagger.ContainerWithDirectoryOpts{
 				Include: []string{
 					"package.json",
 					"project.json",
-					"tsconfig.build.json",
+					"tsconfig.json",
 				},
 			},
 		)
 	}
 
 	_, err := nodeContainer.
+		WithDirectory(projectDir, projectOutput).
 		WithWorkdir(projectDir).
 		WithEnvVariable("PATH", "node_modules/.bin:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithExec([]string{
@@ -63,5 +62,3 @@ func (m *UpdateTsReferences) CI(
 
 	return err
 }
-
-var _ nxexecutor.NxExecutorCI[dagger.Directory] = &UpdateTsReferences{}

@@ -26,7 +26,7 @@ func (m *TestAndBuild) Run(
 			source,
 			dagger.DirectoryWithDirectoryOpts{
 				// Files that aren't ever used by Nx projects
-				Exclude: []string{".git", ".changeset", ".vscode", "dagger", "leyman/main", "go.work", "go.work.sum", "README.md"},
+				Exclude: []string{".git", ".github", ".vscode", "dagger", "leyman/main", "go.work", "go.work.sum", "README.md"},
 			},
 		),
 	).Build(nodeVersion, pnpmVersion)
