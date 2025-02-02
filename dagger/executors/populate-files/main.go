@@ -32,6 +32,7 @@ func (m *PopulateFiles) CI(
 	output *dagger.Directory,
 	projectDir string,
 	dependencyDirs []string,
+	directDependencyDirs []string,
 ) error {
 
 	nodeContainer := m.node().NodeContainer()

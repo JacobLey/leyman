@@ -32,6 +32,7 @@ func (m *Barrelify) CI(
 	output *dagger.Directory,
 	projectDir string,
 	dependencyDirs []string,
+	directDependencyDirs []string,
 ) error {
 
 	nodeContainer := m.node().NodeContainer()

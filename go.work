@@ -8,7 +8,6 @@ use (
 	./dagger/executors/node-deploy
 	./dagger/executors/node-install
 	./dagger/executors/populate-files
-	./dagger/executors/populate-static
 	./dagger/executors/tsc
 	./dagger/executors/update-ts-references
 	./dagger/modules/debian

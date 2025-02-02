@@ -17,7 +17,7 @@ func (m *TestAndBuild) Run(
 	// Ignore needs to mirror .gitignore
 	// Can be copied from Monorepo (auto-populated)
 	//
-	// +ignore=["**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache","**/coverage","**/dist","**/.pnpm-lock-hash","**/.swcrc",".nx","dagger/**/.gitattributes","dagger/**/dagger.gen.go","dagger/**/internal"]
+	// +ignore=[".git","**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache","**/coverage","**/dist","**/.pnpm-lock-hash","**/.swcrc",".nx","dagger/**/.gitattributes","dagger/**/dagger.gen.go","dagger/**/internal"]
 	source *dagger.Directory,
 ) *dagger.Directory {
 	builtDir := dag.Monorepo(

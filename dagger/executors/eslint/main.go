@@ -31,11 +31,12 @@ func (m *Eslint) CI(
 	output *dagger.Directory,
 	projectDir string,
 	dependencyDirs []string,
+	directDependencyDirs []string,
 ) error {
 
 	nodeContainer := m.node().NodeContainer()
 
-	for _, dir := range dependencyDirs {
+	for _, dir := range directDependencyDirs {
 		nodeContainer = nodeContainer.WithDirectory(
 			dir,
 			output.Directory(dir),

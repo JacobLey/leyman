@@ -31,6 +31,7 @@ func (m *UpdateTsReferences) CI(
 	output *dagger.Directory,
 	projectDir string,
 	dependencyDirs []string,
+	directDependencyDirs []string,
 ) error {
 
 	nodeContainer := m.node().NodeContainer().WithFile(
@@ -38,8 +39,8 @@ func (m *UpdateTsReferences) CI(
 		source.File("biome.json"),
 	)
 
-	for _, dir := range dependencyDirs {
-        nodeContainer = nodeContainer.WithDirectory(
+	for _, dir := range directDependencyDirs {
+		nodeContainer = nodeContainer.WithDirectory(
 			dir,
 			output.Directory(dir),
 			dagger.ContainerWithDirectoryOpts{
@@ -50,7 +51,7 @@ func (m *UpdateTsReferences) CI(
 				},
 			},
 		)
-    }
+	}
 
 	_, err := nodeContainer.
 		WithWorkdir(projectDir).

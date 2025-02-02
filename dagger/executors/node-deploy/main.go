@@ -1,9 +1,8 @@
 package main
 
 import (
-	"context"
 	"dagger/node-deploy/internal/dagger"
-	"nxexecutor"
+	"slices"
 )
 
 type NodeDeploy struct {
@@ -33,19 +32,34 @@ func (m *NodeDeploy) pnpm() *dagger.Pnpm {
 // This directory is now safe to consume by other packages or execute.
 // Proxies call to pnpm module.
 func (m *NodeDeploy) Run(
-	ctx context.Context,
+	// +ignore=["*", "!.npmrc", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
 	source *dagger.Directory,
+	// +ignore=["**/node_modules"]
 	output *dagger.Directory,
 	projectDir string,
-	dependencyDirs []string,
+	// +ignore=["*", "!.npmignore"]
+	projectSource *dagger.Directory,
+	// +ignore=["node_modules"]
+	projectOutput *dagger.Directory,
+	dependencyProjectDirs []string,
 ) *dagger.Directory {
 
-	return m.pnpm().DeployPackage(
+	deployed := m.pnpm().DeployPackage(
 		source,
 		output,
 		projectDir,
-		dependencyDirs,
+		projectSource,
+		projectOutput,
+		dependencyProjectDirs,
+	)
+
+	if slices.Contains([]string{}, projectDir) {
+		return deployed
+	}
+
+	return dag.Directory().WithDirectory(
+		".",
+		deployed,
+		dagger.DirectoryWithDirectoryOpts{Exclude: []string{"node_modules"}},
 	)
 }
-
-var _ nxexecutor.NxExecutorRun[dagger.Directory] = &NodeDeploy{}

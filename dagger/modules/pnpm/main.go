@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"dagger/pnpm/internal/dagger"
-	"path"
 )
 
 type Pnpm struct {
@@ -100,10 +98,13 @@ func (m *Pnpm) attachPnpmStore(
 // Actually does a "deploy" without npmignore, which means local dependencies are properly installed
 // in node_modules rather than as symlinks.
 func (m *Pnpm) InstallPackage(
-	ctx context.Context,
+	// +ignore=["*", "!.npmrc", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
 	source *dagger.Directory,
+	// +ignore=["**/node_modules"]
 	output *dagger.Directory,
 	projectDir string,
+	// +ignore=[".npmignore"]
+	projectSource *dagger.Directory,
 	dependencyProjectDirs []string,
 ) *dagger.Directory {
 
@@ -113,12 +114,13 @@ func (m *Pnpm) InstallPackage(
 		pnpmAttached = pnpmAttached.WithDirectory(
 			dependencyProjectDir,
 			output.Directory(dependencyProjectDir),
+			dagger.ContainerWithDirectoryOpts{Exclude: []string{"node_modules"}},
 		)
 	}
 
 	pnpmAttached = pnpmAttached.
 		WithFile(".pnpmfile.cjs", source.File(".pnpmfile.cjs")).
-		WithDirectory(projectDir, source.Directory(projectDir), dagger.ContainerWithDirectoryOpts{Exclude: []string{".npmignore"}}).
+		WithDirectory(projectDir, projectSource, dagger.ContainerWithDirectoryOpts{Exclude: []string{".npmignore"}}).
 		WithWorkdir(projectDir).
 		WithExec([]string{"pnpm", "deploy", "--prefer-offline", "--filter", ".", "./deploy"})
 
@@ -128,10 +130,14 @@ func (m *Pnpm) InstallPackage(
 // Returns a production "deploy"ed version of workspace.
 // All dev dependencies and npmignore-d files will be omitted
 func (m *Pnpm) DeployPackage(
-	ctx context.Context,
+	// +ignore=["*", "!.npmrc", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
 	source *dagger.Directory,
+	// +ignore=["**/node_modules"]
 	output *dagger.Directory,
 	projectDir string,
+	// +ignore=["*", "!.npmignore"]
+	projectSource *dagger.Directory,
+	projectOutput *dagger.Directory,
 	dependencyProjectDirs []string,
 ) *dagger.Directory {
 
@@ -141,13 +147,15 @@ func (m *Pnpm) DeployPackage(
 		pnpmAttached = pnpmAttached.WithDirectory(
 			dependencyProjectDir,
 			output.Directory(dependencyProjectDir),
+			dagger.ContainerWithDirectoryOpts{Exclude: []string{"node_modules"}},
 		)
 	}
 
 	pnpmAttached = pnpmAttached.
-		WithDirectory(projectDir, output.Directory(projectDir)).
+		WithFile(".pnpmfile.cjs", source.File(".pnpmfile.cjs")).
+		WithDirectory(projectDir, projectOutput, dagger.ContainerWithDirectoryOpts{Exclude: []string{"node_modules"}}).
 		WithWorkdir(projectDir).
-		WithFile(".npmignore", source.File(path.Join(projectDir, ".npmignore"))).
+		WithFile(".npmignore", projectSource.File(".npmignore")).
 		WithExec([]string{"pnpm", "deploy", "--filter", ".", "--prod", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")

@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"dagger/tsc/internal/dagger"
-	"nxexecutor"
 	"path"
 )
 
@@ -28,23 +26,18 @@ func (m *Tsc) node() *dagger.Node {
 // Generates a /dist directory in projectDir that contains the generated .d.ts and .js files
 // Performs type checking as well, and will fail if types are invalid.
 func (m *Tsc) Run(
-	ctx context.Context,
+	// +ignore=["*", "!.swcrc.jsonc", "!tsconfig.build.json", "!**/tsconfig.json"]
 	source *dagger.Directory,
-	output *dagger.Directory,
 	projectDir string,
-	dependencyDirs []string,
+	projectOutput *dagger.Directory,
+	directDependencyDirs []string,
 ) *dagger.Directory {
 
 	nodeContainer := m.node().NodeContainer()
-	built := output.Directory(projectDir)
 
-	for _, dir := range dependencyDirs {
+	for _, dir := range directDependencyDirs {
 		pathToTsConfig := path.Join(dir, "tsconfig.json")
 		nodeContainer = nodeContainer.
-			WithDirectory(
-				dir,
-				output.Directory(dir),
-			).
 			WithFile(
 				pathToTsConfig,
 				source.File(pathToTsConfig),
@@ -56,18 +49,20 @@ func (m *Tsc) Run(
 			"tsconfig.build.json",
 			source.File("tsconfig.build.json"),
 		).
-		WithDirectory(projectDir, built).
+		WithDirectory(projectDir, projectOutput).
 		WithWorkdir(projectDir).
 		// Guarantee directory exists, in case no files get populated
 		WithDirectory("dist", dag.Directory()).
 		WithEnvVariable("PATH", "node_modules/.bin:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true})
 
 	typedContainer := nodeContainer.WithExec([]string{"tsc"}).WithoutFile("dist/tsconfig.tsbuildinfo")
-	jsContainer := nodeContainer.
+
+	swcContainer := nodeContainer.WithFile(".swcrc", source.File(".swcrc.jsonc"))
+	jsContainer := swcContainer.
 		WithExec([]string{"bash", "-c", "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --only '**/*.ts?(x)'"})
-	mjsContainer := nodeContainer.
+	mjsContainer := swcContainer.
 		WithExec([]string{"bash", "-c", "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs"})
-	cjsContainer := nodeContainer.
+	cjsContainer := swcContainer.
 		WithExec([]string{"bash", "-c", "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs"})
 
 	dist := typedContainer.
@@ -88,7 +83,5 @@ func (m *Tsc) Run(
 		WithExec([]string{"cp", "-rT", "./dist-cjs", "./dist"}).
 		Directory("dist")
 
-	return built.WithDirectory("dist", dist)
+	return projectOutput.WithDirectory("dist", dist)
 }
-
-var _ nxexecutor.NxExecutorRun[dagger.Directory] = &Tsc{}

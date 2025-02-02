@@ -41,10 +41,6 @@
       "source": "../executors/populate-files"
     },
     {
-      "name": "populate-static",
-      "source": "../executors/populate-static"
-    },
-    {
       "name": "tsc",
       "source": "../executors/tsc"
     },

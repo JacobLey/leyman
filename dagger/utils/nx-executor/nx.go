@@ -11,6 +11,7 @@ type NxExecutorRun[Directory any] interface {
 		output *Directory,
 		projectDir string,
 		dependencyDirs []string,
+		directDepedencyDirs []string,
 	) *Directory
 }
 type NxExecutorCI[Directory any] interface {
@@ -20,5 +21,6 @@ type NxExecutorCI[Directory any] interface {
 		output *Directory,
 		projectDir string,
 		dependencyDirs []string,
+		directDepedencyDirs []string,
 	) error
 }

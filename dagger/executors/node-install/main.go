@@ -1,9 +1,7 @@
 package main
 
 import (
-	"context"
 	"dagger/node-install/internal/dagger"
-	"nxexecutor"
 )
 
 type NodeInstall struct {
@@ -33,19 +31,21 @@ func (m *NodeInstall) pnpm() *dagger.Pnpm {
 // production dependencies are copied over.
 // Proxies call to pnpm module.
 func (m *NodeInstall) Run(
-	ctx context.Context,
+	// +ignore=["*", "!.npmrc", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
 	source *dagger.Directory,
+	// +ignore=["**/node_modules"]
 	output *dagger.Directory,
 	projectDir string,
-	dependencyDirs []string,
+	// +ignore=[".npmignore"]
+	projectSource *dagger.Directory,
+	dependencyProjectDirs []string,
 ) *dagger.Directory {
 
 	return m.pnpm().InstallPackage(
 		source,
 		output,
 		projectDir,
-		dependencyDirs,
+		projectSource,
+		dependencyProjectDirs,
 	)
 }
-
-var _ nxexecutor.NxExecutorRun[dagger.Directory] = &NodeInstall{}
