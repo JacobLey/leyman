@@ -31,10 +31,12 @@ suite('NxDagger', () => {
                             preBuild: {
                                 name: 'node-install',
                                 constructorArguments: ['fooArg'],
+                                parameters: ['projectSource'],
                             },
                             postBuild: {
                                 name: 'NodeDeploy',
                                 constructorArguments: ['barArg'],
+                                parameters: ['projectOutput'],
                             },
                         },
                     },
@@ -43,10 +45,12 @@ suite('NxDagger', () => {
                             methodName: 'tsc',
                             constructorArguments: ['fooArg'],
                             kind: 'transform',
+                            parameters: ['source', 'output'],
                         },
                         test: {
                             constructorArguments: ['fooArg', 'barArg'],
                             kind: 'ci',
+                            parameters: ['projectDir', 'dependencyProjectDirectories'],
                         },
                     },
                     projectGraph: {
@@ -187,10 +191,12 @@ suite('NxDagger', () => {
                             preBuild: {
                                 name: 'node-install',
                                 constructorArguments: ['fooArg'],
+                                parameters: ['projectSource'],
                             },
                             postBuild: {
                                 name: 'NodeDeploy',
                                 constructorArguments: ['barArg'],
+                                parameters: ['projectOutput'],
                             },
                         },
                     ],
@@ -249,6 +255,7 @@ suite('NxDagger', () => {
                             methodName: 'tsc',
                             constructorArguments: ['fooArg'],
                             isCi: false,
+                            parameters: ['source', 'output'],
                         },
                     ],
                     [
@@ -258,6 +265,7 @@ suite('NxDagger', () => {
                             methodName: 'test',
                             constructorArguments: ['fooArg', 'barArg'],
                             isCi: true,
+                            parameters: ['projectDir', 'dependencyProjectDirectories'],
                         },
                     ],
                 ]),

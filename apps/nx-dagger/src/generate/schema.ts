@@ -27,12 +27,27 @@ const checkAndDryRunSchema = objectSchema({
     },
 });
 
+const parameterNames = enumSchema({
+    enum: [
+        'source',
+        'output',
+        'projectDir',
+        'projectSource',
+        'projectOutput',
+        'dependencyProjectDirectories',
+        'directDependencyProjectDirectories',
+    ] as const,
+});
+export type ParameterNames = SchemaType<typeof parameterNames>;
+const parameterSchemas = arraySchema(parameterNames).uniqueItems(true);
+
 const prePostBuild = objectSchema({
     properties: {
         name: stringSchema(),
         constructorArguments: arraySchema(stringSchema()),
+        parameters: parameterSchemas,
     },
-    required: ['name', 'constructorArguments'],
+    required: ['name', 'constructorArguments', 'parameters'],
 });
 
 const daggerOptionsSchema = checkAndDryRunSchema
@@ -65,8 +80,9 @@ const daggerOptionsSchema = checkAndDryRunSchema
                     methodName: stringSchema(),
                     constructorArguments: arraySchema(stringSchema()).uniqueItems(true),
                     kind: enumSchema({ enum: ['ci', 'transform'] as const }),
+                    parameters: parameterSchemas,
                 },
-                required: ['constructorArguments', 'kind'],
+                required: ['constructorArguments', 'kind', 'parameters'],
             }),
         }),
     })

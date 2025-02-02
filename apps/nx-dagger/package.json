@@ -69,6 +69,7 @@
     "chai": "catalog:",
     "chai-as-promised": "catalog:",
     "eslint": "catalog:",
+    "expect-type": "catalog:",
     "load-populate-files": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",

@@ -4,7 +4,9 @@ package main
 import (
 	"<%= it.dagger.directory %>/internal/dagger"
 
+<% if (it.conditionals.hasCi) { %>
 	"context"
+<% } %>
 	"errors"
 	"sync"
 
@@ -84,7 +86,9 @@ var nxConfig = map[NxProjectDir]NxProject{
 // Execute Nx targets over all projects in dependency order
 // and return the fully built monorepo directory
 func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) Build(
+<% if (it.conditionals.hasCi) { %>
 	ctx context.Context,
+<% } %>
 <% for (const arg of [...it.constructorArguments.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
 	<%= arg.name %> <%= arg.type %>,
 <% } %>
@@ -122,7 +126,9 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) Build(
 		}
 
 		directory, err := m.buildProject(
+		<% if (it.conditionals.hasCi) { %>
 			ctx,
+		<% } %>
 		<% for (const arg of [...it.constructorArguments.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
 			<%= arg.name %>,
 		<% } %>
@@ -172,7 +178,9 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) Build(
 }
 
 func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
+<% if (it.conditionals.hasCi) { %>
 	ctx context.Context,
+<% } %>
 <% for (const arg of [...it.constructorArguments.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
 	<%= arg.name %> <%= arg.type %>,
 <% } %>
@@ -180,18 +188,35 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 	dependencyDirectories map[NxProjectDir]*dagger.Directory,
 ) (*dagger.Directory, error) {
 
+<% if (it.conditionals.hasDependencyProjectDirs) { %>
 	dependencyProjectDirs := make([]string, len(nxConfig[projectDir].dependencyProjectDirs))
+<% } %>
+<% if (it.conditionals.hasDirectDependencyProjectDirs) { %>
 	directDependencyProjectDirs := make([]string, len(nxConfig[projectDir].directDependencyProjectDirs))
+<% } %>
 
+<% if (it.conditionals.hasOutput) { %>
 	output := dag.Directory()
+<% } %>
 
+<% if (it.conditionals.hasDependencyProjectDirs || it.conditionals.hasOutput) { %>
 	for i, directory := range nxConfig[projectDir].dependencyProjectDirs {
+	<% if (it.conditionals.hasDependencyProjectDirs) { %>
 		dependencyProjectDirs[i] = string(directory)
+	<% } %>
+	<% if (it.conditionals.hasOutput) { %>
 		output = output.WithDirectory(string(directory), dependencyDirectories[directory])
+	<% } %>
 	}
+<% } %>
+<% if (it.conditionals.hasDirectDependencyProjectDirs) { %>
 	for i, directory := range nxConfig[projectDir].directDependencyProjectDirs {
 		directDependencyProjectDirs[i] = string(directory)
 	}
+<% } %>
+<% if (it.conditionals.hasProjectSource) { %>
+	projectSource := m.Source.Directory(string(projectDir))
+<% } %>
 
 	var built *dagger.Directory
 	switch nxConfig[projectDir].runtime {
@@ -202,10 +227,9 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 					<%= it.constructorArguments.get(arg).name %>,
 				<% } %>
 			).Run(
-				m.Source,
-				output,
-				string(projectDir),
-				dependencyProjectDirs,
+			<% for (const parameter of runtime.preBuild.parameters) { %>
+				<%= it.parametersMap[parameter] %>,
+			<% } %>
 			)
 	<% } %>
 		default:
@@ -227,10 +251,9 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 						<% } %>
 					).Ci(
 						ctx,
-						m.Source,
-						output.WithDirectory(string(projectDir), built),
-						string(projectDir),
-						dependencyProjectDirs,
+					<% for (const parameter of target.parameters) { %>
+						<%= it.parametersMap[parameter] %>,
+					<% } %>
 					)
 				})
 			<% } else { %>
@@ -239,10 +262,9 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 						<%= it.constructorArguments.get(arg).name %>,
 					<% } %>
 				).Run(
-					m.Source,
-					output.WithDirectory(string(projectDir), built),
-					string(projectDir),
-					dependencyProjectDirs,
+					<% for (const parameter of target.parameters) { %>
+						<%= it.parametersMap[parameter] %>,
+					<% } %>
 				)
 			<% } %>
 		<% } %>
@@ -263,10 +285,9 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 					<%= it.constructorArguments.get(arg).name %>,
 				<% } %>
 			).Run(
-				m.Source,
-				output.WithDirectory(string(projectDir), built),
-				string(projectDir),
-				dependencyProjectDirs,
+			<% for (const parameter of runtime.postBuild.parameters) { %>
+				<%= it.parametersMap[parameter] %>,
+			<% } %>
 			)
 	<% } %>
 		default:

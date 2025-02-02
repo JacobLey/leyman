@@ -200,18 +200,14 @@ func (m *MonorepoFn) buildProject(
 	for i, directory := range nxConfig[projectDir].directDependencyProjectDirs {
 		directDependencyProjectDirs[i] = string(directory)
 	}
+	projectSource := m.Source.Directory(string(projectDir))
 
 	var built *dagger.Directory
 	switch nxConfig[projectDir].runtime {
 	case _runtime_node:
 		built = dag.NodeInstall(
 			fooArg,
-		).Run(
-			m.Source,
-			output,
-			string(projectDir),
-			dependencyProjectDirs,
-		)
+		).Run()
 	default:
 		return nil, errors.New("No matching runtime: " + string(nxConfig[projectDir].runtime))
 	}
@@ -225,10 +221,9 @@ func (m *MonorepoFn) buildProject(
 			built = dag.Tsc(
 				fooArg,
 			).Run(
-				m.Source,
-				output.WithDirectory(string(projectDir), built),
-				string(projectDir),
-				dependencyProjectDirs,
+				projectSource,
+				built,
+				directDependencyProjectDirs,
 			)
 		case _target_test:
 			ciErrors.Go(func() error {
@@ -237,8 +232,6 @@ func (m *MonorepoFn) buildProject(
 					barArg,
 				).Ci(
 					ctx,
-					m.Source,
-					output.WithDirectory(string(projectDir), built),
 					string(projectDir),
 					dependencyProjectDirs,
 				)
@@ -258,9 +251,7 @@ func (m *MonorepoFn) buildProject(
 			barArg,
 		).Run(
 			m.Source,
-			output.WithDirectory(string(projectDir), built),
-			string(projectDir),
-			dependencyProjectDirs,
+			output,
 		)
 	default:
 		return nil, errors.New("No matching runtime: " + string(nxConfig[projectDir].runtime))

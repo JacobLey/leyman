@@ -1,3 +1,12 @@
+export type ParameterNames =
+    | 'dependencyProjectDirectories'
+    | 'directDependencyProjectDirectories'
+    | 'output'
+    | 'projectDir'
+    | 'projectOutput'
+    | 'projectSource'
+    | 'source';
+
 export interface TemplateContext {
     constructorArguments: Map<
         string,
@@ -18,10 +27,12 @@ export interface TemplateContext {
             preBuild: {
                 name: string;
                 constructorArguments: string[];
+                parameters: ParameterNames[];
             };
             postBuild: {
                 name: string;
                 constructorArguments: string[];
+                parameters: ParameterNames[];
             };
         }
     >;
@@ -43,6 +54,7 @@ export interface TemplateContext {
             methodName: string;
             constructorArguments: string[];
             isCi: boolean;
+            parameters: ParameterNames[];
         }
     >;
 }

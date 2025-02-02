@@ -15,6 +15,13 @@
         "constructorArguments": [
           "nodeVersion",
           "pnpmVersion"
+        ],
+        "parameters": [
+          "source",
+          "output",
+          "projectDir",
+          "projectSource",
+          "dependencyProjectDirectories"
         ]
       },
       "postBuild": {
@@ -22,57 +29,30 @@
         "constructorArguments": [
           "nodeVersion",
           "pnpmVersion"
+        ],
+        "parameters": [
+          "source",
+          "output",
+          "projectDir",
+          "projectSource",
+          "projectOutput",
+          "dependencyProjectDirectories"
         ]
       }
     }
   },
   "targets": {
-    "barrelify": {
-      "constructorArguments": [
-        "nodeVersion"
-      ],
-      "kind": "ci"
-    },
-    "biome": {
-      "constructorArguments": [
-        "nodeVersion"
-      ],
-      "kind": "ci"
-    },
-    "eslint": {
-      "constructorArguments": [
-        "nodeVersion"
-      ],
-      "kind": "ci"
-    },
-    "coverage-report": {
-      "methodName": "mocha-c8",
-      "constructorArguments": [
-        "nodeVersion"
-      ],
-      "kind": "ci"
-    },
-    "populate-files": {
-      "constructorArguments": [
-        "nodeVersion"
-      ],
-      "kind": "ci"
-    },
-    "populate-static": {
-      "constructorArguments": [],
-      "kind": "transform"
-    },
     "tsc": {
       "constructorArguments": [
         "nodeVersion"
       ],
-      "kind": "transform"
-    },
-    "update-ts-references": {
-      "constructorArguments": [
-        "nodeVersion"
-      ],
-      "kind": "ci"
+      "kind": "transform",
+      "parameters": [
+        "source",
+        "projectDir",
+        "projectOutput",
+        "dependencyProjectDirectories"
+      ]
     }
   }
 }

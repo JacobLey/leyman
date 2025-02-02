@@ -46,10 +46,12 @@ suite('Normalizer', () => {
                         preBuild: {
                             name: '<node-prebuild>',
                             constructorArguments: [],
+                            parameters: ['source'],
                         },
                         postBuild: {
                             name: '<node-prebuild>',
                             constructorArguments: [],
+                            parameters: [],
                         },
                     },
                 },
@@ -57,6 +59,7 @@ suite('Normalizer', () => {
                     build: {
                         constructorArguments: ['nodeVersion'],
                         kind: 'transform',
+                        parameters: ['output'],
                     },
                 },
             };

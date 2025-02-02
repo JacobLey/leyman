@@ -4,7 +4,6 @@ package main
 import (
 	"dagger/monorepo/internal/dagger"
 
-	"context"
 	"errors"
 	"sync"
 
@@ -19,7 +18,7 @@ type Monorepo struct {
 func New(
 	// Root of source file
 	// Ignore needs to mirror .gitignore
-	// +ignore=["**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache","**/coverage","**/dist","**/.pnpm-lock-hash","**/.swcrc",".nx","dagger/**/.gitattributes","dagger/**/dagger.gen.go","dagger/**/internal"]
+	// +ignore=[".git","**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache","**/coverage","**/dist","**/.pnpm-lock-hash","**/.swcrc",".nx","dagger/**/.gitattributes","dagger/**/dagger.gen.go","dagger/**/internal"]
 	source *dagger.Directory,
 ) *Monorepo {
 	return &Monorepo{
@@ -67,14 +66,7 @@ const (
 type NxTarget string
 
 const (
-	_target_barrelify          NxTarget = "barrelify"
-	_target_biome              NxTarget = "biome"
-	_target_coverageReport     NxTarget = "coverage-report"
-	_target_eslint             NxTarget = "eslint"
-	_target_populateFiles      NxTarget = "populate-files"
-	_target_populateStatic     NxTarget = "populate-static"
-	_target_tsc                NxTarget = "tsc"
-	_target_updateTsReferences NxTarget = "update-ts-references"
+	_target_tsc NxTarget = "tsc"
 )
 
 type NxProject struct {
@@ -117,12 +109,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_sinonTypedStub,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_commonProxy: {
@@ -139,12 +126,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_barrelify,
-			_target_populateStatic,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_defaultImport: {
@@ -166,12 +148,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_entryScript: {
@@ -195,12 +172,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_enumToArray: {
@@ -222,12 +194,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_findImport: {
@@ -251,12 +218,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_formatFile: {
@@ -288,13 +250,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_sinonTypedStub,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_barrelify,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_haywire: {
@@ -308,12 +264,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_barrelify,
-			_target_populateStatic,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_haywireLauncher: {
@@ -339,12 +290,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_isoCrypto: {
@@ -374,13 +320,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_barrelify,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_juniper: {
@@ -402,12 +342,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_leymanEslintConfig: {
@@ -415,10 +350,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs:       []NxProjectDir{},
 		directDependencyProjectDirs: []NxProjectDir{},
 		targets: []NxTarget{
-			_target_biome,
-			_target_populateStatic,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_loadPopulateFiles: {
@@ -456,12 +388,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_populateFiles,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_mochaChain: {
@@ -477,11 +404,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_namedPatch: {
@@ -503,12 +426,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_normalizedReactQuery: {
@@ -530,12 +448,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_nxDagger: {
@@ -577,13 +490,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_sinonTypedStub,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_populateFiles,
-			_target_coverageReport,
 		},
 	},
 	_project_nxLifecycle: {
@@ -626,13 +533,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_sinonTypedStub,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_populateFiles,
-			_target_coverageReport,
 		},
 	},
 	_project_nxPluginHandler: {
@@ -654,11 +555,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_sinonTypedStub,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_nxUpdateTsReferences: {
@@ -681,12 +578,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_sinonTypedStub,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
 			_target_tsc,
-			_target_populateFiles,
-			_target_coverageReport,
 		},
 	},
 	_project_parseCwd: {
@@ -708,12 +600,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_pnpmDedicatedLockfile: {
@@ -725,11 +612,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_leymanEslintConfig,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_populateFiles: {
@@ -763,11 +646,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_sinonTypedStub,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_punycodeEsm: {
@@ -789,12 +668,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_sinonTypedStub: {
@@ -811,11 +685,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 	_project_staticEmitter: {
@@ -837,12 +707,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
-			_target_biome,
-			_target_eslint,
-			_target_populateStatic,
-			_target_updateTsReferences,
 			_target_tsc,
-			_target_coverageReport,
 		},
 	},
 }
@@ -850,7 +715,6 @@ var nxConfig = map[NxProjectDir]NxProject{
 // Execute Nx targets over all projects in dependency order
 // and return the fully built monorepo directory
 func (m *Monorepo) Build(
-	ctx context.Context,
 	nodeVersion string,
 	pnpmVersion string,
 ) (*dagger.Directory, error) {
@@ -887,7 +751,6 @@ func (m *Monorepo) Build(
 		}
 
 		directory, err := m.buildProject(
-			ctx,
 			nodeVersion,
 			pnpmVersion,
 			projectDir,
@@ -936,7 +799,6 @@ func (m *Monorepo) Build(
 }
 
 func (m *Monorepo) buildProject(
-	ctx context.Context,
 	nodeVersion string,
 	pnpmVersion string,
 	projectDir NxProjectDir,
@@ -944,7 +806,6 @@ func (m *Monorepo) buildProject(
 ) (*dagger.Directory, error) {
 
 	dependencyProjectDirs := make([]string, len(nxConfig[projectDir].dependencyProjectDirs))
-	directDependencyProjectDirs := make([]string, len(nxConfig[projectDir].directDependencyProjectDirs))
 
 	output := dag.Directory()
 
@@ -952,9 +813,7 @@ func (m *Monorepo) buildProject(
 		dependencyProjectDirs[i] = string(directory)
 		output = output.WithDirectory(string(directory), dependencyDirectories[directory])
 	}
-	for i, directory := range nxConfig[projectDir].directDependencyProjectDirs {
-		directDependencyProjectDirs[i] = string(directory)
-	}
+	projectSource := m.Source.Directory(string(projectDir))
 
 	var built *dagger.Directory
 	switch nxConfig[projectDir].runtime {
@@ -966,6 +825,7 @@ func (m *Monorepo) buildProject(
 			m.Source,
 			output,
 			string(projectDir),
+			projectSource,
 			dependencyProjectDirs,
 		)
 	default:
@@ -977,94 +837,15 @@ func (m *Monorepo) buildProject(
 	for _, target := range nxConfig[projectDir].targets {
 
 		switch target {
-		case _target_barrelify:
-			ciErrors.Go(func() error {
-				return dag.Barrelify(
-					nodeVersion,
-				).Ci(
-					ctx,
-					m.Source,
-					output.WithDirectory(string(projectDir), built),
-					string(projectDir),
-					dependencyProjectDirs,
-				)
-			})
-		case _target_biome:
-			ciErrors.Go(func() error {
-				return dag.Biome(
-					nodeVersion,
-				).Ci(
-					ctx,
-					m.Source,
-					output.WithDirectory(string(projectDir), built),
-					string(projectDir),
-					dependencyProjectDirs,
-				)
-			})
-		case _target_coverageReport:
-			ciErrors.Go(func() error {
-				return dag.MochaC8(
-					nodeVersion,
-				).Ci(
-					ctx,
-					m.Source,
-					output.WithDirectory(string(projectDir), built),
-					string(projectDir),
-					dependencyProjectDirs,
-				)
-			})
-		case _target_eslint:
-			ciErrors.Go(func() error {
-				return dag.Eslint(
-					nodeVersion,
-				).Ci(
-					ctx,
-					m.Source,
-					output.WithDirectory(string(projectDir), built),
-					string(projectDir),
-					dependencyProjectDirs,
-				)
-			})
-		case _target_populateFiles:
-			ciErrors.Go(func() error {
-				return dag.PopulateFiles(
-					nodeVersion,
-				).Ci(
-					ctx,
-					m.Source,
-					output.WithDirectory(string(projectDir), built),
-					string(projectDir),
-					dependencyProjectDirs,
-				)
-			})
-		case _target_populateStatic:
-			built = dag.PopulateStatic().Run(
-				m.Source,
-				output.WithDirectory(string(projectDir), built),
-				string(projectDir),
-				dependencyProjectDirs,
-			)
 		case _target_tsc:
 			built = dag.Tsc(
 				nodeVersion,
 			).Run(
 				m.Source,
-				output.WithDirectory(string(projectDir), built),
 				string(projectDir),
+				built,
 				dependencyProjectDirs,
 			)
-		case _target_updateTsReferences:
-			ciErrors.Go(func() error {
-				return dag.UpdateTsReferences(
-					nodeVersion,
-				).Ci(
-					ctx,
-					m.Source,
-					output.WithDirectory(string(projectDir), built),
-					string(projectDir),
-					dependencyProjectDirs,
-				)
-			})
 		default:
 			return nil, errors.New("No matching target executor: " + string(target))
 		}
@@ -1081,8 +862,10 @@ func (m *Monorepo) buildProject(
 			pnpmVersion,
 		).Run(
 			m.Source,
-			output.WithDirectory(string(projectDir), built),
+			output,
 			string(projectDir),
+			projectSource,
+			built,
 			dependencyProjectDirs,
 		)
 	default:

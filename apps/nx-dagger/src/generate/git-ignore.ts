@@ -13,5 +13,5 @@ export const getGitIgnoreProvider =
             .filter(Boolean)
             .filter(row => !row.startsWith('#'));
 
-        return [...new Set(paths)];
+        return [...new Set(['.git', ...paths])];
     };

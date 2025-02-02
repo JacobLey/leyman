@@ -62,11 +62,27 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "parameters": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "enum": [
+                        "source",
+                        "output",
+                        "projectDir",
+                        "projectSource",
+                        "projectOutput",
+                        "dependencyProjectDirectories",
+                        "directDependencyProjectDirectories"
+                      ]
+                    }
                   }
                 },
                 "required": [
                   "name",
-                  "constructorArguments"
+                  "constructorArguments",
+                  "parameters"
                 ]
               },
               "postBuild": {
@@ -80,11 +96,27 @@
                     "items": {
                       "type": "string"
                     }
+                  },
+                  "parameters": {
+                    "type": "array",
+                    "uniqueItems": true,
+                    "items": {
+                      "enum": [
+                        "source",
+                        "output",
+                        "projectDir",
+                        "projectSource",
+                        "projectOutput",
+                        "dependencyProjectDirectories",
+                        "directDependencyProjectDirectories"
+                      ]
+                    }
                   }
                 },
                 "required": [
                   "name",
-                  "constructorArguments"
+                  "constructorArguments",
+                  "parameters"
                 ]
               }
             },
@@ -114,11 +146,27 @@
                   "ci",
                   "transform"
                 ]
+              },
+              "parameters": {
+                "type": "array",
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "source",
+                    "output",
+                    "projectDir",
+                    "projectSource",
+                    "projectOutput",
+                    "dependencyProjectDirectories",
+                    "directDependencyProjectDirectories"
+                  ]
+                }
               }
             },
             "required": [
               "constructorArguments",
-              "kind"
+              "kind",
+              "parameters"
             ]
           }
         }

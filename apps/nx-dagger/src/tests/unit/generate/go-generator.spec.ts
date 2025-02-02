@@ -38,10 +38,12 @@ suite('GenerateGoFile', () => {
                                 preBuild: {
                                     name: 'node-install',
                                     constructorArguments: ['fooArg'],
+                                    parameters: [],
                                 },
                                 postBuild: {
                                     name: 'NodeDeploy',
                                     constructorArguments: ['barArg'],
+                                    parameters: ['source', 'output'],
                                 },
                             },
                         ],
@@ -89,6 +91,11 @@ suite('GenerateGoFile', () => {
                                 methodName: 'tsc',
                                 constructorArguments: ['fooArg'],
                                 isCi: false,
+                                parameters: [
+                                    'projectSource',
+                                    'projectOutput',
+                                    'directDependencyProjectDirectories',
+                                ],
                             },
                         ],
                         [
@@ -98,6 +105,7 @@ suite('GenerateGoFile', () => {
                                 methodName: 'test',
                                 constructorArguments: ['fooArg', 'barArg'],
                                 isCi: true,
+                                parameters: ['projectDir', 'dependencyProjectDirectories'],
                             },
                         ],
                     ]),

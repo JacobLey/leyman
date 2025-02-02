@@ -34,7 +34,13 @@ suite('GetGitIgnore', () => {
                 foo
             `);
 
-            expect(await ctx.getGitIgnore()).to.deep.equal(['foo', '!baz', 'foobar', 'foo/**']);
+            expect(await ctx.getGitIgnore()).to.deep.equal([
+                '.git',
+                'foo',
+                '!baz',
+                'foobar',
+                'foo/**',
+            ]);
         });
     });
 });

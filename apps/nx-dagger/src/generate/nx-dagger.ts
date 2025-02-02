@@ -54,6 +54,7 @@ export const constructContext = (
             methodName: val.methodName ?? key,
             constructorArguments: val.constructorArguments,
             isCi: val.kind === 'ci',
+            parameters: val.parameters,
         });
     }
 
