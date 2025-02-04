@@ -102,6 +102,8 @@ var nxConfig = map[NxProjectDir]NxProject{
 	},
 }
 
+var mapMutex = sync.RWMutex{}
+
 // Execute Nx targets over all projects in dependency order
 // and return the fully built monorepo directory
 func (m *MonorepoFn) Build(
@@ -138,7 +140,9 @@ func (m *MonorepoFn) Build(
 			if buildError != nil {
 				return buildError
 			}
+			mapMutex.RLock()
 			dependencyDirs[dependencyProjectDir] = builtProjects[dependencyProjectDir].directory
+			mapMutex.RUnlock()
 		}
 
 		directory, err := m.buildProject(
@@ -155,6 +159,8 @@ func (m *MonorepoFn) Build(
 				buildError = err
 			}
 		} else {
+			mapMutex.Lock()
+			defer mapMutex.Unlock()
 			project := builtProjects[projectDir]
 			project.directory = directory
 			builtProjects[projectDir] = project
@@ -162,8 +168,11 @@ func (m *MonorepoFn) Build(
 		return nil
 	}
 	triggerProjectBuildGroup = func(projectDir NxProjectDir) {
+		mapMutex.RLock()
+		projectOnce := builtProjects[projectDir].once
+		mapMutex.RUnlock()
 		// Only run project build once, reporting wait/error groups
-		builtProjects[projectDir].once.Do(func() {
+		projectOnce.Do(func() {
 			defer waitGroup.Done()
 			triggerProjectBuild(projectDir)
 		})
