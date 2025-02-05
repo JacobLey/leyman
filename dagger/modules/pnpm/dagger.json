@@ -10,10 +10,6 @@
   ],
   "dependencies": [
     {
-      "name": "debian",
-      "source": "../debian"
-    },
-    {
       "name": "node",
       "source": "../node"
     }

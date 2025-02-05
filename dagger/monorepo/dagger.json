@@ -18,10 +18,6 @@
       "source": "../executors/biome"
     },
     {
-      "name": "debian",
-      "source": "../modules/debian"
-    },
-    {
       "name": "eslint",
       "source": "../executors/eslint"
     },
@@ -36,10 +32,6 @@
     {
       "name": "node-install",
       "source": "../executors/node-install"
-    },
-    {
-      "name": "pnpm",
-      "source": "../modules/pnpm"
     },
     {
       "name": "populate-files",
