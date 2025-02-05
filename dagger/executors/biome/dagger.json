@@ -3,6 +3,11 @@
   "name": "biome",
   "engineVersion": "v0.15.3",
   "sdk": "go",
+  "include": [
+    "go.mod",
+    "go.sum",
+    "main.go"
+  ],
   "dependencies": [
     {
       "name": "node",
@@ -10,7 +15,6 @@
     }
   ],
   "source": ".",
-  "include": ["go.mod", "go.sum", "main.go"],
   "codegen": {
     "automaticGitignore": false
   }
