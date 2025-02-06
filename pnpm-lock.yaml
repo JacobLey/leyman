@@ -8733,12 +8733,6 @@ snapshots:
       combined-stream: 1.0.8
       mime-types: 2.1.35
 
-  format-file@0.1.4:
-    dependencies:
-      find-up: 7.0.0
-      haywire: 0.1.7
-      tmp-promise: 3.0.3
-
   format-file@0.1.4(@biomejs/biome@1.9.4):
     dependencies:
       find-up: 7.0.0
@@ -9844,17 +9838,6 @@ snapshots:
       '@napi-rs/nice': 1.0.1
 
   pluralize@8.0.0: {}
-
-  populate-files@0.2.3:
-    dependencies:
-      ci-info: 4.1.0
-      format-file: 0.1.4
-      haywire: 0.1.7
-      parse-cwd: 1.1.1
-      uint8array-extras: 1.4.0
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - prettier
 
   populate-files@0.2.3(@biomejs/biome@1.9.4):
     dependencies:
