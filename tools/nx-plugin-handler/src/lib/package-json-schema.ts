@@ -15,13 +15,18 @@ export const isPackageJson = ajv.compile<SchemaType<typeof packageJsonSchema>>(
 );
 
 const executorsJsonSchema = objectSchema({
-    additionalProperties: objectSchema({
-        properties: {
-            implementation: stringSchema(),
-        },
-        required: ['implementation'],
-        additionalProperties: true,
-    }),
+    properties: {
+        executors: objectSchema({
+            additionalProperties: objectSchema({
+                properties: {
+                    implementation: stringSchema(),
+                },
+                required: ['implementation'],
+                additionalProperties: true,
+            }),
+        }),
+    },
+    required: ['executors'],
 });
 
 export const isExecutorsJson = ajv.compile<SchemaType<typeof executorsJsonSchema>>(

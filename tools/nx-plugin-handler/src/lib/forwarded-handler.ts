@@ -61,14 +61,14 @@ export class ForwardedHandler {
             const { default: executorsJson } = (await this.#importer(pathToExecutorsJson, {
                 with: { type: 'json' },
             })) as { default: unknown };
-            if (!isExecutorsJson(executorsJson) || !executorsJson[pluginExecutorName!]) {
+            if (!isExecutorsJson(executorsJson) || !executorsJson.executors[pluginExecutorName!]) {
                 return null;
             }
 
             const pathToExecutorImplementation = Path.join(
                 pathToExecutorsJson,
                 '..',
-                executorsJson[pluginExecutorName!]!.implementation
+                executorsJson.executors[pluginExecutorName!]!.implementation
             );
             const loaded = (await this.#importer(pathToExecutorImplementation)) as {
                 default: RawHandler<Options>;

@@ -58,8 +58,10 @@ suite('ForwardedHandler', () => {
                 .resolves({
                     [Symbol.toStringTag]: 'Module',
                     default: {
-                        '<plugin-executor-name>': {
-                            implementation: './implementation/index.js',
+                        executors: {
+                            '<plugin-executor-name>': {
+                                implementation: './implementation/index.js',
+                            },
                         },
                     },
                 });
