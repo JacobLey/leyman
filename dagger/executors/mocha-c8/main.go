@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"dagger/mocha-c-8/internal/dagger"
+	"path"
+	"strings"
 )
 
 type MochaC8 struct {
@@ -27,10 +29,11 @@ func (m *MochaC8) node() *dagger.Node {
 // and achieves required code coverage.
 func (m *MochaC8) CI(
 	ctx context.Context,
-	// +ignore=["*","!pnpm-lock.yaml","!pnpm-workspace.yaml"]
+	// +ignore=["*","!biome.json","!pnpm-lock.yaml","!pnpm-workspace.yaml","!**/package.json","!**/project.json","!**/tsconfig.json"]
 	source *dagger.Directory,
 	projectDir string,
 	projectOutput *dagger.Directory,
+	directDependencyDirs []string,
 ) error {
 
 	nodeContainer := m.node().NodeContainer()
@@ -40,6 +43,37 @@ func (m *MochaC8) CI(
 			".",
 			[]*dagger.File{source.File("pnpm-lock.yaml"), source.File("pnpm-workspace.yaml")},
 		)
+	} else if projectDir == "apps/nx-update-ts-references" {
+		files := []string{"biome.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"}
+		for _, dir := range directDependencyDirs {
+			files = append(
+				files,
+				path.Join(dir, "package.json"),
+				path.Join(dir, "project.json"),
+				path.Join(dir, "tsconfig.json"),
+			)
+		}
+		nodeContainer = nodeContainer.
+			WithDirectory(
+				".",
+				source,
+				dagger.ContainerWithDirectoryOpts{
+					Include: files,
+				},
+			).
+			WithExec([]string{
+				"bash",
+				"-c",
+				strings.Join(
+					[]string{
+						"echo {} > nx.json",
+						"echo {} > package.json",
+						"mkdir ./node_modules",
+						"echo {} > ./node_modules/.modules.yaml",
+					},
+					" && ",
+				),
+			})
 	}
 
 	nodeContainer = nodeContainer.
