@@ -231,7 +231,7 @@ func (m *MonorepoFn) buildProject(
 		return nil, errors.New("No matching runtime: " + string(nxConfig[projectDir].runtime))
 	}
 
-	ciErrors := errgroup.Group{}
+	ciErrors, cancelCtx := errgroup.WithContext(ctx)
 
 	for _, target := range nxConfig[projectDir].targets {
 
@@ -250,7 +250,7 @@ func (m *MonorepoFn) buildProject(
 					fooArg,
 					barArg,
 				).Ci(
-					ctx,
+					cancelCtx,
 					string(projectDir),
 					dependencyProjectDirs,
 				)

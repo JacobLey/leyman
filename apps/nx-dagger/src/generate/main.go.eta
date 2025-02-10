@@ -255,7 +255,7 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 			return nil, errors.New("No matching runtime: " + string(nxConfig[projectDir].runtime))
 	}
 
-	ciErrors := errgroup.Group{}
+	ciErrors, cancelCtx := errgroup.WithContext(ctx)
 
 	for _, target := range nxConfig[projectDir].targets {
 
@@ -269,7 +269,7 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 							<%= it.constructorArguments.get(arg).name %>,
 						<% } %>
 					).Ci(
-						ctx,
+						cancelCtx,
 					<% for (const parameter of target.parameters) { %>
 						<%= it.parametersMap[parameter] %>,
 					<% } %>
