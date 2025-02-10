@@ -2,7 +2,7 @@ package main
 
 import (
 	"dagger/tsc/internal/dagger"
-	"path"
+	"strings"
 )
 
 type Tsc struct {
@@ -30,20 +30,9 @@ func (m *Tsc) Run(
 	source *dagger.Directory,
 	projectDir string,
 	projectOutput *dagger.Directory,
-	directDependencyDirs []string,
 ) *dagger.Directory {
 
-	nodeContainer := m.node().NodeContainer()
-
-	for _, dir := range directDependencyDirs {
-		pathToTsConfig := path.Join(dir, "tsconfig.json")
-		nodeContainer = nodeContainer.WithFile(
-			pathToTsConfig,
-			source.File(pathToTsConfig),
-		)
-	}
-
-	nodeContainer = nodeContainer.
+	nodeContainer := m.node().NodeContainer().
 		WithFile(
 			"tsconfig.build.json",
 			source.File("tsconfig.build.json"),
@@ -54,9 +43,29 @@ func (m *Tsc) Run(
 		WithDirectory("dist", dag.Directory()).
 		WithEnvVariable("PATH", "node_modules/.bin:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true})
 
-	typedContainer := nodeContainer.WithExec([]string{"tsc"}).WithoutFile("dist/tsconfig.tsbuildinfo")
+	typedContainer := nodeContainer.
+		// Remove references since we only rely on installed/pre-built versions
+		WithExec([]string{
+			"node",
+			"-e",
+			strings.Join(
+				[]string{
+					"const { readFile, writeFile } = await import('node:fs/promises')",
+					"const tsconfig = await readFile('./tsconfig.json', 'utf8')",
+					"const withoutReferences = { ...JSON.parse(tsconfig), references: [] }",
+					"await writeFile('./tsconfig.json', JSON.stringify(withoutReferences, null, 2))",
+				},
+				";",
+			),
+		}).
+		WithExec([]string{"tsc"}).
+		WithoutFile("dist/tsconfig.tsbuildinfo")
 
-	swcContainer := nodeContainer.WithFile(".swcrc", source.File(".swcrc.jsonc"))
+	swcContainer := nodeContainer.
+		// Guarantee directory exists, in case no files get populated
+		WithDirectory("dist", dag.Directory()).
+		WithFile(".swcrc", source.File(".swcrc.jsonc"))
+
 	jsContainer := swcContainer.
 		WithExec([]string{"bash", "-c", "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --only '**/*.ts?(x)'"})
 	mjsContainer := swcContainer.
