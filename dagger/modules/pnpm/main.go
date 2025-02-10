@@ -110,13 +110,14 @@ func (m *Pnpm) InstallPackage(
 
 	pnpmAttached := m.attachPnpmStore(source)
 
-	for _, dependencyProjectDir := range dependencyProjectDirs {
-		pnpmAttached = pnpmAttached.WithDirectory(
-			dependencyProjectDir,
-			output.Directory(dependencyProjectDir),
-			dagger.ContainerWithDirectoryOpts{Exclude: []string{"node_modules"}},
-		)
-	}
+	pnpmAttached = pnpmAttached.WithDirectory(
+		".",
+		output,
+		dagger.ContainerWithDirectoryOpts{
+			Exclude: []string{"**/node_modules"},
+			Include: dependencyProjectDirs,
+		},
+	)
 
 	pnpmAttached = pnpmAttached.
 		WithFile(".pnpmfile.cjs", source.File(".pnpmfile.cjs")).
@@ -143,13 +144,14 @@ func (m *Pnpm) DeployPackage(
 
 	pnpmAttached := m.attachPnpmStore(source)
 
-	for _, dependencyProjectDir := range dependencyProjectDirs {
-		pnpmAttached = pnpmAttached.WithDirectory(
-			dependencyProjectDir,
-			output.Directory(dependencyProjectDir),
-			dagger.ContainerWithDirectoryOpts{Exclude: []string{"node_modules"}},
-		)
-	}
+	pnpmAttached = pnpmAttached.WithDirectory(
+		".",
+		output,
+		dagger.ContainerWithDirectoryOpts{
+			Exclude: []string{"**/node_modules"},
+			Include: dependencyProjectDirs,
+		},
+	)
 
 	pnpmAttached = pnpmAttached.
 		WithFile(".pnpmfile.cjs", source.File(".pnpmfile.cjs")).

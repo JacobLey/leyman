@@ -36,13 +36,17 @@ func (m *Eslint) CI(
 
 	nodeContainer := m.node().NodeContainer()
 
-	for _, dir := range directDependencyDirs {
-		pathToTsConfig := path.Join(dir, "tsconfig.json")
-		nodeContainer = nodeContainer.WithFile(
-			pathToTsConfig,
-			source.File(pathToTsConfig),
-		)
+	files := make([]string, len(directDependencyDirs))
+	for i, dir := range directDependencyDirs {
+		files[i] = path.Join(dir, "tsconfig.json")
 	}
+	nodeContainer = nodeContainer.WithDirectory(
+		".",
+		source,
+		dagger.ContainerWithDirectoryOpts{
+			Include: files,
+		},
+	)
 
 	nodeContainer = nodeContainer.
 		WithFile("tsconfig.build.json", source.File("tsconfig.build.json")).
