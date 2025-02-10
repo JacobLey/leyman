@@ -239,9 +239,12 @@ importers:
 
   .:
     devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 1.9.4
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0
+        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)
       nx-dagger:
         specifier: workspace:^
         version: link:apps/nx-dagger
@@ -9440,7 +9443,7 @@ snapshots:
     optionalDependencies:
       '@nx/devkit': 20.3.2(nx@20.3.2)
 
-  nx-update-ts-references@0.2.0:
+  nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4):
     dependencies:
       '@nx/devkit': 20.3.2(nx@20.3.2)
       ajv: 8.17.1
@@ -9451,12 +9454,12 @@ snapshots:
       haywire: 0.1.7
       npm-default-import: default-import@2.0.7
       npm-entry-script: entry-script@3.0.8
-      npm-format-file: format-file@0.1.4
+      npm-format-file: format-file@0.1.4(@biomejs/biome@1.9.4)
       npm-haywire: haywire@0.1.7
       npm-haywire-launcher: haywire-launcher@0.1.10(entry-script@3.0.8)(haywire@0.1.7)
       npm-juniper: juniper@1.2.4
       npm-parse-cwd: parse-cwd@1.1.1
-      npm-populate-files: populate-files@0.2.3
+      npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
       nx: 20.3.2
       nx-plugin-handler: 0.2.0(@nx/devkit@20.3.2(nx@20.3.2))
       yargs: 17.7.2
