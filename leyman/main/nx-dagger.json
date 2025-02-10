@@ -42,6 +42,66 @@
     }
   },
   "targets": {
+    "barrelify": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci",
+      "parameters": [
+        "source",
+        "projectDir",
+        "projectOutput"
+      ]
+    },
+    "biome": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci",
+      "parameters": [
+        "source",
+        "projectDir",
+        "projectOutput"
+      ]
+    },
+    "mocha-c8": {
+      "pluginNames": [
+        "coverage-report"
+      ],
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci",
+      "parameters": [
+        "source",
+        "projectDir",
+        "projectOutput",
+        "directDependencyProjectDirectories"
+      ]
+    },
+    "eslint": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci",
+      "parameters": [
+        "source",
+        "projectDir",
+        "projectOutput",
+        "directDependencyProjectDirectories"
+      ]
+    },
+    "populate-files": {
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci",
+      "parameters": [
+        "source",
+        "projectDir",
+        "projectOutput"
+      ]
+    },
     "tsc": {
       "constructorArguments": [
         "nodeVersion"
@@ -50,8 +110,23 @@
       "parameters": [
         "source",
         "projectDir",
+        "projectOutput"
+      ]
+    },
+    "update-ts-references": {
+      "pluginNames": [
+        "update-ts-references",
+        "npm-update-ts-references"
+      ],
+      "constructorArguments": [
+        "nodeVersion"
+      ],
+      "kind": "ci",
+      "parameters": [
+        "source",
+        "projectDir",
         "projectOutput",
-        "dependencyProjectDirectories"
+        "directDependencyProjectDirectories"
       ]
     }
   }
