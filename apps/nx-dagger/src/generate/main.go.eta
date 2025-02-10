@@ -264,7 +264,7 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 			case _target_<%= it.changeCase.camelCase(target.name) %>:
 			<% if (target.isCi) { %>
 				ciErrors.Go(func() error {
-					return dag.<%= it.changeCase.pascalCase(target.methodName) %>(
+					return dag.<%= it.changeCase.pascalCase(target.name) %>(
 						<% for (const arg of target.constructorArguments) { %>
 							<%= it.constructorArguments.get(arg).name %>,
 						<% } %>
@@ -276,7 +276,7 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) buildProject(
 					)
 				})
 			<% } else { %>
-				built = dag.<%= it.changeCase.pascalCase(target.methodName) %>(
+				built = dag.<%= it.changeCase.pascalCase(target.name) %>(
 					<% for (const arg of target.constructorArguments) { %>
 						<%= it.constructorArguments.get(arg).name %>,
 					<% } %>

@@ -48,14 +48,17 @@ export const constructContext = (
     }
 
     const targets: TemplateContext['targets'] = new Map();
+    const pluginToTargetMap = new Map<string, string>();
     for (const [key, val] of Object.entries(params.targets)) {
         targets.set(key, {
             name: key,
-            methodName: val.methodName ?? key,
             constructorArguments: val.constructorArguments,
             isCi: val.kind === 'ci',
             parameters: val.parameters,
         });
+        for (const pluginName of val.pluginNames ?? [key]) {
+            pluginToTargetMap.set(pluginName, key);
+        }
     }
 
     const projectDirectDependencies = new Map<string, Set<string>>();
@@ -123,8 +126,11 @@ export const constructContext = (
                 computeAndAddTarget(dependency);
             }
             computedTargets.add(projectTarget);
-            if (projectTargetDependencies.has(projectTarget) && targets.has(projectTarget)) {
-                projectTargets.push(projectTarget);
+            if (
+                projectTargetDependencies.has(projectTarget) &&
+                pluginToTargetMap.has(projectTarget)
+            ) {
+                projectTargets.push(pluginToTargetMap.get(projectTarget)!);
             }
         };
         const inOrderTargets = [...projectTargetDependencies.keys()].sort((a, b) =>

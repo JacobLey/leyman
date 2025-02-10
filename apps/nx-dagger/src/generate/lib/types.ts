@@ -51,7 +51,6 @@ export interface TemplateContext {
         string,
         {
             name: string;
-            methodName: string;
             constructorArguments: string[];
             isCi: boolean;
             parameters: ParameterNames[];

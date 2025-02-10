@@ -4,6 +4,7 @@ import type { PopulateFile } from 'populate-files';
 import { stubMethod } from 'sinon-typed-stub';
 import type { GetGitIgnore } from '../../../generate/git-ignore.js';
 import type { GenerateGoFile } from '../../../generate/go-generator.js';
+import type { TemplateContext } from '../../../generate/lib/types.js';
 import type { NormalizeOptions } from '../../../generate/normalizer.js';
 import * as NxDagger from '../../../generate/nx-dagger.js';
 import { expect } from '../../chai-hooks.js';
@@ -41,8 +42,8 @@ suite('NxDagger', () => {
                         },
                     },
                     targets: {
-                        build: {
-                            methodName: 'tsc',
+                        tsc: {
+                            pluginNames: ['build'],
                             constructorArguments: ['fooArg'],
                             kind: 'transform',
                             parameters: ['source', 'output'],
@@ -208,7 +209,7 @@ suite('NxDagger', () => {
                             name: 'a',
                             directory: 'path/to/a',
                             runtime: 'node',
-                            targets: ['build', 'test'],
+                            targets: ['tsc', 'test'],
                             dependencies: [],
                             directDependencies: [],
                         },
@@ -230,7 +231,7 @@ suite('NxDagger', () => {
                             name: 'c',
                             directory: 'path/to/c',
                             runtime: 'node',
-                            targets: ['test', 'build'],
+                            targets: ['test', 'tsc'],
                             dependencies: ['a', 'b'],
                             directDependencies: ['b'],
                         },
@@ -241,7 +242,7 @@ suite('NxDagger', () => {
                             name: 'd',
                             directory: 'path/to/d',
                             runtime: 'node',
-                            targets: ['build', 'test'],
+                            targets: ['tsc', 'test'],
                             dependencies: ['a', 'b', 'c'],
                             directDependencies: ['a', 'c'],
                         },
@@ -249,10 +250,9 @@ suite('NxDagger', () => {
                 ]),
                 targets: new Map([
                     [
-                        'build',
+                        'tsc',
                         {
-                            name: 'build',
-                            methodName: 'tsc',
+                            name: 'tsc',
                             constructorArguments: ['fooArg'],
                             isCi: false,
                             parameters: ['source', 'output'],
@@ -262,14 +262,13 @@ suite('NxDagger', () => {
                         'test',
                         {
                             name: 'test',
-                            methodName: 'test',
                             constructorArguments: ['fooArg', 'barArg'],
                             isCi: true,
                             parameters: ['projectDir', 'dependencyProjectDirectories'],
                         },
                     ],
                 ]),
-            });
+            } satisfies TemplateContext);
         });
     });
 

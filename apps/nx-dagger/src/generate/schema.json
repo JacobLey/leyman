@@ -131,8 +131,13 @@
           "additionalProperties": {
             "type": "object",
             "properties": {
-              "methodName": {
-                "type": "string"
+              "pluginNames": {
+                "type": "array",
+                "minItems": 1,
+                "uniqueItems": true,
+                "items": {
+                  "type": "string"
+                }
               },
               "constructorArguments": {
                 "type": "array",

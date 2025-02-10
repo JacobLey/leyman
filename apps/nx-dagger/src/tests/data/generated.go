@@ -54,8 +54,8 @@ const (
 type NxTarget string
 
 const (
-	_target_build NxTarget = "build"
-	_target_test  NxTarget = "test"
+	_target_test NxTarget = "test"
+	_target_tsc  NxTarget = "tsc"
 )
 
 type NxProject struct {
@@ -71,7 +71,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs:       []NxProjectDir{},
 		directDependencyProjectDirs: []NxProjectDir{},
 		targets: []NxTarget{
-			_target_build,
+			_target_tsc,
 			_target_test,
 		},
 	},
@@ -84,7 +84,7 @@ var nxConfig = map[NxProjectDir]NxProject{
 			_project_a,
 		},
 		targets: []NxTarget{
-			_target_build,
+			_target_tsc,
 		},
 	},
 	_project_c: {
@@ -236,14 +236,6 @@ func (m *MonorepoFn) buildProject(
 	for _, target := range nxConfig[projectDir].targets {
 
 		switch target {
-		case _target_build:
-			built = dag.Tsc(
-				fooArg,
-			).Run(
-				projectSource,
-				built,
-				directDependencyProjectDirs,
-			)
 		case _target_test:
 			ciErrors.Go(func() error {
 				return dag.Test(
@@ -255,6 +247,14 @@ func (m *MonorepoFn) buildProject(
 					dependencyProjectDirs,
 				)
 			})
+		case _target_tsc:
+			built = dag.Tsc(
+				fooArg,
+			).Run(
+				projectSource,
+				built,
+				directDependencyProjectDirs,
+			)
 		default:
 			return nil, errors.New("No matching target executor: " + string(target))
 		}

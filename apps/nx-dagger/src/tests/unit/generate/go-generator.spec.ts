@@ -55,7 +55,7 @@ suite('GenerateGoFile', () => {
                                 name: 'a',
                                 directory: 'path/to/a',
                                 runtime: 'node',
-                                targets: ['build', 'test'],
+                                targets: ['tsc', 'test'],
                                 dependencies: [],
                                 directDependencies: [],
                             },
@@ -66,7 +66,7 @@ suite('GenerateGoFile', () => {
                                 name: 'b',
                                 directory: 'path/to/b',
                                 runtime: 'node',
-                                targets: ['build'],
+                                targets: ['tsc'],
                                 dependencies: ['a'],
                                 directDependencies: ['a'],
                             },
@@ -85,10 +85,9 @@ suite('GenerateGoFile', () => {
                     ]),
                     targets: new Map([
                         [
-                            'build',
+                            'tsc',
                             {
-                                name: 'build',
-                                methodName: 'tsc',
+                                name: 'tsc',
                                 constructorArguments: ['fooArg'],
                                 isCi: false,
                                 parameters: [
@@ -102,7 +101,6 @@ suite('GenerateGoFile', () => {
                             'test',
                             {
                                 name: 'test',
-                                methodName: 'test',
                                 constructorArguments: ['fooArg', 'barArg'],
                                 isCi: true,
                                 parameters: ['projectDir', 'dependencyProjectDirectories'],

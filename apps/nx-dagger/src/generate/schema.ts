@@ -77,7 +77,7 @@ const daggerOptionsSchema = checkAndDryRunSchema
             properties: {},
             additionalProperties: objectSchema({
                 properties: {
-                    methodName: stringSchema(),
+                    pluginNames: arraySchema(stringSchema()).uniqueItems(true).minItems(1),
                     constructorArguments: arraySchema(stringSchema()).uniqueItems(true),
                     kind: enumSchema({ enum: ['ci', 'transform'] as const }),
                     parameters: parameterSchemas,
