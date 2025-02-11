@@ -190,6 +190,12 @@ catalogs:
       specifier: ^17.7.2
       version: 17.7.2
   leyman:
+    entry-script:
+      specifier: npm:entry-script@^3.0.8
+      version: 3.0.8
+    haywire:
+      specifier: npm:haywire@^0.1.7
+      version: 0.1.7
     npm-barrelify:
       specifier: npm:barrelify@^1.3.2
       version: 1.3.2
@@ -233,7 +239,7 @@ catalogs:
       specifier: npm:sinon-typed-stub@0.0.10
       version: 0.0.10
 
-pnpmfileChecksum: vnhesjhjqefwt6f7zg4clydr6q
+pnpmfileChecksum: uwww6bpxn72gdvtscko323iwfe
 
 importers:
 
@@ -681,6 +687,12 @@ importers:
       common-proxy:
         specifier: workspace:^
         version: link:../../tools/common-proxy
+      entry-script:
+        specifier: catalog:leyman
+        version: 3.0.8
+      haywire:
+        specifier: catalog:leyman
+        version: 0.1.7
       npm-entry-script:
         specifier: catalog:leyman
         version: entry-script@3.0.8

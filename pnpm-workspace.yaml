@@ -9,8 +9,10 @@ catalogs:
   leyman:
     npm-barrelify: npm:barrelify@^1.3.2
     npm-default-import: npm:default-import@^2.0.7
+    entry-script: npm:entry-script@^3.0.8
     npm-entry-script: npm:entry-script@^3.0.8
     npm-format-file: npm:format-file@^0.1.4
+    haywire: npm:haywire@^0.1.7
     npm-haywire: npm:haywire@^0.1.7
     npm-haywire-launcher: npm:haywire-launcher@^0.1.10
     npm-iso-crypto: npm:iso-crypto@^1.2.3
