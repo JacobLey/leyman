@@ -12,10 +12,6 @@
     {
       "name": "monorepo",
       "source": "../monorepo"
-    },
-    {
-      "name": "node",
-      "source": "../modules/node"
     }
   ],
   "source": ".",

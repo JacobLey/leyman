@@ -48,7 +48,7 @@ This repository is currently undergoing a migration to [Dagger](https://dagger.i
 
 All dagger functions are contained in the [/dagger](./dagger) directory.
 
-To get started, run `dagger call --mod ./dagger/test-and-build/ run --source .`
+To get started, run `dagger call --mod ./dagger/test-and-build/ --source . run`
 
 To replicate local Nx builds (build project -> test it -> build dependents -> ...)
 the [nx-dagger](./apps/nx-dagger/) executor is used to autogenerate a [monorepo Dagger function](./dagger/monorepo/main.go).
