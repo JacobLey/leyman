@@ -198,6 +198,7 @@ const addPoints = (p: Point, q: Point, curve: Curve): Point => {
  * @returns public key point
  */
 export const derivePublicKey = (privateKey: bigint, curve: Curve): Point => {
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread
     const bits = [...privateKey.toString(2)].reverse();
 
     let doublePoint: Point | null = null;
@@ -228,6 +229,7 @@ export const derivePublicKey = (privateKey: bigint, curve: Curve): Point => {
 const power = (x: bigint, y: bigint, p: bigint): bigint => {
     let res = 1n;
     let x2 = x;
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread
     const bits = [...y.toString(2)].reverse();
 
     for (const bit of bits) {

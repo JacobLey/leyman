@@ -26,14 +26,14 @@ catalogs:
 
 catalog:
   '@biomejs/biome': ^1.9.4
-  '@eslint/js': ^9.17.0
+  '@eslint/js': ^9.20.0
   '@nx/devkit': ^20.4.2
   '@pnpm/find-workspace-dir': ^7.0.3
   '@pnpm/lockfile.fs': ^1.1.0
   '@pnpm/lockfile.pruner': ^0.0.6
   '@pnpm/logger': ^5.2.0
-  '@swc/cli': ^0.5.2
-  '@swc/core': ^1.10.4
+  '@swc/cli': ^0.6.0
+  '@swc/core': ^1.10.15
   '@swc/helpers': ^0.5.15
   '@tanstack/react-query': ^4.36.1
   '@testing-library/react-hooks': ^8.0.1
@@ -41,14 +41,14 @@ catalog:
   '@types/chai-as-promised': ^8.0.1
   '@types/eslint': ^9.6.1
   '@types/mocha': ^10.0.10
-  '@types/node': ^22.10.5
+  '@types/node': ^22.13.1
   '@types/react': ^18.3.18
   '@types/sinon': ^17.0.3
   '@types/tmp': ^0.2.6
   '@types/yargs': ^17.0.33
-  '@typescript-eslint/eslint-plugin': ^8.19.0
-  '@typescript-eslint/parser': ^8.19.0
-  '@typescript-eslint/utils': ^8.19.0
+  '@typescript-eslint/eslint-plugin': ^8.24.0
+  '@typescript-eslint/parser': ^8.24.0
+  '@typescript-eslint/utils': ^8.24.0
   ajv: ^8.17.1
   c8: ^10.1.3
   chai: ^5.1.2
@@ -57,32 +57,32 @@ catalog:
   ci-info: ^4.1.0
   comment-json: ^4.2.5
   escape-string-regexp: ^5.0.0
-  eslint: ^9.17.0
+  eslint: ^9.20.0
   eslint-config-prettier: ^9.1.0
   eslint-plugin-import: ^2.31.0
-  eslint-plugin-jsdoc: ^50.6.1
+  eslint-plugin-jsdoc: ^50.6.3
   eslint-plugin-jsx-a11y: ^6.10.2
   eslint-plugin-n: ^17.15.1
-  eslint-plugin-react: ^7.37.3
+  eslint-plugin-react: ^7.37.4
   eslint-plugin-react-hooks: ^5.1.0
   eslint-plugin-sonarjs: ^3.0.1
   eslint-plugin-unicorn: ^56.0.1
   eta: ^3.5.0
   expect-type: ^1.1.0
-  fast-equals: ^5.1.3
+  fast-equals: ^5.2.2
   find-up: ^7.0.0
-  globby: ^14.0.2
-  mocha: ^11.0.1
-  npm: ^11.0.0
+  globby: ^14.1.0
+  mocha: ^11.1.0
+  npm: ^11.1.0
   nx: ^20.4.2
   p-defer: ^4.0.1
-  prettier: ^3.4.2
+  prettier: ^3.5.0
   react: ^18.3.1
   react-dom: ^18.3.1
   react-test-renderer: ^18.3.1
   sinon: ^19.0.2
   tmp-promise: ^3.0.3
   ts-dedent: ^2.2.0
-  typescript: ^5.7.2
+  typescript: ^5.7.3
   uint8array-extras: ^1.4.0
   yargs: ^17.7.2

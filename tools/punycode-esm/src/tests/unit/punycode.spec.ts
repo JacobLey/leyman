@@ -243,6 +243,7 @@ suite('punycode', () => {
 
                 test('idempotent', () => {
                     expect(
+                        // eslint-disable-next-line @typescript-eslint/no-misused-spread
                         Punycode.ucs2Encode([...encoded].map(txt => txt.codePointAt(0)!))
                     ).to.equal(encoded);
                 });

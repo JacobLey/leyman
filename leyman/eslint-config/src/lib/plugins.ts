@@ -1,5 +1,4 @@
-import rawEslintConfig from '@eslint/js';
-import type { ESLint, Linter } from 'eslint';
+import type { ESLint } from 'eslint';
 import rawPrettierConfig from 'eslint-config-prettier';
 import rawImportPlugin from 'eslint-plugin-import';
 import rawJsDocPlugin from 'eslint-plugin-jsdoc';
@@ -10,16 +9,7 @@ import rawReactHooksPlugin from 'eslint-plugin-react-hooks';
 import rawSonarPlugin from 'eslint-plugin-sonarjs';
 import rawUnicornPlugin from 'eslint-plugin-unicorn';
 
-export const eslintConfig: {
-    configs: {
-        all: {
-            rules: Linter.RulesRecord;
-        };
-        recommended: {
-            rules: Linter.RulesRecord;
-        };
-    };
-} = rawEslintConfig;
+export { default as eslintConfig } from '@eslint/js';
 
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 export const prettierConfig: ESLint.Plugin = rawPrettierConfig;

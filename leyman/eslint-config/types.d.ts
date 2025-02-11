@@ -23,22 +23,7 @@ declare module 'eslint-plugin-import' {
     export default import('eslint').ESLint.Plugin;
 }
 
-declare module 'eslint-plugin-jsdoc' {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    export default import('eslint').ESLint.Plugin;
-}
-
 declare module 'eslint-plugin-jsx-a11y' {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    export default import('eslint').ESLint.Plugin;
-}
-
-declare module 'eslint-plugin-n' {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    export default import('eslint').ESLint.Plugin;
-}
-
-declare module 'eslint-plugin-react' {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     export default import('eslint').ESLint.Plugin;
 }
@@ -48,7 +33,7 @@ declare module 'eslint-plugin-react-hooks' {
     export default import('eslint').ESLint.Plugin;
 }
 
-declare module 'eslint-plugin-unicorn' {
+declare module 'eslint-plugin-sonarjs' {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     export default import('eslint').ESLint.Plugin;
 }
