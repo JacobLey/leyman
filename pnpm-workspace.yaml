@@ -27,7 +27,7 @@ catalogs:
 catalog:
   '@biomejs/biome': ^1.9.4
   '@eslint/js': ^9.17.0
-  '@nx/devkit': ^20.3.2
+  '@nx/devkit': ^20.4.2
   '@pnpm/find-workspace-dir': ^7.0.3
   '@pnpm/lockfile.fs': ^1.1.0
   '@pnpm/lockfile.pruner': ^0.0.6
@@ -74,7 +74,7 @@ catalog:
   globby: ^14.0.2
   mocha: ^11.0.1
   npm: ^11.0.0
-  nx: ^20.3.2
+  nx: ^20.4.2
   p-defer: ^4.0.1
   prettier: ^3.4.2
   react: ^18.3.1

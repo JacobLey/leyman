@@ -2,7 +2,7 @@ name: Test
 
 env:
   NODE_VERSION: 22.13.1
-  NX_VERSION: 20.3.2
+  NX_VERSION: 20.4.2
   PNPM_VERSION: 9.15.4
 
 on:
