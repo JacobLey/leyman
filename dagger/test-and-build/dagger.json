@@ -1,8 +1,10 @@
 {
   "$schema": "https://docs.dagger.io/reference/dagger.schema.json",
   "name": "test-and-build",
-  "engineVersion": "v0.15.3",
-  "sdk": "go",
+  "engineVersion": "v0.15.4",
+  "sdk": {
+    "source": "go"
+  },
   "include": [
     "go.mod",
     "go.sum",
