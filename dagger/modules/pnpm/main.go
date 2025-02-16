@@ -75,7 +75,7 @@ func (m *Pnpm) attachPnpmStore(
 			".",
 			source,
 			dagger.ContainerWithDirectoryOpts{
-				Include: []string{".npmrc", "pnpm-lock.yaml"},
+				Include: []string{".npmrc", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
 			},
 		).
 		WithExec([]string{"pnpm", "fetch"})
@@ -85,7 +85,7 @@ func (m *Pnpm) attachPnpmStore(
 			".",
 			source,
 			dagger.ContainerWithDirectoryOpts{
-				Include: []string{".npmrc", "pnpm-lock.yaml", "pnpm-workspace.yaml"},
+				Include: []string{".npmrc", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
 			},
 		).
 		WithDirectory(
@@ -120,10 +120,9 @@ func (m *Pnpm) InstallPackage(
 	)
 
 	pnpmAttached = pnpmAttached.
-		WithFile(".pnpmfile.cjs", source.File(".pnpmfile.cjs")).
 		WithDirectory(projectDir, projectSource, dagger.ContainerWithDirectoryOpts{Exclude: []string{".npmignore"}}).
 		WithWorkdir(projectDir).
-		WithExec([]string{"pnpm", "deploy", "--prefer-offline", "--filter", ".", "./deploy"})
+		WithExec([]string{"pnpm", "deploy", "--legacy", "--prefer-offline", "--filter", ".", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")
 }
@@ -154,11 +153,10 @@ func (m *Pnpm) DeployPackage(
 	)
 
 	pnpmAttached = pnpmAttached.
-		WithFile(".pnpmfile.cjs", source.File(".pnpmfile.cjs")).
 		WithDirectory(projectDir, projectOutput, dagger.ContainerWithDirectoryOpts{Exclude: []string{"node_modules"}}).
 		WithWorkdir(projectDir).
 		WithFile(".npmignore", projectSource.File(".npmignore")).
-		WithExec([]string{"pnpm", "deploy", "--filter", ".", "--prod", "./deploy"})
+		WithExec([]string{"pnpm", "deploy", "--legacy", "--filter", ".", "--prod", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")
 }
