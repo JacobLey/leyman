@@ -6,5 +6,8 @@
     "nx-dagger": "workspace:^",
     "nx-lifecycle": "workspace:^",
     "nx-update-ts-references": "workspace:^"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": []
   }
 }

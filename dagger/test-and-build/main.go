@@ -10,7 +10,7 @@ type TestAndBuild struct {
 }
 
 var nodeVersion = "22.13.1"
-var pnpmVersion = "9.15.4"
+var pnpmVersion = "10.4.0"
 
 func New(
 	// Root of source file
