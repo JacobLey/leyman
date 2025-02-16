@@ -293,26 +293,6 @@
         "install:_"
       ]
     },
-    "npm-pnpm-dedicated-lockfile": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "npm-pnpm-dedicated-lockfile --lockfileName=.pnpm-lock-hash --hash --no-ci"
-        ],
-        "color": true,
-        "cwd": "{projectRoot}"
-      },
-      "cache": true,
-      "inputs": [
-        "{workspaceRoot}/pnpm-lock.yaml"
-      ],
-      "outputs": [
-        "{projectRoot}/.pnpm-lock"
-      ],
-      "dependsOn": [
-        "install:_"
-      ]
-    },
     "analyze:_": {
       "executor": "nx:noop",
       "dependsOn": [

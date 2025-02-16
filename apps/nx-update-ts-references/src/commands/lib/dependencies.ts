@@ -1,6 +1,6 @@
 import { createProjectGraphAsync, type ProjectGraph } from '@nx/devkit';
-import { bind, createModule, identifier, singletonScope } from 'npm-haywire';
 import { type Directory, parseCwd } from 'npm-parse-cwd';
+import { bind, createModule, identifier, singletonScope } from 'haywire';
 
 export type ConsoleLog = (log: unknown) => void;
 export const consoleLogId = identifier<ConsoleLog>().named('log');

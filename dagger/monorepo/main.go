@@ -148,7 +148,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		runtime: _runtime_node,
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_pnpmDedicatedLockfile,
 		},
@@ -170,19 +173,12 @@ var nxConfig = map[NxProjectDir]NxProject{
 		runtime: _runtime_node,
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
-			_project_commonProxy,
 			_project_haywire,
 			_project_mochaChain,
-			_project_nxPluginHandler,
-			_project_nxUpdateTsReferences,
-			_project_pnpmDedicatedLockfile,
-			_project_sinonTypedStub,
 		},
 		directDependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_mochaChain,
-			_project_nxUpdateTsReferences,
-			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
 			_target_biome,
@@ -196,21 +192,14 @@ var nxConfig = map[NxProjectDir]NxProject{
 		runtime: _runtime_node,
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
-			_project_commonProxy,
 			_project_defaultImport,
 			_project_haywire,
 			_project_mochaChain,
-			_project_nxPluginHandler,
-			_project_nxUpdateTsReferences,
-			_project_pnpmDedicatedLockfile,
-			_project_sinonTypedStub,
 		},
 		directDependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_defaultImport,
 			_project_mochaChain,
-			_project_nxUpdateTsReferences,
-			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
 			_target_biome,
@@ -225,7 +214,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_nxUpdateTsReferences,
@@ -251,7 +243,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_nxUpdateTsReferences,
@@ -315,11 +310,9 @@ var nxConfig = map[NxProjectDir]NxProject{
 		runtime: _runtime_node,
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
-			_project_pnpmDedicatedLockfile,
 		},
 		directDependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
-			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
 			_target_biome,
@@ -334,23 +327,16 @@ var nxConfig = map[NxProjectDir]NxProject{
 		runtime: _runtime_node,
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
-			_project_commonProxy,
 			_project_defaultImport,
 			_project_entryScript,
 			_project_haywire,
 			_project_mochaChain,
-			_project_nxPluginHandler,
-			_project_nxUpdateTsReferences,
-			_project_pnpmDedicatedLockfile,
-			_project_sinonTypedStub,
 		},
 		directDependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_entryScript,
 			_project_haywire,
 			_project_mochaChain,
-			_project_nxUpdateTsReferences,
-			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
 			_target_biome,
@@ -400,7 +386,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_nxUpdateTsReferences,
@@ -479,12 +468,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_haywire,
-			_project_pnpmDedicatedLockfile,
 		},
 		directDependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_haywire,
-			_project_pnpmDedicatedLockfile,
 		},
 		targets: []NxTarget{
 			_target_biome,
@@ -499,7 +486,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_nxUpdateTsReferences,
@@ -525,7 +515,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_nxUpdateTsReferences,
@@ -646,7 +639,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_pnpmDedicatedLockfile,
 			_project_sinonTypedStub,
@@ -672,7 +668,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_pnpmDedicatedLockfile,
@@ -681,6 +680,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		directDependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
+			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_pnpmDedicatedLockfile,
@@ -700,7 +703,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_nxUpdateTsReferences,
@@ -725,9 +731,18 @@ var nxConfig = map[NxProjectDir]NxProject{
 		runtime: _runtime_node,
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
+			_project_defaultImport,
+			_project_entryScript,
+			_project_haywire,
+			_project_haywireLauncher,
+			_project_mochaChain,
 		},
 		directDependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
+			_project_entryScript,
+			_project_haywire,
+			_project_haywireLauncher,
+			_project_mochaChain,
 		},
 		targets: []NxTarget{
 			_target_biome,
@@ -780,7 +795,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_nxUpdateTsReferences,
@@ -805,7 +823,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		runtime: _runtime_node,
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_pnpmDedicatedLockfile,
 		},
@@ -827,7 +848,10 @@ var nxConfig = map[NxProjectDir]NxProject{
 		dependencyProjectDirs: []NxProjectDir{
 			_project_leymanEslintConfig,
 			_project_commonProxy,
+			_project_defaultImport,
+			_project_entryScript,
 			_project_haywire,
+			_project_haywireLauncher,
 			_project_mochaChain,
 			_project_nxPluginHandler,
 			_project_nxUpdateTsReferences,

@@ -46,8 +46,8 @@
     "eslint": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "nx-update-ts-references": "workspace:^",
-    "pnpm-dedicated-lockfile": "workspace:^",
+    "npm-nx-update-ts-references": "catalog:leyman",
+    "npm-pnpm-dedicated-lockfile": "catalog:leyman",
     "typescript": "catalog:"
   }
 }

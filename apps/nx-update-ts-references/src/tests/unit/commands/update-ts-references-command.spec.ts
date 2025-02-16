@@ -1,7 +1,7 @@
 import type { readFile as ReadFile } from 'node:fs/promises';
 import type { ProjectGraph } from '@nx/devkit';
-import type { AsyncSupplier } from 'npm-haywire';
 import { verifyAndRestore } from 'sinon';
+import type { AsyncSupplier } from 'haywire';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import type { ParseCwd } from '../../../commands/lib/dependencies.js';

@@ -1,5 +1,5 @@
 import { isCI } from 'ci-info';
-import { bind, createModule, identifier } from 'npm-haywire';
+import { bind, createModule, identifier } from 'haywire';
 
 export const isCiId = identifier<boolean>().named('ci');
 

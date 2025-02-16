@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, suite } from 'npm-mocha-chain';
 import { stubMethod } from 'npm-sinon-typed-stub';
 import { verifyAndRestore } from 'sinon';
+import { afterEach, beforeEach, suite } from 'mocha-chain';
 import type { FindLockfileDir, ReadLockfile } from '../../../lib/dependencies.js';
 import { PrunedLockfile } from '../../../lib/pruned-lockfile.js';
 import { expect } from '../../chai-hooks.js';

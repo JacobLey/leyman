@@ -1,4 +1,4 @@
-import { suite, test } from 'npm-mocha-chain';
+import { suite, test } from 'mocha-chain';
 
 suite('entrypoint', () => {
     test('coverage', async () => {

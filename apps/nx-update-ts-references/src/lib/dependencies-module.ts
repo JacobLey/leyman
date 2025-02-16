@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { formatText, type TextFormatter } from 'npm-format-file';
-import { bind, createModule, identifier, optimisticSingletonScope } from 'npm-haywire';
 import { populateFile, type PopulateFile } from 'npm-populate-files';
+import { bind, createModule, identifier, optimisticSingletonScope } from 'haywire';
 import { UpdateTsReferencesFactory, updateTsReferencesId } from './update-ts-references.js';
 
 export const readFileId = identifier<typeof readFile>();

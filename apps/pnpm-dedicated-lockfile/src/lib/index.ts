@@ -1,4 +1,4 @@
-import { bind, singletonScope } from 'npm-haywire';
+import { bind, singletonScope } from 'haywire';
 import { dependenciesModule, findLockfileDirId, readLockfileId } from './dependencies.js';
 import { getPrunedLockfileId, PrunedLockfile } from './pruned-lockfile.js';
 

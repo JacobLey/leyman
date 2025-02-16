@@ -1,6 +1,6 @@
-import { EntryScript } from 'npm-entry-script';
-import { bind, singletonScope } from 'npm-haywire';
-import { launch } from 'npm-haywire-launcher';
+import { EntryScript } from 'entry-script';
+import { bind, singletonScope } from 'haywire';
+import { launch } from 'haywire-launcher';
 import { LockfileCli } from './cli.js';
 import { commandsId, commandsModule } from './commands/index.js';
 import { consoleErrorId, consoleLogId, exitCodeId } from './lib/dependencies.js';

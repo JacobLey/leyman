@@ -16,6 +16,18 @@
       "path": "../../tools/common-proxy"
     },
     {
+      "path": "../../tools/default-import"
+    },
+    {
+      "path": "../../tools/entry-script"
+    },
+    {
+      "path": "../../tools/haywire-launcher"
+    },
+    {
+      "path": "../../tools/haywire"
+    },
+    {
       "path": "../../tools/mocha-chain"
     },
     {

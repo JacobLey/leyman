@@ -1,4 +1,4 @@
-import { bind, identifier } from 'npm-haywire';
+import { bind, identifier } from 'haywire';
 import { readFileId } from '../lib/dependencies-module.js';
 import { updateTsReferencesId } from '../lib/update-ts-references.js';
 import { dependenciesModule, parseCwdId, projectGraphId } from './lib/dependencies.js';

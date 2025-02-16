@@ -1,8 +1,8 @@
 import { findWorkspaceDir } from '@pnpm/find-workspace-dir';
 import { type Lockfile, readWantedLockfile } from '@pnpm/lockfile.fs';
-import { bind, createModule, identifier } from 'npm-haywire';
 import { type Directory, parseCwd } from 'npm-parse-cwd';
 import { populateFile, type PopulateFile } from 'npm-populate-files';
+import { bind, createModule, identifier } from 'haywire';
 
 export type ConsoleLog = (log: unknown) => void;
 export const consoleLogId = identifier<ConsoleLog>().named('log');

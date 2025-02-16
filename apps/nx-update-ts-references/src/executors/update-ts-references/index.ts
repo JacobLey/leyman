@@ -1,4 +1,4 @@
-import { bind, createContainer } from 'npm-haywire';
+import { bind, createContainer } from 'haywire';
 import { dependenciesModule } from '../../lib/dependencies-module.js';
 import { updateTsReferencesId } from '../../lib/update-ts-references.js';
 import { NxUpdateTsReferencesExecutor } from './executor.js';

@@ -2,8 +2,8 @@ import type { readFile as ReadFile } from 'node:fs/promises';
 import Path from 'node:path';
 import commentJson from 'comment-json';
 import type { TextFormatter } from 'npm-format-file';
-import { identifier } from 'npm-haywire';
 import type { PopulateFile } from 'npm-populate-files';
+import { identifier } from 'haywire';
 import { isTsConfig, type TsConfig } from './tsconfig-validator.js';
 
 /**
