@@ -224,8 +224,6 @@ catalogs:
       specifier: npm:sinon-typed-stub@0.0.11
       version: 0.0.11
 
-pnpmfileChecksum: sha256-epLyecybdkfOIuphOh4WrNz6tz7tKp+fuXA6RKnoGjk=
-
 importers:
 
   .:
@@ -3406,10 +3404,6 @@ packages:
   deep-is@0.1.4:
     resolution: {integrity: sha512-oIPzksmTg4/MriiaYGO+okXDT7ztn/w3Eptv/+gSIdMdKsJo0u4CfYNFJPy+4SKMuCqGw2wxnA+URMg3t8a/bQ==}
 
-  default-import@2.0.7:
-    resolution: {integrity: sha512-4+bJJon+wp8p55WwBAjP3C256MyXkjMldg/00pdonpxzlAfhUYCnhT4d+W9BkDoZpjYCayDGNAdHHZ3LXNdcPA==}
-    engines: {node: '>=20'}
-
   default-import@2.0.8:
     resolution: {integrity: sha512-gAUvTfQIJISdj3udi6766hyGW/iqPt969qlgLxZvks/wePN1t0BWQYhUz/Q8jpc1PpclXrUtUJd6NEdFnvXiFg==}
     engines: {node: '>=20'}
@@ -3840,18 +3834,6 @@ packages:
     resolution: {integrity: sha512-hGfm/slu0ZabnNt4oaRZ6uREyfCj6P4fT/n6A1rGV+Z0VdGXjfOhVUpkn6qVQONHGIFwmveGXyDs75+nr6FM8w==}
     engines: {node: '>= 6'}
 
-  format-file@0.1.4:
-    resolution: {integrity: sha512-iyig/rrv9CPCjFwxqKT6dUODBhDvKrIuHwL5GepL7IZl8Sr4vco5f0QPcWDTOUoaN8QWfjARxTExkQrPsTQutw==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      '@biomejs/biome': ^1.9.4
-      prettier: ^3.4.2
-    peerDependenciesMeta:
-      '@biomejs/biome':
-        optional: true
-      prettier:
-        optional: true
-
   format-file@0.1.5:
     resolution: {integrity: sha512-DYZfR9gjFSuYP1UfAk1njWvOBcLrv5Wz3ouydJN/Mg9NGoQzSklXJHscKENvp2zypawTtxfZhFaDk8GEmpqJVw==}
     engines: {node: '>=20'}
@@ -4229,10 +4211,6 @@ packages:
   isexe@2.0.0:
     resolution: {integrity: sha512-RHxMLp9lnKHGHRng9QFhRCMbYAcVpn69smSGcq3f36xjgVVWThj4qqLbTLlq7Ssj8B+fIQ1EuCEGI2lKsyQeIw==}
 
-  iso-crypto@1.2.3:
-    resolution: {integrity: sha512-3Q+dvU5vP7ZUmJB7vUUsNDOpc0PL/A4svKIb4pZvkmjKMMjOuxto/doopsUvX7ht9KKqPghwowyFaIrS5Hz+vQ==}
-    engines: {node: '>=20'}
-
   iso-crypto@1.2.4:
     resolution: {integrity: sha512-tb/AQ8HiJCImgGq+z2ojaVm2gctK1L3EApoLEbLlhs8xaegOnfI3/do5UDpM5pNvlLWJKw1cgG7GlFAAn9oq7w==}
     engines: {node: '>=20'}
@@ -4329,10 +4307,6 @@ packages:
   jsx-ast-utils@3.3.5:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
     engines: {node: '>=4.0'}
-
-  juniper@1.2.4:
-    resolution: {integrity: sha512-sjf3Xn7JzF0VsWWnjuapHHUUhc7Hm/SbAA51z5ifBibCWDpN24m/xm0r7N3PKnWnSfjlNBjh4bfi/tjXUiUk/w==}
-    engines: {node: '>=20'}
 
   juniper@1.2.5:
     resolution: {integrity: sha512-c25WJbNAQy0JGpiqwjxYzc2+6ZtVAjkqF/2QUjHI5NzcMm5T1CEz+oeCsnKhjYJE9r+DO6VpdtWksK/mkj+Sew==}
@@ -4604,7 +4578,7 @@ packages:
     resolution: {integrity: sha512-hRggQG2AZdVFYmpWJZ1lbn+C7x1gsaYwphdEH1tVQg89ZxBFIqfX5sSc4Bl4HigPXfG70uGy31SUiP1hYx75KA==}
     engines: {node: '>=20'}
     peerDependencies:
-      '@nx/devkit': ^20.4.4
+      '@nx/devkit': ^20.4.2
     peerDependenciesMeta:
       '@nx/devkit':
         optional: true
@@ -4724,10 +4698,6 @@ packages:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
 
-  parse-cwd@1.1.1:
-    resolution: {integrity: sha512-PxUxP5hR544ZBuyNd995t9kDv+uV/4/UO8yV2e+gzx6eu4SDHBLbQqTIPNbmSfUXZLKUmbxXTxRV9RUhyOhjmg==}
-    engines: {node: '>=20'}
-
   parse-cwd@1.1.2:
     resolution: {integrity: sha512-B9fehV7qDf9HzKXgZFIRYcXJvZ5edApdQxDvGnhEOG8JdXNQdW7dS0xROxYhZViCfgtwiJkeQtmyoaG7BM09tA==}
     engines: {node: '>=20'}
@@ -4799,10 +4769,6 @@ packages:
     resolution: {integrity: sha512-uQwHH/X6I+PD8RKj2j7E3XBgSzp++4zcnH1wvufWnkz1heVdrYKB4axGGlC2EUidcYzMtB5EXUKRsqqXL3yS8w==}
     engines: {node: '>=20'}
     hasBin: true
-
-  populate-files@0.2.3:
-    resolution: {integrity: sha512-kFg4KZTDaQICM1LhhVVCGSsmbkAeRTqRVFWKA4SOfMH2ahzno9U1sB+2lYMpSHVJ7iS8qIItK/t4pue61T1+tw==}
-    engines: {node: '>=20'}
 
   populate-files@0.2.4:
     resolution: {integrity: sha512-YAWme4iGZEYYjTW79fIB49H7islnXXUvcLUMeDrx7VC7E+64RBLFBgXx46qjIt+X+PDLgHOjoHdCRvub+lvd1g==}
@@ -6509,7 +6475,7 @@ snapshots:
       haywire: 0.1.8
       haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
       juniper: 1.2.5
-      npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
+      npm-populate-files: populate-files@0.2.4(@biomejs/biome@1.9.4)
       parse-cwd: 1.1.2
       yargs: 17.7.2
     transitivePeerDependencies:
@@ -6705,7 +6671,7 @@ snapshots:
   common-proxy@0.1.3:
     dependencies:
       '@swc/helpers': 0.5.15
-      npm-default-import: default-import@2.0.7
+      npm-default-import: default-import@2.0.8
 
   comver-to-semver@1.0.0: {}
 
@@ -6776,8 +6742,6 @@ snapshots:
   deep-eql@5.0.2: {}
 
   deep-is@0.1.4: {}
-
-  default-import@2.0.7: {}
 
   default-import@2.0.8: {}
 
@@ -7343,14 +7307,6 @@ snapshots:
       es-set-tostringtag: 2.1.0
       mime-types: 2.1.35
 
-  format-file@0.1.4(@biomejs/biome@1.9.4):
-    dependencies:
-      find-up: 7.0.0
-      haywire: 0.1.8
-      tmp-promise: 3.0.3
-    optionalDependencies:
-      '@biomejs/biome': 1.9.4
-
   format-file@0.1.5(@biomejs/biome@1.9.4):
     dependencies:
       find-up: 7.0.0
@@ -7722,8 +7678,6 @@ snapshots:
 
   isexe@2.0.0: {}
 
-  iso-crypto@1.2.3: {}
-
   iso-crypto@1.2.4: {}
 
   istanbul-lib-coverage@3.2.2: {}
@@ -7815,10 +7769,6 @@ snapshots:
       array.prototype.flat: 1.3.3
       object.assign: 4.1.7
       object.values: 1.2.1
-
-  juniper@1.2.4:
-    dependencies:
-      escape-string-regexp: 5.0.0
 
   juniper@1.2.5:
     dependencies:
@@ -8022,8 +7972,8 @@ snapshots:
       ajv: 8.17.1
       common-proxy: 0.1.3
       haywire: 0.1.8
-      npm-default-import: default-import@2.0.7
-      npm-juniper: juniper@1.2.4
+      npm-default-import: default-import@2.0.8
+      npm-juniper: juniper@1.2.5
     optionalDependencies:
       '@nx/devkit': 20.4.4(nx@20.4.4(@swc/core@1.10.16(@swc/helpers@0.5.15)))
 
@@ -8032,8 +7982,8 @@ snapshots:
       ajv: 8.17.1
       common-proxy: 0.1.3
       haywire: 0.1.8
-      npm-default-import: default-import@2.0.7
-      npm-juniper: juniper@1.2.4
+      npm-default-import: default-import@2.0.8
+      npm-juniper: juniper@1.2.5
     optionalDependencies:
       '@nx/devkit': 20.4.4(nx@20.4.4(@swc/core@1.10.16))
 
@@ -8042,8 +7992,8 @@ snapshots:
       ajv: 8.17.1
       common-proxy: 0.1.3
       haywire: 0.1.8
-      npm-default-import: default-import@2.0.7
-      npm-juniper: juniper@1.2.4
+      npm-default-import: default-import@2.0.8
+      npm-juniper: juniper@1.2.5
     optionalDependencies:
       '@nx/devkit': 20.4.4(nx@20.4.4)
 
@@ -8057,8 +8007,8 @@ snapshots:
       entry-script: 3.0.9
       haywire: 0.1.8
       haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
-      npm-format-file: format-file@0.1.4(@biomejs/biome@1.9.4)
-      npm-juniper: juniper@1.2.4
+      npm-format-file: format-file@0.1.5(@biomejs/biome@1.9.4)
+      npm-juniper: juniper@1.2.5
       npm-parse-cwd: parse-cwd@1.1.2
       npm-populate-files: populate-files@0.2.4(@biomejs/biome@1.9.4)
       nx: 20.4.4
@@ -8081,8 +8031,8 @@ snapshots:
       entry-script: 3.0.9
       haywire: 0.1.8
       haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
-      npm-format-file: format-file@0.1.4(@biomejs/biome@1.9.4)
-      npm-juniper: juniper@1.2.4
+      npm-format-file: format-file@0.1.5(@biomejs/biome@1.9.4)
+      npm-juniper: juniper@1.2.5
       npm-parse-cwd: parse-cwd@1.1.2
       npm-populate-files: populate-files@0.2.4(@biomejs/biome@1.9.4)
       nx: 20.4.4(@swc/core@1.10.16(@swc/helpers@0.5.15))
@@ -8105,8 +8055,8 @@ snapshots:
       entry-script: 3.0.9
       haywire: 0.1.8
       haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
-      npm-format-file: format-file@0.1.4(@biomejs/biome@1.9.4)
-      npm-juniper: juniper@1.2.4
+      npm-format-file: format-file@0.1.5(@biomejs/biome@1.9.4)
+      npm-juniper: juniper@1.2.5
       npm-parse-cwd: parse-cwd@1.1.2
       npm-populate-files: populate-files@0.2.4(@biomejs/biome@1.9.4)
       nx: 20.4.4(@swc/core@1.10.16)
@@ -8388,8 +8338,6 @@ snapshots:
     dependencies:
       callsites: 3.1.0
 
-  parse-cwd@1.1.1: {}
-
   parse-cwd@1.1.2: {}
 
   parse-imports@2.2.1:
@@ -8449,26 +8397,15 @@ snapshots:
       entry-script: 3.0.9
       haywire: 0.1.8
       haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
-      npm-iso-crypto: iso-crypto@1.2.3
-      npm-parse-cwd: parse-cwd@1.1.1
-      npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
+      npm-iso-crypto: iso-crypto@1.2.4
+      npm-parse-cwd: parse-cwd@1.1.2
+      npm-populate-files: populate-files@0.2.4(@biomejs/biome@1.9.4)
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@biomejs/biome'
       - domexception
       - prettier
       - supports-color
-
-  populate-files@0.2.3(@biomejs/biome@1.9.4):
-    dependencies:
-      ci-info: 4.1.0
-      format-file: 0.1.4(@biomejs/biome@1.9.4)
-      haywire: 0.1.8
-      parse-cwd: 1.1.2
-      uint8array-extras: 1.4.0
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - prettier
 
   populate-files@0.2.4(@biomejs/biome@1.9.4):
     dependencies:
