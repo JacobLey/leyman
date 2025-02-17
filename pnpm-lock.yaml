@@ -13,7 +13,7 @@ catalogs:
       specifier: ^9.20.0
       version: 9.20.0
     '@nx/devkit':
-      specifier: ^20.4.2
+      specifier: ^20.4.4
       version: 20.4.4
     '@pnpm/find-workspace-dir':
       specifier: ^7.0.3
@@ -154,7 +154,7 @@ catalogs:
       specifier: ^11.1.0
       version: 11.1.0
     nx:
-      specifier: ^20.4.2
+      specifier: ^20.4.4
       version: 20.4.4
     p-defer:
       specifier: ^4.0.1
@@ -4604,7 +4604,7 @@ packages:
     resolution: {integrity: sha512-hRggQG2AZdVFYmpWJZ1lbn+C7x1gsaYwphdEH1tVQg89ZxBFIqfX5sSc4Bl4HigPXfG70uGy31SUiP1hYx75KA==}
     engines: {node: '>=20'}
     peerDependencies:
-      '@nx/devkit': ^20.4.2
+      '@nx/devkit': ^20.4.4
     peerDependenciesMeta:
       '@nx/devkit':
         optional: true

@@ -1,7 +1,7 @@
 # https://github.com/devcontainers/images/blob/main/src/base-debian/history
 FROM mcr.microsoft.com/devcontainers/base:1.0.19-debian12
 
-ARG NX_VERSION=20.4.2
+ARG NX_VERSION=20.4.4
 ARG NODE_VERSION=22.13.1
 ARG PNPM_VERSION=10.4.0
 ARG CHANGESETS_VERSION=2.27.12
