@@ -399,8 +399,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "install:_",
-        "pnpm-dedicated-lockfile",
-        "npm-pnpm-dedicated-lockfile"
+        "pnpm-dedicated-lockfile"
       ],
       "configurations": {
         "__lifecycle": {}
