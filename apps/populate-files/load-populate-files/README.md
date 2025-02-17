@@ -25,8 +25,6 @@ Load and dynamically populate file content based on a single files config.
 
 Instead of calling `populateFiles()` directly, we can can export the file configs, and defer the execution of file writing to `loadAndPopulateFiles()`.
 
-This is useful for CLI scripts, or NX plugins like [nx-populate-files](https://www.npmjs.com/package/nx-populate-files).
-
 ## Installation
 
 `npm i load-populate-files`
@@ -111,7 +109,3 @@ Used internally to interpret `cwd` option.
 ### [populate-files](https://www.npmjs.com/package/populate-files)
 
 Populate and format a file based on dynamic content.
-
-### [nx-populate-files](https://www.npmjs.com/package/nx-populate-files)
-
-Load and populate files as an nx target.

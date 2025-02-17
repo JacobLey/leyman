@@ -26,26 +26,26 @@ Nx uses the target's [dependsOn](https://nx.dev/reference/project-configuration#
 
 In practice, this quickly becomes unweildy. In order to properly configure a given task, you have to have full context about all other tasks (including those of your dependencies). You also need to make sure all dependents are updated whenever you add another step to a task.
 
-For example, perhaps your code contains a typescript build step [nx-tsc](https://www.npmjs.com/package/nx-tsc), followed by a unit test [mocha](https://mochajs.org/). An initial config will look like:
+For example, perhaps your code contains a typescript build step [tsc](https://www.typescriptlang.org/docs/handbook/compiler-options.html), followed by a unit test [mocha](https://mochajs.org/). An initial config will look like:
 
 ```json
 {
     "targets": {
-        "nx-tsc": {
-            "dependsOn": ["^nx-tsc"]
+        "tsc": {
+            "dependsOn": ["^tsc"]
         },
         "mocha": {
-            "dependsOn": ["nx-tsc"]
+            "dependsOn": ["tsc"]
         },
     }
 }
 ```
 
-Your mocha task depends on the nx-tsc first, and nx-tsc depends on any of _its_ dependencies to be built first.
+Your mocha task depends on the tsc first, and tsc depends on any of _its_ dependencies to be built first.
 
-Now what if you need want to add a step _after_ to your build? Perhaps you want to use your recently built JS code to [generate a JSON config](https://www.npmjs.com/package/nx-populate-files).
+Now what if you need want to add a step _after_ to your build? Perhaps you want to use your recently built JS code to [generate a JSON config](https://www.npmjs.com/package/load-populate-files).
 
-Now your mocha command needs to update to depend on that populate step, rather than `nx-tsc`. Your `nx-tsc` command _also_ needs to update its dependencies to depend on that task, rather than `nx-tsc`. But only if your dependencies include this populate step!
+Now your mocha command needs to update to depend on that populate step, rather than `tsc`. Your `tsc` command _also_ needs to update its dependencies to depend on that task, rather than `tsc`. But only if your dependencies include this populate step!
 
 Instead of simply adding this new task, you now need to conditionally manage the dependecones on two other tasks! Imagine how this problem can grow as we begin to support more tasks like type checking, code coverage, or codegen. Each implemented slightly different in each package, especailly if you use more than one language in your monorepo!
 
@@ -66,7 +66,7 @@ Note these steps are still abstract, and it is not necessary that every project 
 
 Now we can bind project specific implementations to each abstract task.
 
-In the original example, perhaps we bind our `nx-tsc` target to a `build:run` step, and our `nx-populate-files` step to a `build:post` step.
+In the original example, perhaps we bind our `tsc` target to a `build:run` step, and our `load-populate-files` step to a `build:post` step.
 
 Then our `mocha` target can be bound to a `test:unit` step.
 
@@ -202,7 +202,7 @@ Required. No default value.
 
 This is [bind implementions to tasks](#bind-implementions-to-tasks) logic as described above.
 
-The value is an object mapping, where the key is the name of your specific target implementations (e.g. `nx-tsc` or `mocha`) and the value is the stage it maps to.
+The value is an object mapping, where the key is the name of your specific target implementations (e.g. `tsc` or `mocha`) and the value is the stage it maps to.
 
 __\*\*NOTE\*\*__ If the bound stage has `steps` defined, then you must bind to a specific step. If there are no steps, then you reference the stage directly.
 

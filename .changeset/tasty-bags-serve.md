@@ -1,6 +1,5 @@
 ---
 "load-populate-files": patch
-"nx-populate-files": patch
 "populate-files": patch
 "nx-update-ts-references": patch
 "pnpm-dedicated-lockfile": patch
@@ -25,7 +24,6 @@
 "barrelify": patch
 "haywire": patch
 "juniper": patch
-"nx-tsc": patch
 ---
 
 Bump dependencies
