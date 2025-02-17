@@ -1,5 +1,17 @@
 # nx-plugin-handler
 
+## 0.2.1
+
+### Patch Changes
+
+- f51f869: Import Ajv2020 directly instead of parsing default export
+- 9694f33: Bump dependencies
+- Updated dependencies [a389e60]
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [9694f33]
+  - common-proxy@0.1.3
+  - haywire@0.1.8
+
 ## 0.2.0
 
 ### Minor Changes

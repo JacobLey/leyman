@@ -1,5 +1,12 @@
 # sinon-typed-stub
 
+## 0.0.11
+
+### Patch Changes
+
+- 5151c30: Remove unused dependency
+- 9694f33: Bump dependencies
+
 ## 0.0.10
 
 ### Patch Changes

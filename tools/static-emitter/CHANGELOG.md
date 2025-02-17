@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.9
+
+### Patch Changes
+
+- 9694f33: Bump dependencies
+
 ## 2.0.8
 
 ### Patch Changes

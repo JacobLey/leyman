@@ -1,5 +1,11 @@
 # enum-to-array
 
+## 1.1.16
+
+### Patch Changes
+
+- 9694f33: Bump dependencies
+
 ## 1.1.15
 
 ### Patch Changes

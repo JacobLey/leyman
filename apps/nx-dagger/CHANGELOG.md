@@ -1,5 +1,31 @@
 # nx-lifecycle
 
+## 0.1.0
+
+### Minor Changes
+
+- 493d37a: Allow multiple plugin targets to map to a single dagger module
+- 7a2bd71: Support customizing parameters
+
+### Patch Changes
+
+- 40eb2a8: Wrap CI errors in cancelable context
+- 873e6c5: Strip out ignored files explicitly
+- 9de477f: Wrap parallel map access in mutex
+- Updated dependencies [a389e60]
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [e59da43]
+- Updated dependencies [f51f869]
+- Updated dependencies [9694f33]
+  - common-proxy@0.1.3
+  - haywire-launcher@0.1.11
+  - entry-script@3.0.9
+  - haywire@0.1.8
+  - populate-files@0.2.4
+  - nx-plugin-handler@0.2.1
+  - juniper@1.2.5
+  - parse-cwd@1.1.2
+
 ## 0.2.0
 
 ### Minor Changes

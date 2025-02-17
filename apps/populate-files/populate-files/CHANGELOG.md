@@ -1,5 +1,18 @@
 # populate-files
 
+## 0.2.4
+
+### Patch Changes
+
+- e59da43: Remove references to archived packages
+- 9694f33: Bump dependencies
+- Updated dependencies [a389e60]
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [9694f33]
+  - format-file@0.1.5
+  - haywire@0.1.8
+  - parse-cwd@1.1.2
+
 ## 0.2.3
 
 ### Patch Changes

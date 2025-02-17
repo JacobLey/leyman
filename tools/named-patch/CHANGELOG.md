@@ -1,5 +1,11 @@
 # named-patch
 
+## 1.0.16
+
+### Patch Changes
+
+- 9694f33: Bump dependencies
+
 ## 1.0.15
 
 ### Patch Changes

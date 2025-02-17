@@ -1,5 +1,23 @@
 # nx-update-ts-references
 
+## 0.2.1
+
+### Patch Changes
+
+- 2dfcf0d: Refactor dependencies to not require pnpmfile
+- 5151c30: Remove unused dependency
+- f51f869: Import Ajv2020 directly instead of parsing default export
+- 9694f33: Bump dependencies
+- Updated dependencies [a389e60]
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [f51f869]
+- Updated dependencies [9694f33]
+  - common-proxy@0.1.3
+  - haywire-launcher@0.1.11
+  - entry-script@3.0.9
+  - haywire@0.1.8
+  - nx-plugin-handler@0.2.1
+
 ## 0.2.0
 
 ### Minor Changes

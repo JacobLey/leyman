@@ -1,6 +1,6 @@
 {
   "name": "mocha-chain",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Utility methods to help manage and expose nx plugins",
   "engines": {
     "node": ">=20"

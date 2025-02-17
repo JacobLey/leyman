@@ -1,5 +1,12 @@
 # Change Log
 
+## 2.0.8
+
+### Patch Changes
+
+- 2dfcf0d: Refactor dependencies to not require pnpmfile
+- 9694f33: Bump dependencies
+
 ## 2.0.7
 
 ### Patch Changes

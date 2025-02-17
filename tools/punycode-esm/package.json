@@ -1,6 +1,6 @@
 {
   "name": "punycode-esm",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "Typescript + ESM version of punycode.js",
   "engines": {
     "node": ">=20"

@@ -1,5 +1,12 @@
 # common-proxy
 
+## 0.1.3
+
+### Patch Changes
+
+- a389e60: Remove unused dev dependency
+- 9694f33: Bump dependencies
+
 ## 0.1.2
 
 ### Patch Changes

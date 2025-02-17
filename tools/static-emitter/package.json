@@ -1,6 +1,6 @@
 {
   "name": "static-emitter",
-  "version": "2.0.8",
+  "version": "2.0.9",
   "description": "Statically typed event emitter.",
   "engines": {
     "node": ">=20"

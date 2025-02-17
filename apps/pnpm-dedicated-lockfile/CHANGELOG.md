@@ -1,5 +1,17 @@
 # pnpm-dedicated-lockfile
 
+## 0.0.4
+
+### Patch Changes
+
+- 2dfcf0d: Refactor dependencies to not require pnpmfile
+- 9694f33: Bump dependencies
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [9694f33]
+  - haywire-launcher@0.1.11
+  - entry-script@3.0.9
+  - haywire@0.1.8
+
 ## 0.0.3
 
 ### Patch Changes

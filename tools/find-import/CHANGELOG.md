@@ -1,5 +1,13 @@
 # find-import
 
+## 1.0.14
+
+### Patch Changes
+
+- 9694f33: Bump dependencies
+- Updated dependencies [9694f33]
+  - parse-cwd@1.1.2
+
 ## 1.0.13
 
 ### Patch Changes

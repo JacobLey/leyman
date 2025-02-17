@@ -1,5 +1,12 @@
 # haywire
 
+## 0.1.8
+
+### Patch Changes
+
+- 2dfcf0d: Refactor dependencies to not require pnpmfile
+- 9694f33: Bump dependencies
+
 ## 0.1.7
 
 ### Patch Changes

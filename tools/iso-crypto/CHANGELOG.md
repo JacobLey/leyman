@@ -1,5 +1,11 @@
 # iso-crypto
 
+## 1.2.4
+
+### Patch Changes
+
+- 9694f33: Bump dependencies
+
 ## 1.2.3
 
 ### Patch Changes

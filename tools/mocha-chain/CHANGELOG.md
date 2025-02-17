@@ -1,5 +1,15 @@
 # mocha-chain
 
+## 0.0.11
+
+### Patch Changes
+
+- 2dfcf0d: Refactor dependencies to not require pnpmfile
+- 9694f33: Bump dependencies
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [9694f33]
+  - haywire@0.1.8
+
 ## 0.0.10
 
 ### Patch Changes

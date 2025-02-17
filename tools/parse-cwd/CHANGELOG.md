@@ -1,5 +1,11 @@
 # parse-cwd
 
+## 1.1.2
+
+### Patch Changes
+
+- 9694f33: Bump dependencies
+
 ## 1.1.1
 
 ### Patch Changes

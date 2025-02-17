@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.0.9
+
+### Patch Changes
+
+- 2dfcf0d: Refactor dependencies to not require pnpmfile
+- 9694f33: Bump dependencies
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [9694f33]
+  - default-import@2.0.8
+
 ## 3.0.8
 
 ### Patch Changes

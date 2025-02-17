@@ -1,5 +1,12 @@
 # juniper
 
+## 1.2.5
+
+### Patch Changes
+
+- f51f869: Import Ajv2020 directly instead of parsing default export
+- 9694f33: Bump dependencies
+
 ## 1.2.4
 
 ### Patch Changes

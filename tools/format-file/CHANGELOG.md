@@ -1,5 +1,15 @@
 # format-file
 
+## 0.1.5
+
+### Patch Changes
+
+- a389e60: Remove unused dev dependency
+- 9694f33: Bump dependencies
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [9694f33]
+  - haywire@0.1.8
+
 ## 0.1.4
 
 ### Patch Changes

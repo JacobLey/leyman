@@ -1,6 +1,6 @@
 {
   "name": "default-import",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Properly handle CJS imports in ESM.",
   "engines": {
     "node": ">=20"

@@ -1,5 +1,27 @@
 # nx-lifecycle
 
+## 0.2.1
+
+### Patch Changes
+
+- e59da43: Remove references to archived packages
+- 235c248: Expose schema as uri-reference
+- f51f869: Import Ajv2020 directly instead of parsing default export
+- 9694f33: Bump dependencies
+- Updated dependencies [a389e60]
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [f51f869]
+- Updated dependencies [9694f33]
+  - common-proxy@0.1.3
+  - format-file@0.1.5
+  - haywire-launcher@0.1.11
+  - default-import@2.0.8
+  - entry-script@3.0.9
+  - haywire@0.1.8
+  - nx-plugin-handler@0.2.1
+  - juniper@1.2.5
+  - parse-cwd@1.1.2
+
 ## 0.2.0
 
 ### Minor Changes

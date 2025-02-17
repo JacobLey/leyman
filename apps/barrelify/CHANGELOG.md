@@ -1,5 +1,21 @@
 # barrelify
 
+## 1.3.3
+
+### Patch Changes
+
+- f51f869: Import Ajv2020 directly instead of parsing default export
+- 9694f33: Bump dependencies
+- Updated dependencies [2dfcf0d]
+- Updated dependencies [f51f869]
+- Updated dependencies [9694f33]
+  - haywire-launcher@0.1.11
+  - entry-script@3.0.9
+  - haywire@0.1.8
+  - juniper@1.2.5
+  - find-import@1.0.14
+  - parse-cwd@1.1.2
+
 ## 1.3.2
 
 ### Patch Changes
