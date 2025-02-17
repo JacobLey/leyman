@@ -2,6 +2,7 @@ package main
 
 import (
 	"dagger/pnpm/internal/dagger"
+	"strings"
 )
 
 type Pnpm struct {
@@ -122,6 +123,20 @@ func (m *Pnpm) InstallPackage(
 	pnpmAttached = pnpmAttached.
 		WithDirectory(projectDir, projectSource, dagger.ContainerWithDirectoryOpts{Exclude: []string{".npmignore"}}).
 		WithWorkdir(projectDir).
+		// Revert all local packages to 0 so remote packages never prefer them
+		WithExec([]string{
+			"node",
+			"-e",
+			strings.Join(
+				[]string{
+					"const { readFile, writeFile } = await import('node:fs/promises')",
+					"const packageJson = await readFile('./package.json', 'utf8')",
+					"const version0 = { ...JSON.parse(packageJson), version: '0.0.0' }",
+					"await writeFile('./package.json', JSON.stringify(version0, null, 2) + '\\n')",
+				},
+				";",
+			),
+		}).
 		WithExec([]string{"pnpm", "deploy", "--legacy", "--prefer-offline", "--filter", ".", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")
