@@ -191,38 +191,38 @@ catalogs:
       version: 17.7.2
   leyman:
     npm-barrelify:
-      specifier: npm:barrelify@^1.3.2
-      version: 1.3.2
+      specifier: npm:barrelify@^1.3.3
+      version: 1.3.3
     npm-default-import:
-      specifier: npm:default-import@^2.0.7
-      version: 2.0.7
+      specifier: npm:default-import@^2.0.8
+      version: 2.0.8
     npm-format-file:
-      specifier: npm:format-file@^0.1.4
-      version: 0.1.4
+      specifier: npm:format-file@^0.1.5
+      version: 0.1.5
     npm-iso-crypto:
-      specifier: npm:iso-crypto@^1.2.3
-      version: 1.2.3
-    npm-juniper:
-      specifier: npm:juniper@^1.2.4
+      specifier: npm:iso-crypto@^1.2.4
       version: 1.2.4
+    npm-juniper:
+      specifier: npm:juniper@^1.2.5
+      version: 1.2.5
     npm-load-populate-files:
-      specifier: npm:load-populate-files@^0.1.1
-      version: 0.1.1
+      specifier: npm:load-populate-files@^0.1.2
+      version: 0.1.2
     npm-nx-update-ts-references:
-      specifier: npm:nx-update-ts-references@^0.2.0
-      version: 0.2.0
+      specifier: npm:nx-update-ts-references@^0.2.1
+      version: 0.2.1
     npm-parse-cwd:
-      specifier: npm:parse-cwd@^1.1.1
-      version: 1.1.1
+      specifier: npm:parse-cwd@^1.1.2
+      version: 1.1.2
     npm-pnpm-dedicated-lockfile:
-      specifier: npm:pnpm-dedicated-lockfile@^0.0.3
-      version: 0.0.3
+      specifier: npm:pnpm-dedicated-lockfile@^0.0.4
+      version: 0.0.4
     npm-populate-files:
-      specifier: npm:populate-files@^0.2.3
-      version: 0.2.3
+      specifier: npm:populate-files@^0.2.4
+      version: 0.2.4
     npm-sinon-typed-stub:
-      specifier: npm:sinon-typed-stub@0.0.10
-      version: 0.0.10
+      specifier: npm:sinon-typed-stub@0.0.11
+      version: 0.0.11
 
 pnpmfileChecksum: sha256-epLyecybdkfOIuphOh4WrNz6tz7tKp+fuXA6RKnoGjk=
 
@@ -235,7 +235,7 @@ importers:
         version: 1.9.4
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)
       nx-dagger:
         specifier: workspace:^
         version: link:apps/nx-dagger
@@ -274,7 +274,7 @@ importers:
         version: link:../juniper
       npm-populate-files:
         specifier: catalog:leyman
-        version: populate-files@0.2.3(@biomejs/biome@1.9.4)
+        version: populate-files@0.2.4(@biomejs/biome@1.9.4)
       parse-cwd:
         specifier: workspace:^
         version: link:../../tools/parse-cwd
@@ -683,16 +683,16 @@ importers:
         version: link:../../tools/haywire-launcher
       npm-format-file:
         specifier: catalog:leyman
-        version: format-file@0.1.4(@biomejs/biome@1.9.4)
+        version: format-file@0.1.5(@biomejs/biome@1.9.4)
       npm-juniper:
         specifier: catalog:leyman
-        version: juniper@1.2.4
+        version: juniper@1.2.5
       npm-parse-cwd:
         specifier: catalog:leyman
-        version: parse-cwd@1.1.1
+        version: parse-cwd@1.1.2
       npm-populate-files:
         specifier: catalog:leyman
-        version: populate-files@0.2.3(@biomejs/biome@1.9.4)
+        version: populate-files@0.2.4(@biomejs/biome@1.9.4)
       nx:
         specifier: 'catalog:'
         version: 20.4.4(@swc/core@1.10.16)
@@ -756,10 +756,10 @@ importers:
         version: link:../../tools/mocha-chain
       npm-load-populate-files:
         specifier: catalog:leyman
-        version: load-populate-files@0.1.1(@biomejs/biome@1.9.4)
+        version: load-populate-files@0.1.2(@biomejs/biome@1.9.4)
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
@@ -801,13 +801,13 @@ importers:
         version: link:../../tools/haywire-launcher
       npm-iso-crypto:
         specifier: catalog:leyman
-        version: iso-crypto@1.2.3
+        version: iso-crypto@1.2.4
       npm-parse-cwd:
         specifier: catalog:leyman
-        version: parse-cwd@1.1.1
+        version: parse-cwd@1.1.2
       npm-populate-files:
         specifier: catalog:leyman
-        version: populate-files@0.2.3(@biomejs/biome@1.9.4)
+        version: populate-files@0.2.4(@biomejs/biome@1.9.4)
       yargs:
         specifier: 'catalog:'
         version: 17.7.2
@@ -865,10 +865,10 @@ importers:
         version: link:../../tools/mocha-chain
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       npm-sinon-typed-stub:
         specifier: catalog:leyman
-        version: sinon-typed-stub@0.0.10(@types/sinon@17.0.3)(sinon@19.0.2)
+        version: sinon-typed-stub@0.0.11(@types/sinon@17.0.3)(sinon@19.0.2)
       sinon:
         specifier: 'catalog:'
         version: 19.0.2
@@ -1095,7 +1095,7 @@ importers:
         version: 56.0.1(eslint@9.20.1)
       npm-juniper:
         specifier: catalog:leyman
-        version: juniper@1.2.4
+        version: juniper@1.2.5
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -1135,7 +1135,7 @@ importers:
         version: 11.1.0
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1174,7 +1174,7 @@ importers:
         version: 0.5.15
       npm-default-import:
         specifier: catalog:leyman
-        version: default-import@2.0.7
+        version: default-import@2.0.8
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -1217,10 +1217,10 @@ importers:
         version: link:../mocha-chain
       npm-barrelify:
         specifier: catalog:leyman
-        version: barrelify@1.3.2(@biomejs/biome@1.9.4)
+        version: barrelify@1.3.3(@biomejs/biome@1.9.4)
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16(@swc/helpers@0.5.15))
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16(@swc/helpers@0.5.15))
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -1271,10 +1271,10 @@ importers:
         version: link:../mocha-chain
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
-        version: pnpm-dedicated-lockfile@0.0.3(@biomejs/biome@1.9.4)
+        version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@1.9.4)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1329,10 +1329,10 @@ importers:
         version: link:../mocha-chain
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
-        version: pnpm-dedicated-lockfile@0.0.3(@biomejs/biome@1.9.4)
+        version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@1.9.4)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1575,13 +1575,13 @@ importers:
         version: 11.1.0
       npm-barrelify:
         specifier: catalog:leyman
-        version: barrelify@1.3.2(@biomejs/biome@1.9.4)
+        version: barrelify@1.3.3(@biomejs/biome@1.9.4)
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
-        version: pnpm-dedicated-lockfile@0.0.3(@biomejs/biome@1.9.4)
+        version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@1.9.4)
       typescript:
         specifier: 'catalog:'
         version: 5.7.3
@@ -1641,10 +1641,10 @@ importers:
         version: link:../mocha-chain
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
-        version: pnpm-dedicated-lockfile@0.0.3(@biomejs/biome@1.9.4)
+        version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@1.9.4)
       sinon:
         specifier: 'catalog:'
         version: 19.0.2
@@ -1762,10 +1762,10 @@ importers:
         version: 11.1.0
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
-        version: pnpm-dedicated-lockfile@0.0.3(@biomejs/biome@1.9.4)
+        version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@1.9.4)
       sinon:
         specifier: 'catalog:'
         version: 19.0.2
@@ -1918,10 +1918,10 @@ importers:
         version: link:../haywire
       npm-default-import:
         specifier: catalog:leyman
-        version: default-import@2.0.7
+        version: default-import@2.0.8
       npm-juniper:
         specifier: catalog:leyman
-        version: juniper@1.2.4
+        version: juniper@1.2.5
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -1970,7 +1970,7 @@ importers:
         version: link:../mocha-chain
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       nx:
         specifier: 'catalog:'
         version: 20.4.4(@swc/core@1.10.16)
@@ -2135,7 +2135,7 @@ importers:
         version: link:../mocha-chain
       npm-nx-update-ts-references:
         specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
+        version: nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -3150,8 +3150,8 @@ packages:
   bare-events@2.5.4:
     resolution: {integrity: sha512-+gFfDkR8pj4/TrWCGUGWmJIkBwuxPS5F+a5yWjOHQt2hHvNZd5YLzadjmDUtFmMM4y429bnKLa8bYBMHcYdnQA==}
 
-  barrelify@1.3.2:
-    resolution: {integrity: sha512-QociApcRD2m34oLrIgb/8fkZAgCjlse3XR6elHzsC8Lrubb3je+KDASopExwiDJ/w5zd3da2ZIOyRDkcqVLYFQ==}
+  barrelify@1.3.3:
+    resolution: {integrity: sha512-J4m4pTuMg9uVL7IBIO5op974Bbq1yXpOzZzzgtj9CTC+O71Q/QTRKhpVx9GO9kKqJiTxiUa2ketor00yPQsjSw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -3324,8 +3324,8 @@ packages:
     resolution: {integrity: sha512-buhp5kePrmda3vhc5B9t7pUQXAb2Tnd0qgpkIhPhkHXxJpiPJ11H0ZEU0oBpJ2QztSbzG/ZxMj/CHsYJqRHmyg==}
     engines: {node: '>= 12.0.0'}
 
-  common-proxy@0.1.2:
-    resolution: {integrity: sha512-FwAMjYdevx9aTNth7SRH9P3tef83livrp12pZ8W9xTt8S2gteRdIsje6SWVJB5d2/d68wjge0saPGosh4ltm/w==}
+  common-proxy@0.1.3:
+    resolution: {integrity: sha512-uslvuAYug1e70Jj9y+ITghdweaSz3NCLnh/GDQ1OhVgnG36g/F0M0uatsxmwiJlmKCah0oD/q2eFrUnYcerguw==}
     engines: {node: '>=20'}
 
   comver-to-semver@1.0.0:
@@ -3408,6 +3408,10 @@ packages:
 
   default-import@2.0.7:
     resolution: {integrity: sha512-4+bJJon+wp8p55WwBAjP3C256MyXkjMldg/00pdonpxzlAfhUYCnhT4d+W9BkDoZpjYCayDGNAdHHZ3LXNdcPA==}
+    engines: {node: '>=20'}
+
+  default-import@2.0.8:
+    resolution: {integrity: sha512-gAUvTfQIJISdj3udi6766hyGW/iqPt969qlgLxZvks/wePN1t0BWQYhUz/Q8jpc1PpclXrUtUJd6NEdFnvXiFg==}
     engines: {node: '>=20'}
 
   defaults@1.0.4:
@@ -3497,8 +3501,8 @@ packages:
     resolution: {integrity: sha512-yjNnPr315/FjS4zIsUxYguYUPP2e1NK4d7E7ZOLiyYCcbFBiTMyID+2wvm2w6+pZ/odMA7cRkjhsPbltwBOrLg==}
     engines: {node: '>=8.6'}
 
-  entry-script@3.0.8:
-    resolution: {integrity: sha512-ruVD0noj6IMONGdUYeoz1B3P4eaPTXDyzyXD6PaI66FF33BdIPzz6bM3m1G0gl9jyg91VsIbE8nrQVvLSYACzQ==}
+  entry-script@3.0.9:
+    resolution: {integrity: sha512-jKm4f91DmeOghp/ikdOeAxlr7/Cr+TBBcVxXq/5nL034U3nXDCK//0Q5bvXouQ/BUoORlclNLpbN2pbunyldyw==}
     engines: {node: '>=20'}
 
   error-ex@1.3.2:
@@ -3780,8 +3784,8 @@ packages:
     resolution: {integrity: sha512-YsGpe3WHLK8ZYi4tWDg2Jy3ebRz2rXowDxnld4bkQB00cc/1Zw9AWnC0i9ztDJitivtQvaI9KaLyKrc+hBW0yg==}
     engines: {node: '>=8'}
 
-  find-import@1.0.13:
-    resolution: {integrity: sha512-J0QH3+/s3zHGOqn0mwpnpINqPmC4Q2FEsoNiCqys9HcxCwJq+4N3gfC3BnpqAEDzpekWVwrtNjabje6es+cfgw==}
+  find-import@1.0.14:
+    resolution: {integrity: sha512-ZEVWDOhhryUru4YueVlk9ZLFwR/3qDAsbchOg19Gq4aqbWbKDNdBdr51gMz2MrSzdsMTSXud3an8nTSkGO3PxA==}
     engines: {node: '>=20'}
 
   find-up@4.1.0:
@@ -3842,6 +3846,18 @@ packages:
     peerDependencies:
       '@biomejs/biome': ^1.9.4
       prettier: ^3.4.2
+    peerDependenciesMeta:
+      '@biomejs/biome':
+        optional: true
+      prettier:
+        optional: true
+
+  format-file@0.1.5:
+    resolution: {integrity: sha512-DYZfR9gjFSuYP1UfAk1njWvOBcLrv5Wz3ouydJN/Mg9NGoQzSklXJHscKENvp2zypawTtxfZhFaDk8GEmpqJVw==}
+    engines: {node: '>=20'}
+    peerDependencies:
+      '@biomejs/biome': ^1.9.4
+      prettier: ^3.5.0
     peerDependenciesMeta:
       '@biomejs/biome':
         optional: true
@@ -3980,15 +3996,15 @@ packages:
     resolution: {integrity: sha512-0hJU9SCPvmMzIBdZFqNPXWa6dqh7WdH0cII9y+CyS8rG3nL48Bclra9HmKhVVUHyPWNH5Y7xDwAB7bfgSjkUMQ==}
     engines: {node: '>= 0.4'}
 
-  haywire-launcher@0.1.10:
-    resolution: {integrity: sha512-enURrQrRjqYMu1GzdhPQLijmNuDiWsxXMtm+2aTRCDIPxwevPHe31Iq7I+sf65A1DtH/HXvPwlBlMabNvr+0Rg==}
+  haywire-launcher@0.1.11:
+    resolution: {integrity: sha512-5glkmAGGJq4pCwN+5zj96Gnqw6rHe9uLsyjza8RGzqa23AlHI7WO2u2mhT9ckL9N98mrYq03gZDOth9EFO40WQ==}
     engines: {node: '>=20'}
     peerDependencies:
-      entry-script: ^3.0.8
-      haywire: ^0.1.7
+      entry-script: ^3.0.9
+      haywire: ^0.1.8
 
-  haywire@0.1.7:
-    resolution: {integrity: sha512-wbDpj3CbcmVbtDAvx9pwxTAlQeNDyXvekxd7DHcCf4MxdJBpYXut3F9fEc+Nn7JnHoWTx+11pDrWRZ2kdz/gxA==}
+  haywire@0.1.8:
+    resolution: {integrity: sha512-6Vhb/EytmMXZg/G9Yph75hFsaQDVMCSDsZbLcMTCRLzZZlNNCWlrLr0JOnuKusAt3938NwcpP9kEbzQIzc4PjA==}
     engines: {node: '>=20'}
 
   he@1.2.0:
@@ -4217,6 +4233,10 @@ packages:
     resolution: {integrity: sha512-3Q+dvU5vP7ZUmJB7vUUsNDOpc0PL/A4svKIb4pZvkmjKMMjOuxto/doopsUvX7ht9KKqPghwowyFaIrS5Hz+vQ==}
     engines: {node: '>=20'}
 
+  iso-crypto@1.2.4:
+    resolution: {integrity: sha512-tb/AQ8HiJCImgGq+z2ojaVm2gctK1L3EApoLEbLlhs8xaegOnfI3/do5UDpM5pNvlLWJKw1cgG7GlFAAn9oq7w==}
+    engines: {node: '>=20'}
+
   istanbul-lib-coverage@3.2.2:
     resolution: {integrity: sha512-O8dpsF+r0WV/8MNRKfnmrtCWhuKjxrq2w+jpzBL5UZKTi2LeVWnWOmWRxFlesJONmc+wLAGvKQZEOanko0LFTg==}
     engines: {node: '>=8'}
@@ -4314,6 +4334,10 @@ packages:
     resolution: {integrity: sha512-sjf3Xn7JzF0VsWWnjuapHHUUhc7Hm/SbAA51z5ifBibCWDpN24m/xm0r7N3PKnWnSfjlNBjh4bfi/tjXUiUk/w==}
     engines: {node: '>=20'}
 
+  juniper@1.2.5:
+    resolution: {integrity: sha512-c25WJbNAQy0JGpiqwjxYzc2+6ZtVAjkqF/2QUjHI5NzcMm5T1CEz+oeCsnKhjYJE9r+DO6VpdtWksK/mkj+Sew==}
+    engines: {node: '>=20'}
+
   just-extend@6.2.0:
     resolution: {integrity: sha512-cYofQu2Xpom82S6qD778jBDpwvvy39s1l/hrYij2u9AMdQcGRpaBu6kY4mVhuno5kJVi1DAz4aiphA2WI1/OAw==}
 
@@ -4342,8 +4366,8 @@ packages:
     resolution: {integrity: sha512-cNOjgCnLB+FnvWWtyRTzmB3POJ+cXxTA81LoW7u8JdmhfXzriropYwpjShnz1QLLWsQwY7nIxoDmcPTwphDK9w==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  load-populate-files@0.1.1:
-    resolution: {integrity: sha512-fOom8Jw78JdRuxKwJhn0V1fzTbglOxHsH3+Ey+gDiZB1jtBX1rOfwwrsUZrf5W+77AHF3EQ3OjT34fUT+DaEnw==}
+  load-populate-files@0.1.2:
+    resolution: {integrity: sha512-yKHa/bmeSGQ887DE33dZvx/07nW9H6CrVkMf3CfPJtWA6T4jcmcBOr4m4lGALKIWeSdoIqMJ2+wPTyYzAj26Yw==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -4576,17 +4600,17 @@ packages:
       - validate-npm-package-name
       - which
 
-  nx-plugin-handler@0.2.0:
-    resolution: {integrity: sha512-lHoMPOuBzuLDLqjCXYsnHr2jQB+52t1gMEfjWJUQ/4IKdnowFH9AeP/j8Y5o80pbBxnduQaLfkhS4P6FNPB3AQ==}
+  nx-plugin-handler@0.2.1:
+    resolution: {integrity: sha512-hRggQG2AZdVFYmpWJZ1lbn+C7x1gsaYwphdEH1tVQg89ZxBFIqfX5sSc4Bl4HigPXfG70uGy31SUiP1hYx75KA==}
     engines: {node: '>=20'}
     peerDependencies:
-      '@nx/devkit': ^20.3.0
+      '@nx/devkit': ^20.4.2
     peerDependenciesMeta:
       '@nx/devkit':
         optional: true
 
-  nx-update-ts-references@0.2.0:
-    resolution: {integrity: sha512-SQBJy6YyA8su2UJpXrX+zxwLvXXg/6EOnfOAK8vV2ETW+X9rvotkUVM6DKpQbzwjIxlgz/lEdysQtOAfhY36CA==}
+  nx-update-ts-references@0.2.1:
+    resolution: {integrity: sha512-o53UfJ81APn4xG2ZZhiK+/L3e90P210Wp7OmyYu+046TYi9aCeIcP4w0J4BoUadn8Qcu1TElNdN+ayohVoeZ6w==}
     engines: {node: '>=20'}
     hasBin: true
 
@@ -4704,6 +4728,10 @@ packages:
     resolution: {integrity: sha512-PxUxP5hR544ZBuyNd995t9kDv+uV/4/UO8yV2e+gzx6eu4SDHBLbQqTIPNbmSfUXZLKUmbxXTxRV9RUhyOhjmg==}
     engines: {node: '>=20'}
 
+  parse-cwd@1.1.2:
+    resolution: {integrity: sha512-B9fehV7qDf9HzKXgZFIRYcXJvZ5edApdQxDvGnhEOG8JdXNQdW7dS0xROxYhZViCfgtwiJkeQtmyoaG7BM09tA==}
+    engines: {node: '>=20'}
+
   parse-imports@2.2.1:
     resolution: {integrity: sha512-OL/zLggRp8mFhKL0rNORUTR4yBYujK/uU+xZL+/0Rgm2QE4nLO9v8PzEweSJEbMGKmDRjJE4R3IMJlL2di4JeQ==}
     engines: {node: '>= 18'}
@@ -4767,13 +4795,17 @@ packages:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
 
-  pnpm-dedicated-lockfile@0.0.3:
-    resolution: {integrity: sha512-kKzMTQNh892gs1PjtyN+kt4sVS/OElGBSa7jvibT0LRwZXd2HO4Atai7tQRat170p/wtsH4U6GsWO2fH2L4zPg==}
+  pnpm-dedicated-lockfile@0.0.4:
+    resolution: {integrity: sha512-uQwHH/X6I+PD8RKj2j7E3XBgSzp++4zcnH1wvufWnkz1heVdrYKB4axGGlC2EUidcYzMtB5EXUKRsqqXL3yS8w==}
     engines: {node: '>=20'}
     hasBin: true
 
   populate-files@0.2.3:
     resolution: {integrity: sha512-kFg4KZTDaQICM1LhhVVCGSsmbkAeRTqRVFWKA4SOfMH2ahzno9U1sB+2lYMpSHVJ7iS8qIItK/t4pue61T1+tw==}
+    engines: {node: '>=20'}
+
+  populate-files@0.2.4:
+    resolution: {integrity: sha512-YAWme4iGZEYYjTW79fIB49H7islnXXUvcLUMeDrx7VC7E+64RBLFBgXx46qjIt+X+PDLgHOjoHdCRvub+lvd1g==}
     engines: {node: '>=20'}
 
   possible-typed-array-names@1.1.0:
@@ -5045,8 +5077,8 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  sinon-typed-stub@0.0.10:
-    resolution: {integrity: sha512-e6gllcLMKjbGiUL3CaHe/sGL9v+ZSJ7LpsRSCZguSRaTmTf6vW7lxmN7RE2+BQGMUvDQLPCInLmZgNow5MjHjw==}
+  sinon-typed-stub@0.0.11:
+    resolution: {integrity: sha512-/mkXFEXZkYAbn4HSOkqE3Pn+gmP4olD5GoZ+x9p0tL82CP1pqeXYbqy/phuZYy96MPuuCkwPL+uBGtX3F6Zq5Q==}
     engines: {node: '>=20'}
     peerDependencies:
       '@types/sinon': ^17.0.3
@@ -6467,19 +6499,18 @@ snapshots:
   bare-events@2.5.4:
     optional: true
 
-  barrelify@1.3.2(@biomejs/biome@1.9.4):
+  barrelify@1.3.3(@biomejs/biome@1.9.4):
     dependencies:
       ajv: 8.17.1
       ci-info: 4.1.0
-      default-import: 2.0.7
-      entry-script: 3.0.8
-      find-import: 1.0.13
+      entry-script: 3.0.9
+      find-import: 1.0.14
       globby: 14.1.0
-      haywire: 0.1.7
-      haywire-launcher: 0.1.10(entry-script@3.0.8)(haywire@0.1.7)
-      juniper: 1.2.4
+      haywire: 0.1.8
+      haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
+      juniper: 1.2.5
       npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
-      parse-cwd: 1.1.1
+      parse-cwd: 1.1.2
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -6671,7 +6702,7 @@ snapshots:
 
   comment-parser@1.4.1: {}
 
-  common-proxy@0.1.2:
+  common-proxy@0.1.3:
     dependencies:
       '@swc/helpers': 0.5.15
       npm-default-import: default-import@2.0.7
@@ -6748,6 +6779,8 @@ snapshots:
 
   default-import@2.0.7: {}
 
+  default-import@2.0.8: {}
+
   defaults@1.0.4:
     dependencies:
       clone: 1.0.4
@@ -6821,9 +6854,9 @@ snapshots:
     dependencies:
       ansi-colors: 4.1.3
 
-  entry-script@3.0.8:
+  entry-script@3.0.9:
     dependencies:
-      default-import: 2.0.7
+      default-import: 2.0.8
 
   error-ex@1.3.2:
     dependencies:
@@ -7257,9 +7290,9 @@ snapshots:
     dependencies:
       to-regex-range: 5.0.1
 
-  find-import@1.0.13:
+  find-import@1.0.14:
     dependencies:
-      parse-cwd: 1.1.1
+      parse-cwd: 1.1.2
 
   find-up@4.1.0:
     dependencies:
@@ -7313,7 +7346,15 @@ snapshots:
   format-file@0.1.4(@biomejs/biome@1.9.4):
     dependencies:
       find-up: 7.0.0
-      haywire: 0.1.7
+      haywire: 0.1.8
+      tmp-promise: 3.0.3
+    optionalDependencies:
+      '@biomejs/biome': 1.9.4
+
+  format-file@0.1.5(@biomejs/biome@1.9.4):
+    dependencies:
+      find-up: 7.0.0
+      haywire: 0.1.8
       tmp-promise: 3.0.3
     optionalDependencies:
       '@biomejs/biome': 1.9.4
@@ -7465,12 +7506,12 @@ snapshots:
     dependencies:
       function-bind: 1.1.2
 
-  haywire-launcher@0.1.10(entry-script@3.0.8)(haywire@0.1.7):
+  haywire-launcher@0.1.11(entry-script@3.0.9)(haywire@0.1.8):
     dependencies:
-      entry-script: 3.0.8
-      haywire: 0.1.7
+      entry-script: 3.0.9
+      haywire: 0.1.8
 
-  haywire@0.1.7:
+  haywire@0.1.8:
     dependencies:
       p-defer: 4.0.1
 
@@ -7683,6 +7724,8 @@ snapshots:
 
   iso-crypto@1.2.3: {}
 
+  iso-crypto@1.2.4: {}
+
   istanbul-lib-coverage@3.2.2: {}
 
   istanbul-lib-report@3.0.1:
@@ -7777,6 +7820,10 @@ snapshots:
     dependencies:
       escape-string-regexp: 5.0.0
 
+  juniper@1.2.5:
+    dependencies:
+      escape-string-regexp: 5.0.0
+
   just-extend@6.2.0: {}
 
   keyv@4.5.4:
@@ -7800,17 +7847,17 @@ snapshots:
 
   lines-and-columns@2.0.3: {}
 
-  load-populate-files@0.1.1(@biomejs/biome@1.9.4):
+  load-populate-files@0.1.2(@biomejs/biome@1.9.4):
     dependencies:
       ajv: 8.17.1
       ci-info: 4.1.0
-      default-import: 2.0.7
-      entry-script: 3.0.8
-      haywire: 0.1.7
-      haywire-launcher: 0.1.10(entry-script@3.0.8)(haywire@0.1.7)
-      juniper: 1.2.4
-      parse-cwd: 1.1.1
-      populate-files: 0.2.3(@biomejs/biome@1.9.4)
+      default-import: 2.0.8
+      entry-script: 3.0.9
+      haywire: 0.1.8
+      haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
+      juniper: 1.2.5
+      parse-cwd: 1.1.2
+      populate-files: 0.2.4(@biomejs/biome@1.9.4)
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -7970,55 +8017,52 @@ snapshots:
 
   npm@11.1.0: {}
 
-  nx-plugin-handler@0.2.0(@nx/devkit@20.4.4(nx@20.4.4(@swc/core@1.10.16(@swc/helpers@0.5.15)))):
+  nx-plugin-handler@0.2.1(@nx/devkit@20.4.4(nx@20.4.4(@swc/core@1.10.16(@swc/helpers@0.5.15)))):
     dependencies:
       ajv: 8.17.1
-      common-proxy: 0.1.2
-      haywire: 0.1.7
+      common-proxy: 0.1.3
+      haywire: 0.1.8
       npm-default-import: default-import@2.0.7
       npm-juniper: juniper@1.2.4
     optionalDependencies:
       '@nx/devkit': 20.4.4(nx@20.4.4(@swc/core@1.10.16(@swc/helpers@0.5.15)))
 
-  nx-plugin-handler@0.2.0(@nx/devkit@20.4.4(nx@20.4.4(@swc/core@1.10.16))):
+  nx-plugin-handler@0.2.1(@nx/devkit@20.4.4(nx@20.4.4(@swc/core@1.10.16))):
     dependencies:
       ajv: 8.17.1
-      common-proxy: 0.1.2
-      haywire: 0.1.7
+      common-proxy: 0.1.3
+      haywire: 0.1.8
       npm-default-import: default-import@2.0.7
       npm-juniper: juniper@1.2.4
     optionalDependencies:
       '@nx/devkit': 20.4.4(nx@20.4.4(@swc/core@1.10.16))
 
-  nx-plugin-handler@0.2.0(@nx/devkit@20.4.4(nx@20.4.4)):
+  nx-plugin-handler@0.2.1(@nx/devkit@20.4.4(nx@20.4.4)):
     dependencies:
       ajv: 8.17.1
-      common-proxy: 0.1.2
-      haywire: 0.1.7
+      common-proxy: 0.1.3
+      haywire: 0.1.8
       npm-default-import: default-import@2.0.7
       npm-juniper: juniper@1.2.4
     optionalDependencies:
       '@nx/devkit': 20.4.4(nx@20.4.4)
 
-  nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4):
+  nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4):
     dependencies:
       '@nx/devkit': 20.4.4(nx@20.4.4)
       ajv: 8.17.1
       ci-info: 4.1.0
       comment-json: 4.2.5
-      common-proxy: 0.1.2
-      entry-script: 3.0.8
-      haywire: 0.1.7
-      npm-default-import: default-import@2.0.7
-      npm-entry-script: entry-script@3.0.8
+      common-proxy: 0.1.3
+      entry-script: 3.0.9
+      haywire: 0.1.8
+      haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
       npm-format-file: format-file@0.1.4(@biomejs/biome@1.9.4)
-      npm-haywire: haywire@0.1.7
-      npm-haywire-launcher: haywire-launcher@0.1.10(entry-script@3.0.8)(haywire@0.1.7)
       npm-juniper: juniper@1.2.4
-      npm-parse-cwd: parse-cwd@1.1.1
-      npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
+      npm-parse-cwd: parse-cwd@1.1.2
+      npm-populate-files: populate-files@0.2.4(@biomejs/biome@1.9.4)
       nx: 20.4.4
-      nx-plugin-handler: 0.2.0(@nx/devkit@20.4.4(nx@20.4.4))
+      nx-plugin-handler: 0.2.1(@nx/devkit@20.4.4(nx@20.4.4))
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -8027,25 +8071,22 @@ snapshots:
       - debug
       - prettier
 
-  nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16(@swc/helpers@0.5.15)):
+  nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16(@swc/helpers@0.5.15)):
     dependencies:
       '@nx/devkit': 20.4.4(nx@20.4.4(@swc/core@1.10.16(@swc/helpers@0.5.15)))
       ajv: 8.17.1
       ci-info: 4.1.0
       comment-json: 4.2.5
-      common-proxy: 0.1.2
-      entry-script: 3.0.8
-      haywire: 0.1.7
-      npm-default-import: default-import@2.0.7
-      npm-entry-script: entry-script@3.0.8
+      common-proxy: 0.1.3
+      entry-script: 3.0.9
+      haywire: 0.1.8
+      haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
       npm-format-file: format-file@0.1.4(@biomejs/biome@1.9.4)
-      npm-haywire: haywire@0.1.7
-      npm-haywire-launcher: haywire-launcher@0.1.10(entry-script@3.0.8)(haywire@0.1.7)
       npm-juniper: juniper@1.2.4
-      npm-parse-cwd: parse-cwd@1.1.1
-      npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
+      npm-parse-cwd: parse-cwd@1.1.2
+      npm-populate-files: populate-files@0.2.4(@biomejs/biome@1.9.4)
       nx: 20.4.4(@swc/core@1.10.16(@swc/helpers@0.5.15))
-      nx-plugin-handler: 0.2.0(@nx/devkit@20.4.4(nx@20.4.4(@swc/core@1.10.16(@swc/helpers@0.5.15))))
+      nx-plugin-handler: 0.2.1(@nx/devkit@20.4.4(nx@20.4.4(@swc/core@1.10.16(@swc/helpers@0.5.15))))
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -8054,25 +8095,22 @@ snapshots:
       - debug
       - prettier
 
-  nx-update-ts-references@0.2.0(@biomejs/biome@1.9.4)(@swc/core@1.10.16):
+  nx-update-ts-references@0.2.1(@biomejs/biome@1.9.4)(@swc/core@1.10.16):
     dependencies:
       '@nx/devkit': 20.4.4(nx@20.4.4(@swc/core@1.10.16))
       ajv: 8.17.1
       ci-info: 4.1.0
       comment-json: 4.2.5
-      common-proxy: 0.1.2
-      entry-script: 3.0.8
-      haywire: 0.1.7
-      npm-default-import: default-import@2.0.7
-      npm-entry-script: entry-script@3.0.8
+      common-proxy: 0.1.3
+      entry-script: 3.0.9
+      haywire: 0.1.8
+      haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
       npm-format-file: format-file@0.1.4(@biomejs/biome@1.9.4)
-      npm-haywire: haywire@0.1.7
-      npm-haywire-launcher: haywire-launcher@0.1.10(entry-script@3.0.8)(haywire@0.1.7)
       npm-juniper: juniper@1.2.4
-      npm-parse-cwd: parse-cwd@1.1.1
-      npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
+      npm-parse-cwd: parse-cwd@1.1.2
+      npm-populate-files: populate-files@0.2.4(@biomejs/biome@1.9.4)
       nx: 20.4.4(@swc/core@1.10.16)
-      nx-plugin-handler: 0.2.0(@nx/devkit@20.4.4(nx@20.4.4(@swc/core@1.10.16)))
+      nx-plugin-handler: 0.2.1(@nx/devkit@20.4.4(nx@20.4.4(@swc/core@1.10.16)))
       yargs: 17.7.2
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -8352,6 +8390,8 @@ snapshots:
 
   parse-cwd@1.1.1: {}
 
+  parse-cwd@1.1.2: {}
+
   parse-imports@2.2.1:
     dependencies:
       es-module-lexer: 1.6.0
@@ -8399,18 +8439,16 @@ snapshots:
 
   pluralize@8.0.0: {}
 
-  pnpm-dedicated-lockfile@0.0.3(@biomejs/biome@1.9.4):
+  pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@1.9.4):
     dependencies:
       '@pnpm/find-workspace-dir': 7.0.3
       '@pnpm/lockfile.fs': 1.1.0(@pnpm/logger@5.2.0)
       '@pnpm/lockfile.pruner': 0.0.6
       '@pnpm/logger': 5.2.0
       ci-info: 4.1.0
-      entry-script: 3.0.8
-      haywire: 0.1.7
-      npm-entry-script: entry-script@3.0.8
-      npm-haywire: haywire@0.1.7
-      npm-haywire-launcher: haywire-launcher@0.1.10(entry-script@3.0.8)(haywire@0.1.7)
+      entry-script: 3.0.9
+      haywire: 0.1.8
+      haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
       npm-iso-crypto: iso-crypto@1.2.3
       npm-parse-cwd: parse-cwd@1.1.1
       npm-populate-files: populate-files@0.2.3(@biomejs/biome@1.9.4)
@@ -8425,8 +8463,19 @@ snapshots:
     dependencies:
       ci-info: 4.1.0
       format-file: 0.1.4(@biomejs/biome@1.9.4)
-      haywire: 0.1.7
-      parse-cwd: 1.1.1
+      haywire: 0.1.8
+      parse-cwd: 1.1.2
+      uint8array-extras: 1.4.0
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - prettier
+
+  populate-files@0.2.4(@biomejs/biome@1.9.4):
+    dependencies:
+      ci-info: 4.1.0
+      format-file: 0.1.5(@biomejs/biome@1.9.4)
+      haywire: 0.1.8
+      parse-cwd: 1.1.2
       uint8array-extras: 1.4.0
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -8722,7 +8771,7 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  sinon-typed-stub@0.0.10(@types/sinon@17.0.3)(sinon@19.0.2):
+  sinon-typed-stub@0.0.11(@types/sinon@17.0.3)(sinon@19.0.2):
     dependencies:
       sinon: 19.0.2
     optionalDependencies:
