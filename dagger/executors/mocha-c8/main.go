@@ -74,6 +74,11 @@ func (m *MochaC8) CI(
 					" && ",
 				),
 			})
+	} else if projectDir == "tools/format-file" {
+		nodeContainer = nodeContainer.WithFile(
+			"biome.json",
+			source.File("biome.json"),
+		)
 	}
 
 	nodeContainer = nodeContainer.
@@ -84,8 +89,17 @@ func (m *MochaC8) CI(
 		WithWorkdir(projectDir).
 		WithEnvVariable("PATH", "node_modules/.bin:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true})
 
-	_, err := nodeContainer.
-		WithExec([]string{"c8", "mocha", "--recursive", "./dist/tests/{unit,integration}/**/*.spec.*js"}).
-		Sync(ctx)
+	if projectDir == "tools/named-patch" {
+		nodeContainer = nodeContainer.
+			WithExec([]string{"c8", "--clean=fals", "--reporter=none", "mocha", "--recursive", "'./dist/tests/unit/**/*.spec.*js'"}).
+			WithEnvVariable("NODE_OPTIONS", "-C patchable").
+			WithExec([]string{"c8", "--clean=fals", "--reporter=none", "mocha", "--recursive", "'./dist/tests/integration/**/*.spec.*js'"}).
+			WithExec([]string{"c8", "report", "--all", "--check-coverage"})
+	} else {
+		nodeContainer = nodeContainer.
+			WithExec([]string{"c8", "mocha", "--recursive", "./dist/tests/{unit,integration}/**/*.spec.*js"})
+	}
+
+	_, err := nodeContainer.Sync(ctx)
 	return err
 }
