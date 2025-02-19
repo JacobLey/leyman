@@ -89,7 +89,7 @@ export class Binding<
     public readonly scope: Scopes = transientScope;
 
     /**
-     * @param outputId - identifer of type returned by provider
+     * @param outputId - identifier of type returned by provider
      * @param depIds - list of dependency types, in order that will be passed to provider
      * @param isAsync - flag to indicate provider returns a promise of the output id
      * @param provider - method to calculate output id based on dependencies. If `isAsync=true`, can return a promise
@@ -329,7 +329,7 @@ export class DepsBindingBuilder<
     readonly #outputId: OutputId;
     readonly #depIds: DependencyIds;
     /**
-     * @param outputId - output identifer
+     * @param outputId - output identifier
      * @param depIds - dependency ids, in order that will be passed to provider
      */
     public constructor(outputId: OutputId, depIds: DependencyIds) {
