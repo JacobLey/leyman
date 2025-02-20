@@ -1327,7 +1327,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * This resolutin will kick off its own recursive requests to `#getMaybeSync`, and while the base case is not explicitly
      * stated, this is safe because of prior checks ensure the container has a healthy setup.
      *
-     * @param binding - binding of identifer being requested
+     * @param binding - binding of identifier being requested
      * @param requestCache - current request cache, shared across entire request
      * @param supplierCache - current scope cache, potentially same as requestCache,
      * which can be used to determine if request singletons need to be instantiated first

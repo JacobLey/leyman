@@ -197,7 +197,7 @@ export class HaywireId<
      * Any annotations like `nullable` or `supplier` are removed.
      *
      * @example
-     * const id = identifer();
+     * const id = identifier();
      * id.nullable().lateBinding().baseId() === id; // true
      *
      * @returns generic form of identifier

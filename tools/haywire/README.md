@@ -56,7 +56,7 @@ A fully type-safe dependency injection library using native javascript.
 
 Dependency injection is an incredibly powerful tool to implement inversion of control. It simplifies logic and produces more modular code that is easily testable.
 
-Unfortunately, Javascript as a language lacks a DI framework on the level of quality of other langages, such as [Dagger] for Java.
+Unfortunately, Javascript as a language lacks a DI framework on the level of quality of other languages, such as [Dagger] for Java.
 
 There are some existing solutions, but none satisfy all of the following requirements:
 
@@ -65,7 +65,7 @@ There are some existing solutions, but none satisfy all of the following require
 - Constructor only injection
   - An alternative is property injection. This is both type unsafe (fields are marked as non-optional, but not written during constructor) and does not support private fields.
 - Circular dependencies
-  - In general circular dependencies are an antipattern, but the reality is that it is not always possible. Being able to opt into circular depdencies (while maintaining all other requirements) is occasionally a necessity.
+  - In general circular dependencies are an antipattern, but the reality is that it is not always possible. Being able to opt into circular dependencies (while maintaining all other requirements) is occasionally a necessity.
 - Singleton, Request, and Transient scopes
   - It is important that some values are shared across resources, like a database client (singleton). Sometimes values need to be shared for the particular instantiation like a context object (request). Everything else should be created as requested (transient).
 - Optional asynchronous support
@@ -143,7 +143,7 @@ import { bind } from 'haywire';
 import { dbUrlId, dbPasswordId } from './types.js';
 
 export const urlBinding = bind(dbUrlId)
-    // Provide singletong off the bat
+    // Provide singleton off the bat
     .withInstance(process.env.DATABASE_URL!);
 
 export const passwordBinding = bind(dbPasswordId)
@@ -215,7 +215,7 @@ import { UserService, userServiceBinding } from './user-service.js';
 
 const module = createModule(loggerBinding)
     // Order does not matter
-    .addBinding(databaseBindining)
+    .addBinding(databaseBinding)
     // If any binding is added that is:
     // > a duplicate
     // > requires a stricter (e.g. non-null) version of a declared binding
@@ -246,13 +246,13 @@ container.get(Database);
 
 Types do not exist in Javascript, so we can't pass references to a type like we would in a strongly typed language.
 
-However, we can pass classes around, and we can create a type "identifer" that will contain all necessary type identifer data.
+However, we can pass classes around, and we can create a type "identifier" that will contain all necessary type identifier data.
 
 When dealing with classes (such as the `UserService` above) we can simply pass the class directly to methods like `bind` and `get`.
 
 But sometimes we need a little extra data around a type, such as the fact that it can be `null`. Or maybe the class is too "generic" like a `Map` and needs some extra qualifiers.
 
-This is where the `identifer()` method comes into play. It is the most basic building block of our dependency injection.
+This is where the `identifier()` method comes into play. It is the most basic building block of our dependency injection.
 
 `identifier` takes the class as the only parameter to the method. The resulting typed `HaywireId` is interchangable with the class in all APIs.
 
@@ -267,25 +267,25 @@ Just like everything else, this is 100% type safe! It is enforced that the symbo
 
 Sometimes we want to inject values that don't map directly to a class. Most likely because we are coding to an interface, or are dealing with combinations of types.
 
-`identifer` can also be used parameter-less, passing the type as generic type parameter instead!
+`identifier` can also be used parameter-less, passing the type as generic type parameter instead!
 
 
 ** **NOTE!!** ** This is the one place where Haywire is potentially type unsafe. Since types and generics do not exist at runtime, haywire has no way of knowing if an id has been instantiated before. Therefore it is _critical_ to only have a single instance of an id for a given type.
 
 ```ts
-const userServiceId = identifer(UserService);
+const userServiceId = identifier(UserService);
 // true (and type safe!) because we can cache the id for this class
-userServiceId === identifer(UserService);
+userServiceId === identifier(UserService);
 
 // false (and type safe!) because we know only one has a constructor
-userServiceId === identifer<UserService>();
+userServiceId === identifier<UserService>();
 
 const numberId = identifier<number>();
 // false (and not type safe!) so haywire will not be able to distinguish between the two at build time
 numberId === identifier<number>();
 ```
 
-See the full api for `HaywireId` below. 
+See the full api for `HaywireId` below.
 
 ### Binding an implementation to an id
 
@@ -312,7 +312,7 @@ export const userServiceBinding = bind(UserService)
     // `withDependencies` will be type checked, and will create a build failure if the provided id does not satisfy requirements
     .withDependencies([
         // Type error! Cannot be null
-        databaseId.nullable(), 
+        databaseId.nullable(),
         loggerId.undefinable(),
         // Type error! No matching parameter in provider
         dbUrlId,
@@ -326,7 +326,7 @@ export const userServiceBinding = bind(UserService)
     // `withDependencies` will be type checked, and will create a build failure if the provided id does not satisfy requirements, such as if a third id was adda
     .withDependencies([
         // Type error! Cannot be null
-        databaseId.nullable(), 
+        databaseId.nullable(),
         loggerId.undefinable(),
         // Type error! No matching parameter in provider
         dbUrlId,
@@ -335,16 +335,16 @@ export const userServiceBinding = bind(UserService)
 // Dependencies before provider:
 export const databaseBinding = bind(databaseId)
     .withDependencies([
-        loggerId, 
-        dbUrlId, 
+        loggerId,
+        dbUrlId,
         dbPasswordId,
         // Allowed to declare extra dependencies
         fooId,
     ])
     .withProvider((
-        logger, 
+        logger,
         // Error! url is known to be a string
-        url: number, 
+        url: number,
         password
     ) => new Database(logger, url, password));
 
@@ -432,10 +432,10 @@ Scope options are:
   - Similar behavior as `singletonScope`, except this value is instantiated immediately during the "preload" stage.
 - `requestScope`
   - A single value is created the first time it is requested for a single call to `container.get()`. All future dependencies will share this same value. Future requests will reinstantiate a new value.
-- `optimisticReqeustScope`
+- `optimisticRequestScope`
   - Similar behavior as `requestScope`, expect this value is instantiated at the very beginning of a request before any other values.
 - `supplierScope`
-  - Similar to `requestScope`, but "opts out" of propagated scope from a supplier (if the current reqeust is inside a supplier). This is an uncommonly used scope for ensuring a new value is used every request including suppliers, but still can take advantage of caching. All dependencies on this binding will also be opted out of the parent request's scope.
+  - Similar to `requestScope`, but "opts out" of propagated scope from a supplier (if the current request is inside a supplier). This is an uncommonly used scope for ensuring a new value is used every request including suppliers, but still can take advantage of caching. All dependencies on this binding will also be opted out of the parent request's scope.
 
 ### Supplying a value
 
@@ -456,7 +456,7 @@ bind(randomId).toGenerator(() => {
 class IdMiddleware {
 
     constructor(private readonly randomSupplier: () => string) {}
-    
+
     attachId(req: Request) {
         req.id = randomSupplier();
     }
@@ -494,17 +494,17 @@ Supplier can take 5 forms, indicated by the parameters passed to `supplier()`.
 |-----------|----------------|-----------|-------------|
 | `{ sync: true, propagateScope: false }` | `() => T` | `true`, or even omitting all parameters. | A synchronous method which effectively acts like a new call to `container.get()` every time it is invoked. |
 | `{ sync: false, propagateScope: false }` | `() => Promise<T>` | `'async'` | An asynchronous method which effectively acts like a new call to `container.getAsync()` every time it is invoked. |
-| `{ sync: true, propagateScope: true }` | `() => T` | ❌ | A synchronous method which will _retain_ the current reqeust scope when instantiating more values. |
-| `{ sync: false, propagateScope: true }` | `() => Promise<T>` | ❌ | An asynchronous method which will _retain_ the current reqeust scope when instantiating more values. |
+| `{ sync: true, propagateScope: true }` | `() => T` | ❌ | A synchronous method which will _retain_ the current request scope when instantiating more values. |
+| `{ sync: false, propagateScope: true }` | `() => Promise<T>` | ❌ | An asynchronous method which will _retain_ the current request scope when instantiating more values. |
 | `false` | `T` | `false` | "Reverts" a supplier id back to a non-supplier |
 
-Synchronous suppliers are usually ideal for developer experience, as they are simpler than promises. However that means the underlying bindings _must_ be able to instantiate every related dependency synchronously. See the above [bindings](#binding-an-implementation-to-an-id) section for discussion about "optimistic" scopes to work around internal async dependencies. Similarly see the `supplierScope` scope if you _need_ to opt out of 
+Synchronous suppliers are usually ideal for developer experience, as they are simpler than promises. However that means the underlying bindings _must_ be able to instantiate every related dependency synchronously. See the above [bindings](#binding-an-implementation-to-an-id) section for discussion about "optimistic" scopes to work around internal async dependencies. Similarly see the `supplierScope` scope if you _need_ to opt out of
 
 Even if a container is flagged as async, it is possible to create synchronous suppliers internally.
 
 ** **NOTE!!** ** Current Haywire containers do not have a way to tell at build time (with type checking) whether the supplier will be able to successfully create a synchronous supplier.
 
-When in doubt, rely on asynchrounous suppliers (which are fully type checked). It is also recommended to expose your container to unit tests and run `container.check()` to have it internally detect any possible issues during test time.
+When in doubt, rely on asynchronous suppliers (which are fully type checked). It is also recommended to expose your container to unit tests and run `container.check()` to have it internally detect any possible issues during test time.
 
 ### Circular dependencies
 
@@ -514,11 +514,11 @@ Sometimes we end up with a literal chicken and egg problem. In order to create a
 
 A naive solution will either infinitely try create chickens and eggs until dependencies are settled, or will deadlock on either being created first. Haywire at least will discover this type of issues during `container.check()` and will prevent usage of container until the circular dependency is resolved.
 
-** **NOTE!!** ** Haywire is not able to detect cicular dependencies at build time (using types). Similar to suppliers, it is recommended to expose your container to unit tests and run `container.check()` to enforce no circular dependencies exist.
+** **NOTE!!** ** Haywire is not able to detect circular dependencies at build time (using types). Similar to suppliers, it is recommended to expose your container to unit tests and run `container.check()` to enforce no circular dependencies exist.
 
 Instead of expecting both the chicken and the egg to be synchronously available, we can instead perform "late binding" of one (or both...). This means accepting a `Promise` of the dependency rather than its actual value.
 
-Similar to suppliers, we can indicate a late-binding dependency by marking the identifer as `.lateBinding()`. Don't worry, like all things Haywire, this is type safe and will not interfere with other identifiers that might declare a promise returning a similar type.
+Similar to suppliers, we can indicate a late-binding dependency by marking the identifier as `.lateBinding()`. Don't worry, like all things Haywire, this is type safe and will not interfere with other identifiers that might declare a promise returning a similar type.
 
 ```ts
 class Chicken {
@@ -574,7 +574,7 @@ const getChicken = () => {
 
 Bindings are the way to tell Haywire how to instantiate a single instance based on its dependencies. Similarly we can define a binding for every dependency.
 
-However bindings by themselves are meaningless, bindings do not mutate any sort of global state and two bindings are completely unrelated by default. In fact you can bind a single identifer to multiple different providers depending on your context (e.g. targeting a local DB client when testing instead of your production client).
+However bindings by themselves are meaningless, bindings do not mutate any sort of global state and two bindings are completely unrelated by default. In fact you can bind a single identifier to multiple different providers depending on your context (e.g. targeting a local DB client when testing instead of your production client).
 
 So in order to collect a set of bindings into a full implementation of all your resources, we use Modules.
 
@@ -591,7 +591,7 @@ import { createModule } from '';
 
 class A { a = 1 }
 class B { b = 2 }
-class C { c = 3 } 
+class C { c = 3 }
 
 const aBinding = bind(A).withDependencies([B, C]).withConstructorProvider();
 const bBinding = bind(B).withDependencies([C]).withConstructorProvider();
@@ -625,8 +625,8 @@ Similarly introducing dependencies that require a stricter version of existing o
 ```ts
 const aModule = createModule(
     bind(A).withDependencies([
-        identifer(B).nullable(), 
-        identifer(C).undefinable()
+        identifier(B).nullable(),
+        identifier(C).undefinable()
     ]).withConstructorProvider()
 );
 const bModule = createModule(
@@ -674,7 +674,7 @@ createContainer(
 
 The container is the final goal of Haywire, and exposes an API to finally instantiate the types and bindings you defined earlier.
 
-There are two types of Containers: 
+There are two types of Containers:
 - `AsyncContainer`
   - The default, which only supports instantiating values asynchronously `container.getAsync(<identifier>)`
 - `SyncContainer`
@@ -684,11 +684,11 @@ If you _need_ synchronous access, but have promises internally you have two opti
 1. Use synchronous suppliers internally to take advantage of cached optimistic promises.
 2. Provide promises instead of literal values. This is different than a latebinding promise though, and can quickly become unwieldy.
 
-The container lifecylce happens in 4 stages. They may be explicitly activated or skipped, and internally any previous steps will be executed (and cached).
+The container lifecycle happens in 4 stages. They may be explicitly activated or skipped, and internally any previous steps will be executed (and cached).
 
 1. Checking: `container.check()`
     - Confirms the bindings from the module are complete and satisfy eachother.
-    - This both reenforces any type checking that has been performed earlier, as well as additional checks like detecting circular dependencies and synchronous suppliers that have to be async.
+    - This both reinforces any type checking that has been performed earlier, as well as additional checks like detecting circular dependencies and synchronous suppliers that have to be async.
     - It is highly recommended to expose this container to your test suite and call the check method to make sure the container will work at runtime.
 2. Wiring: `container.wire()`
     - Links up bindings to their dependencies bindings. Ensures that later requests to the container execute with high performance.
@@ -700,7 +700,7 @@ The container lifecylce happens in 4 stages. They may be explicitly activated or
     - The "request" to initialize is always unique to normal `.get()` requests, even if this step is invoked as part of a `get()`.
     - Unsafe to run at test time, since it instantiates real instances.
     - Recommended to run during startup, to perform any expensive compute ahead of time.
-4. Instantiation: `container.getAsync(<identifer>)` or `container.get(<identifer>)` (SyncContainer only)
+4. Instantiation: `container.getAsync(<identifier>)` or `container.get(<identifier>)` (SyncContainer only)
     - Initializes the requested value, respecting all dependencies, scopes, and bindings that have been declared up until this point.
     - Like other APIs, accepts both an identifier or a class.
     - Type checking enforces that the requested value is bound in the container. Requesting a non-declared identifier, or a value that is stricter than the binding (e.g. requesting `T` when binding is for `T | null`) will both raise a type failure and throw an error.
@@ -715,7 +715,7 @@ Using normal modules and containers, we would need to create, check, wire, and p
 
 What if we could check and wire an incomplete container, then register the last few implementations at runtime? We can use `Factory`s for this!
 
-Instead of converting a module to a container, we can instead convert it to a factory. Unlike containers, there is no check to enforce that the dependencies are all satisfied by outputs yet. Then we can register implementations of the remaining identifiers, and once we have provided them all, turn the factory into a normal container for further usage using the same `createContainer` API. 
+Instead of converting a module to a container, we can instead convert it to a factory. Unlike containers, there is no check to enforce that the dependencies are all satisfied by outputs yet. Then we can register implementations of the remaining identifiers, and once we have provided them all, turn the factory into a normal container for further usage using the same `createContainer` API.
 
 Like everything else in Haywire, `Factory`s are immutable and type safe, so adding a binding returns a _new_ `Factory` with updated typing. Attempting to attach a implementation that already exists or does not satisfy the dependency requirements will result in both type and runtime errors.
 
@@ -739,10 +739,10 @@ factory.wire();
 
 express().get((req, res) => {
 
-    // Error! We haven't registered all required depdendencies.
+    // Error! We haven't registered all required dependencies.
     factory.toContainer();
 
-    // Error! We reqire a non-null version.
+    // Error! We require a non-null version.
     factory.register(reqId.nullable(), req);
 
     const registeredFactory = factory
@@ -785,7 +785,7 @@ class C {
 }
 
 const aBinding = bind(A).withConstructorProvider().withDependencies([B, C]);
-const bBinding = bind(B).withConstructorProvider().withDependencie([C]).scoped(singletonScope);
+const bBinding = bind(B).withConstructorProvider().withDependencies([C]).scoped(singletonScope);
 const cBinding = bind(C).withConstructorGenerator().scoped(requestScope);
 
 const container = createModule(aBinding).addBinding(bBinding).addBinding(cBinding);
@@ -831,7 +831,7 @@ The best way to see this in action is the source code of this package, but a sma
 // This value will never exist at runtime, so it is impossible for callers to correctly reference
 declare const impossibleSym: unique symbol;
 
-type ValidateAdd<Values, T> = 
+type ValidateAdd<Values, T> =
     (
         // Wrapping in an array prevents the values from "spreading"
         [T] extends [Values]
@@ -913,7 +913,7 @@ Any sort of "conditional" and "DRY" logic should be handled by mixing and matchi
 
 The two exceptions to this rule are:
 - `identifier<T>()` allows a generic to define a type
-- All types publically exposed in the [Types](#types) section of API.
+- All types publicly exposed in the [Types](#types) section of API.
 
 ## API
 
@@ -929,7 +929,7 @@ Method signatures:
   - Optionally provide a `name` to be included whenever the id is stringified in debug logs or errors. Default is `'haywire-id'`.
   - If the type is optionally `null` or `undefined`, will throw a type error. Those are special cases that should be handled via the `nullable()` and `undefinable()` methods respectively.
 - `identifier(Foo)`
-  - Returns an id for the class `Foo`. It will return the _same_ id every time, and is generally interchangable with providing the `Foo` class directly to APIs if necessary.
+  - Returns an id for the class `Foo`. It will return the _same_ id every time, and is generally interchangeable with providing the `Foo` class directly to APIs if necessary.
 - `identifier(id)`
   - If a HaywireId is provided as input, the id is return unchanged.
 
@@ -947,9 +947,9 @@ Begins the process of binding an identifier to a provider with dependencies. Doe
 | `BindingBuilder` | `withProvider(provider: (X, Y) => T)` | Declare a method that will construct the type based on dependencies | `ProviderBindingBuilder` | |
 | `BindingBuilder` | `withAsyncProvider(provider: (X, Y) => Promise<T>)` | Declare a method that will asynchronously construct the type based on dependencies. | `AsyncProviderBindingBuilder` | Will result in container being async. |
 | `BindingBuilder` | `withConstructorProvider()` | Tells Haywire to use the constructor of the class directly, and infer any dependencies for that. | `ProviderBindingBuilder` | Only available to ids constructed via a class |
-| `BindingBuilder` | `withDependenices([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | |
-| `ProviderBindingBuilder` | `withDependenices([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | The list is enforced via types to match types declared as parameters for the provider |
-| `AsyncProviderBindingBuilder` | `withDependenices([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | The list is enforced via types to match types declared as parameters for the provider |
+| `BindingBuilder` | `withDependencies([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | |
+| `ProviderBindingBuilder` | `withDependencies([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | The list is enforced via types to match types declared as parameters for the provider |
+| `AsyncProviderBindingBuilder` | `withDependencies([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | The list is enforced via types to match types declared as parameters for the provider |
 | `DepsBindingBuilder` | `withProvider(provider: (X, Y) => T)` | Declare a method that will construct the type based on dependencies | `Binding` | Types of parameters are auto-populated based on provided ids |
 | `DepsBindingBuilder` | `withAsyncProvider(provider: (X, Y) => Promise<T>)` | Declare a method that will asynchronously construct the type based on dependencies. | `Binding` | Will result in container being async. |
 | `DepsBindingBuilder` | `withConstructorProvider()` | Tells Haywire to use the constructor of the class directly.  | `ProviderBindingBuilder` | Enforces that the type signature of the constructor matches the provided dependencies |
@@ -962,7 +962,7 @@ Alias for `Module.fromBinding()`
 
 #### `createContainer`
 
-Create a container from a module that has all dependencies satisfied. 
+Create a container from a module that has all dependencies satisfied.
 Also creates a container from a factory that has all dependencies registered.
 
 If the module/factory is not complete, will result in a type error.
@@ -990,7 +990,7 @@ Represents a type that can be used to reference binding outputs, dependencies, a
 All methods on an id are chainable and revertable. They will also produce the exact same instance as before so long as the types are still a match. Order that methods are applied does not matter.
 
 ```ts
-const id = identifer<number>();
+const id = identifier<number>();
 
 const modifiedId = id.nullable().undefinable().supplier('async').named('foo-bar');
 
@@ -1059,7 +1059,7 @@ Collection of incomplete bindings that can still be checked and wired like a con
 | `check()` | ❌ | `void` | Similar to `container.check()`. Assumes that all to-be-registered bindings are synchronous, optimistic singletons, with no dependencies. Operation will be cached for all containers generated. |
 | `wire()` | ❌ | `void` | Similar to `container.wire()`. Operation will be cached for all containers generated. |
 | `register(idOrClass, instance)` | First parameter is either a `HaywireId` or raw class declaring the type. Second parameter is an instance satisfying the requested type. | `Factory` | Returns a _new_ factory with value registered. Because of this, a factory instance may be shared across multiple contexts. If the factory has been checked/wired, that state will persist. |
-| `toContainer()` | ❌ | `AynscContainer \| SyncContainer` | Returns a container with registered values bound. Will inherit factory's checked/wired state. Will be an AsyncContainer if any module binding's provider is async. |
+| `toContainer()` | ❌ | `AsyncContainer \| SyncContainer` | Returns a container with registered values bound. Will inherit factory's checked/wired state. Will be an AsyncContainer if any module binding's provider is async. |
 
 ### Types
 
@@ -1070,7 +1070,7 @@ The following types are exported and are part of the public interface. They may 
 Takes one generic parameter that is the typeof a haywire id. Returns the type that the id represents. Mirrors the value that would be returned by `.get()`ing the id, or declaring it as a dependency.
 
 ```ts
-const id = identifer<number>().nullable().supplier();
+const id = identifier<number>().nullable().supplier();
 
 // () => number | null
 type Id = HaywireIdType<typeof id>;
@@ -1082,23 +1082,23 @@ Takes one generic parameter that is an arbitrary type `T`. Returns the type of a
 
 Includes additional internal type annotations to distinguish between a normal asynchronous function, but otherwise effectively `() => Promise<T>`
 
-This is the type used internally to represent `identifer<T>().supplier('async')`.
+This is the type used internally to represent `identifier<T>().supplier('async')`.
 
 #### `Supplier`
 
-Synchronous version of `AsyncSupplier`. A parameter-less method that returns `T`. 
+Synchronous version of `AsyncSupplier`. A parameter-less method that returns `T`.
 
 Includes additional internal type annotations to distinguish between a normal function, but otherwise effectively `() => T`
 
-This is the type used internally to represent `identifer<T>().supplier()`.
+This is the type used internally to represent `identifier<T>().supplier()`.
 
 #### `LateBinding`
 
-A `Promise` that resolves to `T`. 
+A `Promise` that resolves to `T`.
 
 Includes additional internal type annotations to distinguish between a normal function, but otherwise effectively `Promise<T>`.
 
-This is the type used internally to represent `identifer<T>().lateBinding()`.
+This is the type used internally to represent `identifier<T>().lateBinding()`.
 
 ### Errors
 
@@ -1120,7 +1120,7 @@ Specific instances include attempting to add a binding for an id that already ex
 
 #### `HaywireContainerValidationError`
 
-Error potenitally thrown during the `Container.check()` stage.
+Error potentially thrown during the `Container.check()` stage.
 
 Specific instances may report circular dependencies, or sync supplier that are incorrectly backed by async providers.
 
