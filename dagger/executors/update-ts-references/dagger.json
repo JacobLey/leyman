@@ -1,7 +1,7 @@
 {
   "$schema": "https://docs.dagger.io/reference/dagger.schema.json",
   "name": "update-ts-references",
-  "engineVersion": "v0.15.4",
+  "engineVersion": "v0.16.1",
   "sdk": {
     "source": "go"
   },
@@ -16,7 +16,6 @@
       "source": "../../modules/node"
     }
   ],
-  "source": ".",
   "codegen": {
     "automaticGitignore": false
   }
