@@ -20,15 +20,7 @@
   ],
   "sideEffects": false,
   "exports": {
-    ".": {
-      "types": "./src/index.ts",
-      "default": "./dist/index.js"
-    }
-  },
-  "publishConfig": {
-    "exports": {
-      ".": "./dist/index.js"
-    }
+    ".": "./dist/index.js"
   },
   "dependencies": {
     "ci-info": "catalog:",
