@@ -137,7 +137,7 @@ func (m *Pnpm) InstallPackage(
 				";",
 			),
 		}).
-		WithExec([]string{"pnpm", "deploy", "--legacy", "--prefer-offline", "--filter", ".", "./deploy"})
+		WithExec([]string{"pnpm", "deploy", "--prefer-offline", "--filter", ".", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")
 }
@@ -171,7 +171,7 @@ func (m *Pnpm) DeployPackage(
 		WithDirectory(projectDir, projectOutput, dagger.ContainerWithDirectoryOpts{Exclude: []string{"node_modules"}}).
 		WithWorkdir(projectDir).
 		WithFile(".npmignore", projectSource.File(".npmignore")).
-		WithExec([]string{"pnpm", "deploy", "--legacy", "--filter", ".", "--prod", "./deploy"})
+		WithExec([]string{"pnpm", "deploy", "--filter", ".", "--prod", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")
 }
