@@ -38,6 +38,7 @@
     "@types/chai-as-promised": "catalog:",
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
+    "@types/sinon": "catalog:",
     "@types/tmp": "catalog:",
     "c8": "catalog:",
     "chai": "catalog:",

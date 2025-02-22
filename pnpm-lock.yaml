@@ -1010,6 +1010,9 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 22.13.4
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 17.0.3
       '@types/tmp':
         specifier: 'catalog:'
         version: 0.2.6
