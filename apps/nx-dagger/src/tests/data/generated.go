@@ -126,9 +126,9 @@ func (m *MonorepoFn) Build(
 		waitGroup.Add(1)
 	}
 
-	var triggerProjectBuild func(projectDir NxProjectDir) error
+	var triggerProjectBuild func(projectDir NxProjectDir)
 	var triggerProjectBuildGroup func(projectDir NxProjectDir)
-	triggerProjectBuild = func(projectDir NxProjectDir) error {
+	triggerProjectBuild = func(projectDir NxProjectDir) {
 
 		projectConfig := nxConfig[projectDir]
 		dependencyDirs := make(map[NxProjectDir]*dagger.Directory, len(projectConfig.dependencyProjectDirs))
@@ -138,11 +138,15 @@ func (m *MonorepoFn) Build(
 			// because top-level has already kicked off each project
 			triggerProjectBuildGroup(dependencyProjectDir)
 			if buildError != nil {
-				return buildError
+				return
 			}
 			mapMutex.RLock()
 			dependencyDirs[dependencyProjectDir] = builtProjects[dependencyProjectDir].directory
 			mapMutex.RUnlock()
+		}
+
+		if buildError != nil {
+			return
 		}
 
 		directory, err := m.buildProject(
@@ -158,14 +162,13 @@ func (m *MonorepoFn) Build(
 				// So long as _some_ early error gets flagged
 				buildError = err
 			}
-		} else {
+		} else if buildError == nil {
 			mapMutex.Lock()
 			defer mapMutex.Unlock()
 			project := builtProjects[projectDir]
 			project.directory = directory
 			builtProjects[projectDir] = project
 		}
-		return nil
 	}
 	triggerProjectBuildGroup = func(projectDir NxProjectDir) {
 		mapMutex.RLock()
