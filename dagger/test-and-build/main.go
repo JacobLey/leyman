@@ -14,9 +14,9 @@ var pnpmVersion = "10.4.1"
 
 func New(
 	// Root of source file
-	// Ignore needs to mirror .gitignore
+	// Ignore needs to mirror .gitignore, in addition to files that are known to not be relevant to build.
 	// Can be copied from Monorepo (auto-populated)
-	// +ignore=[".git","**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache","**/coverage","**/dist","**/.pnpm-lock-hash","**/.swcrc",".nx","dagger/**/.gitattributes","dagger/**/dagger.gen.go","dagger/**/internal"]
+	// +ignore=[".git","**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache","**/coverage","**/dist","**/.pnpm-lock-hash","**/.swcrc",".nx","dagger/**/.gitattributes","dagger","!dagger/monorepo/main.go","scripts"]
 	source *dagger.Directory,
 ) *TestAndBuild {
 	return &TestAndBuild{
@@ -36,9 +36,9 @@ func New(
 					"**/.pnpm-lock-hash",
 					"**/.swcrc",
 					".nx",
-					"dagger/**/.gitattributes",
-					"dagger/**/dagger.gen.go",
-					"dagger/**/internal",
+					"dagger",
+					"!dagger/monorepo/main.go",
+					"scripts",
 				},
 			},
 		),
