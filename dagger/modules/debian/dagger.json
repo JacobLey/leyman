@@ -6,8 +6,6 @@
     "source": "go"
   },
   "include": [
-    "go.mod",
-    "go.sum",
     "main.go"
   ],
   "codegen": {
