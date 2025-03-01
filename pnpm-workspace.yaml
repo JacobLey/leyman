@@ -78,6 +78,6 @@ catalog:
   sinon: ^19.0.2
   tmp-promise: ^3.0.3
   ts-dedent: ^2.2.0
-  typescript: ^5.7.3
+  typescript: ^5.8.2
   uint8array-extras: ^1.4.0
   yargs: ^17.7.2
