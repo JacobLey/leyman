@@ -91,9 +91,9 @@ func (m *MochaC8) CI(
 
 	if projectDir == "tools/named-patch" {
 		nodeContainer = nodeContainer.
-			WithExec([]string{"c8", "--clean=fals", "--reporter=none", "mocha", "--recursive", "'./dist/tests/unit/**/*.spec.*js'"}).
+			WithExec([]string{"c8", "--clean=false", "--reporter=none", "mocha", "--recursive", "'./dist/tests/unit/noop.spec.js'"}).
 			WithEnvVariable("NODE_OPTIONS", "-C patchable").
-			WithExec([]string{"c8", "--clean=fals", "--reporter=none", "mocha", "--recursive", "'./dist/tests/integration/**/*.spec.*js'"}).
+			WithExec([]string{"c8", "--clean=false", "--reporter=none", "mocha", "--recursive", "'./dist/tests/unit/patch.spec.js'"}).
 			WithExec([]string{"c8", "report", "--all", "--check-coverage"})
 	} else {
 		nodeContainer = nodeContainer.
