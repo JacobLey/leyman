@@ -1040,6 +1040,9 @@ importers:
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../pnpm-dedicated-lockfile
+      sinon:
+        specifier: 'catalog:'
+        version: 19.0.2
       sinon-typed-stub:
         specifier: workspace:^
         version: link:../../../tools/sinon-typed-stub

@@ -49,6 +49,7 @@
     "mocha-chain": "workspace:^",
     "nx-update-ts-references": "workspace:^",
     "pnpm-dedicated-lockfile": "workspace:^",
+    "sinon": "catalog:",
     "sinon-typed-stub": "workspace:^",
     "tmp-promise": "catalog:",
     "typescript": "catalog:"
