@@ -9,8 +9,8 @@ type TestAndBuild struct {
 	Source *dagger.Directory
 }
 
-var nodeVersion = "22.13.1"
-var pnpmVersion = "10.4.1"
+var nodeVersion = "22.14.0"
+var pnpmVersion = "10.5.2"
 
 func New(
 	// Root of source file

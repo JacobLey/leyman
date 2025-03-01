@@ -22,7 +22,7 @@ catalogs:
 catalog:
   '@biomejs/biome': ^1.9.4
   '@eslint/js': ^9.20.0
-  '@nx/devkit': ^20.4.4
+  '@nx/devkit': ^20.4.6
   '@pnpm/find-workspace-dir': ^7.0.3
   '@pnpm/lockfile.fs': ^1.1.0
   '@pnpm/lockfile.pruner': ^0.0.6
@@ -36,7 +36,7 @@ catalog:
   '@types/chai-as-promised': ^8.0.1
   '@types/eslint': ^9.6.1
   '@types/mocha': ^10.0.10
-  '@types/node': ^22.13.1
+  '@types/node': ^22.13.8
   '@types/react': ^18.3.18
   '@types/sinon': ^17.0.3
   '@types/tmp': ^0.2.6
@@ -69,7 +69,7 @@ catalog:
   globby: ^14.1.0
   mocha: ^11.1.0
   npm: ^11.1.0
-  nx: ^20.4.4
+  nx: ^20.4.6
   p-defer: ^4.0.1
   prettier: ^3.5.0
   react: ^18.3.1
