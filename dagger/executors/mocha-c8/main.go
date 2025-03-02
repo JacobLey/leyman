@@ -25,6 +25,15 @@ func (m *MochaC8) node() *dagger.Node {
 	return dag.Node(m.NodeVersion)
 }
 
+var biomeFormattedPackages = map[string]bool{
+	"apps/nx-dagger":                          true,
+	"apps/nx-lifecycle":                       true,
+	"apps/populate-files/load-populate-files": true,
+	"apps/populate-files/populate-files":      true,
+	"apps/nx-update-ts-references":            true,
+	"tools/format-file":                       true,
+}
+
 // Assert that all tests (both unit + integration) in projectDir are passing
 // and achieves required code coverage.
 func (m *MochaC8) CI(
@@ -44,7 +53,7 @@ func (m *MochaC8) CI(
 			[]*dagger.File{source.File("pnpm-lock.yaml"), source.File("pnpm-workspace.yaml")},
 		)
 	} else if projectDir == "apps/nx-update-ts-references" {
-		files := []string{"biome.json", "pnpm-lock.yaml", "pnpm-workspace.yaml"}
+		files := []string{"pnpm-lock.yaml", "pnpm-workspace.yaml"}
 		for _, dir := range directDependencyDirs {
 			files = append(
 				files,
@@ -74,7 +83,9 @@ func (m *MochaC8) CI(
 					" && ",
 				),
 			})
-	} else if projectDir == "tools/format-file" {
+	}
+
+	if biomeFormattedPackages[projectDir] {
 		nodeContainer = nodeContainer.WithFile(
 			"biome.json",
 			source.File("biome.json"),
