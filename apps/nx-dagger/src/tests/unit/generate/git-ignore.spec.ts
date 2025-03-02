@@ -42,5 +42,30 @@ suite('GetGitIgnore', () => {
                 'foo/**',
             ]);
         });
+
+        stubs.test('Loads and parses gitignore', async ctx => {
+            ctx.stubbedReadFile.withArgs('<workspace-root>/.gitignore', 'utf8').resolves(dedent`
+                foo
+                #bar
+                  !baz
+                foobar
+                foo/**
+                foo
+            `);
+
+            expect(await ctx.getGitIgnore()).to.deep.equal([
+                '.git',
+                'foo',
+                '!baz',
+                'foobar',
+                'foo/**',
+            ]);
+        });
+
+        stubs.test('Defaults to empty file', async ctx => {
+            ctx.stubbedReadFile.withArgs('<workspace-root>/.gitignore', 'utf8').rejects('<ERROR>');
+
+            expect(await ctx.getGitIgnore()).to.deep.equal(['.git']);
+        });
     });
 });
