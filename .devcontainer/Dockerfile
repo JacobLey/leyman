@@ -40,8 +40,9 @@ RUN pnpm i -g "nx@${NX_VERSION}" "@changesets/cli@${CHANGESETS_VERSION}"
 
 # Install Go
 ENV PATH=$PATH:$HOME/go/bin
-RUN wget https://dl.google.com/go/go${GO_VERSION}.linux-arm64.tar.gz && \
-    tar -C $HOME -xzf go${GO_VERSION}.linux-arm64.tar.gz && \
+RUN wget https://dl.google.com/go/go${GO_VERSION}.linux-arm64.tar.gz -O /tmp/go.tar.gz && \
+    tar -C $HOME -xzf /tmp/go.tar.gz && \
+    rm /tmp/go.tar.gz && \
     go install golang.org/x/tools/gopls@latest
 
 # Install dagger

@@ -2,8 +2,9 @@
 
 # Helper script to "recursively" setup all dagger modules for local development
 dagger develop --mod ./dagger/modules/debian
+dagger develop --mod ./dagger/modules/go-lang
 dagger develop --mod ./dagger/modules/node
-dagger develop --mod ./dagger/modules/pnpm 
+dagger develop --mod ./dagger/modules/pnpm
 dagger develop --mod ./dagger/executors/barrelify
 dagger develop --mod ./dagger/executors/biome
 dagger develop --mod ./dagger/executors/eslint

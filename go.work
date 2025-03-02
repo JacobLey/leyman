@@ -11,6 +11,7 @@ use (
 	./dagger/executors/tsc
 	./dagger/executors/update-ts-references
 	./dagger/modules/debian
+	./dagger/modules/go-lang
 	./dagger/modules/node
 	./dagger/modules/pnpm
 	./dagger/monorepo
