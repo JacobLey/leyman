@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"dagger/test-and-build/internal/dagger"
 )
 
@@ -46,8 +47,9 @@ func New(
 }
 
 // CI entrypoint
-func (m *TestAndBuild) Run() *dagger.Directory {
-	builtDir := dag.Monorepo(
+func (m *TestAndBuild) Run(ctx context.Context) (*dagger.Directory, error) {
+
+	monorepo := dag.Monorepo(
 		dag.Directory().WithDirectory(
 			".",
 			m.Source,
@@ -56,7 +58,14 @@ func (m *TestAndBuild) Run() *dagger.Directory {
 				Exclude: []string{".git", ".github", ".vscode", "dagger", "leyman/main", "go.work", "go.work.sum", "README.md"},
 			},
 		),
-	).Build(nodeVersion, pnpmVersion)
+	)
 
-	return builtDir
+	builtDir := monorepo.Build(nodeVersion, pnpmVersion)
+
+	projectDirs, err := monorepo.ProjectDirs(ctx, "node")
+	if err != nil {
+		return nil, err
+	}
+
+	return dag.Pnpm(pnpmVersion).RestoreVersions(builtDir, projectDirs), nil
 }

@@ -27,6 +27,9 @@ func (m *NodeDeploy) pnpm() *dagger.Pnpm {
 	return dag.Pnpm(m.PnpmVersion, m.NodeVersion)
 }
 
+// Packages that actually get deployed (.npmignore applied by pnpm)
+var deployedPackages = []string{}
+
 // Replaces projectDir with "deploy"ed version.
 // Meaning all dev dependencies and npmignore-ed files are stripped out.
 // This directory is now safe to consume by other packages or execute.
@@ -42,24 +45,26 @@ func (m *NodeDeploy) Run(
 	// +ignore=["node_modules"]
 	projectOutput *dagger.Directory,
 	dependencyProjectDirs []string,
+	directDependencyProjectDirs []string,
 ) *dagger.Directory {
 
-	deployed := m.pnpm().DeployPackage(
+	if slices.Contains(deployedPackages, projectDir) {
+		return m.pnpm().DeployPackage(
+			source,
+			output,
+			projectDir,
+			projectSource,
+			projectOutput,
+			dependencyProjectDirs,
+		)
+	}
+
+	return m.pnpm().RepackPackage(
 		source,
 		output,
 		projectDir,
 		projectSource,
 		projectOutput,
-		dependencyProjectDirs,
-	)
-
-	if slices.Contains([]string{}, projectDir) {
-		return deployed
-	}
-
-	return dag.Directory().WithDirectory(
-		".",
-		deployed,
-		dagger.DirectoryWithDirectoryOpts{Exclude: []string{"node_modules"}},
+		directDependencyProjectDirs,
 	)
 }

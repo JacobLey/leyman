@@ -2,6 +2,7 @@ package main
 
 import (
 	"dagger/pnpm/internal/dagger"
+	"path"
 	"strings"
 )
 
@@ -34,14 +35,15 @@ func (m *Pnpm) pnpmContainer() *dagger.Container {
 		m.node().NodeContainer(),
 	)
 }
+var versionPrefix = "0.0.0-DAGGERDEV"
 
 // Install PNPM onto the provided container
-func (m *Pnpm) installPnpm(container *dagger.Container) *dagger.Container {
+func (m *Pnpm) InstallPnpm(container *dagger.Container) *dagger.Container {
 
 	pnpmHome := "${HOME}/.local/share/pnpm"
 
-	pnpmContainer := m.node().
-		NodeContainer().
+	pnpmContainer := dag.Debian().
+		BaseContainer().
 		WithExec([]string{"apt-get", "install", "curl", "-y"}).
 		WithEnvVariable("PNPM_HOME", pnpmHome, dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithEnvVariable("PATH", "${PNPM_HOME}:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true}).
@@ -64,12 +66,19 @@ func (m *Pnpm) installPnpm(container *dagger.Container) *dagger.Container {
 		)
 }
 
+// Provide a generic container with pnpm installed
+func (m *Pnpm) PnpmContainer() *dagger.Container {
+	return m.InstallPnpm(
+		dag.Debian().BaseContainer(),
+	)
+}
+
 // Returns a pnpm container with pre-populated store attached
 func (m *Pnpm) attachPnpmStore(
 	source *dagger.Directory,
 ) *dagger.Container {
 
-	pnpmContainer := m.pnpmContainer()
+	pnpmContainer := m.PnpmContainer()
 
 	fetchedContainer := pnpmContainer.
 		WithDirectory(
@@ -95,6 +104,33 @@ func (m *Pnpm) attachPnpmStore(
 		)
 }
 
+// Update versioning to a "prerelease" so workspace specifiers _only_ match local, and
+// remove specifiers _only_ match remote.
+// Omitting this can result in funky peer-dependency resolution.
+func (m *Pnpm) reformatPackageJson(
+	source *dagger.Directory,
+	projectDir string,
+) *dagger.File {
+	return dag.Node(nodeVersion).
+		NodeContainer().
+		WithFile("package.json", source.File(path.Join(projectDir, "package.json"))).
+		// Revert all local packages to 0 so remote packages never prefer them
+		WithExec([]string{
+			"node",
+			"-e",
+			strings.Join(
+				[]string{
+					"const { readFile, writeFile } = await import('node:fs/promises')",
+					"const packageJson = JSON.parse(await readFile('./package.json', 'utf8'))",
+					"const version0 = { ...packageJson, version: `" + versionPrefix + "${packageJson.version}` }",
+					"await writeFile('./package.json', JSON.stringify(version0, null, 2) + '\\n')",
+				},
+				";",
+			),
+		}).
+		File("package.json")
+}
+
 // Install dependencies for a single projectDir.
 // Actually does a "deploy" without npmignore, which means local dependencies are properly installed
 // in node_modules rather than as symlinks.
@@ -115,31 +151,76 @@ func (m *Pnpm) InstallPackage(
 		".",
 		output,
 		dagger.ContainerWithDirectoryOpts{
-			Exclude: []string{"**/node_modules"},
+			Exclude: []string{"**/node_modules", "**/package.json"},
 			Include: dependencyProjectDirs,
 		},
 	)
 
+	for _, dependencyProjectDir := range dependencyProjectDirs {
+		pnpmAttached = pnpmAttached.WithFile(
+			path.Join(dependencyProjectDir, "package.json"),
+			m.reformatPackageJson(source, dependencyProjectDir),
+		)
+	}
+
 	pnpmAttached = pnpmAttached.
-		WithDirectory(projectDir, projectSource, dagger.ContainerWithDirectoryOpts{Exclude: []string{".npmignore"}}).
+		WithDirectory(projectDir, projectSource, dagger.ContainerWithDirectoryOpts{Exclude: []string{".npmignore", "package.json"}}).
 		WithWorkdir(projectDir).
-		// Revert all local packages to 0 so remote packages never prefer them
-		WithExec([]string{
-			"node",
-			"-e",
-			strings.Join(
-				[]string{
-					"const { readFile, writeFile } = await import('node:fs/promises')",
-					"const packageJson = await readFile('./package.json', 'utf8')",
-					"const version0 = { ...JSON.parse(packageJson), version: '0.0.0' }",
-					"await writeFile('./package.json', JSON.stringify(version0, null, 2) + '\\n')",
-				},
-				";",
-			),
-		}).
+		WithFile("package.json", m.reformatPackageJson(source, projectDir)).
 		WithExec([]string{"pnpm", "deploy", "--prefer-offline", "--filter", ".", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")
+}
+
+// Returns a production "packed"ed version of workspace.
+// All npmignore-d files will be omitted, and package.json will be rewritten without workspace/catalog references
+func (m *Pnpm) RepackPackage(
+	// +ignore=["*", "!.npmrc", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
+	source *dagger.Directory,
+	// +ignore=["*", "package.json"]
+	output *dagger.Directory,
+	projectDir string,
+	// +ignore=["*", "!.npmignore"]
+	projectSource *dagger.Directory,
+	projectOutput *dagger.Directory,
+	directDependencyProjectDirs []string,
+) *dagger.Directory {
+
+	tarballFilename := "dagger.tgz"
+	deployDirectory := "deploy"
+	packageJsonPaths := make([]string, len(directDependencyProjectDirs))
+	for i, dependencyDir := range directDependencyProjectDirs {
+		packageJsonPaths[i] = path.Join(dependencyDir, "package.json")
+	}
+
+	return m.PnpmContainer().
+		WithDirectory(
+			".",
+			source,
+			dagger.ContainerWithDirectoryOpts{
+				Include: []string{".npmrc", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
+			},
+		).
+		WithDirectory(
+			".",
+			output,
+			dagger.ContainerWithDirectoryOpts{
+				Include: packageJsonPaths,
+			},
+		).
+		WithDirectory(
+			projectDir,
+			projectOutput,
+			dagger.ContainerWithDirectoryOpts{
+				Exclude: []string{"node_modules", "!node_modules/*"},
+			},
+		).
+		WithWorkdir(projectDir).
+		WithFile(".npmignore", projectSource.File(".npmignore")).
+		WithExec([]string{"pnpm", "pack", "--out", tarballFilename}).
+		WithExec([]string{"mkdir", deployDirectory}).
+		WithExec([]string{"tar", "xvf", tarballFilename, "-C", deployDirectory}).
+		Directory(path.Join(deployDirectory, "package"))
 }
 
 // Returns a production "deploy"ed version of workspace.
@@ -174,4 +255,34 @@ func (m *Pnpm) DeployPackage(
 		WithExec([]string{"pnpm", "deploy", "--filter", ".", "--prod", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")
+}
+
+// Undoes the "reformatting" of package.jsons during install/deploy
+func (m *Pnpm) RestoreVersions(
+	output *dagger.Directory,
+	projectDirs []string,
+) *dagger.Directory {
+
+	result := output
+	container := dag.Debian().BaseContainer()
+
+	for _, projectDir := range projectDirs {
+		packageJsonPath := path.Join(projectDir, "package.json")
+		formattedPackageJson := container.
+			WithFile("package.json", output.File(packageJsonPath)).
+			WithExec([]string{
+				"sed",
+				"-i",
+				"s/" + versionPrefix + "//g",
+				"./package.json",
+			}).
+			File("package.json")
+
+		result = result.WithFile(
+			packageJsonPath,
+			formattedPackageJson,
+		)
+	}
+
+	return result
 }

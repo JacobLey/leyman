@@ -12,6 +12,10 @@
     {
       "name": "monorepo",
       "source": "../monorepo"
+    },
+    {
+      "name": "pnpm",
+      "source": "../modules/pnpm"
     }
   ],
   "codegen": {

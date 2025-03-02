@@ -36,7 +36,8 @@
           "projectDir",
           "projectSource",
           "projectOutput",
-          "dependencyProjectDirectories"
+          "dependencyProjectDirectories",
+          "directDependencyProjectDirectories"
         ]
       }
     }
