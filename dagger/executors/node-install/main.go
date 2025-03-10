@@ -5,25 +5,20 @@ import (
 )
 
 type NodeInstall struct {
-	// Node version to use
-	NodeVersion string
 	PnpmVersion string
 }
 
 func New(
-	// Node version to use
-	nodeVersion string,
 	// Pnpm version to use
 	pnpmVersion string,
 ) *NodeInstall {
 	return &NodeInstall{
-		NodeVersion: nodeVersion,
 		PnpmVersion: pnpmVersion,
 	}
 }
 
 func (m *NodeInstall) pnpm() *dagger.Pnpm {
-	return dag.Pnpm(m.PnpmVersion, m.NodeVersion)
+	return dag.Pnpm(m.PnpmVersion)
 }
 
 // Adds node_modules directory to projectDir, with all dependencies installed.

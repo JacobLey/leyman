@@ -14,7 +14,6 @@
       "preBuild": {
         "name": "node-install",
         "constructorArguments": [
-          "nodeVersion",
           "pnpmVersion"
         ],
         "parameters": [
@@ -28,7 +27,6 @@
       "postBuild": {
         "name": "node-deploy",
         "constructorArguments": [
-          "nodeVersion",
           "pnpmVersion"
         ],
         "parameters": [

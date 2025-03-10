@@ -9,32 +9,18 @@ import (
 type Pnpm struct {
 	// Version to use
 	Version string
-	// Node version to use
-	NodeVersion string
 }
 
 func New(
 	// Version to use
 	pnpmVersion string,
-	// Node version to use
-	nodeVersion string,
 ) *Pnpm {
 	return &Pnpm{
-		Version:     pnpmVersion,
-		NodeVersion: nodeVersion,
+		Version: pnpmVersion,
 	}
 }
 
-func (m *Pnpm) node() *dagger.Node {
-	return dag.Node(m.NodeVersion)
-}
-
-// Provide a generic container with pnpm installed
-func (m *Pnpm) pnpmContainer() *dagger.Container {
-	return m.installPnpm(
-		m.node().NodeContainer(),
-	)
-}
+var nodeVersion = "22.14.0"
 var versionPrefix = "0.0.0-DAGGERDEV"
 
 // Install PNPM onto the provided container

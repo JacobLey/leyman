@@ -6,25 +6,20 @@ import (
 )
 
 type NodeDeploy struct {
-	// Node version to use
-	NodeVersion string
 	PnpmVersion string
 }
 
 func New(
-	// Node version to use
-	nodeVersion string,
 	// Pnpm version to use
 	pnpmVersion string,
 ) *NodeDeploy {
 	return &NodeDeploy{
-		NodeVersion: nodeVersion,
 		PnpmVersion: pnpmVersion,
 	}
 }
 
 func (m *NodeDeploy) pnpm() *dagger.Pnpm {
-	return dag.Pnpm(m.PnpmVersion, m.NodeVersion)
+	return dag.Pnpm(m.PnpmVersion)
 }
 
 // Packages that actually get deployed (.npmignore applied by pnpm)
