@@ -38,8 +38,13 @@ func New(
 					"**/.pnpm-lock-hash",
 					"**/.swcrc",
 					".nx",
+					// Version controlled, but not relevant to dagger
+					".vscode",
 					"dagger",
 					"!dagger/monorepo/main.go",
+					"go.work",
+					"go.work.sum",
+					"README.md",
 					"scripts",
 				},
 			},
@@ -56,7 +61,7 @@ func (m *TestAndBuild) Run(ctx context.Context) (*dagger.Directory, error) {
 			m.Source,
 			dagger.DirectoryWithDirectoryOpts{
 				// Files that aren't ever used by Nx projects
-				Exclude: []string{".git", ".github", ".vscode", "dagger", "leyman/main", "go.work", "go.work.sum", "README.md"},
+				Exclude: []string{".github", "leyman/main"},
 			},
 		),
 	)
