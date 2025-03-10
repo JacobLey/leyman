@@ -10,6 +10,7 @@ type TestAndBuild struct {
 	Source *dagger.Directory
 }
 
+var goLangVersion = "1.24.0"
 var nodeVersion = "22.14.0"
 var pnpmVersion = "10.5.2"
 
@@ -60,7 +61,7 @@ func (m *TestAndBuild) Run(ctx context.Context) (*dagger.Directory, error) {
 		),
 	)
 
-	builtDir := monorepo.Build(nodeVersion, pnpmVersion)
+	builtDir := monorepo.Build(goLangVersion, nodeVersion, pnpmVersion)
 
 	projectDirs, err := monorepo.ProjectDirs(ctx, "node")
 	if err != nil {

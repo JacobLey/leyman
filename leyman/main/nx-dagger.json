@@ -5,6 +5,7 @@
     "name": "monorepo"
   },
   "constructorArguments": {
+    "goLangVersion": "string",
     "nodeVersion": "string",
     "pnpmVersion": "string"
   },
@@ -70,6 +71,7 @@
         "coverage-report"
       ],
       "constructorArguments": [
+        "goLangVersion",
         "nodeVersion"
       ],
       "kind": "ci",

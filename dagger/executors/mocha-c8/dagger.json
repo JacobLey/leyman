@@ -10,6 +10,10 @@
   ],
   "dependencies": [
     {
+      "name": "go-lang",
+      "source": "../../modules/go-lang"
+    },
+    {
       "name": "node",
       "source": "../../modules/node"
     }

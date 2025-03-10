@@ -8,15 +8,20 @@ import (
 )
 
 type MochaC8 struct {
+	// GoLang version to use
+	GoVersion string
 	// Node version to use
 	NodeVersion string
 }
 
 func New(
+	// GoLang version to use
+	goLangVersion string,
 	// Node version to use
 	nodeVersion string,
 ) *MochaC8 {
 	return &MochaC8{
+		GoVersion:   goLangVersion,
 		NodeVersion: nodeVersion,
 	}
 }
@@ -32,6 +37,9 @@ var biomeFormattedPackages = map[string]bool{
 	"apps/populate-files/populate-files":      true,
 	"apps/nx-update-ts-references":            true,
 	"tools/format-file":                       true,
+}
+var goFormattedPackages = map[string]bool{
+	"apps/nx-dagger": true,
 }
 
 // Assert that all tests (both unit + integration) in projectDir are passing
@@ -90,6 +98,9 @@ func (m *MochaC8) CI(
 			"biome.json",
 			source.File("biome.json"),
 		)
+	}
+	if goFormattedPackages[projectDir] {
+		nodeContainer = dag.GoLang(m.GoVersion).InstallGo(nodeContainer)
 	}
 
 	nodeContainer = nodeContainer.
