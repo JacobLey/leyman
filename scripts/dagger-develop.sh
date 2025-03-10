@@ -15,4 +15,5 @@ dagger develop --mod ./dagger/executors/populate-files
 dagger develop --mod ./dagger/executors/tsc
 dagger develop --mod ./dagger/executors/update-ts-references
 dagger develop --mod ./dagger/monorepo
+dagger develop --mod ./dagger/monorepo/monorepo-builder
 dagger develop --mod ./dagger/test-and-build

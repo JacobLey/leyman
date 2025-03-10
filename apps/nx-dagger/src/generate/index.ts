@@ -5,7 +5,7 @@ import {
     dependenciesModule,
     isCiId,
     parseCwdId,
-    populateFileId,
+    populateFilesId,
     readFileId,
     workspaceRootId,
 } from './lib/depedencies.js';
@@ -41,7 +41,7 @@ export const nxDaggerModule = dependenciesModule
                 getGitIgnoreId,
                 normalizeOptionsId,
                 generateGoFileId,
-                populateFileId,
+                populateFilesId,
             ])
             .withProvider(nxDaggerProvider)
     );

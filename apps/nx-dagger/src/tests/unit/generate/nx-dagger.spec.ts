@@ -1,6 +1,6 @@
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite, test } from 'mocha-chain';
-import type { PopulateFile } from 'populate-files';
+import type { PopulateFiles } from 'populate-files';
 import { stubMethod } from 'sinon-typed-stub';
 import type { GetGitIgnore } from '../../../generate/git-ignore.js';
 import type { GenerateGoFile } from '../../../generate/go-generator.js';
@@ -277,19 +277,19 @@ suite('NxDagger', () => {
             const stubbedGetGitIgnore = stubMethod<GetGitIgnore>();
             const stubbedNormalizeOptions = stubMethod<NormalizeOptions>();
             const stubbedGenerateGoFile = stubMethod<GenerateGoFile>();
-            const stubbedPopulateFile = stubMethod<PopulateFile>();
+            const stubbedPopulateFiles = stubMethod<PopulateFiles>();
 
             return {
                 stubbedGetGitIgnore: stubbedGetGitIgnore.stub,
                 stubbedNormalizeOptions: stubbedNormalizeOptions.stub,
                 stubbedGenerateGoFile: stubbedGenerateGoFile.stub,
-                stubbedPopulateFile: stubbedPopulateFile.stub,
+                stubbedPopulateFiles: stubbedPopulateFiles.stub,
                 nxDagger: NxDagger.nxDaggerProvider(
                     '<workspace-root>',
                     stubbedGetGitIgnore.method,
                     stubbedNormalizeOptions.method,
                     stubbedGenerateGoFile.method,
-                    stubbedPopulateFile.method
+                    stubbedPopulateFiles.method
                 ),
             };
         });
@@ -307,8 +307,11 @@ suite('NxDagger', () => {
                 runtimes: {},
                 targets: {},
             });
-            ctx.stubbedGenerateGoFile.resolves('<go-file>');
-            ctx.stubbedPopulateFile.resolves();
+            ctx.stubbedGenerateGoFile.resolves({
+                main: '<go-file>',
+                builder: '<go-builder-file>',
+            });
+            ctx.stubbedPopulateFiles.resolves();
 
             await ctx.nxDagger(
                 {
@@ -332,12 +335,19 @@ suite('NxDagger', () => {
                     targets: new Map(),
                 },
             ]);
-            expect(ctx.stubbedPopulateFile.callCount).to.equal(1);
-            expect(ctx.stubbedPopulateFile.getCall(0).args).to.deep.equal([
-                {
-                    filePath: '<workspace-root>/<dagger-directory>/main.go',
-                    content: '<go-file>',
-                },
+            expect(ctx.stubbedPopulateFiles.callCount).to.equal(1);
+            expect(ctx.stubbedPopulateFiles.getCall(0).args).to.deep.equal([
+                [
+                    {
+                        filePath: '<workspace-root>/<dagger-directory>/main.go',
+                        content: '<go-file>',
+                    },
+                    {
+                        filePath:
+                            '<workspace-root>/<dagger-directory>/<dagger-directory>-builder/main.go',
+                        content: '<go-builder-file>',
+                    },
+                ],
                 {
                     check: true,
                     dryRun: false,

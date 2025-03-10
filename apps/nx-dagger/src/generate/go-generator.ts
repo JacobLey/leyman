@@ -9,15 +9,22 @@ import type { ParameterNames, TemplateContext } from './lib/types.js';
 
 const execFileAsync = promisify(execFile);
 const eta = new Eta();
-const compiledTemplate = new Eta()
-    .compile(
-        await readFile(Path.join(import.meta.dirname, '../../src/generate/main.go.eta'), 'utf8')
-    )
-    .bind(eta);
+const [mainTemplate, mainBuilderTemplate] = await Promise.all([
+    readFile(Path.join(import.meta.dirname, '../../src/generate/main.go.eta'), 'utf8'),
+    readFile(Path.join(import.meta.dirname, '../../src/generate/main-builder.go.eta'), 'utf8'),
+]);
+const compiledTemplate = eta.compile(mainTemplate).bind(eta);
+const compiledBuilderTemplate = eta.compile(mainBuilderTemplate).bind(eta);
 
-export type GenerateGoFile = (context: TemplateContext) => Promise<string>;
+interface NxDaggerFiles {
+    main: string;
+    builder: string;
+}
+export type GenerateGoFile = (context: TemplateContext) => Promise<NxDaggerFiles>;
 
-export const generateGoFile: GenerateGoFile = async (context: TemplateContext): Promise<string> => {
+export const generateGoFile: GenerateGoFile = async (
+    context: TemplateContext
+): Promise<NxDaggerFiles> => {
     const hasCi = [...context.targets.values()].some(target => target.isCi);
 
     const allParameters = new Set(
@@ -36,7 +43,7 @@ export const generateGoFile: GenerateGoFile = async (context: TemplateContext): 
     const hasOutput = allParameters.has('output');
     const hasProjectSource = allParameters.has('projectSource');
 
-    const rendered = compiledTemplate({
+    const templateOptions = {
         ...context,
         changeCase,
         conditionals: {
@@ -55,16 +62,37 @@ export const generateGoFile: GenerateGoFile = async (context: TemplateContext): 
             dependencyProjectDirectories: 'dependencyProjectDirs',
             directDependencyProjectDirectories: 'directDependencyProjectDirs',
         } satisfies Record<ParameterNames, string>,
-    });
+    };
+    const rendered = compiledTemplate(templateOptions);
+    const renderedBuilder = compiledBuilderTemplate(templateOptions);
 
-    const file = await tmpFile({ postfix: '.go' });
+    const formattedData: NxDaggerFiles = {
+        main: '',
+        builder: '',
+    };
+    await Promise.all(
+        [
+            {
+                raw: rendered,
+                key: 'main' as const,
+            },
+            {
+                raw: renderedBuilder,
+                key: 'builder' as const,
+            },
+        ].map(async ({ raw, key }) => {
+            const file = await tmpFile({ postfix: `-${key}.go` });
 
-    await writeFile(file.path, rendered, 'utf8');
+            await writeFile(file.path, raw, 'utf8');
 
-    await execFileAsync('gofmt', ['-w', file.path]);
+            await execFileAsync('gofmt', ['-w', file.path]);
 
-    const data = await readFile(file.path, 'utf8');
-    await file.cleanup();
+            const data = await readFile(file.path, 'utf8');
+            await file.cleanup();
 
-    return data;
+            formattedData[key] = data;
+        })
+    );
+
+    return formattedData;
 };

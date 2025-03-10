@@ -15,5 +15,6 @@ use (
 	./dagger/modules/node
 	./dagger/modules/pnpm
 	./dagger/monorepo
+	./dagger/monorepo/monorepo-builder
 	./dagger/test-and-build
 )

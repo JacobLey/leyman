@@ -2,15 +2,13 @@
 package main
 
 import (
-	"dagger/<%= it.dagger.name %>/internal/dagger"
+	"dagger/monorepo-fn/internal/dagger"
 
-<% if (it.conditionals.hasCi) { %>
 	"context"
-<% } %>
 	"sync"
 )
 
-type <%= it.changeCase.pascalCase(it.dagger.name) %> struct {
+type MonorepoFn struct {
 	// Root of source file
 	Source *dagger.Directory
 }
@@ -18,18 +16,18 @@ type <%= it.changeCase.pascalCase(it.dagger.name) %> struct {
 func New(
 	// Root of source file
 	// Ignore needs to mirror .gitignore
-	// +ignore=<%~ JSON.stringify(it.gitIgnore) %><%~ '\n' %>
+	// +ignore=["ignore","stuff/**","!allowed"]
 	source *dagger.Directory,
-) *<%= it.changeCase.pascalCase(it.dagger.name) %> {
-	return &<%= it.changeCase.pascalCase(it.dagger.name) %>{
+) *MonorepoFn {
+	return &MonorepoFn{
 		Source: dag.Directory().WithDirectory(
 			".",
 			source,
 			dagger.DirectoryWithDirectoryOpts{
 				Exclude: []string{
-				<% for (const ignored of it.gitIgnore) { %>
-					"<%= ignored %>",
-				<% } %>
+					"ignore",
+					"stuff/**",
+					"!allowed",
 				},
 			},
 		),
@@ -38,23 +36,20 @@ func New(
 
 // List all project directories, filtered by runtime
 // Empty string results in all project directories
-func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) ProjectDirs(
+func (m *MonorepoFn) ProjectDirs(
 	ctx context.Context,
 	runtime string,
 ) ([]string, error) {
 
-	return dag.<%= it.changeCase.pascalCase(it.dagger.name) %>Builder(m.Source).ProjectDirs(ctx, runtime)
+	return dag.MonorepoFnBuilder(m.Source).ProjectDirs(ctx, runtime)
 }
 
 // Execute Nx targets over all projects in dependency order
 // and return the fully built monorepo directory
-func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) Build(
-<% if (it.conditionals.hasCi) { %>
+func (m *MonorepoFn) Build(
 	ctx context.Context,
-<% } %>
-<% for (const arg of [...it.constructorArguments.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
-	<%= arg.name %> <%= arg.type %>,
-<% } %>
+	barArg int,
+	fooArg string,
 ) (*dagger.Directory, error) {
 
 	type builtProject struct {
@@ -64,7 +59,7 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) Build(
 	mapMutex := sync.RWMutex{}
 	builtProjects := map[string]builtProject{}
 	waitGroup := sync.WaitGroup{}
-	projectDirs, projectDirsErr := dag.<%= it.changeCase.pascalCase(it.dagger.name) %>Builder(m.Source).ProjectDirs(ctx, "")
+	projectDirs, projectDirsErr := dag.MonorepoFnBuilder(m.Source).ProjectDirs(ctx, "")
 	if projectDirsErr != nil {
 		return nil, projectDirsErr
 	}
@@ -80,9 +75,9 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) Build(
 	var triggerProjectBuildGroup func(projectDir string)
 	triggerProjectBuild = func(projectDir string) {
 
-		<%= it.changeCase.camelCase(it.dagger.name) %>Builder := dag.<%= it.changeCase.pascalCase(it.dagger.name) %>Builder(m.Source)
+		monorepoFnBuilder := dag.MonorepoFnBuilder(m.Source)
 
-		projectConfig := <%= it.changeCase.camelCase(it.dagger.name) %>Builder.ProjectConfig(projectDir)
+		projectConfig := monorepoFnBuilder.ProjectConfig(projectDir)
 		dependencyDirNames, dependencyProjectDirErr := projectConfig.DependencyProjectDirs(ctx)
 		if dependencyProjectDirErr != nil {
 			buildError = dependencyProjectDirErr
@@ -106,12 +101,11 @@ func (m *<%= it.changeCase.pascalCase(it.dagger.name) %>) Build(
 			return
 		}
 
-		directory := <%= it.changeCase.camelCase(it.dagger.name) %>Builder.BuildProject(
+		directory := monorepoFnBuilder.BuildProject(
 			projectDir,
 			outputDirectories,
-		<% for (const arg of [...it.constructorArguments.values()].sort((a, b) => a.name.localeCompare(b.name, 'en'))) { %>
-			<%= arg.name %>,
-		<% } %>
+			barArg,
+			fooArg,
 		)
 
 		mapMutex.Lock()

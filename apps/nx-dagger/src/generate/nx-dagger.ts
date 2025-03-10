@@ -1,6 +1,6 @@
 import Path from 'node:path';
 import type { ProjectConfiguration, ProjectGraph, TargetConfiguration } from '@nx/devkit';
-import type { PopulateFile } from 'populate-files';
+import type { PopulateFiles } from 'populate-files';
 import type { GetGitIgnore } from './git-ignore.js';
 import type { GenerateGoFile } from './go-generator.js';
 import type { TemplateContext } from './lib/types.js';
@@ -170,7 +170,7 @@ export const nxDaggerProvider =
         getGitIgnore: GetGitIgnore,
         normalizeOptions: NormalizeOptions,
         generateGoFile: GenerateGoFile,
-        populateFile: PopulateFile
+        populateFiles: PopulateFiles
     ): NxDagger =>
     async (projectGraph: ProjectGraph, configOptions: DaggerOptionsOrConfig): Promise<void> => {
         const [gitIgnore, normalizedOptions] = await Promise.all([
@@ -178,7 +178,7 @@ export const nxDaggerProvider =
             normalizeOptions(configOptions),
         ]);
 
-        const goFile = await generateGoFile(
+        const goFiles = await generateGoFile(
             constructContext({
                 ...normalizedOptions,
                 gitIgnore,
@@ -186,11 +186,22 @@ export const nxDaggerProvider =
             })
         );
 
-        await populateFile(
-            {
-                filePath: Path.join(nxWorkspace, normalizedOptions.dagger.directory, 'main.go'),
-                content: goFile,
-            },
+        await populateFiles(
+            [
+                {
+                    filePath: Path.join(nxWorkspace, normalizedOptions.dagger.directory, 'main.go'),
+                    content: goFiles.main,
+                },
+                {
+                    filePath: Path.join(
+                        nxWorkspace,
+                        normalizedOptions.dagger.directory,
+                        `${Path.basename(normalizedOptions.dagger.directory)}-builder`,
+                        'main.go'
+                    ),
+                    content: goFiles.builder,
+                },
+            ],
             {
                 check: normalizedOptions.check,
                 dryRun: normalizedOptions.dryRun,
