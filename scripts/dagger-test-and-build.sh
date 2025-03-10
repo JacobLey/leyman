@@ -1,0 +1,1 @@
+dagger call --mod ./dagger/test-and-build/ --source . run
