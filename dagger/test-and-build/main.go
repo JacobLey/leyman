@@ -12,7 +12,7 @@ type TestAndBuild struct {
 
 var goLangVersion = "1.24.0"
 var nodeVersion = "22.14.0"
-var pnpmVersion = "10.5.2"
+var pnpmVersion = "10.6.2"
 
 func New(
 	// Root of source file
