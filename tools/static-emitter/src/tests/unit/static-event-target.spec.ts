@@ -62,7 +62,7 @@ suite('StaticEventTarget', () => {
                     };
                 }
 
-                expectTypeOf(ExtendTargetDeclare).toMatchTypeOf(ExtendTarget);
+                expectTypeOf<ExtendTargetDeclare>().branded.toEqualTypeOf<ExtendTarget>();
             });
 
             test('Both generics and event param', () => {
@@ -80,7 +80,7 @@ suite('StaticEventTarget', () => {
                     };
                 }
 
-                expectTypeOf(ExtendTargetCombo).toMatchTypeOf(ExtendTarget);
+                expectTypeOf<ExtendTargetCombo>().branded.toEqualTypeOf<ExtendTarget>();
             });
         });
     });

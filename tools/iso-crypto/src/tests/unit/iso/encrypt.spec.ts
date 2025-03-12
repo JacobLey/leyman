@@ -13,8 +13,8 @@ suite('Encrypt', () => {
 
     test('types', () => {
         expectTypeOf<typeof Encrypt>().toEqualTypeOf(BrowserEncrypt);
-        expectTypeOf<typeof Encrypt>().toMatchTypeOf(NodeEncrypt);
-        expectTypeOf(IsoCrypto).toMatchTypeOf<typeof Encrypt>();
+        expectTypeOf<typeof Encrypt>().toEqualTypeOf(NodeEncrypt);
+        expectTypeOf(IsoCrypto).toExtend<typeof Encrypt>();
     });
 
     interface SourceEncrypt {

@@ -14,7 +14,7 @@ suite('Random', () => {
     test('types', () => {
         expectTypeOf<typeof Random>().toEqualTypeOf(BrowserRandom);
         expectTypeOf<typeof Random>().toEqualTypeOf(NodeRandom);
-        expectTypeOf(IsoCrypto).toMatchTypeOf(NodeRandom);
+        expectTypeOf(IsoCrypto).toExtend<typeof Random>();
     });
 
     suite('randomBytes', () => {

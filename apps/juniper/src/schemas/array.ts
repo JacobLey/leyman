@@ -534,9 +534,9 @@ export declare class IArraySchemaOverride<
         schema: ArraySchema<any, any[], any, unknown, boolean>
     ) => any;
 
-    public declare anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    public declare anyOf: (
         this: any,
-        schemas: S[]
+        schemas: ArraySchema<any, any[], any, unknown, boolean>[]
     ) => any;
 
     public declare if: <
@@ -557,9 +557,9 @@ export declare class IArraySchemaOverride<
 
     public declare nullable: (this: any) => any;
 
-    public declare oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    public declare oneOf: (
         this: any,
-        schemas: S[]
+        schemas: ArraySchema<any, any[], any, unknown, boolean>[]
     ) => any;
 
     public declare contains: any;

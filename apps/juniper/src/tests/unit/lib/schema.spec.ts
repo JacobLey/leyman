@@ -17,19 +17,19 @@ suite('schema', () => {
     suite('create', () => {
         test('constructor', () => {
             const schema = new NumberSchema();
-            expectTypeOf(schema).toMatchTypeOf<Schema<number>>();
+            expectTypeOf(schema).toExtend<Schema<number>>();
             expect(schema).to.be.an.instanceOf(NumberSchema);
         });
 
         test('create', () => {
             const schema = NumberSchema.create();
-            expectTypeOf(schema).toMatchTypeOf<Schema<number>>();
+            expectTypeOf(schema).toExtend<Schema<number>>();
             expect(schema).to.be.an.instanceOf(NumberSchema);
         });
 
         test('method', () => {
             const schema = numberSchema();
-            expectTypeOf(schema).toMatchTypeOf<Schema<number>>();
+            expectTypeOf(schema).toExtend<Schema<number>>();
             expect(schema).to.be.an.instanceOf(NumberSchema);
         });
     });

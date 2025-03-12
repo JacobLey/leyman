@@ -10,7 +10,7 @@ suite('CustomEvent', () => {
                 detail: 123,
             });
 
-            expectTypeOf(event).toMatchTypeOf<TypedCustomEvent<string, 123>>();
+            expectTypeOf(event).toEqualTypeOf<TypedCustomEvent<string, 123>>();
         });
 
         test('Extends Event', () => {

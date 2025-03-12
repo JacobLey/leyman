@@ -6,7 +6,7 @@ import * as Encode from '#encode';
 
 suite('Encode', () => {
     test('types', () => {
-        expectTypeOf(IsoCrypto).toMatchTypeOf<typeof Encode>();
+        expectTypeOf(IsoCrypto).toExtend<typeof Encode>();
     });
 
     suite('decode', () => {

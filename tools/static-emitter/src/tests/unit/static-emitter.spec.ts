@@ -68,7 +68,7 @@ suite('StaticEmitter', () => {
                     };
                 }
 
-                expectTypeOf(CustomEmitterDeclare).toMatchTypeOf(CustomEmitter);
+                expectTypeOf<CustomEmitterDeclare>().branded.toEqualTypeOf<CustomEmitter>();
             });
 
             test('Both generics and event param', () => {
@@ -88,7 +88,7 @@ suite('StaticEmitter', () => {
                     };
                 }
 
-                expectTypeOf(CustomEmitterCombo).toMatchTypeOf(CustomEmitter);
+                expectTypeOf<CustomEmitterCombo>().branded.toEqualTypeOf<CustomEmitter>();
             });
         });
 

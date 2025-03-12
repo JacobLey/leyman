@@ -14,7 +14,7 @@ suite('Hash', () => {
     test('types', () => {
         expectTypeOf<typeof Hash>().toEqualTypeOf(BrowserHash);
         expectTypeOf<typeof Hash>().toEqualTypeOf(NodeHash);
-        expectTypeOf(IsoCrypto).toMatchTypeOf<typeof Hash>();
+        expectTypeOf(IsoCrypto).toExtend<typeof Hash>();
     });
 
     suite('hash', () => {

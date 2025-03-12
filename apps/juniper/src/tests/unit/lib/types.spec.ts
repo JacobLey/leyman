@@ -15,7 +15,7 @@ suite('types', () => {
         expectTypeOf<SchemaType<JsonSchema<boolean>>>().toEqualTypeOf<boolean>();
 
         const schema = numberSchema();
-        expectTypeOf(schema).toMatchTypeOf<Schema<number>>();
+        expectTypeOf(schema).toExtend<Schema<number>>();
         expectTypeOf(schema.toJSON()).toEqualTypeOf<JsonSchema<number>>();
     });
 

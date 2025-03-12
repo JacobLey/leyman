@@ -23,8 +23,8 @@ suite('Ecc', () => {
 
     test('types', () => {
         expectTypeOf<typeof Ecc>().toEqualTypeOf(BrowserEcc);
-        expectTypeOf<typeof Ecc>().toMatchTypeOf(NodeEcc);
-        expectTypeOf(IsoCrypto).toMatchTypeOf<typeof Ecc>();
+        expectTypeOf<typeof Ecc>().toEqualTypeOf(NodeEcc);
+        expectTypeOf(IsoCrypto).toExtend<typeof Ecc>();
     });
 
     const successTest = async function (this: Context, { source, target }: EccContext) {

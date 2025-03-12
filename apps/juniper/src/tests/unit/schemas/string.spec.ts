@@ -149,7 +149,7 @@ suite('StringSchema', () => {
                 });
 
                 const validator = new Ajv2020({ strict: true }).compile(json);
-                expectTypeOf<SchemaType<typeof schema>>().toMatchTypeOf<
+                expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
                     | `${string}b${string}`
                     | (`${string}b${string}` & `${string}c` & `a${string}`)
                     | (`${string}c` & `a${string}`)
