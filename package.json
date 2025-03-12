@@ -8,6 +8,9 @@
     "nx-update-ts-references": "workspace:^"
   },
   "pnpm": {
-    "onlyBuiltDependencies": []
+    "onlyBuiltDependencies": [],
+    "ignoredBuiltDependencies": [
+      "nx"
+    ]
   }
 }
