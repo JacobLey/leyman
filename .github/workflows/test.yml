@@ -6,6 +6,7 @@ env:
   PNPM_VERSION: 10.6.2
 
 on:
+  - pull_request
   - push
 
 jobs:
@@ -54,3 +55,19 @@ jobs:
       - name: Verify Targets
         run: |
           nx run @leyman/main:lifecycle
+
+  dagger-test-and-build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Invoke Dagger
+        uses: dagger/dagger-for-github@8.0.0
+        with:
+          version: 0.16.3
+          verb: call
+          module: ./dagger/test-and-build/
+          args: --source . run
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
