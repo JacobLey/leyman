@@ -64,7 +64,8 @@ func (m *Pnpm) attachPnpmStore(
 	source *dagger.Directory,
 ) *dagger.Container {
 
-	pnpmContainer := m.PnpmContainer()
+	pnpmContainer := m.PnpmContainer().
+		WithMountedDirectory(".", dag.Directory())
 
 	fetchedContainer := pnpmContainer.
 		WithDirectory(
@@ -99,7 +100,7 @@ func (m *Pnpm) reformatPackageJson(
 ) *dagger.File {
 	return dag.Node(nodeVersion).
 		NodeContainer().
-		WithFile("package.json", source.File(path.Join(projectDir, "package.json"))).
+		WithMountedFile("package.json", source.File(path.Join(projectDir, "package.json"))).
 		// Revert all local packages to 0 so remote packages never prefer them
 		WithExec([]string{
 			"node",
@@ -132,27 +133,23 @@ func (m *Pnpm) InstallPackage(
 ) *dagger.Directory {
 
 	pnpmAttached := m.attachPnpmStore(source)
+	pnpmBaseDir := pnpmAttached.Directory(".")
 
-	pnpmAttached = pnpmAttached.WithDirectory(
-		".",
-		output,
-		dagger.ContainerWithDirectoryOpts{
-			Exclude: []string{"**/node_modules", "**/package.json"},
-			Include: dependencyProjectDirs,
-		},
-	)
+	pnpmAttached = pnpmAttached.
+		WithMountedDirectory(".", output.WithoutDirectory("**/node_modules")).
+		WithDirectory(".", pnpmBaseDir)
 
 	for _, dependencyProjectDir := range dependencyProjectDirs {
-		pnpmAttached = pnpmAttached.WithFile(
+		pnpmAttached = pnpmAttached.WithMountedFile(
 			path.Join(dependencyProjectDir, "package.json"),
 			m.reformatPackageJson(source, dependencyProjectDir),
 		)
 	}
 
 	pnpmAttached = pnpmAttached.
-		WithDirectory(projectDir, projectSource, dagger.ContainerWithDirectoryOpts{Exclude: []string{".npmignore", "package.json"}}).
+		WithMountedDirectory(projectDir, projectSource.WithoutFile(".npmignore")).
 		WithWorkdir(projectDir).
-		WithFile("package.json", m.reformatPackageJson(source, projectDir)).
+		WithMountedFile("package.json", m.reformatPackageJson(source, projectDir)).
 		WithExec([]string{"pnpm", "deploy", "--prefer-offline", "--filter", ".", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")
@@ -171,15 +168,7 @@ func (m *Pnpm) RepackPackage(
 	projectOutput *dagger.Directory,
 	directDependencyProjectDirs []string,
 ) *dagger.Directory {
-
-	tarballFilename := "dagger.tgz"
-	deployDirectory := "deploy"
-	packageJsonPaths := make([]string, len(directDependencyProjectDirs))
-	for i, dependencyDir := range directDependencyProjectDirs {
-		packageJsonPaths[i] = path.Join(dependencyDir, "package.json")
-	}
-
-	return m.PnpmContainer().
+	ctr := m.PnpmContainer().
 		WithDirectory(
 			".",
 			source,
@@ -187,26 +176,30 @@ func (m *Pnpm) RepackPackage(
 				Include: []string{".npmrc", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
 			},
 		).
-		WithDirectory(
-			".",
-			output,
-			dagger.ContainerWithDirectoryOpts{
-				Include: packageJsonPaths,
-			},
-		).
-		WithDirectory(
+		WithMountedDirectory(
 			projectDir,
 			projectOutput,
-			dagger.ContainerWithDirectoryOpts{
-				Exclude: []string{"node_modules", "!node_modules/*"},
-			},
-		).
+		)
+
+	for _, dependencyDir := range directDependencyProjectDirs {
+		pkgJsonPath := path.Join(dependencyDir, "package.json")
+		ctr = ctr.WithMountedFile(
+			pkgJsonPath,
+			output.File(pkgJsonPath),
+		)
+	}
+
+	tarballFilename := "dagger.tgz"
+	deployDirectory := "deploy"
+	packageDirectory := path.Join(deployDirectory, "package")
+	return ctr.
 		WithWorkdir(projectDir).
-		WithFile(".npmignore", projectSource.File(".npmignore")).
+		WithMountedFile(".npmignore", projectSource.File(".npmignore")).
 		WithExec([]string{"pnpm", "pack", "--out", tarballFilename}).
 		WithExec([]string{"mkdir", deployDirectory}).
+		WithMountedDirectory(packageDirectory, dag.Directory()).
 		WithExec([]string{"tar", "xvf", tarballFilename, "-C", deployDirectory}).
-		Directory(path.Join(deployDirectory, "package"))
+		Directory(packageDirectory)
 }
 
 // Returns a production "deploy"ed version of workspace.
@@ -224,20 +217,16 @@ func (m *Pnpm) DeployPackage(
 ) *dagger.Directory {
 
 	pnpmAttached := m.attachPnpmStore(source)
-
-	pnpmAttached = pnpmAttached.WithDirectory(
-		".",
-		output,
-		dagger.ContainerWithDirectoryOpts{
-			Exclude: []string{"**/node_modules"},
-			Include: dependencyProjectDirs,
-		},
-	)
+	pnpmBaseDir := pnpmAttached.Directory(".")
 
 	pnpmAttached = pnpmAttached.
-		WithDirectory(projectDir, projectOutput, dagger.ContainerWithDirectoryOpts{Exclude: []string{"node_modules"}}).
+		WithMountedDirectory(".", output.WithoutDirectory("**/node_modules")).
+		WithDirectory(".", pnpmBaseDir)
+
+	pnpmAttached = pnpmAttached.
+		WithMountedDirectory(projectDir, projectOutput.WithoutDirectory("node_modules")).
 		WithWorkdir(projectDir).
-		WithFile(".npmignore", projectSource.File(".npmignore")).
+		WithMountedFile(".npmignore", projectSource.File(".npmignore")).
 		WithExec([]string{"pnpm", "deploy", "--filter", ".", "--prod", "./deploy"})
 
 	return pnpmAttached.Directory("deploy")

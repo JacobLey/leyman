@@ -33,14 +33,14 @@ func (m *Tsc) Run(
 ) *dagger.Directory {
 
 	nodeContainer := m.node().NodeContainer().
-		WithFile(
+		WithMountedFile(
 			"tsconfig.build.json",
 			source.File("tsconfig.build.json"),
 		).
-		WithDirectory(projectDir, projectOutput).
+		WithMountedDirectory(projectDir, projectOutput).
 		WithWorkdir(projectDir).
 		// Guarantee directory exists, in case no files get populated
-		WithDirectory("dist", dag.Directory()).
+		WithMountedDirectory("dist", dag.Directory()).
 		WithEnvVariable("PATH", "node_modules/.bin:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true})
 
 	typedContainer := nodeContainer.
@@ -62,9 +62,7 @@ func (m *Tsc) Run(
 		WithoutFile("dist/tsconfig.tsbuildinfo")
 
 	swcContainer := nodeContainer.
-		// Guarantee directory exists, in case no files get populated
-		WithDirectory("dist", dag.Directory()).
-		WithFile(".swcrc", source.File(".swcrc.jsonc"))
+		WithMountedFile(".swcrc", source.File(".swcrc.jsonc"))
 
 	jsContainer := swcContainer.
 		WithExec([]string{"bash", "-c", "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --only '**/*.ts?(x)'"})
@@ -74,22 +72,19 @@ func (m *Tsc) Run(
 		WithExec([]string{"bash", "-c", "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs"})
 
 	dist := typedContainer.
+		Directory("dist").
 		WithDirectory(
-			"dist-js",
+			"/",
 			jsContainer.Directory("dist"),
 		).
-		WithExec([]string{"cp", "-rT", "./dist-js", "./dist"}).
 		WithDirectory(
-			"dist-mjs",
+			"/",
 			mjsContainer.Directory("dist"),
 		).
-		WithExec([]string{"cp", "-rT", "./dist-mjs", "./dist"}).
 		WithDirectory(
-			"dist-cjs",
+			"/",
 			cjsContainer.Directory("dist"),
-		).
-		WithExec([]string{"cp", "-rT", "./dist-cjs", "./dist"}).
-		Directory("dist")
+		)
 
 	return projectOutput.WithDirectory("dist", dist)
 }

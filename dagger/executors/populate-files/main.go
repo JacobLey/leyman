@@ -36,11 +36,11 @@ func (m *PopulateFiles) CI(
 	nodeContainer := m.node().NodeContainer()
 
 	nodeContainer = nodeContainer.
-		WithDirectory(
+		WithMountedDirectory(
 			projectDir,
 			projectOutput,
 		).
-		WithFile(
+		WithMountedFile(
 			"biome.json",
 			source.File("biome.json"),
 		).

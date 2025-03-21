@@ -46,14 +46,15 @@ func (m *UpdateTsReferences) CI(
 			path.Join(dir, "tsconfig.json"),
 		)
 	}
+
+	for _, file := range files {
+		nodeContainer = nodeContainer.WithMountedFile(
+			file,
+			source.File(file),
+		)
+	}
+
 	nodeContainer = nodeContainer.
-		WithDirectory(
-			".",
-			source,
-			dagger.ContainerWithDirectoryOpts{
-				Include: files,
-			},
-		).
 		WithExec([]string{
 			"bash",
 			"-c",
@@ -67,7 +68,7 @@ func (m *UpdateTsReferences) CI(
 				" && ",
 			),
 		}).
-		WithDirectory(projectDir, projectOutput).
+		WithMountedDirectory(projectDir, projectOutput).
 		WithWorkdir(projectDir).
 		WithEnvVariable("PATH", "node_modules/.bin:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true})
 

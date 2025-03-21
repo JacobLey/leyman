@@ -33,16 +33,17 @@ func (m *Biome) CI(
 ) error {
 
 	nodeContainer := m.node().NodeContainer().
-		WithDirectory(
+		WithMountedDirectory(
 			projectDir,
 			projectOutput,
 		).
-		WithFiles(
-			".",
-			[]*dagger.File{
-				source.File(".gitignore"),
-				source.File("biome.json"),
-			},
+		WithMountedFile(
+			"biome.json",
+			source.File("biome.json"),
+		).
+		WithMountedFile(
+			".gitignore",
+			source.File(".gitignore"),
 		).
 		WithWorkdir(projectDir).
 		WithEnvVariable("PATH", "node_modules/.bin:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true})

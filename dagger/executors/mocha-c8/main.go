@@ -55,10 +55,17 @@ func (m *MochaC8) CI(
 
 	nodeContainer := m.node().NodeContainer()
 
+	if goFormattedPackages[projectDir] {
+		nodeContainer = dag.GoLang(m.GoVersion).InstallGo(nodeContainer)
+	}
+
 	if projectDir == "apps/pnpm-dedicated-lockfile" {
-		nodeContainer = nodeContainer.WithFiles(
-			".",
-			[]*dagger.File{source.File("pnpm-lock.yaml"), source.File("pnpm-workspace.yaml")},
+		nodeContainer = nodeContainer.WithMountedFile(
+			"pnpm-lock.yaml",
+			source.File("pnpm-lock.yaml"),
+		).WithMountedFile(
+			"pnpm-workspace.yaml",
+			source.File("pnpm-workspace.yaml"),
 		)
 	} else if projectDir == "apps/nx-update-ts-references" {
 		files := []string{"pnpm-lock.yaml", "pnpm-workspace.yaml"}
@@ -70,14 +77,14 @@ func (m *MochaC8) CI(
 				path.Join(dir, "tsconfig.json"),
 			)
 		}
+		for _, file := range files {
+			nodeContainer = nodeContainer.WithMountedFile(
+				file,
+				source.File(file),
+			)
+		}
+
 		nodeContainer = nodeContainer.
-			WithDirectory(
-				".",
-				source,
-				dagger.ContainerWithDirectoryOpts{
-					Include: files,
-				},
-			).
 			WithExec([]string{
 				"bash",
 				"-c",
@@ -94,17 +101,14 @@ func (m *MochaC8) CI(
 	}
 
 	if biomeFormattedPackages[projectDir] {
-		nodeContainer = nodeContainer.WithFile(
+		nodeContainer = nodeContainer.WithMountedFile(
 			"biome.json",
 			source.File("biome.json"),
 		)
 	}
-	if goFormattedPackages[projectDir] {
-		nodeContainer = dag.GoLang(m.GoVersion).InstallGo(nodeContainer)
-	}
 
 	nodeContainer = nodeContainer.
-		WithDirectory(
+		WithMountedDirectory(
 			projectDir,
 			projectOutput,
 		).
