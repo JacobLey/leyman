@@ -18,7 +18,7 @@ func New(
 	// Root of source file
 	// Ignore needs to mirror .gitignore, in addition to files that are known to not be relevant to build.
 	// Can be copied from Monorepo (auto-populated)
-	// +ignore=[".git","**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache","**/coverage","**/dist","**/.pnpm-lock-hash","**/.swcrc",".nx","dagger/**/.gitattributes","dagger","!dagger/monorepo/main.go","scripts"]
+	// +ignore=[".git","**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache","**/coverage","**/dist","**/.pnpm-lock-hash","**/.swcrc",".nx",".changeset",".devcontainer",".github",".vscode","dagger","!dagger/monorepo/main.go","!dagger/monorepo/monorepo-builder/main.go","go.work","go.work.sum","README.md","scripts"]
 	source *dagger.Directory,
 ) *TestAndBuild {
 	return &TestAndBuild{
@@ -39,9 +39,13 @@ func New(
 					"**/.swcrc",
 					".nx",
 					// Version controlled, but not relevant to dagger
+					".changeset",
+					".devcontainer",
+					".github",
 					".vscode",
 					"dagger",
 					"!dagger/monorepo/main.go",
+					"!dagger/monorepo/monorepo-builder/main.go",
 					"go.work",
 					"go.work.sum",
 					"README.md",
