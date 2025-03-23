@@ -123,7 +123,7 @@ func (m *MochaC8) CI(
 			WithExec([]string{"c8", "report", "--all", "--check-coverage"})
 	} else {
 		nodeContainer = nodeContainer.
-			WithExec([]string{"c8", "mocha", "--recursive", "./dist/tests/{unit,integration}/**/*.spec.*js"})
+			WithExec([]string{"c8", "mocha", "--timeout", "5000", "--recursive", "./dist/tests/{unit,integration}/**/*.spec.*js"})
 	}
 
 	_, err := nodeContainer.Sync(ctx)
