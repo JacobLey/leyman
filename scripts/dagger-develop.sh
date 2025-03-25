@@ -10,6 +10,8 @@ find ./dagger -name go.mod \
 find ./dagger -name go.sum \
     -exec sh -c '> "$1"' _ {} \;
 
+> go.work.sum
+
 # Helper script to "recursively" setup all dagger modules for local development
 dagger develop --mod ./dagger/modules/debian
 dagger develop --mod ./dagger/modules/go-lang
