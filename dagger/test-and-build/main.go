@@ -22,36 +22,33 @@ func New(
 	source *dagger.Directory,
 ) *TestAndBuild {
 	return &TestAndBuild{
-		Source: dag.Directory().WithDirectory(
-			".",
-			source,
-			dagger.DirectoryWithDirectoryOpts{
-				Exclude: []string{
-					".git",
-					"**/*.log*",
-					"**/.DS_Store",
-					"**/node_modules",
-					".pnpm-store",
-					"**/.eslintcache",
-					"**/coverage",
-					"**/dist",
-					"**/.pnpm-lock-hash",
-					"**/.swcrc",
-					".nx",
-					// Version controlled, but not relevant to dagger
-					".changeset",
-					".devcontainer",
-					".github",
-					".vscode",
-					"dagger",
-					"!dagger/monorepo/main.go",
-					"!dagger/monorepo/monorepo-builder/main.go",
-					"go.work",
-					"go.work.sum",
-					"README.md",
-					"scripts",
-				},
+		Source: source.Filter(dagger.DirectoryFilterOpts{
+			Exclude: []string{
+				".git",
+				"**/*.log*",
+				"**/.DS_Store",
+				"**/node_modules",
+				".pnpm-store",
+				"**/.eslintcache",
+				"**/coverage",
+				"**/dist",
+				"**/.pnpm-lock-hash",
+				"**/.swcrc",
+				".nx",
+				// Version controlled, but not relevant to dagger
+				".changeset",
+				".devcontainer",
+				".github",
+				".vscode",
+				"dagger",
+				"!dagger/monorepo/main.go",
+				"!dagger/monorepo/monorepo-builder/main.go",
+				"go.work",
+				"go.work.sum",
+				"README.md",
+				"scripts",
 			},
+		},
 		),
 	}
 }
@@ -60,10 +57,8 @@ func New(
 func (m *TestAndBuild) Run(ctx context.Context) (*dagger.Directory, error) {
 
 	monorepo := dag.Monorepo(
-		dag.Directory().WithDirectory(
-			".",
-			m.Source,
-			dagger.DirectoryWithDirectoryOpts{
+		m.Source.Filter(
+			dagger.DirectoryFilterOpts{
 				// Files that aren't ever used by Nx projects
 				Exclude: []string{".github", "leyman/main"},
 			},
