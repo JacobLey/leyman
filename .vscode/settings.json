@@ -2,7 +2,7 @@
   "biome.lspBin": "leyman/main/node_modules/.bin/biome",
   "eslint.enable": true,
   "eslint.run": "onType",
-  "eslint.runtime": "/home/leyman/.nvm/versions/node/v22.14.0/bin/node",
+  "eslint.runtime": "/home/leyman/.nvm/versions/node/v24.2.0/bin/node",
   "eslint.nodePath": "leyman/main/node_modules",
   "eslint.probe": [
     "javascript",

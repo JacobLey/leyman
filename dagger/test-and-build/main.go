@@ -10,9 +10,9 @@ type TestAndBuild struct {
 	Source *dagger.Directory
 }
 
-var goLangVersion = "1.23.0"
-var nodeVersion = "22.14.0"
-var pnpmVersion = "10.6.2"
+var goLangVersion = "1.24.4"
+var nodeVersion = "24.2.0"
+var pnpmVersion = "10.12.1"
 
 func New(
 	// Root of source file

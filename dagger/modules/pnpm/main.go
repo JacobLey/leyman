@@ -20,7 +20,7 @@ func New(
 	}
 }
 
-var nodeVersion = "22.14.0"
+var nodeVersion = "24.2.0"
 var versionPrefix = "0.0.0-DAGGERDEV"
 
 // Install PNPM onto the provided container

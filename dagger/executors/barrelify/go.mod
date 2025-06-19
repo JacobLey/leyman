@@ -1,6 +1,6 @@
 module dagger/barrelify
 
-go 1.23.0
+go 1.24.4
 
 require (
 	github.com/99designs/gqlgen v0.17.68
