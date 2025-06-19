@@ -1,12 +1,11 @@
 import Path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as FindImport from 'find-import';
 import { before, suite, test } from 'mocha-chain';
 
 suite('findImport', () => {
-    const dataDir = Path.join(fileURLToPath(import.meta.url), '../../data');
+    const dataDir = Path.join(import.meta.filename, '../../data');
     const originalDataDir = Path.join(dataDir, '../../../src/tests/data');
 
     const context = before(async () => {

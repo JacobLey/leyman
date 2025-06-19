@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Re-usable eslint config.",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "private": true,
   "type": "module",

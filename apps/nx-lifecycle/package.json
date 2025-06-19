@@ -3,7 +3,7 @@
   "version": "0.2.1",
   "description": "Keep high level nx lifecycle targets in sync",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "type": "module",
   "author": "JacobLey",

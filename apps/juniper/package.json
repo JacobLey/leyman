@@ -3,7 +3,7 @@
   "version": "1.2.5",
   "description": "ESM JSON Schema builder for static Typescript inference.",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "type": "module",
   "author": "JacobLey",

@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Generate custom dagger function for compiling monorepo based on Nx targets",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "type": "module",
   "author": "JacobLey",

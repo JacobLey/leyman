@@ -3,7 +3,7 @@
   "version": "0.2.4",
   "description": "Dynamically populate file content",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "type": "module",
   "author": "JacobLey",

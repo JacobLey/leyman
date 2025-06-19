@@ -1,5 +1,4 @@
 import Path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { runAsMain } from '#entry-script';
 import { MainNotImplementedError } from '#not-implemented-error';
@@ -16,22 +15,14 @@ suite('EntryScript', () => {
         });
 
         test('static', async () => {
-            await runAsMain(
-                Path.resolve(
-                    Path.dirname(fileURLToPath(import.meta.url)),
-                    '../../data/entry-script-static.js'
-                )
-            );
+            await runAsMain(Path.resolve(import.meta.dirname, '../../data/entry-script-static.js'));
 
             expect(tracker.value).to.equal(EntryScriptStatic);
         });
 
         test('success', async () => {
             await runAsMain(
-                Path.resolve(
-                    Path.dirname(fileURLToPath(import.meta.url)),
-                    '../../data/entry-script-instance.js'
-                )
+                Path.resolve(import.meta.dirname, '../../data/entry-script-instance.js')
             );
 
             expect(tracker.value).to.equal(entryScriptInstance);
@@ -42,7 +33,7 @@ suite('EntryScript', () => {
                 await expect(
                     runAsMain(
                         Path.resolve(
-                            Path.dirname(fileURLToPath(import.meta.url)),
+                            import.meta.dirname,
                             '../../data/entry-script-static-invalid.js'
                         )
                     )
@@ -56,7 +47,7 @@ suite('EntryScript', () => {
                 await expect(
                     runAsMain(
                         Path.resolve(
-                            Path.dirname(fileURLToPath(import.meta.url)),
+                            import.meta.dirname,
                             '../../data/entry-script-instance-invalid.js'
                         )
                     )

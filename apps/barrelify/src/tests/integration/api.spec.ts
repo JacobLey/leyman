@@ -1,10 +1,9 @@
 import Path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { barrelify } from 'barrelify';
 import { suite, test } from 'mocha-chain';
 import { expect } from '../chai-hooks.js';
 
-const rootDir = Path.join(fileURLToPath(import.meta.url), '../../../..');
+const rootDir = Path.join(import.meta.filename, '../../../..');
 
 suite('barrelify', () => {
     test('success', async () => {

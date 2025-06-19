@@ -3,7 +3,7 @@
   "version": "1.0.16",
   "description": "Higher order function for patching named export functions.",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "type": "module",
   "author": "JacobLey",

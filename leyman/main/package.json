@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "description": "Package to contain high level monorepo scripts without exposing packages to entire workspace.",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "private": true,
   "type": "module",

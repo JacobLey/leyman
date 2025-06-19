@@ -3,7 +3,7 @@
   "version": "0.0.4",
   "description": "Write a deterministic lockfile per workspace, based on currently installed dependencies.",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "type": "module",
   "author": "JacobLey",

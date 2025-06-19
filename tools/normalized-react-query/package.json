@@ -3,7 +3,7 @@
   "version": "1.0.10",
   "description": "Wrapper around React Query to enforce type-safe, consistent key-query mappings.",
   "engines": {
-    "node": ">=20"
+    "node": ">=24"
   },
   "type": "module",
   "author": "JacobLey",

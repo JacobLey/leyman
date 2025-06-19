@@ -372,6 +372,7 @@ export default function makeEslintConfigForPackage({
                         allowDefinitionFiles: false,
                     },
                 ],
+                '@typescript-eslint/no-type-alias': 'off',
                 '@typescript-eslint/no-non-null-assertion': 'off',
                 '@typescript-eslint/no-unnecessary-condition': [
                     'error',

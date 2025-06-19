@@ -1,5 +1,4 @@
 import Path from 'node:path';
-import { fileURLToPath } from 'node:url';
 import { expect, use } from 'chai';
 import chaiAsPromised from 'chai-as-promised';
 import { suite, test } from 'mocha-chain';
@@ -14,21 +13,19 @@ suite('parseCwd', () => {
     });
 
     test('Resolves relative to process.cwd()', async () => {
-        const cwd = await ParseCwd.parseCwd(
-            Path.relative(process.cwd(), Path.dirname(fileURLToPath(import.meta.url)))
-        );
-        expect(cwd).to.equal(Path.dirname(fileURLToPath(import.meta.url)));
+        const cwd = await ParseCwd.parseCwd(Path.relative(process.cwd(), import.meta.dirname));
+        expect(cwd).to.equal(import.meta.dirname);
     });
 
     suite('Allows file path', () => {
         test('As string', async () => {
             const cwd = await ParseCwd.parseCwd(import.meta.url);
-            expect(cwd).to.equal(Path.dirname(fileURLToPath(import.meta.url)));
+            expect(cwd).to.equal(import.meta.dirname);
         });
 
         test('As URL', async () => {
             const cwd = await ParseCwd.parseCwd(new URL(import.meta.url));
-            expect(cwd).to.equal(Path.dirname(fileURLToPath(import.meta.url)));
+            expect(cwd).to.equal(import.meta.dirname);
         });
 
         suite('Allows options', () => {
@@ -36,14 +33,14 @@ suite('parseCwd', () => {
                 const cwd = await ParseCwd.parseCwd({
                     cwd: import.meta.url,
                 });
-                expect(cwd).to.equal(Path.dirname(fileURLToPath(import.meta.url)));
+                expect(cwd).to.equal(import.meta.dirname);
             });
 
             test('As URL', async () => {
                 const cwd = await ParseCwd.parseCwd({
                     cwd: new URL(import.meta.url),
                 });
-                expect(cwd).to.equal(Path.dirname(fileURLToPath(import.meta.url)));
+                expect(cwd).to.equal(import.meta.dirname);
             });
 
             test('As Empty', async () => {
