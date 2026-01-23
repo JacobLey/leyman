@@ -7,28 +7,16 @@
   },
   "references": [
     {
-      "path": "../juniper"
-    },
-    {
-      "path": "../nx-update-ts-references"
-    },
-    {
-      "path": "../pnpm-dedicated-lockfile"
-    },
-    {
-      "path": "../populate-files/load-populate-files"
-    },
-    {
       "path": "../populate-files/populate-files"
     },
     {
-      "path": "../../leyman/eslint-config"
+      "path": "../../tools/parse-cwd"
     },
     {
-      "path": "../../tools/common-proxy"
+      "path": "../../tools/nx-plugin-handler"
     },
     {
-      "path": "../../tools/entry-script"
+      "path": "../juniper"
     },
     {
       "path": "../../tools/haywire-launcher"
@@ -37,16 +25,25 @@
       "path": "../../tools/haywire"
     },
     {
-      "path": "../../tools/mocha-chain"
+      "path": "../../tools/entry-script"
     },
     {
-      "path": "../../tools/nx-plugin-handler"
-    },
-    {
-      "path": "../../tools/parse-cwd"
+      "path": "../../tools/common-proxy"
     },
     {
       "path": "../../tools/sinon-typed-stub"
+    },
+    {
+      "path": "../pnpm-dedicated-lockfile"
+    },
+    {
+      "path": "../../tools/mocha-chain"
+    },
+    {
+      "path": "../populate-files/load-populate-files"
+    },
+    {
+      "path": "../../leyman/eslint-config"
     }
   ]
 }

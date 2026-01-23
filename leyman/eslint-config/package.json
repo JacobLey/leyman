@@ -48,7 +48,6 @@
     "chai": "catalog:",
     "eslint": "catalog:",
     "mocha": "catalog:",
-    "npm-nx-update-ts-references": "catalog:leyman",
     "typescript": "catalog:"
   }
 }

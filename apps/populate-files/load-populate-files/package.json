@@ -54,7 +54,6 @@
     "eslint": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "nx-update-ts-references": "workspace:^",
     "pnpm-dedicated-lockfile": "workspace:^",
     "typescript": "catalog:"
   }

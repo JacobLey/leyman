@@ -60,7 +60,6 @@
     "eslint": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "npm-nx-update-ts-references": "catalog:leyman",
     "npm-sinon-typed-stub": "catalog:leyman",
     "sinon": "catalog:",
     "tmp-promise": "catalog:",

@@ -7,25 +7,22 @@
   },
   "references": [
     {
-      "path": "../../apps/barrelify"
+      "path": "../haywire"
     },
     {
-      "path": "../../apps/nx-update-ts-references"
+      "path": "../sinon-typed-stub"
     },
     {
       "path": "../../apps/pnpm-dedicated-lockfile"
     },
     {
-      "path": "../../leyman/eslint-config"
-    },
-    {
-      "path": "../haywire"
-    },
-    {
       "path": "../mocha-chain"
     },
     {
-      "path": "../sinon-typed-stub"
+      "path": "../../apps/barrelify"
+    },
+    {
+      "path": "../../leyman/eslint-config"
     }
   ]
 }

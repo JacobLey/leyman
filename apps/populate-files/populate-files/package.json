@@ -47,7 +47,6 @@
     "format-file": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "nx-update-ts-references": "workspace:^",
     "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "catalog:",
     "sinon-typed-stub": "workspace:^",

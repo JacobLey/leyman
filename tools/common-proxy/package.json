@@ -42,7 +42,6 @@
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "npm-barrelify": "catalog:leyman",
-    "npm-nx-update-ts-references": "catalog:leyman",
     "pnpm-dedicated-lockfile": "workspace:^",
     "typescript": "catalog:"
   }

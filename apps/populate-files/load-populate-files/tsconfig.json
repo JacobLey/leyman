@@ -7,25 +7,13 @@
   },
   "references": [
     {
-      "path": "../../juniper"
-    },
-    {
-      "path": "../../nx-update-ts-references"
-    },
-    {
-      "path": "../../pnpm-dedicated-lockfile"
-    },
-    {
       "path": "../populate-files"
     },
     {
-      "path": "../../../leyman/eslint-config"
+      "path": "../../../tools/parse-cwd"
     },
     {
-      "path": "../../../tools/default-import"
-    },
-    {
-      "path": "../../../tools/entry-script"
+      "path": "../../juniper"
     },
     {
       "path": "../../../tools/haywire-launcher"
@@ -34,10 +22,19 @@
       "path": "../../../tools/haywire"
     },
     {
+      "path": "../../../tools/entry-script"
+    },
+    {
+      "path": "../../../tools/default-import"
+    },
+    {
+      "path": "../../pnpm-dedicated-lockfile"
+    },
+    {
       "path": "../../../tools/mocha-chain"
     },
     {
-      "path": "../../../tools/parse-cwd"
+      "path": "../../../leyman/eslint-config"
     }
   ]
 }

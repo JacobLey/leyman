@@ -54,7 +54,6 @@
     "eslint": "catalog:",
     "expect-type": "catalog:",
     "mocha": "catalog:",
-    "npm-nx-update-ts-references": "catalog:leyman",
     "npm-pnpm-dedicated-lockfile": "catalog:leyman",
     "sinon": "catalog:",
     "typescript": "catalog:"

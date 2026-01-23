@@ -8,7 +8,7 @@
     "pnpm-dedicated-lockfile": {},
     "biome": {},
     "eslint": {},
-    "npm-update-ts-references": {},
+    "update-ts-references": {},
     "delete-dist": {},
     "populate-static": {},
     "tsc": {},

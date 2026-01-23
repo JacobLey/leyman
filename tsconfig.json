@@ -11,9 +11,6 @@
       "path": "./tools/normalized-react-query"
     },
     {
-      "path": "./apps/nx-update-ts-references"
-    },
-    {
       "path": "./apps/pnpm-dedicated-lockfile"
     },
     {

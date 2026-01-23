@@ -99,9 +99,6 @@ catalogs:
     ci-info:
       specifier: ^4.2.0
       version: 4.2.0
-    comment-json:
-      specifier: ^4.2.5
-      version: 4.2.5
     escape-string-regexp:
       specifier: ^5.0.0
       version: 5.0.0
@@ -196,18 +193,9 @@ catalogs:
     npm-barrelify:
       specifier: npm:barrelify@^1.3.3
       version: 1.3.3
-    npm-format-file:
-      specifier: npm:format-file@^0.1.5
-      version: 0.1.5
     npm-juniper:
       specifier: npm:juniper@^1.2.5
       version: 1.2.5
-    npm-load-populate-files:
-      specifier: npm:load-populate-files@^0.1.2
-      version: 0.1.2
-    npm-nx-update-ts-references:
-      specifier: npm:nx-update-ts-references@^0.2.1
-      version: 0.2.1
     npm-parse-cwd:
       specifier: npm:parse-cwd@^1.1.2
       version: 1.1.2
@@ -231,18 +219,12 @@ importers:
       '@nx/js':
         specifier: 'catalog:'
         version: 21.2.1(@babel/traverse@7.28.6)(@swc/core@1.12.3(@swc/helpers@0.5.17))(nx@21.2.1(@swc/core@1.12.3(@swc/helpers@0.5.17)))
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       nx-dagger:
         specifier: workspace:^
         version: link:apps/nx-dagger
       nx-lifecycle:
         specifier: workspace:^
         version: link:apps/nx-lifecycle
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:apps/nx-update-ts-references
       typescript:
         specifier: 'catalog:'
         version: 5.8.3
@@ -334,9 +316,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
@@ -404,9 +383,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
@@ -522,9 +498,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
@@ -640,127 +613,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../nx-update-ts-references
-      pnpm-dedicated-lockfile:
-        specifier: workspace:^
-        version: link:../pnpm-dedicated-lockfile
-      sinon:
-        specifier: 'catalog:'
-        version: 21.0.0
-      sinon-typed-stub:
-        specifier: workspace:^
-        version: link:../../tools/sinon-typed-stub
-      typescript:
-        specifier: 'catalog:'
-        version: 5.8.3
-
-  apps/nx-update-ts-references:
-    dependencies:
-      '@nx/devkit':
-        specifier: 'catalog:'
-        version: 21.2.1(nx@21.2.1(@swc/core@1.12.3(@swc/helpers@0.5.17)))
-      ajv:
-        specifier: 'catalog:'
-        version: 8.17.1
-      ci-info:
-        specifier: 'catalog:'
-        version: 4.2.0
-      comment-json:
-        specifier: 'catalog:'
-        version: 4.2.5
-      common-proxy:
-        specifier: workspace:^
-        version: link:../../tools/common-proxy
-      entry-script:
-        specifier: workspace:^
-        version: link:../../tools/entry-script
-      haywire:
-        specifier: workspace:^
-        version: link:../../tools/haywire
-      haywire-launcher:
-        specifier: workspace:^
-        version: link:../../tools/haywire-launcher
-      npm-format-file:
-        specifier: catalog:leyman
-        version: format-file@0.1.5(@biomejs/biome@2.3.11)(prettier@3.5.3)
-      npm-juniper:
-        specifier: catalog:leyman
-        version: juniper@1.2.5
-      npm-parse-cwd:
-        specifier: catalog:leyman
-        version: parse-cwd@1.1.2
-      npm-populate-files:
-        specifier: catalog:leyman
-        version: populate-files@0.2.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
-      nx:
-        specifier: 'catalog:'
-        version: 21.2.1(@swc/core@1.12.3(@swc/helpers@0.5.17))
-      nx-plugin-handler:
-        specifier: workspace:^
-        version: link:../../tools/nx-plugin-handler
-      yargs:
-        specifier: 'catalog:'
-        version: 18.0.0
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 'catalog:'
-        version: 2.3.11
-      '@leyman/eslint-config':
-        specifier: workspace:^
-        version: link:../../leyman/eslint-config
-      '@swc/cli':
-        specifier: 'catalog:'
-        version: 0.7.7(@swc/core@1.12.3(@swc/helpers@0.5.17))(chokidar@4.0.3)
-      '@swc/core':
-        specifier: 'catalog:'
-        version: 1.12.3(@swc/helpers@0.5.17)
-      '@types/chai':
-        specifier: 'catalog:'
-        version: 5.2.2
-      '@types/chai-as-promised':
-        specifier: 'catalog:'
-        version: 8.0.2
-      '@types/mocha':
-        specifier: 'catalog:'
-        version: 10.0.10
-      '@types/node':
-        specifier: 'catalog:'
-        version: 24.0.3
-      '@types/sinon':
-        specifier: 'catalog:'
-        version: 17.0.4
-      '@types/yargs':
-        specifier: 'catalog:'
-        version: 17.0.33
-      c8:
-        specifier: 'catalog:'
-        version: 10.1.3
-      chai:
-        specifier: 'catalog:'
-        version: 5.2.0
-      chai-as-promised:
-        specifier: 'catalog:'
-        version: 8.0.1(chai@5.2.0)
-      default-import:
-        specifier: workspace:^
-        version: link:../../tools/default-import
-      eslint:
-        specifier: 'catalog:'
-        version: 9.29.0
-      mocha:
-        specifier: 'catalog:'
-        version: 11.7.0
-      mocha-chain:
-        specifier: workspace:^
-        version: link:../../tools/mocha-chain
-      npm-load-populate-files:
-        specifier: catalog:leyman
-        version: load-populate-files@0.1.2(@biomejs/biome@2.3.11)(prettier@3.5.3)
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../pnpm-dedicated-lockfile
@@ -861,9 +713,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/mocha-chain
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       npm-sinon-typed-stub:
         specifier: catalog:leyman
         version: sinon-typed-stub@0.0.11(@types/sinon@17.0.4)(sinon@21.0.0)
@@ -958,9 +807,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../../tools/mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../pnpm-dedicated-lockfile
@@ -1034,9 +880,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../../tools/mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../pnpm-dedicated-lockfile
@@ -1137,9 +980,6 @@ importers:
       mocha:
         specifier: 'catalog:'
         version: 11.7.0
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       typescript:
         specifier: 'catalog:'
         version: 5.8.3
@@ -1222,9 +1062,6 @@ importers:
       npm-barrelify:
         specifier: catalog:leyman
         version: barrelify@1.3.3(@biomejs/biome@2.3.11)(prettier@3.5.3)
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -1273,9 +1110,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
         version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
@@ -1331,9 +1165,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
         version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
@@ -1382,9 +1213,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../apps/nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -1437,9 +1265,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../apps/nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -1507,9 +1332,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../apps/nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -1580,9 +1402,6 @@ importers:
       npm-barrelify:
         specifier: catalog:leyman
         version: barrelify@1.3.3(@biomejs/biome@2.3.11)(prettier@3.5.3)
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
         version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
@@ -1643,9 +1462,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
         version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
@@ -1703,9 +1519,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../apps/nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -1764,9 +1577,6 @@ importers:
       mocha:
         specifier: 'catalog:'
         version: 11.7.0
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       npm-pnpm-dedicated-lockfile:
         specifier: catalog:leyman
         version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
@@ -1821,9 +1631,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../apps/nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -1887,9 +1694,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../apps/nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -1972,9 +1776,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       nx:
         specifier: 'catalog:'
         version: 21.2.1(@swc/core@1.12.3(@swc/helpers@0.5.17))
@@ -2035,9 +1836,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../apps/nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -2083,9 +1881,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../apps/nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -2137,9 +1932,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      npm-nx-update-ts-references:
-        specifier: catalog:leyman
-        version: nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3)
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -2191,9 +1983,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      nx-update-ts-references:
-        specifier: workspace:^
-        version: link:../../apps/nx-update-ts-references
       pnpm-dedicated-lockfile:
         specifier: workspace:^
         version: link:../../apps/pnpm-dedicated-lockfile
@@ -3036,11 +2825,6 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@nx/devkit@20.8.2':
-    resolution: {integrity: sha512-rr9p2/tZDQivIpuBUpZaFBK6bZ+b5SAjZk75V4tbCUqGW3+5OPuVvBPm+X+7PYwUF6rwSpewxkjWNeGskfCe+Q==}
-    peerDependencies:
-      nx: '>= 19 <= 21'
-
   '@nx/devkit@21.2.1':
     resolution: {integrity: sha512-sbc8l6qdc9GER5gUeh+IKecyKA+uUv0V/bf45nibUziUuQN2C1nh9bFJHzBeFeySonmEbF+I0aZ3aoafM5FVuQ==}
     peerDependencies:
@@ -3054,21 +2838,9 @@ packages:
       verdaccio:
         optional: true
 
-  '@nx/nx-darwin-arm64@20.8.2':
-    resolution: {integrity: sha512-t+bmCn6sRPNGU6hnSyWNvbQYA/KgsxGZKYlaCLRwkNhI2akModcBUqtktJzCKd1XHDqs6EkEFBWjFr8/kBEkSg==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [darwin]
-
   '@nx/nx-darwin-arm64@21.2.1':
     resolution: {integrity: sha512-iP5N5TAe4k9j2p4xhEXU/a/6qEW6PWbRQeSSbCsFLuvf4UslP7wW6vuzteSW1r48Aras+5lGUOERtrlnKnuTew==}
     cpu: [arm64]
-    os: [darwin]
-
-  '@nx/nx-darwin-x64@20.8.2':
-    resolution: {integrity: sha512-pt/wmDLM31Es8/EzazlyT5U+ou2l60rfMNFGCLqleHEQ0JUTc0KWnOciBLbHIQFiPsCQZJFEKyfV5V/ncePmmw==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
     os: [darwin]
 
   '@nx/nx-darwin-x64@21.2.1':
@@ -3076,42 +2848,18 @@ packages:
     cpu: [x64]
     os: [darwin]
 
-  '@nx/nx-freebsd-x64@20.8.2':
-    resolution: {integrity: sha512-joZxFbgJfkHkB9uMIJr73Gpnm9pnpvr0XKGbWC409/d2x7q1qK77tKdyhGm+A3+kaZFwstNVPmCUtUwJYyU6LA==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [freebsd]
-
   '@nx/nx-freebsd-x64@21.2.1':
     resolution: {integrity: sha512-r2J6CrPwibsvCjMYQ7OqdpSF6HW1lI/+HghMh/cAeTQiCC2ksVeXR/WX2QkFkBhyo1pAbQilbxLUQOYEl8qL3A==}
     cpu: [x64]
     os: [freebsd]
-
-  '@nx/nx-linux-arm-gnueabihf@20.8.2':
-    resolution: {integrity: sha512-98O/qsxn4vIMPY/FyzvmVrl7C5yFhCUVk0/4PF+PA2SvtQ051L1eMRY6bq/lb69qfN6szJPZ41PG5mPx0NeLZw==}
-    engines: {node: '>= 10'}
-    cpu: [arm]
-    os: [linux]
 
   '@nx/nx-linux-arm-gnueabihf@21.2.1':
     resolution: {integrity: sha512-h7G/OQ0iEiKmcvBKiWycwx3RS+C3X997iDMhQLlJEKno2boUKpEXuz4T1uMBLdGdc6r+XElsaEMJYKxpIy8Fvw==}
     cpu: [arm]
     os: [linux]
 
-  '@nx/nx-linux-arm64-gnu@20.8.2':
-    resolution: {integrity: sha512-h6a+HxwfSpxsi4KpxGgPh9GDBmD2E+XqGCdfYpobabxqEBvlnIlJyuDhlRR06cTWpuNXHpRdrVogmV6m/YbtDg==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [linux]
-
   '@nx/nx-linux-arm64-gnu@21.2.1':
     resolution: {integrity: sha512-Cc1MIZHZEkY60xWuCxoTRDCbdezSyDNnziH9OUnJrCTB09EvDjUv+x9wyOYyBCfcGeU1b1L1icGKw7cS/CZwVw==}
-    cpu: [arm64]
-    os: [linux]
-
-  '@nx/nx-linux-arm64-musl@20.8.2':
-    resolution: {integrity: sha512-4Ev+jM0VAxDHV/dFgMXjQTCXS4I8W4oMe7FSkXpG8RUn6JK659DC8ExIDPoGIh+Cyqq6r6mw1CSia+ciQWICWQ==}
-    engines: {node: '>= 10'}
     cpu: [arm64]
     os: [linux]
 
@@ -3120,20 +2868,8 @@ packages:
     cpu: [arm64]
     os: [linux]
 
-  '@nx/nx-linux-x64-gnu@20.8.2':
-    resolution: {integrity: sha512-nR0ev+wxu+nQYRd7bhqggOxK7UfkV6h+Ko1mumUFyrM5GvPpz/ELhjJFSnMcOkOMcvH0b6G5uTBJvN1XWCkbmg==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
-    os: [linux]
-
   '@nx/nx-linux-x64-gnu@21.2.1':
     resolution: {integrity: sha512-E72abpUPT41DmgOmteTbcuiyRW0lY+3i9lq0drOjr1LApUJs+/HTa3W6K1qAGwZ6vn0XDOdYyG5jhFGzNl1pOg==}
-    cpu: [x64]
-    os: [linux]
-
-  '@nx/nx-linux-x64-musl@20.8.2':
-    resolution: {integrity: sha512-ost41l5yc2aq2Gc9bMMpaPi/jkXqbXEMEPHrxWKuKmaek3K2zbVDQzvBBNcQKxf/mlCsrqN4QO0mKYSRRqag5A==}
-    engines: {node: '>= 10'}
     cpu: [x64]
     os: [linux]
 
@@ -3142,21 +2878,9 @@ packages:
     cpu: [x64]
     os: [linux]
 
-  '@nx/nx-win32-arm64-msvc@20.8.2':
-    resolution: {integrity: sha512-0SEOqT/daBG5WtM9vOGilrYaAuf1tiALdrFavY62+/arXYxXemUKmRI5qoKDTnvoLMBGkJs6kxhMO5b7aUXIvQ==}
-    engines: {node: '>= 10'}
-    cpu: [arm64]
-    os: [win32]
-
   '@nx/nx-win32-arm64-msvc@21.2.1':
     resolution: {integrity: sha512-NTGSDk6i9L3OEreBmlCaCAYHLRjHuyk3rCbX+MzDWCbO9HCLTO/NtKdwsKUNhBWDpEz5pN4ryU05vRBmGXhySA==}
     cpu: [arm64]
-    os: [win32]
-
-  '@nx/nx-win32-x64-msvc@20.8.2':
-    resolution: {integrity: sha512-iIsY+tVqes/NOqTbJmggL9Juie/iaDYlWgXA9IUv88FE9thqWKhVj4/tCcPjsOwzD+1SVna3YISEEFsx5UV4ew==}
-    engines: {node: '>= 10'}
-    cpu: [x64]
     os: [win32]
 
   '@nx/nx-win32-x64-msvc@21.2.1':
@@ -3722,9 +3446,6 @@ packages:
     resolution: {integrity: sha512-itaWrbYbqpGXkGhZPGUulwnhVf5Hpy1xiCFsGqyIGglbBxmG5vSjxQen3/WGOjPpNEv1RtBLKxbmVXm8HpJStQ==}
     engines: {node: '>= 0.4'}
 
-  array-timsort@1.0.3:
-    resolution: {integrity: sha512-/+3GRL7dDAGEfM6TseQk/U+mi18TU2Ms9I3UlLdUMhz2hbvGNTKdj9xniwXfUqgYhHxRx0+8UnKkvlNwVU+cWQ==}
-
   array.prototype.findlast@1.2.5:
     resolution: {integrity: sha512-CVvd6FHg1Z3POpBLxO6E6zr+rSKEQ9L6rZHAaY7lLfhKsWYUBBOuMs0e9o24oopj6H+geRCX0YJ+TJLBK2eHyQ==}
     engines: {node: '>= 0.4'}
@@ -4004,17 +3725,9 @@ packages:
     resolution: {integrity: sha512-OkTL9umf+He2DZkUq8f8J9of7yL6RJKI24dVITBmNfZBmri9zYZQrKkuXiKhyfPSu8tUhnVBB1iKXevvnlR4Ww==}
     engines: {node: '>= 12'}
 
-  comment-json@4.2.5:
-    resolution: {integrity: sha512-bKw/r35jR3HGt5PEPm1ljsQQGyCrR8sFGNiN5L+ykDHdpO8Smxkrkla9Yi6NkQyUrb8V54PGhfMs6NrIwtxtdw==}
-    engines: {node: '>= 6'}
-
   comment-parser@1.4.1:
     resolution: {integrity: sha512-buhp5kePrmda3vhc5B9t7pUQXAb2Tnd0qgpkIhPhkHXxJpiPJ11H0ZEU0oBpJ2QztSbzG/ZxMj/CHsYJqRHmyg==}
     engines: {node: '>= 12.0.0'}
-
-  common-proxy@0.1.3:
-    resolution: {integrity: sha512-uslvuAYug1e70Jj9y+ITghdweaSz3NCLnh/GDQ1OhVgnG36g/F0M0uatsxmwiJlmKCah0oD/q2eFrUnYcerguw==}
-    engines: {node: '>=20'}
 
   comver-to-semver@1.0.0:
     resolution: {integrity: sha512-gcGtbRxjwROQOdXLUWH1fQAXqThUVRZ219aAwgtX3KfYw429/Zv6EIJRf5TBSzWdAGwePmqH7w70WTaX4MDqag==}
@@ -4032,9 +3745,6 @@ packages:
 
   core-js-compat@3.43.0:
     resolution: {integrity: sha512-2GML2ZsCc5LR7hZYz4AXmjQw8zuy2T//2QntwdnpuYI7jteT6GVYJL7F6C2C57R7gSYrcqVW3lAALefdbhBLDA==}
-
-  core-util-is@1.0.3:
-    resolution: {integrity: sha512-ZQBvi1DcpJ4GDqanjucZ2Hj3wEO5pZDS89BWbkcrvdxksJorwUDDZamX9ldFkp9aw2lmBDLgkObEA4DWNJ9FYQ==}
 
   cosmiconfig@7.1.0:
     resolution: {integrity: sha512-AdmX6xUzdNASswsFtmwSt7Vj8po9IuqXm0UXz7QKPuEUmPB4XyjGfaAr2PSuELMwkRMVH1EpIkX5bTZGRB3eCA==}
@@ -4683,10 +4393,6 @@ packages:
     resolution: {integrity: sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==}
     engines: {node: '>=8'}
 
-  has-own-prop@2.0.0:
-    resolution: {integrity: sha512-Pq0h+hvsVm6dDEa8x82GnLSYHOzNDt7f0ddFa3FqcQlgzEiptPqL+XrOJNavjOzSYiYWIrgeVYYgGlLmnxwilQ==}
-    engines: {node: '>=8'}
-
   has-property-descriptors@1.0.2:
     resolution: {integrity: sha512-55JNKuIW+vq4Ke1BjOTjM2YctQIvCT7GFzHwmfZPGo5wnrgkid0YQtnAleFSqumZm4az3n2BS+erby5ipJdgrg==}
 
@@ -5063,11 +4769,6 @@ packages:
     resolution: {integrity: sha512-cNOjgCnLB+FnvWWtyRTzmB3POJ+cXxTA81LoW7u8JdmhfXzriropYwpjShnz1QLLWsQwY7nIxoDmcPTwphDK9w==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  load-populate-files@0.1.2:
-    resolution: {integrity: sha512-yKHa/bmeSGQ887DE33dZvx/07nW9H6CrVkMf3CfPJtWA6T4jcmcBOr4m4lGALKIWeSdoIqMJ2+wPTyYzAj26Yw==}
-    engines: {node: '>=20'}
-    hasBin: true
-
   locate-path@6.0.0:
     resolution: {integrity: sha512-iPZK6eYjbxRu3uB4/WZ3EsEIMJFMqAoopl3R+zuq0UjcAm/MO6KCweDgPfP3elTztoKP3KtnVHxTn2NHBSDVUw==}
     engines: {node: '>=10'}
@@ -5296,32 +4997,6 @@ packages:
       - treeverse
       - validate-npm-package-name
       - which
-
-  nx-plugin-handler@0.2.1:
-    resolution: {integrity: sha512-hRggQG2AZdVFYmpWJZ1lbn+C7x1gsaYwphdEH1tVQg89ZxBFIqfX5sSc4Bl4HigPXfG70uGy31SUiP1hYx75KA==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      '@nx/devkit': ^20.4.2
-    peerDependenciesMeta:
-      '@nx/devkit':
-        optional: true
-
-  nx-update-ts-references@0.2.1:
-    resolution: {integrity: sha512-o53UfJ81APn4xG2ZZhiK+/L3e90P210Wp7OmyYu+046TYi9aCeIcP4w0J4BoUadn8Qcu1TElNdN+ayohVoeZ6w==}
-    engines: {node: '>=20'}
-    hasBin: true
-
-  nx@20.8.2:
-    resolution: {integrity: sha512-mDKpbH3vEpUFDx0rrLh+tTqLq1PYU8KiD/R7OVZGd1FxQxghx2HOl32MiqNsfPcw6AvKlXhslbwIESV+N55FLQ==}
-    hasBin: true
-    peerDependencies:
-      '@swc-node/register': ^1.8.0
-      '@swc/core': ^1.3.85
-    peerDependenciesMeta:
-      '@swc-node/register':
-        optional: true
-      '@swc/core':
-        optional: true
 
   nx@21.2.1:
     resolution: {integrity: sha512-wwLa9BSb/wH2KI6CrM356DerDxf8hnzqXx/OvXuKgWsPtOciUdULisJEzdCvehZYg/l2RH84jOLmMVq7OWNuaw==}
@@ -5631,10 +5306,6 @@ packages:
   regjsparser@0.13.0:
     resolution: {integrity: sha512-NZQZdC5wOE/H3UT28fVGL+ikOZcEzfMGk/c3iN9UGxzWHMa1op7274oyiUVrAG4B2EuFhus8SvkaYnhvW92p9Q==}
     hasBin: true
-
-  repeat-string@1.6.1:
-    resolution: {integrity: sha512-PV0dzCYDNfRi1jCDbJzpW7jNNDRuCOG/jI5ctQcGKt/clZD+YcPS3yIlWuTJMmESC8aevCFmWJy5wjAFgNqN6w==}
-    engines: {node: '>=0.10'}
 
   require-directory@2.1.1:
     resolution: {integrity: sha512-fGxEI7+wsG9xrvdjsrlmL22OMTTiHRwAMroiEeMgq8gzoLC/PQr7RsRDSTLUg/bZAZtF+TVIkHc6/4RIKrui+Q==}
@@ -6188,11 +5859,6 @@ packages:
   yaml@2.7.0:
     resolution: {integrity: sha512-+hSoy/QHluxmC9kCIJyL/uyFmLmc+e5CFR5Wa+bpIhIj85LVb9ZH2nVnqrHoSvKogwODv0ClqZkmiSSaIH5LTA==}
     engines: {node: '>= 14'}
-    hasBin: true
-
-  yaml@2.8.0:
-    resolution: {integrity: sha512-4lLa/EcQCB0cJkyts+FpIRx5G/llPxfP6VQU5KByHEhLxY3IJCH0f0Hy1MHI8sClTvsIb8qwRJ6R/ZdlDJ/leQ==}
-    engines: {node: '>= 14.6'}
     hasBin: true
 
   yargs-parser@21.1.1:
@@ -7203,18 +6869,6 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.19.0
 
-  '@nx/devkit@20.8.2(nx@20.8.2(@swc/core@1.12.3(@swc/helpers@0.5.17)))':
-    dependencies:
-      ejs: 3.1.10
-      enquirer: 2.3.6
-      ignore: 5.3.2
-      minimatch: 9.0.3
-      nx: 20.8.2(@swc/core@1.12.3(@swc/helpers@0.5.17))
-      semver: 7.7.2
-      tmp: 0.2.3
-      tslib: 2.8.1
-      yargs-parser: 21.1.1
-
   '@nx/devkit@21.2.1(nx@21.2.1(@swc/core@1.12.3(@swc/helpers@0.5.17)))':
     dependencies:
       ejs: 3.1.10
@@ -7266,61 +6920,31 @@ snapshots:
       - nx
       - supports-color
 
-  '@nx/nx-darwin-arm64@20.8.2':
-    optional: true
-
   '@nx/nx-darwin-arm64@21.2.1':
-    optional: true
-
-  '@nx/nx-darwin-x64@20.8.2':
     optional: true
 
   '@nx/nx-darwin-x64@21.2.1':
     optional: true
 
-  '@nx/nx-freebsd-x64@20.8.2':
-    optional: true
-
   '@nx/nx-freebsd-x64@21.2.1':
-    optional: true
-
-  '@nx/nx-linux-arm-gnueabihf@20.8.2':
     optional: true
 
   '@nx/nx-linux-arm-gnueabihf@21.2.1':
     optional: true
 
-  '@nx/nx-linux-arm64-gnu@20.8.2':
-    optional: true
-
   '@nx/nx-linux-arm64-gnu@21.2.1':
-    optional: true
-
-  '@nx/nx-linux-arm64-musl@20.8.2':
     optional: true
 
   '@nx/nx-linux-arm64-musl@21.2.1':
     optional: true
 
-  '@nx/nx-linux-x64-gnu@20.8.2':
-    optional: true
-
   '@nx/nx-linux-x64-gnu@21.2.1':
-    optional: true
-
-  '@nx/nx-linux-x64-musl@20.8.2':
     optional: true
 
   '@nx/nx-linux-x64-musl@21.2.1':
     optional: true
 
-  '@nx/nx-win32-arm64-msvc@20.8.2':
-    optional: true
-
   '@nx/nx-win32-arm64-msvc@21.2.1':
-    optional: true
-
-  '@nx/nx-win32-x64-msvc@20.8.2':
     optional: true
 
   '@nx/nx-win32-x64-msvc@21.2.1':
@@ -7970,8 +7594,6 @@ snapshots:
       get-intrinsic: 1.2.7
       is-string: 1.1.1
 
-  array-timsort@1.0.3: {}
-
   array.prototype.findlast@1.2.5:
     dependencies:
       call-bind: 1.0.8
@@ -8301,20 +7923,7 @@ snapshots:
 
   commander@8.3.0: {}
 
-  comment-json@4.2.5:
-    dependencies:
-      array-timsort: 1.0.3
-      core-util-is: 1.0.3
-      esprima: 4.0.1
-      has-own-prop: 2.0.0
-      repeat-string: 1.6.1
-
   comment-parser@1.4.1: {}
-
-  common-proxy@0.1.3:
-    dependencies:
-      '@swc/helpers': 0.5.17
-      npm-default-import: default-import@2.0.8
 
   comver-to-semver@1.0.0: {}
 
@@ -8329,8 +7938,6 @@ snapshots:
   core-js-compat@3.43.0:
     dependencies:
       browserslist: 4.25.0
-
-  core-util-is@1.0.3: {}
 
   cosmiconfig@7.1.0:
     dependencies:
@@ -9117,8 +8724,6 @@ snapshots:
 
   has-flag@4.0.0: {}
 
-  has-own-prop@2.0.0: {}
-
   has-property-descriptors@1.0.2:
     dependencies:
       es-define-property: 1.0.1
@@ -9468,22 +9073,6 @@ snapshots:
 
   lines-and-columns@2.0.3: {}
 
-  load-populate-files@0.1.2(@biomejs/biome@2.3.11)(prettier@3.5.3):
-    dependencies:
-      ajv: 8.17.1
-      ci-info: 4.2.0
-      default-import: 2.0.8
-      entry-script: 3.0.9
-      haywire: 0.1.8
-      haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
-      juniper: 1.2.5
-      parse-cwd: 1.1.2
-      populate-files: 0.2.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
-      yargs: 17.7.2
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - prettier
-
   locate-path@6.0.0:
     dependencies:
       p-locate: 5.0.0
@@ -9631,91 +9220,6 @@ snapshots:
       path-key: 3.1.1
 
   npm@11.4.2: {}
-
-  nx-plugin-handler@0.2.1(@nx/devkit@20.8.2(nx@20.8.2(@swc/core@1.12.3(@swc/helpers@0.5.17)))):
-    dependencies:
-      ajv: 8.17.1
-      common-proxy: 0.1.3
-      haywire: 0.1.8
-      npm-default-import: default-import@2.0.8
-      npm-juniper: juniper@1.2.5
-    optionalDependencies:
-      '@nx/devkit': 20.8.2(nx@20.8.2(@swc/core@1.12.3(@swc/helpers@0.5.17)))
-
-  nx-update-ts-references@0.2.1(@biomejs/biome@2.3.11)(@swc/core@1.12.3(@swc/helpers@0.5.17))(prettier@3.5.3):
-    dependencies:
-      '@nx/devkit': 20.8.2(nx@20.8.2(@swc/core@1.12.3(@swc/helpers@0.5.17)))
-      ajv: 8.17.1
-      ci-info: 4.2.0
-      comment-json: 4.2.5
-      common-proxy: 0.1.3
-      entry-script: 3.0.9
-      haywire: 0.1.8
-      haywire-launcher: 0.1.11(entry-script@3.0.9)(haywire@0.1.8)
-      npm-format-file: format-file@0.1.5(@biomejs/biome@2.3.11)(prettier@3.5.3)
-      npm-juniper: juniper@1.2.5
-      npm-parse-cwd: parse-cwd@1.1.2
-      npm-populate-files: populate-files@0.2.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
-      nx: 20.8.2(@swc/core@1.12.3(@swc/helpers@0.5.17))
-      nx-plugin-handler: 0.2.1(@nx/devkit@20.8.2(nx@20.8.2(@swc/core@1.12.3(@swc/helpers@0.5.17))))
-      yargs: 17.7.2
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - '@swc-node/register'
-      - '@swc/core'
-      - debug
-      - prettier
-
-  nx@20.8.2(@swc/core@1.12.3(@swc/helpers@0.5.17)):
-    dependencies:
-      '@napi-rs/wasm-runtime': 0.2.4
-      '@yarnpkg/lockfile': 1.1.0
-      '@yarnpkg/parsers': 3.0.2
-      '@zkochan/js-yaml': 0.0.7
-      axios: 1.10.0
-      chalk: 4.1.2
-      cli-cursor: 3.1.0
-      cli-spinners: 2.6.1
-      cliui: 8.0.1
-      dotenv: 16.4.7
-      dotenv-expand: 11.0.7
-      enquirer: 2.3.6
-      figures: 3.2.0
-      flat: 5.0.2
-      front-matter: 4.0.2
-      ignore: 5.3.2
-      jest-diff: 29.7.0
-      jsonc-parser: 3.2.0
-      lines-and-columns: 2.0.3
-      minimatch: 9.0.3
-      node-machine-id: 1.1.12
-      npm-run-path: 4.0.1
-      open: 8.4.2
-      ora: 5.3.0
-      resolve.exports: 2.0.3
-      semver: 7.7.2
-      string-width: 4.2.3
-      tar-stream: 2.2.0
-      tmp: 0.2.3
-      tsconfig-paths: 4.2.0
-      tslib: 2.8.1
-      yaml: 2.8.0
-      yargs: 17.7.2
-      yargs-parser: 21.1.1
-    optionalDependencies:
-      '@nx/nx-darwin-arm64': 20.8.2
-      '@nx/nx-darwin-x64': 20.8.2
-      '@nx/nx-freebsd-x64': 20.8.2
-      '@nx/nx-linux-arm-gnueabihf': 20.8.2
-      '@nx/nx-linux-arm64-gnu': 20.8.2
-      '@nx/nx-linux-arm64-musl': 20.8.2
-      '@nx/nx-linux-x64-gnu': 20.8.2
-      '@nx/nx-linux-x64-musl': 20.8.2
-      '@nx/nx-win32-arm64-msvc': 20.8.2
-      '@nx/nx-win32-x64-msvc': 20.8.2
-      '@swc/core': 1.12.3(@swc/helpers@0.5.17)
-    transitivePeerDependencies:
-      - debug
 
   nx@21.2.1(@swc/core@1.12.3(@swc/helpers@0.5.17)):
     dependencies:
@@ -10090,8 +9594,6 @@ snapshots:
   regjsparser@0.13.0:
     dependencies:
       jsesc: 3.1.0
-
-  repeat-string@1.6.1: {}
 
   require-directory@2.1.1: {}
 
@@ -10713,8 +10215,6 @@ snapshots:
   yaml@1.10.2: {}
 
   yaml@2.7.0: {}
-
-  yaml@2.8.0: {}
 
   yargs-parser@21.1.1: {}
 

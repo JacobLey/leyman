@@ -61,7 +61,6 @@
     "expect-type": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "nx-update-ts-references": "workspace:^",
     "pnpm-dedicated-lockfile": "workspace:^",
     "prettier": "catalog:",
     "sinon": "catalog:",

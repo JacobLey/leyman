@@ -7,16 +7,13 @@
   },
   "references": [
     {
-      "path": "../../apps/nx-update-ts-references"
-    },
-    {
       "path": "../../apps/pnpm-dedicated-lockfile"
     },
     {
-      "path": "../../leyman/eslint-config"
+      "path": "../mocha-chain"
     },
     {
-      "path": "../mocha-chain"
+      "path": "../../leyman/eslint-config"
     }
   ]
 }

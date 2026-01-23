@@ -74,7 +74,6 @@ catalogs:
     npm-format-file: npm:format-file@^0.1.5
     npm-juniper: npm:juniper@^1.2.5
     npm-load-populate-files: npm:load-populate-files@^0.1.2
-    npm-nx-update-ts-references: npm:nx-update-ts-references@^0.2.1
     npm-parse-cwd: npm:parse-cwd@^1.1.2
     npm-pnpm-dedicated-lockfile: npm:pnpm-dedicated-lockfile@^0.0.4
     npm-populate-files: npm:populate-files@^0.2.4

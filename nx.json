@@ -148,20 +148,6 @@
         "build:_"
       ]
     },
-    "npm-update-ts-references": {
-      "executor": "npm-nx-update-ts-references:update-ts-references",
-      "cache": true,
-      "inputs": [
-        "{projectRoot}/package.json",
-        "{projectRoot}/tsconfig.json"
-      ],
-      "outputs": [
-        "{projectRoot}/tsconfig.json"
-      ],
-      "dependsOn": [
-        "build:_"
-      ]
-    },
     "tsc": {
       "executor": "nx:run-commands",
       "options": {
@@ -356,8 +342,7 @@
         "barrelify",
         "delete-dist",
         "populate-static",
-        "update-ts-references",
-        "npm-update-ts-references"
+        "update-ts-references"
       ],
       "configurations": {
         "__lifecycle": {}

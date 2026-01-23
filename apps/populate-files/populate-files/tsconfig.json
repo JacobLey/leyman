@@ -7,28 +7,25 @@
   },
   "references": [
     {
-      "path": "../../nx-update-ts-references"
-    },
-    {
-      "path": "../../pnpm-dedicated-lockfile"
-    },
-    {
-      "path": "../../../leyman/eslint-config"
-    },
-    {
-      "path": "../../../tools/format-file"
+      "path": "../../../tools/parse-cwd"
     },
     {
       "path": "../../../tools/haywire"
     },
     {
+      "path": "../../../tools/sinon-typed-stub"
+    },
+    {
+      "path": "../../pnpm-dedicated-lockfile"
+    },
+    {
       "path": "../../../tools/mocha-chain"
     },
     {
-      "path": "../../../tools/parse-cwd"
+      "path": "../../../tools/format-file"
     },
     {
-      "path": "../../../tools/sinon-typed-stub"
+      "path": "../../../leyman/eslint-config"
     }
   ]
 }

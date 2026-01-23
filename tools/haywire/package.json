@@ -52,7 +52,6 @@
     "expect-type": "catalog:",
     "mocha": "catalog:",
     "npm-barrelify": "catalog:leyman",
-    "npm-nx-update-ts-references": "catalog:leyman",
     "npm-pnpm-dedicated-lockfile": "catalog:leyman",
     "typescript": "catalog:"
   }
