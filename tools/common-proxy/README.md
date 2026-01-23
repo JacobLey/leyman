@@ -25,7 +25,7 @@ But sometimes you _have_ to support CommonJS, either because you are developing 
 
 ## Usage
 
-### How it used t work:
+### How it used to work:
 
 ```mts
 // my-module.mts

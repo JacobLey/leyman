@@ -1,8 +1,8 @@
 // biome-ignore lint: Doesn't support being disabled directly
-import type * as DefaultImport from 'npm-default-import' with { 'resolution-mode': 'import' };
+import type * as DefaultImport from 'default-import' with { 'resolution-mode': 'import' };
 import type { ImportableHandler } from './lib/types.cjs';
 
-let defaultImportProm: Promise<typeof DefaultImport> | null = null;
+let cachedDefaultImportProm: Promise<typeof DefaultImport> | null = null;
 
 type ProxyReturnType<Handler extends (...args: any[]) => unknown> =
     ReturnType<Handler> extends Promise<unknown>
@@ -14,9 +14,10 @@ type ProxyReturnType<Handler extends (...args: any[]) => unknown> =
 export const commonProxy = <Handler extends (...args: any[]) => unknown>(
     promiseOfHandler: ImportableHandler<Handler> | Promise<ImportableHandler<Handler>>
 ): ProxyReturnType<Handler> => {
-    defaultImportProm ??= import('npm-default-import');
+    cachedDefaultImportProm ??= import('default-import');
+    const defaultImportProm = cachedDefaultImportProm;
     return (async (...args: unknown[]): Promise<Awaited<ReturnType<Handler>>> => {
-        const [{ defaultImport }, mod] = await Promise.all([defaultImportProm!, promiseOfHandler]);
+        const [{ defaultImport }, mod] = await Promise.all([defaultImportProm, promiseOfHandler]);
 
         const handler = defaultImport(mod);
         return handler(...args) as Awaited<ReturnType<Handler>>;

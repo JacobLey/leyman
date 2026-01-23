@@ -1,6 +1,6 @@
 import Path from 'node:path';
 import type { ExecutorContext } from '@nx/devkit';
-import { defaultImport } from 'npm-default-import';
+import { defaultImport } from 'default-import';
 import type { CreateRequire, Importer } from './dependencies.js';
 import { isExecutorsJson, isPackageJson } from './package-json-schema.js';
 

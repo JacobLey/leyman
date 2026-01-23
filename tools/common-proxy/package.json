@@ -25,7 +25,7 @@
   },
   "dependencies": {
     "@swc/helpers": "catalog:",
-    "npm-default-import": "catalog:leyman"
+    "default-import": "workspace:^"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

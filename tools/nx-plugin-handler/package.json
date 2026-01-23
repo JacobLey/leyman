@@ -26,7 +26,7 @@
     "ajv": "catalog:",
     "common-proxy": "workspace:^",
     "haywire": "workspace:^",
-    "npm-default-import": "catalog:leyman",
+    "default-import": "workspace:^",
     "npm-juniper": "catalog:leyman"
   },
   "peerDependencies": {
