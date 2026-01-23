@@ -15,9 +15,10 @@ export interface AbstractPrivateClass {
     [abstractPrivateId]: true;
     new (...args: any): any;
 }
-export type ClassToConstructable<T extends IsClass> = T extends GenericClass<infer U>
-    ? HaywireId<U, T, null, false, false, false, false>
-    : HaywireId<InstanceOfClass<T>, AbstractPrivateClass, null, false, false, false, false>;
+export type ClassToConstructable<T extends IsClass> =
+    T extends GenericClass<infer U>
+        ? HaywireId<U, T, null, false, false, false, false>
+        : HaywireId<InstanceOfClass<T>, AbstractPrivateClass, null, false, false, false, false>;
 
 const classToIdCache = new WeakMap<GenericClass, HaywireId<any, any, any, any, any, any, any>>();
 
@@ -560,19 +561,20 @@ export type OutputHaywireId<Id extends GenericHaywireId> = HaywireId<
     false
 >;
 
-export type HaywireIdConstructor<Id extends GenericHaywireId> = Id extends HaywireId<
-    unknown,
-    infer U extends GenericClass,
-    string | symbol | null,
-    boolean,
-    boolean,
-    'async' | boolean,
-    boolean
->
-    ? U extends AbstractPrivateClass
-        ? null
-        : U
-    : null;
+export type HaywireIdConstructor<Id extends GenericHaywireId> =
+    Id extends HaywireId<
+        unknown,
+        infer U extends GenericClass,
+        string | symbol | null,
+        boolean,
+        boolean,
+        'async' | boolean,
+        boolean
+    >
+        ? U extends AbstractPrivateClass
+            ? null
+            : U
+        : null;
 
 /**
  * Given the output id of a declared binding, produce the set of all output ids.

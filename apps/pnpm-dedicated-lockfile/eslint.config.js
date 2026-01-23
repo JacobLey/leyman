@@ -6,6 +6,7 @@ export default [
     {
         languageOptions: {
             globals: {
+                Buffer: 'readonly',
                 process: 'readonly',
             },
         },

@@ -5,9 +5,10 @@ packages:
   - '!**/src/tests/**'
 
 catalog:
-  '@biomejs/biome': ^2.0.0
+  '@biomejs/biome': ^2.3.11
   '@eslint/js': ^9.29.0
   '@nx/devkit': ^21.2.1
+  '@nx/js': ^21.2.1
   '@pnpm/find-workspace-dir': ^7.0.3
   '@pnpm/lockfile.fs': ^1.1.0
   '@pnpm/lockfile.pruner': ^0.0.6

@@ -42,17 +42,18 @@ export type GenericBinding = Binding<GenericOutputHaywireId, any, boolean>;
  *
  * @template OutputId output declared binding
  */
-export type BindingOutputType<OutputId extends GenericHaywireId> = OutputId extends HaywireId<
-    infer BaseType,
-    infer Construct,
-    infer Named,
-    infer Nullable,
-    infer Undefinable,
-    'async' | boolean,
-    boolean
->
-    ? ExpandOutput<BaseType, Construct, Named, Nullable, Undefinable>
-    : never;
+export type BindingOutputType<OutputId extends GenericHaywireId> =
+    OutputId extends HaywireId<
+        infer BaseType,
+        infer Construct,
+        infer Named,
+        infer Nullable,
+        infer Undefinable,
+        'async' | boolean,
+        boolean
+    >
+        ? ExpandOutput<BaseType, Construct, Named, Nullable, Undefinable>
+        : never;
 
 /**
  * A provider that declares it's dependencies and output type.
@@ -304,11 +305,10 @@ type IdOrClassToIds<Dependencies extends readonly (GenericHaywireId | IsClass)[]
 };
 
 type ExtendsPromise<T> = T extends Promise<unknown> ? true : false;
-type AsyncPromiseOutput<OutputId extends GenericHaywireId> = true extends ExtendsPromise<
-    HaywireIdType<OutputId>
->
-    ? [InvalidInput<'AsyncPromiseResponse'>]
-    : [];
+type AsyncPromiseOutput<OutputId extends GenericHaywireId> =
+    true extends ExtendsPromise<HaywireIdType<OutputId>>
+        ? [InvalidInput<'AsyncPromiseResponse'>]
+        : [];
 
 const idOrClassToIds = <Dependencies extends readonly (GenericHaywireId | IsClass)[]>(
     ids: [...Dependencies]
@@ -493,9 +493,8 @@ export class AsyncProviderBindingBuilder<
 }
 
 type MissingConstructorInput = [InvalidInput<'MissingConstructorInput'>];
-type MissingConstructorType<T extends GenericHaywireId> = null extends HaywireIdConstructor<T>
-    ? MissingConstructorInput
-    : [];
+type MissingConstructorType<T extends GenericHaywireId> =
+    null extends HaywireIdConstructor<T> ? MissingConstructorInput : [];
 
 /**
  * Binding builder that only has the output id.

@@ -1,0 +1,83 @@
+{
+  "extends": "./tsconfig.build.json",
+  "references": [
+    {
+      "path": "./apps/populate-files/load-populate-files"
+    },
+    {
+      "path": "./apps/populate-files/populate-files"
+    },
+    {
+      "path": "./tools/normalized-react-query"
+    },
+    {
+      "path": "./apps/nx-update-ts-references"
+    },
+    {
+      "path": "./apps/pnpm-dedicated-lockfile"
+    },
+    {
+      "path": "./tools/nx-plugin-handler"
+    },
+    {
+      "path": "./tools/haywire-launcher"
+    },
+    {
+      "path": "./tools/sinon-typed-stub"
+    },
+    {
+      "path": "./leyman/eslint-config"
+    },
+    {
+      "path": "./tools/default-import"
+    },
+    {
+      "path": "./tools/static-emitter"
+    },
+    {
+      "path": "./tools/enum-to-array"
+    },
+    {
+      "path": "./tools/common-proxy"
+    },
+    {
+      "path": "./tools/entry-script"
+    },
+    {
+      "path": "./tools/punycode-esm"
+    },
+    {
+      "path": "./tools/find-import"
+    },
+    {
+      "path": "./tools/format-file"
+    },
+    {
+      "path": "./tools/mocha-chain"
+    },
+    {
+      "path": "./tools/named-patch"
+    },
+    {
+      "path": "./apps/nx-lifecycle"
+    },
+    {
+      "path": "./tools/iso-crypto"
+    },
+    {
+      "path": "./tools/parse-cwd"
+    },
+    {
+      "path": "./apps/barrelify"
+    },
+    {
+      "path": "./apps/nx-dagger"
+    },
+    {
+      "path": "./tools/haywire"
+    },
+    {
+      "path": "./apps/juniper"
+    }
+  ],
+}

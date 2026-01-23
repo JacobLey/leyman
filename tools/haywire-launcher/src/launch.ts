@@ -20,13 +20,18 @@ interface InvalidInput<T extends string> {
     [invalidInput]: typeof invalidInput;
 }
 
-type ValidateEntryContainer<C extends GenericContainer> = C extends AsyncContainer<infer U>
-    ? [
-          NonExtendable<EntryScript, ClassToConstructable<typeof EntryScript>['construct'], null>,
-      ] extends U
-        ? []
-        : [InvalidInput<'ContainerDoesNotOutputEntryScript'>]
-    : [InvalidInput<'InputIsNotContainer'>];
+type ValidateEntryContainer<C extends GenericContainer> =
+    C extends AsyncContainer<infer U>
+        ? [
+              NonExtendable<
+                  EntryScript,
+                  ClassToConstructable<typeof EntryScript>['construct'],
+                  null
+              >,
+          ] extends U
+            ? []
+            : [InvalidInput<'ContainerDoesNotOutputEntryScript'>]
+        : [InvalidInput<'InputIsNotContainer'>];
 type EntryLauncher = <C extends GenericContainer>(
     container: C,
     ...invalidInput: ValidateEntryContainer<C>

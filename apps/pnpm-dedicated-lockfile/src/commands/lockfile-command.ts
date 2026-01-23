@@ -1,7 +1,7 @@
+import { createHash } from 'node:crypto';
 import Path from 'node:path';
 import type { Lockfile } from '@pnpm/lockfile.fs';
 import { isCI } from 'ci-info';
-import { createHash } from 'node:crypto';
 import type { PopulateFile } from 'npm-populate-files';
 import type { Argv } from 'yargs';
 import type { ParseCwd } from '../lib/dependencies.js';
@@ -116,13 +116,18 @@ export class LockfileCommand implements Command<LockfileCommandExtendedInput> {
         lockfile,
         omitComment,
         shouldHash,
-    }: { lockfile: Lockfile; omitComment: boolean; shouldHash: boolean }): Promise<string> {
+    }: {
+        lockfile: Lockfile;
+        omitComment: boolean;
+        shouldHash: boolean;
+    }): Promise<string> {
         const jsonLockfile = JSON.stringify(lockfile, null, 2);
 
         return [
             omitComment ? null : '// DO NOT EDIT MANUALLY - populated by pnpm-dedicated-lockfile',
             shouldHash
-                ? Buffer.from(await createHash('sha512').update(jsonLockfile).digest()).toString('base64') : jsonLockfile,
+                ? Buffer.from(createHash('sha512').update(jsonLockfile).digest()).toString('base64')
+                : jsonLockfile,
             '',
         ]
             .filter(x => x !== null)

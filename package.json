@@ -2,15 +2,18 @@
   "type": "module",
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@nx/js": "catalog:",
     "npm-nx-update-ts-references": "catalog:leyman",
     "nx-dagger": "workspace:^",
     "nx-lifecycle": "workspace:^",
-    "nx-update-ts-references": "workspace:^"
+    "nx-update-ts-references": "workspace:^",
+    "typescript": "catalog:"
   },
   "pnpm": {
     "onlyBuiltDependencies": [],
     "ignoredBuiltDependencies": [
       "nx"
     ]
-  }
+  },
+  "dependencies": {}
 }

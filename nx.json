@@ -22,6 +22,9 @@
       "!{projectRoot}/(dist|src)/tests"
     ]
   },
+  "sync": {
+    "applyChanges": true
+  },
   "targetDefaults": {
     "biome": {
       "executor": "nx:run-commands",
@@ -129,7 +132,10 @@
       ]
     },
     "update-ts-references": {
-      "executor": "nx-update-ts-references:update-ts-references",
+      "executor": "nx:noop",
+      "syncGenerators": [
+        "@nx/js:typescript-sync"
+      ],
       "cache": true,
       "inputs": [
         "{projectRoot}/package.json",
@@ -457,5 +463,21 @@
         "__lifecycle": {}
       }
     }
-  }
+  },
+  "plugins": [
+    {
+      "plugin": "@nx/js/typescript",
+      "options": {
+        "typecheck": {
+          "targetName": "typecheck"
+        },
+        "build": {
+          "targetName": "build",
+          "configName": "tsconfig.lib.json",
+          "buildDepsName": "build-deps",
+          "watchDepsName": "watch-deps"
+        }
+      }
+    }
+  ]
 }

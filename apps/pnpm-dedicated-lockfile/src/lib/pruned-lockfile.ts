@@ -4,10 +4,7 @@ import { pruneSharedLockfile } from '@pnpm/lockfile.pruner';
 import { identifier } from 'haywire';
 import type { FindLockfileDir, ReadLockfile } from './dependencies.js';
 
-export type GetPrunedLockfile = (params: {
-    cwd: string;
-    omitLinks: boolean;
-}) => Promise<Lockfile>;
+export type GetPrunedLockfile = (params: { cwd: string; omitLinks: boolean }) => Promise<Lockfile>;
 export const getPrunedLockfileId = identifier<GetPrunedLockfile>();
 
 export interface IPrunedLockfile {

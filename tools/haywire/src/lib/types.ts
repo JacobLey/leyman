@@ -56,17 +56,18 @@ type ToTupleRec<Union, Rslt extends any[]> = SpliceOne<Union> extends never
 
 type LiteralStringInput = [InvalidInput<'LiteralStringInput'>];
 // Enforce that the provided type is a unique symbol, or a literal string
-export type LiteralStringType<T extends string | symbol> = ToTuple<T> extends {
-    length: 1;
-}
-    ? string extends T
-        ? LiteralStringInput
-        : [T] extends [symbol]
-          ? symbol extends T
-              ? LiteralStringInput
+export type LiteralStringType<T extends string | symbol> =
+    ToTuple<T> extends {
+        length: 1;
+    }
+        ? string extends T
+            ? LiteralStringInput
+            : [T] extends [symbol]
+              ? symbol extends T
+                  ? LiteralStringInput
+                  : []
               : []
-          : []
-    : LiteralStringInput;
+        : LiteralStringInput;
 
 declare const supplier: unique symbol;
 export interface Supplier<T> {

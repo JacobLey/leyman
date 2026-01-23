@@ -53,11 +53,7 @@ export class BarrelifyApi implements IBarrelifyApi {
      * @override
      */
     public async barrelify(
-        options: {
-            cwd?: Directory;
-            dryRun?: boolean;
-            ignore?: string[];
-        } = {}
+        options: { cwd?: Directory; dryRun?: boolean; ignore?: string[] } = {}
     ): Promise<string[]> {
         const cwd = await this.#parseCwd(options.cwd ?? null);
 

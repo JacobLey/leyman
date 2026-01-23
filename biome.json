@@ -42,8 +42,5 @@
   },
   "linter": {
     "enabled": false
-  },
-  "organizeImports": {
-    "enabled": true
   }
 }
