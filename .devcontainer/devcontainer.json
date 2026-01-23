@@ -13,7 +13,8 @@
         "ritwickdey.LiveServer",
         "biomejs.biome",
         "dbaeumer.vscode-eslint",
-        "golang.go"
+        "golang.go",
+        "interactive-smartlog.interactive-smartlog"
       ]
     }
   },
