@@ -72,7 +72,6 @@ catalogs:
     npm-barrelify: npm:barrelify@^1.3.3
     npm-default-import: npm:default-import@^2.0.8
     npm-format-file: npm:format-file@^0.1.5
-    npm-iso-crypto: npm:iso-crypto@^1.2.4
     npm-juniper: npm:juniper@^1.2.5
     npm-load-populate-files: npm:load-populate-files@^0.1.2
     npm-nx-update-ts-references: npm:nx-update-ts-references@^0.2.1

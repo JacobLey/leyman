@@ -1,7 +1,7 @@
 import Path from 'node:path';
 import type { Lockfile } from '@pnpm/lockfile.fs';
 import { isCI } from 'ci-info';
-import { encode, hash } from 'npm-iso-crypto';
+import { createHash } from 'node:crypto';
 import type { PopulateFile } from 'npm-populate-files';
 import type { Argv } from 'yargs';
 import type { ParseCwd } from '../lib/dependencies.js';
@@ -122,16 +122,7 @@ export class LockfileCommand implements Command<LockfileCommandExtendedInput> {
         return [
             omitComment ? null : '// DO NOT EDIT MANUALLY - populated by pnpm-dedicated-lockfile',
             shouldHash
-                ? encode(
-                      {
-                          // https://github.com/microsoft/TypeScript/issues/37774
-                          // eslint-disable-next-line @typescript-eslint/no-magic-numbers
-                          text: await hash(jsonLockfile, { algorithm: 'SHA2', size: 512 }),
-                          encoding: 'raw',
-                      },
-                      'base64'
-                  )
-                : jsonLockfile,
+                ? Buffer.from(await createHash('sha512').update(jsonLockfile).digest()).toString('base64') : jsonLockfile,
             '',
         ]
             .filter(x => x !== null)

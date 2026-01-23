@@ -38,7 +38,6 @@
     "entry-script": "workspace:^",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
-    "npm-iso-crypto": "catalog:leyman",
     "npm-parse-cwd": "catalog:leyman",
     "npm-populate-files": "catalog:leyman",
     "yargs": "catalog:"
