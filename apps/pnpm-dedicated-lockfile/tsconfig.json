@@ -7,19 +7,22 @@
   },
   "references": [
     {
-      "path": "../../leyman/eslint-config"
-    },
-    {
-      "path": "../../tools/entry-script"
-    },
-    {
       "path": "../../tools/haywire-launcher"
     },
     {
       "path": "../../tools/haywire"
     },
     {
+      "path": "../../tools/entry-script"
+    },
+    {
+      "path": "../../tools/sinon-typed-stub"
+    },
+    {
       "path": "../../tools/mocha-chain"
+    },
+    {
+      "path": "../../leyman/eslint-config"
     }
   ]
 }

@@ -76,4 +76,3 @@ catalogs:
     npm-parse-cwd: npm:parse-cwd@^1.1.2
     npm-pnpm-dedicated-lockfile: npm:pnpm-dedicated-lockfile@^0.0.4
     npm-populate-files: npm:populate-files@^0.2.4
-    npm-sinon-typed-stub: npm:sinon-typed-stub@0.0.11

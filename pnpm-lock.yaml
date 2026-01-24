@@ -205,9 +205,6 @@ catalogs:
     npm-populate-files:
       specifier: npm:populate-files@^0.2.4
       version: 0.2.4
-    npm-sinon-typed-stub:
-      specifier: npm:sinon-typed-stub@0.0.11
-      version: 0.0.11
 
 importers:
 
@@ -713,12 +710,12 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/mocha-chain
-      npm-sinon-typed-stub:
-        specifier: catalog:leyman
-        version: sinon-typed-stub@0.0.11(@types/sinon@17.0.4)(sinon@21.0.0)
       sinon:
         specifier: 'catalog:'
         version: 21.0.0
+      sinon-typed-stub:
+        specifier: workspace:^
+        version: link:../../tools/sinon-typed-stub
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3
@@ -1932,9 +1929,9 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      pnpm-dedicated-lockfile:
-        specifier: workspace:^
-        version: link:../../apps/pnpm-dedicated-lockfile
+      npm-pnpm-dedicated-lockfile:
+        specifier: catalog:leyman
+        version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
       sinon:
         specifier: 'catalog:'
         version: 21.0.0
@@ -5461,16 +5458,6 @@ packages:
   signal-exit@4.1.0:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
-
-  sinon-typed-stub@0.0.11:
-    resolution: {integrity: sha512-/mkXFEXZkYAbn4HSOkqE3Pn+gmP4olD5GoZ+x9p0tL82CP1pqeXYbqy/phuZYy96MPuuCkwPL+uBGtX3F6Zq5Q==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      '@types/sinon': ^17.0.3
-      sinon: ^19.0.2
-    peerDependenciesMeta:
-      '@types/sinon':
-        optional: true
 
   sinon@21.0.0:
     resolution: {integrity: sha512-TOgRcwFPbfGtpqvZw+hyqJDvqfapr1qUlOizROIk4bBLjlsjlB00Pg6wMFXNtJRpu+eCZuVOaLatG7M8105kAw==}
@@ -9760,12 +9747,6 @@ snapshots:
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
-
-  sinon-typed-stub@0.0.11(@types/sinon@17.0.4)(sinon@21.0.0):
-    dependencies:
-      sinon: 21.0.0
-    optionalDependencies:
-      '@types/sinon': 17.0.4
 
   sinon@21.0.0:
     dependencies:
