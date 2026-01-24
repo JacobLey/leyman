@@ -47,14 +47,14 @@ RUN wget https://dl.google.com/go/go${GO_VERSION}.linux-arm64.tar.gz -O /tmp/go.
 
 # Install gh (https://github.com/cli/cli/blob/trunk/docs/install_linux.md#debian)
 RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \
-	&& mkdir -p -m 755 /etc/apt/keyrings \
-	&& out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-	&& cat $out | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
-	&& chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-	&& mkdir -p -m 755 /etc/apt/sources.list.d \
-	&& echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-	&& apt update \
-	&& apt install gh -y
+    && mkdir -p -m 755 /etc/apt/keyrings \
+    && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
+    && cat $out | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
+    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
+    && mkdir -p -m 755 /etc/apt/sources.list.d \
+    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
+    && apt update \
+    && apt install gh -y
 
 # Install dagger
 RUN curl -fsSL https://dl.dagger.io/dagger/install.sh | \
@@ -63,3 +63,6 @@ RUN curl -fsSL https://dl.dagger.io/dagger/install.sh | \
 # Grant permissions to non-root
 RUN mkdir -p $HOME/.config/vscode-dev-containers && \
     chown -R $USER:$USER $HOME
+
+RUN NX_PARALLEL="$(nproc --all)" \
+  && echo "export NX_PARALLEL=${NX_PARALLEL}" >> /etc/bash.bashrc
