@@ -1,6 +1,7 @@
 import type { ErrorObject } from 'ajv';
+import type { SchemaType } from 'juniper';
 import { identifier } from 'haywire';
-import { objectSchema, type SchemaType } from 'juniper';
+import { objectSchema } from 'juniper';
 import { ajv } from './lib/ajv.js';
 import { allTargetsSchema } from './target.js';
 

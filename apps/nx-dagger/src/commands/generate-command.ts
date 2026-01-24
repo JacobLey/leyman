@@ -1,8 +1,8 @@
 import type { ProjectGraph } from '@nx/devkit';
-import { isCI } from 'ci-info';
 import type { Argv } from 'yargs';
 import type { NxDagger } from '../generate/nx-dagger.js';
 import type { Command, NxDaggerCommandInput } from './lib/types.js';
+import { isCI } from 'ci-info';
 
 interface GenerateCommandInput extends NxDaggerCommandInput {
     configFile: string;

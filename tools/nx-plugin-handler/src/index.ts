@@ -1,3 +1,4 @@
+import type { GetForwardedHandler } from './lib/forwarded-handler.js';
 import { bind, createContainer, identifier } from 'haywire';
 import {
     createRequireId,
@@ -5,7 +6,7 @@ import {
     importIdentifier,
     loggerIdentifier,
 } from './lib/dependencies.js';
-import { ForwardedHandler, type GetForwardedHandler } from './lib/forwarded-handler.js';
+import { ForwardedHandler } from './lib/forwarded-handler.js';
 import { Handler } from './lib/handler.js';
 
 export type { PluginContext, RawHandler } from './lib/forwarded-handler.js';

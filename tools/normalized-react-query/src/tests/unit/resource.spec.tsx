@@ -1,7 +1,8 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { renderHook, type WrapperComponent } from '@testing-library/react-hooks';
-import { expect } from 'chai';
+import type { WrapperComponent } from '@testing-library/react-hooks';
 import type { ReactNode } from 'react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { renderHook } from '@testing-library/react-hooks';
+import { expect } from 'chai';
 import { spy, verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { resource } from '../../resource.js';

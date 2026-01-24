@@ -1,5 +1,5 @@
-import { StaticEmitter } from '../../index.js';
 import type { ServerEvent } from './server-event.js';
+import { StaticEmitter } from '../../index.js';
 
 export const eventSym = Symbol('eventSymbol');
 

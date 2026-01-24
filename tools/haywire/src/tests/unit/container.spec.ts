@@ -1,23 +1,20 @@
+import type { AsyncSupplier, HaywireIdType, LateBinding, Supplier } from 'haywire';
 import { setTimeout } from 'node:timers/promises';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import {
     AsyncContainer,
-    type AsyncSupplier,
     bind,
     createContainer,
     createModule,
     HaywireContainerValidationError,
-    type HaywireIdType,
     HaywireModuleValidationError,
     identifier,
     isSyncContainer,
-    type LateBinding,
     optimisticRequestScope,
     optimisticSingletonScope,
     requestScope,
     singletonScope,
-    type Supplier,
     supplierScope,
     SyncContainer,
     transientScope,

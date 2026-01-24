@@ -1,12 +1,9 @@
 import type { Done, Context as MochaContext, Test as MochaTest } from 'mocha';
+import type { GenericContextualHook } from './lib/hook-wrapper.js';
+import type { AllowableAdditionalContext, MergeContext } from './lib/merge-context.js';
 import { bind, createModule, identifier, singletonScope } from 'haywire';
 import { afterEachIdentifier } from '#mocha-module';
-import {
-    type GenericContextualHook,
-    wrapHookWithEntrypoint,
-    wrapPerTestHookWithContext,
-} from './lib/hook-wrapper.js';
-import type { AllowableAdditionalContext, MergeContext } from './lib/merge-context.js';
+import { wrapHookWithEntrypoint, wrapPerTestHookWithContext } from './lib/hook-wrapper.js';
 
 export interface ContextualAfterEachHook<ExistingContext extends object>
     extends GenericContextualHook {

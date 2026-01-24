@@ -1,11 +1,5 @@
-import {
-    type JsonSchema,
-    reservedWords,
-    type ReservedWords,
-    type SchemaType,
-    type ToJsonParams,
-    type typeCache,
-} from './types.js';
+import type { JsonSchema, ReservedWords, SchemaType, ToJsonParams, typeCache } from './types.js';
+import { reservedWords } from './types.js';
 import { mergeAllOf, mergeRef } from './utils.js';
 
 const allOfSym = Symbol('allOf');

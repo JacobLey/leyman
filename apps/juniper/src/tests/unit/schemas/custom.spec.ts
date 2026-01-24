@@ -1,8 +1,9 @@
+import type { SchemaType } from 'juniper';
+import type { AvailableProperties } from '../../types.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { customSchema, type SchemaType } from 'juniper';
+import { customSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
-import type { AvailableProperties } from '../../types.js';
 
 suite('CustomSchema', () => {
     test('Custom schema + type', () => {

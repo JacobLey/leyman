@@ -1,3 +1,4 @@
+import type { ParameterNames, TemplateContext } from './lib/types.js';
 import { execFile } from 'node:child_process';
 import { readFile, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
@@ -5,7 +6,6 @@ import { promisify } from 'node:util';
 import * as changeCase from 'change-case';
 import { Eta } from 'eta';
 import { file as tmpFile } from 'tmp-promise';
-import type { ParameterNames, TemplateContext } from './lib/types.js';
 
 const execFileAsync = promisify(execFile);
 const eta = new Eta();

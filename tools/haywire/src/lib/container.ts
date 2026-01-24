@@ -1,10 +1,16 @@
-import pDefer, { type DeferredPromise } from 'p-defer';
-import {
-    type BindingOutputType,
-    type GenericBinding,
-    type InstanceBinding,
-    TempBinding,
-} from '#binding';
+import type { DeferredPromise } from 'p-defer';
+import type { BindingOutputType, GenericBinding, InstanceBinding } from '#binding';
+import type {
+    GenericHaywireId,
+    GenericOutputHaywireId,
+    HaywireIdType,
+    OutputHaywireId,
+    StripAnnotations,
+} from '#identifier';
+import type { Scopes } from '#scopes';
+import type { Extendable, InstanceOfClass, InvalidInput, IsClass, NonExtendable } from '#types';
+import pDefer from 'p-defer';
+import { TempBinding } from '#binding';
 import {
     HaywireCircularDependencyError,
     HaywireDuplicateOutputError,
@@ -15,25 +21,15 @@ import {
     HaywireSyncSupplierError,
     HaywireUndefinedResponseError,
 } from '#errors';
-import {
-    expandOutputId,
-    type GenericHaywireId,
-    type GenericOutputHaywireId,
-    type HaywireIdType,
-    type OutputHaywireId,
-    type StripAnnotations,
-    unsafeIdentifier,
-} from '#identifier';
+import { expandOutputId, unsafeIdentifier } from '#identifier';
 import {
     optimisticRequestScope,
     optimisticSingletonScope,
     requestScope,
-    type Scopes,
     singletonScope,
     supplierScope,
     transientScope,
 } from '#scopes';
-import type { Extendable, InstanceOfClass, InvalidInput, IsClass, NonExtendable } from '#types';
 
 /**
  * Used during late-binding instantiations, as a way to provide references to

@@ -1,8 +1,11 @@
+import type { LoadAndPopulateFiles } from './load-populate-files.js';
+import type { LoadFile } from './loader.js';
+import type { NormalizeParams } from './normalize.js';
 import { bind, identifier, singletonScope } from 'haywire';
 import { dependencies, importerId, parseCwdId, populateFilesId } from './lib/dependencies.js';
-import { type LoadAndPopulateFiles, LoadPopulateFilesFactory } from './load-populate-files.js';
-import { type LoadFile, loadFileProvider } from './loader.js';
-import { type NormalizeParams, normalizeParamsProvider } from './normalize.js';
+import { LoadPopulateFilesFactory } from './load-populate-files.js';
+import { loadFileProvider } from './loader.js';
+import { normalizeParamsProvider } from './normalize.js';
 
 const normalizeParamsId = identifier<NormalizeParams>();
 const loadFileId = identifier<LoadFile>();

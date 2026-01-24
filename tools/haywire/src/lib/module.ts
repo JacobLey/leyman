@@ -1,21 +1,18 @@
 import type { BindingOutputType, GenericBinding } from '#binding';
-import {
-    type AsyncContainer,
-    type Container,
-    createAsyncContainer,
-    createSyncContainer,
-} from '#container';
-import { HaywireDuplicateOutputError } from '#errors';
-import { type Factory, wireFactory } from '#factory';
-import {
-    expandOutputId,
-    type GenericHaywireId,
-    type GenericOutputHaywireId,
-    type HaywireIdType,
-    type OutputHaywireId,
-    type StripAnnotations,
+import type { AsyncContainer, Container } from '#container';
+import type { Factory } from '#factory';
+import type {
+    GenericHaywireId,
+    GenericOutputHaywireId,
+    HaywireIdType,
+    OutputHaywireId,
+    StripAnnotations,
 } from '#identifier';
 import type { ExpandOutput, Extendable, InvalidInput, NonExtendable } from '#types';
+import { createAsyncContainer, createSyncContainer } from '#container';
+import { HaywireDuplicateOutputError } from '#errors';
+import { wireFactory } from '#factory';
+import { expandOutputId } from '#identifier';
 
 type SimplifyDependencyType<T extends readonly GenericHaywireId[]> = {
     [Index in keyof T]: [

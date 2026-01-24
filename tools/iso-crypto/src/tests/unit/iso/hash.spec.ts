@@ -1,8 +1,8 @@
+import type * as Hash from '#hash';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as IsoCrypto from 'iso-crypto';
 import { before, suite, test } from 'mocha-chain';
-import type * as Hash from '#hash';
 import * as BrowserHash from '../../../iso/hash/browser.js';
 import * as NodeHash from '../../../iso/hash/node.js';
 

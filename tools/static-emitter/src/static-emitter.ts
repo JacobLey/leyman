@@ -1,6 +1,6 @@
+import type * as Types from './lib/types.js';
 import CustomEvent from '#custom-event';
 import { StaticEventTarget } from '#static-event-target';
-import type * as Types from './lib/types.js';
 
 /**
  * Wrapper around EventTarget to provide static typing to events

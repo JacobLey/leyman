@@ -1,9 +1,9 @@
 import type { readFile as ReadFile } from 'node:fs/promises';
-import { beforeEach, suite } from 'mocha-chain';
 import type { ParseCwd } from 'parse-cwd';
+import type { LifecycleOptions } from '../../../lifecycle/schema.js';
+import { beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { Normalizer } from '../../../lifecycle/normalizer.js';
-import type { LifecycleOptions } from '../../../lifecycle/schema.js';
 import { expect } from '../../chai-hooks.js';
 
 suite('Normalizer', () => {

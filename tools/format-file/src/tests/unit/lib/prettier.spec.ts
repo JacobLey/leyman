@@ -1,10 +1,10 @@
-import { expect } from 'chai';
 import type { resolveConfig } from 'prettier';
+import type { Executor } from '#types';
+import { expect } from 'chai';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { Prettier } from '#lib';
-import type { Executor } from '#types';
 
 suite('Prettier', () => {
     afterEach(() => {

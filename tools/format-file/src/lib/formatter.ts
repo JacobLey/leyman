@@ -1,9 +1,5 @@
-import {
-    type CanUseFormatter,
-    type FileFormatterOptions,
-    type FilesFormatter,
-    Formatters,
-} from '#types';
+import type { CanUseFormatter, FileFormatterOptions, FilesFormatter } from '#types';
+import { Formatters } from '#types';
 
 /**
  * Core formatting logic using injecting formatter-specific handlers.

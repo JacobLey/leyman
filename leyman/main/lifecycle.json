@@ -3,8 +3,8 @@
   "stages": {
     "analyze": {
       "hooks": [
-        "format",
-        "lint"
+        "lint",
+        "format"
       ],
       "dependsOn": [
         "^build",

@@ -1,5 +1,3 @@
-import Path from 'node:path';
-import { stringToUint8Array } from 'uint8array-extras';
 import type { TextFormatter } from 'format-file';
 import type { ParseCwd } from 'parse-cwd';
 import type {
@@ -9,6 +7,8 @@ import type {
     PopulateFileParams,
     RawOptions,
 } from './lib/types.js';
+import Path from 'node:path';
+import { stringToUint8Array } from 'uint8array-extras';
 
 /**
  * Container class for normalizing and standardizing user input

@@ -1,9 +1,9 @@
-import { isCI } from 'ci-info';
 import type { Argv } from 'yargs';
 import type { ParseCwd } from 'parse-cwd';
 import type { Barrel } from '../lib/barrel.js';
 import type { ConsoleLog } from '../lib/dependencies.js';
 import type { BarrelCommandInput, Command } from './lib/types.js';
+import { isCI } from 'ci-info';
 
 interface BarrelCommandExtendedInput extends BarrelCommandInput {
     ci: boolean;

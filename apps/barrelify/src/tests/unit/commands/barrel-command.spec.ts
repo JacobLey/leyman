@@ -1,11 +1,11 @@
+import type { ParseCwd } from 'parse-cwd';
+import type { ConsoleLog } from '../../../lib/dependencies.js';
 import { expect } from 'chai';
 import { createStubInstance, verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
-import type { ParseCwd } from 'parse-cwd';
 import { stubMethod } from 'sinon-typed-stub';
 import { BarrelCommand } from '../../../commands/barrel-command.js';
 import { Barrel } from '../../../lib/barrel.js';
-import type { ConsoleLog } from '../../../lib/dependencies.js';
 
 suite('BarrelCommand', () => {
     afterEach(() => {

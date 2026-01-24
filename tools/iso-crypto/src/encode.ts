@@ -1,5 +1,6 @@
+import type { Encoding } from './iso/lib/types.js';
 import { decode, encode } from '#encode';
-import { defaultEncoding, type Encoding } from './iso/lib/types.js';
+import { defaultEncoding } from './iso/lib/types.js';
 
 export { decode, encode, type Encoding };
 

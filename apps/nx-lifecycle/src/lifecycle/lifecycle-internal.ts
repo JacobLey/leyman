@@ -1,5 +1,4 @@
 import type { readFile as ReadFile, writeFile as WriteFile } from 'node:fs/promises';
-import { deepEqual } from 'fast-equals';
 import type { FilesFormatter } from 'format-file';
 import type { IsNxJson, IsProjectJson, NxJson, ProjectJson } from '#schemas';
 import type { Logger } from './depedencies.js';
@@ -7,6 +6,7 @@ import type { NormalizedOptions, Normalizer } from './normalizer.js';
 import type { NxAndProjectJsonProcessor } from './processor.js';
 import type { LifecycleOptionsOrConfig } from './schema.js';
 import type { NxContext } from './types.js';
+import { deepEqual } from 'fast-equals';
 
 interface LoadedJsonConfig<T> {
     name: string;

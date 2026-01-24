@@ -1,16 +1,14 @@
-import { HaywireProviderMissingError } from '#errors';
-import {
-    type ClassToConstructable,
-    type GenericHaywireId,
-    type GenericOutputHaywireId,
-    type HaywireId,
-    type HaywireIdConstructor,
-    type HaywireIdType,
-    type OutputHaywireId,
-    type StripAnnotations,
-    unsafeIdentifier,
+import type {
+    ClassToConstructable,
+    GenericHaywireId,
+    GenericOutputHaywireId,
+    HaywireId,
+    HaywireIdConstructor,
+    HaywireIdType,
+    OutputHaywireId,
+    StripAnnotations,
 } from '#identifier';
-import { optimisticSingletonScope, type Scopes, transientScope } from '#scopes';
+import type { Scopes } from '#scopes';
 import type {
     DepsClass,
     ExpandOutput,
@@ -23,6 +21,9 @@ import type {
     Names,
     Supplier,
 } from '#types';
+import { HaywireProviderMissingError } from '#errors';
+import { unsafeIdentifier } from '#identifier';
+import { optimisticSingletonScope, transientScope } from '#scopes';
 
 export type DependencyIdTypes<Dependencies extends readonly [...GenericHaywireId[]]> = {
     [Index in keyof Dependencies]: HaywireIdType<Dependencies[Index]>;

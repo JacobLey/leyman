@@ -1,5 +1,5 @@
-import escapeStringRegexp from 'escape-string-regexp';
 import type { PackageJson } from './package-json-schema.js';
+import escapeStringRegexp from 'escape-string-regexp';
 
 const packageRegex = (packageName: string): string => {
     const escaped = escapeStringRegexp(packageName);

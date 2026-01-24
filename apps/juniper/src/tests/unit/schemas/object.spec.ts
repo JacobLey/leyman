@@ -1,14 +1,8 @@
+import type { EmptyObject, PatternProperties, SchemaType } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import {
-    type EmptyObject,
-    numberSchema,
-    objectSchema,
-    type PatternProperties,
-    type SchemaType,
-    stringSchema,
-} from 'juniper';
+import { numberSchema, objectSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
 
 suite('ObjectSchema', () => {

@@ -1,11 +1,12 @@
+import type { Encryption } from '../lib/types.js';
+import type * as Encrypt from './types.js';
 import { createCipheriv, createDecipheriv } from 'node:crypto';
 import { decode } from '#encode';
 import { hash } from '#hash';
 import { randomBytes } from '#random';
 import { fixBytes } from '../lib/bytes-length.js';
 import { encryptionMeta } from '../lib/size-meta.js';
-import { defaultEncryption, defaultHash, type Encryption } from '../lib/types.js';
-import type * as Encrypt from './types.js';
+import { defaultEncryption, defaultHash } from '../lib/types.js';
 
 const encryptionToCipher = (encryption: Encryption): string =>
     `${encryption.cipher}-${encryption.size}-${encryption.mode}`;

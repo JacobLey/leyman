@@ -1,15 +1,8 @@
+import type { JsonSchema, Schema, SchemaType } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import {
-    type JsonSchema,
-    mergeSchema,
-    numberSchema,
-    NumberSchema,
-    type Schema,
-    type SchemaType,
-    stringSchema,
-} from 'juniper';
+import { mergeSchema, numberSchema, NumberSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
 
 // Schema itself is an abstract class, so use NumberSchema

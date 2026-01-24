@@ -1,7 +1,8 @@
 import type { readFile as ReadFile } from 'node:fs/promises';
-import Path from 'node:path';
 import type { ParseCwd } from 'parse-cwd';
-import { type DaggerOptions, type DaggerOptionsOrConfig, isDaggerOptions } from './schema.js';
+import type { DaggerOptions, DaggerOptionsOrConfig } from './schema.js';
+import Path from 'node:path';
+import { isDaggerOptions } from './schema.js';
 
 export interface NormalizedOptions extends DaggerOptions {
     check: boolean;

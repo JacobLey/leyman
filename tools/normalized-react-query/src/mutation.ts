@@ -1,13 +1,7 @@
-import {
-    hashQueryKey,
-    type MutationKey,
-    type QueryClient,
-    useMutation,
-    type UseMutationResult,
-    useQueryClient,
-} from '@tanstack/react-query';
-import { useMemo } from 'react';
+import type { MutationKey, QueryClient, UseMutationResult } from '@tanstack/react-query';
 import type { DefaultParams, typeCache } from './lib/types.js';
+import { hashQueryKey, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 declare const typeCached: typeof typeCache;
 

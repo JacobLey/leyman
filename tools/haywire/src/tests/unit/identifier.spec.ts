@@ -1,14 +1,8 @@
+import type { AsyncSupplier, HaywireId, HaywireIdType, LateBinding, Supplier } from 'haywire';
+import type { AbstractPrivateClass } from '#identifier';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
-import {
-    type AsyncSupplier,
-    type HaywireId,
-    type HaywireIdType,
-    identifier,
-    type LateBinding,
-    type Supplier,
-} from 'haywire';
-import type { AbstractPrivateClass } from '#identifier';
+import { identifier } from 'haywire';
 import { expect } from '../chai-hooks.js';
 
 suite('Generate identifier', () => {

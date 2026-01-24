@@ -1,9 +1,11 @@
+import type { ParseCwd } from 'parse-cwd';
+import type { PopulateFiles } from 'populate-files';
 import { readFile } from 'node:fs/promises';
 import { workspaceRoot } from '@nx/devkit';
 import { isCI } from 'ci-info';
 import { bind, createModule, identifier } from 'haywire';
-import { type ParseCwd, parseCwd } from 'parse-cwd';
-import { populateFiles, type PopulateFiles } from 'populate-files';
+import { parseCwd } from 'parse-cwd';
+import { populateFiles } from 'populate-files';
 
 export interface Logger {
     info: (...args: unknown[]) => void;

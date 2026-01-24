@@ -1,5 +1,8 @@
 {
   "biome.lspBin": "leyman/main/node_modules/.bin/biome",
+
+  "editor.formatOnSave": true,
+
   "eslint.enable": true,
   "eslint.run": "onType",
   "eslint.runtime": "/home/leyman/.nvm/versions/node/v24.2.0/bin/node",
@@ -11,12 +14,6 @@
     "typescriptreact"
   ],
   "eslint.useESLintClass": true,
-  "eslint.validate": [
-    ".ts",
-    ".cts",
-    "mts",
-    ".tsx"
-  ],
   "eslint.format.enable": false,
   "eslint.workingDirectories": [
     {

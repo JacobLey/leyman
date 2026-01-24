@@ -1,5 +1,6 @@
+import type { Main } from 'entry-script';
 import { fake, verifyAndRestore } from 'sinon';
-import EntryScript, { type Main, MainNotImplementedError } from 'entry-script';
+import EntryScript, { MainNotImplementedError } from 'entry-script';
 import {
     bind,
     createContainer,

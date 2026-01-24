@@ -1,19 +1,14 @@
 import type { webcrypto } from 'node:crypto';
+import type { Point } from '../lib/math.js';
+import type { Curve, InputText } from '../lib/types.js';
+import type * as Ecc from './types.js';
 import { decode, encode } from '#encode';
 import { decrypt, encrypt } from '#encrypt';
 import { padBytes } from '../lib/bytes-length.js';
-import { curves, derivePublicKey, type Point } from '../lib/math.js';
+import { curves, derivePublicKey } from '../lib/math.js';
 import { eccMeta } from '../lib/size-meta.js';
-import {
-    Algorithms,
-    type Curve,
-    defaultCurve,
-    defaultEncryption,
-    Encodings,
-    type InputText,
-} from '../lib/types.js';
+import { Algorithms, defaultCurve, defaultEncryption, Encodings } from '../lib/types.js';
 import { decompressEccPublicKey } from './compression.js';
-import type * as Ecc from './types.js';
 
 const BITS_PER_BYTE = 8;
 const HEX_SIZE = 16;

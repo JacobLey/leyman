@@ -1,7 +1,8 @@
+import type { HashAlgorithm } from '../lib/types.js';
+import type * as HashMethods from './types.js';
 import { createHash } from 'node:crypto';
 import { decode } from '#encode';
-import { Algorithms, defaultHash, type HashAlgorithm } from '../lib/types.js';
-import type * as HashMethods from './types.js';
+import { Algorithms, defaultHash } from '../lib/types.js';
 
 const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
     if (algorithm === Algorithms.SHA1) {

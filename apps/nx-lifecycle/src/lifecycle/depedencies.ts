@@ -1,8 +1,10 @@
+import type { FilesFormatter } from 'format-file';
+import type { ParseCwd } from 'parse-cwd';
 import { readFile, writeFile } from 'node:fs/promises';
 import { isCI } from 'ci-info';
-import { type FilesFormatter, formatFiles } from 'format-file';
+import { formatFiles } from 'format-file';
 import { bind, createModule, identifier } from 'haywire';
-import { type ParseCwd, parseCwd } from 'parse-cwd';
+import { parseCwd } from 'parse-cwd';
 
 export interface Logger {
     info: (...args: unknown[]) => void;

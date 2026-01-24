@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers */
 
+import type { RuleModule } from '@typescript-eslint/utils/ts-eslint';
+import type { ESLint, Linter, Rule } from 'eslint';
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
-import type { RuleModule } from '@typescript-eslint/utils/ts-eslint';
-import type { ESLint, Linter, Rule } from 'eslint';
 import { getInternalRegex } from './lib/internal-regex.js';
 import { assertIsPackageJson } from './lib/package-json-schema.js';
 import {
@@ -242,6 +242,7 @@ export default function makeEslintConfigForPackage({
                 'no-constant-condition': ['error', { checkLoops: false }],
                 'no-continue': 'off',
                 'no-empty': ['error', { allowEmptyCatch: true }],
+                'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
                 'no-implicit-coercion': ['error', { allow: ['!!'] }],
                 'no-inline-comments': 'off',
                 'no-plusplus': 'off',
@@ -306,6 +307,7 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 '@typescript-eslint/consistent-type-assertions': 'error',
+                '@typescript-eslint/consistent-type-imports': 'error',
                 '@typescript-eslint/class-methods-use-this': [
                     'error',
                     {
@@ -480,11 +482,11 @@ export default function makeEslintConfigForPackage({
 
                 // Import
                 ...nonDeprecatedRules('import', importPlugin),
-                'import/consistent-type-specifier-style': 'off',
+                'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
                 'import/dynamic-import-chunkname': 'off',
+                'import/enforce-node-protocol-usage': ['error', 'always'],
                 'import/exports-last': 'off',
                 'import/extensions': 'off',
-                'import/first': ['error', 'absolute-first'],
                 'import/group-exports': 'off',
                 'import/max-dependencies': 'off',
                 'import/named': 'off',
@@ -508,6 +510,7 @@ export default function makeEslintConfigForPackage({
                     {
                         alphabetize: { caseInsensitive: true, order: 'asc' },
                         groups: [
+                            'type',
                             'builtin',
                             'external',
                             'internal',
@@ -516,6 +519,7 @@ export default function makeEslintConfigForPackage({
                             'sibling',
                             ['object', 'unknown'],
                         ],
+                        'newlines-between-types': 'never',
                         'newlines-between': 'never',
                         pathGroups: [
                             {
@@ -524,6 +528,7 @@ export default function makeEslintConfigForPackage({
                                 position: 'after',
                             },
                         ],
+                        sortTypesGroup: true,
                         warnOnUnassignedImports: true,
                     },
                 ],

@@ -2,8 +2,8 @@ import type { readFile, writeFile } from 'node:fs/promises';
 import type { findUp } from 'find-up';
 import type { resolveConfig } from 'prettier';
 import type { file } from 'tmp-promise';
-import { identifier } from 'haywire';
 import type { CanUseFormatter, Executor } from '#types';
+import { identifier } from 'haywire';
 
 export const executorId = identifier<Executor>();
 export const findUpId = identifier<typeof findUp>();

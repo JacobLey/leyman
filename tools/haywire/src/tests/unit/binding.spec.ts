@@ -1,21 +1,18 @@
+import type { AsyncSupplier, GenericHaywireId, HaywireId, LateBinding, Supplier } from 'haywire';
+import type { BindingBuilder } from '#binding';
+import type { AbstractPrivateClass } from '#identifier';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import {
-    type AsyncSupplier,
     bind,
     Binding,
-    type GenericHaywireId,
     HaywireContainerValidationError,
-    type HaywireId,
     identifier,
-    type LateBinding,
     optimisticSingletonScope,
     requestScope,
-    type Supplier,
     transientScope,
 } from 'haywire';
-import { type BindingBuilder, TempBinding } from '#binding';
-import type { AbstractPrivateClass } from '#identifier';
+import { TempBinding } from '#binding';
 import { expect } from '../chai-hooks.js';
 
 suite('bind', () => {

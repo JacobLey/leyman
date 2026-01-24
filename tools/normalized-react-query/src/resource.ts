@@ -1,20 +1,18 @@
-import {
-    type FetchQueryOptions,
-    hashQueryKey,
-    type InvalidateOptions,
-    type QueryClient,
-    type QueryFilters,
-    type QueryKey,
-    type QueryStatus,
-    type ResetOptions,
-    type SetDataOptions,
-    useQuery,
-    useQueryClient,
-    type UseQueryOptions,
-    type UseQueryResult,
+import type {
+    FetchQueryOptions,
+    InvalidateOptions,
+    QueryClient,
+    QueryFilters,
+    QueryKey,
+    QueryStatus,
+    ResetOptions,
+    SetDataOptions,
+    UseQueryOptions,
+    UseQueryResult,
 } from '@tanstack/react-query';
-import { useMemo } from 'react';
 import type { DefaultParams, typeCache } from './lib/types.js';
+import { hashQueryKey, useQuery, useQueryClient } from '@tanstack/react-query';
+import { useMemo } from 'react';
 
 declare const typeCached: typeof typeCache;
 

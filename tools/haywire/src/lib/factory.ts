@@ -1,29 +1,18 @@
-import {
-    type BindingOutputType,
-    type GenericBinding,
-    InstanceBinding,
-    TempBinding,
-} from '#binding';
-import {
-    addBoundInstances,
-    type AsyncContainer,
-    type Container,
-    createAsyncContainer,
-    createSyncContainer,
-    type ExpandedContainer,
-} from '#container';
-import { HaywireDuplicateOutputError, HaywireProviderMissingError } from '#errors';
-import {
-    type ClassToConstructable,
-    expandOutputId,
-    type GenericHaywireId,
-    type GenericOutputHaywireId,
-    type HaywireIdType,
-    type OutputHaywireId,
-    unsafeIdentifier,
+import type { BindingOutputType, GenericBinding } from '#binding';
+import type { AsyncContainer, Container, ExpandedContainer } from '#container';
+import type {
+    ClassToConstructable,
+    GenericHaywireId,
+    GenericOutputHaywireId,
+    HaywireIdType,
+    OutputHaywireId,
 } from '#identifier';
 import type { ValidateOutputIdDoesNotExist, ValidateOutputSatisfiesDependency } from '#module';
 import type { Extendable, InstanceOfClass, InvalidInput, IsClass } from '#types';
+import { InstanceBinding, TempBinding } from '#binding';
+import { addBoundInstances, createAsyncContainer, createSyncContainer } from '#container';
+import { HaywireDuplicateOutputError, HaywireProviderMissingError } from '#errors';
+import { expandOutputId, unsafeIdentifier } from '#identifier';
 
 export type GenericFactory = Factory<any, any, any, any>;
 

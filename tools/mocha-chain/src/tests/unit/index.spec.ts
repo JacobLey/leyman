@@ -1,5 +1,6 @@
+import type { SinonStub } from 'sinon';
 import { expect } from 'chai';
-import { createSandbox, match, type SinonStub } from 'sinon';
+import { createSandbox, match } from 'sinon';
 import { before, suite } from 'mocha-chain';
 
 suite('Pass mocks around in context', () => {

@@ -1,7 +1,7 @@
-import Path from 'node:path';
 import type { ExecutorContext } from '@nx/devkit';
-import { defaultImport } from 'default-import';
 import type { CreateRequire, Importer } from './dependencies.js';
+import Path from 'node:path';
+import { defaultImport } from 'default-import';
 import { isExecutorsJson, isPackageJson } from './package-json-schema.js';
 
 export interface PluginContext extends ExecutorContext {

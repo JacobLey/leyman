@@ -1,8 +1,10 @@
+import type { TextFormatter } from 'format-file';
+import type { ParseCwd } from 'parse-cwd';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { isCI } from 'ci-info';
-import { formatText, type TextFormatter } from 'format-file';
+import { formatText } from 'format-file';
 import { bind, createModule, identifier } from 'haywire';
-import { parseCwd, type ParseCwd } from 'parse-cwd';
+import { parseCwd } from 'parse-cwd';
 
 export const ciId = identifier<boolean>().named('ci');
 export const textFormatterId = identifier<TextFormatter>();

@@ -1,7 +1,10 @@
+import type { Lockfile } from '@pnpm/lockfile.fs';
+import type { Directory } from 'npm-parse-cwd';
+import type { PopulateFile } from 'npm-populate-files';
 import { findWorkspaceDir } from '@pnpm/find-workspace-dir';
-import { type Lockfile, readWantedLockfile } from '@pnpm/lockfile.fs';
-import { type Directory, parseCwd } from 'npm-parse-cwd';
-import { populateFile, type PopulateFile } from 'npm-populate-files';
+import { readWantedLockfile } from '@pnpm/lockfile.fs';
+import { parseCwd } from 'npm-parse-cwd';
+import { populateFile } from 'npm-populate-files';
 import { bind, createModule, identifier } from 'haywire';
 
 export type ConsoleLog = (log: unknown) => void;

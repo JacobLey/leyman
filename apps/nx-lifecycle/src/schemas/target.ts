@@ -1,4 +1,5 @@
-import { objectSchema, type SchemaType, stringSchema } from 'juniper';
+import type { SchemaType } from 'juniper';
+import { objectSchema, stringSchema } from 'juniper';
 import { configurationsSchema } from './configurations.js';
 import { dependsOnSchema } from './depend-on.js';
 

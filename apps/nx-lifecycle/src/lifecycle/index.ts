@@ -1,3 +1,4 @@
+import type { ILifecycleInternal } from './lifecycle-internal.js';
 import { bind, identifier } from 'haywire';
 import { isNxJson, isNxJsonIdentifier, isProjectJson, isProjectJsonIdentifier } from '#schemas';
 import {
@@ -9,7 +10,7 @@ import {
     readFileIdentifier,
     writeFileIdentifier,
 } from './depedencies.js';
-import { type ILifecycleInternal, LifecycleInternal } from './lifecycle-internal.js';
+import { LifecycleInternal } from './lifecycle-internal.js';
 import { Normalizer } from './normalizer.js';
 import { nxAndProjectJsonProcessorIdentifier, processNxAndProjectJsons } from './processor.js';
 

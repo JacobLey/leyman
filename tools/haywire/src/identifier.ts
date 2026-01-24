@@ -1,12 +1,12 @@
-import {
-    type ClassToConstructable,
-    type ExtraAnnotations,
-    type GenericHaywireId,
-    type HaywireId,
-    type StripAnnotations,
-    unsafeIdentifier,
+import type {
+    ClassToConstructable,
+    ExtraAnnotations,
+    GenericHaywireId,
+    HaywireId,
+    StripAnnotations,
 } from '#identifier';
 import type { IsClass, UnknownType } from '#types';
+import { unsafeIdentifier } from '#identifier';
 
 export {
     type ClassToConstructable,
@@ -17,7 +17,7 @@ export {
 } from '#identifier';
 
 interface IdentifierGenerator {
-    // Idempotent
+    // Idempotentq
     <T extends GenericHaywireId>(id: T): T;
     <T extends IsClass>(clazz: T, ...invalidInput: UnknownType<T>): ClassToConstructable<T>;
     <T>(

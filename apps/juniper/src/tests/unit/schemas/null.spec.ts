@@ -1,7 +1,8 @@
+import type { SchemaType } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
-import { nullSchema, type SchemaType } from 'juniper';
+import { nullSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
 
 suite('NullSchema', () => {

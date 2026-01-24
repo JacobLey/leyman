@@ -1,6 +1,7 @@
-import { decode } from '#encode';
-import { Algorithms, defaultHash, type HashAlgorithm } from '../lib/types.js';
+import type { HashAlgorithm } from '../lib/types.js';
 import type * as HashMethods from './types.js';
+import { decode } from '#encode';
+import { Algorithms, defaultHash } from '../lib/types.js';
 
 const { crypto } = globalThis;
 

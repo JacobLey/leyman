@@ -1,14 +1,15 @@
 import type { readFile, writeFile } from 'node:fs/promises';
-import { createStubInstance, define, fake, match, verifyAndRestore } from 'sinon';
 import type { FilesFormatter } from 'format-file';
-import { afterEach, beforeEach, suite } from 'mocha-chain';
-import { mockMethod, stubMethod } from 'sinon-typed-stub';
 import type { isNxJson, isProjectJson } from '#schemas';
-import { LifecycleInternal } from '../../../lifecycle/lifecycle-internal.js';
-import { type NormalizedOptions, Normalizer } from '../../../lifecycle/normalizer.js';
+import type { NormalizedOptions } from '../../../lifecycle/normalizer.js';
 import type { NxAndProjectJsonProcessor } from '../../../lifecycle/processor.js';
 import type { LifecycleOptions } from '../../../lifecycle/schema.js';
 import type { NxContext } from '../../../lifecycle/types.js';
+import { createStubInstance, define, fake, match, verifyAndRestore } from 'sinon';
+import { afterEach, beforeEach, suite } from 'mocha-chain';
+import { mockMethod, stubMethod } from 'sinon-typed-stub';
+import { LifecycleInternal } from '../../../lifecycle/lifecycle-internal.js';
+import { Normalizer } from '../../../lifecycle/normalizer.js';
 import { expect } from '../../chai-hooks.js';
 
 suite('lifecycle', () => {

@@ -1,10 +1,10 @@
 import type { readFile as ReadFile } from 'node:fs/promises';
+import type { ParseCwd } from 'parse-cwd';
+import type { DaggerOptions } from '../../../generate/schema.js';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
-import type { ParseCwd } from 'parse-cwd';
 import { stubMethod } from 'sinon-typed-stub';
 import { Normalizer } from '../../../generate/normalizer.js';
-import type { DaggerOptions } from '../../../generate/schema.js';
 import { expect } from '../../chai-hooks.js';
 
 suite('Normalizer', () => {

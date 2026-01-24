@@ -1,11 +1,11 @@
 import type fs from 'node:fs/promises';
+import type { file } from 'tmp-promise';
+import type { FilesFormatter } from '#types';
 import { expect } from 'chai';
 import { fake, verifyAndRestore } from 'sinon';
-import type { file } from 'tmp-promise';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { FormatterWrapper } from '#lib';
-import type { FilesFormatter } from '#types';
 
 suite('Formatter', () => {
     afterEach(() => {

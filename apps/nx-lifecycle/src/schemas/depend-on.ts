@@ -1,10 +1,10 @@
+import type { SchemaType } from 'juniper';
 import {
     arraySchema,
     booleanSchema,
     enumSchema,
     mergeSchema,
     objectSchema,
-    type SchemaType,
     stringSchema,
 } from 'juniper';
 

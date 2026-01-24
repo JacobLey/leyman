@@ -1,12 +1,7 @@
 import type { AbstractSchema, ConditionalResult, SchemaGenerics } from '../lib/schema.js';
 import type { ConditionalNullable, IsNever, Schema, SchemaType, ToBaseType } from '../lib/types.js';
-import {
-    type ArrayParams,
-    ArraySchema,
-    ArraySchemaOverride,
-    type ArrayType,
-    prefixItemsSym,
-} from './array.js';
+import type { ArrayParams, ArrayType } from './array.js';
+import { ArraySchema, ArraySchemaOverride, prefixItemsSym } from './array.js';
 
 type TupleParams<T, P extends any[], C extends P[number], M, N extends boolean> = Omit<
     ArrayParams<T, P, C, M, N>,

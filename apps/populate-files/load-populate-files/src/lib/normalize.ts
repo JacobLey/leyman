@@ -1,6 +1,6 @@
-import Path from 'node:path';
 import type { ParseCwd } from 'parse-cwd';
 import type { NormalizedParams, RawOptions, RawParams } from './types.js';
+import Path from 'node:path';
 
 export type NormalizeParams = (
     params: RawParams,

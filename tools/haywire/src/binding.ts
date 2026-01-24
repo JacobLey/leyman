@@ -1,11 +1,7 @@
-import { BindingBuilder } from '#binding';
-import {
-    type ClassToConstructable,
-    type GenericHaywireId,
-    type OutputHaywireId,
-    unsafeIdentifier,
-} from '#identifier';
+import type { ClassToConstructable, GenericHaywireId, OutputHaywireId } from '#identifier';
 import type { IsClass } from '#types';
+import { BindingBuilder } from '#binding';
+import { unsafeIdentifier } from '#identifier';
 
 export {
     type AsyncProviderBindingBuilder,

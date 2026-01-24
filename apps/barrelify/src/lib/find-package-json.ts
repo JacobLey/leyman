@@ -1,7 +1,8 @@
+import type { SchemaType } from 'juniper';
+import type { FindImport } from './dependencies.js';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { identifier } from 'haywire';
-import { enumSchema, objectSchema, type SchemaType, stringSchema } from 'juniper';
-import type { FindImport } from './dependencies.js';
+import { enumSchema, objectSchema, stringSchema } from 'juniper';
 
 const modulePackageSchema = objectSchema({
     properties: {

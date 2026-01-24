@@ -1,4 +1,5 @@
-import { createProjectGraphAsync, type ProjectGraph, workspaceRoot } from '@nx/devkit';
+import type { ProjectGraph } from '@nx/devkit';
+import { createProjectGraphAsync, workspaceRoot } from '@nx/devkit';
 import { bind, createModule, identifier, singletonScope } from 'haywire';
 
 export type ConsoleLog = (log: unknown) => void;

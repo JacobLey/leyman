@@ -1,11 +1,8 @@
 import type { Done, HookFunction, Context as MochaContext, Test as MochaTest } from 'mocha';
+import type { AllowableAdditionalContext, MergeContext } from './merge-context.js';
 import pDefer from 'p-defer';
 import { acquireLock, checkLock } from './execution-lock.js';
-import {
-    type AllowableAdditionalContext,
-    type MergeContext,
-    mergeContexts,
-} from './merge-context.js';
+import { mergeContexts } from './merge-context.js';
 
 /**
  * Before/After hooks run only once in the lifecycle of tests.

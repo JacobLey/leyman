@@ -1,4 +1,3 @@
-import { formatErrorMessage } from './lib/lib/errors.js';
 import type {
     PopulateFileParams,
     PopulationResponse,
@@ -7,6 +6,7 @@ import type {
 } from './lib/lib/types.js';
 import type { Normalize } from './lib/normalize.js';
 import type { InternalPopulateFile } from './lib/populate-file.js';
+import { formatErrorMessage } from './lib/lib/errors.js';
 
 export type PopulateFile = (
     params: PopulateFileParams,

@@ -1,8 +1,8 @@
-import yargs from 'yargs';
-import { EntryScript } from 'entry-script';
 import type { Supplier } from 'haywire';
 import type { ConsoleLog, ExitCode } from './commands/lib/dependencies.js';
 import type { AbstractCommand } from './commands/lib/types.js';
+import yargs from 'yargs';
+import { EntryScript } from 'entry-script';
 
 /**
  * LoadPopulateFiles CLI. Run `./bin.mjs --help` for options.

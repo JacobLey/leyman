@@ -1,7 +1,7 @@
+import type { FindImport } from '../../../lib/dependencies.js';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
-import type { FindImport } from '../../../lib/dependencies.js';
 import { FindPackageJson } from '../../../lib/find-package-json.js';
 import { expect } from '../../chai-hooks.js';
 

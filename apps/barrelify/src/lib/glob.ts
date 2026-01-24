@@ -1,6 +1,6 @@
-import Path from 'node:path';
 import type { Globby } from './dependencies.js';
 import type { IsExplicitlyModuleDirectory } from './find-package-json.js';
+import Path from 'node:path';
 
 const COMMON_OR_MODULE = '?(c|m)ts';
 const DEFAULT_OR_COMMON = '?(c)ts';

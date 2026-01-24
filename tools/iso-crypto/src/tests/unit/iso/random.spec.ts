@@ -1,8 +1,8 @@
+import type * as Random from '#random';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as IsoCrypto from 'iso-crypto';
 import { before, suite, test } from 'mocha-chain';
-import type * as Random from '#random';
 import * as BrowserRandom from '../../../iso/random/browser.js';
 import * as NodeRandom from '../../../iso/random/node.js';
 

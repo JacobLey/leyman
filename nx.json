@@ -43,7 +43,7 @@
         }
       },
       "dependsOn": [
-        "analyze:_"
+        "analyze:lint"
       ],
       "cache": false,
       "inputs": [
@@ -80,7 +80,7 @@
       ],
       "outputs": [],
       "dependsOn": [
-        "analyze:format"
+        "analyze:_"
       ]
     },
     "barrelify": {
@@ -295,21 +295,21 @@
         "__lifecycle": {}
       }
     },
-    "analyze:format": {
+    "analyze:lint": {
       "executor": "nx:noop",
       "dependsOn": [
         "analyze:_",
-        "biome"
+        "eslint"
       ],
       "configurations": {
         "__lifecycle": {}
       }
     },
-    "analyze:lint": {
+    "analyze:format": {
       "executor": "nx:noop",
       "dependsOn": [
-        "analyze:format",
-        "eslint"
+        "analyze:lint",
+        "biome"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -318,7 +318,7 @@
     "analyze": {
       "executor": "nx:noop",
       "dependsOn": [
-        "analyze:lint"
+        "analyze:format"
       ],
       "configurations": {
         "__lifecycle": {}

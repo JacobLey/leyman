@@ -1,5 +1,5 @@
-import { StaticEventTarget } from '../../static-event-target.js';
 import type { ServerEvent } from './server-event.js';
+import { StaticEventTarget } from '../../static-event-target.js';
 
 /**
  * @override

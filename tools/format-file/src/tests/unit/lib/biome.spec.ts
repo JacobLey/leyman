@@ -1,10 +1,10 @@
-import { expect } from 'chai';
 import type { findUp } from 'find-up';
+import type { Executor } from '#types';
+import { expect } from 'chai';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { Biome } from '#lib';
-import type { Executor } from '#types';
 
 suite('Biome', () => {
     afterEach(() => {

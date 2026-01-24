@@ -1,7 +1,7 @@
-import { isCI } from 'ci-info';
 import type { Argv } from 'yargs';
 import type { LoadAndPopulateFiles } from 'load-populate-files';
 import type { Command, LoadPopulateFilesCommandInput } from './lib/types.js';
+import { isCI } from 'ci-info';
 
 interface LoadPopulateFilesCommandExtendedInput extends LoadPopulateFilesCommandInput {
     filePath: string;

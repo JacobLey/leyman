@@ -1,8 +1,8 @@
+import type { AbstractCommand } from './lib/types.js';
 import { bind, createModule, identifier } from 'haywire';
 import { Barrel } from '../lib/barrel.js';
 import { consoleLogId, parseCwdId } from '../lib/dependencies.js';
 import { BarrelCommand } from './barrel-command.js';
-import type { AbstractCommand } from './lib/types.js';
 
 export const commandsId = identifier<AbstractCommand[]>();
 

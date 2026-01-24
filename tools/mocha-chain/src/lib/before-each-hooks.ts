@@ -1,18 +1,13 @@
 import type { Done, Context as MochaContext, Test as MochaTest } from 'mocha';
+import type { AfterEachChain } from './after-each-hooks.js';
+import type { GenericContextualHook } from './lib/hook-wrapper.js';
+import type { AllowableAdditionalContext, MergeContext } from './lib/merge-context.js';
+import type { ContextualTest, ExclusiveContextualTest } from './test-hooks.js';
 import { bind, createModule, identifier, singletonScope } from 'haywire';
 import { beforeEachIdentifier } from '#mocha-module';
-import { type AfterEachChain, contextualAfterEachGeneratorIdentifier } from './after-each-hooks.js';
-import {
-    type GenericContextualHook,
-    wrapHookWithEntrypoint,
-    wrapPerTestHookWithContext,
-} from './lib/hook-wrapper.js';
-import type { AllowableAdditionalContext, MergeContext } from './lib/merge-context.js';
-import {
-    type ContextualTest,
-    contextualTestGeneratorIdentifier,
-    type ExclusiveContextualTest,
-} from './test-hooks.js';
+import { contextualAfterEachGeneratorIdentifier } from './after-each-hooks.js';
+import { wrapHookWithEntrypoint, wrapPerTestHookWithContext } from './lib/hook-wrapper.js';
+import { contextualTestGeneratorIdentifier } from './test-hooks.js';
 
 interface ContextualBeforeEachHook<ExistingContext extends object> extends GenericContextualHook {
     <AdditionalContext extends AllowableAdditionalContext>(

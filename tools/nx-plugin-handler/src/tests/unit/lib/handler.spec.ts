@@ -1,10 +1,10 @@
 import type { ExecutorContext } from '@nx/devkit';
+import type { GetForwardedHandler, RawHandler } from '../../../lib/forwarded-handler.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { fake, verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
-import type { GetForwardedHandler, RawHandler } from '../../../lib/forwarded-handler.js';
 import { Handler } from '../../../lib/handler.js';
 
 suite('Handler', () => {

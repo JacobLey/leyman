@@ -1,14 +1,8 @@
-import { identifier } from 'haywire';
-import {
-    type AllTargets,
-    type DependsOn,
-    isEmpty,
-    type NxJson,
-    type ProjectJson,
-    type Target,
-} from '#schemas';
-import { NOOP_EXECUTOR } from './constants.js';
+import type { AllTargets, DependsOn, NxJson, ProjectJson, Target } from '#schemas';
 import type { NormalizedOptions } from './normalizer.js';
+import { identifier } from 'haywire';
+import { isEmpty } from '#schemas';
+import { NOOP_EXECUTOR } from './constants.js';
 
 type ProcessorOptions = Pick<NormalizedOptions, 'bindings' | 'stages'>;
 

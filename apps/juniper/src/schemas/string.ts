@@ -1,11 +1,8 @@
-import escapeStringRegexp from 'escape-string-regexp';
-import { maxInt } from '../lib/constants.js';
-import {
-    AbstractSchema,
-    type ConditionalResult,
-    type SchemaGenerics,
-    type SchemaParams,
-    type SerializationParams,
+import type {
+    ConditionalResult,
+    SchemaGenerics,
+    SchemaParams,
+    SerializationParams,
 } from '../lib/schema.js';
 import type {
     AbstractClean,
@@ -14,6 +11,9 @@ import type {
     Nullable,
     SchemaType,
 } from '../lib/types.js';
+import escapeStringRegexp from 'escape-string-regexp';
+import { maxInt } from '../lib/constants.js';
+import { AbstractSchema } from '../lib/schema.js';
 import { mergeAllOf } from '../lib/utils.js';
 
 interface StringParams<T extends string, N extends boolean> extends SchemaParams<Nullable<T, N>> {

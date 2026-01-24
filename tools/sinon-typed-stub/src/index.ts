@@ -1,4 +1,5 @@
-import { mock, type SinonExpectation, type SinonSpy, type SinonStub, spy, stub } from 'sinon';
+import type { SinonExpectation, SinonSpy, SinonStub } from 'sinon';
+import { mock, spy, stub } from 'sinon';
 
 type Method = (...args: any[]) => unknown;
 

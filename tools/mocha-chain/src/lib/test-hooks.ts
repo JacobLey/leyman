@@ -4,15 +4,14 @@ import type {
     Context as MochaContext,
     Test as MochaTest,
 } from 'mocha';
+import type {
+    ExclusiveEntrypointTest,
+    GenericContextualTest,
+    ValidDoneReturnTypes,
+} from './lib/test-wrapper.js';
 import { bind, createModule, identifier, singletonScope } from 'haywire';
 import { testIdentifier } from '#mocha-module';
-import {
-    type ExclusiveEntrypointTest,
-    type GenericContextualTest,
-    type ValidDoneReturnTypes,
-    wrapTestWithContext,
-    wrapTestWithEntrypoint,
-} from './lib/test-wrapper.js';
+import { wrapTestWithContext, wrapTestWithEntrypoint } from './lib/test-wrapper.js';
 
 export interface ExclusiveContextualTest<ExistingContext extends object>
     extends GenericContextualTest {

@@ -1,8 +1,8 @@
+import type { NxDagger } from '../../../../generate/nx-dagger.js';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { DaggerGenerate } from '../../../../executors/generate/generate.js';
-import type { NxDagger } from '../../../../generate/nx-dagger.js';
 import { expect } from '../../../chai-hooks.js';
 
 suite('Lifecycle', () => {

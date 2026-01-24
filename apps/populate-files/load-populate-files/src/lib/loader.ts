@@ -1,6 +1,6 @@
-import { defaultImport } from 'default-import';
 import type { PopulateFileParams } from 'populate-files';
 import type { Importer } from './lib/dependencies.js';
+import { defaultImport } from 'default-import';
 import { isPopulateFileParams } from './lib/populate-files-validator.js';
 
 export type LoadFile = (filePath: string) => Promise<PopulateFileParams[]>;

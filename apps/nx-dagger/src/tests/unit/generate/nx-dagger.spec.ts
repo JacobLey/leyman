@@ -1,11 +1,11 @@
-import { verifyAndRestore } from 'sinon';
-import { afterEach, beforeEach, suite, test } from 'mocha-chain';
 import type { PopulateFiles } from 'populate-files';
-import { stubMethod } from 'sinon-typed-stub';
 import type { GetGitIgnore } from '../../../generate/git-ignore.js';
 import type { GenerateGoFile } from '../../../generate/go-generator.js';
 import type { TemplateContext } from '../../../generate/lib/types.js';
 import type { NormalizeOptions } from '../../../generate/normalizer.js';
+import { verifyAndRestore } from 'sinon';
+import { afterEach, beforeEach, suite, test } from 'mocha-chain';
+import { stubMethod } from 'sinon-typed-stub';
 import * as NxDagger from '../../../generate/nx-dagger.js';
 import { expect } from '../../chai-hooks.js';
 

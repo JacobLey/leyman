@@ -1,12 +1,12 @@
-import { expect } from 'chai';
 import type { PopulateFile } from 'npm-populate-files';
+import type { ParseCwd } from '../../../lib/dependencies.js';
+import type { GetPrunedLockfile } from '../../../lib/pruned-lockfile.js';
+import { expect } from 'chai';
 import { verifyAndRestore } from 'sinon';
 import { dedent } from 'ts-dedent';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { LockfileCommand } from '../../../commands/lockfile-command.js';
-import type { ParseCwd } from '../../../lib/dependencies.js';
-import type { GetPrunedLockfile } from '../../../lib/pruned-lockfile.js';
 
 suite('LockfileCommand', () => {
     afterEach(() => {

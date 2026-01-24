@@ -1,7 +1,8 @@
-import { expectTypeOf } from 'expect-type';
-import { type JsonSchema, numberSchema, type Schema, type SchemaType } from 'juniper';
-import { suite, test } from 'mocha-chain';
+import type { JsonSchema, Schema, SchemaType } from 'juniper';
 import type { ConditionalNullable, ToBaseType } from '../../../lib/types.js';
+import { expectTypeOf } from 'expect-type';
+import { numberSchema } from 'juniper';
+import { suite, test } from 'mocha-chain';
 
 // These tests will only fail at compile time (if at all).
 suite('types', () => {

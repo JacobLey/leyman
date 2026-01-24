@@ -1,3 +1,5 @@
+import type { SafeLoadFile } from './loader.js';
+import type { InternalPopulateFile } from './populate-file.js';
 import { bind, identifier, singletonScope } from 'haywire';
 import {
     ciId,
@@ -8,9 +10,9 @@ import {
     textFormatterId,
     writeFileId,
 } from './lib/dependencies-module.js';
-import { Loader, type SafeLoadFile } from './loader.js';
+import { Loader } from './loader.js';
 import { Normalize } from './normalize.js';
-import { type InternalPopulateFile, PopulateFile } from './populate-file.js';
+import { PopulateFile } from './populate-file.js';
 
 const safeLoadFileId = identifier<SafeLoadFile>();
 export const internalPopulateFileId = identifier<InternalPopulateFile>();

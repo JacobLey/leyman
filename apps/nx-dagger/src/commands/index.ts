@@ -1,8 +1,8 @@
+import type { AbstractCommand } from './lib/types.js';
 import { bind, identifier } from 'haywire';
 import { nxDaggerId, nxDaggerModule } from '../generate/index.js';
 import { GenerateCommand } from './generate-command.js';
 import { dependenciesModule, projectGraphId } from './lib/dependencies.js';
-import type { AbstractCommand } from './lib/types.js';
 
 export const commandsId = identifier<AbstractCommand[]>();
 

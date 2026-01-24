@@ -1,5 +1,5 @@
-import { commonProxy } from './common-proxy.cjs';
 import type { ImportableHandler } from './lib/types.cjs';
+import { commonProxy } from './common-proxy.cjs';
 
 type DecoratorReturnType<
     Decorator extends (handler: (...args: any[]) => any, ...args: any[]) => (...args: any[]) => any,

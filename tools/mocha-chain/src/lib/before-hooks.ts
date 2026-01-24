@@ -1,18 +1,14 @@
 import type { Done, Context as MochaContext } from 'mocha';
+import type { AfterChain } from './after-hooks.js';
+import type { BeforeEachChain } from './before-each-hooks.js';
+import type { GenericContextualHook } from './lib/hook-wrapper.js';
+import type { AllowableAdditionalContext, MergeContext } from './lib/merge-context.js';
 import { bind, createModule, identifier, singletonScope } from 'haywire';
 import { beforeIdentifier } from '#mocha-module';
 import { contextualAfterEachGeneratorIdentifier } from './after-each-hooks.js';
-import { type AfterChain, contextualAfterGeneratorIdentifier } from './after-hooks.js';
-import {
-    type BeforeEachChain,
-    contextualBeforeEachGeneratorIdentifier,
-} from './before-each-hooks.js';
-import {
-    type GenericContextualHook,
-    wrapHookWithEntrypoint,
-    wrapOneTimeHookWithContext,
-} from './lib/hook-wrapper.js';
-import type { AllowableAdditionalContext, MergeContext } from './lib/merge-context.js';
+import { contextualAfterGeneratorIdentifier } from './after-hooks.js';
+import { contextualBeforeEachGeneratorIdentifier } from './before-each-hooks.js';
+import { wrapHookWithEntrypoint, wrapOneTimeHookWithContext } from './lib/hook-wrapper.js';
 import { contextualTestGeneratorIdentifier } from './test-hooks.js';
 
 interface ContextualBeforeHook<ExistingContext extends object> extends GenericContextualHook {

@@ -1,4 +1,5 @@
-import { objectSchema, type SchemaType } from 'juniper';
+import type { SchemaType } from 'juniper';
+import { objectSchema } from 'juniper';
 
 export const configurationsSchema = objectSchema().oneOf([
     objectSchema({

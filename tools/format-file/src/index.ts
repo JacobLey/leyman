@@ -1,6 +1,6 @@
+import type { FilesFormatter } from '#types';
 import { bind, createContainer, identifier, singletonScope } from 'haywire';
 import * as lib from '#lib';
-import type { FilesFormatter } from '#types';
 
 export { type FileFormatter, type FilesFormatter, Formatters, type TextFormatter } from '#types';
 

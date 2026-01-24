@@ -1,6 +1,7 @@
+import type { Directory } from 'parse-cwd';
 import { createRequire } from 'node:module';
 import Path from 'node:path';
-import { type Directory, parseCwd } from 'parse-cwd';
+import { parseCwd } from 'parse-cwd';
 
 // Re-export for convenience
 export type { Directory } from 'parse-cwd';

@@ -1,4 +1,3 @@
-import Path from 'node:path';
 import type { ProjectConfiguration, ProjectGraph, TargetConfiguration } from '@nx/devkit';
 import type { PopulateFiles } from 'populate-files';
 import type { GetGitIgnore } from './git-ignore.js';
@@ -6,6 +5,7 @@ import type { GenerateGoFile } from './go-generator.js';
 import type { TemplateContext } from './lib/types.js';
 import type { NormalizeOptions } from './normalizer.js';
 import type { DaggerOptions, DaggerOptionsOrConfig } from './schema.js';
+import Path from 'node:path';
 
 export type NxDagger = (
     projectGraph: ProjectGraph,

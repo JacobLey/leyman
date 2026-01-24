@@ -1,5 +1,6 @@
+import type { Encoding, InputText } from './lib/types.js';
 import { inputToEncoding } from './lib/input-to-encoding.js';
-import { defaultEncoding, type Encoding, Encodings, type InputText } from './lib/types.js';
+import { defaultEncoding, Encodings } from './lib/types.js';
 
 const BITS_PER_HEX = 4;
 const HEX_SIZE = 16;

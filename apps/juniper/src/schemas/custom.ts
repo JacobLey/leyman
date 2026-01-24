@@ -1,5 +1,6 @@
-import { AbstractSchema, type SchemaGenerics } from '../lib/schema.js';
+import type { SchemaGenerics } from '../lib/schema.js';
 import type { JsonSchema, SchemaType } from '../lib/types.js';
+import { AbstractSchema } from '../lib/schema.js';
 
 /**
  * "Schema" for importing your own custom JSON Schema document.

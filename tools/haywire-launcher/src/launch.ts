@@ -1,14 +1,15 @@
-import EntryScript, { type Main } from 'entry-script';
-import {
-    type AsyncContainer,
-    type ClassToConstructable,
-    type GenericContainer,
-    type GenericHaywireId,
-    type HaywireIdType,
-    identifier,
-    type NonExtendable,
-    type OutputHaywireId,
+import type { Main } from 'entry-script';
+import type {
+    AsyncContainer,
+    ClassToConstructable,
+    GenericContainer,
+    GenericHaywireId,
+    HaywireIdType,
+    NonExtendable,
+    OutputHaywireId,
 } from 'haywire';
+import EntryScript from 'entry-script';
+import { identifier } from 'haywire';
 
 export interface WrapperMain extends Main {
     getOriginal: () => Promise<Main>;

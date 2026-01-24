@@ -1,6 +1,6 @@
 import type { TextFormatter } from 'format-file';
-import { beforeEach, suite } from 'mocha-chain';
 import type { ParseCwd } from 'parse-cwd';
+import { beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { Normalize } from '../../../lib/normalize.js';
 import { expect } from '../../chai-hooks.js';

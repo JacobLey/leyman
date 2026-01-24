@@ -1,6 +1,10 @@
+import type { GetGitIgnore } from './git-ignore.js';
+import type { GenerateGoFile } from './go-generator.js';
+import type { NormalizeOptions } from './normalizer.js';
+import type { NxDagger } from './nx-dagger.js';
 import { bind, identifier } from 'haywire';
-import { type GetGitIgnore, getGitIgnoreProvider } from './git-ignore.js';
-import { type GenerateGoFile, generateGoFile } from './go-generator.js';
+import { getGitIgnoreProvider } from './git-ignore.js';
+import { generateGoFile } from './go-generator.js';
 import {
     dependenciesModule,
     isCiId,
@@ -9,8 +13,8 @@ import {
     readFileId,
     workspaceRootId,
 } from './lib/depedencies.js';
-import { type NormalizeOptions, Normalizer } from './normalizer.js';
-import { type NxDagger, nxDaggerProvider } from './nx-dagger.js';
+import { Normalizer } from './normalizer.js';
+import { nxDaggerProvider } from './nx-dagger.js';
 
 const getGitIgnoreId = identifier<GetGitIgnore>();
 const generateGoFileId = identifier<GenerateGoFile>();

@@ -1,9 +1,10 @@
+import type { CreateRequire, Importer } from '../../../lib/dependencies.js';
+import type { PluginContext } from '../../../lib/forwarded-handler.js';
 import { expect } from 'chai';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
-import type { CreateRequire, Importer } from '../../../lib/dependencies.js';
-import { ForwardedHandler, type PluginContext } from '../../../lib/forwarded-handler.js';
+import { ForwardedHandler } from '../../../lib/forwarded-handler.js';
 
 suite('ForwardedHandler', () => {
     afterEach(() => {

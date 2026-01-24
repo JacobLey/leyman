@@ -1,7 +1,7 @@
+import type { ParseCwd } from 'parse-cwd';
 import { expect } from 'chai';
 import { createStubInstance, verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
-import type { ParseCwd } from 'parse-cwd';
 import { stubMethod } from 'sinon-typed-stub';
 import { BarrelifyApi } from '../../barrelify-api.js';
 import { Barrel } from '../../lib/barrel.js';

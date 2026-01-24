@@ -1,8 +1,8 @@
 import type { ProjectGraph } from '@nx/devkit';
-import { isCI } from 'ci-info';
 import type { Argv } from 'yargs';
 import type { ILifecycleInternal } from '../lifecycle/lifecycle-internal.js';
 import type { Command, LifecycleCommandInput } from './lib/types.js';
+import { isCI } from 'ci-info';
 
 interface LifecycleCommandExtendedInput extends LifecycleCommandInput {
     configFile: string;

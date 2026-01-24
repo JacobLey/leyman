@@ -1,5 +1,7 @@
-import { createContainer as createFactoryContainer, Factory, type GenericFactory } from '#factory';
-import { createContainer as createModuleContainer, type GenericModule } from '#module';
+import type { GenericFactory } from '#factory';
+import type { GenericModule } from '#module';
+import { createContainer as createFactoryContainer, Factory } from '#factory';
+import { createContainer as createModuleContainer } from '#module';
 
 export {
     AsyncContainer,

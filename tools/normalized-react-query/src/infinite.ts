@@ -1,13 +1,8 @@
-import {
-    hashQueryKey,
-    useQueries,
-    useQueryClient,
-    type UseQueryOptions,
-    type UseQueryResult,
-} from '@tanstack/react-query';
+import type { UseQueryOptions, UseQueryResult } from '@tanstack/react-query';
+import type { DefaultPage, EmptyObject, PaginatedData, PaginatedParams } from './lib/types.js';
+import { hashQueryKey, useQueries, useQueryClient } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { useForceRerender } from './lib/hooks.js';
-import type { DefaultPage, EmptyObject, PaginatedData, PaginatedParams } from './lib/types.js';
 import { Paginated } from './paginated.js';
 
 /**

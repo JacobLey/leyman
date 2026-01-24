@@ -1,11 +1,5 @@
-import {
-    arraySchema,
-    booleanSchema,
-    mergeSchema,
-    objectSchema,
-    type SchemaType,
-    stringSchema,
-} from 'juniper';
+import type { SchemaType } from 'juniper';
+import { arraySchema, booleanSchema, mergeSchema, objectSchema, stringSchema } from 'juniper';
 import { dependsOnSchema } from '#schemas';
 import { ajv } from '../schemas/lib/ajv.js';
 

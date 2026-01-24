@@ -1,4 +1,3 @@
-import { expect } from 'chai';
 import type {
     AsyncFunc,
     Done,
@@ -10,6 +9,7 @@ import type {
     SuiteFunction,
     TestFunction,
 } from 'mocha';
+import { expect } from 'chai';
 import { match, mock, stub, verifyAndRestore } from 'sinon';
 import { bind, createContainer, createModule } from 'haywire';
 import { after, afterEach, before, suite, test } from 'mocha-chain';

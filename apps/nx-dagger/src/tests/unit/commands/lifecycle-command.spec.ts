@@ -1,9 +1,9 @@
 import type { ProjectGraph } from '@nx/devkit';
+import type { NxDagger } from '../../../generate/nx-dagger.js';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { GenerateCommand } from '../../../commands/generate-command.js';
-import type { NxDagger } from '../../../generate/nx-dagger.js';
 import { expect } from '../../chai-hooks.js';
 
 suite('LifecycleCommand', () => {

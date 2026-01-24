@@ -1,8 +1,8 @@
-import yargs from 'yargs';
-import { EntryScript } from 'entry-script';
 import type { Supplier } from 'haywire';
 import type { AbstractCommand } from './commands/lib/types.js';
 import type { ConsoleLog, ExitCode } from './lib/dependencies.js';
+import yargs from 'yargs';
+import { EntryScript } from 'entry-script';
 
 /**
  * Barrelify CLI. Run `./bin.mjs --help` for options.

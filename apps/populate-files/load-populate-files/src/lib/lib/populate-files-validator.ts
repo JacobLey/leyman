@@ -1,6 +1,7 @@
-import { Ajv2020 } from 'ajv/dist/2020.js';
-import { arraySchema, mergeSchema, objectSchema, type SchemaType, stringSchema } from 'juniper';
+import type { SchemaType } from 'juniper';
 import type { PopulateFileParams } from 'populate-files';
+import { Ajv2020 } from 'ajv/dist/2020.js';
+import { arraySchema, mergeSchema, objectSchema, stringSchema } from 'juniper';
 
 const populateFileParam = objectSchema({
     properties: {

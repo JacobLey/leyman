@@ -1,7 +1,7 @@
+import type { AbstractCommand } from './lib/types.js';
 import { bind, createModule, identifier } from 'haywire';
 import { parseCwdId, populateFileId } from '../lib/dependencies.js';
 import { getPrunedLockfileId } from '../lib/pruned-lockfile.js';
-import type { AbstractCommand } from './lib/types.js';
 import { LockfileCommand } from './lockfile-command.js';
 
 export const commandsId = identifier<AbstractCommand[]>();

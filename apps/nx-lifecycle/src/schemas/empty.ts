@@ -1,4 +1,5 @@
-import { objectSchema, type SchemaType } from 'juniper';
+import type { SchemaType } from 'juniper';
+import { objectSchema } from 'juniper';
 import { ajv } from './lib/ajv.js';
 
 const emptySchema = objectSchema({

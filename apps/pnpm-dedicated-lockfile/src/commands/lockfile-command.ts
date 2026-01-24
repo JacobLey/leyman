@@ -1,12 +1,12 @@
-import { createHash } from 'node:crypto';
-import Path from 'node:path';
 import type { Lockfile } from '@pnpm/lockfile.fs';
-import { isCI } from 'ci-info';
 import type { PopulateFile } from 'npm-populate-files';
 import type { Argv } from 'yargs';
 import type { ParseCwd } from '../lib/dependencies.js';
 import type { GetPrunedLockfile } from '../lib/pruned-lockfile.js';
 import type { Command, LockfileCommandInput } from './lib/types.js';
+import { createHash } from 'node:crypto';
+import Path from 'node:path';
+import { isCI } from 'ci-info';
 
 interface LockfileCommandExtendedInput extends LockfileCommandInput {
     ci: boolean;

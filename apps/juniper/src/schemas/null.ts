@@ -1,10 +1,6 @@
-import {
-    AbstractSchema,
-    type SchemaGenerics,
-    type SchemaParams,
-    type SerializationParams,
-} from '../lib/schema.js';
+import type { SchemaGenerics, SchemaParams, SerializationParams } from '../lib/schema.js';
 import type { JsonSchema, SchemaType } from '../lib/types.js';
+import { AbstractSchema } from '../lib/schema.js';
 
 /**
  * Schema for defining null literal.

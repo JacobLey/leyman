@@ -1,9 +1,9 @@
+import type { CanUseFormatter } from '#types';
 import { expect } from 'chai';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { Formatter } from '#lib';
-import type { CanUseFormatter } from '#types';
 
 suite('Formatter', () => {
     afterEach(() => {

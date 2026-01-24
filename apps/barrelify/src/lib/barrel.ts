@@ -1,7 +1,7 @@
-import Path from 'node:path';
 import type { PopulateFile } from 'npm-populate-files';
 import type { ReadFile } from './dependencies.js';
 import type { Glob } from './glob.js';
+import Path from 'node:path';
 
 /**
  * Core logic for barrelify.

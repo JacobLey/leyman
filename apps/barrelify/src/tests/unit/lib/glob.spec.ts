@@ -1,8 +1,8 @@
+import type { Globby } from '../../../lib/dependencies.js';
+import type { IsExplicitlyModuleDirectory } from '../../../lib/find-package-json.js';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
-import type { Globby } from '../../../lib/dependencies.js';
-import type { IsExplicitlyModuleDirectory } from '../../../lib/find-package-json.js';
 import { Glob } from '../../../lib/glob.js';
 import { expect } from '../../chai-hooks.js';
 

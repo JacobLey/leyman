@@ -1,7 +1,8 @@
+import type { PluginContext, RawHandler } from 'nx-plugin-handler';
 import Path from 'node:path';
 import { expect } from 'chai';
 import { suite, test } from 'mocha-chain';
-import { handler, type PluginContext, type RawHandler } from 'nx-plugin-handler';
+import { handler } from 'nx-plugin-handler';
 import { mockMethod } from 'sinon-typed-stub';
 
 suite('handler', () => {

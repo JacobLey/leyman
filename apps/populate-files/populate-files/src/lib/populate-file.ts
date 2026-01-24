@@ -1,13 +1,13 @@
 import type { mkdir as Mkdir, writeFile as WriteFile } from 'node:fs/promises';
-import Path from 'node:path';
-import { areUint8ArraysEqual } from 'uint8array-extras';
-import { formatErrorMessage } from './lib/errors.js';
 import type {
     NormalizedFileParams,
     PopulationResponse,
     PopulationResponseUpdateReason,
 } from './lib/types.js';
 import type { SafeLoadFile } from './loader.js';
+import Path from 'node:path';
+import { areUint8ArraysEqual } from 'uint8array-extras';
+import { formatErrorMessage } from './lib/errors.js';
 
 export type InternalPopulateFile = ({
     filePath,

@@ -1,6 +1,8 @@
+import type { ParseCwd } from 'parse-cwd';
+import type { PopulateFiles } from 'populate-files';
 import { bind, createModule, identifier } from 'haywire';
-import { parseCwd, type ParseCwd } from 'parse-cwd';
-import { populateFiles, type PopulateFiles } from 'populate-files';
+import { parseCwd } from 'parse-cwd';
+import { populateFiles } from 'populate-files';
 
 export type Importer = (specifier: string) => Promise<unknown>;
 export const importerId = identifier<Importer>();

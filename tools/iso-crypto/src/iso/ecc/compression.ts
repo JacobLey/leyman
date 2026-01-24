@@ -1,8 +1,9 @@
+import type { InputText } from '../lib/types.js';
 import { decode, encode } from '#encode';
 import { padBytes } from '../lib/bytes-length.js';
 import { curves, deriveYCoordinate } from '../lib/math.js';
 import { eccMeta } from '../lib/size-meta.js';
-import { defaultCurve, Encodings, type InputText } from '../lib/types.js';
+import { defaultCurve, Encodings } from '../lib/types.js';
 
 const HEX_SIZE = 16;
 const DECOMPRESSED_KEY_PREFIX = 4;

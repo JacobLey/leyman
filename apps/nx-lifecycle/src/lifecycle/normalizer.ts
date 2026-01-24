@@ -1,12 +1,9 @@
 import type { readFile as ReadFile } from 'node:fs/promises';
-import Path from 'node:path';
 import type { ParseCwd } from 'parse-cwd';
-import {
-    isLifecycleOptions,
-    type LifecycleOptions,
-    type LifecycleOptionsOrConfig,
-} from './schema.js';
+import type { LifecycleOptions, LifecycleOptionsOrConfig } from './schema.js';
 import type { NxContext } from './types.js';
+import Path from 'node:path';
+import { isLifecycleOptions } from './schema.js';
 
 export interface NormalizedOptions {
     check: boolean;
