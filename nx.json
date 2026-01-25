@@ -5,10 +5,10 @@
   },
   "namedInputs": {
     "ts-source": [
+      "{workspaceRoot}/configs/swcrc.jsonc",
       "{workspaceRoot}/tsconfig.build.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
-      "{projectRoot}/.swcrc",
       "{projectRoot}/.pnpm-lock",
       "{projectRoot}/src/**/*.(c|m)?tsx?",
       "{projectRoot}/src/**/*.json",
@@ -118,19 +118,6 @@
         "build:_"
       ]
     },
-    "populate-static": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "cp ./.swcrc.jsonc {projectRoot}/.swcrc"
-        ],
-        "parallel": true,
-        "color": true
-      },
-      "dependsOn": [
-        "build:_"
-      ]
-    },
     "update-ts-references": {
       "executor": "nx:noop",
       "syncGenerators": [
@@ -152,9 +139,9 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --only '**/*.ts?(x)'",
-          "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
-          "swc ./src -d ./dist --config-file .swcrc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
+          "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.ts?(x)'",
+          "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
+          "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
           "tsc"
         ],
         "parallel": true,
@@ -332,7 +319,6 @@
         "build:_",
         "barrelify",
         "delete-dist",
-        "populate-static",
         "update-ts-references"
       ],
       "configurations": {

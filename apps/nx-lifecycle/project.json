@@ -10,7 +10,6 @@
     "eslint": {},
     "update-ts-references": {},
     "delete-dist": {},
-    "populate-static": {},
     "tsc": {},
     "populate-files": {},
     "coverage-reset": {},

@@ -47,7 +47,6 @@
     "biome": "analyze:format",
     "barrelify": "build:pre",
     "delete-dist": "build:pre",
-    "populate-static": "build:pre",
     "update-ts-references": "build:pre",
     "tsc": "build:run",
     "populate-files": "build:post",

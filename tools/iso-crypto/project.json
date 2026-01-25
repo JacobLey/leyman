@@ -11,7 +11,6 @@
     "barrelify": {},
     "update-ts-references": {},
     "delete-dist": {},
-    "populate-static": {},
     "tsc": {},
     "coverage-reset": {},
     "mocha-unit-test": {},
