@@ -1,12 +1,12 @@
 import type { Options as GlobbyOptions } from 'globby';
-import type { PopulateFile } from 'npm-populate-files';
 import type { Directory, ParseCwd } from 'parse-cwd';
+import type { PopulateFile } from 'populate-files';
 import { readFile } from 'node:fs/promises';
 import { globby } from 'globby';
-import { populateFile } from 'npm-populate-files';
 import { findImport } from 'find-import';
 import { bind, createModule, identifier } from 'haywire';
 import { parseCwd } from 'parse-cwd';
+import { populateFile } from 'populate-files';
 
 export type ConsoleLog = (log: unknown) => void;
 export const consoleLogId = identifier<ConsoleLog>().named('log');

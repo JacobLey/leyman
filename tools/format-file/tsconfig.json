@@ -13,13 +13,7 @@
       "path": "../sinon-typed-stub"
     },
     {
-      "path": "../../apps/pnpm-dedicated-lockfile"
-    },
-    {
       "path": "../mocha-chain"
-    },
-    {
-      "path": "../../apps/barrelify"
     },
     {
       "path": "../../leyman/eslint-config"

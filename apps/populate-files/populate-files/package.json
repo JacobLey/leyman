@@ -47,7 +47,7 @@
     "format-file": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "pnpm-dedicated-lockfile": "workspace:^",
+    "npm-pnpm-dedicated-lockfile": "catalog:leyman",
     "sinon": "catalog:",
     "sinon-typed-stub": "workspace:^",
     "tmp-promise": "catalog:",

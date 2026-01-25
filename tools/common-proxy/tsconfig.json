@@ -7,16 +7,19 @@
   },
   "references": [
     {
-      "path": "../../apps/pnpm-dedicated-lockfile"
-    },
-    {
-      "path": "../../leyman/eslint-config"
-    },
-    {
       "path": "../default-import"
     },
     {
+      "path": "../../apps/pnpm-dedicated-lockfile"
+    },
+    {
+      "path": "../../apps/barrelify"
+    },
+    {
       "path": "../mocha-chain"
+    },
+    {
+      "path": "../../leyman/eslint-config"
     }
   ]
 }

@@ -39,7 +39,7 @@
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
     "parse-cwd": "workspace:^",
-    "npm-populate-files": "catalog:leyman",
+    "populate-files": "workspace:^",
     "yargs": "catalog:"
   },
   "devDependencies": {

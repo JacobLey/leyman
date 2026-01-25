@@ -7,6 +7,9 @@
   },
   "references": [
     {
+      "path": "../populate-files/populate-files"
+    },
+    {
       "path": "../../tools/parse-cwd"
     },
     {

@@ -1,11 +1,11 @@
 import type { Lockfile } from '@pnpm/lockfile.fs';
-import type { PopulateFile } from 'npm-populate-files';
 import type { Directory } from 'parse-cwd';
+import type { PopulateFile } from 'populate-files';
 import { findWorkspaceDir } from '@pnpm/find-workspace-dir';
 import { readWantedLockfile } from '@pnpm/lockfile.fs';
-import { populateFile } from 'npm-populate-files';
 import { bind, createModule, identifier } from 'haywire';
 import { parseCwd } from 'parse-cwd';
+import { populateFile } from 'populate-files';
 
 export type ConsoleLog = (log: unknown) => void;
 export const consoleLogId = identifier<ConsoleLog>().named('log');

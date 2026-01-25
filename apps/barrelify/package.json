@@ -36,8 +36,8 @@
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
-    "npm-populate-files": "catalog:leyman",
     "parse-cwd": "workspace:^",
+    "populate-files": "workspace:^",
     "yargs": "catalog:"
   },
   "devDependencies": {

@@ -1,6 +1,6 @@
 import type { Lockfile } from '@pnpm/lockfile.fs';
-import type { PopulateFile } from 'npm-populate-files';
 import type { Argv } from 'yargs';
+import type { PopulateFile } from 'populate-files';
 import type { ParseCwd } from '../lib/dependencies.js';
 import type { GetPrunedLockfile } from '../lib/pruned-lockfile.js';
 import type { Command, LockfileCommandInput } from './lib/types.js';

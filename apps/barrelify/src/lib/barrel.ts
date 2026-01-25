@@ -1,4 +1,4 @@
-import type { PopulateFile } from 'npm-populate-files';
+import type { PopulateFile } from 'populate-files';
 import type { ReadFile } from './dependencies.js';
 import type { Glob } from './glob.js';
 import Path from 'node:path';

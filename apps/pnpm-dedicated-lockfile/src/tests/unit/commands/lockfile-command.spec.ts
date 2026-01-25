@@ -1,4 +1,4 @@
-import type { PopulateFile } from 'npm-populate-files';
+import type { PopulateFile } from 'populate-files';
 import type { ParseCwd } from '../../../lib/dependencies.js';
 import type { GetPrunedLockfile } from '../../../lib/pruned-lockfile.js';
 import { expect } from 'chai';

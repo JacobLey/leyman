@@ -1,4 +1,4 @@
-import type { PopulateFile } from 'npm-populate-files';
+import type { PopulateFile } from 'populate-files';
 import type { ReadFile } from '../../../lib/dependencies.js';
 import { createStubInstance, stub, verifyAndRestore } from 'sinon';
 import { dedent } from 'ts-dedent';
