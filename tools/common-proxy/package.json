@@ -41,7 +41,7 @@
     "expect-type": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "npm-barrelify": "catalog:leyman",
+    "barrelify": "workspace:^",
     "pnpm-dedicated-lockfile": "workspace:^",
     "typescript": "catalog:"
   }
