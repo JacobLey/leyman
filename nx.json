@@ -191,15 +191,12 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rm -rf ./coverage"
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp"
         ],
         "parallel": true,
         "color": true,
         "cwd": "{projectRoot}"
       },
-      "outputs": [
-        "{projectRoot}/coverage"
-      ],
       "dependsOn": [
         "test:_"
       ]
@@ -208,7 +205,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 --clean=false --reporter=none mocha --recursive './dist/tests/unit/**/*.spec.*js'"
+          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive './dist/tests/unit/**/*.spec.*js'"
         ],
         "parallel": true,
         "color": true,
@@ -220,7 +217,7 @@
         "^ts-output"
       ],
       "outputs": [
-        "{projectRoot}/coverage/tmp"
+        "{workspaceRoot}/.coverage/project/{projectName}/tmp"
       ],
       "dependsOn": [
         "test:reset"
@@ -230,7 +227,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 ---clean=false --reporter=none mocha --recursive './dist/tests/integration/**/*.spec.*js'"
+          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive './dist/tests/integration/**/*.spec.*js'"
         ],
         "parallel": true,
         "color": true,
@@ -242,7 +239,7 @@
         "^ts-output"
       ],
       "outputs": [
-        "{projectRoot}/coverage/tmp"
+        "{workspaceRoot}/.coverage/project/{projectName}/tmp"
       ],
       "dependsOn": [
         "mocha-unit-test",
@@ -253,17 +250,11 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 report --all --check-coverage"
+          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/tmp -o $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/report -c $NX_WORKSPACE_ROOT/configs/c8rc.json report --all --check-coverage --merge-async"
         ],
         "color": true,
         "cwd": "{projectRoot}"
-      },
-      "inputs": [
-        "{projectRoot}/coverage"
-      ],
-      "dependsOn": [
-        "test:run"
-      ]
+      }
     },
     "pnpm-dedicated-lockfile": {
       "executor": "nx:run-commands",
@@ -429,20 +420,10 @@
         "__lifecycle": {}
       }
     },
-    "test:report": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "test:run",
-        "coverage-report"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
-    },
     "test": {
       "executor": "nx:noop",
       "dependsOn": [
-        "test:report"
+        "test:run"
       ],
       "configurations": {
         "__lifecycle": {}

@@ -4,6 +4,8 @@
 **/node_modules
 .pnpm-store
 
+/.coverage
+
 **/.eslintcache
 **/coverage
 **/dist

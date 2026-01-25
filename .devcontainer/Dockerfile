@@ -70,3 +70,6 @@ RUN mkdir -p $HOME/.config/vscode-dev-containers && \
 # Ensure NX runs at max capacity
 RUN NX_PARALLEL="$(nproc --all)" \
     && echo "export NX_PARALLEL=${NX_PARALLEL}" >> $HOME/.bashrc
+
+# Define custom scripts/commands
+RUN echo "source ./scripts/commands/*" >> $HOME/.bashrc

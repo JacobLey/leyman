@@ -19,8 +19,8 @@
     "mocha-integration-test": {},
     "coverage-report": {},
     "analyze:_": {},
-    "analyze:format": {},
     "analyze:lint": {},
+    "analyze:format": {},
     "analyze": {},
     "build:_": {},
     "build:pre": {},
@@ -32,7 +32,6 @@
     "test:_": {},
     "test:reset": {},
     "test:run": {},
-    "test:report": {},
     "test": {}
   }
 }

@@ -16,15 +16,15 @@
     "mocha-unit-test": {
       "options": {
         "commands": [
-          "c8 --clean=false --reporter=none mocha './dist/tests/unit/noop.spec.js'",
-          "c8 --clean=false --reporter=none mocha --node-option conditions=patchable './dist/tests/unit/patch.spec.js'"
+          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha './dist/tests/unit/noop.spec.js'",
+          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --node-option conditions=patchable './dist/tests/unit/patch.spec.js'"
         ]
       }
     },
     "coverage-report": {},
     "analyze:_": {},
-    "analyze:format": {},
     "analyze:lint": {},
+    "analyze:format": {},
     "analyze": {},
     "build:_": {},
     "build:pre": {},
@@ -36,7 +36,6 @@
     "test:_": {},
     "test:reset": {},
     "test:run": {},
-    "test:report": {},
     "test": {}
   }
 }
