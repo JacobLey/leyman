@@ -189,13 +189,14 @@ catalogs:
     yargs:
       specifier: ^18.0.0
       version: 18.0.0
+  eslint-config:
+    npm-juniper:
+      specifier: npm:juniper@^1.2.5
+      version: 1.2.5
   leyman:
     npm-barrelify:
       specifier: npm:barrelify@^1.3.3
       version: 1.3.3
-    npm-juniper:
-      specifier: npm:juniper@^1.2.5
-      version: 1.2.5
     npm-pnpm-dedicated-lockfile:
       specifier: npm:pnpm-dedicated-lockfile@^0.0.4
       version: 0.0.4
@@ -935,7 +936,7 @@ importers:
         specifier: 'catalog:'
         version: 59.0.1(eslint@9.39.2)
       npm-juniper:
-        specifier: catalog:leyman
+        specifier: catalog:eslint-config
         version: juniper@1.2.5
     devDependencies:
       '@biomejs/biome':

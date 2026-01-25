@@ -33,7 +33,7 @@
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-sonarjs": "catalog:",
     "eslint-plugin-unicorn": "catalog:",
-    "npm-juniper": "catalog:leyman"
+    "npm-juniper": "catalog:eslint-config"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

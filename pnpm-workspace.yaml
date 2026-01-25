@@ -69,8 +69,18 @@ catalog:
   yargs: ^18.0.0
 
 catalogs:
+  # These are dependencies on local packages that can't actually be used locally
+  # because it would be a circular dependency.
+  # In order to avoid these circular dependencies in prod, these should *only* be "dev" dependencies
+  # that would not be included in the published build.
+  # Ideally they are packages that are not even `imported` but rather a separate CLI command
   leyman:
     npm-barrelify: npm:barrelify@^1.3.3
-    npm-juniper: npm:juniper@^1.2.5
     npm-pnpm-dedicated-lockfile: npm:pnpm-dedicated-lockfile@^0.0.4
     npm-populate-files: npm:populate-files@^0.2.4
+
+  # As an exception to above dependencies, 
+  # `eslint-config` is itself a dev dependency (any package using it wouldn't include in published build)
+  # but we don't want to depend on the dev version, so we allowlist a *few* local packages.
+  eslint-config:
+    npm-juniper: npm:juniper@^1.2.5
