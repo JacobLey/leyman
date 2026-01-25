@@ -14,7 +14,7 @@
         "biomejs.biome",
         "dbaeumer.vscode-eslint",
         "golang.go",
-        "interactive-smartlog.interactive-smartlog"
+        "meta.sapling-scm"
       ]
     }
   },

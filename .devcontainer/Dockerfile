@@ -45,24 +45,28 @@ RUN wget https://dl.google.com/go/go${GO_VERSION}.linux-arm64.tar.gz -O /tmp/go.
     rm /tmp/go.tar.gz && \
     go install golang.org/x/tools/gopls@latest
 
-# Install gh (https://github.com/cli/cli/blob/trunk/docs/install_linux.md#debian)
-RUN (type -p wget >/dev/null || (apt update && apt install wget -y)) \
-    && mkdir -p -m 755 /etc/apt/keyrings \
-    && out=$(mktemp) && wget -nv -O$out https://cli.github.com/packages/githubcli-archive-keyring.gpg \
-    && cat $out | tee /etc/apt/keyrings/githubcli-archive-keyring.gpg > /dev/null \
-    && chmod go+r /etc/apt/keyrings/githubcli-archive-keyring.gpg \
-    && mkdir -p -m 755 /etc/apt/sources.list.d \
-    && echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | sudo tee /etc/apt/sources.list.d/github-cli.list > /dev/null \
-    && apt update \
-    && apt install gh -y
-
 # Install dagger
 RUN curl -fsSL https://dl.dagger.io/dagger/install.sh | \
     DAGGER_VERSION=${DAGGER_VERSION} BIN_DIR=$HOME/.local/bin sh
+
+# Install brew https://brew.sh/
+#ENV PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH
+RUN NONINTERACTIVE=1 export LEYMAN_HOMEBREW_CACHE="${HOME}/.cache/Homebrew" LEYMAN_HOMEBREW_PREFIX=/home/linuxbrew/.linuxbrew LEYMAN_BASHRC="${HOME}/.bashrc" \
+    && mkdir -p $LEYMAN_HOMEBREW_PREFIX \
+    && mkdir -p $LEYMAN_HOMEBREW_CACHE \
+    && chown -R $USER:$USER $LEYMAN_HOMEBREW_PREFIX \
+    && chown -R $USER:$USER $LEYMAN_HOMEBREW_CACHE \
+    && sudo -u $USER /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)" \
+    && echo >> $LEYMAN_BASHRC \
+    && echo "eval \"$($LEYMAN_HOMEBREW_PREFIX/bin/brew shellenv bash)\"" >> $LEYMAN_BASHRC
+
+# Install sapling 
+RUN sudo -u $USER /bin/bash -c "/home/linuxbrew/.linuxbrew/bin/brew install sapling"
 
 # Grant permissions to non-root
 RUN mkdir -p $HOME/.config/vscode-dev-containers && \
     chown -R $USER:$USER $HOME
 
+# Ensure NX runs at max capacity
 RUN NX_PARALLEL="$(nproc --all)" \
-  && echo "export NX_PARALLEL=${NX_PARALLEL}" >> /etc/bash.bashrc
+    && echo "export NX_PARALLEL=${NX_PARALLEL}" >> $HOME/.bashrc
