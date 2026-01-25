@@ -1,6 +1,6 @@
-import type { SchemaType } from 'npm-juniper';
+import type { SchemaType } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
-import { objectSchema, stringSchema } from 'npm-juniper';
+import { objectSchema, stringSchema } from 'juniper';
 
 const ajv = new Ajv2020({ strict: true });
 

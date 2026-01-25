@@ -27,7 +27,7 @@
     "common-proxy": "workspace:^",
     "haywire": "workspace:^",
     "default-import": "workspace:^",
-    "npm-juniper": "catalog:leyman"
+    "juniper": "workspace:^"
   },
   "peerDependencies": {
     "@nx/devkit": "catalog:"

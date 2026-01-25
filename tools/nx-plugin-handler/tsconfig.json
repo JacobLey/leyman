@@ -7,13 +7,7 @@
   },
   "references": [
     {
-      "path": "../../apps/pnpm-dedicated-lockfile"
-    },
-    {
-      "path": "../../leyman/eslint-config"
-    },
-    {
-      "path": "../common-proxy"
+      "path": "../../apps/juniper"
     },
     {
       "path": "../default-import"
@@ -22,10 +16,19 @@
       "path": "../haywire"
     },
     {
-      "path": "../mocha-chain"
+      "path": "../common-proxy"
     },
     {
       "path": "../sinon-typed-stub"
+    },
+    {
+      "path": "../../apps/pnpm-dedicated-lockfile"
+    },
+    {
+      "path": "../mocha-chain"
+    },
+    {
+      "path": "../../leyman/eslint-config"
     }
   ]
 }

@@ -1721,9 +1721,9 @@ importers:
       haywire:
         specifier: workspace:^
         version: link:../haywire
-      npm-juniper:
-        specifier: catalog:leyman
-        version: juniper@1.2.5
+      juniper:
+        specifier: workspace:^
+        version: link:../../apps/juniper
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
