@@ -127,8 +127,8 @@ catalogs:
       specifier: ^5.2.0
       version: 5.2.0
     eslint-plugin-sonarjs:
-      specifier: ^3.0.3
-      version: 3.0.3
+      specifier: ^3.0.5
+      version: 3.0.5
     eslint-plugin-unicorn:
       specifier: ^59.0.1
       version: 59.0.1
@@ -196,9 +196,6 @@ catalogs:
     npm-juniper:
       specifier: npm:juniper@^1.2.5
       version: 1.2.5
-    npm-parse-cwd:
-      specifier: npm:parse-cwd@^1.1.2
-      version: 1.1.2
     npm-pnpm-dedicated-lockfile:
       specifier: npm:pnpm-dedicated-lockfile@^0.0.4
       version: 0.0.4
@@ -649,12 +646,12 @@ importers:
       haywire-launcher:
         specifier: workspace:^
         version: link:../../tools/haywire-launcher
-      npm-parse-cwd:
-        specifier: catalog:leyman
-        version: parse-cwd@1.1.2
       npm-populate-files:
         specifier: catalog:leyman
         version: populate-files@0.2.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
+      parse-cwd:
+        specifier: workspace:^
+        version: link:../../tools/parse-cwd
       yargs:
         specifier: 'catalog:'
         version: 18.0.0
@@ -933,7 +930,7 @@ importers:
         version: 5.2.0(eslint@9.39.2)
       eslint-plugin-sonarjs:
         specifier: 'catalog:'
-        version: 3.0.3(eslint@9.39.2)
+        version: 3.0.5(eslint@9.39.2)
       eslint-plugin-unicorn:
         specifier: 'catalog:'
         version: 59.0.1(eslint@9.39.2)
@@ -1833,9 +1830,9 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../mocha-chain
-      pnpm-dedicated-lockfile:
-        specifier: workspace:^
-        version: link:../../apps/pnpm-dedicated-lockfile
+      npm-pnpm-dedicated-lockfile:
+        specifier: catalog:leyman
+        version: pnpm-dedicated-lockfile@0.0.4(@biomejs/biome@2.3.11)(prettier@3.5.3)
       typescript:
         specifier: 'catalog:'
         version: 5.8.3
@@ -4058,8 +4055,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
 
-  eslint-plugin-sonarjs@3.0.3:
-    resolution: {integrity: sha512-/UrTz8wyTW0MQVJKUF70vSjsMMf54+0cKHWAuYObuE82vNM8zrscm0wvZprolHNN0PIdnvVQ9Dm6MQkIzOKu4A==}
+  eslint-plugin-sonarjs@3.0.5:
+    resolution: {integrity: sha512-dI62Ff3zMezUToi161hs2i1HX1ie8Ia2hO0jtNBfdgRBicAG4ydy2WPt0rMTrAe3ZrlqhpAO3w1jcQEdneYoFA==}
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0
 
@@ -4752,6 +4749,10 @@ packages:
 
   jsonc-parser@3.2.0:
     resolution: {integrity: sha512-gfFQZrcTc8CnKXp6Y4/CBT3fTc0OVuDofpre4aEeEpSBPV5X5v4+Vmx+8snU7RLPrNHPKSgLxGo9YuQzz20o+w==}
+
+  jsx-ast-utils-x@0.1.0:
+    resolution: {integrity: sha512-eQQBjBnsVtGacsG9uJNB8qOr3yA8rga4wAaGG1qRcBzSIvfhERLrWxMAM1hp5fcS6Abo8M4+bUBTekYR0qTPQw==}
+    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
 
   jsx-ast-utils@3.3.5:
     resolution: {integrity: sha512-ZZow9HBI5O6EPgSJLUb8n2NKgmVWTwCvHGwFuJlMjvLFqlGG6pjirPhtdsseaLZjSibD8eegzmYpUZwoIlj2cQ==}
@@ -8427,14 +8428,15 @@ snapshots:
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
 
-  eslint-plugin-sonarjs@3.0.3(eslint@9.39.2):
+  eslint-plugin-sonarjs@3.0.5(eslint@9.39.2):
     dependencies:
       '@eslint-community/regexpp': 4.12.1
       builtin-modules: 3.3.0
       bytes: 3.1.2
       eslint: 9.39.2
       functional-red-black-tree: 1.0.1
-      jsx-ast-utils: 3.3.5
+      jsx-ast-utils-x: 0.1.0
+      lodash.merge: 4.6.2
       minimatch: 9.0.5
       scslre: 0.3.0
       semver: 7.7.2
@@ -9143,6 +9145,8 @@ snapshots:
   json5@2.2.3: {}
 
   jsonc-parser@3.2.0: {}
+
+  jsx-ast-utils-x@0.1.0: {}
 
   jsx-ast-utils@3.3.5:
     dependencies:

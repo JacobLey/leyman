@@ -38,7 +38,7 @@
     "entry-script": "workspace:^",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
-    "npm-parse-cwd": "catalog:leyman",
+    "parse-cwd": "workspace:^",
     "npm-populate-files": "catalog:leyman",
     "yargs": "catalog:"
   },

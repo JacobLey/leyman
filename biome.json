@@ -1,5 +1,8 @@
 {
   "$schema": "./leyman/main/node_modules/@biomejs/biome/configuration_schema.json",
+  "assist": {
+    "enabled": false
+  },
   "vcs": {
     "clientKind": "git",
     "enabled": true,
