@@ -1,4 +1,4 @@
-import type { Encoding } from './iso/lib/types.js';
+import type { Encoding, Uint8ArrayBuffer } from './iso/lib/types.js';
 import { decode, encode } from '#encode';
 import { defaultEncoding } from './iso/lib/types.js';
 
@@ -7,8 +7,8 @@ export { decode, encode, type Encoding };
 type Replace<From, To, T extends Record<string, From>> = {
     [k in keyof T]: To;
 };
-type Encoded<T extends Record<string, string>> = Replace<string, Uint8Array, T>;
-type Decoded<T extends Record<string, Uint8Array>> = Replace<Uint8Array, string, T>;
+type Encoded<T extends Record<string, string>> = Replace<string, Uint8ArrayBuffer, T>;
+type Decoded<T extends Record<string, Uint8ArrayBuffer>> = Replace<Uint8ArrayBuffer, string, T>;
 
 /**
  * Decode every attribute in an object.
@@ -39,7 +39,7 @@ export const decodeObject = <T extends Record<string, string>>(
  * @param [encoding='utf8'] - encoding to use, defaults to UTF8
  * @returns same interface as input, with strings
  */
-export const encodeObject = <T extends Record<string, Uint8Array>>(
+export const encodeObject = <T extends Record<string, Uint8ArrayBuffer>>(
     obj: T,
     encoding?: Encoding
 ): Decoded<T> => {

@@ -1,3 +1,4 @@
+import type { Uint8ArrayBuffer } from '../../iso/lib/types.js';
 import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { decode, decodeObject, encodeObject } from 'iso-crypto';
@@ -16,8 +17,8 @@ suite('EncodeObject', () => {
                 bar: decode({ text: '012345', encoding: 'hex' }),
             });
             expectTypeOf(decoded).toEqualTypeOf<{
-                foo: Uint8Array;
-                bar: Uint8Array;
+                foo: Uint8ArrayBuffer;
+                bar: Uint8ArrayBuffer;
             }>();
         });
 
@@ -31,7 +32,7 @@ suite('EncodeObject', () => {
                 foo: decode('<foo>'),
                 bar: decode('<bar>'),
             });
-            expectTypeOf(decoded).toEqualTypeOf<Record<string, Uint8Array>>();
+            expectTypeOf(decoded).toEqualTypeOf<Record<string, Uint8ArrayBuffer>>();
         });
     });
 
@@ -53,7 +54,7 @@ suite('EncodeObject', () => {
         });
 
         test('Default utf8', () => {
-            const myData: Record<string, Uint8Array> = {
+            const myData: Record<string, Uint8ArrayBuffer> = {
                 foo: decode('<foo>'),
                 bar: decode('<bar>'),
             };

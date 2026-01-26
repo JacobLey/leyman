@@ -1,4 +1,4 @@
-import type { Hash, InputText } from '../lib/types.js';
+import type { Hash, InputText, Uint8ArrayBuffer } from '../lib/types.js';
 
 /**
  * Hash provided text with the given algorithm.
@@ -16,4 +16,4 @@ export declare const hash: (
      * Hash algorithm to use, defaults to SHA256.
      */
     algorithm?: Hash
-) => Promise<Uint8Array>;
+) => Promise<Uint8ArrayBuffer>;

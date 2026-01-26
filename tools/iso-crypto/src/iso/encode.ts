@@ -1,6 +1,6 @@
-import type { Encoding, InputText } from './lib/types.js';
+import type { Encoding, InputText, Uint8ArrayBuffer } from './lib/types.js';
 import { inputToEncoding } from './lib/input-to-encoding.js';
-import { defaultEncoding, Encodings } from './lib/types.js';
+import { defaultEncoding } from './lib/types.js';
 
 const BITS_PER_HEX = 4;
 const HEX_SIZE = 16;
@@ -37,14 +37,14 @@ const base64standard = (text: string): string => {
     return appendEquals;
 };
 
-const toBase64 = (buf: ArrayBuffer | number[] | Uint8Array): string =>
+const toBase64 = (buf: ArrayBuffer | number[] | Uint8ArrayBuffer): string =>
     base64url(btoa(String.fromCodePoint(...new Uint8Array(buf))));
-const fromBase64 = (str: string): Uint8Array =>
+const fromBase64 = (str: string): Uint8ArrayBuffer =>
     Uint8Array.from(atob(base64standard(str)), x => x.codePointAt(0)!);
 
-const toHex = (buf: Uint8Array): string =>
+const toHex = (buf: Uint8ArrayBuffer): string =>
     [...buf].map(x => x.toString(HEX_SIZE).padStart(2, '0')).join('');
-const fromHex = (str: string): Uint8Array => {
+const fromHex = (str: string): Uint8ArrayBuffer => {
     const length = str.length % 2 ? str.length + 1 : str.length;
     return new Uint8Array(
         (str.padStart(length, '0').match(/.{2}/gu) ?? []).map(byte =>
@@ -61,16 +61,16 @@ const fromHex = (str: string): Uint8Array => {
  * @param input - text to decode
  * @returns decoded
  */
-export const decode = (input: InputText): Uint8Array => {
+export const decode = (input: InputText): Uint8ArrayBuffer => {
     const { encoding, text } = inputToEncoding(input);
 
-    if (encoding === Encodings.RAW) {
+    if (encoding === 'raw') {
         return text;
     }
-    if (encoding === Encodings.UTF8) {
+    if (encoding === 'utf8') {
         return encoder.encode(text);
     }
-    if (encoding === Encodings.HEX) {
+    if (encoding === 'hex') {
         return fromHex(text);
     }
 
@@ -90,15 +90,15 @@ export const encode = (
 ): string => {
     const buffer = decode(input);
 
-    if (encoding === Encodings.UTF8) {
+    if (encoding === 'utf8') {
         return decoder.decode(buffer);
     }
-    if (encoding === Encodings.HEX) {
+    if (encoding === 'hex') {
         return toHex(buffer);
     }
 
     const url = toBase64(buffer);
-    if (encoding === Encodings.BASE64) {
+    if (encoding === 'base64') {
         return base64standard(url);
     }
 

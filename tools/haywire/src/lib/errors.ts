@@ -12,7 +12,7 @@ export abstract class HaywireError extends Error {}
 const stringifyIds = (ids: GenericHaywireId[]): string =>
     ids
         .map(id => id.toString())
-        .sort((a, b) => a.localeCompare(b, 'en'))
+        .toSorted((a, b) => a.localeCompare(b, 'en'))
         .join(', ');
 
 /**
@@ -118,9 +118,9 @@ export class HaywireCircularDependencyError extends HaywireContainerValidationEr
                         chain: permutation.map(({ id }) => id),
                         message: permutation.map(({ idStr }) => idStr).join('->'),
                     }))
-                    .sort((a, b) => a.message.localeCompare(b.message))[0]!;
+                    .toSorted((a, b) => a.message.localeCompare(b.message))[0]!;
             })
-            .sort((a, b) => a.message.localeCompare(b.message));
+            .toSorted((a, b) => a.message.localeCompare(b.message));
     }
 }
 

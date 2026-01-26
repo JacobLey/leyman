@@ -1,4 +1,4 @@
-import type { Curve, Encryption, InputText } from '../lib/types.js';
+import type { Curve, Encryption, InputText, Uint8ArrayBuffer } from '../lib/types.js';
 
 /**
  * Generate a prime256v1 ECC private key.
@@ -6,7 +6,7 @@ import type { Curve, Encryption, InputText } from '../lib/types.js';
  * @param [curve] - curve algorithm, defaults to p256
  * @returns random private key
  */
-export declare const generateEccPrivateKey: (curve?: Curve) => Promise<Uint8Array>;
+export declare const generateEccPrivateKey: (curve?: Curve) => Promise<Uint8ArrayBuffer>;
 
 /**
  * Generate a public key from the incoming private key.
@@ -17,7 +17,10 @@ export declare const generateEccPrivateKey: (curve?: Curve) => Promise<Uint8Arra
  * @param [curve] - curve algorithm, defaults to p256
  * @returns public key from private key
  */
-export declare const generateEccPublicKey: (privateKey: InputText, curve?: Curve) => Uint8Array;
+export declare const generateEccPublicKey: (
+    privateKey: InputText,
+    curve?: Curve
+) => Uint8ArrayBuffer;
 
 /**
  * Encrypt data using a "sender's" ECC private key, and a
@@ -61,9 +64,9 @@ export declare const eccEncrypt: (
         encryption?: Encryption | undefined;
     }
 ) => Promise<{
-    encrypted: Uint8Array;
-    iv: Uint8Array;
-    publicKey: Uint8Array;
+    encrypted: Uint8ArrayBuffer;
+    iv: Uint8ArrayBuffer;
+    publicKey: Uint8ArrayBuffer;
 }>;
 
 /**
@@ -113,4 +116,4 @@ export declare const eccDecrypt: (
          */
         encryption?: Encryption | undefined;
     }
-) => Promise<Uint8Array>;
+) => Promise<Uint8ArrayBuffer>;

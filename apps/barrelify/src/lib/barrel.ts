@@ -116,7 +116,7 @@ export class Barrel {
 
                     return `${base}${ext.replace('t', 'j')}`;
                 })
-                .sort((a, b) => a.localeCompare(b, 'en'))
+                .toSorted((a, b) => a.localeCompare(b, 'en'))
                 .map(
                     filename =>
                         `export ${types.has(filename) ? 'type ' : ''}* from './${filename}';`

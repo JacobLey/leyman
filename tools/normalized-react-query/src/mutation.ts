@@ -14,9 +14,9 @@ declare const typeCached: typeof typeCache;
  * - Optionally implement handlers `onSuccess`, `onError`, and `onSettled`
  * - Create a single instance ("singleton") of class and export it.
  *
- * @template Data
- * @template Params
- * @template Variables
+ * @template Data output
+ * @template Params identifier
+ * @template Variables input
  */
 export abstract class Mutation<Data, Params = DefaultParams, Variables = DefaultParams> {
     /**
@@ -87,9 +87,9 @@ export abstract class Mutation<Data, Params = DefaultParams, Variables = Default
      * Default behavior is NOOP.
      *
      * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {*} error - error from mutation.
-     * @param {*} variables - variables provided directly to mutation
+     * @param params - method params defined by class.
+     * @param error - error from mutation.
+     * @param variables - variables provided directly to mutation
      * @returns {Promise} error handled
      */
     protected async onError(
@@ -107,10 +107,10 @@ export abstract class Mutation<Data, Params = DefaultParams, Variables = Default
      * Default behavior is NOOP.
      *
      * @param {QueryClient} client - query client
-     * @param {*} params - method params defined by class.
-     * @param {*} data - response from mutation (if successful).
-     * @param {*} error - error from mutation (if error).
-     * @param {*} variables - variables provided directly to mutation
+     * @param params - method params defined by class.
+     * @param data - response from mutation (if successful).
+     * @param error - error from mutation (if error).
+     * @param variables - variables provided directly to mutation
      * @returns {Promise} settle handled
      */
     protected async onSettled(
@@ -131,8 +131,8 @@ export abstract class Mutation<Data, Params = DefaultParams, Variables = Default
      *
      * Not related to `queryKey`s (i.e. can have overlap).
      *
-     * @param {*} params - method params defined by class.
-     * @returns {*[]} - query key array.
+     * @param params - method params defined by class.
+     * @returns {[]} - query key array.
      */
     protected abstract getKey(params: Params): MutationKey;
 
@@ -142,8 +142,8 @@ export abstract class Mutation<Data, Params = DefaultParams, Variables = Default
      * `mutationFn` that is called by React Query.
      * Any data loading and parsing should be implemented here.
      *
-     * @param {*} params - method params defined by class.
-     * @returns {Promise<*>} function that will be called by React Query for data loading.
+     * @param params - method params defined by class.
+     * @returns {Promise} function that will be called by React Query for data loading.
      */
     protected abstract mutationFn(params: Params, variables: Variables): Promise<Data>;
 }

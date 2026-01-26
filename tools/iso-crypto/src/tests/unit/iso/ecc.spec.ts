@@ -6,7 +6,7 @@ import * as IsoCrypto from 'iso-crypto';
 import { before, suite, test } from 'mocha-chain';
 import * as BrowserEcc from '../../../iso/ecc/browser.js';
 import * as NodeEcc from '../../../iso/ecc/node.js';
-import { Ciphers, Curves, Encodings, Modes } from '../../../types.js';
+import { Ciphers, Modes } from '../../../types.js';
 
 interface EccSourceContext {
     source: typeof Ecc;
@@ -49,7 +49,7 @@ suite('Ecc', () => {
                 mode: Modes.CTR,
             },
         ] as const) {
-            for (const curve of [null, undefined, Curves.P256, Curves.P384, Curves.P521] as const) {
+            for (const curve of [null, undefined, 'p256', 'p384', 'p521'] as const) {
                 let options: Parameters<(typeof Ecc)['eccEncrypt']>[1];
                 const curveOptions = curve === null ? [] : [curve];
                 if (curve !== null) {
@@ -156,13 +156,13 @@ suite('Ecc', () => {
                                 iv,
                                 privateKey,
                             },
-                            Encodings.HEX
+                            'hex'
                         ),
                         publicKey: compressed
-                            ? { text: publicKey, encoding: Encodings.HEX }
+                            ? { text: publicKey, encoding: 'hex' }
                             : IsoCrypto.decompressEccPublicKey({
                                   text: publicKey,
-                                  encoding: Encodings.HEX,
+                                  encoding: 'hex',
                               }),
                     },
                     { curve, encryption }

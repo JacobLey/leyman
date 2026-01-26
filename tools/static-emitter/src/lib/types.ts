@@ -16,7 +16,7 @@ export type EmptyObject = {};
  * `events` indicates events declared explicitly (e.g. via class extensions),
  * and via generic parameters.
  *
- * @template T
+ * @template T map of event to type
  */
 export interface IEmitter<T extends EventDict = EventDict> {
     [events]: T;
@@ -68,7 +68,7 @@ export type CustomEventList<Emitter extends IEmitter> = {
  *
  * If `type` is declared as a symbol | number, it will be typed as a generic `string`.
  *
- * @template Type
+ * @template Type event name
  * @template Detail context
  */
 export type EventType<Type extends number | string | symbol, Detail> = Detail extends Event
@@ -83,8 +83,8 @@ export type EventListenerParam<
 /**
  * Native EventTarget listener, with additional types for event + detail.
  *
- * @template Emitter
- * @template EventName
+ * @template Emitter event mapper
+ * @template EventName event id
  */
 type EventTargetCallback<Emitter extends IEmitter, EventName extends EventList<Emitter>> = (
     event: EventListenerParam<Emitter, EventName>
@@ -93,8 +93,8 @@ type EventTargetCallback<Emitter extends IEmitter, EventName extends EventList<E
 /**
  * Native EventTarget listeners can also be an object with `handleEvent` method.
  *
- * @template Emitter
- * @template EventName
+ * @template Emitter event mapper
+ * @template EventName event id
  */
 interface EventTargetHandler<Emitter extends IEmitter, EventName extends EventList<Emitter>> {
     handleEvent: EventTargetCallback<Emitter, EventName>;
@@ -103,8 +103,8 @@ interface EventTargetHandler<Emitter extends IEmitter, EventName extends EventLi
 /**
  * Convenience union of both allowed native listener signatures.
  *
- * @template Emitter
- * @template EventName
+ * @template Emitter event mapper
+ * @template EventName event id
  */
 export type EventTargetListener<Emitter extends IEmitter, EventName extends EventList<Emitter>> =
     | EventTargetCallback<Emitter, EventName>
@@ -114,8 +114,8 @@ export type EventTargetListener<Emitter extends IEmitter, EventName extends Even
  * Null is required for consistency with default types.
  * Usage of null is NOOP, and will often log internal warnings.
  *
- * @template Emitter
- * @template EventName
+ * @template Emitter event mapper
+ * @template EventName event id
  */
 export type NullishEventTargetListener<
     Emitter extends IEmitter,
@@ -125,8 +125,8 @@ export type NullishEventTargetListener<
 /**
  * CustomEvent listener that is internally wrapped for EventTarget.
  *
- * @template Emitter
- * @template EventName
+ * @template Emitter event mapper
+ * @template EventName event id
  */
 export type CustomEventListener<
     Emitter extends IEmitter,

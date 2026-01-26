@@ -1,3 +1,5 @@
+import type { Uint8ArrayBuffer } from './types.js';
+
 /**
  * Extend an Uint8Array to be _at least_ `bytes` long.
  * Prepends 0 to beginning as necessary.
@@ -6,8 +8,8 @@
  * @param bytes - desired min length
  * @returns properly sized array.
  */
-export const padBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
-    if (arr.length >= bytes) {
+export const padBytes = (arr: Uint8ArrayBuffer, bytes: number): Uint8ArrayBuffer => {
+    if (arr.byteLength >= bytes) {
         return arr;
     }
 
@@ -28,8 +30,8 @@ export const padBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
  * @param bytes - desired max length
  * @returns properly sized array.
  */
-export const trimBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
-    if (arr.length <= bytes) {
+export const trimBytes = (arr: Uint8ArrayBuffer, bytes: number): Uint8ArrayBuffer => {
+    if (arr.byteLength <= bytes) {
         return arr;
     }
 
@@ -44,5 +46,5 @@ export const trimBytes = (arr: Uint8Array, bytes: number): Uint8Array => {
  * @param bytes - desired length
  * @returns properly sized array.
  */
-export const fixBytes = (arr: Uint8Array, bytes: number): Uint8Array =>
+export const fixBytes = (arr: Uint8ArrayBuffer, bytes: number): Uint8ArrayBuffer =>
     padBytes(trimBytes(arr, bytes), bytes);

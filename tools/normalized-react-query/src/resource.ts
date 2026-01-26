@@ -25,8 +25,8 @@ declare const typeCached: typeof typeCache;
  * - Optionally implement handlers `onSuccess`, `onError`, and `onSettled`
  * - Create a single instance ("singleton") of class and export it.
  *
- * @template Data
- * @template Params
+ * @template Data - Input
+ * @template Params - Output
  */
 export abstract class Resource<Data, Params = DefaultParams> {
     /**
@@ -281,8 +281,8 @@ export abstract class Resource<Data, Params = DefaultParams> {
      * Must generate a logically different key for different params
      * (and similarly the same key for logically similar params).
      *
-     * @param {*} params - method params defined by class.
-     * @returns {*[]} - query key array.
+     * @param params - method params defined by class.
+     * @returns query key array.
      */
     protected abstract getKey(params: Params): QueryKey;
 
@@ -292,8 +292,8 @@ export abstract class Resource<Data, Params = DefaultParams> {
      * `queryFn` that is called by React Query.
      * Any data loading and parsing should be implemented here.
      *
-     * @param {*} params - method params defined by class.
-     * @returns {Promise<*>} function that will be called by React Query for data loading.
+     * @param params - method params defined by class.
+     * @returns {Promise} function that will be called by React Query for data loading.
      */
     protected abstract queryFn(params: Params): Promise<Data>;
 }

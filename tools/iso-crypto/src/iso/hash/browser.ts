@@ -1,4 +1,4 @@
-import type { HashAlgorithm } from '../lib/types.js';
+import type { HashAlgorithm, Uint8ArrayBuffer } from '../lib/types.js';
 import type * as HashMethods from './types.js';
 import { decode } from '#encode';
 import { Algorithms, defaultHash } from '../lib/types.js';
@@ -6,13 +6,16 @@ import { Algorithms, defaultHash } from '../lib/types.js';
 const { crypto } = globalThis;
 
 const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
-    if (algorithm === Algorithms.SHA1) {
+    if (algorithm === 'SHA1') {
         return 'SHA-1';
     }
     return `SHA-${size}`;
 };
 
-export const hash: (typeof HashMethods)['hash'] = async (input, algorithm = defaultHash) => {
+export const hash: (typeof HashMethods)['hash'] = async (
+    input,
+    algorithm = defaultHash
+): Promise<Uint8ArrayBuffer> => {
     const decoded = decode(input);
 
     if (algorithm === Algorithms.RAW) {

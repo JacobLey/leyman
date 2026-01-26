@@ -59,35 +59,24 @@ export const defaultHash: HashAlgorithm = {
     size: Sizes.KEY_256,
 };
 
-export const enum Encodings {
-    BASE64 = 'base64',
-    BASE64URL = 'base64url',
-    HEX = 'hex',
-    RAW = 'raw',
-    UTF8 = 'utf8',
-}
-export type Encoding = EnumToString<
-    Encodings.BASE64 | Encodings.BASE64URL | Encodings.HEX | Encodings.UTF8
->;
+export type Encoding = 'base64' | 'base64url' | 'hex' | 'utf8';
+export type Encodings = 'raw' | Encoding;
 
-export const defaultEncoding: Encoding = Encodings.UTF8;
+export const defaultEncoding: Encoding = 'utf8';
 
-export const enum Curves {
-    P256 = 'p256',
-    P384 = 'p384',
-    P521 = 'p521',
-}
-export type Curve = EnumToString<Curves>;
-export const defaultCurve: Curve = Curves.P256;
+export type Curve = 'p256' | 'p384' | 'p521';
+export const defaultCurve: Curve = 'p256';
+
+export type Uint8ArrayBuffer = ArrayBufferView<ArrayBuffer> & Uint8Array;
 
 export type InputText =
     | string
-    | Uint8Array
+    | Uint8ArrayBuffer
     | {
           text: string;
           encoding: Encoding;
       }
     | {
-          text: Uint8Array;
-          encoding: EnumToString<Encodings.RAW>;
+          text: Uint8ArrayBuffer;
+          encoding: 'raw';
       };

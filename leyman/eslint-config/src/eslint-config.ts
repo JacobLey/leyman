@@ -436,6 +436,7 @@ export default function makeEslintConfigForPackage({
                         allowAny: true,
                     },
                 ],
+                '@typescript-eslint/strict-void-return': 'off',
                 '@typescript-eslint/switch-exhaustiveness-check': 'error',
                 '@typescript-eslint/triple-slash-reference': [
                     'error',
@@ -605,7 +606,10 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 'jsdoc/require-param-type': 'off',
+                'jsdoc/require-rejects': 'off',
                 'jsdoc/require-returns-type': 'off',
+                'jsdoc/require-tags': 'off',
+                'jsdoc/require-throws-type': 'off',
                 'jsdoc/sort-tags': 'off',
                 'jsdoc/tag-lines': [
                     'error',

@@ -294,15 +294,14 @@ suite('ObjectSchema', () => {
             );
 
             expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                {
-                    foo?: number;
-                } & (
-                    | Record<string, unknown>
-                    | (Record<`a${string}`, number> & {
-                          bar: string;
-                          baz?: number;
-                      })
-                )
+                | {
+                      foo?: number;
+                  }
+                | (Record<`a${string}`, number> & {
+                      bar: string;
+                      baz?: number;
+                      foo?: number;
+                  })
             >();
         });
 

@@ -1,4 +1,4 @@
-import type { Done, HookFunction, Context as MochaContext, Test as MochaTest } from 'mocha';
+import type { Done, Hook, HookFunction, Context as MochaContext, Test as MochaTest } from 'mocha';
 import type { AllowableAdditionalContext, MergeContext } from './merge-context.js';
 import pDefer from 'p-defer';
 import { acquireLock, checkLock } from './execution-lock.js';
@@ -26,7 +26,7 @@ export const wrapOneTimeHookWithContext = async <
     /**
      * Mocha's before/after hook
      */
-    hook: HookFunction,
+    hook: HookFunction | HookFunction<Hook>,
     /**
      * Incoming promise of context.
      */
@@ -113,7 +113,7 @@ export const wrapPerTestHookWithContext = <
     /**
      * Mocha's beforeEach/afterEach hook
      */
-    hook: HookFunction,
+    hook: HookFunction | HookFunction<Hook>,
     /**
      * Incoming promise of context, mapped by Test.
      *

@@ -5,7 +5,7 @@ import { decode } from '#encode';
 import { Algorithms, defaultHash } from '../lib/types.js';
 
 const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
-    if (algorithm === Algorithms.SHA1) {
+    if (algorithm === 'SHA1') {
         return 'SHA1';
     }
     return `sha${size}`;

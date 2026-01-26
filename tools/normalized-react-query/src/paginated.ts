@@ -7,10 +7,10 @@ import { Resource, resource } from './resource.js';
  *
  * See `Resource` for implementation details.
  *
- * @template Data
- * @template Params
- * @template Page
- * @template Meta
+ * @template Data - output that is paginated
+ * @template Params - Input
+ * @template Page - pagination
+ * @template Meta - extra data that is not paginated
  */
 declare abstract class IPaginated<
     Data,

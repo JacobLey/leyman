@@ -1,8 +1,2 @@
-export {
-    Algorithms,
-    Ciphers,
-    Curves,
-    Encodings,
-    Modes,
-    Sizes,
-} from './iso/lib/types.js';
+export type { Encodings } from './iso/lib/types.js';
+export { Algorithms, Ciphers, Modes, Sizes } from './iso/lib/types.js';

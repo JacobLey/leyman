@@ -17,10 +17,10 @@ import { Paginated } from './paginated.js';
  * As well as implementation requirements from `Resource`, implementers should:
  * - optionally implement `getIdentifier`.
  *
- * @template Data
- * @template Params
- * @template Page
- * @template Meta
+ * @template Data output that is paginated
+ * @template Params input
+ * @template Page pagination
+ * @template Meta extra data that is not paginated
  */
 export abstract class Infinite<
     Data,

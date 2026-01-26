@@ -62,8 +62,7 @@ export class PrunedLockfile implements IPrunedLockfile {
     }): Lockfile {
         const { importers } = lockfile;
 
-        const dedicatedLockfile = { ...lockfile };
-        dedicatedLockfile.importers = {};
+        const dedicatedLockfile: Lockfile = { ...lockfile, importers: {} };
 
         let importersToInclude = new Set([baseImporterId as ProjectId]);
         const includedImporters = new Set<ProjectId>();
@@ -98,7 +97,7 @@ export class PrunedLockfile implements IPrunedLockfile {
             importersToInclude = nextImportersToInclude;
         }
 
-        for (const importer of [...includedImporters.keys()].sort((a, b) =>
+        for (const importer of [...includedImporters.keys()].toSorted((a, b) =>
             a.localeCompare(b, 'en')
         )) {
             dedicatedLockfile.importers[importer] = importers[importer]!;

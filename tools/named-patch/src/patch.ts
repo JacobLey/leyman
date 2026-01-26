@@ -35,8 +35,8 @@ const patchableMap = new WeakMap<AnyFunc, PatchableInterface<AnyFunc>>();
  * patch(originalFunction) === patched; // true;
  * patch(patched) === patched; // true;
  *
- * @param {Function} fn - Method to patch.
- * @returns {Function} Method with same signature as input, but patchable.
+ * @param fn - Method to patch.
+ * @returns Method with same signature as input, but patchable.
  */
 
 export const patch = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {

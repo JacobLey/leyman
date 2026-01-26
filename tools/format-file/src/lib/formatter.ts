@@ -1,5 +1,4 @@
 import type { CanUseFormatter, FileFormatterOptions, FilesFormatter } from '#types';
-import { Formatters } from '#types';
 
 /**
  * Core formatting logic using injecting formatter-specific handlers.
@@ -30,7 +29,7 @@ export class Formatter {
         if (files.length === 0) {
             return;
         }
-        const formatter = options.formatter ?? Formatters.INHERIT;
+        const formatter = options.formatter ?? 'inherit';
 
         const [biomeUsability, prettierUsability] = await Promise.all([
             this.#canUseBiome(),
@@ -39,24 +38,24 @@ export class Formatter {
 
         const formatters = [
             {
-                name: Formatters.BIOME,
+                name: 'biome',
                 usable: biomeUsability,
                 format: this.#formatBiomeFiles,
             },
             {
-                name: Formatters.PRETTIER,
+                name: 'prettier',
                 usable: prettierUsability,
                 format: this.#formatPrettierFiles,
             },
         ]
             .filter(({ name }) => {
-                if (formatter === Formatters.INHERIT) {
+                if (formatter === 'inherit') {
                     return true;
                 }
                 return formatter === name;
             })
             .filter(({ usable }) => usable > 0)
-            .sort((a, b) => b.usable - a.usable);
+            .toSorted((a, b) => b.usable - a.usable);
 
         for (const { format } of formatters) {
             try {

@@ -1,4 +1,4 @@
-import type { Encryption, Hash, InputText } from '../lib/types.js';
+import type { Encryption, Hash, InputText, Uint8ArrayBuffer } from '../lib/types.js';
 
 /**
  * Encrypt the incoming content using the specified encryption and hashing algorithms.
@@ -35,8 +35,8 @@ export declare const encrypt: (
         hash?: Hash | undefined;
     }
 ) => Promise<{
-    encrypted: Uint8Array;
-    iv: Uint8Array;
+    encrypted: Uint8ArrayBuffer;
+    iv: Uint8ArrayBuffer;
 }>;
 
 /**
@@ -80,4 +80,4 @@ export declare const decrypt: (
          */
         hash?: Hash | undefined;
     }
-) => Promise<Uint8Array>;
+) => Promise<Uint8ArrayBuffer>;

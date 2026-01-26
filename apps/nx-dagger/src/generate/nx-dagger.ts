@@ -133,7 +133,7 @@ export const constructContext = (
                 projectTargets.push(pluginToTargetMap.get(projectTarget)!);
             }
         };
-        const inOrderTargets = [...projectTargetDependencies.keys()].sort((a, b) =>
+        const inOrderTargets = [...projectTargetDependencies.keys()].toSorted((a, b) =>
             a.localeCompare(b, 'en')
         );
         for (const projectTarget of inOrderTargets) {
@@ -144,10 +144,10 @@ export const constructContext = (
             runtime,
             name: projectName.replaceAll(/[@\\]/gu, ''),
             directory: projectNode.data.root,
-            directDependencies: [...projectDirectDependencies.get(projectName)!].sort((a, b) =>
+            directDependencies: [...projectDirectDependencies.get(projectName)!].toSorted((a, b) =>
                 a.localeCompare(b, 'en')
             ),
-            dependencies: [...projectDependencies.get(projectName)!].sort((a, b) =>
+            dependencies: [...projectDependencies.get(projectName)!].toSorted((a, b) =>
                 a.localeCompare(b, 'en')
             ),
             targets: projectTargets,

@@ -28,7 +28,7 @@ import { StaticEventTarget } from '#static-event-target';
  *
  * myEmitter.emit('bar', { wrong: null }); // Typescript error!
  *
- * @template InterfaceEvents
+ * @template InterfaceEvents map of event to type
  */
 export class StaticEmitter<
     InterfaceEvents extends Types.EventDict = Types.EmptyObject,

@@ -1,4 +1,4 @@
-import type { Encryption } from '../lib/types.js';
+import type { Encryption, Uint8ArrayBuffer } from '../lib/types.js';
 import type * as Encrypt from './types.js';
 import { createCipheriv, createDecipheriv } from 'node:crypto';
 import { decode } from '#encode';
@@ -11,7 +11,7 @@ import { defaultEncryption, defaultHash } from '../lib/types.js';
 const encryptionToCipher = (encryption: Encryption): string =>
     `${encryption.cipher}-${encryption.size}-${encryption.mode}`;
 
-const mergeUint8Array = (a: Uint8Array, b: Uint8Array): Uint8Array => {
+const mergeUint8Array = (a: Uint8ArrayBuffer, b: Uint8ArrayBuffer): Uint8ArrayBuffer => {
     const merged = new Uint8Array(a.length + b.length);
 
     merged.set(a, 0);

@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { assert, expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as mocha from 'mocha';
 import { before, suite, suiteSetup } from 'mocha-chain';
@@ -40,7 +40,6 @@ suite('before', () => {
     let firstRun = true;
     const mergedBeforeEach = mergedContextualBefore.beforeEach((_ctx, done) => {
         expect(order).to.deep.equal(firstRun ? [1, 2, 3] : [1, 2, 3, 4, 5]);
-        firstRun = false;
 
         done();
 
@@ -48,38 +47,21 @@ suite('before', () => {
     });
 
     suite('Chained with beforeEach', () => {
-        mergedBeforeEach.xit(
-            'No async with done',
-            // @ts-expect-error
-            async (ctx, done) => {
-                expectTypeOf(ctx).toEqualTypeOf<{
-                    abc: 123;
-                    efg: boolean;
-                    xyz: number;
-                }>();
+        const tested = mergedBeforeEach.test('Done can be called', (ctx, done) => {
+            firstRun = false;
+            expect(order).to.deep.equal([1, 2, 3]);
 
-                done();
-            }
-        );
-
-        const tested = mergedBeforeEach.test(
-            'Done cannot return',
-            // @ts-expect-error
-            (ctx, done): number => {
-                expect(order).to.deep.equal([1, 2, 3]);
+            expect(ctx).to.deep.equal({
+                abc: 123,
+                efg: true,
+                xyz: 789,
+            });
+            assert.exists(done);
+            setImmediate(() => {
                 order.push(4);
-
-                expect(ctx).to.deep.equal({
-                    abc: 123,
-                    efg: true,
-                    xyz: 789,
-                });
-                setImmediate(() => {
-                    done();
-                });
-                return 0;
-            }
-        );
+                done();
+            });
+        });
 
         mergedContextualBefore.afterEach(async function (this) {
             expect(order).to.deep.equal([1, 2, 3, 4]);
@@ -103,8 +85,6 @@ suite('before', () => {
                 abc: 123;
                 efg: boolean;
             }>();
-
-            return 'Yes this was successful';
         });
 
         mergedContextualBefore.after('After with a title', (ctx, done) => {
@@ -123,6 +103,20 @@ suite('before', () => {
             done();
         });
     });
+
+    mergedBeforeEach.xit(
+        'No async with done',
+        // @ts-expect-error
+        async (_, done) => {
+            done();
+        }
+    );
+
+    mergedBeforeEach.test(
+        'Done cannot return',
+        // @ts-expect-error
+        (): number => 0
+    );
 
     contextualBefore
         .before(ctx => {

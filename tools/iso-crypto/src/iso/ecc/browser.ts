@@ -1,13 +1,13 @@
 import type { webcrypto } from 'node:crypto';
 import type { Point } from '../lib/math.js';
-import type { Curve, InputText } from '../lib/types.js';
+import type { Curve, InputText, Uint8ArrayBuffer } from '../lib/types.js';
 import type * as Ecc from './types.js';
 import { decode, encode } from '#encode';
 import { decrypt, encrypt } from '#encrypt';
 import { padBytes } from '../lib/bytes-length.js';
 import { curves, derivePublicKey } from '../lib/math.js';
 import { eccMeta } from '../lib/size-meta.js';
-import { Algorithms, defaultCurve, defaultEncryption, Encodings } from '../lib/types.js';
+import { Algorithms, defaultCurve, defaultEncryption } from '../lib/types.js';
 import { decompressEccPublicKey } from './compression.js';
 
 const BITS_PER_BYTE = 8;
@@ -25,19 +25,16 @@ export const generateEccPrivateKey: (typeof Ecc)['generateEccPrivateKey'] = asyn
 ) => {
     const ecdh = await crypto.subtle.generateKey(curveToKeyParams(curve), true, ['deriveKey']);
     const key = await crypto.subtle.exportKey('jwk', ecdh.privateKey);
-    return padBytes(decode({ text: key.d!, encoding: Encodings.BASE64URL }), eccMeta(curve).bytes);
+    return padBytes(decode({ text: key.d!, encoding: 'base64url' }), eccMeta(curve).bytes);
 };
 
 const getPublicKey = (privateKey: InputText, curve: Curve): Point => {
-    const hex = encode(decode(privateKey), Encodings.HEX);
+    const hex = encode(decode(privateKey), 'hex');
 
     return derivePublicKey(BigInt(`0x${hex}`), curves[curve]);
 };
 const bigIntToBase64Url = (x: bigint, bytes: number): string =>
-    encode(
-        padBytes(decode({ text: x.toString(HEX_SIZE), encoding: Encodings.HEX }), bytes),
-        Encodings.BASE64URL
-    );
+    encode(padBytes(decode({ text: x.toString(HEX_SIZE), encoding: 'hex' }), bytes), 'base64url');
 const derivePublicKeyBase64 = (privateKey: InputText, curve: Curve): { x: string; y: string } => {
     const { x, y } = getPublicKey(privateKey, curve);
     const { bytes } = eccMeta(curve);
@@ -57,7 +54,7 @@ export const generateEccPublicKey: (typeof Ecc)['generateEccPublicKey'] = (
     return new Uint8Array([
         // eslint-disable-next-line no-bitwise
         2 + Number(y & 1n),
-        ...padBytes(decode({ text: x.toString(HEX_SIZE), encoding: Encodings.HEX }), bytes),
+        ...padBytes(decode({ text: x.toString(HEX_SIZE), encoding: 'hex' }), bytes),
     ]);
 };
 
@@ -70,7 +67,7 @@ const eccSecret = async ({
     publicKey: InputText;
     privateKey: InputText;
 }): Promise<{
-    secret: Uint8Array;
+    secret: Uint8ArrayBuffer;
     privateEc: CryptoKey;
 }> => {
     const bufferPrivateKey = decode(privateKey);
@@ -82,7 +79,7 @@ const eccSecret = async ({
             {
                 crv: curveParams.namedCurve,
                 kty: 'EC',
-                d: encode(bufferPrivateKey, Encodings.BASE64URL),
+                d: encode(bufferPrivateKey, 'base64url'),
                 ...derivePublicKeyBase64(bufferPrivateKey, curve),
             },
             curveParams,
@@ -140,9 +137,9 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
 
     const odd =
         // eslint-disable-next-line no-bitwise
-        decode({ text: jwk.y!, encoding: Encodings.BASE64URL }).reverse()[0]! & 1;
+        decode({ text: jwk.y!, encoding: 'base64url' }).toReversed()[0]! & 1;
 
-    const publicX = decode({ text: jwk.x!, encoding: Encodings.BASE64URL });
+    const publicX = decode({ text: jwk.x!, encoding: 'base64url' });
     const { bytes } = eccMeta(curve);
 
     return {

@@ -19,7 +19,7 @@ export interface ExclusiveContextualTest<ExistingContext extends object>
         name: string,
         fn: (this: MochaContext, ctx: ExistingContext, done: Done) => ValidDoneReturnTypes
     ): MochaTest;
-    (name: string, fn: (this: MochaContext, ctx: ExistingContext) => void): MochaTest;
+    (name: string, fn: (this: MochaContext, ctx: ExistingContext) => Promise<void>): MochaTest;
 }
 export interface ContextualTest<ExistingContext extends object>
     extends ExclusiveContextualTest<ExistingContext> {

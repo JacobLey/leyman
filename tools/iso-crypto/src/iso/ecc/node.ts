@@ -1,19 +1,19 @@
 import type { ECDH } from 'node:crypto';
-import type { Curve } from '../lib/types.js';
+import type { Curve, Uint8ArrayBuffer } from '../lib/types.js';
 import type * as Ecc from './types.js';
 import { createECDH } from 'node:crypto';
 import { decode } from '#encode';
 import { decrypt, encrypt } from '#encrypt';
 import { padBytes } from '../lib/bytes-length.js';
 import { eccMeta } from '../lib/size-meta.js';
-import { Algorithms, Curves, defaultCurve, defaultEncryption } from '../lib/types.js';
+import { Algorithms, defaultCurve, defaultEncryption } from '../lib/types.js';
 
 const getECDH = (curve: Curve): ECDH =>
-    createECDH(curve === Curves.P256 ? 'prime256v1' : `sec${curve}r1`);
+    createECDH(curve === 'p256' ? 'prime256v1' : `sec${curve}r1`);
 
 export const generateEccPrivateKey: (typeof Ecc)['generateEccPrivateKey'] = async (
     curve = defaultCurve
-): Promise<Uint8Array> => {
+): Promise<Uint8ArrayBuffer> => {
     const ecdh = getECDH(curve);
     const { bytes } = eccMeta(curve);
     ecdh.generateKeys();
@@ -24,7 +24,7 @@ export const generateEccPublicKey: (typeof Ecc)['generateEccPublicKey'] = (
     curve = defaultCurve
 ) => {
     const ecdh = getECDH(curve);
-    ecdh.setPrivateKey(decode(privateKey));
+    ecdh.setPrivateKey(new Uint8Array(decode(privateKey)));
     return ecdh.getPublicKey(null, 'compressed');
 };
 
