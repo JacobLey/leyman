@@ -192,7 +192,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive './dist/tests/unit/**/*.spec.*js'"
+          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive './dist/tests/unit/**/*.spec.*js'"
         ],
         "parallel": true,
         "color": true,
@@ -204,7 +204,7 @@
         "^ts-output"
       ],
       "outputs": [
-        "{workspaceRoot}/.coverage/project/{projectName}/tmp"
+        "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
       ],
       "dependsOn": [
         "test:reset"
@@ -214,7 +214,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive './dist/tests/integration/**/*.spec.*js'"
+          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive './dist/tests/integration/**/*.spec.*js'"
         ],
         "parallel": true,
         "color": true,
@@ -226,7 +226,7 @@
         "^ts-output"
       ],
       "outputs": [
-        "{workspaceRoot}/.coverage/project/{projectName}/tmp"
+        "{workspaceRoot}/.coverage/project/{projectName}/tmp/integration"
       ],
       "dependsOn": [
         "mocha-unit-test",

@@ -68,8 +68,12 @@ RUN mkdir -p $HOME/.config/vscode-dev-containers && \
     chown -R $USER:$USER $HOME
 
 # Ensure NX runs at max capacity
-RUN NX_PARALLEL="$(nproc --all)" \
-    && echo "export NX_PARALLEL=${NX_PARALLEL}" >> $HOME/.bashrc
+# Although too many and we risk file overload 
+# (and frankly don't usually have a limit of tasks that can be parallelized)
+RUN NX_PARALLEL="$(nproc --all)" MAX_PARALLEL=8 \
+    && echo >> $HOME/.bashrc \
+    && echo "export NX_PARALLEL=$((NX_PARALLEL>MAX_PARALLEL ? MAX_PARALLEL : NX_PARALLEL))" >> $HOME/.bashrc
 
 # Define custom scripts/commands
-RUN echo "source ./scripts/commands/*" >> $HOME/.bashrc
+RUN echo >> $HOME/.bashrc \
+    && echo "source ./scripts/commands/*" >> $HOME/.bashrc
