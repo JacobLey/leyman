@@ -9,12 +9,13 @@
   "customizations": {
     "vscode": {
       "extensions": [
-        "ms-azuretools.vscode-docker",
-        "ritwickdey.LiveServer",
+        "anthropic.claude-code",
         "biomejs.biome",
         "dbaeumer.vscode-eslint",
         "golang.go",
-        "interactive-smartlog.interactive-smartlog"
+        "interactive-smartlog.interactive-smartlog",
+        "ms-azuretools.vscode-docker",
+        "ritwickdey.LiveServer"
       ]
     }
   },

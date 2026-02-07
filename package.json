@@ -1,10 +1,7 @@
 {
   "type": "module",
   "devDependencies": {
-    "@biomejs/biome": "catalog:",
     "@nx/js": "catalog:",
-    "nx-dagger": "workspace:^",
-    "nx-lifecycle": "workspace:^",
     "typescript": "catalog:"
   },
   "pnpm": {

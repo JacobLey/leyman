@@ -21,7 +21,6 @@
     "eslint": "catalog:",
     "npm": "catalog:",
     "nx": "catalog:",
-    "nx-dagger": "workspace:^",
     "nx-lifecycle": "workspace:^",
     "typescript": "catalog:"
   }
