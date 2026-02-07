@@ -12,6 +12,7 @@
 **/.pnpm-lock-hash
 **/.swcrc
 
+.claude
 .nx
 
 dagger/**/.gitattributes

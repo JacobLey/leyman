@@ -40,7 +40,8 @@ RUN pnpm i -g "nx@${NX_VERSION}" "@changesets/cli@${CHANGESETS_VERSION}"
 
 # Install Go
 ENV PATH=$PATH:$HOME/go/bin
-RUN wget https://dl.google.com/go/go${GO_VERSION}.linux-arm64.tar.gz -O /tmp/go.tar.gz && \
+RUN ARCH="$(dpkg --print-architecture)" && \
+    wget https://dl.google.com/go/go${GO_VERSION}.linux-${ARCH}.tar.gz -O /tmp/go.tar.gz && \
     tar -C $HOME -xzf /tmp/go.tar.gz && \
     rm /tmp/go.tar.gz && \
     go install golang.org/x/tools/gopls@latest
@@ -60,8 +61,9 @@ RUN NONINTERACTIVE=1 export LEYMAN_HOMEBREW_CACHE="${HOME}/.cache/Homebrew" LEYM
     && echo >> $LEYMAN_BASHRC \
     && echo "eval \"$($LEYMAN_HOMEBREW_PREFIX/bin/brew shellenv bash)\"" >> $LEYMAN_BASHRC
 
-# Install sapling 
-RUN sudo -u $USER /bin/bash -c "/home/linuxbrew/.linuxbrew/bin/brew install sapling"
+# Install Claude
+ENV CLAUDE_CONFIG_DIR=/workspace/.claude
+RUN curl -fsSL https://claude.ai/install.sh | bash
 
 # Grant permissions to non-root
 RUN mkdir -p $HOME/.config/vscode-dev-containers && \
