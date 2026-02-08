@@ -10,7 +10,7 @@ type TestAndBuild struct {
 	Source *dagger.Directory
 }
 
-var goLangVersion = "1.24.4"
+var goLangVersion = "1.25.6"
 var nodeVersion = "24.13.0"
 var pnpmVersion = "10.28.1"
 
