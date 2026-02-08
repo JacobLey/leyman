@@ -5,9 +5,6 @@
   "sdk": {
     "source": "go"
   },
-  "include": [
-    "main.go"
-  ],
   "dependencies": [
     {
       "name": "debian",

@@ -14,7 +14,3 @@
 
 .claude
 .nx
-
-dagger/**/.gitattributes
-dagger/**/dagger.gen.go
-dagger/**/internal

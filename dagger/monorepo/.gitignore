@@ -1,5 +1,6 @@
 **
 
+!monorepo-builder
 !.gitignore
 !dagger.json
 !go.mod
