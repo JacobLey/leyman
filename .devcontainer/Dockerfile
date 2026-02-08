@@ -39,10 +39,11 @@ RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=$PNPM_VERSION S
 RUN pnpm i -g "nx@${NX_VERSION}" "@changesets/cli@${CHANGESETS_VERSION}"
 
 # Install Go
-ENV PATH=$PATH:$HOME/go/bin
+ENV PATH=$PATH:$HOME/.go/bin
 RUN ARCH="$(dpkg --print-architecture)" && \
     wget https://dl.google.com/go/go${GO_VERSION}.linux-${ARCH}.tar.gz -O /tmp/go.tar.gz && \
     tar -C $HOME -xzf /tmp/go.tar.gz && \
+    mv $HOME/go $HOME/.go && \
     rm /tmp/go.tar.gz && \
     go install golang.org/x/tools/gopls@latest
 
