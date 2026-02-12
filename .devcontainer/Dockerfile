@@ -1,10 +1,8 @@
 # https://github.com/devcontainers/images/blob/main/src/base-debian/history
 FROM mcr.microsoft.com/devcontainers/base:1.0.25-debian12
 
-ARG NX_VERSION=22.4.1
 ARG NODE_VERSION=24.13.0
 ARG PNPM_VERSION=10.28.1
-ARG CHANGESETS_VERSION=2.29.8
 ARG DAGGER_VERSION=0.19.11
 ARG GO_VERSION=1.25.6
 
@@ -34,9 +32,6 @@ ENV PATH="$HOME/.nvm/versions/node/v$NODE_VERSION/bin:$PATH"
 ENV PNPM_HOME="$HOME/.local/share/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=$PNPM_VERSION SHELL=bash sh -
-
-# Install packages
-RUN pnpm i -g "nx@${NX_VERSION}" "@changesets/cli@${CHANGESETS_VERSION}"
 
 # Install Go
 ENV PATH=$PATH:$HOME/.go/bin
@@ -72,7 +67,7 @@ RUN mkdir -p $HOME/.config/vscode-dev-containers && \
 
 # Ensure NX runs at max capacity
 # Although too many and we risk file overload 
-# (and frankly don't usually have a limit of tasks that can be parallelized)
+# (and frankly don't usually have infinite tasks that can be parallelized)
 RUN NX_PARALLEL="$(nproc --all)" MAX_PARALLEL=8 \
     && echo >> $HOME/.bashrc \
     && echo "export NX_PARALLEL=$((NX_PARALLEL>MAX_PARALLEL ? MAX_PARALLEL : NX_PARALLEL))" >> $HOME/.bashrc

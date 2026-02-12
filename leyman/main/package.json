@@ -17,6 +17,7 @@
   "sideEffects": false,
   "dependencies": {
     "@biomejs/biome": "catalog:",
+    "@changesets/cli": "catalog:",
     "@leyman/eslint-config": "workspace:^",
     "eslint": "catalog:",
     "npm": "catalog:",
