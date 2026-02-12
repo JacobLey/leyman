@@ -1,5 +1,5 @@
 # https://github.com/devcontainers/images/blob/main/src/base-debian/history
-FROM mcr.microsoft.com/devcontainers/base:1.0.25-debian12
+FROM mcr.microsoft.com/devcontainers/base:2.0.2-debian13
 
 ARG NODE_VERSION=24.13.0
 ARG PNPM_VERSION=10.28.1
