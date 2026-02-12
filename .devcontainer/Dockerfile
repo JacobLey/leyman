@@ -57,6 +57,9 @@ RUN NONINTERACTIVE=1 export LEYMAN_HOMEBREW_CACHE="${HOME}/.cache/Homebrew" LEYM
     && echo >> $LEYMAN_BASHRC \
     && echo "eval \"$($LEYMAN_HOMEBREW_PREFIX/bin/brew shellenv bash)\"" >> $LEYMAN_BASHRC
 
+# Install oh-my-zsh https://ohmyz.sh/
+RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
+
 # Install Claude
 ENV CLAUDE_CONFIG_DIR=/workspace/.claude
 RUN curl -fsSL https://claude.ai/install.sh | bash
@@ -74,5 +77,8 @@ RUN NX_PARALLEL="$(nproc --all)" MAX_PARALLEL=8 \
 
 # Define custom scripts/commands
 ENV PATH=$PATH:/workspace/leyman/main/node_modules/.bin
-RUN echo >> $HOME/.bashrc \
-    && echo "source ./scripts/commands/*" >> $HOME/.bashrc
+RUN echo "source ./scripts/commands/*" >> $HOME/.leymanrc \
+    && echo >> $HOME/.bashrc \
+    && echo >> $HOME/.zhshrc \
+    && echo "source $HOME/.leymanrc" >> $HOME/.bashrc \
+    && echo "source $HOME/.leymanrc" >> $HOME/.zshrc
