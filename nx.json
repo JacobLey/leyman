@@ -5,11 +5,12 @@
   },
   "namedInputs": {
     "ts-source": [
+      "{workspaceRoot}/configs/c8rc.json",
       "{workspaceRoot}/configs/swcrc.jsonc",
       "{workspaceRoot}/tsconfig.build.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
-      "{projectRoot}/.pnpm-lock",
+      "{projectRoot}/.pnpm-lock-hash",
       "{projectRoot}/src/**/*.(c|m)?tsx?",
       "{projectRoot}/src/**/*.json",
       "{projectRoot}/src/tests"
@@ -257,7 +258,7 @@
         "{workspaceRoot}/pnpm-lock.yaml"
       ],
       "outputs": [
-        "{projectRoot}/.pnpm-lock"
+        "{projectRoot}/.pnpm-lock-hash"
       ],
       "dependsOn": [
         "install:_"
