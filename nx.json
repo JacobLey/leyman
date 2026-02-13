@@ -306,7 +306,6 @@
       "executor": "nx:noop",
       "dependsOn": [
         "^build",
-        "analyze",
         "install"
       ],
       "configurations": {

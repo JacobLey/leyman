@@ -19,7 +19,6 @@
       ],
       "dependsOn": [
         "^build",
-        "analyze",
         "install"
       ]
     },
