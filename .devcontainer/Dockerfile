@@ -76,9 +76,4 @@ RUN NX_PARALLEL="$(nproc --all)" MAX_PARALLEL=8 \
     && echo "export NX_PARALLEL=$((NX_PARALLEL>MAX_PARALLEL ? MAX_PARALLEL : NX_PARALLEL))" >> $HOME/.bashrc
 
 # Define custom scripts/commands
-ENV PATH=$PATH:/workspace/leyman/main/node_modules/.bin
-RUN echo "source ./scripts/commands/*" >> $HOME/.leymanrc \
-    && echo >> $HOME/.bashrc \
-    && echo >> $HOME/.zhshrc \
-    && echo "source $HOME/.leymanrc" >> $HOME/.bashrc \
-    && echo "source $HOME/.leymanrc" >> $HOME/.zshrc
+ENV PATH=$PATH:/workspace/leyman/main/node_modules/.bin:/workspace/scripts/commands
