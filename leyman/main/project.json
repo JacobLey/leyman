@@ -4,18 +4,13 @@
   "targets": {
     "biome": {},
     "lifecycle": {
-      "executor": "nx-lifecycle:lifecycle",
+      "executor": "nx:run-commands",
       "options": {
-        "configFile": "{projectRoot}/lifecycle.json"
-      },
-      "dependsOn": [
-        "^build"
-      ]
-    },
-    "dagger": {
-      "executor": "nx-dagger:generate",
-      "options": {
-        "configFile": "{projectRoot}/nx-dagger.json"
+        "commands": [
+          "lifecycle"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
       },
       "dependsOn": [
         "^build"
