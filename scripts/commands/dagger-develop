@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+
+set -e
+
+dagger develop --mod ./dagger/test-and-build --recursive
