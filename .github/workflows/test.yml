@@ -1,9 +1,7 @@
 name: Test
 
 env:
-  NODE_VERSION: 24.13.0
-  NX_VERSION: 22.4.1
-  PNPM_VERSION: 10.28.1
+  DAGGER_VERSION: 0.19.11
 
 on:
   - pull_request
@@ -18,40 +16,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Install Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-
-      - name: Install dependencies
-        uses: pnpm/action-setup@v4
-        with:
-          version: ${{ env.PNPM_VERSION }}
-          run_install: |
-            args: [-g, nx@${{ env.NX_VERSION }}]
-
-      # https://github.com/pnpm/action-setup/tree/v4/?tab=readme-ov-file#use-cache-to-reduce-installation-time
-      - name: Get pnpm store directory
-        shell: bash
-        run: |
-          echo "STORE_PATH=$(pnpm store path --silent)" >> $GITHUB_ENV
-  
-      - uses: actions/cache@v4
-        name: Setup pnpm cache
-        with:
-          path: ${{ env.STORE_PATH }}
-          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-pnpm-store-
-  
-      - name: Install dependencies
-        run: |
-          pnpm install --frozen-lockfile
-
       - name: Test
-        run: |
-          nx run-many -t test
-
-      - name: Verify Targets
-        run: |
-          nx run @leyman/main:lifecycle
+        uses: dagger/dagger-for-github@v8.2.0
+        with:
+          version: ${{ env.DAGGER_VERSION }}
+          verb: call
+          module: ./dagger/test-and-build
+          args: run
