@@ -7,8 +7,12 @@
   },
   "dependencies": [
     {
-      "name": "monorepo",
-      "source": "../monorepo"
+      "name": "debian",
+      "source": "../modules/debian"
+    },
+    {
+      "name": "node",
+      "source": "../modules/node"
     },
     {
       "name": "pnpm",

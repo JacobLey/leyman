@@ -59,6 +59,13 @@ func (m *Pnpm) PnpmContainer() *dagger.Container {
 	)
 }
 
+func (m *Pnpm) Install(container *dagger.Container) *dagger.Container {
+	return container.
+		WithMountedCache(".pnpm-store", dag.CacheVolume("pnpm-"+m.Version)).
+		WithExec([]string{"pnpm", "install", "--frozen-lockfile"}).
+		WithoutMount(".pnpm-store")
+}
+
 // Returns a pnpm container with pre-populated store attached
 func (m *Pnpm) attachPnpmStore(
 	source *dagger.Directory,

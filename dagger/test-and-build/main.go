@@ -4,6 +4,8 @@ import (
 	"context"
 	"dagger/test-and-build/internal/dagger"
 	"strings"
+
+	"golang.org/x/sync/errgroup"
 )
 
 type TestAndBuild struct {
@@ -11,16 +13,16 @@ type TestAndBuild struct {
 	Source *dagger.Directory
 }
 
-var goLangVersion = "1.25.6"
 var nodeVersion = "24.13.0"
 var pnpmVersion = "10.28.1"
 
 func New(
 	ctx context.Context,
 	// Root of source file
+	// Relative to this module, not from caller
+	// +defaultPath="../.."
 	// Manually ignore the worst offenders, but use actual .gitignore parsing to catch the rest
 	// +ignore=[".git",".claude","**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache",".coverage","**/dist",".nx"]
-	// +defaultPath="../.."
 	source *dagger.Directory,
 ) (*TestAndBuild, error) {
 
@@ -39,7 +41,7 @@ func New(
 	// Version controlled, but not relevant to dagger
 	exclude = append(exclude,
 		".git",
-		".gitignore",
+		// ".gitignore",
 		".changeset",
 		".devcontainer",
 		".github",
@@ -50,7 +52,6 @@ func New(
 		"go.work",
 		"go.work.sum",
 		"README.md",
-		"scripts",
 	)
 
 	return &TestAndBuild{
@@ -63,21 +64,40 @@ func New(
 // CI entrypoint
 func (m *TestAndBuild) Run(ctx context.Context) (*dagger.Directory, error) {
 
-	monorepo := dag.Monorepo(
-		m.Source.Filter(
-			dagger.DirectoryFilterOpts{
-				// Files that aren't ever used by Nx projects
-				Exclude: []string{".github", "leyman/main"},
-			},
-		),
-	)
+	debian := dag.Debian()
+	node := dag.Node(nodeVersion)
+	pnpm := dag.Pnpm(pnpmVersion)
 
-	builtDir := monorepo.Build(goLangVersion, nodeVersion, pnpmVersion)
+	container := debian.BaseContainer()
+	container = node.InstallNode(container)
+	container = pnpm.InstallPnpm(container)
 
-	projectDirs, err := monorepo.ProjectDirs(ctx, "node")
-	if err != nil {
-		return nil, err
-	}
+	container = container.
+		WithDirectory("/workspace", m.Source).
+		WithWorkdir("/workspace")
 
-	return dag.Pnpm(pnpmVersion).RestoreVersions(builtDir, projectDirs), nil
+	container = pnpm.Install(container)
+
+	container = container.
+		WithEnvVariable("PATH", "${PATH}:./leyman/main/node_modules/.bin:./scripts/commands", dagger.ContainerWithEnvVariableOpts{Expand: true}).
+		WithMountedCache(".nx", dag.CacheVolume("nx"))
+
+	builtContainer := container.WithExec([]string{"nx", "run-many", "-t", "build"})
+
+	eg, ctx := errgroup.WithContext(ctx)
+
+	eg.Go(func() error {
+		_, err := builtContainer.
+			WithExec([]string{"test-coverage"}).
+			Sync(ctx)
+		return err
+	})
+	eg.Go(func() error {
+		_, err := builtContainer.
+			WithExec([]string{"nx", "run", "@leyman/main:lifecycle"}).
+			Sync(ctx)
+		return err
+	})
+
+	return builtContainer.Directory("/workspace"), eg.Wait()
 }
