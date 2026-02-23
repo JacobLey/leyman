@@ -96,9 +96,6 @@ catalogs:
     chai-as-promised:
       specifier: ^8.0.2
       version: 8.0.2
-    change-case:
-      specifier: ^5.4.4
-      version: 5.4.4
     ci-info:
       specifier: ^4.3.1
       version: 4.3.1
@@ -135,9 +132,6 @@ catalogs:
     eslint-plugin-unicorn:
       specifier: ^62.0.0
       version: 62.0.0
-    eta:
-      specifier: ^4.5.0
-      version: 4.5.0
     expect-type:
       specifier: ^1.3.0
       version: 1.3.0
@@ -375,127 +369,6 @@ importers:
       sinon:
         specifier: 'catalog:'
         version: 21.0.1
-      typescript:
-        specifier: 'catalog:'
-        version: 5.9.3
-
-  apps/nx-dagger:
-    dependencies:
-      '@nx/devkit':
-        specifier: 'catalog:'
-        version: 22.4.1(nx@22.4.1(@swc/core@1.15.10(@swc/helpers@0.5.18)))
-      ajv:
-        specifier: 'catalog:'
-        version: 8.17.1
-      change-case:
-        specifier: 'catalog:'
-        version: 5.4.4
-      ci-info:
-        specifier: 'catalog:'
-        version: 4.3.1
-      common-proxy:
-        specifier: workspace:^
-        version: link:../../tools/common-proxy
-      entry-script:
-        specifier: workspace:^
-        version: link:../../tools/entry-script
-      eta:
-        specifier: 'catalog:'
-        version: 4.5.0
-      haywire:
-        specifier: workspace:^
-        version: link:../../tools/haywire
-      haywire-launcher:
-        specifier: workspace:^
-        version: link:../../tools/haywire-launcher
-      juniper:
-        specifier: workspace:^
-        version: link:../juniper
-      nx:
-        specifier: 'catalog:'
-        version: 22.4.1(@swc/core@1.15.10(@swc/helpers@0.5.18))
-      nx-plugin-handler:
-        specifier: workspace:^
-        version: link:../../tools/nx-plugin-handler
-      parse-cwd:
-        specifier: workspace:^
-        version: link:../../tools/parse-cwd
-      populate-files:
-        specifier: workspace:^
-        version: link:../populate-files/populate-files
-      tmp-promise:
-        specifier: 'catalog:'
-        version: 3.0.3
-      yargs:
-        specifier: 'catalog:'
-        version: 18.0.0
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 'catalog:'
-        version: 2.3.12
-      '@leyman/eslint-config':
-        specifier: workspace:^
-        version: link:../../leyman/eslint-config
-      '@swc/cli':
-        specifier: 'catalog:'
-        version: 0.7.10(@swc/core@1.15.10(@swc/helpers@0.5.18))(chokidar@4.0.3)
-      '@swc/core':
-        specifier: 'catalog:'
-        version: 1.15.10(@swc/helpers@0.5.18)
-      '@types/chai':
-        specifier: 'catalog:'
-        version: 5.2.3
-      '@types/chai-as-promised':
-        specifier: 'catalog:'
-        version: 8.0.2
-      '@types/mocha':
-        specifier: 'catalog:'
-        version: 10.0.10
-      '@types/node':
-        specifier: 'catalog:'
-        version: 24.10.9
-      '@types/sinon':
-        specifier: 'catalog:'
-        version: 21.0.0
-      '@types/yargs':
-        specifier: 'catalog:'
-        version: 17.0.33
-      c8:
-        specifier: 'catalog:'
-        version: 10.1.3
-      chai:
-        specifier: 'catalog:'
-        version: 6.2.2
-      chai-as-promised:
-        specifier: 'catalog:'
-        version: 8.0.2(chai@6.2.2)
-      eslint:
-        specifier: 'catalog:'
-        version: 9.39.2
-      expect-type:
-        specifier: 'catalog:'
-        version: 1.3.0
-      load-populate-files:
-        specifier: workspace:^
-        version: link:../populate-files/load-populate-files
-      mocha:
-        specifier: 'catalog:'
-        version: 11.7.0
-      mocha-chain:
-        specifier: workspace:^
-        version: link:../../tools/mocha-chain
-      pnpm-dedicated-lockfile:
-        specifier: workspace:^
-        version: link:../pnpm-dedicated-lockfile
-      sinon:
-        specifier: 'catalog:'
-        version: 21.0.1
-      sinon-typed-stub:
-        specifier: workspace:^
-        version: link:../../tools/sinon-typed-stub
-      ts-dedent:
-        specifier: 'catalog:'
-        version: 2.2.0
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -4243,10 +4116,6 @@ packages:
   esutils@2.0.3:
     resolution: {integrity: sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==}
     engines: {node: '>=0.10.0'}
-
-  eta@4.5.0:
-    resolution: {integrity: sha512-qifAYjuW5AM1eEEIsFnOwB+TGqu6ynU3OKj9WbUTOtUBHFPZqL03XUW34kbp3zm19Ald+U8dEyRXaVsUck+Y1g==}
-    engines: {node: '>=20'}
 
   execa@5.1.1:
     resolution: {integrity: sha512-8uSpZZocAZRBAPIEINJj3Lo9HyGitllczc27Eh5YYojjMFMn8yHMDMaUHE2Jqfq05D/wucwI4JGURyXt1vchyg==}
@@ -9005,8 +8874,6 @@ snapshots:
   estraverse@5.3.0: {}
 
   esutils@2.0.3: {}
-
-  eta@4.5.0: {}
 
   execa@5.1.1:
     dependencies:

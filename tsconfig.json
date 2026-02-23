@@ -68,9 +68,6 @@
       "path": "./apps/barrelify"
     },
     {
-      "path": "./apps/nx-dagger"
-    },
-    {
       "path": "./tools/haywire"
     },
     {
