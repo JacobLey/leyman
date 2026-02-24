@@ -22,7 +22,7 @@ This repo is designed to be used in a [DevContainer](https://code.visualstudio.c
 
 ## Getting Started
 
-"Global" packages are installed automatically if using a dev container, but if not see the [Dockerfile](./.devcontainer/Dockerfile) for list of dependencies (e.g. Node and pnpm).
+"Global" packages are installed under a ["main"](./leyman/main) package, which is explicitly set as part of your PATH.
 
 Run `pnpm i` to get started.
 
@@ -39,27 +39,26 @@ Some standard tasks are:
   - Runs full test suite for package
 
 Try running `nx run-many -t test` to build, analyze, and test the entire package!
+Or run the command [`test-coverage`](./scripts/commands/test-coverage) which will do that, *and* enforce coverage! Coverage is computed after all tests have run.
 
 See individual packages for documentation.
 
 ## Executing Dagger
 
-This repository is currently undergoing a migration to [Dagger](https://dagger.io/) for CI builds. It will continue to use Nx locally, but will use that metadata to produce much more reliable builds.
+This repository uses [Dagger](https://dagger.io/) for CI builds.
+Run [`dagger-test`](./scripts/commands/dagger-test) to simulate that (which really just runs `pnpm i` + `test-coverage` under the hood).
+
+If these tests pass, then CI will pass!
 
 All dagger functions are contained in the [/dagger](./dagger) directory.
 
 To get started, run `dagger call --mod ./dagger/test-and-build/ --source . run`
 
-To replicate local Nx builds (build project -> test it -> build dependents -> ...)
-the [nx-dagger](./apps/nx-dagger/) executor is used to autogenerate a [monorepo Dagger function](./dagger/monorepo/main.go).
-
-To re-generate that file, edit any relevant settings in [nx-dagger.json](./leyman/main/nx-dagger.json), and run `nx run @leyman/main:dagger`.
-
 You may hook up your own Dagger cloud account (`dagger login`) for better view of execution pipeline and debugging.
 
 It is still highly recommended to run `nx run-many -t test` _before_ trying to execute dagger.
 Any issues like linter or build failures will materialize much faster with Nx, at the cost of greater dependency on global installations and less deterministic caching.
-If it works on Nx, it _isn't_ guaranteed to work in CI, but if it works in Dagger it will work on CI!
+If it works on Nx, it _isn't_ guaranteed to work in CI (it *should*, but things slip through the cracks), but if it works in Dagger it will work on CI!
 
 ## Contributing
 
