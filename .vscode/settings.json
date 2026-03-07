@@ -1,5 +1,5 @@
 {
-  "biome.lspBin": "leyman/main/node_modules/.bin/biome",
+  "biome.lsp.bin": "leyman/main/node_modules/.bin/biome",
 
   "editor.formatOnSave": true,
 
@@ -28,12 +28,11 @@
 
   "git.ignoreLimitWarning": true,
 
-  "javascript.preferences.quoteStyle": "single",
+  "js/ts.preferences.quoteStyle": "single",
 
-  "typescript.preferences.importModuleSpecifierEnding": "js",
-  "typescript.preferences.quoteStyle": "single",
-  "typescript.tsdk": "leyman/main/node_modules/typescript/lib",
-  "typescript.tsserver.nodePath": "node",
+  "js/ts.preferences.importModuleSpecifierEnding": "js",
+  "js/ts.tsdk.path": "leyman/main/node_modules/typescript/lib",
+  "js/ts.tsserver.node.path": "node",
 
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome",
