@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 set -e
-nx run-many -t test -c fix --tuiAutoExit --nxBail
+nx run-many -t test -c fix --nxBail

@@ -761,6 +761,7 @@ export default function makeEslintConfigForPackage({
                 'sonarjs/no-empty-test-file': 'off',
                 'sonarjs/no-identical-functions': 'off',
                 'sonarjs/no-implicit-dependencies': 'off',
+                'sonarjs/no-incomplete-assertions': 'off',
                 'sonarjs/no-inconsistent-returns': 'off',
                 'sonarjs/no-selector-parameter': 'off',
                 'sonarjs/no-small-switch': 'off',

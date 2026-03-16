@@ -25,9 +25,7 @@
     ".": "./dist/index.js"
   },
   "peerDependencies": {
-    "@tanstack/react-query": "catalog:",
-    "react": "catalog:",
-    "react-dom": "catalog:"
+    "@tanstack/react-query": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -36,22 +34,17 @@
     "@swc/core": "catalog:",
     "@tanstack/react-query": "catalog:",
     "@testing-library/react-hooks": "catalog:",
-    "@types/chai": "catalog:",
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@types/react": "catalog:",
-    "@types/sinon": "catalog:",
+    "bupkis": "catalog:",
     "c8": "catalog:",
-    "chai": "catalog:",
     "eslint": "catalog:",
-    "expect-type": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "pnpm-dedicated-lockfile": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-test-renderer": "catalog:",
-    "sinon": "catalog:",
     "typescript": "catalog:"
   }
 }
