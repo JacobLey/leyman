@@ -159,13 +159,10 @@ suite('defaultImport', () => {
     });
 
     test('Handles literals', () => {
-        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression, unicorn/no-useless-undefined
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
         expect(DefaultImport.defaultImport(undefined)).to.equal(undefined);
-        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression, unicorn/no-useless-undefined
-        expectTypeOf(DefaultImport.defaultImport(undefined)).toEqualTypeOf(
-            // eslint-disable-next-line unicorn/no-useless-undefined
-            undefined
-        );
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+        expectTypeOf(DefaultImport.defaultImport(undefined)).toEqualTypeOf(undefined);
 
         expect(DefaultImport.defaultImport(null)).to.equal(null);
         expectTypeOf(DefaultImport.defaultImport(null)).toEqualTypeOf(null);

@@ -779,6 +779,7 @@ export default function makeEslintConfigForPackage({
                 'unicorn/catch-error-name': ['error', { ignore: [/^error$/u], name: 'err' }],
                 'unicorn/no-keyword-prefix': 'off',
                 'unicorn/no-null': 'off',
+                'unicorn/no-useless-undefined': ['error', { checkArguments: false }],
                 'unicorn/numeric-separators-style': [
                     'error',
                     {
