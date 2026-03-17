@@ -14,7 +14,7 @@ type TestAndBuild struct {
 }
 
 var nodeVersion = "24.13.0"
-var pnpmVersion = "10.28.1"
+var pnpmVersion = "10.32.1"
 
 func New(
 	ctx context.Context,
