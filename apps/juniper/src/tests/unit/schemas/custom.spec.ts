@@ -33,7 +33,9 @@ suite('CustomSchema', () => {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const schema = customSchema();
 
-            expectTypeOf<AvailableProperties<typeof schema>>().toEqualTypeOf<'cast' | 'toJSON'>();
+            expectTypeOf<AvailableProperties<typeof schema>>().toEqualTypeOf<
+                '~standard' | 'cast' | 'toJSON'
+            >();
         });
     });
 });

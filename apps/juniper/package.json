@@ -29,6 +29,7 @@
     ".": "./dist/index.js"
   },
   "dependencies": {
+    "@standard-schema/spec": "catalog:",
     "escape-string-regexp": "catalog:"
   },
   "devDependencies": {

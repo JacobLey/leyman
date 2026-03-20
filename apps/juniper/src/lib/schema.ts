@@ -1,3 +1,4 @@
+import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
 import type { JsonSchema, ReservedWords, SchemaType, ToJsonParams, typeCache } from './types.js';
 import { reservedWords } from './types.js';
 import { mergeAllOf, mergeRef } from './utils.js';
@@ -77,7 +78,9 @@ export interface SerializationParams {
  *
  * @template T
  */
-export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
+export abstract class AbstractSchema<T extends SchemaGenerics<any>>
+    implements StandardJSONSchemaV1<T['type']>
+{
     /**
      * "Abstract" convenient wrapper around `new` keyword.
      *
@@ -114,6 +117,35 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>> {
      * Not actually defined and should not be accessed via JS.
      */
     public declare readonly [typeCache]: T;
+
+    public readonly '~standard' = {
+        version: 1,
+        vendor: 'juniper',
+        jsonSchema: {
+            input: (
+                standard?: Partial<StandardJSONSchemaV1.Options>,
+                options?: Omit<Parameters<this['toJSON']>[0], 'openApi30'>
+            ): JsonSchema<T['type']> => {
+                const target = standard?.target;
+                // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
+                switch (target) {
+                    case undefined:
+                    case 'draft-2020-12': {
+                        return this.toJSON({ ...options });
+                    }
+                    case 'openapi-3.0': {
+                        return this.toJSON({ ...options, openApi30: true });
+                    }
+                    default:
+                }
+                throw new Error(`JSON Schema target: "${target}" not supported`);
+            },
+            output: (
+                standard?: Partial<StandardJSONSchemaV1.Options>,
+                options?: Omit<Parameters<this['toJSON']>[0], 'openApi30'>
+            ): JsonSchema<T['type']> => this['~standard'].jsonSchema.input(standard, options),
+        } as const,
+    } as const;
 
     /**
      * Create instance of Schema. See `create` for convenient wrapper.

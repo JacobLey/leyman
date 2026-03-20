@@ -1,3 +1,4 @@
+import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
 import type { JsonSchema, Schema, SchemaType } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expect } from 'chai';
@@ -988,6 +989,30 @@ suite('schema', () => {
                     });
                 });
             });
+        });
+    });
+
+    suite('~standard', () => {
+        test('Calls toJSON under the hood', () => {
+            const schema = numberSchema().exclusiveMinimum(13);
+            expectTypeOf(schema).toExtend<StandardJSONSchemaV1<boolean>>();
+            expectTypeOf(
+                mergeSchema().anyOf([schema, stringSchema().contains('foo').endsWith('bar')])
+            ).toExtend<StandardJSONSchemaV1<number>>();
+
+            expect(schema['~standard'].jsonSchema.input()).to.deep.equal(
+                schema['~standard'].jsonSchema.output()
+            );
+            expect(schema['~standard'].jsonSchema.input({ target: 'draft-2020-12' })).to.deep.equal(
+                schema.toJSON()
+            );
+            expect(schema['~standard'].jsonSchema.input({ target: 'openapi-3.0' })).to.deep.equal(
+                schema.toJSON({ openApi30: true })
+            );
+            expect(() => schema['~standard'].jsonSchema.input({ target: 'draft-07' })).to.throw(
+                Error,
+                'JSON Schema target: "draft-07" not supported'
+            );
         });
     });
 
