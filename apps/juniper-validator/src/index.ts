@@ -1,5 +1,5 @@
 import type { StandardJSONSchemaV1, StandardSchemaV1 } from '@standard-schema/spec';
-import type { ErrorObject } from 'ajv/dist/2020.js';
+import type { Options as AjvOptions, ErrorObject } from 'ajv/dist/2020.js';
 import type { Schema } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 
@@ -14,8 +14,13 @@ export interface JuniperValidator<T> extends BothStandards<T> {
     validate: (value: unknown) => StandardSchemaV1.Result<T>;
 }
 
-export const makeValidator = <T>(schema: Schema<T>): JuniperValidator<T> => {
-    const validator = new Ajv2020({ strict: true }).compile<T>(schema.toJSON({ schema: true }));
+export const makeValidator = <T>(
+    schema: Schema<T>,
+    options?: Omit<AjvOptions, 'strict'>
+): JuniperValidator<T> => {
+    const validator = new Ajv2020({ ...options, strict: true }).compile<T>(
+        schema.toJSON({ schema: true })
+    );
 
     const validate = (value: unknown): StandardSchemaV1.Result<T> => {
         if (validator(value)) {

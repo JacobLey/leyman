@@ -1,11 +1,11 @@
 import type { readFile, writeFile } from 'node:fs/promises';
 import type { FilesFormatter } from 'format-file';
-import type { isNxJson, isProjectJson } from '#schemas';
+import type { assertNxJson, assertProjectJson } from '#schemas';
 import type { NormalizedOptions } from '../../../lifecycle/normalizer.js';
 import type { NxAndProjectJsonProcessor } from '../../../lifecycle/processor.js';
 import type { LifecycleOptions } from '../../../lifecycle/schema.js';
 import type { NxContext } from '../../../lifecycle/types.js';
-import { createStubInstance, define, fake, match, verifyAndRestore } from 'sinon';
+import { createStubInstance, fake, match, verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { mockMethod, stubMethod } from 'sinon-typed-stub';
 import { LifecycleInternal } from '../../../lifecycle/lifecycle-internal.js';
@@ -26,8 +26,8 @@ suite('lifecycle', () => {
         const stubbedWriteFile = stubMethod<typeof writeFile>();
         const stubbedFormatFiles = stubMethod<FilesFormatter>();
         const mockedProcessor = mockMethod<NxAndProjectJsonProcessor>();
-        const stubbedIsNxJson = stubMethod<typeof isNxJson>();
-        const stubbedIsProjectJson = stubMethod<typeof isProjectJson>();
+        const stubbedAssertNxJson = stubMethod<typeof assertNxJson>();
+        const stubbedAssertProjectJson = stubMethod<typeof assertProjectJson>();
 
         return {
             stubbedNormalizer,
@@ -35,16 +35,16 @@ suite('lifecycle', () => {
             stubbedWriteFile: stubbedWriteFile.stub,
             stubbedFormatFiles: stubbedFormatFiles.stub,
             mockedProcessor: mockedProcessor.mock,
-            stubbedIsNxJson: stubbedIsNxJson.stub,
-            stubbedIsProjectJson: stubbedIsProjectJson.stub,
+            stubbedAssertNxJson: stubbedAssertNxJson.stub,
+            stubbedAssertProjectJson: stubbedAssertProjectJson.stub,
             lifecycle: new LifecycleInternal(
                 stubbedNormalizer,
                 stubbedReadFile.method,
                 stubbedWriteFile.method,
                 stubbedFormatFiles.method,
                 mockedProcessor.method,
-                stubbedIsNxJson.method,
-                stubbedIsProjectJson.method,
+                stubbedAssertNxJson.method,
+                stubbedAssertProjectJson.method,
                 {
                     info: fake(),
                     error: fake(),
@@ -77,9 +77,9 @@ suite('lifecycle', () => {
                 .withArgs('<bar-path>', 'utf8')
                 .resolves(JSON.stringify(fakeBarProjectJson));
 
-            ctx.stubbedIsNxJson.withArgs(match(fakeNxJson)).returns(true);
-            ctx.stubbedIsProjectJson.withArgs(match(fakeFooProjectJson)).returns(true);
-            ctx.stubbedIsProjectJson.withArgs(match(fakeBarProjectJson)).returns(true);
+            ctx.stubbedAssertNxJson.withArgs(match(fakeNxJson)).returns();
+            ctx.stubbedAssertProjectJson.withArgs(match(fakeFooProjectJson)).returns();
+            ctx.stubbedAssertProjectJson.withArgs(match(fakeBarProjectJson)).returns();
         });
 
         stubs.test('Writes updated files', async ctx => {
@@ -297,13 +297,12 @@ suite('lifecycle', () => {
                 .withArgs('<nx-json-path>', 'utf8')
                 .resolves(JSON.stringify(fakeNxJson));
 
-            ctx.stubbedIsNxJson.withArgs(match(fakeNxJson)).returns(false);
-            define(ctx.stubbedIsNxJson, 'errors', ['<ERROR>']);
+            ctx.stubbedAssertNxJson.withArgs(match(fakeNxJson)).throws();
 
             await expect(ctx.lifecycle.lifecycleInternal(mockOptions, mockContext))
                 .eventually.be.rejectedWith(Error)
                 .that.contain({
-                    message: 'Failed to parse nx.json: [\n  "<ERROR>"\n]',
+                    message: 'Failed to parse nx.json',
                 });
         });
 
@@ -334,16 +333,15 @@ suite('lifecycle', () => {
                 .withArgs('<bar-path>', 'utf8')
                 .resolves(JSON.stringify(fakeBarProjectJson));
 
-            ctx.stubbedIsNxJson.withArgs(match(fakeNxJson)).returns(true);
-            ctx.stubbedIsProjectJson.withArgs(match(fakeFooProjectJson)).returns(true);
+            ctx.stubbedAssertNxJson.withArgs(match(fakeNxJson)).returns();
+            ctx.stubbedAssertProjectJson.withArgs(match(fakeFooProjectJson)).returns();
 
-            ctx.stubbedIsProjectJson.withArgs(match(fakeBarProjectJson)).returns(false);
-            define(ctx.stubbedIsProjectJson, 'errors', ['<ERROR>']);
+            ctx.stubbedAssertProjectJson.withArgs(match(fakeBarProjectJson)).throws();
 
             await expect(ctx.lifecycle.lifecycleInternal(mockOptions, mockContext))
                 .eventually.be.rejectedWith(Error)
                 .that.contain({
-                    message: 'Failed to parse <bar-path>: [\n  "<ERROR>"\n]',
+                    message: 'Failed to parse <bar-path>',
                 });
         });
 

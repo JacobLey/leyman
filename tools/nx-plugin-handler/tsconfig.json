@@ -7,6 +7,9 @@
   },
   "references": [
     {
+      "path": "../../apps/juniper-validator"
+    },
+    {
       "path": "../../apps/juniper"
     },
     {

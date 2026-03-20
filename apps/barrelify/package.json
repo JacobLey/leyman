@@ -28,7 +28,6 @@
     "barrelify": "./bin.mjs"
   },
   "dependencies": {
-    "ajv": "catalog:",
     "ci-info": "catalog:",
     "entry-script": "workspace:^",
     "find-import": "workspace:^",
@@ -36,6 +35,7 @@
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
+    "juniper-validator": "workspace:^",
     "parse-cwd": "workspace:^",
     "populate-files": "workspace:^",
     "yargs": "catalog:"

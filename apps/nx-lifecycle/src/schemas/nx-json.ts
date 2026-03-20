@@ -1,8 +1,7 @@
-import type { ErrorObject } from 'ajv';
 import type { SchemaType } from 'juniper';
 import { identifier } from 'haywire';
 import { objectSchema } from 'juniper';
-import { ajv } from './lib/ajv.js';
+import { makeValidator } from 'juniper-validator';
 import { allTargetsSchema } from './target.js';
 
 const nxJsonSchema = objectSchema({
@@ -11,12 +10,8 @@ const nxJsonSchema = objectSchema({
     },
     additionalProperties: true,
 });
-
 export type NxJson = SchemaType<typeof nxJsonSchema>;
 
-export interface IsNxJson {
-    (val: unknown): val is NxJson;
-    errors?: ErrorObject[] | null;
-}
-export const isNxJson: IsNxJson = ajv.compile<NxJson>(nxJsonSchema.toJSON());
-export const isNxJsonIdentifier = identifier<IsNxJson>().named('nxJson');
+export const assertNxJson = makeValidator(nxJsonSchema).assert;
+export type AssertNxJson = typeof assertNxJson;
+export const assertNxJsonIdentifier = identifier<AssertNxJson>().named('nxJson');

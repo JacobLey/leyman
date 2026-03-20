@@ -1,6 +1,6 @@
 import type { readFile as ReadFile, writeFile as WriteFile } from 'node:fs/promises';
 import type { FilesFormatter } from 'format-file';
-import type { IsNxJson, IsProjectJson, NxJson, ProjectJson } from '#schemas';
+import type { AssertNxJson, AssertProjectJson, NxJson, ProjectJson } from '#schemas';
 import type { Logger } from './depedencies.js';
 import type { NormalizedOptions, Normalizer } from './normalizer.js';
 import type { NxAndProjectJsonProcessor } from './processor.js';
@@ -35,8 +35,8 @@ export class LifecycleInternal {
     readonly #writeFile: typeof WriteFile;
     readonly #formatFiles: FilesFormatter;
     readonly #processNxAndProjectJsons: NxAndProjectJsonProcessor;
-    readonly #isNxJson: IsNxJson;
-    readonly #isProjectJson: IsProjectJson;
+    readonly #assertNxJson: AssertNxJson;
+    readonly #assertProjectJson: AssertProjectJson;
     readonly #logger: Logger;
 
     public readonly lifecycleInternal: ILifecycleInternal;
@@ -47,8 +47,8 @@ export class LifecycleInternal {
         writeFile: typeof WriteFile,
         formatFiles: FilesFormatter,
         processNxAndProjectJsons: NxAndProjectJsonProcessor,
-        isNxJson: IsNxJson,
-        isProjectJson: IsProjectJson,
+        assertNxJson: AssertNxJson,
+        assertProjectJson: AssertProjectJson,
         logger: Logger
     ) {
         this.#normalizer = normalizer;
@@ -56,8 +56,8 @@ export class LifecycleInternal {
         this.#writeFile = writeFile;
         this.#formatFiles = formatFiles;
         this.#processNxAndProjectJsons = processNxAndProjectJsons;
-        this.#isNxJson = isNxJson;
-        this.#isProjectJson = isProjectJson;
+        this.#assertNxJson = assertNxJson;
+        this.#assertProjectJson = assertProjectJson;
         this.#logger = logger;
 
         this.lifecycleInternal = this.#lifecycleInternal.bind(this);
@@ -103,10 +103,10 @@ export class LifecycleInternal {
         ]);
 
         const parsedNxJson: unknown = JSON.parse(rawNxJson);
-        if (!this.#isNxJson(parsedNxJson)) {
-            throw new Error(
-                `Failed to parse nx.json: ${JSON.stringify(this.#isNxJson.errors!, null, 2)}`
-            );
+        try {
+            this.#assertNxJson(parsedNxJson);
+        } catch (err) {
+            throw new Error('Failed to parse nx.json', { cause: err });
         }
 
         return {
@@ -117,15 +117,10 @@ export class LifecycleInternal {
             },
             projectJsons: rawProjectJsons.map(({ name, path, rawData }) => {
                 const data: unknown = JSON.parse(rawData);
-
-                if (!this.#isProjectJson(data)) {
-                    throw new Error(
-                        `Failed to parse ${path}: ${JSON.stringify(
-                            this.#isProjectJson.errors!,
-                            null,
-                            2
-                        )}`
-                    );
+                try {
+                    this.#assertProjectJson(data);
+                } catch (err) {
+                    throw new Error(`Failed to parse ${path}`, { cause: err });
                 }
 
                 return {

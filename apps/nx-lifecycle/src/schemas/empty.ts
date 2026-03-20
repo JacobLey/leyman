@@ -1,6 +1,6 @@
 import type { SchemaType } from 'juniper';
 import { objectSchema } from 'juniper';
-import { ajv } from './lib/ajv.js';
+import { makeValidator } from 'juniper-validator';
 
 const emptySchema = objectSchema({
     additionalProperties: false,
@@ -8,4 +8,4 @@ const emptySchema = objectSchema({
 
 export type Empty = SchemaType<typeof emptySchema>;
 
-export const isEmpty = ajv.compile<Empty>(emptySchema.toJSON());
+export const isEmpty = makeValidator(emptySchema).is;

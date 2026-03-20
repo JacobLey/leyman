@@ -1,7 +1,6 @@
-import type { SchemaType } from 'juniper';
 import type { PopulateFileParams } from 'populate-files';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { arraySchema, mergeSchema, objectSchema, stringSchema } from 'juniper';
+import { makeValidator } from 'juniper-validator';
 
 const populateFileParam = objectSchema({
     properties: {
@@ -16,6 +15,4 @@ const populateFileParams = mergeSchema().oneOf([
     arraySchema({ items: populateFileParam }),
 ]);
 
-export const isPopulateFileParams = new Ajv2020({ strict: true }).compile<
-    SchemaType<typeof populateFileParams>
->(populateFileParams.toJSON());
+export const isPopulateFileParams = makeValidator(populateFileParams).is;

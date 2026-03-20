@@ -27,13 +27,13 @@
     "load-populate-files": "./bin.mjs"
   },
   "dependencies": {
-    "ajv": "catalog:",
     "ci-info": "catalog:",
     "default-import": "workspace:^",
     "entry-script": "workspace:^",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
+    "juniper-validator": "workspace:^",
     "parse-cwd": "workspace:^",
     "populate-files": "workspace:^",
     "yargs": "catalog:"

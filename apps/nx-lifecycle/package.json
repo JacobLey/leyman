@@ -38,7 +38,6 @@
   },
   "dependencies": {
     "@nx/devkit": "catalog:",
-    "ajv": "catalog:",
     "ci-info": "catalog:",
     "common-proxy": "workspace:^",
     "default-import": "workspace:^",
@@ -48,6 +47,7 @@
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
+    "juniper-validator": "workspace:^",
     "nx": "catalog:",
     "nx-plugin-handler": "workspace:^",
     "parse-cwd": "workspace:^",

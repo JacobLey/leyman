@@ -13,6 +13,9 @@
       "path": "../../tools/parse-cwd"
     },
     {
+      "path": "../juniper-validator"
+    },
+    {
       "path": "../juniper"
     },
     {

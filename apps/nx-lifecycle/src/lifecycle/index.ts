@@ -1,6 +1,11 @@
 import type { ILifecycleInternal } from './lifecycle-internal.js';
 import { bind, identifier } from 'haywire';
-import { isNxJson, isNxJsonIdentifier, isProjectJson, isProjectJsonIdentifier } from '#schemas';
+import {
+    assertNxJson,
+    assertNxJsonIdentifier,
+    assertProjectJson,
+    assertProjectJsonIdentifier,
+} from '#schemas';
 import {
     dependenciesModule,
     formatFileIdentifier,
@@ -31,8 +36,8 @@ export const lifecycleInternalModule = dependenciesModule
                 writeFileIdentifier,
                 formatFileIdentifier,
                 nxAndProjectJsonProcessorIdentifier,
-                isNxJsonIdentifier,
-                isProjectJsonIdentifier,
+                assertNxJsonIdentifier,
+                assertProjectJsonIdentifier,
                 loggerIdentifier,
             ])
     )
@@ -42,5 +47,5 @@ export const lifecycleInternalModule = dependenciesModule
             .withConstructorProvider()
     )
     .addBinding(bind(nxAndProjectJsonProcessorIdentifier).withInstance(processNxAndProjectJsons))
-    .addBinding(bind(isNxJsonIdentifier).withInstance(isNxJson))
-    .addBinding(bind(isProjectJsonIdentifier).withInstance(isProjectJson));
+    .addBinding(bind(assertNxJsonIdentifier).withInstance(assertNxJson))
+    .addBinding(bind(assertProjectJsonIdentifier).withInstance(assertProjectJson));

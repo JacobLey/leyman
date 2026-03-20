@@ -1,7 +1,7 @@
 import type { SchemaType } from 'juniper';
 import { arraySchema, booleanSchema, mergeSchema, objectSchema, stringSchema } from 'juniper';
+import { makeValidator } from 'juniper-validator';
 import { dependsOnSchema } from '#schemas';
-import { ajv } from '../schemas/lib/ajv.js';
 
 const checkAndDryRunSchema = objectSchema({
     properties: {
@@ -46,7 +46,9 @@ const lifecycleOptionsSchema = checkAndDryRunSchema
     .required(['stages', 'bindings'])
     .additionalProperties(false);
 export type LifecycleOptions = SchemaType<typeof lifecycleOptionsSchema>;
-export const isLifecycleOptions = ajv.compile<LifecycleOptions>(lifecycleOptionsSchema.toJSON());
+export const isLifecycleOptions = makeValidator(lifecycleOptionsSchema, {
+    formats: { 'uri-reference': true },
+}).is;
 
 const lifecycleOptionsOrConfigSchema = mergeSchema().oneOf([
     lifecycleOptionsSchema,

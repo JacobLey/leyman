@@ -1,8 +1,7 @@
-import type { ErrorObject } from 'ajv';
 import type { SchemaType } from 'juniper';
 import { identifier } from 'haywire';
 import { objectSchema } from 'juniper';
-import { ajv } from './lib/ajv.js';
+import { makeValidator } from 'juniper-validator';
 import { allTargetsSchema } from './target.js';
 
 const projectJsonSchema = objectSchema({
@@ -11,12 +10,8 @@ const projectJsonSchema = objectSchema({
     },
     additionalProperties: true,
 });
-
 export type ProjectJson = SchemaType<typeof projectJsonSchema>;
 
-export interface IsProjectJson {
-    (val: unknown): val is ProjectJson;
-    errors?: ErrorObject[] | null;
-}
-export const isProjectJson: IsProjectJson = ajv.compile<ProjectJson>(projectJsonSchema.toJSON());
-export const isProjectJsonIdentifier = identifier<IsProjectJson>().named('projectJson');
+export const assertProjectJson = makeValidator(projectJsonSchema).assert;
+export type AssertProjectJson = typeof assertProjectJson;
+export const assertProjectJsonIdentifier = identifier<AssertProjectJson>().named('projectJson');

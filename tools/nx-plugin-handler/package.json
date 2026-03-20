@@ -23,11 +23,11 @@
     ".": "./dist/index.cjs"
   },
   "dependencies": {
-    "ajv": "catalog:",
     "common-proxy": "workspace:^",
     "haywire": "workspace:^",
     "default-import": "workspace:^",
-    "juniper": "workspace:^"
+    "juniper": "workspace:^",
+    "juniper-validator": "workspace:^"
   },
   "peerDependencies": {
     "@nx/devkit": "catalog:"

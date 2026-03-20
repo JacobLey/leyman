@@ -214,9 +214,6 @@ importers:
 
   apps/barrelify:
     dependencies:
-      ajv:
-        specifier: 'catalog:'
-        version: 8.17.1
       ci-info:
         specifier: 'catalog:'
         version: 4.3.1
@@ -238,6 +235,9 @@ importers:
       juniper:
         specifier: workspace:^
         version: link:../juniper
+      juniper-validator:
+        specifier: workspace:^
+        version: link:../juniper-validator
       parse-cwd:
         specifier: workspace:^
         version: link:../../tools/parse-cwd
@@ -451,9 +451,6 @@ importers:
       '@nx/devkit':
         specifier: 'catalog:'
         version: 22.4.1(nx@22.4.1(@swc/core@1.15.10(@swc/helpers@0.5.18)))
-      ajv:
-        specifier: 'catalog:'
-        version: 8.17.1
       ci-info:
         specifier: 'catalog:'
         version: 4.3.1
@@ -481,6 +478,9 @@ importers:
       juniper:
         specifier: workspace:^
         version: link:../juniper
+      juniper-validator:
+        specifier: workspace:^
+        version: link:../juniper-validator
       nx:
         specifier: 'catalog:'
         version: 22.4.1(@swc/core@1.15.10(@swc/helpers@0.5.18))
@@ -663,9 +663,6 @@ importers:
 
   apps/populate-files/load-populate-files:
     dependencies:
-      ajv:
-        specifier: 'catalog:'
-        version: 8.17.1
       ci-info:
         specifier: 'catalog:'
         version: 4.3.1
@@ -684,6 +681,9 @@ importers:
       juniper:
         specifier: workspace:^
         version: link:../../juniper
+      juniper-validator:
+        specifier: workspace:^
+        version: link:../../juniper-validator
       parse-cwd:
         specifier: workspace:^
         version: link:../../../tools/parse-cwd
@@ -1632,9 +1632,6 @@ importers:
 
   tools/nx-plugin-handler:
     dependencies:
-      ajv:
-        specifier: 'catalog:'
-        version: 8.17.1
       common-proxy:
         specifier: workspace:^
         version: link:../common-proxy
@@ -1647,6 +1644,9 @@ importers:
       juniper:
         specifier: workspace:^
         version: link:../../apps/juniper
+      juniper-validator:
+        specifier: workspace:^
+        version: link:../../apps/juniper-validator
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'

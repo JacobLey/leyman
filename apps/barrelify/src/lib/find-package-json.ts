@@ -1,8 +1,7 @@
-import type { SchemaType } from 'juniper';
 import type { FindImport } from './dependencies.js';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { identifier } from 'haywire';
 import { enumSchema, objectSchema, stringSchema } from 'juniper';
+import { makeValidator } from 'juniper-validator';
 
 const modulePackageSchema = objectSchema({
     properties: {
@@ -10,11 +9,9 @@ const modulePackageSchema = objectSchema({
         version: stringSchema(),
     },
     required: ['type'],
-}).toJSON();
+});
 
-const isModulePackage = new Ajv2020({ strict: true }).compile<
-    SchemaType<typeof modulePackageSchema>
->(modulePackageSchema);
+const isModulePackage = makeValidator(modulePackageSchema).is;
 /**
  * Returns true if the given file has a package.json that _explicitly_ sets `"type": "module"`.
  *

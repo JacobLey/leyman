@@ -1,8 +1,5 @@
-import type { SchemaType } from 'juniper';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { objectSchema, stringSchema } from 'juniper';
-
-const ajv = new Ajv2020({ strict: true });
+import { makeValidator } from 'juniper-validator';
 
 const packageJsonSchema = objectSchema({
     properties: {
@@ -11,9 +8,7 @@ const packageJsonSchema = objectSchema({
     required: ['executors'],
     additionalProperties: true,
 });
-export const isPackageJson = ajv.compile<SchemaType<typeof packageJsonSchema>>(
-    packageJsonSchema.toJSON()
-);
+export const isPackageJson = makeValidator(packageJsonSchema).is;
 
 const executorsJsonSchema = objectSchema({
     properties: {
@@ -30,6 +25,4 @@ const executorsJsonSchema = objectSchema({
     required: ['executors'],
 });
 
-export const isExecutorsJson = ajv.compile<SchemaType<typeof executorsJsonSchema>>(
-    executorsJsonSchema.toJSON()
-);
+export const isExecutorsJson = makeValidator(executorsJsonSchema).is;

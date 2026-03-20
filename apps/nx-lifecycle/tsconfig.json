@@ -13,6 +13,9 @@
       "path": "../../tools/nx-plugin-handler"
     },
     {
+      "path": "../juniper-validator"
+    },
+    {
       "path": "../juniper"
     },
     {
