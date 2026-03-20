@@ -1,0 +1,33 @@
+{
+  "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "juniper-validator",
+  "metadata": {
+    "daggerRuntime": "node"
+  },
+  "targets": {
+    "pnpm-dedicated-lockfile": {},
+    "biome": {},
+    "eslint": {},
+    "update-ts-references": {},
+    "delete-dist": {},
+    "tsc": {},
+    "coverage-reset": {},
+    "mocha-unit-test": {},
+    "coverage-report": {},
+    "analyze:_": {},
+    "analyze:lint": {},
+    "analyze:format": {},
+    "analyze": {},
+    "build:_": {},
+    "build:pre": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "install:_": {},
+    "install": {},
+    "test:_": {},
+    "test:reset": {},
+    "test:run": {},
+    "test": {}
+  }
+}

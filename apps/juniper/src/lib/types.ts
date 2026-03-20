@@ -1,3 +1,5 @@
+import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
+
 export declare const typeCache: unique symbol;
 
 export interface JsonSchema<T> {
@@ -30,7 +32,7 @@ export interface ToJsonParams {
     schema?: boolean;
 }
 
-export interface Schema<T> {
+export interface Schema<T> extends StandardJSONSchemaV1<T> {
     [typeCache]?: {
         type: T;
     };

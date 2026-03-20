@@ -1,0 +1,22 @@
+{
+  "extends": "../../tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../pnpm-dedicated-lockfile"
+    },
+    {
+      "path": "../../tools/mocha-chain"
+    },
+    {
+      "path": "../juniper"
+    },
+    {
+      "path": "../../leyman/eslint-config"
+    }
+  ]
+}

@@ -1,0 +1,53 @@
+{
+  "name": "juniper-validator",
+  "version": "1.2.5",
+  "description": "StandardSchema compliance for juniper.",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/juniper-validator#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "json",
+    "StandardSchema"
+  ],
+  "sideEffects": false,
+  "types": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "@standard-schema/spec": "catalog:",
+    "ajv": "catalog:",
+    "escape-string-regexp": "catalog:"
+  },
+  "peerDependencies": {
+    "juniper": "workspace:^"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/chai": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/sinon": "catalog:",
+    "c8": "catalog:",
+    "chai": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "juniper": "workspace:^",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "pnpm-dedicated-lockfile": "workspace:^",
+    "sinon": "catalog:",
+    "typescript": "catalog:"
+  }
+}
