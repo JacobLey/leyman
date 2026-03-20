@@ -1,7 +1,7 @@
 name: Test
 
 env:
-  DAGGER_VERSION: 0.19.11
+  DAGGER_VERSION: 0.20.3
 
 on:
   - pull_request

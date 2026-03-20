@@ -3,8 +3,8 @@ FROM mcr.microsoft.com/devcontainers/base:2.0.2-debian13
 
 ARG NODE_VERSION=24.13.0
 ARG PNPM_VERSION=10.32.1
-ARG DAGGER_VERSION=0.19.11
-ARG GO_VERSION=1.25.6
+ARG DAGGER_VERSION=0.20.3
+ARG GO_VERSION=1.26.1
 
 RUN apt-get update \
     && apt-get upgrade -y \
