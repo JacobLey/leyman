@@ -166,7 +166,7 @@ export default function makeEslintConfigForPackage({
 
     return [
         {
-            ignores: ['coverage', 'dist', 'node_modules', '.eslintcache'].map(directory =>
+            ignores: ['coverage', 'dist', 'node_modules', 'out', '.eslintcache'].map(directory =>
                 Path.join(relativePath, directory, '**')
             ),
         },
