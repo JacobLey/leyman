@@ -46,7 +46,8 @@ const lifecycleOptionsSchema = checkAndDryRunSchema
     .required(['stages', 'bindings'])
     .additionalProperties(false);
 export type LifecycleOptions = SchemaType<typeof lifecycleOptionsSchema>;
-export const isLifecycleOptions = makeValidator(lifecycleOptionsSchema, {
+export const lifecycleOptions = lifecycleOptionsSchema.toJSON({ schema: true });
+export const isLifecycleOptions = makeValidator(lifecycleOptions, {
     formats: { 'uri-reference': true },
 }).is;
 
@@ -60,7 +61,7 @@ const lifecycleOptionsOrConfigSchema = mergeSchema().oneOf([
         .additionalProperties(false),
 ]);
 
-export default lifecycleOptionsOrConfigSchema
+export const lifecycleOptionsOrConfig = lifecycleOptionsOrConfigSchema
     .metadata({
         version: 1,
         outputCapture: 'direct-nodejs',

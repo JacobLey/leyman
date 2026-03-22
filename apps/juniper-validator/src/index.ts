@@ -1,11 +1,10 @@
-import type { StandardJSONSchemaV1, StandardSchemaV1 } from '@standard-schema/spec';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Options as AjvOptions, ErrorObject } from 'ajv/dist/2020.js';
-import type { Schema } from 'juniper';
+import type { JsonSchema, Schema } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
+import { isSchema } from 'juniper';
 
-type BothStandards<T> = StandardJSONSchemaV1<T> & StandardSchemaV1<T>;
-
-export interface JuniperValidator<T> extends BothStandards<T> {
+export interface JuniperValidator<T> extends StandardSchemaV1<T> {
     is: (x: unknown) => x is T;
     assert: (x: unknown) => asserts x is T;
     /**
@@ -15,12 +14,11 @@ export interface JuniperValidator<T> extends BothStandards<T> {
 }
 
 export const makeValidator = <T>(
-    schema: Schema<T>,
+    schema: JsonSchema<T> | Schema<T>,
     options?: Omit<AjvOptions, 'strict'>
 ): JuniperValidator<T> => {
-    const validator = new Ajv2020({ ...options, strict: true }).compile<T>(
-        schema.toJSON({ schema: true })
-    );
+    const json = isSchema(schema) ? schema.toJSON({ schema: true }) : schema;
+    const validator = new Ajv2020({ ...options, strict: true }).compile<T>(json);
 
     const validate = (value: unknown): StandardSchemaV1.Result<T> => {
         if (validator(value)) {
@@ -45,7 +43,8 @@ export const makeValidator = <T>(
             throw new Error('Value does not match schema', { cause: validator.errors });
         },
         '~standard': {
-            ...schema['~standard'],
+            version: 1,
+            vendor: 'juniper',
             validate,
         },
         validate,

@@ -10,6 +10,8 @@ import { ObjectSchema } from './schemas/object.js';
 import { StringSchema } from './schemas/string.js';
 import { TupleSchema } from './schemas/tuple.js';
 
+export { isSchema } from './lib/schema.js';
+
 export type { EmptyObject, PatternProperties } from './schemas/object.js';
 export type {
     EmptyIndex,

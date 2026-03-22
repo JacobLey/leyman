@@ -1,4 +1,4 @@
-import type { StandardJSONSchemaV1, StandardSchemaV1 } from '@standard-schema/spec';
+import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { SchemaType } from 'juniper';
 import type { AssertionType, ValidatorType } from 'juniper-validator';
 import { expect } from 'chai';
@@ -20,18 +20,6 @@ suite('juniper-validator', () => {
 
     suite('StandardSchema', () => {
         expectTypeOf(validator).toExtend<StandardSchemaV1<SchemaType<typeof schema>>>();
-        expectTypeOf(validator).toExtend<StandardJSONSchemaV1<SchemaType<typeof schema>>>();
-
-        test('json schema', () => {
-            expect(validator['~standard'].jsonSchema).to.equal(schema['~standard'].jsonSchema);
-
-            expect(
-                validator['~standard'].jsonSchema.input({ target: 'draft-2020-12' })
-            ).to.deep.equal(schema.toJSON());
-            expect(
-                validator['~standard'].jsonSchema.input({ target: 'openapi-3.0' })
-            ).to.deep.equal(schema.toJSON({ openApi30: true }));
-        });
 
         suite('validate', () => {
             test('validate', () => {

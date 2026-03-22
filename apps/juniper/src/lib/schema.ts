@@ -1,5 +1,12 @@
 import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
-import type { JsonSchema, ReservedWords, SchemaType, ToJsonParams, typeCache } from './types.js';
+import type {
+    JsonSchema,
+    ReservedWords,
+    Schema,
+    SchemaType,
+    ToJsonParams,
+    typeCache,
+} from './types.js';
 import { reservedWords } from './types.js';
 import { mergeAllOf, mergeRef } from './utils.js';
 
@@ -79,7 +86,7 @@ export interface SerializationParams {
  * @template T
  */
 export abstract class AbstractSchema<T extends SchemaGenerics<any>>
-    implements StandardJSONSchemaV1<T['type']>
+    implements Schema<T['type']>, StandardJSONSchemaV1<T['type']>
 {
     /**
      * "Abstract" convenient wrapper around `new` keyword.
@@ -919,3 +926,6 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         return schemaType ?? null;
     }
 }
+
+export const isSchema = <T>(schema: unknown): schema is Schema<T> =>
+    schema instanceof AbstractSchema;

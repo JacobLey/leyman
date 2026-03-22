@@ -1,7 +1,13 @@
 import type { PopulateFileParams } from 'load-populate-files';
-import schema from './lifecycle/schema.js';
+import { lifecycleOptions, lifecycleOptionsOrConfig } from './lifecycle/schema.js';
 
-export default {
-    filePath: './schema.json',
-    content: schema,
-} satisfies PopulateFileParams;
+export default [
+    {
+        filePath: './schema.json',
+        content: lifecycleOptions,
+    },
+    {
+        filePath: './nx-executor/schema.json',
+        content: lifecycleOptionsOrConfig,
+    },
+] satisfies PopulateFileParams[];
