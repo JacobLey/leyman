@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
 
 set -e
-nx run-many -t ci --tuiAutoExit --nxBail
+nx run-many -t test --tuiAutoExit --nxBail
 nx run-many -t coverage-report --tuiAutoExit --nxBail

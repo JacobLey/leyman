@@ -28,8 +28,6 @@
     "test:_": {},
     "test:reset": {},
     "test:run": {},
-    "test": {},
-    "ci:_": {},
-    "ci": {}
+    "test": {}
   }
 }

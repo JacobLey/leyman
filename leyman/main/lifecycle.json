@@ -19,6 +19,7 @@
       ],
       "dependsOn": [
         "^build",
+        "check",
         "install"
       ]
     },
@@ -34,15 +35,9 @@
       ],
       "dependsOn": [
         "^test",
-        "build",
-        "install"
-      ]
-    },
-    "ci": {
-      "dependsOn": [
         "check",
         "build",
-        "test"
+        "install"
       ]
     }
   },

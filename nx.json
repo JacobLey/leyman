@@ -44,6 +44,11 @@
           "commands": [
             "biome format --write ."
           ]
+        },
+        "no-check": {
+          "commands": [
+            ":"
+          ]
         }
       },
       "dependsOn": [
@@ -75,6 +80,11 @@
       "configurations": {
         "fix": {
           "fix": true
+        },
+        "no-check": {
+          "commands": [
+            ":"
+          ]
         }
       },
       "cache": true,
@@ -319,6 +329,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "^build",
+        "check",
         "install"
       ],
       "configurations": {
@@ -389,6 +400,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "^test",
+        "check",
         "build",
         "install"
       ],
@@ -421,26 +433,6 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test:run"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
-    },
-    "ci:_": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "check",
-        "build",
-        "test"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
-    },
-    "ci": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "ci:_"
       ],
       "configurations": {
         "__lifecycle": {}
