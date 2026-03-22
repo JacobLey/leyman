@@ -1,14 +1,10 @@
-import { createContainer } from 'haywire';
-import { contextualHookModule } from '#contextual-module';
-import { mochaModule } from '#mocha-module';
 import { entrypointAfterEachIdentifier } from './lib/after-each-hooks.js';
 import { entrypointAfterIdentifier } from './lib/after-hooks.js';
 import { entrypointBeforeEachIdentifier } from './lib/before-each-hooks.js';
 import { entrypointBeforeIdentifier } from './lib/before-hooks.js';
+import { container } from './lib/container.js';
 import { contextualSuiteIdentifier } from './lib/suite-hooks.js';
 import { entrypointTestIdentifier } from './lib/test-hooks.js';
-
-const container = createContainer(mochaModule.mergeModule(contextualHookModule));
 
 export const suite = container.get(contextualSuiteIdentifier);
 

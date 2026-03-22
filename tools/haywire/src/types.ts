@@ -1,3 +1,4 @@
+export type { AbstractPrivateClass } from '#identifier';
 export type {
     AsyncSupplier,
     Constructable,

@@ -5,19 +5,19 @@ import { LoadPopulateFilesCli } from './cli.js';
 import { commandsId, commandsModule } from './commands/index.js';
 import { consoleErrorId, consoleLogId, exitCodeId } from './commands/lib/dependencies.js';
 
-export default launch(
-    commandsModule
-        .addBinding(
-            bind(EntryScript)
-                .withDependencies([LoadPopulateFilesCli])
-                .withProvider(cli => cli)
-                .scoped(singletonScope)
-        )
-        .addBinding(
-            bind(LoadPopulateFilesCli)
-                .withDependencies([commandsId.supplier(), consoleLogId, consoleErrorId, exitCodeId])
-                .withConstructorProvider()
-                .scoped(singletonScope)
-        )
-        .toContainer()
-);
+export const cliContainer = commandsModule
+    .addBinding(
+        bind(EntryScript)
+            .withDependencies([LoadPopulateFilesCli])
+            .withProvider(cli => cli)
+            .scoped(singletonScope)
+    )
+    .addBinding(
+        bind(LoadPopulateFilesCli)
+            .withDependencies([commandsId.supplier(), consoleLogId, consoleErrorId, exitCodeId])
+            .withConstructorProvider()
+            .scoped(singletonScope)
+    )
+    .toContainer();
+
+export default launch(cliContainer);

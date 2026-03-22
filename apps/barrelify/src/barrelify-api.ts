@@ -12,6 +12,7 @@ import type { Barrel } from './lib/barrel.js';
  * @returns List of updated files
  */
 export type Barrelify = (
+    this: void,
     /**
      * Optional
      */
@@ -44,15 +45,19 @@ export class BarrelifyApi implements IBarrelifyApi {
     readonly #barrel: Barrel;
     readonly #parseCwd: ParseCwd;
 
+    public readonly barrelify: Barrelify;
+
     public constructor(barrel: Barrel, parseCwd: ParseCwd) {
         this.#barrel = barrel;
         this.#parseCwd = parseCwd;
+
+        this.barrelify = this.#barrelify.bind(this);
     }
 
     /**
      * @override
      */
-    public async barrelify(
+    async #barrelify(
         options: { cwd?: Directory; dryRun?: boolean; ignore?: string[] } = {}
     ): Promise<string[]> {
         const cwd = await this.#parseCwd(options.cwd ?? null);

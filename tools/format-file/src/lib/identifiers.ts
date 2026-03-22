@@ -2,7 +2,7 @@ import type { readFile, writeFile } from 'node:fs/promises';
 import type { findUp } from 'find-up';
 import type { resolveConfig } from 'prettier';
 import type { file } from 'tmp-promise';
-import type { CanUseFormatter, Executor } from '#types';
+import type { CanUseFormatter, Executor, FilesFormatter } from '#types';
 import { identifier } from 'haywire';
 
 export const executorId = identifier<Executor>();
@@ -18,3 +18,4 @@ export const formatPrettierId =
 export const readFileId = identifier<typeof readFile>();
 export const writeFileId = identifier<typeof writeFile>();
 export const tmpFileFactoryId = identifier<typeof file>();
+export const filesFormatterId = identifier<FilesFormatter>();

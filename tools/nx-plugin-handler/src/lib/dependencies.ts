@@ -1,3 +1,4 @@
+import type { GetForwardedHandler } from './forwarded-handler.js';
 import { createRequire } from 'node:module';
 import { bind, createModule, identifier } from 'haywire';
 
@@ -16,6 +17,8 @@ export type Importer = (
     }
 ) => Promise<unknown>;
 export const importIdentifier = identifier<Importer>();
+
+export const getForwardedHandlerId = identifier<GetForwardedHandler>();
 
 export const dependenciesModule = createModule(
     bind(loggerIdentifier).withInstance(
