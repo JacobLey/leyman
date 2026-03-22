@@ -11,7 +11,7 @@ interface LifecycleCommandExtendedInput extends LifecycleCommandInput {
 }
 
 /**
- * Main `load-populate-files` command
+ * Main `nx-lifecycle` command
  */
 export class LifecycleCommand implements Command<LifecycleCommandExtendedInput> {
     public readonly command = ['$0', 'lifecycle'];

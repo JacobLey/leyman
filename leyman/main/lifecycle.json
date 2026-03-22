@@ -1,5 +1,5 @@
 {
-  "$schema": "../../apps/nx-lifecycle/src/lifecycle/schema.json",
+  "$schema": "../../apps/nx-lifecycle/out/schema.json",
   "stages": {
     "analyze": {
       "hooks": [
