@@ -4,6 +4,9 @@
     "packageManager": "pnpm"
   },
   "namedInputs": {
+    "eslint-input": [
+      "{projectRoot}/eslint.config.js"
+    ],
     "ts-source": [
       "{workspaceRoot}/configs/c8rc.json",
       "{workspaceRoot}/configs/swcrc.jsonc",
@@ -64,7 +67,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "eslint . --cache --cache-strategy content --color"
+          "eslint . --color"
         ],
         "color": true,
         "cwd": "{projectRoot}"
@@ -76,6 +79,7 @@
       },
       "cache": true,
       "inputs": [
+        "eslint-input",
         "ts-source",
         "^ts-output"
       ],
@@ -171,6 +175,14 @@
         "color": true,
         "cwd": "{projectRoot}"
       },
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output"
+      ],
+      "outputs": [
+        "{projectRoot}/out"
+      ],
       "dependsOn": [
         "build:run"
       ]
