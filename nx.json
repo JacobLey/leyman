@@ -250,7 +250,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/tmp -o $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/report -c $NX_WORKSPACE_ROOT/configs/c8rc.json report --all --check-coverage --merge-async"
+          "${NX_WORKSPACE_ROOT}/scripts/nx/coverage-report.sh"
         ],
         "color": true,
         "cwd": "{projectRoot}"
