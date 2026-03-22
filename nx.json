@@ -215,7 +215,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive './dist/tests/unit/**/*.spec.*js'"
+          "NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/unit/**/*.spec.*js\""
         ],
         "parallel": true,
         "color": true,
@@ -237,7 +237,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive './dist/tests/integration/**/*.spec.*js'"
+          "NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/integration/**/*.spec.*js\""
         ],
         "parallel": true,
         "color": true,
