@@ -32,9 +32,9 @@ export class Normalize {
             this.#parseCwd(options.cwd),
             params.content,
         ]);
-
+        const targetDir = Path.resolve(cwd, options.targetDir ?? '.');
         return {
-            filePath: Path.resolve(cwd, params.filePath),
+            filePath: Path.resolve(targetDir, params.filePath),
             content: await this.#parseContent(loadedContent),
             check: this.#normalizeCheck(options.check),
             dryRun: Normalize.#normalizeDryRun(options.dryRun),
@@ -56,10 +56,11 @@ export class Normalize {
             this.#parseCwd(options.cwd),
             loadedContentsPromise,
         ]);
+        const targetDir = Path.resolve(cwd, options.targetDir ?? '.');
 
         const files = await Promise.all(
             loadedContents.map(async loadedContent => ({
-                filePath: Path.resolve(cwd, loadedContent.filePath),
+                filePath: Path.resolve(targetDir, loadedContent.filePath),
                 content: await this.#parseContent(loadedContent.content),
             }))
         );

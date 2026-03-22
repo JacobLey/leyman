@@ -47,6 +47,13 @@ export class LoadPopulateFilesCli extends EntryScript {
                     default: '.',
                     describe: 'Relative working directory for all paths',
                 },
+                targetDir: {
+                    type: 'string',
+                    default: '.',
+                    describe:
+                        'Target directory for resolving output file paths. Defaults to resolved cwd.',
+                    alias: 't',
+                },
             })
             .strict()
             .help()

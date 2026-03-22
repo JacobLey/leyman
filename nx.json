@@ -165,7 +165,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "load-populate-files --filePath ./dist/file-content.js"
+          "load-populate-files --filePath ./dist/file-content.js --target-dir ./out"
         ],
         "parallel": true,
         "color": true,

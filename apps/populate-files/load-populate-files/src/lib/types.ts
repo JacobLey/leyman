@@ -6,15 +6,17 @@ export interface RawParams {
 
 export interface RawOptions {
     cwd?: Directory;
-    check?: boolean | undefined;
-    dryRun?: boolean | undefined;
+    targetDir?: string | null | undefined;
+    check?: boolean | null | undefined;
+    dryRun?: boolean | null | undefined;
 }
 
 export interface NormalizedParams {
     filePath: string;
     options: {
         cwd: string;
-        check?: boolean | undefined;
-        dryRun?: boolean | undefined;
+        targetDir?: string | null | undefined;
+        check?: boolean | null | undefined;
+        dryRun?: boolean | null | undefined;
     };
 }

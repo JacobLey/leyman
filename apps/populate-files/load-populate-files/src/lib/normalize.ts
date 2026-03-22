@@ -18,6 +18,7 @@ export const normalizeParamsProvider =
                 cwd,
                 check: options.check,
                 dryRun: options.dryRun,
+                targetDir: options.targetDir,
             },
         };
     };

@@ -15,6 +15,7 @@ export interface RawOptions {
     check?: boolean | null | undefined;
     dryRun?: boolean | null | undefined;
     cwd?: Directory | null | undefined;
+    targetDir?: string | null | undefined;
 }
 export interface NormalizedOptions {
     check: boolean;

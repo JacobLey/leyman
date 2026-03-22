@@ -57,6 +57,7 @@ export class LoadPopulateFilesCommand implements Command<LoadPopulateFilesComman
             },
             {
                 cwd: options.cwd,
+                targetDir: options.targetDir,
                 check: options.ci,
                 dryRun: options.dryRun,
             }
