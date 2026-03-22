@@ -47,7 +47,7 @@
         }
       },
       "dependsOn": [
-        "analyze:lint"
+        "check:lint"
       ],
       "cache": false,
       "inputs": [
@@ -85,7 +85,7 @@
       ],
       "outputs": [],
       "dependsOn": [
-        "analyze:_"
+        "check:_"
       ]
     },
     "barrelify": {
@@ -276,7 +276,7 @@
         "install:_"
       ]
     },
-    "analyze:_": {
+    "check:_": {
       "executor": "nx:noop",
       "dependsOn": [
         "^build",
@@ -286,30 +286,30 @@
         "__lifecycle": {}
       }
     },
-    "analyze:lint": {
+    "check:lint": {
       "executor": "nx:noop",
       "dependsOn": [
-        "analyze:_",
+        "check:_",
         "eslint"
       ],
       "configurations": {
         "__lifecycle": {}
       }
     },
-    "analyze:format": {
+    "check:format": {
       "executor": "nx:noop",
       "dependsOn": [
-        "analyze:lint",
+        "check:lint",
         "biome"
       ],
       "configurations": {
         "__lifecycle": {}
       }
     },
-    "analyze": {
+    "check": {
       "executor": "nx:noop",
       "dependsOn": [
-        "analyze:format"
+        "check:format"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -389,7 +389,6 @@
       "executor": "nx:noop",
       "dependsOn": [
         "^test",
-        "analyze",
         "build",
         "install"
       ],
@@ -422,6 +421,26 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test:run"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "ci:_": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "check",
+        "build",
+        "test"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "ci": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "ci:_"
       ],
       "configurations": {
         "__lifecycle": {}

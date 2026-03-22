@@ -1,7 +1,7 @@
 {
   "$schema": "../../apps/nx-lifecycle/out/schema.json",
   "stages": {
-    "analyze": {
+    "check": {
       "hooks": [
         "lint",
         "format"
@@ -34,16 +34,22 @@
       ],
       "dependsOn": [
         "^test",
-        "analyze",
         "build",
         "install"
+      ]
+    },
+    "ci": {
+      "dependsOn": [
+        "check",
+        "build",
+        "test"
       ]
     }
   },
   "bindings": {
     "pnpm-dedicated-lockfile": "install",
-    "eslint": "analyze:lint",
-    "biome": "analyze:format",
+    "eslint": "check:lint",
+    "biome": "check:format",
     "barrelify": "build:pre",
     "delete-dist": "build:pre",
     "update-ts-references": "build:pre",

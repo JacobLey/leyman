@@ -17,10 +17,10 @@
     "mocha-unit-test": {},
     "mocha-integration-test": {},
     "coverage-report": {},
-    "analyze:_": {},
-    "analyze:lint": {},
-    "analyze:format": {},
-    "analyze": {},
+    "check:_": {},
+    "check:lint": {},
+    "check:format": {},
+    "check": {},
     "build:_": {},
     "build:pre": {},
     "build:run": {},
@@ -31,6 +31,8 @@
     "test:_": {},
     "test:reset": {},
     "test:run": {},
-    "test": {}
+    "test": {},
+    "ci:_": {},
+    "ci": {}
   }
 }

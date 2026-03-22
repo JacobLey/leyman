@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 set -e
-nx run-many -t test --tuiAutoExit --nxBail
+nx run-many -t ci --tuiAutoExit --nxBail
 rm -rf ./.coverage/tmp
 mkdir -p ./.coverage/tmp
 cp -r ./.coverage/project/*/tmp/*/* ./.coverage/project/@*/*/tmp/*/* ./.coverage/tmp
