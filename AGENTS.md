@@ -25,6 +25,12 @@ Focused guides for common workflows in this repo:
 | DevContainer runtimes, CLI tools, and version parity with Dagger | [`skills/devcontainer/AGENTS.md`](./skills/devcontainer/AGENTS.md) |
 | Writing and maintaining package READMEs | [`skills/writing-readmes/AGENTS.md`](./skills/writing-readmes/AGENTS.md) |
 
+### Coding Standards
+
+| Topic | Skill |
+|-------|-------|
+| Coding patterns and conventions (package design, types, DI, docs) | [`skills/coding-patterns/AGENTS.md`](./skills/coding-patterns/AGENTS.md) |
+
 ### Development Workflows
 
 | Task | Skill |
