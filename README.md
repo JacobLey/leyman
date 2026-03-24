@@ -36,6 +36,14 @@ Run `test-ci` first — it's faster for iteration. Use Dagger to confirm before 
 
 See all aliased (via PATH set during [Devcontainer setup](./.devcontainer/Dockerfile)) scripts in the [/scripts/commands](./scripts/commands) directory.
 
+## Coding Agents
+
+The `.claude/` directory is **not version-controlled** (it's in `.gitignore`). This makes it a safe place to store personal credentials and user-specific configuration — for example, API keys for Claude Code. This is helpful when persisting auth across devcontainer sessions.
+
+Because `.claude/` is gitignored, anything that should be shared across contributors (prompts, settings, hooks) must live elsewhere in the repo. Use the [`skills/`](./skills/) directory or [`AGENTS.md`](./AGENTS.md) for shared agent guidance.
+
+(If you use a different coding agent, PRs are welcome to support those directories).
+
 ## Contributing
 
 1. Make your changes

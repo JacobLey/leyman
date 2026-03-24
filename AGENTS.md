@@ -22,6 +22,7 @@ Focused guides for common workflows in this repo:
 | Installing a package dependency | [`skills/install-package/AGENTS.md`](./skills/install-package/AGENTS.md) |
 | What each `nx.json` target does and when to add it to `project.json` | [`skills/nx-tasks-reference/AGENTS.md`](./skills/nx-tasks-reference/AGENTS.md) |
 | Task lifecycle wiring (how check → build → test connect) | [`leyman/main/lifecycle/AGENTS.md`](./leyman/main/lifecycle/AGENTS.md) |
+| DevContainer runtimes, CLI tools, and version parity with Dagger | [`skills/devcontainer/AGENTS.md`](./skills/devcontainer/AGENTS.md) |
 | Writing and maintaining package READMEs | [`skills/writing-readmes/AGENTS.md`](./skills/writing-readmes/AGENTS.md) |
 
 ### Development Workflows

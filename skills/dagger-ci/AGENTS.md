@@ -3,6 +3,15 @@
 > Dagger docs: [dagger.io](https://dagger.io/) · [Go SDK](https://docs.dagger.io/sdk/go)
 > CI config: [`../../dagger/`](../../dagger/) · GitHub Actions: [`.github/workflows/test.yml`](../../.github/workflows/test.yml)
 
+## Motivation
+
+Running builds and test suites locally is a great start to making sure software works. But "we can't deploy your machine", and can't trust that the tests run locally didn't accidentally rely on unexpected side effects (e.g. a new dependency that didn't make it into version control).
+
+CI workflows fix that (this project uses Github Actions), but then when CI fails it is incredibly hard/slow to debug.
+
+Dagger allows us to run the full CI workflow locally (our Github Actions just point to Dagger) and iterate faster. Now Dagger can be trusted to create
+a fully reproducible build that is known to work.
+
 ## What Dagger Does
 
 Dagger runs the full CI pipeline inside a container for reproducibility. It:
@@ -22,14 +31,10 @@ Dagger runs the full CI pipeline inside a container for reproducibility. It:
 # Full CI simulation (same as GitHub Actions)
 dagger-test
 # PATH based reference to scripts/commands/dagger-test
-# equivalent to:
-dagger call --mod ./dagger/test-and-build/ --source . run
 
 # Set up Dagger for development (initializes module dependencies)
 dagger-develop
 # PATH based reference to scripts/commands/dagger-develop
-# equivalent to:
-dagger develop --mod ./dagger/test-and-build --recursive
 ```
 
 > **Tip:** Run `test-ci` first — Much faster for iteration. Use Dagger only to confirm the final result before push. Dagger is also much harder to debug directly (but still easier than cloud CI)
