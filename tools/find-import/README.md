@@ -1,7 +1,7 @@
 <div style="text-align:center">
 
 # find-import
-Find and load first instance of js/json in parent directories.
+Find and load the first matching JS/JSON file by searching parent directories.
 
 [![npm package](https://badge.fury.io/js/find-import.svg)](https://www.npmjs.com/package/find-import)
 [![License](https://img.shields.io/npm/l/find-import.svg)](https://github.com/JacobLey/leyman/blob/main/tools/find-import/LICENSE)
@@ -9,22 +9,12 @@ Find and load first instance of js/json in parent directories.
 </div>
 
 ## Contents
-- [Introduction](#introduction)
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
   - [findImport](#findimportfilenames-options)
-
-## Introduction
-
-Load the first instance of a found module.
-
-Optionally specify depth preference to prefer "top-most" packages.
-
-Supports `.json`, `.cjs`, `.mjs`, and `.js`.
-
-Returns the path and contents of the found module.
+- [Also See](#also-see)
 
 ## Install
 
@@ -34,7 +24,7 @@ npm i find-import
 
 ## Example
 
-Given file structure
+Given file structure:
 ```
 /
 └─┬ root
@@ -47,64 +37,51 @@ Given file structure
 // cwd = /root/my-package
 import { findImport } from 'find-import';
 
-let found;
+// Searches upward from cwd — finds closest match first
+const found = await findImport(['my-file.cjs', 'my-file.json']);
+found.content;  // { foo: 'bar' }
+found.filePath; // /root/my-package/my-file.json
 
-found = await findImport(['my-file.cjs', 'my-file.json']);
-found.content // { foo: 'bar' }
-found.filePath // /root/my-package/my-file.json
+// Search downward — finds top-most match first
+const fromTop = await findImport(['my-file.cjs', 'my-file.json'], { direction: 'down' });
+fromTop.content;  // { abc: 123 }
+fromTop.filePath; // /root/my-file.cjs
 
-found = await findImport(['my-file.cjs', 'my-file.json'], {
-    direction: 'down',
-});
-found.content // { abc: 123 }
-found.filePath // /root/my-file.cjs
-
-found = await findImport(['my-file.cjs', 'my-file.json'], {
+// Limit search to a subtree
+const scoped = await findImport(['my-file.cjs', 'my-file.json'], {
     direction: 'down',
     startAt: '/root/my-package',
 });
-found.filePath // /root/my-package/my-file.json
-
-
-found = await findImport(['my-file.cjs', 'my-file.json'], {
-    cwd: '/root',
-});
-found.filePath // /root/my-package/my-file.cjs
+scoped.filePath; // /root/my-package/my-file.json
 ```
 
 ## Usage
 
-`find-import` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { findImport } = await import('find-import');`.
+`find-import` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { findImport } = await import('find-import');`.
+
+Supports `.json`, `.cjs`, `.mjs`, and `.js` files.
 
 ## API
 
-### findImport(fileNames, options?)
+### `findImport(fileNames, options?)`
 
-Finds first instance of matching module, and loads. Returns file path to module and content.
+Searches directories for the first matching file from `fileNames` and loads it. By default searches upward from `cwd` to `/`, returning the closest (deepest) match. Returns `null` if no file is found.
 
-Note that `content` is the result of a dynamic `import()` call. If accessing the default content, it may be necessary/convenient to extract that content. See [default-import](https://www.npmjs.com/package/default-import) for a potential solution.
+The `content` field is the result of a dynamic `import()` call. When importing CJS modules, extracting the default export may require [`default-import`](https://www.npmjs.com/package/default-import).
 
-### fileNames
+**Parameters**
 
-string or array of strings
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `fileNames` | `string \| string[]` | — | Required. One or more file names to search for in each directory. |
+| `options` | `object` | `{}` | Optional. Search configuration. |
+| `options.cwd` | `string \| URL` | `process.cwd()` | Bottom-most directory to begin the search from. |
+| `options.direction` | `'up' \| 'down'` | `'up'` | `'up'` searches from `cwd` toward `/` (returns deepest match); `'down'` reverses the order (returns top-most match). |
+| `options.startAt` | `string \| URL` | `'/'` | Top-most directory that bounds the search. |
 
-List of file names to search for in each directory.
+**Returns** `Promise<{ filePath: string; content: unknown } | null>` — the absolute path and loaded content of the first matching file, or `null` if none is found.
 
-#### options
+## Also See
 
-- cwd
-  - Type: `string` or `URL`
-  - optional, defaults to `process.cwd()`
-  - Directory to use as base directory.
-  - See [`parse-cwd`](https://www.npmjs.com/package/parse-cwd).
-
-- direction
-  - `'up'`(default) or `'down'`
-  - direction to search for files.
-    - `'up'` indicates `/foo/bar` -> `/foo` -> `/`
-    - `'down'` is opposite, `/` -> `/foo` -> `/foo/bar`
-
-- startAt
-  - Type: `string` or `URL`
-  - optional, defaults to `/`
-  - Top-most "root" directory to limit search.
+- [`default-import`](https://www.npmjs.com/package/default-import) — extracts the correct default export from a CJS/ESM import, useful when handling `content` from `findImport`
+- [`parse-cwd`](https://www.npmjs.com/package/parse-cwd) — resolves the `cwd` and `startAt` options used by `findImport`

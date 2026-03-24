@@ -1,7 +1,7 @@
 <div style="text-align:center">
 
 # haywire-launcher
-Instantiate and execute your script in one line.
+Instantiate and execute your haywire-managed entry script in one line.
 
 [![npm package](https://badge.fury.io/js/haywire-launcher.svg)](https://www.npmjs.com/package/haywire-launcher)
 [![License](https://img.shields.io/npm/l/haywire-launcher.svg)](https://github.com/JacobLey/leyman/blob/main/tools/haywire-launcher/LICENSE)
@@ -9,48 +9,12 @@ Instantiate and execute your script in one line.
 </div>
 
 ## Contents
-- [Introduction](#introduction)
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [launch](#launchcontainer-id--entryscript)
-
-## Introduction
-
-[EntryScript](https://www.npmjs.com/package/entry-script) is a package that helps manage execution of a file at runtime, while making it easy to mock and test.
-
-[Haywire](https://www.npmjs.com/package/haywire) is a type-safe dependency injection library that furthers the ability to mock and test interfaces.
-
-Using them together, we can have our haywire container instantiate our entry script!
-However, by default this comes with a couple problems that EntryScript was designed to solve in the first place.
-
-We need to actually invoke instantiations of our container, which may trigger behavior that is not safe to run at test time.
-It may also fail if the container internally has dependencies on credentials, environment variables, or network connections that don't exist in your local environment.
-```ts
-import EntryScript from 'entry-script';
-import { myHaywireContainer } from './container.js';
-
-// This potentially has side effects that are not safe locally!
-export default myHaywireContainer.get(EntryScript);
-```
-
-Alternatively we can just use an EntryScript child class to perform the constructor instantiation. 
-However this code isn't easy to test, without mocking the container (Haywire container types should not be mocked themselves) or invoking the container directly, which repeats the issue above.
-```ts
-import EntryScript from 'entry-script';
-import { myHaywireContainer } from './container.js';
-
-export default class extends EntryScript {
-    public static override async main(argv: string[]): Promise<void> {
-        // Test coverage of this code is hard!
-        const entry = await myHaywireContainer.getAsync(EntryScript);
-        return entry.main(argv);
-    }
-}
-```
-
-`HaywireLauncher` is the solution to this! Like all things Haywire, it continues to be type-safe!
+  - [launch](#launchcontainer-id)
+- [Also See](#also-see)
 
 ## Install
 
@@ -60,7 +24,8 @@ npm i haywire-launcher
 
 ## Example
 
-If your container has a binding for `EntryScript`:
+With the default `EntryScript` id (container must bind `EntryScript`):
+
 ```ts
 import { launch } from 'haywire-launcher';
 import { myHaywireContainer } from './container.js';
@@ -68,15 +33,15 @@ import { myHaywireContainer } from './container.js';
 export default launch(myHaywireContainer);
 ```
 
-If your container has a customer binding for a class that implements the `Main` interface:
+With a custom id for any class implementing the `Main` interface:
+
 ```ts
 import type { Main } from 'entry-script';
 import { identifier } from 'haywire';
 import { launch } from 'haywire-launcher';
 import { myHaywireContainer } from './container.js';
 
-// For simple demonstration purposes only!
-// Do _not_ redefine your main id, and import the existing value.
+// Import the real mainId from wherever it is defined in your project
 const mainId = identifier<Main>();
 
 export default launch(myHaywireContainer, mainId);
@@ -84,18 +49,36 @@ export default launch(myHaywireContainer, mainId);
 
 ## Usage
 
-`haywire-launcher` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { launch } = await import('haywire-launcher');`.
+`haywire-launcher` is an ESM module. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { launch } = await import('haywire-launcher');`.
+
+The problem `haywire-launcher` solves: naively calling `container.getAsync(EntryScript)` at the top level of a module triggers container instantiation at import time, making it impossible to mock dependencies in tests. `launch` returns an `EntryScript` subclass synchronously — the container is only resolved when the script is actually executed as the entry point.
 
 ## API
 
-### launch(container, id = EntryScript)
+### `launch(container, id?)`
 
-Method that takes your main container, as well as an optional id (defaults to `EntryScript`) to be passed to the `.getAsync(<id>)` method of your container.
+Returns an `EntryScript` subclass that, when invoked as the entry point, resolves the given id from the container and delegates execution to it.
 
-Synchronously returns an extension of `EntryScript` which proxy the `argv` parameters to your container's instance when invoked by the top level script.
+**Parameters**
 
-_If_ not providing a custom id, the container must provide a binding for `EntryScript` that returns an _instance of_ a child class of `EntryScript`. This method is generally for convenience.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `container` | `AsyncContainer` | — | Required. A haywire async container capable of providing the target instance. |
+| `id` | `HaywireId` | `EntryScript` | Optional. The haywire id to request from the container. Must resolve to a type implementing `Main`. |
 
-Otherwise you may customize your instances to not necessarily extend `EntryScript`, but simply implement the `Main` interface. The container must be capable of providing a non-`nullable()` and non-`undefinable()` instance.
+**Returns** `WrapperMain` (an `EntryScript` subclass) — a class that can be exported as `default` and will be picked up by the `entry-script` lifecycle.
 
-Providing a container (and and optional id) that would not yield a proper `EntryScript` or `Main` interface will result in a type/build time error. Runtime will also experience issues because it will be incapable of fetching instances from the container.
+**Type errors** — Passing a container that cannot provide a binding for the given id, or an id whose type does not implement `Main`, is a compile-time error.
+
+```ts
+import { launch } from 'haywire-launcher';
+import { myHaywireContainer } from './container.js';
+
+// Container must have a binding for EntryScript
+export default launch(myHaywireContainer);
+```
+
+## Also See
+
+- [`haywire`](https://www.npmjs.com/package/haywire) — the type-safe dependency injection library used to build containers
+- [`entry-script`](https://www.npmjs.com/package/entry-script) — the base class that controls entry point execution

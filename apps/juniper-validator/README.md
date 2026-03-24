@@ -1,7 +1,7 @@
 <div style="text-align:center">
 
 # Juniper Validator
-Standard Schema compliant validator for [Juniper](https://www.npmjs.com/package/juniper)
+StandardSchema-compliant validator for [Juniper](https://www.npmjs.com/package/juniper) schemas.
 
 [![npm package](https://badge.fury.io/js/juniper-validator.svg)](https://www.npmjs.com/package/juniper-validator)
 [![License](https://img.shields.io/npm/l/juniper-validator.svg)](https://github.com/JacobLey/leyman/blob/main/apps/juniper-validator/LICENSE)
@@ -9,14 +9,14 @@ Standard Schema compliant validator for [Juniper](https://www.npmjs.com/package/
 </div>
 
 ## Contents
-- [Introduction](#introduction)
 - [Install](#install)
 - [Example](#example)
+- [Usage](#usage)
 - [API](#api)
-
-## Introduction
-
-`juniper-validator` wraps a [Juniper](https://www.npmjs.com/package/juniper) schema (or compiled JSON Schema) with a [StandardSchema](https://standardschema.dev/)-compliant interface. It uses [Ajv](https://ajv.js.org/) internally to compile and run validation.
+  - [makeValidator](#makevalidatorschema-options)
+  - [JuniperValidator](#junipervalidatort)
+  - [Utility Types](#utility-types)
+- [Also See](#also-see)
 
 ## Install
 
@@ -56,34 +56,38 @@ if (result.issues) {
 }
 ```
 
+## Usage
+
+`juniper-validator` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { makeValidator } = await import('juniper-validator');`.
+
+Pass a Juniper `Schema` instance (or a plain `JsonSchema` object) to `makeValidator`. The returned validator implements the [StandardSchema v1](https://standardschema.dev/) interface, making it compatible with any library that accepts standard validators (e.g. form libraries, OpenAPI tooling).
+
+Ajv is used internally to compile and run validation. The `strict` option is always `true`.
+
 ## API
 
 ### `makeValidator(schema, options?)`
 
 Creates a `JuniperValidator` from a Juniper `Schema` instance or a compiled `JsonSchema` object.
 
-```ts
-import { makeValidator } from 'juniper-validator';
-
-const validator = makeValidator(schema);
-```
-
 **Parameters**
 
-- `schema` — a Juniper `Schema` instance or `JsonSchema` object.
-- `options` _(optional)_ — [Ajv constructor options](https://ajv.js.org/options.html), excluding `strict` (always set to `true`).
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `schema` | `Schema \| JsonSchema` | — | Required. A Juniper `Schema` instance or plain JSON Schema object. |
+| `options` | `AjvOptions` | `{}` | Optional. [Ajv constructor options](https://ajv.js.org/options.html). The `strict` option is always forced to `true`. |
 
-**Returns** a `JuniperValidator<T>`.
+**Returns** `JuniperValidator<T>` — a validator instance typed to the schema's inferred type.
 
 ---
 
 ### `JuniperValidator<T>`
 
-The object returned by `makeValidator`. Implements the [StandardSchema v1](https://standardschema.dev/) interface and adds the following methods:
+Implements the [StandardSchema v1](https://standardschema.dev/) interface. Returned by `makeValidator`.
 
-#### `is(value): value is T`
+#### `.is(value): value is T`
 
-Type guard. Returns `true` if `value` matches the schema.
+Type guard. Returns `true` if `value` matches the schema, narrowing the type to `T`.
 
 ```ts
 if (validator.is(value)) {
@@ -91,23 +95,23 @@ if (validator.is(value)) {
 }
 ```
 
-#### `assert(value): asserts value is T`
+#### `.assert(value): asserts value is T`
 
-Assertion. Throws an `Error` with message `'Value does not match schema'` and the Ajv error objects as `cause` if validation fails.
+Throws an `Error` with message `'Value does not match schema'` and Ajv error objects as `cause` if validation fails. Narrows the type to `T` after the call.
 
 ```ts
 validator.assert(value);
 // value is T
 ```
 
-#### `validate(value): StandardSchemaV1.Result<T>`
+#### `.validate(value): StandardSchemaV1.Result<T>`
 
-Convenience shorthand for the StandardSchema `~standard.validate` method. Returns `{ value }` on success, or `{ issues }` on failure where each issue has a `message` string.
+Convenience shorthand for the StandardSchema `~standard.validate` method. Returns `{ value: T }` on success, or `{ issues: StandardSchemaV1.Issue[] }` on failure. Each issue has a `message` string.
 
 ```ts
 const result = validator.validate(value);
 if ('issues' in result) {
-    // result.issues: StandardSchemaV1.Issue[]
+    console.error(result.issues.map(i => i.message));
 }
 ```
 
@@ -115,13 +119,29 @@ if ('issues' in result) {
 
 ### Utility Types
 
-`ValidatorType<V>` and `AssertionType<V>` extract the inferred type and assertion function signature from a `JuniperValidator` instance. Useful as TypeScript helpers when passing validators around.
+#### `ValidatorType<V>`
+
+Extracts the inferred data type `T` from a `JuniperValidator<T>` instance type.
 
 ```ts
-import type { AssertionType, ValidatorType } from 'juniper-validator';
+import type { ValidatorType } from 'juniper-validator';
 
 type MyType = ValidatorType<typeof validator>;
-// equivalent to SchemaType<typeof schema>
+// Equivalent to SchemaType<typeof schema>
+```
+
+#### `AssertionType<V>`
+
+Extracts the assertion function signature from a `JuniperValidator<T>` instance type. Useful for typing parameters that accept an assertion function.
+
+```ts
+import type { AssertionType } from 'juniper-validator';
 
 const assert: AssertionType<typeof validator> = validator.assert;
 ```
+
+## Also See
+
+- [`juniper`](https://www.npmjs.com/package/juniper) — JSON Schema builder with static TypeScript inference; used to create the schemas passed to `makeValidator`
+- [StandardSchema](https://standardschema.dev/) — the interface `JuniperValidator` implements
+- [Ajv](https://ajv.js.org/) — the underlying JSON Schema validator

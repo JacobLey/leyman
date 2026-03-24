@@ -1,41 +1,31 @@
 <div style="text-align:center">
 
 # load-populate-files
-Load and dynamically populate file content based on a single files config.
+Load and dynamically populate file content based on a single file's config.
 
 [![npm package](https://badge.fury.io/js/load-populate-files.svg)](https://www.npmjs.com/package/load-populate-files)
 [![License](https://img.shields.io/npm/l/load-populate-files.svg)](https://github.com/JacobLey/leyman/blob/main/tools/load-populate-files/LICENSE)
 
 </div>
 
-## Table of Contents
+## Contents
 
-- [Introduction](#introduction)
-- [Installation](#installation)
+- [Install](#install)
+- [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-    - [loadAndPopulateFiles](#loadandpopulatefilesfilepath-options)
+  - [loadAndPopulateFiles](#loadandpopulatefilesfilepath-options)
 - [Types](#types)
-    - [PopulateFileParams](#populatefileparams)
+  - [PopulateFileParams](#populatefileparams)
 - [Also See](#also-see)
 
-## Introduction
+## Install
 
-`load-populate-files` is a small library to simplify usage of [populate-files](https://www.npmjs.com/package/populate-files), which will dynamically write files based on calculated content.
+```sh
+npm i load-populate-files
+```
 
-Instead of calling `populateFiles()` directly, we can can export the file configs, and defer the execution of file writing to `loadAndPopulateFiles()`.
-
-## Installation
-
-`npm i load-populate-files`
-
-Populate-files is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { loadAndPopulateFiles } = await import('load-populate-files');`.
-
-## Usage
-
-Provide the file path to a file that _default exports_ the parameters for `populateFiles()`
-
-Options are supported the same as `populateFiles()`.
+## Example
 
 ```ts
 // config.ts
@@ -53,41 +43,54 @@ export default [
 ];
 
 // index.ts
+import { loadAndPopulateFiles } from 'load-populate-files';
+
 await loadAndPopulateFiles('./config.js');
 ```
 
-This is also exposed as a CLI:
+## Usage
 
-`pnpx load-populate-files --help`
-`pnpx load-populate-files --file-path ./config.js`
+`load-populate-files` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { loadAndPopulateFiles } = await import('load-populate-files');`.
+
+Instead of calling `populateFiles()` directly, export file configs from a dedicated config module, then point `loadAndPopulateFiles()` at that file. The loaded file may export a single config object or an array of configs.
+
+This package is also available as a CLI:
+
+```sh
+pnpx load-populate-files --help
+pnpx load-populate-files --file-path ./config.js
+```
 
 ## API
 
-### loadAndPopulateFiles(filePath, options)
+### `loadAndPopulateFiles(filePath, options?)`
 
-Loads the config specified at `filePath`, and passes that to [populateFiles()](https://www.npmjs.com/package/populate-files#populatefilesparams-options).
+Loads the config exported at `filePath` and passes it to [`populateFiles()`](https://www.npmjs.com/package/populate-files#populatefilesparams-options).
 
-The loaded file may either be a single object config, or an array of separate configs.
+**Parameters**
 
-If using the CLI, the `--file-path` parameter is required.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `filePath` | `string` | — | Required. Path to the config module. When using the CLI, pass as `--file-path`. |
+| `options` | `object` | `{}` | Optional. See [options](#options) below. |
 
-#### options
+**Returns** `Promise<void>`
 
-An optional object as the secondary parameter. Passed to underlying `populateFiles()` call.
+#### `options`
 
-They are also available as optional flags in the CLI.
+Options are passed through to the underlying `populateFiles()` call. They are also available as CLI flags.
 
-| property | CLI flag | type | default | description |
+| Property | CLI flag | Type | Default | Description |
 |----------|----------|------|---------|-------------|
-| check | `--ci` | `boolean` | `true` if in a CI environment. Else `false` | If `true`, will fail if writing the file would result in changing the files content. Useful for CI environments to make sure the version-controlled code is up to date before deployment. |
-| dryRun | `--dry-run` | | `boolean` | `false` | If `true`, will not write file regardless of changes. Can still fail if `check` is `true`. |
-| cwd | `--cwd` | `string \| URL` | `process.env.PWD` | Used as the current working directory if `filePath` is a relative file. Will be re-used in filePaths derived from loaded config |
+| `check` | `--ci` | `boolean` | `true` in CI, else `false` | If `true`, fails if writing a file would change its content. Useful for verifying version-controlled files are up to date before deployment. |
+| `dryRun` | `--dry-run` | `boolean` | `false` | If `true`, does not write any files regardless of changes. Can still fail if `check` is `true`. |
+| `cwd` | `--cwd` | `string \| URL` | `process.env.PWD` | Used as the current working directory for `filePath` and re-used for relative `filePath`s in the loaded config. |
 
 ## Types
 
-### PopulateFileParams
+### `PopulateFileParams`
 
-Type of the exported config at the specified file. Represents the parametesr to `populateFiles()`. It is highly recommended to combine with the `satisfies` keyword to ensure your exported config will succeed.
+The type of a single exported config entry — equivalent to the params accepted by `populateFiles()`. Use with the `satisfies` keyword to validate your config at compile time.
 
 ```ts
 import type { PopulateFileParams } from 'load-populate-files';
@@ -98,14 +101,9 @@ export default {
 } satisfies PopulateFileParams;
 ```
 
-Note this type can also be imported from [populate-files](https://www.npmjs.com/package/populate-files) directly.
+This type can also be imported directly from [`populate-files`](https://www.npmjs.com/package/populate-files).
 
 ## Also See
 
-### [parse-cwd](https://www.npmjs.com/package/parse-cwd)
-
-Used internally to interpret `cwd` option.
-
-### [populate-files](https://www.npmjs.com/package/populate-files)
-
-Populate and format a file based on dynamic content.
+- [`populate-files`](https://www.npmjs.com/package/populate-files) — the underlying package that writes files; use directly when you don't need a separate config file
+- [`parse-cwd`](https://www.npmjs.com/package/parse-cwd) — used internally to interpret the `cwd` option

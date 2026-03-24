@@ -1,7 +1,7 @@
 <div style="text-align:center">
 
 # common-proxy
-Conveniently expose ESM-backed methods as a syncronously available (commonjs) async method.
+Wrap an ESM import so it is synchronously available as a promise-returning function in CommonJS.
 
 [![npm package](https://badge.fury.io/js/common-proxy.svg)](https://www.npmjs.com/package/common-proxy)
 [![License](https://img.shields.io/npm/l/common-proxy.svg)](https://github.com/JacobLey/leyman/blob/main/tools/common-proxy/LICENSE)
@@ -9,46 +9,36 @@ Conveniently expose ESM-backed methods as a syncronously available (commonjs) as
 </div>
 
 ## Contents
-
-- [Introduction](#introduction)
+- [Install](#install)
+- [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [commonProxy](#commonproxy)
+  - [commonProxy](#commonproxypromisedFn)
+  - [commonProxyDecorator](#commonproxydecoratorpromiseddecorator)
 
-## Introduction
+## Install
 
-ESM methods import asyncronously. If your codebase is all ESM, then that is easy to work with!
-
-But sometimes you _have_ to support CommonJS, either because you are developing a plugin or existing codebase hasn't been migrated to ESM yet.
-
-`common-proxy` is a CommonJs package that can be provided with your ESM import and syncronously expose the main default export as a promise-returning method.
-
-## Usage
-
-### How it used to work:
-
-```mts
-// my-module.mts
-export const sayHello = (name: string): void => `hello ${name}`;
-
-export default function add(x: number, y: number): number {
-    return x + y;
-};
+```sh
+npm i common-proxy
 ```
 
+## Example
+
+**Before** — ESM import is not synchronously available in CJS:
+
 ```cts
-// my-old-script.cts
-// Error! Cannot `require` an ESM package
-import add from './my-module';
+// my-module.cts
+// Error! Cannot statically import an ESM package from CJS.
+import add from './my-module.mjs';
 
 (async () => {
-    // Works... but requires, and isn't accessible elsewhere
-    const { sayHello } = await import('./my-module');
+    // Works, but the result is not accessible outside the async block.
+    const { sayHello } = await import('./my-module.mjs');
     sayHello('Jacob');
 })();
 ```
 
-### How it works with common-proxy
+**After** — wrap the dynamic import with `commonProxy`:
 
 ```cts
 // my-module.cts
@@ -61,20 +51,57 @@ export const sayHello = imported.then(mod => mod.sayHello);
 ```
 
 ```cts
-// my-new-script.cts
+// consumer.cts
 import add, { sayHello } from './my-module.cjs';
 
-// Both return promises!
+// Both return promises and are usable at the top level of the module.
 const sum: Promise<number> = add(1, 2);
-sayHello('Jacob');
+const greeting = sayHello('Jacob');
 ```
+
+## Usage
+
+`common-proxy` is itself a **CommonJS** package (the export is a `.cjs` file), so it can be `require()`d or statically imported from any CJS file without a dynamic import.
+
+The typical pattern is:
+
+1. Create a `.cts` bridge module next to your ESM source.
+2. Call `import('./your-esm-module.mjs')` to get a `Promise` of the module.
+3. Pass that promise to `commonProxy()` for the default export, or chain `.then(mod => mod.methodName)` for named exports.
+
+If the promise resolves to a module object that has a `default` property (as `import()` does for ES modules with a default export), `commonProxy` automatically unwraps it via [`default-import`](https://www.npmjs.com/package/default-import).
 
 ## API
 
-### commonProxy
+### `commonProxy(promisedFn)`
 
-Takes a Promise of a function, and _syncronously_ returns a function that has the same signature and returns a promise that eventually resolves with the real result from the true function.
+Takes a promise of a function and synchronously returns a wrapper function with the same call signature. Calling the wrapper returns a promise that resolves with the result of the real function.
 
-_If_ the parameter is actually a module with a `default` property (the way `import(<package>)` exposes a default export), the method from default import will be used. See [default-import](https://www.npmjs.com/package/default-import) for more context.
+**Parameters**
 
-Any other methods should be passed directly. This can be achieved with promise chaining `import(<package>).then(mod => mod.methodName)`.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `promisedFn` | `Promise<Handler>` or `Promise<{ default: Handler }>` | — | Required. A promise of the function to proxy, typically the result of a dynamic `import()`. |
+
+**Returns** a function with the same parameters as `Handler` that returns `Promise<ReturnType<Handler>>`. If `Handler` already returns a `Promise`, the return type is preserved as-is.
+
+```cts
+import { commonProxy } from 'common-proxy';
+
+const add = commonProxy(import('./math.mjs').then(m => m.add));
+const result: Promise<number> = add(1, 2);
+```
+
+---
+
+### `commonProxyDecorator(promisedDecorator)`
+
+Variant of `commonProxy` for higher-order decorator functions. Takes a promise of a decorator (a function that wraps another function) and returns a synchronous decorator with the same interface, where calls return promises.
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `promisedDecorator` | `Promise<Decorator>` or `Promise<{ default: Decorator }>` | — | Required. A promise of the decorator function. |
+
+**Returns** a decorator with the same parameters that wraps handlers so their return values become promises.

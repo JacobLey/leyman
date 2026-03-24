@@ -8,28 +8,16 @@ ESM JSON Schema builder for static Typescript inference
 
 </div>
 
+For why Juniper exists and how it compares to alternatives, see [WHY-JUNIPER.md](./WHY-JUNIPER.md).
+
 ## Contents
-- [Introduction](#introduction)
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
 - [Schemas](#schemas)
 - [API](#api)
 - [Recipes](#recipes)
-- [Motivation (The JSON Schema Problem)](#motivation-the-json-schema-problem)
-- [Objectives](#objectives)
-- [Limitations](#limitations)
-- [Comparisons](#comparisons)
-
-## Introduction
-
-Juniper is a JSON Schema generator that focuses on solving two problems:
-1) Writing strict and maintainable JSON Schemas.
-2) Using those enforced schemas as Typescript interfaces.
-
-Juniper primarily supports [Draft 2020-12](https://json-schema.org/draft/2020-12/json-schema-core.html) JSON Schema, but also supports OpenAPI 3.0 as much as possible.
-
-Juniper does not provide any JSON Schema validation. Please use a validation library such as [Ajv](https://www.npmjs.com/package/ajv) for any validation. All examples in this documentation will use Ajv.
+- [Also See](#also-see)
 
 ## Install
 
@@ -97,9 +85,7 @@ if (validator(unknownUserInput)) {
 
 Juniper is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { stringSchema } = await import('juniper');`.
 
-For every schema exported, there is both a class and functional constructor for each schema. The class can be instantiated directly via the `new` keyword, or via the static `create` method. The functional constructor is a reference to the `create` method. All three are perfectly valid ways of creating a schema, and entirely up to you to prefer OOP vs functional programming styles.
-
-The instance returned by all three methods will be an instance of that schema class.
+For every schema exported, there is both a class and functional constructor. The class can be instantiated directly via the `new` keyword, or via the static `create` method. The functional constructor is a reference to the `create` method. All three are equivalent:
 
 ```ts
 import { StringSchema, stringSchema } from 'juniper';
@@ -112,7 +98,7 @@ const schema3 = stringSchema({ maxLength: 10 })
 console.log(schema3 instanceof StringSchema); // true
 ```
 
-Juniper instances are **immutable**. That means calling an instance method does not alter the existing instance, and has no side effects. Every method that "alters" the schema will return a clone of the instance.
+Juniper instances are **immutable**. Calling an instance method does not alter the existing instance. Every method that "alters" the schema returns a clone:
 
 ```ts
 import { numberSchema } from 'juniper';
@@ -125,9 +111,8 @@ console.log(schema1.toJSON()); // { type: 'integer' }
 console.log(schema2.toJSON()); // { type: 'integer', multipleOf: 5 }
 ```
 
-It is _highly_ recommended the Juniper module is used with Typescript. While it may provide some benefits in a JS or loosely typed environment for maintaining schemas, a significant portion of the logic resolves around generating correct types associated with each schema.
+Juniper is designed to be used with TypeScript. While it can be used in a JavaScript environment, a significant portion of the value — including type inference and compile-time schema validation — requires TypeScript. Many schema restrictions are enforced only at the TypeScript level:
 
-There are also many validation restrictions that are only applied in Typescript. For example:
 ```ts
 import { booleanSchema, objectSchema } from 'juniper';
 
@@ -149,237 +134,307 @@ const obj = objectSchema({
     bool
 ]);
 ```
-The above code will fail Typescript validation for a number of reasons. However it will not necessarily fail when executed as plain Javascript. The resulting JSON Schema may be equally nonsensical.
+
+The above code fails TypeScript validation. It does not necessarily fail at runtime, and the resulting JSON Schema may be nonsensical.
 
 ## Schemas
 
-Juniper exports the following Schema classes, with their provided JSON Schema/Typescript equivalent.
+Juniper exports the following schema classes with their JSON Schema and TypeScript equivalents:
 
-Juniper Class | JSON Schema | Typescript literal
+Juniper Class | JSON Schema | TypeScript
 ---|---|---
-ArraySchema | `type: 'array'` | `unknown[]`
-BooleanSchema | `type: 'boolean'` | `boolean`
-CustomSchema | N/A (whatever is provided) | N/A (whatever is provided)
-EnumSchema | `enum: []` | N/A (Union `\|` of provided literals)
-MergeSchema | N/A (compositional schema) | _initially_ `unknown` then `\|` or `&` as appropriate.
-NeverSchema | `not: {}` | `never`
-NullSchema | `type: 'null'` | `null`
-NumberSchema | `type: 'number'` OR `type: 'integer'` | `number`
-ObjectSchema | `type: 'object'` | `{}`
-StringSchema | `type: 'string'` | `string`
-TupleSchema | `type: 'array'` | `[unknown]`
+`ArraySchema` | `type: 'array'` | `unknown[]`
+`BooleanSchema` | `type: 'boolean'` | `boolean`
+`CustomSchema` | N/A (whatever is provided) | N/A (whatever is provided)
+`EnumSchema` | `enum: []` | Union `\|` of provided literals
+`MergeSchema` | N/A (compositional schema) | `unknown`, then `\|` or `&` as appropriate
+`NeverSchema` | `not: {}` | `never`
+`NullSchema` | `type: 'null'` | `null`
+`NumberSchema` | `type: 'number'` OR `type: 'integer'` | `number`
+`ObjectSchema` | `type: 'object'` | `{}`
+`StringSchema` | `type: 'string'` | `string`
+`TupleSchema` | `type: 'array'` | `[unknown]`
 
-Schemas come with a couple caveats:
+Notes:
 
-- `NumberSchema` can emit type of `integer` and `number` (default), based on the `type` field. It does not impact TS typings.
-- `MergeSchema` without "merging" anything can be used as a generic `unknown`. Using methods like `allOf` and `anyOf` can generate a mix of unrelated types like `number | string`.
-- `TupleSchema` is a convenience wrapper around `ArraySchema` ensuring "strict" tuples. The same functionality can be achieved via raw `ArraySchema`.
-- `CustomSchema` is used to break out of the Juniper environment. It's usage is discouraged, but may be the best solution when dealing with instances where some JSON Schemas + typings already exist, and for gradual adoption of Juniper.
-- There is no `any` schema, as `any` is discouraged in favor of `unknown` (`MergeSchema`). If `any` is truly required, `CustomSchema` may be used (default output is "always valid" empty JSON Schema)
+- `NumberSchema` can emit type `integer` or `number` (default) based on the `type` field. This does not impact TypeScript typings.
+- `MergeSchema` without merging anything is a generic `unknown`. Methods like `allOf` and `anyOf` can produce unions such as `number | string`.
+- `TupleSchema` is a convenience wrapper around `ArraySchema` that enforces strict tuples. The same result can be achieved with `ArraySchema` directly.
+- `CustomSchema` is for breaking out of the Juniper environment. Its use is discouraged but may be the best option when integrating with existing JSON Schemas or for gradual adoption.
+- There is no `any` schema. Use `MergeSchema` for `unknown`. If `any` is truly required, use `CustomSchema` (default output is an always-valid empty schema).
 
 ## API
 
 ### Helper Types
 
-Type | Interface | Description
----|---|---
-SchemaType | `SchemaType<Schema>` \| `SchemaType<JSON>` | Extracts the TS type from the class or JSON.
-Schema | `Schema<number>` | Juniper Schema that describes a typescript interface. _Only_ usable for passing to rendering to JSON and occasionally as a parameter to other Juniper instances.
-JSONSchema | `JSONSchema<number>` | JSON Schema object that describes the specified Typescript type
-EmptyObject | `EmptyObject` | Describes an _actually empty_ object. Mostly used internally but exposed for convenience.
-PatternProperties | ``PatternProperties<`abc${string}`>`` | Describes a string pattern type. See `ObjectSchema.patternProperties` for usage.
+| Type | Interface | Description |
+|------|-----------|-------------|
+| `SchemaType` | `SchemaType<Schema>` \| `SchemaType<JSON>` | Extracts the TypeScript type from a Juniper class or JSON Schema object. |
+| `Schema` | `Schema<number>` | A Juniper Schema instance describing a TypeScript interface. Usable for rendering to JSON or passing as a parameter to other Juniper instances. |
+| `JSONSchema` | `JSONSchema<number>` | A JSON Schema object describing the specified TypeScript type. |
+| `EmptyObject` | `EmptyObject` | Describes an actually-empty object. Mostly internal but exposed for convenience. |
+| `PatternProperties` | ``PatternProperties<`abc${string}`>`` | Describes a string pattern type. See [`ObjectSchema.patternProperties`](#objectschema). |
 
 ### Constructors
 
-Every schema can be generated three ways:
-- `new` Keyword - `new StringSchema()`
-- static `create` method - `StringSchema.create()`
-- functional constructor - `stringSchema()`
+Every schema can be created three ways:
 
-Every constructor takes a single options object, to set properties on the JSON object. Every parameter is optional, and can also be set via a method of similar name.
+- `new` keyword — `new StringSchema({ maxLength: 5 })`
+- static `create` method — `StringSchema.create({ maxLength: 5 })`
+- functional constructor — `stringSchema({ maxLength: 5 })`
 
-`stringSchema({ maxLength: 5 })` == `StringSchema.create().maxLength(5)` == `new StringSchema({}).maxLength(5)`.
+All three are equivalent. Every constructor takes a single options object. Every parameter is optional and can also be set via a method of the same name:
 
-Not _every_ property can be set in the constructor, and must be set via a method. This limitation is usually due to restrictions of type inference on the constructor alone.
+```ts
+stringSchema({ maxLength: 5 }) == StringSchema.create().maxLength(5) == new StringSchema({}).maxLength(5)
+```
 
-Schema Constructors make heavy use of [Typescript Generics](https://www.typescriptlang.org/docs/handbook/2/generics.html). The usage of these generics should be seen as internal, and may break in unannounced ways in future releases. The one exception is `CustomSchema`, whose type is provided via the Generic parameter.
+Not every property can be set in the constructor — some must be set via method due to TypeScript inference limitations. Schema constructors make heavy use of TypeScript generics. These generics are internal and may change without announcement. The exception is `CustomSchema`, whose type is provided via the generic parameter.
 
-Juniper instances are immutable, so every method returns a _clone_ of the original instance, with the provided changes.
+Every method returns a clone of the original instance (immutable).
 
-### Generic Schema helper methods
+### Generic Schema Helper Methods
 
-The following helper methods are provided for typing/exporting the JSON Schema from a Juniper instance:
-- `toJSON`
-  - Renders the JSON Schema document. Document should be immediately passed to a validator or serializer. The exact structure of the document is not guaranteed, and should not be modified further.
-  - Options
-    - `openApi30` - `boolean` - Output a JSON Schema compliant with OpenAPI 3.0. Not every property is fully supported! See implementation warnings.
-    - `id` - `string` optionally provide a value to be placed in the `$id` field of the document.
-    - `schema` - `boolean` Include the draft as the `$schema` property.
-- `ref`
-  - Returns a schema object (which can be modified further) that extends the schema via the [`$ref`](https://json-schema.org/understanding-json-schema/structuring.html#ref) property.
-  - Parameters
-    - `path` - `string` Path to where schema is _actually_ stored in document. Final document structure is implementation specific and not verifiable.
-  - If referencing a JSON Schema entirely out of control, it is best to use the `ref` method on a `CustomSchema`. Otherwise it is designed for instances where common schemas are pulled into a reusable section, such as [OpenApi's `components`](https://swagger.io/docs/specification/components/) section.
-  - Example:
-    ```ts
-    import { stringSchema, objectSchema } from 'juniper';
+The following methods are available on every schema instance for rendering and typing.
 
-    // string
-    const idSchema = stringSchema({
-        title: 'Custom ID',
-        pattern: '^[a-z]{32}$',
-    });
+---
 
-    // { id: string } | null
-    const resourceSchema = objectSchema({
-        properties: {
-            id: idSchema.ref('#/components/schemas/id')
+#### `.toJSON(options?)`
+
+Renders the JSON Schema document. The result should be immediately passed to a validator or serializer. The internal structure is not guaranteed and should not be modified.
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `openApi30` | `boolean` | `false` | Output a JSON Schema compliant with OpenAPI 3.0. Not every property is fully supported — see implementation warnings. |
+| `id` | `string` | — | Value to place in the `$id` field of the document. |
+| `schema` | `boolean` | `false` | Include the draft as the `$schema` property. |
+
+**Returns** `object` — the rendered JSON Schema document.
+
+---
+
+#### `.ref(path)`
+
+Returns a schema (which can be modified further) that extends the schema via the [`$ref`](https://json-schema.org/understanding-json-schema/structuring.html#ref) property.
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `path` | `string` | — | Required. Path to where the schema is actually stored in the document. Final document structure is implementation-specific and not verifiable. |
+
+If referencing a JSON Schema entirely outside of Juniper's control, use `ref` on a `CustomSchema`. Otherwise it is designed for instances where common schemas are pulled into a reusable section, such as [OpenAPI's `components`](https://swagger.io/docs/specification/components/).
+
+```ts
+import { stringSchema, objectSchema } from 'juniper';
+
+// string
+const idSchema = stringSchema({
+    title: 'Custom ID',
+    pattern: '^[a-z]{32}$',
+});
+
+// { id: string } | null
+const resourceSchema = objectSchema({
+    properties: {
+        id: idSchema.ref('#/components/schemas/id')
+    },
+    required: ['id'],
+});
+
+const nullableResourceSchema = resourceSchema.ref('#/components/schemas/id').nullable();
+
+console.log({
+    components: {
+        schemas: {
+            id: idSchema.toJSON({ openApi30: true }),
+            resource: resourceSchema.toJSON({ openApi30: true }),
+            nullableResource: nullableResourceSchema.toJSON({ openApi30: true }),
         },
-        required: ['id'],
-    });
+    },
+});
+/**
+ * {
+ *   components: {
+ *     schemas: {
+ *       id: {
+ *          type: 'string',
+ *          title: 'Custom ID',
+ *          pattern: '^[a-z]{32}$'
+ *       },
+ *       resource: {
+ *          type: 'object',
+ *          properties: {
+ *            id: { $ref: '#/components/schemas/id' }
+ *          },
+ *          required: ['id'],
+ *       },
+ *       nullableResource: {
+ *          $ref: '#/components/schemas/resource',
+ *          nullable: true
+ *       },
+ *     }
+ *   }
+ * }
+ */
+```
 
-    const nullableResourceSchema = resourceSchema.ref('#/components/schemas/id').nullable();
+Note: the `nullableResource` above merges `$ref` with additional properties (allowed in Draft 2020-12 and generally supported by resolvers, but not strictly compliant with OpenAPI). For full compliance, merge with a `NullSchema` explicitly:
 
-    console.log({
-        components: {
-            schemas: {
-                id: idSchema.toJSON({ openApi30: true }),
-                resource: resourceSchema.toJSON({ openApi30: true }),
-                nullableResource: nullableResourceSchema.toJSON({ openApi30: true }),
-            },
-        },
-    });
-    /**
-     * {
-     *   components: {
-     *     schemas: {
-     *       id: {
-     *          type: 'string',
-     *          title: 'Custom ID',
-     *          pattern: '^[a-z]{32}$'
-     *       },
-     *       resource: {
-     *          type: 'object',
-     *          properties: {
-     *            id: { $ref: '#/components/schemas/id' }
-     *          },
-     *          required: ['id'],
-     *       },
-     *       nullableResource: {
-     *          $ref: '#/components/schemas/resource',
-     *          nullable: true
-     *       },
-     *     }
-     *   }
-     * }
-     */
-    ```
-    Note the above example is not 100% compliant with OpenAPI spec. The `nullableResource` is _merged_ with the `$ref` (allowed in Draft 2020-12 and generally supported by most resolvers). Full compliance could be achieved by manually merging with a NullSchema:
-    ```ts
-    const nullableResourceSchema = mergeSchema().oneOf([
-        resourceSchema,
-        nullSchema
-    ]);
-    ```
-    The resulting types are identical.
-- `cast`
-  - Casts the instance as a schema for a specific type. Use with caution as it can only be further chained with a `toJSON` call. Possibly useful when declaring a schema for javascript-generated objects that are not explicitly enforced in JSON Schema.
-  - Example:
-    ```ts
-    import { objectSchema } from 'juniper';
+```ts
+const nullableResourceSchema = mergeSchema().oneOf([
+    resourceSchema,
+    nullSchema
+]);
+```
 
-    const kindSym = Symbol.for('kind');
+---
 
-    const userSchema = objectSchema({
-        properties: {
-            id: true,
-            email: true;
-        },
-        additionalProperties: false,
-    }).cast<{
-        [kindSym]: 'user';
-        id: string;
-        email: string;
-    }>();
-    ```
-- `metadata`
-  - Allows attaching any custom data to a JSON Schema. For example, [`x-` prefix for OpenAPI](https://swagger.io/specification/#specification-extensions).
-  - Only restriction is keys cannot overlap with existing implementations. `numberSchema().metadata('maximum', 5)` is forbidden.
-  - Parameters
-    - Either as `(key, value)` format, or `({ key1: val1, key2: val2 })` format.
+#### `.cast<T>()`
 
-Individual schemas _may not_ expose every method, generally due to the result being nonsensical, or forbidden (e.g. `enum: []` cannot also be `nullable`).
+Casts the instance as a schema for a specific TypeScript type. Can only be chained with a `toJSON` call after casting. Useful when declaring a schema for JavaScript-generated objects that are not explicitly enforced in JSON Schema.
 
-### Generic Schema Methods/Properties
-The following methods are available on every Schema:
+```ts
+import { objectSchema } from 'juniper';
 
-Method Name | Constructor Parameter | Can be Unset | Changes Types
----|:---:|:---:|:---:
-[title](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1) | ✅ | ✅ | ❌
-[description](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1) | ✅ | ✅ | ❌
-[default](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.2) | ✅ | ✅ | ❌
-[deprecated](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.3) | ✅ | ✅ | ❌
-[deprecated](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.3) | ✅ | ✅ | ❌
-[example(s)](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.5) | ❌ | ❌ | ❌
-[readOnly](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4) | ✅ | ✅ | ❌
-[writeOnly](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4) | ✅ | ✅ | ❌
-[allOf](https://json-schema.org/understanding-json-schema/reference/combining.html#allof) | ❌ | ❌ | ✅
-[anyOf](https://json-schema.org/understanding-json-schema/reference/combining.html#anyof) | ❌ | ❌ | ✅
-[oneOf](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) | ❌ | ❌ | ✅
-[not](https://json-schema.org/understanding-json-schema/reference/combining.html#not) | ❌ | ❌ | ✅
-[if then else](https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else) | ❌ | ❌ | ✅
-[nullable](https://swagger.io/docs/specification/data-models/data-types/#null) | ❌ | ❌ | ✅
+const kindSym = Symbol.for('kind');
 
-### Specific Schema Methods
+const userSchema = objectSchema({
+    properties: {
+        id: true,
+        email: true,
+    },
+    additionalProperties: false,
+}).cast<{
+    [kindSym]: 'user';
+    id: string;
+    email: string;
+}>();
+```
 
-Schema | Method Name | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 Support
----|---|:---:|:---:|:---:|:---:
-ArraySchema | [items](https://json-schema.org/understanding-json-schema/reference/array.html#items) | ✅ | ❌ | ✅ | ✅
-ArraySchema | [maxItems](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.1) | ✅ | ✅ | ❌ | ✅
-ArraySchema | [minItems](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2) | ✅ | ✅ | ❌ | ✅
-ArraySchema | [uniqueItems](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3) | ✅ | ✅ | ❌ | ✅
-ArraySchema | [contains](https://json-schema.org/understanding-json-schema/reference/array.html#contains) | ❌ | ❌ | ✅ | ❌
-ArraySchema | [maxContains](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4) | ✅ | ✅ | ❌ | ❌
-ArraySchema | [minContains](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5) | ✅ | ✅ | ❌ | ❌
-ArraySchema | [(prepend)prefixItem](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) | ❌ | ❌ | ✅ | ❌
-EnumSchema | [enum(s)](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.2) | ✅ | ❌ | ✅ | ✅
-NumberSchema | [type](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.1) | ✅ | ✅ | ❌ | ✅
-NumberSchema | [multipleOf](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.1) | ✅ | ❌ | ❌ | ✅
-NumberSchema | [maximum](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.2) | ✅ | ✅ | ❌ | ✅
-NumberSchema | [exclusiveMaximum](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.3) | ✅ | ✅ | ❌ | ✅
-NumberSchema | [minimum](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.4) | ✅ | ✅ | ❌ | ✅
-NumberSchema | [exclusiveMinimum](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.5) | ✅ | ✅ | ❌ | ✅
-ObjectSchema | [properties](https://json-schema.org/understanding-json-schema/reference/object.html#properties) | ✅ | ✅ | ✅ | ✅
-ObjectSchema | [maxProperties](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.1) | ✅ | ✅ | ❌ | ✅
-ObjectSchema | [minProperties](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.2) | ✅ | ✅ | ❌ | ✅
-ObjectSchema | [required](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.3) | ✅ | ✅ | ✅ | ✅
-ObjectSchema | [additionalProperties](https://json-schema.org/understanding-json-schema/reference/object.html#additional-properties) | ✅ | ✅ | ✅ | ✅
-ObjectSchema | [patternProperties](https://json-schema.org/understanding-json-schema/reference/object.html#pattern-properties) | ❌ | ✅ | ✅ | ❌
-ObjectSchema | [dependentRequired](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentrequired) | ❌ | ❌ | ✅ | ✅
-ObjectSchema | [dependentSchemas](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentschemas) | ❌ | ❌ | ✅ | ✅
-ObjectSchema | [unevaluatedProperties](https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties) | ✅ | ❌ | ❌ | ❌
-StringSchema | [format](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7) | ✅ | ✅ | ❌ | ✅
-StringSchema | [maxLength](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1) | ✅ | ✅ | ❌ | ✅
-StringSchema | [minLength](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1) | ✅ | ✅ | ❌ | ✅
-StringSchema | [pattern](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.3) | ✅ | ❌ | ❌ | ✅
-StringSchema | startsWith | ❌ | ❌ | ✅ | ✅
-StringSchema | endsWith | ❌ | ❌ | ✅ | ✅
-StringSchema | contains | ❌ | ❌ | ✅ | ✅
-StringSchema | [contentEncoding](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentencoding) | ✅ | ✅ | ❌ | ✅
-StringSchema | [contentMediaType](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype) | ✅ | ✅ | ❌ | ✅
-TupleSchema | [uniqueItems](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3) | ✅ | ✅ | ❌ | ✅
-TupleSchema | [contains](https://json-schema.org/understanding-json-schema/reference/array.html#contains) | ❌ | ❌ | ✅ | ❌
-TupleSchema | [maxContains](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4) | ✅ | ✅ | ❌ | ❌
-TupleSchema | [minContains](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5) | ✅ | ✅ | ❌ | ❌
-TupleSchema | [(prepend)prefixItem](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) | ❌ | ❌ | ✅ | ❌
+---
 
-### Implementation Notes
-- ObjectSchema.patternProperties takes advantage of the string type of the keys. However the key itself is a regular expression pattern, and cannot be interpreted directly. So the key should be wrapped with the `PatternProperties` helper type.
-  - Example:
-    ```ts
-    import { numberSchema, objectSchema, PatternProperties, SchemaType } from 'juniper';
+#### `.metadata(key, value)` / `.metadata(record)`
 
-    const startsOrEndsWith = objectSchema()
+Attaches custom data to a JSON Schema. Useful for extensions like [`x-` prefixes in OpenAPI](https://swagger.io/specification/#specification-extensions).
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `key` | `string` | — | The metadata key. Must not overlap with existing JSON Schema keywords. |
+| `value` | `unknown` | — | The metadata value. |
+
+Alternatively, pass a single object `{ key1: val1, key2: val2 }` to set multiple metadata entries at once.
+
+`numberSchema().metadata('maximum', 5)` is forbidden — `maximum` is an existing keyword.
+
+---
+
+### Generic Schema Methods
+
+The following methods are available on every schema. All methods return a new (cloned) instance.
+
+| Method | Constructor Parameter | Can be Unset | Changes Types |
+|--------|:--------------------:|:------------:|:-------------:|
+| [`title`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1) | ✅ | ✅ | ❌ |
+| [`description`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1) | ✅ | ✅ | ❌ |
+| [`default`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.2) | ✅ | ✅ | ❌ |
+| [`deprecated`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.3) | ✅ | ✅ | ❌ |
+| [`example(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.5) | ❌ | ❌ | ❌ |
+| [`readOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4) | ✅ | ✅ | ❌ |
+| [`writeOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4) | ✅ | ✅ | ❌ |
+| [`allOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#allof) | ❌ | ❌ | ✅ |
+| [`anyOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#anyof) | ❌ | ❌ | ✅ |
+| [`oneOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) | ❌ | ❌ | ✅ |
+| [`not`](https://json-schema.org/understanding-json-schema/reference/combining.html#not) | ❌ | ❌ | ✅ |
+| [`if then else`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else) | ❌ | ❌ | ✅ |
+| [`nullable`](https://swagger.io/docs/specification/data-models/data-types/#null) | ❌ | ❌ | ✅ |
+
+Individual schemas may not expose every method when the result would be nonsensical or forbidden (e.g. `EnumSchema` cannot be `nullable`).
+
+---
+
+### `ArraySchema`
+
+Represents `type: 'array'`. TypeScript type: `unknown[]`.
+
+| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+|--------|:--------------------:|:------------:|:-------------:|:-----------:|
+| [`items`](https://json-schema.org/understanding-json-schema/reference/array.html#items) | ✅ | ❌ | ✅ | ✅ |
+| [`maxItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.1) | ✅ | ✅ | ❌ | ✅ |
+| [`minItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2) | ✅ | ✅ | ❌ | ✅ |
+| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3) | ✅ | ✅ | ❌ | ✅ |
+| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains) | ❌ | ❌ | ✅ | ❌ |
+| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4) | ✅ | ✅ | ❌ | ❌ |
+| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5) | ✅ | ✅ | ❌ | ❌ |
+| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) | ❌ | ❌ | ✅ | ❌ |
+
+---
+
+### `EnumSchema`
+
+Represents `enum: []`. TypeScript type: union of provided literals.
+
+| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+|--------|:--------------------:|:------------:|:-------------:|:-----------:|
+| [`enum(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.2) | ✅ | ❌ | ✅ | ✅ |
+
+---
+
+### `NumberSchema`
+
+Represents `type: 'number'` or `type: 'integer'`. TypeScript type: `number`.
+
+| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+|--------|:--------------------:|:------------:|:-------------:|:-----------:|
+| [`type`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.1) | ✅ | ✅ | ❌ | ✅ |
+| [`multipleOf`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.1) | ✅ | ❌ | ❌ | ✅ |
+| [`maximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.2) | ✅ | ✅ | ❌ | ✅ |
+| [`exclusiveMaximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.3) | ✅ | ✅ | ❌ | ✅ |
+| [`minimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.4) | ✅ | ✅ | ❌ | ✅ |
+| [`exclusiveMinimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.5) | ✅ | ✅ | ❌ | ✅ |
+
+---
+
+### `ObjectSchema`
+
+Represents `type: 'object'`. TypeScript type: `{}`.
+
+| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+|--------|:--------------------:|:------------:|:-------------:|:-----------:|
+| [`properties`](https://json-schema.org/understanding-json-schema/reference/object.html#properties) | ✅ | ✅ | ✅ | ✅ |
+| [`maxProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.1) | ✅ | ✅ | ❌ | ✅ |
+| [`minProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.2) | ✅ | ✅ | ❌ | ✅ |
+| [`required`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.3) | ✅ | ✅ | ✅ | ✅ |
+| [`additionalProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#additional-properties) | ✅ | ✅ | ✅ | ✅ |
+| [`patternProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#pattern-properties) | ❌ | ✅ | ✅ | ❌ |
+| [`dependentRequired`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentrequired) | ❌ | ❌ | ✅ | ✅ |
+| [`dependentSchemas`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentschemas) | ❌ | ❌ | ✅ | ✅ |
+| [`unevaluatedProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties) | ✅ | ❌ | ❌ | ❌ |
+
+**Note on `additionalProperties`:** JSON Schema interprets omitting `additionalProperties` as `additionalProperties: true`. The emitted TypeScript type includes the index signature only when `additionalProperties` is explicitly set to `true`:
+
+```ts
+import { objectSchema, SchemaType } from 'juniper';
+
+const empty = objectSchema();
+// EmptyObject — no index signature
+type EmptyObject = SchemaType<typeof empty>;
+
+const indexed = empty.additionalProperties(true);
+// Record<string, unknown>
+type IndexedObject = SchemaType<typeof indexed>;
+```
+
+**Note on `patternProperties`:** The key is a regular expression pattern and cannot be interpreted directly as a TypeScript string type. Wrap the key with the `PatternProperties` helper type:
+
+```ts
+import { numberSchema, objectSchema, PatternProperties, SchemaType } from 'juniper';
+
+const startsOrEndsWith = objectSchema()
     .patternProperties(
         '^abc' as PatternProperties<`abc${string}`>,
         true
@@ -389,38 +444,101 @@ TupleSchema | [(prepend)prefixItem](https://json-schema.org/understanding-json-s
         numberSchema()
     );
 
-    // Record<`abc${string}`, unknown> & Record<`${string}xyz`, number>;
-    type Output = SchemaType<typeof startsWithAbc>;
-    ```
-- StringSchema's `startsWith`, `endsWith`, and `contains` are just wrappers around the `pattern` property, but with special typescript handling.
-- TupleSchema is simply a wrapper around ArraySchema enforcing "strict" tuples (does not allow editing `items`). It is recommended but not necessary. Every TupleSchema is an ArraySchema.
-- JSON Schema interprets omitting `additionalProperties` as implied `additionalProperties=true`. The emitted typescript will only include this extra index typing when explicitly set to true.
-  - Example:
-    ```ts
-    import { objectSchema, SchemaType } from 'juniper';
+// Record<`abc${string}`, unknown> & Record<`${string}xyz`, number>
+type Output = SchemaType<typeof startsOrEndsWith>;
+```
 
-    const empty = objectSchema();
-    // Actually called `EmptyObject`, see "Helper Types".
-    type EmptyObject = SchemaType<typeof empty>;
+---
 
-    const indexed = empty.additionalProperties(true);
-    // Record<string, unknown>
-    type IndexedObject = SchemaType<typeof indexed>;
-    ```
+### `StringSchema`
+
+Represents `type: 'string'`. TypeScript type: `string`.
+
+| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+|--------|:--------------------:|:------------:|:-------------:|:-----------:|
+| [`format`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7) | ✅ | ✅ | ❌ | ✅ |
+| [`maxLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1) | ✅ | ✅ | ❌ | ✅ |
+| [`minLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1) | ✅ | ✅ | ❌ | ✅ |
+| [`pattern`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.3) | ✅ | ❌ | ❌ | ✅ |
+| `startsWith` | ❌ | ❌ | ✅ | ✅ |
+| `endsWith` | ❌ | ❌ | ✅ | ✅ |
+| `contains` | ❌ | ❌ | ✅ | ✅ |
+| [`contentEncoding`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentencoding) | ✅ | ✅ | ❌ | ✅ |
+| [`contentMediaType`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype) | ✅ | ✅ | ❌ | ✅ |
+
+`startsWith`, `endsWith`, and `contains` are wrappers around the `pattern` property with special TypeScript handling to narrow the inferred string type (e.g. `startsWith('abc')` produces `` `abc${string}` ``).
+
+---
+
+### `TupleSchema`
+
+Represents `type: 'array'` with strict tuple semantics. TypeScript type: `[unknown]`. A convenience wrapper around `ArraySchema` that prevents editing `items` directly. Every `TupleSchema` is an `ArraySchema`.
+
+| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+|--------|:--------------------:|:------------:|:-------------:|:-----------:|
+| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3) | ✅ | ✅ | ❌ | ✅ |
+| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains) | ❌ | ❌ | ✅ | ❌ |
+| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4) | ✅ | ✅ | ❌ | ❌ |
+| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5) | ✅ | ✅ | ❌ | ❌ |
+| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) | ❌ | ❌ | ✅ | ❌ |
+
+---
+
+### `BooleanSchema`
+
+Represents `type: 'boolean'`. TypeScript type: `boolean`.
+
+Exposes all [generic schema methods](#generic-schema-methods). Does not expose `not` (use `EnumSchema` to restrict boolean values).
+
+---
+
+### `NullSchema`
+
+Represents `type: 'null'`. TypeScript type: `null`.
+
+Exposes all [generic schema methods](#generic-schema-methods).
+
+---
+
+### `NeverSchema`
+
+Represents `not: {}`. TypeScript type: `never`.
+
+Exposes all [generic schema methods](#generic-schema-methods).
+
+---
+
+### `MergeSchema`
+
+A compositional schema with no inherent type constraint. TypeScript type: `unknown` initially, narrowed to `|` or `&` via `anyOf`/`allOf`. Use this for generic `unknown` types or to combine unrelated schemas.
+
+Exposes all [generic schema methods](#generic-schema-methods).
+
+---
+
+### `CustomSchema`
+
+Accepts arbitrary JSON Schema content. TypeScript type is provided via the generic parameter.
+
+```ts
+import { customSchema } from 'juniper';
+
+const mySchema = customSchema<{ foo: string }>({ foo: { type: 'string' } });
+```
+
+Use `CustomSchema` when integrating with pre-existing JSON Schemas or adopting Juniper incrementally. Its use is discouraged in greenfield code.
 
 ## Recipes
 
-Some helpful schema recipes to get started and provide inspiration of how to proceed.
+### TypeScript Enum
 
-### Typescript Enum
-
-Typescript `enums` are actually object dictionaries that sometimes have [reverse mappings](https://www.typescriptlang.org/docs/handbook/enums.html#reverse-mappings) so cannot trivially get list of all values via something like `Object.values`. The [enum-to-array](https://www.npmjs.com/package/enum-to-array) can resolve that.
+TypeScript `enums` are object dictionaries that sometimes have [reverse mappings](https://www.typescriptlang.org/docs/handbook/enums.html#reverse-mappings), so you cannot trivially get all values via `Object.values`. The [enum-to-array](https://www.npmjs.com/package/enum-to-array) package resolves this:
 
 ```ts
 import { enumToValues } from 'enum-to-array';
 import { enumSchema } from 'juniper';
 
-MyEnum {
+enum MyEnum {
     FOO = 'BAR',
     ABC = 123,
 }
@@ -431,149 +549,7 @@ enumSchema({
 // { enum: ['BAR', 123] }
 ```
 
-## Motivation (The JSON Schema Problem)
+## Also See
 
-[Json Schema](https://json-schema.org/) is a powerful vocabulary for describing data formats that is both human and machine readable.
-
-However, when it comes to generating and using these schemas, a few issues pop up:
-
-- Strictness
-  - Validation of a Json Schema is quite loose, and does not enforce sensible schemas.
-  - For example:
-    - ```json
-      {
-        "items": { "type": "number" }
-      }
-      ```
-      _appears_ to enforce an array with number elements. But due to the omission of `"type": "array"` any non-array value will also validate successfully!
-    - ```json
-      {
-        "type": "array",
-        "items": { "type": "number" },
-        "maxLength": 10
-      }
-      ```
-      Now we have added the `array` enforcement and even required no more than 10 elements. Except that is the wrong keyword! `maxItems` enforces array length, `maxLength` is for strings.
-    - ```json
-      {
-        "type": "object",
-        "properties": {
-            "foobar": { "type": "string" }
-        },
-        "required": ["fooBar"]
-      }
-      ```
-      This schema object uses inconsistent case and as a result, `foobar` is never guaranteed to exist on the output! Furthermore it is unlikely data will validate at all because it is missing the `fooBar` property (which could be anything).
-  - Libraries like Ajv have a `{ strict: true }` setting to help enforce this, but that only lets you know once you have already failed to write JSON Schema as expected.
-  - Juniper solves this issue by strict typings on the schema generators. You must explicitly declare the type of the schema (e.g. `object` or `number`) and only the properties related to that schema may be set.
-- DRY
-  - Good code should be DRY ([Don't repeat yourself](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself)). However, JSON Schema itself is just JSON, it doesn't mean anything in a Typescript runtime. Manually writing Typescript interfaces to match a JSON schema (and vice versa) quickly becomes a maintenance nightmare and opens up opportunities to mistype a schema.
-  - Juniper resolves this issue by generating the JSON Schema and the Typescript types at the same time. Typescript interfaces are emitted by JSON Schema attributes where possible, but does not limit schema generation due to that.
-  - See [Comparisons](#comparisons) for a list of alternatives that help DRY JSON Schema generation.
-- Backwards Compatibility
-  - Json Schema comes in multiple "versions", often referred to as drafts. While these versions generally follow the patterns set by predecessors, some changes are breaking and are non-trivial to fix. Perhaps the most infamous is [OpenApi's `nullable` keyword over `type: 'null'`](https://swagger.io/docs/specification/data-models/data-types/#null). When generating Json Schemas for multiple environments, it can be tricky to maintain usage of the correct keywords.
-  - By generating the JSON Schema dynamically, Juniper is able to adjust the outputted schema to fit the environment.
-    - Presently Juniper supports Draft 2020-12 (default) and OpenAPI 3.0.
-
-## Objectives
-
-Juniper has the following goals for generating JSON Schema:
-
-- JSON Schema compatibility
-  - Hopefully obvious, Juniper should expose the functionality of every JSON Schema keyword.
-- Strict Typing
-  - As much as possible, any changes to a JSON Schema that _can_ be reflected as a TS Type should alter the emitted interface.
-- Generate Strict Schemas
-  - "Strictness" is defined by the [Ajv Validator](https://ajv.js.org/strict-mode.html). Any outputted JSON Schema should be able to be passed to AJV with `{ strict: true }` with no errors.
-- Enforce best practice
-  - JSON Schema itself has little restrictions of what a valid schema is, and even with "strict" schemas can create nonsensical schemas. Juniper is opinionated in only generating schemas that make logical sense.
-  - For example `BooleanSchema` does not allow setting the `not` keyword. Given there are only at most 3 possible values (`true`, `false`, and potentially `null`) if it is desired to restrict the schema further, it is recommended to use the `EnumSchema` instead.
-- Multi-draft support
-  - As much as logically possible, outputted schemas should be compatible with multiple drafts.
-  - For example, `if`/`then`/`else` conditionals are converted to [`anyOf` pairs](https://json-schema.org/understanding-json-schema/reference/conditionals.html#implication) when rendered with `openApi30: true`.
-- Catch errors at Build time
-  - Any validations enforcing schema structure should be applied at Typescript time. Code that successfully compiles to javascript should _never_ throw an error during runtime due to validation issues.
-
-### Non-Goals
-The following are non-goals for Juniper.
-
-- Validation
-  - Juniper is not a validation library. It will also not catch "impossible" schemas such as:
-    ```ts
-    import { stringSchema } from 'juniper';
-
-    const neverValid = stringSchema({ minLength: 10, maxLength: 5 });
-    ```
-- Predictable JSON Schema
-  - Juniper applies various "optimizations" to schemas in order to provide strictness, and also ensure logically correct JSON Schema. As a result, the internal structure of a schema should be treated as opaque, and only passed to a serializer (e.g. `JSON.stringify`) or a validator (e.g. an `Ajv` instance). Attempting to read/modify the resulting JSON manually may have unexpected consequences.
-  - Example:
-    ```ts
-    import { numberSchema } from 'juniper';
-
-    const schema = numberSchema({
-        type: 'number',
-        multipleOf: 6,
-    })
-        .nullable()
-        .multipleOf(8)
-        .allOf(
-            numberSchema({ type: 'integer' })
-        );
-
-    /**
-     * "Expected" schema:
-     * {
-     *   "type": "number",
-     *   "multipleOf": 6,
-     *   "nullable": true,
-     *   "allOf": [{
-     *     "type": "integer",
-     *   }],
-     * }
-     */
-    console.log(json.toJSON())
-    /**
-     * Actual schema:
-     * {
-     *   "type": "integer",
-     *   "multipleOf": 24,
-     *   "allOf": [{}],
-     * }
-     */
-    ```
-- Sensible Defaults
-  - JSON Schema _does not_ apply any defaults to a schema that are not explicitly required. As such, properties like object's `required`, `additionalProperties` or `unevaluatedProperties` _must_ be set manually. Perhaps the one exception is `TupleSchema` which handles some values internally to ensure a strict tuple schema.
-- Performance
-  - While Juniper should not be a runtime bottleneck, it optimizes functionality over speed for schema generation. Schemas should (as much as possible) be generated only once, and at the start of the process.
-
-## Limitations
-
-Juniper tries to emit Typescript types for related JSON Schemas. These types are generally best effort, and have some limitations.
-
-- Unions
-  - Typescript does not have a way of differentiating between `oneOf` or `anyOf`. Both will use the union pipe literal `|`.
-- Negation
-  - The `not` keyword is not fully enforced in Typescript. The general TS equivalent `Exclude` does not enforce a specific type is not allowed.
-  - For example:
-    ```ts
-    // Legal, although seems like it should not be.
-    const notAbc: Exclude<string, 'abc'> = 'abc';
-    const notAbc123: Exclude<{ abc: number }, { abc: 123 }> = { abc: 123 };
-    ```
-  - The general exception is enforcement that a schema cannot be null.
-
-## Comparisons
-
-There are many other tools available for dealing with JSON Schema in a Typescript environment. While this list is not exhaustive, it provides insight to potential alternatives and feature disparity.
-
-- Dynamic Schema Generation
-  - [TypeBox](https://www.npmjs.com/package/@sinclair/typebox)
-  - [JTD for Ajv](https://ajv.js.org/json-type-definition.html)
-- Javascript validation
-  - [joi](https://www.npmjs.com/package/joi)
-  - [zod](https://zod.dev/)
-- TS -> JSON Schema
-  - [typescript-json-schema](https://www.npmjs.com/package/typescript-json-schema)
-  - [ts-json-schema-henerator](https://www.npmjs.com/package/ts-json-schema-generator)
-- JSON Schema -> TS
-  - [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript)
+- [WHY-JUNIPER.md](./WHY-JUNIPER.md) — Motivation, design decisions, and comparison to alternative libraries.
+- [juniper-validator](https://www.npmjs.com/package/juniper-validator) — Validation companion for Juniper schemas.

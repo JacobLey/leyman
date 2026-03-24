@@ -9,40 +9,25 @@ Modular control for entry script execution.
 </div>
 
 ## Contents
-- [Introduction](#introduction)
+- [The Problem](#the-problem)
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
   - [EntryScript](#entryscript)
-    - [main(argv: string[]): Promise<void>](#mainargv-string-promise)
 - [Also See](#also-see)
 
-## Introduction
+## The Problem
 
-Modular control for entry script execution.
-
-Many top-level NodeJS executables look something like:
+Many top-level NodeJS executables execute side effects the moment the file is loaded:
 
 ```ts
 // bin.ts
-import express from 'express.js';
 import { database } from './my-database.js';
-import { middleware } from './my-middleware.js';
-
 await database.connect();
-
-const app = express();
-app.use(middleware);
-
-app.listen(3000);
 ```
 
-This file is not testable, extendable, or modular because it executes the moment it is loaded. It is not possible to stub methods like `database.connect` in a test suite.
-
-`entry-script` solves this by providing a light class to extend and export as default. The internals of `EntryScript` detect that the class is the top-level script, and kicks off the process.
-
-But during a test environment where it is _not_ the top-level script, nothing is executed! That allows you to mock and inspect methods as necessary to fully test your code.
+This makes the file untestable — any import of it triggers real network calls, with no opportunity to mock dependencies. `entry-script` solves this by providing a base class to extend and export as `default`. The internals detect whether the module is the actual entry point: if so, execution proceeds; if imported by a test or another module, nothing runs.
 
 ## Install
 
@@ -52,6 +37,8 @@ npm i entry-script
 
 ## Example
 
+Export the class when you want tests to inject mocked dependencies via the constructor:
+
 ```ts
 // my-app.ts
 import { EntryScript } from 'entry-script';
@@ -59,85 +46,97 @@ import express, { type Application } from 'express';
 import { database } from './my-database.js';
 import { middleware } from './my-middleware.js';
 
-/**
- * Class will be picked up by unit/integration tests to
- * provide mock dependencies
- */
 export class MyApp extends EntryScript {
-
     #app: Application;
     #database: typeof database;
 
     constructor(application = express(), db = database) {
+        super();
         this.#app = application;
         this.#database = db;
     }
 
     // node ./my-app.js --port 8080
     public override async main([, port = '8080']: string[]): Promise<void> {
-        await database.connect();
+        await this.#database.connect();
+        this.#app.use(middleware);
+        this.#app.listen(Number.parseInt(port));
 
-        app.use(middleware);
-
-        app.listen(parseInt(port));
-
-        await new Promise((resolve, reject) => {
-            // Graceful shutdown
-            process.once('SIGTERM', () => {
-                resolve();
-            });
+        await new Promise<void>(resolve => {
+            process.once('SIGTERM', resolve);
         });
 
-        await database.disconnect();
+        await this.#database.disconnect();
     }
 }
 
-// Instance will be picked up when this file is executed directly!
+// Picked up when this file is the entry point
 export default new MyApp();
 ```
 
-Now executing `node ./my-app.js` will start the server as expected!
+Running `node ./my-app.js --port 8080` starts the server. Importing `MyApp` from a test gives you the class with no side effects.
 
-But `import MyApp from './my-app.js';` will return the app class that is ripe for unit/integration testing!
+Alternatively, export the class itself (not an instance) and implement the static form of `main`:
+
+```ts
+export class MyApp extends EntryScript {
+    public static override async main(argv: string[]): Promise<void> {
+        // ...
+    }
+}
+
+export default MyApp;
+```
 
 ## Usage
 
-`entry-script` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { EntryScript } = await import('entry-script');`.
+`entry-script` is an ESM module. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { EntryScript } = await import('entry-script');`.
 
-Any class that extends `EntryScript` must export either the class itself or an instance of the class as the `default` export.
+The `default` export of a module using `entry-script` must be either:
+- An **instance** of an `EntryScript` subclass — the instance `main(argv)` method will be called.
+- The **class** itself (an `EntryScript` subclass) — the static `main(argv)` method will be called.
 
-Depending on class/instance export, either the static or instance version of `main(argv: string[]): Promise<void>` must be implemented.
+Exactly one of the static or instance `main` must be implemented.
 
 ## API
 
-### EntryScript
+### `EntryScript`
 
-Extendable class that control logic flow of an entry point. Will not perform any execution if the entry point for nodejs does not export a child class of EntryScript as `default`.
+Base class for entry point modules. Extend it, implement `main`, and export the class or an instance as `default`. The class is available as both the default export and a named export.
 
-This class is exported both as the default export of this package, and as a named export.
+```ts
+import EntryScript from 'entry-script';
+import { EntryScript } from 'entry-script';
+```
 
-#### main(argv: string[]): Promise<void>
+#### `.main(argv): Promise<void>`
 
-Available as both a static and instance method.
+Available as both a **static** and an **instance** method.
 
-If a class is exported, will call the static method, if an instance is exported will call the instance method. Only one will be called, and it _must_ be implemented.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `argv` | `string[]` | — | Required. Command-line arguments, equivalent to `process.argv` with the node executable and filename stripped. |
 
-In general this method should not be called directly during production, as it is called implicitly by the internal EntryScript lifecycle, although it may be called as part of your unit/integration tests (thats the whole idea!).
+**Returns** `Promise<void>` — resolves when the script has finished executing.
 
-The array of parameters passed to it are the command line arguments. T
-hey are the same as `process.argv`, minus the node executable and filename:
+The method to implement is determined by the export pattern:
+- `export default new MyApp()` → implement the **instance** method.
+- `export default MyApp` → implement the **static** method.
 
-`node ./foo-bar.js --port 8080` -> `argv = ['--port', '8080']`.
+`main` is called implicitly by the `entry-script` lifecycle when the module is the entry point. During tests, call it directly on the class or instance to drive execution with controlled inputs.
+
+`node ./my-app.js --port 8080` passes `argv = ['--port', '8080']`.
+
+**Throws** `MainNotImplementedError` — if neither the static nor instance `main` has been overridden.
+
+### `Main`
+
+Interface satisfied by any class with a `main(argv: string[]): Promise<void>` method. Used by `haywire-launcher` and other integrations that accept arbitrary entry implementations.
+
+```ts
+import type { Main } from 'entry-script';
+```
 
 ## Also See
 
-### [haywire-launcher](https://www.npmjs.com/package/haywire-launcher)
-
-Manage dependency injection alongside entrypoint handling!
-
-```ts
-import { launch } from 'haywire-launcher';
-import { myContainer } from './container.js';
-
-export default launch(myContainer);
-```
+- [`haywire-launcher`](https://www.npmjs.com/package/haywire-launcher) — combine dependency injection with entry-point handling using a haywire container

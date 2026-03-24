@@ -1,84 +1,41 @@
 <div style="text-align:center">
 
 # mocha-chain
-Chain mocha BDD methods together for determinstic and type safe tests.
+Chain mocha BDD methods together for deterministic and type safe tests.
 
 [![npm package](https://badge.fury.io/js/mocha-chain.svg)](https://www.npmjs.com/package/mocha-chain)
 [![License](https://img.shields.io/npm/l/mocha-chain.svg)](https://github.com/JacobLey/leyman/blob/main/tools/mocha-chain/LICENSE)
 
 </div>
 
-## Table of Contents
+## Contents
 
-- [Introduction](#introduction)
-- [Installation](#installation)
+- [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
 - [Chaining hooks](#chaining-hooks)
 - [API](#api)
+    - [suite](#suite)
+    - [before](#before)
+    - [beforeEach](#beforeeach)
+    - [test](#test)
+    - [afterEach](#aftereach)
+    - [after](#after)
 
-## Introduction
+For the problem this solves and design rationale, see [WHY-MOCHA-CHAIN.md](./WHY-MOCHA-CHAIN.md).
 
-[Mocha](https://mochajs.org/) is a powerful and popular testing framework. Refer to the linked documentation for the best examples, but this is a simple demonstration:
+## Install
 
-```ts
-import { suite, beforeEach, test } from 'mocha';
-import { expect } from 'chai';
-
-suite('Division.divide', () => {
-
-    let division: Division | null = null;
-
-    beforeEach(() => {
-        division = new Division();
-    });
-
-    test('success', () => {
-        expect(division!.divide(12, 3)).to.equal(4);
-    });
-
-    test('failure', () => {
-        expect(() => division!.divide(12, 0)).to.throw(Error);
-    });
-});
+```sh
+npm i mocha-chain
 ```
 
-In the example above, we can create a new instance of our `Divison` class before every test that runs in the `Division.divide()` suite. Then we can assert the expected behavior in each test.
-
-Functionally, this works exactly as we want, but has a few drawbacks.
-
-The first is that it is not type safe. We have to define the `division` variable in the shared scope, but only define it inside the `beforeEach` hook. While we know the hook will run before our test, typescript is not convinced, so we have to explicitly override the types at test time. If our tests are not type safe themselves, how can we be confident they are testing type safe interfaces?
-
-What if we just created a single instance of `Division` and shared it across all tests?
-
-```ts
-const division = new Division();;
-
-test('success', () => {
-    expect(division.divide(12, 3)).to.equal(4);
-});
-```
-
-Now it is type safe! But what if our class is mutable, or has some other internal state that individual tests can impact? This may be the case if we are working with an local database, or using a library like [Sinon](https://sinonjs.org/) for setting up mocks _per test_.
-
-So we could just ditch the `beforeEach` hook altogether, but this will begin to violate [DRY](https://en.wikipedia.org/wiki/Don%27t_repeat_yourself), and we lose out on all the perks of mocha hooks, like teardowns of mocks.
-
-Ideally we can still use these mocha hooks, but chain the results to be accessed in following hooks and tests.
-
-Entry `mocha-chain`, which does exactly that.
-
-## Installation
-
-`npm i mocha-chain`
-
-Mocha-chain is an ESM package. It _must_ be imported.
-
-The type safety of mocha-chain is a major benefit, but does not require typescript or any further build step to support. It is not a _replacement_ for mocha, but works alongside it. In fact there is a peer dependency on mocha and is completely interchangable.
+`mocha-chain` is an ESM package and must be imported (not required). It is not a replacement for mocha — it wraps mocha's native methods and has a peer dependency on mocha. The two are fully interchangeable; you can mix `mocha-chain` and native mocha calls in the same suite.
 
 ## Example
 
 ```ts
-import { before, beforeEach, suite } from 'mocha-chain'; 
+import { before, beforeEach, suite } from 'mocha-chain';
 
 suite('Example Database Test', () => {
 
@@ -157,62 +114,45 @@ suite('Example Database Test', () => {
 
 ## Usage
 
-`mocha-chain` exports hook and test methods mirroring `mocha`. As stated above, this is not a _replacement_ of mocha as these methods will invoke the native `mocha` methods under the hood.
+`mocha-chain` exports hook and test methods that mirror mocha's API. Each method calls the native mocha equivalent under the hood, but extends it with context chaining: if a hook returns an object, all its keys are shallow-merged into a context object that is passed as a parameter to any chained hooks or tests.
 
-However they provide the extra benefit of chaining the methods so any values returned by that hook (and any previous hooks) will be available to following hooks and tests. The values are returned as an object, with all keys merged with existing context object.
+Hooks and tests are chained by calling methods on the return value of a hook:
 
-Besides the extra context as a parameter and the added data in the response, it otherwise maintains the API of mocha methods, including async and sync support, named hooks, and passing the test instance as `this`.
-
-Similarly you can mark tests and suites with `.only()` and `.skip()`.
-
-Given that tests and hooks are just function calls, it is easy to _accidentally_ perform the following:
 ```ts
-suite('FooBar', () => {
+const withUser = beforeEach(() => {
+    return { user: createFakeUserData() };
+});
 
-    test('Does foo', () => {
-
-        test('Does bar', () => {
-            // This will silently never run!
-        });
-    });
+// `user` is fully typed — no null assertions needed
+withUser.test('User has a name', ({ user }) => {
+    expect(user.name).to.be.a('string');
 });
 ```
-`mocha-chain` will also enforce that the `Does bar` test above will immediately throw an error, causing `Does foo` to fail. 
 
-Native mocha behavior does not support embedding tests (or hooks, or suites...), but also does not enforce against it.
+The context object passed to each hook or test is a **shallow clone** of the accumulated context, so mutations in one test do not affect others.
+
+All mocha features are preserved: async callbacks, named hooks, `this` as the hook/test instance, `.only()`, and `.skip()`.
+
+`mocha-chain` also enforces that tests and hooks are not nested inside other tests or hooks. Native mocha silently ignores such nesting; `mocha-chain` throws immediately, causing the enclosing test to fail visibly.
 
 ## Chaining hooks
 
-A `before` hook can have a context that is passed to a `beforeEach` hook. Similarly a `beforeEach` hook can have a context that is later referenced in both the test and the teardown `afterEach` hook.
+Each hook can chain to a subset of other hooks. The table below shows which target hooks can be called on the return value of a source hook.
 
-But you can't access context of an `afterEach` hook in a test. Or `before` from an `after`.
+`suite` sets up hooks and tests but does not itself return chainable context. `test` can be called from hooks but does not return context to chain further.
 
-The following table shows which hooks can be chained. 
-
-Note that `suite` is just used for setting up further hooks and tests, and does not return a chainable interface itself. It also runs _before_ any hooks run, so it does not have any access to context itself.
-
-Similarly `test` can chained from hooks, but does not return any context.
-
-
-| chainable? | `before` | `beforeEach` | `afterEach` | `after` |
-|------------|:------:|:------:|:------:|:------:|
-| `before` | ✅ | ❌ | ❌ | ❌ |
-| `beforeEach` | ✅ | ✅ | ❌ | ❌ |
-| `test` | ✅ | ✅ | ✅ | ❌ |
-| `afterEach` | ✅ | ✅ | ✅ | ❌ |
-| `after` | ✅ | ❌ | ❌ | ✅ |
-
-See the [API](#api) section below for more details on the individual hooks, but the chaining behavior is the same for all.
-
-The chained hook (or test) will accept a callback which will now be called with an additional parameter which is the context of previous hooks. It can further return more context which will be merged with the existing.
-
-Note that the context object passed to further hooks is a shallow clone of the returned context, so it will be a new object on for every hook and test.
+| Source \ Target | `before` | `beforeEach` | `test` | `afterEach` | `after` |
+|-----------------|:--------:|:------------:|:------:|:-----------:|:-------:|
+| `before`        | ✅ | ❌ | ✅ | ✅ | ✅ |
+| `beforeEach`    | ❌ | ✅ | ✅ | ✅ | ❌ |
+| `afterEach`     | ❌ | ❌ | ❌ | ✅ | ❌ |
+| `after`         | ❌ | ❌ | ❌ | ❌ | ✅ |
 
 ```ts
 before(() => {
     return { abc: 123 };
 }).beforeEach(({ abc }) => {
-    return ({ efg: abc + 333 });
+    return { efg: abc + 333 };
 }).test('Chained', ({ abc, efg }) => {
     expect(abc).to.equal(123);
     expect(efg).to.equal(456);
@@ -221,74 +161,124 @@ before(() => {
 
 ## API
 
-### `suite`
+### `suite(title, fn)`
 
-Aliases `describe` and `context`. Mirrors `mocha` method of the same name.
+Aliases: `describe`, `context`. Mirrors the mocha method of the same name.
 
-First parameter is the title of the suite. The second is a callback function which can set up hooks and tests internally to the context of this suite.
+**Parameters**
 
-Callback _must_ be synchronous, and async methods will result in a failure.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `title` | `string` | — | Required. Name of the suite. |
+| `fn` | `() => void` | — | Required. Synchronous callback that registers hooks and tests. Async callbacks result in a failure. |
 
-Calling this method inside another hook or test will result in an error.
+`suite` does not return chainable context. Calling it inside a hook or test throws immediately.
 
-Instead of using the method directly, may be modified with `.skip()` or `.only()` with the same parameters:
+Supports `.only()` and `.skip()` modifiers with the same parameters:
 
 ```ts
-suite.only('Only this will run', () => {});
-describe.skip('This does not run', () => {});
+suite.only('Only this suite runs', () => {});
+describe.skip('This suite is skipped', () => {});
 ```
 
-### `before`
+---
 
-Alias `suiteSetup`. Mirrors `mocha` method of the same name.
+### `before(title?, fn)`
 
-A hook that runs at the very start of a suite. Optionally supports a title as the first argument, otherwise takes a callback that will be invoked for the hook. The callback may be async.
+Alias: `suiteSetup`. Mirrors the mocha method of the same name.
+
+Runs once at the start of the enclosing suite.
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `title` | `string` | — | Optional. Name for the hook, shown in output on failure. |
+| `fn` | `(ctx) => object \| void` | — | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
+
+**Returns** a chainable handle. The context returned by this hook is accessible in chained `before`, `beforeEach`, `test`, `afterEach`, and `after` calls.
 
 ```ts
 before('Optional title', () => {});
 suiteSetup(async () => {});
 ```
 
-If the callback returns an object, all keys are cloned over to chained context. This context is accessible in chained hooks `before`, `beforeEach`, `test`, `afterEach`, and `after`.
+---
 
-### `beforeEach`
+### `beforeEach(title?, fn)`
 
-Alias `setup`. Mirrors `mocha` method of the same name.
+Alias: `setup`. Mirrors the mocha method of the same name.
 
-A hook that runs before every test. Optionally supports a title as the first argument, otherwise takes a callback that will be invoked for the hook. The callback may be async.
+Runs before every test in the enclosing suite.
 
-If the callback returns an object, all keys are cloned over to chained context. This context is accessible in chained hooks `beforeEach`, `test`, `afterEach`.
+**Parameters**
 
-### `test`
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `title` | `string` | — | Optional. Name for the hook. |
+| `fn` | `(ctx) => object \| void` | — | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
 
-Alias `it`, `specify`. Mirrors `mocha` method of the same name.
+**Returns** a chainable handle. The context returned by this hook is accessible in chained `beforeEach`, `test`, and `afterEach` calls.
 
-Runs the actual test, supporting both synchronous and asynchronous execution.
+---
 
-Instead of using the method directly, may be modified with `.skip()` or `.only()` with the same parameters:
+### `test(title, fn)`
+
+Aliases: `it`, `specify`. Mirrors the mocha method of the same name.
+
+Runs the actual test.
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `title` | `string` | — | Required. Name of the test. |
+| `fn` | `(ctx) => void` | — | Required. The test callback. May be async. |
+
+`test` does not return chainable context.
+
+Supports `.only()` and `.skip()` modifiers:
 
 ```ts
-test.only('Only this will run', () => {});
-it.skip('This does not run', () => {});
+test.only('Only this test runs', () => {});
+it.skip('This test is skipped', () => {});
 ```
 
-### `afterEach`
+---
 
-Alias `teardown`. Mirrors `mocha` method of the same name.
+### `afterEach(title?, fn)`
 
-A hook that runs after every test. Optionally supports a title as the first argument, otherwise takes a callback that will be invoked for the hook. The callback may be async.
+Alias: `teardown`. Mirrors the mocha method of the same name.
 
-If the callback returns an object, all keys are cloned over to chained context. This context is accessible in chained hook `afterEach`.
+Runs after every test in the enclosing suite. Guaranteed to run even if the test fails.
 
-### `before`
+**Parameters**
 
-Alias `suiteTeardown`. Mirrors `mocha` method of the same name.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `title` | `string` | — | Optional. Name for the hook. |
+| `fn` | `(ctx) => object \| void` | — | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
 
-A hook that runs at the very end of a suite. Optionally supports a title as the first argument, otherwise takes a callback that will be invoked for the hook. The callback may be async.
+**Returns** a chainable handle. The context returned by this hook is accessible in chained `afterEach` calls only.
+
+---
+
+### `after(title?, fn)`
+
+Alias: `suiteTeardown`. Mirrors the mocha method of the same name.
+
+Runs once at the end of the enclosing suite. Guaranteed to run even if tests fail.
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `title` | `string` | — | Optional. Name for the hook. |
+| `fn` | `(ctx) => object \| void` | — | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
+
+**Returns** a chainable handle. The context returned by this hook is accessible in chained `after` calls only.
 
 ```ts
 after('Optional title', () => {});
 suiteTeardown(async () => {});
 ```
-
-If the callback returns an object, all keys are cloned over to chained context. This context is accessible in chained hook `after`.

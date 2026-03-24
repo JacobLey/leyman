@@ -9,28 +9,15 @@ Statically typed event emitter.
 </div>
 
 ## Contents
-- [Introduction](#introduction)
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [TypedEvents](#typedevent)
-  - [CustomEvent](#customevent)
   - [events](#events)
+  - [TypedEvent](#typedevent)
+  - [CustomEvent](#customevent)
   - [StaticEventTarget](#staticeventtarget)
   - [StaticEmitter](#staticemitter)
-
-## Introduction
-
-EventTarget with support for static type enforcement of events.
-
-The default event target allows for any `string` as the event name, and the data as `Event`. So knowing/using type information is impossible without extra (unnecessary) validations, or manual casting (risky).
-
-StaticEmitter is a wrapper of `EventTarget` that enforces event format via static type declarations. It also supports non-`Event` bodies, `symbol` events, and NodeJS-esque syntax (`on()`, `emit()`...).
-
-A type-only wrapper of `EventTarget` is also available, `StaticEventTarget`.
-
-StaticEmitter works in both NodeJS and the browser.
 
 ## Install
 
@@ -43,159 +30,202 @@ npm i static-emitter
 ```ts
 import { type events, StaticEmitter } from 'static-emitter';
 
+// Declare events by extending StaticEmitter
 class MyEmitter extends StaticEmitter {
     declare public [events]: {
         foo: [boolean, number[]];
         bar: [string];
-    }
+    };
 }
 
-const myEmitter = new StaticEmitter<{
-    foo: number[];
-    bar: string;
-}>();
-myEmitter.on('foo', nums => {
+const myEmitter = new MyEmitter();
+myEmitter.on('foo', (bool, nums) => {
+    console.log(bool); // typed as boolean
     console.log(nums); // typed as number[]
 });
-myEmitter.emit('foo', [123]); // success!
+myEmitter.emit('foo', true, [123]); // OK
 
-myEmitter.emit('bar', { wrong: null }); // Typescript error!
+myEmitter.emit('bar', { wrong: null }); // TypeScript error!
 ```
 
 ## Usage
 
-static-emitter is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { StaticEmitter, StaticEventTarget } = await import('static-emitter');`.
+`static-emitter` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { StaticEmitter } = await import('static-emitter')`.
 
-The `StaticEventTarget` is a type-cast of [EventTarget](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget). It provides _no_ extra functionality in javascript-land. Therefore, it is highly recommended this class be used in Typescript to gain any benefit from static typing. It may be loaded separately via `import { StaticEventTarget } from 'static-emitter/static-event-target';`.
+Individual exports are also available at sub-paths:
 
-The `StaticEmitter` is an extension of `StaticEventTarget`. It includes support for symbol events, non-event bodies, and EventEmitter-esque syntax.
+| Import path | Exports |
+|-------------|---------|
+| `static-emitter` | all exports |
+| `static-emitter/static-event-target` | `StaticEventTarget` |
+| `static-emitter/typed-event` | `TypedEvent` |
+| `static-emitter/custom-event` | `CustomEvent` |
+
+Events are declared as a key-value map of `eventName → eventDetail`. The detail type drives all listener and emit signatures. When the detail is an `Event` subclass (e.g. `MouseEvent`) it is used directly; any other type is wrapped in a `CustomEvent`.
 
 ## API
 
-### TypedEvent
+### `events`
 
-Type-only casting of [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event). Includes a generic parameter for setting the eventName.
-
-This casting may be convenient for usage with raw `StaticEventTarget`.
+A type-only `symbol` used to declare the event map on a class that extends `StaticEventTarget` or `StaticEmitter`. It has no runtime value and must always be used with `declare` or `typeof`.
 
 ```ts
-import { TypedEvent } from 'static-emitter';
-// Or solo
-import { TypedEvent } from 'static-emitter/typed-event';
+import { type events, StaticEmitter } from 'static-emitter';
 
-const myEvent: TypedEvent<'abc'> = new TypedEvent('abc');
+class MyEmitter extends StaticEmitter {
+    declare public [events]: {
+        ready: [void];
+        data: [Buffer];
+    };
+}
 ```
 
-### CustomEvent
+---
 
-_On Browser_ type-only casting of [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent). Extends `TypedEvent` and includes an additional generic parameter for setting the `detail`. For non-null details, the `detail` option will be required.
+### `TypedEvent`
 
-_On NodeJS_ a polyfill for `CustomEvent`, which does not natively exists.
+A type-only cast of the browser [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event) with a generic parameter for the event name. Useful when constructing events for use with `StaticEventTarget`.
 
 ```ts
-import { CustomEvent } from 'static-emitter';
-// Or solo
-import { CustomEvent } from 'static-emitter/custom-event';
+import { TypedEvent } from 'static-emitter'; // or 'static-emitter/typed-event'
 
-const myEvent: CustomEvent<'abc', 123> = new TypedEvent('abc', { detail: 123 });
-const myNullEvent: CustomEvent<'foo', null> = new TypedEvent('foo');
+const ev: TypedEvent<'ready'> = new TypedEvent('ready');
 ```
 
-### events
+---
 
-A type-only symbol for declaring events on emitter extension. Not strictly required if event declarations only occur via generic parameters.
+### `CustomEvent`
 
-Note that `events` _does not exist_ in javascript, and should only be used for event declarations.
+On browsers: a type-only cast of [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent) that extends `TypedEvent` and adds a generic `detail` parameter. When `detail` is non-null the `detail` option is required in the constructor.
 
-Ensure any usage is paired with the `typeof` or `declare` keywords.
+On Node.js: a polyfill for `CustomEvent`.
 
-### StaticEventTarget
+```ts
+import { CustomEvent } from 'static-emitter'; // or 'static-emitter/custom-event'
 
-A type-only extension of [EventTarget](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget). Events can be declared which enforce the allowed dispatch/listener events.
+const ev = new CustomEvent('data', { detail: Buffer.from('hello') });
+```
 
-Events can be declared via generic parameters (recommended when instantiating/extending an EventTarget directly) or via the `events` property.
+---
 
-Events are declared as a key-value mapping of `eventName` and `eventDetail`.
+### `StaticEventTarget`
 
-When `eventDetail` is an Event-extension (e.g. `MouseEvent`) then the detail is left unchanged. When any other type, it is wrapped in a `CustomEvent`.
+A type-only extension of the browser [`EventTarget`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget). Declares which events may be dispatched and listened to, enforcing types on the native `addEventListener`, `removeEventListener`, and `dispatchEvent` methods. There is no extra runtime code — the value is purely in TypeScript's type system.
+
+Events can be declared via a generic type parameter (when instantiating or extending directly) or via the `[events]` property on a subclass.
 
 ```ts
 import { CustomEvent, events, StaticEventTarget } from 'static-emitter';
-// Or solo
-import { StaticEventTarget } from 'static-emitter/static-event-target';
 
-class MyTarget extends StaticEventTarget<{
+// Via generic parameter
+const target = new StaticEventTarget<{
     click: MouseEvent;
-}> {}
-
-class MyExtendedTarget extends MyTarget {
-    [events]: MyTarget[events] & {
-        foo: 'bar';
-    }
-}
-const myTarget = new MyExtendedTarget();
-
-// Alternative
-const myTarget = new StaticEventTarget<{
-    click: MouseEvent;
-    foo: 'bar';
+    status: 'ok' | 'error';
 }>();
 
-myTarget.addEventListener('click', (mouseEvent: MouseEvent) => {...});
-myTarget.addEventListener('foo', {
-    handleEvent: (mouseEvent: CustomEvent<'foo', 'bar'>) => {...}),
-});
-// Typescript Error! Type mismatch.
-myTarget.addEventListener('foo', (numEvent: CustomEvent<'foo', number>) => {...});
+target.addEventListener('click', (e: MouseEvent) => { /* ... */ });
+target.addEventListener('status', (e: CustomEvent<'status', 'ok' | 'error'>) => { /* ... */ });
+target.dispatchEvent(new CustomEvent('status', { detail: 'ok' }));
 
-myTarget.dispatchEvent(new CustomEvent('foo', { detail: 'bar' }));
-myTarget.dispatchEvent(new MouseEvent('click'));
+// Via subclass
+class MyTarget extends StaticEventTarget<{ click: MouseEvent }> {
+    declare [events]: this[typeof events] & { status: 'ok' | 'error' };
+}
 ```
 
-### StaticEmitter
+#### `.addEventListener(type, listener, options?)`
 
-Extension of `StaticEventTarget` with support for symbol events, non-event bodies, and EventEmitter-esque syntax.
+Typed override of `EventTarget.addEventListener`.
 
-The event declaration syntax of `StaticEmitter` is the same as `StaticEventTarget`, and any native events can be used the same way.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `type` | `string` (declared event name) | — | Required. Event name. |
+| `listener` | typed listener or `EventListenerObject` | — | Required. Callback or handler object. |
+| `options` | `boolean \| AddEventListenerOptions` | — | Optional. Native listener options. |
 
-Note that `symbol` events and non-event bodies cannot use the native EventTarget methods.
-Similarly, any non-`CustomEvent` events cannot use the helper methods and must rely on EventTarget's native methods (type constraints will still be applied). The exception is `off()` which supports all event names/listeners.
+#### `.removeEventListener(type, listener, options?)`
 
-Listener methods (`on` + `addListener`) will pass two parameters. The first is the parsed `detail` from the custom event, and the raw CustomEvent as the second parameter.
+Typed override of `EventTarget.removeEventListener`. Parameters mirror `addEventListener`.
+
+#### `.dispatchEvent(event)`
+
+Typed override of `EventTarget.dispatchEvent`.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `event` | typed `Event` for the declared event name | — | Required. The event to dispatch. |
+
+**Returns** `boolean` — `true` if no listener called `preventDefault()`.
+
+---
+
+### `StaticEmitter`
+
+Extends `StaticEventTarget` with Node.js `EventEmitter`-style methods (`on`, `once`, `off`, `emit`), support for `symbol` event names, and non-`Event` detail values. All native `EventTarget` methods remain available and fully typed.
+
+`symbol` events and non-`Event` details require the helper methods (`on`/`once`/`off`/`emit`). Non-`CustomEvent` events (e.g. native `MouseEvent`) must use the native `addEventListener`/`dispatchEvent` methods; type constraints still apply.
+
+Listener callbacks receive `(detail, nativeCustomEvent)` — the unwrapped detail as the first argument.
 
 ```ts
-import { CustomEvent, StaticEmitter } from 'static-emitter';
+import { StaticEmitter } from 'static-emitter';
 
-const serverConnect = Symbol('server-connect');
+const connect = Symbol('connect');
 
-const myTarget = new StaticEmitter<{
-    click: MouseEvent;
-    foo: 'bar';
-    [serverConnect]: { port: number; timestamp: Date };
+const emitter = new StaticEmitter<{
+    data: string;
+    [connect]: { port: number };
 }>();
 
-myTarget.on('foo', (bar: 'bar', nativeEvent: CustomEvent<'foo', 'bar'>) => {});
-// Alias for `on()`
-myTarget.addListener(serverConnect, (connectionDetails: { port: number; timestamp: Date }) => {});
-// Typescript Error! Type mismatch.
-myTarget.on('foo', (num: number) => {});
-// Typescript Error! Native MouseEvent not supported.
-myTarget.on('click', (mouseEvent: MouseEvent) => {});
+emitter.on('data', (value: string) => console.log(value));
+emitter.once(connect, ({ port }) => console.log(port));
 
-// Remove listener immediately after first event
-myTarget.once('foo', (bar: 'bar') => {});
+emitter.emit('data', 'hello');
+emitter.emit(connect, { port: 3000 });
 
-myTarget.emit('foo', 'bar');
-myTarget.emit(serverConnect, { port: 3000, timestamp: new Date() });
-// Typescript Error! Type mismatch.
-myTarget.emit('foo', 123);
-
-// Example only, note this wouldn't actually "remove" anything, as this function was never added.
-myTarget.off(serverConnect, () => {})
-// Alias for `off()`. Supports native format.
-myTarget.removeListener('foo', {
-    handleEvent: (customEvent: CustomEvent<'foo', 'bar'>) => {},
-});
-// Supports native events
-myTarget.off('click', (mouseEvent: MouseEvent) => {});
+emitter.off('data', handler);
 ```
+
+#### `new StaticEmitter<InterfaceEvents>()`
+
+Constructor takes no arguments. Events are declared via the `InterfaceEvents` generic or the `[events]` symbol property on subclasses.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `InterfaceEvents` | `Record<string \| symbol, unknown>` | `{}` | Optional generic. Map of event name to detail type. |
+
+#### `.on(eventName, listener)`
+
+Registers a listener. Returns `this` for chaining. Aliased as `.addListener()`.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `eventName` | declared event name (`string` or `symbol`) | — | Required. |
+| `listener` | `(detail, event) => void` | — | Required. Receives the unwrapped detail. |
+
+#### `.once(eventName, listener)`
+
+Registers a one-time listener that is removed after its first invocation. Returns `this`.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `eventName` | declared event name (`string` or `symbol`) | — | Required. |
+| `listener` | `(detail, event) => void` | — | Required. |
+
+#### `.off(eventName, listener)`
+
+Removes a previously registered listener. Accepts both helper-style and native-style listeners. Returns `this`. Aliased as `.removeListener()`.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `eventName` | any declared event name | — | Required. |
+| `listener` | the listener reference originally passed to `on`/`once`/`addEventListener` | — | Required. |
+
+#### `.emit(eventName, detail)`
+
+Dispatches an event. Returns `this`.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `eventName` | declared event name (`string` or `symbol`) | — | Required. |
+| `detail` | the declared detail type for this event | — | Required. |

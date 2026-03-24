@@ -1,110 +1,130 @@
 <div style="text-align:center">
 
 # format-file
-Format files based on existing formatter configs like Biome.
+Format generated files in-place using biome or prettier.
 
 [![npm package](https://badge.fury.io/js/format-file.svg)](https://www.npmjs.com/package/format-file)
 [![License](https://img.shields.io/npm/l/format-file.svg)](https://github.com/JacobLey/leyman/blob/main/tools/format-file/LICENSE)
 
 </div>
 
-## Table of Contents
+## Contents
 
-- [Introduction](#introduction)
-- [Installation](#installation)
+- [Install](#install)
 - [Example](#example)
+- [Usage](#usage)
 - [API](#api)
   - [formatFile](#formatfilefilepath-options)
-  - [formatFiles](#formatfilesfilepath-options)
+  - [formatFiles](#formatfilesfilepaths-options)
   - [formatText](#formattextcontent-options)
 
-## Introduction
+## Install
 
-Code and config generation is hard enough already. Some of this code should be checked into version control, and should therefore abide by the repositories code formatting rules.
+```sh
+npm i format-file
+```
 
-`format-file` is a package which will return a formatted version of generated JSON, typescript, and javascript files by inferring the formatting rules at runtime.
+Both `@biomejs/biome` and `prettier` are optional peer dependencies. Install at least one:
 
-Under the hood, it uses either the user's configured [biome](https://biomejs.dev/) or [prettier](https://prettier.io/) setup to format files on their behalf.
-
-## Installation
-
-`npm i format-file`
-
-Format-file is an ESM package. It _must_ be imported.
-
-Due to [peer dependencies](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#peerdependenciesmeta) on biome + prettier, it is recommended to install at least one of them as well (or set up a similar peer dependency).
+```sh
+npm i @biomejs/biome   # recommended (default in this monorepo)
+npm i prettier
+```
 
 ## Example
 
 ```ts
-// generated.ts
-export    const  foo={
-abc   : 123,
-      efg:456  ,
-} ;
-
-// index.ts
 import { formatFile, formatText } from 'format-file';
 
+// Format a file in-place
 await formatFile('./generated.ts');
-readFileSync('/generated.ts', 'utf8');
-/**
- * export const foo = {
- *   abc: 123,
- *   efg: 456
- * };
- */
+// ./generated.ts is now formatted per your biome/prettier config
 
-await formatText(`
-{     "abc":123   ,
-     "efg":
-              456}
-`, { ext: '.json' });
-/**
- * {
- *   "abc": 123,
- *   "efg": 456
- * }
- */
+// Format a raw text body as JSON
+const result = await formatText(
+    `{     "abc":123   ,\n     "efg":\n              456}`,
+    { ext: '.json' }
+);
+// result === '{\n  "abc": 123,\n  "efg": 456\n}\n'
 ```
 
 ## Usage
 
-File formatting is best effort and is not necessarily guaranteed to succeed. Primarily if the repo does not have biome or prettier installed.
+`format-file` is an ESM module. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { formatFile } = await import('format-file');`.
 
-It is recommended to create _reasonable_ files before formatting, such as generating JSON files using `JSON.stringify(content, null, 2)` as a reasonable default.
+Formatting is best-effort. If neither biome nor prettier is installed and configured, files are returned unchanged. It is recommended to produce reasonable output before formatting (e.g. `JSON.stringify(data, null, 2)`), treating formatting as a polish step rather than a correctness requirement.
 
-Both biome and prettier have been declared as optional [peerDependencies](https://docs.npmjs.com/cli/v10/configuring-npm/package-json#peerdependenciesmeta) in this package. If using this library as an internal functionality, it is recommended to keep biome and prettier as optional peer dependencies to maintain your package's dependency.
+In this monorepo, `biome` is the default formatter and will be preferred when `formatter` is not specified.
 
 ## API
 
 ### `formatFile(filePath, options?)`
 
-Formats a file in-place.
+Formats a file in-place according to the project's formatter configuration.
 
-The first parameter is the file path. If the path is relative, will be resolved from working directory just like regular `fs` methods.
+**Parameters**
 
-The second parameter is an optional object with a `formatter` property.
-While the default behavior is `'inherit'` which will iterate over viable formatters based on support. It may be overridden with `'biome'` or `'parser'`.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `filePath` | `string` | — | Required. Path to the file. Relative paths resolve from `process.cwd()`. |
+| `options` | `FileFormatterOptions` | `{}` | Optional. See [FileFormatterOptions](#fileformatteroptions). |
 
-Returns a promise which when resolved, means the file is formatted according user settings.
+**Returns** `Promise<void>` — resolves when the file has been formatted and written.
 
-### `formatFiles(filePath[], options?)`
+```ts
+await formatFile('./src/generated.ts');
+await formatFile('./config.json', { formatter: 'prettier' });
+```
 
-Formats a set of files in-place.
+#### FileFormatterOptions
 
-First parameter is a list of file paths. Any paths that are relative will be resolved from working directory just like regular `fs` methods.
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `formatter` | `'biome' \| 'prettier' \| 'inherit'` | `'inherit'` | Formatter to use. `'inherit'` tries each available formatter in order. |
 
-Second parameter is an optional object the same as [formatFile](#formatfilefilepath-options)
+---
 
-Returns a promise which when resolved, means the files are formatted according user settings.
+### `formatFiles(filePaths, options?)`
+
+Formats a set of files in-place. Equivalent to calling `formatFile` on each path.
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `filePaths` | `string[]` | — | Required. List of file paths. Relative paths resolve from `process.cwd()`. |
+| `options` | `FileFormatterOptions` | `{}` | Optional. Same options as [`formatFile`](#formatfilefilepath-options). |
+
+**Returns** `Promise<void>` — resolves when all files have been formatted and written.
+
+```ts
+await formatFiles(['./src/generated.ts', './src/other.ts']);
+```
+
+---
 
 ### `formatText(content, options?)`
 
-Formats an inline text body as if it were a file.
+Formats a raw text string as if it were a file, returning the formatted result.
 
-Parameter is the raw text body.
+**Parameters**
 
-Second parameter is options which include a `ext`, which defaults to `.js`. It also support sthe `formatter` option that [formatFile](#formatfilefilepath-options) has.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `content` | `string` | — | Required. The raw text content to format. |
+| `options` | `TextFormatterOptions` | `{}` | Optional. See [TextFormatterOptions](#textformatteroptions). |
 
-Returns a promise which resolves to a formatted version of the text.
+**Returns** `Promise<string>` — the formatted text content.
+
+```ts
+const formatted = await formatText('export    const  foo={abc:1}', { ext: '.ts' });
+```
+
+#### TextFormatterOptions
+
+Extends [FileFormatterOptions](#fileformatteroptions) with:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `formatter` | `'biome' \| 'prettier' \| 'inherit'` | `'inherit'` | Formatter to use. |
+| `ext` | `'.json' \| '.js' \| '.ts' \| '.mjs' \| '.mts' \| '.cjs' \| '.cts' \| '.jsx' \| '.tsx'` | `'.js'` | File extension used to select formatting rules. |

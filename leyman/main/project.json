@@ -3,6 +3,7 @@
   "name": "@leyman/main",
   "targets": {
     "biome": {},
+    "pnpm-dedicated-lockfile": {},
     "lifecycle": {
       "executor": "nx:run-commands",
       "options": {

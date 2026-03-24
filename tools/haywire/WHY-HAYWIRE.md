@@ -87,4 +87,3 @@ When the code compiles, the container is guaranteed to work (barring external ru
 
 The result: dependency injection that fails at build time, not in production.
 
-→ [Back to README](./README.md)

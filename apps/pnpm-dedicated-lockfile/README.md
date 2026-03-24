@@ -1,32 +1,21 @@
 <div style="text-align:center">
 
 # pnpm-dedicated-lockfile
-Generate a lockfile that only contains dependencies of a single package.
+Generate a per-package lockfile extracted from the monorepo `pnpm-lock.yaml`.
 
 [![npm package](https://badge.fury.io/js/pnpm-dedicated-lockfile.svg)](https://www.npmjs.com/package/pnpm-dedicated-lockfile)
 [![License](https://img.shields.io/npm/l/pnpm-dedicated-lockfile.svg)](https://github.com/JacobLey/leyman/blob/main/apps/pnpm-dedicated-lockfile/LICENSE)
 
 </div>
 
+For the problem this solves and design rationale, see [WHY-PNPM-DEDICATED-LOCKFILE.md](./WHY-PNPM-DEDICATED-LOCKFILE.md).
+
 ## Contents
-- [Introduction](#introduction)
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
-
-## Introduction
-
-[pnpm](https://pnpm.io/) is a package manager than greatly assists working with monorepo. It stores a manifest of all installed packages in a single file `.pnpm-lock.yaml` at the root of your workspace. This is necessary for pNpm to manage all dependencies in one place, with appropiate caching and shared references.
-
-However this means it is difficult to tell when changes in an installed dependency impact a given package.
-
-When you have CI jobs that are based on caching, updating a single dependency can trigger _every_ job to re-run, which is slow and expensive.
-
-Instead, you can calculate a single lockfile for a given package, and perform caching based on that.
-
-`pnpm-dedicated-lockfile` is a CLI that writes this dedicated lockfile to your package.
-
-Note that while this file is directly based on `.pnpm-lock.yaml` and has a similar format, it is _not_ an actual lockfile and is not interchangeable with `.pnpm-lock.yaml`. Instead it should only be used for caching, and for visually inspecting dependency impacts to a given package.
+- [CLI](#cli)
+- [Also See](#also-see)
 
 ## Install
 
@@ -37,24 +26,43 @@ npm i pnpm-dedicated-lockfile --save-dev
 ## Example
 
 ```sh
-npx pnpm-dedicated-lockfile --projectDir ./path/to/package
+# Write .pnpm-lock to ./packages/my-app/
+pnpm-dedicated-lockfile --projectDir ./packages/my-app
+
+# Write a SHA hash instead of the full lockfile
+pnpm-dedicated-lockfile --projectDir ./packages/my-app --hash
+
+# Check without writing (CI mode)
+pnpm-dedicated-lockfile --projectDir ./packages/my-app --ci
 ```
 
-Will write a file at `./path/to/package/.pnpm-lock`.
+Output is written to `<projectDir>/.pnpm-lock` by default.
 
 ## Usage
 
-`npx pnpm-dedicated-lockfile --help` to get started.
+Run after `pnpm install`. The generated `.pnpm-lock` file reflects only the direct and transitive dependencies of the target package. Use it as a CI cache key — it only changes when _that package's_ dependency tree changes.
 
-It is generally recommended to only include `pnpm-dedicated-lockfile` as a dev/test dependency.
-The resulting files may be checked into version control. They are as deterministic as `.pnpm-lock.yaml`, but since they may only be used for caching, it is not strictly necessary.
+The generated file is **not** a real lockfile and cannot replace `pnpm-lock.yaml`. It is for caching and visual inspection only.
 
-| flag | type | default | description |
+Commit the generated files to version control. They are as deterministic as `pnpm-lock.yaml`, and committing them allows CI to detect drift with `--ci`.
+
+## CLI
+
+```sh
+pnpm-dedicated-lockfile [options]
+```
+
+| Flag | Type | Default | Description |
 |------|------|---------|-------------|
-| `--projectDir` | `string` | `.` | Directory containing package to calculate dedicated lockfile. |
-| `--hash` | `boolean` | `false` | Write a SHA hash instead of a large JSON file. This has benefits of reduced file size, but may more easily result in collisions. |
-| `--lockfile-name` | `string` | `.pnpm-lock` | Update the file name to whatever you prefer. |
-| `--omit-comment` | `boolean` | `false` | Exclude the `// DO NOT EDIT` comment at top of file. |
-| `--omit-links` | `boolean` | `false` | Exclude dependencies that are only related to local workspace links (e.g. `workspace:^` specifiers). They are included by default |
-| `--dry-run` | `boolean` | `false` | Don't actually create/update the files. |
-| `--ci` | `boolean` | If is CI environment | If existing file is out-of-date, throws an error. Make sure to explicitly set as false if not checking files into version control. |
+| `--projectDir` | `string` | `.` | Directory of the package to generate a lockfile for. |
+| `--hash` | `boolean` | `false` | Write a SHA hash instead of the full lockfile JSON. Smaller output, but may have more collisions. |
+| `--lockfile-name` | `string` | `.pnpm-lock` | Override the output file name. |
+| `--omit-comment` | `boolean` | `false` | Exclude the `// DO NOT EDIT` comment at the top of the file. |
+| `--omit-links` | `boolean` | `false` | Exclude local workspace link dependencies (`workspace:^` specifiers). Included by default. |
+| `--dry-run` | `boolean` | `false` | Compute the lockfile without writing it. |
+| `--ci` | `boolean` | auto (CI env) | Fail if the existing file is out of date. Set explicitly to `false` when not tracking files in version control. |
+
+## Also See
+
+- [WHY-PNPM-DEDICATED-LOCKFILE.md](./WHY-PNPM-DEDICATED-LOCKFILE.md) — motivation: why per-package lockfiles help CI caching
+- [pnpm workspaces](https://pnpm.io/workspaces) — the monorepo model this tool is designed for

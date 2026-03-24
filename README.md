@@ -1,68 +1,59 @@
-# Leyman README
+# Leyman
 
-An Nx monorepo for various libraries and plugins.
+An Nx monorepo of TypeScript libraries and tools for Node.js ESM environments.
 
-It is _highly_ recommended when developing locally to use a devcontainer. This will ensure your environment is set up correctly, and not risk interfering with any other settings or packages you may have configured across your desktop.
+> **First time here?** Open this repo in VSCode — it will prompt you to reopen in the [DevContainer](.devcontainer/), which sets up Node, PNPM, and all tooling automatically.
 
-The [.devcontainer](./.devcontainer) directory is fully set up. If you open this repo in VSCode, you should immediately see an option to open it up in DevContainer.
+## Packages
 
-## Concepts
-
-[PNPM](https://pnpm.io/) is used for package management. It is highly efficient for sharing disk space while allowing packages to manage dependencies separately.
-
-[Nx](https://nx.dev/) is used for task running. It manages the required prerequisite steps (e.g. building dependencies) with caching to simplify workflows.
-
-A majority of the code written here is developed with [Typescript](https://www.typescriptlang.org/) targeting a [Node](https://nodejs.org/) ESM executable. Conceptually it is not restricted to only that, and could support other languages as well. No raw Javascript should be be used if Typescript is a viable alternative. CommonJS should be avoided unless explicitly required by consomers. Even then, lightly wrapping ESM with libraries like [CommonProxy](./tools/common-proxy/) are preferable to maintaining a full CommonJS codebase.
-
-[Eslint](https://eslint.org/) enforces highly opinionated linting of Typescript files, to both catch issues and enforce a consitent coding style.
-
-[Biome](https://biomejs.dev/) enforces Typescript and JSON formatting. It is an optimized replacement for Prettier.
-
-This repo is designed to be used in a [DevContainer](https://code.visualstudio.com/docs/devcontainers/containers). This ensures all your runtimes and configurations are properly set up by default, and won't pollute the rest of your workspace.
+Full index of packages can be found [here](./skills/projects/AGENTS.md).
 
 ## Getting Started
 
-"Global" packages are installed under a ["main"](./leyman/main) package, which is explicitly set as part of your PATH.
+```bash
+# Install dependencies
+pnpm i
 
-Run `pnpm i` to get started.
+# Build and test everything
+test-ci
+```
 
-From there, run `nx run <package-name>:<task>`. See [Nx documetation](https://nx.dev/nx-api/nx/documents/run) for more details.
+> **Nx is not globally installed.** It ships with `@leyman/main` and is on `PATH` automatically. Use `nx` directly — not `npx nx` or `pnpm exec nx`.
 
-Many tasks are broken down into subtasks to manage the various steps required. For example a typescript build script may perform some codegen before generating the final `.js` files. See the [nx-lifecyle](./apps/nx-lifecycle) package to see how we manage this!
+See [`AGENTS.md`](./AGENTS.md) for the full skill index.
 
-Some standard tasks are:
-- build
-  - Generates executable output code
-- analyze
-  - Applies linters/formatters
-- test
-  - Runs full test suite for package
+## CI
 
-Try running `nx run-many -t test` to build, analyze, and test the entire package!
-Or run the command [`test-coverage`](./scripts/commands/test-coverage) which will do that, *and* enforce coverage! Coverage is computed after all tests have run.
+This repo uses [Dagger](https://dagger.io/) for CI. To replicate CI locally:
 
-See individual packages for documentation.
+```bash
+dagger-test
+# or equivalently:
+dagger call --mod ./dagger/test-and-build/ --source . run
+```
 
-## Executing Dagger
+Run `test-ci` first — it's faster for iteration. Use Dagger to confirm before pushing.
 
-This repository uses [Dagger](https://dagger.io/) for CI builds.
-Run [`dagger-test`](./scripts/commands/dagger-test) to simulate that (which really just runs `pnpm i` + `test-coverage` under the hood).
-
-If these tests pass, then CI will pass!
-
-All dagger functions are contained in the [/dagger](./dagger) directory.
-
-To get started, run `dagger call --mod ./dagger/test-and-build/ --source . run`
-
-You may hook up your own Dagger cloud account (`dagger login`) for better view of execution pipeline and debugging.
-
-It is still highly recommended to run `nx run-many -t test` _before_ trying to execute dagger.
-Any issues like linter or build failures will materialize much faster with Nx, at the cost of greater dependency on global installations and less deterministic caching.
-If it works on Nx, it _isn't_ guaranteed to work in CI (it *should*, but things slip through the cracks), but if it works in Dagger it will work on CI!
+See all aliased (via PATH set during [Devcontainer setup](./.devcontainer/Dockerfile)) scripts in the [/scripts/commands](./scripts/commands) directory.
 
 ## Contributing
 
-All changes should include a [changeset](https://www.npmjs.com/package/@changesets/cli) file that reports how packages are impacted.
+1. Make your changes
+2. Run `test-ci` to verify
+3. Run `changeset` and follow the prompts to document your changes
+4. Submit a PR — GitHub Actions runs Dagger automatically
 
-Simply run `changeset` once you are done and follow the instructions in the CLI.
-Then include the generated file in your commit.
+## Tooling
+
+| Tool | Role |
+|------|------|
+| [PNPM](https://pnpm.io/) | Package manager with workspace support |
+| [Nx](https://nx.dev/) | Task runner with caching and dependency graph |
+| [TypeScript](https://www.typescriptlang.org/) | Language (ESM, strict mode) |
+| [SWC](https://swc.rs/) | Fast TypeScript compiler |
+| [ESLint](https://eslint.org/) | Linting (opinionated, 15+ plugins) |
+| [Biome](https://biomejs.dev/) | Formatting |
+| [Mocha](https://mochajs.org/) + [Chai](https://www.chaijs.com/) | Testing |
+| [C8](https://github.com/bcoe/c8) | Coverage (100% required) |
+| [Dagger](https://dagger.io/) | CI pipeline |
+| [Changesets](https://github.com/changesets/changesets) | Versioning and changelogs |

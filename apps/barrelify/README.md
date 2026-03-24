@@ -9,23 +9,13 @@ Auto-generate TS barrel files.
 </div>
 
 ## Contents
-- [Introduction](#introduction)
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
   - [barrelify](#barrelifyoptions)
-
-## Introduction
-
-Auto-generate barrel files for typescript.
-
-Scans your directories for `index.ts` files with the `// AUTO-BARREL` comment at the start.
-Then re-writes the files as a barrel of all other javascript files in the directory.
-
-Respects CommonJS/ESM compatibilities. Always ignores `.gitignore`-d and `node_modules` files.
-
-Barrel files _should_ be checked into version control.
+- [CLI](#cli)
+- [Also See](#also-see)
 
 ## Install
 
@@ -35,7 +25,7 @@ npm i barrelify --save-dev
 
 ## Example
 
-Given file structure
+Given file structure:
 ```
 /
 ├─┬ cjs
@@ -55,7 +45,7 @@ Given file structure
   └── index.ts // _not_ AUTO-BARREL
 ```
 
-`npx barrelify` will rewrite:
+`npx barrelify` rewrites:
 
 /cjs/index.ts:
 ```ts
@@ -74,43 +64,67 @@ export * from './ts.js';
 export * from './esm.mjs';
 ```
 
-Note that the `// AUTO-BARREL` comment is preserved, so future `npx barrelify` will continue to keep files in sync.
+The `// AUTO-BARREL` comment is preserved so subsequent runs stay in sync.
 
 ## Usage
 
-`barrelify` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { barrelify } = await import('barrelify');`.
+`barrelify` is an ESM module. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { barrelify } = await import('barrelify');`.
 
-It is also available as a CLI.
+It is also available as a CLI via `npx barrel` or `npx barrelify`.
 
-`npx barrel --help` to get started.
+Mark any `index.ts` file you want managed with `// AUTO-BARREL` as the very first characters in the file. Barrelify will not create new index files — it only rewrites files that are already opted in.
 
-It is generally recommended to only include `barrelify` as a dev/test dependency.
-
-Make sure your index files are flagged with `// AUTO-BARREL` as the very first characters in the file. It will not generate index files by itself.
-
-`npx barrel --ci` will execute a special "dry-run" version, that throws an error if any files are found out of sync. This can ensure barrel files are properly generated _before_ checking into version control, or during CI tests.
+Always ignores `.gitignore`-d paths and `node_modules`. Barrel files should be checked into version control.
 
 ## API
 
-### barrelify(options?)
+### `barrelify(options?)`
 
-Programmatic way to access `barrelify`. Performs same actions as CLI.
+Programmatic entry point. Scans for `// AUTO-BARREL` index files and rewrites them with correct barrel exports.
 
-#### options
+**Parameters**
 
-##### cwd
-string (default = process.cwd())
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `options` | `BarrelifyOptions` | `{}` | Optional. See [Options](#options). |
 
-Directory to start search for index files. Defaults/resolves from process.cwd().
+**Returns** `Promise<void>` — resolves when all barrel files have been written.
 
-Recursively checks directories starting from this point.
+```ts
+import { barrelify } from 'barrelify';
 
-##### dryRun
-boolean (default = false)
+await barrelify({ cwd: './src', ignore: ['**/generated/**'] });
+```
 
-If true, will not actually perform file writes.
+#### Options
 
-##### ignore
-string[] (default = [])
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `cwd` | `string` | `process.cwd()` | Root directory to start searching for index files. Searches recursively. |
+| `dryRun` | `boolean` | `false` | If `true`, computes barrel output but does not write any files. |
+| `ignore` | `string[]` | `[]` | Glob patterns for index files to skip. |
 
-Globs for index files that should be explicitly ignored.
+## CLI
+
+```sh
+npx barrel [options]
+npx barrelify [options]
+```
+
+| Flag | Description |
+|------|-------------|
+| `--ci` | Dry-run mode that exits with a non-zero code if any barrel file is out of sync. Use in CI to verify files were committed. |
+| `--cwd <path>` | Root directory to search. Defaults to `process.cwd()`. |
+| `--dry-run` | Compute barrel output without writing files. |
+| `--ignore <globs...>` | Glob patterns for index files to skip. |
+
+```sh
+npx barrel --ci           # fail if any barrel file is stale
+npx barrel --cwd ./src    # limit search to ./src
+npx barrel --dry-run      # preview changes without writing
+npx barrel --ignore '**/generated/**'
+```
+
+## Also See
+
+- [barrelify skill](../../skills/packages/barrelify/AGENTS.md) — monorepo conventions and guidance for using barrelify in this repo

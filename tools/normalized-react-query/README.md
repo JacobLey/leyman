@@ -1,6 +1,6 @@
 <div style="text-align:center">
 
-# >normalized-react-query
+# normalized-react-query
 Wrapper around React Query to enforce type-safe, consistent key-query mappings.
 
 [![npm package](https://badge.fury.io/js/normalized-react-query.svg)](https://www.npmjs.com/package/normalized-react-query)
@@ -9,72 +9,21 @@ Wrapper around React Query to enforce type-safe, consistent key-query mappings.
 </div>
 
 ## Contents
-- [Introduction](#introduction)
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [Resource](#resource)
-  - [Paginated](#paginated)
-  - [Infinite](#infinite)
-  - [Mutation](#mutation)
+  - [resource](#resource)
+  - [infinite](#infinite)
+  - [Hooks](#hooks)
+  - [Linked](#linked)
 - [Types](#types)
   - [QueryData](#querydata)
   - [QueryParams](#queryparams)
-  - [QueryVariables](#queryvariables)
-  - [EmptyObject](#emptyobject)
-
-
-## Introduction
-
-[React Query](https://tanstack.com/query/v4) provides powerful API state management, with caching, pre-fetching, SSR, and hook support.
-
-The main idea is pairing "keys" (unique to a specific API call + params) with a query function. React Query handles actual pairing of async logic with synchronous hooks/renders behind the scenes.
-
-The "problem" with manual pairing of keys to functions is that there is no way to ensure the exact same function is paired to the same key, or that the same key is re-used for similar queries. As a result, either caching may prevent the desired function from being called, or may accidentally call the same function multiple times.
-
-Take these example hooks, which represent inconsistent usage of keys + query handlers:
-
-```ts
-import { useQuery } from '@tanstack/react-query';
-import { getUsers } from './api/users.js';
-
-const useExample = () => {
-    const firstQuery = useQuery(
-        ['users', 'get'],
-        async () => {
-            return getPosts();
-        };
-    );
-
-    const secondQuery = useQuery(
-        ['users', 'get'],
-        async () => {
-            // NEVER RUNS
-            // Uses cached value of `firstQuery`.
-            // Result is typed to include `{ decorate: boolean }` but that will never exist.
-            const users = await getUsers();
-            return users.map(user => {
-                ...user,
-                decorate: true,
-            };
-        };
-    );
-
-    const thirdQuery = useQuery(
-        // Different key, same API call.
-        // Triggers another fetch for data that already exists.
-        ['users', 'fetch'],
-        async () => {
-            return getUsers();
-        };
-    );
-};
-```
-
-This package attempts to solve this discrepancy by forcing pairing of keys and functions, with strongly typed data.
-
-Ideally any implementations of the wrapper classes can offload any API and business logic so that actual React functions can simply access the data as it becomes available.
+  - [QueryKey](#querykey)
+  - [LinkOf](#linkof)
+- [Also See](#also-see)
 
 ## Install
 
@@ -85,167 +34,326 @@ npm i normalized-react-query
 ## Example
 
 ```ts
-import type { QueryKey } from '@tanstack/react-query';
-import { useState } from 'react';
+import type { QueryClient, QueryKey } from '@tanstack/react-query';
 import {
-    Paginated,
+    resource,
+    infinite,
+    useNormalizedQuery,
+    useNormalizedInfiniteQuery,
     type QueryData,
     type QueryParams,
-    Resource,
 } from 'normalized-react-query';
-import { getUsers, listUsers } from './api/users.js';
+import { getUser, listUsers } from './api/users.js';
 
-class FetchUser extends Resource<User, UserId> {
-    protected getKey(id: QueryParams<this>): QueryKey {
-        return ['users', 'get', id];
-    }
-    protected async queryFn(id: QueryParams<this>): Promise<QueryData<this>> {
-        return getUser(id)
-    }
-}
-const fetchUser = new FetchUser();
+// Define a resource once — key and queryFn are always paired together.
+const fetchUser = resource<{ id: number }, User>({
+    key: ({ id }) => ['users', 'get', id],
+    queryFn: ({ params: { id } }) => getUser(id),
+});
 
-class ListUsers extends Paginated<User> {
-    protected getKey(): QueryKey {
-        return ['posts', 'get'];
-    }
-    protected async queryFn(): Promise<QueryData<this>> {
-        return listUsers();
-    }
-    protected async onSuccess(
-        client: QueryClient,
-        params: QueryParams<this>,
-        data: QueryData<this>
-    ): void {
-        for (const user of data) {
-            // Pre-populate lookup data of users by-id.
-            fetchUser.setData(client, user.id, user);
-        }
-    }
-}
-const listUsers = new ListUsers();
+// Pre-populate the per-user cache whenever a list is fetched.
+const listUsersInfinite = infinite<void, User[], number>({
+    key: ['users', 'list'],
+    getInitialPageParam: 0,
+    getNextPageParam: ({ lastPage, lastPageParam }) =>
+        lastPage.length ? lastPageParam + 1 : undefined,
+    queryFn: ({ pageParam }) => listUsers(pageParam),
+}).propagate(({ page }) =>
+    page.map(user => ({
+        ...user,
+        detail: fetchUser.link({ id: user.id }),
+    }))
+);
 
-const useExample = () => {
-    const firstQuery = fetchUser.useQuery(123);
-    // Successfully cached
-    const secondQuery = fetchUser.useQuery(123);
-    // Separate query, consistent behavior
-    const thirdQuery = fetchUser.useQuery(456);
+const useExample = (queryClient: QueryClient) => {
+    // All three refer to the same cache entry — no collision, no double-fetch.
+    const first = useNormalizedQuery(fetchUser, { id: 123 });
+    const second = useNormalizedQuery(fetchUser, { id: 123 }); // served from cache
+    const third = useNormalizedQuery(fetchUser, { id: 456 }); // separate entry
 
-    // Pre-populates every user
-    const listQuery = listUsers.useQuery();
-
-    const [showFourth, setShowFourth] = useState(false);
-    useEffect(() => {
-        setTimeout(() => setShowFourth(true), 5000);
-    });
-
-    // Will be cached immediately on load, due to "listUsers" pre-population.
-    const fourthQuery = fetchUser.useQuery(789, {
-        // All normal React-Query options are available
-        enabled: showFourth,
-    });
+    const list = useNormalizedInfiniteQuery(listUsersInfinite, undefined);
 };
 ```
 
 ## Usage
 
-`normalized-react-query` is an ESM module. That means it _must_ be `import`ed. To load from a CJS module, use dynamic import `const { Resource } = await import('normalized-react-query');`.
+`normalized-react-query` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { resource } = await import('normalized-react-query');`.
 
-Both the react and react query modules are required for this package to work. Peer dependencies are declared on both. This package merely enforces typing and structure, any caching/revalidation/subscription is still implemented by native React Query.
+Both `react` and `@tanstack/react-query` are peer dependencies. This package enforces typing and structure; all caching, revalidation, and subscription logic is handled by React Query.
 
-Class interfaces are used to best expose inheritance and override functionality for typescript. The actual query instances used should be singletons (e.g. create once and re-use).
-
-A lowercase version of each class is available in favor of functional programming practices.
-
-e.g.
-```ts
-import { resource, Resource } from 'normalized-react-query';
-import { getUser, type User } from './api.js';
-
-class GetUserClass extends Resource<User, string> {
-    getKey(id) {
-        return ['users', id];
-    }
-    queryFn(id) {
-        return getUser(id);
-    }
-    onError(client, id, error) {
-        console.error(`Failed to lookup user ${id}`, error);
-    }
-}
-const getUserClass = new GetUserClass();
-
-// Logically same as `getUserClass`.
-const getUser = resource<User, string>(
-    {
-        getKey(id) {
-            return ['users', id];
-        }
-        queryFn(id) {
-            return getUser(id);
-        }
-    },
-    {
-        onError(client, id, error) {
-            console.error(`Failed to lookup user ${id}`, error);
-        }
-    }
-);
-```
+Instances created by `resource()` and `infinite()` are designed to be singletons — create once, import everywhere. The functional constructors (`resource`, `infinite`) are the primary API. The underlying `Resource` and `Infinite` classes are also exported as types for use in type annotations.
 
 ## API
 
-### Resource
+### `resource(params)`
 
-The `Resource` class is the most basic wrapper around `useQuery`. When in doubt, a method that asynchronously loads data (a "resource") should extend the `Resource` class.
+Creates a type-safe, singleton reference to a non-paginated query. The key and query function are defined together and reused at every call site.
 
-Each child class defines the parameters to the function, and generates a unique `queryKey` for those params. It also provides some basic abstractions to support other React Query functionality such as pre-fetching data and invalidation.
+**Parameters**
 
-The query function can be as simple as a direct API call, but supports side effects as necessary. A common side effect may be to take a sub-resource of the response, and pre-load another query.
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `params.key` | `TQueryKey \| ((params: TParams) => TQueryKey)` | — | Required. A static key or function computing the key from params. |
+| `params.queryFn` | `(options: QueryFunctionContextWithParams<TParams, ...>, queryClient?) => Promise<TData> \| TData` | — | Required. The cached query function. Receives params plus standard TanStack context. |
 
-These side-effects should _most likely_ be placed in lifecycle hooks, like `onSuccess`.
+**Returns** `Resource<TParams, TData>` — a resource instance.
 
-### Paginated
+#### `Resource` instance methods
 
-The `Paginated` class is a typed extension `Resource`. It provides some default typing to support pagination, which React Query supports natively with [keepPreviousData](https://tanstack.com/query/v4/docs/guides/paginated-queries).
+All methods that interact with the cache accept `queryClient` as the first argument and `params` as the second.
 
-### Infinite
+##### `.getKey(params): TQueryKey`
 
-The `Infinite` class wraps the `Paginated` class further, providing "infinite" queries where all pages are loaded and available in parallel. It is built off multiple individual queries, so any refetching, caching, invalidation, and de-duplication is handled smoothy.
+Returns the computed query key for the given params.
 
-#### Why not native `useInfinite`?
+##### `.getQueryFn(params): QueryFn`
 
-React Query exports a `useInfinite` natively, which provides _very_ similar behavior out of the box. The decision to not use it is based on that hook conflicting with `useQuery`'s cache. `useInfinite` queries cannot share a `queryKey` with `useQuery`, and therefore cannot benefit from the powerful functionality React Query defines.
+Returns the query function bound to the given params, suitable for passing to TanStack directly.
 
-Therefore, a custom `useInfinite` hook was implemented using React Query's `useQueries` hook. That ensures any using of `Infinite`s `useQuery` hook can benefit from `useInfinite` and vice versa. Remember `Infinite` is a child class of `Paginated` and therefore supports normal query behavior as well.
+##### `.getUseQueryOptions(queryClient, params | skipToken, options?)`
 
-### Mutation
+Returns options ready to spread into `useQuery` or `useQueries`. Supports `skipToken` to disable the query.
 
-The `Mutation` class is a wrapper around [React Query `useMutation`](https://tanstack.com/query/v4/docs/reference/useMutation). "Mutations" aren't fetching data, but rather changing the server state, and handling side effects accordingly.
+##### `.getUseSuspenseQueryOptions(queryClient, params, options?)`
 
-Most common mutations are POST and PATCH endpoints, that most likely impact a related GET endpoint. Therefore the "side effects" should either set the new state data (if returned from the mutation) or invalidate the existing query and force it to refetch.
+Returns options ready to spread into `useSuspenseQuery` or `useSuspenseQueries`.
 
-Mutations are not "cached" in the same sense `useQuery` is, but do generally benefit from the pattern of consistent mutation handling and typings.
+##### `.fetchQuery(queryClient, params, options?): Promise<TData>`
+
+Fetches (or reads from cache) and returns data. Triggers propagation to downstream linked resources.
+
+##### `.prefetchQuery(queryClient, params, options?): Promise<Linked>`
+
+Prefetches without throwing. Returns a `Linked` reference usable with prefetched hooks.
+
+##### `.ensureQueryData(queryClient, params, options?): Promise<TData>`
+
+Returns stale cached data or fetches fresh data. Waits for all downstream propagated links to resolve.
+
+##### `.setQueryData(queryClient, params, updater, options?): TData | undefined`
+
+Sets data directly in the cache. The updater can be a value or a callback receiving the current cached value.
+
+##### `.populate(queryClient, params, updater, options?): TParams`
+
+Calls `setQueryData` and returns the params. Useful for chaining — the returned params can be passed directly to hooks.
+
+##### `.link(params, options?): Linked`
+
+Must be called inside a `propagate` callback. Triggers a prefetch of this resource and returns a `Linked` reference for downstream hooks. Throws if called outside of `propagate`.
+
+##### `.propagate(map): Resource`
+
+Attaches a transformation that runs after the query resolves. Inside `map`, call `.link()` on other resources to trigger downstream prefetches. Returns a new `Resource` with the updated propagated type.
+
+##### `.invalidateQuery(queryClient, params, filters?, options?): Promise<void>`
+
+Invalidates the exact query entry for the given params.
+
+##### `.refetchQuery(queryClient, params, filters?, options?): Promise<void>`
+
+Refetches the exact query entry for the given params.
+
+##### `.cancelQuery(queryClient, params, filters?, options?): Promise<void>`
+
+Cancels the in-flight query for the given params.
+
+##### `.removeQuery(queryClient, params, filters?): void`
+
+Removes the query entry from cache.
+
+##### `.resetQuery(queryClient, params, filters?, options?): Promise<void>`
+
+Resets the query to its initial state.
+
+##### `.getQueryData(queryClient, params): TData | undefined`
+
+Returns cached data without triggering a fetch.
+
+##### `.getQueryState(queryClient, params): QueryState | undefined`
+
+Returns the full TanStack query state object.
+
+##### `.getCachedQuery(queryClient, params, filters?): Query | undefined`
+
+Returns the internal TanStack `Query` instance.
+
+##### `.isFetching(queryClient, params, filters?): boolean`
+
+Returns `true` if a fetch is currently in flight for this exact query.
+
+##### `.hasData(queryClient, params): boolean`
+
+Returns `true` if any data is present in cache (regardless of staleness).
+
+##### `.hasState(queryClient, params): boolean`
+
+Returns `true` if a query state entry exists (whether fetching, stale, or idle).
+
+---
+
+### `infinite(params)`
+
+Creates a type-safe, singleton reference to an infinite (paginated) query. Shares the cache key space with `resource`, so `resource` and `infinite` instances can cross-populate each other's caches.
+
+**Parameters**
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `params.key` | `TQueryKey \| ((params: TParams) => TQueryKey)` | — | Required. A static key or function computing the key from params. |
+| `params.queryFn` | `(options: QueryFunctionContextWithParams<TParams, TPageParam, ...>, queryClient?) => Promise<TData> \| TData` | — | Required. Called once per page load. |
+| `params.getInitialPageParam` | `TPageParam \| ((params: TParams) => TPageParam)` | — | Required. The page param used to fetch the first page. |
+| `params.getNextPageParam` | `(params: { lastPage, allPages, lastPageParam, allPageParams }) => TPageParam \| null \| undefined` | — | Required. Returns the next page param, or `null`/`undefined` when there are no more pages. |
+| `params.getPreviousPageParam` | `(params: { firstPage, allPages, firstPageParam, allPageParams }) => TPageParam \| null \| undefined` | `undefined` | Optional. Enables backwards pagination. |
+
+**Returns** `Infinite<TParams, TPageParam, TData>` — an infinite instance.
+
+#### `Infinite` instance methods
+
+`Infinite` extends `Queryable` and shares `getKey`, `invalidateQuery`, `refetchQuery`, `cancelQuery`, `removeQuery`, `resetQuery`, `getQueryData`, `getQueryState`, `getCachedQuery`, `isFetching`, `hasData`, and `hasState` with `Resource`.
+
+##### `.getInitialPageParam(params): TPageParam`
+
+Returns the initial page param for the given query params.
+
+##### `.getGetNextPageParam(params): GetNextPageParamFunction`
+
+Returns the `getNextPageParam` callback bound to the given params.
+
+##### `.getGetPreviousPageParam(params): GetPreviousPageParamFunction`
+
+Returns the `getPreviousPageParam` callback bound to the given params.
+
+##### `.getUseInfiniteQueryOptions(queryClient, params | skipToken, options?)`
+
+Returns options ready to spread into `useInfiniteQuery`. Supports `skipToken`.
+
+##### `.getUseSuspenseInfiniteQueryOptions(queryClient, params, options?)`
+
+Returns options ready to spread into `useSuspenseInfiniteQuery`.
+
+##### `.fetchInfiniteQuery(queryClient, params, options?): Promise<InfiniteData<TData>>`
+
+Fetches all loaded pages and triggers propagation.
+
+##### `.prefetchInfiniteQuery(queryClient, params, options?): Promise<Linked>`
+
+Prefetches without throwing. Returns a `Linked` reference.
+
+##### `.ensureInfiniteQueryData(queryClient, params, options?): Promise<InfiniteData<TData>>`
+
+Returns stale or fresh data and waits for all propagated links to resolve.
+
+##### `.setInfiniteQueryData(queryClient, params, updater, options?): InfiniteData<TData> | undefined`
+
+Sets paginated data directly in the cache.
+
+##### `.populate(queryClient, params, updater, options?): TParams`
+
+Calls `setInfiniteQueryData` and returns the params.
+
+##### `.link(params, options?): Linked`
+
+Must be called inside a `propagate` callback. Triggers a prefetch and returns a `Linked` reference. Throws if called outside of `propagate`.
+
+##### `.propagate(map): Infinite`
+
+Attaches a per-page transformation. The `map` callback receives `{ page, pageParam }` and may call `.link()` on other resources. Returns a new `Infinite` with the updated propagated type.
+
+---
+
+### Hooks
+
+All hooks wrap their TanStack counterparts with type-safe resource/infinite instances. The `key` and `queryFn` are derived from the resource — do not pass them manually.
+
+#### `useNormalizedQuery(res, params | skipToken, options?, queryClient?)`
+
+Wraps `useQuery`. Pass `skipToken` as `params` to disable the query.
+
+#### `useNormalizedSuspenseQuery(res, params, options?, queryClient?)`
+
+Wraps `useSuspenseQuery`.
+
+#### `useNormalizedNullableSuspenseQuery(res, params | skipToken, options?, queryClient?)`
+
+Wraps `useSuspenseQuery` with `skipToken` support. Returns `null` when `skipToken` is passed.
+
+#### `useNormalizedPrefetchQuery(res, params, options?, queryClient?): Linked`
+
+Wraps `usePrefetchQuery`. Triggers a prefetch on first render and returns a `Linked` reference for use with prefetched hooks.
+
+#### `useNormalizedPrefetchedQuery(linked | skipToken | null, options?)`
+
+Wraps `useQuery` for data that has already been prefetched via `prefetchQuery` or `useNormalizedPrefetchQuery`.
+
+#### `useNormalizedPrefetchedSuspenseQuery(linked, options?)`
+
+Wraps `useSuspenseQuery` for prefetched data.
+
+#### `useNormalizedNullablePrefetchedSuspenseQuery(linked | skipToken | null, options?)`
+
+Wraps `useSuspenseQuery` with `skipToken` support for prefetched data. Returns `null` when disabled.
+
+#### `useNormalizedInfiniteQuery(inf, params | skipToken, options?, queryClient?)`
+
+Wraps `useInfiniteQuery`. Pass `skipToken` as `params` to disable.
+
+#### `useNormalizedPrefetchedInfiniteQuery(linked | skipToken | null, options?)`
+
+Wraps `useInfiniteQuery` for prefetched infinite data.
+
+---
+
+### `Linked`
+
+A `Linked<TParams, TQueryKey, TData, TQueryable>` is a reference to a specific query that has been (or is being) prefetched. It is produced by `.prefetchQuery()`, `.prefetchInfiniteQuery()`, `.link()`, and `useNormalizedPrefetchQuery()`.
+
+Pass `Linked` instances to the `useNormalizedPrefetched*` hooks to subscribe to their data.
+
+#### `.getQueryable(): TQueryable`
+
+Returns the resource or infinite instance.
+
+#### `.getParams(): TParams`
+
+Returns the params that were used to prefetch.
+
+#### `.getQueryClient(): QueryClient`
+
+Returns the query client associated with the prefetch.
 
 ## Types
 
-A few types are exported for convenience of accessing the generic parameters of a resource.
+### `QueryData<T>`
 
-All accept the `this` instance of a child class.
+Extracts the cached data type (`TData`) from a `Resource` or `Infinite` instance type.
 
-### QueryData
+```ts
+type UserData = QueryData<typeof fetchUser>; // User
+```
 
-Access the returned data type of `useQuery`.
+### `QueryParams<T>`
 
-### QueryParams
+Extracts the params type from a `Resource` or `Infinite` instance type.
 
-Access the parameter data type to `useQuery`.
+```ts
+type UserParams = QueryParams<typeof fetchUser>; // { id: number }
+```
 
-### QueryVariables
+### `QueryKey<T>`
 
-Unique to `Mutation`, access the variables interface provided to mutation execution.
+Extracts the query key type from a `Resource` or `Infinite` instance type.
 
-### EmptyObject
+### `LinkOf<T>`
 
-Represents `{}` type, with no keys. Can be passed as parameter to `Paginated`/`Infinite` generics when there are no other parameters to provide.
+Extracts the `Linked` type for a given `Resource` or `Infinite` instance type. Useful for typing function parameters that accept a prefetched reference.
+
+```ts
+type UserLink = LinkOf<typeof fetchUser>;
+// Linked<{ id: number }, readonly unknown[], User, Resource<...>>
+```
+
+## Also See
+
+- [`@tanstack/react-query`](https://tanstack.com/query/v4) — the underlying query library this package wraps
+- [WHY-NORMALIZED-REACT-QUERY.md](./WHY-NORMALIZED-REACT-QUERY.md) — motivation, the key/function pairing problem, and why native `useInfiniteQuery` is not used
