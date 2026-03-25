@@ -42,5 +42,6 @@ Focused guides for common workflows in this repo:
 | Linting and formatting (ESLint, Biome, auto-fix) | [`skills/linting-formatting/AGENTS.md`](./skills/linting-formatting/AGENTS.md) |
 | Running CI locally with Dagger | [`skills/dagger-ci/AGENTS.md`](./skills/dagger-ci/AGENTS.md) |
 | Versioning packages with changesets | [`skills/versioning/AGENTS.md`](./skills/versioning/AGENTS.md) |
+| Updating catalog dependencies to latest minor/patch versions | [`skills/updating-dependencies/AGENTS.md`](./skills/updating-dependencies/AGENTS.md) |
 | Debugging (source maps, cache, test failures) | [`skills/debugging/AGENTS.md`](./skills/debugging/AGENTS.md) |
 
