@@ -4,12 +4,13 @@ import { commonProxy } from './common-proxy.cjs';
 type DecoratorReturnType<
     Decorator extends (handler: (...args: any[]) => any, ...args: any[]) => (...args: any[]) => any,
     Handler extends (...args: any[]) => any,
-> = ReturnType<Handler> extends Promise<unknown>
-    ? // Similar to proxy, if the decorated method is already async, then keep type as-is
-      Decorator
-    : (
-          ...handlerArgs: Parameters<Decorator>
-      ) => (...args: Parameters<Handler>) => Promise<Awaited<ReturnType<Handler>>>;
+> =
+    ReturnType<Handler> extends Promise<unknown>
+        ? // Similar to proxy, if the decorated method is already async, then keep type as-is
+          Decorator
+        : (
+              ...handlerArgs: Parameters<Decorator>
+          ) => (...args: Parameters<Handler>) => Promise<Awaited<ReturnType<Handler>>>;
 
 export const commonProxyDecorator = <
     Decorator extends (handler: (...args: any[]) => any, ...args: any[]) => (...args: any[]) => any,

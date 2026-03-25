@@ -66,12 +66,13 @@ export type ValidateOutputIdDoesNotExist<
 export type ValidateOutputSatisfiesDependency<
     ExistingDependencies extends [Extendable],
     IncomingOutputs extends [Extendable],
-> = Exclude<
-    FilterIdType<ExistingDependencies, BaseIds<IncomingOutputs>>,
-    IncomingOutputs
-> extends never
-    ? []
-    : [InvalidInput<'OutputDoesNotSatisfyDependency'>];
+> =
+    Exclude<
+        FilterIdType<ExistingDependencies, BaseIds<IncomingOutputs>>,
+        IncomingOutputs
+    > extends never
+        ? []
+        : [InvalidInput<'OutputDoesNotSatisfyDependency'>];
 
 /**
  * Validate that dependencies of incoming binding are satisfied by existing output ids.
@@ -86,12 +87,13 @@ export type ValidateOutputSatisfiesDependency<
 export type ValidateDependenciesSatisfiedByOutput<
     ExistingOutputs extends [Extendable],
     IncomingDependencies extends [Extendable],
-> = Exclude<
-    FilterIdType<IncomingDependencies, BaseIds<ExistingOutputs>>,
-    ExistingOutputs
-> extends never
-    ? []
-    : [InvalidInput<'DependenciesNotSatisfiedByOutput'>];
+> =
+    Exclude<
+        FilterIdType<IncomingDependencies, BaseIds<ExistingOutputs>>,
+        ExistingOutputs
+    > extends never
+        ? []
+        : [InvalidInput<'DependenciesNotSatisfiedByOutput'>];
 
 /**
  * Type-based validations for `fromBinding`. Will resolve to an impossible spreadable input if invalid.

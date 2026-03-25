@@ -1,8 +1,7 @@
 type Values<T> = T[Extract<keyof T, string>];
 
-type IfEmpty<Enum extends Record<string, unknown>, Else> = Record<never, string> extends Enum
-    ? []
-    : Else;
+type IfEmpty<Enum extends Record<string, unknown>, Else> =
+    Record<never, string> extends Enum ? [] : Else;
 
 /**
  * List key-value pairs of enum, in order that they occur.

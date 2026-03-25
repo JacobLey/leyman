@@ -50,9 +50,10 @@ type SpliceOne<Union> = Exclude<Union, ExtractOne<Union>>;
 type ExtractOne<Union> = ExtractParm<UnionToSect<UnionToParm<Union>>>;
 
 type ToTuple<Union> = ToTupleRec<Union, []>;
-type ToTupleRec<Union, Rslt extends any[]> = SpliceOne<Union> extends never
-    ? [ExtractOne<Union>, ...Rslt]
-    : ToTupleRec<SpliceOne<Union>, [ExtractOne<Union>, ...Rslt]>;
+type ToTupleRec<Union, Rslt extends any[]> =
+    SpliceOne<Union> extends never
+        ? [ExtractOne<Union>, ...Rslt]
+        : ToTupleRec<SpliceOne<Union>, [ExtractOne<Union>, ...Rslt]>;
 
 type LiteralStringInput = [InvalidInput<'LiteralStringInput'>];
 // Enforce that the provided type is a unique symbol, or a literal string

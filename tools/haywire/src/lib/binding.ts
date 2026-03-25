@@ -401,9 +401,10 @@ type DependenciesToIds<Dependencies extends readonly unknown[]> = {
 type DependenciesMisMatch<
     DependencyIds extends readonly (GenericHaywireId | IsClass)[],
     Dependencies extends readonly unknown[],
-> = IdOrClassToIds<DependencyIds> extends DependenciesToIds<Dependencies>
-    ? []
-    : [InvalidInput<'DependenciesMismatch'>];
+> =
+    IdOrClassToIds<DependencyIds> extends DependenciesToIds<Dependencies>
+        ? []
+        : [InvalidInput<'DependenciesMismatch'>];
 
 /**
  * Binding builder that has output + provider, and needs the dependencies.
