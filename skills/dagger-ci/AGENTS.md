@@ -65,7 +65,7 @@ dagger/
 | Use | When |
 |-----|------|
 | `test-only` | During development — fast feedback, uses local cache |
-| `scripts/commands/dagger-test` | Before pushing — confirms full CI will pass |
+| `dagger-test` | Before pushing — confirms full CI will pass |
 | `test-ci` | Middle ground — runs full tests + coverage without containerization |
 
 ## Versions

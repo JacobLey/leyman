@@ -2,6 +2,8 @@
 
 This is an Nx-managed PNPM monorepo. See [nx.dev](https://nx.dev) for general Nx documentation.
 
+All agent-focused documentation should use AGENTS.md, but this file is linked to CLAUDE.md for initial discoverability.
+
 ## Nx in This Repo
 
 Nx is **not globally installed**. It ships as a dependency of `@leyman/main` and is on `PATH` via `/workspace/leyman/main/node_modules/.bin`. **Use `nx` directly — no `npx`, no `pnpm exec`.**

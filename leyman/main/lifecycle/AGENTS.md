@@ -46,6 +46,6 @@ Avoid editing `dependsOn` by hand in `nx.json` or any `project.json`. `nx-lifecy
 
 ## The `coverage-report` exception
 
-`coverage-report` is intentionally **not** bound to the `test` lifecycle. It validates the 100% coverage threshold after all test data has been collected, and must run as a separate `nx run-many -t coverage-report` pass. The `scripts/commands/test-ci` script runs both in sequence.
+`coverage-report` is intentionally **not** bound to the `test` lifecycle. It validates the 100% coverage threshold after all test data has been collected, and must run as a separate `nx run-many -t coverage-report` pass. The `test-ci` script runs both in sequence.
 
 Binding it inside `test` would mean coverage thresholds are enforced on every incremental test run, which is unhelpful during development. Keeping it separate lets `nx run-many -t test` run fast and iteratively, while CI enforces coverage as a final gate.
