@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 set -e
-nx run-many -t test --nxBail -c no-check
+nx run-many -t test --nxBail -c no-check  --outputStyle dynamic-legacy
