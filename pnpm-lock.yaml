@@ -939,6 +939,9 @@ importers:
       nx-lifecycle:
         specifier: workspace:^
         version: link:../../apps/nx-lifecycle
+      pnpm-dedicated-lockfile:
+        specifier: workspace:^
+        version: link:../../apps/pnpm-dedicated-lockfile
       typescript:
         specifier: 'catalog:'
         version: 5.9.3

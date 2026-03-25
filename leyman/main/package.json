@@ -23,6 +23,7 @@
     "npm": "catalog:",
     "nx": "catalog:",
     "nx-lifecycle": "workspace:^",
+    "pnpm-dedicated-lockfile": "workspace:^",
     "typescript": "catalog:"
   }
 }
