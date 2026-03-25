@@ -5,7 +5,7 @@
 
 ## Typescript usage
 
-All javascript code in this repo should use Typescript. The one exception is `cli.mjs` files that are required at the top-level for CLI-deployed packages.
+All javascript code in this repo should use Typescript. The two exceptions are `cli.mjs` files that are required at the top-level for CLI-deployed packages, and `eslint.config.js` which needs to run pre-build. The logic in both should be trivial.
 
 Typescript usage is strict, enforced both by Typescript itself and eslint's type-based rules. For example keywords like `any` are banned, and functions should declare their output type instead of just inferring.
 
