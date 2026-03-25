@@ -13,7 +13,6 @@
         "biomejs.biome",
         "dbaeumer.vscode-eslint",
         "golang.go",
-        "interactive-smartlog.interactive-smartlog",
         "ms-azuretools.vscode-docker",
         "ritwickdey.LiveServer"
       ]
