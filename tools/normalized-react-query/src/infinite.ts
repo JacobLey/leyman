@@ -130,10 +130,7 @@ class Infinite<
                       ) => Promise<TData> | TData;
                   },
               ]
-            | [
-                  Infinite<TParams, TPageParam, TData, unknown, TQueryKey>,
-                  (x: any) => TPropagatedData,
-              ]
+            | [Infinite<TParams, TPageParam, TData, any, TQueryKey>, (x: any) => TPropagatedData]
     ) {
         super(options[0]);
         if (options.length === 1) {
@@ -578,7 +575,7 @@ class Infinite<
     public propagate<TData2>(
         map: (source: InfiniteSet<TPropagatedData, TPageParam>) => TData2
     ): Infinite<TParams, TPageParam, TData, TData2, TQueryKey> {
-        return new Infinite(this, map);
+        return new Infinite<TParams, TPageParam, TData, TData2, TQueryKey>(this, map);
     }
 
     #getMemoizedSelector(

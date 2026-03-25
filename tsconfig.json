@@ -1,5 +1,8 @@
 {
   "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    "types": []
+  },
   "references": [
     {
       "path": "./apps/populate-files/load-populate-files"
@@ -76,5 +79,5 @@
     {
       "path": "./apps/juniper-validator"
     }
-  ],
+  ]
 }

@@ -80,7 +80,7 @@ class Resource<
                       ) => Promise<TData> | TData;
                   },
               ]
-            | [Resource<TParams, TData, unknown, TQueryKey>, (x: any) => TPropagatedData]
+            | [Resource<TParams, TData, any, TQueryKey>, (x: any) => TPropagatedData]
     ) {
         super(options[0]);
         if (options.length === 1) {

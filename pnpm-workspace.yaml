@@ -7,7 +7,7 @@ packages:
 catalog:
   '@biomejs/biome': ^2.4.8
   '@changesets/cli': ^2.30.0
-  '@eslint/js': ^9.39.2
+  '@eslint/js': ^10.0.1
   '@nx/devkit': ^22.6.1
   '@nx/js': ^22.6.1
   '@pnpm/find-workspace-dir': ^7.0.3
@@ -24,7 +24,7 @@ catalog:
   '@types/chai-as-promised': ^8.0.2
   '@types/eslint': ^9.6.1
   '@types/mocha': ^10.0.10
-  '@types/node': ^24.1.0
+  '@types/node': ^24.12.0
   '@types/react': ^19.2.14
   '@types/sinon': ^21.0.0
   '@types/tmp': ^0.2.6
@@ -34,14 +34,14 @@ catalog:
   '@typescript-eslint/utils': ^8.57.2
   ajv: ^8.18.0
   bupkis: ^0.18.1
-  c8: ^10.1.3
+  c8: ^11.0.0
   chai: ^6.2.2
   chai-as-promised: ^8.0.2
   change-case: ^5.4.4
   ci-info: ^4.4.0
   comment-json: ^4.5.1
   escape-string-regexp: ^5.0.0
-  eslint: ^9.39.2
+  eslint: ^9.39.4
   eslint-config-prettier: ^10.1.8
   eslint-plugin-import: ^2.32.0
   eslint-plugin-jsdoc: ^62.8.0
@@ -49,8 +49,8 @@ catalog:
   eslint-plugin-n: ^17.24.0
   eslint-plugin-react: ^7.37.5
   eslint-plugin-react-hooks: ^7.0.1
-  eslint-plugin-sonarjs: ^3.0.5
-  eslint-plugin-unicorn: ^62.0.0
+  eslint-plugin-sonarjs: ^4.0.2
+  eslint-plugin-unicorn: ^63.0.0
   eta: ^4.5.0
   expect-type: ^1.3.0
   fast-equals: ^6.0.0
@@ -66,7 +66,7 @@ catalog:
   sinon: ^21.0.3
   tmp-promise: ^3.0.3
   ts-dedent: ^2.2.0
-  typescript: ^5.9.3
+  typescript: ^6.0.2
   uint8array-extras: ^1.5.0
   yargs: ^18.0.0
 
