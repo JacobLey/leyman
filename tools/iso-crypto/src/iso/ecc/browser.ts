@@ -1,4 +1,3 @@
-import type { webcrypto } from 'node:crypto';
 import type { Point } from '../lib/math.js';
 import type { Curve, InputText, Uint8ArrayBuffer } from '../lib/types.js';
 import type * as Ecc from './types.js';
@@ -15,7 +14,7 @@ const HEX_SIZE = 16;
 
 const { crypto } = globalThis;
 
-const curveToKeyParams = (curve: Curve): webcrypto.EcKeyGenParams => ({
+const curveToKeyParams = (curve: Curve): EcKeyGenParams => ({
     name: 'ECDH',
     namedCurve: curve.replace('p', 'P-'),
 });

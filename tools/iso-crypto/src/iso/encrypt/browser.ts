@@ -1,4 +1,3 @@
-import type { webcrypto } from 'node:crypto';
 import type { Encryption } from '../lib/types.js';
 import type * as Encrypt from './types.js';
 import { decode } from '#encode';
@@ -10,7 +9,7 @@ import { defaultEncryption, defaultHash } from '../lib/types.js';
 
 const { crypto } = globalThis;
 
-const encryptionToAlgorithm = (encryption: Encryption): webcrypto.AesDerivedKeyParams => ({
+const encryptionToAlgorithm = (encryption: Encryption): AesDerivedKeyParams => ({
     name: `${encryption.cipher}-${encryption.mode}`,
     length: encryption.size / 2,
 });

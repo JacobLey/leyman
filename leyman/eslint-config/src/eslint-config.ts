@@ -461,6 +461,8 @@ export default function makeEslintConfigForPackage({
                         ignoreEnums: true,
                     },
                 ],
+                // Many false-positives
+                '@typescript-eslint/no-unnecessary-type-arguments': 'off',
                 '@typescript-eslint/no-unsafe-type-assertion': 'off',
                 '@typescript-eslint/no-unused-expressions': [
                     'error',
