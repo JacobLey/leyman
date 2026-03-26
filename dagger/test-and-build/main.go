@@ -22,7 +22,7 @@ func New(
 	// Relative to this module, not from caller
 	// +defaultPath="../.."
 	// Manually ignore the worst offenders, but use actual .gitignore parsing to catch the rest
-	// +ignore=[".git",".claude","**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache",".coverage","**/dist",".nx"]
+	// +ignore=["/.git","/.claude-config","**/*.log*","**/.DS_Store","**/node_modules",".pnpm-store","**/.eslintcache",".coverage","**/dist","/.nx"]
 	source *dagger.Directory,
 ) (*TestAndBuild, error) {
 

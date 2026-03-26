@@ -6,7 +6,7 @@ An Nx monorepo of TypeScript libraries and tools for Node.js ESM environments.
 
 ## Packages
 
-Full index of packages can be found [here](./skills/projects/AGENTS.md).
+Full index of packages can be found [here](./.claude/skills/projects/SKILL.md).
 
 ## Getting Started
 
@@ -38,9 +38,8 @@ See all aliased (via PATH set during [Devcontainer setup](./.devcontainer/Docker
 
 ## Coding Agents
 
-The `.claude/` directory is **not version-controlled** (it's in `.gitignore`). This makes it a safe place to store personal credentials and user-specific configuration — for example, API keys for Claude Code. This is helpful when persisting auth across devcontainer sessions.
-
-Because `.claude/` is gitignored, anything that should be shared across contributors (prompts, settings, hooks) must live elsewhere in the repo. Use the [`skills/`](./skills/) directory or [`AGENTS.md`](./AGENTS.md) for shared agent guidance.
+The `.claude-config/` directory is **not version-controlled** (it's in `.gitignore`). 
+While operating in devcontainer, that is where Claude credentials will be stored, so session can persist across devcontainer  builds.
 
 (If you use a different coding agent, PRs are welcome to support those directories).
 

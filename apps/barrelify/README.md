@@ -124,7 +124,3 @@ npx barrel --cwd ./src    # limit search to ./src
 npx barrel --dry-run      # preview changes without writing
 npx barrel --ignore '**/generated/**'
 ```
-
-## Also See
-
-- [barrelify skill](../../skills/packages/barrelify/AGENTS.md) — monorepo conventions and guidance for using barrelify in this repo

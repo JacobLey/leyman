@@ -61,7 +61,7 @@ RUN NONINTERACTIVE=1 export LEYMAN_HOMEBREW_CACHE="${HOME}/.cache/Homebrew" LEYM
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 # Install Claude
-ENV CLAUDE_CONFIG_DIR=/workspace/.claude
+ENV CLAUDE_CONFIG_DIR=/workspace/.claude-config
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
 # Grant permissions to non-root

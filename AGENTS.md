@@ -2,7 +2,7 @@
 
 This is an Nx-managed PNPM monorepo. See [nx.dev](https://nx.dev) for general Nx documentation.
 
-All agent-focused documentation should use AGENTS.md, but this file is linked to CLAUDE.md for initial discoverability.
+All agent-focused documentation should use SKILL.md, but this file is linked to CLAUDE.md for initial discoverability.
 
 ## Nx in This Repo
 
@@ -18,30 +18,30 @@ Focused guides for common workflows in this repo:
 
 | Task | Skill |
 |------|-------|
-| Running Nx tasks (build, test, check, etc.) | [`skills/nx-run-tasks/AGENTS.md`](./skills/nx-run-tasks/AGENTS.md) |
-| Understanding the various projects/packages available | [`skills/projects/AGENTS.md`](./skills/projects/AGENTS.md) |
-| Creating a new package in the monorepo | [`skills/create-package/AGENTS.md`](./skills/create-package/AGENTS.md) |
-| Installing a package dependency | [`skills/install-package/AGENTS.md`](./skills/install-package/AGENTS.md) |
-| What each `nx.json` target does and when to add it to `project.json` | [`skills/nx-tasks-reference/AGENTS.md`](./skills/nx-tasks-reference/AGENTS.md) |
-| Task lifecycle wiring (how check → build → test connect) | [`leyman/main/lifecycle/AGENTS.md`](./leyman/main/lifecycle/AGENTS.md) |
-| DevContainer runtimes, CLI tools, and version parity with Dagger | [`skills/devcontainer/AGENTS.md`](./skills/devcontainer/AGENTS.md) |
-| Writing and maintaining package READMEs | [`skills/writing-readmes/AGENTS.md`](./skills/writing-readmes/AGENTS.md) |
+| Running Nx tasks (build, test, check, etc.) | [`.claude/skills/nx-run-tasks/SKILL.md`](./.claude/skills/nx-run-tasks/SKILL.md) |
+| Understanding the various projects/packages available | [`.claude/skills/projects/SKILL.md`](./.claude/skills/projects/SKILL.md) |
+| Creating a new package in the monorepo | [`.claude/skills/create-package/SKILL.md`](./.claude/skills/create-package/SKILL.md) |
+| Installing a package dependency | [`.claude/skills/install-package/SKILL.md`](./.claude/skills/install-package/SKILL.md) |
+| What each `nx.json` target does and when to add it to `project.json` | [`.claude/skills/nx-tasks-reference/SKILL.md`](./.claude/skills/nx-tasks-reference/SKILL.md) |
+| Task lifecycle wiring (how check → build → test connect) | [`leyman/main/.claude/lifecycle/SKILL.md`](./leyman/main/.claude/lifecycle/SKILL.md) |
+| DevContainer runtimes, CLI tools, and version parity with Dagger | [`.claude/skills/devcontainer/SKILL.md`](./.claude/skills/devcontainer/SKILL.md) |
+| Writing and maintaining package READMEs | [`.claude/skills/writing-readmes/SKILL.md`](./.claude/skills/writing-readmes/SKILL.md) |
 
 ### Coding Standards
 
 | Topic | Skill |
 |-------|-------|
-| Coding patterns and conventions (package design, types, DI, docs) | [`skills/coding-patterns/AGENTS.md`](./skills/coding-patterns/AGENTS.md) |
+| Coding patterns and conventions (package design, types, DI, docs) | [`.claude/skills/coding-patterns/SKILL.md`](./.claude/skills/coding-patterns/SKILL.md) |
 
 ### Development Workflows
 
 | Task | Skill |
 |------|-------|
-| Writing and running tests (Mocha, mocha-chain, Sinon, C8) | [`skills/testing/AGENTS.md`](./skills/testing/AGENTS.md) |
-| Building TypeScript packages (SWC, tsconfig, ESM) | [`skills/typescript/AGENTS.md`](./skills/typescript/AGENTS.md) |
-| Linting and formatting (ESLint, Biome, auto-fix) | [`skills/linting-formatting/AGENTS.md`](./skills/linting-formatting/AGENTS.md) |
-| Running CI locally with Dagger | [`skills/dagger-ci/AGENTS.md`](./skills/dagger-ci/AGENTS.md) |
-| Versioning packages with changesets | [`skills/versioning/AGENTS.md`](./skills/versioning/AGENTS.md) |
-| Updating catalog dependencies to latest minor/patch versions | [`skills/updating-dependencies/AGENTS.md`](./skills/updating-dependencies/AGENTS.md) |
-| Debugging (source maps, cache, test failures) | [`skills/debugging/AGENTS.md`](./skills/debugging/AGENTS.md) |
+| Writing and running tests (Mocha, mocha-chain, Sinon, C8) | [`.claude/skills/testing/SKILL.md`](./.claude/skills/testing/SKILL.md) |
+| Building TypeScript packages (SWC, tsconfig, ESM) | [`.claude/skills/typescript/SKILL.md`](./.claude/skills/typescript/SKILL.md) |
+| Linting and formatting (ESLint, Biome, auto-fix) | [`.claude/skills/linting-formatting/SKILL.md`](./.claude/skills/linting-formatting/SKILL.md) |
+| Running CI locally with Dagger | [`.claude/skills/dagger-ci/SKILL.md`](./.claude/skills/dagger-ci/SKILL.md) |
+| Versioning packages with changesets | [`.claude/skills/versioning/SKILL.md`](./.claude/skills/versioning/SKILL.md) |
+| Updating catalog dependencies to latest minor/patch versions | [`.claude/skills/updating-dependencies/SKILL.md`](./.claude/skills/updating-dependencies/SKILL.md) |
+| Debugging (source maps, cache, test failures) | [`.claude/skills/debugging/SKILL.md`](./.claude/skills/debugging/SKILL.md) |
 
