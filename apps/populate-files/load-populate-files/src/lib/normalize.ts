@@ -19,6 +19,7 @@ export const normalizeParamsProvider =
                 check: options.check,
                 dryRun: options.dryRun,
                 targetDir: options.targetDir,
+                clean: options.clean,
             },
         };
     };

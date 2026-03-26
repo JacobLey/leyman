@@ -199,8 +199,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rm -r ./out",
-          "load-populate-files --filePath ./dist/file-content.js --target-dir ./out"
+          "load-populate-files --filePath ./dist/file-content.js --target-dir ./out --clean"
         ],
         "color": true,
         "cwd": "{projectRoot}"

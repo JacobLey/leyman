@@ -67,8 +67,10 @@ export class Normalize {
 
         return {
             files,
+            targetDir,
             check: this.#normalizeCheck(options.check),
             dryRun: Normalize.#normalizeDryRun(options.dryRun),
+            clean: options.clean ?? false,
         };
     }
 

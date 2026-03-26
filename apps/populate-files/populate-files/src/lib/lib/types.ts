@@ -16,6 +16,7 @@ export interface RawOptions {
     dryRun?: boolean | null | undefined;
     cwd?: Directory | null | undefined;
     targetDir?: string | null | undefined;
+    clean?: boolean | null | undefined;
 }
 export interface NormalizedOptions {
     check: boolean;
@@ -25,9 +26,11 @@ export interface NormalizedOptions {
 export interface NormalizedFileParams extends NormalizedOptions, NormalizedParams {}
 export interface NormalizedFilesParams extends NormalizedOptions {
     files: NormalizedParams[];
+    clean: boolean;
+    targetDir: string;
 }
 
-export type PopulationResponseUpdateReason = 'content-changed' | 'file-not-exist';
+export type PopulationResponseUpdateReason = 'content-changed' | 'file-not-exist' | 'stale-file';
 export interface AbstractPopulationResponse {
     filePath: string;
 }

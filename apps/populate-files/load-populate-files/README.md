@@ -85,6 +85,8 @@ Options are passed through to the underlying `populateFiles()` call. They are al
 | `check` | `--ci` | `boolean` | `true` in CI, else `false` | If `true`, fails if writing a file would change its content. Useful for verifying version-controlled files are up to date before deployment. |
 | `dryRun` | `--dry-run` | `boolean` | `false` | If `true`, does not write any files regardless of changes. Can still fail if `check` is `true`. |
 | `cwd` | `--cwd` | `string \| URL` | `process.env.PWD` | Used as the current working directory for `filePath` and re-used for relative `filePath`s in the loaded config. |
+| `targetDir` | `--target-dir`, `-t` | `string` | `'.'` | Target directory for resolving output file paths. Resolved relative to `cwd`. |
+| `clean` | `--clean` | `boolean` | `false` | If `true`, removes files in `targetDir` that were not generated. In `--ci` mode, fails instead of removing. |
 
 ## Types
 

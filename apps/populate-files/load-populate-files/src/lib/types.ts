@@ -9,6 +9,7 @@ export interface RawOptions {
     targetDir?: string | null | undefined;
     check?: boolean | null | undefined;
     dryRun?: boolean | null | undefined;
+    clean?: boolean | null | undefined;
 }
 
 export interface NormalizedParams {
@@ -18,5 +19,6 @@ export interface NormalizedParams {
         targetDir?: string | null | undefined;
         check?: boolean | null | undefined;
         dryRun?: boolean | null | undefined;
+        clean?: boolean | null | undefined;
     };
 }

@@ -7,6 +7,7 @@ interface LoadPopulateFilesCommandExtendedInput extends LoadPopulateFilesCommand
     filePath: string;
     ci: boolean;
     dryRun: boolean;
+    clean: boolean;
 }
 
 /**
@@ -46,6 +47,12 @@ export class LoadPopulateFilesCommand implements Command<LoadPopulateFilesComman
                     type: 'boolean',
                     default: false,
                 },
+                clean: {
+                    describe:
+                        'Remove files in --target-dir that were not generated. In --ci mode, fail instead of removing.',
+                    type: 'boolean',
+                    default: false,
+                },
             })
             .strict();
     }
@@ -60,6 +67,7 @@ export class LoadPopulateFilesCommand implements Command<LoadPopulateFilesComman
                 targetDir: options.targetDir,
                 check: options.ci,
                 dryRun: options.dryRun,
+                clean: options.clean,
             }
         );
     }

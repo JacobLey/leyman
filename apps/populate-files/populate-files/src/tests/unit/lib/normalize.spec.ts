@@ -95,8 +95,10 @@ suite('Normalize', () => {
                         content: new Uint8Array([1, 2, 3, 4]),
                     },
                 ],
-                dryRun: true,
+                targetDir: '/root/dir',
                 check: false,
+                dryRun: true,
+                clean: false,
             });
 
             expect(ctx.stubbedTextFormatter.called).to.equal(false);
@@ -124,8 +126,10 @@ suite('Normalize', () => {
                         content: new Uint8Array([60, 100, 97, 116, 97, 62]),
                     },
                 ],
-                dryRun: false,
+                targetDir: '/root/dir',
                 check: true,
+                dryRun: false,
+                clean: false,
             });
         });
     });

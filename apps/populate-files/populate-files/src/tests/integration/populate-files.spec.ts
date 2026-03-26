@@ -1,4 +1,4 @@
-import { readFile } from 'node:fs/promises';
+import { readFile, stat, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { dir, file } from 'tmp-promise';
 import { stringToUint8Array } from 'uint8array-extras';
@@ -337,6 +337,109 @@ suite('Integration test', () => {
                 Error,
                 'ENOENT: no such file or director'
             );
+        });
+
+        withTmpFiles.test('--clean deletes stale files', async ctx => {
+            const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
+            const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
+
+            await writeFile(stalePath, 'I am stale');
+
+            const results = await populateFiles([{ filePath: generatedPath, content: 'hello' }], {
+                check: false,
+                clean: true,
+                targetDir: ctx.tmpDir.path,
+            });
+
+            expect(results).to.deep.equal([
+                { updated: true, reason: 'file-not-exist', filePath: generatedPath },
+                { updated: true, reason: 'stale-file', filePath: stalePath },
+            ]);
+
+            expect(await readFile(generatedPath, 'utf8')).to.equal('hello');
+            await expect(stat(stalePath)).to.eventually.be.rejectedWith(Error, 'ENOENT');
+        });
+
+        withTmpFiles.test('--clean with --dry-run does not delete stale files', async ctx => {
+            const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
+            const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
+
+            await writeFile(stalePath, 'I am stale');
+
+            const results = await populateFiles([{ filePath: generatedPath, content: 'hello' }], {
+                check: false,
+                dryRun: true,
+                clean: true,
+                targetDir: ctx.tmpDir.path,
+            });
+
+            expect(results).to.deep.equal([
+                { updated: true, reason: 'file-not-exist', filePath: generatedPath },
+                { updated: true, reason: 'stale-file', filePath: stalePath },
+            ]);
+
+            expect(await readFile(stalePath, 'utf8')).to.equal('I am stale');
+        });
+
+        withTmpFiles.test('--clean with --ci fails when stale files exist', async ctx => {
+            const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
+            const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
+            const content = 'hello';
+
+            await Promise.all([
+                writeFile(stalePath, 'I am stale'),
+                writeFile(generatedPath, content),
+            ]);
+
+            await expect(
+                populateFiles([{ filePath: generatedPath, content }], {
+                    check: true,
+                    clean: true,
+                    targetDir: ctx.tmpDir.path,
+                })
+            ).to.eventually.be.rejectedWith(
+                Error,
+                `File ${stalePath} not up to date. Reason: stale-file`
+            );
+
+            expect(await readFile(stalePath, 'utf8')).to.equal('I am stale');
+        });
+
+        withTmpFiles.test('--clean with no stale files passes cleanly', async ctx => {
+            const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
+            const content = 'hello';
+
+            await writeFile(generatedPath, content);
+
+            const results = await populateFiles([{ filePath: generatedPath, content }], {
+                check: true,
+                clean: true,
+                targetDir: ctx.tmpDir.path,
+            });
+
+            expect(results).to.deep.equal([{ updated: false, filePath: generatedPath }]);
+        });
+
+        withTmpFiles.test('--clean with 0 inputs to non-existent directory succeeds', async ctx => {
+            const nonExistentDir = Path.join(ctx.tmpDir.path, 'does-not-exist');
+
+            const results = await populateFiles([], {
+                check: false,
+                clean: true,
+                targetDir: nonExistentDir,
+            });
+
+            expect(results).to.deep.equal([]);
+        });
+
+        withTmpFiles.test('--clean propagates unknown readdir errors', async ctx => {
+            await expect(
+                populateFiles([], {
+                    check: false,
+                    clean: true,
+                    targetDir: ctx.tmpTxtFile.path,
+                })
+            ).to.eventually.be.rejectedWith(Error, 'ENOTDIR');
         });
     });
 });

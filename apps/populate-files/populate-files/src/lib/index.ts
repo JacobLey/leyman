@@ -6,7 +6,9 @@ import {
     dependenciesModule,
     mkdirId,
     parseCwdId,
+    readdirId,
     readFileId,
+    rmId,
     textFormatterId,
     writeFileId,
 } from './lib/dependencies-module.js';
@@ -16,6 +18,7 @@ import { PopulateFile } from './populate-file.js';
 
 const safeLoadFileId = identifier<SafeLoadFile>();
 export const internalPopulateFileId = identifier<InternalPopulateFile>();
+export { readdirId, rmId };
 
 export const populateFilesModule = dependenciesModule
     .addBinding(

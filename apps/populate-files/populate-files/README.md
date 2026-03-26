@@ -82,6 +82,8 @@ Writes the provided content to the file at `params.filePath`.
 | `check` | `boolean` | `true` in CI, else `false` | If `true`, fails if writing the file would change its content. Useful for CI environments to verify version-controlled files are up to date before deployment. |
 | `dryRun` | `boolean` | `false` | If `true`, does not write the file regardless of changes. Can still fail if `check` is `true`. |
 | `cwd` | `string \| URL` | `process.env.PWD` | Used as the current working directory when `params.filePath` is a relative path. |
+| `targetDir` | `string` | `'.'` | Directory used to resolve relative `filePath`s in params. Resolved relative to `cwd`. |
+| `clean` | `boolean` | `false` | Only applies to `populateFiles`. If `true`, removes files in `targetDir` that are not in the provided params. In `check` mode, fails instead of removing. |
 
 ---
 
