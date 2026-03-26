@@ -38,8 +38,6 @@ while (queue.length) {
 console.log(Array.from(deps).join('\n'));
 ")
 
-echo DEPS $DEPS
-
 # Copy coverage tmp files for project and its transitive deps
 while IFS= read -r dep; do
   dep_cov="$WORKSPACE_ROOT/.coverage/project/$dep/tmp"

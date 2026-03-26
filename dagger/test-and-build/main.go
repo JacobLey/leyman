@@ -79,7 +79,7 @@ func (m *TestAndBuild) Run(ctx context.Context) (*dagger.Directory, error) {
 	container = pnpm.Install(container)
 
 	container = container.
-		WithEnvVariable("PATH", "${PATH}:./leyman/main/node_modules/.bin:./scripts/commands", dagger.ContainerWithEnvVariableOpts{Expand: true}).
+		WithEnvVariable("PATH", "${PATH}:/workspace/leyman/main/node_modules/.bin:/workspace/scripts/commands", dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithMountedCache(".nx", dag.CacheVolume("nx"))
 
 	builtContainer := container.WithExec([]string{"nx", "run-many", "-t", "build"})
@@ -88,7 +88,7 @@ func (m *TestAndBuild) Run(ctx context.Context) (*dagger.Directory, error) {
 
 	eg.Go(func() error {
 		_, err := builtContainer.
-			WithExec([]string{"test-coverage"}).
+			WithExec([]string{"test-ci"}).
 			Sync(ctx)
 		return err
 	})
