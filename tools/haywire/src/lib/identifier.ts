@@ -6,6 +6,7 @@ import type {
     IsClass,
     LateBinding,
     LiteralStringType,
+    MultiList,
     Names,
     Supplier,
 } from '#types';
@@ -17,12 +18,24 @@ export interface AbstractPrivateClass {
 }
 export type ClassToConstructable<T extends IsClass> =
     T extends GenericClass<infer U>
-        ? HaywireId<U, T, null, false, false, false, false>
-        : HaywireId<InstanceOfClass<T>, AbstractPrivateClass, null, false, false, false, false>;
+        ? HaywireId<U, T, null, false, false, false, false, false>
+        : HaywireId<
+              InstanceOfClass<T>,
+              AbstractPrivateClass,
+              null,
+              false,
+              false,
+              false,
+              false,
+              false
+          >;
 
-const classToIdCache = new WeakMap<GenericClass, HaywireId<any, any, any, any, any, any, any>>();
+const classToIdCache = new WeakMap<
+    GenericClass,
+    HaywireId<any, any, any, any, any, any, any, any>
+>();
 
-type AllAnnotations = 'latebinding' | 'nullable' | 'supplier' | 'undefinable';
+type AllAnnotations = 'latebinding' | 'list' | 'nullable' | 'supplier' | 'undefinable';
 type StripNullable<T, A extends AllAnnotations = 'nullable'> = 'nullable' extends A
     ? [T] extends [infer U | null]
         ? U
@@ -30,6 +43,11 @@ type StripNullable<T, A extends AllAnnotations = 'nullable'> = 'nullable' extend
     : T;
 type StripUndefinable<T, A extends AllAnnotations = 'undefinable'> = 'undefinable' extends A
     ? [T] extends [infer U | undefined]
+        ? U
+        : T
+    : T;
+type StripList<T, A extends AllAnnotations = 'list'> = 'list' extends A
+    ? [T] extends [MultiList<infer U>]
         ? U
         : T
     : T;
@@ -46,7 +64,7 @@ type StripLateBinding<T, A extends AllAnnotations = 'latebinding'> = 'latebindin
         : T
     : T;
 export type StripAnnotations<T, A extends AllAnnotations = AllAnnotations> = StripNullable<
-    StripUndefinable<StripSupplier<StripLateBinding<T, A>, A>, A>,
+    StripUndefinable<StripList<StripSupplier<StripLateBinding<T, A>, A>, A>, A>,
     A
 >;
 
@@ -58,7 +76,9 @@ interface UnsafeIdentifierGenerator {
     // Idempotent
     <T extends GenericHaywireId>(id: T): T;
     <T extends IsClass>(clazz: T): ClassToConstructable<T>;
-    <T>(name?: string): HaywireId<StripAnnotations<T>, null, null, false, false, false, false>;
+    <T>(
+        name?: string
+    ): HaywireId<StripAnnotations<T>, null, null, false, false, false, false, false>;
 }
 
 type SupplierProp<T extends 'async' | boolean> = T extends false
@@ -70,6 +90,7 @@ type SupplierProp<T extends 'async' | boolean> = T extends false
 
 interface Annotations<
     Named extends Names,
+    List extends 'multi' | boolean,
     Nullable extends boolean,
     Undefinable extends boolean,
     Supply extends 'async' | boolean,
@@ -79,6 +100,11 @@ interface Annotations<
      * Discriminator for different types that look the same (e.g. two different config strings need different names)
      */
     readonly named: Named;
+    /**
+     * If true or 'multi', generated type will be an array.
+     * 'multi' indicates the binding provides multiple values at once.
+     */
+    readonly list: List;
     /**
      * If true, generated type can be null
      */
@@ -100,8 +126,9 @@ interface Annotations<
 declare const idType: unique symbol;
 const unsafeIdSym = Symbol('unsafeIdentifier');
 
-const defaultAnnotations: Annotations<null, false, false, false, false> = {
+const defaultAnnotations: Annotations<null, false, false, false, false, false> = {
     named: null,
+    list: false,
     nullable: false,
     undefinable: false,
     supplier: false,
@@ -125,6 +152,7 @@ const MAX_NUMBER_RADIX = 36;
  * @template T
  * @template Constructor
  * @template Named
+ * @template List
  * @template Nullable
  * @template Undefinable
  * @template Supply
@@ -134,6 +162,7 @@ export class HaywireId<
     T,
     Constructor extends GenericClass<T> | null,
     Named extends Names,
+    List extends 'multi' | boolean,
     Nullable extends boolean,
     Undefinable extends boolean,
     Supply extends 'async' | boolean,
@@ -143,24 +172,34 @@ export class HaywireId<
     static #pseudoRandTracker = 0;
 
     public declare readonly [idType]: T;
-    #baseId: HaywireId<T, Constructor, Named, false, false, false, false> | null = null;
-    readonly #childIds: Map<string, HaywireId<any, any, any, any, any, any, any>>;
+    #baseId: HaywireId<
+        T,
+        Constructor,
+        Named,
+        List extends 'multi' | true ? true : false,
+        false,
+        false,
+        false,
+        false
+    > | null = null;
+    readonly #childIds: Map<string, HaywireId<any, any, any, any, any, any, any, any>>;
 
     public readonly id: string;
     public readonly construct: Constructor;
-    public readonly annotations: Annotations<Named, Nullable, Undefinable, Supply, LateBind>;
+    public readonly annotations: Annotations<Named, List, Nullable, Undefinable, Supply, LateBind>;
 
     private constructor(
         id: string,
         construct: Constructor,
         annotations: Annotations<
             Named,
+            List,
             Nullable,
             Undefinable,
             Supply,
             LateBind
         > = defaultAnnotations as typeof annotations,
-        childIds = new Map<string, HaywireId<any, any, any, any, any, any, any>>()
+        childIds = new Map<string, HaywireId<any, any, any, any, any, any, any, any>>()
     ) {
         this.id = id;
         this.construct = construct;
@@ -174,6 +213,8 @@ export class HaywireId<
         const { annotations } = this;
         const annotationsText = [
             annotations.named === null ? null : (`named: ${String(annotations.named)}` as const),
+            annotations.list !== false &&
+                (annotations.list === 'multi' ? ('list(multi)' as const) : ('list' as const)),
             annotations.nullable && ('nullable' as const),
             annotations.undefinable && ('undefinable' as const),
             typeof annotations.supplier === 'object' &&
@@ -196,22 +237,34 @@ export class HaywireId<
      * possibly with the class constructor attached.
      *
      * Any annotations like `nullable` or `supplier` are removed.
+     * The `list` annotation is preserved but normalized ('multi' → `true`).
      *
      * @example
      * const id = identifier();
      * id.nullable().lateBinding().baseId() === id; // true
+     * id.list('multi').baseId() === id.list(); // true
      *
      * @returns generic form of identifier
      */
-    public baseId(): HaywireId<T, Constructor, Named, false, false, false, false> {
+    public baseId(): BaseHaywireId<this> {
         if (!this.#baseId) {
             this.#baseId = this.#extend({
                 ...this.annotations,
+                list: this.annotations.list !== false,
                 nullable: false,
                 undefinable: false,
                 supplier: false,
                 lateBinding: false,
-            });
+            }) as HaywireId<
+                T,
+                Constructor,
+                Named,
+                List extends 'multi' | true ? true : false,
+                false,
+                false,
+                false,
+                false
+            >;
         }
         return this.#baseId;
     }
@@ -231,11 +284,11 @@ export class HaywireId<
      */
     public named(
         name?: null
-    ): HaywireId<T, Constructor, null, Nullable, Undefinable, Supply, LateBind>;
+    ): HaywireId<T, Constructor, null, List, Nullable, Undefinable, Supply, LateBind>;
     public named<NewName extends string | symbol>(
         named: NewName,
         ...invalidInput: LiteralStringType<NewName>
-    ): HaywireId<T, Constructor, NewName, Nullable, Undefinable, Supply, LateBind>;
+    ): HaywireId<T, Constructor, NewName, List, Nullable, Undefinable, Supply, LateBind>;
     public named(named: string | symbol | null = null): GenericHaywireId {
         if (this.annotations.named === named) {
             return this;
@@ -256,10 +309,10 @@ export class HaywireId<
      */
     public nullable(
         nullable: false
-    ): HaywireId<T, Constructor, Named, false, Undefinable, Supply, LateBind>;
+    ): HaywireId<T, Constructor, Named, List, false, Undefinable, Supply, LateBind>;
     public nullable(
         nullable?: true
-    ): HaywireId<T, Constructor, Named, true, Undefinable, Supply, LateBind>;
+    ): HaywireId<T, Constructor, Named, List, true, Undefinable, Supply, LateBind>;
     public nullable(nullable = true): GenericHaywireId {
         if (this.annotations.nullable === nullable) {
             return this;
@@ -280,10 +333,10 @@ export class HaywireId<
      */
     public undefinable(
         undefinable: false
-    ): HaywireId<T, Constructor, Named, Nullable, false, Supply, LateBind>;
+    ): HaywireId<T, Constructor, Named, List, Nullable, false, Supply, LateBind>;
     public undefinable(
         undefinable?: true
-    ): HaywireId<T, Constructor, Named, Nullable, true, Supply, LateBind>;
+    ): HaywireId<T, Constructor, Named, List, Nullable, true, Supply, LateBind>;
     public undefinable(undefinable = true): GenericHaywireId {
         if (this.annotations.undefinable === undefinable) {
             return this;
@@ -307,7 +360,7 @@ export class HaywireId<
      */
     public supplier(
         supplier: false
-    ): HaywireId<T, Constructor, Named, Nullable, Undefinable, false, LateBind>;
+    ): HaywireId<T, Constructor, Named, List, Nullable, Undefinable, false, LateBind>;
     public supplier(
         supplier?:
             | true
@@ -315,7 +368,7 @@ export class HaywireId<
                   sync: true;
                   propagateScope: boolean;
               }
-    ): HaywireId<T, Constructor, Named, Nullable, Undefinable, true, LateBind>;
+    ): HaywireId<T, Constructor, Named, List, Nullable, Undefinable, true, LateBind>;
     public supplier(
         supplier:
             | 'async'
@@ -323,7 +376,7 @@ export class HaywireId<
                   sync: false;
                   propagateScope: boolean;
               }
-    ): HaywireId<T, Constructor, Named, Nullable, Undefinable, 'async', LateBind>;
+    ): HaywireId<T, Constructor, Named, List, Nullable, Undefinable, 'async', LateBind>;
     public supplier(
         supplier:
             | 'async'
@@ -371,10 +424,10 @@ export class HaywireId<
      */
     public lateBinding(
         lateBinding: false
-    ): HaywireId<T, Constructor, Named, Nullable, Undefinable, Supply, false>;
+    ): HaywireId<T, Constructor, Named, List, Nullable, Undefinable, Supply, false>;
     public lateBinding(
         lateBinding?: true
-    ): HaywireId<T, Constructor, Named, Nullable, Undefinable, Supply, true>;
+    ): HaywireId<T, Constructor, Named, List, Nullable, Undefinable, Supply, true>;
     public lateBinding(lateBinding = true): GenericHaywireId {
         if (this.annotations.lateBinding === lateBinding) {
             return this;
@@ -382,6 +435,40 @@ export class HaywireId<
         return this.#extend({
             ...this.annotations,
             lateBinding,
+        });
+    }
+
+    /**
+     * Mark identifier as a list.
+     * When true, the resolved type will be an array. Multiple bindings for the same list id
+     * will be collected into a single array.
+     *
+     * When 'multi', the binding provides multiple values at once (returns an array that gets
+     * spread into the collected list). A nullable/undefinable 'multi' provider returning `null`/`undefined`
+     * contributes a single `null`/`undefined` element.
+     *
+     * Elements from a single provider retain their order, but no order is guaranteed across providers.
+     *
+     * @param [list=true] - (un)sets the ability to depend on a list of values (from multiple providers),
+     * 'multi' allows providers to return an array themselves.
+     * @returns new identifier with annotation
+     */
+    public list(
+        list: false
+    ): HaywireId<T, Constructor, Named, false, Nullable, Undefinable, Supply, LateBind>;
+    public list(
+        list?: true
+    ): HaywireId<T, Constructor, Named, true, Nullable, Undefinable, Supply, LateBind>;
+    public list(
+        list: 'multi'
+    ): HaywireId<T, Constructor, Named, 'multi', Nullable, Undefinable, Supply, LateBind>;
+    public list(list: 'multi' | boolean = true): GenericHaywireId {
+        if (this.annotations.list === list) {
+            return this;
+        }
+        return this.#extend({
+            ...this.annotations,
+            list,
         });
     }
 
@@ -393,8 +480,8 @@ export class HaywireId<
         idOrNameOrClass?:
             | string
             | GenericClass<T2>
-            | HaywireId<T2, Constructor2, Named2, false, false, false, false>
-    ): HaywireId<T2, Constructor2, Named2, false, false, false, false> => {
+            | HaywireId<T2, Constructor2, Named2, false, false, false, false, false>
+    ): HaywireId<T2, Constructor2, Named2, false, false, false, false, false> => {
         // Idempotency
         if (idOrNameOrClass instanceof HaywireId) {
             return idOrNameOrClass;
@@ -402,7 +489,7 @@ export class HaywireId<
 
         if (typeof idOrNameOrClass === 'string') {
             if (idOrNameOrClass) {
-                return new HaywireId<T2, Constructor2, Named2, false, false, false, false>(
+                return new HaywireId<T2, Constructor2, Named2, false, false, false, false, false>(
                     idOrNameOrClass,
                     null as Constructor2
                 );
@@ -412,7 +499,7 @@ export class HaywireId<
             if (cachedId) {
                 return cachedId;
             }
-            const id = new HaywireId<T2, Constructor2, Named2, false, false, false, false>(
+            const id = new HaywireId<T2, Constructor2, Named2, false, false, false, false, false>(
                 idOrNameOrClass.name,
                 idOrNameOrClass as Constructor2
             );
@@ -420,7 +507,7 @@ export class HaywireId<
             return id;
         }
 
-        return new HaywireId<T2, Constructor2, Named2, false, false, false, false>(
+        return new HaywireId<T2, Constructor2, Named2, false, false, false, false, false>(
             'haywire-id',
             null as Constructor2
         );
@@ -471,17 +558,23 @@ export class HaywireId<
      */
     static #annotationKey({
         named,
+        list,
         nullable,
         undefinable,
         supplier,
         lateBinding,
-    }: Annotations<string | symbol | null, boolean, boolean, 'async' | boolean, boolean>): string {
-        const key = JSON.stringify([named, nullable, undefinable, supplier, lateBinding]);
-        if (typeof named === 'symbol') {
-            // Stringified symbols becomes null, so need to attach extra metadata to account for symbol value
-            return this.#getSymRand(named) + key;
-        }
-        return key;
+    }: Annotations<
+        string | symbol | null,
+        'multi' | boolean,
+        boolean,
+        boolean,
+        'async' | boolean,
+        boolean
+    >): string {
+        let name = typeof named === 'symbol' ? this.#getSymRand(named) : named;
+        name = name === null ? 'null' : `"${name}"`;
+        const supply = supplier === false ? 'false' : `${supplier.propagateScope}:${supplier.sync}`;
+        return `${name}|${list}|${nullable}|${undefinable}|${supply}|${lateBinding}`;
     }
 
     /**
@@ -497,9 +590,10 @@ export class HaywireId<
         Undefinable2 extends boolean,
         Supply2 extends 'async' | boolean,
         LateBind2 extends boolean,
+        List2 extends 'multi' | boolean,
     >(
-        annotations: Annotations<Named2, Nullable2, Undefinable2, Supply2, LateBind2>
-    ): HaywireId<T, Constructor, Named2, Nullable2, Undefinable2, Supply2, LateBind2> {
+        annotations: Annotations<Named2, List2, Nullable2, Undefinable2, Supply2, LateBind2>
+    ): HaywireId<T, Constructor, Named2, List2, Nullable2, Undefinable2, Supply2, LateBind2> {
         const existing = this.#childIds.get(HaywireId.#annotationKey(annotations));
         if (existing) {
             // eslint-disable-next-line @typescript-eslint/no-unsafe-return
@@ -513,10 +607,13 @@ export class HaywireId<
 export const unsafeIdentifier = HaywireId[unsafeIdSym]!;
 delete (HaywireId as Record<typeof unsafeIdSym, unknown>)[unsafeIdSym];
 
+export type RawType<T extends GenericHaywireId> = T[typeof idType];
+
 export type GenericHaywireId = HaywireId<
     unknown,
     GenericClass | null,
     string | symbol | null,
+    'multi' | boolean,
     boolean,
     boolean,
     'async' | boolean,
@@ -528,6 +625,17 @@ export type GenericOutputHaywireId = HaywireId<
     string | symbol | null,
     boolean,
     boolean,
+    boolean,
+    false,
+    false
+>;
+export type GenericBaseHaywireId = HaywireId<
+    unknown,
+    GenericClass | null,
+    string | symbol | null,
+    boolean,
+    false,
+    false,
     false,
     false
 >;
@@ -539,42 +647,66 @@ type HaywireIdTypeUndefinable<Id extends GenericHaywireId> =
     Id['annotations']['undefinable'] extends true
         ? HaywireIdTypeNullable<Id> | undefined
         : HaywireIdTypeNullable<Id>;
+type HaywireIdTypeList<Id extends GenericHaywireId> = Id['annotations']['list'] extends
+    | 'multi'
+    | true
+    ? MultiList<HaywireIdTypeUndefinable<Id>>
+    : HaywireIdTypeUndefinable<Id>;
 type HaywireIdTypeSupplier<Id extends GenericHaywireId> = Id['annotations']['supplier'] extends {
     sync: infer U;
 }
     ? U extends true
-        ? Supplier<HaywireIdTypeUndefinable<Id>>
-        : AsyncSupplier<HaywireIdTypeUndefinable<Id>>
-    : HaywireIdTypeUndefinable<Id>;
+        ? Supplier<HaywireIdTypeList<Id>>
+        : AsyncSupplier<HaywireIdTypeList<Id>>
+    : HaywireIdTypeList<Id>;
 export type HaywireIdType<Id extends GenericHaywireId> =
     Id['annotations']['lateBinding'] extends true
         ? LateBinding<HaywireIdTypeSupplier<Id>>
         : HaywireIdTypeSupplier<Id>;
 
+/**
+ * What a binding's provider should return for a given id.
+ * Differs from {@link HaywireIdType} for `list: true` ids:
+ * - `list: false` → T (same as HaywireIdType)
+ * - `list: true` → T (single element; container collects into T[])
+ * - `list: 'multi'` → T[] (provider returns multiple elements at once).
+ *   If nullable/undefinable, the provider may also return `null`/`undefined` directly,
+ *   which is treated as a single `null`/`undefined` element. Return `[]` to contribute nothing.
+ *
+ * @template Id
+ */
+export type HaywireIdProviderType<Id extends GenericHaywireId> =
+    Id['annotations']['list'] extends 'multi'
+        ? Extract<HaywireIdTypeUndefinable<Id>, null | undefined> | HaywireIdTypeUndefinable<Id>[]
+        : HaywireIdTypeUndefinable<Id>;
+
 export type OutputHaywireId<Id extends GenericHaywireId> = HaywireId<
     Id[typeof idType],
     Id['construct'],
     Id['annotations']['named'],
+    Id['annotations']['list'] extends 'multi' | true ? true : false,
     Id['annotations']['nullable'],
     Id['annotations']['undefinable'],
     false,
     false
 >;
 
-export type HaywireIdConstructor<Id extends GenericHaywireId> =
-    Id extends HaywireId<
-        unknown,
-        infer U extends GenericClass,
-        string | symbol | null,
-        boolean,
-        boolean,
-        'async' | boolean,
-        boolean
-    >
-        ? U extends AbstractPrivateClass
-            ? null
-            : U
-        : null;
+export type BaseHaywireId<Id extends GenericHaywireId> = HaywireId<
+    Id[typeof idType],
+    Id['construct'],
+    Id['annotations']['named'],
+    Id['annotations']['list'] extends 'multi' | true ? true : false,
+    false,
+    false,
+    false,
+    false
+>;
+
+export type HaywireIdConstructor<Id extends GenericHaywireId> = Id['construct'] extends GenericClass
+    ? Id['construct'] extends AbstractPrivateClass
+        ? null
+        : Id['construct']
+    : null;
 
 /**
  * Given the output id of a declared binding, produce the set of all output ids.
@@ -593,6 +725,7 @@ export type ExpandOutputId<OutputId extends GenericHaywireId> = HaywireId<
     OutputId[typeof idType],
     OutputId['construct'],
     OutputId['annotations']['named'],
+    OutputId['annotations']['list'],
     true | OutputId['annotations']['nullable'],
     true | OutputId['annotations']['undefinable'],
     false,
@@ -625,4 +758,24 @@ export const expandOutputId = <OutputId extends GenericHaywireId>(
         }
     }
     return expandedIds;
+};
+
+/**
+ * Calculate the output ids that are satisfied by _every_ provided output id.
+ * Used for lists, where each binding contributes elements, so a requested id is only valid
+ * if all bindings satisfy it (e.g. a single nullable binding makes the whole list nullable).
+ *
+ * @param baseId - shared base id of all output ids
+ * @param outputIds - output ids of each binding
+ * @returns set of output ids that every output id can satisfy
+ */
+export const expandSharedOutputIds = (
+    baseId: GenericBaseHaywireId,
+    outputIds: Iterable<GenericHaywireId>
+): Set<GenericOutputHaywireId> => {
+    let sharedIds: Set<GenericOutputHaywireId> = expandOutputId(baseId);
+    for (const outputId of outputIds) {
+        sharedIds = sharedIds.intersection(expandOutputId(outputId));
+    }
+    return sharedIds;
 };

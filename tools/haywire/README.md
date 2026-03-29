@@ -18,6 +18,7 @@ A fully type-safe dependency injection library using native javascript.
     - [Binding an implementation to an id](#binding-an-implementation-to-an-id)
     - [Supplying a value](#supplying-a-value)
     - [Circular dependencies](#circular-dependencies)
+    - [Lists](#lists)
     - [Collecting bindings in modules](#collecting-bindings-in-modules)
     - [Requesting instances from a container](#requesting-instances-from-a-container)
     - [Combining containers with dynamic runtime values](#combining-containers-with-dynamic-runtime-values)
@@ -543,6 +544,46 @@ const getChicken = () => {
 };
 ```
 
+### Lists
+
+Most ids may only have a single binding. Sometimes you want many independent bindings to contribute to one collection, such as a set of plugins or middleware. Mark the id as a list with `.list()`, and every binding for that id is collected into a single array.
+
+```ts
+interface Plugin {
+    name: string;
+}
+const pluginId = identifier<Plugin>().list();
+
+const pluginModule = createModule(bind(pluginId).withGenerator(() => ({ name: 'logging' })))
+    // Unlike other ids, adding more bindings for a list is allowed
+    .addBinding(bind(pluginId).withGenerator(() => ({ name: 'metrics' })));
+
+class PluginRunner {
+    constructor(private readonly plugins: Plugin[]) {}
+}
+const runnerBinding = bind(PluginRunner)
+    .withDependencies([pluginId])
+    .withConstructorProvider();
+
+const container = createContainer(pluginModule.addBinding(runnerBinding));
+// [{ name: 'logging' }, { name: 'metrics' }]
+container.get(pluginId);
+```
+
+A `list()` binding's provider returns a _single_ element. If one provider should contribute several elements at once, bind with `.list('multi')` and return an array (return `[]` to contribute nothing). `list()` and `list('multi')` bindings for the same id are collected together, and depending on either form resolves the full list.
+
+```ts
+bind(pluginId.list('multi')).withGenerator(() => [{ name: 'a' }, { name: 'b' }]);
+```
+
+Things to keep in mind:
+- Elements from one provider keep their order. **No order is guaranteed across providers**, so do not rely on the order bindings were added.
+- `nullable()`/`undefinable()` apply to each _element_. A list can only be requested (or depended on) as non-null if _every_ binding is non-null, so a single `.nullable()` binding makes the whole list nullable.
+- A nullable `list('multi')` provider that returns `null` contributes a single `null` element (same for `undefined`). Return `[]` for "no elements".
+- Adding the exact same binding instance more than once (e.g. via merged modules) only includes it once. Separate bindings are always included, even if they return the same value.
+- Lists work with scopes, suppliers, and late bindings like any other id. Each element binding is scoped individually.
+- A [`Factory`](#factory) can `register()` list elements multiple times. Each registered element is appended to the elements bound in the module, and must still satisfy every dependency on that list.
+
 ### Collecting bindings in modules
 
 Bindings are the way to tell Haywire how to instantiate a single instance based on its dependencies. Similarly we can define a binding for every dependency.
@@ -979,7 +1020,8 @@ originalId === id; // true!
 | `named(name: string \| unique symbol \| null)` | A _literal_ string or a _unique_ symbol. Differentiates similarly typed ids. For example you may have multiple different strings representing various environment variables. A `null` value will "revert" the naming to default omission | `T` | String unions and non-unique symbols will be rejected. |
 | `supplier(options)` | `true` (default), `false`, `'async'` or an object `{ sync: boolean, propagateScope: boolean }` | `() => T` or `() => Promise<T>` | See [Supplying A Value](#supplying-a-value) above for more context about suppliers |
 | `lateBinding(enabled?: boolean)` | boolean (default=`true`) | `Promise<T>` | See [Circular Dependencies](#circular-dependencies) above for more context about late binding |
-| `baseId()` | ❌ | `T` | Strips all modifiers from the id and returns the original id value that would have come from `identifier()` |
+| `list(list?: boolean \| 'multi')` | `true` (default), `false`, or `'multi'` | `T[]` | See [Lists](#lists) above. `'multi'` bindings return an array of elements, but are requested/depended on the same as `true`. `baseId()` retains the list annotation (normalizing `'multi'` to `true`) |
+| `baseId()` | ❌ | `T` | Strips all modifiers (except `list`) from the id and returns the original id value that would have come from `identifier()` |
 
 #### `Binding`
 
@@ -990,6 +1032,7 @@ Represents a combination of provider and dependencies. Eventual output of `bind(
 | `nullable(enabled?: true)` | _Only_ `true` | Marks the output as if you originally provided a `nullable()` id to original `bind()`. Useful if a class literal was used instead. Since providers have already been attached and type checked, it is not possible to "revert" |
 | `undefinable(enabled?: true)` | _Only_ `true` | Marks the output as if you originally provided a `undefinable()` id to original `bind()`. Useful if a class literal was used instead. Since providers have already been attached and type checked, it is not possible to "revert" |
 | `named(name: string \| unique symbol \| null)` | A _literal_ string or a _unique_ symbol. | Marks the output as if you originally provided a `named()` id to original `bind()`. Useful if a class literal was used instead. |
+| `list(enabled?: true)` | _Only_ `true` | Converts the output to a list, where the provider's value is a single element. See [Lists](#lists) above |
 | `scoped(scope)` | scope (default=`transientScope`) | See [Binding an Implementation](#binding-an-implementation-to-an-id) above for more context about scopes and their impact on resource lifecycles |
 
 #### `Module`
@@ -998,7 +1041,7 @@ Represents a collection of `Binding`s, each for a unique identifier.
 
 | Method | Parameters | Return Type | Notes |
 |--------|------------|-------------|-------|
-| `addBinding(binding)` | `Binding` | `Module` | Returns a _new_ module with extra binding attached. Type+runtime validations ensure it is a unique output and all dependencies are still satisfied |
+| `addBinding(binding)` | `Binding` | `Module` | Returns a _new_ module with extra binding attached. Type+runtime validations ensure it is a unique output (except [lists](#lists)) and all dependencies are still satisfied |
 | `mergeModule(module)` | `Module` | `Module` | Returns a _new_ module with two modules merged. Order does not matter (`A.mergeModule(B)` = `B.mergeModule(A)`). Type+runtime validations ensure all outputs are unique and all dependencies are still satisfied |
 | `toContainer()` | ❌ | `AsyncContainer \| SyncContainer` | Returns a container of all bindings. Type enforcement ensures module is fully satisfied. Will be an AsyncContainer if any binding's provider is async. |
 | `toFactory()` | ❌ | `Factory` | Returns a factory to register remaining dependencies. |
@@ -1031,7 +1074,7 @@ Collection of incomplete bindings that can still be checked and wired like a con
 |--------|------------|-------------|-------|
 | `check()` | ❌ | `void` | Similar to `container.check()`. Assumes that all to-be-registered bindings are synchronous, optimistic singletons, with no dependencies. Operation will be cached for all containers generated. |
 | `wire()` | ❌ | `void` | Similar to `container.wire()`. Operation will be cached for all containers generated. |
-| `register(idOrClass, instance)` | First parameter is either a `HaywireId` or raw class declaring the type. Second parameter is an instance satisfying the requested type. | `Factory` | Returns a _new_ factory with value registered. Because of this, a factory instance may be shared across multiple contexts. If the factory has been checked/wired, that state will persist. |
+| `register(idOrClass, instance)` | First parameter is either a `HaywireId` or raw class declaring the type. Second parameter is an instance satisfying the requested type. | `Factory` | Returns a _new_ factory with value registered. [List](#lists) ids may be registered multiple times, each adding an element (or elements for `'multi'`). Because of this, a factory instance may be shared across multiple contexts. If the factory has been checked/wired, that state will persist. |
 | `toContainer()` | ❌ | `AsyncContainer \| SyncContainer` | Returns a container with registered values bound. Will inherit factory's checked/wired state. Will be an AsyncContainer if any module binding's provider is async. |
 
 ### Types
@@ -1101,7 +1144,7 @@ Specific instances may report circular dependencies, or sync suppliers that are 
 
 Error thrown during request time, during `preload()` or `get()` (or will be rejected when using async versions).
 
-Specific instances may report a value that is `null` for an id that is not declared as `.nullable()`, or the response is not an `instanceof` the requested class.
+Specific instances may report a value that is `null` for an id that is not declared as `.nullable()`, or the response is not an `instanceof` the requested class. For [lists](#lists) these checks apply to each element, and a `list('multi')` provider that does not return an array is rejected.
 
 ## Also See
 

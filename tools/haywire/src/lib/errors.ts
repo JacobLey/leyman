@@ -235,6 +235,21 @@ export class HaywireInstanceOfResponseError extends HaywireInstanceValidationErr
 }
 
 /**
+ * Thrown when a `list('multi')` provider returns a value that is not an array
+ * (or `null`/`undefined`, which are treated as a single element).
+ */
+export class HaywireListResponseError extends HaywireInstanceValidationError {
+    public readonly outputId: GenericHaywireId;
+    public readonly value: unknown;
+    public constructor(outputId: GenericHaywireId, value: unknown) {
+        super(`Non-array value returned by list provider: ${outputId.toString()}`);
+        this.name = 'HaywireListResponseError';
+        this.outputId = outputId;
+        this.value = value;
+    }
+}
+
+/**
  * Thrown when multiple providers fail to generate the required value.
  * These errors may have been thrown explicitly by the provider itself, or as part of other validations
  * that are `HaywireInstanceValidationError`.

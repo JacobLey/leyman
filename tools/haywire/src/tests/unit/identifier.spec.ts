@@ -1,8 +1,16 @@
-import type { AsyncSupplier, HaywireId, HaywireIdType, LateBinding, Supplier } from 'haywire';
+import type {
+    AsyncSupplier,
+    HaywireId,
+    HaywireIdType,
+    LateBinding,
+    MultiList,
+    Supplier,
+} from 'haywire';
 import type { AbstractPrivateClass } from '#identifier';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import { identifier } from 'haywire';
+import { expandOutputId } from '#identifier';
 import { expect } from '../chai-hooks.js';
 
 suite('Generate identifier', () => {
@@ -13,7 +21,9 @@ suite('Generate identifier', () => {
         }
 
         const id = identifier<Foo>();
-        expectTypeOf(id).toEqualTypeOf<HaywireId<Foo, null, null, false, false, false, false>>();
+        expectTypeOf(id).toEqualTypeOf<
+            HaywireId<Foo, null, null, false, false, false, false, false>
+        >();
         expect(id.id).to.equal('haywire-id');
         expect(id.construct).to.equal(null);
 
@@ -71,7 +81,7 @@ suite('Generate identifier', () => {
 
         const fooId = identifier(Foo);
         expectTypeOf(fooId).toEqualTypeOf<
-            HaywireId<Foo, typeof Foo, null, false, false, false, false>
+            HaywireId<Foo, typeof Foo, null, false, false, false, false, false>
         >();
         expect(fooId.id).to.equal('Foo');
         expect(fooId.construct).to.equal(Foo);
@@ -86,7 +96,7 @@ suite('Generate identifier', () => {
         identifier<typeof Foo>(PrivateBar);
         expect(privateBarId.construct).to.equal(PrivateBar);
         expectTypeOf(privateBarId).toEqualTypeOf<
-            HaywireId<PrivateBar, AbstractPrivateClass, null, false, false, false, false>
+            HaywireId<PrivateBar, AbstractPrivateClass, null, false, false, false, false, false>
         >();
 
         identifier(ExtraBar);
@@ -159,6 +169,38 @@ suite('annotations', () => {
         id.named<string>('a');
         // @ts-expect-error
         id.named<symbol>(sym);
+    });
+
+    test('list', () => {
+        const listId = id.list();
+        expectTypeOf<HaywireIdType<typeof listId>>().toEqualTypeOf<MultiList<Foo>>();
+
+        expectTypeOf(listId.annotations.list).toEqualTypeOf(true);
+        expect(listId.annotations.list).to.equal(true);
+        expect(listId.toString()).to.equal('haywire-id(list)');
+
+        expectTypeOf(id.annotations.list).toEqualTypeOf(false);
+        expect(id.annotations.list).to.equal(false);
+
+        expect(id.list(true)).to.equal(listId);
+        expect(listId.list(true)).to.equal(listId);
+        expect(id.list()).to.equal(listId);
+        expect(id).to.not.equal(listId);
+
+        const removed = listId.list(false);
+        expectTypeOf(removed).toEqualTypeOf(id);
+        expect(removed).to.equal(id);
+
+        const multi = id.list('multi');
+        expectTypeOf<HaywireIdType<typeof multi>>().toEqualTypeOf<MultiList<Foo>>();
+        expectTypeOf(multi.annotations.list).toEqualTypeOf<'multi'>();
+        expect(multi.annotations.list).to.equal('multi');
+
+        expect(multi).to.not.equal(listId);
+        expect(multi.list('multi')).to.equal(multi);
+        expect(multi.list(false)).to.equal(id);
+        expect(multi.list()).to.equal(listId);
+        expect(multi.toString()).to.equal('haywire-id(list(multi))');
     });
 
     test('nullable', () => {
@@ -278,20 +320,53 @@ suite('annotations', () => {
         const allId = id.nullable().undefinable().supplier().lateBinding();
         expect(allId.baseId()).to.equal(id);
         expectTypeOf(allId.baseId()).toEqualTypeOf(id);
+
+        const listId = id.list('multi');
+        expect(listId.baseId()).to.equal(id.list());
+        expectTypeOf(listId.baseId()).toEqualTypeOf(id.list(true));
     });
 
     test('all', () => {
-        const all = id.named('<name>').nullable().undefinable().supplier().lateBinding();
-        const allOrder = id.lateBinding().supplier().undefinable().nullable().named('<name>');
+        const all = id.named('<name>').nullable().undefinable().list().supplier().lateBinding();
+        const allOrder = id
+            .lateBinding()
+            .supplier()
+            .list()
+            .undefinable()
+            .nullable()
+            .named('<name>');
         expectTypeOf(allOrder).toEqualTypeOf(all);
         expect(allOrder).to.equal(all);
+        expect(all.toString()).to.equal(
+            'haywire-id(named: <name>, list, nullable, undefinable, supplier(sync), late-binding)'
+        );
 
         expectTypeOf<HaywireIdType<typeof all>>().toEqualTypeOf<
-            LateBinding<Supplier<Foo | null | undefined>>
+            LateBinding<Supplier<MultiList<Foo | null | undefined>>>
         >();
 
-        expect(
-            all.named().nullable(false).undefinable(false).supplier(false).lateBinding(false)
-        ).to.equal(id);
+        const reversed = all
+            .named()
+            .nullable(false)
+            .undefinable(false)
+            .list(false)
+            .supplier(false)
+            .lateBinding(false);
+        expect(reversed).to.equal(id);
+        expect(reversed.toString()).to.equal('haywire-id');
+
+        expectTypeOf<HaywireIdType<typeof reversed>>().toEqualTypeOf<Foo>();
     });
+});
+
+test('exapndOutputId', () => {
+    const id = identifier<string>();
+    expect(expandOutputId(id)).to.deep.equal(
+        new Set([id, id.nullable(), id.undefinable(), id.nullable().undefinable()])
+    );
+
+    const numId = identifier<number>();
+    expect(expandOutputId(numId.nullable())).to.deep.equal(
+        new Set([numId.nullable(), numId.nullable().undefinable()])
+    );
 });

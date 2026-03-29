@@ -1,32 +1,40 @@
-import type { BindingOutputType, GenericBinding } from '#binding';
+import type { BindingListOutputType, BindingOutputType, GenericBinding } from '#binding';
 import type { AsyncContainer, Container, ExpandedContainer } from '#container';
 import type {
     ClassToConstructable,
+    GenericBaseHaywireId,
     GenericHaywireId,
     GenericOutputHaywireId,
-    HaywireIdType,
+    HaywireIdProviderType,
     OutputHaywireId,
 } from '#identifier';
-import type { ValidateOutputIdDoesNotExist, ValidateOutputSatisfiesDependency } from '#module';
+import type {
+    CombineListOutputs,
+    ValidateOutputIdDoesNotExist,
+    ValidateOutputSatisfiesDependency,
+} from '#module';
 import type { Extendable, InstanceOfClass, InvalidInput, IsClass } from '#types';
-import { InstanceBinding, TempBinding } from '#binding';
+import { InstanceBinding, normalizeOutputId, TempBinding } from '#binding';
 import { addBoundInstances, createAsyncContainer, createSyncContainer } from '#container';
 import { HaywireDuplicateOutputError, HaywireProviderMissingError } from '#errors';
-import { expandOutputId, unsafeIdentifier } from '#identifier';
+import { expandOutputId, expandSharedOutputIds, unsafeIdentifier } from '#identifier';
 
 export type GenericFactory = Factory<any, any, any, any>;
 
 type ValidateRegister<
     Outputs extends [Extendable],
     Dependencies extends [Extendable],
-    Bindings extends InstanceBinding<GenericOutputHaywireId>,
-    OutputId extends GenericHaywireId,
+    Bindings extends InstanceBinding<GenericHaywireId>,
+    OutputId extends GenericOutputHaywireId,
 > = [
     ...ValidateOutputIdDoesNotExist<
         BindingOutputType<Bindings['outputId']> | Outputs,
         BindingOutputType<OutputId>
     >,
-    ...ValidateOutputSatisfiesDependency<Dependencies, BindingOutputType<OutputId>>,
+    ...ValidateOutputSatisfiesDependency<
+        Dependencies,
+        BindingListOutputType<OutputId> | BindingOutputType<OutputId>
+    >,
 ] &
     [];
 
@@ -53,7 +61,8 @@ declare const idType: unique symbol;
  * for a container that is ready for use.
  *
  * @template Outputs values that container is currently able to emit
- * @template Dependencies dependencies declared on the module, _excluding_ outputs from both module and instance bindings
+ * @template Dependencies dependencies declared on the module, _excluding_ outputs from both module and instance bindings.
+ * List dependencies are always retained (even if satisfied) so that registered list elements can be validated against them.
  * @template Async if false, will result in a SyncContainer
  * @template Bindings instance bindings that are ready to be attached to container
  */
@@ -61,7 +70,7 @@ export class Factory<
     Outputs extends [Extendable],
     Dependencies extends [Extendable],
     Async extends boolean,
-    Bindings extends InstanceBinding<GenericOutputHaywireId>,
+    Bindings extends InstanceBinding<GenericHaywireId>,
 > {
     public declare [idType]: {
         outputs: Outputs;
@@ -71,22 +80,41 @@ export class Factory<
     };
 
     readonly #container: Container<Outputs, Async>;
-    readonly #missingDependencyOutputsByBaseId: Map<
-        GenericOutputHaywireId,
-        GenericOutputHaywireId[]
+    readonly #missingDependencyOutputsByBaseId: Map<GenericBaseHaywireId, GenericOutputHaywireId[]>;
+    readonly #existingOutputBaseIds: Set<GenericBaseHaywireId>;
+    /**
+     * Every list dependency declared in the module (satisfied or not), keyed by base id.
+     * Registered list elements must continue to satisfy all of these.
+     */
+    readonly #listDependencyOutputsByBaseId: ReadonlyMap<
+        GenericBaseHaywireId,
+        readonly GenericOutputHaywireId[]
     >;
-    readonly #existingOutputBaseIds: Set<GenericOutputHaywireId>;
+    /**
+     * Output ids that are satisfied by every list binding (from module and registered instances), keyed by base id.
+     */
+    readonly #listOutputIdsByBaseId: Map<GenericBaseHaywireId, ReadonlySet<GenericOutputHaywireId>>;
     readonly #registeredBindings: Bindings[];
 
     private constructor(
         container: Container<Outputs, Async>,
-        missingDependencyOutputsByBaseId: Map<GenericOutputHaywireId, GenericOutputHaywireId[]>,
-        existingOutputBaseIds: Set<GenericOutputHaywireId>,
+        missingDependencyOutputsByBaseId: Map<GenericBaseHaywireId, GenericOutputHaywireId[]>,
+        existingOutputBaseIds: Set<GenericBaseHaywireId>,
+        listDependencyOutputsByBaseId: ReadonlyMap<
+            GenericBaseHaywireId,
+            readonly GenericOutputHaywireId[]
+        >,
+        listOutputIdsByBaseId: ReadonlyMap<
+            GenericBaseHaywireId,
+            ReadonlySet<GenericOutputHaywireId>
+        >,
         registeredBindings: Bindings[]
     ) {
         this.#container = container;
         this.#missingDependencyOutputsByBaseId = new Map(missingDependencyOutputsByBaseId);
         this.#existingOutputBaseIds = new Set(existingOutputBaseIds);
+        this.#listDependencyOutputsByBaseId = listDependencyOutputsByBaseId;
+        this.#listOutputIdsByBaseId = new Map(listOutputIdsByBaseId);
         this.#registeredBindings = [...registeredBindings];
     }
 
@@ -96,29 +124,67 @@ export class Factory<
         Async extends boolean,
     >(
         this: void,
-        bindings: ReadonlyMap<GenericOutputHaywireId, GenericBinding>,
+        bindings: ReadonlyMap<GenericBaseHaywireId, GenericBinding>,
+        listBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>,
         isAsync: Async
     ): Factory<Outputs, Dependencies, Async, never> {
-        const outputIds = new Set(bindings.keys());
+        const outputIds = new Set(
+            [...bindings.values()].flatMap(binding => [...expandOutputId(binding.outputId)])
+        );
+        const listOutputIdsByBaseId = new Map(
+            [...listBindings].map(([baseId, bindingsForList]) => [
+                baseId,
+                expandSharedOutputIds(
+                    baseId,
+                    bindingsForList.map(binding => binding.outputId)
+                ),
+            ])
+        );
+        // Dependencies are compared as outputs, so suppliers + late bindings are satisfied by the underlying output.
         const dependencyIds = new Set(
-            [...bindings.values()].flatMap(binding => binding.dependencyIds)
+            [...bindings.values(), ...listBindings.values()]
+                .flat()
+                .flatMap(binding => binding.dependencyIds.map(id => normalizeOutputId(id)))
         );
 
-        const missingDependencyOutputsByBaseId = new Map<
-            GenericOutputHaywireId,
+        const listDependencyOutputsByBaseId = new Map<
+            GenericBaseHaywireId,
             GenericOutputHaywireId[]
         >();
-        for (const missingDependency of dependencyIds.difference(outputIds)) {
-            const outputMissingDependency = missingDependency.supplier(false).lateBinding(false);
-            const allMissing =
-                missingDependencyOutputsByBaseId.get(outputMissingDependency.baseId()) ?? [];
-            allMissing.push(outputMissingDependency);
-            missingDependencyOutputsByBaseId.set(outputMissingDependency.baseId(), allMissing);
+        const missingDependencyOutputsByBaseId = new Map<
+            GenericBaseHaywireId,
+            GenericOutputHaywireId[]
+        >();
+        // Widen type, `normalizeOutputId` loses track of the list annotation (see container `checkIsList`)
+        for (const dependencyId of dependencyIds as Set<GenericOutputHaywireId>) {
+            const baseId = dependencyId.baseId();
+            let isMissing: boolean;
+            if (dependencyId.annotations.list) {
+                const listDependencies = listDependencyOutputsByBaseId.get(baseId) ?? [];
+                listDependencies.push(dependencyId);
+                listDependencyOutputsByBaseId.set(baseId, listDependencies);
+                isMissing = !listOutputIdsByBaseId.get(baseId)?.has(dependencyId);
+            } else {
+                isMissing = !outputIds.has(dependencyId);
+            }
+            if (isMissing) {
+                const allMissing = missingDependencyOutputsByBaseId.get(baseId) ?? [];
+                allMissing.push(dependencyId);
+                missingDependencyOutputsByBaseId.set(baseId, allMissing);
+            }
         }
 
-        const missingImplementationBindings = new Map<GenericOutputHaywireId, GenericBinding>();
+        const missingImplementationBindings = new Map<GenericBaseHaywireId, GenericBinding>();
+        const missingImplementationListBindings = new Map<GenericBaseHaywireId, GenericBinding[]>();
         for (const [baseId, dependencyOutputIds] of missingDependencyOutputsByBaseId) {
-            let laxestId = baseId;
+            // If the module already declares bindings for this output, they are too lax to satisfy
+            // the dependency. Keep them rather than replacing with a temp binding, the dependency remains missing
+            // (and for lists, registering further instances will not be able to satisfy it either).
+            if (baseId.annotations.list ? listBindings.has(baseId) : bindings.has(baseId)) {
+                continue;
+            }
+
+            let laxestId: GenericOutputHaywireId = baseId;
             if (dependencyOutputIds.every(outputId => outputId.annotations.nullable)) {
                 laxestId = laxestId.nullable();
             }
@@ -127,23 +193,31 @@ export class Factory<
             }
 
             const tempBinding = new TempBinding(laxestId);
-            for (const id of expandOutputId(laxestId)) {
-                missingImplementationBindings.set(id, tempBinding);
+            if (laxestId.annotations.list) {
+                missingImplementationListBindings.set(baseId, [tempBinding]);
+            } else {
+                missingImplementationBindings.set(baseId, tempBinding);
             }
         }
 
         const mergedBindings = new Map([...bindings, ...missingImplementationBindings]);
+        const mergedListBindings = new Map([...listBindings, ...missingImplementationListBindings]);
 
         const container: AsyncContainer<Outputs> = isAsync
-            ? createAsyncContainer(mergedBindings)
-            : createSyncContainer(mergedBindings);
+            ? createAsyncContainer(mergedBindings, mergedListBindings)
+            : createSyncContainer(mergedBindings, mergedListBindings);
 
-        const existingOutputBaseIds = new Set([...bindings.keys()].map(id => id.baseId()));
+        const existingOutputBaseIds = new Set(
+            // Only need to track non-list, because duplicating lists are explicitly allowed
+            bindings.keys()
+        );
 
         return new Factory<Outputs, Dependencies, Async, never>(
             container as Container<Outputs, Async>,
             missingDependencyOutputsByBaseId,
             existingOutputBaseIds,
+            listDependencyOutputsByBaseId,
+            listOutputIdsByBaseId,
             []
         );
     }
@@ -186,13 +260,18 @@ export class Factory<
      */
     public register<OutputId extends GenericHaywireId>(
         outputId: OutputId,
-        instance: HaywireIdType<OutputHaywireId<OutputId>>,
-        ...invalidInput: ValidateRegister<Outputs, Dependencies, Bindings, OutputId>
+        instance: HaywireIdProviderType<OutputId>,
+        ...invalidInput: ValidateRegister<
+            Outputs,
+            Dependencies,
+            Bindings,
+            OutputHaywireId<OutputId>
+        >
     ): Factory<
-        Outputs,
-        Exclude<Dependencies, BindingOutputType<OutputId>>,
+        CombineListOutputs<Outputs, BindingListOutputType<OutputHaywireId<OutputId>>>,
+        Exclude<Dependencies, BindingOutputType<OutputHaywireId<OutputId>>>,
         Async,
-        Bindings | InstanceBinding<OutputHaywireId<OutputId>>
+        Bindings | InstanceBinding<OutputId>
     >;
     public register<Constructor extends IsClass>(
         clazz: Constructor,
@@ -211,21 +290,36 @@ export class Factory<
     >;
     public register<OutputId extends GenericHaywireId>(
         outputIdOrClass: OutputId,
-        instance: HaywireIdType<OutputId>
-    ): Factory<Outputs, any, Async, Bindings | InstanceBinding<OutputHaywireId<OutputId>>> {
+        instance: HaywireIdProviderType<OutputId>
+    ): Factory<any, any, Async, Bindings | InstanceBinding<OutputId>> {
         const outputId = unsafeIdentifier(outputIdOrClass);
+        const normalizedOutputId = normalizeOutputId(outputId);
         const baseId = outputId.baseId();
 
         if (this.#existingOutputBaseIds.has(baseId)) {
             throw new HaywireDuplicateOutputError([outputId]);
         }
 
-        const missingDependencyOutputs = this.#missingDependencyOutputsByBaseId.get(baseId);
-        if (missingDependencyOutputs) {
-            const actualOutputs = new Set(expandOutputId(outputId));
-            const stillMissing = new Set(missingDependencyOutputs).difference(actualOutputs);
+        let listOutputIds: ReadonlySet<GenericOutputHaywireId> | null = null;
+        if (baseId.annotations.list) {
+            // Every list element (existing and new) must satisfy every list dependency.
+            listOutputIds = (
+                this.#listOutputIdsByBaseId.get(baseId) ?? expandOutputId(baseId)
+            ).intersection(expandOutputId(normalizedOutputId));
+            const stillMissing = new Set(
+                this.#listDependencyOutputsByBaseId.get(baseId)
+            ).difference(listOutputIds);
             if (stillMissing.size > 0) {
                 throw new HaywireProviderMissingError([...stillMissing]);
+            }
+        } else {
+            const missingDependencyOutputs = this.#missingDependencyOutputsByBaseId.get(baseId);
+            if (missingDependencyOutputs) {
+                const actualOutputs = expandOutputId(normalizedOutputId);
+                const stillMissing = new Set(missingDependencyOutputs).difference(actualOutputs);
+                if (stillMissing.size > 0) {
+                    throw new HaywireProviderMissingError([...stillMissing]);
+                }
             }
         }
 
@@ -233,18 +327,25 @@ export class Factory<
             Outputs,
             Exclude<Dependencies, any>,
             Async,
-            Bindings | InstanceBinding<OutputHaywireId<OutputId>>
+            Bindings | InstanceBinding<OutputId>
         >(
             this.#container,
             this.#missingDependencyOutputsByBaseId,
             this.#existingOutputBaseIds,
+            this.#listDependencyOutputsByBaseId,
+            this.#listOutputIdsByBaseId,
             this.#registeredBindings
         );
         factory.#missingDependencyOutputsByBaseId.delete(baseId);
-        factory.#existingOutputBaseIds.add(baseId);
-        factory.#registeredBindings.push(
-            new InstanceBinding(outputId.supplier(false).lateBinding(false), instance)
-        );
+        if (listOutputIds) {
+            // List ids are acceptable to provide more than once.
+            factory.#listOutputIdsByBaseId.set(baseId, listOutputIds);
+        } else {
+            // Regular ids can only be provided once.
+            factory.#existingOutputBaseIds.add(baseId);
+        }
+        const binding = new InstanceBinding(outputId, instance);
+        factory.#registeredBindings.push(binding);
 
         return factory;
     }

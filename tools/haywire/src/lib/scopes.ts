@@ -49,7 +49,7 @@ export const optimisticSingletonScope = Symbol('optimistic-singleton');
  *
  * **NOTE**
  * Suppliers act as a requests against the container for an instance,
- * and _by default_ dot no share the share the parent's request scope.
+ * and _by default_ do not share the share the parent's request scope.
  *
  * If you want a dependency internal to a supplier to "inherit" the scope of the parent request,
  * set the supplier as `propagateScope`.

@@ -70,6 +70,11 @@ export type LiteralStringType<T extends string | symbol> =
               : []
         : LiteralStringInput;
 
+declare const multiList: unique symbol;
+export interface MultiList<T> extends Array<T> {
+    [multiList]: typeof multiList;
+}
+
 declare const supplier: unique symbol;
 export interface Supplier<T> {
     [supplier]: typeof supplier;
@@ -83,7 +88,7 @@ export interface AsyncSupplier<T> {
 
 declare const lateBinding: unique symbol;
 export interface LateBinding<T> extends Promise<T> {
-    [lateBinding]: true;
+    [lateBinding]: typeof lateBinding;
 }
 
 export type Names = string | symbol | null;
@@ -91,37 +96,46 @@ export type Names = string | symbol | null;
 declare const nonExtendable: unique symbol;
 export interface Extendable {
     [nonExtendable]: true;
-    (val: never): unknown;
-    c: (val: never) => unknown;
 }
 export interface NonExtendable<
     T,
     Construct extends GenericClass<any> | IsClass | null,
     Named extends Names,
+    List extends boolean,
+    Nullable extends boolean,
+    Undefinable extends boolean,
 > extends Extendable {
     (val: T): T;
     construct: (val: Construct) => Construct;
-    mame: (val: Named) => Named;
+    name: (val: Named) => Named;
+    list: (list: List) => List;
+    nullable: (nullable: Nullable) => Nullable;
+    undefinable: (undefinable: Undefinable) => Undefinable;
 }
 
 type ExpandOutputUndefinable<
     T,
     Construct extends GenericClass<any> | IsClass | null,
     Named extends Names,
+    List extends boolean,
+    Nullable extends boolean,
     Undefinable extends boolean,
 > = true extends Undefinable
-    ? [NonExtendable<T | undefined, Construct, Named>]
-    : [NonExtendable<T | undefined, Construct, Named>] | [NonExtendable<T, Construct, Named>];
+    ? [NonExtendable<T, Construct, Named, List, Nullable, true>]
+    :
+          | [NonExtendable<T, Construct, Named, List, Nullable, false>]
+          | [NonExtendable<T, Construct, Named, List, Nullable, true>];
 type ExpandOutputNullable<
     T,
     Construct extends GenericClass<any> | IsClass | null,
     Named extends Names,
+    List extends boolean,
     Nullable extends boolean,
     Undefinable extends boolean,
 > = true extends Nullable
-    ? ExpandOutputUndefinable<T | null, Construct, Named, Undefinable>
+    ? ExpandOutputUndefinable<T, Construct, Named, List, true, Undefinable>
     :
-          | ExpandOutputUndefinable<T | null, Construct, Named, Undefinable>
-          | ExpandOutputUndefinable<T, Construct, Named, Undefinable>;
+          | ExpandOutputUndefinable<T, Construct, Named, List, false, Undefinable>
+          | ExpandOutputUndefinable<T, Construct, Named, List, true, Undefinable>;
 
 export type { ExpandOutputNullable as ExpandOutput };

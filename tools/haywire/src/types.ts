@@ -6,4 +6,5 @@ export type {
     LateBinding,
     NonExtendable,
     Supplier,
+    MultiList,
 } from '#types';

@@ -1,4 +1,4 @@
-import type { AsyncSupplier, HaywireIdType, LateBinding, Supplier } from 'haywire';
+import type { AsyncSupplier, HaywireIdType, LateBinding, MultiList, Supplier } from 'haywire';
 import { setTimeout } from 'node:timers/promises';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
@@ -6,6 +6,7 @@ import {
     AsyncContainer,
     bind,
     createContainer,
+    createFactory,
     createModule,
     HaywireContainerValidationError,
     HaywireModuleValidationError,
@@ -24,10 +25,12 @@ import { addBoundInstances } from '#container';
 import {
     HaywireCircularDependencyError,
     HaywireInstanceOfResponseError,
+    HaywireListResponseError,
     HaywireMultiError,
     HaywireNullResponseError,
     HaywireProviderMissingError,
     HaywireSyncSupplierError,
+    HaywireUndefinedResponseError,
 } from '#errors';
 import { expect } from '../chai-hooks.js';
 
@@ -2631,5 +2634,1166 @@ suite('container', () => {
                 }
             });
         }
+    });
+
+    suite('addBoundInstances with list bindings', () => {
+        const numId = identifier<number>().named('nums').list();
+        const sumId = identifier<number>().named('sum');
+
+        // The list annotation is not tracked through the register/container output types (see the
+        // `checkIsList` TODO), so list registration is exercised through this structural view.
+        interface ListRegisterFactory {
+            wire: () => void;
+            register: (id: unknown, instance: unknown) => ListRegisterFactory;
+            toContainer: () => { getAsync: (id: unknown) => Promise<unknown> };
+        }
+
+        for (const wired of [false, true] as const) {
+            suite(wired ? 'wired' : 'unwired', () => {
+                test('Replaces a temp list binding and appends further instances', async () => {
+                    // A missing list dependency becomes a temp binding in the factory. Registering
+                    // the first instance replaces that temp, and the second appends to it.
+                    const baseId = identifier<number>().named('base');
+                    const module = createModule(
+                        bind(sumId)
+                            // Depend on a second optimistic singleton alongside the list so the
+                            // rebinding walk sees both the replaced temp and an untouched binding.
+                            .withDependencies([numId, baseId])
+                            .withProvider((nums, base) =>
+                                nums.reduce((total, num) => total + num, base)
+                            )
+                            // Optimistic singletons drive upstream-dependent tracking, which the
+                            // wired rebinding paths update when the temp binding is replaced.
+                            .scoped(optimisticSingletonScope)
+                    ).addBinding(
+                        bind(baseId)
+                            .withGenerator(() => 100)
+                            .scoped(optimisticSingletonScope)
+                    );
+
+                    const factory = createFactory(module) as unknown as ListRegisterFactory;
+                    if (wired) {
+                        factory.wire();
+                    }
+
+                    const container = factory.register(numId, 1).register(numId, 2).toContainer();
+
+                    expect(await container.getAsync(numId)).to.deep.equal([1, 2]);
+                    expect(await container.getAsync(sumId)).to.equal(103);
+                });
+
+                test('Appends to an existing (non-temp) list binding', async () => {
+                    const module = createModule(
+                        bind(sumId)
+                            .withDependencies([numId])
+                            .withProvider(nums => nums.reduce((total, num) => total + num, 0))
+                            .scoped(optimisticSingletonScope)
+                    ).addBinding(
+                        bind(numId)
+                            .withGenerator(() => 10)
+                            .scoped(optimisticSingletonScope)
+                    );
+
+                    const container = createContainer(module);
+                    if (wired) {
+                        container.wire();
+                    }
+
+                    const cloned = addBoundInstances(container, [new InstanceBinding(numId, 20)]);
+
+                    expect(await cloned.getAsync(numId)).to.deep.equal([10, 20]);
+                    expect(await cloned.getAsync(sumId)).to.equal(30);
+                });
+
+                test('Adds a brand new list binding not present in the container', async () => {
+                    const freshListId = identifier<number>().named('fresh').list();
+                    const module = createModule(
+                        bind(sumId)
+                            .withGenerator(() => 0)
+                            .scoped(singletonScope)
+                    );
+
+                    const container = createContainer(module);
+                    if (wired) {
+                        container.wire();
+                    }
+
+                    const cloned = addBoundInstances(container, [
+                        new InstanceBinding(freshListId, 7),
+                        new InstanceBinding(freshListId, 8),
+                    ]);
+
+                    // The list expansion of instance bindings is not reflected in the container's
+                    // output types (see the `checkIsList` TODO), so query via a structural cast.
+                    const genericCloned = cloned as unknown as {
+                        getAsync: (id: unknown) => Promise<number[]>;
+                    };
+                    expect(await genericCloned.getAsync(freshListId)).to.deep.equal([7, 8]);
+                });
+            });
+        }
+    });
+
+    suite('List bindings', () => {
+        suite('Basic list resolution', () => {
+            test('Sync container with list bindings', () => {
+                const numId = identifier<number>().list();
+
+                const module = createModule(bind(numId).withGenerator(() => 1))
+                    .addBinding(bind(numId).withGenerator(() => 2))
+                    .addBinding(bind(numId).withGenerator(() => 3));
+
+                const container = createContainer(module);
+                expect(container).to.be.an.instanceOf(SyncContainer);
+
+                const result = container.get(numId);
+                expectTypeOf(result).toBeArray();
+                expect(result).to.deep.equal([1, 2, 3]);
+            });
+
+            test('Async container with list bindings', async () => {
+                const numId = identifier<number>().list();
+
+                const module = createModule(bind(numId).withAsyncGenerator(async () => 10))
+                    .addBinding(bind(numId).withGenerator(() => 20))
+                    .addBinding(bind(numId).withGenerator(() => 30));
+
+                const container = createContainer(module);
+                expect(container).to.be.an.instanceOf(AsyncContainer);
+                expect(container).to.not.be.an.instanceOf(SyncContainer);
+
+                const result = await container.getAsync(numId);
+                expectTypeOf(result).toBeArray();
+                expect(result).to.deep.equal([10, 20, 30]);
+            });
+
+            test('List bindings alongside regular bindings', () => {
+                const numListId = identifier<number>().named('nums').list();
+                const strId = identifier<string>().named('str');
+
+                const module = createModule(bind(numListId).withGenerator(() => 1))
+                    .addBinding(bind(numListId).withGenerator(() => 2))
+                    .addBinding(bind(strId).withInstance('hello'));
+
+                const container = createContainer(module);
+                expect(container).to.be.an.instanceOf(SyncContainer);
+
+                expect(container.get(numListId)).to.deep.equal([1, 2]);
+                expect(container.get(strId)).to.equal('hello');
+            });
+
+            test('Single list binding', () => {
+                const numId = identifier<number>().list();
+                const module = createModule(bind(numId).withGenerator(() => 42));
+                const container = createContainer(module);
+
+                expect(container.get(numId)).to.deep.equal([42]);
+            });
+        });
+
+        suite('Scopes', () => {
+            test('Mixed singleton and transient scopes', () => {
+                const numListId = identifier<number>().list();
+                let transientCount = 0;
+                let singletonCount = 0;
+
+                const module = createModule(
+                    bind(numListId)
+                        .withGenerator(() => {
+                            singletonCount += 1;
+                            return singletonCount;
+                        })
+                        .scoped(singletonScope)
+                ).addBinding(
+                    bind(numListId)
+                        .withGenerator(() => {
+                            transientCount += 1;
+                            return transientCount + 100;
+                        })
+                        .scoped(transientScope)
+                );
+
+                const container = createContainer(module);
+
+                const result1 = container.get(numListId);
+                expect(result1).to.deep.equal([1, 101]);
+
+                const result2 = container.get(numListId);
+                // Singleton returns cached, transient gets new value
+                expect(result2).to.deep.equal([1, 102]);
+
+                const result3 = container.get(numListId);
+                expect(result3).to.deep.equal([1, 103]);
+            });
+
+            test('All singleton scopes', () => {
+                const numListId = identifier<number>().list();
+                let count = 0;
+
+                const module = createModule(
+                    bind(numListId)
+                        .withGenerator(() => {
+                            count += 1;
+                            return count;
+                        })
+                        .scoped(singletonScope)
+                ).addBinding(
+                    bind(numListId)
+                        .withGenerator(() => {
+                            count += 1;
+                            return count + 100;
+                        })
+                        .scoped(singletonScope)
+                );
+
+                const container = createContainer(module);
+
+                const result1 = container.get(numListId);
+                const result2 = container.get(numListId);
+
+                expect(result1).to.deep.equal(result2);
+            });
+
+            test('Request scoped list bindings', () => {
+                const numListId = identifier<number>().list();
+                let count = 0;
+
+                const module = createModule(
+                    bind(numListId)
+                        .withGenerator(() => {
+                            count += 1;
+                            return count;
+                        })
+                        .scoped(requestScope)
+                ).addBinding(
+                    bind(numListId)
+                        .withGenerator(() => {
+                            count += 1;
+                            return count + 100;
+                        })
+                        .scoped(requestScope)
+                );
+
+                const container = createContainer(module);
+
+                const result1 = container.get(numListId);
+                expect(result1).to.deep.equal([1, 102]);
+
+                // New request, new values
+                const result2 = container.get(numListId);
+                expect(result2).to.deep.equal([3, 104]);
+            });
+        });
+
+        suite('Mix of sync and async providers', () => {
+            test('Async list makes container async', async () => {
+                const strListId = identifier<string>().list();
+
+                const module = createModule(bind(strListId).withGenerator(() => 'sync')).addBinding(
+                    bind(strListId).withAsyncGenerator(async () => 'async')
+                );
+
+                const container = createContainer(module);
+                expect(container).to.be.an.instanceOf(AsyncContainer);
+                expect(container).to.not.be.an.instanceOf(SyncContainer);
+
+                const result = await container.getAsync(strListId);
+                expect(result).to.deep.equal(['sync', 'async']);
+            });
+        });
+
+        suite('No provider exists', () => {
+            test('Undeclared list throws sync', () => {
+                const numListId = identifier<number>().list();
+                const otherId = identifier<string>().named('other');
+
+                const module = createModule(bind(otherId).withInstance('hello'));
+                const container = createContainer(module);
+
+                expect(() => {
+                    // @ts-expect-error
+                    container.get(numListId);
+                }).to.throw(HaywireContainerValidationError, 'Providers missing for container');
+            });
+
+            test('Undeclared list throws async', async () => {
+                const numListId = identifier<number>().list();
+                const otherId = identifier<string>().named('other');
+
+                const module = createModule(bind(otherId).withAsyncGenerator(async () => 'hello'));
+                const container = createContainer(module);
+
+                await expect(
+                    // @ts-expect-error
+                    container.getAsync(numListId)
+                ).to.eventually.be.rejectedWith(
+                    HaywireContainerValidationError,
+                    'Providers missing for container'
+                );
+            });
+        });
+
+        suite('List with dependencies', () => {
+            test('List bindings that have their own dependencies', () => {
+                const numListId = identifier<number>().list();
+
+                const module = createModule(bind(A).withConstructorGenerator())
+                    .addBinding(bind(B).withConstructorGenerator())
+                    .addBinding(
+                        bind(numListId)
+                            .withDependencies([A])
+                            .withProvider(a => {
+                                expect(a).to.be.an.instanceOf(A);
+                                return 1;
+                            })
+                    )
+                    .addBinding(
+                        bind(numListId)
+                            .withDependencies([B])
+                            .withProvider(b => {
+                                expect(b).to.be.an.instanceOf(B);
+                                return 2;
+                            })
+                    );
+
+                const container = createContainer(module);
+                expect(container.get(numListId)).to.deep.equal([1, 2]);
+            });
+
+            test('Async list bindings with dependencies', async () => {
+                const numListId = identifier<number>().list();
+
+                const module = createModule(bind(A).withConstructorGenerator())
+                    .addBinding(
+                        bind(B)
+                            .withAsyncGenerator(async () => new B())
+                            .scoped(singletonScope)
+                    )
+                    .addBinding(
+                        bind(numListId)
+                            .withDependencies([A])
+                            .withProvider(a => {
+                                expect(a).to.be.an.instanceOf(A);
+                                return 10;
+                            })
+                    )
+                    .addBinding(
+                        bind(numListId)
+                            .withDependencies([B])
+                            .withAsyncProvider(async b => {
+                                expect(b).to.be.an.instanceOf(B);
+                                return 20;
+                            })
+                    );
+
+                const container = createContainer(module);
+                const result = await container.getAsync(numListId);
+                expect(result).to.deep.equal([10, 20]);
+            });
+
+            test('List binding depending on supplier of regular binding', () => {
+                const numListId = identifier<number>().list();
+
+                const module = createModule(
+                    bind(A).withConstructorGenerator().scoped(singletonScope)
+                ).addBinding(
+                    bind(numListId)
+                        .withDependencies([identifier(A).supplier()])
+                        .withProvider(aSupplier => {
+                            const a = aSupplier();
+                            expect(a).to.be.an.instanceOf(A);
+                            return 42;
+                        })
+                );
+
+                const container = createContainer(module);
+                expect(container.get(numListId)).to.deep.equal([42]);
+            });
+
+            test('List binding depending on late binding of regular binding', async () => {
+                const numListId = identifier<number>().list();
+
+                const module = createModule(
+                    bind(A).withConstructorGenerator().scoped(singletonScope)
+                ).addBinding(
+                    bind(numListId)
+                        .withDependencies([identifier(A).lateBinding()])
+                        .withAsyncProvider(async lateA => {
+                            // Late binding is a promise resolved after provider returns.
+                            // Store it rather than awaiting inline.
+                            void lateA.then(a => {
+                                expect(a).to.be.an.instanceOf(A);
+                            });
+                            return 99;
+                        })
+                );
+
+                const container = createContainer(module);
+                const result = await container.getAsync(numListId);
+                expect(result).to.deep.equal([99]);
+            });
+        });
+
+        suite('Optimistic singleton preloading with list', () => {
+            test('List bindings with optimistic singletons', async () => {
+                const numListId = identifier<number>().list();
+                const order: number[] = [];
+
+                const module = createModule(
+                    bind(numListId)
+                        .withAsyncGenerator(async () => {
+                            order.push(1);
+                            return 1;
+                        })
+                        .scoped(optimisticSingletonScope)
+                ).addBinding(
+                    bind(numListId)
+                        .withAsyncGenerator(async () => {
+                            order.push(2);
+                            return 2;
+                        })
+                        .scoped(optimisticSingletonScope)
+                );
+
+                const container = createContainer(module);
+
+                const result1 = await container.getAsync(numListId);
+                expect(result1).to.deep.equal([1, 2]);
+
+                // Should be cached
+                const result2 = await container.getAsync(numListId);
+                expect(result2).to.deep.equal([1, 2]);
+                // Only called twice total (once each during preload)
+                expect(order).to.have.lengthOf(2);
+            });
+        });
+
+        suite('Idempotent lifecycle', () => {
+            test('List container lifecycle methods are idempotent', async () => {
+                const numListId = identifier<number>().list();
+
+                const module = createModule(bind(numListId).withGenerator(() => 1)).addBinding(
+                    bind(numListId).withGenerator(() => 2)
+                );
+
+                const container = createContainer(module);
+
+                container.check();
+                container.check();
+                container.wire();
+                container.wire();
+                container.preload();
+                container.preload();
+                await container.preloadAsync();
+
+                expect(container.get(numListId)).to.deep.equal([1, 2]);
+            });
+        });
+
+        suite('"multi" lists', () => {
+            test('Multi provider contributes several elements at once', () => {
+                const numId = identifier<number>().list('multi');
+
+                const module = createModule(bind(numId).withGenerator(() => [1, 2])).addBinding(
+                    bind(numId).withGenerator(() => [3, 4])
+                );
+
+                const result = createContainer(module).get(numId);
+                expectTypeOf(result).toBeArray();
+                expect(result).to.deep.equal([1, 2, 3, 4]);
+            });
+
+            test('Multi and single contributions combine into one list', () => {
+                // A 'multi' binding returns several elements; a 'list' binding returns one.
+                // Both are collected under the same base id and flattened together.
+                const comboId = identifier<number>().named('combo');
+
+                const module = createModule(
+                    bind(comboId.list('multi')).withGenerator(() => [1, 2])
+                ).addBinding(bind(comboId.list()).withGenerator(() => 3));
+
+                expect(createContainer(module).get(comboId.list())).to.deep.equal([1, 2, 3]);
+            });
+
+            test('Multi provider may contribute nothing', () => {
+                const numId = identifier<number>().list('multi');
+
+                const module = createModule(bind(numId).withGenerator(() => []))
+                    .addBinding(bind(numId).withGenerator(() => [7]))
+                    .addBinding(bind(numId).withGenerator(() => []));
+
+                expect(createContainer(module).get(numId)).to.deep.equal([7]);
+            });
+
+            test('Async multi makes the container async', async () => {
+                const numId = identifier<number>().list('multi');
+
+                const module = createModule(
+                    bind(numId).withAsyncGenerator(async () => [1, 2])
+                ).addBinding(bind(numId).withGenerator(() => [3]));
+
+                const container = createContainer(module);
+                expect(container).to.be.an.instanceOf(AsyncContainer);
+                expect(container).to.not.be.an.instanceOf(SyncContainer);
+
+                expect(await container.getAsync(numId)).to.deep.equal([1, 2, 3]);
+            });
+
+            test('Multi list is cached by singleton scope', () => {
+                const numId = identifier<number>().list('multi');
+                let calls = 0;
+
+                const module = createModule(
+                    bind(numId)
+                        .withGenerator(() => {
+                            calls += 1;
+                            return [calls, calls * 10];
+                        })
+                        .scoped(singletonScope)
+                );
+
+                const container = createContainer(module);
+                expect(container.get(numId)).to.deep.equal([1, 10]);
+                expect(container.get(numId)).to.deep.equal([1, 10]);
+                expect(calls).to.equal(1);
+            });
+        });
+
+        suite('Consumed as a dependency', () => {
+            test('Binding receives the collected array', () => {
+                const numId = identifier<number>().named('n').list();
+                const sumId = identifier<number>().named('sum');
+
+                const module = createModule(bind(numId).withGenerator(() => 1))
+                    .addBinding(bind(numId).withGenerator(() => 2))
+                    .addBinding(bind(numId).withGenerator(() => 3))
+                    .addBinding(
+                        bind(sumId)
+                            .withDependencies([numId])
+                            .withProvider(nums => {
+                                expectTypeOf(nums).toBeArray();
+                                return nums.reduce((total, num) => total + num, 0);
+                            })
+                    );
+
+                expect(createContainer(module).get(sumId)).to.equal(6);
+            });
+
+            test('Async binding receives the collected array', async () => {
+                const numId = identifier<number>().named('n').list();
+                const sumId = identifier<number>().named('sum');
+
+                const module = createModule(bind(numId).withGenerator(() => 1))
+                    .addBinding(bind(numId).withAsyncGenerator(async () => 2))
+                    .addBinding(
+                        bind(sumId)
+                            .withDependencies([numId])
+                            .withAsyncProvider(async nums =>
+                                nums.reduce((total, num) => total + num, 0)
+                            )
+                    );
+
+                expect(await createContainer(module).getAsync(sumId)).to.equal(3);
+            });
+
+            test('Depends on a supplier of a list', () => {
+                const itemId = identifier<TrackParams>().named('item').list();
+                const outId = identifier<TrackParams[]>().named('out');
+
+                const module = createModule(
+                    bind(itemId)
+                        .withGenerator(() => new A())
+                        .scoped(transientScope)
+                )
+                    .addBinding(
+                        bind(itemId)
+                            .withGenerator(() => new B())
+                            .scoped(transientScope)
+                    )
+                    .addBinding(
+                        bind(outId)
+                            .withDependencies([itemId.supplier()])
+                            .withProvider(supplier => {
+                                const first = supplier();
+                                const second = supplier();
+                                expect(first).to.have.lengthOf(2);
+                                expect(first[0]).to.be.an.instanceOf(A);
+                                expect(first[1]).to.be.an.instanceOf(B);
+                                // Each supplier invocation is a fresh request, so transient
+                                // elements (and the array itself) are newly created.
+                                expect(second).to.not.equal(first);
+                                expect(second[0]).to.not.equal(first[0]);
+                                return first;
+                            })
+                    );
+
+                expect(createContainer(module).get(outId)).to.have.lengthOf(2);
+            });
+
+            test('Depends on a late binding of a list', async () => {
+                const itemId = identifier<number>().named('item').list();
+                const collectorId = identifier<{ items: number[] | undefined }>().named(
+                    'collector'
+                );
+
+                const module = createModule(
+                    bind(itemId)
+                        .withGenerator(() => 1)
+                        .scoped(singletonScope)
+                )
+                    .addBinding(
+                        bind(itemId)
+                            .withGenerator(() => 2)
+                            .scoped(singletonScope)
+                    )
+                    .addBinding(
+                        bind(collectorId)
+                            .withDependencies([itemId.lateBinding()])
+                            .withAsyncProvider(async lateItems => {
+                                const collector: { items: number[] | undefined } = {
+                                    items: undefined,
+                                };
+                                // Late binding resolves after the provider returns.
+                                void lateItems.then(items => {
+                                    collector.items = items;
+                                });
+                                return collector;
+                            })
+                    );
+
+                const collector = await createContainer(module).getAsync(collectorId);
+                await setTimeout(0);
+                expect(collector.items).to.deep.equal([1, 2]);
+            });
+
+            test('Depends on a late binding of a list in a sync container', async () => {
+                const itemId = identifier<number>().named('sync-item').list();
+                const collectorId = identifier<{ items: number[] | undefined }>().named(
+                    'sync-collector'
+                );
+
+                const module = createModule(
+                    bind(itemId)
+                        .withGenerator(() => 1)
+                        .scoped(singletonScope)
+                )
+                    .addBinding(
+                        bind(itemId)
+                            .withGenerator(() => 2)
+                            .scoped(singletonScope)
+                    )
+                    .addBinding(
+                        bind(collectorId)
+                            .withDependencies([itemId.lateBinding()])
+                            .withProvider(lateItems => {
+                                const collector: { items: number[] | undefined } = {
+                                    items: undefined,
+                                };
+                                void lateItems.then(items => {
+                                    collector.items = items;
+                                });
+                                return collector;
+                            })
+                    );
+
+                const container = createContainer(module);
+                expect(container).to.be.an.instanceOf(SyncContainer);
+
+                const collector = container.get(collectorId);
+                await setTimeout(0);
+                expect(collector.items).to.deep.equal([1, 2]);
+            });
+
+            test('Sync propagating supplier reaches a list dependency', () => {
+                const listId = identifier<number>().named('ss-list').list();
+                const midId = identifier<number>().named('ss-mid');
+                const outId = identifier<number>().named('ss-out');
+
+                const module = createModule(
+                    bind(listId)
+                        .withGenerator(() => 1)
+                        .scoped(optimisticSingletonScope)
+                )
+                    .addBinding(
+                        bind(listId)
+                            .withGenerator(() => 2)
+                            .scoped(optimisticSingletonScope)
+                    )
+                    .addBinding(
+                        bind(midId)
+                            .withDependencies([listId])
+                            .withProvider(nums => nums.reduce((total, num) => total + num, 0))
+                    )
+                    .addBinding(
+                        bind(outId)
+                            .withDependencies([
+                                midId.supplier({ sync: true, propagateScope: true }),
+                            ])
+                            .withProvider(supplier => supplier())
+                    );
+
+                const container = createContainer(module);
+                // Exercises the sync-supplier safety walk over a list dependency.
+                container.check();
+                expect(container.get(outId)).to.equal(3);
+            });
+        });
+
+        suite('Element validation', () => {
+            test('Class instances are validated per element', async () => {
+                const aListId = identifier(A).list();
+
+                const container = createContainer(
+                    createModule(bind(aListId).withGenerator(() => new A()))
+                        .addBinding(bind(aListId).withConstructorProvider().withDependencies([]))
+                        .addBinding(bind(aListId).withAsyncGenerator(async () => new A()))
+                );
+
+                const result = await container.getAsync(aListId);
+                expectTypeOf(result).toEqualTypeOf<MultiList<A>>();
+                expect(result).to.have.lengthOf(3);
+                for (const element of result) {
+                    expect(element).to.be.an.instanceOf(A);
+                }
+            });
+
+            test('Wrong instance element is rejected', async () => {
+                const aListId = identifier(A).list();
+                const invalidBinding = bind(aListId).withGenerator(() => new B() as unknown as A);
+
+                expect(() => createContainer(createModule(invalidBinding)).get(aListId))
+                    .to.throw(HaywireInstanceOfResponseError)
+                    .contains({
+                        message: 'Value B returned by provider is not instance of class: A(list)',
+                    });
+
+                await expect(
+                    createContainer(
+                        createModule(invalidBinding).addBinding(
+                            bind(aListId).withAsyncGenerator(async () => new A())
+                        )
+                    ).getAsync(aListId)
+                ).to.eventually.be.rejectedWith(HaywireInstanceOfResponseError);
+            });
+
+            test('Null element for non-nullable list is rejected', async () => {
+                const numId = identifier<number>().named('nulls').list();
+                const invalidBinding = bind(numId).withGenerator(() => null as unknown as number);
+
+                expect(() => createContainer(createModule(invalidBinding)).get(numId))
+                    .to.throw(HaywireNullResponseError)
+                    .contains({
+                        message:
+                            'Null value returned for non-nullable provider: haywire-id(named: nulls, list)',
+                    });
+
+                await expect(
+                    createContainer(
+                        createModule(
+                            bind(numId).withAsyncGenerator(async () => null as unknown as number)
+                        )
+                    ).getAsync(numId)
+                ).to.eventually.be.rejectedWith(HaywireNullResponseError);
+            });
+
+            test('Undefined element for non-undefinable list is rejected', () => {
+                const numId = identifier<number>().named('undefineds').list();
+
+                expect(() =>
+                    createContainer(
+                        createModule(
+                            bind(numId).withGenerator(() => undefined as unknown as number)
+                        )
+                    ).get(numId)
+                ).to.throw(HaywireUndefinedResponseError);
+            });
+
+            test('Nullable and undefinable lists accept missing elements', () => {
+                const numId = identifier<number>().named('missing').list();
+
+                const container = createContainer(
+                    createModule(bind(numId.nullable()).withGenerator(() => null))
+                        .addBinding(bind(numId.undefinable()).withGenerator(() => {}))
+                        .addBinding(bind(numId).withGenerator(() => 1))
+                );
+
+                const result = container.get(numId.nullable().undefinable());
+                expectTypeOf(result).toEqualTypeOf<MultiList<number | null | undefined>>();
+                expect(result).to.have.members([null, undefined, 1]);
+            });
+
+            suite('"multi"', () => {
+                test('Returning null is a single null element', async () => {
+                    const numId = identifier<number>().named('multi-null').nullable();
+
+                    const container = createContainer(
+                        createModule(bind(numId.list('multi')).withGenerator(() => null))
+                            .addBinding(
+                                bind(numId.list('multi')).withAsyncGenerator(async () => null)
+                            )
+                            .addBinding(bind(numId.list('multi')).withGenerator(() => []))
+                    );
+
+                    expect(await container.getAsync(numId.list())).to.deep.equal([null, null]);
+                });
+
+                test('Returning undefined is a single undefined element', () => {
+                    const numId = identifier<number>().named('multi-undefined').undefinable();
+
+                    const container = createContainer(
+                        createModule(bind(numId.list('multi')).withGenerator(() => {}))
+                    );
+
+                    expect(container.get(numId.list())).to.deep.equal([undefined]);
+                });
+
+                test('Returning null for non-nullable is rejected', () => {
+                    const numId = identifier<number>().named('multi-non-null').list('multi');
+
+                    expect(() =>
+                        createContainer(
+                            createModule(
+                                bind(numId).withGenerator(() => null as unknown as number[])
+                            )
+                        ).get(numId)
+                    ).to.throw(HaywireNullResponseError);
+                });
+
+                test('Each element is validated', () => {
+                    const numId = identifier<number>().named('multi-elements').list('multi');
+
+                    expect(() =>
+                        createContainer(
+                            createModule(
+                                bind(numId).withGenerator(() => [1, null] as unknown as number[])
+                            )
+                        ).get(numId)
+                    ).to.throw(HaywireNullResponseError);
+                });
+
+                test('Non-array response is rejected', async () => {
+                    const numId = identifier<number>().named('multi-non-array').list('multi');
+
+                    expect(() =>
+                        createContainer(
+                            createModule(bind(numId).withGenerator(() => 5 as unknown as number[]))
+                        ).get(numId)
+                    )
+                        .to.throw(HaywireListResponseError)
+                        .contains({
+                            message:
+                                'Non-array value returned by list provider: haywire-id(named: multi-non-array, list)',
+                            value: 5,
+                        });
+
+                    await expect(
+                        createContainer(
+                            createModule(
+                                bind(numId).withAsyncGenerator(async () => 5 as unknown as number[])
+                            )
+                        ).getAsync(numId)
+                    ).to.eventually.be.rejectedWith(HaywireListResponseError);
+                });
+            });
+        });
+
+        suite('Ordering', () => {
+            test('Elements from a single provider retain their order', async () => {
+                const letterId = identifier<string>().named('letters');
+                const outId = identifier<string[]>().named('letters-out');
+
+                const container = createContainer(
+                    createModule(
+                        bind(letterId.list('multi')).withAsyncGenerator(async () => {
+                            await setTimeout(10);
+                            return ['c', 'a', 'b'];
+                        })
+                    )
+                        .addBinding(bind(letterId.list()).withAsyncGenerator(async () => 'x'))
+                        .addBinding(bind(letterId.list()).withGenerator(() => 'y'))
+                        .addBinding(
+                            bind(outId)
+                                .withDependencies([letterId.list()])
+                                .withProvider(letters => letters)
+                        )
+                );
+
+                for (const result of [
+                    await container.getAsync(letterId.list()),
+                    await container.getAsync(outId),
+                ]) {
+                    // No ordering is guaranteed across providers
+                    expect(result).to.have.members(['a', 'b', 'c', 'x', 'y']);
+                    const start = result.indexOf('c');
+                    expect(result.slice(start, start + 3)).to.deep.equal(['c', 'a', 'b']);
+                }
+            });
+
+            test('Multiple failing elements are all reported', async () => {
+                const numId = identifier<number>().named('failures').list();
+                const outId = identifier<number[]>().named('failures-out');
+
+                const container = createContainer(
+                    createModule(
+                        bind(numId).withAsyncGenerator(async () => {
+                            throw new Error('first');
+                        })
+                    )
+                        .addBinding(
+                            bind(numId).withAsyncGenerator(async () => {
+                                throw new Error('second');
+                            })
+                        )
+                        .addBinding(
+                            bind(outId)
+                                .withDependencies([numId])
+                                .withProvider(nums => nums)
+                        )
+                );
+
+                const err = await catchThrown(async () => container.getAsync(outId));
+                expect(err).to.be.an.instanceOf(HaywireMultiError);
+                expect((err as HaywireMultiError).causes).to.have.lengthOf(2);
+            });
+        });
+
+        suite('Late binding through list elements', () => {
+            for (const sync of [true, false]) {
+                suite(sync ? 'sync' : 'async', () => {
+                    const buildModule = () => {
+                        const itemId = identifier<string>().named('item').list();
+                        const summaryId = identifier<string[]>().named('summary');
+                        const lateSummaries: Promise<string[]>[] = [];
+
+                        const module = createModule(
+                            bind(itemId)
+                                .withDependencies([summaryId.lateBinding()])
+                                .withProvider(summary => {
+                                    lateSummaries.push(summary);
+                                    return 'a';
+                                })
+                        )
+                            .addBinding(
+                                sync
+                                    ? bind(itemId).withGenerator(() => 'b')
+                                    : bind(itemId).withAsyncGenerator(async () => 'b')
+                            )
+                            .addBinding(
+                                bind(summaryId)
+                                    .withDependencies([itemId])
+                                    .withProvider(items => items)
+                            );
+                        return { itemId, summaryId, lateSummaries, module };
+                    };
+
+                    test('Late binding in an element receives the full list', async () => {
+                        const { itemId, lateSummaries, module } = buildModule();
+                        const container = createContainer(module);
+                        expect(isSyncContainer(container)).to.equal(sync);
+
+                        const result = await container.getAsync(itemId);
+                        expect(result).to.have.members(['a', 'b']);
+                        expect(lateSummaries).to.have.lengthOf(1);
+                        expect(await lateSummaries[0]).to.have.members(['a', 'b']);
+                    });
+
+                    test('Late binding when list is requested as a dependency', async () => {
+                        const { summaryId, lateSummaries, module } = buildModule();
+                        const container = createContainer(module);
+
+                        const result = await container.getAsync(summaryId);
+                        expect(result).to.have.members(['a', 'b']);
+                        expect(lateSummaries).to.have.lengthOf(1);
+                        expect(await lateSummaries[0]).to.equal(result);
+                    });
+
+                    test('Element late binds to its own list', async () => {
+                        const selfId = identifier<number>().named('self').list();
+                        const outId = identifier<number[]>().named('self-out');
+                        const lateLists: Promise<number[]>[] = [];
+
+                        const container = createContainer(
+                            createModule(
+                                sync
+                                    ? bind(selfId).withGenerator(() => 1)
+                                    : bind(selfId).withAsyncGenerator(async () => 1)
+                            )
+                                .addBinding(
+                                    bind(selfId)
+                                        .withDependencies([selfId.lateBinding()])
+                                        .withProvider(list => {
+                                            lateLists.push(list);
+                                            return 2;
+                                        })
+                                )
+                                .addBinding(
+                                    bind(outId)
+                                        .withDependencies([selfId])
+                                        .withProvider(list => list)
+                                )
+                        );
+
+                        const listResult = await container.getAsync(selfId);
+                        expect(listResult).to.have.members([1, 2]);
+                        expect(await lateLists[0]).to.equal(listResult);
+
+                        const outResult = await container.getAsync(outId);
+                        expect(outResult).to.have.members([1, 2]);
+                        expect(await lateLists[1]).to.equal(outResult);
+                        expect(lateLists).to.have.lengthOf(2);
+                    });
+                });
+            }
+        });
+    });
+
+    suite('Regression guards', () => {
+        test('Async request for a non-list output returns the value, not an array', async () => {
+            const container = createContainer(
+                createModule(bind(A).withAsyncGenerator(async () => new A()))
+            );
+
+            const a = await container.getAsync(A);
+            expectTypeOf(a).toEqualTypeOf<A>();
+            expect(a).to.be.an.instanceOf(A);
+            expect(Array.isArray(a)).to.equal(false);
+        });
+
+        test('Circular check reports every unsafe dependency path', () => {
+            // A has two independent unsafe cycles (via B and via C). Both must be reported,
+            // not just the first one encountered.
+            const module = createModule(
+                bind(A)
+                    .withDependencies([identifier(B).lateBinding(), identifier(C).lateBinding()])
+                    .withProvider((...params) => new A(...params))
+            )
+                .addBinding(
+                    bind(B)
+                        .withDependencies([identifier(A).supplier()])
+                        .withProvider((...params) => new B(...params))
+                )
+                .addBinding(
+                    bind(C)
+                        .withDependencies([identifier(A).supplier()])
+                        .withProvider((...params) => new C(...params))
+                );
+
+            let thrown: unknown;
+            try {
+                createContainer(module).wire();
+            } catch (err) {
+                thrown = err;
+            }
+            expect(thrown).to.be.an.instanceOf(HaywireCircularDependencyError);
+            expect((thrown as HaywireCircularDependencyError).circularChains).to.have.lengthOf(2);
+        });
+
+        test('Self-referential late binding resolves in a sync container', async () => {
+            const container = createContainer(
+                createModule(
+                    bind(LinkedList)
+                        .withDependencies([identifier(LinkedList).lateBinding()])
+                        .withProvider(late => {
+                            const node = new LinkedList(null);
+                            void late.then(value => {
+                                node.next = value;
+                            });
+                            return node;
+                        })
+                )
+            );
+            expect(container).to.be.an.instanceOf(SyncContainer);
+
+            const node = container.get(LinkedList);
+            // Late bindings resolve on the next microtask, even synchronously.
+            await setTimeout(0);
+            expect(node.next).to.equal(node);
+        });
+
+        test('Circular late binding reuses the cached dependency in a sync container', async () => {
+            // A depends on a late binding of B; B depends on A directly. When the late binding
+            // resolves B, its own dependency on A must be served from the request's late binding
+            // cache (the already-created A) rather than instantiated afresh.
+            let capturedA: A | undefined;
+            const container = createContainer(
+                createModule(
+                    bind(A)
+                        .withDependencies([identifier(B).lateBinding()])
+                        .withProvider(lateB => {
+                            const a = new A();
+                            void lateB.then(() => {});
+                            return a;
+                        })
+                ).addBinding(
+                    bind(B)
+                        .withDependencies([A])
+                        .withProvider(a => {
+                            capturedA = a;
+                            return new B();
+                        })
+                )
+            );
+            expect(container).to.be.an.instanceOf(SyncContainer);
+
+            const a = container.get(A);
+            await setTimeout(0);
+            expect(capturedA).to.equal(a);
+        });
+
+        test('Circular late binding reuses the cached dependency in an async container', async () => {
+            // Same reuse as the sync case, but an async provider routes it through the async
+            // implementation path, which keeps its own late binding cache.
+            let capturedA: A | undefined;
+            const container = createContainer(
+                createModule(
+                    bind(A)
+                        .withDependencies([identifier(B).lateBinding()])
+                        .withAsyncProvider(async lateB => {
+                            const a = new A();
+                            void lateB.then(() => {});
+                            return a;
+                        })
+                ).addBinding(
+                    bind(B)
+                        .withDependencies([A])
+                        .withProvider(a => {
+                            capturedA = a;
+                            return new B();
+                        })
+                )
+            );
+            expect(container).to.be.an.instanceOf(AsyncContainer);
+            expect(container).to.not.be.an.instanceOf(SyncContainer);
+
+            const a = await container.getAsync(A);
+            await setTimeout(0);
+            expect(capturedA).to.equal(a);
+        });
+
+        test('Supplier opens a fresh supplier scope on each invocation', () => {
+            const supplierId = identifier<{ supply: Supplier<A> }>().named('reg-supplier');
+
+            const container = createContainer(
+                createModule(
+                    bind(supplierId)
+                        .withDependencies([identifier(A).supplier()])
+                        .withProvider(supply => ({ supply }))
+                )
+                    .addBinding(
+                        bind(A)
+                            .withDependencies([C])
+                            .withProvider(c => new A(c))
+                    )
+                    .addBinding(bind(C).withConstructorGenerator().scoped(supplierScope))
+            );
+
+            const { supply } = container.get(supplierId);
+            const a1 = supply();
+            const a2 = supply();
+            // A non-propagating supplier starts a new request each call, so the supplier-scoped
+            // C is freshly created rather than leaking from a previously captured scope cache.
+            expect(a1).to.not.equal(a2);
+            expect(a1.params[0]).to.not.equal(a2.params[0]);
+        });
     });
 });

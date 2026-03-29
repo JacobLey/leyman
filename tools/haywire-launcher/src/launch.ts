@@ -27,7 +27,10 @@ type ValidateEntryContainer<C extends GenericContainer> =
               NonExtendable<
                   EntryScript,
                   ClassToConstructable<typeof EntryScript>['construct'],
-                  null
+                  null,
+                  false,
+                  false,
+                  false
               >,
           ] extends U
             ? []
@@ -44,7 +47,10 @@ type ValidateIdContainer<C extends GenericContainer, Id extends GenericHaywireId
               NonExtendable<
                   NonNullable<HaywireIdType<OutputHaywireId<Id>>>,
                   Id['construct'],
-                  Id['annotations']['named']
+                  Id['annotations']['named'],
+                  false,
+                  false,
+                  false
               >,
           ] extends O
             ? []
