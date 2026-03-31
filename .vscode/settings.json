@@ -34,6 +34,8 @@
   "js/ts.tsdk.path": "leyman/main/node_modules/typescript/lib",
   "js/ts.tsserver.node.path": "node",
 
+  "terminal.integrated.keyboard.protocol": "xterm",
+
   "[javascript]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.tabSize": 4,
