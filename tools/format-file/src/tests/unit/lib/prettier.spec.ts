@@ -1,5 +1,4 @@
 import type { resolveConfig } from 'prettier';
-import type { Executor } from '#types';
 import { expect } from 'chai';
 import { verifyAndRestore } from 'sinon';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
@@ -12,18 +11,12 @@ suite('Prettier', () => {
     });
 
     const withStubs = beforeEach(() => {
-        const stubbedExecutor = stubMethod<Executor>();
         const stubbedGetPrettierPath = stubMethod<() => string>();
         const stubbedGetResolveConfig = stubMethod<() => Promise<typeof resolveConfig>>();
         return {
-            stubbedExecutor: stubbedExecutor.stub,
             stubbedGetPrettierPath: stubbedGetPrettierPath.stub,
             stubbedGetResolveConfig: stubbedGetResolveConfig.stub,
-            prettier: new Prettier(
-                stubbedExecutor.method,
-                stubbedGetPrettierPath.method,
-                stubbedGetResolveConfig.method
-            ),
+            prettier: new Prettier(stubbedGetPrettierPath.method, stubbedGetResolveConfig.method),
         };
     });
 
@@ -57,19 +50,6 @@ suite('Prettier', () => {
             ctx.stubbedGetPrettierPath.throws();
 
             expect(await ctx.prettier.canUsePrettier()).to.equal(0);
-
-            expect(ctx.stubbedGetResolveConfig.notCalled).to.equal(true);
         });
-    });
-
-    withStubs.test('formatPrettierFiles', async ctx => {
-        ctx.stubbedGetPrettierPath.returns('<prettier>');
-        ctx.stubbedExecutor.resolves();
-
-        await ctx.prettier.formatPrettierFiles(['<path-1>', '<path-2>']);
-
-        expect(
-            ctx.stubbedExecutor.calledWith('<prettier>', ['<path-1>', '<path-2>', '--write'])
-        ).to.equal(true);
     });
 });

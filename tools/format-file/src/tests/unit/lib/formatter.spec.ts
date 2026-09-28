@@ -21,10 +21,14 @@ suite('Formatter', () => {
             stubbedCanUsePrettier: stubbedCanUsePrettier.stub,
             stubbedFormatPrettierFiles: stubbedFormatPrettierFiles.stub,
             formatter: new Formatter(
-                stubbedCanUseBiome.method,
-                stubbedFormatBiomeFiles.method,
-                stubbedCanUsePrettier.method,
-                stubbedFormatPrettierFiles.method
+                {
+                    canUseBiome: stubbedCanUseBiome.method,
+                    formatBiomeFiles: stubbedFormatBiomeFiles.method,
+                },
+                {
+                    canUsePrettier: stubbedCanUsePrettier.method,
+                    formatPrettierFiles: stubbedFormatPrettierFiles.method,
+                }
             ),
         };
     });
@@ -99,6 +103,18 @@ suite('Formatter', () => {
 
             expect(ctx.stubbedFormatBiomeFiles.calledWith(['<filename>'])).to.equal(true);
             expect(ctx.stubbedFormatPrettierFiles.calledWith(['<filename>'])).to.equal(true);
+        });
+
+        withStubs.test('Checks formatter availability once', async ctx => {
+            ctx.stubbedCanUseBiome.resolves(2);
+            ctx.stubbedCanUsePrettier.resolves(1);
+            ctx.stubbedFormatBiomeFiles.resolves();
+
+            await ctx.formatter.formatFiles(['<filename-1>']);
+            await ctx.formatter.formatFiles(['<filename-2>']);
+
+            expect(ctx.stubbedCanUseBiome.calledOnce).to.equal(true);
+            expect(ctx.stubbedCanUsePrettier.calledOnce).to.equal(true);
         });
 
         withStubs.test('Resolves even if no formatters supported', async ctx => {

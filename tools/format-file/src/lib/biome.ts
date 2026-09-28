@@ -1,21 +1,26 @@
-import type { findUp } from 'find-up';
-import type { CanUseFormatter, Executor } from '#types';
+import type { CanUseFormatter } from '#types';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { findUp } from 'find-up';
+import { biomePath } from './lib-path.js';
+
+const execFileAsync = promisify(execFile);
 
 /**
  * Biome formatter.
+ *
+ * Path and config lookups are injectable so tests can simulate biome being uninstalled or unconfigured.
  */
 export class Biome {
-    readonly #executor: Executor;
-    readonly #findUp: typeof findUp;
     readonly #getBiomePath: () => string;
+    readonly #findUp: typeof findUp;
 
     public readonly canUseBiome: () => Promise<CanUseFormatter>;
     public readonly formatBiomeFiles: (files: string[]) => Promise<void>;
 
-    public constructor(executor: Executor, find: typeof findUp, getBiomePath: () => string) {
-        this.#executor = executor;
-        this.#findUp = find;
+    public constructor(getBiomePath: () => string = biomePath, find: typeof findUp = findUp) {
         this.#getBiomePath = getBiomePath;
+        this.#findUp = find;
 
         this.canUseBiome = this.#canUseBiome.bind(this);
         this.formatBiomeFiles = this.#formatBiomeFiles.bind(this);
@@ -36,6 +41,6 @@ export class Biome {
     }
 
     async #formatBiomeFiles(files: string[]): Promise<void> {
-        await this.#executor(this.#getBiomePath(), ['format', '--write', ...files]);
+        await execFileAsync(this.#getBiomePath(), ['format', '--write', ...files]);
     }
 }

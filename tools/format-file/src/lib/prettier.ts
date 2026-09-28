@@ -1,11 +1,27 @@
 import type { resolveConfig } from 'prettier';
-import type { CanUseFormatter, Executor } from '#types';
+import type { CanUseFormatter } from '#types';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+import { prettierPath } from './lib-path.js';
+
+const execFileAsync = promisify(execFile);
+
+/**
+ * Prettier is an optional peer dependency, so only load it when actually needed.
+ *
+ * @returns function to locate a prettier config file
+ */
+const getPrettierResolveConfig = async (): Promise<typeof resolveConfig> => {
+    const prettier = await import('prettier');
+    return prettier.resolveConfig;
+};
 
 /**
  * Prettier formatter.
+ *
+ * Path and config lookups are injectable so tests can simulate prettier being uninstalled or unconfigured.
  */
 export class Prettier {
-    readonly #executor: Executor;
     readonly #getPrettierPath: () => string;
     readonly #getResolveConfig: () => Promise<typeof resolveConfig>;
 
@@ -13,11 +29,9 @@ export class Prettier {
     public readonly formatPrettierFiles: (files: string[]) => Promise<void>;
 
     public constructor(
-        executor: Executor,
-        getPrettierPath: () => string,
-        getResolveConfig: () => Promise<typeof resolveConfig>
+        getPrettierPath: () => string = prettierPath,
+        getResolveConfig: () => Promise<typeof resolveConfig> = getPrettierResolveConfig
     ) {
-        this.#executor = executor;
         this.#getPrettierPath = getPrettierPath;
         this.#getResolveConfig = getResolveConfig;
 
@@ -43,6 +57,6 @@ export class Prettier {
     }
 
     async #formatPrettierFiles(files: string[]): Promise<void> {
-        await this.#executor(this.#getPrettierPath(), [...files, '--write']);
+        await execFileAsync(this.#getPrettierPath(), [...files, '--write']);
     }
 }

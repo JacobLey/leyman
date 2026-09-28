@@ -65,4 +65,11 @@ suite('format-file', () => {
         const formattedJs = await BiomeFormatter.formatText(formattedFixtures.js.raw);
         expect(formattedJs).to.equal(formattedFixtures.js.formatted);
     });
+
+    withTmpFile.test('Formats with a specific formatter', async () => {
+        const formattedJs = await BiomeFormatter.formatText(formattedFixtures.js.raw, {
+            formatter: 'prettier',
+        });
+        expect(formattedJs).to.equal(formattedFixtures.js.prettierFormatted);
+    });
 });

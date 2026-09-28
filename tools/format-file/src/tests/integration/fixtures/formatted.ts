@@ -64,5 +64,12 @@ export default {
             const foo = param => param.toString(radix);
 
         `,
+        prettierFormatted: dedent`
+            export { Bing } from "bong";
+
+            export const radix = 16;
+            const foo = (param) => param.toString(radix);
+
+        `,
     },
 };

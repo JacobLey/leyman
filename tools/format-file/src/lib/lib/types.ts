@@ -1,7 +1,3 @@
-import type { execFile } from 'node:child_process';
-
-export type Executor = (typeof execFile)['__promisify__'];
-
 export type Formatters = 'biome' | 'inherit' | 'prettier';
 export interface FileFormatterOptions {
     /**

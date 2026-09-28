@@ -7,9 +7,6 @@
   },
   "references": [
     {
-      "path": "../haywire"
-    },
-    {
       "path": "../sinon-typed-stub"
     },
     {

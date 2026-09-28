@@ -1,28 +1,49 @@
-import type { CanUseFormatter, FileFormatterOptions, FilesFormatter } from '#types';
+import type {
+    CanUseFormatter,
+    FileFormatter,
+    FileFormatterOptions,
+    FilesFormatter,
+    TextFormatter,
+    TextFormatterOptions,
+} from '#types';
+import { readFile, writeFile } from 'node:fs/promises';
+import { file } from 'tmp-promise';
+import { Biome } from './biome.js';
+import { Prettier } from './prettier.js';
+
+type BiomeFormatter = Pick<Biome, 'canUseBiome' | 'formatBiomeFiles'>;
+type PrettierFormatter = Pick<Prettier, 'canUsePrettier' | 'formatPrettierFiles'>;
 
 /**
- * Core formatting logic using injecting formatter-specific handlers.
+ * Core formatting logic, choosing between available formatters.
+ *
+ * Formatters are injectable so tests can exercise selection and fallback behavior,
+ * which is not reproducible with the real (always installed) formatters.
  */
 export class Formatter {
-    readonly #canUseBiome: () => Promise<CanUseFormatter>;
-    readonly #formatBiomeFiles: (files: string[]) => Promise<void>;
-    readonly #canUsePrettier: () => Promise<CanUseFormatter>;
-    readonly #formatPrettierFiles: (files: string[]) => Promise<void>;
+    readonly #biome: BiomeFormatter;
+    readonly #prettier: PrettierFormatter;
+
+    /**
+     * Formatter availability is determined once and reused,
+     * as installation/configuration is not expected to change during the process.
+     */
+    #usability: Promise<[CanUseFormatter, CanUseFormatter]> | null = null;
 
     public readonly formatFiles: FilesFormatter;
+    public readonly formatFile: FileFormatter;
+    public readonly formatText: TextFormatter;
 
     public constructor(
-        canUseBiome: () => Promise<CanUseFormatter>,
-        formatBiomeFiles: (files: string[]) => Promise<void>,
-        canUsePrettier: () => Promise<CanUseFormatter>,
-        formatPrettierFiles: (files: string[]) => Promise<void>
+        biome: BiomeFormatter = new Biome(),
+        prettier: PrettierFormatter = new Prettier()
     ) {
-        this.#canUseBiome = canUseBiome;
-        this.#formatBiomeFiles = formatBiomeFiles;
-        this.#canUsePrettier = canUsePrettier;
-        this.#formatPrettierFiles = formatPrettierFiles;
+        this.#biome = biome;
+        this.#prettier = prettier;
 
         this.formatFiles = this.#formatFiles.bind(this);
+        this.formatFile = this.#formatFile.bind(this);
+        this.formatText = this.#formatText.bind(this);
     }
 
     async #formatFiles(files: string[], options: FileFormatterOptions = {}): Promise<void> {
@@ -31,21 +52,22 @@ export class Formatter {
         }
         const formatter = options.formatter ?? 'inherit';
 
-        const [biomeUsability, prettierUsability] = await Promise.all([
-            this.#canUseBiome(),
-            this.#canUsePrettier(),
+        this.#usability ??= Promise.all([
+            this.#biome.canUseBiome(),
+            this.#prettier.canUsePrettier(),
         ]);
+        const [biomeUsability, prettierUsability] = await this.#usability;
 
         const formatters = [
             {
                 name: 'biome',
                 usable: biomeUsability,
-                format: this.#formatBiomeFiles,
+                format: this.#biome.formatBiomeFiles,
             },
             {
                 name: 'prettier',
                 usable: prettierUsability,
-                format: this.#formatPrettierFiles,
+                format: this.#prettier.formatPrettierFiles,
             },
         ]
             .filter(({ name }) => {
@@ -63,5 +85,24 @@ export class Formatter {
                 return;
             } catch {}
         }
+    }
+
+    async #formatFile(filePath: string, options?: FileFormatterOptions): Promise<void> {
+        return this.#formatFiles([filePath], options);
+    }
+
+    async #formatText(text: string, options: TextFormatterOptions = {}): Promise<string> {
+        const tmpFile = await file({
+            prefix: 'format-file',
+            postfix: options.ext ?? '.js',
+        });
+
+        await writeFile(tmpFile.path, text, 'utf8');
+        await this.#formatFiles([tmpFile.path], { formatter: options.formatter });
+        const formatted = await readFile(tmpFile.path, 'utf8');
+
+        await tmpFile.cleanup();
+
+        return formatted;
     }
 }

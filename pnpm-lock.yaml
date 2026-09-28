@@ -1040,9 +1040,6 @@ importers:
       find-up:
         specifier: 'catalog:'
         version: 8.0.0
-      haywire:
-        specifier: workspace:^
-        version: link:../haywire
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3
