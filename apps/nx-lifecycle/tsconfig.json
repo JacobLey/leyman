@@ -40,7 +40,7 @@
       "path": "../../tools/sinon-typed-stub"
     },
     {
-      "path": "../../tools/mocha-chain"
+      "path": "../../tools/test-chain/mocha-chain"
     },
     {
       "path": "../populate-files/load-populate-files"

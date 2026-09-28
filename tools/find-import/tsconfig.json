@@ -10,7 +10,7 @@
       "path": "../parse-cwd"
     },
     {
-      "path": "../mocha-chain"
+      "path": "../test-chain/mocha-chain"
     },
     {
       "path": "../../leyman/eslint-config"

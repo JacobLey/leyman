@@ -14,7 +14,7 @@ All javascript code in this repo should use Typescript. The two exceptions are `
 
 Typescript usage is strict, enforced both by Typescript itself and eslint's type-based rules. For example keywords like `any` are banned, and functions should declare their output type instead of just inferring.
 
-To encourage type safe code, "chainable" methods (see packages like [mocha-chain](../../../tools/mocha-chain/) and [juniper](../../../apps/juniper) for examples) should be encouraged. That results in immutable objects (type cannot change implicitly) and instead returns an updated instance with an updated type.
+To encourage type safe code, "chainable" methods (see packages like [mocha-chain](../../../tools/test-chain/mocha-chain/) and [juniper](../../../apps/juniper) for examples) should be encouraged. That results in immutable objects (type cannot change implicitly) and instead returns an updated instance with an updated type.
 
 This repo primarily uses vanilla typescript. Transformers (like babel plugins) are generally avoided until functionality becomes GA. Typescript is capable of handling the most common transforms (like React code).
 

@@ -71,7 +71,7 @@ Integration tests should _not_ try to match implementation files, and instead fo
 
 ### Common Imports
 
-#### [mocha-chain](../../../tools/mocha-chain/)
+#### [mocha-chain](../../../tools/test-chain/mocha-chain/)
 
 A wrapper around [Mocha](https://mochajs.org/), provides better type safety, but otherwise follows same format.
 

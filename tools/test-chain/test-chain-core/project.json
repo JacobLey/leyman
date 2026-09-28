@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "test-chain-core",
+  "metadata": {
+    "daggerRuntime": "node"
+  },
+  "targets": {
+    "biome": {},
+    "eslint": {},
+    "update-ts-references": {},
+    "delete-dist": {},
+    "tsc": {},
+    "coverage-report": {},
+    "check:_": {},
+    "check:lint": {},
+    "check:format": {},
+    "check": {},
+    "build:_": {},
+    "build:pre": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "install:_": {},
+    "install": {},
+    "test:_": {},
+    "test:reset": {},
+    "test:run": {},
+    "test": {}
+  }
+}

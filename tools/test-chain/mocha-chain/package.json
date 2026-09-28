@@ -9,7 +9,7 @@
   "author": "JacobLey",
   "license": "MIT",
   "repository": "JacobLey/leyman",
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/mocha-chain#readme",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/test-chain/mocha-chain#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
@@ -23,13 +23,8 @@
   "exports": {
     ".": "./dist/index.js"
   },
-  "imports": {
-    "#contextual-module": "./dist/lib/contextual-module.js",
-    "#mocha-module": "./dist/lib/mocha-module.js"
-  },
   "dependencies": {
-    "haywire": "workspace:^",
-    "p-defer": "catalog:"
+    "test-chain-core": "workspace:^"
   },
   "peerDependencies": {
     "@types/mocha": "catalog:",
@@ -46,11 +41,13 @@
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/chai": "catalog:",
+    "@types/chai-as-promised": "catalog:",
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@types/sinon": "catalog:",
     "c8": "catalog:",
     "chai": "catalog:",
+    "chai-as-promised": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
     "mocha": "catalog:",

@@ -7,7 +7,7 @@
   },
   "references": [
     {
-      "path": "../mocha-chain"
+      "path": "../test-chain/mocha-chain"
     },
     {
       "path": "../../apps/barrelify"

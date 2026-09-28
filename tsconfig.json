@@ -50,9 +50,6 @@
       "path": "./tools/format-file"
     },
     {
-      "path": "./tools/mocha-chain"
-    },
-    {
       "path": "./tools/named-patch"
     },
     {
@@ -75,6 +72,12 @@
     },
     {
       "path": "./apps/juniper-validator"
+    },
+    {
+      "path": "./tools/test-chain/test-chain-core"
+    },
+    {
+      "path": "./tools/test-chain/mocha-chain"
     }
   ]
 }

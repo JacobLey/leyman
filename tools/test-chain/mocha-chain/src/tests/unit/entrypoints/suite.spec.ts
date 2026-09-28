@@ -21,10 +21,8 @@ suite('suite', () => {
                 });
         });
 
-        test('Cannot return promise from suite', function (this) {
-            // Trick lock into thinking test is complete
-            this.runnable().duration = -1;
-
+        // Native test, so mocha-chain's lock does not reject the suite first
+        mocha.test('Cannot return promise from suite', () => {
             expect(() => {
                 // @ts-expect-error
                 suite('Never runs', async () => {});

@@ -10,7 +10,7 @@
       "path": "../sinon-typed-stub"
     },
     {
-      "path": "../mocha-chain"
+      "path": "../test-chain/mocha-chain"
     },
     {
       "path": "../../leyman/eslint-config"

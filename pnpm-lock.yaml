@@ -283,7 +283,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../../tools/mocha-chain
+        version: link:../../tools/test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
         version: 21.0.3
@@ -350,7 +350,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../../tools/mocha-chain
+        version: link:../../tools/test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
         version: 21.0.3
@@ -414,7 +414,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../../tools/mocha-chain
+        version: link:../../tools/test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
         version: 21.0.3
@@ -520,7 +520,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../../tools/mocha-chain
+        version: link:../../tools/test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
         version: 21.0.3
@@ -602,7 +602,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../../../tools/mocha-chain
+        version: link:../../../tools/test-chain/mocha-chain
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -666,7 +666,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../../../tools/mocha-chain
+        version: link:../../../tools/test-chain/mocha-chain
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3
@@ -839,7 +839,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -884,7 +884,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -936,7 +936,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -981,7 +981,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -1030,7 +1030,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -1088,7 +1088,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       npm-barrelify:
         specifier: catalog:leyman
         version: barrelify@1.3.3(@biomejs/biome@2.4.8)(prettier@3.8.1)
@@ -1215,7 +1215,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
         version: 21.0.3
@@ -1269,62 +1269,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
-      sinon:
-        specifier: 'catalog:'
-        version: 21.0.3
-      typescript:
-        specifier: 'catalog:'
-        version: 6.0.2
-
-  tools/mocha-chain:
-    dependencies:
-      haywire:
-        specifier: workspace:^
-        version: link:../haywire
-      p-defer:
-        specifier: 'catalog:'
-        version: 4.0.1
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 'catalog:'
-        version: 2.4.8
-      '@leyman/eslint-config':
-        specifier: workspace:^
-        version: link:../../leyman/eslint-config
-      '@swc/cli':
-        specifier: 'catalog:'
-        version: 0.8.0(@swc/core@1.15.21(@swc/helpers@0.5.19))
-      '@swc/core':
-        specifier: 'catalog:'
-        version: 1.15.21(@swc/helpers@0.5.19)
-      '@types/chai':
-        specifier: 'catalog:'
-        version: 5.2.3
-      '@types/mocha':
-        specifier: 'catalog:'
-        version: 10.0.10
-      '@types/node':
-        specifier: 'catalog:'
-        version: 24.12.0
-      '@types/sinon':
-        specifier: 'catalog:'
-        version: 21.0.0
-      c8:
-        specifier: 'catalog:'
-        version: 11.0.0
-      chai:
-        specifier: 'catalog:'
-        version: 6.2.2
-      eslint:
-        specifier: 'catalog:'
-        version: 9.39.4
-      expect-type:
-        specifier: 'catalog:'
-        version: 1.3.0
-      mocha:
-        specifier: 'catalog:'
-        version: 11.7.5
+        version: link:../test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
         version: 21.0.3
@@ -1375,7 +1320,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
         version: 21.0.3
@@ -1426,7 +1371,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       react:
         specifier: 'catalog:'
         version: 19.2.4
@@ -1499,7 +1444,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       nx:
         specifier: 'catalog:'
         version: 22.6.1(@swc/core@1.15.21(@swc/helpers@0.5.19))
@@ -1556,7 +1501,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -1598,7 +1543,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       typescript:
         specifier: 'catalog:'
         version: 6.0.2
@@ -1646,7 +1591,7 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
         version: 21.0.3
@@ -1694,7 +1639,96 @@ importers:
         version: 11.7.5
       mocha-chain:
         specifier: workspace:^
-        version: link:../mocha-chain
+        version: link:../test-chain/mocha-chain
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
+
+  tools/test-chain/mocha-chain:
+    dependencies:
+      test-chain-core:
+        specifier: workspace:^
+        version: link:../test-chain-core
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.4.8
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: link:../../../leyman/eslint-config
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.0(@swc/core@1.15.21(@swc/helpers@0.5.19))
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.15.21(@swc/helpers@0.5.19)
+      '@types/chai':
+        specifier: 'catalog:'
+        version: 5.2.3
+      '@types/chai-as-promised':
+        specifier: 'catalog:'
+        version: 8.0.2
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.0
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 21.0.0
+      c8:
+        specifier: 'catalog:'
+        version: 11.0.0
+      chai:
+        specifier: 'catalog:'
+        version: 6.2.2
+      chai-as-promised:
+        specifier: 'catalog:'
+        version: 8.0.2(chai@6.2.2)
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4
+      expect-type:
+        specifier: 'catalog:'
+        version: 1.3.0
+      mocha:
+        specifier: 'catalog:'
+        version: 11.7.5
+      sinon:
+        specifier: 'catalog:'
+        version: 21.0.3
+      typescript:
+        specifier: 'catalog:'
+        version: 6.0.2
+
+  tools/test-chain/test-chain-core:
+    dependencies:
+      p-defer:
+        specifier: 'catalog:'
+        version: 4.0.1
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.4.8
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: link:../../../leyman/eslint-config
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.0(@swc/core@1.15.21(@swc/helpers@0.5.19))
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.15.21(@swc/helpers@0.5.19)
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.12.0
+      c8:
+        specifier: 'catalog:'
+        version: 11.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.4
       typescript:
         specifier: 'catalog:'
         version: 6.0.2

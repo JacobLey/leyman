@@ -13,7 +13,7 @@
       "path": "../../apps/barrelify"
     },
     {
-      "path": "../mocha-chain"
+      "path": "../test-chain/mocha-chain"
     },
     {
       "path": "../../leyman/eslint-config"

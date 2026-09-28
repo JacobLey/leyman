@@ -7,7 +7,7 @@
   },
   "references": [
     {
-      "path": "../../tools/mocha-chain"
+      "path": "../../tools/test-chain/mocha-chain"
     },
     {
       "path": "../../leyman/eslint-config"

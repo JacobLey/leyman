@@ -4,7 +4,7 @@
 Chain mocha BDD methods together for deterministic and type safe tests.
 
 [![npm package](https://badge.fury.io/js/mocha-chain.svg)](https://www.npmjs.com/package/mocha-chain)
-[![License](https://img.shields.io/npm/l/mocha-chain.svg)](https://github.com/JacobLey/leyman/blob/main/tools/mocha-chain/LICENSE)
+[![License](https://img.shields.io/npm/l/mocha-chain.svg)](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/LICENSE)
 
 </div>
 

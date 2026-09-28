@@ -1,5 +1,5 @@
 {
-  "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "mocha-chain",
   "metadata": {
     "daggerRuntime": "node"

@@ -47,7 +47,8 @@ See each package's README.md for full usage documentation.
 | [`haywire`](../../../tools/haywire/) | Type-safe dependency injection — invalid containers are compile errors |
 | [`haywire-launcher`](../../../tools/haywire-launcher/) | Connect Haywire DI containers to `entry-script` CLI entry points |
 | [`iso-crypto`](../../../tools/iso-crypto/) | Isomorphic cryptography for Node.js and Browser |
-| [`mocha-chain`](../../../tools/mocha-chain/) | Type-safe Mocha hook chaining with typed context propagation |
+| [`mocha-chain`](../../../tools/test-chain/mocha-chain/) | Type-safe Mocha hook chaining with typed context propagation |
+| [`test-chain-core`](../../../tools/test-chain/test-chain-core/) | Framework-agnostic internals for chaining test hooks (used by `mocha-chain`) |
 | [`named-patch`](../../../tools/named-patch/) | Testable monkey-patching via named function wrappers |
 | [`normalized-react-query`](../../../tools/normalized-react-query/) | Type-safe React Query wrappers that enforce consistent key/query pairing |
 | [`nx-plugin-handler`](../../../tools/nx-plugin-handler/) | Error-handling wrapper for Nx executor implementations |

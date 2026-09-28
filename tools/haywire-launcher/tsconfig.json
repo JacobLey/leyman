@@ -7,16 +7,16 @@
   },
   "references": [
     {
-      "path": "../../leyman/eslint-config"
-    },
-    {
-      "path": "../entry-script"
+      "path": "../test-chain/mocha-chain"
     },
     {
       "path": "../haywire"
     },
     {
-      "path": "../mocha-chain"
+      "path": "../entry-script"
+    },
+    {
+      "path": "../../leyman/eslint-config"
     }
   ]
 }

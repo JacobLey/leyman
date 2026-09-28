@@ -1,25 +1,22 @@
-import { entrypointAfterEachIdentifier } from './lib/after-each-hooks.js';
-import { entrypointAfterIdentifier } from './lib/after-hooks.js';
-import { entrypointBeforeEachIdentifier } from './lib/before-each-hooks.js';
-import { entrypointBeforeIdentifier } from './lib/before-hooks.js';
-import { container } from './lib/container.js';
-import { contextualSuiteIdentifier } from './lib/suite-hooks.js';
-import { entrypointTestIdentifier } from './lib/test-hooks.js';
+import * as mocha from 'mocha';
+import { createMochaChain } from './lib/mocha-chain.js';
 
-export const suite = container.get(contextualSuiteIdentifier);
+const chain = createMochaChain(mocha);
+
+export const { suite } = chain;
 
 /**
  * Wrapper around Mocha's `before`/`suiteSetup`.
  *
  * Context returned from this method will be propagated to chained hooks/tests.
  */
-export const before = container.get(entrypointBeforeIdentifier);
+export const { before } = chain;
 /**
  * Wrapper around Mocha's `beforeEach`/`setup`.
  *
  * Context returned from this method will be propagated to chained hooks/tests.
  */
-export const beforeEach = container.get(entrypointBeforeEachIdentifier);
+export const { beforeEach } = chain;
 export const xdescribe = suite.skip;
 /**
  * Wrapper around Mocha's `test`.
@@ -27,20 +24,20 @@ export const xdescribe = suite.skip;
  * Ensures that tests are not accidentally instantiated internally, which currently
  * is silently ignored: https://github.com/mochajs/mocha/issues/4525
  */
-export const test = container.get(entrypointTestIdentifier);
+export const { test } = chain;
 export const xit = test.skip;
 /**
  * Wrapper around Mocha's `afterEach`/`teardown`.
  *
  * Context returned from this method will be propagated to chained hooks/tests.
  */
-export const afterEach = container.get(entrypointAfterEachIdentifier);
+export const { afterEach } = chain;
 /**
  * Wrapper around Mocha's `after`/`suiteTeardown`.
  *
  * Context returned from this method will be propagated to chained hooks/tests.
  */
-export const after = container.get(entrypointAfterIdentifier);
+export const { after } = chain;
 export {
     suite as describe,
     suite as context,
