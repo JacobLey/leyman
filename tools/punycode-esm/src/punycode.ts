@@ -18,7 +18,7 @@ const delimiter = '-'; // '\x2D'
 const baseMinusTMin = base - tMin;
 
 /** Regular expressions */
-const regexNonASCII = /[^\0-\u007E]/u; // Non-ASCII chars
+const regexNonASCII = /[^\0-\u007F]/u; // Non-ASCII chars. Note: U+007F DEL is excluded too.
 const regexSeparators = /[\u002E\u3002\uFF0E\uFF61]/gu; // RFC 3490 separators
 
 /**
@@ -108,13 +108,13 @@ export const ucs2Encode = (codePoints: readonly number[]): string =>
  * the code point does not represent a value.
  */
 const basicToDigit = (codePoint: number): number => {
-    if (codePoint - 0x30 < 0x0a) {
-        return codePoint - 0x16;
+    if (codePoint >= 0x30 && codePoint < 0x3a) {
+        return 26 + (codePoint - 0x30);
     }
-    if (codePoint - 0x41 < 0x1a) {
+    if (codePoint >= 0x41 && codePoint < 0x5b) {
         return codePoint - 0x41;
     }
-    if (codePoint - 0x61 < 0x1a) {
+    if (codePoint >= 0x61 && codePoint < 0x7b) {
         return codePoint - 0x61;
     }
     return base;
@@ -215,7 +215,7 @@ export const decode = (input: string): string => {
             const digit = basicToDigit(input.codePointAt(index)!);
             ++index;
 
-            checkOverflow(digit, base, { gte: true });
+            checkOverflow(digit, base, { gte: true, error: 'invalid-input' });
             checkOverflow(digit, Math.floor((maxInt - i) / w));
 
             i += digit * w;

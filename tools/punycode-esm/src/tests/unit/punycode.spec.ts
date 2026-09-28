@@ -70,7 +70,7 @@ const testData = {
          * `b1abfaaepdrnnbgefbaDotcwatmq2g4l`
          * Without mixed-case annotation it has to encode to:
          * `b1abfaaepdrnnbgefbadotcwatmq2g4l`
-         * https://github.com/bestiejs/punycode.js/issues/3
+         * https://github.com/mathiasbynens/punycode.js/issues/3
          */
         'Russian (Cyrillic)': {
             decoded:
@@ -162,7 +162,7 @@ const testData = {
             decoded: 'ma\u00F1ana.com',
             encoded: 'xn--maana-pta.com',
         },
-        // https://github.com/bestiejs/punycode.js/issues/17
+        // https://github.com/mathiasbynens/punycode.js/issues/17
         'example.com.': {
             decoded: 'example.com.',
             encoded: 'example.com.',
@@ -195,6 +195,11 @@ const testData = {
             decoded:
                 '\u0434\u0436\u0443\u043C\u043B\u0430@\u0434\u0436p\u0443\u043C\u043B\u0430\u0442\u0435\u0441\u0442.b\u0440\u0444a',
             encoded: '\u0434\u0436\u0443\u043C\u043B\u0430@xn--p-8sbkgc5ag7bhce.xn--ba-lmcq',
+        },
+        // https://github.com/mathiasbynens/punycode.js/pull/115
+        'Does not encode DEL': {
+            decoded: 'foo\u007F.example',
+            encoded: 'foo\u007F.example',
         },
     },
     separators: {
@@ -271,8 +276,15 @@ suite('punycode', () => {
         test('Throws RangeError: Illegal input >= 0x80 (not a basic code point)', () => {
             expect(() => Punycode.decode('\u0081-')).to.throw(RangeError);
         });
+        test('Throws RangeError: Invalid input', () => {
+            expect(() => Punycode.decode('\u0081')).to.throw(RangeError, 'Invalid input');
+            expect(() => Punycode.decode('ls8h=')).to.throw(RangeError, 'Invalid input');
+        });
         test('Throws RangeError: Overflow: input needs wider integers to process', () => {
-            expect(() => Punycode.decode('\u0081')).to.throw(RangeError);
+            expect(() => Punycode.decode('99999999a')).to.throw(
+                RangeError,
+                'Overflow: input needs wider integers to process'
+            );
         });
     });
 

@@ -19,6 +19,7 @@ ESM and TypeScript port of the punycode.js library.
   - [toUnicode](#tounicodestring)
   - [ucs2Decode](#ucs2decodestring)
   - [ucs2Encode](#ucs2encodecodepoints)
+- [Credit](#credit)
 
 ## Install
 
@@ -43,8 +44,6 @@ toUnicode('xn----dqo34k.com');  // '☃-⌘.com'
 ## Usage
 
 `punycode-esm` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { encode } = await import('punycode-esm')`.
-
-This is a direct ESM/TypeScript port of [punycode.js](https://www.npmjs.com/package/punycode) by [Mathias Bynens](https://mathiasbynens.be/). The logic is identical; this package exists for compatibility with TypeScript `moduleResolution: nodenext` and pure-ESM projects.
 
 ## API
 
@@ -161,3 +160,10 @@ Creates a string from an array of Unicode code point values.
 ucs2Encode([0x61, 0x62, 0x63]); // 'abc'
 ucs2Encode([0x1D306]);          // '\uD834\uDF06'
 ```
+
+## Credit
+
+This is a direct ESM/TypeScript port of [punycode.js](https://github.com/mathiasbynens/punycode.js) by [Mathias Bynens](https://mathiasbynens.be/). The logic is identical; this package exists for compatibility with TypeScript `moduleResolution: nodenext` and pure-ESM projects. Logic is in sync with `punycode` v2.3.1.
+
+- Original npm package: [`punycode`](https://www.npmjs.com/package/punycode)
+- Original GitHub repository: [mathiasbynens/punycode.js](https://github.com/mathiasbynens/punycode.js)
