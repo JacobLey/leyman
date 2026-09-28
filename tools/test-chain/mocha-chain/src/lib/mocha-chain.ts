@@ -48,6 +48,7 @@ export const createMochaChain = (methods: MochaMethods): MochaChain =>
             inTest: thisArg => (thisArg as MochaContext).test as MochaTest,
         },
         supportsDone: true,
+        allowAsyncSuites: false,
         names: {
             before: ['before', 'suiteSetup'],
             beforeEach: ['beforeEach', 'setup'],

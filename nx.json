@@ -257,6 +257,29 @@
         "test:reset"
       ]
     },
+    "vitest-unit-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none vitest run --config $NX_WORKSPACE_ROOT/configs/vitest.config.js --root ."
+        ],
+        "parallel": true,
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output",
+        "{workspaceRoot}/configs/vitest.config.js"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
+      ],
+      "dependsOn": [
+        "test:reset"
+      ]
+    },
     "coverage-report": {
       "executor": "nx:run-commands",
       "options": {
@@ -403,7 +426,8 @@
       "dependsOn": [
         "test:reset",
         "mocha-unit-test",
-        "mocha-integration-test"
+        "mocha-integration-test",
+        "vitest-unit-test"
       ],
       "configurations": {
         "__lifecycle": {}

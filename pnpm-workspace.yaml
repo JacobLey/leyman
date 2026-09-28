@@ -69,6 +69,8 @@ catalog:
   ts-dedent: ^2.2.0
   typescript: ^6.0.2
   uint8array-extras: ^1.5.0
+  vite: ^8.3.1
+  vitest: ^5.0.2
   yargs: ^18.0.0
 
 catalogs:

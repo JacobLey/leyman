@@ -62,6 +62,10 @@ export interface ChainFramework<Key extends object> {
      * Whether callbacks that declare an extra parameter receive a `done` callback (e.g. Mocha).
      */
     supportsDone: boolean;
+    /**
+     * Whether suite callbacks may be async (e.g. Vitest), or must be synchronous (e.g. Mocha).
+     */
+    allowAsyncSuites: boolean;
     names: ChainNames;
 }
 
@@ -173,29 +177,36 @@ export interface ChainSuite extends SuiteFn {
     skip: SuiteFn;
 }
 
-const withSuiteLock =
-    (suite: NativeMethod): SuiteFn =>
-    (title, cb) => {
-        checkLock();
-        return suite(title, function (this: unknown): void {
-            if (cb.call(this) instanceof Promise) {
-                throw new TypeError('Suite callback must be synchronous');
-            }
-        });
-    };
-
 /**
  * Wrap the native suite method with enforcement that it is never called:
  * - Inside a hook/test
- * - With an async callback
+ * - With an async callback, unless the framework supports it
  *   - e.g. Mocha does not respect async suites, and carries on leading to race conditions.
  *
  * @template Key - identity of a test
  * @param framework - framework description
  * @returns wrapped suite method
  */
-export const createSuite = <Key extends object>({ methods }: ChainFramework<Key>): ChainSuite =>
-    Object.assign(withSuiteLock(methods.suite), {
-        only: withSuiteLock(methods.suite.only),
-        skip: withSuiteLock(methods.suite.skip),
+export const createSuite = <Key extends object>(framework: ChainFramework<Key>): ChainSuite => {
+    const { methods, allowAsyncSuites } = framework;
+    const withLock =
+        (suite: NativeMethod): SuiteFn =>
+        (title, cb) => {
+            checkLock();
+            return suite(
+                title,
+                allowAsyncSuites
+                    ? cb
+                    : function (this: unknown): void {
+                          if (cb.call(this) instanceof Promise) {
+                              throw new TypeError('Suite callback must be synchronous');
+                          }
+                      }
+            );
+        };
+
+    return Object.assign(withLock(methods.suite), {
+        only: withLock(methods.suite.only),
+        skip: withLock(methods.suite.skip),
     });
+};

@@ -1,0 +1,16 @@
+{
+  "extends": "../../../tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "references": [
+    {
+      "path": "../test-chain-core"
+    },
+    {
+      "path": "../../../leyman/eslint-config"
+    }
+  ]
+}

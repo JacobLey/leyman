@@ -1,0 +1,45 @@
+{
+  "name": "vitest-chain",
+  "version": "0.0.1",
+  "description": "Chain vitest methods together for deterministic and type safe tests",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/test-chain/vitest-chain#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "vitest",
+    "test",
+    "hooks",
+    "context"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "test-chain-core": "workspace:^"
+  },
+  "peerDependencies": {
+    "vitest": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/node": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:",
+    "vitest": "catalog:"
+  }
+}

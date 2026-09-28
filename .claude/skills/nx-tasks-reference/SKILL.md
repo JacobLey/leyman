@@ -97,7 +97,7 @@ Generates static output files by running `load-populate-files` against `./dist/f
 
 Deletes the per-project coverage temp directory (`.coverage/project/{projectName}/tmp`) before tests run. Ensures coverage data from a previous run does not contaminate the current run.
 
-**Add when:** The package has tests. Add whenever `mocha-unit-test` or `mocha-integration-test` is present.
+**Add when:** The package has tests. Add whenever `mocha-unit-test`, `mocha-integration-test`, or `vitest-unit-test` is present.
 
 ---
 
@@ -114,6 +114,16 @@ Runs Mocha unit tests from `./dist/tests/unit/**/*.spec.*js` under C8 coverage i
 Runs Mocha integration tests from `./dist/tests/integration/**/*.spec.*js` under C8 coverage instrumentation.
 
 **Add when:** The package has integration tests in `src/tests/integration/`.
+
+---
+
+### `vitest-unit-test`
+
+Runs Vitest unit tests from `./dist/tests/unit/**/*.spec.js` under C8 coverage instrumentation, using the shared [`configs/vitest.config.js`](../../../configs/vitest.config.js).
+
+The shared config runs pre-compiled tests with native `import` and the `threads` pool (so C8 can collect V8 coverage), and sets `sequence.hooks: "list"` (required by `vitest-chain`).
+
+**Add when:** The package tests with Vitest instead of Mocha (e.g. `vitest-chain`). Use instead of `mocha-unit-test`.
 
 ---
 

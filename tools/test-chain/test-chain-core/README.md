@@ -23,7 +23,7 @@ npm i test-chain-core
 
 ## Usage
 
-This package is not intended to be used directly in tests. It implements context propagation for [mocha-chain](../mocha-chain/README.md) (and future framework integrations), which describe their framework (native methods, how to identify the current test, and naming) and expose precise public types.
+This package is not intended to be used directly in tests. It implements context propagation for [mocha-chain](../mocha-chain/README.md) and [vitest-chain](../vitest-chain/README.md), which each describe their framework (native methods, how to identify the current test, and naming) and expose precise public types.
 
 ## API
 
@@ -47,6 +47,7 @@ Return values are loosely typed; framework packages cast them to their own publi
 | `currentTest.inHook` | `(thisArg, args) => Key` | Identify the executing test from a per-test hook's native `this`/arguments. |
 | `currentTest.inTest` | `(thisArg, args) => Key` | Identify the executing test from a test's native `this`/arguments. |
 | `supportsDone` | `boolean` | Whether callbacks that declare an extra parameter receive a `done` callback. |
+| `allowAsyncSuites` | `boolean` | Whether suite callbacks may return a promise. |
 | `names` | `ChainNames` | Property names (aliases) each chained method is exposed under. |
 
 `Key` identifies the currently executing test (e.g. Mocha's `Test`, Vitest's `task`), used to propagate per-test context.
@@ -62,3 +63,4 @@ Thrown (via the rejected `handler`) when a chained hook executes before the hook
 ## Also See
 
 - [mocha-chain](../mocha-chain/README.md)
+- [vitest-chain](../vitest-chain/README.md)

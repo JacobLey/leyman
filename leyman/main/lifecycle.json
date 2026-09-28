@@ -51,6 +51,7 @@
     "populate-files": "build:post",
     "coverage-reset": "test:reset",
     "mocha-unit-test": "test:run",
-    "mocha-integration-test": "test:run"
+    "mocha-integration-test": "test:run",
+    "vitest-unit-test": "test:run"
   }
 }
