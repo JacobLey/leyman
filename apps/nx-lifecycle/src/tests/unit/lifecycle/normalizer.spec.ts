@@ -188,7 +188,7 @@ suite('Normalizer', () => {
             ctx.stubbedParseCwd.resolves('<parsed-cwd>');
             ctx.stubbedReadFile.resolves(JSON.stringify({}));
 
-            await expect(
+            const thrown: unknown = await expect(
                 ctx.normalizer.normalizeOptions(
                     {},
                     {
@@ -196,10 +196,10 @@ suite('Normalizer', () => {
                         projects: [],
                     }
                 )
-            ).to.eventually.be.rejectedWith(
-                Error,
-                `Invalid config loaded from <parsed-cwd>/lifecycle.json`
-            );
+            ).to.be.rejectedWith(Error);
+            expect(thrown)
+                .to.have.property('message')
+                .that.includes(`Invalid config loaded from <parsed-cwd>/lifecycle.json`);
         });
     });
 });

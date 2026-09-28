@@ -238,21 +238,21 @@ suite('container', () => {
                 );
                 await asyncContainer.preloadAsync();
 
-                await expect(
+                const thrown: unknown = await expect(
                     // @ts-expect-error
                     asyncContainer.getAsync(A)
-                ).to.eventually.be.rejectedWith(
-                    HaywireContainerValidationError,
-                    'Providers missing for container: A'
-                );
+                ).to.be.rejectedWith(HaywireContainerValidationError);
+                expect(thrown)
+                    .to.have.property('message')
+                    .that.includes('Providers missing for container: A');
 
-                await expect(
+                const thrownById: unknown = await expect(
                     // @ts-expect-error
                     asyncContainer.getAsync(identifier<B>())
-                ).to.eventually.be.rejectedWith(
-                    HaywireContainerValidationError,
-                    'Providers missing for container: haywire-id'
-                );
+                ).to.be.rejectedWith(HaywireContainerValidationError);
+                expect(thrownById)
+                    .to.have.property('message')
+                    .that.includes('Providers missing for container: haywire-id');
             });
         });
 
@@ -594,11 +594,12 @@ suite('container', () => {
                         message: 'Null value returned for non-nullable provider: B',
                     });
 
-                await expect(container.getAsync(A))
-                    .to.eventually.be.rejectedWith(HaywireNullResponseError)
-                    .that.contain({
-                        message: 'Null value returned for non-nullable provider: B',
-                    });
+                const thrown: unknown = await expect(container.getAsync(A)).to.be.rejectedWith(
+                    HaywireNullResponseError
+                );
+                expect(thrown).to.include({
+                    message: 'Null value returned for non-nullable provider: B',
+                });
 
                 const asyncContainer = createContainer(
                     createModule(
@@ -610,11 +611,12 @@ suite('container', () => {
                 );
                 asyncContainer.wire();
 
-                await expect(asyncContainer.preloadAsync())
-                    .to.eventually.be.rejectedWith(HaywireNullResponseError)
-                    .that.contain({
-                        message: 'Null value returned for non-nullable provider: D(undefinable)',
-                    });
+                const preloadThrown: unknown = await expect(
+                    asyncContainer.preloadAsync()
+                ).to.be.rejectedWith(HaywireNullResponseError);
+                expect(preloadThrown).to.include({
+                    message: 'Null value returned for non-nullable provider: D(undefinable)',
+                });
             });
 
             test('Returns undefined', async () => {
@@ -662,20 +664,21 @@ suite('container', () => {
 
                 await container.preloadAsync();
 
-                await expect(container.getAsync(A))
-                    .to.eventually.be.rejectedWith(HaywireMultiError)
-                    .that.contain({
-                        message: [
-                            'Multiple errors: [',
-                            [
-                                'Undefined value returned for non-undefinable provider: B',
-                                'Undefined value returned for non-undefinable provider: B(named: sync)',
-                                'Null value returned for non-nullable provider: D',
-                                '<ERROR>',
-                            ].join(', '),
-                            ']',
-                        ].join(''),
-                    });
+                const thrown: unknown = await expect(container.getAsync(A)).to.be.rejectedWith(
+                    HaywireMultiError
+                );
+                expect(thrown).to.include({
+                    message: [
+                        'Multiple errors: [',
+                        [
+                            'Undefined value returned for non-undefinable provider: B',
+                            'Undefined value returned for non-undefinable provider: B(named: sync)',
+                            'Null value returned for non-nullable provider: D',
+                            '<ERROR>',
+                        ].join(', '),
+                        ']',
+                    ].join(''),
+                });
             });
 
             test('Returns wrong instanceof', async () => {
@@ -722,9 +725,10 @@ suite('container', () => {
                 // Sync error -> no caching
                 expect(failures[0].reason !== failures[1].reason).to.equal(true);
 
-                await expect(bSupplier())
-                    .to.eventually.be.rejectedWith(HaywireInstanceOfResponseError)
-                    .that.does.not.equal(failures[0].reason);
+                const thrown: unknown = await expect(bSupplier()).to.be.rejectedWith(
+                    HaywireInstanceOfResponseError
+                );
+                expect(thrown).to.not.equal(failures[0].reason);
 
                 const failedContainer = createContainer(
                     createModule(
@@ -735,12 +739,12 @@ suite('container', () => {
                     ).addBinding(bind(E).withConstructorGenerator())
                 );
                 failedContainer.wire();
-                await expect(failedContainer.preloadAsync())
-                    .to.be.rejectedWith(HaywireInstanceOfResponseError)
-                    .that.eventually.contain({
-                        message:
-                            'Value {"d":false} returned by provider is not instance of class: D',
-                    });
+                const preloadThrown: unknown = await expect(
+                    failedContainer.preloadAsync()
+                ).to.be.rejectedWith(HaywireInstanceOfResponseError);
+                expect(preloadThrown).to.include({
+                    message: 'Value {"d":false} returned by provider is not instance of class: D',
+                });
                 await expect(failedContainer.getAsync(E)).to.be.rejectedWith(
                     HaywireInstanceOfResponseError
                 );
@@ -756,7 +760,7 @@ suite('container', () => {
                     .that.contains({
                         message: 'Providers missing for container: custom-name',
                     });
-                await expect(container.getAsync(identifier<123>())).to.eventually.be.rejectedWith(
+                await expect(container.getAsync(identifier<123>())).to.be.rejectedWith(
                     HaywireProviderMissingError
                 );
             });
@@ -963,9 +967,10 @@ suite('container', () => {
                 ]);
                 expect(throwns[0]).to.contain({ message: '<ERROR>' });
                 expect(throwns[0]).to.equal(throwns[1]);
-                await expect(container.getAsync(A))
-                    .to.eventually.be.rejectedWith(Error)
-                    .that.does.not.equal(throwns[0]);
+                const thrown: unknown = await expect(container.getAsync(A)).to.be.rejectedWith(
+                    Error
+                );
+                expect(thrown).to.not.equal(throwns[0]);
 
                 expect(await container.getAsync(B)).to.equal(b);
             });
@@ -1385,7 +1390,8 @@ suite('container', () => {
                     )
             );
 
-            await expect(container.getAsync(A)).to.eventually.be.rejectedWith(Error).that.contain({
+            const thrown: unknown = await expect(container.getAsync(A)).to.be.rejectedWith(Error);
+            expect(thrown).to.include({
                 message: '<ERROR>',
             });
 
@@ -2350,7 +2356,7 @@ suite('container', () => {
                     for (let j = 0; j < 2; ++j) {
                         expect(() => aSupplier()).to.throw(CustomError);
                         rejectionExpectations.push(
-                            expect(dSupplier()).to.eventually.be.rejectedWith(CustomError)
+                            expect(dSupplier()).to.be.rejectedWith(CustomError)
                         );
                     }
                 }
@@ -2423,15 +2429,15 @@ suite('container', () => {
                 for (let i = 0; i < 2; ++i) {
                     const { aSupplier, dSupplier } = await container.getAsync(supplierIdentifier);
 
-                    await expect(container.getAsync(A)).to.eventually.be.rejectedWith(CustomError);
+                    await expect(container.getAsync(A)).to.be.rejectedWith(CustomError);
                     rejectionExpectations.push(
-                        expect(container.getAsync(D)).to.eventually.be.rejectedWith(CustomError)
+                        expect(container.getAsync(D)).to.be.rejectedWith(CustomError)
                     );
 
                     for (let j = 0; j < 2; ++j) {
                         rejectionExpectations.push(
-                            expect(aSupplier()).to.eventually.be.rejectedWith(CustomError),
-                            expect(dSupplier()).to.eventually.be.rejectedWith(CustomError)
+                            expect(aSupplier()).to.be.rejectedWith(CustomError),
+                            expect(dSupplier()).to.be.rejectedWith(CustomError)
                         );
                     }
                     await Promise.all(rejectionExpectations);
@@ -2618,9 +2624,9 @@ suite('container', () => {
                                 new InstanceBinding(extraId, 123),
                             ]);
 
-                            await expect(
-                                cloned.getAsync(extraId.undefinable())
-                            ).to.eventually.be.rejectedWith(HaywireProviderMissingError);
+                            await expect(cloned.getAsync(extraId.undefinable())).to.be.rejectedWith(
+                                HaywireProviderMissingError
+                            );
                         });
 
                         test('Throw on duplicate binding', () => {
@@ -2923,13 +2929,13 @@ suite('container', () => {
                 const module = createModule(bind(otherId).withAsyncGenerator(async () => 'hello'));
                 const container = createContainer(module);
 
-                await expect(
+                const thrown: unknown = await expect(
                     // @ts-expect-error
                     container.getAsync(numListId)
-                ).to.eventually.be.rejectedWith(
-                    HaywireContainerValidationError,
-                    'Providers missing for container'
-                );
+                ).to.be.rejectedWith(HaywireContainerValidationError);
+                expect(thrown)
+                    .to.have.property('message')
+                    .that.includes('Providers missing for container');
             });
         });
 
@@ -3373,7 +3379,7 @@ suite('container', () => {
                             bind(aListId).withAsyncGenerator(async () => new A())
                         )
                     ).getAsync(aListId)
-                ).to.eventually.be.rejectedWith(HaywireInstanceOfResponseError);
+                ).to.be.rejectedWith(HaywireInstanceOfResponseError);
             });
 
             test('Null element for non-nullable list is rejected', async () => {
@@ -3393,7 +3399,7 @@ suite('container', () => {
                             bind(numId).withAsyncGenerator(async () => null as unknown as number)
                         )
                     ).getAsync(numId)
-                ).to.eventually.be.rejectedWith(HaywireNullResponseError);
+                ).to.be.rejectedWith(HaywireNullResponseError);
             });
 
             test('Undefined element for non-undefinable list is rejected', () => {
@@ -3492,7 +3498,7 @@ suite('container', () => {
                                 bind(numId).withAsyncGenerator(async () => 5 as unknown as number[])
                             )
                         ).getAsync(numId)
-                    ).to.eventually.be.rejectedWith(HaywireListResponseError);
+                    ).to.be.rejectedWith(HaywireListResponseError);
                 });
             });
         });

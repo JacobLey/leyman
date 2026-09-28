@@ -55,11 +55,12 @@ suite('parseCwd', () => {
         });
 
         test('Throws on non-found', async () => {
-            await expect(ParseCwd.parseCwd('/not/found'))
-                .eventually.be.rejectedWith(Error)
-                .that.contain({
-                    message: 'Directory not found: /not/found',
-                });
+            const thrown: unknown = await expect(
+                ParseCwd.parseCwd('/not/found')
+            ).to.be.rejectedWith(Error);
+            expect(thrown).to.include({
+                message: 'Directory not found: /not/found',
+            });
         });
     });
 });

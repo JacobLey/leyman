@@ -24,17 +24,21 @@ suite('cli', () => {
     suite('commands', () => {
         suite('default/load-populate-files', () => {
             test('unknown options', async () => {
-                await expect(execAsync('./bin.mjs --unknown --option'))
-                    .to.eventually.be.rejectedWith(Error)
-                    .that.has.property('stderr')
-                    .that.contain('Unknown arguments: unknown, option');
+                const thrown: unknown = await expect(
+                    execAsync('./bin.mjs --unknown --option')
+                ).to.be.rejectedWith(Error);
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.includes('Unknown arguments: unknown, option');
             });
 
             test('invalid config file', async () => {
-                await expect(execAsync('./bin.mjs --config-file ./does-not-exist.json'))
-                    .to.eventually.be.rejectedWith(Error)
-                    .that.has.property('stderr')
-                    .that.contain(
+                const thrown: unknown = await expect(
+                    execAsync('./bin.mjs --config-file ./does-not-exist.json')
+                ).to.be.rejectedWith(Error);
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.includes(
                         `Error: ENOENT: no such file or directory, open '${Path.join(import.meta.dirname, '../../../does-not-exist.json')}'`
                     );
             });

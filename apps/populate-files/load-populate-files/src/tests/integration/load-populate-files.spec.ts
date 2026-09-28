@@ -24,7 +24,7 @@ suite('loadAndPopulateFiles', () => {
     });
 
     test('ci', async () => {
-        await expect(
+        const thrown: unknown = await expect(
             loadAndPopulateFiles(
                 {
                     filePath: './dist/tests/data/out-of-sync.js',
@@ -33,10 +33,12 @@ suite('loadAndPopulateFiles', () => {
                     check: true,
                 }
             )
-        ).to.eventually.be.rejectedWith(
-            Error,
-            `File ${Path.join(import.meta.dirname, '../../../src/tests/data/out-of-sync.txt')} not up to date. Reason: content-changed`
-        );
+        ).to.be.rejectedWith(Error);
+        expect(thrown)
+            .to.have.property('message')
+            .that.includes(
+                `File ${Path.join(import.meta.dirname, '../../../src/tests/data/out-of-sync.txt')} not up to date. Reason: content-changed`
+            );
     });
 
     test('dry run', async () => {
@@ -68,7 +70,7 @@ suite('loadAndPopulateFiles', () => {
 
     suite('failure', () => {
         test('Not found', async () => {
-            await expect(
+            const thrown: unknown = await expect(
                 loadAndPopulateFiles(
                     {
                         filePath: './dist/tests/data/does-not-exist.js',
@@ -77,14 +79,16 @@ suite('loadAndPopulateFiles', () => {
                         check: false,
                     }
                 )
-            ).to.eventually.be.rejectedWith(
-                Error,
-                `JS file not found: ${Path.resolve('./dist/tests/data/does-not-exist.js')}`
-            );
+            ).to.be.rejectedWith(Error);
+            expect(thrown)
+                .to.have.property('message')
+                .that.includes(
+                    `JS file not found: ${Path.resolve('./dist/tests/data/does-not-exist.js')}`
+                );
         });
 
         test('File fails to load', async () => {
-            await expect(
+            const thrown: unknown = await expect(
                 loadAndPopulateFiles(
                     {
                         filePath: './dist/tests/data/throws-error.js',
@@ -93,11 +97,12 @@ suite('loadAndPopulateFiles', () => {
                         check: false,
                     }
                 )
-            ).to.eventually.be.rejectedWith(Error, "Can't load me!");
+            ).to.be.rejectedWith(Error);
+            expect(thrown).to.have.property('message').that.includes("Can't load me!");
         });
 
         test('Invalid export syntax', async () => {
-            await expect(
+            const thrown: unknown = await expect(
                 loadAndPopulateFiles(
                     {
                         filePath: './dist/tests/data/invalid-export.js',
@@ -106,10 +111,12 @@ suite('loadAndPopulateFiles', () => {
                         check: false,
                     }
                 )
-            ).to.eventually.be.rejectedWith(
-                Error,
-                `File content does not fulfill populate-file input at: ${Path.resolve('./dist/tests/data/invalid-export.js')}`
-            );
+            ).to.be.rejectedWith(Error);
+            expect(thrown)
+                .to.have.property('message')
+                .that.includes(
+                    `File content does not fulfill populate-file input at: ${Path.resolve('./dist/tests/data/invalid-export.js')}`
+                );
         });
     });
 });

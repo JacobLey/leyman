@@ -117,7 +117,7 @@ suite('Integration test', () => {
         withTmpFiles.test('Errors when file is changed during check', async ctx => {
             const content = { getsWritten: false, throwsError: true };
 
-            await expect(
+            const thrown: unknown = await expect(
                 populateFile(
                     {
                         filePath: ctx.tmpJsonFile.path,
@@ -125,10 +125,12 @@ suite('Integration test', () => {
                     },
                     { check: true, dryRun: true }
                 )
-            ).to.eventually.be.rejectedWith(
-                Error,
-                `File ${ctx.tmpJsonFile.path} not up to date. Reason: content-changed`
-            );
+            ).to.be.rejectedWith(Error);
+            expect(thrown)
+                .to.have.property('message')
+                .that.includes(
+                    `File ${ctx.tmpJsonFile.path} not up to date. Reason: content-changed`
+                );
 
             const data = await readFile(ctx.tmpJsonFile.path, 'utf8');
             expect(data).to.not.deep.equal(content);
@@ -138,7 +140,7 @@ suite('Integration test', () => {
             const content = 'File will not exist';
             const txtPath = Path.join(ctx.tmpDir.path, 'new-txt-file.txt');
 
-            await expect(
+            const thrown: unknown = await expect(
                 populateFile(
                     {
                         filePath: txtPath,
@@ -146,15 +148,17 @@ suite('Integration test', () => {
                     },
                     { check: true, dryRun: true }
                 )
-            ).to.eventually.be.rejectedWith(
-                Error,
-                `File ${txtPath} not up to date. Reason: file-not-exist`
-            );
+            ).to.be.rejectedWith(Error);
+            expect(thrown)
+                .to.have.property('message')
+                .that.includes(`File ${txtPath} not up to date. Reason: file-not-exist`);
 
-            await expect(readFile(txtPath, 'utf8')).to.eventually.be.rejectedWith(
-                Error,
-                'ENOENT: no such file or director'
+            const readThrown: unknown = await expect(readFile(txtPath, 'utf8')).to.be.rejectedWith(
+                Error
             );
+            expect(readThrown)
+                .to.have.property('message')
+                .that.includes('ENOENT: no such file or director');
         });
     });
 
@@ -308,7 +312,7 @@ suite('Integration test', () => {
 
             const txtPath = Path.join(ctx.tmpDir.path, 'new-txt-file.txt');
 
-            await expect(
+            const thrown: unknown = await expect(
                 populateFiles(
                     [
                         {
@@ -322,21 +326,25 @@ suite('Integration test', () => {
                     ],
                     { check: true, dryRun: true }
                 )
-            ).to.eventually.be.rejectedWith(
-                Error,
-                [
-                    `File ${ctx.tmpJsonFile.path} not up to date. Reason: content-changed`,
-                    `File ${txtPath} not up to date. Reason: file-not-exist`,
-                ].join(', ')
-            );
+            ).to.be.rejectedWith(Error);
+            expect(thrown)
+                .to.have.property('message')
+                .that.includes(
+                    [
+                        `File ${ctx.tmpJsonFile.path} not up to date. Reason: content-changed`,
+                        `File ${txtPath} not up to date. Reason: file-not-exist`,
+                    ].join(', ')
+                );
 
             const jsonData = await readFile(ctx.tmpJsonFile.path, 'utf8');
             expect(jsonData).to.not.equal(prettyJson(jsonContent));
 
-            await expect(readFile(txtPath, 'utf8')).to.eventually.be.rejectedWith(
-                Error,
-                'ENOENT: no such file or director'
+            const readThrown: unknown = await expect(readFile(txtPath, 'utf8')).to.be.rejectedWith(
+                Error
             );
+            expect(readThrown)
+                .to.have.property('message')
+                .that.includes('ENOENT: no such file or director');
         });
 
         withTmpFiles.test('--clean deletes stale files', async ctx => {
@@ -357,7 +365,8 @@ suite('Integration test', () => {
             ]);
 
             expect(await readFile(generatedPath, 'utf8')).to.equal('hello');
-            await expect(stat(stalePath)).to.eventually.be.rejectedWith(Error, 'ENOENT');
+            const thrown: unknown = await expect(stat(stalePath)).to.be.rejectedWith(Error);
+            expect(thrown).to.have.property('message').that.includes('ENOENT');
         });
 
         withTmpFiles.test('--clean with --dry-run does not delete stale files', async ctx => {
@@ -391,16 +400,16 @@ suite('Integration test', () => {
                 writeFile(generatedPath, content),
             ]);
 
-            await expect(
+            const thrown: unknown = await expect(
                 populateFiles([{ filePath: generatedPath, content }], {
                     check: true,
                     clean: true,
                     targetDir: ctx.tmpDir.path,
                 })
-            ).to.eventually.be.rejectedWith(
-                Error,
-                `File ${stalePath} not up to date. Reason: stale-file`
-            );
+            ).to.be.rejectedWith(Error);
+            expect(thrown)
+                .to.have.property('message')
+                .that.includes(`File ${stalePath} not up to date. Reason: stale-file`);
 
             expect(await readFile(stalePath, 'utf8')).to.equal('I am stale');
         });
@@ -433,13 +442,14 @@ suite('Integration test', () => {
         });
 
         withTmpFiles.test('--clean propagates unknown readdir errors', async ctx => {
-            await expect(
+            const thrown: unknown = await expect(
                 populateFiles([], {
                     check: false,
                     clean: true,
                     targetDir: ctx.tmpTxtFile.path,
                 })
-            ).to.eventually.be.rejectedWith(Error, 'ENOTDIR');
+            ).to.be.rejectedWith(Error);
+            expect(thrown).to.have.property('message').that.includes('ENOTDIR');
         });
     });
 });

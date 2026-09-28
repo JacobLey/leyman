@@ -52,7 +52,7 @@ suite('launch', () => {
             // @ts-expect-error
             const entry = launch(container, identifier<EntryScript>());
 
-            await expect(entry.main(['--foo', 'bar'])).to.eventually.be.rejectedWith(
+            await expect(entry.main(['--foo', 'bar'])).to.be.rejectedWith(
                 HaywireContainerValidationError
             );
         });
@@ -86,7 +86,7 @@ suite('launch', () => {
             // @ts-expect-error
             const entry = launch(container);
 
-            await expect(entry.main(['--foo', 'bar'])).to.eventually.be.rejectedWith(
+            await expect(entry.main(['--foo', 'bar'])).to.be.rejectedWith(
                 HaywireContainerValidationError
             );
         });
@@ -157,9 +157,7 @@ suite('launch', () => {
         withContainerId.test('Returns not implemented class', async ({ container, id }) => {
             const entry = launch(container, id.named('static'));
 
-            await expect(entry.main(['--foo', 'bar'])).to.eventually.be.rejectedWith(
-                MainNotImplementedError
-            );
+            await expect(entry.main(['--foo', 'bar'])).to.be.rejectedWith(MainNotImplementedError);
         });
     });
 

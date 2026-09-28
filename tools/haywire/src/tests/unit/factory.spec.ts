@@ -174,11 +174,11 @@ suite('factory', () => {
                 await expect(
                     // @ts-expect-error
                     container.getAsync(fId)
-                ).to.eventually.be.rejectedWith(HaywireProviderMissingError);
+                ).to.be.rejectedWith(HaywireProviderMissingError);
                 await expect(
                     // @ts-expect-error
                     extrasContainer.getAsync(extraId)
-                ).to.eventually.be.rejectedWith(HaywireProviderMissingError);
+                ).to.be.rejectedWith(HaywireProviderMissingError);
             });
         });
     });

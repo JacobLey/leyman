@@ -30,31 +30,31 @@ suite('EntryScript', () => {
 
         suite('failure', () => {
             test('Static method not implemented', async () => {
-                await expect(
+                const thrown: unknown = await expect(
                     runAsMain(
                         Path.resolve(
                             import.meta.dirname,
                             '../../data/entry-script-static-invalid.js'
                         )
                     )
-                ).to.eventually.be.rejectedWith(
-                    MainNotImplementedError,
-                    '"main" not implemented on EntryScript child class.'
-                );
+                ).to.be.rejectedWith(MainNotImplementedError);
+                expect(thrown)
+                    .to.have.property('message')
+                    .that.includes('"main" not implemented on EntryScript child class.');
             });
 
             test('Instance method not implemented', async () => {
-                await expect(
+                const thrown: unknown = await expect(
                     runAsMain(
                         Path.resolve(
                             import.meta.dirname,
                             '../../data/entry-script-instance-invalid.js'
                         )
                     )
-                ).to.eventually.be.rejectedWith(
-                    MainNotImplementedError,
-                    '"main" not implemented on EntryScript child instance.'
-                );
+                ).to.be.rejectedWith(MainNotImplementedError);
+                expect(thrown)
+                    .to.have.property('message')
+                    .that.includes('"main" not implemented on EntryScript child instance.');
             });
 
             test('No URL exists', async () => {

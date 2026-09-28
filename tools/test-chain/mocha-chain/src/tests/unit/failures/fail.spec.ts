@@ -226,7 +226,8 @@ suite('Failure cases', () => {
 
                 const [first, second] = registered.afterEach;
 
-                await expect(second!.call(fakeContext)).to.eventually.be.rejectedWith(message);
+                const thrown: unknown = await expect(second!.call(fakeContext)).to.be.rejected;
+                expect(thrown).to.have.property('message').that.includes(message);
                 await first!.call(fakeContext);
             });
 
@@ -236,7 +237,8 @@ suite('Failure cases', () => {
 
                 const [first, second] = registered.after;
 
-                await expect(second!.call(fakeContext)).to.eventually.be.rejectedWith(message);
+                const thrown: unknown = await expect(second!.call(fakeContext)).to.be.rejected;
+                expect(thrown).to.have.property('message').that.includes(message);
                 await first!.call(fakeContext);
             });
         });
@@ -256,7 +258,8 @@ suite('Failure cases', () => {
 
                 const [first, second] = registered.beforeEach;
                 await first!.call(fakeContext);
-                await expect(second!.call(fakeContext)).to.eventually.be.rejectedWith('<ERROR>');
+                const thrown: unknown = await expect(second!.call(fakeContext)).to.be.rejected;
+                expect(thrown).to.have.property('message').that.includes('<ERROR>');
                 await registered.afterEach[0]!.call(fakeContext);
 
                 expect(teardownContext).to.deep.equal({ abc: 123 });
@@ -276,7 +279,8 @@ suite('Failure cases', () => {
 
                 const [first, second] = registered.before;
                 await first!.call(fakeContext);
-                await expect(second!.call(fakeContext)).to.eventually.be.rejectedWith('<ERROR>');
+                const thrown: unknown = await expect(second!.call(fakeContext)).to.be.rejected;
+                expect(thrown).to.have.property('message').that.includes('<ERROR>');
                 await registered.after[0]!.call(fakeContext);
 
                 expect(teardownContext).to.deep.equal({ abc: 123 });

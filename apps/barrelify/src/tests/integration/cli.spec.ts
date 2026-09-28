@@ -33,10 +33,12 @@ suite('cli', () => {
             });
 
             test('unknown options', async () => {
-                await expect(execAsync('./bin.mjs --unknown --option'))
-                    .to.eventually.be.rejectedWith(Error)
-                    .that.has.property('stderr')
-                    .that.contain('Unknown arguments: unknown, option');
+                const thrown: unknown = await expect(
+                    execAsync('./bin.mjs --unknown --option')
+                ).to.be.rejectedWith(Error);
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.includes('Unknown arguments: unknown, option');
             });
 
             test('ci', async () => {
@@ -47,10 +49,10 @@ suite('cli', () => {
             });
 
             test('failure', async () => {
-                await expect(execAsync('./bin.mjs barrel --ci')).to.eventually.be.rejectedWith(
-                    Error,
-                    'Files are not built'
-                );
+                const thrown: unknown = await expect(
+                    execAsync('./bin.mjs barrel --ci')
+                ).to.be.rejectedWith(Error);
+                expect(thrown).to.have.property('message').that.includes('Files are not built');
             });
         });
     });

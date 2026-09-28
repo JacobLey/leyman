@@ -220,11 +220,12 @@ suite('lifecycle', () => {
                     ],
                 });
 
-            await expect(ctx.lifecycle.lifecycleInternal(mockOptions, mockContext))
-                .eventually.be.rejectedWith(Error)
-                .that.contain({
-                    message: 'File <nx-json-path> is not up to date',
-                });
+            const thrown: unknown = await expect(
+                ctx.lifecycle.lifecycleInternal(mockOptions, mockContext)
+            ).to.be.rejectedWith(Error);
+            expect(thrown).to.include({
+                message: 'File <nx-json-path> is not up to date',
+            });
 
             expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
         });
@@ -299,11 +300,12 @@ suite('lifecycle', () => {
 
             ctx.stubbedAssertNxJson.withArgs(match(fakeNxJson)).throws();
 
-            await expect(ctx.lifecycle.lifecycleInternal(mockOptions, mockContext))
-                .eventually.be.rejectedWith(Error)
-                .that.contain({
-                    message: 'Failed to parse nx.json',
-                });
+            const thrown: unknown = await expect(
+                ctx.lifecycle.lifecycleInternal(mockOptions, mockContext)
+            ).to.be.rejectedWith(Error);
+            expect(thrown).to.include({
+                message: 'Failed to parse nx.json',
+            });
         });
 
         stubs.test('Invalid project.json', async ctx => {
@@ -338,11 +340,12 @@ suite('lifecycle', () => {
 
             ctx.stubbedAssertProjectJson.withArgs(match(fakeBarProjectJson)).throws();
 
-            await expect(ctx.lifecycle.lifecycleInternal(mockOptions, mockContext))
-                .eventually.be.rejectedWith(Error)
-                .that.contain({
-                    message: 'Failed to parse <bar-path>',
-                });
+            const thrown: unknown = await expect(
+                ctx.lifecycle.lifecycleInternal(mockOptions, mockContext)
+            ).to.be.rejectedWith(Error);
+            expect(thrown).to.include({
+                message: 'Failed to parse <bar-path>',
+            });
         });
 
         stubs.afterEach(ctx => {

@@ -71,14 +71,15 @@ suite('BarrelCommand', () => {
             ctx.stubbedParseCwd.resolves('<resolved-cwd>');
             ctx.stubbedBarrel.barrelFiles.resolves(['<file>']);
 
-            await expect(
+            const thrown: unknown = await expect(
                 ctx.barrelCommand.handler({
                     cwd: '<cwd>',
                     ci: true,
                     dryRun: false,
                     ignore: ['<ignore>'],
                 })
-            ).to.eventually.be.rejectedWith(Error, 'Files are not built');
+            ).to.be.rejectedWith(Error);
+            expect(thrown).to.have.property('message').that.includes('Files are not built');
 
             expect(ctx.stubbedLogger.calledOnceWithExactly('<file>')).to.equal(true);
         });

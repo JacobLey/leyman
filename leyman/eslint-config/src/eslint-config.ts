@@ -358,6 +358,12 @@ export default function makeEslintConfigForPackage({
                         allowStaticOnly: true,
                     },
                 ],
+                '@typescript-eslint/no-floating-promises': [
+                    'error',
+                    {
+                        checkThenables: true,
+                    },
+                ],
                 '@typescript-eslint/no-implicit-any-catch': 'off',
                 '@typescript-eslint/no-invalid-void-type': 'off',
                 '@typescript-eslint/no-misused-promises': [
