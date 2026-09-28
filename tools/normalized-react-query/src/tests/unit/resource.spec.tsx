@@ -10,7 +10,6 @@ import {
     useSuspenseQueries,
 } from '@tanstack/react-query';
 import { renderHook } from '@testing-library/react-hooks/server/index.js';
-import { expect, expectAsync } from 'bupkis';
 import { beforeEach, suite } from 'mocha-chain';
 import {
     useNormalizedNullablePrefetchedSuspenseQuery,
@@ -22,6 +21,7 @@ import {
     useNormalizedSuspenseQuery,
 } from 'normalized-react-query';
 import { Linked } from '../../lib/linked.js';
+import { expect } from '../chai-hooks.js';
 import { austenId, fellowshipOfTheRingId, prideAndPrejudiceId, tolkienId } from '../data/api.js';
 import { authors, books } from '../data/normalized.js';
 
@@ -54,10 +54,10 @@ suite('resource', () => {
                 authorId: tolkienId,
             });
 
-            expect(tolkien, 'to be an instance of', Linked);
-            expect(tolkien.getQueryClient(), 'to equal', client);
-            expect(tolkien.getQueryable(), 'to equal', authorsWithFavoriteAuthor);
-            expect(tolkien.getParams(), 'to deep equal', { authorId: tolkienId });
+            expect(tolkien).to.be.an.instanceOf(Linked);
+            expect(tolkien.getQueryClient()).to.equal(client);
+            expect(tolkien.getQueryable()).to.equal(authorsWithFavoriteAuthor);
+            expect(tolkien.getParams()).to.deep.equal({ authorId: tolkienId });
 
             await tolkien
                 .getQueryable()
@@ -66,13 +66,13 @@ suite('resource', () => {
             const tolkiensFavorite = tolkien
                 .getQueryable()
                 .getQueryData(tolkien.getQueryClient(), tolkien.getParams());
-            expect(tolkiensFavorite?.favoriteAuthor, 'to deep equal', {
+            expect(tolkiensFavorite?.favoriteAuthor).to.deep.equal({
                 authorId: austenId,
             });
         });
 
         context.test('Cannot be invoked directly', async () => {
-            expect(() => authors.link({ authorId: tolkienId }), 'to throw');
+            expect(() => authors.link({ authorId: tolkienId })).to.throw();
         });
     });
 
@@ -82,7 +82,7 @@ suite('resource', () => {
             const params = { authorId: randomId };
             const name = 'Joe Schmoe';
 
-            expect(authors.getQueryState(client, params), 'to be undefined');
+            expect(authors.getQueryState(client, params)).to.equal(undefined);
 
             authors.setQueryData(client, params, {
                 name,
@@ -91,13 +91,13 @@ suite('resource', () => {
             });
 
             const data = authors.getQueryData(client, params);
-            expect(data, 'not to be falsy');
-            expect(data!.name, 'to equal', name);
+            expect(data).to.not.equal(undefined);
+            expect(data!.name).to.equal(name);
 
             const fetchedData = await authors.fetchQuery(client, params);
-            expect(fetchedData.name, 'to equal', name);
+            expect(fetchedData.name).to.equal(name);
 
-            expect(authors.getQueryData(new QueryClient(), params), 'to be undefined');
+            expect(authors.getQueryData(new QueryClient(), params)).to.equal(undefined);
         });
 
         context.test('Set populated data', async ({ client }) => {
@@ -106,8 +106,8 @@ suite('resource', () => {
             const bookId = '<book-id>';
             const bookParams = { bookId };
 
-            expect(authors.getQueryState(client, authorParams), 'to be falsy');
-            expect(books.getQueryState(client, bookParams), 'to be falsy');
+            expect(authors.getQueryState(client, authorParams)).to.equal(undefined);
+            expect(books.getQueryState(client, bookParams)).to.equal(undefined);
 
             expect(
                 books.populate(client, bookParams, {
@@ -118,18 +118,16 @@ suite('resource', () => {
                         name: '<name>',
                         favoriteAuthor: null,
                     }),
-                }),
-                'to equal',
-                bookParams
-            );
+                })
+            ).to.equal(bookParams);
 
             const book = books.getQueryData(client, bookParams);
-            expect(book, 'not to be undefined');
-            expect(book!.author, 'to equal', authorParams);
+            expect(book).to.not.equal(undefined);
+            expect(book!.author).to.equal(authorParams);
 
             const author = authors.getQueryData(client, authorParams);
-            expect(author, 'not to be undefined');
-            expect(author!.name, 'to equal', '<name>');
+            expect(author).to.not.equal(undefined);
+            expect(author!.name).to.equal('<name>');
         });
     });
 
@@ -137,36 +135,33 @@ suite('resource', () => {
         context.test('Get direct data', async ({ client }) => {
             const author = await authors.fetchQuery(client, { authorId: tolkienId });
 
-            expect(author.name, 'to equal', 'J.R.R. Tolkien');
-            expect(authors.getQueryData(client, { authorId: tolkienId }), 'to equal', author);
+            expect(author.name).to.equal('J.R.R. Tolkien');
+            expect(authors.getQueryData(client, { authorId: tolkienId })).to.equal(author);
         });
 
         context.test('Get populated data', async ({ client }) => {
             const bookParams = { bookId: fellowshipOfTheRingId };
 
             const fetchBook = books.fetchQuery(client, bookParams);
-            expect(books.isFetching(client, bookParams), 'to be true');
-            expect(books.hasState(client, bookParams), 'to be true');
-            expect(books.hasData(client, bookParams), 'to be false');
-            expect(books.getQueryState(client, bookParams), 'to be truthy');
+            expect(books.isFetching(client, bookParams)).to.equal(true);
+            expect(books.hasState(client, bookParams)).to.equal(true);
+            expect(books.hasData(client, bookParams)).to.equal(false);
+            expect(books.getQueryState(client, bookParams)).to.not.equal(undefined);
             const book = await fetchBook;
 
-            expect(book.title, 'to equal', 'Fellowship of the Ring');
+            expect(book.title).to.equal('Fellowship of the Ring');
 
             const fetchAuthor = authors.fetchQuery(client, book.author);
-            expect(books.isFetching(client, { bookId: fellowshipOfTheRingId }), 'to be false');
-            expect(books.hasData(client, bookParams), 'to be true');
-            expect(books.getQueryState(client, bookParams), 'to be truthy');
+            expect(books.isFetching(client, { bookId: fellowshipOfTheRingId })).to.equal(false);
+            expect(books.hasData(client, bookParams)).to.equal(true);
+            expect(books.getQueryState(client, bookParams)).to.not.equal(undefined);
             const author = await fetchAuthor;
 
-            expect(author.name, 'to equal', 'J.R.R. Tolkien');
+            expect(author.name).to.equal('J.R.R. Tolkien');
         });
 
         context.test('Throws when query throws', async ({ client }) => {
-            await expectAsync(
-                books.fetchQuery(client, { bookId: '<not-a-real-id>' }),
-                'to be rejected'
-            );
+            await expect(books.fetchQuery(client, { bookId: '<not-a-real-id>' })).to.be.rejected;
         });
 
         context.test('Does not throw when propagated throws', async ({ client }) => {
@@ -175,10 +170,8 @@ suite('resource', () => {
                 favoriteBook: books.link({ bookId: '<fake-book-id>' }),
             }));
 
-            await expectAsync(
-                authorWithFakeFavoriteBook.fetchQuery(client, { authorId: tolkienId }),
-                'not to be rejected'
-            );
+            await expect(authorWithFakeFavoriteBook.fetchQuery(client, { authorId: tolkienId })).to
+                .be.fulfilled;
         });
 
         context.test('Triggers downstream propagation', async ({ client }) => {
@@ -186,7 +179,7 @@ suite('resource', () => {
                 authorId: tolkienId,
             });
 
-            expect(authors.isFetching(client, { authorId: austenId }), 'to be true');
+            expect(authors.isFetching(client, { authorId: austenId })).to.equal(true);
         });
     });
 
@@ -195,20 +188,20 @@ suite('resource', () => {
             const linkedAuthor = await authors.prefetchQuery(client, { authorId: tolkienId });
 
             const author = authors.getQueryData(client, linkedAuthor.getParams());
-            expect(author, 'not to be undefined');
-            expect(author!.name, 'to equal', 'J.R.R. Tolkien');
+            expect(author).to.not.equal(undefined);
+            expect(author!.name).to.equal('J.R.R. Tolkien');
         });
 
         context.test('Get populated data', async ({ client }) => {
             const linkedBook = await books.prefetchQuery(client, { bookId: fellowshipOfTheRingId });
 
             const book = books.getQueryData(client, linkedBook.getParams());
-            expect(book, 'not to be undefined');
-            expect(book!.title, 'to equal', 'Fellowship of the Ring');
+            expect(book).to.not.equal(undefined);
+            expect(book!.title).to.equal('Fellowship of the Ring');
 
             const author = authors.getQueryData(client, book!.author);
-            expect(author, 'not to be undefined');
-            expect(author!.name, 'to equal', 'J.R.R. Tolkien');
+            expect(author).to.not.equal(undefined);
+            expect(author!.name).to.equal('J.R.R. Tolkien');
         });
 
         context.test('Does not propagate failure', async ({ client }) => {
@@ -220,7 +213,7 @@ suite('resource', () => {
                 authorId: tolkienId,
             });
 
-            expect(authors.isFetching(client, { authorId: austenId }), 'to be true');
+            expect(authors.isFetching(client, { authorId: austenId })).to.equal(true);
         });
     });
 
@@ -238,9 +231,9 @@ suite('resource', () => {
             );
 
             const book = await books.ensureQueryData(client, { bookId });
-            expect(book.title, 'to equal', '<title>');
+            expect(book.title).to.equal('<title>');
 
-            await expectAsync(authors.ensureQueryData(client, book.author), 'to be rejected');
+            await expect(authors.ensureQueryData(client, book.author)).to.be.rejected;
         });
 
         context.test('Get populated data', async ({ client }) => {
@@ -251,12 +244,12 @@ suite('resource', () => {
             const book = books.getQueryData(client, {
                 bookId: fellowshipOfTheRingId,
             });
-            expect(book, 'to be truthy');
-            expect(book!.title, 'to equal', 'Fellowship of the Ring');
+            expect(book).to.not.equal(undefined);
+            expect(book!.title).to.equal('Fellowship of the Ring');
 
             const author = authors.getQueryData(client, book!.author);
-            expect(author, 'to be truthy');
-            expect(author!.name, 'to equal', 'J.R.R. Tolkien');
+            expect(author).to.not.equal(undefined);
+            expect(author!.name).to.equal('J.R.R. Tolkien');
         });
 
         context.test('Get propagated data', async ({ client }) => {
@@ -265,15 +258,12 @@ suite('resource', () => {
             });
 
             const author = authorsWithFavoriteAuthor.getQueryData(client, { authorId: austenId });
-            expect(author, 'to be truthy');
-            expect(author!.name, 'to equal', 'Jane Austen');
+            expect(author).to.not.equal(undefined);
+            expect(author!.name).to.equal('Jane Austen');
         });
 
         context.test('Throws when failure', async ({ client }) => {
-            await expectAsync(
-                books.ensureQueryData(client, { bookId: '<book-id>' }),
-                'to be rejected'
-            );
+            await expect(books.ensureQueryData(client, { bookId: '<book-id>' })).to.be.rejected;
         });
 
         context.test('Throws when propagated failure', async ({ client }) => {
@@ -282,10 +272,9 @@ suite('resource', () => {
                 favoriteBook: books.link({ bookId: '<book-id>' }),
             }));
 
-            await expectAsync(
-                authorWithFavoriteFakeBook.ensureQueryData(client, { authorId: tolkienId }),
-                'to be rejected'
-            );
+            await expect(
+                authorWithFavoriteFakeBook.ensureQueryData(client, { authorId: tolkienId })
+            ).to.be.rejected;
         });
 
         context.test(
@@ -296,12 +285,11 @@ suite('resource', () => {
                     favoriteBook: books.link({ bookId: '<book-id>' }, { isolateErrors: true }),
                 }));
 
-                await expectAsync(
+                await expect(
                     authorWithFavoriteIsolatedFakeBook.ensureQueryData(client, {
                         authorId: tolkienId,
-                    }),
-                    'not to be rejected'
-                );
+                    })
+                ).to.be.fulfilled;
             }
         );
     });
@@ -363,9 +351,9 @@ suite('resource', () => {
                     wrapper,
                 });
 
-                expect(result.current.book.data, 'to be undefined');
-                expect(result.current.author.data?.id, 'to be undefined');
-                expect(result.current.favoriteAuthor.data, 'to be undefined');
+                expect(result.current.book.data).to.equal(undefined);
+                expect(result.current.author.data?.id).to.equal(undefined);
+                expect(result.current.favoriteAuthor.data).to.equal(undefined);
             });
 
             contextWithWrapper.test('Returns data when preloaded', async ({ client, wrapper }) => {
@@ -386,9 +374,9 @@ suite('resource', () => {
                     { wrapper }
                 );
 
-                expect(result.current.book.data?.id, 'to equal', fellowshipOfTheRingId);
-                expect(result.current.author.data?.id, 'to equal', tolkienId);
-                expect(result.current.favoriteAuthor.data?.id, 'to equal', austenId);
+                expect(result.current.book.data?.id).to.equal(fellowshipOfTheRingId);
+                expect(result.current.author.data?.id).to.equal(tolkienId);
+                expect(result.current.favoriteAuthor.data?.id).to.equal(austenId);
 
                 const { result: result2 } = renderHook(
                     () =>
@@ -398,9 +386,9 @@ suite('resource', () => {
                     { wrapper }
                 );
 
-                expect(result2.current.book.data?.id, 'to equal', prideAndPrejudiceId);
-                expect(result2.current.author.data?.id, 'to equal', austenId);
-                expect(result2.current.favoriteAuthor.data, 'to be undefined');
+                expect(result2.current.book.data?.id).to.equal(prideAndPrejudiceId);
+                expect(result2.current.author.data?.id).to.equal(austenId);
+                expect(result2.current.favoriteAuthor.data).to.equal(undefined);
             });
 
             contextWithWrapper.test(
@@ -418,9 +406,9 @@ suite('resource', () => {
                         { wrapper }
                     );
 
-                    expect(result.current.book.data?.id, 'to equal', fellowshipOfTheRingId);
-                    expect(result.current.author.data?.id, 'to equal', tolkienId);
-                    expect(result.current.favoriteAuthor.data?.id, 'to equal', '<fake-id-2>');
+                    expect(result.current.book.data?.id).to.equal(fellowshipOfTheRingId);
+                    expect(result.current.author.data?.id).to.equal(tolkienId);
+                    expect(result.current.favoriteAuthor.data?.id).to.equal('<fake-id-2>');
 
                     await bookWithAuthorsFavorite.prefetchQuery(client, {
                         bookId: prideAndPrejudiceId,
@@ -434,9 +422,9 @@ suite('resource', () => {
                         { wrapper }
                     );
 
-                    expect(result2.current.book.data?.id, 'to equal', prideAndPrejudiceId);
-                    expect(result2.current.author.data?.id, 'to equal', austenId);
-                    expect(result2.current.favoriteAuthor.data, 'to be undefined');
+                    expect(result2.current.book.data?.id).to.equal(prideAndPrejudiceId);
+                    expect(result2.current.author.data?.id).to.equal(austenId);
+                    expect(result2.current.favoriteAuthor.data).to.equal(undefined);
                 }
             );
         });
@@ -481,7 +469,7 @@ suite('resource', () => {
                     wrapper,
                 });
 
-                expect(result.current, 'to deep equal', {
+                expect(result.current).to.deep.equal({
                     fellowshipId: undefined,
                     austenId: undefined,
                     skipped: undefined,
@@ -497,7 +485,7 @@ suite('resource', () => {
                     wrapper,
                 }));
 
-                expect(result.current, 'to deep equal', {
+                expect(result.current).to.deep.equal({
                     austenId,
                     tolkienId,
                     fellowshipId: fellowshipOfTheRingId,
@@ -543,23 +531,23 @@ suite('resource', () => {
                     wrapper,
                 });
 
-                expect(result.current.book.data, 'to be undefined');
-                expect(result.current.author.data?.id, 'to be undefined');
-                expect(result.current.favoriteAuthor.data, 'to be undefined');
+                expect(result.current.book.data).to.equal(undefined);
+                expect(result.current.author.data?.id).to.equal(undefined);
+                expect(result.current.favoriteAuthor.data).to.equal(undefined);
 
                 const query = bookWithAuthorsFavorite.getCachedQuery(client, {
                     bookId: fellowshipOfTheRingId,
                 });
-                expect(query, 'not to be undefined');
+                expect(query).to.not.equal(undefined);
                 await query!.promise;
 
                 ({ result } = renderHook(() => useHook({ bookId: fellowshipOfTheRingId }), {
                     wrapper,
                 }));
 
-                expect(result.current.book.data?.id, 'to equal', fellowshipOfTheRingId);
-                expect(result.current.author.data?.id, 'to equal', tolkienId);
-                expect(result.current.favoriteAuthor.data?.id, 'to equal', '<fake-id-2>');
+                expect(result.current.book.data?.id).to.equal(fellowshipOfTheRingId);
+                expect(result.current.author.data?.id).to.equal(tolkienId);
+                expect(result.current.favoriteAuthor.data?.id).to.equal('<fake-id-2>');
             });
 
             contextWithWrapper.test(
@@ -572,21 +560,21 @@ suite('resource', () => {
                     let { result } = renderHook(() => useHook({ bookId: fellowshipOfTheRingId }), {
                         wrapper,
                     });
-                    expect(result.current.book.data, 'to be undefined');
+                    expect(result.current.book.data).to.equal(undefined);
 
                     const query = bookWithAuthorsFavorite.getCachedQuery(client, {
                         bookId: fellowshipOfTheRingId,
                     });
-                    expect(query, 'not to be undefined');
+                    expect(query).to.not.equal(undefined);
                     await query!.promise;
 
                     ({ result } = renderHook(() => useHook({ bookId: fellowshipOfTheRingId }), {
                         wrapper,
                     }));
 
-                    expect(result.current.book.data?.id, 'to equal', fellowshipOfTheRingId);
-                    expect(result.current.author.data?.id, 'to equal', tolkienId);
-                    expect(result.current.favoriteAuthor.data?.id, 'to equal', austenId);
+                    expect(result.current.book.data?.id).to.equal(fellowshipOfTheRingId);
+                    expect(result.current.author.data?.id).to.equal(tolkienId);
+                    expect(result.current.favoriteAuthor.data?.id).to.equal(austenId);
                 }
             );
         });
@@ -629,21 +617,17 @@ suite('resource', () => {
                         },
                         { wrapper }
                     );
-                    expect(suspended.result.current, 'to be null');
+                    expect(suspended.result.current).to.equal(null);
 
-                    expect(prom, 'to be a', Promise);
+                    expect(prom).to.be.an.instanceOf(Promise);
                     expect(
-                        books.getQueryState(client, { bookId: fellowshipOfTheRingId })?.fetchStatus,
-                        'to equal',
-                        'fetching'
+                        books.getQueryState(client, { bookId: fellowshipOfTheRingId })?.fetchStatus
+                    ).to.equal('fetching');
+                    expect(authors.getQueryState(client, { authorId: tolkienId })).to.equal(
+                        undefined
                     );
-                    expect(
-                        authors.getQueryState(client, { authorId: tolkienId }),
-                        'to be undefined'
-                    );
-                    expect(
-                        authors.getQueryState(client, { authorId: austenId }),
-                        'to be undefined'
+                    expect(authors.getQueryState(client, { authorId: austenId })).to.equal(
+                        undefined
                     );
                     await (prom as Promise<void>);
                     // eslint-disable-next-line require-atomic-updates -- explicitly want to reset before hook
@@ -660,26 +644,22 @@ suite('resource', () => {
                         },
                         { wrapper }
                     );
-                    expect(suspended.result.current, 'to be null');
+                    expect(suspended.result.current).to.equal(null);
 
-                    expect(prom, 'to be a', Promise);
+                    expect(prom).to.be.an.instanceOf(Promise);
                     expect(
-                        authors.getQueryState(client, { authorId: tolkienId })?.fetchStatus,
-                        'to equal',
-                        'idle'
-                    );
+                        authors.getQueryState(client, { authorId: tolkienId })?.fetchStatus
+                    ).to.equal('idle');
                     expect(
-                        authors.getQueryState(client, { authorId: austenId })?.fetchStatus,
-                        'to equal',
-                        'fetching'
-                    );
+                        authors.getQueryState(client, { authorId: austenId })?.fetchStatus
+                    ).to.equal('fetching');
                     await (prom as Promise<void>);
 
                     const { result } = renderHook(() => useHook(), { wrapper });
 
-                    expect(result.current.book.data.id, 'to equal', fellowshipOfTheRingId);
-                    expect(result.current.author.data.id, 'to equal', tolkienId);
-                    expect(result.current.favoriteAuthor.data.id, 'to equal', austenId);
+                    expect(result.current.book.data.id).to.equal(fellowshipOfTheRingId);
+                    expect(result.current.author.data.id).to.equal(tolkienId);
+                    expect(result.current.favoriteAuthor.data.id).to.equal(austenId);
                 }
             );
         });
@@ -726,14 +706,14 @@ suite('resource', () => {
                     },
                     { wrapper }
                 );
-                expect(suspended.result.current, 'to be null');
+                expect(suspended.result.current).to.equal(null);
 
-                expect(prom, 'to be a', Promise);
+                expect(prom).to.be.an.instanceOf(Promise);
                 await (prom as Promise<void>);
 
                 const { result } = renderHook(() => useHook(), { wrapper });
 
-                expect(result.current, 'to deep equal', {
+                expect(result.current).to.deep.equal({
                     austenId,
                     tolkienId,
                     fellowshipId: fellowshipOfTheRingId,
@@ -777,18 +757,18 @@ suite('resource', () => {
                     },
                     { wrapper }
                 );
-                expect(suspended.result.current, 'to be null');
+                expect(suspended.result.current).to.equal(null);
 
-                expect(prom, 'to be a', Promise);
+                expect(prom).to.be.an.instanceOf(Promise);
                 await (prom as Promise<void>);
 
                 const { result } = renderHook(() => useHook(), { wrapper });
 
-                expect(result.current.book, 'not to be null');
-                expect(result.current.book!.data.id, 'to equal', prideAndPrejudiceId);
-                expect(result.current.author, 'not to be null');
-                expect(result.current.author!.data.id, 'to equal', austenId);
-                expect(result.current.favoriteAuthor, 'to be null');
+                expect(result.current.book).to.not.equal(null);
+                expect(result.current.book!.data.id).to.equal(prideAndPrejudiceId);
+                expect(result.current.author).to.not.equal(null);
+                expect(result.current.author!.data.id).to.equal(austenId);
+                expect(result.current.favoriteAuthor).to.equal(null);
             });
         });
 
@@ -835,17 +815,14 @@ suite('resource', () => {
                         },
                         { wrapper }
                     );
-                    expect(suspended.result.current, 'to be null');
+                    expect(suspended.result.current).to.equal(null);
 
-                    expect(prom, 'to be a', Promise);
+                    expect(prom).to.be.an.instanceOf(Promise);
                     expect(
-                        books.getQueryState(client, { bookId: fellowshipOfTheRingId })?.fetchStatus,
-                        'to equal',
-                        'fetching'
-                    );
-                    expect(
-                        authors.getQueryState(client, { authorId: tolkienId }),
-                        'to be undefined'
+                        books.getQueryState(client, { bookId: fellowshipOfTheRingId })?.fetchStatus
+                    ).to.equal('fetching');
+                    expect(authors.getQueryState(client, { authorId: tolkienId })).to.equal(
+                        undefined
                     );
 
                     const [preload] = await Promise.all([
@@ -857,9 +834,9 @@ suite('resource', () => {
 
                     let { result } = renderHook(() => useHook(preload), { wrapper });
 
-                    expect(result.current.book.data.id, 'to equal', fellowshipOfTheRingId);
-                    expect(result.current.author.data.id, 'to equal', tolkienId);
-                    expect(result.current.favoriteAuthor.data.id, 'to equal', '<fake-id>');
+                    expect(result.current.book.data.id).to.equal(fellowshipOfTheRingId);
+                    expect(result.current.author.data.id).to.equal(tolkienId);
+                    expect(result.current.favoriteAuthor.data.id).to.equal('<fake-id>');
 
                     // Wait for existing subqueries to flush...
                     await Promise.all(
@@ -871,9 +848,9 @@ suite('resource', () => {
 
                     ({ result } = renderHook(() => useHook(preload), { wrapper }));
 
-                    expect(result.current.book.data.id, 'to equal', fellowshipOfTheRingId);
-                    expect(result.current.author.data.id, 'to equal', tolkienId);
-                    expect(result.current.favoriteAuthor.data.id, 'to equal', austenId);
+                    expect(result.current.book.data.id).to.equal(fellowshipOfTheRingId);
+                    expect(result.current.author.data.id).to.equal(tolkienId);
+                    expect(result.current.favoriteAuthor.data.id).to.equal(austenId);
                 }
             );
         });
@@ -922,8 +899,8 @@ suite('resource', () => {
                         { wrapper }
                     );
 
-                    expect(suspended.result.current, 'to be null');
-                    expect(prom, 'to be a', Promise);
+                    expect(suspended.result.current).to.equal(null);
+                    expect(prom).to.be.an.instanceOf(Promise);
 
                     const [fellowshipPreload] = await Promise.all([
                         bookWithAuthorsFavorite.prefetchQuery(client, {
@@ -934,9 +911,9 @@ suite('resource', () => {
 
                     let { result } = renderHook(() => useHook(fellowshipPreload), { wrapper });
 
-                    expect(result.current.book?.data.id, 'to equal', fellowshipOfTheRingId);
-                    expect(result.current.author?.data.id, 'to equal', tolkienId);
-                    expect(result.current.favoriteAuthor?.data.id, 'to equal', '<fake-id>');
+                    expect(result.current.book?.data.id).to.equal(fellowshipOfTheRingId);
+                    expect(result.current.author?.data.id).to.equal(tolkienId);
+                    expect(result.current.favoriteAuthor?.data.id).to.equal('<fake-id>');
 
                     const pridePreload = await bookWithAuthorsFavorite.prefetchQuery(client, {
                         bookId: prideAndPrejudiceId,
@@ -944,15 +921,15 @@ suite('resource', () => {
 
                     ({ result } = renderHook(() => useHook(pridePreload), { wrapper }));
 
-                    expect(result.current.book?.data.id, 'to equal', prideAndPrejudiceId);
-                    expect(result.current.author?.data.id, 'to equal', austenId);
-                    expect(result.current.favoriteAuthor, 'to be null');
+                    expect(result.current.book?.data.id).to.equal(prideAndPrejudiceId);
+                    expect(result.current.author?.data.id).to.equal(austenId);
+                    expect(result.current.favoriteAuthor).to.equal(null);
 
                     ({ result } = renderHook(() => useHook(fellowshipPreload), { wrapper }));
 
-                    expect(result.current.book?.data.id, 'to equal', fellowshipOfTheRingId);
-                    expect(result.current.author?.data.id, 'to equal', tolkienId);
-                    expect(result.current.favoriteAuthor?.data.id, 'to equal', austenId);
+                    expect(result.current.book?.data.id).to.equal(fellowshipOfTheRingId);
+                    expect(result.current.author?.data.id).to.equal(tolkienId);
+                    expect(result.current.favoriteAuthor?.data.id).to.equal(austenId);
                 }
             );
         });

@@ -1,7 +1,7 @@
 import { CancelledError, QueryClient } from '@tanstack/react-query';
-import { expect, expectAsync } from 'bupkis';
 import { beforeEach, suite } from 'mocha-chain';
 import { resource } from 'normalized-react-query';
+import { expect } from '../../chai-hooks.js';
 
 suite('queryable', () => {
     const context = beforeEach(() => {
@@ -29,15 +29,15 @@ suite('queryable', () => {
             });
 
             let fetched = await fetchableResource.fetchQuery(client);
-            expect(fetched, 'to equal', 1);
+            expect(fetched).to.equal(1);
 
             fetched = await fetchableResource.fetchQuery(client);
-            expect(fetched, 'to equal', 1);
+            expect(fetched).to.equal(1);
 
             await fetchableResource.refetchQuery(client);
 
             fetched = await fetchableResource.fetchQuery(client);
-            expect(fetched, 'to equal', 2);
+            expect(fetched).to.equal(2);
         });
 
         context.test('Will not perform original fetch', async ({ client }) => {
@@ -50,7 +50,7 @@ suite('queryable', () => {
 
             await fetchableResource.refetchQuery(client, 'abc');
 
-            expect(fetchableResource.hasState(client, 'abc'), 'to be false');
+            expect(fetchableResource.hasState(client, 'abc')).to.equal(false);
         });
     });
 
@@ -75,14 +75,14 @@ suite('queryable', () => {
 
             await abortableResource.cancelQuery(client, []);
 
-            await expectAsync(fetching, 'to reject with a', CancelledError);
+            await expect(fetching).to.be.rejectedWith(CancelledError);
 
             const queryState = abortableResource.getQueryState(client, true);
-            expect(queryState, 'not to be undefined');
-            expect(queryState!.data, 'to be undefined');
+            expect(queryState).to.not.equal(undefined);
+            expect(queryState!.data).to.equal(undefined);
 
             const refetched = await abortableResource.fetchQuery(client, {});
-            expect(refetched, 'to equal', false);
+            expect(refetched).to.equal(false);
         });
     });
 
@@ -94,17 +94,17 @@ suite('queryable', () => {
 
         context.test('Removes', async ({ client }) => {
             removableResource.populate(client, 1, 2);
-            expect(removableResource.hasData(client, 1), 'to be true');
+            expect(removableResource.hasData(client, 1)).to.equal(true);
 
             removableResource.removeQuery(client, 1);
 
-            expect(removableResource.hasState(client, 1), 'to be false');
+            expect(removableResource.hasState(client, 1)).to.equal(false);
         });
 
         context.test('Noop if not exists', async ({ client }) => {
             removableResource.removeQuery(client, 1);
 
-            expect(removableResource.hasState(client, 1), 'to be false');
+            expect(removableResource.hasState(client, 1)).to.equal(false);
         });
     });
 
@@ -129,17 +129,17 @@ suite('queryable', () => {
 
             await prefetching;
 
-            expect(resettableResource.hasState(client, [1, 'a']), 'to be true');
-            expect(resettableResource.hasData(client, [1, 'a']), 'to be false');
+            expect(resettableResource.hasState(client, [1, 'a'])).to.equal(true);
+            expect(resettableResource.hasData(client, [1, 'a'])).to.equal(false);
 
             const updated = await resettableResource.fetchQuery(client, [1, 'a']);
-            expect(updated, 'to equal', 'a:3');
+            expect(updated).to.equal('a:3');
         });
 
         resettableContext.test('Noop if not exists', async ({ client, resettableResource }) => {
             await resettableResource.resetQuery(client, [2, 'b']);
 
-            expect(resettableResource.hasState(client, [2, 'b']), 'to be false');
+            expect(resettableResource.hasState(client, [2, 'b'])).to.equal(false);
         });
     });
 });

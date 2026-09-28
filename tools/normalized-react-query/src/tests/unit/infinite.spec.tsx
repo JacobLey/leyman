@@ -9,7 +9,6 @@ import {
     useQueryClient,
 } from '@tanstack/react-query';
 import { renderHook } from '@testing-library/react-hooks/server/index.js';
-import { expect, expectAsync } from 'bupkis';
 import { beforeEach, suite } from 'mocha-chain';
 import {
     useNormalizedInfiniteQuery,
@@ -21,6 +20,7 @@ import {
     useNormalizedSuspenseInfiniteQuery,
 } from 'normalized-react-query';
 import { Linked } from '../../lib/linked.js';
+import { expect } from '../chai-hooks.js';
 import {
     austenId,
     fellowshipOfTheRingId,
@@ -67,12 +67,12 @@ suite('infinite', () => {
 
             const authorWithBook = await authorsWithBooks.fetchInfiniteQuery(client);
 
-            expect(authorWithBook.pages.flat(), 'to have length', 2);
+            expect(authorWithBook.pages.flat()).to.have.length(2);
             const [firstLink] = authorWithBook.pages.flat();
-            expect(firstLink, 'to be an instance of', Linked);
-            expect(firstLink!.getQueryClient(), 'to equal', client);
-            expect(firstLink!.getQueryable(), 'to equal', infiniteBooksByAuthor);
-            expect(firstLink!.getParams(), 'to deep equal', { authorId: tolkienId });
+            expect(firstLink).to.be.an.instanceOf(Linked);
+            expect(firstLink!.getQueryClient()).to.equal(client);
+            expect(firstLink!.getQueryable()).to.equal(infiniteBooksByAuthor);
+            expect(firstLink!.getParams()).to.deep.equal({ authorId: tolkienId });
 
             await firstLink!
                 .getQueryable()
@@ -83,12 +83,12 @@ suite('infinite', () => {
                 .getInfiniteQueryData(firstLink!.getQueryClient(), firstLink!.getParams())
                 ?.pages.flat()
                 .map(book => book.bookId);
-            expect(tolkiensBooks, 'to have length', 2);
-            expect(tolkiensBooks, 'to contain', fellowshipOfTheRingId);
+            expect(tolkiensBooks).to.have.length(2);
+            expect(tolkiensBooks).to.include(fellowshipOfTheRingId);
         });
 
         context.test('Cannot be invoked directly', async () => {
-            expect(() => infiniteBooksWithAuthor.link({ authorId: tolkienId }), 'to throw');
+            expect(() => infiniteBooksWithAuthor.link({ authorId: tolkienId })).to.throw();
         });
     });
 
@@ -97,8 +97,8 @@ suite('infinite', () => {
             const authorId = '<author-id>';
             const bookId = '<book-id>';
 
-            expect(infiniteAuthorsWithBooks.getQueryState(client), 'to be undefined');
-            expect(infiniteBooksWithAuthor.getQueryState(client, { authorId }), 'to be undefined');
+            expect(infiniteAuthorsWithBooks.getQueryState(client)).to.equal(undefined);
+            expect(infiniteBooksWithAuthor.getQueryState(client, { authorId })).to.equal(undefined);
 
             infiniteAuthorsWithBooks.setInfiniteQueryData(client, undefined, {
                 pages: [[{ authorId }]],
@@ -122,20 +122,17 @@ suite('infinite', () => {
             );
 
             const listedAuthors = infiniteAuthorsWithBooks.getQueryState(client);
-            expect(listedAuthors?.data?.pages[0]?.[0]?.authorId, 'to equal', authorId);
+            expect(listedAuthors?.data?.pages[0]?.[0]?.authorId).to.equal(authorId);
             const listedBooks = infiniteBooksWithAuthor.getQueryState(client, { authorId });
-            expect(listedBooks?.data?.pages[0]?.[0]?.bookId, 'to equal', bookId);
+            expect(listedBooks?.data?.pages[0]?.[0]?.bookId).to.equal(bookId);
 
             const fetchedData = await infiniteAuthorsWithBooks.fetchInfiniteQuery(client);
             expect(
-                fetchedData.pages.flat().map(author => author.getParams().authorId),
-                'to deep equal',
-                [authorId]
-            );
+                fetchedData.pages.flat().map(author => author.getParams().authorId)
+            ).to.deep.equal([authorId]);
 
-            expect(
-                infiniteBooksWithAuthor.getQueryData(new QueryClient(), { authorId }),
-                'to be undefined'
+            expect(infiniteBooksWithAuthor.getQueryData(new QueryClient(), { authorId })).to.equal(
+                undefined
             );
         });
 
@@ -143,8 +140,8 @@ suite('infinite', () => {
             const authorId = '<author-id>';
             const bookId = '<book-id>';
 
-            expect(infiniteAuthorsWithBooks.getQueryState(client), 'to be undefined');
-            expect(infiniteBooksWithAuthor.getQueryState(client, { authorId }), 'to be undefined');
+            expect(infiniteAuthorsWithBooks.getQueryState(client)).to.equal(undefined);
+            expect(infiniteBooksWithAuthor.getQueryState(client, { authorId })).to.equal(undefined);
 
             expect(
                 // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
@@ -155,9 +152,8 @@ suite('infinite', () => {
                             offset: -1,
                         },
                     ],
-                }),
-                'to be undefined'
-            );
+                })
+            ).to.equal(undefined);
             expect(
                 infiniteBooksWithAuthor.populate(
                     client,
@@ -170,15 +166,13 @@ suite('infinite', () => {
                             },
                         ],
                     }
-                ),
-                'to deep equal',
-                { authorId }
-            );
+                )
+            ).to.deep.equal({ authorId });
 
             const listedAuthors = infiniteAuthorsWithBooks.getQueryState(client);
-            expect(listedAuthors?.data?.pages[0]?.[0]?.authorId, 'to equal', authorId);
+            expect(listedAuthors?.data?.pages[0]?.[0]?.authorId).to.equal(authorId);
             const listedBooks = infiniteBooksWithAuthor.getQueryState(client, { authorId });
-            expect(listedBooks?.data?.pages[0]?.[0]?.bookId, 'to equal', bookId);
+            expect(listedBooks?.data?.pages[0]?.[0]?.bookId).to.equal(bookId);
         });
     });
 
@@ -189,7 +183,7 @@ suite('infinite', () => {
             const authorId = listedAuthors.pages
                 .flat()
                 .map(author => author.getParams().authorId)[0]!;
-            expect(authorId, 'to equal', tolkienId);
+            expect(authorId).to.equal(tolkienId);
 
             const listedBooks = await infiniteBooksWithAuthor.fetchInfiniteQuery(
                 client,
@@ -201,17 +195,16 @@ suite('infinite', () => {
                 }
             );
 
-            expect(listedBooks.pages, 'to have length', 3);
+            expect(listedBooks.pages).to.have.length(3);
             const bookIds = listedBooks.pages.flat().map(book => book.getParams().bookId);
 
-            expect(bookIds, 'to contain', fellowshipOfTheRingId);
+            expect(bookIds).to.include(fellowshipOfTheRingId);
         });
 
         context.test('Throws when query throws', async ({ client }) => {
-            await expectAsync(
-                infiniteBooksWithAuthor.fetchInfiniteQuery(client, { authorId: '<not-a-real-id>' }),
-                'to be rejected'
-            );
+            await expect(
+                infiniteBooksWithAuthor.fetchInfiniteQuery(client, { authorId: '<not-a-real-id>' })
+            ).to.be.rejected;
         });
 
         context.test('Does not throw when propagated throws', async ({ client }) => {
@@ -219,10 +212,9 @@ suite('infinite', () => {
                 page.map(book => authors.link({ authorId: book.bookId }))
             );
 
-            await expectAsync(
-                authorWithFakeFavoriteBook.fetchInfiniteQuery(client, { authorId: tolkienId }),
-                'not to be rejected'
-            );
+            await expect(
+                authorWithFakeFavoriteBook.fetchInfiniteQuery(client, { authorId: tolkienId })
+            ).to.be.fulfilled;
         });
 
         context.test('Triggers downstream propagation', async ({ client }) => {
@@ -237,9 +229,8 @@ suite('infinite', () => {
 
             await infiniteAuthorsWithBooks.fetchInfiniteQuery(client);
 
-            expect(
-                infiniteBooksWithAuthor.isFetching(client, { authorId: tolkienId }),
-                'to be true'
+            expect(infiniteBooksWithAuthor.isFetching(client, { authorId: tolkienId })).to.equal(
+                true
             );
         });
     });
@@ -254,9 +245,7 @@ suite('infinite', () => {
                 client,
                 linkedBooks.getParams()
             );
-            expect(
-                listedBooks?.pages.flat().map(book => book.bookId),
-                'to contain',
+            expect(listedBooks?.pages.flat().map(book => book.bookId)).to.include(
                 fellowshipOfTheRingId
             );
         });
@@ -264,7 +253,7 @@ suite('infinite', () => {
         context.test('Get populated data', async ({ client }) => {
             await infiniteBooksWithAuthor.prefetchInfiniteQuery(client, { authorId: kingId });
 
-            expect(books.hasState(client, { bookId: longWalkId }), 'to be false');
+            expect(books.hasState(client, { bookId: longWalkId })).to.equal(false);
 
             await infiniteBooksWithAuthor.prefetchInfiniteQuery(
                 client,
@@ -275,7 +264,7 @@ suite('infinite', () => {
                 }
             );
 
-            expect(books.hasState(client, { bookId: longWalkId }), 'to be false');
+            expect(books.hasState(client, { bookId: longWalkId })).to.equal(false);
         });
 
         context.test('Only respects options on initial load', async ({ client }) => {
@@ -288,7 +277,7 @@ suite('infinite', () => {
             );
 
             const book = books.getQueryData(client, { bookId: longWalkId });
-            expect(book?.title, 'to equal', 'The Long Walk');
+            expect(book?.title).to.equal('The Long Walk');
         });
 
         context.test('Does not propagate failure', async ({ client }) => {
@@ -301,7 +290,7 @@ suite('infinite', () => {
             await infiniteAuthorsWithBooks.prefetchInfiniteQuery(client, undefined, {
                 pages: 10,
             });
-            expect(infiniteBooksByAuthor.isFetching(client, { authorId: kingId }), 'to be true');
+            expect(infiniteBooksByAuthor.isFetching(client, { authorId: kingId })).to.equal(true);
         });
     });
 
@@ -333,10 +322,10 @@ suite('infinite', () => {
 
             await infiniteAuthorsWithBooks.ensureInfiniteQueryData(client);
 
-            expect(authors.getQueryData(client, { authorId })?.name, 'to equal', 'Stephen King');
-            expect(authors.getQueryData(client, { authorId: tolkienId }), 'to be undefined');
-            expect(books.getQueryData(client, { bookId })?.title, 'to equal', 'The Long Walk');
-            expect(books.getQueryData(client, { bookId: shiningId }), 'to be undefined');
+            expect(authors.getQueryData(client, { authorId })?.name).to.equal('Stephen King');
+            expect(authors.getQueryData(client, { authorId: tolkienId })).to.equal(undefined);
+            expect(books.getQueryData(client, { bookId })?.title).to.equal('The Long Walk');
+            expect(books.getQueryData(client, { bookId: shiningId })).to.equal(undefined);
         });
 
         context.test('Get populated data', async ({ client }) => {
@@ -347,25 +336,21 @@ suite('infinite', () => {
                     .getQueryData(client, {
                         authorId: tolkienId,
                     })
-                    ?.pages.flat(),
-                'to have length',
-                4
-            );
+                    ?.pages.flat()
+            ).to.have.length(4);
             expect(
                 books.getQueryData(client, {
                     bookId: fellowshipOfTheRingId,
-                })?.title,
-                'to equal',
-                'Fellowship of the Ring'
-            );
+                })?.title
+            ).to.equal('Fellowship of the Ring');
 
-            expect(books.getQueryData(client, { bookId: longWalkId }), 'to be undefined');
+            expect(books.getQueryData(client, { bookId: longWalkId })).to.equal(undefined);
 
             await infiniteAuthorsWithBooks.ensureInfiniteQueryData(client, undefined, {
                 // Not respected after initial load
                 pages: 10,
             });
-            expect(books.hasState(client, { bookId: longWalkId }), 'to be false');
+            expect(books.hasState(client, { bookId: longWalkId })).to.equal(false);
         });
 
         context.test('Only respects options on initial load', async ({ client }) => {
@@ -373,18 +358,15 @@ suite('infinite', () => {
                 pages: 10,
             });
 
-            expect(
-                books.getQueryData(client, { bookId: longWalkId })?.title,
-                'to equal',
+            expect(books.getQueryData(client, { bookId: longWalkId })?.title).to.equal(
                 'The Long Walk'
             );
         });
 
         context.test('Throws when failure', async ({ client }) => {
-            await expectAsync(
-                infiniteBooksByAuthor.ensureInfiniteQueryData(client, { authorId: '<author-id>' }),
-                'to be rejected'
-            );
+            await expect(
+                infiniteBooksByAuthor.ensureInfiniteQueryData(client, { authorId: '<author-id>' })
+            ).to.be.rejected;
         });
 
         context.test('Throws when propagated failure', async ({ client }) => {
@@ -395,10 +377,9 @@ suite('infinite', () => {
                 }))
             );
 
-            await expectAsync(
-                infiniteBooksWithMoreBooks.ensureInfiniteQueryData(client, { authorId: austenId }),
-                'to be rejected'
-            );
+            await expect(
+                infiniteBooksWithMoreBooks.ensureInfiniteQueryData(client, { authorId: austenId })
+            ).to.be.rejected;
         });
 
         context.test(
@@ -414,12 +395,11 @@ suite('infinite', () => {
                     }))
                 );
 
-                await expectAsync(
+                await expect(
                     infiniteBooksWithMoreBooks.ensureInfiniteQueryData(client, {
                         authorId: austenId,
-                    }),
-                    'not to be rejected'
-                );
+                    })
+                ).to.be.fulfilled;
             }
         );
     });
@@ -492,7 +472,7 @@ suite('infinite', () => {
             contextWithWrapper.test('Returns undefined when not loaded', ({ wrapper }) => {
                 const { result } = renderHook(() => useHook(), { wrapper });
 
-                expect(result.current, 'to deep equal', {
+                expect(result.current).to.deep.equal({
                     firstAuthor: undefined,
                     firstAuthorBookIds: [],
                     lastAuthor: undefined,
@@ -509,30 +489,30 @@ suite('infinite', () => {
 
                 let { result } = renderHook(() => useHook(), { wrapper });
 
-                expect(result.current.firstAuthor, 'to deep equal', { authorId: tolkienId });
-                expect(result.current.firstAuthorBookIds, 'to contain', fellowshipOfTheRingId);
-                expect(result.current.lastAuthor, 'to deep equal', { authorId: orwellId });
-                expect(result.current.lastAuthorBookParams, 'to deep equal', [0, 2]);
-                expect(result.current.hasMoreAuthors, 'to equal', true);
-                expect(result.current.hasPreviousAuthors, 'to equal', false);
+                expect(result.current.firstAuthor).to.deep.equal({ authorId: tolkienId });
+                expect(result.current.firstAuthorBookIds).to.include(fellowshipOfTheRingId);
+                expect(result.current.lastAuthor).to.deep.equal({ authorId: orwellId });
+                expect(result.current.lastAuthorBookParams).to.deep.equal([0, 2]);
+                expect(result.current.hasMoreAuthors).to.equal(true);
+                expect(result.current.hasPreviousAuthors).to.equal(false);
 
                 const oldFetchMore = result.current.fetchMoreAuthors;
                 await oldFetchMore();
 
                 ({ result } = renderHook(() => useHook(), { wrapper }));
 
-                expect(result.current.firstAuthor, 'to deep equal', { authorId: tolkienId });
-                expect(result.current.firstAuthorBookIds, 'to contain', fellowshipOfTheRingId);
-                expect(result.current.lastAuthor, 'to deep equal', { authorId: kingId });
-                expect(result.current.lastAuthorBookIds, 'to have length', 0);
-                expect(result.current.hasMoreAuthors, 'to equal', true);
-                expect(result.current.hasPreviousAuthors, 'to equal', false);
+                expect(result.current.firstAuthor).to.deep.equal({ authorId: tolkienId });
+                expect(result.current.firstAuthorBookIds).to.include(fellowshipOfTheRingId);
+                expect(result.current.lastAuthor).to.deep.equal({ authorId: kingId });
+                expect(result.current.lastAuthorBookIds).to.have.length(0);
+                expect(result.current.hasMoreAuthors).to.equal(true);
+                expect(result.current.hasPreviousAuthors).to.equal(false);
 
                 await oldFetchMore();
 
                 ({ result } = renderHook(() => useHook(), { wrapper }));
 
-                expect(result.current.hasMoreAuthors, 'to equal', false);
+                expect(result.current.hasMoreAuthors).to.equal(false);
             });
 
             contextWithWrapper.test(
@@ -569,14 +549,12 @@ suite('infinite', () => {
                         }
                     );
 
-                    expect(result.current.skipped.data, 'to be undefined');
+                    expect(result.current.skipped.data).to.equal(undefined);
                     expect(
                         result.current.initialized.data?.pages
                             .flat()
-                            .map(book => book.getParams().bookId),
-                        'to deep equal',
-                        ['<book-id-2>']
-                    );
+                            .map(book => book.getParams().bookId)
+                    ).to.deep.equal(['<book-id-2>']);
                 }
             );
         });
@@ -614,36 +592,36 @@ suite('infinite', () => {
                     wrapper,
                 });
 
-                expect(result.current, 'to deep equal', {
+                expect(result.current).to.deep.equal({
                     listedAuthors: null,
                     listedBooks: null,
                 });
 
                 const authorsQuery = infiniteAuthors.getCachedQuery(client);
-                expect(authorsQuery, 'not to be undefined');
+                expect(authorsQuery).to.not.equal(undefined);
                 await authorsQuery!.promise;
 
                 ({ result } = renderHook(() => useHook({ pages: 1 }), {
                     wrapper,
                 }));
 
-                expect(result.current.listedAuthors, 'to contain', tolkienId);
-                expect(result.current.listedAuthors, 'not to contain', kingId);
-                expect(result.current.listedBooks, 'to be null');
+                expect(result.current.listedAuthors).to.include(tolkienId);
+                expect(result.current.listedAuthors).to.not.include(kingId);
+                expect(result.current.listedBooks).to.equal(null);
 
                 const booksQuery = infiniteBooksByAuthor.getCachedQuery(client, {
                     authorId: tolkienId,
                 });
-                expect(booksQuery, 'not to be undefined');
+                expect(booksQuery).to.not.equal(undefined);
                 await booksQuery!.promise;
 
                 ({ result } = renderHook(() => useHook({ pages: 2 }), {
                     wrapper,
                 }));
 
-                expect(result.current.listedAuthors, 'to contain', tolkienId);
-                expect(result.current.listedAuthors, 'not to contain', kingId);
-                expect(result.current.listedBooks, 'to contain', fellowshipOfTheRingId);
+                expect(result.current.listedAuthors).to.include(tolkienId);
+                expect(result.current.listedAuthors).to.not.include(kingId);
+                expect(result.current.listedBooks).to.include(fellowshipOfTheRingId);
             });
 
             contextWithWrapper.test('Allows returning empty', async ({ client, wrapper }) => {
@@ -651,7 +629,7 @@ suite('infinite', () => {
                     wrapper,
                 });
 
-                expect(result.current, 'to deep equal', {
+                expect(result.current).to.deep.equal({
                     listedAuthors: null,
                     listedBooks: null,
                 });
@@ -662,7 +640,7 @@ suite('infinite', () => {
                     wrapper,
                 }));
 
-                expect(result.current, 'to deep equal', {
+                expect(result.current).to.deep.equal({
                     listedAuthors: [tolkienId, orwellId],
                     listedBooks: null,
                 });
@@ -671,17 +649,15 @@ suite('infinite', () => {
                     wrapper,
                 }));
 
-                expect(result.current.listedAuthors, 'to contain', tolkienId);
-                expect(result.current.listedAuthors, 'not to contain', kingId);
+                expect(result.current.listedAuthors).to.include(tolkienId);
+                expect(result.current.listedAuthors).to.not.include(kingId);
                 // Because original page load was 0 pages, never propagated
-                expect(result.current.listedBooks, 'to be null');
+                expect(result.current.listedBooks).to.equal(null);
 
                 expect(
                     infiniteBooksWithAuthor.getQueryState(client, { authorId: tolkienId })
-                        ?.fetchStatus,
-                    'to equal',
-                    'fetching'
-                );
+                        ?.fetchStatus
+                ).to.equal('fetching');
             });
         });
 
@@ -722,18 +698,13 @@ suite('infinite', () => {
                         },
                         { wrapper }
                     );
-                    expect(suspended.result.current, 'to be null');
+                    expect(suspended.result.current).to.equal(null);
 
-                    expect(prom, 'to be a', Promise);
+                    expect(prom).to.be.an.instanceOf(Promise);
+                    expect(infiniteAuthors.getQueryState(client)?.fetchStatus).to.equal('fetching');
                     expect(
-                        infiniteAuthors.getQueryState(client)?.fetchStatus,
-                        'to equal',
-                        'fetching'
-                    );
-                    expect(
-                        infiniteBooksByAuthor.getQueryState(client, { authorId: tolkienId }),
-                        'to be undefined'
-                    );
+                        infiniteBooksByAuthor.getQueryState(client, { authorId: tolkienId })
+                    ).to.equal(undefined);
                     await (prom as Promise<void>);
                     // eslint-disable-next-line require-atomic-updates -- explicitly want to reset before hook
                     prom = null;
@@ -749,23 +720,21 @@ suite('infinite', () => {
                         },
                         { wrapper }
                     );
-                    expect(suspended.result.current, 'to be null');
+                    expect(suspended.result.current).to.equal(null);
 
-                    expect(prom, 'to be a', Promise);
-                    expect(infiniteAuthors.getQueryState(client)?.fetchStatus, 'to equal', 'idle');
+                    expect(prom).to.be.an.instanceOf(Promise);
+                    expect(infiniteAuthors.getQueryState(client)?.fetchStatus).to.equal('idle');
                     expect(
                         infiniteBooksByAuthor.getQueryState(client, { authorId: tolkienId })
-                            ?.fetchStatus,
-                        'to equal',
-                        'fetching'
-                    );
+                            ?.fetchStatus
+                    ).to.equal('fetching');
                     await (prom as Promise<void>);
 
                     const { result } = renderHook(() => useHook(), { wrapper });
 
-                    expect(result.current.firstAuthor, 'to deep equal', { authorId: tolkienId });
-                    expect(result.current.listedBooks, 'to contain', fellowshipOfTheRingId);
-                    expect(result.current.hasMoreAuthors, 'to equal', true);
+                    expect(result.current.firstAuthor).to.deep.equal({ authorId: tolkienId });
+                    expect(result.current.listedBooks).to.include(fellowshipOfTheRingId);
+                    expect(result.current.hasMoreAuthors).to.equal(true);
                     void result.current.loadMoreAuthors();
 
                     // Doesn't throw
@@ -810,16 +779,16 @@ suite('infinite', () => {
                     },
                     { wrapper }
                 );
-                expect(suspended.result.current, 'to be null');
+                expect(suspended.result.current).to.equal(null);
 
-                expect(prom, 'to be a', Promise);
+                expect(prom).to.be.an.instanceOf(Promise);
                 await (prom as Promise<void>);
 
                 let { result } = renderHook(() => useHook(), { wrapper });
 
-                expect(result.current.skipped, 'to be null');
-                expect(result.current.listedBooks, 'to be truthy');
-                expect(result.current.listedBooks, 'not to include', longWalkId);
+                expect(result.current.skipped).to.equal(null);
+                expect(result.current.listedBooks).to.not.equal(undefined);
+                expect(result.current.listedBooks).to.not.include(longWalkId);
 
                 await infiniteBooksByAuthor.prefetchInfiniteQuery(
                     client,
@@ -831,9 +800,9 @@ suite('infinite', () => {
 
                 ({ result } = renderHook(() => useHook(), { wrapper }));
 
-                expect(result.current.skipped, 'to be null');
-                expect(result.current.listedBooks, 'to be truthy');
-                expect(result.current.listedBooks, 'not to include', longWalkId);
+                expect(result.current.skipped).to.equal(null);
+                expect(result.current.listedBooks).to.not.equal(undefined);
+                expect(result.current.listedBooks).to.not.include(longWalkId);
 
                 await infiniteBooksByAuthor.invalidateQuery(client, { authorId: kingId });
                 await infiniteBooksByAuthor.prefetchInfiniteQuery(
@@ -846,7 +815,7 @@ suite('infinite', () => {
 
                 ({ result } = renderHook(() => useHook(), { wrapper }));
 
-                expect(result.current.listedBooks, 'to include', longWalkId);
+                expect(result.current.listedBooks).to.include(longWalkId);
             });
         });
 
@@ -898,9 +867,9 @@ suite('infinite', () => {
                         },
                         { wrapper }
                     );
-                    expect(suspended.result.current, 'to be null');
+                    expect(suspended.result.current).to.equal(null);
 
-                    expect(prom, 'to be a', Promise);
+                    expect(prom).to.be.an.instanceOf(Promise);
 
                     infiniteBooksByAuthor.setInfiniteQueryData(
                         client,
@@ -927,11 +896,9 @@ suite('infinite', () => {
                     let { result } = renderHook(() => useHook(preload), { wrapper });
 
                     expect(
-                        result.current.listedAuthors.map(author => author.getParams().authorId),
-                        'to contain',
-                        tolkienId
-                    );
-                    expect(result.current.listedBooks, 'to contain', longWalkId);
+                        result.current.listedAuthors.map(author => author.getParams().authorId)
+                    ).to.include(tolkienId);
+                    expect(result.current.listedBooks).to.include(longWalkId);
 
                     // Wait for existing subqueries to flush...
                     await Promise.all(
@@ -943,10 +910,10 @@ suite('infinite', () => {
 
                     ({ result } = renderHook(() => useHook(preload), { wrapper }));
 
-                    expect(result.current.listedBooks, 'not to contain', fellowshipOfTheRingId);
-                    expect(authors.hasData(client, { authorId: tolkienId }), 'to be true');
+                    expect(result.current.listedBooks).to.not.include(fellowshipOfTheRingId);
+                    expect(authors.hasData(client, { authorId: tolkienId })).to.equal(true);
                     // Got loaded via propagation of initial data
-                    expect(authors.hasState(client, { authorId: kingId }), 'to be true');
+                    expect(authors.hasState(client, { authorId: kingId })).to.equal(true);
                 }
             );
         });
@@ -989,8 +956,8 @@ suite('infinite', () => {
                         { wrapper }
                     );
 
-                    expect(suspended.result.current, 'to be null');
-                    expect(prom, 'to be a', Promise);
+                    expect(suspended.result.current).to.equal(null);
+                    expect(prom).to.be.an.instanceOf(Promise);
 
                     const [preload] = await Promise.all([
                         infiniteAuthorsWithBooks.prefetchInfiniteQuery(client),
@@ -1009,22 +976,20 @@ suite('infinite', () => {
                         { wrapper }
                     );
 
-                    expect(suspended.result.current, 'to be null');
-                    expect(prom, 'to be a', Promise);
+                    expect(suspended.result.current).to.equal(null);
+                    expect(prom).to.be.an.instanceOf(Promise);
 
                     await (prom as Promise<void>);
 
                     const { result } = renderHook(() => useHook(preload), { wrapper });
 
-                    expect(result.current.listedAuthors?.hasNextPage, 'to equal', true);
+                    expect(result.current.listedAuthors?.hasNextPage).to.equal(true);
                     expect(
                         result.current.listedAuthors?.data.pages
                             .flat()
-                            .map(author => author.getParams().authorId),
-                        'to contain',
-                        tolkienId
-                    );
-                    expect(result.current.listedBooks?.data, 'to contain', fellowshipOfTheRingId);
+                            .map(author => author.getParams().authorId)
+                    ).to.include(tolkienId);
+                    expect(result.current.listedBooks?.data).to.include(fellowshipOfTheRingId);
                 }
             );
 
@@ -1047,8 +1012,8 @@ suite('infinite', () => {
                     { wrapper }
                 );
 
-                expect(result.current.listedAuthors?.data.pages.flat(), 'to have length', 0);
-                expect(result.current.listedBooks, 'to be null');
+                expect(result.current.listedAuthors?.data.pages.flat()).to.have.length(0);
+                expect(result.current.listedBooks).to.equal(null);
             });
         });
     });
