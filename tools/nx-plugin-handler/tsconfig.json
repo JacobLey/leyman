@@ -25,9 +25,6 @@
       "path": "../sinon-typed-stub"
     },
     {
-      "path": "../../apps/pnpm-dedicated-lockfile"
-    },
-    {
       "path": "../mocha-chain"
     },
     {

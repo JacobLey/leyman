@@ -7,9 +7,6 @@
   },
   "references": [
     {
-      "path": "../pnpm-dedicated-lockfile"
-    },
-    {
       "path": "../../tools/mocha-chain"
     },
     {

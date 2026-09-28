@@ -31,9 +31,6 @@
       "path": "../../../tools/default-import"
     },
     {
-      "path": "../../pnpm-dedicated-lockfile"
-    },
-    {
       "path": "../../../tools/mocha-chain"
     },
     {

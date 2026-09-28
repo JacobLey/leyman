@@ -1,7 +1,6 @@
 ---
 "load-populate-files": major
 "populate-files": major
-"pnpm-dedicated-lockfile": major
 "normalized-react-query": major
 "nx-plugin-handler": major
 "haywire-launcher": major

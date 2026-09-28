@@ -36,6 +36,5 @@ Required files (copy and adapt from template):
 
 Run `pnpm i` then `nx run-many -t build` and `nx run @leyman/main:lifecycle`
 
-This will generate `pnpm-dedicated-lockfile`, and generally make
-sure all the config files (e.g. `tsconfig.json`) are properly synced.
+This will make sure all the config files (e.g. `tsconfig.json`) are properly synced.
 ```

@@ -6,7 +6,6 @@
   },
   "type": "module",
   "targets": {
-    "pnpm-dedicated-lockfile": {},
     "biome": {},
     "eslint": {},
     "barrelify": {},

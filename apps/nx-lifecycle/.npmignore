@@ -2,7 +2,6 @@ CHANGELOG.md
 project.json
 tsconfig.json
 
-.pnpm-lock-hash
 coverage/**
 eslint.config.js
 

@@ -54,7 +54,6 @@
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "nx": "catalog:",
-    "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "catalog:",
     "sinon-typed-stub": "workspace:^",
     "typescript": "catalog:"

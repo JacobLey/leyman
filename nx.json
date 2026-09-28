@@ -13,10 +13,12 @@
       "{workspaceRoot}/tsconfig.build.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
-      "{projectRoot}/.pnpm-lock-hash",
       "{projectRoot}/src/**/*.(c|m)?tsx?",
       "{projectRoot}/src/**/*.json",
-      "{projectRoot}/src/tests"
+      "{projectRoot}/src/tests",
+      {
+        "externalDependencies": []
+      }
     ],
     "ts-output": [
       "{projectRoot}/package.json",
@@ -30,26 +32,6 @@
     "applyChanges": true
   },
   "targetDefaults": {
-    "pnpm-dedicated-lockfile": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "pnpm-dedicated-lockfile --lockfileName=.pnpm-lock-hash --hash --no-ci"
-        ],
-        "color": true,
-        "cwd": "{projectRoot}"
-      },
-      "cache": true,
-      "inputs": [
-        "{workspaceRoot}/pnpm-lock.yaml"
-      ],
-      "outputs": [
-        "{projectRoot}/.pnpm-lock-hash"
-      ],
-      "dependsOn": [
-        "install:_"
-      ]
-    },
     "biome": {
       "executor": "nx:run-commands",
       "options": {
@@ -388,8 +370,7 @@
     "install": {
       "executor": "nx:noop",
       "dependsOn": [
-        "install:_",
-        "pnpm-dedicated-lockfile"
+        "install:_"
       ],
       "configurations": {
         "__lifecycle": {}

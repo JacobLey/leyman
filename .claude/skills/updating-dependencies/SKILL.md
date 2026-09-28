@@ -89,8 +89,6 @@ test-only
 
 Assuming tests were stable, and all changes were non-breaking, tests should continue to pass with latest versions.
 
-The build process should also generate a new `.pnpm-lock-hash` for affected packages as well, signaling NX's cache has been successfully updated.
-
 If tests fail, report them to the user so they can iterate on solving. Some may as trivial as small lint/formatting changes, some may require unexpected refactors that should require intentional input.
 
 Then run

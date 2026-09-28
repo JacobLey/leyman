@@ -10,9 +10,6 @@
       "path": "../parse-cwd"
     },
     {
-      "path": "../../apps/pnpm-dedicated-lockfile"
-    },
-    {
       "path": "../mocha-chain"
     },
     {

@@ -71,7 +71,6 @@
     "load-populate-files": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "catalog:",
     "sinon-typed-stub": "workspace:^",
     "typescript": "catalog:"

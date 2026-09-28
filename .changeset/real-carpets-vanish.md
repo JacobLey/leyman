@@ -1,7 +1,6 @@
 ---
 "load-populate-files": patch
 "populate-files": patch
-"pnpm-dedicated-lockfile": patch
 "normalized-react-query": patch
 "juniper-validator": patch
 "haywire-launcher": patch

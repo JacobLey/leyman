@@ -40,7 +40,6 @@
     "eslint": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "npm-pnpm-dedicated-lockfile": "catalog:leyman",
     "typescript": "catalog:"
   }
 }

@@ -14,9 +14,6 @@
       "path": "./tools/normalized-react-query"
     },
     {
-      "path": "./apps/pnpm-dedicated-lockfile"
-    },
-    {
       "path": "./tools/nx-plugin-handler"
     },
     {

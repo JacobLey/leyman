@@ -42,7 +42,6 @@
     }
   },
   "bindings": {
-    "pnpm-dedicated-lockfile": "install",
     "eslint": "check:lint",
     "biome": "check:format",
     "barrelify": "build:pre",

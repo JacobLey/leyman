@@ -42,7 +42,6 @@
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "barrelify": "workspace:^",
-    "pnpm-dedicated-lockfile": "workspace:^",
     "typescript": "catalog:"
   }
 }

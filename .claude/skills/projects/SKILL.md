@@ -31,7 +31,6 @@ See each package's README.md for full usage documentation.
 | [`juniper`](../../../apps/juniper/) | JSON Schema builder with static TypeScript inference |
 | [`juniper-validator`](../../../apps/juniper-validator/) | StandardSchema-compliant validator wrapping Juniper schemas |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | Nx plugin for managing ordered task dependency lifecycles |
-| [`pnpm-dedicated-lockfile`](../../../apps/pnpm-dedicated-lockfile/) | Generate per-package lockfiles from the monorepo lockfile |
 | [`populate-files`](../../../apps/populate-files/populate-files/) | Write dynamic content to static files with CI sync checking |
 | [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | Load a config file and run `populate-files` from CLI |
 

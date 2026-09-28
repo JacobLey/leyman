@@ -9,7 +9,6 @@
 **/.eslintcache
 **/coverage
 **/dist
-**/.pnpm-lock-hash
 **/.swcrc
 
 /.claude-config

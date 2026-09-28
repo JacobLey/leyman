@@ -61,7 +61,6 @@
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "npm-barrelify": "catalog:leyman",
-    "npm-pnpm-dedicated-lockfile": "catalog:leyman",
     "prettier": "catalog:",
     "sinon": "catalog:",
     "sinon-typed-stub": "workspace:^",

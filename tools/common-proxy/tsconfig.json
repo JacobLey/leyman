@@ -10,9 +10,6 @@
       "path": "../default-import"
     },
     {
-      "path": "../../apps/pnpm-dedicated-lockfile"
-    },
-    {
       "path": "../../apps/barrelify"
     },
     {

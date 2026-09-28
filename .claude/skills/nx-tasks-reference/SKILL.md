@@ -13,6 +13,10 @@ See [`lifecycle.json`](../../../leyman/main/lifecycle.json) for the authoritativ
 
 `lifecycle.json` is this monorepo's implementation of [`nx-lifecycle`](../../../apps/nx-lifecycle/)
 
+### Dependency changes and caching
+
+Nx hashes each project's npm dependencies (direct and transitive, resolved from `pnpm-lock.yaml`) through the project graph, so a dependency change only invalidates caches of projects that actually depend on it. The `ts-source` named input sets `{ "externalDependencies": [] }` to opt out of Nx's default for `nx:run-commands` targets, which otherwise hashes _every_ external package in the workspace (`AllExternalDependencies`) and busts all caches on any lockfile change. Use `nx show target inputs <project>:<target>` to inspect what is hashed.
+
 ---
 
 ## Work Targets
@@ -121,16 +125,6 @@ Validates 100% test coverage by merging all C8 temp data and checking thresholds
 
 ---
 
-### `pnpm-dedicated-lockfile`
-
-Computes a per-package hash of `pnpm-lock.yaml` and writes it to `.pnpm-lock-hash`. This hash is used as a `ts-source` input so that any dependency change invalidates the package's build and test caches.
-
-**Lifecycle hook:** `install`
-
-**Add when:** Every project should use this.
-
----
-
 ## Typical `project.json` Templates
 
 ### Standard TypeScript package (unit tests only)
@@ -140,7 +134,6 @@ Computes a per-package hash of `pnpm-lock.yaml` and writes it to `.pnpm-lock-has
   "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "my-package",
   "targets": {
-    "pnpm-dedicated-lockfile": {},
     "biome": {},
     "eslint": {},
     "update-ts-references": {},

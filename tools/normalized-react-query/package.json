@@ -42,7 +42,6 @@
     "eslint": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "pnpm-dedicated-lockfile": "workspace:^",
     "react": "catalog:",
     "react-dom": "catalog:",
     "typescript": "catalog:"

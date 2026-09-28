@@ -6,7 +6,6 @@
   },
   "type": "commonjs",
   "targets": {
-    "pnpm-dedicated-lockfile": {},
     "barrelify": {},
     "biome": {},
     "eslint": {},

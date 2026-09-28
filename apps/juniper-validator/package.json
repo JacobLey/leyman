@@ -46,7 +46,6 @@
     "juniper": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "pnpm-dedicated-lockfile": "workspace:^",
     "sinon": "catalog:",
     "typescript": "catalog:"
   }

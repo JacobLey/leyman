@@ -1,7 +1,6 @@
 ---
 "barrelify": patch
 "nx-lifecycle": patch
-"pnpm-dedicated-lockfile": patch
 "load-populate-files": patch
 "populate-files": patch
 "common-proxy": patch
