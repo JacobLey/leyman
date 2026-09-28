@@ -1,7 +1,7 @@
 import type { Argv } from 'yargs';
-import type { LoadAndPopulateFiles } from 'load-populate-files';
 import type { Command, LoadPopulateFilesCommandInput } from './lib/types.js';
 import { isCI } from 'ci-info';
+import { loadAndPopulateFiles } from '../lib/load-populate-files.js';
 
 interface LoadPopulateFilesCommandExtendedInput extends LoadPopulateFilesCommandInput {
     filePath: string;
@@ -13,23 +13,13 @@ interface LoadPopulateFilesCommandExtendedInput extends LoadPopulateFilesCommand
 /**
  * Main `load-populate-files` command
  */
-export class LoadPopulateFilesCommand implements Command<LoadPopulateFilesCommandExtendedInput> {
-    public readonly command = ['$0', 'load-populate-files'];
-    public readonly describe = 'Read pre-generated content and write to file';
-
-    readonly #loadPopulateFiles: LoadAndPopulateFiles;
-
-    public constructor(loadPopulateFiles: LoadAndPopulateFiles) {
-        this.#loadPopulateFiles = loadPopulateFiles;
-
-        this.handler = this.handler.bind(this);
-    }
-
-    public builder(
-        this: void,
+export const loadPopulateFilesCommand: Command<LoadPopulateFilesCommandExtendedInput> = {
+    command: ['$0', 'load-populate-files'],
+    describe: 'Read pre-generated content and write to file',
+    builder: (
         yargs: Argv<LoadPopulateFilesCommandInput>
-    ): Argv<LoadPopulateFilesCommandExtendedInput> {
-        return yargs
+    ): Argv<LoadPopulateFilesCommandExtendedInput> =>
+        yargs
             .options({
                 filePath: {
                     describe: 'File that exports data content to populate',
@@ -54,11 +44,9 @@ export class LoadPopulateFilesCommand implements Command<LoadPopulateFilesComman
                     default: false,
                 },
             })
-            .strict();
-    }
-
-    public async handler(options: LoadPopulateFilesCommandExtendedInput): Promise<void> {
-        await this.#loadPopulateFiles(
+            .strict(),
+    handler: async options => {
+        await loadAndPopulateFiles(
             {
                 filePath: options.filePath,
             },
@@ -70,5 +58,5 @@ export class LoadPopulateFilesCommand implements Command<LoadPopulateFilesComman
                 clean: options.clean,
             }
         );
-    }
-}
+    },
+};

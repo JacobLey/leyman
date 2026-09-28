@@ -25,7 +25,6 @@
   "dependencies": {
     "ci-info": "catalog:",
     "format-file": "workspace:^",
-    "haywire": "workspace:^",
     "parse-cwd": "workspace:^",
     "uint8array-extras": "catalog:"
   },
@@ -38,7 +37,6 @@
     "@types/chai-as-promised": "catalog:",
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
-    "@types/sinon": "catalog:",
     "@types/tmp": "catalog:",
     "c8": "catalog:",
     "chai": "catalog:",
@@ -47,8 +45,6 @@
     "format-file": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "sinon": "catalog:",
-    "sinon-typed-stub": "workspace:^",
     "tmp-promise": "catalog:",
     "typescript": "catalog:"
   }

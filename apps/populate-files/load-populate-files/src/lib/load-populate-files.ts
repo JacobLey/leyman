@@ -1,43 +1,18 @@
-import type { PopulateFiles, PopulationResponse } from 'populate-files';
-import type { LoadFile } from './loader.js';
-import type { NormalizeParams } from './normalize.js';
+import type { PopulationResponse } from 'populate-files';
 import type { RawOptions, RawParams } from './types.js';
+import { populateFiles } from 'populate-files';
+import { loadFile } from './loader.js';
+import { normalizeParams } from './normalize.js';
 
 export type LoadAndPopulateFiles = (
     params: RawParams,
     options?: RawOptions
 ) => Promise<PopulationResponse[]>;
 
-/**
- * Factory for generating primary `loadAndPopulateFiles` function
- */
-export class LoadPopulateFilesFactory {
-    readonly #normalizeParams: NormalizeParams;
-    readonly #loadFile: LoadFile;
-    readonly #populateFiles: PopulateFiles;
+export const loadAndPopulateFiles: LoadAndPopulateFiles = async (params, options = {}) => {
+    const normalized = await normalizeParams(params, options);
 
-    public readonly loadAndPopulateFiles: LoadAndPopulateFiles;
+    const files = await loadFile(normalized.filePath);
 
-    public constructor(
-        normalizeParams: NormalizeParams,
-        loadFile: LoadFile,
-        populateFiles: PopulateFiles
-    ) {
-        this.#normalizeParams = normalizeParams;
-        this.#loadFile = loadFile;
-        this.#populateFiles = populateFiles;
-
-        this.loadAndPopulateFiles = this.#loadAndPopulateFiles.bind(this);
-    }
-
-    async #loadAndPopulateFiles(
-        params: RawParams,
-        options: RawOptions = {}
-    ): Promise<PopulationResponse[]> {
-        const normalized = await this.#normalizeParams(params, options);
-
-        const files = await this.#loadFile(normalized.filePath);
-
-        return this.#populateFiles(files, normalized.options);
-    }
-}
+    return populateFiles(files, normalized.options);
+};

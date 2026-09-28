@@ -1,27 +1,17 @@
-import type { TextFormatter } from 'format-file';
-import type { ParseCwd } from 'parse-cwd';
-import { beforeEach, suite } from 'mocha-chain';
-import { stubMethod } from 'sinon-typed-stub';
-import { Normalize } from '../../../lib/normalize.js';
+import Path from 'node:path';
+import { isCI } from 'ci-info';
+import { stringToUint8Array } from 'uint8array-extras';
+import { suite, test } from 'mocha-chain';
+import { normalizeFileParams, normalizeFilesParams } from '../../../lib/normalize.js';
 import { expect } from '../../chai-hooks.js';
 
-suite('Normalize', () => {
-    const withStubs = beforeEach(() => {
-        const stubbedTextFormatter = stubMethod<TextFormatter>();
-        const stubbedParseCwd = stubMethod<ParseCwd>();
-        return {
-            stubbedTextFormatter: stubbedTextFormatter.stub,
-            stubbedParseCwd: stubbedParseCwd.stub,
-            normalize: new Normalize(true, stubbedParseCwd.method, stubbedTextFormatter.method),
-        };
-    });
+const cwd = import.meta.dirname;
 
+suite('normalize', () => {
     suite('normalizeFileParams', () => {
-        withStubs.test('success', async ctx => {
-            ctx.stubbedParseCwd.withArgs('<cwd>').resolves('/root/dir');
-
+        test('success', async () => {
             expect(
-                await ctx.normalize.normalizeFileParams(
+                await normalizeFileParams(
                     {
                         filePath: 'file/path',
                         content: '<content>',
@@ -29,45 +19,36 @@ suite('Normalize', () => {
                     {
                         dryRun: true,
                         check: false,
-                        cwd: '<cwd>',
+                        cwd,
                     }
                 )
             ).to.deep.equal({
-                filePath: '/root/dir/file/path',
-                content: new Uint8Array([60, 99, 111, 110, 116, 101, 110, 116, 62]),
+                filePath: Path.join(cwd, 'file/path'),
+                content: stringToUint8Array('<content>'),
                 dryRun: true,
                 check: false,
             });
-
-            expect(ctx.stubbedTextFormatter.called).to.equal(false);
         });
 
-        withStubs.test('Options are optional', async ctx => {
-            ctx.stubbedParseCwd.resolves('/root/dir');
-            ctx.stubbedTextFormatter
-                .withArgs('{"foo":"bar"}', { ext: '.json' })
-                .resolves('foo-bar');
-
+        test('Options are optional', async () => {
             expect(
-                await ctx.normalize.normalizeFileParams({
+                await normalizeFileParams({
                     filePath: '/file/path',
                     content: Promise.resolve({ foo: 'bar' }),
                 })
             ).to.deep.equal({
                 filePath: '/file/path',
-                content: new Uint8Array([102, 111, 111, 45, 98, 97, 114]),
+                content: stringToUint8Array('{\n  "foo": "bar"\n}\n'),
                 dryRun: false,
-                check: true,
+                check: isCI,
             });
         });
     });
 
     suite('normalizeFilesParams', () => {
-        withStubs.test('success', async ctx => {
-            ctx.stubbedParseCwd.withArgs('<cwd>').resolves('/root/dir');
-
+        test('success', async () => {
             expect(
-                await ctx.normalize.normalizeFilesParams(
+                await normalizeFilesParams(
                     [
                         {
                             filePath: 'file/path/1',
@@ -81,53 +62,48 @@ suite('Normalize', () => {
                     {
                         dryRun: true,
                         check: false,
-                        cwd: '<cwd>',
+                        clean: true,
+                        targetDir: 'target',
+                        cwd,
                     }
                 )
             ).to.deep.equal({
                 files: [
                     {
-                        filePath: '/root/dir/file/path/1',
-                        content: new Uint8Array([60, 99, 111, 110, 116, 101, 110, 116, 62]),
+                        filePath: Path.join(cwd, 'target/file/path/1'),
+                        content: stringToUint8Array('<content>'),
                     },
                     {
                         filePath: '/file/path/2',
                         content: new Uint8Array([1, 2, 3, 4]),
                     },
                 ],
-                targetDir: '/root/dir',
+                targetDir: Path.join(cwd, 'target'),
                 check: false,
                 dryRun: true,
-                clean: false,
+                clean: true,
             });
-
-            expect(ctx.stubbedTextFormatter.called).to.equal(false);
         });
 
-        withStubs.test('Options are optional', async ctx => {
-            ctx.stubbedParseCwd.resolves('/root/dir');
-            ctx.stubbedTextFormatter
-                .withArgs('{"foo":"bar"}', { ext: '.json' })
-                .resolves('foo-bar');
-
+        test('Options are optional', async () => {
             expect(
-                await ctx.normalize.normalizeFilesParams([
+                await normalizeFilesParams([
                     { filePath: 'file/path/1', content: { foo: 'bar' } },
                     { filePath: '/file/path/2', content: Promise.resolve('<data>') },
                 ])
             ).to.deep.equal({
                 files: [
                     {
-                        filePath: '/root/dir/file/path/1',
-                        content: new Uint8Array([102, 111, 111, 45, 98, 97, 114]),
+                        filePath: Path.resolve('file/path/1'),
+                        content: stringToUint8Array('{\n  "foo": "bar"\n}\n'),
                     },
                     {
                         filePath: '/file/path/2',
-                        content: new Uint8Array([60, 100, 97, 116, 97, 62]),
+                        content: stringToUint8Array('<data>'),
                     },
                 ],
-                targetDir: '/root/dir',
-                check: true,
+                targetDir: Path.resolve(),
+                check: isCI,
                 dryRun: false,
                 clean: false,
             });

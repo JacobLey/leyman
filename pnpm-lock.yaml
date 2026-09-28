@@ -542,12 +542,6 @@ importers:
       entry-script:
         specifier: workspace:^
         version: link:../../../tools/entry-script
-      haywire:
-        specifier: workspace:^
-        version: link:../../../tools/haywire
-      haywire-launcher:
-        specifier: workspace:^
-        version: link:../../../tools/haywire-launcher
       juniper:
         specifier: workspace:^
         version: link:../../juniper
@@ -621,9 +615,6 @@ importers:
       format-file:
         specifier: workspace:^
         version: link:../../../tools/format-file
-      haywire:
-        specifier: workspace:^
-        version: link:../../../tools/haywire
       parse-cwd:
         specifier: workspace:^
         version: link:../../../tools/parse-cwd
@@ -655,9 +646,6 @@ importers:
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.0
-      '@types/sinon':
-        specifier: 'catalog:'
-        version: 21.0.0
       '@types/tmp':
         specifier: 'catalog:'
         version: 0.2.6
@@ -679,12 +667,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: link:../../../tools/mocha-chain
-      sinon:
-        specifier: 'catalog:'
-        version: 21.0.3
-      sinon-typed-stub:
-        specifier: workspace:^
-        version: link:../../../tools/sinon-typed-stub
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3

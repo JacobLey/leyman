@@ -10,12 +10,6 @@
       "path": "../../../tools/parse-cwd"
     },
     {
-      "path": "../../../tools/haywire"
-    },
-    {
-      "path": "../../../tools/sinon-typed-stub"
-    },
-    {
       "path": "../../../tools/mocha-chain"
     },
     {
