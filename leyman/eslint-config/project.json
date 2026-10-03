@@ -4,14 +4,12 @@
   "targets": {
     "biome": {},
     "update-ts-references": {},
-    "delete-dist": {},
     "tsc": {},
-    "coverage-reset": {},
     "mocha-unit-test": {},
     "mocha-integration-test": {
       "options": {
         "commands": [
-          "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none eslint . --cache --cache-strategy content --color"
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration && c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none eslint . --cache --cache-strategy content --color"
         ],
         "parallel": true,
         "color": true,
@@ -29,12 +27,10 @@
     "check:lint": {},
     "check": {},
     "build:_": {},
-    "build:pre": {},
     "build:run": {},
     "build:post": {},
     "build": {},
     "test:_": {},
-    "test:reset": {},
     "test:run": {},
     "test:report": {},
     "test": {},

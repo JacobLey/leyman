@@ -19,8 +19,8 @@ install → prepare ┬→ check ─────────┬→ verify
 | `install` | — | Dependencies installed and linked |
 | `prepare` | `generate` → `format` | Everything that rewrites source: codegen (`barrelify`, `update-ts-references`), then formatting (`biome`). Writes locally, only checks in CI, so `build` always sees final source |
 | `check` | `lint` | Opinionated rules (`eslint`). Nothing else depends on it, so a hacky change still builds and tests |
-| `build` | `pre` → `run` → `post` | `pre`: reset output (`delete-dist`). `run`: produce `dist/`. `post`: codegen that needs `dist/` (`populate-files` → `out/`) |
-| `test` | `reset` → `run` → `report` | `reset`: clear previous coverage. `run`: test suites (unit and integration can both run). `report`: enforce coverage thresholds. Does not test dependencies; use `nx run-many`/`nx affected` for that |
+| `build` | `run` → `post` | `run`: produce `dist/` (clearing it first). `post`: codegen that needs `dist/` (`populate-files` → `out/`) |
+| `test` | `run` → `report` | `run`: test suites, each clearing its own coverage data (unit and integration can both run). `report`: enforce coverage thresholds. Does not test dependencies; use `nx run-many`/`nx affected` for that |
 | `verify` | — | `check` + `test`: everything CI requires of a project |
 
 `prepare` targets must write by default and only check (failing on drift) when `CI` is set. Formatting before `build` keeps its cache inputs stable.

@@ -111,20 +111,6 @@
         "{projectRoot}/**/index.(c|m)?ts"
       ]
     },
-    "delete-dist": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "rm -rf ./dist"
-        ],
-        "parallel": true,
-        "color": true,
-        "cwd": "{projectRoot}"
-      },
-      "dependsOn": [
-        "build:_"
-      ]
-    },
     "update-ts-references": {
       "executor": "nx:noop",
       "syncGenerators": [
@@ -146,12 +132,13 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
+          "rm -rf ./dist",
           "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.ts?(x)'",
           "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
           "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
           "tsc"
         ],
-        "parallel": true,
+        "parallel": false,
         "color": true,
         "cwd": "{projectRoot}"
       },
@@ -164,7 +151,7 @@
         "{projectRoot}/dist"
       ],
       "dependsOn": [
-        "build:pre"
+        "build:_"
       ]
     },
     "populate-files": {
@@ -188,25 +175,11 @@
         "build:run"
       ]
     },
-    "coverage-reset": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp"
-        ],
-        "parallel": true,
-        "color": true,
-        "cwd": "{projectRoot}"
-      },
-      "dependsOn": [
-        "test:_"
-      ]
-    },
     "mocha-unit-test": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/unit/**/*.spec.*js\""
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/unit/**/*.spec.*js\""
         ],
         "parallel": true,
         "color": true,
@@ -221,14 +194,14 @@
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
       ],
       "dependsOn": [
-        "test:reset"
+        "test:_"
       ]
     },
     "mocha-integration-test": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/integration/**/*.spec.*js\""
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/integration/**/*.spec.*js\""
         ],
         "parallel": true,
         "color": true,
@@ -244,14 +217,14 @@
       ],
       "dependsOn": [
         "mocha-unit-test",
-        "test:reset"
+        "test:_"
       ]
     },
     "vitest-unit-test": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none vitest run --config $NX_WORKSPACE_ROOT/configs/vitest.config.js --root ."
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none vitest run --config $NX_WORKSPACE_ROOT/configs/vitest.config.js --root ."
         ],
         "parallel": true,
         "color": true,
@@ -267,7 +240,7 @@
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
       ],
       "dependsOn": [
-        "test:reset"
+        "test:_"
       ]
     },
     "coverage-report": {
@@ -388,20 +361,10 @@
         "__lifecycle": {}
       }
     },
-    "build:pre": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "build:_",
-        "delete-dist"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
-    },
     "build:run": {
       "executor": "nx:noop",
       "dependsOn": [
-        "build:pre",
+        "build:_",
         "tsc"
       ],
       "configurations": {
@@ -436,20 +399,10 @@
         "__lifecycle": {}
       }
     },
-    "test:reset": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "test:_",
-        "coverage-reset"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
-    },
     "test:run": {
       "executor": "nx:noop",
       "dependsOn": [
-        "test:reset",
+        "test:_",
         "mocha-unit-test",
         "mocha-integration-test",
         "vitest-unit-test"

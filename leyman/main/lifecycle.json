@@ -26,7 +26,6 @@
     },
     "build": {
       "hooks": [
-        "pre",
         "run",
         "post"
       ],
@@ -37,7 +36,6 @@
     },
     "test": {
       "hooks": [
-        "reset",
         "run",
         "report"
       ],
@@ -57,10 +55,8 @@
     "update-ts-references": "prepare:generate",
     "biome": "prepare:format",
     "eslint": "check:lint",
-    "delete-dist": "build:pre",
     "tsc": "build:run",
     "populate-files": "build:post",
-    "coverage-reset": "test:reset",
     "mocha-unit-test": "test:run",
     "mocha-integration-test": "test:run",
     "vitest-unit-test": "test:run",

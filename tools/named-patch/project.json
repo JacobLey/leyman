@@ -5,15 +5,15 @@
     "biome": {},
     "eslint": {},
     "update-ts-references": {},
-    "delete-dist": {},
     "tsc": {},
-    "coverage-reset": {},
     "mocha-unit-test": {
       "options": {
         "commands": [
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit",
           "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha './dist/tests/unit/noop.spec.js'",
           "c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --node-option conditions=patchable './dist/tests/unit/patch.spec.js'"
-        ]
+        ],
+        "parallel": false
       }
     },
     "coverage-report": {},
@@ -27,12 +27,10 @@
     "check:lint": {},
     "check": {},
     "build:_": {},
-    "build:pre": {},
     "build:run": {},
     "build:post": {},
     "build": {},
     "test:_": {},
-    "test:reset": {},
     "test:run": {},
     "test:report": {},
     "test": {},

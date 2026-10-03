@@ -43,14 +43,6 @@ Rewrites `index.ts` files that contain an `// AUTO-BARREL` marker with correct r
 
 ---
 
-### `delete-dist`
-
-Removes the `./dist` directory before building begins, ensuring no stale build artifacts carry over between runs.
-
-**Add when:** The package compiles TypeScript to `./dist`. Add to all packages with a `tsc` target.
-
----
-
 ### `update-ts-references`
 
 Keep `tsconfig.json` `references` in sync with the package's inter-package dependencies.
@@ -61,7 +53,7 @@ Keep `tsconfig.json` `references` in sync with the package's inter-package depen
 
 ### `tsc`
 
-Compiles TypeScript using SWC (fast transpilation) and `tsc` (declaration file generation + type checking).
+Deletes `./dist`, then compiles TypeScript using SWC (fast transpilation) and `tsc` (declaration file generation + type checking). Clearing `dist` inside the target means it only happens on a cache miss.
 
 Output goes to `./dist`.
 
@@ -77,17 +69,9 @@ Generates static output files by running `load-populate-files` against `./dist/f
 
 ---
 
-### `coverage-reset`
-
-Deletes the per-project coverage temp directory (`.coverage/project/{projectName}/tmp`) before tests run. Ensures coverage data from a previous run does not contaminate the current run.
-
-**Add when:** The package has tests. Add whenever `mocha-unit-test`, `mocha-integration-test`, or `vitest-unit-test` is present.
-
----
-
 ### `mocha-unit-test`
 
-Runs Mocha unit tests from `./dist/tests/unit/**/*.spec.*js` under C8 coverage instrumentation.
+Clears its coverage directory, then runs Mocha unit tests from `./dist/tests/unit/**/*.spec.*js` under C8 coverage instrumentation.
 
 **Add when:** The package has unit tests in `src/tests/unit/`. Add to virtually all packages.
 
@@ -95,7 +79,7 @@ Runs Mocha unit tests from `./dist/tests/unit/**/*.spec.*js` under C8 coverage i
 
 ### `mocha-integration-test`
 
-Runs Mocha integration tests from `./dist/tests/integration/**/*.spec.*js` under C8 coverage instrumentation.
+Clears its coverage directory, then runs Mocha integration tests from `./dist/tests/integration/**/*.spec.*js` under C8 coverage instrumentation.
 
 **Add when:** The package has integration tests in `src/tests/integration/`.
 
@@ -103,7 +87,7 @@ Runs Mocha integration tests from `./dist/tests/integration/**/*.spec.*js` under
 
 ### `vitest-unit-test`
 
-Runs Vitest unit tests from `./dist/tests/unit/**/*.spec.js` under C8 coverage instrumentation, using the shared [`configs/vitest.config.js`](../../../configs/vitest.config.js).
+Clears its coverage directory, then runs Vitest unit tests from `./dist/tests/unit/**/*.spec.js` under C8 coverage instrumentation, using the shared [`configs/vitest.config.js`](../../../configs/vitest.config.js).
 
 The shared config runs pre-compiled tests with native `import` and the `threads` pool (so C8 can collect V8 coverage), and sets `sequence.hooks: "list"` (required by `vitest-chain`).
 
@@ -131,9 +115,7 @@ Validates 100% coverage using only the C8 data from this project's own test targ
     "biome": {},
     "eslint": {},
     "update-ts-references": {},
-    "delete-dist": {},
     "tsc": {},
-    "coverage-reset": {},
     "mocha-unit-test": {},
     "coverage-report": {},
     "check:_": {},
