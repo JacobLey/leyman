@@ -5,26 +5,26 @@ description: Installing a package dependency
 
 # Installing a package
 
-> Reference: https://pnpm.io/workspaces
+## 1. Add the version to the default `catalog:` in [`pnpm-workspace.yaml`](../../../pnpm-workspace.yaml)
 
-This workspace uses pnpm to manage dependencies.
+Skip if it is already there. Use the default `catalog:` only. Don't add a named catalog: every package should use the same version.
 
-## Steps
+The named catalogs under `catalogs:` are reserved for depending on the **npm-published** build of a package in this repo, to break a dev-time circular dependency. Read the comments there before adding to them.
 
-### 1. Add the dependencies to [pnpm-workspace.yaml](../../../pnpm-workspace.yaml)
+## 2. Reference it from the package's `package.json`
 
-This is only required if the dependency deos not yet exist in the codebase, otherwise it should already be there.
+```json
+"dependencies": { "some-lib": "catalog:" },
+"devDependencies": { "@leyman/expect": "workspace:^" }
+```
 
-Put the dependency under the default `catalog`. Do _not_ create a custom catalog key, we should encourage a single
-version used consistently across the monorepo.
+External packages use `catalog:`. Packages in this repo use `workspace:^`. A `peerDependency` or `optionalDependency` must also be listed in `devDependencies` to be installed locally.
 
-The only exception is adding dependencies on npm-based version of packages that are maintained in this repo. This is for rare cases
-to work around circular dependencies that only show up in dev environments.
+## 3. Install and build
 
-### 2. Create the package directory and files
+```bash
+pnpm i
+nx run-many -t build
+```
 
-Add the package to `package.json`'s dependencies (or devDependencies). Note that packages that are "optional" or "peer" dependencies will also need it as a dev dependency in order to develop locally against it.
-
-### 3. Run install and build commands
-
-Run `pnpm i` then `nx run-many -t build` to actually perform the install and cache bust nx projects.
+The build also syncs `tsconfig.json` `references` for new workspace dependencies.

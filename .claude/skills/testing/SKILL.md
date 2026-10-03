@@ -5,96 +5,48 @@ description: Writing and running tests (Mocha, mocha-chain, Sinon, C8)
 
 # Testing
 
-> Framework docs: [Mocha](https://mochajs.org/) · [Chai](https://www.chaijs.com/) · [Sinon](https://sinonjs.org/) · [C8](https://github.com/bcoe/c8)
-> Workspace test config: [`../../../nx.json`](../../../nx.json) (targets: `mocha-unit-test`, `mocha-integration-test`, `coverage-report`)
+> Config: [`../../../nx.json`](../../../nx.json) (targets: `mocha-unit-test`, `mocha-integration-test`, `vitest-unit-test`, `coverage-report`) · [`../../../configs/c8rc.json`](../../../configs/c8rc.json)
 
-## Running Tests
+## Running
 
 ```bash
-# Full test suite for all packages (lint + build + test)
-nx run-many -t test
-
-# Tests + coverage enforcement (what CI runs)
-test-ci
-
-# Tests only — skip lint/format checks
-test-only
+test-only   # build + test, skips lint/format (-c no-check), stops on first failure
+test-ci     # lint + build + test, then coverage-report — what CI runs
 ```
 
-> **Coverage is enforced separately** — `nx run-many -t test` runs tests and collects coverage data, but `nx run-many -t coverage-report` validates the 100% thresholds. Both must pass in CI.
+Tests run against compiled `dist/`, so a test run always rebuilds first (cached when unchanged).
 
-That means coverage can come from tests on the package, as well as tests from dependents. That is useful for cases where "testing" the code requires a lot more work than just seeing it in action.
+## Coverage
 
-We should still test code in the package itself as much as possible, but do not overcomplicate unnecessarily.
+100% lines, statements, functions and branches, enforced by `coverage-report`. That target is deliberately **not** part of `test` (see the [lifecycle skill](../../../leyman/main/.claude/skills/lifecycle/SKILL.md)), so `nx run-many -t test` passing does not mean coverage passes. Run `test-ci`.
 
-## Coverage Requirements
+A package's coverage is merged from its own tests and the tests of every package that depends on it. Test in the package itself where reasonable, but coverage from dependents counts when exercising code directly would be contrived.
 
-All packages require **100% coverage** across lines, statements, functions, and branches (enforced by C8 via `configs/c8rc.json`). Coverage is collected during `mocha-unit-test` and `mocha-integration-test`, then merged and validated by `coverage-report`.
+100% is the floor, not the goal: two `if`s are fully covered by two tests but have four paths. If code is hard to cover, it is usually missing an abstraction. Use `haywire` DI (see `haywire-launcher` for covering CLI entry points) rather than reaching into internals.
 
-Coverage reports land at `.coverage/project/<package-name>/report/`.
-
-100% coverage is a _minimum_ enforcement.
-
-Take the example function:
-
-```js
-const doStuff = () => {
-    if (foo) {
-        doFoo();
-    }
-    if (bar) {
-        doBar();
-    }
-}
-```
-
-There are technically 4 paths (not including the possibilty of throwing), but 100% coverage is possible in just 2 passes. That doesn't mean we have to (or should) test every possible cardinality, but it means that full test coverage just scrapes the surface of what is actually happening.
-
-Code should be written such that it is testable, and therefore maintainable. Non-testable code means a missing abstraction or poor implementation. See packages like `haywire` and `haywire-laucher` for solutions around providing test coverage for package internals and top-level executables via dependency injection.
-
-## Writing Tests
-
-### File Structure
+## Layout
 
 ```
-src/
-  tests/
-    unit/           ← unit tests (*.spec.ts)
-    integration/    ← integration tests (*.spec.ts)
+src/tests/unit/          ← mirrors src/ (src/lib/foo.ts → src/tests/unit/lib/foo.spec.ts)
+src/tests/integration/   ← user-level workflows (CLI runs, real file system), not per-file
 ```
 
-Unit tests should generally be named/placed after the file it tests.
+Not every file needs its own spec; files exercised as a side effect of other tests are fine.
 
-e.g. a file under `src/models/lib/foo-bar.ts` should have a test `src/models/lib/foo-bar.spec.ts`. Not every file needs to have a test, especially if it is just plain exports or functions which are called as a side-effect of other tests.
+## Libraries
 
-Integration tests should _not_ try to match implementation files, and instead focus on the high level user workflow. For example testing the CLI functionality, or executing tasks on the actual codebase.
-
-### Common Imports
-
-#### [mocha-chain](../../../tools/test-chain/mocha-chain/)
-
-A wrapper around [Mocha](https://mochajs.org/), provides better type safety, but otherwise follows same format.
-
-Mocha must be installed (peer dependency) as it is still the core test runner, but doesn't need to be imported directly.
-
-Tests are configured to use the `TDD` interface (`before`, `after`, `suite`...).
-
-#### [Chai](https://www.chaijs.com/)
-
-Assertion library. For assertions around promises (primarily "will reject") see `chai-as-promised`, usually wrapped via a `chai-hooks.ts` file.
-
-#### [Sinon](https://sinonjs.org/)
-
-Creates mockable and spyable instances to inject into tests (plays very well with `haywire`).
-
-For better type-safe usage, see [sinon-typed-stub](../../../tools/sinon-typed-stub/).
-
-Always restore after each test.
+- **[`mocha-chain`](../../../tools/test-chain/mocha-chain/)** — import `suite`, `test`, `beforeEach`, etc. from here instead of using Mocha globals (TDD interface). Hooks can return values that become typed context for later hooks and tests. `mocha` itself is still a dev dependency as the runner. Use `vitest-chain` + the `vitest-unit-test` target only for Vitest-specific packages.
+- **[`@leyman/expect`](../../../leyman/expect/)** — `import { expect } from '@leyman/expect'`. Chai with `chai-as-promised` registered. Depend on it (dev) instead of `chai`.
+- **`expect-type`** — `expectTypeOf(...)` for compile-time type assertions alongside runtime ones.
+- **Sinon** + **[`sinon-typed-stub`](../../../tools/sinon-typed-stub/)** — stubs to inject via DI. Restore after every test:
 
 ```ts
 import { verifyAndRestore } from 'sinon';
+import { afterEach } from 'mocha-chain';
 
 afterEach(() => {
     verifyAndRestore();
 });
 ```
+
+See the "Tests" sections of the [coding-patterns skill](../coding-patterns/SKILL.md) for how to write individual tests.

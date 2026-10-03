@@ -5,21 +5,17 @@ description: Writing and maintaining package READMEs
 
 # Writing Package READMEs
 
-> Reference: [`../../../AGENTS.md`](../../../AGENTS.md)
-> Example: [`../../../tools/haywire/README.md`](../../../tools/haywire/README.md) · [`../../../apps/juniper/README.md`](../../../apps/juniper/README.md)
+> Examples: [`../../../tools/haywire/README.md`](../../../tools/haywire/README.md) · [`../../../apps/juniper/README.md`](../../../apps/juniper/README.md)
 
 ## Purpose
 
-Every published package needs a README that serves two audiences simultaneously:
-1. **Developers** using the package — need to understand what it does, how to install it, and how to use the API
-2. **AI agents** working in this repo — need precise API details without wading through motivation/justification
-    * Additional context can be provided throughout the repo with various additional SKILL.md files. This README should only exist as an entrypoint.
+Every package needs a README. It is published to npm, so it is written for people using the package, and it doubles as the precise API reference agents read. Repo-internal conventions belong in SKILL.md files, not READMEs.
 
 ## README vs WHY File
 
 **README.md** — How to use the package. Should not justify the package's existence or compare it to alternatives. Focus on guiding an active user.
 
-**WHY-\<PACKAGE\>.md** — Why this package exists, the problem it solves, motivation, design decisions, comparison to alternatives. Especialy useful for more complicated packages that may have existing alternatives. Link from README when relevant.
+**WHY-\<PACKAGE\>.md** — Why this package exists, the problem it solves, motivation, design decisions, comparison to alternatives. Especially useful for more complicated packages that may have existing alternatives. Link from README when relevant.
 
 **Rule:** If a section answers "why does this exist?" rather than "how do I use it?", it belongs in WHY-\<PACKAGE\>.md.
 
@@ -34,7 +30,7 @@ See [`../../../tools/haywire/WHY-HAYWIRE.md`](../../../tools/haywire/WHY-HAYWIRE
 One-sentence description of what it does.
 
 [![npm package](https://badge.fury.io/js/<npm-name>.svg)](https://www.npmjs.com/package/<npm-name>)
-[![License](https://img.shields.io/npm/l/<npm-name>.svg)](LICENSE)
+[![License](https://img.shields.io/npm/l/<npm-name>.svg)](https://github.com/JacobLey/leyman/blob/main/<path>/LICENSE)
 
 </div>
 
@@ -119,48 +115,16 @@ Use the actual TypeScript signature but simplified for readability:
 ```
 
 ### Parameter tables
-Always include a table for functions with 2+ parameters or any complex options:
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `name` | `string` | — | Required fields use `—` as default |
-| `timeout` | `number` | `5000` | Optional fields show their default |
-| `options` | `Options` | `{}` | Complex options get their own sub-table |
-
-- Mark required parameters clearly (use `—` in default column, or say "Required." in description)
-- Use backticks for all type names and parameter names
-- Keep descriptions to one sentence
-
-### Class documentation
-```markdown
-### `ClassName`
-
-Brief description.
-
-#### Constructor: `new ClassName(dep1, dep2)`
-Constructor docs.
-
-#### `.methodName(params): ReturnType`
-Method docs.
-
-#### `.propertyName: Type`
-Property docs.
-```
+Use one for functions with 2+ parameters or any options object. Required parameters show `—` as the default. One-sentence descriptions.
 
 ### Type documentation
 Export types used by the API should be documented inline where first used, or in a dedicated `## Types` section for complex types.
-
-### Error documentation
-If a function can throw, document it:
-```markdown
-**Throws** `TypeError` — if `param` is not a string.
-```
 
 ## What NOT to Put in a README
 
 - Extended motivation or "the problem this solves" → WHY file
 - Comparison to alternative libraries → WHY file
-- Implementation details (how it works internally) → AGENTS file or code comments
+- Implementation details (how it works internally) → code comments
 - Changelog → CHANGELOG.md (managed by changesets)
 - Contributing instructions → root README
 
@@ -177,15 +141,4 @@ Do NOT create a WHY file for:
 
 ## Updating READMEs
 
-When the API changes:
-1. Update the function signature in the `###` header
-2. Update the parameter table
-3. Update examples if behavior changed
-4. If a new function is added, follow the template above
-
-When reading this skill to write a README:
-1. Read the existing README first
-2. Identify motivation content → move to WHY file
-3. Apply the standard structure
-4. For each exported symbol: signature header, parameters table, return type, example
-5. Link related packages in "Also See"
+When the API changes, update the signature header, parameter table and examples in the same change. When restructuring an existing README, move motivation content into the WHY file first.

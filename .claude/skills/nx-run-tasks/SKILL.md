@@ -5,57 +5,30 @@ description: Running Nx tasks (build, test, check, etc.)
 
 # Running Nx Tasks
 
-> General Nx CLI reference: https://nx.dev/docs/reference/nx-commands#nx-run
-> Workspace task definitions: [`../../../nx.json`](../../../nx.json)
-
-## How to Run Tasks
-
 ```bash
-# Single project, single target
 nx run <project>:<target>
-
-# All projects
-nx run-many -t <target>
-
-# Specific projects
-nx run-many -t <target> -p <project1> <project2>
-
-# Only projects affected by current changes (vs main branch)
-nx affected -t <target>
+nx run-many -t <target> [-p <project1> <project2>]
+nx affected -t <target>        # vs main
 ```
 
-## Task Ordering
+Run the high-level target you care about (`check`, `build`, `test`). Its dependencies run first and are usually cache hits. See the [lifecycle skill](../../../leyman/main/.claude/skills/lifecycle/SKILL.md) for the ordering.
 
-Tasks are broken down into high level goals (checking, building, testing...)
+`--excludeTaskDependencies` rarely does what you want. Tests run from `dist/`, so skipping the build means testing stale code.
 
-See [this explanation](../../../leyman/main/.claude/lifecycle/SKILL.md) for why/how that is maintained.
+## Configurations
 
-Just select the high level task to focus on and execute it. Dependent tasks will run, but Nx caching should make those very fast.
+- `-c fix`: auto-fix lint and format (`eslint`, `biome`).
+- `-c no-check`: turn `eslint`/`biome` into no-ops so build/test skip them.
 
-Note that it is difficult to run a single task (even with `--excludeTaskDependencies`). For example trying to re-run the tests, without re-running the build step won't actually reflect the recent code changes in the tests.
+## Shortcuts (`scripts/commands`, on `PATH`)
 
-## Useful Flags
+| Command | Runs |
+|---------|------|
+| `test-only` | `test` with `-c no-check --nxBail`: fastest feedback |
+| `test-and-fix` | `test` with `-c fix` |
+| `test-ci` | `test`, then `coverage-report`: what CI runs |
+| `dagger-test` | The full CI pipeline in a container (see [dagger-ci](../dagger-ci/SKILL.md)) |
 
-```bash
--c fix                     # Short for --configuration=fix auto-fixes lint and format issues
---skipNxCache              # Bypass cache and rerun
---verbose                  # Stack traces and extra output
---nxBail                   # Stop after first failure
---tuiAutoExit              # Exit TUI automatically when done (used in scripts)
-nx affected --base=main    # Explicit base for affected calculation
-```
+## Finding targets
 
-## Common Command Shortcuts
-
-These are linked to the /scripts/commands directory (via PATH)
-
-```bash
-test-ci       # Full CI: test + coverage enforcement
-test-only     # Tests only, skip lint/format
-test-and-fix  # Run full CI target with auto-fix
-dagger-test   # Run full CI pipeline in Dagger container
-```
-
-## Finding Available Targets
-
-See enabled targets in `project.json`, and cross reference against [nx.json`](../../../nx.json) and [lifecycle.json](../../../leyman/main/lifecycle.json) to exclude the orchestration tasks.
+`nx show project <project>` lists the resolved targets, including ones inferred by plugins (e.g. `typecheck`). Work targets are described in [nx-tasks-reference](../nx-tasks-reference/SKILL.md).

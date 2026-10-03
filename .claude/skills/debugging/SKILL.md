@@ -5,97 +5,40 @@ description: Debugging (source maps, cache, test failures)
 
 # Debugging
 
-> Reference: [`../../../nx.json`](../../../nx.json) · [Node.js debugging](https://nodejs.org/en/learn/getting-started/debugging)
+## Source maps
 
-## Source Maps
+Compiled output has source maps. Run with `NODE_OPTIONS=--enable-source-maps` to get TypeScript stack traces. The `mocha-unit-test`, `mocha-integration-test` and `vitest-unit-test` targets already set it.
 
-Source maps are enabled everywhere. Set `NODE_OPTIONS=--enable-source-maps` to get TypeScript stack traces from compiled JS:
+## Running a single test file
+
+Tests run from compiled `dist/`, so rebuild first (`nx run <project>:build`). Then, from the project directory (mocha is a per-project dev dependency, not on `PATH`):
 
 ```bash
-NODE_OPTIONS=--enable-source-maps node ./dist/index.js
+NODE_OPTIONS=--enable-source-maps ./node_modules/.bin/mocha './dist/tests/unit/my.spec.js' --grep "my test name"
 ```
 
-The `mocha-unit-test` and `mocha-integration-test` targets already set this automatically.
-
-## Nx Cache Issues
-
-If a target seems to return stale results, bypass the cache:
+## Stale results
 
 ```bash
-nx run <project>:<target> --skipNxCache
+nx run <project>:<target> --skipNxCache   # bypass local and shared (remote) cache
+nx reset                                  # clear this worktree's .nx/ cache and daemon
 ```
 
-Clear the entire local cache:
-```bash
-nx reset
-```
+Task outputs are also shared between worktrees through the `nx-cache` sidecar. `nx reset` does not clear that; see the [worktrees skill](../worktrees/SKILL.md).
 
-## Verbose Output
+## Inspecting targets
 
-```bash
-nx run <project>:<target> --verbose   # show stack traces and detailed logs
-```
-
-## Inspecting Target Configuration
-
-Always use `nx show project` to see the actual resolved config — some targets are inferred by plugins and won't appear in `project.json`:
+Some targets (e.g. `typecheck`) are inferred by the `@nx/js/typescript` plugin and never appear in `project.json`. Use the resolved config:
 
 ```bash
-nx show project <project> --json
 nx show project <project> --json | jq '.targets.<target>'
+nx show target inputs <project>:<target>   # what is hashed for caching
 ```
 
-## Debugging Test Failures
+## Coverage
 
-Run a single test file directly (skip Nx overhead):
-```bash
-cd <project-dir>
-NODE_OPTIONS=--enable-source-maps mocha './dist/tests/unit/my.spec.js'
-```
+HTML reports are written to `.coverage/project/<name>/report/index.html`. A project's coverage is merged from its own tests **and the tests of every project that depends on it** (see `scripts/nx/coverage-report.sh`), so an uncovered line may be covered once dependents' tests have run. `test-ci` runs everything in the right order.
 
-Run with a filter to target specific tests:
-```bash
-mocha './dist/tests/unit/**/*.spec.js' --grep "my test name"
-```
+## Command not found
 
-## Debugging Build Failures
-
-1. Check TypeScript errors: `nx run <project>:typecheck`
-2. Check lint: `nx run <project>:check:lint`
-3. Check format: `nx run <project>:check:format`
-4. Check barrel files are in sync: `barrel --ci` (from project dir)
-
-## Coverage Debugging
-
-Coverage reports are at `.coverage/project/<name>/report/index.html`. Open in a browser to see which lines/branches are uncovered.
-
-To rerun coverage without clearing existing data:
-```bash
-nx run <project>:mocha-unit-test --skipNxCache
-nx run <project>:mocha-integration-test --skipNxCache
-nx run <project>:coverage-report
-```
-
-## Dependency Graph
-
-Visualize the full dependency graph to understand task ordering:
-```bash
-nx graph                          # open in browser
-nx graph --file=graph.json        # export to JSON
-nx affected:graph                 # show only affected projects
-```
-
-## ESLint Cache
-
-ESLint caches results in `.eslintcache`. If you see stale lint results:
-```bash
-nx run <project>:eslint --skipNxCache
-```
-
-## DevContainer
-
-This repo is designed for use in the [DevContainer](../../../.devcontainer/). Outside it, tools like Node, PNPM, Dagger, and global binaries may not be on PATH as expected.
-
-If a command is not found, check:
-1. Are you in the DevContainer?
-2. Is `leyman/main/node_modules/.bin` on your PATH? (it should be automatically via PNPM workspace setup)
+`nx`, `biome`, `eslint` (from `leyman/main/node_modules/.bin`) and `scripts/commands` are added to `PATH` by `remoteEnv` in `.devcontainer/devcontainer.json`, so they are only on `PATH` inside the devcontainer. In another worktree, that `PATH` still points at the worktree the container was opened on.

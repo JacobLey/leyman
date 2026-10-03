@@ -5,17 +5,11 @@ description: Understanding the various projects/packages available
 
 # Projects
 
-A project (aka package) is any directory in this repo that has a `project.json` file (which plugs it into Nx runners).
+A project is any directory with a `project.json`. All current projects are TypeScript packages with a `package.json` and a README.md.
 
-_In practice_ all projects are JS based, and therefore also have `package.json`.
-
-Every project should have a README.md.
-
-Most smaller "lib-based" projects go in the `/tools` directory. These should be fairly simple libraries, with a straightforward README.
-
-More complicated projects (i.e. includes a WHY-\<PROJECT\>.md) or those that used outside of traditional `import` (e.g. CLIs) should go in the `/apps` directory.
-
-The two other exceptions are in the `/leyman` directory, which manages meta configuration for this repo, and will never be deployed.
+- `tools/`: libraries consumed via `import`.
+- `apps/`: CLIs, Nx plugins, and larger packages that are used other than by plain `import`.
+- `leyman/`: private, repo-internal packages that are never published.
 
 ## Packages
 
@@ -64,4 +58,5 @@ See each package's README.md for full usage documentation.
 | Package | Description |
 |---------|-------------|
 | [`eslint-config`](../../../leyman/eslint-config) | Very opinionated eslint config used internally for package linting |
+| [`expect`](../../../leyman/expect) | Pre-configured chai assertions for internal tests |
 | [`main`](../../../leyman/main) | Workaround for installing "global" packages, and executing repo-wide tasks |

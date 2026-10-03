@@ -27,7 +27,7 @@ Focused guides for common workflows in this repo:
 | Creating a new package in the monorepo | [`.claude/skills/create-package/SKILL.md`](./.claude/skills/create-package/SKILL.md) |
 | Installing a package dependency | [`.claude/skills/install-package/SKILL.md`](./.claude/skills/install-package/SKILL.md) |
 | What each `nx.json` target does and when to add it to `project.json` | [`.claude/skills/nx-tasks-reference/SKILL.md`](./.claude/skills/nx-tasks-reference/SKILL.md) |
-| Task lifecycle wiring (how check → build → test connect) | [`leyman/main/.claude/lifecycle/SKILL.md`](./leyman/main/.claude/lifecycle/SKILL.md) |
+| Task lifecycle wiring (how check → build → test connect) | [`leyman/main/.claude/skills/lifecycle/SKILL.md`](./leyman/main/.claude/skills/lifecycle/SKILL.md) |
 | DevContainer runtimes, CLI tools, and version parity with Dagger | [`.claude/skills/devcontainer/SKILL.md`](./.claude/skills/devcontainer/SKILL.md) |
 | Worktree layout, setup, and creating/opening/removing worktrees | [`.claude/skills/worktrees/SKILL.md`](./.claude/skills/worktrees/SKILL.md) |
 | Writing and maintaining package READMEs | [`.claude/skills/writing-readmes/SKILL.md`](./.claude/skills/writing-readmes/SKILL.md) |

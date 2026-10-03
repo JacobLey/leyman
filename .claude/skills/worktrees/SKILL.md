@@ -43,18 +43,6 @@ The container's workspace folder is therefore the host path (for example `/Users
 
 ---
 
-## First-time switch from the old `/workspace` setup
-
-You don't need to move anything. Open the main checkout and run **Dev Containers: Rebuild and Reopen in Container**:
-
-- `initialize.sh` creates `leyman-worktrees/.shared/` and moves the existing pnpm store and Claude config into it.
-- `postCreateCommand` runs `pnpm install`. The existing `node_modules` were linked against the old store path, so pnpm purges and relinks them (`confirmModulesPurge=false`).
-- Remove the old container: `docker compose -p leyman_devcontainer down`. That's the old compose project name; check it with `docker compose ls`.
-
-**Claude Code memory:** project data under `.shared/claude-config/projects/` is keyed by path, and the old entry is `-workspace`. After the first launch, find the new entry with `ls .shared/claude-config/projects` and move the old `memory/` into it. Once everything works, you can delete the old `<main>/.claude-config`.
-
----
-
 ## Daily workflow
 
 Run these from a VS Code window opened **locally** on the main checkout (dismiss "Reopen in Container"), or from a host terminal:
@@ -127,7 +115,6 @@ Never `rm` the worktree you are running in; `scripts/worktree` refuses to do it.
 
 ## Maintenance and troubleshooting
 
-- **"predates worktree support" warning, or "Workspace does not exist"**: the worktree's branch was created before this setup existed, so it still has the old `/workspace` devcontainer config. Merge or rebase it onto `main`.
 - **Container fails with "must live in …-worktrees"**: the worktree was created somewhere else, for example nested under `.claude/worktrees/`. Recreate it with `scripts/worktree new`.
 - **No `[remote cache]` hits**: from inside the container, run `curl -s -o /dev/null -w '%{http_code}' http://nx-cache:3000/v1/cache/x`. A `404` means the server is up. Hits only happen when task inputs match, and uncommitted changes alter the hashes.
 - **The shared Nx cache keeps growing**: the server never evicts anything. Prune it from the host, for example with `find <worktrees>/.shared/nx-cache -name '*.tar' -mtime +30 -delete`.

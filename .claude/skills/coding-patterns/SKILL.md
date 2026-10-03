@@ -5,7 +5,7 @@ description: Coding patterns and conventions (package design, types, DI, docs)
 
 # Coding Patterns
 
-This document covers the soft rules and conventions of this codebase. Hard rules — formatting, import ordering, lint errors — are enforced automatically by Biome and ESLint (see [`./claude/skills/linting-formatting/SKILL.md`](../linting-formatting/SKILL.md)). Everything here is about judgment, not automation.
+This document covers the soft rules and conventions of this codebase. Hard rules — formatting, import ordering, lint errors — are enforced automatically by Biome and ESLint (see the [linting-formatting skill](../linting-formatting/SKILL.md)). Everything here is about judgment, not automation.
 
 ---
 
@@ -148,9 +148,9 @@ The abstract base lets callers catch all errors from a package with a single `in
 
 ## Prefer named exports
 
-Named exports are easier for code completion and implicitly recommends unambiguous variable names for importers.
+Named exports are easier for code completion and push importers toward unambiguous names.
 
-Default exports are acceptable in the case of dependents expecting a "single" export, such a `entry-script` and `load-populate-files` will
+Default exports are acceptable in the case of dependents expecting a "single" export, such as `entry-script` and `load-populate-files` will
 dynamically import a file and process the default export.
 
 ---
@@ -169,17 +169,6 @@ For packages with many internal modules, use the `imports` field in `package.jso
 ```
 
 This avoids deep relative paths (`../../../../lib/foo.js`) and makes internal refactoring easier. Use this when a package has more than a handful of internal cross-dependencies.
-
----
-
-## Type-only imports
-
-Always use `import type` when importing only types. This is enforced by the linter, but worth understanding why: it ensures the import is fully erased at compile time, prevents accidental circular dependency issues, and makes the module graph explicit.
-
-```ts
-import type { GenericBinding } from '#binding';
-import { createModule } from '#module'; // has runtime value — plain import
-```
 
 ---
 
@@ -215,16 +204,17 @@ expect(() => doThing()).to.throw(MyError);
 
 ## Tests: type assertions alongside value assertions
 
-Tests verify both runtime behaviour and TypeScript types. Use `expect-type` alongside Chai:
+Tests verify both runtime behaviour and TypeScript types. Use `expect-type` alongside `@leyman/expect`:
 
 ```ts
-import { expect } from 'chai';
+import { expect } from '@leyman/expect';
 import { expectTypeOf } from 'expect-type';
+import { test } from 'mocha-chain';
 
 test('returns correct type', () => {
     const result = findImport(['config.json']);
     expectTypeOf(result).toEqualTypeOf<Promise<{ filePath: string; content: unknown } | null>>();
-    // ... await and chai assertions
+    // ... await and value assertions
 });
 ```
 
@@ -232,25 +222,12 @@ Type assertions catch regressions where the runtime value is correct but the inf
 
 ---
 
-## Parallelism: Promise.all over sequential awaits
+## Parallelism
 
-When multiple async operations are independent, run them in parallel:
-
-```ts
-// Prefer
-const [biome, prettier] = await Promise.all([canUseBiome(), canUsePrettier()]);
-
-// Avoid
-const biome = await canUseBiome();
-const prettier = await canUsePrettier();
-```
-
-This applies to both production code and tests. Sequential awaits that could be parallel are a silent performance issue.
+Independent async operations go in `Promise.all`, in production code and tests alike.
 
 ---
 
 ## `satisfies` over `as`
 
-`as` in Typescript can sometimes make small tweaks to a type that are unintentional (if intentional, do `as unknown as TYPE`).
-
-The `satisfies` keyword ensures types are correct and abide by some contract without actually re-typing the object.
+`as` can silently change a type. `satisfies` checks a value against a type without re-typing it. When a cast really is intended, make it loud with `as unknown as T`.

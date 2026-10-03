@@ -7,11 +7,7 @@ description: What each nx.json target does and when to add it to project.json
 
 Every package in this repo is wired into the same lifecycle via `nx.json` `targetDefaults`. When adding or modifying a `project.json`, declare the targets the package needs as `{}` — the full implementation comes from the targetDefault.
 
-The orchestration targets (e.g. `check:_`, `check:lint`, `check`) will be autopopulated via `nx run @leyman/main:lifecycle`. These are just NOOP commands, but ensure consistent order of execution (e.g. Ensures code is built before testing, and coverage reports are reset before writing new ones).
-
-See [`lifecycle.json`](../../../leyman/main/lifecycle.json) for the authoritative binding of each work target to its lifecycle hook.
-
-`lifecycle.json` is this monorepo's implementation of [`nx-lifecycle`](../../../apps/nx-lifecycle/)
+The orchestration targets (`check:_`, `check:lint`, `check`, …) are no-ops that only enforce ordering. `nx run @leyman/main:lifecycle` adds them to `project.json` and generates their `dependsOn` from [`lifecycle.json`](../../../leyman/main/lifecycle.json). See the [lifecycle skill](../../../leyman/main/.claude/skills/lifecycle/SKILL.md).
 
 ### Dependency changes and caching
 
@@ -21,19 +17,11 @@ Nx hashes each project's npm dependencies (direct and transitive, resolved from 
 
 ## Work Targets
 
-The following section is a description of what each task attempts to accomplish, as well as guidance of when to add it to `project.json`. Not every project is going to use every task (e.g. many "lib" type projects will skip integration testing). See `lifecycle.json` or `nx.json` to see how it fits into the orchestration.
-
-No targets (beside repo-wide commands like `lifecycle` itself) should operate outside the `nx-lifecycle` orchestration.
-
-That means if a new target is added, it should be added to `lifecycle.json`.
+Every work target except repo-wide commands (like `lifecycle` itself) and `coverage-report` must be bound in `lifecycle.json`.
 
 ### `biome`
 
-Formats source files in-place using [Biome](https://biomejs.dev/).
-
-**Configurations:**
-- *(default)* — formatting check, fails on violations
-- `fix` — Runs in `--write` mode, formatting all files
+Checks formatting with Biome. `-c fix` writes changes. `-c no-check` is a no-op.
 
 **Add when:** Every package.
 
@@ -41,11 +29,7 @@ Formats source files in-place using [Biome](https://biomejs.dev/).
 
 ### `eslint`
 
-Lints TypeScript source using ESLint. Uses the project-local `eslint.config.js`.
-
-**Configurations:**
-- *(default)* — lint check, fails on violations
-- `fix` — auto-fixes fixable violations
+Lints with the project's `eslint.config.js`. `-c fix` auto-fixes. `-c no-check` is a no-op.
 
 **Add when:** Add to all TypeScript packages (has `tsconfig.json`).
 
@@ -129,9 +113,9 @@ The shared config runs pre-compiled tests with native `import` and the `threads`
 
 ### `coverage-report`
 
-Validates 100% test coverage by merging all C8 temp data and checking thresholds. Uses `scripts/nx/coverage-report.sh`.
+Validates 100% coverage by merging the C8 data from this project's tests and from every project that depends on it (`scripts/nx/coverage-report.sh`). Not part of the lifecycle; `test-ci` runs it after `test`.
 
-**Add when:** The package has mocha tests and must enforce coverage thresholds.
+**Add when:** The package has any test target.
 
 ---
 

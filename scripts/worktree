@@ -58,15 +58,6 @@ in_container() {
     [ -n "${REMOTE_CONTAINERS:-}" ] || [ -f /.dockerenv ]
 }
 
-# Branches that predate worktree support carry the old devcontainer config, which
-# mounts at /workspace, so opening them "in a devcontainer" fails.
-warn_if_unsupported() {
-    if [ ! -f "$1/.devcontainer/initialize.sh" ]; then
-        echo "warning: $1 predates worktree support (no .devcontainer/initialize.sh)." >&2
-        echo "         Its devcontainer will not open correctly; merge or rebase onto main first." >&2
-    fi
-}
-
 # Prints the worktree's editor URL, then hands it to the OS unless `launch` is false.
 # Editors are just URL formats (from WORKTREE_EDITOR); add new ones as cases here.
 open_worktree() {
@@ -144,7 +135,6 @@ cmd_new() {
         git worktree add -b "$branch" "$path" "$base"
     fi
     echo "Created $path"
-    warn_if_unsupported "$path"
 
     open_worktree "$path" false "$open"
 }
@@ -161,7 +151,6 @@ cmd_open() {
     done
     local path
     path="$(existing_worktree "$target")"
-    warn_if_unsupported "$path"
     open_worktree "$path" "$local_only" "$launch"
 }
 
@@ -170,7 +159,6 @@ cmd_up() {
     require_devcontainer_cli
     local path
     path="$(existing_worktree "${1:-}")"
-    warn_if_unsupported "$path"
     devcontainer up --workspace-folder "$path"
     echo "Shell into it with: scripts/worktree shell $path"
 }

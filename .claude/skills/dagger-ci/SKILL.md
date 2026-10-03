@@ -8,25 +8,14 @@ description: Running CI locally with Dagger
 > Dagger docs: [dagger.io](https://dagger.io/) · [Go SDK](https://docs.dagger.io/sdk/go)
 > CI config: [`../../../dagger/`](../../../dagger/) · GitHub Actions: [`.github/workflows/test.yml`](../../../.github/workflows/test.yml)
 
-## Motivation
+GitHub Actions only calls Dagger, so the same pipeline runs locally in a clean container. That catches anything that only works because of local state (untracked files, stale `dist/`, a dependency missing from the lockfile).
 
-Running builds and test suites locally is a great start to making sure software works. But "we can't deploy your machine", and can't trust that the tests run locally didn't accidentally rely on unexpected side effects (e.g. a new dependency that didn't make it into version control).
+## Pipeline (`dagger/test-and-build/main.go`)
 
-CI workflows fix that (this project uses Github Actions), but then when CI fails it is incredibly hard/slow to debug.
-
-Dagger allows us to run the full CI workflow locally (our Github Actions just point to Dagger) and iterate faster. Now Dagger can be trusted to create
-a fully reproducible build that is known to work.
-
-## What Dagger Does
-
-Dagger runs the full CI pipeline inside a container for reproducibility. It:
-1. Installs Node and PNPM in a Debian container
-    * Versions are hardcoded, and should match this [devcontainer's](../../../.devcontainer/Dockerfile) setting.
-2. Copies source, installs dependencies (`pnpm i`)
-3. Runs `nx run-many -t build` (all packages)
-4. In parallel:
-   - Runs `nx run-many -t test` + `nx run-many -t coverage-report` (test + coverage)
-   - Runs `nx run @leyman/main:lifecycle` (validates lifecycle config is up to date)
+1. Debian + Node + pnpm (versions must match the devcontainer, see the [devcontainer skill](../devcontainer/SKILL.md))
+2. Copy the source (respecting `.gitignore`), `pnpm i`
+3. `nx run-many -t build`
+4. In parallel: `test-ci`, and `nx run @leyman/main:lifecycle` (fails if generated lifecycle config is out of date)
 
 **If Dagger passes, CI passes.**
 
@@ -35,22 +24,12 @@ Dagger runs the full CI pipeline inside a container for reproducibility. It:
 ```bash
 # Full CI simulation (same as GitHub Actions)
 dagger-test
-# PATH based reference to scripts/commands/dagger-test
 
-# Set up Dagger for development (initializes module dependencies)
+# Regenerate Dagger Go SDK bindings (after editing the Go modules)
 dagger-develop
-# PATH based reference to scripts/commands/dagger-develop
 ```
 
-> **Tip:** Run `test-ci` first — Much faster for iteration. Use Dagger only to confirm the final result before push. Dagger is also much harder to debug directly (but still easier than cloud CI)
-
-## Dagger Cloud (Optional)
-
-```bash
-dagger login # connect to Dagger Cloud for pipeline visualization and caching
-```
-
-With Dagger Cloud, you get a web UI showing each pipeline step and its logs, which is useful for debugging CI failures.
+Run `test-ci` first; it is much faster. Use Dagger to confirm before pushing. Dagger needs Docker (available in the devcontainer via docker-outside-of-docker). The first run is slow while layers are cached.
 
 ## Module Structure
 
@@ -65,24 +44,4 @@ dagger/
     └── debian/        ← base Debian container
 ```
 
-## When to Use Dagger vs Nx
-
-| Use | When |
-|-----|------|
-| `test-only` | During development — fast feedback, uses local cache |
-| `dagger-test` | Before pushing — confirms full CI will pass |
-| `test-ci` | Middle ground — runs full tests + coverage without containerization |
-
-## Versions
-
-- Dagger engine: Similar to Node/PNPM, should match version of [Dockerfile](../../../.devcontainer/Dockerfile)
-
-These are set in `dagger/test-and-build/main.go`. When upgrading, update both the Go source and the `dagger.json` engine version.
-
-## Troubleshooting
-
-**Container fails but Nx passes** — likely an environment difference (missing binary, wrong Node version, network issue). Check the Dagger logs carefully for the specific step that failed.
-
-**"dagger: command not found"** — Dagger CLI must be installed. In the DevContainer it is available automatically.
-
-**Slow first run** — Dagger downloads and caches container layers on the first run. Subsequent runs use the cache.
+If Dagger fails but `test-ci` passes locally, suspect an environment difference: a file that is gitignored or untracked, or a version mismatch between the devcontainer and Dagger.

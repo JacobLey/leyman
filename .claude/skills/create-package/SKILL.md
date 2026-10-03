@@ -5,36 +5,30 @@ description: Creating a new package in the monorepo
 
 # Creating a New Package
 
-> Reference: https://nx.dev/concepts/more-concepts/applications-and-libraries
+There are no generators. Copy an existing package of similar shape and adapt it:
 
-This workspace uses manual package creation (no Nx generators are configured for new packages). Use an existing package as a template.
+- Simple library: `tools/parse-cwd`, `tools/enum-to-array`
+- Library with DI: `tools/haywire`
+- CLI app: `apps/barrelify`
 
-## Steps
+Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)).
 
-### 1. Choose a template
+## Files
 
-Pick an existing package at a similar level of complexity:
+| File | Notes |
+|------|-------|
+| `package.json` | `"type": "module"`, version `0.0.1`. Dependencies via `catalog:` / `workspace:^` (see [install-package](../install-package/SKILL.md)). Tests need dev deps on `mocha`, `mocha-chain`, `@leyman/expect`, `c8`. |
+| `tsconfig.json` | `{ "extends": "<relative>/tsconfig.build.json", "compilerOptions": { "outDir": "dist", "rootDir": "src", "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo" } }`. `references` are generated. |
+| `project.json` | List only the work targets the package uses, as `{}` (see [nx-tasks-reference](../nx-tasks-reference/SKILL.md)). Orchestration targets are added by the lifecycle command. |
+| `eslint.config.js` | Export `configGenerator(...)` from `@leyman/eslint-config` (see [linting-formatting](../linting-formatting/SKILL.md)). |
+| `README.md` | Required. See [writing-readmes](../writing-readmes/SKILL.md). |
+
+## Then
 
 ```bash
-# Simple library → tools/enum-to-array or tools/parse-cwd
-# Library with DI → tools/haywire
-# App → apps/barrelify
+pnpm i
+nx run @leyman/main:lifecycle   # adds orchestration targets to project.json
+nx run-many -t build            # syncs tsconfig references
 ```
 
-### 2. Create the package directory and files
-
-Required files (copy and adapt from template):
-
-| File | Purpose |
-|------|---------|
-| `package.json` | Name, version, dependencies. Must have `"type": "module"`. New packages should start at `0.0.1` version |
-| `tsconfig.json` | Extends root tsconfig. Dependencies will be synced automatically. Body should be `{"extends": "./path/to/tsconfig.build.json", "compilerOptions": { "outDir": "dist", "rootDir": "src", "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo" } }` |
-| `project.json` | Declares non-default targets. Most targets come from `nx.json` defaults. Many tasks are synced via [lifecycle](../../../leyman/main/lifecycle.json) and the rest are opted into based on demands. See [the nx-tasks-reference skill](../nx-tasks-reference/SKILL.md) for more info about which tasks to opt into. |
-| `eslint.config.js` | By default just export the result from `configGenerator` from `@leyman/eslint-config` combined with package.json. Can be extended if package has specific requirements. |
-
-### 3. Run initial nx command
-
-Run `pnpm i` then `nx run-many -t build` and `nx run @leyman/main:lifecycle`
-
-This will make sure all the config files (e.g. `tsconfig.json`) are properly synced.
-```
+Also add a row to the table in the [projects skill](../projects/SKILL.md), and a changeset if the package will be published (see [versioning](../versioning/SKILL.md)).

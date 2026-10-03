@@ -1,9 +1,6 @@
 {
   "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "find-import",
-  "metadata": {
-    "daggerRuntime": "node"
-  },
   "targets": {
     "biome": {},
     "eslint": {},
