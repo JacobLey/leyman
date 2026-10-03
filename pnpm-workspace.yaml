@@ -5,6 +5,40 @@ packages:
   - tools/test-chain/*
   - '!**/src/tests/**'
 
+autoInstallPeers: false
+disallowWorkspaceCycles: true
+forceLegacyDeploy: true
+
+# Required for Docker install
+packageImportMethod: clone-or-copy
+
+hoistPattern:
+  - '!*'
+publicHoistPattern:
+  - '!*'
+
+# `storeDir` is intentionally unset: it would override `npm_config_store_dir`,
+# which Dagger and the devcontainer each set to point at their own store.
+
+# Supply-chain protections
+
+# Only install versions published at least 7 days ago (in minutes)
+minimumReleaseAge: 10080
+minimumReleaseAgeExclude:
+  # Packages published from this repo, consumed via `npm:` aliases in catalogs below
+  - barrelify
+  - juniper
+# Fail if a package's publish trust level (e.g. provenance) drops compared to earlier versions
+trustPolicy: no-downgrade
+# Transitive dependencies may only come from the registry (no git/tarball URLs)
+blockExoticSubdeps: true
+# Fail on unapproved dependency build scripts instead of silently skipping them
+strictDepBuilds: true
+onlyBuiltDependencies: []
+ignoredBuiltDependencies:
+  - '@swc/core'
+  - nx
+
 catalog:
   '@biomejs/biome': ^2.4.8
   '@changesets/cli': ^2.30.0

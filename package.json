@@ -4,11 +4,5 @@
     "@nx/js": "catalog:",
     "typescript": "catalog:"
   },
-  "pnpm": {
-    "onlyBuiltDependencies": [],
-    "ignoredBuiltDependencies": [
-      "nx"
-    ]
-  },
   "dependencies": {}
 }

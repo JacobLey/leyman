@@ -42,6 +42,8 @@ func (m *Pnpm) InstallPnpm(container *dagger.Container) *dagger.Container {
 	return container.
 		WithEnvVariable("PNPM_HOME", pnpmHome, dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithEnvVariable("PATH", "${PNPM_HOME}:${PATH}", dagger.ContainerWithEnvVariableOpts{Expand: true}).
+		// Cache volumes are mounted at this path (relative to the workdir)
+		WithEnvVariable("npm_config_store_dir", ".pnpm-store").
 		WithDirectory(
 			pnpmHome,
 			pnpmContainer.Directory(
@@ -79,7 +81,7 @@ func (m *Pnpm) attachPnpmStore(
 			".",
 			source,
 			dagger.ContainerWithDirectoryOpts{
-				Include: []string{".npmrc", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
+				Include: []string{"pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
 			},
 		).
 		WithExec([]string{"pnpm", "fetch"})
@@ -89,7 +91,7 @@ func (m *Pnpm) attachPnpmStore(
 			".",
 			source,
 			dagger.ContainerWithDirectoryOpts{
-				Include: []string{".npmrc", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
+				Include: []string{"pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
 			},
 		).
 		WithDirectory(
@@ -129,7 +131,7 @@ func (m *Pnpm) reformatPackageJson(
 // Actually does a "deploy" without npmignore, which means local dependencies are properly installed
 // in node_modules rather than as symlinks.
 func (m *Pnpm) InstallPackage(
-	// +ignore=["*", "!.npmrc", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
+	// +ignore=["*", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
 	source *dagger.Directory,
 	// +ignore=["**/node_modules"]
 	output *dagger.Directory,
@@ -165,7 +167,7 @@ func (m *Pnpm) InstallPackage(
 // Returns a production "packed"ed version of workspace.
 // All npmignore-d files will be omitted, and package.json will be rewritten without workspace/catalog references
 func (m *Pnpm) RepackPackage(
-	// +ignore=["*", "!.npmrc", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
+	// +ignore=["*", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
 	source *dagger.Directory,
 	// +ignore=["*", "package.json"]
 	output *dagger.Directory,
@@ -180,7 +182,7 @@ func (m *Pnpm) RepackPackage(
 			".",
 			source,
 			dagger.ContainerWithDirectoryOpts{
-				Include: []string{".npmrc", "pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
+				Include: []string{"pnpm-lock.yaml", "pnpm-workspace.yaml", ".pnpmfile.cjs"},
 			},
 		).
 		WithMountedDirectory(
@@ -212,7 +214,7 @@ func (m *Pnpm) RepackPackage(
 // Returns a production "deploy"ed version of workspace.
 // All dev dependencies and npmignore-d files will be omitted
 func (m *Pnpm) DeployPackage(
-	// +ignore=["*", "!.npmrc", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
+	// +ignore=["*", "!.pnpmfile.cjs", "!pnpm-lock.yaml", "!pnpm-workspace.yaml"]
 	source *dagger.Directory,
 	// +ignore=["**/node_modules"]
 	output *dagger.Directory,

@@ -17,7 +17,7 @@ services:
 
     environment:
       CLAUDE_CONFIG_DIR: ${WORKTREES_DIR}/.shared/claude-config
-      # Overrides `store-dir` in .npmrc so every worktree installs from one store
+      # Every worktree installs from one shared store
       npm_config_store_dir: ${WORKTREES_DIR}/.shared/pnpm-store
       NX_SELF_HOSTED_REMOTE_CACHE_SERVER: http://nx-cache:3000
 
