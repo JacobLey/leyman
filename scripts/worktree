@@ -63,7 +63,7 @@ in_container() {
 warn_if_unsupported() {
     if [ ! -f "$1/.devcontainer/initialize.sh" ]; then
         echo "warning: $1 predates worktree support (no .devcontainer/initialize.sh)." >&2
-        echo "         Its devcontainer will not open correctly; merge or rebase onto dev first." >&2
+        echo "         Its devcontainer will not open correctly; merge or rebase onto main first." >&2
     fi
 }
 

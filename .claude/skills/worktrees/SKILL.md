@@ -5,7 +5,7 @@ description: Worktree-based development — folder layout, setup, creating/openi
 
 # Skill: Worktrees
 
-**Do all development in a git worktree.** Each worktree opens in its own devcontainer. The main checkout still works normally, but it's best left on `dev` and used as the place where new worktrees start.
+**Do all development in a git worktree.** Each worktree opens in its own devcontainer. The main checkout still works normally, but it's best left on `main` and used as the place where new worktrees start.
 
 Each worktree has its own `node_modules`, `.nx/` and devcontainer. Downloaded packages and build outputs are shared through `.shared/`.
 
@@ -61,7 +61,7 @@ Run these from a VS Code window opened **locally** on the main checkout (dismiss
 
 | Action | VS Code task | CLI |
 |--------|--------------|-----|
-| Start work | `Worktree: new` | `scripts/worktree new feat/x [--from dev]` |
+| Start work | `Worktree: new` | `scripts/worktree new feat/x [--from main]` |
 | Reopen later | `Worktree: open` | `scripts/worktree open feat/x [--local] [--print]` |
 | Clean up | `Worktree: remove` | `scripts/worktree rm feat/x [--delete-branch] [--force]` |
 | Container without an editor | | `scripts/worktree up feat/x` / `scripts/worktree shell feat/x [cmd...]` |
@@ -70,7 +70,7 @@ Run these from a VS Code window opened **locally** on the main checkout (dismiss
 - `new` creates `leyman-worktrees/feat-x` (`/` in a branch name becomes `-`). It checks out `feat/x` if that branch exists. Otherwise it creates the branch from `--from`, which defaults to the current `HEAD`. It then opens the folder **directly in its devcontainer**.
 - With the default editor (`vscode`), `new` and `open` print a Cmd+clickable `vscode://` link and hand it to the OS (macOS `open`, Linux `xdg-open`). VS Code asks for confirmation ("An external application wants to open…"). Keep that prompt: turning it off lets any app or webpage open a dev container for any folder, which runs that folder's `initializeCommand` on the host. `--no-open` (for `new`) and `--print` (for `open`) only print the link. If the link opens the folder but not the container, use `open --local` and click **Reopen in Container**.
 - `rm` runs `docker compose down` on the worktree's devcontainer, which would otherwise keep running, and then `git worktree remove`. It refuses to remove the main checkout or the worktree you're running it from.
-- Git won't check out the same branch in two worktrees. With the main checkout on `dev`, worktrees branch from `dev` rather than checking it out.
+- Git won't check out the same branch in two worktrees. With the main checkout on `main`, worktrees branch from `main` rather than checking it out.
 
 The tasks in `.vscode/tasks.json` are meant for a local window. In a container window, nothing launches automatically, but the printed links should still work when clicked.
 
@@ -127,7 +127,7 @@ Never `rm` the worktree you are running in; `scripts/worktree` refuses to do it.
 
 ## Maintenance and troubleshooting
 
-- **"predates worktree support" warning, or "Workspace does not exist"**: the worktree's branch was created before this setup existed, so it still has the old `/workspace` devcontainer config. Merge or rebase it onto `dev`.
+- **"predates worktree support" warning, or "Workspace does not exist"**: the worktree's branch was created before this setup existed, so it still has the old `/workspace` devcontainer config. Merge or rebase it onto `main`.
 - **Container fails with "must live in …-worktrees"**: the worktree was created somewhere else, for example nested under `.claude/worktrees/`. Recreate it with `scripts/worktree new`.
 - **No `[remote cache]` hits**: from inside the container, run `curl -s -o /dev/null -w '%{http_code}' http://nx-cache:3000/v1/cache/x`. A `404` means the server is up. Hits only happen when task inputs match, and uncommitted changes alter the hashes.
 - **The shared Nx cache keeps growing**: the server never evicts anything. Prune it from the host, for example with `find <worktrees>/.shared/nx-cache -name '*.tar' -mtime +30 -delete`.
