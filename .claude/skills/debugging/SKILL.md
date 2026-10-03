@@ -37,7 +37,7 @@ nx show target inputs <project>:<target>   # what is hashed for caching
 
 ## Coverage
 
-HTML reports are written to `.coverage/project/<name>/report/index.html`. A project's coverage is merged from its own tests **and the tests of every project that depends on it** (see `scripts/nx/coverage-report.sh`), so an uncovered line may be covered once dependents' tests have run. `test-ci` runs everything in the right order.
+HTML reports are written to `.coverage/project/<name>/report/index.html`. Only the project's own tests count toward its coverage (see `scripts/nx/coverage-report.sh`).
 
 ## Command not found
 

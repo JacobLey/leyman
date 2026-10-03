@@ -2,4 +2,3 @@
 
 set -e
 nx run-many -t test --outputStyle dynamic-legacy
-nx run-many -t coverage-report --outputStyle dynamic-legacy

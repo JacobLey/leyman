@@ -288,7 +288,19 @@
         ],
         "color": true,
         "cwd": "{projectRoot}"
-      }
+      },
+      "cache": true,
+      "inputs": [
+        "ts-source",
+        "^ts-output",
+        "{workspaceRoot}/scripts/nx/coverage-report.sh"
+      ],
+      "outputs": [
+        "{workspaceRoot}/.coverage/project/{projectName}/report"
+      ],
+      "dependsOn": [
+        "test:run"
+      ]
     },
     "check:_": {
       "executor": "nx:noop",
@@ -433,10 +445,20 @@
         "__lifecycle": {}
       }
     },
+    "test:report": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test:run",
+        "coverage-report"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
     "test": {
       "executor": "nx:noop",
       "dependsOn": [
-        "test:run"
+        "test:report"
       ],
       "configurations": {
         "__lifecycle": {}

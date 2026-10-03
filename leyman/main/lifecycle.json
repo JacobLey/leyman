@@ -31,7 +31,8 @@
     "test": {
       "hooks": [
         "reset",
-        "run"
+        "run",
+        "report"
       ],
       "dependsOn": [
         "^test",
@@ -52,6 +53,7 @@
     "coverage-reset": "test:reset",
     "mocha-unit-test": "test:run",
     "mocha-integration-test": "test:run",
-    "vitest-unit-test": "test:run"
+    "vitest-unit-test": "test:run",
+    "coverage-report": "test:report"
   }
 }

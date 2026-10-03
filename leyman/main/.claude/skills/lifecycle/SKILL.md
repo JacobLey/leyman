@@ -14,7 +14,7 @@ description: How the check → build → test → install task lifecycle is wire
 | `install` | — | Dependencies installed and linked |
 | `check` | `lint` → `format` | Linters, then formatters (formatting runs last so lint fixes get reformatted) |
 | `build` | `pre` → `run` → `post` | `pre`: edit source or reset output (`barrelify`, `delete-dist`). `run`: produce `dist/`. `post`: codegen that needs `dist/` (`populate-files` → `out/`) |
-| `test` | `reset` → `run` | `reset`: clear previous coverage. `run`: test suites (unit and integration can both run) |
+| `test` | `reset` → `run` → `report` | `reset`: clear previous coverage. `run`: test suites (unit and integration can both run). `report`: enforce coverage thresholds |
 
 Work targets should support a `no-check` configuration where it makes sense, so `build`/`test` can run without strict lint (`test-only` relies on this).
 
@@ -29,7 +29,3 @@ What each work target does: [nx-tasks-reference](../../../../../.claude/skills/n
 5. Document it in [nx-tasks-reference](../../../../../.claude/skills/nx-tasks-reference/SKILL.md).
 
 Don't hand-edit orchestration `dependsOn`. If a target needs to run before another, express that with stages/hooks (adding a hook if needed).
-
-## `coverage-report` is outside the lifecycle
-
-It is deliberately not bound to `test`, so `nx run-many -t test` stays fast during development. `test-ci` runs `test` and then `coverage-report` as a separate pass, and that is what CI enforces.

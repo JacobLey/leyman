@@ -17,7 +17,7 @@ Nx hashes each project's npm dependencies (direct and transitive, resolved from 
 
 ## Work Targets
 
-Every work target except repo-wide commands (like `lifecycle` itself) and `coverage-report` must be bound in `lifecycle.json`.
+Every work target except repo-wide commands (like `lifecycle` itself) must be bound in `lifecycle.json`.
 
 ### `biome`
 
@@ -113,7 +113,7 @@ The shared config runs pre-compiled tests with native `import` and the `threads`
 
 ### `coverage-report`
 
-Validates 100% coverage by merging the C8 data from this project's tests and from every project that depends on it (`scripts/nx/coverage-report.sh`). Not part of the lifecycle; `test-ci` runs it after `test`.
+Validates 100% coverage using only the C8 data from this project's own test targets (`scripts/nx/coverage-report.sh`). Runs in `test:report`, after the test suites. Coverage from dependents' tests does not count.
 
 **Add when:** The package has any test target.
 

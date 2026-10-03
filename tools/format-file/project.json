@@ -27,6 +27,7 @@
     "test:_": {},
     "test:reset": {},
     "test:run": {},
+    "test:report": {},
     "test": {}
   }
 }

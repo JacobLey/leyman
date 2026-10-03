@@ -11,16 +11,16 @@ description: Writing and running tests (Mocha, mocha-chain, Sinon, C8)
 
 ```bash
 test-only   # build + test, skips lint/format (-c no-check), stops on first failure
-test-ci     # lint + build + test, then coverage-report — what CI runs
+test-ci     # lint + build + test + coverage-report — what CI runs
 ```
 
 Tests run against compiled `dist/`, so a test run always rebuilds first (cached when unchanged).
 
 ## Coverage
 
-100% lines, statements, functions and branches, enforced by `coverage-report`. That target is deliberately **not** part of `test` (see the [lifecycle skill](../../../leyman/main/.claude/skills/lifecycle/SKILL.md)), so `nx run-many -t test` passing does not mean coverage passes. Run `test-ci`.
+100% lines, statements, functions and branches, enforced by `coverage-report` as the last step of `test` (`test:report`). An incomplete package fails `test`.
 
-A package's coverage is merged from its own tests and the tests of every package that depends on it. Test in the package itself where reasonable, but coverage from dependents counts when exercising code directly would be contrived.
+Coverage is per package: only the package's own tests count, not tests of packages that depend on it. Every package must fully test itself.
 
 100% is the floor, not the goal: two `if`s are fully covered by two tests but have four paths. If code is hard to cover, it is usually missing an abstraction. Use `haywire` DI (see `haywire-launcher` for covering CLI entry points) rather than reaching into internals.
 

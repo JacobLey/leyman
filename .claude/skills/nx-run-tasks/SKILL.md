@@ -26,7 +26,7 @@ Run the high-level target you care about (`check`, `build`, `test`). Its depende
 |---------|------|
 | `test-only` | `test` with `-c no-check --nxBail`: fastest feedback |
 | `test-and-fix` | `test` with `-c fix` |
-| `test-ci` | `test`, then `coverage-report`: what CI runs |
+| `test-ci` | `test` (including `coverage-report`): what CI runs |
 | `dagger-test` | The full CI pipeline in a container (see [dagger-ci](../dagger-ci/SKILL.md)) |
 
 ## Finding targets
