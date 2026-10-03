@@ -31,6 +31,7 @@
     "build:post": {},
     "build": {},
     "test:_": {},
+    "test:compile": {},
     "test:run": {},
     "test:report": {},
     "test": {},

@@ -5,7 +5,7 @@
  */
 export default {
     test: {
-        include: ['dist/tests/unit/**/*.spec.js'],
+        include: ['dist/tests/unit/**/*.spec.js', 'dist-test/unit/**/*.spec.js'],
         // Forked workers are killed before V8 can flush coverage, so c8 would see nothing.
         // Worker threads write their coverage on exit.
         pool: 'threads',

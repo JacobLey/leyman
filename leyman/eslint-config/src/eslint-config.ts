@@ -166,8 +166,8 @@ export default function makeEslintConfigForPackage({
 
     return [
         {
-            ignores: ['coverage', 'dist', 'node_modules', 'out', '.eslintcache'].map(directory =>
-                Path.join(relativePath, directory, '**')
+            ignores: ['coverage', 'dist', 'dist-test', 'node_modules', 'out', '.eslintcache'].map(
+                directory => Path.join(relativePath, directory, '**')
             ),
         },
         {
@@ -854,7 +854,9 @@ export default function makeEslintConfigForPackage({
         },
         {
             // Disable "best practice" rules for tests
-            files: [Path.join(relativePath, 'src/tests/**/*.{c,m,}ts{x,}')],
+            files: ['src/tests', 'test'].map(directory =>
+                Path.join(relativePath, directory, '**/*.{c,m,}ts{x,}')
+            ),
             rules: {
                 'no-magic-numbers': 'off',
                 '@typescript-eslint/explicit-function-return-type': 'off',

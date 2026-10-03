@@ -21,7 +21,8 @@
       ],
       "dependsOn": [
         "^build",
-        "prepare"
+        "prepare",
+        "build"
       ]
     },
     "build": {
@@ -36,6 +37,7 @@
     },
     "test": {
       "hooks": [
+        "compile",
         "run",
         "report"
       ],
@@ -57,6 +59,7 @@
     "eslint": "check:lint",
     "tsc": "build:run",
     "populate-files": "build:post",
+    "tsc-test": "test:compile",
     "mocha-unit-test": "test:run",
     "mocha-integration-test": "test:run",
     "vitest-unit-test": "test:run",

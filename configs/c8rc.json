@@ -7,6 +7,8 @@
     "coverage/**",
     "eslint.config.js",
     "src/tests/**",
+    "test/**",
+    "dist-test/**",
     "types.d.ts"
   ],
   "exclude-after-remap": true,

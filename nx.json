@@ -59,6 +59,8 @@
     ],
     "test-source": [
       "ts-source",
+      "{projectRoot}/test/**/*",
+      "{workspaceRoot}/tsconfig.test.json",
       "package-files",
       "dependency-builds",
       "{workspaceRoot}/configs/c8rc.json"
@@ -92,13 +94,17 @@
         "{projectRoot}/*.json",
         "{projectRoot}/*.(c|m)?js",
         "{projectRoot}/src/**/*.(c|m)?tsx?",
-        "{projectRoot}/src/**/*.json"
+        "{projectRoot}/src/**/*.json",
+        "{projectRoot}/test/**/*.(c|m)?tsx?",
+        "{projectRoot}/test/**/*.json"
       ],
       "outputs": [
         "{projectRoot}/*.json",
         "{projectRoot}/*.(c|m)?js",
         "{projectRoot}/src/**/*.(c|m)?tsx?",
-        "{projectRoot}/src/**/*.json"
+        "{projectRoot}/src/**/*.json",
+        "{projectRoot}/test/**/*.(c|m)?tsx?",
+        "{projectRoot}/test/**/*.json"
       ]
     },
     "eslint": {
@@ -119,6 +125,7 @@
       "inputs": [
         "eslint-input",
         "ts-source",
+        "{projectRoot}/test/**/*",
         "package-files",
         "dependency-builds",
         "^package-files"
@@ -200,6 +207,32 @@
         "build:_"
       ]
     },
+    "tsc-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "rm -rf ./dist-test",
+          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.ts?(x)'",
+          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
+          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
+          "tsc -p ./test"
+        ],
+        "parallel": false,
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "test-source",
+        "^package-files"
+      ],
+      "outputs": [
+        "{projectRoot}/dist-test"
+      ],
+      "dependsOn": [
+        "test:_"
+      ]
+    },
     "populate-files": {
       "executor": "nx:run-commands",
       "options": {
@@ -226,7 +259,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/unit/**/*.spec.*js\""
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/unit/**/*.spec.*js\" \"$PWD/dist-test/unit/**/*.spec.*js\""
         ],
         "parallel": true,
         "color": true,
@@ -241,14 +274,14 @@
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
       ],
       "dependsOn": [
-        "test:_"
+        "test:compile"
       ]
     },
     "mocha-integration-test": {
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/integration/**/*.spec.*js\""
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist/tests/integration/**/*.spec.*js\" \"$PWD/dist-test/integration/**/*.spec.*js\""
         ],
         "parallel": true,
         "color": true,
@@ -264,7 +297,7 @@
       ],
       "dependsOn": [
         "mocha-unit-test",
-        "test:_"
+        "test:compile"
       ]
     },
     "vitest-unit-test": {
@@ -287,7 +320,7 @@
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
       ],
       "dependsOn": [
-        "test:_"
+        "test:compile"
       ]
     },
     "coverage-report": {
@@ -378,7 +411,8 @@
       "executor": "nx:noop",
       "dependsOn": [
         "^build",
-        "prepare"
+        "prepare",
+        "build"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -451,10 +485,20 @@
         "__lifecycle": {}
       }
     },
-    "test:run": {
+    "test:compile": {
       "executor": "nx:noop",
       "dependsOn": [
         "test:_",
+        "tsc-test"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "test:run": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "test:compile",
         "mocha-unit-test",
         "mocha-integration-test",
         "vitest-unit-test"

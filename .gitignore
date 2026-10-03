@@ -9,6 +9,7 @@
 **/.eslintcache
 **/coverage
 **/dist
+**/dist-test
 **/.swcrc
 
 /.claude-config
