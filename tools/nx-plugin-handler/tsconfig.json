@@ -28,6 +28,9 @@
       "path": "../test-chain/mocha-chain"
     },
     {
+      "path": "../../leyman/expect"
+    },
+    {
       "path": "../../leyman/eslint-config"
     }
   ]

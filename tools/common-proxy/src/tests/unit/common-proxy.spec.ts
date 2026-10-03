@@ -1,6 +1,6 @@
 import { setTimeout } from 'node:timers/promises';
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
+import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { commonProxy } from '../../common-proxy.cjs';
 import { proxiedHandler, proxiedMethods } from '../fixtures/fixtures.cjs';

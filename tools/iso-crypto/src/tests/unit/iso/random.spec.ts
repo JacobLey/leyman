@@ -1,6 +1,6 @@
 import type * as Random from '#random';
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
+import { expect } from '@leyman/expect';
 import * as IsoCrypto from 'iso-crypto';
 import { before, suite, test } from 'mocha-chain';
 import * as BrowserRandom from '../../../iso/random/browser.js';

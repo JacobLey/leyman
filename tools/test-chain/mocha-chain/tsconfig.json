@@ -8,10 +8,13 @@
   },
   "references": [
     {
-      "path": "../../../leyman/eslint-config"
+      "path": "../test-chain-core"
     },
     {
-      "path": "../test-chain-core"
+      "path": "../../../leyman/expect"
+    },
+    {
+      "path": "../../../leyman/eslint-config"
     }
   ]
 }

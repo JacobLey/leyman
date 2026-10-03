@@ -1,6 +1,6 @@
 import type { ParseCwd } from 'parse-cwd';
-import { expect } from 'chai';
 import { createStubInstance, verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { BarrelifyApi } from '../../barrelify-api.js';

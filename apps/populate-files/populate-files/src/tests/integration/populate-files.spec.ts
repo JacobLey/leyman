@@ -2,9 +2,9 @@ import { readFile, stat, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { dir, file } from 'tmp-promise';
 import { stringToUint8Array } from 'uint8array-extras';
+import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { populateFile, populateFiles } from 'populate-files';
-import { expect } from '../chai-hooks.js';
 
 const prettyJson = (json: object) => `${JSON.stringify(json, null, 2)}\n`;
 

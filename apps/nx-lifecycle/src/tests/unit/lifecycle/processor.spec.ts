@@ -1,6 +1,6 @@
+import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import * as Processor from '../../../lifecycle/processor.js';
-import { expect } from '../../chai-hooks.js';
 
 /**
  * Ensure inputs are never modified.

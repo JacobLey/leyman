@@ -2,6 +2,7 @@ import type { AsyncSupplier, HaywireIdType, LateBinding, MultiList, Supplier } f
 import { setTimeout } from 'node:timers/promises';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
+import { expect } from '@leyman/expect';
 import {
     AsyncContainer,
     bind,
@@ -32,7 +33,6 @@ import {
     HaywireSyncSupplierError,
     HaywireUndefinedResponseError,
 } from '#errors';
-import { expect } from '../chai-hooks.js';
 
 const catchThrown = async (fn: () => unknown): Promise<unknown> => {
     try {

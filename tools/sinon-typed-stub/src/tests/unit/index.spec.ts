@@ -1,6 +1,6 @@
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { define, verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, suite, test } from 'mocha-chain';
 import { mockMethod, spyMethod, stubMethod } from 'sinon-typed-stub';
 

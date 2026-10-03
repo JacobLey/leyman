@@ -9,6 +9,7 @@ import {
     useQueryClient,
 } from '@tanstack/react-query';
 import { renderHook } from '@testing-library/react-hooks/server/index.js';
+import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import {
     useNormalizedInfiniteQuery,
@@ -20,7 +21,6 @@ import {
     useNormalizedSuspenseInfiniteQuery,
 } from 'normalized-react-query';
 import { Linked } from '../../lib/linked.js';
-import { expect } from '../chai-hooks.js';
 import {
     austenId,
     fellowshipOfTheRingId,

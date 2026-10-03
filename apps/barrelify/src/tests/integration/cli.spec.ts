@@ -1,8 +1,8 @@
 import { exec } from 'node:child_process';
 import Path from 'node:path';
 import { promisify } from 'node:util';
+import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { expect } from '../chai-hooks.js';
 
 const execAsync = promisify(exec);
 

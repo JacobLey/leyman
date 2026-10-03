@@ -1,0 +1,39 @@
+{
+  "name": "@leyman/expect",
+  "version": "0.0.1",
+  "description": "Pre-configured chai assertions for internal tests.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/leyman/expect#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "sideEffects": true,
+  "exports": {
+    ".": "./dist/expect.js"
+  },
+  "dependencies": {
+    "@types/chai": "catalog:",
+    "@types/chai-as-promised": "catalog:",
+    "chai": "catalog:",
+    "chai-as-promised": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "typescript": "catalog:"
+  }
+}

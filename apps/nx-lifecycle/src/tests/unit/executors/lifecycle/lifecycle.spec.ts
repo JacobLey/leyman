@@ -1,10 +1,10 @@
 import type { ILifecycleInternal } from '../../../../lifecycle/lifecycle-internal.js';
 import type { LifecycleOptionsOrConfig } from '../../../../lifecycle/schema.js';
 import { verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { mockMethod } from 'sinon-typed-stub';
 import { Lifecycle } from '../../../../executors/lifecycle/lifecycle.js';
-import { expect } from '../../../chai-hooks.js';
 
 suite('Lifecycle', () => {
     const stubs = beforeEach(() => {

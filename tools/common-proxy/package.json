@@ -30,18 +30,17 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
-    "@types/chai": "catalog:",
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
+    "barrelify": "workspace:^",
     "c8": "catalog:",
-    "chai": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "barrelify": "workspace:^",
     "typescript": "catalog:"
   }
 }

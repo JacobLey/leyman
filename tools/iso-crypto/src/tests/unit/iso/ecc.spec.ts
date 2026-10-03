@@ -1,7 +1,7 @@
 import type { Context } from 'mocha';
 import type * as Ecc from '#ecc';
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
+import { expect } from '@leyman/expect';
 import * as IsoCrypto from 'iso-crypto';
 import { before, suite, test } from 'mocha-chain';
 import * as BrowserEcc from '../../../iso/ecc/browser.js';

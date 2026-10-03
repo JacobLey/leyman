@@ -1,7 +1,7 @@
 import type { SchemaType } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
+import { expect } from '@leyman/expect';
 import { stringSchema } from 'juniper';
 import { before, suite, test } from 'mocha-chain';
 

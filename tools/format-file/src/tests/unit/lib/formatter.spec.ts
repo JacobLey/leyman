@@ -1,6 +1,6 @@
 import type { CanUseFormatter } from '#types';
-import { expect } from 'chai';
 import { verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { Formatter } from '#lib';

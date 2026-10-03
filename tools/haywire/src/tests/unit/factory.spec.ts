@@ -1,9 +1,9 @@
 import type { MultiList } from 'haywire';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
+import { expect } from '@leyman/expect';
 import { bind, createContainer, createFactory, createModule, identifier } from 'haywire';
 import { HaywireDuplicateOutputError, HaywireProviderMissingError } from '#errors';
-import { expect } from '../chai-hooks.js';
 
 suite('factory', () => {
     class A {

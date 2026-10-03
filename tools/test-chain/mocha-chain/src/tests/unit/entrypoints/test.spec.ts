@@ -1,6 +1,6 @@
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as mocha from 'mocha';
+import { expect } from '@leyman/expect';
 import { it, specify, suite, test, xit } from 'mocha-chain';
 
 const ranTests = new Set<number>();

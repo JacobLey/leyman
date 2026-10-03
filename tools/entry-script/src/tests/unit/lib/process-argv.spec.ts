@@ -1,6 +1,6 @@
+import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { getProcessArgvBinIndex } from '#process-argv';
-import { expect } from '../../chai-hooks.js';
 
 suite('process.argv', () => {
     test('Is normal Node', () => {

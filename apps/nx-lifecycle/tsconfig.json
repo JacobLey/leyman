@@ -46,6 +46,9 @@
       "path": "../populate-files/load-populate-files"
     },
     {
+      "path": "../../leyman/expect"
+    },
+    {
       "path": "../../leyman/eslint-config"
     }
   ]

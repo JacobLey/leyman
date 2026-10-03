@@ -6,11 +6,11 @@ import type { NxAndProjectJsonProcessor } from '../../../lifecycle/processor.js'
 import type { LifecycleOptions } from '../../../lifecycle/schema.js';
 import type { NxContext } from '../../../lifecycle/types.js';
 import { createStubInstance, fake, match, verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { mockMethod, stubMethod } from 'sinon-typed-stub';
 import { LifecycleInternal } from '../../../lifecycle/lifecycle-internal.js';
 import { Normalizer } from '../../../lifecycle/normalizer.js';
-import { expect } from '../../chai-hooks.js';
 
 suite('lifecycle', () => {
     const mockOptions = {} as LifecycleOptions;

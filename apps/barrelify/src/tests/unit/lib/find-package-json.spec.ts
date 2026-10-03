@@ -1,9 +1,9 @@
 import type { FindImport } from '../../../lib/dependencies.js';
 import { verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { FindPackageJson } from '../../../lib/find-package-json.js';
-import { expect } from '../../chai-hooks.js';
 
 suite('FindPackageJson', () => {
     afterEach(() => {

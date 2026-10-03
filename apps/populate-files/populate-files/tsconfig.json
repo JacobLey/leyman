@@ -16,6 +16,9 @@
       "path": "../../../tools/format-file"
     },
     {
+      "path": "../../../leyman/expect"
+    },
+    {
       "path": "../../../leyman/eslint-config"
     }
   ]

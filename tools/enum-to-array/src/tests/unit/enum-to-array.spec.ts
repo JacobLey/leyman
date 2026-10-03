@@ -1,5 +1,5 @@
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
+import { expect } from '@leyman/expect';
 import * as EnumToArray from 'enum-to-array';
 import { suite, test } from 'mocha-chain';
 

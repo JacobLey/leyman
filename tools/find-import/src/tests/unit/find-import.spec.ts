@@ -1,6 +1,6 @@
 import Path from 'node:path';
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
+import { expect } from '@leyman/expect';
 import * as FindImport from 'find-import';
 import { before, suite, test } from 'mocha-chain';
 

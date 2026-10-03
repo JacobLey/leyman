@@ -1,10 +1,7 @@
 import Path from 'node:path';
-import { expect, use } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
+import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import * as ParseCwd from 'parse-cwd';
-
-use(chaiAsPromised);
 
 suite('parseCwd', () => {
     test('Defaults to process.cwd()', async () => {

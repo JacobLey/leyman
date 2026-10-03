@@ -1,10 +1,10 @@
 import type { ProjectGraph } from '@nx/devkit';
 import type { ILifecycleInternal } from '../../../lifecycle/lifecycle-internal.js';
 import { verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { mockMethod } from 'sinon-typed-stub';
 import { LifecycleCommand } from '../../../commands/lifecycle-command.js';
-import { expect } from '../../chai-hooks.js';
 
 suite('LifecycleCommand', () => {
     const stubs = beforeEach(() => {

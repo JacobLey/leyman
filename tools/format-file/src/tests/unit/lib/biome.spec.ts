@@ -1,6 +1,6 @@
 import type { findUp } from 'find-up';
-import { expect } from 'chai';
 import { verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { Biome } from '#lib';

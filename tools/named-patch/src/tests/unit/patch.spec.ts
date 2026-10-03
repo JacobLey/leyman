@@ -1,6 +1,6 @@
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import { stub, verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, suite, test } from 'mocha-chain';
 import * as Patch from 'named-patch';
 

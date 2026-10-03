@@ -1,6 +1,6 @@
 import type { events } from 'static-emitter';
-import { expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
+import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { CustomEvent, StaticEmitter } from 'static-emitter';
 import { CustomEmitter, eventSym } from '../data/custom-emitter.js';

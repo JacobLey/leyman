@@ -1,4 +1,4 @@
-import { expect } from 'chai';
+import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import * as Punycode from 'punycode-esm';
 

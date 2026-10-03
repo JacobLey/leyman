@@ -10,6 +10,7 @@ import type { BindingBuilder } from '#binding';
 import type { AbstractPrivateClass } from '#identifier';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
+import { expect } from '@leyman/expect';
 import {
     bind,
     Binding,
@@ -20,7 +21,6 @@ import {
     transientScope,
 } from 'haywire';
 import { TempBinding } from '#binding';
-import { expect } from '../chai-hooks.js';
 
 suite('bind', () => {
     abstract class Foo {

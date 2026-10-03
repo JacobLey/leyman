@@ -1,9 +1,9 @@
 import Path from 'node:path';
 import { isCI } from 'ci-info';
 import { stringToUint8Array } from 'uint8array-extras';
+import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { normalizeFileParams, normalizeFilesParams } from '../../../lib/normalize.js';
-import { expect } from '../../chai-hooks.js';
 
 const cwd = import.meta.dirname;
 

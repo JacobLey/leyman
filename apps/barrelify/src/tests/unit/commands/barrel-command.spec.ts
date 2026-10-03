@@ -1,7 +1,7 @@
 import type { ParseCwd } from 'parse-cwd';
 import type { ConsoleLog } from '../../../lib/dependencies.js';
-import { expect } from 'chai';
 import { createStubInstance, verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { BarrelCommand } from '../../../commands/barrel-command.js';

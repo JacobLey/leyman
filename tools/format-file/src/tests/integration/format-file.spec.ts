@@ -1,7 +1,7 @@
 import { readFile, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
-import { expect } from 'chai';
 import { dir } from 'tmp-promise';
+import { expect } from '@leyman/expect';
 import * as BiomeFormatter from 'format-file';
 import { beforeEach, suite } from 'mocha-chain';
 import formattedFixtures from './fixtures/formatted.js';

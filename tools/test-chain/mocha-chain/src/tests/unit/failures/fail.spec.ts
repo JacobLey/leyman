@@ -9,14 +9,11 @@ import type {
     TestFunction,
 } from 'mocha';
 import type { MochaMethods } from '../../../lib/mocha-chain.js';
-import { use } from 'chai';
-import chaiAsPromised from 'chai-as-promised';
 import * as mocha from 'mocha';
 import { match, mock, stub, verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { after, afterEach, suite, test } from 'mocha-chain';
 import { createMochaChain } from '../../../lib/mocha-chain.js';
-
-const { expect } = use(chaiAsPromised);
 
 suite('Failure cases', () => {
     const fakeCurrentTest = {};

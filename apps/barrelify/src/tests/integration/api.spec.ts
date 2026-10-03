@@ -1,7 +1,7 @@
 import Path from 'node:path';
+import { expect } from '@leyman/expect';
 import { barrelify } from 'barrelify';
 import { suite, test } from 'mocha-chain';
-import { expect } from '../chai-hooks.js';
 
 const rootDir = Path.join(import.meta.filename, '../../../..');
 

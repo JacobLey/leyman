@@ -1,7 +1,7 @@
 import { CancelledError, QueryClient } from '@tanstack/react-query';
+import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { resource } from 'normalized-react-query';
-import { expect } from '../../chai-hooks.js';
 
 suite('queryable', () => {
     const context = beforeEach(() => {

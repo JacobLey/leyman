@@ -1,5 +1,6 @@
 import type { Main } from 'entry-script';
 import { fake, verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import EntryScript, { MainNotImplementedError } from 'entry-script';
 import {
     bind,
@@ -10,7 +11,6 @@ import {
 } from 'haywire';
 import { launch } from 'haywire-launcher';
 import { afterEach, beforeEach, suite, test } from 'mocha-chain';
-import { expect } from '../../chai-hooks.js';
 
 suite('launch', () => {
     const withFake = beforeEach(() => ({

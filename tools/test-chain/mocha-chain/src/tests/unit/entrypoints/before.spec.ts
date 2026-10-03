@@ -1,6 +1,6 @@
-import { assert, expect } from 'chai';
 import { expectTypeOf } from 'expect-type';
 import * as mocha from 'mocha';
+import { assert, expect } from '@leyman/expect';
 import { before, suite, suiteSetup } from 'mocha-chain';
 
 const order: number[] = [];

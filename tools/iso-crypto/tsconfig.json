@@ -13,6 +13,9 @@
       "path": "../../apps/barrelify"
     },
     {
+      "path": "../../leyman/expect"
+    },
+    {
       "path": "../../leyman/eslint-config"
     }
   ]

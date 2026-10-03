@@ -1,10 +1,10 @@
 import type { Globby } from '../../../lib/dependencies.js';
 import type { IsExplicitlyModuleDirectory } from '../../../lib/find-package-json.js';
 import { verifyAndRestore } from 'sinon';
+import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { stubMethod } from 'sinon-typed-stub';
 import { Glob } from '../../../lib/glob.js';
-import { expect } from '../../chai-hooks.js';
 
 suite('FindPackageJson', () => {
     afterEach(() => {
