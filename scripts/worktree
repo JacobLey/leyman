@@ -30,7 +30,7 @@ Commands:
 
 Editor (WORKTREE_EDITOR env var):
   vscode (default)  Print Cmd+clickable vscode:// links and launch via the `code` CLI
-                    if installed, otherwise macOS `open`.
+                    (on PATH or inside the VS Code app bundle), else macOS `open`.
   none              Only print the worktree path; use `up`/`shell` or your IDE's
                     dev container support.
 EOF
@@ -94,19 +94,43 @@ open_vscode() {
     if [ "$launch" != true ] || in_container; then
         return
     fi
-    if command -v code >/dev/null; then
+    local code_cli
+    code_cli="$(find_code_cli)"
+    if [ -n "$code_cli" ]; then
         if [ "$local_only" = true ]; then
-            code "$path"
+            "$code_cli" "$path"
         else
-            code --folder-uri "vscode-remote://${remote#vscode-remote/}"
+            "$code_cli" --folder-uri "vscode-remote://${remote#vscode-remote/}"
         fi
     elif [ "$(uname)" = Darwin ]; then
+        # URL handler fallback; VS Code asks for confirmation before opening it
         if [ "$local_only" = true ]; then
             open -a 'Visual Studio Code' "$path"
         else
             open "vscode://${remote}"
         fi
     fi
+}
+
+# The `code` CLI ships inside the macOS app bundle even when it isn't installed on
+# PATH. Using it avoids the confirmation prompt that `vscode://` links trigger.
+find_code_cli() {
+    if command -v code >/dev/null; then
+        command -v code
+        return
+    fi
+    [ "$(uname)" = Darwin ] || return 0
+    local app
+    {
+        echo "/Applications/Visual Studio Code.app"
+        echo "$HOME/Applications/Visual Studio Code.app"
+        mdfind 'kMDItemCFBundleIdentifier == "com.microsoft.VSCode"' 2>/dev/null || true
+    } | while IFS= read -r app; do
+        if [ -x "$app/Contents/Resources/app/bin/code" ]; then
+            echo "$app/Contents/Resources/app/bin/code"
+            break
+        fi
+    done
 }
 
 # Resolves <branch|path> to an existing worktree directory
