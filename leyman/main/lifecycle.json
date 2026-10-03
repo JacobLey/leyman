@@ -1,14 +1,27 @@
 {
   "$schema": "../../apps/nx-lifecycle/out/schema.json",
   "stages": {
-    "check": {
+    "install": {
+      "dependsOn": [
+        "^build"
+      ]
+    },
+    "prepare": {
       "hooks": [
-        "lint",
+        "generate",
         "format"
       ],
       "dependsOn": [
-        "^build",
         "install"
+      ]
+    },
+    "check": {
+      "hooks": [
+        "lint"
+      ],
+      "dependsOn": [
+        "^build",
+        "prepare"
       ]
     },
     "build": {
@@ -19,13 +32,7 @@
       ],
       "dependsOn": [
         "^build",
-        "check",
-        "install"
-      ]
-    },
-    "install": {
-      "dependsOn": [
-        "^build"
+        "prepare"
       ]
     },
     "test": {
@@ -35,19 +42,22 @@
         "report"
       ],
       "dependsOn": [
-        "^test",
+        "build"
+      ]
+    },
+    "verify": {
+      "dependsOn": [
         "check",
-        "build",
-        "install"
+        "test"
       ]
     }
   },
   "bindings": {
+    "barrelify": "prepare:generate",
+    "update-ts-references": "prepare:generate",
+    "biome": "prepare:format",
     "eslint": "check:lint",
-    "biome": "check:format",
-    "barrelify": "build:pre",
     "delete-dist": "build:pre",
-    "update-ts-references": "build:pre",
     "tsc": "build:run",
     "populate-files": "build:post",
     "coverage-reset": "test:reset",

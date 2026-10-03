@@ -21,7 +21,7 @@ Every work target except repo-wide commands (like `lifecycle` itself) must be bo
 
 ### `biome`
 
-Checks formatting with Biome. `-c fix` writes changes. `-c no-check` is a no-op.
+Formats with Biome (`scripts/nx/biome-format.sh`). Writes changes, except in CI where it only checks. `-c check` checks without writing.
 
 **Add when:** Every package.
 
@@ -29,7 +29,7 @@ Checks formatting with Biome. `-c fix` writes changes. `-c no-check` is a no-op.
 
 ### `eslint`
 
-Lints with the project's `eslint.config.js`. `-c fix` auto-fixes. `-c no-check` is a no-op.
+Lints with the project's `eslint.config.js`. `-c fix` auto-fixes.
 
 **Add when:** Add to all TypeScript packages (has `tsconfig.json`).
 

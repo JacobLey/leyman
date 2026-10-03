@@ -12,18 +12,18 @@ ESLint does all linting. Biome does formatting only (its linter is disabled). Bo
 ## Running
 
 ```bash
-nx run <project>:check            # eslint, then biome
-nx run-many -t check -c fix       # auto-fix everything
+nx run <project>:check            # format (writes), then eslint
+nx run-many -t check -c fix       # also auto-fix lint
 
 # A single tool on one project (work targets are `eslint` and `biome`;
-# `check:lint` / `check:format` are the orchestration targets that wrap them)
+# `check:lint` / `prepare:format` are the orchestration targets that wrap them)
 nx run <project>:eslint -c fix --excludeTaskDependencies
-nx run <project>:biome -c fix --excludeTaskDependencies
+nx run <project>:biome --excludeTaskDependencies
 ```
 
-Biome runs after ESLint on purpose: ESLint fixes can produce code that then needs reformatting.
+Formatting is part of the `prepare` stage, which runs before both `check` and `build`. It writes changes by default, and in CI (`CI` set) it only checks and fails on unformatted code. `-c check` checks without writing locally.
 
-Both targets also have a `no-check` configuration that turns them into no-ops. `test-only` uses it to skip linting while iterating.
+Linting is the `check` stage, which `build` and `test` don't depend on, so lint errors never block a quick build or test run. `verify` (and `test-ci`) runs both. Code changed by `eslint -c fix` is reformatted on the next run.
 
 Biome is not cached by Nx (it is fast enough), ESLint is.
 

@@ -16,21 +16,26 @@
         "^build"
       ]
     },
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
     "check:_": {},
     "check:lint": {},
-    "check:format": {},
     "check": {},
     "build:_": {},
     "build:pre": {},
     "build:run": {},
     "build:post": {},
     "build": {},
-    "install:_": {},
-    "install": {},
     "test:_": {},
     "test:reset": {},
     "test:run": {},
     "test:report": {},
-    "test": {}
+    "test": {},
+    "verify:_": {},
+    "verify": {}
   }
 }

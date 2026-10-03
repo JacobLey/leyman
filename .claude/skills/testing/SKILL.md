@@ -10,8 +10,8 @@ description: Writing and running tests (Mocha, mocha-chain, Sinon, C8)
 ## Running
 
 ```bash
-test-only   # build + test, skips lint/format (-c no-check), stops on first failure
-test-ci     # lint + build + test + coverage-report — what CI runs
+test-only   # build + test (no lint), stops on first failure
+test-ci     # verify: lint + build + test + coverage-report — what CI runs
 ```
 
 Tests run against compiled `dist/`, so a test run always rebuilds first (cached when unchanged).

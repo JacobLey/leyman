@@ -1,6 +1,6 @@
 ---
 name: lifecycle
-description: How the check → build → test → install task lifecycle is wired (nx-lifecycle, lifecycle.json) and how to add a new target to it
+description: How the install → prepare → check/build → test → verify task lifecycle is wired (nx-lifecycle, lifecycle.json) and how to add a new target to it
 ---
 
 # Lifecycle Configuration
@@ -9,14 +9,21 @@ description: How the check → build → test → install task lifecycle is wire
 
 ## Stages
 
+```
+install → prepare ┬→ check ─────────┬→ verify
+                  └→ build → test ──┘
+```
+
 | Stage | Hooks | Purpose |
 |-------|-------|---------|
 | `install` | — | Dependencies installed and linked |
-| `check` | `lint` → `format` | Linters, then formatters (formatting runs last so lint fixes get reformatted) |
-| `build` | `pre` → `run` → `post` | `pre`: edit source or reset output (`barrelify`, `delete-dist`). `run`: produce `dist/`. `post`: codegen that needs `dist/` (`populate-files` → `out/`) |
-| `test` | `reset` → `run` → `report` | `reset`: clear previous coverage. `run`: test suites (unit and integration can both run). `report`: enforce coverage thresholds |
+| `prepare` | `generate` → `format` | Everything that rewrites source: codegen (`barrelify`, `update-ts-references`), then formatting (`biome`). Writes locally, only checks in CI, so `build` always sees final source |
+| `check` | `lint` | Opinionated rules (`eslint`). Nothing else depends on it, so a hacky change still builds and tests |
+| `build` | `pre` → `run` → `post` | `pre`: reset output (`delete-dist`). `run`: produce `dist/`. `post`: codegen that needs `dist/` (`populate-files` → `out/`) |
+| `test` | `reset` → `run` → `report` | `reset`: clear previous coverage. `run`: test suites (unit and integration can both run). `report`: enforce coverage thresholds. Does not test dependencies; use `nx run-many`/`nx affected` for that |
+| `verify` | — | `check` + `test`: everything CI requires of a project |
 
-Work targets should support a `no-check` configuration where it makes sense, so `build`/`test` can run without strict lint (`test-only` relies on this).
+`prepare` targets must write by default and only check (failing on drift) when `CI` is set. Formatting before `build` keeps its cache inputs stable.
 
 What each work target does: [nx-tasks-reference](../../../../../.claude/skills/nx-tasks-reference/SKILL.md).
 

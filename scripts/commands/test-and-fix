@@ -1,4 +1,4 @@
 #!/usr/bin/env bash
 
 set -e
-nx run-many -t test -c fix --outputStyle dynamic-legacy
+nx run-many -t verify -c fix --outputStyle dynamic-legacy

@@ -36,25 +36,20 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "biome format ."
+          "${NX_WORKSPACE_ROOT}/scripts/nx/biome-format.sh"
         ],
         "color": true,
         "cwd": "{projectRoot}"
       },
       "configurations": {
-        "fix": {
+        "check": {
           "commands": [
-            "biome format --write ."
-          ]
-        },
-        "no-check": {
-          "commands": [
-            ":"
+            "biome format ."
           ]
         }
       },
       "dependsOn": [
-        "check:lint"
+        "prepare:generate"
       ],
       "cache": false,
       "inputs": [
@@ -82,11 +77,6 @@
       "configurations": {
         "fix": {
           "fix": true
-        },
-        "no-check": {
-          "commands": [
-            ":"
-          ]
         }
       },
       "cache": true,
@@ -111,7 +101,7 @@
         "cwd": "{projectRoot}"
       },
       "dependsOn": [
-        "build:_"
+        "prepare:_"
       ],
       "cache": true,
       "inputs": [
@@ -149,7 +139,7 @@
         "{projectRoot}/tsconfig.json"
       ],
       "dependsOn": [
-        "build:_"
+        "prepare:_"
       ]
     },
     "tsc": {
@@ -302,11 +292,68 @@
         "test:run"
       ]
     },
+    "install:_": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "^build"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "install": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "install:_"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "prepare:_": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "install"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "prepare:generate": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "prepare:_",
+        "barrelify",
+        "update-ts-references"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "prepare:format": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "prepare:generate",
+        "biome"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "prepare": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "prepare:format"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
     "check:_": {
       "executor": "nx:noop",
       "dependsOn": [
         "^build",
-        "install"
+        "prepare"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -322,20 +369,10 @@
         "__lifecycle": {}
       }
     },
-    "check:format": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "check:lint",
-        "biome"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
-    },
     "check": {
       "executor": "nx:noop",
       "dependsOn": [
-        "check:format"
+        "check:lint"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -345,8 +382,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "^build",
-        "check",
-        "install"
+        "prepare"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -356,9 +392,7 @@
       "executor": "nx:noop",
       "dependsOn": [
         "build:_",
-        "barrelify",
-        "delete-dist",
-        "update-ts-references"
+        "delete-dist"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -393,31 +427,10 @@
         "__lifecycle": {}
       }
     },
-    "install:_": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "^build"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
-    },
-    "install": {
-      "executor": "nx:noop",
-      "dependsOn": [
-        "install:_"
-      ],
-      "configurations": {
-        "__lifecycle": {}
-      }
-    },
     "test:_": {
       "executor": "nx:noop",
       "dependsOn": [
-        "^test",
-        "check",
-        "build",
-        "install"
+        "build"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -459,6 +472,25 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test:report"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "verify:_": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "check",
+        "test"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
+    "verify": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "verify:_"
       ],
       "configurations": {
         "__lifecycle": {}
