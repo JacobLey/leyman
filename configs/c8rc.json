@@ -9,7 +9,7 @@
     "src/tests/**",
     "test/**",
     "dist-test/**",
-    "types.d.ts"
+    "**/*.d.{,c,m}ts"
   ],
   "exclude-after-remap": true,
   "extension": [

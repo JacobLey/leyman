@@ -1,11 +1,7 @@
-/**
- * Most generic class possible.
- * Used by types to help determine if a method is a class constructor.
- */
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export declare abstract class Constructable {
-    private constructor(...args: unknown[]);
-}
+import type { Constructable } from '../../constructable.js';
+
+export type { Constructable };
+
 /**
  * Almost the most generic class possible.
  *
