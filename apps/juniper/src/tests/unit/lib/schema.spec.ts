@@ -3,7 +3,7 @@ import type { JsonSchema, Schema, SchemaType } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
-import { mergeSchema, numberSchema, NumberSchema, stringSchema } from 'juniper';
+import { isSchema, mergeSchema, numberSchema, NumberSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
 
 // Schema itself is an abstract class, so use NumberSchema
@@ -25,6 +25,26 @@ suite('schema', () => {
             const schema = numberSchema();
             expectTypeOf(schema).toExtend<Schema<number>>();
             expect(schema).to.be.an.instanceOf(NumberSchema);
+        });
+    });
+
+    suite('isSchema', () => {
+        test('Schema instances', () => {
+            expect(isSchema(numberSchema())).to.equal(true);
+            expect(isSchema(mergeSchema())).to.equal(true);
+        });
+
+        test('Non-schemas', () => {
+            for (const value of [numberSchema().toJSON(), {}, null, 'number', NumberSchema]) {
+                expect(isSchema(value)).to.equal(false);
+            }
+        });
+
+        test('Narrows type', () => {
+            const value: unknown = numberSchema();
+            if (isSchema<number>(value)) {
+                expectTypeOf(value).toEqualTypeOf<Schema<number>>();
+            }
         });
     });
 

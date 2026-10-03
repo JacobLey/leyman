@@ -1649,12 +1649,18 @@ importers:
       '@leyman/eslint-config':
         specifier: workspace:^
         version: link:../../../leyman/eslint-config
+      '@leyman/expect':
+        specifier: workspace:^
+        version: link:../../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
         version: 0.8.0(@swc/core@1.15.21(@swc/helpers@0.5.19))
       '@swc/core':
         specifier: 'catalog:'
         version: 1.15.21(@swc/helpers@0.5.19)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
       '@types/node':
         specifier: 'catalog:'
         version: 24.12.0
@@ -1664,6 +1670,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 9.39.4
+      mocha:
+        specifier: 'catalog:'
+        version: 11.7.5
       typescript:
         specifier: 'catalog:'
         version: 6.0.2

@@ -1,6 +1,6 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { SchemaType } from 'juniper';
-import type { AssertionType, ValidatorType } from 'juniper-validator';
+import type { AssertionType, JuniperValidator, ValidatorType } from 'juniper-validator';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { mergeSchema, numberSchema, stringSchema } from 'juniper';
@@ -50,6 +50,27 @@ suite('juniper-validator', () => {
                     'must match a schema in anyOf',
                 ]);
             });
+        });
+    });
+
+    suite('JSON schema', () => {
+        const jsonValidator = makeValidator<number>({
+            type: 'number',
+            exclusiveMinimum: 2,
+            maximum: 13,
+        });
+
+        test('success', () => {
+            expectTypeOf(jsonValidator).toEqualTypeOf<JuniperValidator<number>>();
+            expect(jsonValidator.validate(5)).to.deep.equal({ value: 5 });
+            expect(jsonValidator.is(13)).to.equal(true);
+        });
+
+        test('failure', () => {
+            expect(jsonValidator.is(2)).to.equal(false);
+            expect(jsonValidator.validate('5').issues!.map(issue => issue.message)).to.deep.equal([
+                'must be number',
+            ]);
         });
     });
 
