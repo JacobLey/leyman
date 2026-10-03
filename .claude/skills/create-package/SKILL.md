@@ -18,6 +18,7 @@ Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)
 | File | Notes |
 |------|-------|
 | `package.json` | `"type": "module"`, version `0.0.1`. Dependencies via `catalog:` / `workspace:^` (see [install-package](../install-package/SKILL.md)). Tests need dev deps on `mocha`, `mocha-chain`, `@leyman/expect`, `c8`. |
+| `src/`, `data/`, `out/` | Where files go decides what is cached; see [Project layout and caching](../nx-tasks-reference/SKILL.md#project-layout-and-caching). |
 | `tsconfig.json` | `{ "extends": "<relative>/tsconfig.build.json", "compilerOptions": { "outDir": "dist", "rootDir": "src", "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo" } }`. `references` are generated. |
 | `project.json` | List only the work targets the package uses, as `{}` (see [nx-tasks-reference](../nx-tasks-reference/SKILL.md)). Orchestration targets are added by the lifecycle command. |
 | `eslint.config.js` | Export `configGenerator(...)` from `@leyman/eslint-config` (see [linting-formatting](../linting-formatting/SKILL.md)). |

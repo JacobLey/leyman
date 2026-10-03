@@ -4,28 +4,64 @@
     "packageManager": "pnpm"
   },
   "namedInputs": {
+    "shared-globals": [
+      {
+        "runtime": "node --version"
+      }
+    ],
+    "package-files": [
+      "{projectRoot}/package.json",
+      "{projectRoot}/executors.json",
+      "{projectRoot}/*.(c|m)?js",
+      "{projectRoot}/*.d.(c|m)?ts",
+      "{projectRoot}/data/**/*",
+      "{projectRoot}/out/**/*"
+    ],
     "eslint-input": [
       "{projectRoot}/eslint.config.js"
     ],
     "ts-source": [
-      "{workspaceRoot}/configs/c8rc.json",
+      "shared-globals",
       "{workspaceRoot}/configs/swcrc.jsonc",
       "{workspaceRoot}/tsconfig.build.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
-      "{projectRoot}/src/**/*.(c|m)?tsx?",
-      "{projectRoot}/src/**/*.json",
-      "{projectRoot}/src/tests",
+      "{projectRoot}/src/**/*",
       {
         "externalDependencies": []
       }
     ],
-    "ts-output": [
-      "{projectRoot}/package.json",
-      "{projectRoot}/dist/**/*.(c|m)?js",
-      "{projectRoot}/dist/**/*.d.(c|m)?ts",
-      "{projectRoot}/(dist|src)/**/*.json",
-      "!{projectRoot}/(dist|src)/tests"
+    "dependency-builds": [
+      {
+        "dependentTasksOutputFiles": "**/dist/**/*.js",
+        "transitive": true
+      },
+      {
+        "dependentTasksOutputFiles": "**/dist/**/*.mjs",
+        "transitive": true
+      },
+      {
+        "dependentTasksOutputFiles": "**/dist/**/*.cjs",
+        "transitive": true
+      },
+      {
+        "dependentTasksOutputFiles": "**/dist/**/*.d.ts",
+        "transitive": true
+      },
+      {
+        "dependentTasksOutputFiles": "**/dist/**/*.d.mts",
+        "transitive": true
+      },
+      {
+        "dependentTasksOutputFiles": "**/dist/**/*.d.cts",
+        "transitive": true
+      }
+    ],
+    "test-source": [
+      "ts-source",
+      "package-files",
+      "dependency-builds",
+      "{workspaceRoot}/configs/c8rc.json"
     ]
   },
   "sync": {
@@ -83,7 +119,9 @@
       "inputs": [
         "eslint-input",
         "ts-source",
-        "^ts-output"
+        "package-files",
+        "dependency-builds",
+        "^package-files"
       ],
       "outputs": [],
       "dependsOn": [
@@ -105,7 +143,14 @@
       ],
       "cache": true,
       "inputs": [
-        "{projectRoot}/**/index.(c|m)?ts"
+        "shared-globals",
+        "{projectRoot}/package.json",
+        "{projectRoot}/src/**/*",
+        "dependency-builds",
+        "^package-files",
+        {
+          "externalDependencies": []
+        }
       ],
       "outputs": [
         "{projectRoot}/**/index.(c|m)?ts"
@@ -145,7 +190,8 @@
       "cache": true,
       "inputs": [
         "ts-source",
-        "^ts-output"
+        "dependency-builds",
+        "^package-files"
       ],
       "outputs": [
         "{projectRoot}/dist"
@@ -166,7 +212,8 @@
       "cache": true,
       "inputs": [
         "ts-source",
-        "^ts-output"
+        "dependency-builds",
+        "^package-files"
       ],
       "outputs": [
         "{projectRoot}/out"
@@ -187,8 +234,8 @@
       },
       "cache": true,
       "inputs": [
-        "ts-source",
-        "^ts-output"
+        "test-source",
+        "^package-files"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
@@ -209,8 +256,8 @@
       },
       "cache": true,
       "inputs": [
-        "ts-source",
-        "^ts-output"
+        "test-source",
+        "^package-files"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/integration"
@@ -232,8 +279,8 @@
       },
       "cache": true,
       "inputs": [
-        "ts-source",
-        "^ts-output",
+        "test-source",
+        "^package-files",
         "{workspaceRoot}/configs/vitest.config.js"
       ],
       "outputs": [
@@ -254,9 +301,14 @@
       },
       "cache": true,
       "inputs": [
+        "shared-globals",
         "ts-source",
-        "^ts-output",
-        "{workspaceRoot}/scripts/nx/coverage-report.sh"
+        "{workspaceRoot}/configs/c8rc.json",
+        "{workspaceRoot}/scripts/nx/coverage-report.sh",
+        {
+          "dependentTasksOutputFiles": ".coverage/project/**/*.json",
+          "transitive": true
+        }
       ],
       "outputs": [
         "{workspaceRoot}/.coverage/project/{projectName}/report"
