@@ -54,7 +54,7 @@ export abstract class HaywireContainerValidationError extends HaywireError {}
  * and it is never possible to have the first value.
  *
  * Ideally this should be addressed by refactoring to remove the circular dependency altogether.
- * If that is not possible, use `identifier.lateBinding()` for one of the dependencies, to generate a promise
+ * If that is not possible, use `identifier.deferred()` for one of the dependencies, to generate a promise
  * that will be resolved later with the circularly generated value.
  */
 export class HaywireCircularDependencyError extends HaywireContainerValidationError {
@@ -131,7 +131,7 @@ export class HaywireCircularDependencyError extends HaywireContainerValidationEr
  * Either:
  * - Refactor the supplier to be asynchronous itself
  * - Refactor the dependency providers to become synchronous
- * - Use optimistic scoping to pre-compute an async dependency to be available synchronously.
+ * - Use eager scoping to pre-compute an async dependency to be available synchronously.
  */
 export class HaywireSyncSupplierError extends HaywireContainerValidationError {
     public readonly unsafeSupplierBindings: {

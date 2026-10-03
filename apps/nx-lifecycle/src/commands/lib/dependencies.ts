@@ -30,6 +30,6 @@ export const dependenciesModule = createModule(
         })
     )
     .addBinding(
-        bind(projectGraphId).withAsyncGenerator(createProjectGraphAsync).scoped(singletonScope)
+        bind(projectGraphId).withAsyncFactory(createProjectGraphAsync).scoped(singletonScope)
     )
     .addBinding(bind(workspaceRootId).withInstance(workspaceRoot));

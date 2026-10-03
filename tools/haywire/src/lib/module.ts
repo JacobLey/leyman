@@ -1,6 +1,6 @@
 import type { BindingListOutputType, BindingOutputType, GenericBinding } from '#binding';
-import type { AsyncContainer, Container } from '#container';
-import type { Factory } from '#factory';
+import type { Container, MaybeSyncContainer } from '#container';
+import type { ContainerFactory } from '#container-factory';
 import type {
     GenericBaseHaywireId,
     GenericHaywireId,
@@ -9,8 +9,8 @@ import type {
 } from '#identifier';
 import type { ExpandOutput, Extendable, InvalidInput, NonExtendable } from '#types';
 import { createAsyncContainer, createSyncContainer } from '#container';
+import { wireContainerFactory } from '#container-factory';
 import { HaywireDuplicateOutputError } from '#errors';
-import { wireFactory } from '#factory';
 
 type SimplifyDependencyType<T extends readonly GenericOutputHaywireId[]> = {
     [Index in keyof T]: [
@@ -449,8 +449,8 @@ export class Module<
         ...invalidInput: [any] extends [Outputs]
             ? []
             : ValidateToContainer<ListOutputs | Outputs, Dependencies>
-    ): Container<ListOutputs | Outputs, Async>;
-    public toContainer(): AsyncContainer<ListOutputs | Outputs> {
+    ): MaybeSyncContainer<ListOutputs | Outputs, Async>;
+    public toContainer(): Container<ListOutputs | Outputs> {
         const bindings = new Map(this.#bindings);
 
         return this.isAsync
@@ -473,24 +473,27 @@ export class Module<
             T[typeof idType]['listOutputs'] | T[typeof idType]['outputs'],
             T[typeof idType]['dependencies']
         >
-    ): Container<T[typeof idType]['listOutputs'] | T[typeof idType]['outputs'], T['isAsync']>;
+    ): MaybeSyncContainer<
+        T[typeof idType]['listOutputs'] | T[typeof idType]['outputs'],
+        T['isAsync']
+    >;
     public static createContainer<T extends GenericModule>(
         this: void,
         mod: T
-    ): AsyncContainer<T[typeof idType]['listOutputs'] | T[typeof idType]['outputs']> {
+    ): Container<T[typeof idType]['listOutputs'] | T[typeof idType]['outputs']> {
         return mod.toContainer();
     }
 
-    public toFactory(): Factory<
+    public toContainerFactory(): ContainerFactory<
         ListOutputs | Outputs,
         Exclude<Dependencies, ListOutputs | Outputs> | ListDependencies<Dependencies>,
         Async,
         never
     > {
-        return wireFactory(this.#bindings, this.#listBindings, this.isAsync);
+        return wireContainerFactory(this.#bindings, this.#listBindings, this.isAsync);
     }
 
-    public static createFactory<
+    public static createContainerFactory<
         Outputs extends [Extendable],
         ListOutputs extends [Extendable],
         Dependencies extends [Extendable],
@@ -498,15 +501,15 @@ export class Module<
     >(
         this: void,
         mod: Module<Outputs, ListOutputs, Dependencies, Async>
-    ): Factory<
+    ): ContainerFactory<
         ListOutputs | Outputs,
         Exclude<Dependencies, ListOutputs | Outputs> | ListDependencies<Dependencies>,
         Async,
         never
     > {
-        return mod.toFactory();
+        return mod.toContainerFactory();
     }
 }
 
 export const createModule = Module.fromBinding;
-export const { createContainer, createFactory } = Module;
+export const { createContainer, createContainerFactory } = Module;

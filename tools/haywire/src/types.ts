@@ -3,7 +3,7 @@ export type {
     AsyncSupplier,
     Constructable,
     IsClass,
-    LateBinding,
+    Deferred,
     NonExtendable,
     Supplier,
     MultiList,

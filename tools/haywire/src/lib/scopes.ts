@@ -33,7 +33,7 @@ export const singletonScope = Symbol('singleton');
 /**
  * Same bevahior as singleton scope.
  *
- * Can be "optimistically" instantiated during container setup via `container.preload() / container.preloadSync`.
+ * Can be "eagerly" instantiated during container setup via `container.preload() / container.preloadSync`.
  * Helpful to catch any errors and peform potentially expensive calculations/loads
  * before any interfaces are in use.
  *
@@ -41,9 +41,9 @@ export const singletonScope = Symbol('singleton');
  *
  * **NOTE**
  *
- * Instance bindings are implicitly optimistic singleton scope.
+ * Instance bindings are implicitly eager singleton scope.
  */
-export const optimisticSingletonScope = Symbol('optimistic-singleton');
+export const eagerSingletonScope = Symbol('eager-singleton');
 /**
  * Provider will be invoked at most once per container request.
  *
@@ -82,7 +82,7 @@ export const requestScope = Symbol('request');
 /**
  * Same bevahior as request scope.
  *
- * Can be "optimistically" instantiated during the request to the the container.
+ * Can be "eagerly" instantiated during the request to the the container.
  * Helpful to catch any errors and peform potentially expensive calculations/loads
  * before any interfaces are in use.
  *
@@ -93,26 +93,26 @@ export const requestScope = Symbol('request');
  * `A` depends on a _supplier_ of `B`, and propagates its scope.
  *
  * `B` depends on `C`.
- * `C` is scoped as `optimistic-request`.
+ * `C` is scoped as `eager-request`.
  *
  * `A.B()` can be called synchronously, because `C` already exists.
  *
  * **NOTE**
- * Instances will only be optimistically instantiated if they are in the dependency graph
+ * Instances will only be eagerly instantiated if they are in the dependency graph
  *
  * **Example:**
  * `A` depends on `B`
  * `C` depends on `D`
  *
- * Both `B` and `D` are `optimistic-request`.
+ * Both `B` and `D` are `eager-request`.
  *
  * A request for `A` will only instantiate `B`, not `D`.
  */
-export const optimisticRequestScope = Symbol('optimistic-request');
+export const eagerRequestScope = Symbol('eager-request');
 /**
  * Similar to `request` scope, but "opts out" of the propagated scope from the parent request.
  *
- * If a `supplier` scope occurs at the top level of a container request, or the parent supplier did
+ * If an isolated request scope occurs at the top level of a container request, or the parent supplier did
  * not propagate scope, it acts exactly the same as `request` scope.
  *
  * **Example:**
@@ -120,18 +120,18 @@ export const optimisticRequestScope = Symbol('optimistic-request');
  * `A` depends on a B, and _supplier_ `C`, which propagates scope.
  * `C` depends on `D` + `E`, which both depend on `B`.
  *
- * `B` is scoped as supplier.
+ * `B` is scoped as isolated-request.
  *
  * `A.B !== A.C().D.B`
  * `const C = A.C()`
  * `C.D.B === C.E.B`.
  */
-export const supplierScope = Symbol('supplier');
+export const isolatedRequestScope = Symbol('isolated-request');
 
 export type Scopes =
-    | typeof optimisticRequestScope
-    | typeof optimisticSingletonScope
+    | typeof eagerRequestScope
+    | typeof eagerSingletonScope
+    | typeof isolatedRequestScope
     | typeof requestScope
     | typeof singletonScope
-    | typeof supplierScope
     | typeof transientScope;

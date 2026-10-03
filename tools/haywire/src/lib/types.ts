@@ -86,9 +86,9 @@ export interface AsyncSupplier<T> {
     (): Promise<T>;
 }
 
-declare const lateBinding: unique symbol;
-export interface LateBinding<T> extends Promise<T> {
-    [lateBinding]: typeof lateBinding;
+declare const deferred: unique symbol;
+export interface Deferred<T> extends Promise<T> {
+    [deferred]: typeof deferred;
 }
 
 export type Names = string | symbol | null;

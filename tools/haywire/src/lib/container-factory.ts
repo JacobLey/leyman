@@ -1,5 +1,5 @@
 import type { BindingListOutputType, BindingOutputType, GenericBinding } from '#binding';
-import type { AsyncContainer, Container, ExpandedContainer } from '#container';
+import type { Container, ExpandedContainer, MaybeSyncContainer } from '#container';
 import type {
     ClassToConstructable,
     GenericBaseHaywireId,
@@ -19,9 +19,9 @@ import { addBoundInstances, createAsyncContainer, createSyncContainer } from '#c
 import { HaywireDuplicateOutputError, HaywireProviderMissingError } from '#errors';
 import { expandOutputId, expandSharedOutputIds, unsafeIdentifier } from '#identifier';
 
-export type GenericFactory = Factory<any, any, any, any>;
+export type GenericContainerFactory = ContainerFactory<any, any, any, any>;
 
-type ValidateRegister<
+type ValidateBindInstance<
     Outputs extends [Extendable],
     Dependencies extends [Extendable],
     Bindings extends InstanceBinding<GenericHaywireId>,
@@ -40,17 +40,17 @@ type ValidateRegister<
 
 /**
  * Verify that the container has no dependencies remaining unbound before exposing the container.
- * Exclude outputs before checking (even though dependencies _should_ already do that) so that `GenericFactory` templates
+ * Exclude outputs before checking (even though dependencies _should_ already do that) so that `GenericContainerFactory` templates
  * can use this method.
  *
  * @template F - factory
  */
-type ValidateToContainer<F extends GenericFactory> = [] &
+type ValidateToContainer<F extends GenericContainerFactory> = [] &
     ([Exclude<F[typeof idType]['dependencies'], F[typeof idType]['outputs']>] extends [never]
         ? []
         : [InvalidInput<'MissingOutput'>]);
 
-const wireFactorySym = Symbol('wireFactory');
+const wireContainerFactorySym = Symbol('wireContainerFactory');
 
 declare const idType: unique symbol;
 
@@ -66,7 +66,7 @@ declare const idType: unique symbol;
  * @template Async if false, will result in a SyncContainer
  * @template Bindings instance bindings that are ready to be attached to container
  */
-export class Factory<
+export class ContainerFactory<
     Outputs extends [Extendable],
     Dependencies extends [Extendable],
     Async extends boolean,
@@ -79,7 +79,7 @@ export class Factory<
         bindings: Bindings;
     };
 
-    readonly #container: Container<Outputs, Async>;
+    readonly #container: MaybeSyncContainer<Outputs, Async>;
     readonly #missingDependencyOutputsByBaseId: Map<GenericBaseHaywireId, GenericOutputHaywireId[]>;
     readonly #existingOutputBaseIds: Set<GenericBaseHaywireId>;
     /**
@@ -97,7 +97,7 @@ export class Factory<
     readonly #registeredBindings: Bindings[];
 
     private constructor(
-        container: Container<Outputs, Async>,
+        container: MaybeSyncContainer<Outputs, Async>,
         missingDependencyOutputsByBaseId: Map<GenericBaseHaywireId, GenericOutputHaywireId[]>,
         existingOutputBaseIds: Set<GenericBaseHaywireId>,
         listDependencyOutputsByBaseId: ReadonlyMap<
@@ -118,7 +118,7 @@ export class Factory<
         this.#registeredBindings = [...registeredBindings];
     }
 
-    public static [wireFactorySym]?<
+    public static [wireContainerFactorySym]?<
         Outputs extends [Extendable],
         Dependencies extends [Extendable],
         Async extends boolean,
@@ -127,7 +127,7 @@ export class Factory<
         bindings: ReadonlyMap<GenericBaseHaywireId, GenericBinding>,
         listBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>,
         isAsync: Async
-    ): Factory<Outputs, Dependencies, Async, never> {
+    ): ContainerFactory<Outputs, Dependencies, Async, never> {
         const outputIds = new Set(
             [...bindings.values()].flatMap(binding => [...expandOutputId(binding.outputId)])
         );
@@ -140,7 +140,7 @@ export class Factory<
                 ),
             ])
         );
-        // Dependencies are compared as outputs, so suppliers + late bindings are satisfied by the underlying output.
+        // Dependencies are compared as outputs, so suppliers + deferred dependencies are satisfied by the underlying output.
         const dependencyIds = new Set(
             [...bindings.values(), ...listBindings.values()]
                 .flat()
@@ -203,7 +203,7 @@ export class Factory<
         const mergedBindings = new Map([...bindings, ...missingImplementationBindings]);
         const mergedListBindings = new Map([...listBindings, ...missingImplementationListBindings]);
 
-        const container: AsyncContainer<Outputs> = isAsync
+        const container: Container<Outputs> = isAsync
             ? createAsyncContainer(mergedBindings, mergedListBindings)
             : createSyncContainer(mergedBindings, mergedListBindings);
 
@@ -212,8 +212,8 @@ export class Factory<
             bindings.keys()
         );
 
-        return new Factory<Outputs, Dependencies, Async, never>(
-            container as Container<Outputs, Async>,
+        return new ContainerFactory<Outputs, Dependencies, Async, never>(
+            container as MaybeSyncContainer<Outputs, Async>,
             missingDependencyOutputsByBaseId,
             existingOutputBaseIds,
             listDependencyOutputsByBaseId,
@@ -224,7 +224,7 @@ export class Factory<
 
     /**
      * Checks the underlying container.
-     * Uses {@link AsyncContainer.check()} directly.
+     * Uses {@link Container.check()} directly.
      *
      * Recommended to be called as an optimization, becaues check the factory
      * will ensure _every_ resulting container is pre-checked.
@@ -235,7 +235,7 @@ export class Factory<
 
     /**
      * Wires the underlying container.
-     * Uses {@link AsyncContainer.wire()} directly.
+     * Uses {@link Container.wire()} directly.
      *
      * Recommended to be called as an optimization, becaues wiring the factory
      * will ensure _every_ resulting container is pre-wired.
@@ -245,53 +245,53 @@ export class Factory<
     }
 
     /**
-     * Register an output id to a corresponding instance.
+     * Bind an output id to a corresponding instance.
      *
-     * Similar to binding, but there is no provider, dependencies, or ability to make it async.
+     * Equivalent to adding a `bind(outputId).withInstance(instance)` binding, so there is no provider, dependencies, or ability to make it async.
      *
      * Call will fail if an existing output has already been declared that has overlap with this.
      *
-     * Returns a new instance of Factory, so the original is not mutated and can have multiple different types injected to it.
-     * The new Factory also has types updated, to prevent duplicate output ids in future registrations.
+     * Returns a new instance of ContainerFactory, so the original is not mutated and can have multiple different types injected to it.
+     * The new ContainerFactory also has types updated, to prevent duplicate output ids in future registrations.
      *
      * @param outputId - id defining type of instance
      * @param instance - instance to provide to all bindings
      * @param invalidInput - Enforces that incoming `outputId` is not a duplicate of existing ids
      */
-    public register<OutputId extends GenericHaywireId>(
+    public bindInstance<OutputId extends GenericHaywireId>(
         outputId: OutputId,
         instance: HaywireIdProviderType<OutputId>,
-        ...invalidInput: ValidateRegister<
+        ...invalidInput: ValidateBindInstance<
             Outputs,
             Dependencies,
             Bindings,
             OutputHaywireId<OutputId>
         >
-    ): Factory<
+    ): ContainerFactory<
         CombineListOutputs<Outputs, BindingListOutputType<OutputHaywireId<OutputId>>>,
         Exclude<Dependencies, BindingOutputType<OutputHaywireId<OutputId>>>,
         Async,
         Bindings | InstanceBinding<OutputId>
     >;
-    public register<Constructor extends IsClass>(
+    public bindInstance<Constructor extends IsClass>(
         clazz: Constructor,
         instance: InstanceOfClass<Constructor>,
-        ...invalidInput: ValidateRegister<
+        ...invalidInput: ValidateBindInstance<
             Outputs,
             Dependencies,
             Bindings,
             ClassToConstructable<Constructor>
         >
-    ): Factory<
+    ): ContainerFactory<
         Outputs,
         Exclude<Dependencies, BindingOutputType<ClassToConstructable<Constructor>>>,
         Async,
         Bindings | InstanceBinding<ClassToConstructable<Constructor>>
     >;
-    public register<OutputId extends GenericHaywireId>(
+    public bindInstance<OutputId extends GenericHaywireId>(
         outputIdOrClass: OutputId,
         instance: HaywireIdProviderType<OutputId>
-    ): Factory<any, any, Async, Bindings | InstanceBinding<OutputId>> {
+    ): ContainerFactory<any, any, Async, Bindings | InstanceBinding<OutputId>> {
         const outputId = unsafeIdentifier(outputIdOrClass);
         const normalizedOutputId = normalizeOutputId(outputId);
         const baseId = outputId.baseId();
@@ -323,7 +323,7 @@ export class Factory<
             }
         }
 
-        const factory = new Factory<
+        const factory = new ContainerFactory<
             Outputs,
             Exclude<Dependencies, any>,
             Async,
@@ -353,7 +353,7 @@ export class Factory<
     /**
      * Produce the final container that is capable of outputting requested instances.
      *
-     * Will return a new instance every time, although pre-wiring the container via {@link Factory.wire()}
+     * Will return a new instance every time, although pre-wiring the container via {@link ContainerFactory.wire()}
      * will be applied to each instance as an optimization.
      *
      * If bindings have been declared with dependencies that are not yet satisfied by existing outputs,
@@ -372,20 +372,20 @@ export class Factory<
         return addBoundInstances(this.#container, this.#registeredBindings);
     }
 
-    public static createContainer<F extends GenericFactory>(
+    public static createContainer<F extends GenericContainerFactory>(
         this: void,
         factory: F,
         ...invalidInput: ValidateToContainer<F>
     ): ReturnType<F['toContainer']>;
-    public static createContainer<F extends GenericFactory>(
+    public static createContainer<F extends GenericContainerFactory>(
         this: void,
         factory: F
     ): ReturnType<F['toContainer']> {
-        return (factory as GenericFactory).toContainer() as ReturnType<F['toContainer']>;
+        return (factory as GenericContainerFactory).toContainer() as ReturnType<F['toContainer']>;
     }
 }
 
-export const wireFactory = Factory[wireFactorySym]!;
-delete Factory[wireFactorySym];
+export const wireContainerFactory = ContainerFactory[wireContainerFactorySym]!;
+delete ContainerFactory[wireContainerFactorySym];
 
-export const { createContainer } = Factory;
+export const { createContainer } = ContainerFactory;

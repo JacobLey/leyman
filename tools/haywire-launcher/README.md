@@ -63,7 +63,7 @@ Returns an `EntryScript` subclass that, when invoked as the entry point, resolve
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `container` | `AsyncContainer` | — | Required. A haywire async container capable of providing the target instance. |
+| `container` | `Container` | — | Required. A haywire async container capable of providing the target instance. |
 | `id` | `HaywireId` | `EntryScript` | Optional. The haywire id to request from the container. Must resolve to a type implementing `Main`. |
 
 **Returns** `WrapperMain` (an `EntryScript` subclass) — a class that can be exported as `default` and will be picked up by the `entry-script` lifecycle.

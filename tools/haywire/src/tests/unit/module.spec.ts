@@ -2,8 +2,8 @@ import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import {
-    AsyncContainer,
     bind,
+    Container,
     createContainer,
     createModule,
     HaywireContainerValidationError,
@@ -41,13 +41,13 @@ suite('module', () => {
     const uniqueSym = Symbol('abc');
 
     const aOrBBinding = bind(aOrBId)
-        .withDependencies([aOrBId.lateBinding()])
+        .withDependencies([aOrBId.deferred()])
         .withProvider(() => 'a');
     const numberBinding = bind(numberId).withInstance(123);
     const fooBinding = bind(identifier(Foo).nullable().undefinable().named(uniqueSym))
         .withDependencies([identifier(Bar).nullable()])
         .withProvider(bar => bar);
-    const barBinding = bind(Bar).withGenerator(() => {
+    const barBinding = bind(Bar).withFactory(() => {
         class Extends extends Bar {
             public constructor() {
                 super();
@@ -104,12 +104,12 @@ suite('module', () => {
 
             const withBazModule = withBarModule.addBinding(bazBinding);
 
-            expect(createContainer(withBazModule)).to.be.an.instanceOf(AsyncContainer);
+            expect(createContainer(withBazModule)).to.be.an.instanceOf(Container);
             expect(createContainer(withBazModule)).to.not.be.an.instanceOf(SyncContainer);
             expectTypeOf(createContainer(withBazModule)).not.toHaveProperty('getSync');
 
             const dupeNumberBinding = bind(
-                identifier<number>().nullable().undefinable().supplier().lateBinding()
+                identifier<number>().nullable().undefinable().supplier().deferred()
             ).withInstance(4);
             numberModule.addBinding(dupeNumberBinding);
             numberModule.addBinding(dupeNumberBinding.named('<name>'));
@@ -214,12 +214,12 @@ suite('module', () => {
             expectTypeOf(createContainer(withFooModule)).toHaveProperty('get');
 
             const withBazModule = withFooModule.mergeModule(bazModule);
-            expect(createContainer(withBazModule)).to.be.an.instanceOf(AsyncContainer);
+            expect(createContainer(withBazModule)).to.be.an.instanceOf(Container);
             expect(createContainer(withBazModule)).to.not.be.an.instanceOf(SyncContainer);
             expectTypeOf(createContainer(withBazModule)).not.toHaveProperty('getSync');
 
             const dupNumBinding = bind(
-                identifier<number>().nullable().undefinable().supplier().lateBinding()
+                identifier<number>().nullable().undefinable().supplier().deferred()
             ).withInstance(4);
 
             module
@@ -324,22 +324,22 @@ suite('module', () => {
         const numListId = identifier<number>().named('num').list();
 
         test('Create module with list binding', () => {
-            const listModule = createModule(bind(numListId).withGenerator(() => 1));
+            const listModule = createModule(bind(numListId).withFactory(() => 1));
             expect(listModule).to.be.an.instanceOf(Module);
         });
 
         test('Multiple list bindings with same output', () => {
-            const listModule = createModule(bind(numListId).withGenerator(() => 1))
-                .addBinding(bind(numListId).withGenerator(() => 2))
-                .addBinding(bind(numListId).withGenerator(() => 3));
+            const listModule = createModule(bind(numListId).withFactory(() => 1))
+                .addBinding(bind(numListId).withFactory(() => 2))
+                .addBinding(bind(numListId).withFactory(() => 3));
 
             const container = createContainer(listModule);
             expect(container).to.be.an.instanceOf(SyncContainer);
         });
 
         test('List bindings merge via mergeModule', () => {
-            const mod1 = createModule(bind(numListId).withGenerator(() => 1));
-            const mod2 = createModule(bind(numListId).withGenerator(() => 2));
+            const mod1 = createModule(bind(numListId).withFactory(() => 1));
+            const mod2 = createModule(bind(numListId).withFactory(() => 2));
 
             const merged = mod1.mergeModule(mod2);
             const container = createContainer(merged);
@@ -348,8 +348,8 @@ suite('module', () => {
 
         test('Merging a module whose list key is new seeds it from empty', () => {
             const otherListId = identifier<string>().named('others').list();
-            const mod1 = createModule(bind(numListId).withGenerator(() => 1));
-            const mod2 = createModule(bind(otherListId).withGenerator(() => 'a'));
+            const mod1 = createModule(bind(numListId).withFactory(() => 1));
+            const mod2 = createModule(bind(otherListId).withFactory(() => 'a'));
 
             // The list key from mod2 is absent from mod1, exercising the empty-seed merge branch.
             const merged = mod1.mergeModule(mod2);
@@ -359,13 +359,13 @@ suite('module', () => {
         });
 
         test('Async list binding makes container async', () => {
-            const listModule = createModule(bind(numListId).withGenerator(() => 1)).addBinding(
-                bind(numListId).withAsyncGenerator(async () => 2)
+            const listModule = createModule(bind(numListId).withFactory(() => 1)).addBinding(
+                bind(numListId).withAsyncFactory(async () => 2)
             );
 
             const container = createContainer(listModule);
-            expectTypeOf(container).toExtend<AsyncContainer<any>>();
-            expect(container).to.be.an.instanceOf(AsyncContainer);
+            expectTypeOf(container).toExtend<Container<any>>();
+            expect(container).to.be.an.instanceOf(Container);
             expectTypeOf(container).not.toExtend<SyncContainer<any>>();
             expect(container).to.not.be.an.instanceOf(SyncContainer);
             container.check();
@@ -374,7 +374,7 @@ suite('module', () => {
         test('List and regular bindings coexist', () => {
             const strId = identifier<string>().named('str');
 
-            const mod = createModule(bind(numListId).withGenerator(() => 1))
+            const mod = createModule(bind(numListId).withFactory(() => 1))
                 .addBinding(
                     bind(numListId)
                         .withDependencies([strId])
@@ -411,7 +411,7 @@ suite('module', () => {
             const bindingRequiresNonNull = bind(consumeId)
                 .withDependencies([numListId])
                 .withProvider(() => 'consumed');
-            const listModule = createModule(bind(numListId.nullable()).withGenerator(() => 1));
+            const listModule = createModule(bind(numListId.nullable()).withFactory(() => 1));
             // @ts-expect-error
             const invalidModule = listModule.addBinding(bindingRequiresNonNull);
             expect(() => {
@@ -423,7 +423,7 @@ suite('module', () => {
                     message: 'Providers missing for container: haywire-id(named: num, list)',
                 });
 
-            const validModule = createModule(bind(numListId).withGenerator(() => 1)).addBinding(
+            const validModule = createModule(bind(numListId).withFactory(() => 1)).addBinding(
                 bind(consumeId)
                     .withDependencies([numListId])
                     .withProvider(() => 'consumed')
@@ -432,8 +432,8 @@ suite('module', () => {
         });
 
         test('The same binding instance is only included once', () => {
-            const oneBinding = bind(numListId).withGenerator(() => 1);
-            const twoBinding = bind(numListId).withGenerator(() => 2);
+            const oneBinding = bind(numListId).withFactory(() => 1);
+            const twoBinding = bind(numListId).withFactory(() => 2);
 
             const added = createModule(oneBinding).addBinding(oneBinding);
             expect(createContainer(added).get(numListId)).to.deep.equal([1]);
@@ -447,10 +447,10 @@ suite('module', () => {
         test('Distinct bindings with the same implementation are all included', () => {
             const shared = { shared: true };
             const sharedId = identifier<{ shared: boolean }>().named('shared').list();
-            const generator = (): { shared: boolean } => shared;
+            const factory = (): { shared: boolean } => shared;
 
-            const mod = createModule(bind(sharedId).withGenerator(generator)).addBinding(
-                bind(sharedId).withGenerator(generator)
+            const mod = createModule(bind(sharedId).withFactory(factory)).addBinding(
+                bind(sharedId).withFactory(factory)
             );
 
             expect(createContainer(mod).get(sharedId)).to.deep.equal([shared, shared]);
@@ -459,7 +459,7 @@ suite('module', () => {
         test('Dependency declared as "multi" is satisfied by list output', () => {
             const countId = identifier<number>().named('count');
 
-            const mod = createModule(bind(numListId).withGenerator(() => 1)).addBinding(
+            const mod = createModule(bind(numListId).withFactory(() => 1)).addBinding(
                 bind(countId)
                     .withDependencies([numListId.list('multi')])
                     .withProvider(nums => nums.length)

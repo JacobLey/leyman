@@ -1,7 +1,7 @@
 import type { Main } from 'entry-script';
 import type {
-    AsyncContainer,
     ClassToConstructable,
+    Container,
     GenericContainer,
     GenericHaywireId,
     HaywireIdType,
@@ -22,7 +22,7 @@ interface InvalidInput<T extends string> {
 }
 
 type ValidateEntryContainer<C extends GenericContainer> =
-    C extends AsyncContainer<infer U>
+    C extends Container<infer U>
         ? [
               NonExtendable<
                   EntryScript,
@@ -42,7 +42,7 @@ type EntryLauncher = <C extends GenericContainer>(
 ) => WrapperMain;
 
 type ValidateIdContainer<C extends GenericContainer, Id extends GenericHaywireId> = [
-    ...(C extends AsyncContainer<infer O>
+    ...(C extends Container<infer O>
         ? [
               NonExtendable<
                   NonNullable<HaywireIdType<OutputHaywireId<Id>>>,

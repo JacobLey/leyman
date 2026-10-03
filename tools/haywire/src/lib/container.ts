@@ -26,19 +26,19 @@ import {
 } from '#errors';
 import { expandOutputId, expandSharedOutputIds, unsafeIdentifier } from '#identifier';
 import {
-    optimisticRequestScope,
-    optimisticSingletonScope,
+    eagerRequestScope,
+    eagerSingletonScope,
+    isolatedRequestScope,
     requestScope,
     singletonScope,
-    supplierScope,
     transientScope,
 } from '#scopes';
 
 /**
- * Used during late-binding instantiations, as a way to provide references to
+ * Used during deferred instantiations, as a way to provide references to
  * "this already exists in request chain, so can re-use it".
  */
-type LateCache = Map<
+type DeferredCache = Map<
     GenericBaseHaywireId,
     {
         value: unknown;
@@ -67,29 +67,29 @@ type ScopeCache = Map<
  * with any errors that pop up in the meantime.
  *
  * The registry will be populated by instances that are created in the chain, so that _eventually_ that value
- * can be re-used when requested during late binding.
+ * can be re-used when requested during deferred.
  */
-interface LateBindingRequest extends DeferredPromise<unknown> {
+interface DeferredRequest extends DeferredPromise<unknown> {
     binding: GenericBinding;
     dependencyId: GenericHaywireId;
-    registry: LateCache;
+    registry: DeferredCache;
 }
 
 /**
  * Merge the results of the requested binding(s) into the requested value.
  *
- * For a list request (multiple bindings) the full list is registered to every late binding request
+ * For a list request (multiple bindings) the full list is registered to every deferred request
  * generated in the chain, as the individual list bindings only register their own portion.
  *
  * @param bindings - requested binding(s)
  * @param listValue - value generated for each binding, in order
- * @param lateBindingRequests - late binding requests generated in the chain
+ * @param deferredRequests - deferred requests generated in the chain
  * @returns single value, or flattened list of values
  */
 const collectRequestedValue = (
     bindings: GenericBinding | readonly GenericBinding[],
     listValue: unknown[],
-    lateBindingRequests: LateBindingRequest[]
+    deferredRequests: DeferredRequest[]
 ): unknown => {
     if (!Array.isArray(bindings)) {
         return listValue[0];
@@ -97,21 +97,22 @@ const collectRequestedValue = (
     const value = listValue.flat();
     // List requests always contain at least one binding, all sharing the same base id.
     const baseId = (bindings as readonly GenericBinding[])[0]!.outputId.baseId();
-    for (const { registry } of lateBindingRequests) {
+    for (const { registry } of deferredRequests) {
         registry.set(baseId, { value });
     }
     return value;
 };
 
-export type Container<Outputs extends [Extendable], Async extends boolean> = Async extends true
-    ? AsyncContainer<Outputs>
-    : SyncContainer<Outputs>;
+export type MaybeSyncContainer<
+    Outputs extends [Extendable],
+    Async extends boolean,
+> = Async extends true ? Container<Outputs> : SyncContainer<Outputs>;
 
 export type ExpandedContainer<
     Outputs extends [Extendable],
     Bindings extends GenericBinding,
     Async extends boolean,
-> = Container<BindingOutputType<Bindings['outputId']> | Outputs, Async>;
+> = MaybeSyncContainer<BindingOutputType<Bindings['outputId']> | Outputs, Async>;
 
 type NoBindingDeclared = [InvalidInput<'NoBindingDeclared'>];
 
@@ -193,7 +194,7 @@ const validateProviderOutput = (outputId: GenericOutputHaywireId, value: unknown
  *    - Sets up the actual data flow to generate instances based on scopes and suppliers.
  *    - Will perform checks, if not explicitly performed already
  * 3) Preload
- *    - Instantiates any optimistic singletons
+ *    - Instantiates any eager singletons
  *    - Will perform wiring, if not explicitly performed already
  * 4) Get
  *    - Main use case of container. Used for actual instantiation, and can be used to continue to create more instances.
@@ -201,7 +202,7 @@ const validateProviderOutput = (outputId: GenericOutputHaywireId, value: unknown
  *
  * @template Outputs
  */
-export class AsyncContainer<Outputs extends [Extendable]> {
+export class Container<Outputs extends [Extendable]> {
     public declare [typeTracking]: Outputs;
     readonly #isSync: boolean;
     /**
@@ -231,7 +232,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      */
     readonly #upstreamDependents: Map<GenericBinding, Set<GenericBinding>>;
     /**
-     * Map of binding, to all bindings that must first be "optimistically requested".
+     * Map of binding, to all bindings that must first be "eagerly requested".
      * An entry exists for all bindings, but many will result in an empty array.
      *
      * Populated during the "wire" step.
@@ -241,7 +242,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * Map of binding, to a boolean determining whether it must be requested asynchronously.
      * Async bindings are the most obvious, but a "sync" binding that directly depends on another async binding
      * will not actually be available synchronously.
-     * Unless that async binding was created as an "optimistic singleton".
+     * Unless that async binding was created as an "eager singleton".
      *
      * An entry exists for all bindings.
      * Populated during the "wire" step.
@@ -285,7 +286,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                   ReadonlyMap<GenericBaseHaywireId, GenericBinding>,
                   ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>,
               ]
-            | readonly [AsyncContainer<Outputs>]
+            | readonly [Container<Outputs>]
     ) {
         if (params.length === 1) {
             const [container] = params;
@@ -351,8 +352,8 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     public static [createContainerSym]?<Outputs extends [Extendable]>(
         bindings: ReadonlyMap<GenericBaseHaywireId, GenericBinding>,
         listBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>
-    ): AsyncContainer<Outputs> {
-        return new AsyncContainer<Outputs>(bindings, listBindings);
+    ): Container<Outputs> {
+        return new Container<Outputs>(bindings, listBindings);
     }
 
     /**
@@ -380,10 +381,10 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         Bindings extends InstanceBinding<GenericHaywireId>,
         Async extends boolean,
     >(
-        container: Container<Outputs, Async>,
+        container: MaybeSyncContainer<Outputs, Async>,
         bindings: Bindings[]
     ): ExpandedContainer<Outputs, Bindings, Async> {
-        const cloned = new (container.constructor as typeof AsyncContainer | typeof SyncContainer)(
+        const cloned = new (container.constructor as typeof Container | typeof SyncContainer)(
             container
         ) as ExpandedContainer<Outputs, Bindings, Async>;
 
@@ -566,13 +567,13 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * Calls check internally, to ensure container is in a healthy state before continuing.
      *
      * The wiring performed is:
-     * Optimistic Singletons
-     *   Optimistic singletons are tricky becuase despite their _potentially_ async nature, it is always safe to treat them as
+     * Eager Singletons
+     *   Eager singletons are tricky becuase despite their _potentially_ async nature, it is always safe to treat them as
      *     sync in other parts of requests. During the very beginning of initialization though, that is not necessarily safe,
      *     so calculate the dependency order in which singletons can be instantiated without causing issues.
-     * Optimistic Requests
-     *   Similar to singletons, optimistic requests can potentially be treated as sync. Again we need to ensure the values
-     *     are constructed in the right order to safely access. Also ensures we _only_ optimistically instantiate providers
+     * Eager Requests
+     *   Similar to singletons, eager requests can potentially be treated as sync. Again we need to ensure the values
+     *     are constructed in the right order to safely access. Also ensures we _only_ eagerly instantiate providers
      *     relevant to this top-level request.
      * Determine which dependencies are safe for async
      *   Where possible, we want to use synchronous instantiation. The logic is overall simpler and more performant. However,
@@ -613,11 +614,11 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * Protect Circular dependencies
      *   Circular dependencies can be tricky to see directly, as they may be the result of large chains including suppliers.
      *     The type system does not attempt to protect against circulars for this reason, so a check must be performed to ensure
-     *     either no circulars exist, or they are properly protected against with late bindings and properly scoped suppliers.
+     *     either no circulars exist, or they are properly protected against with deferred dependencies and properly scoped suppliers.
      * Enforce circular suppliers
      *   The top level container will always be async if a single provider internally is async. However the suppliers generated internally
      *     _may_ be sync, if just that dependency path is all sync. The type system is not able to track this directly, because there are
-     *     cases of async dependencies that can be treated as sync, because optimistic scoping will pre-cache the value.
+     *     cases of async dependencies that can be treated as sync, because eager scoping will pre-cache the value.
      */
     public check(): void {
         if (this.#checked) {
@@ -631,7 +632,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     }
 
     /**
-     * Pre-calculate all optimistic singletons.
+     * Pre-calculate all eager singletons.
      *
      * Conceptually it is safe to run multiple times, due to scope caching. Attempts to improve performance
      * by just returning a promise that resolves with a previous `preload`'s success.
@@ -688,7 +689,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * Type-checking enforces that the requested value is actually defined in this container, and translates the requested
      * identifier to instance type.
      *
-     * Will attempt to preload any optimistic singletons, if not already done.
+     * Will attempt to preload any eager singletons, if not already done.
      *
      * @param id - {@link HaywireId} to instantiate
      */
@@ -707,7 +708,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             ] extends Outputs
                 ? []
                 : NoBindingDeclared)
-    ): Promise<StripAnnotations<HaywireIdType<Id>, 'latebinding' | 'supplier'>>;
+    ): Promise<StripAnnotations<HaywireIdType<Id>, 'deferred' | 'supplier'>>;
     public getAsync<Constructor extends IsClass>(
         clazz: Constructor,
         ...invalidInput: [] &
@@ -719,7 +720,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     ): Promise<InstanceOfClass<Constructor>>;
     public async getAsync<Id extends GenericHaywireId>(
         idOrClass: Id
-    ): Promise<StripAnnotations<HaywireIdType<Id>, 'latebinding' | 'supplier'>> {
+    ): Promise<StripAnnotations<HaywireIdType<Id>, 'deferred' | 'supplier'>> {
         const id = normalizeOutputId(unsafeIdentifier(idOrClass));
         const hasBindings = id.annotations.list
             ? this[getIdToListBindingsSym].has(id)
@@ -730,7 +731,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         await this.preloadAsync();
         const requestCache: ScopeCache = new Map();
         return this.#getMaybeSyncId(id, requestCache, requestCache) as Promise<
-            StripAnnotations<HaywireIdType<Id>, 'latebinding' | 'supplier'>
+            StripAnnotations<HaywireIdType<Id>, 'deferred' | 'supplier'>
         >;
     }
 
@@ -766,7 +767,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         const uniqueDependencyIds = new Set(
             [...this.#bindings].flatMap(binding =>
                 binding.dependencyIds.map(id =>
-                    normalizeOutputId(id.lateBinding(false).supplier(false))
+                    normalizeOutputId(id.deferred(false).supplier(false))
                 )
             )
         );
@@ -799,17 +800,17 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      *
      * The best solution is to simply avoid circular dependencies in design.
      *
-     * The next best is to utilize "late-binding". This means the dependency is on a promise that _eventually_ resolves to
+     * The next best is to utilize "deferred" dependencies. This means the dependency is on a promise that _eventually_ resolves to
      * the requested value.
      *
-     * For non-supplier dependencies, late-binding successfully "breaks the chain".
+     * For non-supplier dependencies, a deferred dependency successfully "breaks the chain".
      *
      * e.g. `A` depends on `B` depends on `C` depends on `D`, which _circularly_ depends on `A`.
-     * Making any single of these dependencies late-binding is enough.
+     * Making any single of these dependencies deferred is enough.
      *
      * For supplier dependencies, this may not be enough.
      *
-     * e.g. `A` depends on `B`. `B` depends on late-binding `C`. `C` depends on a supplier of `D`. `D` depends on `A`.
+     * e.g. `A` depends on `B`. `B` depends on deferred `C`. `C` depends on a supplier of `D`. `D` depends on `A`.
      *
      * In order to supply the instance of `C` to `B`, we need to create a supplier of `D`. This _supplier_ can _theoretically_ be used
      * immediately in the provider, which instantiates a _new_ request for `D` (which requests `A`, and `B`!).
@@ -828,7 +829,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * If we end at a binding with no dependencies, that "chain" is safe.
      * If we end up at a dependency that is _already_ in the chain, end this check (if it is illegally circular, let that binding perform its own check).
      * If we end up at a dependency of our original binding:
-     *     If we never crossed a late-binding boundary, flag this as circular
+     *     If we never crossed a deferred boundary, flag this as circular
      *     Else
      *          If there is a singleton-scoped in the chain, it is safe
      *          If there is a request-scoped in the chain
@@ -847,8 +848,8 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     #checkForCircular(): void {
         const safeOutputs = new Set<GenericBaseHaywireId>();
         const circularPaths: GenericHaywireId[][] = [];
-        const singletonScopes = new Set([optimisticSingletonScope, singletonScope]);
-        const requestScopes = new Set([optimisticRequestScope, requestScope]);
+        const singletonScopes = new Set([eagerSingletonScope, singletonScope]);
+        const requestScopes = new Set([eagerRequestScope, requestScope]);
 
         interface ChainLink {
             // Binding for dependency.
@@ -859,8 +860,8 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             outgoing: GenericHaywireId;
         }
         const isChainSafe = (chain: ChainLink[]): boolean => {
-            if (chain.some(({ outgoing }) => outgoing.annotations.lateBinding)) {
-                // Only if there is late binding can circular dependencies be acceptable
+            if (chain.some(({ outgoing }) => outgoing.annotations.deferred)) {
+                // Only if there is deferred can circular dependencies be acceptable
 
                 if (chain.some(({ binding }) => singletonScopes.has(binding.scope))) {
                     // Singletons will eventually run into cached value, so are safe (regardless of suppliers)
@@ -872,7 +873,9 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     return chain.every(({ binding, outgoing }) => {
                         const { supplier } = outgoing.annotations;
                         if (typeof supplier === 'object') {
-                            return supplier.propagateScope && binding.scope !== supplierScope;
+                            return (
+                                supplier.propagateScope && binding.scope !== isolatedRequestScope
+                            );
                         }
                         return true;
                     });
@@ -957,15 +960,15 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * (although they can be flagged async to avoid this issue altogether).
      *
      * A supplier can be sync when the binding is synchronous and every dependency qualifies as synchronous.
-     * It can also be synchronous if async binding or dependencies can utilize optimistic scopes.
+     * It can also be synchronous if async binding or dependencies can utilize eager scopes.
      *
-     * Note that late-binding does not "protect" a binding from async dependencies.
-     * This is because late-bindings will resolve by the time the request completes
+     * Note that deferred does not "protect" a binding from async dependencies.
+     * This is because deferred dependencies will resolve by the time the request completes
      * (or rather, immediately on the next event loop, which is the best we can do with promises).
-     * So a late-binding dependency must resolve syncronously as well.
+     * So a deferred dependency must resolve syncronously as well.
      *
-     * Suppliers that propagate their scope (and are not supplier-scoped themselves) can benefit from optimistic request bindings,
-     * but ones that do not can only rely on optimistic singletons.
+     * Suppliers that propagate their scope (and are not supplier-scoped themselves) can benefit from eager request bindings,
+     * but ones that do not can only rely on eager singletons.
      *
      * We only need to inspect sync suppliers
      * (async suppliers don't have this problem, and regular bindings can obfuscate the instantation logic, the whole point of DI)
@@ -980,7 +983,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         const isSafeForSyncSupplier = (
             binding: GenericBinding,
             chain: Set<GenericOutputHaywireId>,
-            optimisticScopes: Set<Scopes>
+            eagerScopes: Set<Scopes>
         ): boolean => {
             const baseId = binding.outputId.baseId();
             if (chain.has(baseId)) {
@@ -988,8 +991,8 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 // If we are sync up until this point, it can remain sync.
                 return true;
             }
-            if (optimisticScopes.has(binding.scope)) {
-                // If the "parent" scopes have already optimistically created these resources,
+            if (eagerScopes.has(binding.scope)) {
+                // If the "parent" scopes have already eagerly created these resources,
                 // will be synchronously available
                 return true;
             }
@@ -1013,7 +1016,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     isSafeForSyncSupplier(
                         dependencyBinding,
                         new Set([...chain, baseId]),
-                        optimisticScopes
+                        eagerScopes
                     )
                 );
             });
@@ -1056,17 +1059,17 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             }
         };
 
-        for (const [propagateScope, isSupplierScope, optimisticScopes] of [
-            // Suppliers that are the "entrypoint" for a request cannot rely on optimistic requests
+        for (const [propagateScope, isIsolatedRequestScope, eagerScopes] of [
+            // Suppliers that are the "entrypoint" for a request cannot rely on eager requests
             // to pre-cache async dependencies.
-            [false, false, new Set([optimisticSingletonScope] as const)],
-            [false, true, new Set([optimisticSingletonScope] as const)],
+            [false, false, new Set([eagerSingletonScope] as const)],
+            [false, true, new Set([eagerSingletonScope] as const)],
             // Suppliers that are _not_ the "entrypoint", but are not inheriting the original request scope cannot rely
-            // on optimistic requests to pre-cache async dependencies.
-            [true, true, new Set([optimisticSingletonScope] as const)],
-            // Suppliers that are the propagating scope from a parent request _can_ rely on optimistic requests
+            // on eager requests to pre-cache async dependencies.
+            [true, true, new Set([eagerSingletonScope] as const)],
+            // Suppliers that are the propagating scope from a parent request _can_ rely on eager requests
             // to pre-cache async dependencies.
-            [true, false, new Set([optimisticRequestScope, optimisticSingletonScope] as const)],
+            [true, false, new Set([eagerRequestScope, eagerSingletonScope] as const)],
         ] as const) {
             const syncBindings = new Set(
                 syncSuppliers
@@ -1078,7 +1081,10 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                                 }
                             ).propagateScope === propagateScope
                     )
-                    .filter(([binding]) => (binding.scope === supplierScope) === isSupplierScope)
+                    .filter(
+                        ([binding]) =>
+                            (binding.scope === isolatedRequestScope) === isIsolatedRequestScope
+                    )
                     .flatMap(([, id]) => {
                         if (checkIsList(id)) {
                             return this.#baseIdToListBindings.get(id.baseId())!;
@@ -1089,7 +1095,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             );
 
             for (const syncBinding of syncBindings) {
-                if (isSafeForSyncSupplier(syncBinding, new Set(), optimisticScopes)) {
+                if (isSafeForSyncSupplier(syncBinding, new Set(), eagerScopes)) {
                     safeBindings.add(syncBinding);
                 } else {
                     unsafeBindings.add(syncBinding);
@@ -1104,10 +1110,10 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     }
 
     /**
-     * Precalcuate list of optimistic singletons that need to be instantiated, before
-     * the specified optimistic singleton can be instantiated.
+     * Precalcuate list of eager singletons that need to be instantiated, before
+     * the specified eager singleton can be instantiated.
      *
-     * Only populates entries for optimistic singletons, so possible resulting map is actually empty or
+     * Only populates entries for eager singletons, so possible resulting map is actually empty or
      * has no dependencies declared.
      *
      * Does not actually perform the instantations.
@@ -1123,15 +1129,15 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
             const collected: GenericBinding[] = [];
             for (const dependencyId of binding.dependencyIds) {
-                const { lateBinding, supplier } = dependencyId.annotations;
-                if (lateBinding || (typeof supplier === 'object' && !supplier.sync)) {
+                const { deferred, supplier } = dependencyId.annotations;
+                if (deferred || (typeof supplier === 'object' && !supplier.sync)) {
                     continue;
                 }
                 const dependencyBindings = checkIsList(dependencyId)
                     ? this.#baseIdToListBindings.get(dependencyId.baseId())!
                     : [this.#baseIdToBinding.get(dependencyId.baseId())!];
                 for (const dependencyBinding of dependencyBindings) {
-                    if (dependencyBinding.scope === optimisticSingletonScope) {
+                    if (dependencyBinding.scope === eagerSingletonScope) {
                         collected.push(dependencyBinding);
                     } else {
                         collected.push(
@@ -1147,7 +1153,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         };
 
         for (const binding of [...this.#bindings].filter(
-            bind => bind.scope === optimisticSingletonScope
+            bind => bind.scope === eagerSingletonScope
         )) {
             const singletonBindings = [...new Set(collectBindings(binding, new Set()))];
             this.#singletonMap.set(binding, singletonBindings);
@@ -1184,9 +1190,9 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     ? this.#baseIdToListBindings.get(dependencyBaseId)!
                     : [this.#baseIdToBinding.get(dependencyBaseId)!];
                 for (const dependencyBinding of dependencyBindings) {
-                    if (dependencyBinding.scope === optimisticSingletonScope) {
+                    if (dependencyBinding.scope === eagerSingletonScope) {
                         continue;
-                    } else if (dependencyBinding.scope === optimisticRequestScope) {
+                    } else if (dependencyBinding.scope === eagerRequestScope) {
                         collected.push(dependencyBinding);
                     } else {
                         collected.push(
@@ -1212,13 +1218,13 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * The sync path cannot possibly redirect the the async path, so there are checks the protect against that need.
      *
      * Note that whether or not the binding is being referenced via a top-level request, a provider dependency,
-     * a late binding request, or a supplier is irrelevant to the logic here.
+     * a deferred request, or a supplier is irrelevant to the logic here.
      *
      * The main difference between enabling sync for suppliers has to do with ability to use request caching,
      * but for the actual provider instantiation the request singletons will already exist regardless of context.
      */
     #wireAsyncs(): void {
-        const optimisticScopes = new Set([optimisticRequestScope, optimisticSingletonScope]);
+        const eagerScopes = new Set([eagerRequestScope, eagerSingletonScope]);
         const isAsync = (binding: GenericBinding, chain: Set<GenericBaseHaywireId>): boolean => {
             if (chain.has(binding.outputId.baseId())) {
                 // Come full circle. If nothing in the chain has forced async yet, we can stay sync
@@ -1231,7 +1237,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             }
             if (binding.isAsync) {
                 // This is the only that that actually forces async implementations,
-                // but can force all consumers, including seemingly sync proiders depending on late-bindings
+                // but can force all consumers, including seemingly sync proiders depending on deferred dependencies
                 this.#isAsyncImplementationMap.set(binding, true);
                 return true;
             }
@@ -1244,8 +1250,8 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     ? this.#baseIdToListBindings.get(dependencyId.baseId())!
                     : [this.#baseIdToBinding.get(dependencyId.baseId())!];
                 return dependencyBindings.some(dependencyBinding => {
-                    if (optimisticScopes.has(dependencyBinding.scope)) {
-                        // Optimistic values are pre-computed, so the actual request can always rely on cache
+                    if (eagerScopes.has(dependencyBinding.scope)) {
+                        // Eager values are pre-computed, so the actual request can always rely on cache
                         return false;
                     }
                     // Check dependency, appending to chain
@@ -1265,7 +1271,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     /**
      * Asynchronously instantiate a binding. Will create all dependencies first before invoking provider.
      * Supplier will be implemented as as a new internal request for that binding, potentially propagating request scope.
-     * Late bindings will be implemented as a deferred promise that will be handled by the top-level request
+     * Deferred dependencies will be implemented as a deferred promise that will be handled by the top-level request
      * (which will iteratively instantiate each dependency and resolve/reject as necessary).
      *
      * @param params - required params
@@ -1273,38 +1279,38 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * @param params.requestCache - current request cache, shared across entire request
      * @param params.supplierCache - current scope cache, potentially same as requestCache,
      * but should be treated differently based on supplier context and scope
-     * @param params.lateBindingCache - map of any bindings that have been calculated already in the current request chain,
+     * @param params.deferredCache - map of any bindings that have been calculated already in the current request chain,
      * which should be re-used if possible.
-     * @returns promise of both the instantiated value, and any late binding requests that have been generated by dependencies
+     * @returns promise of both the instantiated value, and any deferred requests that have been generated by dependencies
      * (and dependencies of dependencies)
      */
     async #getImplementation({
         binding,
         requestCache,
         supplierCache,
-        lateBindingCache,
+        deferredCache,
     }: {
         binding: GenericBinding;
         requestCache: ScopeCache;
         supplierCache: ScopeCache;
-        lateBindingCache: LateCache;
+        deferredCache: DeferredCache;
     }): Promise<{
         value: unknown;
-        lateBindingRequests: LateBindingRequest[];
+        deferredRequests: DeferredRequest[];
     }> {
-        // Re-use of instances already created in the same request chain (e.g. circular late bindings)
-        // is handled by callers, which check `lateBindingCache` by the requested id before reaching here.
+        // Re-use of instances already created in the same request chain (e.g. circular deferred dependencies)
+        // is handled by callers, which check `deferredCache` by the requested id before reaching here.
         // List element bindings share a base id with the full list, so they only ever register the full list
         // via those callers, never their own portion.
         const isListBinding = checkIsList(binding.outputId);
 
         const relevantCache = {
             [transientScope]: null,
-            [optimisticSingletonScope]: this.#singletonCache,
+            [eagerSingletonScope]: this.#singletonCache,
             [singletonScope]: this.#singletonCache,
-            [optimisticRequestScope]: requestCache,
+            [eagerRequestScope]: requestCache,
             [requestScope]: requestCache,
-            [supplierScope]: supplierCache,
+            [isolatedRequestScope]: supplierCache,
         }[binding.scope];
 
         // If an instance already exists (or is being created in parallel) in the same request, return that immediately.
@@ -1317,31 +1323,31 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 const [value] = await cached.promise!;
                 return {
                     value,
-                    lateBindingRequests: [],
+                    deferredRequests: [],
                 };
             }
         }
 
-        // Create the value that will be put in cache immediately. Will be necessary to check during late binding rejections
+        // Create the value that will be put in cache immediately. Will be necessary to check during deferred rejections
         // to safely evict from cache.
         const cacheContainer = {};
 
-        const lateBindingRequests: LateBindingRequest[] = [];
+        const deferredRequests: DeferredRequest[] = [];
 
-        // Setup a collection of promises that will be extended by every late binding.
-        // Will be used later during the caching to ensure the cache can't resolve until the late-bindings resolve.
-        const lateBindingPromises: Promise<unknown>[] = [];
+        // Setup a collection of promises that will be extended by every deferred.
+        // Will be used later during the caching to ensure the cache can't resolve until the deferred dependencies resolve.
+        const deferredPromises: Promise<unknown>[] = [];
 
         // Collect a promise that will resolve with the (wrapped) value, but don't actually
         // await it until we get the cache setup.
         const outputPromise = (async () => {
             const settled = await Promise.allSettled(
                 binding.dependencyIds.map(async (dependencyId): Promise<readonly [unknown]> => {
-                    if (dependencyId.annotations.lateBinding) {
+                    if (dependencyId.annotations.deferred) {
                         const deferred = pDefer();
-                        lateBindingPromises.push(deferred.promise);
-                        const registry: LateCache = new Map();
-                        lateBindingRequests.push({
+                        deferredPromises.push(deferred.promise);
+                        const registry: DeferredCache = new Map();
+                        deferredRequests.push({
                             ...deferred,
                             binding,
                             dependencyId,
@@ -1355,9 +1361,9 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                         dependencyId,
                         requestCache,
                         supplierCache,
-                        lateBindingCache,
+                        deferredCache,
                     });
-                    lateBindingRequests.push(...dependency.lateBindingRequests);
+                    deferredRequests.push(...dependency.deferredRequests);
                     return [dependency.value];
                 })
             );
@@ -1371,12 +1377,12 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
             validateProviderOutput(binding.outputId, value);
 
-            // Record this instance so that any late binding bubbling up from a dependency
+            // Record this instance so that any deferred bubbling up from a dependency
             // (which may circularly reference this very binding) re-uses it.
             // List element bindings only produce a portion of the list, so the full list is registered
             // by whichever caller collects the elements.
             if (!isListBinding) {
-                for (const { registry } of lateBindingRequests) {
+                for (const { registry } of deferredRequests) {
                     registry.set(binding.outputId.baseId(), { value });
                 }
             }
@@ -1388,16 +1394,16 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         if (relevantCache) {
             // Note the cache value does not _immediately_ have `value` attached to it.
             // While risky, this is safe because it will only be accessed by the sync equivalent
-            // if this async method was actually generated "optimistically" and therefore fully resolved.
+            // if this async method was actually generated "eagerly" and therefore fully resolved.
             const cacheValue = Object.assign(cacheContainer, {
                 promise: outputPromise
                     .then(async ([value]) => {
                         cacheValue.value = value;
-                        await Promise.all(lateBindingPromises);
+                        await Promise.all(deferredPromises);
                         return [value] as const;
                     })
                     .catch((err: unknown) => {
-                        // Failures may occur because of late-bindings,
+                        // Failures may occur because of deferred dependencies,
                         // or because the actual generation promise rejects
                         // (which we still have not actually awaited and checked!)
                         // so if that does happen, we need to evict this value from cache.
@@ -1418,7 +1424,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
         return {
             value,
-            lateBindingRequests,
+            deferredRequests,
         };
     }
 
@@ -1427,24 +1433,24 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         dependencyId,
         requestCache,
         supplierCache,
-        lateBindingCache,
+        deferredCache,
     }: {
         ownerBinding: GenericBinding;
         dependencyId: GenericHaywireId;
         requestCache: ScopeCache;
         supplierCache: ScopeCache;
-        lateBindingCache: LateCache;
+        deferredCache: DeferredCache;
     }): Promise<{
         value: unknown;
-        lateBindingRequests: LateBindingRequest[];
+        deferredRequests: DeferredRequest[];
     }> {
         const dependencyBaseId = dependencyId.baseId();
         // If already created instance in same dependency chain, just re-use that one!
-        const lateBindingValue = lateBindingCache.get(dependencyBaseId);
-        if (lateBindingValue) {
+        const deferredValue = deferredCache.get(dependencyBaseId);
+        if (deferredValue) {
             return {
-                value: lateBindingValue.value,
-                lateBindingRequests: [],
+                value: deferredValue.value,
+                deferredRequests: [],
             };
         }
 
@@ -1455,7 +1461,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             // cache, and only continues the owner's request scope when propagating. The owner's
             // "request scope" is its supplier cache when it is itself supplier-scoped.
             const relevantCache =
-                ownerBinding.scope === supplierScope ? supplierCache : requestCache;
+                ownerBinding.scope === isolatedRequestScope ? supplierCache : requestCache;
             if (supplier.sync) {
                 return {
                     value: () => {
@@ -1466,7 +1472,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                             scopeCache
                         );
                     },
-                    lateBindingRequests: [],
+                    deferredRequests: [],
                 };
             }
             return {
@@ -1478,7 +1484,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                         scopeCache
                     );
                 },
-                lateBindingRequests: [],
+                deferredRequests: [],
             };
         }
 
@@ -1486,7 +1492,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
         let result: {
             value: unknown;
-            lateBindingRequests: LateBindingRequest[];
+            deferredRequests: DeferredRequest[];
         };
         if (isList) {
             const dependencyBindings = this.#baseIdToListBindings.get(dependencyBaseId)!;
@@ -1499,20 +1505,20 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                               binding: dependencyBinding,
                               requestCache,
                               supplierCache,
-                              lateBindingCache,
+                              deferredCache,
                           })
                         : this.#getSyncImplementation({
                               binding: dependencyBinding,
                               requestCache,
                               supplierCache,
-                              lateBindingCache,
+                              deferredCache,
                           })
                 )
             );
             HaywireMultiError.validateAllSettled(settled);
             result = {
                 value: settled.flatMap(({ value }) => value.value as unknown[]),
-                lateBindingRequests: settled.flatMap(({ value }) => value.lateBindingRequests),
+                deferredRequests: settled.flatMap(({ value }) => value.deferredRequests),
             };
         } else {
             const dependencyBinding = this.#baseIdToBinding.get(dependencyBaseId)!;
@@ -1521,18 +1527,18 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                       binding: dependencyBinding,
                       requestCache,
                       supplierCache,
-                      lateBindingCache,
+                      deferredCache,
                   })
                 : this.#getSyncImplementation({
                       binding: dependencyBinding,
                       requestCache,
                       supplierCache,
-                      lateBindingCache,
+                      deferredCache,
                   });
         }
 
-        const { value, lateBindingRequests } = result;
-        for (const { registry } of lateBindingRequests) {
+        const { value, deferredRequests } = result;
+        for (const { registry } of deferredRequests) {
             registry.set(dependencyBaseId, { value });
         }
         return result;
@@ -1549,34 +1555,34 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * @param params.binding - binding being requested
      * @param params.requestCache - current request cache
      * @param params.supplierCache - current scope cache
-     * @param params.lateBindingCache - map of any bindings that have been calculated already in the current request chain
-     * @returns both the instantiated value, and any late binding requests that have been generated by dependencies
+     * @param params.deferredCache - map of any bindings that have been calculated already in the current request chain
+     * @returns both the instantiated value, and any deferred requests that have been generated by dependencies
      * @throws if the provided value is not of the correct type (e.g. null but output is not nullable)
      */
     #getSyncImplementation({
         binding,
         requestCache,
         supplierCache,
-        lateBindingCache,
+        deferredCache,
     }: {
         binding: GenericBinding;
         requestCache: ScopeCache;
         supplierCache: ScopeCache;
-        lateBindingCache: LateCache;
+        deferredCache: DeferredCache;
     }): {
         value: unknown;
-        lateBindingRequests: LateBindingRequest[];
+        deferredRequests: DeferredRequest[];
     } {
         // Re-use of instances already created in the same request chain is handled by callers (see async version).
         const isListBinding = checkIsList(binding.outputId);
 
         const relevantCache = {
             [transientScope]: null,
-            [optimisticSingletonScope]: this.#singletonCache,
+            [eagerSingletonScope]: this.#singletonCache,
             [singletonScope]: this.#singletonCache,
-            [optimisticRequestScope]: requestCache,
+            [eagerRequestScope]: requestCache,
             [requestScope]: requestCache,
-            [supplierScope]: supplierCache,
+            [isolatedRequestScope]: supplierCache,
         }[binding.scope];
 
         if (relevantCache) {
@@ -1584,7 +1590,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             if (cached) {
                 return {
                     value: cached.value,
-                    lateBindingRequests: [],
+                    deferredRequests: [],
                 };
             }
         }
@@ -1592,21 +1598,21 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         const cacheContainer = {};
 
         const parameters: unknown[] = [];
-        const lateBindingRequests: LateBindingRequest[] = [];
+        const deferredRequests: DeferredRequest[] = [];
 
         for (const dependencyId of binding.dependencyIds) {
-            if (dependencyId.annotations.lateBinding) {
+            if (dependencyId.annotations.deferred) {
                 const deferred = pDefer();
-                const registry: LateCache = new Map();
-                lateBindingRequests.push({
+                const registry: DeferredCache = new Map();
+                deferredRequests.push({
                     ...deferred,
                     binding,
                     dependencyId,
                     registry,
-                    // If late bindings fail, need to evict value from cache
+                    // If deferred dependencies fail, need to evict value from cache
                     // as it is not actually fully and safely instantiated.
                     // Note that async version skips this logic, because the cached promise
-                    // performs a similar check to wait for late-binding success.
+                    // performs a similar check to wait for deferred success.
                     reject: relevantCache
                         ? err => {
                               deferred.reject(err);
@@ -1625,9 +1631,9 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 dependencyId,
                 requestCache,
                 supplierCache,
-                lateBindingCache
+                deferredCache
             );
-            lateBindingRequests.push(...dependency.lateBindingRequests);
+            deferredRequests.push(...dependency.deferredRequests);
             parameters.push(dependency.value);
         }
         const value = binding.provider(...parameters);
@@ -1636,13 +1642,13 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
         // Promise is not actually provided, since the _async_ version of this binding should never be called,
         // because we prefer sync version.
-        // **NOTE** Opposite is not necessarily true. The async version does _eventually_ populate `value` because optimistic
+        // **NOTE** Opposite is not necessarily true. The async version does _eventually_ populate `value` because eager
         // scopes can transition from async -> sync.
-        // Record this instance so that any late binding bubbling up from a dependency
+        // Record this instance so that any deferred bubbling up from a dependency
         // (which may circularly reference this very binding) re-uses it.
         // List element bindings only produce a portion of the list (see async version).
         if (!isListBinding) {
-            for (const { registry } of lateBindingRequests) {
+            for (const { registry } of deferredRequests) {
                 registry.set(binding.outputId.baseId(), { value });
             }
         }
@@ -1650,7 +1656,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         relevantCache?.set(binding, Object.assign(cacheContainer, { value }));
         return {
             value,
-            lateBindingRequests,
+            deferredRequests,
         };
     }
 
@@ -1659,17 +1665,17 @@ export class AsyncContainer<Outputs extends [Extendable]> {
         dependencyId: GenericHaywireId,
         requestCache: ScopeCache,
         supplierCache: ScopeCache,
-        lateBindingCache: LateCache
+        deferredCache: DeferredCache
     ): {
         value: unknown;
-        lateBindingRequests: LateBindingRequest[];
+        deferredRequests: DeferredRequest[];
     } {
         const dependencyBaseId = dependencyId.baseId();
-        const lateBindingValue = lateBindingCache.get(dependencyBaseId);
-        if (lateBindingValue) {
+        const deferredValue = deferredCache.get(dependencyBaseId);
+        if (deferredValue) {
             return {
-                value: lateBindingValue.value,
-                lateBindingRequests: [],
+                value: deferredValue.value,
+                deferredRequests: [],
             };
         }
 
@@ -1680,7 +1686,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
             // cache, and only continues the owner's request scope when propagating. The owner's
             // "request scope" is its supplier cache when it is itself supplier-scoped.
             const relevantCache =
-                ownerBinding.scope === supplierScope ? supplierCache : requestCache;
+                ownerBinding.scope === isolatedRequestScope ? supplierCache : requestCache;
             if (supplier.sync) {
                 return {
                     value: () => {
@@ -1691,7 +1697,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                             scopeCache
                         );
                     },
-                    lateBindingRequests: [],
+                    deferredRequests: [],
                 };
             }
             return {
@@ -1703,7 +1709,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                         scopeCache
                     );
                 },
-                lateBindingRequests: [],
+                deferredRequests: [],
             };
         }
 
@@ -1711,25 +1717,25 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 
         let result: {
             value: unknown;
-            lateBindingRequests: LateBindingRequest[];
+            deferredRequests: DeferredRequest[];
         };
         if (isList) {
             const bindings = this.#baseIdToListBindings.get(dependencyBaseId)!;
             const values: unknown[][] = [];
-            const lateBindingRequests: LateBindingRequest[][] = [];
+            const deferredRequests: DeferredRequest[][] = [];
             for (const binding of bindings) {
                 const bindingResult = this.#getSyncImplementation({
                     binding,
                     requestCache,
                     supplierCache,
-                    lateBindingCache,
+                    deferredCache,
                 });
                 values.push(bindingResult.value as unknown[]);
-                lateBindingRequests.push(bindingResult.lateBindingRequests);
+                deferredRequests.push(bindingResult.deferredRequests);
             }
             result = {
                 value: values.flat(),
-                lateBindingRequests: lateBindingRequests.flat(),
+                deferredRequests: deferredRequests.flat(),
             };
         } else {
             const binding = this.#baseIdToBinding.get(dependencyBaseId)!;
@@ -1737,12 +1743,12 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 binding,
                 requestCache,
                 supplierCache,
-                lateBindingCache,
+                deferredCache,
             });
         }
 
-        const { value, lateBindingRequests } = result;
-        for (const { registry } of lateBindingRequests) {
+        const { value, deferredRequests } = result;
+        for (const { registry } of deferredRequests) {
             registry.set(dependencyBaseId, { value });
         }
         return result;
@@ -1791,9 +1797,9 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * Handle the top-level request for an instance.
      * Attempts to defer to sync version if possible.
      *
-     * If it is the beginning of a request (rather than a scope-propagating supplier) instantiate all optimistic requests first.
+     * If it is the beginning of a request (rather than a scope-propagating supplier) instantiate all eager requests first.
      *
-     * Then create the actual instance, and resolve any late-binding requests that result.
+     * Then create the actual instance, and resolve any deferred requests that result.
      * This resolution will kick off its own recursive requests to `#getMaybeSync`, and while the base case is not explicitly
      * stated, this is safe because of prior checks ensure the container has a healthy setup.
      *
@@ -1802,42 +1808,42 @@ export class AsyncContainer<Outputs extends [Extendable]> {
      * @param requestCache - current request cache, shared across entire request
      * @param supplierCache - current scope cache, potentially same as requestCache,
      * which can be used to determine if request singletons need to be instantiated first
-     * @param lateBindingCache - map of any bindings that have been calculated already in the current request chain,
+     * @param deferredCache - map of any bindings that have been calculated already in the current request chain,
      * to be passed to actual implementations.
-     * @returns promise of instantiated value, with all late-binding values resolved
+     * @returns promise of instantiated value, with all deferred values resolved
      */
     async #getMaybeSync(
         bindings: GenericBinding | readonly GenericBinding[],
         requestCache: ScopeCache,
         supplierCache: ScopeCache,
-        lateBindingCache?: LateCache
+        deferredCache?: DeferredCache
     ): Promise<unknown> {
         const bindingsList = [bindings].flat();
 
-        if (requestCache === supplierCache && !lateBindingCache) {
+        if (requestCache === supplierCache && !deferredCache) {
             // If the caches are the same, this is a "top level" request. Note that could be either
             // a `container.get()` _or_ a supplier that does not propagate scope. Either one will
-            // require all optimistic request instances to be create before the rest of dependency chain can begin.
+            // require all eager request instances to be create before the rest of dependency chain can begin.
             const settled = await Promise.allSettled(
                 // Note: the outer callback must _not_ be `async`. flatMap only flattens a
                 // returned array, not a promise of one, so an async callback would leave the
-                // inner optimistic requests unawaited.
+                // inner eager requests unawaited.
                 bindingsList.flatMap(binding =>
                     this.#requestMap
                         .get(binding)!
-                        .map(async optimisticBinding =>
-                            this.#getMaybeSync(optimisticBinding, requestCache, supplierCache)
+                        .map(async eagerBinding =>
+                            this.#getMaybeSync(eagerBinding, requestCache, supplierCache)
                         )
                 )
             );
 
             HaywireMultiError.validateAllSettled(settled);
         }
-        const lateBindCache =
-            lateBindingCache ?? new Map<GenericBaseHaywireId, { value: unknown }>();
+        const chainDeferredCache =
+            deferredCache ?? new Map<GenericBaseHaywireId, { value: unknown }>();
 
         // If this instance could be implemented entire synchronously, do it.
-        // Note this logic has to come _after_ the optimistic requests, because the async implementation map
+        // Note this logic has to come _after_ the eager requests, because the async implementation map
         // relies on the logic that these values do already exist.
         if (!bindingsList.some(binding => this.#isAsyncImplementationMap.get(binding))) {
             // Pass `bindings` (not `bindingsList`) to preserve single-vs-array semantics:
@@ -1846,12 +1852,12 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                 bindings,
                 requestCache,
                 supplierCache,
-                lateBindingCache: lateBindCache,
+                deferredCache: chainDeferredCache,
             });
         }
 
         // Create the requested value, which creates+validates all dependencies internally.
-        // However, it may include "late-binding" values as well, which are not yet created.
+        // However, it may include "deferred" dependencies values as well, which are not yet created.
         // So create those next.
         const allResults = await Promise.allSettled(
             bindingsList.map(async binding =>
@@ -1859,30 +1865,30 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     binding,
                     requestCache,
                     supplierCache,
-                    lateBindingCache: lateBindCache,
+                    deferredCache: chainDeferredCache,
                 })
             )
         );
         HaywireMultiError.validateAllSettled(allResults);
         const listValue: unknown[] = [];
-        const lateBindingRequests: LateBindingRequest[] = [];
+        const deferredRequests: DeferredRequest[] = [];
         for (const bindingResult of allResults) {
             listValue.push(bindingResult.value.value);
-            lateBindingRequests.push(...bindingResult.value.lateBindingRequests);
+            deferredRequests.push(...bindingResult.value.deferredRequests);
         }
-        const value = collectRequestedValue(bindings, listValue, lateBindingRequests);
+        const value = collectRequestedValue(bindings, listValue, deferredRequests);
 
         try {
             const settled = await Promise.allSettled(
-                lateBindingRequests.map(async lateBindingRequest => {
-                    const { binding, dependencyId, registry } = lateBindingRequest;
+                deferredRequests.map(async deferredRequest => {
+                    const { binding, dependencyId, registry } = deferredRequest;
                     const { supplier } = dependencyId.annotations;
                     const dependencyBaseId = dependencyId.baseId();
-                    const chainCache = new Map([...lateBindCache, ...registry]);
+                    const chainCache = new Map([...chainDeferredCache, ...registry]);
                     const cachedValue = chainCache.get(dependencyBaseId);
                     if (cachedValue && typeof supplier !== 'object') {
                         // Already created in this request chain (e.g. circular reference), re-use it.
-                        lateBindingRequest.resolve(cachedValue.value);
+                        deferredRequest.resolve(cachedValue.value);
                         return;
                     }
                     const dependencyBindings = checkIsList(dependencyId)
@@ -1890,9 +1896,9 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                         : this.#baseIdToBinding.get(dependencyBaseId)!;
                     if (typeof supplier === 'object') {
                         const relevantCache =
-                            binding.scope === supplierScope ? supplierCache : requestCache;
+                            binding.scope === isolatedRequestScope ? supplierCache : requestCache;
                         if (supplier.sync) {
-                            lateBindingRequest.resolve(() => {
+                            deferredRequest.resolve(() => {
                                 const scopeCache: ScopeCache = new Map();
                                 return this.#getSync({
                                     bindings: dependencyBindings,
@@ -1903,7 +1909,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                                 });
                             });
                         } else {
-                            lateBindingRequest.resolve(async () => {
+                            deferredRequest.resolve(async () => {
                                 const scopeCache: ScopeCache = new Map();
                                 return this.#getMaybeSync(
                                     dependencyBindings,
@@ -1914,25 +1920,25 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                         }
                     } else {
                         // Repeat the request cycle, because this value itself may invoke it's own
-                        // late binding requests which need handling.
+                        // deferred requests which need handling.
                         const val = await this.#getMaybeSync(
                             dependencyBindings,
                             requestCache,
                             supplierCache,
                             chainCache
                         );
-                        lateBindingRequest.resolve(val);
+                        deferredRequest.resolve(val);
                     }
                 })
             );
 
             HaywireMultiError.validateAllSettled(settled);
         } catch (err) {
-            // Generally speaking, the failure to invoke any late-binding value means the entire dependency chain failed.
-            // e.g. A depends on late bindings of B + C.
+            // Generally speaking, the failure to invoke any deferred value means the entire dependency chain failed.
+            // e.g. A depends on deferred dependencies of B + C.
             // B was successful, but C was not.
             // We still need to fail `B` because it may circularly reference, which has failed.
-            for (const { reject } of lateBindingRequests) {
+            for (const { reject } of deferredRequests) {
                 reject(err);
             }
             throw err;
@@ -1957,69 +1963,69 @@ export class AsyncContainer<Outputs extends [Extendable]> {
     }
 
     /**
-     * Sync version of `#getMaybeSync`. Because late-binding values use promises, it is actually impossible to _really_
+     * Sync version of `#getMaybeSync`. Because deferred values use promises, it is actually impossible to _really_
      * resolve them in the same event loop as returning this instance. However, they will be resolved on the next event loop.
      *
-     * Fundamentally this is acceptable, as late-bindings should be treated as _eventually_ resolving anyways.
+     * Fundamentally this is acceptable, as deferred dependencies should be treated as _eventually_ resolving anyways.
      *
      * @param params - required params
      * @param params.bindings - requested binding(s). Pass multiple bindings to compute a list.
      * Takes binding instead of id to support precompute steps where only some bindings require instantiation.
      * @param params.requestCache - current request cache
      * @param params.supplierCache - current scope cache
-     * @param params.lateBindingCache - map of any bindings that have been calculated already in the current request chain
-     * @returns instantiated value, with all late-binding requests immediately resolving on the next event loop.
+     * @param params.deferredCache - map of any bindings that have been calculated already in the current request chain
+     * @returns instantiated value, with all deferred requests immediately resolving on the next event loop.
      * If provided array of bindings, returns a single array of all results merged.
-     * @throws if instantiation of providers fails, or when one of the late-binding chains fails after instantiation
+     * @throws if instantiation of providers fails, or when one of the deferred chains fails after instantiation
      */
     #getSync({
         bindings,
         requestCache,
         supplierCache,
-        lateBindingCache,
+        deferredCache,
     }: {
         bindings: GenericBinding | readonly GenericBinding[];
         requestCache: ScopeCache;
         supplierCache: ScopeCache;
-        lateBindingCache?: LateCache;
+        deferredCache?: DeferredCache;
     }): unknown {
         const bindingsList = [bindings].flat();
 
-        if (requestCache === supplierCache && !lateBindingCache) {
+        if (requestCache === supplierCache && !deferredCache) {
             for (const binding of bindingsList) {
-                for (const optimisticBinding of this.#requestMap.get(binding)!) {
-                    this.#getSync({ bindings: optimisticBinding, requestCache, supplierCache });
+                for (const eagerBinding of this.#requestMap.get(binding)!) {
+                    this.#getSync({ bindings: eagerBinding, requestCache, supplierCache });
                 }
             }
         }
 
-        const lateBindCache =
-            lateBindingCache ?? new Map<GenericBaseHaywireId, { value: unknown }>();
+        const chainDeferredCache =
+            deferredCache ?? new Map<GenericBaseHaywireId, { value: unknown }>();
 
         const listValue: unknown[] = [];
-        const lateBindingRequests: LateBindingRequest[] = [];
+        const deferredRequests: DeferredRequest[] = [];
         for (const binding of bindingsList) {
             const bindingResult = this.#getSyncImplementation({
                 binding,
                 requestCache,
                 supplierCache,
-                lateBindingCache: lateBindCache,
+                deferredCache: chainDeferredCache,
             });
             listValue.push(bindingResult.value);
-            lateBindingRequests.push(...bindingResult.lateBindingRequests);
+            deferredRequests.push(...bindingResult.deferredRequests);
         }
-        const value = collectRequestedValue(bindings, listValue, lateBindingRequests);
+        const value = collectRequestedValue(bindings, listValue, deferredRequests);
 
         try {
-            for (const lateBindingRequest of lateBindingRequests) {
-                const { binding, dependencyId, registry } = lateBindingRequest;
+            for (const deferredRequest of deferredRequests) {
+                const { binding, dependencyId, registry } = deferredRequest;
                 const { supplier } = dependencyId.annotations;
                 const dependencyBaseId = dependencyId.baseId();
-                const chainCache = new Map([...lateBindCache, ...registry]);
+                const chainCache = new Map([...chainDeferredCache, ...registry]);
                 const cachedValue = chainCache.get(dependencyBaseId);
                 if (cachedValue && typeof supplier !== 'object') {
                     // Already created in this request chain (e.g. circular reference), re-use it.
-                    lateBindingRequest.resolve(cachedValue.value);
+                    deferredRequest.resolve(cachedValue.value);
                     continue;
                 }
                 const dependencyBindings = checkIsList(dependencyId)
@@ -2027,9 +2033,9 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                     : this.#baseIdToBinding.get(dependencyBaseId)!;
                 if (typeof supplier === 'object') {
                     const relevantCache =
-                        binding.scope === supplierScope ? supplierCache : requestCache;
+                        binding.scope === isolatedRequestScope ? supplierCache : requestCache;
                     if (supplier.sync) {
-                        lateBindingRequest.resolve(() => {
+                        deferredRequest.resolve(() => {
                             const scopeCache: ScopeCache = new Map();
                             return this.#getSync({
                                 bindings: dependencyBindings,
@@ -2038,7 +2044,7 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                             });
                         });
                     } else {
-                        lateBindingRequest.resolve(async () => {
+                        deferredRequest.resolve(async () => {
                             const scopeCache: ScopeCache = new Map();
                             return this.#getMaybeSync(
                                 dependencyBindings,
@@ -2052,13 +2058,13 @@ export class AsyncContainer<Outputs extends [Extendable]> {
                         requestCache,
                         supplierCache,
                         bindings: dependencyBindings,
-                        lateBindingCache: chainCache,
+                        deferredCache: chainCache,
                     });
-                    lateBindingRequest.resolve(val);
+                    deferredRequest.resolve(val);
                 }
             }
         } catch (err) {
-            for (const { reject } of lateBindingRequests) {
+            for (const { reject } of deferredRequests) {
                 reject(err);
             }
             throw err;
@@ -2105,14 +2111,14 @@ export class AsyncContainer<Outputs extends [Extendable]> {
 }
 
 /**
- * Extension of AsyncContainer that also supports all methods in a synchronous manner.
+ * Extension of Container that also supports all methods in a synchronous manner.
  * Also supports async for general consistency, although all computation is fundamentally synchronous under the hood.
  *
- * @see {@link AsyncContainer} for more documentation
+ * @see {@link Container} for more documentation
  *
  * @template Outputs
  */
-export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<Outputs> {
+export class SyncContainer<Outputs extends [Extendable]> extends Container<Outputs> {
     /**
      * Create a synchronous container from module bindings.
      *
@@ -2130,7 +2136,7 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
     /**
      * Sync version of {@link preloadAsync}.
      *
-     * Instantiates all optimistic singletons.
+     * Instantiates all eager singletons.
      */
     public preload(): void {
         this[preloadSyncSym]();
@@ -2184,17 +2190,17 @@ export class SyncContainer<Outputs extends [Extendable]> extends AsyncContainer<
     }
 }
 
-export type GenericContainer = AsyncContainer<[Extendable]>;
+export type GenericContainer = Container<[Extendable]>;
 
 export const isSyncContainer = <Outputs extends [Extendable]>(
-    container: AsyncContainer<Outputs>
+    container: Container<Outputs>
 ): container is SyncContainer<Outputs> => container instanceof SyncContainer;
 
 export const createSyncContainer = SyncContainer[createContainerSym]!;
 delete SyncContainer[createContainerSym];
 
-export const createAsyncContainer = AsyncContainer[createContainerSym]!;
-delete AsyncContainer[createContainerSym];
+export const createAsyncContainer = Container[createContainerSym]!;
+delete Container[createContainerSym];
 
-export const addBoundInstances = AsyncContainer[addBoundInstancesSym]!;
-delete AsyncContainer[addBoundInstancesSym];
+export const addBoundInstances = Container[addBoundInstancesSym]!;
+delete Container[addBoundInstancesSym];

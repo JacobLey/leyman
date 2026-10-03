@@ -33,19 +33,19 @@ A fully type-safe dependency injection library using native javascript.
         - [createModule](#createmodule)
         - [createContainer](#createcontainer)
         - [isSyncContainer](#issynccontainer)
-        - [createFactory](#createfactory)
+        - [createContainerFactory](#createcontainerfactory)
     - [Classes](#classes)
         - [HaywireId](#haywireid)
         - [Binding](#binding)
         - [Module](#module)
-        - [AsyncContainer](#asynccontainer)
+        - [Container](#container)
         - [SyncContainer](#synccontainer)
-        - [Factory](#factory)
+        - [ContainerFactory](#containerfactory)
     - [Types](#types)
         - [HaywireIdType](#haywireidtype)
         - [AsyncSupplier](#asyncsupplier)
         - [Supplier](#supplier)
-        - [LateBinding](#latebinding)
+        - [Deferred](#deferred)
     - [Errors](#errors)
         - [HaywireError](#haywireerror)
         - [HaywireModuleValidationError](#haywiremodulevalidationerror)
@@ -106,7 +106,7 @@ class Logger implements ILogger {
 
 export const loggerBinding = bind(loggerId)
     // Skip declaring dependencies if none exist
-    .withGenerator(() => new Logger())
+    .withFactory(() => new Logger())
     // Ensure a single value is shared across all resources
     .scoped(singletonScope);
 ```
@@ -274,7 +274,7 @@ Now that we have our types declared in haywire, we need to tell Haywire how to c
 
 Haywire cannot implicitly reference a constructor, nor will it infer how to bind interfaces to implementations. Haywire requires explicit instruction, but there are some shorthands to support instantiation.
 
-All bindings begin with the `bind()` method. From there it expects both a provider and dependencies. The order in which you provide them is not enforced, and have competing benefits. If an instance has no dependencies, you can declare either an empty array, or a "generator" instead.
+All bindings begin with the `bind()` method. From there it expects both a provider and dependencies. The order in which you provide them is not enforced, and have competing benefits. If an instance has no dependencies, you can declare either an empty array, or use one of the `with*Factory` shorthands instead.
 
 The parameters to the provider line up with order that dependencies are provided.
 
@@ -323,10 +323,10 @@ export const databaseBinding = bind(databaseId)
         password
     ) => new Database(logger, url, password));
 
-// Using a generator:
+// Using a factory (shorthand for a provider with no dependencies):
 export const loggerBinding = bind(loggerId)
     // Implicitly skip specifying an empty dependency list
-    .withAsyncGenerator(async () => new Logger());
+    .withAsyncFactory(async () => new Logger());
 
 // Passing an instance directly:
 export const urlBinding = bind(dbUrlId)
@@ -346,8 +346,8 @@ const scopedloggerBinding = loggerBinding.scoped(singletonScope);
 
 Note that singletons are not _globally_ singular, and just singular for a given container.
 
-Scopes can also be "optimistic". This means that containers will _immediately_ attempt to construct this instance when a dependent is requested. Usually this is unnecessary but has two main advantages:
-1. Optimistic bindings can instantiate async providers, then `supply` them _synchronously_ to dependents.
+Scopes can also be "eager". This means that containers will _immediately_ attempt to construct this instance when a dependent is requested. Usually this is unnecessary but has two main advantages:
+1. Eager bindings can instantiate async providers, then `supply` them _synchronously_ to dependents.
 2. Expensive/slow operations can be pushed towards the start of processing, so that they are available earlier and will not block future requests.
 
 ```ts
@@ -361,7 +361,7 @@ class C {
 
 // A is instantiated _asynchronously_
 // Perhaps it contains data from a remote network call
-const aBinding = bind(A).withAsyncGenerator(async () => new A());
+const aBinding = bind(A).withAsyncFactory(async () => new A());
 const bBinding = bind(B).withDependencies([A]).withProvider(a => new B(a));
 
 const cBinding = bind(C).withDependencies([identifier(B).supplier({ sync: true, propagateScope: true })]).withProvider(bSupplier => new C(bSupplier));
@@ -376,17 +376,17 @@ const c = cProvider(() => {
 
 In the example above, combining these bindings into a module/container will not work as expected. `C` expects a method that _synchronously_ generates a new `B` every time. But `B` is dependent on `A` which is constructed _asynchronously_, which is impossible.
 
-But if `A`'s binding were "optimistic", then `C` can generate `A` ahead of time!
+But if `A`'s binding were "eager", then `C` can generate `A` ahead of time!
 
 ```ts
-import { optimisticRequestScope } from 'haywire';
+import { eagerRequestScope } from 'haywire';
 
-const optimisticABinding = aBinding.scoped(optimisticRequestScope);
+const eagerABinding = aBinding.scoped(eagerRequestScope);
 
 // What the resulting container code now looks like:
-const optimisticA = await aProvider();
+const eagerA = await aProvider();
 // Success! Full synchronous support
-const c = cProvider(() => bProvider(optimisticA));
+const c = cProvider(() => bProvider(eagerA));
 ```
 
 You will see we also introduced a new type of scope "requestScope".
@@ -399,16 +399,16 @@ A request scope means a single value is created and shared for all values instan
 
 Scope options are:
 - `transientScope`
-  - This is the simplest, and the default. If X is transient and a binding declares it as a dependency, it will create a new X. If there is more than one dependent, both will receive unique instances. There is no "optimistic" version.
+  - This is the simplest, and the default. If X is transient and a binding declares it as a dependency, it will create a new X. If there is more than one dependent, both will receive unique instances. There is no "eager" version.
 - `singletonScope`
   - A single value is created the first time it is requested. All future requests and dependencies will receive this same value.
-- `optimisticSingletonScope`
+- `eagerSingletonScope`
   - Similar behavior as `singletonScope`, except this value is instantiated immediately during the "preload" stage.
 - `requestScope`
   - A single value is created the first time it is requested for a single call to `container.get()`. All future dependencies will share this same value. Future requests will reinstantiate a new value.
-- `optimisticRequestScope`
+- `eagerRequestScope`
   - Similar behavior as `requestScope`, except this value is instantiated at the very beginning of a request before any other values.
-- `supplierScope`
+- `isolatedRequestScope`
   - Similar to `requestScope`, but "opts out" of propagated scope from a supplier (if the current request is inside a supplier). This is an uncommonly used scope for ensuring a new value is used every request including suppliers, but still can take advantage of caching. All dependencies on this binding will also be opted out of the parent request's scope.
 
 ### Supplying a value
@@ -420,7 +420,7 @@ Naively, we could just type an id to be a method that returns our desired value:
 ```ts
 const randomId = identifier<() => string>();
 
-bind(randomId).withGenerator(() => {
+bind(randomId).withFactory(() => {
     return () => {
         const rand = Math.random();
         return rand.toString(36).slice(2);
@@ -443,6 +443,8 @@ There are a few problems with this though:
 2. What if our "randomId" required dependencies of its own, such as a seed? In the implementation above, the inputs would be frozen when the method is generated, rather than dynamically refetching every time.
 
 The solution is suppliers!
+
+If you are coming from Guice or Dagger, a Haywire supplier is what those libraries call a `Provider<T>`. In Haywire, a "provider" is instead the function that constructs a value from its dependencies (see [binding](#binding-an-implementation-to-an-id)).
 
 A supplier is declared on the identifier using the `.supplier()` annotation. This will update the type of the id from `T` to `() => T`. Don't worry, like all things Haywire this is type-safe, and won't interfere with other ids matching `() => T` (without the supplier annotation).
 
@@ -472,7 +474,7 @@ Supplier can take 5 forms, indicated by the parameters passed to `supplier()`.
 | `{ sync: false, propagateScope: true }` | `() => Promise<T>` | ❌ | An asynchronous method which will _retain_ the current request scope when instantiating more values. |
 | `false` | `T` | `false` | "Reverts" a supplier id back to a non-supplier |
 
-Synchronous suppliers are usually ideal for developer experience, as they are simpler than promises. However that means the underlying bindings _must_ be able to instantiate every related dependency synchronously. See the above [bindings](#binding-an-implementation-to-an-id) section for discussion about "optimistic" scopes to work around internal async dependencies. Similarly see the `supplierScope` scope if you _need_ to opt out of scope propagation.
+Synchronous suppliers are usually ideal for developer experience, as they are simpler than promises. However that means the underlying bindings _must_ be able to instantiate every related dependency synchronously. See the above [bindings](#binding-an-implementation-to-an-id) section for discussion about "eager" scopes to work around internal async dependencies. Similarly see the `isolatedRequestScope` scope if you _need_ to opt out of scope propagation.
 
 Even if a container is flagged as async, it is possible to create synchronous suppliers internally.
 
@@ -490,9 +492,9 @@ A naive solution will either infinitely try to create chickens and eggs until de
 
 ** **NOTE!!** ** Haywire is not able to detect circular dependencies at build time (using types). Similar to suppliers, it is recommended to expose your container to unit tests and run `container.check()` to enforce no circular dependencies exist.
 
-Instead of expecting both the chicken and the egg to be synchronously available, we can instead perform "late binding" of one (or both...). This means accepting a `Promise` of the dependency rather than its actual value.
+Instead of expecting both the chicken and the egg to be synchronously available, we can instead "defer" one (or both...). This means accepting a `Promise` of the dependency rather than its actual value.
 
-Similar to suppliers, we can indicate a late-binding dependency by marking the identifier as `.lateBinding()`. Don't worry, like all things Haywire, this is type safe and will not interfere with other identifiers that might declare a promise returning a similar type.
+Similar to suppliers, we can indicate a deferred dependency by marking the identifier as `.deferred()`. Don't worry, like all things Haywire, this is type safe and will not interfere with other identifiers that might declare a promise returning a similar type.
 
 ```ts
 class Chicken {
@@ -508,15 +510,15 @@ class Egg {
 }
 
 const chickenBinding = bind(Chicken).withDependencies([Egg]).withConstructorProvider();
-const eggBinding = bind(Egg).withDependencies([identifier(Chicken).lateBinding()]).withConstructorProvider();
+const eggBinding = bind(Egg).withDependencies([identifier(Chicken).deferred()]).withConstructorProvider();
 ```
 
-Late bindings can be mixed with suppliers, and enjoy the benefits of both. In this case, it will be a promise that resolves to a supplier.
+Deferred dependencies can be mixed with suppliers, and enjoy the benefits of both. In this case, it will be a promise that resolves to a supplier.
 
-** **NOTE!!** ** The promise passed to provider _will not_ resolve before the provider returns. You should _never_ block the provider on the result of a late-bound promise. This will end up blocking the promise resolution infinitely. Since this issue is in provider implementation, it is not possible for Haywire to detect these kinds of issues at either build or execution time.
+** **NOTE!!** ** The promise passed to provider _will not_ resolve before the provider returns. You should _never_ block the provider on the result of a deferred promise. This will end up blocking the promise resolution infinitely. Since this issue is in provider implementation, it is not possible for Haywire to detect these kinds of issues at either build or execution time.
 
 ```ts
-const eggBinding = bind(Egg).withDependencies([identifier(Chicken).lateBinding()]).withAsyncProvider(async chickenPromise => {
+const eggBinding = bind(Egg).withDependencies([identifier(Chicken).deferred()]).withAsyncProvider(async chickenPromise => {
     // This will never move forward!
     const chicken = await chickenPromise;
     return new Egg(chicken);
@@ -525,7 +527,7 @@ const eggBinding = bind(Egg).withDependencies([identifier(Chicken).lateBinding()
 
 The promise passed to the provider _will_ resolve before the request returns to the caller. However it is recommended to not expect all promises to be fully resolved at this point, since the actual callback execution of chained `.then()`s is not guaranteed to have finished by then, especially for synchronous requests.
 
-An oversimplified look at how the container handles late binding internally:
+An oversimplified look at how the container handles deferred dependencies internally:
 ```ts
 import { defer } from 'p-defer';
 
@@ -554,9 +556,9 @@ interface Plugin {
 }
 const pluginId = identifier<Plugin>().list();
 
-const pluginModule = createModule(bind(pluginId).withGenerator(() => ({ name: 'logging' })))
+const pluginModule = createModule(bind(pluginId).withFactory(() => ({ name: 'logging' })))
     // Unlike other ids, adding more bindings for a list is allowed
-    .addBinding(bind(pluginId).withGenerator(() => ({ name: 'metrics' })));
+    .addBinding(bind(pluginId).withFactory(() => ({ name: 'metrics' })));
 
 class PluginRunner {
     constructor(private readonly plugins: Plugin[]) {}
@@ -573,7 +575,7 @@ container.get(pluginId);
 A `list()` binding's provider returns a _single_ element. If one provider should contribute several elements at once, bind with `.list('multi')` and return an array (return `[]` to contribute nothing). `list()` and `list('multi')` bindings for the same id are collected together, and depending on either form resolves the full list.
 
 ```ts
-bind(pluginId.list('multi')).withGenerator(() => [{ name: 'a' }, { name: 'b' }]);
+bind(pluginId.list('multi')).withFactory(() => [{ name: 'a' }, { name: 'b' }]);
 ```
 
 Things to keep in mind:
@@ -581,8 +583,8 @@ Things to keep in mind:
 - `nullable()`/`undefinable()` apply to each _element_. A list can only be requested (or depended on) as non-null if _every_ binding is non-null, so a single `.nullable()` binding makes the whole list nullable.
 - A nullable `list('multi')` provider that returns `null` contributes a single `null` element (same for `undefined`). Return `[]` for "no elements".
 - Adding the exact same binding instance more than once (e.g. via merged modules) only includes it once. Separate bindings are always included, even if they return the same value.
-- Lists work with scopes, suppliers, and late bindings like any other id. Each element binding is scoped individually.
-- A [`Factory`](#factory) can `register()` list elements multiple times. Each registered element is appended to the elements bound in the module, and must still satisfy every dependency on that list.
+- Lists work with scopes, suppliers, and deferred dependencies like any other id. Each element binding is scoped individually.
+- A [`ContainerFactory`](#containerfactory) can `bindInstance()` list elements multiple times. Each bound element is appended to the elements bound in the module, and must still satisfy every dependency on that list.
 
 ### Collecting bindings in modules
 
@@ -591,6 +593,8 @@ Bindings are the way to tell Haywire how to instantiate a single instance based 
 However bindings by themselves are meaningless, bindings do not mutate any sort of global state and two bindings are completely unrelated by default. In fact you can bind a single identifier to multiple different providers depending on your context (e.g. targeting a local DB client when testing instead of your production client).
 
 So in order to collect a set of bindings into a full implementation of all your resources, we use Modules.
+
+A Haywire `Module` is a module in the Guice sense (an immutable bundle of bindings), not an ES module. You can define several Haywire modules in one file, or build one up from bindings spread across many files.
 
 You can turn a single binding into a Module using `createModule(<binding>)`. This method is an alias for `Module.fromBinding`, so use whichever you prefer.
 
@@ -609,7 +613,7 @@ class C { c = 3 }
 
 const aBinding = bind(A).withDependencies([B, C]).withConstructorProvider();
 const bBinding = bind(B).withDependencies([C]).withConstructorProvider();
-const cBinding = bind(C).withConstructorGenerator();
+const cBinding = bind(C).withConstructorFactory();
 
 const abModule = createModule(aBinding).addBinding(bBinding);
 
@@ -647,7 +651,7 @@ const bModule = createModule(
     bind(B).withDependencies([C]).withConstructorProvider()
 );
 const cModule = createModule(
-    bind(C).withGenerator(() => new C()).undefinable()
+    bind(C).withFactory(() => new C()).undefinable()
 );
 
 // Allowed, A requires B | null and we have connected B.
@@ -689,14 +693,14 @@ createContainer(
 The container is the final goal of Haywire, and exposes an API to finally instantiate the types and bindings you defined earlier.
 
 There are two types of Containers:
-- `AsyncContainer`
+- `Container`
   - The default, which only supports instantiating values asynchronously `container.getAsync(<identifier>)`
 - `SyncContainer`
   - Only created if _every_ binding in the module is synchronous. Supports the full async API for consistency, but also a `container.get(<identifier>)` which synchronously instantiates a value.
 
 If you _need_ synchronous access, but have promises internally you have two options:
-1. Use synchronous suppliers internally to take advantage of cached optimistic promises.
-2. Provide promises instead of literal values. This is different than a latebinding promise though, and can quickly become unwieldy.
+1. Use synchronous suppliers internally to take advantage of cached eager promises.
+2. Provide promises instead of literal values. This is different than a deferred promise though, and can quickly become unwieldy.
 
 The container lifecycle happens in 4 stages. They may be explicitly activated or skipped, and internally any previous steps will be executed (and cached).
 
@@ -706,11 +710,11 @@ The container lifecycle happens in 4 stages. They may be explicitly activated or
     - It is highly recommended to expose this container to your test suite and call the check method to make sure the container will work at runtime.
 2. Wiring: `container.wire()`
     - Links up bindings to their dependencies bindings. Ensures that later requests to the container execute with high performance.
-    - Includes logic such as linking bindings to their internal optimistic dependencies which need to run before they are actually requested.
+    - Includes logic such as linking bindings to their internal eager dependencies which need to run before they are actually requested.
     - Safe to also run in tests, but shouldn't add any additional validations.
     - Recommended to run during startup, to perform any expensive compute ahead of time.
 3. Preloading: `container.preloadAsync()` or `container.preload()` (SyncContainer only)
-    - Initializes all optimistic singletons in the container.
+    - Initializes all eager singletons in the container.
     - The "request" to initialize is always unique to normal `.get()` requests, even if this step is invoked as part of a `get()`.
     - Unsafe to run at test time, since it instantiates real instances.
     - Recommended to run during startup, to perform any expensive compute ahead of time.
@@ -727,20 +731,20 @@ What if we wanted to inject values that aren't known until later though? Such as
 
 Using normal modules and containers, we would need to create, check, wire, and preload a new container for every request, which is much more expensive than it should be.
 
-What if we could check and wire an incomplete container, then register the last few implementations at runtime? We can use `Factory`s for this!
+What if we could check and wire an incomplete container, then bind the last few instances at runtime? We can use a `ContainerFactory` for this!
 
-Instead of converting a module to a container, we can instead convert it to a factory. Unlike containers, there is no check to enforce that the dependencies are all satisfied by outputs yet. Then we can register implementations of the remaining identifiers, and once we have provided them all, turn the factory into a normal container for further usage using the same `createContainer` API.
+Instead of converting a module to a container, we can instead convert it to a container factory. Unlike containers, there is no check to enforce that the dependencies are all satisfied by outputs yet. Then we can bind instances for the remaining identifiers, and once we have provided them all, turn the container factory into a normal container for further usage using the same `createContainer` API.
 
-Like everything else in Haywire, `Factory`s are immutable and type safe, so adding a binding returns a _new_ `Factory` with updated typing. Attempting to attach an implementation that already exists or does not satisfy the dependency requirements will result in both type and runtime errors.
+Like everything else in Haywire, a `ContainerFactory` is immutable and type safe, so adding a binding returns a _new_ `ContainerFactory` with updated typing. Attempting to attach an implementation that already exists or does not satisfy the dependency requirements will result in both type and runtime errors.
 
 ```ts
-import { bind, createContainer, createFactory, identifier } from 'haywire';
+import { bind, createContainer, createContainerFactory, identifier } from 'haywire';
 import express from 'express';
 
 const reqId = identifier<express.Request>();
 const resId = identifier<express.Response>();
 
-const factory = createFactory(
+const factory = createContainerFactory(
     createModule(
         bind(A).withDependencies([reqId, resId])
     )
@@ -753,29 +757,29 @@ factory.wire();
 
 express().get((req, res) => {
 
-    // Error! We haven't registered all required dependencies.
+    // Error! We haven't bound all required dependencies.
     factory.toContainer();
 
     // Error! We require a non-null version.
-    factory.register(reqId.nullable(), req);
+    factory.bindInstance(reqId.nullable(), req);
 
-    const registeredFactory = factory
-        .register(reqId, req)
-        .register(resId, res);
+    const boundFactory = factory
+        .bindInstance(reqId, req)
+        .bindInstance(resId, res);
 
-    // Error! We already registered this value
-    registeredFactory.register(reqId, req);
+    // Error! We already bound this value
+    boundFactory.bindInstance(reqId, req);
 
     // Allowed to add new ids, even if not previously a dependency.
-    registeredFactory.register(B, new B());
+    boundFactory.bindInstance(B, new B());
 
     // This is a _unique_ container (unique singletons) for every request. But it inherits the existing checks + wiring, so it is initialized much faster!
-    const container = registeredFactory.toContainer();
+    const container = boundFactory.toContainer();
     const a = container.get(A);
 });
 ```
 
-Factories can only be provided with instances, you cannot define a new provider or dependencies at this stage.
+Container factories can only be provided with instances, you cannot define a new provider or dependencies at this stage.
 
 ### Scope Gotchas
 
@@ -800,7 +804,7 @@ class C {
 
 const aBinding = bind(A).withConstructorProvider().withDependencies([B, C]);
 const bBinding = bind(B).withConstructorProvider().withDependencies([C]).scoped(singletonScope);
-const cBinding = bind(C).withConstructorGenerator().scoped(requestScope);
+const cBinding = bind(C).withConstructorFactory().scoped(requestScope);
 
 const container = createContainer(createModule(aBinding).addBinding(bBinding).addBinding(cBinding));
 
@@ -813,7 +817,7 @@ a2.b.c === a2.c // false! `b` is an older value, and therefore has an older vers
 a1.c === a2.b.c; // true
 ```
 
-In practice this shouldn't cause issues, but this may be a reason to use the `optimisticSingleton` scopes. That will ensure all values are created in a different "request" than the current one.
+In practice this shouldn't cause issues, but this may be a reason to use the `eagerSingletonScope`. That will ensure all values are created in a different "request" than the current one.
 
 It is also not recommended to depend on your dependency's dependencies. So hopefully this is not much of an issue in the first place.
 
@@ -955,9 +959,9 @@ Begins the process of binding an identifier to a provider with dependencies. Doe
 |----------|--------|------------|-------------|-------|
 | ❌ | `bind(idOrClass: HaywireId \| Foo)` | Either a `HaywireId` or a raw class (equivalent to `identifier(Foo)`) | `BindingBuilder` | |
 | `BindingBuilder` | `withInstance(value: T)` | A singleton instance that satisfies the type of id | `Binding` | Scopes are irrelevant to resulting binding, because it is always a singleton |
-| `BindingBuilder` | `withGenerator(() => T)` | A method with no parameters that returns the requested type | `Binding` | |
-| `BindingBuilder` | `withAsyncGenerator(() => Promise<T>)` | A method with no parameters that asynchronously returns the requested type | `Binding` | Will result in container being async. |
-| `BindingBuilder` | `withConstructorGenerator()` | Instructs Haywire to use the classes constructor directly with no parameters | `Binding` | Only available to ids constructed via a class |
+| `BindingBuilder` | `withFactory(() => T)` | A method with no parameters that returns the requested type | `Binding` | |
+| `BindingBuilder` | `withAsyncFactory(() => Promise<T>)` | A method with no parameters that asynchronously returns the requested type | `Binding` | Will result in container being async. |
+| `BindingBuilder` | `withConstructorFactory()` | Instructs Haywire to use the classes constructor directly with no parameters | `Binding` | Only available to ids constructed via a class |
 | `BindingBuilder` | `withProvider(provider: (X, Y) => T)` | Declare a method that will construct the type based on dependencies | `ProviderBindingBuilder` | |
 | `BindingBuilder` | `withAsyncProvider(provider: (X, Y) => Promise<T>)` | Declare a method that will asynchronously construct the type based on dependencies. | `AsyncProviderBindingBuilder` | Will result in container being async. |
 | `BindingBuilder` | `withConstructorProvider()` | Tells Haywire to use the constructor of the class directly, and infer any dependencies for that. | `ProviderBindingBuilder` | Only available to ids constructed via a class |
@@ -977,19 +981,19 @@ Alias for `Module.fromBinding()`
 #### `createContainer`
 
 Create a container from a module that has all dependencies satisfied.
-Also creates a container from a factory that has all dependencies registered.
+Also creates a container from a container factory that has all dependencies bound.
 
-If the module/factory is not complete, will result in a type error.
+If the module/container factory is not complete, will result in a type error.
 
 #### `isSyncContainer`
 
-Takes a parameter of an `AsyncContainer` or `SyncContainer`. Will return true if value is a `SyncContainer` and unlocks usage of the synchronous `preload()` and `get()` methods.
+Takes a parameter of a `Container` or `SyncContainer`. Will return true if value is a `SyncContainer` and unlocks usage of the synchronous `preload()` and `get()` methods.
 
 Persists types better than a class `instanceof SyncContainer` check (although that is essentially the internal logic of this method).
 
-#### `createFactory`
+#### `createContainerFactory`
 
-Create a factory from a module that does not have all dependencies satisfied.
+Create a container factory from a module that does not have all dependencies satisfied.
 
 ### Classes
 
@@ -1019,7 +1023,7 @@ originalId === id; // true!
 | `undefinable(enabled?: boolean)` | boolean (default=`true`). If false, will "revert" to a non-undefined type | `T \| undefined` | |
 | `named(name: string \| unique symbol \| null)` | A _literal_ string or a _unique_ symbol. Differentiates similarly typed ids. For example you may have multiple different strings representing various environment variables. A `null` value will "revert" the naming to default omission | `T` | String unions and non-unique symbols will be rejected. |
 | `supplier(options)` | `true` (default), `false`, `'async'` or an object `{ sync: boolean, propagateScope: boolean }` | `() => T` or `() => Promise<T>` | See [Supplying A Value](#supplying-a-value) above for more context about suppliers |
-| `lateBinding(enabled?: boolean)` | boolean (default=`true`) | `Promise<T>` | See [Circular Dependencies](#circular-dependencies) above for more context about late binding |
+| `deferred(enabled?: boolean)` | boolean (default=`true`) | `Promise<T>` | See [Circular Dependencies](#circular-dependencies) above for more context about deferred dependencies |
 | `list(list?: boolean \| 'multi')` | `true` (default), `false`, or `'multi'` | `T[]` | See [Lists](#lists) above. `'multi'` bindings return an array of elements, but are requested/depended on the same as `true`. `baseId()` retains the list annotation (normalizing `'multi'` to `true`) |
 | `baseId()` | ❌ | `T` | Strips all modifiers (except `list`) from the id and returns the original id value that would have come from `identifier()` |
 
@@ -1043,39 +1047,39 @@ Represents a collection of `Binding`s, each for a unique identifier.
 |--------|------------|-------------|-------|
 | `addBinding(binding)` | `Binding` | `Module` | Returns a _new_ module with extra binding attached. Type+runtime validations ensure it is a unique output (except [lists](#lists)) and all dependencies are still satisfied |
 | `mergeModule(module)` | `Module` | `Module` | Returns a _new_ module with two modules merged. Order does not matter (`A.mergeModule(B)` = `B.mergeModule(A)`). Type+runtime validations ensure all outputs are unique and all dependencies are still satisfied |
-| `toContainer()` | ❌ | `AsyncContainer \| SyncContainer` | Returns a container of all bindings. Type enforcement ensures module is fully satisfied. Will be an AsyncContainer if any binding's provider is async. |
-| `toFactory()` | ❌ | `Factory` | Returns a factory to register remaining dependencies. |
+| `toContainer()` | ❌ | `Container \| SyncContainer` | Returns a container of all bindings. Type enforcement ensures module is fully satisfied. Will be a `Container` if any binding's provider is async. |
+| `toContainerFactory()` | ❌ | `ContainerFactory` | Returns a container factory to bind instances for the remaining dependencies. |
 
-#### `AsyncContainer`
+#### `Container`
 
 A collection of bindings that is capable of _asynchronously_ instantiating any requested output.
 
 | Method | Parameters | Return Type | Notes |
 |--------|------------|-------------|-------|
 | `check()` | ❌ | `void` | Performs runtime enforcement that all dependencies are satisfied by a binding, and any [circular dependencies](#circular-dependencies) and [sync suppliers](#supplying-a-value) are handled properly. Successful result is cached, and any future calls will return immediately. |
-| `wire()` | ❌ | `void` | Wires internal mappings to ensure proper ordering of dependency instantiation and optimistic bindings. Result is cached, and any future calls will return immediately. Calls `check()` internally first. |
-| `preloadAsync()` | ❌ | `Promise<void>` | Instantiates all optimistic singletons. Result is cached, and any future calls will return immediately. Calls `wire()` internally first. |
+| `wire()` | ❌ | `void` | Wires internal mappings to ensure proper ordering of dependency instantiation and eager bindings. Result is cached, and any future calls will return immediately. Calls `check()` internally first. |
+| `preloadAsync()` | ❌ | `Promise<void>` | Instantiates all eager singletons. Result is cached, and any future calls will return immediately. Calls `wire()` internally first. |
 | `getAsync(idOrClass)` | `HaywireId` or raw class of requested value | `Promise<T>` | _Asynchronously_ instantiates the requested value. Each call counts as a separate "request" for scoping. Will throw error if requested value does not exist in bindings, including requesting a non-null value when binding is declared `.nullable()` |
 
 #### `SyncContainer`
 
-Extends `AsyncContainer` and supports all methods in addition to synchronous versions of methods. Only available when every binding is synchronous.
+Extends `Container` and supports all methods in addition to synchronous versions of methods. Only available when every binding is synchronous.
 
 | Method | Parameters | Return Type | Notes |
 |--------|------------|-------------|-------|
 | `preload()` | ❌ | `void` | Same behavior as `preloadAsync()`, only synchronous. Calling either will perform caching for both. |
 | `get(idOrClass)` | `HaywireId` or raw class of requested value | `T` | Same behavior as `getAsync(idOrClass)`, only synchronous. |
 
-#### `Factory`
+#### `ContainerFactory`
 
-Collection of incomplete bindings that can still be checked and wired like a container. Once remaining singletons are registered, can produce a container.
+Collection of incomplete bindings that can still be checked and wired like a container. Once instances for the remaining dependencies are bound, can produce a container.
 
 | Method | Parameters | Return Type | Notes |
 |--------|------------|-------------|-------|
-| `check()` | ❌ | `void` | Similar to `container.check()`. Assumes that all to-be-registered bindings are synchronous, optimistic singletons, with no dependencies. Operation will be cached for all containers generated. |
+| `check()` | ❌ | `void` | Similar to `container.check()`. Assumes that all to-be-bound instances are synchronous, eager singletons, with no dependencies. Operation will be cached for all containers generated. |
 | `wire()` | ❌ | `void` | Similar to `container.wire()`. Operation will be cached for all containers generated. |
-| `register(idOrClass, instance)` | First parameter is either a `HaywireId` or raw class declaring the type. Second parameter is an instance satisfying the requested type. | `Factory` | Returns a _new_ factory with value registered. [List](#lists) ids may be registered multiple times, each adding an element (or elements for `'multi'`). Because of this, a factory instance may be shared across multiple contexts. If the factory has been checked/wired, that state will persist. |
-| `toContainer()` | ❌ | `AsyncContainer \| SyncContainer` | Returns a container with registered values bound. Will inherit factory's checked/wired state. Will be an AsyncContainer if any module binding's provider is async. |
+| `bindInstance(idOrClass, instance)` | First parameter is either a `HaywireId` or raw class declaring the type. Second parameter is an instance satisfying the requested type. | `ContainerFactory` | Returns a _new_ container factory with the value bound. [List](#lists) ids may be bound multiple times, each adding an element (or elements for `'multi'`). Because of this, a factory instance may be shared across multiple contexts. If the factory has been checked/wired, that state will persist. |
+| `toContainer()` | ❌ | `Container \| SyncContainer` | Returns a container with bound instances attached. Will inherit factory's checked/wired state. Will be a `Container` if any module binding's provider is async. |
 
 ### Types
 
@@ -1108,13 +1112,13 @@ Includes additional internal type annotations to distinguish between a normal fu
 
 This is the type used internally to represent `identifier<T>().supplier()`.
 
-#### `LateBinding`
+#### `Deferred`
 
 A `Promise` that resolves to `T`.
 
 Includes additional internal type annotations to distinguish between a normal promise, but otherwise effectively `Promise<T>`.
 
-This is the type used internally to represent `identifier<T>().lateBinding()`.
+This is the type used internally to represent `identifier<T>().deferred()`.
 
 ### Errors
 

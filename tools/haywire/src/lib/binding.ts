@@ -13,13 +13,13 @@ import type {
 import type { Scopes } from '#scopes';
 import type {
     AsyncSupplier,
+    Deferred,
     DepsClass,
     ExpandOutput,
     ExtendsType,
     GenericClass,
     InvalidInput,
     IsClass,
-    LateBinding,
     LiteralStringType,
     MultiList,
     Names,
@@ -27,7 +27,7 @@ import type {
 } from '#types';
 import { HaywireProviderMissingError } from '#errors';
 import { unsafeIdentifier } from '#identifier';
-import { optimisticSingletonScope, transientScope } from '#scopes';
+import { eagerSingletonScope, transientScope } from '#scopes';
 
 export type DependencyIdTypes<Dependencies extends readonly [...GenericHaywireId[]]> = {
     [Index in keyof Dependencies]: HaywireIdType<Dependencies[Index]>;
@@ -37,12 +37,12 @@ export type GenericBinding = Binding<GenericOutputHaywireId, any, boolean>;
 /**
  * Given the output id of a declared binding, produce the set of all output types.
  *
- * e.g. If the provided output is `A + nullable + lateBinding`,
+ * e.g. If the provided output is `A + nullable + deferred`,
  * then the output types would be:
  * > `A + nullable`
  * > `A + nullable + undefinable`
  *
- * It would omit the lateBinding (and supplier) totally.
+ * It would omit the deferred (and supplier) totally.
  * It would also not be able to produce _just_ `A` or `A + undefinable`
  *
  * Only returns data for non-list (see {@link BindingListOutputType} for equivalent).
@@ -95,7 +95,7 @@ type NormalizedOutputId<T extends GenericHaywireId> = HaywireId<
 export const normalizeOutputId = <T extends GenericHaywireId>(id: T): NormalizedOutputId<T> =>
     id
         .supplier(false)
-        .lateBinding(false)
+        .deferred(false)
         .list((id.annotations.list !== false) as false) as NormalizedOutputId<T>;
 
 const providerToMaybeList = <
@@ -449,7 +449,7 @@ export class TempBinding<OutputId extends GenericOutputHaywireId> extends Bindin
             () => {
                 throw new HaywireProviderMissingError([outputId]);
             },
-            optimisticSingletonScope
+            eagerSingletonScope
         );
     }
 }
@@ -470,7 +470,7 @@ export class InstanceBinding<OutputId extends GenericHaywireId> extends Binding<
             [],
             false,
             providerToMaybeList(outputId, false, () => instance),
-            optimisticSingletonScope
+            eagerSingletonScope
         );
     }
 }
@@ -580,21 +580,21 @@ type DependenciesToIds<Dependencies extends readonly unknown[]> = {
         StripAnnotations<Dependencies[Index]>,
         GenericClass<StripAnnotations<Dependencies[Index]>> | null,
         string | symbol | null,
-        StripAnnotations<Dependencies[Index], 'latebinding' | 'supplier'> extends MultiList<unknown>
+        StripAnnotations<Dependencies[Index], 'deferred' | 'supplier'> extends MultiList<unknown>
             ? 'multi' | true
             : false,
-        null extends StripAnnotations<Dependencies[Index], 'latebinding' | 'list' | 'supplier'>
+        null extends StripAnnotations<Dependencies[Index], 'deferred' | 'list' | 'supplier'>
             ? boolean
             : false,
-        undefined extends StripAnnotations<Dependencies[Index], 'latebinding' | 'list' | 'supplier'>
+        undefined extends StripAnnotations<Dependencies[Index], 'deferred' | 'list' | 'supplier'>
             ? boolean
             : false,
-        StripAnnotations<Dependencies[Index], 'latebinding'> extends Supplier<unknown>
+        StripAnnotations<Dependencies[Index], 'deferred'> extends Supplier<unknown>
             ? true
-            : StripAnnotations<Dependencies[Index], 'latebinding'> extends AsyncSupplier<unknown>
+            : StripAnnotations<Dependencies[Index], 'deferred'> extends AsyncSupplier<unknown>
               ? 'async'
               : false,
-        Dependencies[Index] extends LateBinding<unknown> ? true : false
+        Dependencies[Index] extends Deferred<unknown> ? true : false
     >;
 };
 
@@ -730,17 +730,17 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
             [],
             false,
             providerToMaybeList(this.#outputId, false, () => value),
-            optimisticSingletonScope
+            eagerSingletonScope
         );
     }
 
-    public withConstructorGenerator(
+    public withConstructorFactory(
         ...invalidInput: ExtendsType<
             HaywireIdConstructor<OutputId>,
             DepsClass<HaywireIdProviderType<OutputHaywireId<OutputId>>, []>
         >
     ): Binding<OutputHaywireId<OutputId>, [], false>;
-    public withConstructorGenerator(): Binding<OutputHaywireId<OutputId>, [], false> {
+    public withConstructorFactory(): Binding<OutputHaywireId<OutputId>, [], false> {
         const normalized = normalizeOutputId(this.#outputId);
         return new Binding(
             normalized,
@@ -757,7 +757,7 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
         );
     }
 
-    public withGenerator(
+    public withFactory(
         provider: () => HaywireIdProviderType<OutputId>
     ): Binding<OutputHaywireId<OutputId>, [], false> {
         return new Binding(
@@ -768,11 +768,11 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
         );
     }
 
-    public withAsyncGenerator(
+    public withAsyncFactory(
         provider: () => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>,
         ...invalidInput: AsyncPromiseOutput<OutputId> & []
     ): Binding<OutputHaywireId<OutputId>, [], true>;
-    public withAsyncGenerator(
+    public withAsyncFactory(
         provider: () => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>
     ): Binding<OutputHaywireId<OutputId>, [], true> {
         return new Binding(

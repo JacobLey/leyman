@@ -30,7 +30,7 @@ suite('launch', () => {
             }
 
             const container = createContainer(
-                createModule(bind(EntryScript).withAsyncGenerator(() => new MyEntry()))
+                createModule(bind(EntryScript).withAsyncFactory(() => new MyEntry()))
             );
 
             return { container, myEntry: MyEntry };
@@ -106,7 +106,7 @@ suite('launch', () => {
             const staticId = id.named('static');
 
             const container = createContainer(
-                createModule(bind(MyEntry).withConstructorGenerator())
+                createModule(bind(MyEntry).withConstructorFactory())
                     .addBinding(
                         bind(EntryScript)
                             .withDependencies([MyEntry])
@@ -114,7 +114,7 @@ suite('launch', () => {
                     )
                     .addBinding(
                         bind(MyEntry)
-                            .withGenerator(() => new MyEntry(true))
+                            .withFactory(() => new MyEntry(true))
                             .named('id')
                     )
                     .addBinding(

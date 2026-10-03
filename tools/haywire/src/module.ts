@@ -1,1 +1,1 @@
-export { createFactory, createModule, Module } from '#module';
+export { createContainerFactory, createModule, Module } from '#module';

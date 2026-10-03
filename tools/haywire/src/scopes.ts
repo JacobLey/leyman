@@ -1,9 +1,9 @@
 export {
-    optimisticRequestScope,
-    optimisticSingletonScope,
+    eagerRequestScope,
+    eagerSingletonScope,
+    isolatedRequestScope,
     requestScope,
     type Scopes,
     singletonScope,
-    supplierScope,
     transientScope,
 } from '#scopes';

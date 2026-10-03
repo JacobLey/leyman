@@ -1,21 +1,24 @@
-import type { GenericFactory } from '#factory';
+import type { GenericContainerFactory } from '#container-factory';
 import type { GenericModule } from '#module';
-import { createContainer as createFactoryContainer, Factory } from '#factory';
-import { createContainer as createModuleContainer } from '#module';
+import {
+    ContainerFactory,
+    createContainer as createContainerFromFactory,
+} from '#container-factory';
+import { createContainer as createContainerFromModule } from '#module';
 
 export {
-    AsyncContainer,
+    Container,
     type GenericContainer,
     isSyncContainer,
     SyncContainer,
 } from '#container';
 
-type CreateContainer = typeof createFactoryContainer & typeof createModuleContainer;
+type CreateContainer = typeof createContainerFromFactory & typeof createContainerFromModule;
 export const createContainer: CreateContainer = ((
-    factoryOrModule: GenericFactory | GenericModule
+    factoryOrModule: GenericContainerFactory | GenericModule
 ) => {
-    if (factoryOrModule instanceof Factory) {
-        return createFactoryContainer(factoryOrModule);
+    if (factoryOrModule instanceof ContainerFactory) {
+        return createContainerFromFactory(factoryOrModule);
     }
-    return createModuleContainer(factoryOrModule);
+    return createContainerFromModule(factoryOrModule);
 }) as CreateContainer;

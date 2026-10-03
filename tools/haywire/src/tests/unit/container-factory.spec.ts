@@ -2,7 +2,7 @@ import type { MultiList } from 'haywire';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
-import { bind, createContainer, createFactory, createModule, identifier } from 'haywire';
+import { bind, createContainer, createContainerFactory, createModule, identifier } from 'haywire';
 import { HaywireDuplicateOutputError, HaywireProviderMissingError } from '#errors';
 
 suite('factory', () => {
@@ -45,7 +45,7 @@ suite('factory', () => {
             bind(cId)
                 .withDependencies([
                     dId.undefinable(),
-                    eId.lateBinding(),
+                    eId.deferred(),
                     fId.nullable().undefinable().supplier(),
                 ])
                 .withProvider(() => new C())
@@ -55,7 +55,7 @@ suite('factory', () => {
         // @ts-expect-error
         createContainer(module);
 
-        const factory = createFactory(module);
+        const factory = createContainerFactory(module);
 
         expect(() => {
             // @ts-expect-error
@@ -64,22 +64,22 @@ suite('factory', () => {
     });
 
     suite('sync', () => {
-        const factory = createFactory(module);
+        const factory = createContainerFactory(module);
         factory.check();
         factory.wire();
 
         suite('register', () => {
             const fulfilledFactory = factory
-                .register(dId, new D())
-                .register(E, new E())
-                .register(fId.nullable(), null);
+                .bindInstance(dId, new D())
+                .bindInstance(E, new E())
+                .bindInstance(fId.nullable(), null);
 
             const extraId = identifier<number>();
             const withExtras = fulfilledFactory
-                .register(A, new A())
-                .register(D, new D())
-                .register(eId.named('e'), new E())
-                .register(extraId.nullable().lateBinding(), 123);
+                .bindInstance(A, new A())
+                .bindInstance(D, new D())
+                .bindInstance(eId.named('e'), new E())
+                .bindInstance(extraId.nullable().deferred(), 123);
 
             test('toContainer', () => {
                 const container = fulfilledFactory.toContainer();
@@ -108,53 +108,53 @@ suite('factory', () => {
                 // Part of original outputs
                 expect(() => {
                     // @ts-expect-error
-                    factory.register(aId, new A());
+                    factory.bindInstance(aId, new A());
                 }).to.throw(HaywireDuplicateOutputError);
 
                 // Duplicate register
                 expect(() => {
                     // @ts-expect-error
-                    factory.register(dId, new D()).register(dId, new D());
+                    factory.bindInstance(dId, new D()).bindInstance(dId, new D());
                 }).to.throw(HaywireDuplicateOutputError);
             });
 
             test('Bound instances does not match type', () => {
                 // Not matching type
                 // @ts-expect-error
-                factory.register(dId, new E());
+                factory.bindInstance(dId, new E());
                 // @ts-expect-error
-                factory.register(F, null);
+                factory.bindInstance(F, null);
             });
 
             test('Output does not fully satisfy dependencies', () => {
                 // Does not fully satisfy dependencies
                 expect(() => {
                     // @ts-expect-error
-                    factory.register(eId.nullable(), new E());
+                    factory.bindInstance(eId.nullable(), new E());
                 }).to.throw(HaywireProviderMissingError);
             });
         });
     });
 
     suite('async', () => {
-        const factory = createFactory(
+        const factory = createContainerFactory(
             module.addBinding(
-                bind(identifier<number>().nullable().named('async')).withAsyncGenerator(() => null)
+                bind(identifier<number>().nullable().named('async')).withAsyncFactory(() => null)
             )
         );
 
         suite('register', () => {
             const fulfilledFactory = factory
-                .register(dId, new D())
-                .register(E, new E())
-                .register(fId.nullable(), null);
+                .bindInstance(dId, new D())
+                .bindInstance(E, new E())
+                .bindInstance(fId.nullable(), null);
 
             const extraId = identifier<number>();
             const withExtras = fulfilledFactory
-                .register(A, new A())
-                .register(D, new D())
-                .register(eId.named('e'), new E())
-                .register(extraId.nullable().lateBinding(), 123);
+                .bindInstance(A, new A())
+                .bindInstance(D, new D())
+                .bindInstance(eId.named('e'), new E())
+                .bindInstance(extraId.nullable().deferred(), 123);
 
             test('toContainer', async () => {
                 const container = fulfilledFactory.toContainer();
@@ -191,8 +191,8 @@ suite('factory', () => {
             .withProvider(nums => nums.reduce((total, num) => total + num, 0));
 
         test('Module list outputs satisfy dependencies', () => {
-            const factory = createFactory(
-                createModule(bind(numListId).withGenerator(() => 1)).addBinding(sumBinding)
+            const factory = createContainerFactory(
+                createModule(bind(numListId).withFactory(() => 1)).addBinding(sumBinding)
             );
 
             const container = factory.toContainer();
@@ -201,25 +201,31 @@ suite('factory', () => {
         });
 
         test('Registered elements are added to module elements', () => {
-            const factory = createFactory(
-                createModule(bind(numListId).withGenerator(() => 1)).addBinding(sumBinding)
+            const factory = createContainerFactory(
+                createModule(bind(numListId).withFactory(() => 1)).addBinding(sumBinding)
             );
             factory.wire();
 
-            const container = factory.register(numListId, 2).register(numListId, 3).toContainer();
+            const container = factory
+                .bindInstance(numListId, 2)
+                .bindInstance(numListId, 3)
+                .toContainer();
             expect(container.get(sumId)).to.equal(6);
             expect(container.get(numListId)).to.have.members([1, 2, 3]);
         });
 
         test('Missing list is satisfied by registering elements', () => {
-            const factory = createFactory(createModule(sumBinding));
+            const factory = createContainerFactory(createModule(sumBinding));
 
             expect(() => {
                 // @ts-expect-error
                 factory.toContainer();
             }).to.throw(HaywireProviderMissingError);
 
-            const container = factory.register(numListId, 2).register(numListId, 3).toContainer();
+            const container = factory
+                .bindInstance(numListId, 2)
+                .bindInstance(numListId, 3)
+                .toContainer();
             const nums = container.get(numListId);
             expectTypeOf(nums).toEqualTypeOf<MultiList<number>>();
             expect(nums).to.have.members([2, 3]);
@@ -227,57 +233,57 @@ suite('factory', () => {
         });
 
         test('Register "multi" elements', () => {
-            const factory = createFactory(createModule(sumBinding));
+            const factory = createContainerFactory(createModule(sumBinding));
 
             const container = factory
-                .register(numListId.list('multi'), [1, 2])
-                .register(numListId.list('multi'), [])
+                .bindInstance(numListId.list('multi'), [1, 2])
+                .bindInstance(numListId.list('multi'), [])
                 .toContainer();
             expect(container.get(numListId)).to.have.members([1, 2]);
             expect(container.get(sumId)).to.equal(3);
 
             const nullableId = identifier<number>().named('nullable-nums').nullable();
-            const nullableContainer = createFactory(
-                createModule(bind(sumId).withGenerator(() => 0))
+            const nullableContainer = createContainerFactory(
+                createModule(bind(sumId).withFactory(() => 0))
             )
-                .register(nullableId.list('multi'), null)
+                .bindInstance(nullableId.list('multi'), null)
                 .toContainer();
             expect(nullableContainer.get(nullableId.list())).to.deep.equal([null]);
         });
 
         test('Registered elements must satisfy list dependencies', () => {
-            const factory = createFactory(createModule(sumBinding));
+            const factory = createContainerFactory(createModule(sumBinding));
 
             expect(() => {
                 // @ts-expect-error
-                factory.register(numListId.nullable(), null);
+                factory.bindInstance(numListId.nullable(), null);
             }).to.throw(HaywireProviderMissingError);
 
             expect(() => {
                 // @ts-expect-error
-                factory.register(numListId, 1).register(numListId.nullable(), null);
+                factory.bindInstance(numListId, 1).bindInstance(numListId.nullable(), null);
             }).to.throw(HaywireProviderMissingError);
 
-            const satisfiedFactory = createFactory(
-                createModule(bind(numListId).withGenerator(() => 1)).addBinding(sumBinding)
+            const satisfiedFactory = createContainerFactory(
+                createModule(bind(numListId).withFactory(() => 1)).addBinding(sumBinding)
             );
             expect(() => {
                 // @ts-expect-error
-                satisfiedFactory.register(numListId.nullable(), null);
+                satisfiedFactory.bindInstance(numListId.nullable(), null);
             }).to.throw(HaywireProviderMissingError);
         });
 
         test('Laxer elements restrict requestable ids', () => {
             const otherListId = identifier<number>().named('others').list();
-            const factory = createFactory(createModule(bind(sumId).withGenerator(() => 0)));
+            const factory = createContainerFactory(createModule(bind(sumId).withFactory(() => 0)));
             factory.wire();
 
-            const strictContainer = factory.register(otherListId, 1).toContainer();
+            const strictContainer = factory.bindInstance(otherListId, 1).toContainer();
             expect(strictContainer.get(otherListId)).to.deep.equal([1]);
 
             const laxContainer = factory
-                .register(otherListId, 1)
-                .register(otherListId.nullable(), null)
+                .bindInstance(otherListId, 1)
+                .bindInstance(otherListId.nullable(), null)
                 .toContainer();
             expect(laxContainer.get(otherListId.nullable())).to.have.members([1, null]);
             expect(() => {
@@ -287,39 +293,37 @@ suite('factory', () => {
         });
 
         test('Module list too lax for dependency cannot be satisfied', () => {
-            const laxModule = createModule(bind(numListId.nullable()).withGenerator(() => null));
+            const laxModule = createModule(bind(numListId.nullable()).withFactory(() => null));
             // @ts-expect-error
             const invalidModule = laxModule.addBinding(sumBinding);
-            const factory = createFactory(invalidModule);
+            const factory = createContainerFactory(invalidModule);
 
             expect(() => {
                 // @ts-expect-error
                 factory.toContainer();
             }).to.throw(HaywireProviderMissingError);
-            expect(() => factory.register(numListId, 1)).to.throw(HaywireProviderMissingError);
+            expect(() => factory.bindInstance(numListId, 1)).to.throw(HaywireProviderMissingError);
         });
 
         test('Async', async () => {
-            const factory = createFactory(
-                createModule(bind(numListId).withAsyncGenerator(async () => 1)).addBinding(
-                    sumBinding
-                )
+            const factory = createContainerFactory(
+                createModule(bind(numListId).withAsyncFactory(async () => 1)).addBinding(sumBinding)
             );
 
-            const container = factory.register(numListId, 2).toContainer();
+            const container = factory.bindInstance(numListId, 2).toContainer();
             expect(await container.getAsync(sumId)).to.equal(3);
         });
     });
 
     suite('Module outputs', () => {
-        test('Supplier and late binding dependencies are satisfied by module outputs', () => {
+        test('Supplier and deferred dependencies are satisfied by module outputs', () => {
             const numId = identifier<number>().named('num');
             const outId = identifier<number>().named('out');
 
-            const container = createFactory(
-                createModule(bind(numId).withGenerator(() => 1)).addBinding(
+            const container = createContainerFactory(
+                createModule(bind(numId).withFactory(() => 1)).addBinding(
                     bind(outId)
-                        .withDependencies([numId.supplier(), numId.lateBinding()])
+                        .withDependencies([numId.supplier(), numId.deferred()])
                         .withProvider(supplier => supplier() + 1)
                 )
             ).toContainer();
@@ -331,14 +335,14 @@ suite('factory', () => {
             const numId = identifier<number>().named('lax');
             const outId = identifier<number>().named('lax-out');
 
-            const laxModule = createModule(bind(numId.nullable()).withGenerator(() => 1));
+            const laxModule = createModule(bind(numId.nullable()).withFactory(() => 1));
             // @ts-expect-error
             const invalidModule = laxModule.addBinding(
                 bind(outId)
                     .withDependencies([numId])
                     .withProvider(num => num)
             );
-            const factory = createFactory(invalidModule);
+            const factory = createContainerFactory(invalidModule);
 
             expect(() => {
                 // @ts-expect-error
@@ -346,7 +350,7 @@ suite('factory', () => {
             }).to.throw(HaywireProviderMissingError);
             expect(() => {
                 // @ts-expect-error
-                factory.register(numId, 1);
+                factory.bindInstance(numId, 1);
             }).to.throw(HaywireDuplicateOutputError);
         });
     });

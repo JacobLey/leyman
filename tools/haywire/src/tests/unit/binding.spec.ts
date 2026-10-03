@@ -1,8 +1,8 @@
 import type {
     AsyncSupplier,
+    Deferred,
     GenericHaywireId,
     HaywireId,
-    LateBinding,
     MultiList,
     Supplier,
 } from 'haywire';
@@ -14,9 +14,9 @@ import { expect } from '@leyman/expect';
 import {
     bind,
     Binding,
+    eagerSingletonScope,
     HaywireContainerValidationError,
     identifier,
-    optimisticSingletonScope,
     requestScope,
     transientScope,
 } from 'haywire';
@@ -62,8 +62,8 @@ suite('bind', () => {
     const extendsBarBind = bind(identifier(ExtendsBar).undefinable());
 
     class Egg {
-        public readonly egg: LateBinding<Egg>;
-        public constructor(egg: LateBinding<Egg>) {
+        public readonly egg: Deferred<Egg>;
+        public constructor(egg: Deferred<Egg>) {
             this.egg = egg;
         }
     }
@@ -82,7 +82,7 @@ suite('bind', () => {
     const thingId = identifier<Thing>();
     const thingBind = bind(thingId);
 
-    const kindaThingId = thingId.named('<name>').nullable().undefinable().supplier().lateBinding();
+    const kindaThingId = thingId.named('<name>').nullable().undefinable().supplier().deferred();
     const kindaThingBind = bind(kindaThingId);
 
     const promisishId = identifier<789 | Promise<123>>();
@@ -113,7 +113,7 @@ suite('bind', () => {
                 stuff: () => [],
             });
             expectTypeOf(thingBinding).toEqualTypeOf<Binding<typeof thingId, [], false>>();
-            expect(thingBinding.scope).to.equal(optimisticSingletonScope);
+            expect(thingBinding.scope).to.equal(eagerSingletonScope);
 
             kindaThingBind.withInstance({
                 stuff: () => [],
@@ -163,9 +163,9 @@ suite('bind', () => {
     suite('constructor', () => {
         test('list(false)', () => {
             // @ts-expect-error
-            fooBind.withConstructorGenerator();
+            fooBind.withConstructorFactory();
 
-            const extendsFooBinding = extendsFooBind.withConstructorGenerator();
+            const extendsFooBinding = extendsFooBind.withConstructorFactory();
             expect(extendsFooBinding.scope).to.deep.equal(transientScope);
             expect(extendsFooBinding.depIds).to.deep.equal([]);
             expectTypeOf(extendsFooBinding.depIds).toEqualTypeOf<readonly []>();
@@ -173,24 +173,24 @@ suite('bind', () => {
             expectTypeOf(extendsFooBinding.provider()).toEqualTypeOf<ExtendsFoo>();
 
             // @ts-expect-error
-            barBind.withConstructorGenerator();
+            barBind.withConstructorFactory();
             // @ts-expect-error
-            extendsBarBind.withConstructorGenerator();
+            extendsBarBind.withConstructorFactory();
             // @ts-expect-error
-            eggBind.withConstructorGenerator();
+            eggBind.withConstructorFactory();
             // @ts-expect-error
-            chickenBind.withConstructorGenerator();
+            chickenBind.withConstructorFactory();
             // @ts-expect-error
-            thingBind.withConstructorGenerator();
+            thingBind.withConstructorFactory();
             // @ts-expect-error
-            promisishBind.withConstructorGenerator();
+            promisishBind.withConstructorFactory();
         });
 
         test('list(true)', () => {
             const listExtendsFooBind = bind(
                 identifier(ExtendsFoo).list().nullable().supplier('async')
             );
-            const extendsFooBinding = listExtendsFooBind.withConstructorGenerator();
+            const extendsFooBinding = listExtendsFooBind.withConstructorFactory();
             const extendsFoo = extendsFooBinding.provider();
             expectTypeOf(extendsFoo).toEqualTypeOf<MultiList<ExtendsFoo | null>>();
             expect(extendsFoo).to.have.length(1);
@@ -198,21 +198,21 @@ suite('bind', () => {
 
             bind(identifier(Foo).list())
                 // @ts-expect-error
-                .withConstructorGenerator();
+                .withConstructorFactory();
             bind(identifier(Bar).list())
                 // @ts-expect-error
-                .withConstructorGenerator();
+                .withConstructorFactory();
             bind(promisishId.list())
                 // @ts-expect-error
-                .withConstructorGenerator();
+                .withConstructorFactory();
         });
 
         test('list(multi)', () => {
             const multiExtendsFooBind = bind(
-                identifier(ExtendsFoo).list('multi').undefinable().lateBinding()
+                identifier(ExtendsFoo).list('multi').undefinable().deferred()
             );
 
-            const extendsFooBinding = multiExtendsFooBind.withConstructorGenerator();
+            const extendsFooBinding = multiExtendsFooBind.withConstructorFactory();
             const extendsFoo = extendsFooBinding.provider();
             expectTypeOf(extendsFoo).toEqualTypeOf<MultiList<ExtendsFoo | undefined>>();
             expect(extendsFoo).to.have.length(1);
@@ -220,13 +220,13 @@ suite('bind', () => {
 
             bind(identifier(Foo).list('multi'))
                 // @ts-expect-error
-                .withConstructorGenerator();
+                .withConstructorFactory();
             bind(identifier(Bar).list('multi'))
                 // @ts-expect-error
-                .withConstructorGenerator();
+                .withConstructorFactory();
             bind(promisishId.list('multi'))
                 // @ts-expect-error
-                .withConstructorGenerator();
+                .withConstructorFactory();
         });
     });
 
@@ -253,14 +253,14 @@ suite('bind', () => {
             ).toEqualTypeOf<ExtendsBar | undefined>();
 
             const eggProvider = eggBind.withConstructorProvider();
-            eggProvider.withDependencies([identifier(Egg).lateBinding()]);
+            eggProvider.withDependencies([identifier(Egg).deferred()]);
             // @ts-expect-error
             eggProvider.withDependencies([identifier(Egg)]);
 
             const chickenProvider = chickenBind.withConstructorProvider();
             chickenProvider.withDependencies([Egg]);
             // @ts-expect-error
-            chickenProvider.withDependencies([identifier(Egg).lateBinding()]);
+            chickenProvider.withDependencies([identifier(Egg).deferred()]);
 
             // @ts-expect-error
             promisishBind.withConstructorProvider();
@@ -302,9 +302,9 @@ suite('bind', () => {
         });
     });
 
-    suite('generator', () => {
+    suite('factory', () => {
         test('list(false)', () => {
-            const fooBinding = fooBind.withGenerator(() => new ExtendsFoo());
+            const fooBinding = fooBind.withFactory(() => new ExtendsFoo());
             expectTypeOf(fooBinding).toEqualTypeOf<
                 Binding<
                     HaywireId<Foo, AbstractPrivateClass, null, false, false, false, false, false>,
@@ -313,60 +313,60 @@ suite('bind', () => {
                 >
             >();
             // @ts-expect-error
-            fooBind.withGenerator(() => new ExtendsBar());
+            fooBind.withFactory(() => new ExtendsBar());
 
             // @ts-expect-error
-            extendsFooBind.withGenerator(() => null);
+            extendsFooBind.withFactory(() => null);
 
-            barBind.withGenerator(() => null);
-            extendsBarBind.withGenerator((): undefined => {});
+            barBind.withFactory(() => null);
+            extendsBarBind.withFactory((): undefined => {});
 
             // @ts-expect-error
-            thingBind.withGenerator((val: Thing) => val);
+            thingBind.withFactory((val: Thing) => val);
 
-            promisishBind.withGenerator(async () => 123 as const);
-            promisishBind.withGenerator(() => 789);
+            promisishBind.withFactory(async () => 123 as const);
+            promisishBind.withFactory(() => 789);
         });
 
         test('list(true)', async () => {
-            const fooBinding = bind(identifier(Foo).list()).withGenerator(() => new ExtendsFoo());
+            const fooBinding = bind(identifier(Foo).list()).withFactory(() => new ExtendsFoo());
             expectTypeOf(fooBinding.provider()).toEqualTypeOf<MultiList<Foo>>();
             expect(fooBinding.provider()).to.have.length(1);
             expect(fooBinding.provider()[0]).to.be.an.instanceOf(ExtendsFoo);
 
-            bind(identifier(Foo).list()).withGenerator(
+            bind(identifier(Foo).list()).withFactory(
                 // @ts-expect-error - array is not a single element
                 () => [new ExtendsFoo()]
             );
 
             const promisish = bind(promisishId.list().nullable())
-                .withGenerator(async () => 123 as const)
+                .withFactory(async () => 123 as const)
                 .provider();
             expectTypeOf(promisish).toEqualTypeOf<MultiList<789 | Promise<123> | null>>();
             expect(promisish).to.have.length(1);
             expect(await Promise.all(promisish as Promise<unknown>[])).to.deep.equal([123]);
             expect(
                 bind(promisishId.list().nullable())
-                    .withGenerator(() => null)
+                    .withFactory(() => null)
                     .provider()
             ).to.deep.equal([null]);
         });
 
         test('list(multi)', async () => {
-            const fooBinding = bind(identifier(Foo).list('multi')).withGenerator(() => [
+            const fooBinding = bind(identifier(Foo).list('multi')).withFactory(() => [
                 new ExtendsFoo(),
             ]);
             expectTypeOf(fooBinding.provider()).toEqualTypeOf<MultiList<Foo>>();
             expect(fooBinding.provider()).to.have.length(1);
             expect(fooBinding.provider()[0]).to.be.an.instanceOf(ExtendsFoo);
 
-            bind(identifier(Foo).list('multi')).withGenerator(
+            bind(identifier(Foo).list('multi')).withFactory(
                 // @ts-expect-error - single element is not an array
                 () => new ExtendsFoo()
             );
 
             const promisish = bind(promisishId.list('multi').undefinable())
-                .withGenerator(() => [Promise.resolve(123), undefined, 789])
+                .withFactory(() => [Promise.resolve(123), undefined, 789])
                 .provider();
             expectTypeOf(promisish).toEqualTypeOf<MultiList<789 | Promise<123> | undefined>>();
             expect(promisish).to.have.length(3);
@@ -378,9 +378,9 @@ suite('bind', () => {
         });
     });
 
-    suite('async generator', () => {
+    suite('async factory', () => {
         test('list(false)', () => {
-            const fooBinding = fooBind.withAsyncGenerator(() => new ExtendsFoo());
+            const fooBinding = fooBind.withAsyncFactory(() => new ExtendsFoo());
             expectTypeOf(fooBinding).toEqualTypeOf<
                 Binding<
                     HaywireId<Foo, AbstractPrivateClass, null, false, false, false, false, false>,
@@ -389,25 +389,25 @@ suite('bind', () => {
                 >
             >();
             // @ts-expect-error
-            fooBind.withAsyncGenerator(async () => new ExtendsBar());
+            fooBind.withAsyncFactory(async () => new ExtendsBar());
 
             // @ts-expect-error
-            extendsFooBind.withAsyncGenerator(async () => null);
+            extendsFooBind.withAsyncFactory(async () => null);
 
-            barBind.withAsyncGenerator(async () => null);
-            extendsBarBind.withAsyncGenerator((): undefined => {});
-
-            // @ts-expect-error
-            thingBind.withAsyncGenerator(async (val: Thing) => val);
+            barBind.withAsyncFactory(async () => null);
+            extendsBarBind.withAsyncFactory((): undefined => {});
 
             // @ts-expect-error
-            promisishBind.withAsyncGenerator(async () => {
+            thingBind.withAsyncFactory(async (val: Thing) => val);
+
+            // @ts-expect-error
+            promisishBind.withAsyncFactory(async () => {
                 await Promise.resolve(123);
             });
         });
 
         test('list(true)', async () => {
-            const fooBinding = bind(identifier(Foo).list()).withAsyncGenerator(
+            const fooBinding = bind(identifier(Foo).list()).withAsyncFactory(
                 () => new ExtendsFoo()
             );
             expectTypeOf(fooBinding.provider()).toEqualTypeOf<
@@ -417,20 +417,20 @@ suite('bind', () => {
             expect(foos).to.have.length(1);
             expect(foos[0]).to.be.an.instanceOf(ExtendsFoo);
 
-            bind(identifier(Foo).list()).withAsyncGenerator(
+            bind(identifier(Foo).list()).withAsyncFactory(
                 // @ts-expect-error - array is not a single element
                 () => [new ExtendsFoo()]
             );
 
             const promisishBound = bind(promisishId.list().nullable());
             // @ts-expect-error
-            promisishBound.withAsyncGenerator(async () => 789 as const);
+            promisishBound.withAsyncFactory(async () => 789 as const);
         });
 
         test('list(multi)', async () => {
             const fooBinding = bind(
-                identifier(Foo).list('multi').undefinable().lateBinding()
-            ).withAsyncGenerator(async () => [new ExtendsFoo(), undefined]);
+                identifier(Foo).list('multi').undefinable().deferred()
+            ).withAsyncFactory(async () => [new ExtendsFoo(), undefined]);
             expectTypeOf(fooBinding.provider()).toEqualTypeOf<
                 MultiList<Foo | undefined> | Promise<MultiList<Foo | undefined>>
             >();
@@ -442,17 +442,17 @@ suite('bind', () => {
             // Undefinable multi may resolve undefined directly, treated as a single element
             expect(
                 await bind(identifier(Foo).list('multi').undefinable())
-                    .withAsyncGenerator(async () => {})
+                    .withAsyncFactory(async () => {})
                     .provider()
             ).to.deep.equal([undefined]);
 
-            bind(identifier(Foo).list('multi')).withGenerator(
+            bind(identifier(Foo).list('multi')).withFactory(
                 // @ts-expect-error - single element is not an array
                 () => new ExtendsFoo()
             );
 
             const promisish = await bind(promisishId.list('multi').undefinable())
-                .withAsyncGenerator(() => [Promise.resolve(123), undefined, 789])
+                .withAsyncFactory(() => [Promise.resolve(123), undefined, 789])
                 .provider();
             expectTypeOf(promisish).toEqualTypeOf<MultiList<789 | Promise<123> | undefined>>();
             expect(promisish).to.have.length(3);
@@ -537,16 +537,16 @@ suite('bind', () => {
                 .withProvider(
                     (
                         ...args: [
-                            LateBinding<Supplier<string>>,
+                            Deferred<Supplier<string>>,
                             AsyncSupplier<MultiList<number | null>>,
-                            LateBinding<MultiList<boolean | undefined>>,
+                            Deferred<MultiList<boolean | undefined>>,
                         ]
                     ) => args.length
                 )
                 .withDependencies([
-                    identifier<string>().lateBinding().supplier(),
+                    identifier<string>().deferred().supplier(),
                     identifier<number>().supplier('async').list(),
-                    identifier<boolean>().lateBinding().list('multi').undefinable(),
+                    identifier<boolean>().deferred().list('multi').undefinable(),
                 ]);
         });
 
@@ -604,7 +604,7 @@ suite('bind', () => {
             // @ts-expect-error
             extendsBarProviderBinding.withDependencies([identifier(ExtendsBar).undefinable()]);
             // @ts-expect-error
-            extendsBarProviderBinding.withDependencies([identifier(ExtendsBar).lateBinding()]);
+            extendsBarProviderBinding.withDependencies([identifier(ExtendsBar).deferred()]);
 
             // @ts-expect-error
             extendsBarProviderBinding.withDependencies([Bar]);
@@ -614,9 +614,7 @@ suite('bind', () => {
             );
             bindingDependsOnStringProm.withDependencies([identifier<Promise<string>>()]);
             // @ts-expect-error
-            bindingDependsOnStringProm.withDependencies([
-                identifier<Promise<string>>().lateBinding(),
-            ]);
+            bindingDependsOnStringProm.withDependencies([identifier<Promise<string>>().deferred()]);
 
             const extendsBarProvider = extendsBarBind.withAsyncProvider(
                 async (val: string | undefined) => new ExtendsBar(val?.length ?? 0)
@@ -650,13 +648,13 @@ suite('bind', () => {
                 .withAsyncProvider(
                     (
                         ...args: [
-                            LateBinding<AsyncSupplier<MultiList<string | undefined>>>,
+                            Deferred<AsyncSupplier<MultiList<string | undefined>>>,
                             MultiList<number>,
                         ]
                     ) => args.length
                 )
                 .withDependencies([
-                    identifier<string>().lateBinding().supplier('async').list().undefinable(),
+                    identifier<string>().deferred().supplier('async').list().undefinable(),
                     identifier<number>().list('multi'),
                 ]);
         });
@@ -713,12 +711,12 @@ suite('bind', () => {
         const aOrBAsyncSupplier = (async () => 'b') as AsyncSupplier<'b'>;
         const extendsBarDependencies = extendsBarBind.withDependencies([
             OtherBar,
-            identifier<[number, number]>().nullable().lateBinding().list(),
+            identifier<[number, number]>().nullable().deferred().list(),
             identifier<number>().undefinable().supplier(),
             identifier<boolean>().supplier('async'),
         ]);
 
-        const eggDependencies = eggBind.withDependencies([identifier(Egg).lateBinding()]);
+        const eggDependencies = eggBind.withDependencies([identifier(Egg).deferred()]);
         const chickenDependencies = chickenBind.withDependencies([Egg]);
 
         const thingDependencies = thingBind.withDependencies([identifier<string[]>()]);
@@ -764,7 +762,7 @@ suite('bind', () => {
 
             test('list(multi)', () => {
                 const multiExtendsFooDeps = bind(
-                    identifier(ExtendsFoo).list('multi').lateBinding().nullable()
+                    identifier(ExtendsFoo).list('multi').deferred().nullable()
                 ).withDependencies([identifier<{ foo: boolean }>()]);
                 const binding = multiExtendsFooDeps.withConstructorProvider();
                 expectTypeOf(binding.provider({ foo: true })).toEqualTypeOf<
@@ -815,7 +813,7 @@ suite('bind', () => {
                 extendsBarDependencies.withProvider(
                     (otherBar, lateNullable, undefinedSupplier, asyncSupplier) => {
                         expectTypeOf(lateNullable).toEqualTypeOf<
-                            LateBinding<MultiList<[number, number] | null>>
+                            Deferred<MultiList<[number, number] | null>>
                         >();
                         expectTypeOf(undefinedSupplier).toEqualTypeOf<
                             Supplier<number | undefined>
@@ -1078,7 +1076,7 @@ suite('TempBinding', () => {
 
     const binding = new TempBinding(id);
 
-    expectTypeOf(binding).toEqualTypeOf(bind(id).withGenerator(() => 123));
+    expectTypeOf(binding).toEqualTypeOf(bind(id).withFactory(() => 123));
 
     expect(() => {
         binding.provider();

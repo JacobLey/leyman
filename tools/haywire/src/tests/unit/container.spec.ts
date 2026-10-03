@@ -1,23 +1,23 @@
-import type { AsyncSupplier, HaywireIdType, LateBinding, MultiList, Supplier } from 'haywire';
+import type { AsyncSupplier, Deferred, HaywireIdType, MultiList, Supplier } from 'haywire';
 import { setTimeout } from 'node:timers/promises';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import {
-    AsyncContainer,
     bind,
+    Container,
     createContainer,
-    createFactory,
+    createContainerFactory,
     createModule,
+    eagerRequestScope,
+    eagerSingletonScope,
     HaywireContainerValidationError,
     HaywireModuleValidationError,
     identifier,
+    isolatedRequestScope,
     isSyncContainer,
-    optimisticRequestScope,
-    optimisticSingletonScope,
     requestScope,
     singletonScope,
-    supplierScope,
     SyncContainer,
     transientScope,
 } from 'haywire';
@@ -97,7 +97,7 @@ suite('container', () => {
         const module = createModule(bind(A).withDependencies([B, D]).withConstructorProvider())
             .addBinding(bind(B).withDependencies([C, D]).withConstructorProvider())
             .addBinding(bind(C).withInstance(c))
-            .addBinding(bind(D).withConstructorGenerator().scoped(requestScope));
+            .addBinding(bind(D).withConstructorFactory().scoped(requestScope));
 
         const container = createContainer(module);
         expect(container).to.be.an.instanceOf(SyncContainer);
@@ -128,7 +128,7 @@ suite('container', () => {
         await container.preloadAsync();
     });
 
-    test('AsyncContainer', async () => {
+    test('Container', async () => {
         const module = createModule(bind(A).withDependencies([B, D]).withConstructorProvider())
             .addBinding(
                 bind(B)
@@ -137,13 +137,13 @@ suite('container', () => {
             )
             .addBinding(
                 bind(C)
-                    .withAsyncGenerator(() => new C())
+                    .withAsyncFactory(() => new C())
                     .scoped(singletonScope)
             )
-            .addBinding(bind(D).withConstructorGenerator().scoped(requestScope));
+            .addBinding(bind(D).withConstructorFactory().scoped(requestScope));
 
         const container = createContainer(module);
-        expect(container).to.be.an.instanceOf(AsyncContainer);
+        expect(container).to.be.an.instanceOf(Container);
         expect(container).to.not.be.an.instanceOf(SyncContainer);
         expectTypeOf(container).not.toHaveProperty('getSync');
         expect(isSyncContainer(container)).to.equal(false);
@@ -197,7 +197,7 @@ suite('container', () => {
             const container = createContainer(
                 createModule(
                     bind(Different).withConstructorProvider().withDependencies([Similar])
-                ).addBinding(bind(Simple).withConstructorGenerator())
+                ).addBinding(bind(Simple).withConstructorFactory())
             );
 
             expect(() => {
@@ -210,8 +210,8 @@ suite('container', () => {
 
         suite('Non-existent output is requested', () => {
             const aId = identifier<A>();
-            const module = createModule(bind(aId).withGenerator(() => new A())).addBinding(
-                bind(identifier(B)).withGenerator(() => new B())
+            const module = createModule(bind(aId).withFactory(() => new A())).addBinding(
+                bind(identifier(B)).withFactory(() => new B())
             );
 
             test('sync', () => {
@@ -234,7 +234,7 @@ suite('container', () => {
 
             test('async', async () => {
                 const asyncContainer = createContainer(
-                    module.addBinding(bind(C).withAsyncGenerator(() => new C()))
+                    module.addBinding(bind(C).withAsyncFactory(() => new C()))
                 );
                 await asyncContainer.preloadAsync();
 
@@ -269,7 +269,7 @@ suite('container', () => {
                         )
                         .addBinding(bind(Egg).withDependencies([Chicken]).withConstructorProvider())
                         .addBinding(bind(A).withDependencies([Chicken]).withConstructorProvider())
-                        .addBinding(bind(B).withConstructorGenerator())
+                        .addBinding(bind(B).withConstructorFactory())
                 );
                 expect(() => {
                     container.wire();
@@ -332,7 +332,7 @@ suite('container', () => {
                                 ])
                                 .withConstructorProvider()
                         )
-                        .addBinding(bind(B).withConstructorGenerator())
+                        .addBinding(bind(B).withConstructorFactory())
                 );
                 expect(() => {
                     container.wire();
@@ -354,7 +354,7 @@ suite('container', () => {
                 const container = createContainer(
                     createModule(
                         bind(A)
-                            .withDependencies([identifier(B).lateBinding()])
+                            .withDependencies([identifier(B).deferred()])
                             .withConstructorProvider()
                     )
                         .addBinding(
@@ -383,7 +383,7 @@ suite('container', () => {
                                 .scoped(requestScope)
                         )
                         .addBinding(
-                            // Propagates scope, but uses supplier scope
+                            // Propagates scope, but uses isolated request scope
                             bind(D)
                                 .withDependencies([
                                     identifier(A).supplier({
@@ -392,14 +392,14 @@ suite('container', () => {
                                     }),
                                 ])
                                 .withConstructorProvider()
-                                .scoped(supplierScope)
+                                .scoped(isolatedRequestScope)
                         )
                         .addBinding(bind(E).withDependencies([A, F]).withConstructorProvider())
                         .addBinding(
                             bind(F)
                                 .withDependencies([A])
                                 .withConstructorProvider()
-                                .scoped(optimisticSingletonScope)
+                                .scoped(eagerSingletonScope)
                         )
                 );
 
@@ -411,9 +411,9 @@ suite('container', () => {
                         message: [
                             'Circular dependencies detected in container:',
                             [
-                                'A->B(late-binding)->C(supplier(async, propagating))->E(supplier(async))',
-                                'A(supplier(async, propagating))->B(late-binding)',
-                                'A(supplier(sync, propagating))->B(late-binding)->C(supplier(async, propagating))->D',
+                                'A->B(deferred)->C(supplier(async, propagating))->E(supplier(async))',
+                                'A(supplier(async, propagating))->B(deferred)',
+                                'A(supplier(sync, propagating))->B(deferred)->C(supplier(async, propagating))->D',
                             ].join(', '),
                         ].join(' '),
                     });
@@ -423,7 +423,7 @@ suite('container', () => {
                 const container = createContainer(
                     createModule(
                         bind(A)
-                            .withDependencies([identifier(B).lateBinding()])
+                            .withDependencies([identifier(B).deferred()])
                             .withConstructorProvider()
                             .scoped(singletonScope)
                     )
@@ -431,8 +431,8 @@ suite('container', () => {
                         .addBinding(
                             bind(C)
                                 .withDependencies([
-                                    identifier(B).nullable().lateBinding(),
-                                    identifier(D).lateBinding(),
+                                    identifier(B).nullable().deferred(),
+                                    identifier(D).deferred(),
                                     identifier(E).supplier(),
                                 ])
                                 .withConstructorProvider()
@@ -484,7 +484,7 @@ suite('container', () => {
                         )
                         .addBinding(
                             bind(E)
-                                .withDependencies([identifier(F).lateBinding()])
+                                .withDependencies([identifier(F).deferred()])
                                 .withProvider(() => new E())
                         )
                         .addBinding(
@@ -510,7 +510,7 @@ suite('container', () => {
                     });
             });
 
-            test('Singletons are not optimistic', async () => {
+            test('Singletons are not eager', async () => {
                 const container = createContainer(
                     createModule(bind(A).withDependencies([B, C, D, E]).withConstructorProvider())
                         .addBinding(
@@ -529,7 +529,7 @@ suite('container', () => {
                             bind(D)
                                 .withAsyncProvider(async () => new D())
                                 .withDependencies([])
-                                .scoped(optimisticRequestScope)
+                                .scoped(eagerRequestScope)
                         )
                         .addBinding(
                             bind(E)
@@ -604,9 +604,9 @@ suite('container', () => {
                 const asyncContainer = createContainer(
                     createModule(
                         bind(D)
-                            .withAsyncGenerator(() => null as unknown as D)
+                            .withAsyncFactory(() => null as unknown as D)
                             .undefinable()
-                            .scoped(optimisticSingletonScope)
+                            .scoped(eagerSingletonScope)
                     )
                 );
                 asyncContainer.wire();
@@ -637,7 +637,7 @@ suite('container', () => {
                         )
                         .addBinding(
                             bind(B)
-                                .withGenerator(() => undefined as unknown as B)
+                                .withFactory(() => undefined as unknown as B)
                                 .named('sync')
                         )
                         .addBinding(
@@ -735,8 +735,8 @@ suite('container', () => {
                         bind(D)
                             .withDependencies([E])
                             .withAsyncProvider(() => ({ d: false }) as unknown as D)
-                            .scoped(optimisticSingletonScope)
-                    ).addBinding(bind(E).withConstructorGenerator())
+                            .scoped(eagerSingletonScope)
+                    ).addBinding(bind(E).withConstructorFactory())
                 );
                 failedContainer.wire();
                 const preloadThrown: unknown = await expect(
@@ -792,12 +792,12 @@ suite('container', () => {
                     )
                     .addBinding(
                         bind(B)
-                            .withGenerator(() => 123 as unknown as B)
+                            .withFactory(() => 123 as unknown as B)
                             .scoped(singletonScope)
                     )
                     .addBinding(
                         bind(C)
-                            .withAsyncGenerator(async () => {
+                            .withAsyncFactory(async () => {
                                 await setTimeout(5);
                                 throw new Error('Bad C');
                             })
@@ -858,40 +858,37 @@ suite('container', () => {
             expect(secondErrors[1]).to.not.equal(errors[1]);
         });
 
-        suite('Late binding failures will evict from cache', () => {
+        suite('Deferred dependency failures will evict from cache', () => {
             test('sync', async () => {
                 const container = createContainer(
                     createModule(
                         bind(A)
-                            .withDependencies([
-                                identifier(B).lateBinding(),
-                                identifier(C).lateBinding(),
-                            ])
+                            .withDependencies([identifier(B).deferred(), identifier(C).deferred()])
                             .withConstructorProvider()
                             .scoped(singletonScope)
                     )
-                        .addBinding(bind(B).withConstructorGenerator().scoped(singletonScope))
+                        .addBinding(bind(B).withConstructorFactory().scoped(singletonScope))
                         .addBinding(
                             bind(C)
-                                .withDependencies([identifier(D).lateBinding()])
+                                .withDependencies([identifier(D).deferred()])
                                 .withProvider(() => new C())
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(D)
-                                .withDependencies([identifier(E).lateBinding()])
+                                .withDependencies([identifier(E).deferred()])
                                 .withProvider(() => new D())
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(E)
-                                .withDependencies([identifier(F).lateBinding()])
+                                .withDependencies([identifier(F).deferred()])
                                 .withProvider(() => new E())
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(F)
-                                .withGenerator(() => Object.create(null) as F)
+                                .withFactory(() => Object.create(null) as F)
                                 .scoped(singletonScope)
                         )
                 );
@@ -920,39 +917,36 @@ suite('container', () => {
                 const container = createContainer(
                     createModule(
                         bind(A)
-                            .withDependencies([
-                                identifier(B).lateBinding(),
-                                identifier(C).lateBinding(),
-                            ])
+                            .withDependencies([identifier(B).deferred(), identifier(C).deferred()])
                             .withConstructorProvider()
                             .scoped(singletonScope)
                     )
                         .addBinding(
                             bind(B)
-                                .withAsyncGenerator(async () => new B())
+                                .withAsyncFactory(async () => new B())
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(C)
-                                .withDependencies([identifier(D).lateBinding()])
+                                .withDependencies([identifier(D).deferred()])
                                 .withProvider(() => new C())
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(D)
-                                .withDependencies([identifier(E).lateBinding()])
+                                .withDependencies([identifier(E).deferred()])
                                 .withProvider(() => new D())
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(E)
-                                .withDependencies([identifier(F).lateBinding()])
+                                .withDependencies([identifier(F).deferred()])
                                 .withProvider(() => new E())
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(F)
-                                .withAsyncGenerator(async () => {
+                                .withAsyncFactory(async () => {
                                     throw new Error('<ERROR>');
                                 })
                                 .scoped(singletonScope)
@@ -1010,13 +1004,13 @@ suite('container', () => {
                         bind(A)
                             .withDependencies([C])
                             .withAsyncProvider(async c => new A(c))
-                            .scoped(optimisticRequestScope)
+                            .scoped(eagerRequestScope)
                     )
                     .addBinding(
                         bind(B).withDependencies([D]).withConstructorProvider().scoped(requestScope)
                     )
-                    .addBinding(bind(C).withConstructorGenerator().scoped(requestScope))
-                    .addBinding(bind(D).withConstructorGenerator().scoped(optimisticRequestScope))
+                    .addBinding(bind(C).withConstructorFactory().scoped(requestScope))
+                    .addBinding(bind(D).withConstructorFactory().scoped(eagerRequestScope))
             );
 
             const supplier = await container.getAsync(supplierId);
@@ -1073,25 +1067,25 @@ suite('container', () => {
                         bind(A)
                             .withDependencies([C, E, F])
                             .withConstructorProvider()
-                            .scoped(supplierScope)
+                            .scoped(isolatedRequestScope)
                     )
                     .addBinding(
                         bind(B)
                             .withDependencies([D, E, F])
                             .withConstructorProvider()
-                            .scoped(supplierScope)
+                            .scoped(isolatedRequestScope)
                     )
                     .addBinding(
                         bind(C)
                             .withDependencies([E])
                             .withAsyncProvider(e => new C(e))
-                            .scoped(optimisticRequestScope)
+                            .scoped(eagerRequestScope)
                     )
                     .addBinding(
                         bind(D).withDependencies([E]).withConstructorProvider().scoped(requestScope)
                     )
                     .addBinding(bind(E).withDependencies([F]).withConstructorProvider())
-                    .addBinding(bind(F).withConstructorGenerator().scoped(supplierScope))
+                    .addBinding(bind(F).withConstructorFactory().scoped(isolatedRequestScope))
             );
 
             const supplier = await container.getAsync(supplierId);
@@ -1112,7 +1106,7 @@ suite('container', () => {
             expect(supplier.f).to.not.equal(bParams[2]);
         });
 
-        suite('Optimistic singletons are available immediately', () => {
+        suite('Eager singletons are available immediately', () => {
             test('Async component', async () => {
                 const supplierId = identifier<{
                     aSupplier: Supplier<A>;
@@ -1144,21 +1138,21 @@ suite('container', () => {
                                     async (bSupplier, cSupplier) =>
                                         new A(bSupplier(), await cSupplier())
                                 )
-                                .scoped(optimisticSingletonScope)
+                                .scoped(eagerSingletonScope)
                         )
                         .addBinding(
                             bind(B)
                                 .withDependencies([
                                     identifier(C).supplier(),
-                                    identifier(B).lateBinding(),
+                                    identifier(B).deferred(),
                                 ])
                                 .withAsyncProvider((cSupplier, lateB) => new B(cSupplier(), lateB))
-                                .scoped(optimisticSingletonScope)
+                                .scoped(eagerSingletonScope)
                         )
                         .addBinding(
                             bind(C)
-                                .withAsyncGenerator(() => new C())
-                                .scoped(optimisticSingletonScope)
+                                .withAsyncFactory(() => new C())
+                                .scoped(eagerSingletonScope)
                         )
                 );
 
@@ -1211,7 +1205,7 @@ suite('container', () => {
                                     expect(c).to.equal(cSupplier());
                                     return new A(b, c);
                                 })
-                                .scoped(optimisticSingletonScope)
+                                .scoped(eagerSingletonScope)
                         )
                         .addBinding(
                             bind(B)
@@ -1222,12 +1216,12 @@ suite('container', () => {
                                     expect(c).to.equal(cSupplier());
                                     return new B(c);
                                 })
-                                .scoped(optimisticSingletonScope)
+                                .scoped(eagerSingletonScope)
                         )
                         .addBinding(
                             bind(C)
-                                .withGenerator(() => new C())
-                                .scoped(optimisticSingletonScope)
+                                .withFactory(() => new C())
+                                .scoped(eagerSingletonScope)
                         )
                 );
 
@@ -1292,7 +1286,7 @@ suite('container', () => {
                             .withAsyncProvider(
                                 (bSupplier, cSupplier) => new A(bSupplier(), cSupplier())
                             )
-                            .scoped(optimisticRequestScope)
+                            .scoped(eagerRequestScope)
                     )
                     .addBinding(
                         bind(B)
@@ -1303,12 +1297,12 @@ suite('container', () => {
                                 }),
                             ])
                             .withAsyncProvider(cSupplier => new B(cSupplier()))
-                            .scoped(optimisticRequestScope)
+                            .scoped(eagerRequestScope)
                     )
                     .addBinding(
                         bind(C)
-                            .withAsyncGenerator(() => new C())
-                            .scoped(optimisticRequestScope)
+                            .withAsyncFactory(() => new C())
+                            .scoped(eagerRequestScope)
                     )
             );
 
@@ -1347,7 +1341,7 @@ suite('container', () => {
                             }),
                         ])
                         .withConstructorProvider()
-                        .scoped(supplierScope)
+                        .scoped(isolatedRequestScope)
                 )
                     .addBinding(
                         bind(B)
@@ -1358,14 +1352,14 @@ suite('container', () => {
                                 }),
                             ])
                             .withConstructorProvider()
-                            .scoped(optimisticRequestScope)
+                            .scoped(eagerRequestScope)
                     )
                     .addBinding(
                         bind(C)
-                            .withGenerator(() => {
+                            .withFactory(() => {
                                 throw new Error('<ERROR>');
                             })
-                            .scoped(optimisticRequestScope)
+                            .scoped(eagerRequestScope)
                     )
                     .addBinding(
                         bind(D)
@@ -1376,12 +1370,12 @@ suite('container', () => {
                                 }),
                             ])
                             .withConstructorProvider()
-                            .scoped(optimisticRequestScope)
+                            .scoped(eagerRequestScope)
                     )
                     .addBinding(
                         bind(E)
-                            .withAsyncGenerator(async () => new E())
-                            .scoped(optimisticRequestScope)
+                            .withAsyncFactory(async () => new E())
+                            .scoped(eagerRequestScope)
                     )
                     .addBinding(
                         bind(dSupplierIdentifier)
@@ -1440,12 +1434,12 @@ suite('container', () => {
                         )
                         .addBinding(
                             bind(C)
-                                .withGenerator(() => new C())
-                                .scoped(supplierScope)
+                                .withFactory(() => new C())
+                                .scoped(isolatedRequestScope)
                         )
                         .addBinding(
                             bind(D)
-                                .withGenerator(() => new D())
+                                .withFactory(() => new D())
                                 .scoped(requestScope)
                         )
                 );
@@ -1502,12 +1496,12 @@ suite('container', () => {
                         )
                         .addBinding(
                             bind(C)
-                                .withAsyncGenerator(() => new C())
-                                .scoped(supplierScope)
+                                .withAsyncFactory(() => new C())
+                                .scoped(isolatedRequestScope)
                         )
                         .addBinding(
                             bind(D)
-                                .withAsyncGenerator(() => new D())
+                                .withAsyncFactory(() => new D())
                                 .scoped(requestScope)
                         )
                 );
@@ -1565,7 +1559,7 @@ suite('container', () => {
                                 ])
                                 .withConstructorProvider()
                         )
-                        .addBinding(bind(B).withConstructorGenerator().scoped(requestScope))
+                        .addBinding(bind(B).withConstructorFactory().scoped(requestScope))
                         .addBinding(
                             bind(cSupplierIdentifier)
                                 .withDependencies([
@@ -1575,7 +1569,7 @@ suite('container', () => {
                                     }),
                                 ])
                                 .withProvider(cSupplier => ({ cSupplier }))
-                                .scoped(supplierScope)
+                                .scoped(isolatedRequestScope)
                         )
                         .addBinding(
                             bind(cSupplierIdentifier.named('request'))
@@ -1588,7 +1582,7 @@ suite('container', () => {
                                 .withProvider(cSupplier => ({ cSupplier }))
                                 .scoped(requestScope)
                         )
-                        .addBinding(bind(C).withConstructorGenerator().scoped(requestScope))
+                        .addBinding(bind(C).withConstructorFactory().scoped(requestScope))
                 );
 
                 for (const { aSupplier, viaASupplier } of [
@@ -1690,7 +1684,7 @@ suite('container', () => {
                                     }),
                                 ])
                                 .withAsyncProvider(cSupplier => ({ cSupplier }))
-                                .scoped(supplierScope)
+                                .scoped(isolatedRequestScope)
                         )
                         .addBinding(
                             bind(cSupplierIdentifier.named('request'))
@@ -1773,7 +1767,7 @@ suite('container', () => {
             });
         });
 
-        suite('Optimistic binding order', () => {
+        suite('Eager binding order', () => {
             test('Sync component', () => {
                 const order: string[] = [];
                 const addToOrder = <T extends TrackParams>(x: T): T => {
@@ -1792,7 +1786,7 @@ suite('container', () => {
                             bind(B)
                                 .withDependencies([C])
                                 .withProvider(() => addToOrder(new B()))
-                                .scoped(optimisticRequestScope)
+                                .scoped(eagerRequestScope)
                         )
                         .addBinding(
                             bind(C)
@@ -1804,29 +1798,29 @@ suite('container', () => {
                             bind(D)
                                 .withDependencies([E])
                                 .withProvider(() => addToOrder(new D()))
-                                .scoped(optimisticSingletonScope)
+                                .scoped(eagerSingletonScope)
                         )
                         .addBinding(
                             bind(E)
-                                .withDependencies([identifier(E).lateBinding()])
+                                .withDependencies([identifier(E).deferred()])
                                 .withProvider(() => addToOrder(new E()))
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(F)
-                                .withGenerator(() => addToOrder(new F()))
-                                .scoped(optimisticSingletonScope)
+                                .withFactory(() => addToOrder(new F()))
+                                .scoped(eagerSingletonScope)
                         )
                 );
 
                 container.get(A);
 
                 expect(order).to.deep.equal([
-                    // Optimistic singletons + direct dependencies
+                    // Eager singletons + direct dependencies
                     'E',
                     'D',
                     'F',
-                    // Optimistic request + direct dependencies
+                    // Eager request + direct dependencies
                     'C',
                     'B',
                     // Requested value
@@ -1846,13 +1840,13 @@ suite('container', () => {
                         bind(A)
                             .withDependencies([B])
                             .withAsyncProvider(async () => addToOrder(new A()))
-                            .scoped(supplierScope)
+                            .scoped(isolatedRequestScope)
                     )
                         .addBinding(
                             bind(B)
                                 .withDependencies([C])
                                 .withAsyncProvider(async () => addToOrder(new B()))
-                                .scoped(optimisticRequestScope)
+                                .scoped(eagerRequestScope)
                         )
                         .addBinding(
                             bind(C)
@@ -1864,29 +1858,29 @@ suite('container', () => {
                             bind(D)
                                 .withDependencies([E])
                                 .withAsyncProvider(async () => addToOrder(new D()))
-                                .scoped(optimisticSingletonScope)
+                                .scoped(eagerSingletonScope)
                         )
                         .addBinding(
                             bind(E)
-                                .withDependencies([identifier(E).lateBinding()])
+                                .withDependencies([identifier(E).deferred()])
                                 .withAsyncProvider(async () => addToOrder(new E()))
                                 .scoped(singletonScope)
                         )
                         .addBinding(
                             bind(F)
-                                .withAsyncGenerator(async () => addToOrder(new F()))
-                                .scoped(optimisticSingletonScope)
+                                .withAsyncFactory(async () => addToOrder(new F()))
+                                .scoped(eagerSingletonScope)
                         )
                 );
 
                 await container.getAsync(A);
 
                 expect(order).to.deep.equal([
-                    // Optimistic singletons + direct dependencies
+                    // Eager singletons + direct dependencies
                     'F',
                     'E',
                     'D',
-                    // Optimistic request + direct dependencies
+                    // Eager request + direct dependencies
                     'C',
                     'B',
                     // Requested value
@@ -1896,19 +1890,17 @@ suite('container', () => {
         });
     });
 
-    suite('Late binding', () => {
+    suite('Deferred dependency', () => {
         suite('supplier', () => {
             suite('Sync container', () => {
                 test('Propagate request scope', async () => {
                     interface LateSupplier {
-                        lateSupplier: LateBinding<Supplier<LateSupplier | null | undefined>>;
-                        asyncLateSupplier: LateBinding<
-                            AsyncSupplier<LateSupplier | null | undefined>
-                        >;
+                        lateSupplier: Deferred<Supplier<LateSupplier | null | undefined>>;
+                        asyncLateSupplier: Deferred<AsyncSupplier<LateSupplier | null | undefined>>;
                     }
-                    const lateBindingProvider = (
-                        supplier: LateBinding<Supplier<LateSupplier | null | undefined>>,
-                        asyncSupplier: LateBinding<AsyncSupplier<LateSupplier | null | undefined>>
+                    const deferredProvider = (
+                        supplier: Deferred<Supplier<LateSupplier | null | undefined>>,
+                        asyncSupplier: Deferred<AsyncSupplier<LateSupplier | null | undefined>>
                     ): LateSupplier => ({
                         lateSupplier: supplier,
                         asyncLateSupplier: asyncSupplier,
@@ -1918,13 +1910,13 @@ suite('container', () => {
 
                     const container = createContainer(
                         createModule(
-                            bind(lateSupplierIdentifier.lateBinding().supplier())
+                            bind(lateSupplierIdentifier.deferred().supplier())
                                 .withDependencies([
                                     lateSupplierIdentifier
                                         .named('A')
                                         .nullable()
                                         .undefinable()
-                                        .lateBinding()
+                                        .deferred()
                                         .supplier({
                                             sync: true,
                                             propagateScope: true,
@@ -1933,42 +1925,42 @@ suite('container', () => {
                                         .named('B')
                                         .nullable()
                                         .undefinable()
-                                        .lateBinding()
+                                        .deferred()
                                         .supplier({
                                             sync: false,
                                             propagateScope: true,
                                         }),
                                 ])
-                                .withProvider(lateBindingProvider)
+                                .withProvider(deferredProvider)
                                 .scoped(requestScope)
                         )
                             .addBinding(
                                 bind(lateSupplierIdentifier.named('A').nullable().undefinable())
                                     .withDependencies([
-                                        lateSupplierIdentifier.lateBinding().supplier({
+                                        lateSupplierIdentifier.deferred().supplier({
                                             sync: true,
                                             propagateScope: true,
                                         }),
-                                        lateSupplierIdentifier.lateBinding().supplier({
+                                        lateSupplierIdentifier.deferred().supplier({
                                             sync: false,
                                             propagateScope: true,
                                         }),
                                     ])
-                                    .withProvider(lateBindingProvider)
+                                    .withProvider(deferredProvider)
                             )
                             .addBinding(
                                 bind(lateSupplierIdentifier.named('B').nullable().undefinable())
                                     .withDependencies([
-                                        lateSupplierIdentifier.lateBinding().supplier({
+                                        lateSupplierIdentifier.deferred().supplier({
                                             sync: true,
                                             propagateScope: true,
                                         }),
-                                        lateSupplierIdentifier.lateBinding().supplier({
+                                        lateSupplierIdentifier.deferred().supplier({
                                             sync: false,
                                             propagateScope: true,
                                         }),
                                     ])
-                                    .withProvider(lateBindingProvider)
+                                    .withProvider(deferredProvider)
                             )
                     );
 
@@ -1999,12 +1991,12 @@ suite('container', () => {
 
                 test('No propagation supplier scope', async () => {
                     interface LateSupplier {
-                        lateSupplier: LateBinding<Supplier<A | null | undefined>>;
-                        asyncLateSupplier: LateBinding<AsyncSupplier<B | null | undefined>>;
+                        lateSupplier: Deferred<Supplier<A | null | undefined>>;
+                        asyncLateSupplier: Deferred<AsyncSupplier<B | null | undefined>>;
                     }
-                    const lateBindingProvider = (
-                        supplier: LateBinding<Supplier<A | null | undefined>>,
-                        asyncSupplier: LateBinding<AsyncSupplier<B | null | undefined>>
+                    const deferredProvider = (
+                        supplier: Deferred<Supplier<A | null | undefined>>,
+                        asyncSupplier: Deferred<AsyncSupplier<B | null | undefined>>
                     ): LateSupplier => ({
                         lateSupplier: supplier,
                         asyncLateSupplier: asyncSupplier,
@@ -2013,17 +2005,13 @@ suite('container', () => {
                     const lateSupplierIdentifier = identifier<LateSupplier>();
 
                     const baseModule = createModule(
-                        bind(lateSupplierIdentifier.lateBinding().supplier())
+                        bind(lateSupplierIdentifier.deferred().supplier())
                             .withDependencies([
-                                identifier(A).nullable().undefinable().lateBinding().supplier(),
-                                identifier(B)
-                                    .nullable()
-                                    .undefinable()
-                                    .lateBinding()
-                                    .supplier('async'),
+                                identifier(A).nullable().undefinable().deferred().supplier(),
+                                identifier(B).nullable().undefinable().deferred().supplier('async'),
                             ])
-                            .withProvider(lateBindingProvider)
-                            .scoped(supplierScope)
+                            .withProvider(deferredProvider)
+                            .scoped(isolatedRequestScope)
                     );
 
                     const circularContainer = createContainer(
@@ -2031,19 +2019,19 @@ suite('container', () => {
                             createModule(
                                 bind(identifier(A).nullable())
                                     .withDependencies([
-                                        lateSupplierIdentifier.lateBinding(),
-                                        lateSupplierIdentifier.lateBinding(),
+                                        lateSupplierIdentifier.deferred(),
+                                        lateSupplierIdentifier.deferred(),
                                     ])
                                     .withConstructorProvider()
-                                    .scoped(optimisticRequestScope)
+                                    .scoped(eagerRequestScope)
                             ).addBinding(
                                 bind(identifier(B).undefinable())
                                     .withDependencies([
-                                        lateSupplierIdentifier.lateBinding(),
-                                        lateSupplierIdentifier.lateBinding(),
+                                        lateSupplierIdentifier.deferred(),
+                                        lateSupplierIdentifier.deferred(),
                                     ])
                                     .withConstructorProvider()
-                                    .scoped(optimisticRequestScope)
+                                    .scoped(eagerRequestScope)
                             )
                         )
                     );
@@ -2055,11 +2043,11 @@ suite('container', () => {
                         baseModule.mergeModule(
                             createModule(
                                 bind(identifier(A).nullable())
-                                    .withDependencies([identifier(B).lateBinding().undefinable()])
+                                    .withDependencies([identifier(B).deferred().undefinable()])
                                     .withConstructorProvider()
                             ).addBinding(
                                 bind(identifier(B).undefinable())
-                                    .withDependencies([identifier(A).lateBinding().nullable()])
+                                    .withDependencies([identifier(A).deferred().nullable()])
                                     .withConstructorProvider()
                             )
                         )
@@ -2092,15 +2080,13 @@ suite('container', () => {
                 test('Propagate request scope', async () => {
                     interface LateSupplier {
                         lateSupplier?:
-                            | LateBinding<Supplier<LateSupplier | null | undefined>>
+                            | Deferred<Supplier<LateSupplier | null | undefined>>
                             | undefined;
-                        asyncLateSupplier: LateBinding<
-                            AsyncSupplier<LateSupplier | null | undefined>
-                        >;
+                        asyncLateSupplier: Deferred<AsyncSupplier<LateSupplier | null | undefined>>;
                     }
-                    const lateBindingProvider = async (
-                        asyncSupplier: LateBinding<AsyncSupplier<LateSupplier | null | undefined>>,
-                        supplier?: LateBinding<Supplier<LateSupplier | null | undefined>>
+                    const deferredProvider = async (
+                        asyncSupplier: Deferred<AsyncSupplier<LateSupplier | null | undefined>>,
+                        supplier?: Deferred<Supplier<LateSupplier | null | undefined>>
                     ): Promise<LateSupplier> => ({
                         lateSupplier: supplier,
                         asyncLateSupplier: asyncSupplier,
@@ -2110,33 +2096,33 @@ suite('container', () => {
 
                     const container = createContainer(
                         createModule(
-                            bind(lateSupplierIdentifier.lateBinding().supplier())
+                            bind(lateSupplierIdentifier.deferred().supplier())
                                 .withDependencies([
                                     lateSupplierIdentifier
                                         .named('A')
                                         .nullable()
                                         .undefinable()
-                                        .lateBinding()
+                                        .deferred()
                                         .supplier({
                                             sync: false,
                                             propagateScope: true,
                                         }),
                                 ])
-                                .withAsyncProvider(lateBindingProvider)
-                                .scoped(optimisticRequestScope)
+                                .withAsyncProvider(deferredProvider)
+                                .scoped(eagerRequestScope)
                         ).addBinding(
                             bind(lateSupplierIdentifier.named('A').nullable().undefinable())
                                 .withDependencies([
-                                    lateSupplierIdentifier.lateBinding().supplier({
+                                    lateSupplierIdentifier.deferred().supplier({
                                         sync: false,
                                         propagateScope: true,
                                     }),
-                                    lateSupplierIdentifier.lateBinding().supplier({
+                                    lateSupplierIdentifier.deferred().supplier({
                                         sync: true,
                                         propagateScope: true,
                                     }),
                                 ])
-                                .withAsyncProvider(lateBindingProvider)
+                                .withAsyncProvider(deferredProvider)
                         )
                     );
 
@@ -2160,12 +2146,12 @@ suite('container', () => {
 
                 test('No propagation supplier scope', async () => {
                     interface LateSupplier {
-                        lateSupplier: LateBinding<Supplier<A | null | undefined>>;
-                        asyncLateSupplier: LateBinding<AsyncSupplier<B | null | undefined>>;
+                        lateSupplier: Deferred<Supplier<A | null | undefined>>;
+                        asyncLateSupplier: Deferred<AsyncSupplier<B | null | undefined>>;
                     }
-                    const lateBindingProvider = async (
-                        supplier: LateBinding<Supplier<A | null | undefined>>,
-                        asyncSupplier: LateBinding<AsyncSupplier<B | null | undefined>>
+                    const deferredProvider = async (
+                        supplier: Deferred<Supplier<A | null | undefined>>,
+                        asyncSupplier: Deferred<AsyncSupplier<B | null | undefined>>
                     ): Promise<LateSupplier> => ({
                         lateSupplier: supplier,
                         asyncLateSupplier: asyncSupplier,
@@ -2174,17 +2160,13 @@ suite('container', () => {
                     const lateSupplierIdentifier = identifier<LateSupplier>();
 
                     const baseModule = createModule(
-                        bind(lateSupplierIdentifier.lateBinding().supplier())
+                        bind(lateSupplierIdentifier.deferred().supplier())
                             .withDependencies([
-                                identifier(A).nullable().undefinable().lateBinding().supplier(),
-                                identifier(B)
-                                    .nullable()
-                                    .undefinable()
-                                    .lateBinding()
-                                    .supplier('async'),
+                                identifier(A).nullable().undefinable().deferred().supplier(),
+                                identifier(B).nullable().undefinable().deferred().supplier('async'),
                             ])
-                            .withAsyncProvider(lateBindingProvider)
-                            .scoped(supplierScope)
+                            .withAsyncProvider(deferredProvider)
+                            .scoped(isolatedRequestScope)
                     );
 
                     const circularContainer = createContainer(
@@ -2192,19 +2174,19 @@ suite('container', () => {
                             createModule(
                                 bind(identifier(A).nullable())
                                     .withDependencies([
-                                        lateSupplierIdentifier.lateBinding(),
-                                        lateSupplierIdentifier.lateBinding(),
+                                        lateSupplierIdentifier.deferred(),
+                                        lateSupplierIdentifier.deferred(),
                                     ])
                                     .withConstructorProvider()
-                                    .scoped(optimisticRequestScope)
+                                    .scoped(eagerRequestScope)
                             ).addBinding(
                                 bind(identifier(B).undefinable())
                                     .withDependencies([
-                                        lateSupplierIdentifier.lateBinding(),
-                                        lateSupplierIdentifier.lateBinding(),
+                                        lateSupplierIdentifier.deferred(),
+                                        lateSupplierIdentifier.deferred(),
                                     ])
                                     .withAsyncProvider(async (...params) => new B(...params))
-                                    .scoped(optimisticRequestScope)
+                                    .scoped(eagerRequestScope)
                             )
                         )
                     );
@@ -2216,11 +2198,11 @@ suite('container', () => {
                         baseModule.mergeModule(
                             createModule(
                                 bind(identifier(A).nullable())
-                                    .withDependencies([identifier(B).lateBinding().undefinable()])
+                                    .withDependencies([identifier(B).deferred().undefinable()])
                                     .withConstructorProvider()
                             ).addBinding(
                                 bind(identifier(B).undefinable())
-                                    .withDependencies([identifier(A).lateBinding().nullable()])
+                                    .withDependencies([identifier(A).deferred().nullable()])
                                     .withConstructorProvider()
                             )
                         )
@@ -2258,22 +2240,22 @@ suite('container', () => {
                     .addBinding(bind(B).withDependencies([C, D]).withConstructorProvider())
                     .addBinding(
                         bind(C)
-                            .withDependencies([identifier(A).lateBinding().nullable()])
+                            .withDependencies([identifier(A).deferred().nullable()])
                             .withConstructorProvider()
                     )
                     .addBinding(
                         bind(D)
                             .withDependencies([
-                                identifier(E).lateBinding().undefinable(),
-                                identifier(F).lateBinding().undefinable(),
+                                identifier(E).deferred().undefinable(),
+                                identifier(F).deferred().undefinable(),
                             ])
                             .withConstructorProvider()
                     )
                     .addBinding(
                         bind(E)
                             .withDependencies([
-                                identifier(E).lateBinding(),
-                                identifier(F).lateBinding().undefinable(),
+                                identifier(E).deferred(),
+                                identifier(F).deferred().undefinable(),
                                 A,
                             ])
                             .withConstructorProvider()
@@ -2301,28 +2283,28 @@ suite('container', () => {
                 const container = createContainer(
                     createModule(
                         bind(A)
-                            .withDependencies([identifier(B).lateBinding()])
+                            .withDependencies([identifier(B).deferred()])
                             .withConstructorProvider()
                             .scoped(requestScope)
                     )
                         .addBinding(
                             bind(B)
-                                .withDependencies([identifier(C).lateBinding()])
+                                .withDependencies([identifier(C).deferred()])
                                 .withConstructorProvider()
                         )
                         .addBinding(
                             bind(C)
-                                .withDependencies([identifier(D).lateBinding()])
+                                .withDependencies([identifier(D).deferred()])
                                 .withConstructorProvider()
                         )
                         .addBinding(
                             bind(D)
-                                .withDependencies([identifier(A).lateBinding(), E])
+                                .withDependencies([identifier(A).deferred(), E])
                                 .withConstructorProvider()
                                 .scoped(requestScope)
                         )
                         .addBinding(
-                            bind(E).withGenerator(() => {
+                            bind(E).withFactory(() => {
                                 throw new CustomError();
                             })
                         )
@@ -2379,28 +2361,28 @@ suite('container', () => {
                 const container = createContainer(
                     createModule(
                         bind(A)
-                            .withDependencies([identifier(B).lateBinding()])
+                            .withDependencies([identifier(B).deferred()])
                             .withAsyncProvider(() => new A())
                             .scoped(requestScope)
                     )
                         .addBinding(
                             bind(B)
-                                .withDependencies([identifier(C).lateBinding()])
+                                .withDependencies([identifier(C).deferred()])
                                 .withAsyncProvider(() => new B())
                         )
                         .addBinding(
                             bind(C)
-                                .withDependencies([identifier(D).lateBinding()])
+                                .withDependencies([identifier(D).deferred()])
                                 .withAsyncProvider(() => new C())
                         )
                         .addBinding(
                             bind(D)
-                                .withDependencies([identifier(A).lateBinding(), E])
+                                .withDependencies([identifier(A).deferred(), E])
                                 .withAsyncProvider(() => new D())
                                 .scoped(requestScope)
                         )
                         .addBinding(
-                            bind(E).withGenerator(() => {
+                            bind(E).withFactory(() => {
                                 throw new CustomError();
                             })
                         )
@@ -2451,7 +2433,7 @@ suite('container', () => {
             const container = createContainer(
                 createModule(
                     bind(LinkedList)
-                        .withDependencies([identifier(LinkedList).lateBinding()])
+                        .withDependencies([identifier(LinkedList).deferred()])
                         .withAsyncProvider(async late => {
                             const linkedList = new LinkedList(null);
                             void late.then(val => {
@@ -2471,8 +2453,8 @@ suite('container', () => {
         test('Return promise from sync provider', async () => {
             interface SpecialPromise extends Promise<123> {
                 specialValue: true;
-                a: LateBinding<A>;
-                b: LateBinding<B>;
+                a: Deferred<A>;
+                b: Deferred<B>;
             }
 
             const promiseIdentifier = identifier<SpecialPromise>().named('promise');
@@ -2480,16 +2462,13 @@ suite('container', () => {
                 prom: SpecialPromise;
                 promSupplier: Supplier<SpecialPromise>;
                 promAsyncSupplier: AsyncSupplier<SpecialPromise>;
-                lateProm: LateBinding<SpecialPromise>;
+                lateProm: Deferred<SpecialPromise>;
             }>();
 
             const container = createContainer(
                 createModule(
                     bind(promiseIdentifier)
-                        .withDependencies([
-                            identifier(A).lateBinding(),
-                            identifier(B).lateBinding(),
-                        ])
+                        .withDependencies([identifier(A).deferred(), identifier(B).deferred()])
                         .withProvider(
                             // eslint-disable-next-line @typescript-eslint/promise-function-async
                             (lateA, lateB) => {
@@ -2507,7 +2486,7 @@ suite('container', () => {
                             bind(A)
                                 .withDependencies([promiseIdentifier])
                                 .withAsyncProvider(pId => new A(pId))
-                                .scoped(optimisticSingletonScope)
+                                .scoped(eagerSingletonScope)
                         ).addBinding(
                             bind(B).withDependencies([promiseIdentifier]).withConstructorProvider()
                         )
@@ -2518,7 +2497,7 @@ suite('container', () => {
                                 promiseIdentifier,
                                 promiseIdentifier.supplier(),
                                 promiseIdentifier.supplier('async'),
-                                promiseIdentifier.lateBinding(),
+                                promiseIdentifier.deferred(),
                             ])
                             .withAsyncProvider(
                                 (prom, promSupplier, promAsyncSupplier, lateProm) => ({
@@ -2561,17 +2540,17 @@ suite('container', () => {
                 bind(B)
                     .withDependencies([C, identifier(D).nullable()])
                     .withProvider(() => new B())
-                    .scoped(optimisticRequestScope)
+                    .scoped(eagerRequestScope)
             )
             .addBinding(
                 bind(C)
                     .withDependencies([
                         identifier(D).undefinable(),
-                        identifier(E).lateBinding(),
+                        identifier(E).deferred(),
                         identifier(F).undefinable().nullable(),
                     ])
                     .withProvider(() => new C())
-                    .scoped(optimisticSingletonScope)
+                    .scoped(eagerSingletonScope)
             )
             .addBinding(new TempBinding(identifier(D)))
             .addBinding(new TempBinding(identifier(E)))
@@ -2588,7 +2567,7 @@ suite('container', () => {
                             : createContainer(
                                   module.addBinding(
                                       bind(F)
-                                          .withAsyncGenerator(() => new F())
+                                          .withAsyncFactory(() => new F())
                                           .named('async')
                                   )
                               );
@@ -2648,9 +2627,9 @@ suite('container', () => {
 
         // The list annotation is not tracked through the register/container output types (see the
         // `checkIsList` TODO), so list registration is exercised through this structural view.
-        interface ListRegisterFactory {
+        interface ListBindInstanceContainerFactory {
             wire: () => void;
-            register: (id: unknown, instance: unknown) => ListRegisterFactory;
+            bindInstance: (id: unknown, instance: unknown) => ListBindInstanceContainerFactory;
             toContainer: () => { getAsync: (id: unknown) => Promise<unknown> };
         }
 
@@ -2662,27 +2641,32 @@ suite('container', () => {
                     const baseId = identifier<number>().named('base');
                     const module = createModule(
                         bind(sumId)
-                            // Depend on a second optimistic singleton alongside the list so the
+                            // Depend on a second eager singleton alongside the list so the
                             // rebinding walk sees both the replaced temp and an untouched binding.
                             .withDependencies([numId, baseId])
                             .withProvider((nums, base) =>
                                 nums.reduce((total, num) => total + num, base)
                             )
-                            // Optimistic singletons drive upstream-dependent tracking, which the
+                            // Eager singletons drive upstream-dependent tracking, which the
                             // wired rebinding paths update when the temp binding is replaced.
-                            .scoped(optimisticSingletonScope)
+                            .scoped(eagerSingletonScope)
                     ).addBinding(
                         bind(baseId)
-                            .withGenerator(() => 100)
-                            .scoped(optimisticSingletonScope)
+                            .withFactory(() => 100)
+                            .scoped(eagerSingletonScope)
                     );
 
-                    const factory = createFactory(module) as unknown as ListRegisterFactory;
+                    const factory = createContainerFactory(
+                        module
+                    ) as unknown as ListBindInstanceContainerFactory;
                     if (wired) {
                         factory.wire();
                     }
 
-                    const container = factory.register(numId, 1).register(numId, 2).toContainer();
+                    const container = factory
+                        .bindInstance(numId, 1)
+                        .bindInstance(numId, 2)
+                        .toContainer();
 
                     expect(await container.getAsync(numId)).to.deep.equal([1, 2]);
                     expect(await container.getAsync(sumId)).to.equal(103);
@@ -2693,11 +2677,11 @@ suite('container', () => {
                         bind(sumId)
                             .withDependencies([numId])
                             .withProvider(nums => nums.reduce((total, num) => total + num, 0))
-                            .scoped(optimisticSingletonScope)
+                            .scoped(eagerSingletonScope)
                     ).addBinding(
                         bind(numId)
-                            .withGenerator(() => 10)
-                            .scoped(optimisticSingletonScope)
+                            .withFactory(() => 10)
+                            .scoped(eagerSingletonScope)
                     );
 
                     const container = createContainer(module);
@@ -2715,7 +2699,7 @@ suite('container', () => {
                     const freshListId = identifier<number>().named('fresh').list();
                     const module = createModule(
                         bind(sumId)
-                            .withGenerator(() => 0)
+                            .withFactory(() => 0)
                             .scoped(singletonScope)
                     );
 
@@ -2745,9 +2729,9 @@ suite('container', () => {
             test('Sync container with list bindings', () => {
                 const numId = identifier<number>().list();
 
-                const module = createModule(bind(numId).withGenerator(() => 1))
-                    .addBinding(bind(numId).withGenerator(() => 2))
-                    .addBinding(bind(numId).withGenerator(() => 3));
+                const module = createModule(bind(numId).withFactory(() => 1))
+                    .addBinding(bind(numId).withFactory(() => 2))
+                    .addBinding(bind(numId).withFactory(() => 3));
 
                 const container = createContainer(module);
                 expect(container).to.be.an.instanceOf(SyncContainer);
@@ -2760,12 +2744,12 @@ suite('container', () => {
             test('Async container with list bindings', async () => {
                 const numId = identifier<number>().list();
 
-                const module = createModule(bind(numId).withAsyncGenerator(async () => 10))
-                    .addBinding(bind(numId).withGenerator(() => 20))
-                    .addBinding(bind(numId).withGenerator(() => 30));
+                const module = createModule(bind(numId).withAsyncFactory(async () => 10))
+                    .addBinding(bind(numId).withFactory(() => 20))
+                    .addBinding(bind(numId).withFactory(() => 30));
 
                 const container = createContainer(module);
-                expect(container).to.be.an.instanceOf(AsyncContainer);
+                expect(container).to.be.an.instanceOf(Container);
                 expect(container).to.not.be.an.instanceOf(SyncContainer);
 
                 const result = await container.getAsync(numId);
@@ -2777,8 +2761,8 @@ suite('container', () => {
                 const numListId = identifier<number>().named('nums').list();
                 const strId = identifier<string>().named('str');
 
-                const module = createModule(bind(numListId).withGenerator(() => 1))
-                    .addBinding(bind(numListId).withGenerator(() => 2))
+                const module = createModule(bind(numListId).withFactory(() => 1))
+                    .addBinding(bind(numListId).withFactory(() => 2))
                     .addBinding(bind(strId).withInstance('hello'));
 
                 const container = createContainer(module);
@@ -2790,7 +2774,7 @@ suite('container', () => {
 
             test('Single list binding', () => {
                 const numId = identifier<number>().list();
-                const module = createModule(bind(numId).withGenerator(() => 42));
+                const module = createModule(bind(numId).withFactory(() => 42));
                 const container = createContainer(module);
 
                 expect(container.get(numId)).to.deep.equal([42]);
@@ -2805,14 +2789,14 @@ suite('container', () => {
 
                 const module = createModule(
                     bind(numListId)
-                        .withGenerator(() => {
+                        .withFactory(() => {
                             singletonCount += 1;
                             return singletonCount;
                         })
                         .scoped(singletonScope)
                 ).addBinding(
                     bind(numListId)
-                        .withGenerator(() => {
+                        .withFactory(() => {
                             transientCount += 1;
                             return transientCount + 100;
                         })
@@ -2838,14 +2822,14 @@ suite('container', () => {
 
                 const module = createModule(
                     bind(numListId)
-                        .withGenerator(() => {
+                        .withFactory(() => {
                             count += 1;
                             return count;
                         })
                         .scoped(singletonScope)
                 ).addBinding(
                     bind(numListId)
-                        .withGenerator(() => {
+                        .withFactory(() => {
                             count += 1;
                             return count + 100;
                         })
@@ -2866,14 +2850,14 @@ suite('container', () => {
 
                 const module = createModule(
                     bind(numListId)
-                        .withGenerator(() => {
+                        .withFactory(() => {
                             count += 1;
                             return count;
                         })
                         .scoped(requestScope)
                 ).addBinding(
                     bind(numListId)
-                        .withGenerator(() => {
+                        .withFactory(() => {
                             count += 1;
                             return count + 100;
                         })
@@ -2895,12 +2879,12 @@ suite('container', () => {
             test('Async list makes container async', async () => {
                 const strListId = identifier<string>().list();
 
-                const module = createModule(bind(strListId).withGenerator(() => 'sync')).addBinding(
-                    bind(strListId).withAsyncGenerator(async () => 'async')
+                const module = createModule(bind(strListId).withFactory(() => 'sync')).addBinding(
+                    bind(strListId).withAsyncFactory(async () => 'async')
                 );
 
                 const container = createContainer(module);
-                expect(container).to.be.an.instanceOf(AsyncContainer);
+                expect(container).to.be.an.instanceOf(Container);
                 expect(container).to.not.be.an.instanceOf(SyncContainer);
 
                 const result = await container.getAsync(strListId);
@@ -2926,7 +2910,7 @@ suite('container', () => {
                 const numListId = identifier<number>().list();
                 const otherId = identifier<string>().named('other');
 
-                const module = createModule(bind(otherId).withAsyncGenerator(async () => 'hello'));
+                const module = createModule(bind(otherId).withAsyncFactory(async () => 'hello'));
                 const container = createContainer(module);
 
                 const thrown: unknown = await expect(
@@ -2943,8 +2927,8 @@ suite('container', () => {
             test('List bindings that have their own dependencies', () => {
                 const numListId = identifier<number>().list();
 
-                const module = createModule(bind(A).withConstructorGenerator())
-                    .addBinding(bind(B).withConstructorGenerator())
+                const module = createModule(bind(A).withConstructorFactory())
+                    .addBinding(bind(B).withConstructorFactory())
                     .addBinding(
                         bind(numListId)
                             .withDependencies([A])
@@ -2969,10 +2953,10 @@ suite('container', () => {
             test('Async list bindings with dependencies', async () => {
                 const numListId = identifier<number>().list();
 
-                const module = createModule(bind(A).withConstructorGenerator())
+                const module = createModule(bind(A).withConstructorFactory())
                     .addBinding(
                         bind(B)
-                            .withAsyncGenerator(async () => new B())
+                            .withAsyncFactory(async () => new B())
                             .scoped(singletonScope)
                     )
                     .addBinding(
@@ -3001,7 +2985,7 @@ suite('container', () => {
                 const numListId = identifier<number>().list();
 
                 const module = createModule(
-                    bind(A).withConstructorGenerator().scoped(singletonScope)
+                    bind(A).withConstructorFactory().scoped(singletonScope)
                 ).addBinding(
                     bind(numListId)
                         .withDependencies([identifier(A).supplier()])
@@ -3016,16 +3000,16 @@ suite('container', () => {
                 expect(container.get(numListId)).to.deep.equal([42]);
             });
 
-            test('List binding depending on late binding of regular binding', async () => {
+            test('List binding depending on deferred of regular binding', async () => {
                 const numListId = identifier<number>().list();
 
                 const module = createModule(
-                    bind(A).withConstructorGenerator().scoped(singletonScope)
+                    bind(A).withConstructorFactory().scoped(singletonScope)
                 ).addBinding(
                     bind(numListId)
-                        .withDependencies([identifier(A).lateBinding()])
+                        .withDependencies([identifier(A).deferred()])
                         .withAsyncProvider(async lateA => {
-                            // Late binding is a promise resolved after provider returns.
+                            // Deferred dependency is a promise resolved after provider returns.
                             // Store it rather than awaiting inline.
                             void lateA.then(a => {
                                 expect(a).to.be.an.instanceOf(A);
@@ -3040,25 +3024,25 @@ suite('container', () => {
             });
         });
 
-        suite('Optimistic singleton preloading with list', () => {
-            test('List bindings with optimistic singletons', async () => {
+        suite('Eager singleton preloading with list', () => {
+            test('List bindings with eager singletons', async () => {
                 const numListId = identifier<number>().list();
                 const order: number[] = [];
 
                 const module = createModule(
                     bind(numListId)
-                        .withAsyncGenerator(async () => {
+                        .withAsyncFactory(async () => {
                             order.push(1);
                             return 1;
                         })
-                        .scoped(optimisticSingletonScope)
+                        .scoped(eagerSingletonScope)
                 ).addBinding(
                     bind(numListId)
-                        .withAsyncGenerator(async () => {
+                        .withAsyncFactory(async () => {
                             order.push(2);
                             return 2;
                         })
-                        .scoped(optimisticSingletonScope)
+                        .scoped(eagerSingletonScope)
                 );
 
                 const container = createContainer(module);
@@ -3078,8 +3062,8 @@ suite('container', () => {
             test('List container lifecycle methods are idempotent', async () => {
                 const numListId = identifier<number>().list();
 
-                const module = createModule(bind(numListId).withGenerator(() => 1)).addBinding(
-                    bind(numListId).withGenerator(() => 2)
+                const module = createModule(bind(numListId).withFactory(() => 1)).addBinding(
+                    bind(numListId).withFactory(() => 2)
                 );
 
                 const container = createContainer(module);
@@ -3100,8 +3084,8 @@ suite('container', () => {
             test('Multi provider contributes several elements at once', () => {
                 const numId = identifier<number>().list('multi');
 
-                const module = createModule(bind(numId).withGenerator(() => [1, 2])).addBinding(
-                    bind(numId).withGenerator(() => [3, 4])
+                const module = createModule(bind(numId).withFactory(() => [1, 2])).addBinding(
+                    bind(numId).withFactory(() => [3, 4])
                 );
 
                 const result = createContainer(module).get(numId);
@@ -3115,8 +3099,8 @@ suite('container', () => {
                 const comboId = identifier<number>().named('combo');
 
                 const module = createModule(
-                    bind(comboId.list('multi')).withGenerator(() => [1, 2])
-                ).addBinding(bind(comboId.list()).withGenerator(() => 3));
+                    bind(comboId.list('multi')).withFactory(() => [1, 2])
+                ).addBinding(bind(comboId.list()).withFactory(() => 3));
 
                 expect(createContainer(module).get(comboId.list())).to.deep.equal([1, 2, 3]);
             });
@@ -3124,9 +3108,9 @@ suite('container', () => {
             test('Multi provider may contribute nothing', () => {
                 const numId = identifier<number>().list('multi');
 
-                const module = createModule(bind(numId).withGenerator(() => []))
-                    .addBinding(bind(numId).withGenerator(() => [7]))
-                    .addBinding(bind(numId).withGenerator(() => []));
+                const module = createModule(bind(numId).withFactory(() => []))
+                    .addBinding(bind(numId).withFactory(() => [7]))
+                    .addBinding(bind(numId).withFactory(() => []));
 
                 expect(createContainer(module).get(numId)).to.deep.equal([7]);
             });
@@ -3135,11 +3119,11 @@ suite('container', () => {
                 const numId = identifier<number>().list('multi');
 
                 const module = createModule(
-                    bind(numId).withAsyncGenerator(async () => [1, 2])
-                ).addBinding(bind(numId).withGenerator(() => [3]));
+                    bind(numId).withAsyncFactory(async () => [1, 2])
+                ).addBinding(bind(numId).withFactory(() => [3]));
 
                 const container = createContainer(module);
-                expect(container).to.be.an.instanceOf(AsyncContainer);
+                expect(container).to.be.an.instanceOf(Container);
                 expect(container).to.not.be.an.instanceOf(SyncContainer);
 
                 expect(await container.getAsync(numId)).to.deep.equal([1, 2, 3]);
@@ -3151,7 +3135,7 @@ suite('container', () => {
 
                 const module = createModule(
                     bind(numId)
-                        .withGenerator(() => {
+                        .withFactory(() => {
                             calls += 1;
                             return [calls, calls * 10];
                         })
@@ -3170,9 +3154,9 @@ suite('container', () => {
                 const numId = identifier<number>().named('n').list();
                 const sumId = identifier<number>().named('sum');
 
-                const module = createModule(bind(numId).withGenerator(() => 1))
-                    .addBinding(bind(numId).withGenerator(() => 2))
-                    .addBinding(bind(numId).withGenerator(() => 3))
+                const module = createModule(bind(numId).withFactory(() => 1))
+                    .addBinding(bind(numId).withFactory(() => 2))
+                    .addBinding(bind(numId).withFactory(() => 3))
                     .addBinding(
                         bind(sumId)
                             .withDependencies([numId])
@@ -3189,8 +3173,8 @@ suite('container', () => {
                 const numId = identifier<number>().named('n').list();
                 const sumId = identifier<number>().named('sum');
 
-                const module = createModule(bind(numId).withGenerator(() => 1))
-                    .addBinding(bind(numId).withAsyncGenerator(async () => 2))
+                const module = createModule(bind(numId).withFactory(() => 1))
+                    .addBinding(bind(numId).withAsyncFactory(async () => 2))
                     .addBinding(
                         bind(sumId)
                             .withDependencies([numId])
@@ -3208,12 +3192,12 @@ suite('container', () => {
 
                 const module = createModule(
                     bind(itemId)
-                        .withGenerator(() => new A())
+                        .withFactory(() => new A())
                         .scoped(transientScope)
                 )
                     .addBinding(
                         bind(itemId)
-                            .withGenerator(() => new B())
+                            .withFactory(() => new B())
                             .scoped(transientScope)
                     )
                     .addBinding(
@@ -3236,7 +3220,7 @@ suite('container', () => {
                 expect(createContainer(module).get(outId)).to.have.lengthOf(2);
             });
 
-            test('Depends on a late binding of a list', async () => {
+            test('Depends on a deferred dependency on a list', async () => {
                 const itemId = identifier<number>().named('item').list();
                 const collectorId = identifier<{ items: number[] | undefined }>().named(
                     'collector'
@@ -3244,22 +3228,22 @@ suite('container', () => {
 
                 const module = createModule(
                     bind(itemId)
-                        .withGenerator(() => 1)
+                        .withFactory(() => 1)
                         .scoped(singletonScope)
                 )
                     .addBinding(
                         bind(itemId)
-                            .withGenerator(() => 2)
+                            .withFactory(() => 2)
                             .scoped(singletonScope)
                     )
                     .addBinding(
                         bind(collectorId)
-                            .withDependencies([itemId.lateBinding()])
+                            .withDependencies([itemId.deferred()])
                             .withAsyncProvider(async lateItems => {
                                 const collector: { items: number[] | undefined } = {
                                     items: undefined,
                                 };
-                                // Late binding resolves after the provider returns.
+                                // Deferred dependency resolves after the provider returns.
                                 void lateItems.then(items => {
                                     collector.items = items;
                                 });
@@ -3272,7 +3256,7 @@ suite('container', () => {
                 expect(collector.items).to.deep.equal([1, 2]);
             });
 
-            test('Depends on a late binding of a list in a sync container', async () => {
+            test('Depends on a deferred dependency on a list in a sync container', async () => {
                 const itemId = identifier<number>().named('sync-item').list();
                 const collectorId = identifier<{ items: number[] | undefined }>().named(
                     'sync-collector'
@@ -3280,17 +3264,17 @@ suite('container', () => {
 
                 const module = createModule(
                     bind(itemId)
-                        .withGenerator(() => 1)
+                        .withFactory(() => 1)
                         .scoped(singletonScope)
                 )
                     .addBinding(
                         bind(itemId)
-                            .withGenerator(() => 2)
+                            .withFactory(() => 2)
                             .scoped(singletonScope)
                     )
                     .addBinding(
                         bind(collectorId)
-                            .withDependencies([itemId.lateBinding()])
+                            .withDependencies([itemId.deferred()])
                             .withProvider(lateItems => {
                                 const collector: { items: number[] | undefined } = {
                                     items: undefined,
@@ -3317,13 +3301,13 @@ suite('container', () => {
 
                 const module = createModule(
                     bind(listId)
-                        .withGenerator(() => 1)
-                        .scoped(optimisticSingletonScope)
+                        .withFactory(() => 1)
+                        .scoped(eagerSingletonScope)
                 )
                     .addBinding(
                         bind(listId)
-                            .withGenerator(() => 2)
-                            .scoped(optimisticSingletonScope)
+                            .withFactory(() => 2)
+                            .scoped(eagerSingletonScope)
                     )
                     .addBinding(
                         bind(midId)
@@ -3350,9 +3334,9 @@ suite('container', () => {
                 const aListId = identifier(A).list();
 
                 const container = createContainer(
-                    createModule(bind(aListId).withGenerator(() => new A()))
+                    createModule(bind(aListId).withFactory(() => new A()))
                         .addBinding(bind(aListId).withConstructorProvider().withDependencies([]))
-                        .addBinding(bind(aListId).withAsyncGenerator(async () => new A()))
+                        .addBinding(bind(aListId).withAsyncFactory(async () => new A()))
                 );
 
                 const result = await container.getAsync(aListId);
@@ -3365,7 +3349,7 @@ suite('container', () => {
 
             test('Wrong instance element is rejected', async () => {
                 const aListId = identifier(A).list();
-                const invalidBinding = bind(aListId).withGenerator(() => new B() as unknown as A);
+                const invalidBinding = bind(aListId).withFactory(() => new B() as unknown as A);
 
                 expect(() => createContainer(createModule(invalidBinding)).get(aListId))
                     .to.throw(HaywireInstanceOfResponseError)
@@ -3376,7 +3360,7 @@ suite('container', () => {
                 await expect(
                     createContainer(
                         createModule(invalidBinding).addBinding(
-                            bind(aListId).withAsyncGenerator(async () => new A())
+                            bind(aListId).withAsyncFactory(async () => new A())
                         )
                     ).getAsync(aListId)
                 ).to.be.rejectedWith(HaywireInstanceOfResponseError);
@@ -3384,7 +3368,7 @@ suite('container', () => {
 
             test('Null element for non-nullable list is rejected', async () => {
                 const numId = identifier<number>().named('nulls').list();
-                const invalidBinding = bind(numId).withGenerator(() => null as unknown as number);
+                const invalidBinding = bind(numId).withFactory(() => null as unknown as number);
 
                 expect(() => createContainer(createModule(invalidBinding)).get(numId))
                     .to.throw(HaywireNullResponseError)
@@ -3396,7 +3380,7 @@ suite('container', () => {
                 await expect(
                     createContainer(
                         createModule(
-                            bind(numId).withAsyncGenerator(async () => null as unknown as number)
+                            bind(numId).withAsyncFactory(async () => null as unknown as number)
                         )
                     ).getAsync(numId)
                 ).to.be.rejectedWith(HaywireNullResponseError);
@@ -3407,9 +3391,7 @@ suite('container', () => {
 
                 expect(() =>
                     createContainer(
-                        createModule(
-                            bind(numId).withGenerator(() => undefined as unknown as number)
-                        )
+                        createModule(bind(numId).withFactory(() => undefined as unknown as number))
                     ).get(numId)
                 ).to.throw(HaywireUndefinedResponseError);
             });
@@ -3418,9 +3400,9 @@ suite('container', () => {
                 const numId = identifier<number>().named('missing').list();
 
                 const container = createContainer(
-                    createModule(bind(numId.nullable()).withGenerator(() => null))
-                        .addBinding(bind(numId.undefinable()).withGenerator(() => {}))
-                        .addBinding(bind(numId).withGenerator(() => 1))
+                    createModule(bind(numId.nullable()).withFactory(() => null))
+                        .addBinding(bind(numId.undefinable()).withFactory(() => {}))
+                        .addBinding(bind(numId).withFactory(() => 1))
                 );
 
                 const result = container.get(numId.nullable().undefinable());
@@ -3433,11 +3415,11 @@ suite('container', () => {
                     const numId = identifier<number>().named('multi-null').nullable();
 
                     const container = createContainer(
-                        createModule(bind(numId.list('multi')).withGenerator(() => null))
+                        createModule(bind(numId.list('multi')).withFactory(() => null))
                             .addBinding(
-                                bind(numId.list('multi')).withAsyncGenerator(async () => null)
+                                bind(numId.list('multi')).withAsyncFactory(async () => null)
                             )
-                            .addBinding(bind(numId.list('multi')).withGenerator(() => []))
+                            .addBinding(bind(numId.list('multi')).withFactory(() => []))
                     );
 
                     expect(await container.getAsync(numId.list())).to.deep.equal([null, null]);
@@ -3447,7 +3429,7 @@ suite('container', () => {
                     const numId = identifier<number>().named('multi-undefined').undefinable();
 
                     const container = createContainer(
-                        createModule(bind(numId.list('multi')).withGenerator(() => {}))
+                        createModule(bind(numId.list('multi')).withFactory(() => {}))
                     );
 
                     expect(container.get(numId.list())).to.deep.equal([undefined]);
@@ -3458,9 +3440,7 @@ suite('container', () => {
 
                     expect(() =>
                         createContainer(
-                            createModule(
-                                bind(numId).withGenerator(() => null as unknown as number[])
-                            )
+                            createModule(bind(numId).withFactory(() => null as unknown as number[]))
                         ).get(numId)
                     ).to.throw(HaywireNullResponseError);
                 });
@@ -3471,7 +3451,7 @@ suite('container', () => {
                     expect(() =>
                         createContainer(
                             createModule(
-                                bind(numId).withGenerator(() => [1, null] as unknown as number[])
+                                bind(numId).withFactory(() => [1, null] as unknown as number[])
                             )
                         ).get(numId)
                     ).to.throw(HaywireNullResponseError);
@@ -3482,7 +3462,7 @@ suite('container', () => {
 
                     expect(() =>
                         createContainer(
-                            createModule(bind(numId).withGenerator(() => 5 as unknown as number[]))
+                            createModule(bind(numId).withFactory(() => 5 as unknown as number[]))
                         ).get(numId)
                     )
                         .to.throw(HaywireListResponseError)
@@ -3495,7 +3475,7 @@ suite('container', () => {
                     await expect(
                         createContainer(
                             createModule(
-                                bind(numId).withAsyncGenerator(async () => 5 as unknown as number[])
+                                bind(numId).withAsyncFactory(async () => 5 as unknown as number[])
                             )
                         ).getAsync(numId)
                     ).to.be.rejectedWith(HaywireListResponseError);
@@ -3510,13 +3490,13 @@ suite('container', () => {
 
                 const container = createContainer(
                     createModule(
-                        bind(letterId.list('multi')).withAsyncGenerator(async () => {
+                        bind(letterId.list('multi')).withAsyncFactory(async () => {
                             await setTimeout(10);
                             return ['c', 'a', 'b'];
                         })
                     )
-                        .addBinding(bind(letterId.list()).withAsyncGenerator(async () => 'x'))
-                        .addBinding(bind(letterId.list()).withGenerator(() => 'y'))
+                        .addBinding(bind(letterId.list()).withAsyncFactory(async () => 'x'))
+                        .addBinding(bind(letterId.list()).withFactory(() => 'y'))
                         .addBinding(
                             bind(outId)
                                 .withDependencies([letterId.list()])
@@ -3541,12 +3521,12 @@ suite('container', () => {
 
                 const container = createContainer(
                     createModule(
-                        bind(numId).withAsyncGenerator(async () => {
+                        bind(numId).withAsyncFactory(async () => {
                             throw new Error('first');
                         })
                     )
                         .addBinding(
-                            bind(numId).withAsyncGenerator(async () => {
+                            bind(numId).withAsyncFactory(async () => {
                                 throw new Error('second');
                             })
                         )
@@ -3563,7 +3543,7 @@ suite('container', () => {
             });
         });
 
-        suite('Late binding through list elements', () => {
+        suite('Deferred dependencies through list elements', () => {
             for (const sync of [true, false]) {
                 suite(sync ? 'sync' : 'async', () => {
                     const buildModule = () => {
@@ -3573,7 +3553,7 @@ suite('container', () => {
 
                         const module = createModule(
                             bind(itemId)
-                                .withDependencies([summaryId.lateBinding()])
+                                .withDependencies([summaryId.deferred()])
                                 .withProvider(summary => {
                                     lateSummaries.push(summary);
                                     return 'a';
@@ -3581,8 +3561,8 @@ suite('container', () => {
                         )
                             .addBinding(
                                 sync
-                                    ? bind(itemId).withGenerator(() => 'b')
-                                    : bind(itemId).withAsyncGenerator(async () => 'b')
+                                    ? bind(itemId).withFactory(() => 'b')
+                                    : bind(itemId).withAsyncFactory(async () => 'b')
                             )
                             .addBinding(
                                 bind(summaryId)
@@ -3592,7 +3572,7 @@ suite('container', () => {
                         return { itemId, summaryId, lateSummaries, module };
                     };
 
-                    test('Late binding in an element receives the full list', async () => {
+                    test('Deferred dependency in an element receives the full list', async () => {
                         const { itemId, lateSummaries, module } = buildModule();
                         const container = createContainer(module);
                         expect(isSyncContainer(container)).to.equal(sync);
@@ -3603,7 +3583,7 @@ suite('container', () => {
                         expect(await lateSummaries[0]).to.have.members(['a', 'b']);
                     });
 
-                    test('Late binding when list is requested as a dependency', async () => {
+                    test('Deferred dependency when list is requested as a dependency', async () => {
                         const { summaryId, lateSummaries, module } = buildModule();
                         const container = createContainer(module);
 
@@ -3613,7 +3593,7 @@ suite('container', () => {
                         expect(await lateSummaries[0]).to.equal(result);
                     });
 
-                    test('Element late binds to its own list', async () => {
+                    test('Element defers to its own list', async () => {
                         const selfId = identifier<number>().named('self').list();
                         const outId = identifier<number[]>().named('self-out');
                         const lateLists: Promise<number[]>[] = [];
@@ -3621,12 +3601,12 @@ suite('container', () => {
                         const container = createContainer(
                             createModule(
                                 sync
-                                    ? bind(selfId).withGenerator(() => 1)
-                                    : bind(selfId).withAsyncGenerator(async () => 1)
+                                    ? bind(selfId).withFactory(() => 1)
+                                    : bind(selfId).withAsyncFactory(async () => 1)
                             )
                                 .addBinding(
                                     bind(selfId)
-                                        .withDependencies([selfId.lateBinding()])
+                                        .withDependencies([selfId.deferred()])
                                         .withProvider(list => {
                                             lateLists.push(list);
                                             return 2;
@@ -3656,7 +3636,7 @@ suite('container', () => {
     suite('Regression guards', () => {
         test('Async request for a non-list output returns the value, not an array', async () => {
             const container = createContainer(
-                createModule(bind(A).withAsyncGenerator(async () => new A()))
+                createModule(bind(A).withAsyncFactory(async () => new A()))
             );
 
             const a = await container.getAsync(A);
@@ -3670,7 +3650,7 @@ suite('container', () => {
             // not just the first one encountered.
             const module = createModule(
                 bind(A)
-                    .withDependencies([identifier(B).lateBinding(), identifier(C).lateBinding()])
+                    .withDependencies([identifier(B).deferred(), identifier(C).deferred()])
                     .withProvider((...params) => new A(...params))
             )
                 .addBinding(
@@ -3694,11 +3674,11 @@ suite('container', () => {
             expect((thrown as HaywireCircularDependencyError).circularChains).to.have.lengthOf(2);
         });
 
-        test('Self-referential late binding resolves in a sync container', async () => {
+        test('Self-referential deferred dependency resolves in a sync container', async () => {
             const container = createContainer(
                 createModule(
                     bind(LinkedList)
-                        .withDependencies([identifier(LinkedList).lateBinding()])
+                        .withDependencies([identifier(LinkedList).deferred()])
                         .withProvider(late => {
                             const node = new LinkedList(null);
                             void late.then(value => {
@@ -3711,20 +3691,20 @@ suite('container', () => {
             expect(container).to.be.an.instanceOf(SyncContainer);
 
             const node = container.get(LinkedList);
-            // Late bindings resolve on the next microtask, even synchronously.
+            // Deferred dependencies resolve on the next microtask, even synchronously.
             await setTimeout(0);
             expect(node.next).to.equal(node);
         });
 
-        test('Circular late binding reuses the cached dependency in a sync container', async () => {
-            // A depends on a late binding of B; B depends on A directly. When the late binding
-            // resolves B, its own dependency on A must be served from the request's late binding
+        test('Circular deferred dependency reuses the cached dependency in a sync container', async () => {
+            // A depends on a deferred dependency on B; B depends on A directly. When the deferred
+            // resolves B, its own dependency on A must be served from the request's deferred
             // cache (the already-created A) rather than instantiated afresh.
             let capturedA: A | undefined;
             const container = createContainer(
                 createModule(
                     bind(A)
-                        .withDependencies([identifier(B).lateBinding()])
+                        .withDependencies([identifier(B).deferred()])
                         .withProvider(lateB => {
                             const a = new A();
                             void lateB.then(() => {});
@@ -3746,14 +3726,14 @@ suite('container', () => {
             expect(capturedA).to.equal(a);
         });
 
-        test('Circular late binding reuses the cached dependency in an async container', async () => {
+        test('Circular deferred dependency reuses the cached dependency in an async container', async () => {
             // Same reuse as the sync case, but an async provider routes it through the async
-            // implementation path, which keeps its own late binding cache.
+            // implementation path, which keeps its own deferred cache.
             let capturedA: A | undefined;
             const container = createContainer(
                 createModule(
                     bind(A)
-                        .withDependencies([identifier(B).lateBinding()])
+                        .withDependencies([identifier(B).deferred()])
                         .withAsyncProvider(async lateB => {
                             const a = new A();
                             void lateB.then(() => {});
@@ -3768,7 +3748,7 @@ suite('container', () => {
                         })
                 )
             );
-            expect(container).to.be.an.instanceOf(AsyncContainer);
+            expect(container).to.be.an.instanceOf(Container);
             expect(container).to.not.be.an.instanceOf(SyncContainer);
 
             const a = await container.getAsync(A);
@@ -3790,7 +3770,7 @@ suite('container', () => {
                             .withDependencies([C])
                             .withProvider(c => new A(c))
                     )
-                    .addBinding(bind(C).withConstructorGenerator().scoped(supplierScope))
+                    .addBinding(bind(C).withConstructorFactory().scoped(isolatedRequestScope))
             );
 
             const { supply } = container.get(supplierId);
