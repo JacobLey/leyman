@@ -16,7 +16,7 @@ Commands:
         creates it from <base> (default: the current HEAD). --no-open only prints.
   open <branch|path> [--local] [--print]
         Open a worktree in your editor, directly inside its devcontainer
-        (--local: open on the host instead; --print: only print the links).
+        (--local: open on the host instead; --print: only print the link).
   up <branch|path>
         Start a worktree's devcontainer without an editor (needs the devcontainer
         CLI: npm install -g @devcontainers/cli).
@@ -29,8 +29,8 @@ Commands:
         List worktrees.
 
 Editor (WORKTREE_EDITOR env var):
-  vscode (default)  Print Cmd+clickable vscode:// links and launch via the `code` CLI
-                    (on PATH or inside the VS Code app bundle), else macOS `open`.
+  vscode (default)  Print a Cmd+clickable vscode:// link and open it via the OS
+                    (macOS `open`, Linux `xdg-open`). VS Code asks to confirm.
   none              Only print the worktree path; use `up`/`shell` or your IDE's
                     dev container support.
 EOF
@@ -67,70 +67,45 @@ warn_if_unsupported() {
     fi
 }
 
-# Prints how to open the worktree, then launches the editor unless `launch` is false.
-# The editor comes from WORKTREE_EDITOR; add new editors as cases here.
+# Prints the worktree's editor URL, then hands it to the OS unless `launch` is false.
+# Editors are just URL formats (from WORKTREE_EDITOR); add new ones as cases here.
 open_worktree() {
     local path="$1" local_only="$2" launch="$3"
-    local editor="${WORKTREE_EDITOR:-vscode}"
+    local editor="${WORKTREE_EDITOR:-vscode}" url
     case "$editor" in
-    vscode) open_vscode "$path" "$local_only" "$launch" ;;
-    none) echo "Start its devcontainer with: scripts/worktree up $path" ;;
+    vscode)
+        if [ "$local_only" = true ]; then
+            url="vscode://file${path}/"
+        else
+            # The devcontainer mounts the worktree at its host path, so the
+            # container workspace folder is the same path.
+            local hex
+            hex="$(printf '%s' "$path" | od -An -tx1 | tr -d ' \n')"
+            url="vscode://vscode-remote/dev-container+${hex}${path}"
+        fi
+        ;;
+    none)
+        echo "Start its devcontainer with: scripts/worktree up $path"
+        return
+        ;;
     *) die "unknown WORKTREE_EDITOR '$editor' (expected: vscode, none)" ;;
     esac
-}
 
-# Links use VS Code's `vscode://` URL handler, so they work without the `code` CLI.
-open_vscode() {
-    local path="$1" local_only="$2" launch="$3"
-    # The devcontainer mounts the worktree at its host path, so the container
-    # workspace folder is the same path.
-    local hex
-    hex="$(printf '%s' "$path" | od -An -tx1 | tr -d ' \n')"
-    local remote="vscode-remote/dev-container+${hex}${path}"
-
-    echo "Open in devcontainer: vscode://${remote}"
-    echo "Open locally:         vscode://file${path}/"
-
-    if [ "$launch" != true ] || in_container; then
-        return
-    fi
-    local code_cli
-    code_cli="$(find_code_cli)"
-    if [ -n "$code_cli" ]; then
-        if [ "$local_only" = true ]; then
-            "$code_cli" "$path"
-        else
-            "$code_cli" --folder-uri "vscode-remote://${remote#vscode-remote/}"
-        fi
-    elif [ "$(uname)" = Darwin ]; then
-        # URL handler fallback; VS Code asks for confirmation before opening it
-        if [ "$local_only" = true ]; then
-            open -a 'Visual Studio Code' "$path"
-        else
-            open "vscode://${remote}"
-        fi
+    echo "Open: $url"
+    if [ "$launch" = true ] && ! in_container; then
+        open_url "$url"
     fi
 }
 
-# The `code` CLI ships inside the macOS app bundle even when it isn't installed on
-# PATH. Using it avoids the confirmation prompt that `vscode://` links trigger.
-find_code_cli() {
-    if command -v code >/dev/null; then
-        command -v code
-        return
+# The editor may ask to confirm, since the URL comes from an external application
+open_url() {
+    if command -v open >/dev/null && [ "$(uname)" = Darwin ]; then
+        open "$1"
+    elif command -v xdg-open >/dev/null; then
+        xdg-open "$1" >/dev/null 2>&1
+    else
+        echo "Click the link above to open it." >&2
     fi
-    [ "$(uname)" = Darwin ] || return 0
-    local app
-    {
-        echo "/Applications/Visual Studio Code.app"
-        echo "$HOME/Applications/Visual Studio Code.app"
-        mdfind 'kMDItemCFBundleIdentifier == "com.microsoft.VSCode"' 2>/dev/null || true
-    } | while IFS= read -r app; do
-        if [ -x "$app/Contents/Resources/app/bin/code" ]; then
-            echo "$app/Contents/Resources/app/bin/code"
-            break
-        fi
-    done
 }
 
 # Resolves <branch|path> to an existing worktree directory

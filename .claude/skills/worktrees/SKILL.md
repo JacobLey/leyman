@@ -68,7 +68,7 @@ Run these from a VS Code window opened **locally** on the main checkout (dismiss
 | List | | `scripts/worktree list` |
 
 - `new` creates `leyman-worktrees/feat-x` (`/` in a branch name becomes `-`). It checks out `feat/x` if that branch exists. Otherwise it creates the branch from `--from`, which defaults to the current `HEAD`. It then opens the folder **directly in its devcontainer**.
-- With the default editor (`vscode`), `new` and `open` print Cmd+clickable `vscode://` links: one opens the worktree in its devcontainer, the other opens it locally. Clicking a link goes through VS Code's URL handler, so the `code` CLI isn't needed, but VS Code first asks for confirmation ("An external application wants to open…"). To launch automatically without that prompt, the script runs the `code` CLI: from `PATH` if installed, otherwise the copy inside the VS Code app bundle (`/Applications`, `~/Applications`, or wherever Spotlight finds it). Only if neither exists does it fall back to macOS `open` on the link, which shows the prompt. `--no-open` (for `new`) and `--print` (for `open`) only print the links. If the devcontainer link opens the folder but not the container, use the local link and click **Reopen in Container**.
+- With the default editor (`vscode`), `new` and `open` print a Cmd+clickable `vscode://` link and hand it to the OS (macOS `open`, Linux `xdg-open`). VS Code asks for confirmation ("An external application wants to open…"). Keep that prompt: turning it off lets any app or webpage open a dev container for any folder, which runs that folder's `initializeCommand` on the host. `--no-open` (for `new`) and `--print` (for `open`) only print the link. If the link opens the folder but not the container, use `open --local` and click **Reopen in Container**.
 - `rm` runs `docker compose down` on the worktree's devcontainer, which would otherwise keep running, and then `git worktree remove`. It refuses to remove the main checkout or the worktree you're running it from.
 - Git won't check out the same branch in two worktrees. With the main checkout on `dev`, worktrees branch from `dev` rather than checking it out.
 
@@ -80,12 +80,12 @@ Only the step that launches the editor is editor-specific. `initialize.sh`, the 
 
 | `WORKTREE_EDITOR` | Behavior |
 |---|---|
-| `vscode` (default) | Print `vscode://` links and launch VS Code as described above |
+| `vscode` (default) | Print a `vscode://` link and open it via the OS, as described above |
 | `none` | Print only the path. Then use `up`/`shell`, or open the worktree with your IDE's dev container support (for example JetBrains: open `.devcontainer/devcontainer.json`) |
 
 `up` and `shell` use the reference [devcontainer CLI](https://github.com/devcontainers/cli) (`npm install -g @devcontainers/cli`). It runs `initialize.sh`, compose and `postCreateCommand` the same way VS Code does. That makes it the right choice for terminal-only work, for example running Claude Code with `scripts/worktree shell feat/x claude`.
 
-To support another editor, add a case to `open_worktree` in `scripts/worktree`. Only add an editor after its launch flow has been confirmed to work.
+To support another editor, add a case to `open_worktree` in `scripts/worktree` that builds the editor's URL. Only add an editor after its URL format has been confirmed to work.
 
 ---
 
