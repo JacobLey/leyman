@@ -31,7 +31,8 @@
     "#identifier": "./dist/lib/identifier.js",
     "#module": "./dist/lib/module.js",
     "#scopes": "./dist/lib/scopes.js",
-    "#types": "./dist/lib/types.js"
+    "#types": "./dist/lib/types.js",
+    "#internal/*": "./dist/*"
   },
   "dependencies": {
     "p-defer": "catalog:"
