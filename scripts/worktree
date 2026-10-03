@@ -1,0 +1,202 @@
+#!/usr/bin/env bash
+#
+# Manage git worktrees in <main checkout>-worktrees/, each opened in its own devcontainer.
+# Intended to run on the HOST (macOS bash 3.2 compatible). See .claude/skills/worktrees/SKILL.md.
+
+set -euo pipefail
+
+usage() {
+    cat <<'EOF'
+Usage: scripts/worktree <command> [args]
+
+Commands:
+  new <branch> [--from <base>] [--no-open]
+        Create a worktree for <branch> in <main checkout>-worktrees/ and open it in a
+        devcontainer. Checks out <branch> if it exists, otherwise creates it from
+        <base> (default: the current HEAD). --no-open only prints the links.
+  open <branch|path> [--local] [--print]
+        Open a worktree in VS Code, directly inside its devcontainer
+        (--local: open on the host instead; --print: only print the links).
+  rm <branch|path> [--delete-branch] [--force]
+        Stop the worktree's devcontainer, remove the worktree, and optionally
+        delete its branch.
+  list
+        List worktrees.
+
+Every new/open prints Cmd+clickable vscode:// links. Launching uses the `code` CLI
+if installed, otherwise macOS `open`; elsewhere, click the printed link.
+EOF
+}
+
+die() {
+    echo "error: $*" >&2
+    exit 1
+}
+
+common_dir="$(git rev-parse --path-format=absolute --git-common-dir)" ||
+    die 'not inside the leyman repo'
+main_checkout="$(dirname "$common_dir")"
+worktrees_dir="${main_checkout}-worktrees"
+
+# Branch names may contain `/`; directories may not
+worktree_path() {
+    case "$1" in
+    /*) echo "$1" ;;
+    *) echo "$worktrees_dir/$(echo "$1" | tr '/' '-')" ;;
+    esac
+}
+
+in_container() {
+    [ -n "${REMOTE_CONTAINERS:-}" ] || [ -f /.dockerenv ]
+}
+
+# Branches that predate worktree support carry the old devcontainer config, which
+# mounts at /workspace, so opening them "in a devcontainer" fails.
+warn_if_unsupported() {
+    if [ ! -f "$1/.devcontainer/initialize.sh" ]; then
+        echo "warning: $1 predates worktree support (no .devcontainer/initialize.sh)." >&2
+        echo "         Its devcontainer will not open correctly; merge or rebase onto dev first." >&2
+    fi
+}
+
+# Prints Cmd+clickable links for the worktree, then tries to launch VS Code unless
+# `launch` is false. Links use VS Code's `vscode://` URL handler, so they work
+# without the `code` CLI.
+open_worktree() {
+    local path="$1" local_only="$2" launch="$3"
+    # The devcontainer mounts the worktree at its host path, so the container
+    # workspace folder is the same path.
+    local hex
+    hex="$(printf '%s' "$path" | od -An -tx1 | tr -d ' \n')"
+    local remote="vscode-remote/dev-container+${hex}${path}"
+
+    echo "Open in devcontainer: vscode://${remote}"
+    echo "Open locally:         vscode://file${path}/"
+
+    if [ "$launch" != true ] || in_container; then
+        return
+    fi
+    if command -v code >/dev/null; then
+        if [ "$local_only" = true ]; then
+            code "$path"
+        else
+            code --folder-uri "vscode-remote://${remote#vscode-remote/}"
+        fi
+    elif [ "$(uname)" = Darwin ]; then
+        if [ "$local_only" = true ]; then
+            open -a 'Visual Studio Code' "$path"
+        else
+            open "vscode://${remote}"
+        fi
+    fi
+}
+
+cmd_new() {
+    local branch='' base=HEAD open=true
+    while [ $# -gt 0 ]; do
+        case "$1" in
+        --from) base="${2:?--from requires a value}"; shift 2 ;;
+        --no-open) open=false; shift ;;
+        -*) die "unknown option $1" ;;
+        *) [ -z "$branch" ] || die 'only one branch allowed'; branch="$1"; shift ;;
+        esac
+    done
+    [ -n "$branch" ] || die 'missing <branch>'
+
+    local path
+    path="$(worktree_path "$branch")"
+    [ ! -e "$path" ] || die "$path already exists"
+
+    if git show-ref --verify --quiet "refs/heads/$branch"; then
+        git worktree add "$path" "$branch"
+    else
+        git worktree add -b "$branch" "$path" "$base"
+    fi
+    echo "Created $path"
+    warn_if_unsupported "$path"
+
+    open_worktree "$path" false "$open"
+}
+
+cmd_open() {
+    local target='' local_only=false launch=true
+    while [ $# -gt 0 ]; do
+        case "$1" in
+        --local) local_only=true; shift ;;
+        --print) launch=false; shift ;;
+        -*) die "unknown option $1" ;;
+        *) target="$1"; shift ;;
+        esac
+    done
+    [ -n "$target" ] || die 'missing <branch|path>'
+    local path
+    path="$(worktree_path "$target")"
+    [ -d "$path" ] || die "$path does not exist"
+    warn_if_unsupported "$path"
+    open_worktree "$path" "$local_only" "$launch"
+}
+
+stop_devcontainer() {
+    local path="$1"
+    if ! command -v docker >/dev/null; then
+        echo "warning: docker not found, skipping devcontainer cleanup" >&2
+        return
+    fi
+    local project
+    project="$(docker ps -aq --filter "label=devcontainer.local_folder=$path" |
+        xargs -r docker inspect --format '{{ index .Config.Labels "com.docker.compose.project" }}' |
+        sort -u)"
+    if [ -n "$project" ]; then
+        echo "Stopping devcontainer ($project)"
+        docker compose -p "$project" down
+    fi
+}
+
+cmd_rm() {
+    local target='' delete_branch=false force=false
+    while [ $# -gt 0 ]; do
+        case "$1" in
+        --delete-branch) delete_branch=true; shift ;;
+        --force) force=true; shift ;;
+        -*) die "unknown option $1" ;;
+        *) target="$1"; shift ;;
+        esac
+    done
+    [ -n "$target" ] || die 'missing <branch|path>'
+
+    local path
+    path="$(worktree_path "$target")"
+    [ -d "$path" ] || die "$path does not exist"
+    [ "$path" != "$main_checkout" ] || die 'refusing to remove the main checkout'
+    if [ "$path" = "$(git rev-parse --show-toplevel)" ]; then
+        die 'refusing to remove the worktree you are in (and possibly its running container)'
+    fi
+
+    local branch
+    branch="$(git -C "$path" branch --show-current)"
+
+    stop_devcontainer "$path"
+
+    if [ "$force" = true ]; then
+        git worktree remove --force "$path"
+    else
+        git worktree remove "$path"
+    fi
+
+    if [ "$delete_branch" = true ] && [ -n "$branch" ]; then
+        if [ "$force" = true ]; then
+            git branch -D "$branch"
+        else
+            git branch -d "$branch"
+        fi
+    fi
+}
+
+case "${1:-}" in
+new) shift; cmd_new "$@" ;;
+open) shift; cmd_open "$@" ;;
+rm) shift; cmd_rm "$@" ;;
+list) git worktree list ;;
+-h | --help | help | '') usage ;;
+*) usage >&2; exit 1 ;;
+esac

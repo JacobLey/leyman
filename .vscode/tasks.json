@@ -1,0 +1,41 @@
+{
+  // Worktree tasks run on the HOST: use them from a window opened locally
+  // (not "Reopen in Container"). See .claude/skills/worktrees/SKILL.md.
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Worktree: new",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/worktree",
+      "args": ["new", "${input:branch}", "--from", "${input:base}"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Worktree: open",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/worktree",
+      "args": ["open", "${input:branch}"],
+      "problemMatcher": []
+    },
+    {
+      "label": "Worktree: remove",
+      "type": "shell",
+      "command": "${workspaceFolder}/scripts/worktree",
+      "args": ["rm", "${input:branch}"],
+      "problemMatcher": []
+    }
+  ],
+  "inputs": [
+    {
+      "id": "branch",
+      "type": "promptString",
+      "description": "Branch name (worktree folder is the branch with / replaced by -)"
+    },
+    {
+      "id": "base",
+      "type": "promptString",
+      "description": "Base to branch from (ignored if the branch already exists)",
+      "default": "HEAD"
+    }
+  ]
+}

@@ -61,7 +61,7 @@ RUN NONINTERACTIVE=1 export LEYMAN_HOMEBREW_CACHE="${HOME}/.cache/Homebrew" LEYM
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)"
 
 # Install Claude
-ENV CLAUDE_CONFIG_DIR=/workspace/.claude-config
+# CLAUDE_CONFIG_DIR is set in docker-compose.yml so config is shared across worktrees
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
 # Grant permissions to non-root
@@ -75,5 +75,5 @@ RUN NX_PARALLEL="$(nproc --all)" MAX_PARALLEL=5 \
     && echo >> $HOME/.bashrc \
     && echo "export NX_PARALLEL=$((NX_PARALLEL>MAX_PARALLEL ? MAX_PARALLEL : NX_PARALLEL))" >> $HOME/.bashrc
 
-# Define custom scripts/commands
-ENV PATH=$PATH:/workspace/leyman/main/node_modules/.bin:/workspace/scripts/commands
+# Worktree-specific PATH entries (nx, biome, scripts/commands) are set via `remoteEnv`
+# in devcontainer.json, since the workspace path differs per worktree.

@@ -1,4 +1,5 @@
-version: '3.8'
+# MAIN_CHECKOUT and WORKTREES_DIR come from `.devcontainer/.env`, written by `initialize.sh`
+# (the devcontainer `initializeCommand`).
 
 services:
   leyman:
@@ -10,9 +11,31 @@ services:
       - /usr/local/share/docker-init.sh
 
     volumes:
-      - ..:/workspace:delegated
+      # Mounted at the identical host paths so git worktree links work on both sides
+      - ${MAIN_CHECKOUT:?run .devcontainer/initialize.sh}:${MAIN_CHECKOUT}:delegated
+      - ${WORKTREES_DIR:?run .devcontainer/initialize.sh}:${WORKTREES_DIR}:delegated
+
+    environment:
+      CLAUDE_CONFIG_DIR: ${WORKTREES_DIR}/.shared/claude-config
+      # Overrides `store-dir` in .npmrc so every worktree installs from one store
+      npm_config_store_dir: ${WORKTREES_DIR}/.shared/pnpm-store
+      NX_SELF_HOSTED_REMOTE_CACHE_SERVER: http://nx-cache:3000
+
+    depends_on:
+      - nx-cache
 
     # Overrides default command so things don't shut down after the process ends.
     command:
       - sleep
       - infinity
+
+  # Shares Nx task outputs across worktrees (Nx's local cache is per-worktree)
+  nx-cache:
+    image: node:24-slim
+    command:
+      - node
+      - /server/nx-cache-server.mjs
+    volumes:
+      - ./nx-cache-server.mjs:/server/nx-cache-server.mjs:ro
+      - ${WORKTREES_DIR}/.shared/nx-cache:/cache
+    restart: unless-stopped

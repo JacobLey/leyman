@@ -13,3 +13,4 @@
 
 /.claude-config
 /.nx
+/.devcontainer/.env

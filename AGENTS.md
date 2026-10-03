@@ -4,9 +4,13 @@ This is an Nx-managed PNPM monorepo. See [nx.dev](https://nx.dev) for general Nx
 
 All agent-focused documentation should use SKILL.md, but this file is linked to CLAUDE.md for initial discoverability.
 
+## Worktrees
+
+All development happens in git worktrees (kept in `<main checkout>-worktrees/`), each with its own devcontainer. The pnpm store and Nx cache are shared; `node_modules` is not. See [`.claude/skills/worktrees/SKILL.md`](./.claude/skills/worktrees/SKILL.md).
+
 ## Nx in This Repo
 
-Nx is **not globally installed**. It ships as a dependency of `@leyman/main` and is on `PATH` via `/workspace/leyman/main/node_modules/.bin`. **Use `nx` directly — no `npx`, no `pnpm exec`.**
+Nx is **not globally installed**. It ships as a dependency of `@leyman/main` and is on `PATH` via `<worktree>/leyman/main/node_modules/.bin`. **Use `nx` directly — no `npx`, no `pnpm exec`.**
 
 The workspace task lifecycle (check → build → test → install phases and their sub-targets) is defined in [`nx.json`](./nx.json) — that is the source of truth for how tasks are ordered and what they do.
 
@@ -25,6 +29,7 @@ Focused guides for common workflows in this repo:
 | What each `nx.json` target does and when to add it to `project.json` | [`.claude/skills/nx-tasks-reference/SKILL.md`](./.claude/skills/nx-tasks-reference/SKILL.md) |
 | Task lifecycle wiring (how check → build → test connect) | [`leyman/main/.claude/lifecycle/SKILL.md`](./leyman/main/.claude/lifecycle/SKILL.md) |
 | DevContainer runtimes, CLI tools, and version parity with Dagger | [`.claude/skills/devcontainer/SKILL.md`](./.claude/skills/devcontainer/SKILL.md) |
+| Worktree layout, setup, and creating/opening/removing worktrees | [`.claude/skills/worktrees/SKILL.md`](./.claude/skills/worktrees/SKILL.md) |
 | Writing and maintaining package READMEs | [`.claude/skills/writing-readmes/SKILL.md`](./.claude/skills/writing-readmes/SKILL.md) |
 
 ### Coding Standards

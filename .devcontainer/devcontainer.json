@@ -3,8 +3,15 @@
   "name": "Leyman",
   "dockerComposeFile": "docker-compose.yml",
   "service": "leyman",
-  "workspaceFolder": "/workspace",
+  "initializeCommand": "sh .devcontainer/initialize.sh",
+  "workspaceFolder": "${localWorkspaceFolder}",
   "remoteUser": "leyman",
+
+  "remoteEnv": {
+    "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/leyman/main/node_modules/.bin:${containerWorkspaceFolder}/scripts/commands"
+  },
+
+  "postCreateCommand": "pnpm install --frozen-lockfile --config.confirmModulesPurge=false",
 
   "customizations": {
     "vscode": {
