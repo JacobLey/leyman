@@ -64,14 +64,28 @@ Run these from a VS Code window opened **locally** on the main checkout (dismiss
 | Start work | `Worktree: new` | `scripts/worktree new feat/x [--from dev]` |
 | Reopen later | `Worktree: open` | `scripts/worktree open feat/x [--local] [--print]` |
 | Clean up | `Worktree: remove` | `scripts/worktree rm feat/x [--delete-branch] [--force]` |
+| Container without an editor | | `scripts/worktree up feat/x` / `scripts/worktree shell feat/x [cmd...]` |
 | List | | `scripts/worktree list` |
 
 - `new` creates `leyman-worktrees/feat-x` (`/` in a branch name becomes `-`). It checks out `feat/x` if that branch exists. Otherwise it creates the branch from `--from`, which defaults to the current `HEAD`. It then opens the folder **directly in its devcontainer**.
-- `new` and `open` always print Cmd+clickable `vscode://` links: one opens the worktree in its devcontainer, the other opens it locally. These go through VS Code's URL handler, so the `code` CLI isn't needed. To launch automatically, the script uses `code` if it is installed, otherwise macOS `open`. `--no-open` (for `new`) and `--print` (for `open`) only print the links. If the devcontainer link opens the folder but not the container, use the local link and click **Reopen in Container**.
+- With the default editor (`vscode`), `new` and `open` print Cmd+clickable `vscode://` links: one opens the worktree in its devcontainer, the other opens it locally. These go through VS Code's URL handler, so the `code` CLI isn't needed. To launch automatically, the script uses `code` if it is installed, otherwise macOS `open`. `--no-open` (for `new`) and `--print` (for `open`) only print the links. If the devcontainer link opens the folder but not the container, use the local link and click **Reopen in Container**.
 - `rm` runs `docker compose down` on the worktree's devcontainer, which would otherwise keep running, and then `git worktree remove`. It refuses to remove the main checkout or the worktree you're running it from.
 - Git won't check out the same branch in two worktrees. With the main checkout on `dev`, worktrees branch from `dev` rather than checking it out.
 
 The tasks in `.vscode/tasks.json` are meant for a local window. In a container window, nothing launches automatically, but the printed links should still work when clicked.
+
+### Other editors
+
+Only the step that launches the editor is editor-specific. `initialize.sh`, the compose file and `devcontainer.json` follow the open [Dev Containers spec](https://containers.dev). Set `WORKTREE_EDITOR` in your shell profile:
+
+| `WORKTREE_EDITOR` | Behavior |
+|---|---|
+| `vscode` (default) | Print `vscode://` links and launch VS Code as described above |
+| `none` | Print only the path. Then use `up`/`shell`, or open the worktree with your IDE's dev container support (for example JetBrains: open `.devcontainer/devcontainer.json`) |
+
+`up` and `shell` use the reference [devcontainer CLI](https://github.com/devcontainers/cli) (`npm install -g @devcontainers/cli`). It runs `initialize.sh`, compose and `postCreateCommand` the same way VS Code does. That makes it the right choice for terminal-only work, for example running Claude Code with `scripts/worktree shell feat/x claude`.
+
+To support another editor, add a case to `open_worktree` in `scripts/worktree`. Only add an editor after its launch flow has been confirmed to work.
 
 ---
 
@@ -113,6 +127,7 @@ Never `rm` the worktree you are running in; `scripts/worktree` refuses to do it.
 
 ## Maintenance and troubleshooting
 
+- **"predates worktree support" warning, or "Workspace does not exist"**: the worktree's branch was created before this setup existed, so it still has the old `/workspace` devcontainer config. Merge or rebase it onto `dev`.
 - **Container fails with "must live in …-worktrees"**: the worktree was created somewhere else, for example nested under `.claude/worktrees/`. Recreate it with `scripts/worktree new`.
 - **No `[remote cache]` hits**: from inside the container, run `curl -s -o /dev/null -w '%{http_code}' http://nx-cache:3000/v1/cache/x`. A `404` means the server is up. Hits only happen when task inputs match, and uncommitted changes alter the hashes.
 - **The shared Nx cache keeps growing**: the server never evicts anything. Prune it from the host, for example with `find <worktrees>/.shared/nx-cache -name '*.tar' -mtime +30 -delete`.

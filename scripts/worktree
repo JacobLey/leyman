@@ -11,20 +11,28 @@ Usage: scripts/worktree <command> [args]
 
 Commands:
   new <branch> [--from <base>] [--no-open]
-        Create a worktree for <branch> in <main checkout>-worktrees/ and open it in a
-        devcontainer. Checks out <branch> if it exists, otherwise creates it from
-        <base> (default: the current HEAD). --no-open only prints the links.
+        Create a worktree for <branch> in <main checkout>-worktrees/ and open it in
+        your editor's devcontainer. Checks out <branch> if it exists, otherwise
+        creates it from <base> (default: the current HEAD). --no-open only prints.
   open <branch|path> [--local] [--print]
-        Open a worktree in VS Code, directly inside its devcontainer
+        Open a worktree in your editor, directly inside its devcontainer
         (--local: open on the host instead; --print: only print the links).
+  up <branch|path>
+        Start a worktree's devcontainer without an editor (needs the devcontainer
+        CLI: npm install -g @devcontainers/cli).
+  shell <branch|path> [command...]
+        Run a shell (or command) in a worktree's devcontainer, starting it if needed.
   rm <branch|path> [--delete-branch] [--force]
         Stop the worktree's devcontainer, remove the worktree, and optionally
         delete its branch.
   list
         List worktrees.
 
-Every new/open prints Cmd+clickable vscode:// links. Launching uses the `code` CLI
-if installed, otherwise macOS `open`; elsewhere, click the printed link.
+Editor (WORKTREE_EDITOR env var):
+  vscode (default)  Print Cmd+clickable vscode:// links and launch via the `code` CLI
+                    if installed, otherwise macOS `open`.
+  none              Only print the worktree path; use `up`/`shell` or your IDE's
+                    dev container support.
 EOF
 }
 
@@ -59,10 +67,20 @@ warn_if_unsupported() {
     fi
 }
 
-# Prints Cmd+clickable links for the worktree, then tries to launch VS Code unless
-# `launch` is false. Links use VS Code's `vscode://` URL handler, so they work
-# without the `code` CLI.
+# Prints how to open the worktree, then launches the editor unless `launch` is false.
+# The editor comes from WORKTREE_EDITOR; add new editors as cases here.
 open_worktree() {
+    local path="$1" local_only="$2" launch="$3"
+    local editor="${WORKTREE_EDITOR:-vscode}"
+    case "$editor" in
+    vscode) open_vscode "$path" "$local_only" "$launch" ;;
+    none) echo "Start its devcontainer with: scripts/worktree up $path" ;;
+    *) die "unknown WORKTREE_EDITOR '$editor' (expected: vscode, none)" ;;
+    esac
+}
+
+# Links use VS Code's `vscode://` URL handler, so they work without the `code` CLI.
+open_vscode() {
     local path="$1" local_only="$2" launch="$3"
     # The devcontainer mounts the worktree at its host path, so the container
     # workspace folder is the same path.
@@ -89,6 +107,20 @@ open_worktree() {
             open "vscode://${remote}"
         fi
     fi
+}
+
+# Resolves <branch|path> to an existing worktree directory
+existing_worktree() {
+    [ -n "$1" ] || die 'missing <branch|path>'
+    local path
+    path="$(worktree_path "$1")"
+    [ -d "$path" ] || die "$path does not exist"
+    echo "$path"
+}
+
+require_devcontainer_cli() {
+    command -v devcontainer >/dev/null ||
+        die "devcontainer CLI not found (npm install -g @devcontainers/cli)"
 }
 
 cmd_new() {
@@ -128,12 +160,33 @@ cmd_open() {
         *) target="$1"; shift ;;
         esac
     done
-    [ -n "$target" ] || die 'missing <branch|path>'
     local path
-    path="$(worktree_path "$target")"
-    [ -d "$path" ] || die "$path does not exist"
+    path="$(existing_worktree "$target")"
     warn_if_unsupported "$path"
     open_worktree "$path" "$local_only" "$launch"
+}
+
+cmd_up() {
+    [ $# -le 1 ] || die 'usage: scripts/worktree up <branch|path>'
+    require_devcontainer_cli
+    local path
+    path="$(existing_worktree "${1:-}")"
+    warn_if_unsupported "$path"
+    devcontainer up --workspace-folder "$path"
+    echo "Shell into it with: scripts/worktree shell $path"
+}
+
+cmd_shell() {
+    require_devcontainer_cli
+    local path
+    path="$(existing_worktree "${1:-}")"
+    shift
+    # `up` is a no-op when the container is already running
+    devcontainer up --workspace-folder "$path" >/dev/null
+    if [ $# -eq 0 ]; then
+        set -- bash -l
+    fi
+    devcontainer exec --workspace-folder "$path" "$@"
 }
 
 stop_devcontainer() {
@@ -162,11 +215,8 @@ cmd_rm() {
         *) target="$1"; shift ;;
         esac
     done
-    [ -n "$target" ] || die 'missing <branch|path>'
-
     local path
-    path="$(worktree_path "$target")"
-    [ -d "$path" ] || die "$path does not exist"
+    path="$(existing_worktree "$target")"
     [ "$path" != "$main_checkout" ] || die 'refusing to remove the main checkout'
     if [ "$path" = "$(git rev-parse --show-toplevel)" ]; then
         die 'refusing to remove the worktree you are in (and possibly its running container)'
@@ -195,6 +245,8 @@ cmd_rm() {
 case "${1:-}" in
 new) shift; cmd_new "$@" ;;
 open) shift; cmd_open "$@" ;;
+up) shift; cmd_up "$@" ;;
+shell) shift; cmd_shell "$@" ;;
 rm) shift; cmd_rm "$@" ;;
 list) git worktree list ;;
 -h | --help | help | '') usage ;;
