@@ -55,7 +55,7 @@ The `dependsOn` fields become a tangled web of implementation details rather tha
 
 1. **Stages** — You declare abstract, high-level workflows once (e.g. `build` with hooks `pre`, `run`, `post`; `test` with hooks `run`, `report`). These stages express the _intended_ order of operations, independent of any specific tooling.
 
-2. **Bindings** — Each package declares which concrete targets (e.g. `tsc`, `eslint`) map to which stage and hook. The mapping lives with the tool, not scattered across every dependent.
+2. **Bindings** — You declare once which concrete targets (e.g. `tsc`, `eslint`) map to which stage and hook. Each project opts in by defining those targets. The mapping lives with the tool, not scattered across every dependent.
 
 3. **Generation** — `nx-lifecycle` reads the stages and bindings, then writes all the `dependsOn` fields into `nx.json` and `project.json` automatically.
 

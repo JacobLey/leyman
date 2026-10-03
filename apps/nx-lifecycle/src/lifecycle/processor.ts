@@ -8,6 +8,7 @@ type ProcessorOptions = Pick<NormalizedOptions, 'bindings' | 'stages'>;
 
 type LifecycleTarget = {
     name: string;
+    stage: string;
     dependsOn: DependsOn;
 } & (
     | {
@@ -38,6 +39,7 @@ const calculateTargets = ({ stages }: ProcessorOptions): LifecycleTargets => {
         const prefixHook = `${stageName}:_`;
         lifecycleTargets.set(prefixHook, {
             name: prefixHook,
+            stage: stageName,
             kind: 'anchor',
             dependsOn: stage.dependsOn ?? [],
         });
@@ -50,6 +52,7 @@ const calculateTargets = ({ stages }: ProcessorOptions): LifecycleTargets => {
             const hookName = `${stageName}:${hook}`;
             lifecycleTargets.set(hookName, {
                 name: hookName,
+                stage: stageName,
                 kind: 'hook',
                 dependsOn: [previousHook],
                 previousHook,
@@ -58,6 +61,7 @@ const calculateTargets = ({ stages }: ProcessorOptions): LifecycleTargets => {
         }
         lifecycleTargets.set(stageName, {
             name: stageName,
+            stage: stageName,
             kind: 'base',
             dependsOn: [previousHook],
             hasHooks: hooks.length > 0,
@@ -122,33 +126,23 @@ const calculateTargetsToRemove = ({
     return targetsToRemove;
 };
 
+const getDependencyTarget = (dependency: DependsOn[number]): string =>
+    typeof dependency === 'string' ? dependency : dependency.target;
+
+const normalizeDependencyTarget = (dependencyTarget: string): string =>
+    dependencyTarget.replace(/^\^/u, '');
+
 const removeDependencyTargets = ({
     target,
-    lifecycleTargets,
     targetsToRemove,
 }: {
     target: Target;
-    lifecycleTargets: LifecycleTargets;
     targetsToRemove: Set<string>;
-}): DependsOn => {
-    if (target.dependsOn) {
-        return target.dependsOn.filter(dependency => {
-            const dependencyTarget =
-                typeof dependency === 'string' ? dependency : dependency.target;
-
-            const normalized = dependencyTarget.replace(/^\^/u, '');
-            if (targetsToRemove.has(normalized)) {
-                return false;
-            }
-            const lifecycleTarget = lifecycleTargets.get(normalized);
-            if (lifecycleTarget) {
-                return lifecycleTarget.kind === 'base';
-            }
-            return true;
-        });
-    }
-    return [];
-};
+}): DependsOn =>
+    (target.dependsOn ?? []).filter(
+        dependency =>
+            !targetsToRemove.has(normalizeDependencyTarget(getDependencyTarget(dependency)))
+    );
 
 const validateLifecycleDependencies = ({
     lifecycleTargets,
@@ -160,15 +154,21 @@ const validateLifecycleDependencies = ({
     targetsToRemove: Set<string>;
 }): void => {
     for (const [stageName, { dependsOn }] of Object.entries(options.stages)) {
-        if (dependsOn) {
-            const filtered = removeDependencyTargets({
-                target: { dependsOn },
-                lifecycleTargets,
-                targetsToRemove,
-            });
+        for (const dependency of dependsOn ?? []) {
+            const dependencyTarget = getDependencyTarget(dependency);
+            const normalized = normalizeDependencyTarget(dependencyTarget);
 
-            if (filtered.length !== dependsOn.length) {
-                throw new Error(`Invalid dependency detected on lifecycle stage ${stageName}`);
+            const lifecycleTarget = lifecycleTargets.get(normalized);
+            if (lifecycleTarget && lifecycleTarget.kind !== 'base') {
+                const suggested = dependencyTarget.replace(normalized, lifecycleTarget.stage);
+                throw new Error(
+                    `Lifecycle stage ${stageName} cannot depend on ${dependencyTarget}, which is internal to stage ${lifecycleTarget.stage}. Depend on ${suggested} instead`
+                );
+            }
+            if (targetsToRemove.has(normalized)) {
+                throw new Error(
+                    `Lifecycle stage ${stageName} cannot depend on ${dependencyTarget}, which is a stale lifecycle target in nx.json`
+                );
             }
         }
     }
@@ -210,7 +210,6 @@ const processNxJson = ({
                 ...originalTarget,
                 dependsOn: removeDependencyTargets({
                     target: originalTarget,
-                    lifecycleTargets,
                     targetsToRemove,
                 }),
             };
@@ -269,7 +268,6 @@ const processProjectJson = ({
             targets[targetName] = processedTarget;
             processedTarget.dependsOn = removeDependencyTargets({
                 target,
-                lifecycleTargets,
                 targetsToRemove,
             });
 

@@ -1,7 +1,7 @@
 import type { readFile as ReadFile, writeFile as WriteFile } from 'node:fs/promises';
 import type { FilesFormatter } from 'format-file';
 import type { AssertNxJson, AssertProjectJson, NxJson, ProjectJson } from '#schemas';
-import type { Logger } from './depedencies.js';
+import type { Logger } from './dependencies.js';
 import type { NormalizedOptions, Normalizer } from './normalizer.js';
 import type { NxAndProjectJsonProcessor } from './processor.js';
 import type { LifecycleOptionsOrConfig } from './schema.js';
@@ -68,6 +68,11 @@ export class LifecycleInternal {
 
         const { nxJson, projectJsons } = await this.#loadJsonConfigs(normalized);
 
+        this.#warnUndeclaredBindings(
+            normalized.bindings,
+            projectJsons.map(({ data }) => data)
+        );
+
         const { processedNxJson, processedProjectJsons } = this.#processNxAndProjectJsons({
             nxJson: nxJson.data,
             projectJsons: projectJsons.map(({ data }) => data),
@@ -130,6 +135,29 @@ export class LifecycleInternal {
                 };
             }),
         };
+    }
+
+    /**
+     * A binding that no project declares is usually a typo.
+     * Only a warning, as targets inferred by Nx plugins are not declared in `project.json`.
+     *
+     * @param bindings - target names mapped to their hooks
+     * @param projectJsons - loaded project configs
+     */
+    #warnUndeclaredBindings(
+        bindings: NormalizedOptions['bindings'],
+        projectJsons: ProjectJson[]
+    ): void {
+        const declaredTargets = new Set(
+            projectJsons.flatMap(projectJson => Object.keys(projectJson.targets ?? {}))
+        );
+        for (const targetName of Object.keys(bindings)) {
+            if (!declaredTargets.has(targetName)) {
+                this.#logger.warn(
+                    `Bound target ${targetName} is not declared in any project.json. Is it a typo?`
+                );
+            }
+        }
     }
 
     async #saveJsonConfigs({

@@ -11,6 +11,7 @@
       "properties": {
         "$schema": {
           "type": "string",
+          "description": "Path or URL to the JSON schema for this file",
           "examples": [
             "https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-lifecycle/src/lifecycle/schema.json"
           ],
@@ -115,6 +116,7 @@
       "properties": {
         "$schema": {
           "type": "string",
+          "description": "Path or URL to the JSON schema for this file",
           "examples": [
             "https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-lifecycle/src/lifecycle/schema.json"
           ],

@@ -677,7 +677,64 @@ suite('Processor', () => {
                             projectJsons: [{}],
                         })
                     );
-                }).to.throw('Invalid dependency detected on lifecycle stage secondStage');
+                }).to.throw(
+                    'Lifecycle stage secondStage cannot depend on firstStage:_, which is internal to stage firstStage. Depend on firstStage instead'
+                );
+            });
+
+            test('Stage depends on hook of another stage', () => {
+                expect(() => {
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    firstStage: {
+                                        hooks: ['hookName'],
+                                    },
+                                    secondStage: {
+                                        dependsOn: [
+                                            { target: 'firstStage:hookName', dependencies: true },
+                                        ],
+                                    },
+                                },
+                                bindings: {},
+                            },
+                            nxJson: {},
+                            projectJsons: [{}],
+                        })
+                    );
+                }).to.throw(
+                    'Lifecycle stage secondStage cannot depend on firstStage:hookName, which is internal to stage firstStage. Depend on firstStage instead'
+                );
+            });
+
+            test('Stage depends on stale lifecycle target', () => {
+                expect(() => {
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    myStage: {
+                                        dependsOn: ['^removedStage'],
+                                    },
+                                },
+                                bindings: {},
+                            },
+                            nxJson: {
+                                targetDefaults: {
+                                    removedStage: {
+                                        configurations: {
+                                            __lifecycle: {},
+                                        },
+                                    },
+                                },
+                            },
+                            projectJsons: [{}],
+                        })
+                    );
+                }).to.throw(
+                    'Lifecycle stage myStage cannot depend on ^removedStage, which is a stale lifecycle target in nx.json'
+                );
             });
         });
     });

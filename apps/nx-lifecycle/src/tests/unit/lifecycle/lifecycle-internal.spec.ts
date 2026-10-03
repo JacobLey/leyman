@@ -28,9 +28,15 @@ suite('lifecycle', () => {
         const mockedProcessor = mockMethod<NxAndProjectJsonProcessor>();
         const stubbedAssertNxJson = stubMethod<typeof assertNxJson>();
         const stubbedAssertProjectJson = stubMethod<typeof assertProjectJson>();
+        const fakeLogger = {
+            info: fake(),
+            warn: fake(),
+            error: fake(),
+        };
 
         return {
             stubbedNormalizer,
+            fakeLogger,
             stubbedReadFile: stubbedReadFile.stub,
             stubbedWriteFile: stubbedWriteFile.stub,
             stubbedFormatFiles: stubbedFormatFiles.stub,
@@ -45,10 +51,7 @@ suite('lifecycle', () => {
                 mockedProcessor.method,
                 stubbedAssertNxJson.method,
                 stubbedAssertProjectJson.method,
-                {
-                    info: fake(),
-                    error: fake(),
-                }
+                fakeLogger
             ),
         };
     });
@@ -274,6 +277,54 @@ suite('lifecycle', () => {
             ).to.equal(true);
             expect(ctx.stubbedWriteFile.callCount).to.equal(1);
         });
+    });
+
+    stubs.test('Warns about bindings no project declares', async ctx => {
+        const declaringProjectJson = { targets: { declared: {} } };
+        const options = {
+            check: false,
+            dryRun: false,
+            nxJsonPath: '<nx-json-path>',
+            packageJsonPaths: [
+                { name: '<foo>', path: '<foo-path>' },
+                { name: '<bar>', path: '<bar-path>' },
+            ],
+            stages: fakeStages,
+            bindings: {
+                declared: 'myStage',
+                typo: 'myStage',
+            },
+        };
+
+        ctx.stubbedNormalizer.normalizeOptions.withArgs(mockOptions, mockContext).resolves(options);
+
+        ctx.stubbedReadFile.withArgs('<nx-json-path>', 'utf8').resolves(JSON.stringify(fakeNxJson));
+        ctx.stubbedReadFile
+            .withArgs('<foo-path>', 'utf8')
+            .resolves(JSON.stringify(declaringProjectJson));
+        ctx.stubbedReadFile
+            .withArgs('<bar-path>', 'utf8')
+            .resolves(JSON.stringify(fakeBarProjectJson));
+
+        ctx.stubbedAssertNxJson.withArgs(match(fakeNxJson)).returns();
+        ctx.stubbedAssertProjectJson.withArgs(match(declaringProjectJson)).returns();
+        ctx.stubbedAssertProjectJson.withArgs(match(fakeBarProjectJson)).returns();
+
+        ctx.mockedProcessor.returns({
+            processedNxJson: fakeNxJson,
+            processedProjectJsons: [declaringProjectJson, fakeBarProjectJson],
+        });
+        ctx.stubbedFormatFiles.resolves();
+
+        await ctx.lifecycle.lifecycleInternal(mockOptions, mockContext);
+
+        expect(ctx.fakeLogger.warn.callCount).to.equal(1);
+        expect(
+            ctx.fakeLogger.warn.calledWith(
+                'Bound target typo is not declared in any project.json. Is it a typo?'
+            )
+        ).to.equal(true);
+        expect(ctx.stubbedWriteFile.notCalled).to.equal(true);
     });
 
     suite('Invalid loaded data throws errors', () => {

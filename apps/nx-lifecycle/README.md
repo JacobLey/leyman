@@ -162,6 +162,18 @@ A stage without hooks (referenced directly by name):
 }
 ```
 
+#### Generated targets
+
+Each stage generates a chain of `noop` targets. For `build` with hooks `pre`, `run`, `post`:
+
+```
+build:_ → build:pre → build:run → build:post → build
+```
+
+- `build:_` is the stage's **anchor**. It carries the stage's `dependsOn`, so every hook waits for it. Nothing can be bound to it.
+- Each hook depends on the previous one, and a bound target depends on the hook before its own. Targets bound to the same hook run in parallel.
+- `build` is the stage's public entry point. Other stages and your own targets should depend on it, not on its hooks.
+
 ### `bindings`
 
 Required. No default.
@@ -187,6 +199,25 @@ Multiple targets from different languages or toolchains can bind to the same hoo
     }
 }
 ```
+
+A binding applies to every project that defines the target, through `targetDefaults` or its own `project.json`. A project opts in by defining it (e.g. `"tsc": {}`). A warning is logged for a binding that no `project.json` declares, since it is usually a typo. Targets inferred by Nx plugins are not declared in `project.json`, so they trigger the warning too.
+
+#### Project-specific dependencies
+
+A project can't change a stage's `dependsOn`, but it can add dependencies to its own bound targets. `nx-lifecycle` keeps any `dependsOn` entry that isn't a lifecycle target and appends the hook dependency after it:
+
+```json
+// project.json
+{
+    "targets": {
+        "e2e-test": {
+            "dependsOn": [{ "target": "build", "projects": ["my-server"] }]
+        }
+    }
+}
+```
+
+Use this sparingly. If many projects need the same dependency, it belongs in the stage.
 
 ### `check`
 

@@ -14,7 +14,7 @@ import {
     parseCwdId,
     readFileIdentifier,
     writeFileIdentifier,
-} from './depedencies.js';
+} from './dependencies.js';
 import { LifecycleInternal } from './lifecycle-internal.js';
 import { Normalizer } from './normalizer.js';
 import { nxAndProjectJsonProcessorIdentifier, processNxAndProjectJsons } from './processor.js';
