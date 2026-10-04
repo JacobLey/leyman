@@ -4,7 +4,7 @@
 Populate static files with dynamic content, and make sure they stay in sync.
 
 [![npm package](https://badge.fury.io/js/populate-files.svg)](https://www.npmjs.com/package/populate-files)
-[![License](https://img.shields.io/npm/l/populate-files.svg)](https://github.com/JacobLey/leyman/blob/main/tools/populate-files/LICENSE)
+[![License](https://img.shields.io/npm/l/populate-files.svg)](https://github.com/JacobLey/leyman/blob/main/apps/populate-files/populate-files/LICENSE)
 
 </div>
 

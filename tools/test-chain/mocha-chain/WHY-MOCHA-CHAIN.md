@@ -73,4 +73,4 @@ withDivision.test('success', ({ division }) => {
 - Each test gets a fresh instance from the hook, isolated from every other test
 - Teardown hooks (`afterEach`, `after`) receive the same context, so cleanup is type-safe too
 
-→ [Back to README](./README.md)
+→ [Back to README](https://www.npmjs.com/package/mocha-chain)

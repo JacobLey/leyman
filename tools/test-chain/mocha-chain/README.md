@@ -15,14 +15,14 @@ Chain mocha BDD methods together for deterministic and type safe tests.
 - [Usage](#usage)
 - [Chaining hooks](#chaining-hooks)
 - [API](#api)
-    - [suite](#suite)
-    - [before](#before)
-    - [beforeEach](#beforeeach)
-    - [test](#test)
-    - [afterEach](#aftereach)
-    - [after](#after)
+    - [suite](#suitetitle-fn)
+    - [before](#beforetitle-fn)
+    - [beforeEach](#beforeeachtitle-fn)
+    - [test](#testtitle-fn)
+    - [afterEach](#aftereachtitle-fn)
+    - [after](#aftertitle-fn)
 
-For the problem this solves and design rationale, see [WHY-MOCHA-CHAIN.md](./WHY-MOCHA-CHAIN.md).
+For the problem this solves and design rationale, see [WHY-MOCHA-CHAIN.md](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md).
 
 ## Install
 

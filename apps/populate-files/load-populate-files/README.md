@@ -4,7 +4,7 @@
 Load and dynamically populate file content based on a single file's config.
 
 [![npm package](https://badge.fury.io/js/load-populate-files.svg)](https://www.npmjs.com/package/load-populate-files)
-[![License](https://img.shields.io/npm/l/load-populate-files.svg)](https://github.com/JacobLey/leyman/blob/main/tools/load-populate-files/LICENSE)
+[![License](https://img.shields.io/npm/l/load-populate-files.svg)](https://github.com/JacobLey/leyman/blob/main/apps/populate-files/load-populate-files/LICENSE)
 
 </div>
 

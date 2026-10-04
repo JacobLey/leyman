@@ -8,7 +8,11 @@
   "type": "module",
   "author": "JacobLey",
   "license": "MIT",
-  "repository": "JacobLey/leyman",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "tools/find-import"
+  },
   "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/find-import#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"

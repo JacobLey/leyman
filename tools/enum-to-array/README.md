@@ -13,7 +13,7 @@
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [enumToArray](#enumtoarrayenumedict)
+  - [enumToArray](#enumtoarrayenumdict)
   - [enumToValues](#enumtovaluesenumdict-options)
   - [enumToKeys](#enumtokeysenumdict)
 

@@ -62,4 +62,4 @@ React Query exports `useInfiniteQuery` natively, which provides similar behavior
 
 ---
 
-→ [Back to README](./README.md)
+→ [Back to README](https://www.npmjs.com/package/normalized-react-query)

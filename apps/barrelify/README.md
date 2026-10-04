@@ -15,7 +15,6 @@ Auto-generate TS barrel files.
 - [API](#api)
   - [barrelify](#barrelifyoptions)
 - [CLI](#cli)
-- [Also See](#also-see)
 
 ## Install
 

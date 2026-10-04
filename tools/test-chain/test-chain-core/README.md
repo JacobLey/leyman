@@ -23,7 +23,7 @@ npm i test-chain-core
 
 ## Usage
 
-This package is not intended to be used directly in tests. It implements context propagation for [mocha-chain](../mocha-chain/README.md) and [vitest-chain](../vitest-chain/README.md), which each describe their framework (native methods, how to identify the current test, and naming) and expose precise public types.
+This package is not intended to be used directly in tests. It implements context propagation for [mocha-chain](https://www.npmjs.com/package/mocha-chain) and [vitest-chain](https://www.npmjs.com/package/vitest-chain), which each describe their framework (native methods, how to identify the current test, and naming) and expose precise public types.
 
 ## API
 
@@ -62,5 +62,5 @@ Thrown (via the rejected `handler`) when a chained hook executes before the hook
 
 ## Also See
 
-- [mocha-chain](../mocha-chain/README.md)
-- [vitest-chain](../vitest-chain/README.md)
+- [mocha-chain](https://www.npmjs.com/package/mocha-chain)
+- [vitest-chain](https://www.npmjs.com/package/vitest-chain)

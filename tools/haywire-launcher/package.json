@@ -8,7 +8,11 @@
   "type": "module",
   "author": "JacobLey",
   "license": "MIT",
-  "repository": "JacobLey/leyman",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "tools/haywire-launcher"
+  },
   "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/haywire-launcher#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"

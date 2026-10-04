@@ -14,15 +14,15 @@ Wrapper around React Query to enforce type-safe, consistent key-query mappings.
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [resource](#resource)
-  - [infinite](#infinite)
+  - [resource](#resourceparams)
+  - [infinite](#infiniteparams)
   - [Hooks](#hooks)
   - [Linked](#linked)
 - [Types](#types)
-  - [QueryData](#querydata)
-  - [QueryParams](#queryparams)
-  - [QueryKey](#querykey)
-  - [LinkOf](#linkof)
+  - [QueryData](#querydatat)
+  - [QueryParams](#queryparamst)
+  - [QueryKey](#querykeyt)
+  - [LinkOf](#linkoft)
 - [Also See](#also-see)
 
 ## Install
@@ -371,4 +371,4 @@ type UserLink = LinkOf<typeof fetchUser>;
 ## Also See
 
 - [`@tanstack/react-query`](https://tanstack.com/query/v4) — the underlying query library this package wraps
-- [WHY-NORMALIZED-REACT-QUERY.md](./WHY-NORMALIZED-REACT-QUERY.md) — motivation, the key/function pairing problem, and why native `useInfiniteQuery` is not used
+- [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md) — motivation, the key/function pairing problem, and why native `useInfiniteQuery` is not used

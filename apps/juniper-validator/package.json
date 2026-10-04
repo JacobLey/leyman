@@ -8,7 +8,11 @@
   "type": "module",
   "author": "JacobLey",
   "license": "MIT",
-  "repository": "JacobLey/leyman",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "apps/juniper-validator"
+  },
   "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/juniper-validator#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"

@@ -8,7 +8,7 @@ ESM JSON Schema builder for static Typescript inference
 
 </div>
 
-For why Juniper exists and how it compares to alternatives, see [WHY-JUNIPER.md](./WHY-JUNIPER.md).
+For why Juniper exists and how it compares to alternatives, see [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md).
 
 ## Contents
 - [Install](#install)
@@ -551,5 +551,5 @@ enumSchema({
 
 ## Also See
 
-- [WHY-JUNIPER.md](./WHY-JUNIPER.md) — Motivation, design decisions, and comparison to alternative libraries.
+- [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md) — Motivation, design decisions, and comparison to alternative libraries.
 - [juniper-validator](https://www.npmjs.com/package/juniper-validator) — Validation companion for Juniper schemas.

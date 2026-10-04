@@ -17,7 +17,7 @@ Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)
 
 | File | Notes |
 |------|-------|
-| `package.json` | `"type": "module"`, version `0.0.1`. Dependencies via `catalog:` / `workspace:^` (see [install-package](../install-package/SKILL.md)). Tests need dev deps on `mocha`, `mocha-chain`, `@leyman/expect`, `c8`. |
+| `package.json` | `"type": "module"`, version `0.0.1`. Dependencies via `catalog:` / `workspace:^` (see [install-package](../install-package/SKILL.md)). Tests need dev deps on `mocha`, `mocha-chain`, `@leyman/expect`, `c8`. Set `"repository": { "type": "git", "url": "git+https://github.com/JacobLey/leyman.git", "directory": "<path>" }` and `"homepage": "https://github.com/JacobLey/leyman/tree/main/<path>#readme"`. |
 | `src/`, `test/`, `data/`, `out/` | Where files go decides what is cached; see [Project layout and caching](../nx-tasks-reference/SKILL.md#project-layout-and-caching). |
 | `tsconfig.json` | `{ "extends": "<relative>/configs/tsconfig.build.json", "compilerOptions": { "outDir": "dist", "rootDir": "src", "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo" }, "include": ["src", "*.d.ts"] }`. `references` are generated. |
 | `test/tsconfig.json` | `{ "extends": "<relative>/configs/tsconfig.test.json" }`. See the [testing skill](../testing/SKILL.md#layout). |

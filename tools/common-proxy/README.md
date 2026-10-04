@@ -13,7 +13,7 @@ Wrap an ESM import so it is synchronously available as a promise-returning funct
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [commonProxy](#commonproxypromisedFn)
+  - [commonProxy](#commonproxypromisedfn)
   - [commonProxyDecorator](#commonproxydecoratorpromiseddecorator)
 
 ## Install

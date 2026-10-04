@@ -120,6 +120,16 @@ Use one for functions with 2+ parameters or any options object. Required paramet
 ### Type documentation
 Export types used by the API should be documented inline where first used, or in a dedicated `## Types` section for complex types.
 
+## Links
+
+The README is rendered on npmjs.com, which does not resolve relative links inside a monorepo package (`./WHY-PACKAGE.md` 404s there). Every link must be absolute:
+
+- Another package's README → its npm page: `https://www.npmjs.com/package/<name>`
+- Any other repo file (WHY file, LICENSE, config) → `https://github.com/JacobLey/leyman/blob/main/<repo path>`
+- In-page anchors (`#...`) are fine, but must match GitHub's slug of the full heading text: `` ### `suite(title, fn)` `` is `#suitetitle-fn`, not `#suite`. Repeated headings get `-1`, `-2` suffixes.
+
+The same applies to WHY files, which link back to the README via its npm page.
+
 ## What NOT to Put in a README
 
 - Extended motivation or "the problem this solves" → WHY file

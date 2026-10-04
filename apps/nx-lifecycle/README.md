@@ -4,7 +4,7 @@
 An [Nx](https://nx.dev/) plugin that injects specific targets into high level workflows.
 
 [![npm package](https://badge.fury.io/js/nx-lifecycle.svg)](https://www.npmjs.com/package/nx-lifecycle)
-[![License](https://img.shields.io/npm/l/nx-lifecycle.svg)](https://github.com/JacobLey/leyman/blob/main/tools/nx-lifecycle/LICENSE)
+[![License](https://img.shields.io/npm/l/nx-lifecycle.svg)](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/LICENSE)
 
 </div>
 
@@ -23,7 +23,7 @@ An [Nx](https://nx.dev/) plugin that injects specific targets into high level wo
     - [dryRun](#dryrun)
 - [CLI](#cli)
 
-For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](./WHY-NX-LIFECYCLE.md).
+For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
 
 ## Install
 

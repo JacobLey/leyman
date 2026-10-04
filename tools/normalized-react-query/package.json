@@ -8,8 +8,12 @@
   "type": "module",
   "author": "JacobLey",
   "license": "MIT",
-  "repository": "JacobLey/leyman",
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/consistent-react-query#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "tools/normalized-react-query"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/normalized-react-query#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

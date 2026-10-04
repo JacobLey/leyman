@@ -55,7 +55,7 @@ describe('Example Database Test', () => {
 
 ## Usage
 
-`vitest-chain` is an ESM package that wraps vitest's native methods (a peer dependency). It is the vitest equivalent of [mocha-chain](../mocha-chain/README.md) — see [WHY-MOCHA-CHAIN.md](../mocha-chain/WHY-MOCHA-CHAIN.md) for the problem it solves.
+`vitest-chain` is an ESM package that wraps vitest's native methods (a peer dependency). It is the vitest equivalent of [mocha-chain](https://www.npmjs.com/package/mocha-chain) — see [WHY-MOCHA-CHAIN.md](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md) for the problem it solves.
 
 Native vitest methods and `vitest-chain` methods can be mixed in the same suite.
 
@@ -95,5 +95,5 @@ If a hook fails, downstream `afterEach`/`afterAll` hooks still run with the cont
 
 ## Also See
 
-- [mocha-chain](../mocha-chain/README.md) — the same API for Mocha
-- [test-chain-core](../test-chain-core/README.md) — framework-agnostic internals shared by both
+- [mocha-chain](https://www.npmjs.com/package/mocha-chain) — the same API for Mocha
+- [test-chain-core](https://www.npmjs.com/package/test-chain-core) — framework-agnostic internals shared by both

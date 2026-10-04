@@ -57,7 +57,7 @@ A fully type-safe dependency injection library using native javascript.
 
 Haywire is a dependency injection library for TypeScript that makes invalid container states impossible to express — missing bindings, mismatched types, and duplicate registrations are all caught at compile time. It requires no decorators, no global state, and no additional build tooling beyond TypeScript itself.
 
-For the motivation behind Haywire and a comparison with existing DI solutions, see [WHY-HAYWIRE.md](./WHY-HAYWIRE.md).
+For the motivation behind Haywire and a comparison with existing DI solutions, see [WHY-HAYWIRE.md](https://github.com/JacobLey/leyman/blob/main/tools/haywire/WHY-HAYWIRE.md).
 
 ## Installation
 

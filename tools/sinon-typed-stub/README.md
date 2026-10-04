@@ -13,9 +13,9 @@ Type-safe wrappers for Sinon spies, stubs, and mocks.
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [stubMethod](#stubmethod)
-  - [spyMethod](#spymethod)
-  - [mockMethod](#mockmethod)
+  - [stubMethod](#stubmethodt)
+  - [spyMethod](#spymethodtfn)
+  - [mockMethod](#mockmethodt)
 
 ## Install
 
