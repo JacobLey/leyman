@@ -1,5 +1,6 @@
-import type { Directory, ParseCwd } from 'parse-cwd';
-import type { Barrel } from './lib/barrel.js';
+import type { Directory } from 'parse-cwd';
+import { parseCwd } from 'parse-cwd';
+import { barrelFiles } from './lib/barrel.js';
 
 /**
  * Programatically invoke barrelify.
@@ -32,40 +33,9 @@ export type Barrelify = (
     }
 ) => Promise<string[]>;
 
-interface IBarrelifyApi {
-    barrelify: Barrelify;
-}
-
-/**
- * Build programatic API for Barrelify.
- *
- * Parse user input and pass to internal implementation.
- */
-export class BarrelifyApi implements IBarrelifyApi {
-    readonly #barrel: Barrel;
-    readonly #parseCwd: ParseCwd;
-
-    public readonly barrelify: Barrelify;
-
-    public constructor(barrel: Barrel, parseCwd: ParseCwd) {
-        this.#barrel = barrel;
-        this.#parseCwd = parseCwd;
-
-        this.barrelify = this.#barrelify.bind(this);
-    }
-
-    /**
-     * @override
-     */
-    async #barrelify(
-        options: { cwd?: Directory; dryRun?: boolean; ignore?: string[] } = {}
-    ): Promise<string[]> {
-        const cwd = await this.#parseCwd(options.cwd ?? null);
-
-        return this.#barrel.barrelFiles({
-            cwd,
-            dryRun: options.dryRun ?? false,
-            ignore: options.ignore ?? [],
-        });
-    }
-}
+export const barrelify: Barrelify = async (options = {}) =>
+    barrelFiles({
+        cwd: await parseCwd(options.cwd ?? null),
+        dryRun: options.dryRun ?? false,
+        ignore: options.ignore ?? [],
+    });

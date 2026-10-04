@@ -2,7 +2,8 @@ import { exec } from 'node:child_process';
 import Path from 'node:path';
 import { promisify } from 'node:util';
 import { expect } from '@leyman/expect';
-import { suite, test } from 'mocha-chain';
+import { beforeEach, suite, test } from 'mocha-chain';
+import { barrel, createTmpDir, HEADER } from './lib/fixtures.js';
 
 const execAsync = promisify(exec);
 
@@ -53,6 +54,34 @@ suite('cli', () => {
                     execAsync('./bin.mjs barrel --ci')
                 ).to.be.rejectedWith(Error);
                 expect(thrown).to.have.property('message').that.includes('Files are not built');
+            });
+
+            suite('Writes files', () => {
+                const withTmpDir = beforeEach(createTmpDir);
+                withTmpDir.afterEach(async ctx => {
+                    await ctx.tmpDir.cleanup();
+                });
+
+                withTmpDir.test('Writes and logs updated files', async ctx => {
+                    await ctx.writeFiles({ 'a.ts': '', 'index.ts': HEADER });
+
+                    const result = await execAsync(`./bin.mjs --ci=false --cwd ${ctx.tmpDir.path}`);
+
+                    expect(result.stdout).to.equal(`${ctx.resolve('index.ts')}\n`);
+                    expect(result.stderr).to.equal('');
+                    expect(await ctx.read('index.ts')).to.equal(barrel("export * from './a.js';"));
+                });
+
+                withTmpDir.test('--ci does not write', async ctx => {
+                    await ctx.writeFiles({ 'a.ts': '', 'index.ts': HEADER });
+
+                    const thrown: unknown = await expect(
+                        execAsync(`./bin.mjs --ci --cwd ${ctx.tmpDir.path}`)
+                    ).to.be.rejectedWith(Error);
+                    expect(thrown).to.have.property('stdout', `${ctx.resolve('index.ts')}\n`);
+                    expect(thrown).to.have.property('message').that.includes('Files are not built');
+                    expect(await ctx.read('index.ts')).to.equal(HEADER);
+                });
             });
         });
     });

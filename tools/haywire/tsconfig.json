@@ -11,6 +11,9 @@
   ],
   "references": [
     {
+      "path": "../../apps/barrelify"
+    },
+    {
       "path": "../../leyman/expect"
     },
     {

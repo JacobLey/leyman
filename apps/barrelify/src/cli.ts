@@ -1,8 +1,6 @@
-import type { Supplier } from 'haywire';
-import type { AbstractCommand } from './commands/lib/types.js';
-import type { ConsoleLog, ExitCode } from './lib/dependencies.js';
 import yargs from 'yargs';
 import { EntryScript } from 'entry-script';
+import { barrelCommand } from './commands/barrel-command.js';
 
 /**
  * Barrelify CLI. Run `./bin.mjs --help` for options.
@@ -10,24 +8,6 @@ import { EntryScript } from 'entry-script';
  * Uses `yargs` package for command line parsing and logic flow.
  */
 export class BarrelCli extends EntryScript {
-    readonly #getCommands: Supplier<AbstractCommand[]>;
-    readonly #logger: ConsoleLog;
-    readonly #errorLogger: ConsoleLog;
-    readonly #exitCode: ExitCode;
-
-    public constructor(
-        getCommands: Supplier<AbstractCommand[]>,
-        logger: ConsoleLog,
-        errorLogger: ConsoleLog,
-        exitCode: ExitCode
-    ) {
-        super();
-        this.#getCommands = getCommands;
-        this.#logger = logger;
-        this.#errorLogger = errorLogger;
-        this.#exitCode = exitCode;
-    }
-
     /**
      * Entry point to CLI script.
      *
@@ -35,11 +15,11 @@ export class BarrelCli extends EntryScript {
      *
      * @param argv - process arguments
      */
-    public override async main(argv: string[]): Promise<void> {
+    public static override async main(argv: string[]): Promise<void> {
         // eslint-disable-next-line import/no-relative-parent-imports
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
-        const yarg = yargs()
+        await yargs()
             .scriptName('barrelify')
             .option({
                 cwd: {
@@ -56,23 +36,21 @@ export class BarrelCli extends EntryScript {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(packageJson.default.version);
-
-        for (const command of this.#getCommands()) {
-            yarg.command(command);
-        }
-
-        await yarg.parseAsync(argv, {}, this.#yargsOutput.bind(this));
+            .version(packageJson.default.version)
+            .command(barrelCommand)
+            .parseAsync(argv, {}, BarrelCli.#yargsOutput);
     }
 
-    #yargsOutput(e: unknown, _argv: unknown, log: string): void {
+    static #yargsOutput(this: void, e: unknown, _argv: unknown, log: string): void {
         if (e) {
-            this.#exitCode(1);
+            process.exitCode = 1;
             if (log) {
-                this.#errorLogger(log);
+                // eslint-disable-next-line no-console
+                console.error(log);
             }
         } else if (log) {
-            this.#logger(log);
+            // eslint-disable-next-line no-console
+            console.log(log);
         }
     }
 }

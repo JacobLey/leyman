@@ -17,22 +17,7 @@
       "path": "../../tools/parse-cwd"
     },
     {
-      "path": "../juniper-validator"
-    },
-    {
-      "path": "../juniper"
-    },
-    {
-      "path": "../../tools/haywire-launcher"
-    },
-    {
-      "path": "../../tools/haywire"
-    },
-    {
       "path": "../../tools/entry-script"
-    },
-    {
-      "path": "../../tools/sinon-typed-stub"
     },
     {
       "path": "../../tools/test-chain/mocha-chain"
