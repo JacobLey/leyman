@@ -1,4 +1,4 @@
-module dagger/test-and-build
+module dagger/ci
 
 go 1.26.1
 

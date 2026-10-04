@@ -45,7 +45,7 @@ Focused guides for common workflows in this repo:
 | Writing and running tests (Mocha, mocha-chain, Sinon, C8) | [`.claude/skills/testing/SKILL.md`](./.claude/skills/testing/SKILL.md) |
 | Building TypeScript packages (SWC, tsconfig, ESM) | [`.claude/skills/typescript/SKILL.md`](./.claude/skills/typescript/SKILL.md) |
 | Linting and formatting (ESLint, Biome, auto-fix) | [`.claude/skills/linting-formatting/SKILL.md`](./.claude/skills/linting-formatting/SKILL.md) |
-| Running CI locally with Dagger | [`.claude/skills/dagger-ci/SKILL.md`](./.claude/skills/dagger-ci/SKILL.md) |
+| Running CI locally with Dagger, and releasing to npm | [`.claude/skills/dagger-ci/SKILL.md`](./.claude/skills/dagger-ci/SKILL.md) |
 | Versioning packages with changesets | [`.claude/skills/versioning/SKILL.md`](./.claude/skills/versioning/SKILL.md) |
 | Updating catalog dependencies to latest minor/patch versions | [`.claude/skills/updating-dependencies/SKILL.md`](./.claude/skills/updating-dependencies/SKILL.md) |
 | Debugging (source maps, cache, test failures) | [`.claude/skills/debugging/SKILL.md`](./.claude/skills/debugging/SKILL.md) |

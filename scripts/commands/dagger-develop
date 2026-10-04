@@ -2,4 +2,4 @@
 
 set -e
 
-dagger develop --mod ./dagger/test-and-build --recursive
+dagger develop --mod ./dagger

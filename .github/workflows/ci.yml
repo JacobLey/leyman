@@ -1,0 +1,146 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  # Superseded PR pushes are cancelled; every commit to main gets its own run
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  cancel-in-progress: true
+
+env:
+  # Keep in sync with `engineVersion` in `dagger/dagger.json` and `.devcontainer/Dockerfile`
+  DAGGER_VERSION: 0.20.3
+  # Outside the checkout, so it is never part of the source Dagger tests
+  NX_CACHE_DIR: /tmp/nx-cache
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # PRs can read main's cache, but main never reads a PR's
+      - name: Restore Nx cache
+        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.NX_CACHE_DIR }}
+          key: nx-${{ github.sha }}
+          restore-keys: nx-
+
+      - name: Start Nx cache server
+        env:
+          NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
+        run: |
+          node .devcontainer/nx-cache-server.mjs &
+          curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null
+
+      - name: Test
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: ${{ env.DAGGER_VERSION }}
+          verb: call
+          module: ./dagger
+          args: test --nx-cache=tcp://localhost:3000
+
+      # Saved even when tests fail, so tasks that passed are not re-run
+      - name: Prune Nx cache
+        if: ${{ !cancelled() }}
+        run: find "$NX_CACHE_DIR" -type f -mtime +7 -delete
+
+      - name: Save Nx cache
+        if: ${{ !cancelled() }}
+        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: ${{ env.NX_CACHE_DIR }}
+          key: nx-${{ github.sha }}
+
+  # Opens (or updates) a "Version Packages" PR applying pending changesets
+  version:
+    needs: test
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    # Only the latest main commit's version PR matters
+    concurrency:
+      group: version
+      cancel-in-progress: true
+    permissions:
+      contents: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Changelogs reference the commit that added each changeset
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Apply changesets
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: ${{ env.DAGGER_VERSION }}
+          verb: call
+          module: ./dagger
+          args: version export --path .
+
+      # Does nothing when there are no pending changesets
+      - name: Open version PR
+        uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
+        with:
+          branch: changeset-release/main
+          delete-branch: true
+          title: Version Packages
+          commit-message: Version Packages
+          body: Merging this PR publishes the packages below to npm.
+
+  # Publishes every package whose version is not yet on npm (i.e. after a version PR merges)
+  publish:
+    needs: test
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    concurrency:
+      group: publish
+      cancel-in-progress: false
+    permissions:
+      # Push release tags
+      contents: write
+      # npm trusted publishing (OIDC) and provenance
+      id-token: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      # npm runs inside Dagger, so hand it the GitHub Actions environment it uses for OIDC and provenance
+      - name: Capture GitHub environment
+        run: |
+          for name in $(compgen -e | grep -E '^(GITHUB_|RUNNER_|ACTIONS_ID_TOKEN_REQUEST_)'); do
+            printf 'export %s=%q\n' "$name" "${!name}"
+          done > "$RUNNER_TEMP/github-env"
+
+      - name: Publish
+        id: publish
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: ${{ env.DAGGER_VERSION }}
+          verb: call
+          module: ./dagger
+          args: publish --github-env=file://${{ runner.temp }}/github-env
+
+      - name: Tag releases
+        env:
+          PUBLISHED: ${{ steps.publish.outputs.output }}
+        run: |
+          [ -n "$PUBLISHED" ] || exit 0
+          for tag in $PUBLISHED; do
+            git tag "$tag"
+          done
+          git push origin --tags

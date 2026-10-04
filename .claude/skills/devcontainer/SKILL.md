@@ -35,9 +35,9 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 
 | Runtime | DevContainer | Dagger |
 |---------|-------------|--------|
-| Node.js | `ARG NODE_VERSION` in `.devcontainer/Dockerfile` | `nodeVersion` in `dagger/test-and-build/main.go` and `dagger/modules/pnpm/main.go` |
-| pnpm | `ARG PNPM_VERSION` in `.devcontainer/Dockerfile` | `pnpmVersion` in `dagger/test-and-build/main.go` |
-| dagger | `ARG DAGGER_VERSION` in `.devcontainer/Dockerfile` | `engineVersion` in each `dagger.json`, and `DAGGER_VERSION` in `.github/workflows/test.yml` |
-| Debian | base image tag in `.devcontainer/Dockerfile` (`debian13`) | `DefaultVersion()` in `dagger/modules/debian/main.go` (`"13.3"`) |
+| Node.js | `ARG NODE_VERSION` in `.devcontainer/Dockerfile` | `nodeImage` tag in `dagger/main.go` |
+| pnpm | `ARG PNPM_VERSION` in `.devcontainer/Dockerfile` | `pnpmVersion` in `dagger/main.go` |
+| dagger | `ARG DAGGER_VERSION` in `.devcontainer/Dockerfile` | `engineVersion` in `dagger/dagger.json`, and `DAGGER_VERSION` in `.github/workflows/ci.yml` |
+| Debian | base image tag in `.devcontainer/Dockerfile` (`debian13`) | `nodeImage` variant in `dagger/main.go` (`trixie` = Debian 13) |
 
-**When upgrading a runtime version, update all locations in the table above.** A mismatch means `dagger-test` runs under a different Node/pnpm version than local development — bugs that only reproduce in CI are a common symptom.
+**When upgrading a runtime version, update all locations in the table above.** `nodeImage` is pinned by digest; get the new one with `docker buildx imagetools inspect node:<tag>`. A mismatch means `dagger-test` runs under a different Node/pnpm version than local development — bugs that only reproduce in CI are a common symptom.

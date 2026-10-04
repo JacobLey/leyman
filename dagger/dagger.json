@@ -1,20 +1,10 @@
 {
   "$schema": "https://docs.dagger.io/reference/dagger.schema.json",
-  "name": "pnpm",
+  "name": "ci",
   "engineVersion": "v0.20.3",
   "sdk": {
     "source": "go"
   },
-  "dependencies": [
-    {
-      "name": "debian",
-      "source": "../debian"
-    },
-    {
-      "name": "node",
-      "source": "../node"
-    }
-  ],
   "codegen": {
     "automaticGitignore": false
   }

@@ -23,3 +23,9 @@ Use the npm package name (from `package.json`), not the directory name. One file
 
 - Packages under `leyman/` (private, never published)
 - Changes only to tests, dev tooling, configs, CI or devDependencies
+
+## Releasing
+
+Don't run `changeset version` or publish by hand. After a changeset merges to `main`, CI opens a "Version Packages" PR; merging that PR publishes to npm. See the [dagger-ci skill](../dagger-ci/SKILL.md#releasing).
+
+A changeset naming a package that is no longer in the workspace makes `changeset version` fail, so delete or edit changesets when removing a package.

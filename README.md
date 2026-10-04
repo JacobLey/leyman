@@ -29,7 +29,7 @@ This repo uses [Dagger](https://dagger.io/) for CI. To replicate CI locally:
 ```bash
 dagger-test
 # or equivalently:
-dagger call --mod ./dagger/test-and-build/ --source . run
+dagger call --mod ./dagger test
 ```
 
 Run `test-ci` first — it's faster for iteration. Use Dagger to confirm before pushing.

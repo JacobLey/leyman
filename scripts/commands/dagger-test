@@ -2,4 +2,4 @@
 
 set -e
 
-dagger call --mod ./dagger/test-and-build/ --source . run
+dagger call --mod ./dagger test "$@"
