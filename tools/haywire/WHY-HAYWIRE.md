@@ -87,3 +87,15 @@ When the code compiles, the container is guaranteed to work (barring external ru
 
 The result: dependency injection that fails at build time, not in production.
 
+
+---
+
+## Comparisons
+
+- [InversifyJS](https://www.npmjs.com/package/inversify) — Decorators (`@injectable`, `@inject`) plus `reflect-metadata`, with string, symbol or class identifiers. A missing binding is an error thrown when the container resolves it.
+- [TSyringe](https://www.npmjs.com/package/tsyringe) — Microsoft's decorator-based container. Also needs `reflect-metadata`, keeps a global root container by default, and resolves tokens at runtime.
+- [TypeDI](https://www.npmjs.com/package/typedi) — Decorator-based with a global container; property injection is supported, with the type-safety gaps described above.
+- [NestJS](https://nestjs.com/) — Its injector is decorator-based and tied to the framework's module system. Unresolvable dependencies surface as "Nest can't resolve dependencies" at startup.
+- [Awilix](https://www.npmjs.com/package/awilix) — No decorators, but dependencies are resolved by registration name at runtime, so a typo or missing registration is not a type error.
+
+Haywire is the only one of these where a container that compiles is guaranteed to have every binding it needs.

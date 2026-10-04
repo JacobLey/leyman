@@ -1,16 +1,27 @@
 <div style="text-align:center">
 
 # haywire
-A fully type-safe dependency injection library using native javascript.
+Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state.
 
 [![npm package](https://badge.fury.io/js/haywire.svg)](https://www.npmjs.com/package/haywire)
 [![License](https://img.shields.io/npm/l/haywire.svg)](https://github.com/JacobLey/leyman/blob/main/tools/haywire/LICENSE)
 
 </div>
 
+If your container compiles, it is complete: missing bindings, mismatched types and duplicate registrations are all TypeScript errors, not runtime crashes.
+
+- **Wiring mistakes are type errors** — a missing dependency, a duplicate binding, the wrong id passed to `container.get()`, or a nullable value injected into a non-nullable parameter all fail to build.
+- **Plain JavaScript** — constructor injection with no decorators, `experimentalDecorators` or `reflect-metadata`. Works with private fields, and in plain JS too.
+- **Type-based ids, not strings** — `identifier<T>()` distinguishes two `string` dependencies (say a database URL and password) at the type level.
+- **Real-world lifecycles** — singleton, request and transient scopes; opt-in async initialization; explicit circular dependencies; runtime values (like an HTTP request) supplied per call.
+- **Immutable and independent** — modules never mutate, and containers share no global registry, so tests can build their own.
+
+**Compared to** [InversifyJS](https://www.npmjs.com/package/inversify), [TSyringe](https://www.npmjs.com/package/tsyringe), [TypeDI](https://www.npmjs.com/package/typedi) and [NestJS](https://nestjs.com/)'s injector, which rely on decorators and string or token keys and find missing bindings at runtime, and [Awilix](https://www.npmjs.com/package/awilix), which avoids decorators but resolves by name at runtime.
+
+For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.com/JacobLey/leyman/blob/main/tools/haywire/WHY-HAYWIRE.md).
+
 ## Table of Contents
 
-- [Introduction](#introduction)
 - [Installation](#installation)
 - [Example](#example)
 - [Concepts](#concepts)
@@ -52,12 +63,6 @@ A fully type-safe dependency injection library using native javascript.
         - [HaywireContainerValidationError](#haywirecontainervalidationerror)
         - [HaywireInstanceValidationError](#haywireinstancevalidationerror)
 - [Also See](#also-see)
-
-## Introduction
-
-Haywire is a dependency injection library for TypeScript that makes invalid container states impossible to express — missing bindings, mismatched types, and duplicate registrations are all caught at compile time. It requires no decorators, no global state, and no additional build tooling beyond TypeScript itself.
-
-For the motivation behind Haywire and a comparison with existing DI solutions, see [WHY-HAYWIRE.md](https://github.com/JacobLey/leyman/blob/main/tools/haywire/WHY-HAYWIRE.md).
 
 ## Installation
 

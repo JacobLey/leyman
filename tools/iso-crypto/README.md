@@ -1,18 +1,25 @@
 <div style="text-align:center">
 
 # iso-crypto
-Cryptographic methods that work in isomorphic (Browser + NodeJS) environments.
+Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES and ECDH.
 
 [![npm package](https://badge.fury.io/js/iso-crypto.svg)](https://www.npmjs.com/package/iso-crypto)
 [![License](https://img.shields.io/npm/l/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/tools/iso-crypto/LICENSE)
 
 </div>
 
+- **Same code everywhere** — one async API that uses `node:crypto` on Node.js and `crypto.subtle` in the browser, picked by package `imports` conditions.
+- **Less ceremony than raw WebCrypto** — no `importKey`/`CryptoKey` handling; secrets, keys and IVs are plain `Uint8Array`s or strings.
+- **ECDH encryption in one call** — `eccEncrypt`/`eccDecrypt` derive a shared secret from one party's private key and the other's public key, then encrypt with AES.
+- **ECC key utilities** — generate keys and compress/decompress public keys on P-256, P-384 and P-521.
+- **Encoding helpers** — isomorphic text, hex, base64 and base64url encoding, plus secure random bytes.
+
+**When not to use it:** encryption is AES-CBC/CTR without authentication (no GCM or MAC), so ciphertext tampering is not detected, and secrets are stretched with a single hash, not a password KDF like PBKDF2, scrypt or Argon2. For those needs, or curves like secp256k1 and X25519, see [@noble/ciphers](https://www.npmjs.com/package/@noble/ciphers) and [@noble/curves](https://www.npmjs.com/package/@noble/curves).
+
 ## Contents
-- [Introduction](#introduction)
 - [Supported Algorithms](#supported-algorithms)
   - [Hash](#hash)
-  - [Symmetric Encryption](#asymmetric-encryption)
+  - [Symmetric Encryption](#symmetric-encryption)
   - [ECDH (Asymmetric)](#ecdh-asymmetric)
 - [Install](#install)
 - [Example](#example)
@@ -45,12 +52,6 @@ Cryptographic methods that work in isomorphic (Browser + NodeJS) environments.
   - [Hash](#hash-2)
   - [Encryption](#encryption)
   - [Curve](#curve)
-
-## Introduction
-
-IsoCrypto provides a common interface for cryptographic methods for both NodeJS and Browser environments. On NodeJS it generally relies on the [`node:crypto`](https://nodejs.org/api/crypto.html) module, and on Browser based on [`window.crypto.subtle`](https://developer.mozilla.org/en-US/docs/Web/API/SubtleCrypto).
-
-Some lower level isomorphic utilities are also provided, such as text encoding and random byte generation.
 
 ## Supported Algorithms
 

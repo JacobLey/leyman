@@ -1,7 +1,7 @@
 {
   "name": "mocha-chain",
   "version": "1.0.0",
-  "description": "Utility methods to help manage and expose nx plugins",
+  "description": "Chain mocha BDD methods together for deterministic and type safe tests.",
   "engines": {
     "node": ">=24"
   },
@@ -18,10 +18,15 @@
     "url": "https://github.com/JacobLey/leyman/issues"
   },
   "keywords": [
-    "commonjs",
-    "async",
-    "handler",
-    "import"
+    "mocha",
+    "test",
+    "testing",
+    "bdd",
+    "hooks",
+    "beforeEach",
+    "context",
+    "typescript",
+    "type-safe"
   ],
   "sideEffects": false,
   "exports": {

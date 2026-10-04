@@ -1,12 +1,20 @@
 <div style="text-align:center">
 
 # barrelify
-Auto-generate TS barrel files.
+Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.
 
 [![npm package](https://badge.fury.io/js/barrelify.svg)](https://www.npmjs.com/package/barrelify)
 [![License](https://img.shields.io/npm/l/barrelify.svg)](https://github.com/JacobLey/leyman/blob/main/apps/barrelify/LICENSE)
 
 </div>
+
+- **Specifiers that resolve** — writes `./foo.js`, `./foo.cjs` and `./foo.mjs` (never extensionless paths), so barrels work under Node ESM and TypeScript's `nodenext` resolution.
+- **ESM/CJS aware** — reads the nearest `package.json` `"type"` and only re-exports files the index can actually load (a CommonJS index never re-exports `.mts`).
+- **Opt-in** — only rewrites `index.ts` files that start with `// AUTO-BARREL`; it never creates files or touches hand-written barrels.
+- **CI check** — `barrel --ci` fails when a committed barrel is stale.
+- **Keeps type-only exports** — lines you change to `export type *` stay type-only on later runs.
+
+**Compared to** [barrelsby](https://www.npmjs.com/package/barrelsby) and [ctix](https://www.npmjs.com/package/ctix), which generate barrels across a directory tree from configuration, barrelify keeps one opt-in marker per file and no config.
 
 ## Contents
 - [Install](#install)
@@ -71,7 +79,9 @@ The `// AUTO-BARREL` comment is preserved so subsequent runs stay in sync.
 
 It is also available as a CLI via `npx barrel` or `npx barrelify`.
 
-Mark any `index.ts` file you want managed with `// AUTO-BARREL` as the very first characters in the file. Barrelify will not create new index files — it only rewrites files that are already opted in.
+Mark any `index.ts` file you want managed with `// AUTO-BARREL` as the very first characters in the file. Barrelify will not create new index files — it only rewrites files that are already opted in. Each barrel re-exports its sibling files only, not subdirectories.
+
+To re-export a file's types only, change its line to `export type * from './foo.js';`. Barrelify keeps it type-only when it rewrites the file.
 
 Always ignores `.gitignore`-d paths and `node_modules`. Barrel files should be checked into version control.
 

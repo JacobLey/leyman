@@ -1,12 +1,25 @@
 <div style="text-align:center">
 
 # normalized-react-query
-Wrapper around React Query to enforce type-safe, consistent key-query mappings.
+Type-safe query definitions for TanStack Query — define each key and fetcher once, and link related queries so they prefetch together.
 
 [![npm package](https://badge.fury.io/js/normalized-react-query.svg)](https://www.npmjs.com/package/normalized-react-query)
 [![License](https://img.shields.io/npm/l/normalized-react-query.svg)](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/LICENSE)
 
 </div>
+
+- **One definition per query** — `resource()` pairs a key with its fetcher, so the same key can never serve different data and the same data is never fetched under two keys.
+- **Typed by params** — call sites pass `{ id: 123 }`, not a hand-built key array; reads, writes and invalidation (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
+- **Linked queries, no waterfalls** — `.propagate()` declares the queries a result leads to (a book's author, every user on a list page), which start prefetching the moment the parent loads.
+- **SSR in one call** — `.query(client, params, { awaitLinks: true })` loads a query and everything it links to, ready to dehydrate.
+- **Every hook flavour** — plain, suspense, nullable (`skipToken`), infinite and prefetched variants of TanStack's hooks.
+
+**Compared to**
+
+- TanStack's own [`queryOptions`](https://tanstack.com/query/latest/docs/framework/react/guides/query-options) — also pairs a key with its fetcher, but per call site; there are no params-typed cache helpers or linked prefetching.
+- [@lukemorales/query-key-factory](https://www.npmjs.com/package/@lukemorales/query-key-factory) — organizes keys (and optionally fetchers) into a typed tree; it does not link queries or wrap the hooks.
+
+For the full motivation, see [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md).
 
 ## Contents
 
@@ -51,7 +64,7 @@ const fetchUser = resource<{ id: number }, User>({
     queryFn: ({ params: { id } }) => getUser(id),
 });
 
-// Pre-populate the per-user cache whenever a list is fetched.
+// Whenever a page of users loads, prefetch each user's detail query.
 const listUsersInfinite = infinite<void, User[], number>({
     key: ['users', 'list'],
     getInitialPageParam: 0,
@@ -203,7 +216,7 @@ Returns `true` if a query state entry exists (whether fetching, stale, or idle).
 
 ### `infinite(params)`
 
-Creates a type-safe, singleton reference to an infinite (paginated) query. Shares the cache key space with `resource`, so `resource` and `infinite` instances can cross-populate each other's caches.
+Creates a type-safe, singleton reference to an infinite (paginated) query, backed by TanStack's infinite queries. Like `resource`, it supports `.propagate()`, so each loaded page can link to other resources.
 
 **Parameters**
 
@@ -370,5 +383,5 @@ type UserLink = LinkOf<typeof fetchUser>;
 
 ## Also See
 
-- [`@tanstack/react-query`](https://tanstack.com/query/v4) — the underlying query library this package wraps
-- [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md) — motivation, the key/function pairing problem, and why native `useInfiniteQuery` is not used
+- [`@tanstack/react-query`](https://tanstack.com/query/latest) — the underlying query library this package wraps
+- [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md) — motivation: the key/function pairing problem, and request waterfalls

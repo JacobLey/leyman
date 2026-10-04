@@ -1,7 +1,7 @@
 {
   "name": "iso-crypto",
   "version": "2.0.0",
-  "description": "Isomorphic cryptographic functions for browser and NodeJS.",
+  "description": "Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES and ECDH.",
   "engines": {
     "node": ">=24"
   },
@@ -19,15 +19,18 @@
   },
   "keywords": [
     "cryptography",
+    "crypto",
     "isomorphic",
-    "ecdh",
-    "encryption",
     "browser",
+    "webcrypto",
+    "subtlecrypto",
+    "encryption",
     "aes",
+    "ecdh",
+    "ecc",
     "sha",
-    "encode",
     "hash",
-    "ecc"
+    "encode"
   ],
   "sideEffects": false,
   "types": "./dist/index.js",

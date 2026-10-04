@@ -1,7 +1,7 @@
 {
   "name": "nx-lifecycle",
   "version": "1.0.0",
-  "description": "Keep high level nx lifecycle targets in sync",
+  "description": "Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, …) and the targets bound to them.",
   "engines": {
     "node": ">=24"
   },
@@ -19,7 +19,12 @@
   },
   "keywords": [
     "nx",
+    "nx-plugin",
+    "monorepo",
     "lifecycle",
+    "dependsOn",
+    "task-pipeline",
+    "targets",
     "build",
     "test",
     "cli"

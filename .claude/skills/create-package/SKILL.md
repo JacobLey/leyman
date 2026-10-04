@@ -24,7 +24,7 @@ Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)
 | `.npmignore` | Copy from a sibling package; it excludes `src/`, `test/` and `dist-test/`. |
 | `project.json` | List only the work targets the package uses, as `{}` (see [nx-tasks-reference](../nx-tasks-reference/SKILL.md)). Orchestration targets are added by the lifecycle command. |
 | `eslint.config.js` | Export `configGenerator(...)` from `@leyman/eslint-config` (see [linting-formatting](../linting-formatting/SKILL.md)). |
-| `README.md` | Required. See [writing-readmes](../writing-readmes/SKILL.md). |
+| `README.md` | Required. See [writing-readmes](../writing-readmes/SKILL.md). Published packages also get a row in the root `README.md` package table. |
 
 ## Then
 

@@ -1,7 +1,7 @@
 {
   "name": "barrelify",
   "version": "2.0.0",
-  "description": "Auto-generate TS barrel files.",
+  "description": "Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.",
   "engines": {
     "node": ">=24"
   },
@@ -19,7 +19,15 @@
   },
   "keywords": [
     "barrel",
-    "index",
+    "barrel-file",
+    "barrel-files",
+    "index.ts",
+    "re-export",
+    "exports",
+    "typescript",
+    "esm",
+    "commonjs",
+    "codegen",
     "cli"
   ],
   "sideEffects": false,

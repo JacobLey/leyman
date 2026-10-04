@@ -1,7 +1,7 @@
 {
   "name": "normalized-react-query",
   "version": "2.0.0",
-  "description": "Wrapper around React Query to enforce type-safe, consistent key-query mappings.",
+  "description": "Type-safe query definitions for TanStack Query — define each key and fetcher once, and link related queries so they prefetch together.",
   "engines": {
     "node": ">=24"
   },
@@ -19,9 +19,16 @@
   },
   "keywords": [
     "react-query",
-    "map",
-    "consistent",
-    "normalizr"
+    "tanstack-query",
+    "tanstack",
+    "react",
+    "query-key",
+    "query-key-factory",
+    "query-options",
+    "prefetch",
+    "ssr",
+    "suspense",
+    "typescript"
   ],
   "sideEffects": false,
   "types": "./dist/index.js",

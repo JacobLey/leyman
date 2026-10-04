@@ -11,13 +11,15 @@ description: Writing and maintaining package READMEs
 
 Every package needs a README. It is published to npm, so it is written for people using the package, and it doubles as the precise API reference agents read. Repo-internal conventions belong in SKILL.md files, not READMEs.
 
+The README is also how the package is found and judged. npm search, web search, LLM crawlers and coding agents read the npm page (often only its first screen) and `node_modules/<pkg>/README.md`. Few follow links to other files. So the first screen of the README must say what the package does, why to pick it over the alternatives, and when not to.
+
 ## README vs WHY File
 
-**README.md** — How to use the package. Should not justify the package's existence or compare it to alternatives. Focus on guiding an active user.
+**README.md** — How to use the package, opened by a short pitch: a few **Highlights** bullets naming what sets it apart, and (when alternatives exist) a short **Compared to** table or list naming them. The pitch is a summary, at most ~25 lines; everything after it guides an active user.
 
-**WHY-\<PACKAGE\>.md** — Why this package exists, the problem it solves, motivation, design decisions, comparison to alternatives. Especially useful for more complicated packages that may have existing alternatives. Link from README when relevant.
+**WHY-\<PACKAGE\>.md** — The long form: the problem it solves with worked examples, design decisions, non-goals, and the full comparison to alternatives. Especially useful for more complicated packages. Link it from the end of the README's pitch.
 
-**Rule:** If a section answers "why does this exist?" rather than "how do I use it?", it belongs in WHY-\<PACKAGE\>.md.
+**Rule:** The README says *that* the package is different and from what, in a few lines. The WHY file says *why* at length. Anything longer than a bullet or table row belongs in WHY-\<PACKAGE\>.md.
 
 See [`../../../tools/haywire/WHY-HAYWIRE.md`](../../../tools/haywire/WHY-HAYWIRE.md) as the reference example.
 
@@ -27,12 +29,21 @@ See [`../../../tools/haywire/WHY-HAYWIRE.md`](../../../tools/haywire/WHY-HAYWIRE
 <div style="text-align:center">
 
 # Package Name
-One-sentence description of what it does.
+One-sentence description of what it does (same as `package.json` `description`).
 
 [![npm package](https://badge.fury.io/js/<npm-name>.svg)](https://www.npmjs.com/package/<npm-name>)
 [![License](https://img.shields.io/npm/l/<npm-name>.svg)](https://github.com/JacobLey/leyman/blob/main/<path>/LICENSE)
 
 </div>
+
+- **Highlight** — what sets it apart, in a line.
+- **Highlight** — 3–5 of these.
+
+| | <package> | <alternative> | <alternative> |
+|---|---|---|---|
+| <deciding feature> | ✅ | ❌ | ✅ |
+
+For the full motivation and comparison, see [WHY-<PACKAGE>.md](https://github.com/JacobLey/leyman/blob/main/<path>/WHY-<PACKAGE>.md).
 
 ## Contents
 - [Install](#install)
@@ -132,11 +143,17 @@ The same applies to WHY files, which link back to the README via its npm page.
 
 ## What NOT to Put in a README
 
-- Extended motivation or "the problem this solves" → WHY file
-- Comparison to alternative libraries → WHY file
+- Extended motivation or "the problem this solves" → WHY file (the pitch keeps a few bullets)
+- Detailed comparison to alternative libraries → WHY file (the pitch keeps a short table)
 - Implementation details (how it works internally) → code comments
 - Changelog → CHANGELOG.md (managed by changesets)
 - Contributing instructions → root README
+
+## package.json Discoverability
+
+`description` is the line npm search, Google snippets and agent search results show. Name the category and the differentiator, not just the category: "Compile-time checked dependency injection for TypeScript — no decorators", not "Type safe dependency injection". Package names that don't say what they do (juniper, haywire) rely on it entirely.
+
+`keywords` should cover the terms someone would search for: the category (`dependency-injection`, `di`, `ioc`), the ecosystem (`typescript`, `nx-plugin`, `tanstack-query`) and the distinguishing feature (`no-decorators`, `compile-time`). Don't add competitor names.
 
 ## When to Create a WHY File
 

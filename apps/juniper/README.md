@@ -1,14 +1,28 @@
 <div style="text-align:center">
 
 # Juniper
-ESM JSON Schema builder for static Typescript inference
+Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output.
 
 [![npm package](https://badge.fury.io/js/juniper.svg)](https://www.npmjs.com/package/juniper)
 [![License](https://img.shields.io/npm/l/juniper.svg)](https://github.com/JacobLey/leyman/blob/main/apps/juniper/LICENSE)
 
 </div>
 
-For why Juniper exists and how it compares to alternatives, see [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md).
+- **One source of truth** — write the schema once, get its TypeScript type with `SchemaType<typeof schema>`. Nothing to keep in sync.
+- **Mistakes are compile errors** — each schema type only exposes the keywords that apply to it, so `maxLength` on an array or a `required` key missing from `properties` fails to build instead of silently validating everything.
+- **Strict output** — emitted schemas pass [Ajv's strict mode](https://ajv.js.org/strict-mode.html), so they work with any standard JSON Schema validator.
+- **Multiple targets** — emit JSON Schema 2020-12 (and OpenAPI 3.1), or `toJSON({ openApi30: true })` for OpenAPI 3.0's `nullable` dialect, from the same definition.
+- **Immutable builders** — every method returns a new schema, so shared base schemas can be safely extended.
+
+**Compared to**
+
+- [TypeBox](https://www.npmjs.com/package/@sinclair/typebox) — also builds JSON Schema and types together, but focuses on covering JSON Schema rather than rejecting schemas that don't make sense.
+- [zod](https://zod.dev/) / [joi](https://www.npmjs.com/package/joi) — validation libraries with their own schema formats; JSON Schema is an export, not the source.
+- [typescript-json-schema](https://www.npmjs.com/package/typescript-json-schema) / [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) — code generators that convert one way between TypeScript and JSON Schema, and can't stop you authoring a bad schema.
+
+Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](https://www.npmjs.com/package/juniper-validator).
+
+For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md).
 
 ## Contents
 - [Install](#install)

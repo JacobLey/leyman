@@ -59,6 +59,6 @@ The `dependsOn` fields become a tangled web of implementation details rather tha
 
 3. **Wiring** — `nx-lifecycle` reads the stages and bindings, then derives every `dependsOn`: its Nx plugin infers them when Nx builds the project graph, or its executor writes them into `nx.json` and `project.json`.
 
-The result: adding a new step means updating one binding. Every downstream `dependsOn` is recomputed. The generated configs are checked into version control, so CI can verify they're in sync before any deployment proceeds.
+The result: adding a new step means updating one binding. Every downstream `dependsOn` is recomputed. With the plugin this happens every time Nx builds the project graph, so there is nothing to keep in sync. With the executor the generated configs are committed, and CI checks they are up to date.
 
 Now you can just run `nx run <project>:build` and let the projects determine what "building" means to it.

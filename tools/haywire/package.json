@@ -1,7 +1,7 @@
 {
   "name": "haywire",
   "version": "1.0.0",
-  "description": "Type safe dependency injection",
+  "description": "Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state.",
   "engines": {
     "node": ">=24"
   },
@@ -18,10 +18,16 @@
     "url": "https://github.com/JacobLey/leyman/issues"
   },
   "keywords": [
+    "dependency-injection",
+    "di",
+    "ioc",
+    "inversion-of-control",
+    "container",
     "typescript",
-    "dependency injection",
-    "inversion of control",
-    "type-safe"
+    "type-safe",
+    "compile-time",
+    "no-decorators",
+    "esm"
   ],
   "sideEffects": false,
   "exports": {

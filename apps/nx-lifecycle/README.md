@@ -1,12 +1,22 @@
 <div style="text-align:center">
 
 # nx-lifecycle
-An [Nx](https://nx.dev/) plugin that injects specific targets into high level workflows.
+[Nx](https://nx.dev/) plugin that derives every `dependsOn` from declared lifecycle stages (build, test, …) and the targets bound to them.
 
 [![npm package](https://badge.fury.io/js/nx-lifecycle.svg)](https://www.npmjs.com/package/nx-lifecycle)
 [![License](https://img.shields.io/npm/l/nx-lifecycle.svg)](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/LICENSE)
 
 </div>
+
+Declare your workflow once — `build` runs hooks `pre` → `run` → `post`, `test` runs after `build` — then bind tools to hooks (`tsc` → `build:run`, `mocha` → `test:run`). Then `nx run <project>:build` runs the right steps, in the right order, in any project.
+
+- **Add a step in one place** — binding a new target (codegen, lint, a post-build step) rewires every dependent automatically, across every project.
+- **Per-project implementations** — each project opts into the bound targets it declares, so TypeScript, Go and Java projects can all answer to the same `build` and `test`.
+- **Nothing to commit** — the plugin infers targets when Nx builds the project graph, and fails with the fix if a project's `dependsOn` breaks the wiring. An executor that writes the config to files is also available.
+
+**Compared to** hand-written `dependsOn` in `targetDefaults` and each `project.json`: there, adding a step between two existing ones means editing every target that depended on the first, in every project that has it.
+
+For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
 
 ## Contents
 
@@ -22,8 +32,6 @@ An [Nx](https://nx.dev/) plugin that injects specific targets into high level wo
     - [check](#check)
     - [dryRun](#dryrun)
 - [CLI](#cli)
-
-For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
 
 ## Install
 

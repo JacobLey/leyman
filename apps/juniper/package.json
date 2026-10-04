@@ -1,7 +1,7 @@
 {
   "name": "juniper",
   "version": "2.0.0",
-  "description": "ESM JSON Schema builder for static Typescript inference.",
+  "description": "Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output.",
   "engines": {
     "node": ">=24"
   },
@@ -18,14 +18,18 @@
     "url": "https://github.com/JacobLey/leyman/issues"
   },
   "keywords": [
-    "JSON",
-    "schema",
     "json-schema",
+    "json-schema-builder",
+    "schema",
     "typescript",
-    "builder",
+    "type-inference",
     "static-types",
-    "open-api",
-    "swagger"
+    "ajv",
+    "openapi",
+    "openapi-3",
+    "swagger",
+    "validation",
+    "builder"
   ],
   "sideEffects": false,
   "types": "./dist/index.js",

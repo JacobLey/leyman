@@ -1,7 +1,7 @@
 {
   "name": "common-proxy",
   "version": "1.0.0",
-  "description": "Utility methods to help manage and expose nx plugins",
+  "description": "Wrap an ESM import so it is synchronously available as a promise-returning function in CommonJS.",
   "engines": {
     "node": ">=24"
   },
@@ -19,8 +19,11 @@
   },
   "keywords": [
     "commonjs",
+    "esm",
+    "interop",
+    "dynamic-import",
     "async",
-    "handler",
+    "proxy",
     "import"
   ],
   "sideEffects": false,
