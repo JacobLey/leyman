@@ -263,6 +263,16 @@ suite('resource', () => {
             expect(author!.name).to.equal('Jane Austen');
         });
 
+        context.test('Waits for propagated data every time', async ({ client }) => {
+            await authorsWithFavoriteAuthor.ensureQueryData(client, { authorId: tolkienId });
+            authorsWithFavoriteAuthor.removeQuery(client, { authorId: austenId });
+
+            await authorsWithFavoriteAuthor.ensureQueryData(client, { authorId: tolkienId });
+            expect(
+                authorsWithFavoriteAuthor.getQueryData(client, { authorId: austenId })?.name
+            ).to.equal('Jane Austen');
+        });
+
         context.test('Throws when failure', async ({ client }) => {
             await expect(books.ensureQueryData(client, { bookId: '<book-id>' })).to.be.rejected;
         });

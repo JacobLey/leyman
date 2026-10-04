@@ -296,6 +296,17 @@ suite('infinite', () => {
     });
 
     suite('ensureQueryData', () => {
+        context.test('Waits for propagated data every time', async ({ client }) => {
+            const authorId = tolkienId;
+            await infiniteBooksWithAuthor.ensureInfiniteQueryData(client, { authorId });
+            booksWithAuthor.removeQuery(client, { bookId: fellowshipOfTheRingId });
+
+            await infiniteBooksWithAuthor.ensureInfiniteQueryData(client, { authorId });
+            expect(
+                booksWithAuthor.getQueryData(client, { bookId: fellowshipOfTheRingId })?.title
+            ).to.equal('Fellowship of the Ring');
+        });
+
         context.test('Does not reload existing data', async ({ client }) => {
             const authorId = kingId;
             const bookId = longWalkId;

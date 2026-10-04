@@ -220,7 +220,7 @@ class Resource<
             queryKey: this.getKey(params),
             queryFn: this.getQueryFn(params),
         });
-        return this.#getSelector<TPropagatedData>({
+        return this.#createSelector<TPropagatedData>({
             client: queryClient,
             prefetches: [],
             revalidateIfStale: true,
@@ -288,7 +288,7 @@ class Resource<
         }
         const prefetches: Promise<void>[] = [];
 
-        const response = this.#getSelector<TPropagatedData>({
+        const response = this.#createSelector<TPropagatedData>({
             client: queryClient,
             prefetches,
             revalidateIfStale,
@@ -434,8 +434,35 @@ class Resource<
 
     /**
      * Combine user provided `select` with internal propagation selectors.
-     * Memoize the result (based on user input) to maintain memoization as best as possible.
-     * (TanstackQuery will avoid re-running selectors in hooks if all references are unchanged as a performance optimization).
+     *
+     * @param links - query client + collection of prefetch promises
+     * @param rawSelect - user provided `select`
+     * @returns selector that transforms query data all the way to user-specified data
+     */
+    #createSelector<T>(
+        links: LinksActive,
+        rawSelect?: (source: TPropagatedData) => T
+    ): (source: TData) => T {
+        const select = rawSelect ?? (noopSelector as (source: TPropagatedData) => T);
+
+        const selector = (source: TData): T => {
+            let value: unknown = source;
+            try {
+                setLinksActive(links);
+                for (const subSelector of this.#selectors) {
+                    value = subSelector(value);
+                }
+            } finally {
+                setLinksActive(null);
+            }
+            return select(value as TPropagatedData);
+        };
+        return selector;
+    }
+
+    /**
+     * `#createSelector`, memoized per query client and user `select`, so hooks get the same reference every render.
+     * Only for hooks: the selector keeps the `links` it was created with.
      *
      * @param links - query client + collection of prefetch promises
      * @param rawSelect - user provided `select`
@@ -452,18 +479,7 @@ class Resource<
             return existing as (source: TData) => T;
         }
 
-        const selector = (source: TData): T => {
-            let value: unknown = source;
-            try {
-                setLinksActive(links);
-                for (const subSelector of this.#selectors) {
-                    value = subSelector(value);
-                }
-            } finally {
-                setLinksActive(null);
-            }
-            return select(value as TPropagatedData);
-        };
+        const selector = this.#createSelector(links, select);
         this.#setMemoizedSelector(links.client, select, selector);
         return selector;
     }

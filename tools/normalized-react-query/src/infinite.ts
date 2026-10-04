@@ -362,7 +362,7 @@ class Infinite<
             queryFn: this.getQueryFn(params),
             queryKey: this.getKey(params),
         });
-        return this.#getSelector<InfiniteData<TPropagatedData, TPageParam>>({
+        return this.#createSelector<InfiniteData<TPropagatedData, TPageParam>>({
             client: queryClient,
             prefetches: [],
             revalidateIfStale: true,
@@ -449,7 +449,7 @@ class Infinite<
             queryClient.infiniteQuery(queryOptions).catch(() => {});
         }
         const prefetches: Promise<void>[] = [];
-        const response = this.#getSelector<InfiniteData<TPropagatedData, TPageParam>>({
+        const response = this.#createSelector<InfiniteData<TPropagatedData, TPageParam>>({
             client: queryClient,
             prefetches,
             revalidateIfStale,
@@ -603,17 +603,19 @@ class Infinite<
         firstMap.set(selector, memoized);
     }
 
-    #getSelector<T>(
+    /**
+     * Combine user provided `select` with internal propagation selectors.
+     *
+     * @param links - query client + collection of prefetch promises
+     * @param rawSelect - user provided `select`
+     * @returns selector that transforms query data all the way to user-specified data
+     */
+    #createSelector<T>(
         links: LinksActive,
         rawSelect?: (source: InfiniteData<TPropagatedData, TPageParam>) => T
     ): (data: InfiniteData<TData, TPageParam>) => T {
         const select =
             rawSelect ?? (noopSelector as (source: InfiniteData<TPropagatedData, TPageParam>) => T);
-
-        const existing = this.#getMemoizedSelector(links.client, select);
-        if (existing) {
-            return existing as (data: InfiniteData<TData, TPageParam>) => T;
-        }
 
         const selector = (source: InfiniteData<TData, TPageParam>): T => {
             const pages: TPropagatedData[] = [];
@@ -634,6 +636,30 @@ class Infinite<
                 pageParams: source.pageParams,
             });
         };
+        return selector;
+    }
+
+    /**
+     * `#createSelector`, memoized per query client and user `select`, so hooks get the same reference every render.
+     * Only for hooks: the selector keeps the `links` it was created with.
+     *
+     * @param links - query client + collection of prefetch promises
+     * @param rawSelect - user provided `select`
+     * @returns selector that transforms query data all the way to user-specified data
+     */
+    #getSelector<T>(
+        links: LinksActive,
+        rawSelect?: (source: InfiniteData<TPropagatedData, TPageParam>) => T
+    ): (data: InfiniteData<TData, TPageParam>) => T {
+        const select =
+            rawSelect ?? (noopSelector as (source: InfiniteData<TPropagatedData, TPageParam>) => T);
+
+        const existing = this.#getMemoizedSelector(links.client, select);
+        if (existing) {
+            return existing as (data: InfiniteData<TData, TPageParam>) => T;
+        }
+
+        const selector = this.#createSelector(links, select);
         this.#setMemoizedSelector(links.client, select, selector);
         return selector;
     }
