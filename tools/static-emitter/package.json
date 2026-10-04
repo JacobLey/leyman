@@ -36,7 +36,8 @@
     "#static-event-target": {
       "types": "./dist/lib/static-event-target/type.js",
       "default": "./dist/lib/static-event-target/static-event-target.js"
-    }
+    },
+    "#internal/*": "./dist/*"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

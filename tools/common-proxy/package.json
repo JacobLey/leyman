@@ -42,5 +42,8 @@
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
   }
 }

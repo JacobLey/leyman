@@ -56,5 +56,8 @@
     "sinon": "catalog:",
     "sinon-typed-stub": "workspace:^",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
   }
 }

@@ -7,8 +7,8 @@
   "files": {
     "includes": [
       "**",
-      "!!src/tests/data/sub/sub.json",
-      "!!src/tests/data/second.json"
+      "!!test/data/sub/sub.json",
+      "!!test/data/second.json"
     ]
   }
 }
