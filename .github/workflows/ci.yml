@@ -19,6 +19,10 @@ env:
   DAGGER_VERSION: 0.21.10
   # Outside the checkout, so it is never part of the source Dagger tests
   NX_CACHE_DIR: /tmp/nx-cache
+  # Bump to discard every cached Nx result (e.g. after finding an input Nx doesn't hash)
+  NX_CACHE_VERSION: v1
+  # Cached Nx results older than this are never served
+  NX_CACHE_MAX_AGE_DAYS: 7
 
 jobs:
   test:
@@ -34,8 +38,16 @@ jobs:
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.NX_CACHE_DIR }}
-          key: nx-${{ github.sha }}
-          restore-keys: nx-
+          key: nx-${{ env.NX_CACHE_VERSION }}-${{ github.sha }}
+          restore-keys: nx-${{ env.NX_CACHE_VERSION }}-
+
+      # Each file is one task result, timestamped when Nx stored it (reads don't touch it, and
+      # actions/cache preserves it), so this expires each result a fixed time after it was created.
+      # Runs before the server starts, so an expired result is never served.
+      - name: Expire old Nx results
+        run: |
+          mkdir -p "$NX_CACHE_DIR"
+          find "$NX_CACHE_DIR" -type f -mmin +$((NX_CACHE_MAX_AGE_DAYS * 24 * 60)) -print -delete | wc -l | xargs echo "Expired results:"
 
       - name: Start Nx cache server
         env:
@@ -53,16 +65,12 @@ jobs:
           args: test --nx-cache=tcp://localhost:3000
 
       # Saved even when tests fail, so tasks that passed are not re-run
-      - name: Prune Nx cache
-        if: ${{ !cancelled() }}
-        run: find "$NX_CACHE_DIR" -type f -mtime +7 -delete
-
       - name: Save Nx cache
         if: ${{ !cancelled() }}
         uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
         with:
           path: ${{ env.NX_CACHE_DIR }}
-          key: nx-${{ github.sha }}
+          key: nx-${{ env.NX_CACHE_VERSION }}-${{ github.sha }}
 
   # Opens (or updates) a "Version Packages" PR applying pending changesets
   version:
