@@ -23,8 +23,9 @@ describe('test', () => {
         await expect(Promise.resolve(1)).resolves.toBe(1);
     });
 
+    // Skipped on purpose, to check skipping is supported
     test.skip('Can skip test', () => {
-        throw new Error('<ERROR>');
+        expect.unreachable();
     });
 
     describe('Declaring inside a test fails', () => {
@@ -32,7 +33,7 @@ describe('test', () => {
 
         test('test', () => {
             expect(() => {
-                test('Never runs', () => {});
+                test('Never runs', () => expect.unreachable());
             }).toThrow(message);
         });
 
@@ -52,9 +53,10 @@ describe('test', () => {
 });
 
 suite('describe', () => {
+    // Skipped on purpose, to check skipping is supported
     describe.skip('Skipped suite', () => {
         test('Never runs', () => {
-            throw new Error('<ERROR>');
+            expect.unreachable();
         });
     });
 

@@ -4,17 +4,19 @@ import { assertIsPackageJson } from '#internal/lib/package-json-schema.js';
 
 suite('assertIsPackageJson', () => {
     test('is package.json', () => {
-        assertIsPackageJson({
-            name: '<name>',
-            dependencies: {
-                foo: '<foo>',
-                bar: '<bar>',
-            },
-            optionalDependencies: {
-                abc: '<xyz>',
-            },
-            extra: true,
-        });
+        expect(() => {
+            assertIsPackageJson({
+                name: '<name>',
+                dependencies: {
+                    foo: '<foo>',
+                    bar: '<bar>',
+                },
+                optionalDependencies: {
+                    abc: '<xyz>',
+                },
+                extra: true,
+            });
+        }).not.to.throw();
     });
 
     test('is not package.json', () => {

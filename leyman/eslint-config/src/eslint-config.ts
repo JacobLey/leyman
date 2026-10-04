@@ -777,6 +777,8 @@ export default function makeEslintConfigForPackage({
                 'sonarjs/no-selector-parameter': 'off',
                 'sonarjs/no-small-switch': 'off',
                 'sonarjs/no-wildcard-import': 'off',
+                // Suggests chai property assertions (`.to.be.null`), which no-unused-expressions forbids
+                'sonarjs/prefer-specific-assertions': 'off',
                 'sonarjs/public-static-readonly': 'off',
                 'sonarjs/redundant-type-aliases': 'off',
                 'sonarjs/sonar-max-lines': 'off',

@@ -87,7 +87,7 @@ catalog:
   eslint-plugin-n: ^17.24.0
   eslint-plugin-react: ^7.37.5
   eslint-plugin-react-hooks: ^7.1.1
-  eslint-plugin-sonarjs: ^4.0.2
+  eslint-plugin-sonarjs: ^4.2.1
   eslint-plugin-unicorn: ^63.0.0
   eta: ^4.5.0
   expect-type: ^1.4.0

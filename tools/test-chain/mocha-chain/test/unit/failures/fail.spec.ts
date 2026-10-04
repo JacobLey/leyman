@@ -115,6 +115,8 @@ suite('Failure cases', () => {
         });
 
         test('Test declared inside a test', () => {
+            // Only declared to check that it throws
+            // eslint-disable-next-line sonarjs/assertions-in-tests
             expect(() => test('This will never run', () => {}))
                 .to.throw(Error)
                 .that.contains({
@@ -178,6 +180,8 @@ suite('Failure cases', () => {
         });
 
         after('Test declared inside a hook', () => {
+            // Only declared to check that it throws
+            // eslint-disable-next-line sonarjs/assertions-in-tests
             expect(() => test('This will never run', () => {})).to.throw(
                 Error,
                 'Cannot create new hook/suite/test while executing a hook/test'
