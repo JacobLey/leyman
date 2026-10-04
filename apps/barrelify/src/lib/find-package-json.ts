@@ -1,5 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { findPackageJSON } from 'node:module';
+import Path from 'node:path';
 import { pathToFileURL } from 'node:url';
 
 /**
@@ -13,7 +14,8 @@ import { pathToFileURL } from 'node:url';
 export const isExplicitlyModuleDirectory = async (file: string): Promise<boolean> => {
     const packageJsonPath = findPackageJSON(pathToFileURL(file));
 
-    if (!packageJsonPath) {
+    // Since Node 24.14, a file without any package.json above it resolves to itself
+    if (!packageJsonPath || Path.basename(packageJsonPath) !== 'package.json') {
         return false;
     }
 
