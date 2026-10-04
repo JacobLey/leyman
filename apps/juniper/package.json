@@ -41,6 +41,7 @@
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@types/sinon": "catalog:",
+    "@typescript/native": "catalog:",
     "ajv": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",

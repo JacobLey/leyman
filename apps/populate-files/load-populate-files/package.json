@@ -45,6 +45,7 @@
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@types/yargs": "catalog:",
+    "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
     "mocha": "catalog:",

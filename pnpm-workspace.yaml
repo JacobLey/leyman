@@ -71,6 +71,7 @@ catalog:
   '@typescript-eslint/eslint-plugin': ^8.70.1
   '@typescript-eslint/parser': ^8.70.1
   '@typescript-eslint/utils': ^8.70.1
+  '@typescript/native': npm:typescript@^7.0.2
   ajv: ^8.20.0
   c8: ^11.0.0
   chai: ^6.2.2
@@ -104,7 +105,10 @@ catalog:
   sinon: ^21.1.2
   tmp-promise: ^3.0.3
   ts-dedent: ^2.3.0
-  typescript: ^6.0.3
+  # TypeScript 7 ships no compiler API (expected in 7.1), so `typescript` stays TypeScript 6 for tools that
+  # load it as a library (Nx's `@nx/js/typescript` plugin, typescript-eslint), while `@typescript/native`
+  # provides TypeScript 7's `tsc`. Packages that compile TypeScript depend on both.
+  typescript: npm:@typescript/typescript6@^6.0.2
   uint8array-extras: ^1.6.0
   vite: ^8.3.1
   vitest: ^5.0.2

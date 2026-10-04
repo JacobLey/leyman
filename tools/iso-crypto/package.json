@@ -63,6 +63,7 @@
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@types/sinon": "catalog:",
+    "@typescript/native": "catalog:",
     "barrelify": "workspace:^",
     "c8": "catalog:",
     "eslint": "catalog:",

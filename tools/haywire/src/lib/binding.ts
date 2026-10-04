@@ -282,7 +282,9 @@ export class Binding<
             this.outputId.named(named as ''),
             this.depIds,
             this.isAsync,
-            this.provider
+            // Needed by TypeScript 7 to infer the output id from `outputId`, typescript-eslint checks with TypeScript 6
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+            this.provider as Binding<any, any, any>['provider']
         );
     }
 
@@ -326,7 +328,14 @@ export class Binding<
                 Async
             >;
         }
-        return new Binding(this.outputId.nullable(), this.depIds, this.isAsync, this.provider);
+        return new Binding(
+            this.outputId.nullable(),
+            this.depIds,
+            this.isAsync,
+            // Needed by TypeScript 7 to infer the output id from `outputId`, typescript-eslint checks with TypeScript 6
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+            this.provider as Binding<any, any, any>['provider']
+        );
     }
 
     /**
@@ -369,7 +378,14 @@ export class Binding<
                 Async
             >;
         }
-        return new Binding(this.outputId.undefinable(), this.depIds, this.isAsync, this.provider);
+        return new Binding(
+            this.outputId.undefinable(),
+            this.depIds,
+            this.isAsync,
+            // Needed by TypeScript 7 to infer the output id from `outputId`, typescript-eslint checks with TypeScript 6
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+            this.provider as Binding<any, any, any>['provider']
+        );
     }
 
     /**
@@ -417,7 +433,11 @@ export class Binding<
             outputId,
             this.depIds,
             this.isAsync,
-            providerToMaybeList(outputId, this.isAsync, this.provider)
+            providerToMaybeList(
+                outputId,
+                this.isAsync,
+                this.provider as Binding<any, any, any>['provider']
+            )
         );
     }
 }
@@ -558,7 +578,7 @@ export class DepsBindingBuilder<
             ...deps: DependencyIdTypes<DependencyIds>
         ) => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>
     ): Binding<OutputHaywireId<OutputId>, DependencyIds, true> {
-        return new Binding(
+        return new Binding<OutputHaywireId<OutputId>, DependencyIds, true>(
             normalizeOutputId(this.#outputId),
             this.#depIds,
             true,
@@ -679,7 +699,7 @@ export class AsyncProviderBindingBuilder<
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
         depIds: [...DependencyIds]
     ): Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, true> {
-        return new Binding(
+        return new Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, true>(
             normalizeOutputId(this.#outputId),
             idOrClassToIds(depIds),
             true,
@@ -767,7 +787,7 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
     public withAsyncFactory(
         provider: () => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>
     ): Binding<OutputHaywireId<OutputId>, [], true> {
-        return new Binding(
+        return new Binding<OutputHaywireId<OutputId>, [], true>(
             normalizeOutputId(this.#outputId),
             [],
             true,
@@ -793,13 +813,7 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
     > {
         return new ProviderBindingBuilder(
             this.#outputId.list((this.#outputId.annotations.list !== false) as false),
-            (...args) =>
-                new (
-                    this.#outputId.construct as DepsClass<
-                        HaywireIdProviderType<OutputId>,
-                        unknown[]
-                    >
-                )(...args)
+            (...args) => new (this.#outputId.construct as DepsClass<unknown, unknown[]>)(...args)
         ) as ProviderBindingBuilder<
             OutputId,
             ConstructorParameters<NonNullable<HaywireIdConstructor<OutputId>>>

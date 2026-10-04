@@ -21,7 +21,8 @@
         "dbaeumer.vscode-eslint",
         "golang.go",
         "ms-azuretools.vscode-docker",
-        "ritwickdey.LiveServer"
+        "ritwickdey.LiveServer",
+        "TypeScriptTeam.native-preview"
       ]
     }
   },

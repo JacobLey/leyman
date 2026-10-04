@@ -31,8 +31,9 @@
   "js/ts.preferences.quoteStyle": "single",
 
   "js/ts.preferences.importModuleSpecifierEnding": "js",
-  "js/ts.tsdk.path": "leyman/main/node_modules/typescript/lib",
-  "js/ts.tsserver.node.path": "node",
+  // TypeScript 7 language server (TypeScriptTeam.native-preview), from the workspace install
+  "js/ts.experimental.useTsgo": true,
+  "js/ts.tsdk.path": "leyman/main/node_modules/@typescript/native",
 
   "terminal.integrated.keyboard.protocol": "xterm",
 

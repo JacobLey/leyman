@@ -2,6 +2,7 @@
   "type": "module",
   "devDependencies": {
     "@nx/js": "catalog:",
+    "@typescript/native": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {}

@@ -39,6 +39,7 @@
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@types/sinon": "catalog:",
+    "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",

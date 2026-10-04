@@ -10,7 +10,6 @@
     "emitDeclarationOnly": true,
     "exactOptionalPropertyTypes": true,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "remove",
     "incremental": true,
     "isolatedDeclarations": false,
     "isolatedModules": true,

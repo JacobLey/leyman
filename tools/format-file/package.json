@@ -53,6 +53,7 @@
     "@types/node": "catalog:",
     "@types/sinon": "catalog:",
     "@types/tmp": "catalog:",
+    "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
