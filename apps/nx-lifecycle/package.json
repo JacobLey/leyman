@@ -23,6 +23,7 @@
   "sideEffects": false,
   "executors": "./executors.json",
   "exports": {
+    "./plugin": "./dist/plugin/index.js",
     "./package.json": {
       "default": "./package.json"
     }
@@ -63,6 +64,7 @@
     "@types/yargs": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
+    "expect-type": "catalog:",
     "load-populate-files": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",

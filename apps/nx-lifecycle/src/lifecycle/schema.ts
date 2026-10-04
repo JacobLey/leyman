@@ -21,27 +21,31 @@ const checkAndDryRunSchema = objectSchema({
     },
 });
 
+export const stagesSchema = objectSchema({
+    description: 'Lifecycle stages by name',
+    properties: {},
+    additionalProperties: objectSchema({
+        properties: {
+            dependsOn: dependsOnSchema,
+            hooks: arraySchema(stringSchema()),
+        },
+    }),
+});
+
+export const bindingsSchema = objectSchema({
+    description: 'Bind targets to hooks',
+    properties: {},
+    additionalProperties: stringSchema({
+        description: 'Name of hook in `stage:hook` format',
+    }),
+});
+
 const lifecycleOptionsSchema = checkAndDryRunSchema
     .title('lifecycle')
     .description('Inject Nx targets as high level workflows')
     .properties({
-        stages: objectSchema({
-            description: 'Lifecycle stages by name',
-            properties: {},
-            additionalProperties: objectSchema({
-                properties: {
-                    dependsOn: dependsOnSchema,
-                    hooks: arraySchema(stringSchema()),
-                },
-            }),
-        }),
-        bindings: objectSchema({
-            description: 'Bind targets to hooks',
-            properties: {},
-            additionalProperties: stringSchema({
-                description: 'Name of hook in `stage:hook` format',
-            }),
-        }),
+        stages: stagesSchema,
+        bindings: bindingsSchema,
     })
     .required(['stages', 'bindings'])
     .additionalProperties(false);

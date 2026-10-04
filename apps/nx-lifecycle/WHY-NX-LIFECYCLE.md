@@ -57,7 +57,7 @@ The `dependsOn` fields become a tangled web of implementation details rather tha
 
 2. **Bindings** — You declare once which concrete targets (e.g. `tsc`, `eslint`) map to which stage and hook. Each project opts in by defining those targets. The mapping lives with the tool, not scattered across every dependent.
 
-3. **Generation** — `nx-lifecycle` reads the stages and bindings, then writes all the `dependsOn` fields into `nx.json` and `project.json` automatically.
+3. **Wiring** — `nx-lifecycle` reads the stages and bindings, then derives every `dependsOn`: its Nx plugin infers them when Nx builds the project graph, or its executor writes them into `nx.json` and `project.json`.
 
 The result: adding a new step means updating one binding. Every downstream `dependsOn` is recomputed. The generated configs are checked into version control, so CI can verify they're in sync before any deployment proceeds.
 

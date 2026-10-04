@@ -4,9 +4,9 @@ import { identifier } from 'haywire';
 import { isEmpty } from '#schemas';
 import { NOOP_EXECUTOR } from './constants.js';
 
-type ProcessorOptions = Pick<NormalizedOptions, 'bindings' | 'stages'>;
+export type ProcessorOptions = Pick<NormalizedOptions, 'bindings' | 'stages'>;
 
-type LifecycleTarget = {
+export type LifecycleTarget = {
     name: string;
     stage: string;
     dependsOn: DependsOn;
@@ -27,10 +27,21 @@ type LifecycleTarget = {
       ))
 );
 
-type LifecycleTargets = Map<string, LifecycleTarget>;
+export type LifecycleTargets = Map<string, LifecycleTarget>;
 
 type LifecycleTargetWithHooks = Extract<LifecycleTarget, { previousHook: string }>;
-type RegisteredTargets = Map<string, LifecycleTargetWithHooks>;
+export type RegisteredTargets = Map<string, LifecycleTargetWithHooks>;
+
+export interface LifecyclePlan {
+    /**
+     * Every anchor, hook and stage target by name, with the dependencies its stage declares.
+     */
+    lifecycleTargets: LifecycleTargets;
+    /**
+     * Bound target names mapped to the lifecycle target they run in.
+     */
+    registeredTargets: RegisteredTargets;
+}
 
 const calculateTargets = ({ stages }: ProcessorOptions): LifecycleTargets => {
     const lifecycleTargets: LifecycleTargets = new Map();
@@ -147,11 +158,9 @@ const removeDependencyTargets = ({
 const validateLifecycleDependencies = ({
     lifecycleTargets,
     options,
-    targetsToRemove,
 }: {
     lifecycleTargets: LifecycleTargets;
     options: ProcessorOptions;
-    targetsToRemove: Set<string>;
 }): void => {
     for (const [stageName, { dependsOn }] of Object.entries(options.stages)) {
         for (const dependency of dependsOn ?? []) {
@@ -165,13 +174,45 @@ const validateLifecycleDependencies = ({
                     `Lifecycle stage ${stageName} cannot depend on ${dependencyTarget}, which is internal to stage ${lifecycleTarget.stage}. Depend on ${suggested} instead`
                 );
             }
-            if (targetsToRemove.has(normalized)) {
+        }
+    }
+};
+
+const validateStaleDependencies = ({
+    options,
+    targetsToRemove,
+}: {
+    options: ProcessorOptions;
+    targetsToRemove: Set<string>;
+}): void => {
+    for (const [stageName, { dependsOn }] of Object.entries(options.stages)) {
+        for (const dependency of dependsOn ?? []) {
+            const dependencyTarget = getDependencyTarget(dependency);
+            if (targetsToRemove.has(normalizeDependencyTarget(dependencyTarget))) {
                 throw new Error(
                     `Lifecycle stage ${stageName} cannot depend on ${dependencyTarget}, which is a stale lifecycle target in nx.json`
                 );
             }
         }
     }
+};
+
+/**
+ * Calculates the lifecycle targets, and the hook each bound target runs in.
+ * Shared by the executor, which writes the result to files, and the plugin, which infers it.
+ *
+ * @param options - stages and bindings
+ * @returns lifecycle targets and bound targets
+ * @throws if stages or bindings are inconsistent
+ */
+export const planLifecycle = (options: ProcessorOptions): LifecyclePlan => {
+    const lifecycleTargets = calculateTargets(options);
+    validateLifecycleDependencies({ lifecycleTargets, options });
+
+    return {
+        lifecycleTargets,
+        registeredTargets: registerTargets({ options, lifecycleTargets }),
+    };
 };
 
 const processNxJson = ({
@@ -319,18 +360,15 @@ export const processNxAndProjectJsons: NxAndProjectJsonProcessor = ({
     processedNxJson: NxJson;
     processedProjectJsons: ProjectJson[];
 } => {
-    const lifecycleTargets = calculateTargets(options);
+    const { lifecycleTargets, registeredTargets } = planLifecycle(options);
     const targetsToRemove = calculateTargetsToRemove({
         lifecycleTargets,
         nxJson,
     });
-    validateLifecycleDependencies({
-        lifecycleTargets,
+    validateStaleDependencies({
         options,
         targetsToRemove,
     });
-
-    const registeredTargets = registerTargets({ options, lifecycleTargets });
 
     const processedNxJson = processNxJson({
         nxJson,

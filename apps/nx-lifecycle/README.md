@@ -11,13 +11,16 @@ An [Nx](https://nx.dev/) plugin that injects specific targets into high level wo
 ## Contents
 
 - [Install](#install)
-- [Usage](#usage)
+- [Plugin](#plugin)
+    - [Overriding inferred targets](#overriding-inferred-targets)
+    - [Limitations](#limitations)
+    - [Migrating from the executor](#migrating-from-the-executor)
+- [Executor](#executor)
 - [Configuration](#configuration)
     - [stages](#stages)
     - [bindings](#bindings)
     - [check](#check)
     - [dryRun](#dryrun)
-- [Executors](#executors)
 - [CLI](#cli)
 
 For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](./WHY-NX-LIFECYCLE.md).
@@ -25,8 +28,84 @@ For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](./WH
 ## Install
 
 ```sh
-npm i nx-lifecycle
+npm i -D nx-lifecycle
 ```
+
+`nx-lifecycle` wires targets in one of two ways:
+
+- **[Plugin](#plugin)** (recommended): infers the lifecycle targets whenever Nx builds the project graph. Nothing is written to files.
+- **[Executor](#executor)**: writes the lifecycle targets into `nx.json` and every `project.json`, to be committed. CI checks they are up to date.
+
+Both take the same [stages](#stages) and [bindings](#bindings).
+
+## Plugin
+
+Add the plugin to `nx.json`, with stages and bindings as its options. Install `nx-lifecycle` in the workspace root `package.json`, where Nx resolves plugins.
+
+```json
+// nx.json
+{
+    "plugins": [
+        {
+            "plugin": "nx-lifecycle/plugin",
+            "options": {
+                "stages": {
+                    "build": {
+                        "hooks": ["pre", "run", "post"],
+                        "dependsOn": ["^build"]
+                    },
+                    "test": {
+                        "hooks": ["run", "report"],
+                        "dependsOn": ["build"]
+                    }
+                },
+                "bindings": {
+                    "tsc": "build:run",
+                    "mocha": "test:run"
+                }
+            }
+        }
+    ]
+}
+```
+
+Every project with a `project.json` gets the [stage targets](#generated-targets). A bound target is wired in a project when its `project.json` declares it, e.g. `"tsc": {}`; the implementation can still come from `targetDefaults`. `nx show project <name>` lists the inferred targets.
+
+### Overriding inferred targets
+
+Nx applies `nx.json` `targetDefaults` and `project.json` on top of inferred targets. A `dependsOn` there replaces the inferred one rather than merging with it. So:
+
+- Don't define the stage targets (`build`, `build:_`, `build:run`…) yourself.
+- If a bound target sets its own `dependsOn`, include its lifecycle dependency: the hook before its own, or `<stage>:_` for the first hook.
+
+```json
+// project.json, with "e2e-test": "test:run"
+{
+    "targets": {
+        "e2e-test": {
+            "dependsOn": [{ "target": "build", "projects": ["my-server"] }, "test:_"]
+        }
+    }
+}
+```
+
+Every time Nx builds the project graph, the plugin checks the merged configuration, and fails with the entry to add if a bound target lost its lifecycle dependency.
+
+### Limitations
+
+- Only projects with a `project.json` get lifecycle targets.
+- A target created by another Nx plugin is only wired if it is also declared in `project.json`.
+- Nx must load the plugin before it can build anything, so a workspace can't use the plugin from its own unbuilt source. Depend on a published version.
+
+### Migrating from the executor
+
+1. Add the plugin to `nx.json`, with the options of the executor.
+2. Remove the `lifecycle` target that runs the executor.
+3. In `nx.json` `targetDefaults`, delete every target with a `__lifecycle` configuration, and remove lifecycle targets from the `dependsOn` of bound targets. Delete `dependsOn` if nothing else is left in it, as an empty list replaces the inferred one.
+4. Optionally delete the lifecycle targets (`"build:_": {}`…) from each `project.json`. They are empty, so they don't override anything.
+5. Run `nx show projects`. The plugin reports any target that still overrides its wiring.
+
+## Executor
 
 Register it as a target in a `project.json`. Because `lifecycle` manages dependencies for the rest of your targets, it should live in a project outside your normal build/test graph — for example, a root-level management package. See [Nx-lifecycle's own monorepo config](https://github.com/JacobLey/leyman/blob/main/leyman/main/lifecycle.json) for a real example.
 
@@ -44,9 +123,7 @@ Register it as a target in a `project.json`. Because `lifecycle` manages depende
 }
 ```
 
-## Usage
-
-`nx-lifecycle` reads your stage and binding configuration, then writes `dependsOn` entries into `nx.json` and all relevant `project.json` files. The generated targets use the [noop](https://nx.dev/nx-api/nx/executors/noop) executor and should never be invoked directly or have their configuration edited by hand. Commit the generated output to version control.
+`nx-lifecycle` reads your stage and binding configuration, then writes `dependsOn` entries into `nx.json` and all relevant `project.json` files. The generated targets use the [noop](https://nx.dev/nx-api/nx/executors/noop) executor and should never be invoked directly or have their configuration edited by hand. Commit the generated output to version control, and rerun the executor whenever you add, remove, or rename targets.
 
 You may declare any of your own targets as depending on a lifecycle-managed target. That is the intended use: your targets reference abstract stage targets, and `nx-lifecycle` ensures those stages wire up to the correct concrete implementations.
 
@@ -204,7 +281,7 @@ A binding applies to every project that defines the target, through `targetDefau
 
 #### Project-specific dependencies
 
-A project can't change a stage's `dependsOn`, but it can add dependencies to its own bound targets. `nx-lifecycle` keeps any `dependsOn` entry that isn't a lifecycle target and appends the hook dependency after it:
+With the plugin, see [Overriding inferred targets](#overriding-inferred-targets) instead. With the executor, a project can't change a stage's `dependsOn`, but it can add dependencies to its own bound targets. `nx-lifecycle` keeps any `dependsOn` entry that isn't a lifecycle target and appends the hook dependency after it:
 
 ```json
 // project.json
@@ -221,6 +298,8 @@ Use this sparingly. If many projects need the same dependency, it belongs in the
 
 ### `check`
 
+Executor only.
+
 | Type | Default |
 |------|---------|
 | `boolean` | `true` in CI, `false` otherwise |
@@ -229,19 +308,13 @@ When `true`, the executor fails if `nx.json` or any `project.json` is out of syn
 
 ### `dryRun`
 
+Executor only.
+
 | Type | Default |
 |------|---------|
 | `boolean` | `false` |
 
 When `true`, performs all computation but skips writing any files. Can still fail when `check` is `true`.
-
-## Executors
-
-### `nx-lifecycle:lifecycle`
-
-Reads the stage and binding configuration, then updates `nx.json` and all `project.json` files with the correct `dependsOn` entries for every lifecycle-managed target. Bound project targets gain the appropriate dependencies automatically.
-
-Run this executor whenever you add, remove, or rename targets in your projects to keep all `dependsOn` declarations in sync.
 
 ## CLI
 
