@@ -14,9 +14,6 @@
       "path": "./tools/normalized-react-query"
     },
     {
-      "path": "./tools/nx-plugin-handler"
-    },
-    {
       "path": "./tools/haywire-launcher"
     },
     {

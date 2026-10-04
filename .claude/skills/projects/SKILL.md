@@ -46,7 +46,6 @@ See each package's README.md for full usage documentation.
 | [`test-chain-core`](../../../tools/test-chain/test-chain-core/) | Framework-agnostic internals shared by `mocha-chain` and `vitest-chain` |
 | [`named-patch`](../../../tools/named-patch/) | Testable monkey-patching via named function wrappers |
 | [`normalized-react-query`](../../../tools/normalized-react-query/) | Type-safe React Query wrappers that enforce consistent key/query pairing |
-| [`nx-plugin-handler`](../../../tools/nx-plugin-handler/) | Error-handling wrapper for Nx executor implementations |
 | [`parse-cwd`](../../../tools/parse-cwd/) | Resolve and validate a working directory from string, URL, or undefined |
 | [`punycode-esm`](../../../tools/punycode-esm/) | ESM port of the Punycode encoding library |
 | [`sinon-typed-stub`](../../../tools/sinon-typed-stub/) | Type-safe Sinon spy, stub, and mock wrappers |

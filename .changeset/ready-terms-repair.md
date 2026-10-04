@@ -2,7 +2,6 @@
 "load-populate-files": major
 "populate-files": major
 "normalized-react-query": major
-"nx-plugin-handler": major
 "haywire-launcher": major
 "sinon-typed-stub": major
 "default-import": major

@@ -1,7 +1,0 @@
-{
-  "executors": {
-    "fake-executor": {
-      "implementation": "../../../dist-test/data/implementation/index.cjs"
-    }
-  }
-}
