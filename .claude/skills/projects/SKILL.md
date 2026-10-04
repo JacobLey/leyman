@@ -66,3 +66,4 @@ See each package's README.md for full usage documentation.
 | Package | Description |
 |---------|-------------|
 | [`eslint-config-schema`](../../../e2e/eslint-config-schema) | Checks that eslint-config's hand-written package.json schema matches what juniper builds |
+| [`normalized-react-query-ssr`](../../../e2e/normalized-react-query-ssr) | Checks that normalized-react-query's preloading carries across a server render into client hydration |
