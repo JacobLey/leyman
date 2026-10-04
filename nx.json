@@ -255,6 +255,20 @@
         "build:run"
       ]
     },
+    "sync-injected": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "${NX_WORKSPACE_ROOT}/scripts/nx/sync-injected.mjs"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "dependsOn": [
+        "build:post"
+      ]
+    },
     "mocha-unit-test": {
       "executor": "nx:run-commands",
       "options": {
@@ -467,10 +481,20 @@
         "__lifecycle": {}
       }
     },
+    "build:sync": {
+      "executor": "nx:noop",
+      "dependsOn": [
+        "build:post",
+        "sync-injected"
+      ],
+      "configurations": {
+        "__lifecycle": {}
+      }
+    },
     "build": {
       "executor": "nx:noop",
       "dependsOn": [
-        "build:post"
+        "build:sync"
       ],
       "configurations": {
         "__lifecycle": {}

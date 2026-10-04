@@ -266,8 +266,12 @@ func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
 	// Only keep the store and metadata cache: the `node_modules` that `pnpm fetch` leaves behind makes
 	// `pnpm install` skip linking projects. The offline install needs the cached metadata to check the
 	// lockfile against the supply-chain policies.
+	//
+	// Injected workspace packages are `directory:` dependencies, which `pnpm fetch` reads even though it has
+	// nothing to download for them. Empty directories satisfy it, keeping this layer independent of the source.
 	fetched := m.base().
 		WithDirectory(workdir, lockfiles).
+		WithExec([]string{"sh", "-c", `grep -oE 'resolution: \{directory: [^,]+' pnpm-lock.yaml | cut -d ' ' -f 3 | xargs -r mkdir -p`}).
 		WithExec([]string{"pnpm", "fetch"})
 
 	return m.base().

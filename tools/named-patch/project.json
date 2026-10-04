@@ -18,6 +18,7 @@
       }
     },
     "coverage-report": {},
+    "sync-injected": {},
     "install:_": {},
     "install": {},
     "prepare:_": {},
@@ -30,6 +31,7 @@
     "build:_": {},
     "build:run": {},
     "build:post": {},
+    "build:sync": {},
     "build": {},
     "test:_": {},
     "test:compile": {},

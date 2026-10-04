@@ -21,7 +21,7 @@ install → prepare ┬→ check ─────────┬→ verify
 | `install` | — | Dependencies installed and linked |
 | `prepare` | `generate` → `format` | Everything that rewrites source: codegen (`barrelify`, `update-ts-references`), then formatting (`biome`). Writes locally, only checks in CI, so `build` always sees final source |
 | `check` | `lint` | Opinionated rules (`eslint`). Runs after the project's own build (tests import its `dist/` types). Nothing depends on it, so a hacky change still builds and tests |
-| `build` | `run` → `post` | `run`: produce `dist/` (clearing it first). `post`: codegen that needs `dist/` (`populate-files` → `out/`) |
+| `build` | `run` → `post` → `sync` | `run`: produce `dist/` (clearing it first). `post`: codegen that needs `dist/` (`populate-files` → `out/`). `sync`: copy the published files into dependents' injected copies (`sync-injected`), uncached so it also follows cache restores |
 | `test` | `compile` → `run` → `report` | `compile`: compile and type-check `test/` into `dist-test/` (`tsc-test`). `run`: test suites, each clearing its own coverage data (unit and integration can both run). `report`: enforce coverage thresholds. Does not test dependencies; use `nx run-many`/`nx affected` for that |
 | `verify` | — | `check` + `test`: everything CI requires of a project |
 

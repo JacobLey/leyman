@@ -20,6 +20,8 @@ The named catalogs under `catalogs:` are reserved for depending on the **npm-pub
 
 External packages use `catalog:`. Packages in this repo use `workspace:^`. A `peerDependency` or `optionalDependency` must also be listed in `devDependencies` to be installed locally.
 
+Workspace packages are injected, not symlinked: a dependent sees a copy of only the files the package publishes, and the package's peers resolve from the dependent, as they would from npm. The dependency's `build` keeps the copy current (see [`sync-injected`](../nx-tasks-reference/SKILL.md#sync-injected)).
+
 ## 3. Install and build
 
 ```bash

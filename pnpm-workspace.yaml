@@ -8,7 +8,11 @@ packages:
 
 autoInstallPeers: false
 disallowWorkspaceCycles: true
-forceLegacyDeploy: true
+# Install workspace dependencies as copies of their published files, with peers resolved from each dependent,
+# like a package from the registry. Builds keep the copies current (`sync-injected`).
+injectWorkspacePackages: true
+# Otherwise pnpm symlinks to the source again whenever peers allow it, which is nearly always
+dedupeInjectedDeps: false
 
 # Required for Docker install
 packageImportMethod: clone-or-copy

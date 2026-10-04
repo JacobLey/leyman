@@ -42,5 +42,5 @@ A test-only package under `e2e/` checks other workspace packages together, e.g. 
 
 - `package.json`: named `@leyman/e2e-<name>`, `"private": true`, no `exports`, and only `devDependencies` (including the packages under test, via `workspace:^`).
 - No `src/`, root `tsconfig.json` or `.npmignore`. Tests go in `test/integration/`.
-- `project.json` targets: `biome`, `eslint`, `tsc-test`, `mocha-integration-test`. No `tsc` (nothing to build), and no `coverage-report` (no source of its own to cover).
+- `project.json` targets: `biome`, `eslint`, `tsc-test`, `mocha-integration-test`. No `tsc` or `sync-injected` (nothing to build), and no `coverage-report` (no source of its own to cover).
 - Import the packages under test by their public exports only. Add an export to a package if needed, rather than reaching into its `dist/`.

@@ -18,6 +18,7 @@
     "build:_": {},
     "build:run": {},
     "build:post": {},
+    "build:sync": {},
     "build": {},
     "test:_": {},
     "test:compile": {},

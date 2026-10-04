@@ -28,7 +28,8 @@
     "build": {
       "hooks": [
         "run",
-        "post"
+        "post",
+        "sync"
       ],
       "dependsOn": [
         "^build",
@@ -63,6 +64,7 @@
     "mocha-unit-test": "test:run",
     "mocha-integration-test": "test:run",
     "vitest-unit-test": "test:run",
-    "coverage-report": "test:report"
+    "coverage-report": "test:report",
+    "sync-injected": "build:sync"
   }
 }
