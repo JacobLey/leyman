@@ -62,6 +62,7 @@ jobs:
           version: ${{ env.DAGGER_VERSION }}
           verb: call
           module: ./dagger
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: test --nx-cache=tcp://localhost:3000
 
       # Saved even when tests fail, so tasks that passed are not re-run
@@ -98,6 +99,7 @@ jobs:
           version: ${{ env.DAGGER_VERSION }}
           verb: call
           module: ./dagger
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: version export --path .
 
       # Does nothing when there are no pending changesets
@@ -115,6 +117,8 @@ jobs:
     needs: test
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
+    # Restricted to main; npm trusted publishing only accepts this environment
+    environment: npm
     concurrency:
       group: publish
       cancel-in-progress: false
@@ -141,6 +145,7 @@ jobs:
           version: ${{ env.DAGGER_VERSION }}
           verb: call
           module: ./dagger
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: publish --github-env=file://${{ runner.temp }}/github-env
 
       - name: Tag releases
