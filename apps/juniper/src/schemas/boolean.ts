@@ -18,29 +18,29 @@ export class BooleanSchema<
     /**
      * Not enough possible states.
      */
-    public declare anyOf: never;
+    declare public anyOf: never;
 
     /**
      * Not enough possible states.
      */
-    public declare allOf: never;
+    declare public allOf: never;
 
     /**
      * Not enough possible states.
      */
-    public declare if: never;
+    declare public if: never;
 
     /**
      * Not enough possible states.
      */
-    public declare oneOf: never;
+    declare public oneOf: never;
 
     /**
      * Not enough possible states.
      */
-    public declare not: never;
+    declare public not: never;
 
-    public declare nullable: (this: AnyBooleanSchema) => BooleanSchema<true>;
+    declare public nullable: (this: AnyBooleanSchema) => BooleanSchema<true>;
 
     /**
      * Create a new instance of BooleanSchema.

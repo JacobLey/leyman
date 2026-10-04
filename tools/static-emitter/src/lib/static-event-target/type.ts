@@ -12,22 +12,22 @@ export declare class StaticEventTarget<InterfaceEvents extends Types.EventDict =
     /**
      * Child classes _should_ declare types using this property.
      */
-    public declare [Types.events]: InterfaceEvents;
+    declare public [Types.events]: InterfaceEvents;
 
     // Existing methods, just with type overrides.
     // Only `string` events are allowed and explicit Event usage is required.
 
-    public declare addEventListener: <K extends Types.EventList<this>>(
+    declare public addEventListener: <K extends Types.EventList<this>>(
         type: K,
         listener: Types.NullishEventTargetListener<this, K>,
         options?: boolean | AddEventListenerOptions
     ) => void;
 
-    public declare dispatchEvent: <K extends Types.EventList<this>>(
+    declare public dispatchEvent: <K extends Types.EventList<this>>(
         event: Types.EventListenerParam<this, K>
     ) => boolean;
 
-    public declare removeEventListener: <K extends Types.EventList<this>>(
+    declare public removeEventListener: <K extends Types.EventList<this>>(
         type: K,
         listener: Types.NullishEventTargetListener<this, K>,
         options?: boolean | EventListenerOptions

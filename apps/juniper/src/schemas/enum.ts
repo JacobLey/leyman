@@ -26,32 +26,32 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
     /**
      * Enums aren't conditional.
      */
-    public declare allOf: never;
+    declare public allOf: never;
 
     /**
      * Enums aren't conditional.
      */
-    public declare anyOf: never;
+    declare public anyOf: never;
 
     /**
      * Enums aren't conditional.
      */
-    public declare if: never;
+    declare public if: never;
 
     /**
      * Enums aren't conditional.
      */
-    public declare not: never;
+    declare public not: never;
 
     /**
      * Not applicable.
      */
-    public declare nullable: never;
+    declare public nullable: never;
 
     /**
      * Enums aren't conditional.
      */
-    public declare oneOf: never;
+    declare public oneOf: never;
 
     /**
      * @override

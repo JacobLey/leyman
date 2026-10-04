@@ -20,82 +20,82 @@ export class CustomSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
     /**
      * Not applicable.
      */
-    public declare title: never;
+    declare public title: never;
 
     /**
      * Not applicable.
      */
-    public declare allOf: never;
+    declare public allOf: never;
 
     /**
      * Not applicable.
      */
-    public declare anyOf: never;
+    declare public anyOf: never;
 
     /**
      * Not applicable.
      */
-    public declare description: never;
+    declare public description: never;
 
     /**
      * Not applicable.
      */
-    public declare default: never;
+    declare public default: never;
 
     /**
      * Not applicable.
      */
-    public declare deprecated: never;
+    declare public deprecated: never;
 
     /**
      * Not applicable.
      */
-    public declare example: never;
+    declare public example: never;
 
     /**
      * Not applicable.
      */
-    public declare examples: never;
+    declare public examples: never;
 
     /**
      * Not applicable.
      */
-    public declare readOnly: never;
+    declare public readOnly: never;
 
     /**
      * Not applicable.
      */
-    public declare writeOnly: never;
+    declare public writeOnly: never;
 
     /**
      * Not applicable.
      */
-    public declare if: never;
+    declare public if: never;
 
     /**
      * Not applicable.
      */
-    public declare metadata: never;
+    declare public metadata: never;
 
     /**
      * Not applicable.
      */
-    public declare not: never;
+    declare public not: never;
 
     /**
      * Not applicable.
      */
-    public declare nullable: never;
+    declare public nullable: never;
 
     /**
      * Not applicable.
      */
-    public declare oneOf: never;
+    declare public oneOf: never;
 
     /**
      * Not applicable.
      */
-    public declare ref: never;
+    declare public ref: never;
 
     /**
      * @override

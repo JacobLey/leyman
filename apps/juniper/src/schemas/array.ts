@@ -103,7 +103,7 @@ export class ArraySchema<
 
     protected override readonly schemaType = 'array';
 
-    public declare allOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    declare public allOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
         this: AnyArraySchema,
         schema: S
     ) => ArraySchema<
@@ -114,7 +114,7 @@ export class ArraySchema<
         null extends SchemaType<S> ? N : boolean
     >;
 
-    public declare anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    declare public anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
         this: AnyArraySchema,
         schemas: S[]
     ) => ArraySchema<
@@ -125,7 +125,7 @@ export class ArraySchema<
         null extends SchemaType<S> ? N : boolean
     >;
 
-    public declare if: <
+    declare public if: <
         IfT,
         IfP extends any[],
         IfC extends IfP[number] | IfT,
@@ -154,16 +154,16 @@ export class ArraySchema<
         >
     >;
 
-    public declare not: <NotN extends boolean>(
+    declare public not: <NotN extends boolean>(
         this: AnyArraySchema,
         schema: ArraySchema<any, any[], any, unknown, NotN>
     ) => NotN extends true ? ArraySchema<T, P, C, unknown, boolean> : this;
 
-    public declare nullable: (
+    declare public nullable: (
         this: AnyArraySchema
     ) => ArraySchema<T, P, C, unknown, boolean extends N ? boolean : true>;
 
-    public declare oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    declare public oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
         this: AnyArraySchema,
         schemas: S[]
     ) => ArraySchema<
@@ -527,19 +527,19 @@ export declare class IArraySchemaOverride<
     M,
     N extends boolean,
 > extends ArraySchema<T, P, C, M, N> {
-    public declare static create: any;
+    declare public static create: any;
 
-    public declare allOf: (
+    declare public allOf: (
         this: any,
         schema: ArraySchema<any, any[], any, unknown, boolean>
     ) => any;
 
-    public declare anyOf: (
+    declare public anyOf: (
         this: any,
         schemas: ArraySchema<any, any[], any, unknown, boolean>[]
     ) => any;
 
-    public declare if: <
+    declare public if: <
         IfT,
         IfP extends any[],
         IfC extends IfP[number] | IfT,
@@ -553,20 +553,20 @@ export declare class IArraySchemaOverride<
         conditionals: ConditionalResult<Then, Else>
     ) => any;
 
-    public declare not: any;
+    declare public not: any;
 
-    public declare nullable: (this: any) => any;
+    declare public nullable: (this: any) => any;
 
-    public declare oneOf: (
+    declare public oneOf: (
         this: any,
         schemas: ArraySchema<any, any[], any, unknown, boolean>[]
     ) => any;
 
-    public declare contains: any;
+    declare public contains: any;
 
-    public declare prefixItem: any;
+    declare public prefixItem: any;
 
-    public declare prependPrefixItem: any;
+    declare public prependPrefixItem: any;
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention

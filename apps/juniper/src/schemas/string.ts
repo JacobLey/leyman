@@ -62,17 +62,17 @@ export class StringSchema<
 
     protected override readonly schemaType = 'string';
 
-    public declare allOf: <S extends StringSchema<string, boolean>>(
+    declare public allOf: <S extends StringSchema<string, boolean>>(
         this: AnyStringSchema,
         schema: S
     ) => StringSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
-    public declare anyOf: <S extends StringSchema<string, boolean>>(
+    declare public anyOf: <S extends StringSchema<string, boolean>>(
         this: AnyStringSchema,
         schemas: S[]
     ) => StringSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
-    public declare if: <
+    declare public if: <
         IfT extends string,
         IfN extends boolean,
         ThenT extends string,
@@ -88,16 +88,16 @@ export class StringSchema<
         ConditionalNullable<N, IfN, ThenN, ElseN>
     >;
 
-    public declare not: <NotN extends boolean>(
+    declare public not: <NotN extends boolean>(
         this: AnyStringSchema,
         schema: StringSchema<string, NotN>
     ) => NotN extends true ? StringSchema<T, boolean> : this;
 
-    public declare nullable: (
+    declare public nullable: (
         this: AnyStringSchema
     ) => StringSchema<T, boolean extends N ? boolean : true>;
 
-    public declare oneOf: <S extends StringSchema<string, boolean>>(
+    declare public oneOf: <S extends StringSchema<string, boolean>>(
         this: AnyStringSchema,
         schemas: S[]
     ) => StringSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;

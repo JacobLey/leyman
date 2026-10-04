@@ -96,7 +96,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @param options - constructor parameters
      * @returns new schema instance
      */
-    protected declare static create: (this: void, options?: any) => AbstractSchema<any>;
+    declare protected static create: (this: void, options?: any) => AbstractSchema<any>;
 
     readonly #allOf: AbstractSchema<T>[];
     readonly #anyOf: AbstractSchema<T>[][];
@@ -117,13 +117,13 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     readonly #title: string | null;
     readonly #writeOnly: boolean;
 
-    protected declare readonly schemaType?: string;
+    declare protected readonly schemaType?: string;
 
     /**
      * Used to store type information.
      * Not actually defined and should not be accessed via JS.
      */
-    public declare readonly [typeCache]: T;
+    declare public readonly [typeCache]: T;
 
     public readonly '~standard' = {
         version: 1,

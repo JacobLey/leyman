@@ -55,7 +55,7 @@ suite('StaticEventTarget', () => {
                  * @override
                  */
                 class ExtendTargetDeclare extends StaticEventTarget {
-                    public declare [events]: {
+                    declare public [events]: {
                         foo: 123;
                         bar: ServerEvent<'bar'>;
                         onStuff: NativeEvent;
@@ -72,7 +72,7 @@ suite('StaticEventTarget', () => {
                 class ExtendTargetCombo extends StaticEventTarget<{
                     foo: 123;
                 }> {
-                    public declare [events]: StaticEventTarget<{
+                    declare public [events]: StaticEventTarget<{
                         foo: 123;
                     }>[typeof events] & {
                         bar: ServerEvent<'bar'>;

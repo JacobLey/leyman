@@ -257,7 +257,7 @@ export class Module<
     Async extends boolean,
 > implements GenericModule
 {
-    public declare [idType]: {
+    declare public [idType]: {
         outputs: Outputs;
         listOutputs: ListOutputs;
         dependencies: Dependencies;

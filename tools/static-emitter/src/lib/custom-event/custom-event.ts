@@ -10,7 +10,7 @@ declare class CustomEvent<E extends string, T = null>
     extends globalThis.CustomEvent<T>
     implements TypedEvent<E>
 {
-    public declare readonly type: E;
+    declare public readonly type: E;
 
     public constructor(
         type: E,

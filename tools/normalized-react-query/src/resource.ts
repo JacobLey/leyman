@@ -50,7 +50,7 @@ class Resource<
      *
      * __DO NOT USE__
      */
-    public declare readonly [typeCache]?: {
+    declare public readonly [typeCache]?: {
         data: TData;
         params: TParams;
         key: TQueryKey;

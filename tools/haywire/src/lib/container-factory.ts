@@ -72,7 +72,7 @@ export class ContainerFactory<
     Async extends boolean,
     Bindings extends InstanceBinding<GenericHaywireId>,
 > {
-    public declare [idType]: {
+    declare public [idType]: {
         outputs: Outputs;
         dependencies: Dependencies;
         async: Async;

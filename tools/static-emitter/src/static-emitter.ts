@@ -45,12 +45,12 @@ export class StaticEmitter<
     /**
      * Alias for `on()`.
      */
-    public declare addListener: this['on'];
+    declare public addListener: this['on'];
 
     /**
      * Alias for `off()`.
      */
-    public declare removeListener: this['off'];
+    declare public removeListener: this['off'];
 
     // Custom methods, mirroring EventEmitter syntax + simplifying CustomEvent + allowing symbols.
 

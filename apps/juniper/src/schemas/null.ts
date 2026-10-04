@@ -11,32 +11,32 @@ export class NullSchema extends AbstractSchema<SchemaGenerics<null>> {
     /**
      * Not applicable.
      */
-    public declare allOf: never;
+    declare public allOf: never;
 
     /**
      * Not applicable.
      */
-    public declare anyOf: never;
+    declare public anyOf: never;
 
     /**
      * Not enough possible states.
      */
-    public declare if: never;
+    declare public if: never;
 
     /**
      * Not enough possible states.
      */
-    public declare not: never;
+    declare public not: never;
 
     /**
      * Already nullable.
      */
-    public declare nullable: never;
+    declare public nullable: never;
 
     /**
      * Not applicable.
      */
-    public declare oneOf: never;
+    declare public oneOf: never;
 
     /**
      * Create a new instance of NullSchema.

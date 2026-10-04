@@ -87,23 +87,23 @@ export class NumberSchema<
     // Nullable
     N extends boolean = false,
 > extends AbstractSchema<NumberGenerics<T, N>> {
-    protected declare readonly schemaType;
+    declare protected readonly schemaType;
 
     readonly #maximum: LimitWithExclusive;
     readonly #minimum: LimitWithExclusive;
     readonly #multipleOfs: number[];
 
-    public declare allOf: <S extends NumberSchema<number, boolean>>(
+    declare public allOf: <S extends NumberSchema<number, boolean>>(
         this: AnyNumberSchema,
         schema: S
     ) => NumberSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
-    public declare anyOf: <S extends NumberSchema<number, boolean>>(
+    declare public anyOf: <S extends NumberSchema<number, boolean>>(
         this: AnyNumberSchema,
         schemas: S[]
     ) => NumberSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
-    public declare if: <
+    declare public if: <
         IfT extends number,
         IfN extends boolean,
         ThenT extends number,
@@ -119,16 +119,16 @@ export class NumberSchema<
         ConditionalNullable<N, IfN, ThenN, ElseN>
     >;
 
-    public declare not: <NotN extends boolean>(
+    declare public not: <NotN extends boolean>(
         this: AnyNumberSchema,
         schema: NumberSchema<number, NotN>
     ) => NotN extends true ? NumberSchema<T, boolean> : this;
 
-    public declare nullable: (
+    declare public nullable: (
         this: AnyNumberSchema
     ) => NumberSchema<T, boolean extends N ? boolean : true>;
 
-    public declare oneOf: <S extends NumberSchema<number, boolean>>(
+    declare public oneOf: <S extends NumberSchema<number, boolean>>(
         this: AnyNumberSchema,
         schemas: S[]
     ) => NumberSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;

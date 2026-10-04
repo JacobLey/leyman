@@ -61,7 +61,7 @@ class Infinite<
      *
      * __DO NOT USE__
      */
-    public declare readonly [typeCache]?: {
+    declare public readonly [typeCache]?: {
         data: InfiniteData<TData, TPageParam>;
         params: TParams;
         key: TQueryKey;

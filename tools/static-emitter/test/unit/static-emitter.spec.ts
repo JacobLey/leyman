@@ -62,7 +62,7 @@ suite('StaticEmitter', () => {
                  * @override
                  */
                 class CustomEmitterDeclare extends StaticEmitter {
-                    public declare [events]: {
+                    declare public [events]: {
                         foo: 123;
                         bar: ServerEvent<'bar'>;
                         [eventSym]: { myData: string };
@@ -80,7 +80,7 @@ suite('StaticEmitter', () => {
                     foo: 123 | 456;
                     bar: ServerEvent<'bar'>;
                 }> {
-                    public declare [events]: StaticEmitter<{
+                    declare public [events]: StaticEmitter<{
                         foo: 123 | 456;
                         bar: ServerEvent<'bar'>;
                     }>[typeof events] & {

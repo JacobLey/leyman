@@ -21,17 +21,17 @@ type AnyMergeSchema = MergeSchema<any>;
  * @template T
  */
 export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
-    public declare allOf: <S extends Schema<unknown>>(
+    declare public allOf: <S extends Schema<unknown>>(
         this: AnyMergeSchema,
         schema: S
     ) => MergeSchema<SchemaType<S> & T>;
 
-    public declare anyOf: <S extends Schema<unknown>>(
+    declare public anyOf: <S extends Schema<unknown>>(
         this: AnyMergeSchema,
         schemas: S[]
     ) => MergeSchema<SchemaType<S> & T>;
 
-    public declare if: <
+    declare public if: <
         If extends AbstractSchema<SchemaGenerics<unknown>>,
         Then extends AbstractSchema<SchemaGenerics<unknown>>,
         Else extends AbstractSchema<SchemaGenerics<unknown>>,
@@ -41,14 +41,14 @@ export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
         conditionals: ConditionalResult<Then, Else>
     ) => MergeSchema<T & (SchemaType<Else> | (SchemaType<If> & SchemaType<Then>))>;
 
-    public declare not: (this: AnyMergeSchema, schemas: Schema<unknown>) => this;
+    declare public not: (this: AnyMergeSchema, schemas: Schema<unknown>) => this;
 
     /**
      * Not applicable.
      */
-    public declare nullable: never;
+    declare public nullable: never;
 
-    public declare oneOf: <S extends Schema<unknown>>(
+    declare public oneOf: <S extends Schema<unknown>>(
         this: AnyMergeSchema,
         schemas: S[]
     ) => MergeSchema<SchemaType<S> & T>;

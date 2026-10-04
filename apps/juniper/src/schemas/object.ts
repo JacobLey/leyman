@@ -168,7 +168,7 @@ export class ObjectSchema<
 
     protected override readonly schemaType = 'object';
 
-    public declare allOf: <S extends Schema<Record<string, unknown> | null>>(
+    declare public allOf: <S extends Schema<Record<string, unknown> | null>>(
         this: AnyObjectSchema,
         schema: S
     ) => ObjectSchema<
@@ -180,7 +180,7 @@ export class ObjectSchema<
         null extends SchemaType<S> ? N : boolean
     >;
 
-    public declare anyOf: <S extends Schema<Record<string, unknown> | null>>(
+    declare public anyOf: <S extends Schema<Record<string, unknown> | null>>(
         this: AnyObjectSchema,
         schemas: S[]
     ) => ObjectSchema<
@@ -192,7 +192,7 @@ export class ObjectSchema<
         null extends SchemaType<S> ? N : boolean
     >;
 
-    public declare if: <
+    declare public if: <
         IfP extends BaseParameterSchemaObject,
         IfR extends StripString<Extract<keyof IfP, string>>,
         IfA extends boolean | AbstractSchema<SchemaGenerics<unknown>>,
@@ -224,7 +224,7 @@ export class ObjectSchema<
         >
     >;
 
-    public declare not: <
+    declare public not: <
         NotP extends BaseParameterSchemaObject,
         NotR extends StripString<Extract<keyof NotP, string>>,
         NotN extends boolean,
@@ -233,11 +233,11 @@ export class ObjectSchema<
         schema: ObjectSchema<NotP, NotR, any, any, any, NotN>
     ) => NotN extends true ? ObjectSchema<P, R, A, X, M, boolean> : this;
 
-    public declare nullable: (
+    declare public nullable: (
         this: AnyObjectSchema
     ) => ObjectSchema<P, R, A, X, M, boolean extends N ? boolean : true>;
 
-    public declare oneOf: <S extends Schema<Record<string, unknown> | null>>(
+    declare public oneOf: <S extends Schema<Record<string, unknown> | null>>(
         this: AnyObjectSchema,
         schemas: S[]
     ) => ObjectSchema<

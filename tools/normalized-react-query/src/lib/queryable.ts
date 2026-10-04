@@ -54,7 +54,7 @@ export abstract class Queryable<TParams, TQueryKey extends readonly unknown[], T
      *
      * __DO NOT USE__
      */
-    public declare readonly [typeCache]?: {
+    declare public readonly [typeCache]?: {
         params: TParams;
         key: TQueryKey;
         data: TData;

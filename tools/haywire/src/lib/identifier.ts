@@ -171,7 +171,7 @@ export class HaywireId<
     static readonly #symToRand = new WeakMap<symbol, string>();
     static #pseudoRandTracker = 0;
 
-    public declare readonly [idType]: T;
+    declare public readonly [idType]: T;
     #baseId: HaywireId<
         T,
         Constructor,

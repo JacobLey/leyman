@@ -203,7 +203,7 @@ const validateProviderOutput = (outputId: GenericOutputHaywireId, value: unknown
  * @template Outputs
  */
 export class Container<Outputs extends [Extendable]> {
-    public declare [typeTracking]: Outputs;
+    declare public [typeTracking]: Outputs;
     readonly #isSync: boolean;
     /**
      * All bindings found in the original modules, merging both non-list and all list.
