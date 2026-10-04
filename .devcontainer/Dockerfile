@@ -1,8 +1,8 @@
 # https://github.com/devcontainers/images/blob/main/src/base-debian/history
-FROM mcr.microsoft.com/devcontainers/base:2.0.2-debian13
+FROM mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 
-ARG NODE_VERSION=24.13.0
-ARG PNPM_VERSION=10.32.1
+ARG NODE_VERSION=24.21.0
+ARG PNPM_VERSION=10.34.5
 ARG DAGGER_VERSION=0.21.10
 ARG GO_VERSION=1.26.8
 

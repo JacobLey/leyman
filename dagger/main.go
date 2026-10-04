@@ -17,9 +17,9 @@ import (
 
 // Keep in sync with `.devcontainer/Dockerfile` (see the devcontainer skill).
 const (
-	// node:24.13.0-trixie-slim
-	nodeImage   = "node:24.13.0-trixie-slim@sha256:036dfa7e82a1e867b09248440a2b6635b3f8de557f69e60bac923a10c6e696a8"
-	pnpmVersion = "10.32.1"
+	// node:24.21.0-trixie-slim
+	nodeImage   = "node:24.21.0-trixie-slim@sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe"
+	pnpmVersion = "10.34.5"
 )
 
 const (
