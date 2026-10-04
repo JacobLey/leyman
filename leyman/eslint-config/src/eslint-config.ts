@@ -502,6 +502,8 @@ export default function makeEslintConfigForPackage({
                 'import/group-exports': 'off',
                 'import/max-dependencies': 'off',
                 'import/named': 'off',
+                // TypeScript already checks namespace members, and this rule can't follow `export *` from CommonJS (e.g. mocha 12)
+                'import/namespace': 'off',
                 'import/newline-after-import': ['error', { count: 1 }],
                 'import/no-anonymous-default-export': 'off',
                 'import/no-commonjs': 'off',

@@ -58,8 +58,8 @@ catalogs:
       specifier: ^19.3.0
       version: 19.3.0
     '@types/sinon':
-      specifier: ^21.0.1
-      version: 21.0.1
+      specifier: ^22.0.0
+      version: 22.0.0
     '@types/tmp':
       specifier: ^0.2.6
       version: 0.2.6
@@ -82,8 +82,8 @@ catalogs:
       specifier: ^8.20.0
       version: 8.20.0
     c8:
-      specifier: ^11.0.0
-      version: 11.0.0
+      specifier: ^12.0.0
+      version: 12.0.0
     chai:
       specifier: ^6.2.2
       version: 6.2.2
@@ -139,8 +139,8 @@ catalogs:
       specifier: ^16.2.4
       version: 16.2.4
     mocha:
-      specifier: ^11.8.0
-      version: 11.8.0
+      specifier: ^12.0.2
+      version: 12.0.2
     npm:
       specifier: ^11.20.0
       version: 11.20.0
@@ -160,8 +160,8 @@ catalogs:
       specifier: ^19.3.0
       version: 19.3.0
     sinon:
-      specifier: ^21.1.2
-      version: 21.1.2
+      specifier: ^22.1.0
+      version: 22.1.0
     tmp-promise:
       specifier: ^3.0.3
       version: 3.0.3
@@ -238,7 +238,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -256,13 +256,13 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/test-chain/mocha-chain
@@ -296,7 +296,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -308,7 +308,7 @@ importers:
         version: 24.19.0
       '@types/sinon':
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 22.0.0
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -317,7 +317,7 @@ importers:
         version: 8.20.0
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -326,13 +326,13 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.1.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -360,7 +360,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -372,13 +372,13 @@ importers:
         version: 24.19.0
       '@types/sinon':
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 22.0.0
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -390,13 +390,13 @@ importers:
         version: link:../juniper
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.1.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -451,7 +451,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -463,7 +463,7 @@ importers:
         version: 24.19.0
       '@types/sinon':
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 22.0.0
       '@types/yargs':
         specifier: 'catalog:'
         version: 17.0.35
@@ -472,7 +472,7 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -484,13 +484,13 @@ importers:
         version: link:../populate-files/load-populate-files
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../../tools/test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.1.0
       sinon-typed-stub:
         specifier: workspace:^
         version: link:../../tools/sinon-typed-stub
@@ -536,7 +536,7 @@ importers:
         version: link:../../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -554,13 +554,13 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../../../tools/test-chain/mocha-chain
@@ -594,7 +594,7 @@ importers:
         version: link:../../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -612,13 +612,13 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../../../tools/test-chain/mocha-chain
@@ -682,7 +682,7 @@ importers:
         version: 2.5.14
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -706,7 +706,7 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       chai:
         specifier: 'catalog:'
         version: 6.2.2
@@ -715,7 +715,7 @@ importers:
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -743,7 +743,7 @@ importers:
         version: link:../eslint-config
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -758,13 +758,13 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -819,7 +819,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -837,7 +837,7 @@ importers:
         version: link:../../apps/barrelify
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -846,7 +846,7 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -867,7 +867,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -885,7 +885,7 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       chai:
         specifier: 'catalog:'
         version: 6.2.2
@@ -897,7 +897,7 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -922,7 +922,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -937,13 +937,13 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -964,7 +964,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -979,7 +979,7 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -988,7 +988,7 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -1013,7 +1013,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1028,7 +1028,7 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -1037,7 +1037,7 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -1068,7 +1068,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1086,7 +1086,7 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -1095,7 +1095,7 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -1129,7 +1129,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1144,7 +1144,7 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -1153,7 +1153,7 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       npm-barrelify:
         specifier: catalog:leyman
         version: barrelify@1.3.3(@biomejs/biome@2.5.14)(prettier@3.9.9)
@@ -1174,7 +1174,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1186,13 +1186,13 @@ importers:
         version: 24.19.0
       '@types/sinon':
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 22.0.0
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       entry-script:
         specifier: workspace:^
         version: link:../entry-script
@@ -1204,13 +1204,13 @@ importers:
         version: link:../haywire
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.1.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1228,7 +1228,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1240,7 +1240,7 @@ importers:
         version: 24.19.0
       '@types/sinon':
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 22.0.0
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -1249,7 +1249,7 @@ importers:
         version: link:../../apps/barrelify
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -1258,13 +1258,13 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.1.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1282,7 +1282,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1294,13 +1294,13 @@ importers:
         version: 24.19.0
       '@types/sinon':
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 22.0.0
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -1309,13 +1309,13 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.1.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1333,7 +1333,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1357,13 +1357,13 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -1390,7 +1390,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1405,13 +1405,13 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -1432,7 +1432,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1447,13 +1447,13 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -1474,7 +1474,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1486,13 +1486,13 @@ importers:
         version: 24.19.0
       '@types/sinon':
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 22.0.0
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -1501,13 +1501,13 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.1.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1525,7 +1525,7 @@ importers:
         version: link:../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1540,7 +1540,7 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -1549,7 +1549,7 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: link:../test-chain/mocha-chain
@@ -1574,7 +1574,7 @@ importers:
         version: link:../../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1586,13 +1586,13 @@ importers:
         version: 24.19.0
       '@types/sinon':
         specifier: 'catalog:'
-        version: 21.0.1
+        version: 22.0.0
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -1601,10 +1601,10 @@ importers:
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       sinon:
         specifier: 'catalog:'
-        version: 21.1.2
+        version: 22.1.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1626,7 +1626,7 @@ importers:
         version: link:../../../leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1641,13 +1641,13 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
       mocha:
         specifier: 'catalog:'
-        version: 11.8.0
+        version: 12.0.2
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1666,7 +1666,7 @@ importers:
         version: link:../../../leyman/eslint-config
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.2(@swc/helpers@0.5.23)
@@ -1678,7 +1678,7 @@ importers:
         version: typescript@7.0.2
       c8:
         specifier: 'catalog:'
-        version: 11.0.0
+        version: 12.0.0
       eslint:
         specifier: 'catalog:'
         version: 9.39.5
@@ -2446,10 +2446,6 @@ packages:
       '@types/node':
         optional: true
 
-  '@isaacs/cliui@8.0.2':
-    resolution: {integrity: sha512-O8jcjabXaleOG9DQ0+ARXWZBTfnP4WNAqzuiJK7ll44AmxGKv/J2M4TPjxjY3znBCfvBXFzucm1twdyFybFqEA==}
-    engines: {node: '>=12'}
-
   '@istanbuljs/schema@0.1.3':
     resolution: {integrity: sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==}
     engines: {node: '>=8'}
@@ -2467,9 +2463,6 @@ packages:
   '@jridgewell/resolve-uri@3.1.2':
     resolution: {integrity: sha512-bRISgCIjP20/tbWSPWMEi54QVPRZExkuD9lJL+UIxUKtwVJA8wW1Trb1jMs1RFXo1CBTNZ/5hpC9QvmKWdopKw==}
     engines: {node: '>=6.0.0'}
-
-  '@jridgewell/sourcemap-codec@1.5.0':
-    resolution: {integrity: sha512-gv3ZRaISU3fjPAgNsriBRqGWQL6quFx04YMPW/zD8XMLsU32mhCCbfbO6KZFLjvYpCZ8zyDEgqsgf+PwPaM7GQ==}
 
   '@jridgewell/sourcemap-codec@1.6.0':
     resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
@@ -2680,10 +2673,6 @@ packages:
 
   '@oxc-project/types@0.151.0':
     resolution: {integrity: sha512-J1yXrIlNDZVzE3ada310xeAw7nH8yCAyLPuUIsjKatFPmfn5bS1oW+cM+QsGOtVWd5nhSpbwZWx/rue+r5Z+PA==}
-
-  '@pkgjs/parseargs@0.11.0':
-    resolution: {integrity: sha512-+1VkjdD0QBLPodGrJUeqarH8VAIvQODIbwh9XpP5Syisf7YoQgsJKPNFoqqLQlu+VQ/tVSshMR6loPMn8U+dPg==}
-    engines: {node: '>=14'}
 
   '@rolldown/binding-android-arm-eabi@1.2.11':
     resolution: {integrity: sha512-A5kXfGKvKWWZE0TtPrfsvT+q4Y5d1QG8gGUzpYjGydM+fARM9MuX90PrXYXe0XbsDVgyxxNzHo6giCj90bsFNw==}
@@ -3007,8 +2996,8 @@ packages:
   '@types/react@19.3.0':
     resolution: {integrity: sha512-N0rFCuH9YoxG9/m61l9MfpJKfmLOVU0em7ipIz6TRgSSkvReLB9vL85GB+yr8Bs5leqpvg96JSwF4ZS1s4viQg==}
 
-  '@types/sinon@21.0.1':
-    resolution: {integrity: sha512-5yoJSqLbjH8T9V2bksgRayuhpZy+723/z6wBOR+Soe4ZlXC0eW8Na71TeaZPUWDQvM7LYKa9UGFc6LRqxiR5fQ==}
+  '@types/sinon@22.0.0':
+    resolution: {integrity: sha512-TDbVpbccc2HfiqHR09Argj3mHV1KMW7sCCKj52fsl8lbRLkEn7fB1966EWhOKWUBcqfBueZuPoA7/OK1CKiy3g==}
 
   '@types/sinonjs__fake-timers@8.1.5':
     resolution: {integrity: sha512-mQkU2jY8jJEF7YHjHvsQO8+3ughTL1mcnn96igfhONmR+fUPSKIkefQYpSe8bsly2Ep7oQbn/6VG5/9/0qcArQ==}
@@ -3525,9 +3514,9 @@ packages:
     resolution: {integrity: sha512-/Nf7TyzTx6S3yRJObOAV7956r8cr2+Oj8AC5dt8wSP3BQAoeX58NoHyCU8P8zGkNXStjTSi6fzO6F0pBdcYbEg==}
     engines: {node: '>= 0.8'}
 
-  c8@11.0.0:
-    resolution: {integrity: sha512-e/uRViGHSVIJv7zsaDKM7VRn2390TgHXqUSvYwPHBQaU6L7E9L0n9JbdkwdYPvshDT0KymBmmlwSpms3yBaMNg==}
-    engines: {node: 20 || >=22}
+  c8@12.0.0:
+    resolution: {integrity: sha512-4zpJvrd1nKWutnnKC2pXkFmb6iM1l+ffN//o1CzlTNwW7GSOs9a1xrLqkC48nU8oEkjmPZLPiwMsIaOvoF4Pqg==}
+    engines: {node: ^20.19.0 || ^22.12.0 || >=23}
     hasBin: true
     peerDependencies:
       monocart-coverage-reports: ^2
@@ -3563,10 +3552,6 @@ packages:
     resolution: {integrity: sha512-P8BjAsXvZS+VIDUI11hHCQEv74YT67YUi5JJFNWIqL235sBmjX4+qx9Muvls5ivyNENctx46xQLQ3aTuE7ssaQ==}
     engines: {node: '>=6'}
 
-  camelcase@6.3.0:
-    resolution: {integrity: sha512-Gmy6FhYlCY7uOElZUSbxo2UCDH8owEk996gkbrpsgGtrJLM3J7jGxl9Ic7Qwwj4ivOE5AWZWRMecDdF7hqGjFA==}
-    engines: {node: '>=10'}
-
   caniuse-lite@1.0.30001766:
     resolution: {integrity: sha512-4C0lfJ0/YPjJQHagaE9x2Elb69CIqEPZeG0anQt9SIvIoOH4a4uaRl73IavyO+0qZh6MDLH//DrXThEYKHkmYA==}
 
@@ -3593,9 +3578,9 @@ packages:
     resolution: {integrity: sha512-OAlb+T7V4Op9OwdkjmguYRqncdlx5JiofwOAUkmTF+jNdHwzTaTs4sRAGpzLF3oOz5xAyDGrPgeIDFQmDOTiJw==}
     engines: {node: '>= 16'}
 
-  chokidar@4.0.3:
-    resolution: {integrity: sha512-Qgzu8kfBvo+cA4962jnP1KkS6Dop5NS6g7R5LFYJr4b8Ub94PPQXUksCw9PvXoeXPRRddRNC5C1JQUR2SMGtnA==}
-    engines: {node: '>= 14.16.0'}
+  chokidar@5.0.0:
+    resolution: {integrity: sha512-TQMmc3w+5AxjpL8iIiwebF73dRDF4fBIieAqGn9RGCWaEVwQ6Fb2cGe31Yns0RRIzii5goJ1Y7xbMwo1TxMplw==}
+    engines: {node: '>= 20.19.0'}
 
   ci-info@4.3.1:
     resolution: {integrity: sha512-Wdy2Igu8OcBpI2pZePZ5oWjPC38tmDVx5WKUXKwlLYkA0ozo85sLsLvkBbBn/sZaSCMFOGZJ14fvW9t5/d7kdA==}
@@ -3716,10 +3701,6 @@ packages:
       supports-color:
         optional: true
 
-  decamelize@4.0.0:
-    resolution: {integrity: sha512-9iE1PgSik9HeIIw2JO94IidnE3eBoQrFJ3w7sFuzSX4DpmZ3v5sZpUiV5Swcf6mQEF+Y0ru8Neo+p+nyh2J+hQ==}
-    engines: {node: '>=10'}
-
   decompress-response@10.0.0:
     resolution: {integrity: sha512-oj7KWToJuuxlPr7VV0vabvxEIiqNMo+q0NueIiL3XhtwC6FVOX7Hr1c0C4eD0bmf7Zr+S/dSf2xvkH3Ad6sU3Q==}
     engines: {node: '>=20'}
@@ -3763,12 +3744,8 @@ packages:
     engines: {node: '>= 16.0.0'}
     hasBin: true
 
-  diff@7.0.0:
-    resolution: {integrity: sha512-PJWHUb1RFevKCwaFA9RlG5tCd+FO5iRh9A8HEtkmBH2Li03iJriB6m6JIN4rGz3K3JLawI7/veA1xzRKP6ISBw==}
-    engines: {node: '>=0.3.1'}
-
-  diff@8.0.4:
-    resolution: {integrity: sha512-DPi0FmjiSU5EvQV0++GFDOJ9ASQUVFh5kD+OzOnYdi7n3Wpm9hWWGfB/O2blfHcMVTL5WkQXSnRiK9makhrcnw==}
+  diff@9.0.0:
+    resolution: {integrity: sha512-svtcdpS8CgJyqAjEQIXdb3OjhFVVYjzGAPO8WGCmRbrml64SPw/jJD4GoE98aR7r25A0XcgrK3F02yw9R/vhQw==}
     engines: {node: '>=0.3.1'}
 
   dir-glob@3.0.1:
@@ -3790,9 +3767,6 @@ packages:
   dunder-proto@1.0.1:
     resolution: {integrity: sha512-KIN/nDJBQRcXw0MLVhZE9iQHmG68qAVIBg9CqmUYjmQIhgij9U5MFvrqkUL5FbtyyzZuOeOt0zdeRe4UY7ct+A==}
     engines: {node: '>= 0.4'}
-
-  eastasianwidth@0.2.0:
-    resolution: {integrity: sha512-I88TYZWc9XiYHRQ4/3c5rjjfgkjhLyW2luGIheGERbNQ6OY7yTybanSpDXZa8y7VUP9YmDcYa+eyq4ca7iLqWA==}
 
   ejs@5.0.1:
     resolution: {integrity: sha512-COqBPFMxuPTPspXl2DkVYaDS3HtrD1GpzOGkNTJ1IYkifq/r9h8SVEFrjA3D9/VJGOEoMQcrlhpntcSUrM8k6A==}
@@ -4286,11 +4260,6 @@ packages:
     resolution: {integrity: sha512-XxwI8EOhVQgWp6iDL+3b0r86f4d6AX6zSU55HfB4ydCEuXLXc5FcYeOu+nnGftS4TEju/11rt4KJPTMgbfmv4A==}
     engines: {node: '>=10.13.0'}
 
-  glob@10.4.5:
-    resolution: {integrity: sha512-7Bv8RF0k6xjo7d4A/PxYLbUCfb6c+Vpd2/mB2yRDlew7Jb5hEXiCD9ibfO7wpk8i4sevK6DFny9h7EYbM3/sHg==}
-    deprecated: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
-    hasBin: true
-
   glob@13.0.6:
     resolution: {integrity: sha512-Wjlyrolmm8uDpm/ogGyXZXb1Z+Ca2B8NbJwqBVg0axK9GbBeoS7yGV6vjXnYdGm6X53iehEuxxbyiKp8QmN4Vw==}
     engines: {node: 18 || 20 || >=22}
@@ -4382,10 +4351,6 @@ packages:
   haywire@0.1.8:
     resolution: {integrity: sha512-6Vhb/EytmMXZg/G9Yph75hFsaQDVMCSDsZbLcMTCRLzZZlNNCWlrLr0JOnuKusAt3938NwcpP9kEbzQIzc4PjA==}
     engines: {node: '>=20'}
-
-  he@1.2.0:
-    resolution: {integrity: sha512-F/1DnUGPopORZi0ni+CvrCgHQ5FyEAHRLSApuYWMmrbSwoN2Mn/7k+Gl38gJnR7yyDZk6WLXwiGod1JOWNDKGw==}
-    hasBin: true
 
   hermes-estree@0.25.1:
     resolution: {integrity: sha512-0wUoCcLp+5Ev5pDW2OriHC2MJCbwLwuRx+gAqMTOkGKJJiBCLjtrvy4PWUGn6MIVefecRpzoOZ/UV6iGdOr+Cw==}
@@ -4543,10 +4508,6 @@ packages:
     resolution: {integrity: sha512-41Cifkg6e8TylSpdtTpeLVMqvSBEVzTttHvERD741+pnZ8ANv0004MRL43QKPDlK9cGvNp6NZWZUBlbGXYxxng==}
     engines: {node: '>=0.12.0'}
 
-  is-path-inside@3.0.3:
-    resolution: {integrity: sha512-Fd4gABb+ycGAmKou8eMftCupSir5lRxqf4aD/vd0cD2qc4HL07OjCeuHMr8Ro4CoMaeCKDB0/ECBOVWjTwUvPQ==}
-    engines: {node: '>=8'}
-
   is-path-inside@4.0.0:
     resolution: {integrity: sha512-lJJV/5dYS+RcL8uQdBDW9c9uWFLLBNRyFhnAKXw5tVqLlKZ4RMGZKv+YQ/IA3OhD+RpbJa1LLFM1FQPGyIXvOA==}
     engines: {node: '>=12'}
@@ -4554,10 +4515,6 @@ packages:
   is-plain-obj@1.1.0:
     resolution: {integrity: sha512-yvkRyxmFKEOQ4pNXCmJG5AEQNlXJS5LaONXo5/cLdTZdWvsZ1ioJEonLGAosKlMWE8lwUy/bJzMjcw8az73+Fg==}
     engines: {node: '>=0.10.0'}
-
-  is-plain-obj@2.1.0:
-    resolution: {integrity: sha512-YWnfyRwxL/+SsrWYfOpUtz5b3YD+nyfkHvjbcanzk8zgyO4ASD67uVMRt8k5bM4lLMDnXfriRhOpemw+NfT1eA==}
-    engines: {node: '>=8'}
 
   is-plain-obj@4.1.0:
     resolution: {integrity: sha512-+Pgi+vMuUNkJyExiMBt5IlFoMyKnr5zhJ4Uspz58WOhBF5QoIZkFyNHIbBAtHwzVAgk5RtndVNsDRN61/mmDqg==}
@@ -4653,9 +4610,6 @@ packages:
     resolution: {integrity: sha512-H0dkQoCa3b2VEeKQBOxFph+JAbcrQdE7KC0UkqwpLmv2EC4P41QXP+rqo9wYodACiG5/WM5s9oDApTU8utwj9g==}
     engines: {node: '>= 0.4'}
 
-  jackspeak@3.4.3:
-    resolution: {integrity: sha512-OGlZQpz2yfahA/Rd1Y8Cd9SIEsqvXkLVoSw/cgwhnhFMDbsQFeZYoJJ7bIZBS9BcamUW96asq/npPWugM+RQBw==}
-
   js-tokens@4.0.0:
     resolution: {integrity: sha512-RdJUflcE3cUzKiMqQgsCu06FPu9UdIJO0beYbPhHN4k6apgJtifcoCtT9bcxOpYBtpD2kCM6Sbzg4CausW/PKQ==}
 
@@ -4663,12 +4617,12 @@ packages:
     resolution: {integrity: sha512-okMH7OXXJ7YrN9Ok3/SXrnu4iX9yOk+25nqX4imS2npuvTYDmo/QEZoqwZkYaIDk3jVvBOTOIEgEhaLOynBS9g==}
     hasBin: true
 
-  js-yaml@4.1.1:
-    resolution: {integrity: sha512-qQKT4zQxXl8lLwBtHMWwaTcGfFOZviOJet3Oy/xmGk2gZH677CJM9EvtfdSkgWcATZhj/55JZ0rmy3myCT5lsA==}
-    hasBin: true
-
   js-yaml@4.3.2:
     resolution: {integrity: sha512-SFNOvSJ+Dgf/9An904Yx+CgSlIPCkIpao4qo51lpee25TIRejdH3rhR4EZMGoNx3/TP3O+wzWuiTFl4sqbltzA==}
+    hasBin: true
+
+  js-yaml@5.4.2:
+    resolution: {integrity: sha512-m+aqu+LwO1O6sIopafj8HUVl5aawITwZQe/yHpMCKjaWBaA/d07B/QdMb3529REftiU+RMMHL3Vlsw3hON7vWg==}
     hasBin: true
 
   jsdoc-type-pratt-parser@7.2.0:
@@ -4861,9 +4815,6 @@ packages:
     resolution: {integrity: sha512-ozCC6gdQ+glXOQsveKD0YsDy8DSQFjDTz4zyzEHNV5+JP5D62LmfDZ6o1cycFx9ouG940M5dE8C8CTewdj2YWQ==}
     engines: {node: ^12.20.0 || ^14.13.1 || >=16.0.0}
 
-  lru-cache@10.4.3:
-    resolution: {integrity: sha512-JNAzZcXrCt42VGLuYz0zfAzDfAvJWW6AfYlDBQyDV5DClI2m5sAmK+OIO7s59XfsRsWHp02jAJrRadPRGTt6SQ==}
-
   lru-cache@11.2.7:
     resolution: {integrity: sha512-aY/R+aEsRelme17KGQa/1ZSIpLpNYYrhcrepKTZgE+W3WM16YMCaPwOHLHsmopZHELU0Ojin1lPVxKR0MihncA==}
     engines: {node: 20 || >=22}
@@ -4946,9 +4897,9 @@ packages:
     resolution: {integrity: sha512-tEBHqDnIoM/1rXME1zgka9g6Q2lcoCkxHLuc7ODJ5BxbP5d4c2Z5cGgtXAku59200Cx7diuHTOYfSBD8n6mm8A==}
     engines: {node: '>=16 || 14 >=14.17'}
 
-  mocha@11.8.0:
-    resolution: {integrity: sha512-VyCeUdGN3A9lmCTTgG4yuvY9ixxaDk+xt2R/7/+1AP6EqNG+G9OKkzBwhVtVYoNX8YsxNSgAl8mOv3IAeOpFbw==}
-    engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+  mocha@12.0.2:
+    resolution: {integrity: sha512-SjAulGHxlMJLCD1bhvJBAiYwYxglydRzA9PDQ5MALq1oLRMMtIhxSQJ0olCFgA7c9YbTdxC0KOV0wl8JEDYVhA==}
+    engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
   mri@1.2.0:
@@ -5189,9 +5140,6 @@ packages:
     resolution: {integrity: sha512-R4nPAVTAU0B9D35/Gk3uJf/7XYbQcyohSKdvAxIRSNghFl4e71hVoGnBNQz9cWaXxO2I10KTC+3jMdvvoKw6dQ==}
     engines: {node: '>=6'}
 
-  package-json-from-dist@1.0.1:
-    resolution: {integrity: sha512-UEZIS3/by4OC8vL3P2dTXRETpebLI2NiI5vIrjaD/5UtrkFX/tNbwjTSRAGC/+7CAo2pIcBaRgWmcBBHcsaCIw==}
-
   package-manager-detector@0.2.11:
     resolution: {integrity: sha512-BEnLolu+yuz22S56CU1SUKq3XC3PkwD5wv4ikR4MfGvnRVcmzXR9DwSlW2fEamyTPyXHomBJRzgapeuBvRNzJQ==}
 
@@ -5235,10 +5183,6 @@ packages:
 
   path-parse@1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
-
-  path-scurry@1.11.1:
-    resolution: {integrity: sha512-Xa4Nw17FS9ApQFJ9umLiJS4orGjm7ZzwUrwamcGQuHSzDyth9boKDaycYdDcZDuqYATXw4HFXgaqWTctW/v1HA==}
-    engines: {node: '>=16 || 14 >=14.18'}
 
   path-scurry@2.0.2:
     resolution: {integrity: sha512-3O/iVVsJAPsOnpwWIeD+d6z/7PmqApyQePUtCndjatj/9I5LylHvt5qluFaBT3I5h3r1ejfR056c+FCv+NnNXg==}
@@ -5332,9 +5276,6 @@ packages:
     resolution: {integrity: sha512-WuyALRjWPDGtt/wzJiadO5AXY+8hZ80hVpe6MyivgraREW751X3SbhRvG3eLKOYN+8VEvqLcf3wdnt44Z4S4SA==}
     engines: {node: '>=10'}
 
-  randombytes@2.1.0:
-    resolution: {integrity: sha512-vYl3iOX+4CKUWuxGi9Ukhie6fsqXqS9FE2Zaic4tNFD2N2QQaXOMFbuKK4QmDHC0JO6B1Zp41J0LpT0oR68amQ==}
-
   react-dom@19.3.0:
     resolution: {integrity: sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==}
     peerDependencies:
@@ -5361,9 +5302,9 @@ packages:
     resolution: {integrity: sha512-9u/sniCrY3D5WdsERHzHE4G2YCXqoG5FTHUiCC4SIbr6XcLZBY05ya9EKjYek9O5xOAwjGq+1JdGBAS7Q9ScoA==}
     engines: {node: '>= 6'}
 
-  readdirp@4.1.2:
-    resolution: {integrity: sha512-GDhwkLfywWL2s6vEjyhri+eXmfH6j1L7JE27WhqLeYzoh/A3DBaYGEj2H/HFZCn/kMfim73FXxEJTw06WtxQwg==}
-    engines: {node: '>= 14.18.0'}
+  readdirp@5.1.1:
+    resolution: {integrity: sha512-Kko+Y5XQ6fM+Ce3dq3m9YGxnacYZYl9cA1wZjaF3Vbry2L3i1qVg8+CAgNPsXRArPMUMCaOR7oa9Nqntc43JKA==}
+    engines: {node: '>= 20.19.0'}
 
   refa@0.12.1:
     resolution: {integrity: sha512-J8rn6v4DBb2nnFqkqwy6/NnTYMcgLA+sLr0iIO41qpv0n+ngb7ksag2tMRl0inb1bbO/esUwzW1vbJi7K0sI0g==}
@@ -5521,8 +5462,9 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  serialize-javascript@6.0.2:
-    resolution: {integrity: sha512-Saa1xPByTTq2gdeFZYLLo+RFE35NHZkAbqZeWNd3BpzppeVisAqpDjcp8dyf6uIvEqJRd46jemmyA4iFIeVk8g==}
+  serialize-javascript@7.1.2:
+    resolution: {integrity: sha512-GL2BWwVa6JydKO6l/ljVgjAZF4QJ3S7dWDWi53s5GZT8PJzD2fNxi67HANQGKAqPrwEpL5ba7gUBGi0Ls/sEoQ==}
+    engines: {node: '>=20.0.0'}
 
   set-function-length@1.2.2:
     resolution: {integrity: sha512-pgRc4hJ4/sNjWCSS9AmnS40x3bNMDTknHgL5UaMBTMyJnU90EgWh1Rz+MC9eFu4BuN/UwZjKQuY/1v3rM7HMfg==}
@@ -5567,8 +5509,8 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  sinon@21.1.2:
-    resolution: {integrity: sha512-FS6mN+/bx7e2ajpXkEmOcWB6xBzWiuNoAQT18/+a20SS4U7FSYl8Ms7N6VTUxN/1JAjkx7aXp+THMC8xdpp0gA==}
+  sinon@22.1.0:
+    resolution: {integrity: sha512-n1ajF2rBWMTtEwbKcw4UdFg4nCnDdq/U6RDoxtOd7oapOlRoJ5ynwFx60owROyhDpA9QhMZi0pCO/xtmwFjG7w==}
 
   slash@3.0.0:
     resolution: {integrity: sha512-g9Q1haeby36OSStwb4ntCGGGaKsaVSjQ68fBxoQcutl5fS1vuY18H3wSt3jFyFtrkx+Kz0V1G85A4MyAdDMi2Q==}
@@ -5633,10 +5575,6 @@ packages:
   string-width@4.2.3:
     resolution: {integrity: sha512-wKyQRQpjJ0sIp62ErSZdGsjMJWsap5oRNihHhu6G7JVO/9jIB6UyevL+tXuOqrng8j/cxKTWyWUwvSTriiZz/g==}
     engines: {node: '>=8'}
-
-  string-width@5.1.2:
-    resolution: {integrity: sha512-HnLOCR3vjcY8beoNLtcjZ5/nxn2afmME6lhrDrebokqMap+XbeW8n9TXpPDOqdGK5qcI3oT0GKTW6wC7EMiVqA==}
-    engines: {node: '>=12'}
 
   string-width@7.2.0:
     resolution: {integrity: sha512-tsaTIkKW9b4N+AEj+SVA+WhJzV7/zMhcSu78mLKWSk7cXMOSHsBKFWUs0fWwq8QyK3MgJBQRX6Gbi4kYbdvGkQ==}
@@ -5706,6 +5644,10 @@ packages:
   strip-json-comments@3.1.1:
     resolution: {integrity: sha512-6fPc+R4ihwqP6N/aIv2f1gMH8lOVtWQHoqC4yK6oSDVVocumAsfCqjkXnqiYMhmMwS/mEHLp7Vehlt3ql6lEig==}
     engines: {node: '>=8'}
+
+  strip-json-comments@5.0.3:
+    resolution: {integrity: sha512-1tB5mhVo7U+ETBKNf92xT4hrQa3pm0MZ0PQvuDnWgAAGHDsfp4lPSpiS6psrSiet87wyGPh9ft6wmhOMQ0hDiw==}
+    engines: {node: '>=14.16'}
 
   strtok3@10.3.5:
     resolution: {integrity: sha512-ki4hZQfh5rX0QDLLkOCj+h+CVNkqmp/CMf8v8kZpkNVK6jGQooMytqzLZYUVYIZcFZ6yDB70EfD8POcFXiF5oA==}
@@ -6048,16 +5990,12 @@ packages:
     resolution: {integrity: sha512-BN22B5eaMMI9UMtjrGd5g5eCYPpCPDUy0FJXbYsaT5zYxjFOckS53SQDE3pWkVoWpHXVb3BrYcEN4Twa55B5cA==}
     engines: {node: '>=0.10.0'}
 
-  workerpool@9.3.2:
-    resolution: {integrity: sha512-Xz4Nm9c+LiBHhDR5bDLnNzmj6+5F+cyEAWPMkbs2awq/dYazR/efelZzUAjB/y3kNHL+uzkHvxVVpaOfGCPV7A==}
+  workerpool@10.0.3:
+    resolution: {integrity: sha512-6z2Iis68Wqth93/G/wJP9u+R3O+d2XTlgWChGCwuT1qLbBsOYueGRZuJ++v3mtDP5KjYdy+WzvWC+VWETSVXJA==}
 
   wrap-ansi@7.0.0:
     resolution: {integrity: sha512-YVGIj2kamLSTxw6NsZjoBxfSwsn0ycdesmc4p+Q21c5zPuZ1pl+NfxVdxPtdHvmNVOQ6XSYG4AUtyt/Fi7D16Q==}
     engines: {node: '>=10'}
-
-  wrap-ansi@8.1.0:
-    resolution: {integrity: sha512-si7QWI6zUMq56bESFvagtmzMdGOtoxfR+Sez11Mobfc7tm+VkUckk9bW2UeffTGVUbOksxmSw0AA2gs8g71NCQ==}
-    engines: {node: '>=12'}
 
   wrap-ansi@9.0.0:
     resolution: {integrity: sha512-G8ura3S+3Z2G+mkgNRq8dqaFZAuxfsxpBB8OCTGRTCtp+l/v9nbFNmCUP1BZMts3G1142MsZfn6eeUKrr4PD1Q==}
@@ -6089,10 +6027,6 @@ packages:
   yargs-parser@22.0.0:
     resolution: {integrity: sha512-rwu/ClNdSMpkSrUb+d6BRsSkLUq1fmfsY6TOpYzTwvwkg1/NRG85KBy3kq++A8LKQwX6lsu+aWad+2khvuXrqw==}
     engines: {node: ^20.19.0 || ^22.12.0 || >=23}
-
-  yargs-unparser@2.0.0:
-    resolution: {integrity: sha512-7pRTIA9Qc1caZ0bZ6RYRGbHJthJWuakf+WmHK0rVeLkNrrGhfoabBNdue6kdINI6r4if7ocq9aD/n7xwKOdzOA==}
-    engines: {node: '>=10'}
 
   yargs@17.7.2:
     resolution: {integrity: sha512-7dSzzRQ++CKnNI/krKnYRV7JKKPUXMEh61soaHKg9mrWEhzFWhFnxPxGl+69cD1Ou63C13NUPCnmIcrvqCuM6w==}
@@ -6896,7 +6830,7 @@ snapshots:
       outdent: 0.5.0
       prettier: 2.8.8
       resolve-from: 5.0.0
-      semver: 7.7.4
+      semver: 7.8.5
 
   '@changesets/assemble-release-plan@6.0.10':
     dependencies:
@@ -6905,7 +6839,7 @@ snapshots:
       '@changesets/should-skip-package': 0.1.2
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
-      semver: 7.7.4
+      semver: 7.8.5
 
   '@changesets/changelog-git@0.2.1':
     dependencies:
@@ -6962,7 +6896,7 @@ snapshots:
       '@changesets/types': 6.1.0
       '@manypkg/get-packages': 1.1.3
       picocolors: 1.1.1
-      semver: 7.7.4
+      semver: 7.8.5
 
   '@changesets/get-release-plan@4.0.16':
     dependencies:
@@ -6990,7 +6924,7 @@ snapshots:
   '@changesets/parse@0.4.3':
     dependencies:
       '@changesets/types': 6.1.0
-      js-yaml: 4.1.1
+      js-yaml: 4.3.2
 
   '@changesets/pre@2.0.2':
     dependencies:
@@ -7118,15 +7052,6 @@ snapshots:
     optionalDependencies:
       '@types/node': 24.19.0
 
-  '@isaacs/cliui@8.0.2':
-    dependencies:
-      string-width: 5.1.2
-      string-width-cjs: string-width@4.2.3
-      strip-ansi: 7.1.0
-      strip-ansi-cjs: strip-ansi@6.0.1
-      wrap-ansi: 8.1.0
-      wrap-ansi-cjs: wrap-ansi@7.0.0
-
   '@istanbuljs/schema@0.1.3': {}
 
   '@jest/diff-sequences@30.0.1': {}
@@ -7143,14 +7068,12 @@ snapshots:
 
   '@jridgewell/resolve-uri@3.1.2': {}
 
-  '@jridgewell/sourcemap-codec@1.5.0': {}
-
   '@jridgewell/sourcemap-codec@1.6.0': {}
 
   '@jridgewell/trace-mapping@0.3.31':
     dependencies:
       '@jridgewell/resolve-uri': 3.1.2
-      '@jridgewell/sourcemap-codec': 1.5.0
+      '@jridgewell/sourcemap-codec': 1.6.0
 
   '@keyv/serialize@1.1.1': {}
 
@@ -7349,9 +7272,6 @@ snapshots:
 
   '@oxc-project/types@0.151.0': {}
 
-  '@pkgjs/parseargs@0.11.0':
-    optional: true
-
   '@rolldown/binding-android-arm-eabi@1.2.11':
     optional: true
 
@@ -7428,7 +7348,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@swc/cli@0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))':
+  '@swc/cli@0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)':
     dependencies:
       '@swc/core': 1.16.2(@swc/helpers@0.5.23)
       '@swc/counter': 0.1.3
@@ -7440,6 +7360,8 @@ snapshots:
       slash: 3.0.0
       source-map: 0.7.4
       tinyglobby: 0.2.17
+    optionalDependencies:
+      chokidar: 5.0.0
     transitivePeerDependencies:
       - supports-color
 
@@ -7579,7 +7501,7 @@ snapshots:
     dependencies:
       csstype: 3.2.3
 
-  '@types/sinon@21.0.1':
+  '@types/sinon@22.0.0':
     dependencies:
       '@types/sinonjs__fake-timers': 8.1.5
 
@@ -7660,7 +7582,7 @@ snapshots:
       '@typescript-eslint/types': 8.70.1
       '@typescript-eslint/visitor-keys': 8.70.1
       debug: 4.4.3(supports-color@8.1.1)
-      minimatch: 10.2.5
+      minimatch: 10.2.6
       semver: 7.7.4
       tinyglobby: 0.2.17
       ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
@@ -8094,7 +8016,7 @@ snapshots:
   binary-version-check@6.1.0:
     dependencies:
       binary-version: 7.1.0
-      semver: 7.7.4
+      semver: 7.8.5
       semver-truncate: 3.0.0
 
   binary-version@7.1.0:
@@ -8154,7 +8076,7 @@ snapshots:
 
   bytes@3.1.2: {}
 
-  c8@11.0.0:
+  c8@12.0.0:
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
       '@istanbuljs/schema': 0.1.3
@@ -8165,7 +8087,7 @@ snapshots:
       istanbul-reports: 3.1.7
       test-exclude: 8.0.0
       v8-to-istanbul: 9.3.0
-      yargs: 17.7.2
+      yargs: 18.2.0
       yargs-parser: 21.1.1
 
   cacheable-lookup@7.0.0: {}
@@ -8204,8 +8126,6 @@ snapshots:
 
   callsites@3.1.0: {}
 
-  camelcase@6.3.0: {}
-
   caniuse-lite@1.0.30001766: {}
 
   chai-as-promised@8.0.2(chai@6.2.2):
@@ -8226,9 +8146,9 @@ snapshots:
 
   check-error@2.1.1: {}
 
-  chokidar@4.0.3:
+  chokidar@5.0.0:
     dependencies:
-      readdirp: 4.1.2
+      readdirp: 5.1.1
 
   ci-info@4.3.1: {}
 
@@ -8343,8 +8263,6 @@ snapshots:
     optionalDependencies:
       supports-color: 8.1.1
 
-  decamelize@4.0.0: {}
-
   decompress-response@10.0.0:
     dependencies:
       mimic-response: 4.0.0
@@ -8381,9 +8299,7 @@ snapshots:
     dependencies:
       address: 2.0.3
 
-  diff@7.0.0: {}
-
-  diff@8.0.4: {}
+  diff@9.0.0: {}
 
   dir-glob@3.0.1:
     dependencies:
@@ -8404,8 +8320,6 @@ snapshots:
       call-bind-apply-helpers: 1.0.2
       es-errors: 1.3.0
       gopd: 1.2.0
-
-  eastasianwidth@0.2.0: {}
 
   ejs@5.0.1: {}
 
@@ -8611,7 +8525,7 @@ snapshots:
   eslint-compat-utils@0.5.1(eslint@9.39.5):
     dependencies:
       eslint: 9.39.5
-      semver: 7.7.4
+      semver: 7.8.5
 
   eslint-config-prettier@10.1.8(eslint@9.39.5):
     dependencies:
@@ -9146,18 +9060,9 @@ snapshots:
     dependencies:
       is-glob: 4.0.3
 
-  glob@10.4.5:
-    dependencies:
-      foreground-child: 3.3.0
-      jackspeak: 3.4.3
-      minimatch: 9.0.5
-      minipass: 7.1.3
-      package-json-from-dist: 1.0.1
-      path-scurry: 1.11.1
-
   glob@13.0.6:
     dependencies:
-      minimatch: 10.2.5
+      minimatch: 10.2.6
       minipass: 7.1.3
       path-scurry: 2.0.2
 
@@ -9257,8 +9162,6 @@ snapshots:
   haywire@0.1.8:
     dependencies:
       p-defer: 4.0.1
-
-  he@1.2.0: {}
 
   hermes-estree@0.25.1: {}
 
@@ -9401,13 +9304,9 @@ snapshots:
 
   is-number@7.0.0: {}
 
-  is-path-inside@3.0.3: {}
-
   is-path-inside@4.0.0: {}
 
   is-plain-obj@1.1.0: {}
-
-  is-plain-obj@2.1.0: {}
 
   is-plain-obj@4.1.0: {}
 
@@ -9496,12 +9395,6 @@ snapshots:
       has-symbols: 1.1.0
       set-function-name: 2.0.2
 
-  jackspeak@3.4.3:
-    dependencies:
-      '@isaacs/cliui': 8.0.2
-    optionalDependencies:
-      '@pkgjs/parseargs': 0.11.0
-
   js-tokens@4.0.0: {}
 
   js-yaml@3.14.1:
@@ -9509,11 +9402,11 @@ snapshots:
       argparse: 1.0.10
       esprima: 4.0.1
 
-  js-yaml@4.1.1:
+  js-yaml@4.3.2:
     dependencies:
       argparse: 2.0.1
 
-  js-yaml@4.3.2:
+  js-yaml@5.4.2:
     dependencies:
       argparse: 2.0.1
 
@@ -9663,8 +9556,6 @@ snapshots:
 
   lowercase-keys@3.0.0: {}
 
-  lru-cache@10.4.3: {}
-
   lru-cache@11.2.7: {}
 
   lru-cache@5.1.1:
@@ -9683,7 +9574,7 @@ snapshots:
 
   make-dir@4.0.0:
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.5
 
   math-intrinsics@1.1.0: {}
 
@@ -9734,29 +9625,24 @@ snapshots:
 
   minipass@7.1.3: {}
 
-  mocha@11.8.0:
+  mocha@12.0.2:
     dependencies:
       browser-stdout: 1.3.1
-      chokidar: 4.0.3
+      chokidar: 5.0.0
       debug: 4.4.3(supports-color@8.1.1)
-      diff: 7.0.0
-      escape-string-regexp: 4.0.0
-      find-up: 5.0.0
-      glob: 10.4.5
-      he: 1.2.0
-      is-path-inside: 3.0.3
-      js-yaml: 4.1.1
-      log-symbols: 4.1.0
-      minimatch: 9.0.5
+      diff: 9.0.0
+      find-up-simple: 1.0.1
+      glob: 13.0.6
+      is-path-inside: 4.0.0
+      is-unicode-supported: 0.1.0
+      js-yaml: 5.4.2
+      minimatch: 10.2.6
       ms: 2.1.3
       picocolors: 1.1.1
-      serialize-javascript: 6.0.2
-      strip-json-comments: 3.1.1
+      serialize-javascript: 7.1.2
+      strip-json-comments: 5.0.3
       supports-color: 8.1.1
-      workerpool: 9.3.2
-      yargs: 17.7.2
-      yargs-parser: 21.1.1
-      yargs-unparser: 2.0.0
+      workerpool: 10.0.3
 
   mri@1.2.0: {}
 
@@ -10048,8 +9934,6 @@ snapshots:
 
   p-try@2.2.0: {}
 
-  package-json-from-dist@1.0.1: {}
-
   package-manager-detector@0.2.11:
     dependencies:
       quansync: 0.2.11
@@ -10084,11 +9968,6 @@ snapshots:
   path-key@4.0.0: {}
 
   path-parse@1.0.7: {}
-
-  path-scurry@1.11.1:
-    dependencies:
-      lru-cache: 10.4.3
-      minipass: 7.1.3
 
   path-scurry@2.0.2:
     dependencies:
@@ -10162,10 +10041,6 @@ snapshots:
 
   quick-lru@5.1.1: {}
 
-  randombytes@2.1.0:
-    dependencies:
-      safe-buffer: 5.2.1
-
   react-dom@19.3.0(react@19.3.0):
     dependencies:
       react: 19.3.0
@@ -10193,7 +10068,7 @@ snapshots:
       string_decoder: 1.3.0
       util-deprecate: 1.0.2
 
-  readdirp@4.1.2: {}
+  readdirp@5.1.1: {}
 
   refa@0.12.1:
     dependencies:
@@ -10352,7 +10227,7 @@ snapshots:
 
   semver-truncate@3.0.0:
     dependencies:
-      semver: 7.7.4
+      semver: 7.8.5
 
   semver@6.3.1: {}
 
@@ -10362,9 +10237,7 @@ snapshots:
 
   semver@7.8.5: {}
 
-  serialize-javascript@6.0.2:
-    dependencies:
-      randombytes: 2.1.0
+  serialize-javascript@7.1.2: {}
 
   set-function-length@1.2.2:
     dependencies:
@@ -10426,12 +10299,12 @@ snapshots:
 
   signal-exit@4.1.0: {}
 
-  sinon@21.1.2:
+  sinon@22.1.0:
     dependencies:
       '@sinonjs/commons': 3.0.1
       '@sinonjs/fake-timers': 15.4.0
       '@sinonjs/samsam': 10.0.2
-      diff: 8.0.4
+      diff: 9.0.0
 
   slash@3.0.0: {}
 
@@ -10493,12 +10366,6 @@ snapshots:
       emoji-regex: 8.0.0
       is-fullwidth-code-point: 3.0.0
       strip-ansi: 6.0.1
-
-  string-width@5.1.2:
-    dependencies:
-      eastasianwidth: 0.2.0
-      emoji-regex: 9.2.2
-      strip-ansi: 7.1.0
 
   string-width@7.2.0:
     dependencies:
@@ -10592,6 +10459,8 @@ snapshots:
 
   strip-json-comments@3.1.1: {}
 
+  strip-json-comments@5.0.3: {}
+
   strtok3@10.3.5:
     dependencies:
       '@tokenizer/token': 0.3.0
@@ -10636,7 +10505,7 @@ snapshots:
     dependencies:
       '@istanbuljs/schema': 0.1.3
       glob: 13.0.6
-      minimatch: 10.2.5
+      minimatch: 10.2.6
 
   text-decoder@1.2.3:
     dependencies:
@@ -10928,19 +10797,13 @@ snapshots:
 
   word-wrap@1.2.5: {}
 
-  workerpool@9.3.2: {}
+  workerpool@10.0.3: {}
 
   wrap-ansi@7.0.0:
     dependencies:
       ansi-styles: 4.3.0
       string-width: 4.2.3
       strip-ansi: 6.0.1
-
-  wrap-ansi@8.1.0:
-    dependencies:
-      ansi-styles: 6.2.1
-      string-width: 5.1.2
-      strip-ansi: 7.1.0
 
   wrap-ansi@9.0.0:
     dependencies:
@@ -10961,13 +10824,6 @@ snapshots:
   yargs-parser@21.1.1: {}
 
   yargs-parser@22.0.0: {}
-
-  yargs-unparser@2.0.0:
-    dependencies:
-      camelcase: 6.3.0
-      decamelize: 4.0.0
-      flat: 5.0.2
-      is-plain-obj: 2.1.0
 
   yargs@17.7.2:
     dependencies:
