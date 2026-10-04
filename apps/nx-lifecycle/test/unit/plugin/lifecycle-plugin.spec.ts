@@ -1,14 +1,15 @@
 import type { CreateDependenciesContext, ProjectConfiguration } from '@nx/devkit';
-import type { ReadJsonFile } from '#internal/plugin/dependencies.js';
-import type { LifecyclePluginOptions } from '#internal/plugin/schema.js';
-import { AggregateCreateNodesError } from '@nx/devkit';
-import { fake, verifyAndRestore } from 'sinon';
+import type { LifecyclePluginOptions } from 'nx-lifecycle/plugin';
+import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import Os from 'node:os';
+import Path from 'node:path';
+import { AggregateCreateNodesError, logger } from '@nx/devkit';
+import { stub, verifyAndRestore } from 'sinon';
 import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
-import { stubMethod } from 'sinon-typed-stub';
-import { assertProjectJson } from '#schemas';
-import { LifecyclePlugin } from '#internal/plugin/lifecycle-plugin.js';
-import { assertLifecyclePluginOptions } from '#internal/plugin/schema.js';
+import { createDependencies, createNodes as createNodesTuple } from 'nx-lifecycle/plugin';
+
+const [, createNodes] = createNodesTuple;
 
 suite('LifecyclePlugin', () => {
     const options = {
@@ -25,20 +26,23 @@ suite('LifecyclePlugin', () => {
         },
     } satisfies LifecyclePluginOptions;
 
-    const stubs = beforeEach(() => {
-        const stubbedReadJsonFile = stubMethod<ReadJsonFile>();
-        const fakeLogger = { warn: fake() };
+    const withWorkspace = beforeEach(async () => {
+        const workspaceRoot = await mkdtemp(Path.join(Os.tmpdir(), 'nx-lifecycle-plugin-'));
 
         return {
-            fakeLogger,
-            stubbedReadJsonFile: stubbedReadJsonFile.stub,
-            plugin: new LifecyclePlugin(
-                assertLifecyclePluginOptions,
-                stubbedReadJsonFile.method,
-                assertProjectJson,
-                fakeLogger
-            ),
+            workspaceRoot,
+            context: { nxJsonConfiguration: {}, workspaceRoot },
+            writeProjectJson: async (path: string, data: unknown): Promise<void> => {
+                await mkdir(Path.dirname(Path.join(workspaceRoot, path)), { recursive: true });
+                await writeFile(Path.join(workspaceRoot, path), JSON.stringify(data));
+            },
+            // Warnings are printed with the Nx logger
+            warn: stub(logger, 'warn'),
         };
+    });
+
+    withWorkspace.afterEach(async ({ workspaceRoot }) => {
+        await rm(workspaceRoot, { recursive: true, force: true });
     });
 
     afterEach(() => {
@@ -46,31 +50,20 @@ suite('LifecyclePlugin', () => {
     });
 
     suite('createNodes', () => {
-        const context = {
-            nxJsonConfiguration: {},
-            workspaceRoot: '<root>',
-        };
-
-        stubs.test('Matches every project.json', ({ plugin }) => {
-            expect(plugin.createNodes[0]).to.equal('**/project.json');
-        });
-
-        stubs.test('Infers lifecycle targets and wires declared bindings', async ctx => {
-            ctx.stubbedReadJsonFile.withArgs('<root>/project.json').returns({
-                targets: { tsc: {}, other: {} },
-            });
-            ctx.stubbedReadJsonFile.withArgs('<root>/packages/foo/project.json').returns({
-                targets: { eslint: { dependsOn: ['other'] } },
-            });
-            ctx.stubbedReadJsonFile.withArgs('<root>/packages/bar/project.json').returns({});
-
-            const [, createNodes] = ctx.plugin.createNodes;
+        withWorkspace.test('Infers lifecycle targets and wires declared bindings', async ctx => {
+            await Promise.all([
+                ctx.writeProjectJson('project.json', { targets: { tsc: {}, other: {} } }),
+                ctx.writeProjectJson('packages/foo/project.json', {
+                    targets: { eslint: { dependsOn: ['other'] } },
+                }),
+                ctx.writeProjectJson('packages/bar/project.json', {}),
+            ]);
 
             expect(
                 await createNodes(
                     ['project.json', 'packages/foo/project.json', 'packages/bar/project.json'],
                     options,
-                    context
+                    ctx.context
                 )
             ).to.deep.equal([
                 [
@@ -214,10 +207,9 @@ suite('LifecyclePlugin', () => {
             ]);
         });
 
-        stubs.test('Copies object dependencies of a stage', async ctx => {
-            ctx.stubbedReadJsonFile.returns({});
+        withWorkspace.test('Copies object dependencies of a stage', async ctx => {
+            await ctx.writeProjectJson('project.json', {});
 
-            const [, createNodes] = ctx.plugin.createNodes;
             const [[, result] = []] = await createNodes(
                 ['project.json'],
                 {
@@ -228,7 +220,7 @@ suite('LifecyclePlugin', () => {
                     },
                     bindings: {},
                 },
-                context
+                ctx.context
             );
 
             expect(result?.projects?.['.']?.targets?.['e2e:_']?.dependsOn).to.deep.equal([
@@ -236,9 +228,7 @@ suite('LifecyclePlugin', () => {
             ]);
         });
 
-        stubs.test('Fails on invalid options', async ctx => {
-            const [, createNodes] = ctx.plugin.createNodes;
-
+        withWorkspace.test('Fails on invalid options', async ctx => {
             await expect(
                 createNodes(
                     ['project.json'],
@@ -246,7 +236,7 @@ suite('LifecyclePlugin', () => {
                         stages: { build: { hooks: 'run' } },
                         bindings: {},
                     } as unknown as LifecyclePluginOptions,
-                    context
+                    ctx.context
                 )
             ).to.be.rejectedWith(
                 Error,
@@ -257,9 +247,7 @@ suite('LifecyclePlugin', () => {
             );
         });
 
-        stubs.test('Fails on inconsistent stages', async ctx => {
-            const [, createNodes] = ctx.plugin.createNodes;
-
+        withWorkspace.test('Fails on inconsistent stages', async ctx => {
             await expect(
                 createNodes(
                     ['project.json'],
@@ -270,7 +258,7 @@ suite('LifecyclePlugin', () => {
                         },
                         bindings: {},
                     },
-                    context
+                    ctx.context
                 )
             ).to.be.rejectedWith(
                 Error,
@@ -278,13 +266,11 @@ suite('LifecyclePlugin', () => {
             );
         });
 
-        stubs.test('Fails on invalid project.json', async ctx => {
-            ctx.stubbedReadJsonFile.returns({ targets: 123 });
-
-            const [, createNodes] = ctx.plugin.createNodes;
+        withWorkspace.test('Fails on invalid project.json', async ctx => {
+            await ctx.writeProjectJson('project.json', { targets: 123 });
 
             const thrown: unknown = await expect(
-                createNodes(['project.json'], options, context)
+                createNodes(['project.json'], options, ctx.context)
             ).to.be.rejectedWith(AggregateCreateNodesError);
             expect(thrown)
                 .to.have.property('errors')
@@ -322,47 +308,47 @@ suite('LifecyclePlugin', () => {
                 ),
             }) as unknown as CreateDependenciesContext;
 
-        stubs.test('Accepts wired targets', ctx => {
-            expect(
-                ctx.plugin.createDependencies(options, contextFor({ foo: {}, bar: {} }))
-            ).to.deep.equal([]);
-            expect(ctx.fakeLogger.warn.callCount).to.equal(0);
+        withWorkspace.test('Accepts wired targets', ctx => {
+            expect(createDependencies(options, contextFor({ foo: {}, bar: {} }))).to.deep.equal([]);
+            expect(ctx.warn.callCount).to.equal(0);
         });
 
-        stubs.test('Ignores projects without targets', ctx => {
+        withWorkspace.test('Ignores projects without targets', ctx => {
             expect(
-                ctx.plugin.createDependencies(options, {
+                createDependencies(options, {
                     projects: { foo: { root: 'foo' } },
                 } as unknown as CreateDependenciesContext)
             ).to.deep.equal([]);
-            expect(ctx.fakeLogger.warn.callCount).to.equal(2);
+            // Neither bound target is defined, as the only project has no targets
+            expect(ctx.warn.args).to.deep.equal([
+                ['Bound target tsc is not defined in any project. Is it a typo?'],
+                ['Bound target eslint is not defined in any project. Is it a typo?'],
+            ]);
         });
 
-        stubs.test('Warns about bindings no project defines', ctx => {
+        withWorkspace.test('Warns about bindings no project defines', ctx => {
             const targets = Object.fromEntries(
                 Object.entries(wiredProject.targets).filter(([targetName]) => targetName !== 'tsc')
             );
 
-            expect(
-                ctx.plugin.createDependencies(options, contextFor({ foo: { targets } }))
-            ).to.deep.equal([]);
-            expect(ctx.fakeLogger.warn.callCount).to.equal(1);
-            expect(ctx.fakeLogger.warn.getCall(0).args).to.deep.equal([
+            expect(createDependencies(options, contextFor({ foo: { targets } }))).to.deep.equal([]);
+            expect(ctx.warn.callCount).to.equal(1);
+            expect(ctx.warn.getCall(0).args).to.deep.equal([
                 'Bound target tsc is not defined in any project. Is it a typo?',
             ]);
         });
 
-        stubs.test('Fails on invalid options', ctx => {
-            expect(() => ctx.plugin.createDependencies(undefined, contextFor({}))).to.throw(
+        withWorkspace.test('Fails on invalid options', () => {
+            expect(() => createDependencies(undefined, contextFor({}))).to.throw(
                 Error,
                 'Invalid nx-lifecycle plugin options in nx.json'
             );
         });
 
         suite('Fails on unwired targets', () => {
-            stubs.test('Lifecycle target overridden', ctx => {
+            withWorkspace.test('Lifecycle target overridden', () => {
                 expect(() =>
-                    ctx.plugin.createDependencies(
+                    createDependencies(
                         options,
                         contextFor({
                             foo: {
@@ -386,9 +372,9 @@ suite('LifecyclePlugin', () => {
                 );
             });
 
-            stubs.test('Bound target in project without lifecycle targets', ctx => {
+            withWorkspace.test('Bound target in project without lifecycle targets', () => {
                 expect(() =>
-                    ctx.plugin.createDependencies(
+                    createDependencies(
                         options,
                         contextFor({
                             foo: {},
@@ -405,9 +391,9 @@ suite('LifecyclePlugin', () => {
                 );
             });
 
-            stubs.test('Bound target not declared in project.json', ctx => {
+            withWorkspace.test('Bound target not declared in project.json', () => {
                 expect(() =>
-                    ctx.plugin.createDependencies(
+                    createDependencies(
                         options,
                         contextFor({
                             foo: {
@@ -428,7 +414,7 @@ suite('LifecyclePlugin', () => {
                 );
             });
 
-            stubs.test('Bound target dependsOn replaced, once for all projects', ctx => {
+            withWorkspace.test('Bound target dependsOn replaced, once for all projects', () => {
                 const targets = {
                     ...wiredProject.targets,
                     tsc: { executor: 'nx:run-commands', dependsOn: ['^build'] },
@@ -436,7 +422,7 @@ suite('LifecyclePlugin', () => {
                 };
 
                 expect(() =>
-                    ctx.plugin.createDependencies(
+                    createDependencies(
                         options,
                         contextFor({ foo: { targets }, bar: { targets }, baz: {} })
                     )

@@ -494,9 +494,6 @@ importers:
       sinon:
         specifier: 'catalog:'
         version: 22.1.0
-      sinon-typed-stub:
-        specifier: workspace:^
-        version: file:tools/sinon-typed-stub(@types/sinon@22.0.0)(sinon@22.1.0)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -5702,16 +5699,6 @@ packages:
     resolution: {integrity: sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==}
     engines: {node: '>=14'}
 
-  sinon-typed-stub@file:tools/sinon-typed-stub:
-    resolution: {directory: tools/sinon-typed-stub, type: directory}
-    engines: {node: '>=24'}
-    peerDependencies:
-      '@types/sinon': ^22.0.0
-      sinon: ^22.1.0
-    peerDependenciesMeta:
-      '@types/sinon':
-        optional: true
-
   sinon@22.1.0:
     resolution: {integrity: sha512-n1ajF2rBWMTtEwbKcw4UdFg4nCnDdq/U6RDoxtOd7oapOlRoJ5ynwFx60owROyhDpA9QhMZi0pCO/xtmwFjG7w==}
 
@@ -10570,12 +10557,6 @@ snapshots:
   signal-exit@3.0.7: {}
 
   signal-exit@4.1.0: {}
-
-  sinon-typed-stub@file:tools/sinon-typed-stub(@types/sinon@22.0.0)(sinon@22.1.0):
-    dependencies:
-      sinon: 22.1.0
-    optionalDependencies:
-      '@types/sinon': 22.0.0
 
   sinon@22.1.0:
     dependencies:

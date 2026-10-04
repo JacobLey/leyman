@@ -79,7 +79,6 @@
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "sinon": "catalog:",
-    "sinon-typed-stub": "workspace:^",
     "typescript": "catalog:"
   }
 }

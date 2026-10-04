@@ -32,9 +32,6 @@
       "path": "../../tools/entry-script"
     },
     {
-      "path": "../../tools/sinon-typed-stub"
-    },
-    {
       "path": "../../tools/test-chain/mocha-chain"
     },
     {
