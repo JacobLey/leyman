@@ -1,4 +1,4 @@
-import type { NxPluginV2 } from '@nx/devkit';
+import type { NxPlugin } from '@nx/devkit';
 import type { LifecyclePluginOptions } from 'nx-lifecycle/plugin';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
@@ -14,6 +14,6 @@ suite('plugin', () => {
     });
 
     test('types', () => {
-        expectTypeOf(plugin).toExtend<NxPluginV2<LifecyclePluginOptions>>();
+        expectTypeOf(plugin).toExtend<NxPlugin<LifecyclePluginOptions>>();
     });
 });

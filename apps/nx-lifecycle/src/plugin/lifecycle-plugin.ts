@@ -1,10 +1,10 @@
 import type {
     CreateDependencies,
     CreateDependenciesContext,
-    CreateNodesContextV2,
+    CreateNodes,
+    CreateNodesContext,
     CreateNodesResult,
-    CreateNodesResultV2,
-    CreateNodesV2,
+    CreateNodesResultArray,
     ProjectConfiguration,
     TargetConfiguration,
 } from '@nx/devkit';
@@ -124,7 +124,7 @@ export class LifecyclePlugin {
     readonly #assertProjectJson: AssertProjectJson;
     readonly #logger: PluginLogger;
 
-    public readonly createNodes: CreateNodesV2<LifecyclePluginOptions>;
+    public readonly createNodes: CreateNodes<LifecyclePluginOptions>;
     public readonly createDependencies: (
         ...args: Parameters<CreateDependencies<LifecyclePluginOptions>>
     ) => [];
@@ -166,8 +166,8 @@ export class LifecyclePlugin {
     async #createNodes(
         projectJsonPaths: readonly string[],
         options: LifecyclePluginOptions | undefined,
-        context: CreateNodesContextV2
-    ): Promise<CreateNodesResultV2> {
+        context: CreateNodesContext
+    ): Promise<CreateNodesResultArray> {
         const plan = this.#plan(options);
 
         return createNodesFromFiles(
@@ -181,7 +181,7 @@ export class LifecyclePlugin {
     #createProjectNode(
         projectJsonPath: string,
         { lifecycleTargets, registeredTargets }: LifecyclePlan,
-        context: CreateNodesContextV2
+        context: CreateNodesContext
     ): CreateNodesResult {
         const projectJson = this.#readJsonFile(Path.join(context.workspaceRoot, projectJsonPath));
         this.#assertProjectJson(projectJson);

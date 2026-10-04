@@ -48,8 +48,8 @@ catalog:
   '@biomejs/biome': ^2.5.14
   '@changesets/cli': ^2.31.1
   '@eslint/js': ^10.0.1
-  '@nx/devkit': ^22.7.12
-  '@nx/js': ^22.7.12
+  '@nx/devkit': ^23.2.1
+  '@nx/js': ^23.2.1
   '@pnpm/find-workspace-dir': ^7.0.3
   '@pnpm/lockfile.fs': ^1.1.0
   '@pnpm/lockfile.pruner': ^0.0.6
@@ -98,7 +98,7 @@ catalog:
   globby: ^16.2.4
   mocha: ^12.0.2
   npm: ^11.20.0
-  nx: ^22.7.12
+  nx: ^23.2.1
   p-defer: ^4.0.1
   prettier: ^3.9.9
   react: ^19.3.0

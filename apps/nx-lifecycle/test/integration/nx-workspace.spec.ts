@@ -110,7 +110,8 @@ suite('Nx workspace', () => {
         withPlugin.test('Runs stages in order', async function (this: Context, { nx }) {
             this.timeout(60_000);
 
-            const output = await nx('run', 'b:build');
+            // Outside a terminal, Nx hides the output of successful dependency tasks unless static
+            const output = await nx('run', 'b:build', '--outputStyle=static');
 
             expect(output).to.contain('compiled a');
             expect(output).to.contain('compiled b');
