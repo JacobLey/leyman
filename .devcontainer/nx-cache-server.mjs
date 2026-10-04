@@ -32,6 +32,9 @@ const exists = async path => {
 };
 
 const server = createServer(async (req, res) => {
+    // Never reuse connections: Dagger's host service tunnel (CI) doesn't forward the server closing an
+    // idle keep-alive connection, so Nx would send its next request into a dead socket and hang forever.
+    res.setHeader('connection', 'close');
     const hash = hashPattern.exec(req.url ?? '')?.groups?.hash;
     if (!hash) {
         res.writeHead(404).end();
