@@ -20,7 +20,7 @@ import {
 } from 'normalized-react-query';
 import { austenId, fellowshipOfTheRingId, prideAndPrejudiceId, tolkienId } from '../data/api.js';
 import { authors, books } from '../data/normalized.js';
-import { createWrapper, renderHook, waitFor } from '../data/render.js';
+import { createWrapper, renderHook, suspenseWrapper, waitFor } from '../data/render.js';
 import { Linked } from '#internal/lib/linked.js';
 
 const authorsWithFavoriteAuthor = authors.propagate(author => ({
@@ -963,6 +963,39 @@ suite('resource', () => {
                     );
 
                     expect(result.current.favoriteAuthor.data.id).to.equal('<fake-id>');
+                }
+            );
+
+            context.test('Reads the link client without a provider', async () => {
+                const linkClient = new QueryClient();
+                const linked = await books.prefetchQuery(linkClient, {
+                    bookId: fellowshipOfTheRingId,
+                });
+
+                const { result } = renderHook(() => useNormalizedPrefetchedSuspenseQuery(linked), {
+                    wrapper: suspenseWrapper,
+                });
+
+                expect(result.current.data.id).to.equal(fellowshipOfTheRingId);
+            });
+
+            contextWithWrapper.test(
+                'Reads the link client over the provider client',
+                async ({ client, wrapper }) => {
+                    const linkClient = new QueryClient();
+                    const linked = await books.prefetchQuery(linkClient, {
+                        bookId: fellowshipOfTheRingId,
+                    });
+
+                    const { result } = renderHook(
+                        () => useNormalizedPrefetchedSuspenseQuery(linked),
+                        { wrapper }
+                    );
+
+                    expect(result.current.data.id).to.equal(fellowshipOfTheRingId);
+                    expect(books.hasState(client, { bookId: fellowshipOfTheRingId })).to.equal(
+                        false
+                    );
                 }
             );
         });

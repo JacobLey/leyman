@@ -10,6 +10,19 @@ export { renderHook, waitFor } from '@testing-library/react';
 export type Wrapper = (props: { children: ReactNode }) => ReactNode;
 
 /**
+ * Catches any hook that suspends, without providing a client.
+ *
+ * While suspended, `renderHook`'s `result.current` stays `null`.
+ *
+ * @param props - component props
+ * @param props.children - hook under test
+ * @returns wrapped children
+ */
+export const suspenseWrapper: Wrapper = ({ children }) => (
+    <Suspense fallback={null}>{children}</Suspense>
+);
+
+/**
  * Provides the client to hooks, and catches any hook that suspends.
  *
  * While suspended, `renderHook`'s `result.current` stays `null`.

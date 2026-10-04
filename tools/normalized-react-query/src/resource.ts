@@ -814,14 +814,17 @@ export const useNormalizedPrefetchedSuspenseQuery = <
         select?: (data: TPropagatedData) => TSelectedData;
     } = {}
 ): UseSuspenseQueryResult<TSelectedData, unknown> =>
-    useSuspenseQuery({
-        ...options,
-        ...linked
-            .getQueryable()
-            .getUseSuspenseQueryOptions(linked.getQueryClient(), linked.getParams(), {
-                select,
-            }),
-    });
+    useSuspenseQuery(
+        {
+            ...options,
+            ...linked
+                .getQueryable()
+                .getUseSuspenseQueryOptions(linked.getQueryClient(), linked.getParams(), {
+                    select,
+                }),
+        },
+        linked.getQueryClient()
+    );
 
 /**
  * Similar to {@link useNormalizedPrefetchedSuspenseQuery}.
