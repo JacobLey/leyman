@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
-import { assertIsPackageJson } from '../../../lib/package-json-schema.js';
+import { assertIsPackageJson } from '#internal/lib/package-json-schema.js';
 
 suite('assertIsPackageJson', () => {
     test('is package.json', () => {

@@ -49,5 +49,8 @@
     "eslint": "catalog:",
     "mocha": "catalog:",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
   }
 }

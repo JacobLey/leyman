@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
-import { getInternalRegex } from '../../../lib/internal-regex.js';
+import { getInternalRegex } from '#internal/lib/internal-regex.js';
 
 suite('getInternalRegex', () => {
     test('success', () => {
