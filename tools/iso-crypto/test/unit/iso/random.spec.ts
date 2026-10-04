@@ -3,12 +3,12 @@ import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import * as IsoCrypto from 'iso-crypto';
 import { before, suite, test } from 'mocha-chain';
-import * as BrowserRandom from '../../../iso/random/browser.js';
-import * as NodeRandom from '../../../iso/random/node.js';
+import * as BrowserRandom from '#internal/iso/random/browser.js';
+import * as NodeRandom from '#internal/iso/random/node.js';
 
 suite('Random', () => {
     test('coverage', async () => {
-        await import('../../../iso/random/types.js');
+        await import('#internal/iso/random/types.js');
     });
 
     test('types', () => {

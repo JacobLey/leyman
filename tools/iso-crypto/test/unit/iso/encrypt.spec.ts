@@ -3,12 +3,12 @@ import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import * as IsoCrypto from 'iso-crypto';
 import { before, suite, test } from 'mocha-chain';
-import * as BrowserEncrypt from '../../../iso/encrypt/browser.js';
-import * as NodeEncrypt from '../../../iso/encrypt/node.js';
+import * as BrowserEncrypt from '#internal/iso/encrypt/browser.js';
+import * as NodeEncrypt from '#internal/iso/encrypt/node.js';
 
 suite('Encrypt', () => {
     test('coverage', async () => {
-        await import('../../../iso/encrypt/types.js');
+        await import('#internal/iso/encrypt/types.js');
     });
 
     test('types', () => {

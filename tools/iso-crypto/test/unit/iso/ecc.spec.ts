@@ -3,10 +3,10 @@ import type * as Ecc from '#ecc';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import * as IsoCrypto from 'iso-crypto';
+import { Ciphers, Modes } from 'iso-crypto';
 import { before, suite, test } from 'mocha-chain';
-import * as BrowserEcc from '../../../iso/ecc/browser.js';
-import * as NodeEcc from '../../../iso/ecc/node.js';
-import { Ciphers, Modes } from '../../../types.js';
+import * as BrowserEcc from '#internal/iso/ecc/browser.js';
+import * as NodeEcc from '#internal/iso/ecc/node.js';
 
 interface EccSourceContext {
     source: typeof Ecc;
@@ -18,7 +18,7 @@ interface EccContext extends EccSourceContext {
 
 suite('Ecc', () => {
     test('coverage', async () => {
-        await import('../../../iso/ecc/types.js');
+        await import('#internal/iso/ecc/types.js');
     });
 
     test('types', () => {

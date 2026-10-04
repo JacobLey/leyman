@@ -51,7 +51,8 @@
       "types": "./dist/iso/random/types.js",
       "browser": "./dist/iso/random/browser.js",
       "default": "./dist/iso/random/node.js"
-    }
+    },
+    "#internal/*": "./dist/*"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

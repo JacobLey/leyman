@@ -1,4 +1,4 @@
-import type { Uint8ArrayBuffer } from '../../iso/lib/types.js';
+import type { Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { decode, decodeObject, encodeObject } from 'iso-crypto';
