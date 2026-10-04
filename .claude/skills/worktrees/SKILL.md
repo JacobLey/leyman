@@ -25,6 +25,7 @@ The main checkout stays wherever you cloned it. Worktrees go in a **dedicated si
       pnpm-store/              <- pnpm content-addressed store
       nx-cache/                <- Nx task outputs (served by the nx-cache sidecar)
       claude-config/           <- CLAUDE_CONFIG_DIR (auth, settings, memory)
+      plans/                   <- plans shared by every worktree (`<worktree>/plans` symlinks here)
 ```
 
 Every devcontainer, including the one for the main checkout, mounts **two folders: `leyman/` and `leyman-worktrees/`**. Each one is mounted at the same absolute path it has on the host. This has three effects:
@@ -39,6 +40,7 @@ The container's workspace folder is therefore the host path (for example `/Users
 
 - Fails if the folder being opened is neither the main checkout nor a direct child of `<main>-worktrees/`.
 - Creates `.shared/`. The first time, it moves `<main>/.pnpm-store` into `.shared/` and copies `<main>/.claude-config` there.
+- Links `<worktree>/plans` to `.shared/plans/`. Plans written there are visible from every worktree and never committed (`/plans` is gitignored).
 - Writes the paths and a namespaced `COMPOSE_PROJECT_NAME` (`leyman`, `leyman_feat-x`) to `.devcontainer/.env`, which is gitignored and read by `docker-compose.yml`. Container names therefore never clash with same-named worktrees from other repos.
 
 ---

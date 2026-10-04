@@ -13,5 +13,6 @@
 **/.swcrc
 
 /.claude-config
+/plans
 /.nx
 /.devcontainer/.env
