@@ -7,6 +7,8 @@ description: How the install → prepare → check/build → test → verify tas
 
 [`lifecycle.json`](../../../lifecycle.json) is the source of truth for task ordering. [`nx-lifecycle`](../../../../../apps/nx-lifecycle/README.md) uses it to generate every orchestration target's `dependsOn` in `nx.json` and each `project.json`. For why, see [WHY-NX-LIFECYCLE.md](../../../../../apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
 
+`nx-lifecycle` also ships an Nx plugin that infers these targets instead of generating them. This repo can't load it from the workspace, because Nx needs plugins before it can build anything. Switching means consuming a published version through the `leyman` catalog (like `npm-barrelify`), then following the README's migration steps.
+
 ## Stages
 
 ```
