@@ -1,7 +1,7 @@
 import type * as vitest from 'vitest';
-import type { VitestMethods } from '../../lib/vitest-chain.js';
+import type { VitestMethods } from '#internal/lib/vitest-chain.js';
 import { describe, expect, test } from 'vitest';
-import { createVitestChain } from '../../lib/vitest-chain.js';
+import { createVitestChain } from '#internal/lib/vitest-chain.js';
 
 type Registered = (...args: unknown[]) => Promise<void>;
 

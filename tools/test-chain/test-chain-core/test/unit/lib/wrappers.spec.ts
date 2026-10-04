@@ -1,7 +1,7 @@
 import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import { HookOrderError } from 'test-chain-core';
-import { withoutContext } from '../../../lib/wrappers.js';
+import { withoutContext } from '#internal/lib/wrappers.js';
 
 suite('wrappers', () => {
     suite('withoutContext', () => {

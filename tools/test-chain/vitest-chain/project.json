@@ -6,6 +6,7 @@
     "eslint": {},
     "update-ts-references": {},
     "tsc": {},
+    "tsc-test": {},
     "vitest-unit-test": {},
     "coverage-report": {},
     "install:_": {},

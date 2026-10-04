@@ -6,6 +6,10 @@
     "rootDir": "src",
     "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
   },
+  "include": [
+    "src",
+    "*.d.ts"
+  ],
   "references": [
     {
       "path": "../test-chain-core"

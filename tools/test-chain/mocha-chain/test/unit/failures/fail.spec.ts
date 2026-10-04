@@ -8,12 +8,12 @@ import type {
     SuiteFunction,
     TestFunction,
 } from 'mocha';
-import type { MochaMethods } from '../../../lib/mocha-chain.js';
+import type { MochaMethods } from '#internal/lib/mocha-chain.js';
 import * as mocha from 'mocha';
 import { match, mock, stub, verifyAndRestore } from 'sinon';
 import { expect } from '@leyman/expect';
 import { after, afterEach, suite, test } from 'mocha-chain';
-import { createMochaChain } from '../../../lib/mocha-chain.js';
+import { createMochaChain } from '#internal/lib/mocha-chain.js';
 
 suite('Failure cases', () => {
     const fakeCurrentTest = {};

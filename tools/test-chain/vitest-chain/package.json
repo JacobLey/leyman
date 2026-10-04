@@ -41,5 +41,8 @@
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
   }
 }

@@ -1,6 +1,6 @@
 import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
-import { mergeContexts } from '../../../lib/merge-context.js';
+import { mergeContexts } from '#internal/lib/merge-context.js';
 
 suite('mergeContexts', () => {
     test('Ignores falsy additional context', async () => {
