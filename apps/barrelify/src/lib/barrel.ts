@@ -22,13 +22,17 @@ export const generateBarrelFile = ({
         // Idempotent
         '// AUTO-BARREL',
         '',
-        ...files
-            .map(file => {
-                const ext = Path.extname(file);
-                const base = Path.basename(file, ext);
+        ...[
+            ...new Set(
+                files.map(file => {
+                    const ext = Path.extname(file);
+                    const base = Path.basename(file, ext);
 
-                return `${base}${ext.replace('t', 'j')}`;
-            })
+                    // `.tsx` compiles to `.js`, like `.ts`
+                    return `${base}${ext === '.tsx' ? '.js' : ext.replace('t', 'j')}`;
+                })
+            ),
+        ]
             .toSorted((a, b) => a.localeCompare(b, 'en'))
             .map(filename => `export ${types.has(filename) ? 'type ' : ''}* from './${filename}';`),
         '',

@@ -8,7 +8,7 @@ Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/C
 
 </div>
 
-- **Specifiers that resolve** — writes `./foo.js`, `./foo.cjs` and `./foo.mjs` (never extensionless paths), so barrels work under Node ESM and TypeScript's `nodenext` resolution.
+- **Specifiers that resolve** — writes `./foo.js`, `./foo.cjs` and `./foo.mjs` (never extensionless paths, and `.tsx` components export as `./Button.js`), so barrels work under Node ESM and TypeScript's `nodenext` resolution.
 - **ESM/CJS aware** — reads the nearest `package.json` `"type"` and only re-exports files the index can actually load (a CommonJS index never re-exports `.mts`).
 - **Opt-in** — only rewrites `index.ts` files that start with `// AUTO-BARREL`; it never creates files or touches hand-written barrels.
 - **CI check** — `barrel --ci` fails when a committed barrel is stale.
@@ -79,7 +79,7 @@ The `// AUTO-BARREL` comment is preserved so subsequent runs stay in sync.
 
 It is also available as a CLI via `npx barrel` or `npx barrelify`.
 
-Mark any `index.ts` file you want managed with `// AUTO-BARREL` as the very first characters in the file. Barrelify will not create new index files — it only rewrites files that are already opted in. Each barrel re-exports its sibling files only, not subdirectories.
+Mark any `index.ts` (or `index.tsx`, `index.cts`, `index.mts`) file you want managed with `// AUTO-BARREL` as the very first characters in the file. Barrelify will not create new index files — it only rewrites files that are already opted in. Each barrel re-exports its sibling `.ts`, `.cts`, `.mts` and `.tsx` files only, not subdirectories. Declaration files (`.d.ts`) are skipped. `.tsx` files follow the same ESM/CJS rules as `.ts`, and are exported as `.js`, matching TypeScript's `react-jsx` output.
 
 To re-export a file's types only, change its line to `export type * from './foo.js';`. Barrelify keeps it type-only when it rewrites the file.
 

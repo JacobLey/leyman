@@ -186,6 +186,45 @@ suite('barrelify', () => {
             );
         });
 
+        withTmpDir.test('Exports .tsx files and manages index.tsx', async ctx => {
+            await ctx.writeFiles({
+                'package.json': JSON.stringify({ type: 'module' }),
+                'Button.tsx': '',
+                'util.ts': '',
+                'index.tsx': barrel("export type * from './util.js';"),
+                'index.cts': HEADER,
+            });
+
+            await barrelify({ cwd: ctx.tmpDir.path });
+
+            expect(await ctx.read('index.tsx')).to.equal(
+                barrel("export * from './Button.js';", "export type * from './util.js';")
+            );
+            // `.tsx` is ESM in a module package, so CommonJS can't re-export it
+            expect(await ctx.read('index.cts')).to.equal(barrel());
+        });
+
+        withTmpDir.test('A .ts and .tsx file of the same name export once', async ctx => {
+            await ctx.writeFiles({ 'a.ts': '', 'a.tsx': '', 'index.ts': HEADER });
+
+            await barrelify({ cwd: ctx.tmpDir.path });
+
+            expect(await ctx.read('index.ts')).to.equal(barrel("export * from './a.js';"));
+        });
+
+        withTmpDir.test('Skips declaration files', async ctx => {
+            await ctx.writeFiles({
+                'a.ts': '',
+                'globals.d.ts': '',
+                'types.d.cts': '',
+                'index.ts': HEADER,
+            });
+
+            await barrelify({ cwd: ctx.tmpDir.path });
+
+            expect(await ctx.read('index.ts')).to.equal(barrel("export * from './a.js';"));
+        });
+
         withTmpDir.test('Only exports sibling files', async ctx => {
             await ctx.writeFiles({
                 'a.ts': '',

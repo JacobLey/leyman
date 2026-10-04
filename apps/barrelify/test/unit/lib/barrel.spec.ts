@@ -57,6 +57,23 @@ suite('barrel', () => {
             );
         });
 
+        test('tsx files', () => {
+            expect(
+                generateBarrelFile({
+                    files: ['Button.tsx', 'Button.ts', 'card.tsx'],
+                    types: new Set(['card.js']),
+                })
+            ).to.equal(
+                dedent`
+                    // AUTO-BARREL
+
+                    export * from './Button.js';
+                    export type * from './card.js';
+
+                `
+            );
+        });
+
         test('Files declared with types', () => {
             expect(
                 generateBarrelFile({

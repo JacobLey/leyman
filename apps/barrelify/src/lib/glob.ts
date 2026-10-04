@@ -2,9 +2,11 @@ import Path from 'node:path';
 import { globby } from 'globby';
 import { isExplicitlyModuleDirectory } from './find-package-json.js';
 
-const COMMON_OR_MODULE = '?(c|m)ts';
-const DEFAULT_OR_COMMON = '?(c)ts';
+// `.tsx` compiles like `.ts`: to `.js`, in the module system of the nearest package.json
+const COMMON_OR_MODULE = '@(ts|cts|mts|tsx)';
+const DEFAULT_OR_COMMON = '@(ts|cts|tsx)';
 const COMMON_ONLY = 'cts';
+const INDEX = 'index.@(ts|cts|mts|tsx)';
 
 /**
  * Load all index files contained within the directory.
@@ -25,7 +27,7 @@ export const findIndexFiles = async ({
 }): Promise<string[]> =>
     globby(
         [
-            '**/index.?(c|m)ts',
+            `**/${INDEX}`,
             '!**/node_modules/**',
             ...ignore.map(i => `!${i.replaceAll(Path.win32.sep, '/')}`),
         ],
@@ -45,7 +47,7 @@ const getExtensions = async (filePath: string): Promise<string> => {
     if (filePath.endsWith('.mts')) {
         return COMMON_OR_MODULE;
     }
-    if (filePath.endsWith('.ts')) {
+    if (filePath.endsWith('.ts') || filePath.endsWith('.tsx')) {
         if (await isExplicitlyModuleDirectory(filePath)) {
             return COMMON_OR_MODULE;
         }
@@ -64,7 +66,7 @@ const getExtensions = async (filePath: string): Promise<string> => {
  */
 export const findFilesForIndex = async (filePath: string): Promise<string[]> => {
     const extensions = await getExtensions(filePath);
-    return globby([`*.${extensions}`, '!index.?(c|m)ts'], {
+    return globby([`*.${extensions}`, `!${INDEX}`, '!*.d.@(ts|cts|mts)'], {
         cwd: Path.dirname(filePath),
         gitignore: true,
     });
