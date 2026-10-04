@@ -54,10 +54,6 @@ export const baseNamingConvention = [
         format: ['camelCase'],
         leadingUnderscore: 'forbid',
         trailingUnderscore: 'forbid',
-        filter: {
-            regex: '^Ajv$',
-            match: false,
-        },
     },
     {
         selector: 'enum',
@@ -129,10 +125,27 @@ export const baseNamingConvention = [
         selector: 'variable',
         modifiers: ['const', 'global'],
         format: ['camelCase', 'UPPER_CASE'],
-        filter: {
-            regex: '^Ajv$',
-            match: false,
-        },
+    },
+];
+
+// React components are PascalCase, so JSX files also allow it for anything that may be a component.
+// Function-typed variables are listed with and without `global`, so they are more specific than either base rule.
+export const reactComponentNamingConvention = [
+    {
+        selector: 'function',
+        format: ['camelCase', 'PascalCase'],
+    },
+    {
+        selector: 'variable',
+        modifiers: ['const'],
+        types: ['function'],
+        format: ['camelCase', 'PascalCase'],
+    },
+    {
+        selector: 'variable',
+        modifiers: ['const', 'global'],
+        types: ['function'],
+        format: ['camelCase', 'PascalCase', 'UPPER_CASE'],
     },
 ];
 
@@ -852,6 +865,16 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint/no-require-imports': 'off',
                 '@typescript-eslint/no-var-requires': 'off',
                 'unicorn/prefer-top-level-await': 'off',
+            },
+        },
+        {
+            files: ['**/*.{c,m,}tsx'],
+            rules: {
+                '@typescript-eslint/naming-convention': [
+                    'error',
+                    ...baseNamingConvention,
+                    ...reactComponentNamingConvention,
+                ],
             },
         },
         {
