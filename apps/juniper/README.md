@@ -12,7 +12,7 @@ Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-read
 - **Mistakes are compile errors** — each schema type only exposes the keywords that apply to it, so `maxLength` on an array or a `required` key missing from `properties` fails to build instead of silently validating everything.
 - **Strict output** — emitted schemas pass [Ajv's strict mode](https://ajv.js.org/strict-mode.html), so they work with any standard JSON Schema validator.
 - **Multiple targets** — emit JSON Schema 2020-12 (and OpenAPI 3.1), or `toJSON({ openApi30: true })` for OpenAPI 3.0's `nullable` dialect, from the same definition.
-- **Immutable builders** — every method returns a new schema, so shared base schemas can be safely extended.
+- **Immutable builders** — every method returns a new schema, so shared base schemas can be safely extended, or narrowed with `pick`, `omit` and `partial`.
 
 **Compared to**
 
@@ -461,6 +461,34 @@ const startsOrEndsWith = objectSchema()
 // Record<`abc${string}`, unknown> & Record<`${string}xyz`, number>
 type Output = SchemaType<typeof startsOrEndsWith>;
 ```
+
+**Deriving schemas with `pick`, `omit` and `partial`:** Build variants of an object schema, such as the create, update and response shapes of the same resource. They only change `properties` and `required`. Every other keyword (`additionalProperties`, `title`, ...) is kept, so reset any that no longer fit.
+
+```ts
+import { numberSchema, objectSchema, SchemaType, stringSchema } from 'juniper';
+
+const user = objectSchema({
+    properties: {
+        id: numberSchema(),
+        name: stringSchema(),
+        email: stringSchema(),
+    },
+    required: ['id', 'name'],
+    additionalProperties: false,
+});
+
+const createUser = user.omit(['id']);
+// { name: string; email?: string }
+type CreateUser = SchemaType<typeof createUser>;
+
+// { name?: string; email?: string }
+const updateUser = createUser.partial();
+
+// { id: number; name?: string }, only `name` is optional
+const summary = user.pick(['id', 'name']).partial(['name']);
+```
+
+Keys are checked against the schema's properties, so a typo is a compile error. Constraints added by combining schemas (`allOf`, `if`, `dependentRequired`, ...) still apply to the result, in both the JSON Schema and its type. For example, a property required through `dependentRequired` stays required after `partial()`.
 
 ---
 

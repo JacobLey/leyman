@@ -48,6 +48,17 @@ export type EmptyObject = Omit<EmptyIndex, number | string>;
 
 type StripString<T extends string> = AbstractStrip<T, string>;
 
+/**
+ * Required keys `R` that are still properties of `NewP`.
+ *
+ * @template NewP - properties after picking/omitting
+ * @template R - required keys before
+ */
+type RemainingRequired<NewP extends BaseParameterSchemaObject, R> = Extract<
+    R,
+    StripString<Extract<keyof NewP, string>>
+>;
+
 type ObjectType<
     // Properties
     P extends BaseSchemaObject,
@@ -392,6 +403,84 @@ export class ObjectSchema<
     }
 
     /**
+     * Keep only the given `properties` (and their `required` entries).
+     * Every other keyword, such as `additionalProperties`, is kept as is.
+     *
+     * Constraints added by combining schemas (`allOf`, `dependentRequired`, ...) still apply to the result,
+     * in both the JSON Schema and its type.
+     *
+     * @param this - this instance
+     * @param keys - properties to keep
+     * @returns cloned object schema
+     */
+    public pick<K extends StripString<Extract<keyof P, string>>>(
+        this: this,
+        keys: readonly K[]
+    ): ObjectSchema<Pick<P, K>, RemainingRequired<Pick<P, K>, R>, A, X, M, N> {
+        const keep = new Set<string>(keys);
+        return this.#withProperties(key => keep.has(key)) as unknown as ObjectSchema<
+            Pick<P, K>,
+            RemainingRequired<Pick<P, K>, R>,
+            A,
+            X,
+            M,
+            N
+        >;
+    }
+
+    /**
+     * Remove the given `properties` (and their `required` entries).
+     * Every other keyword, such as `additionalProperties`, is kept as is.
+     *
+     * Constraints added by combining schemas (`allOf`, `dependentRequired`, ...) still apply to the result,
+     * in both the JSON Schema and its type.
+     *
+     * @param this - this instance
+     * @param keys - properties to remove
+     * @returns cloned object schema
+     */
+    public omit<K extends StripString<Extract<keyof P, string>>>(
+        this: this,
+        keys: readonly K[]
+    ): ObjectSchema<Omit<P, K>, RemainingRequired<Omit<P, K>, R>, A, X, M, N> {
+        const remove = new Set<string>(keys);
+        return this.#withProperties(key => !remove.has(key)) as unknown as ObjectSchema<
+            Omit<P, K>,
+            RemainingRequired<Omit<P, K>, R>,
+            A,
+            X,
+            M,
+            N
+        >;
+    }
+
+    /**
+     * Make properties optional, by removing them from `required`.
+     * Without `keys`, makes every property optional.
+     *
+     * Properties required by combined schemas (`allOf`, `dependentRequired`, ...) stay required,
+     * in both the JSON Schema and its type.
+     *
+     * @param this - this instance
+     * @param [keys] - properties to make optional, defaults to every property
+     * @returns cloned object schema
+     */
+    public partial<K extends StripString<Extract<keyof P, string>> = R>(
+        this: this,
+        keys?: readonly K[]
+    ): ObjectSchema<P, RemainingRequired<P, Exclude<R, K>>, A, X, M, N> {
+        const optional = new Set<string>(keys ?? this.#required);
+        return (
+            this as unknown as ObjectSchema<P, RemainingRequired<P, Exclude<R, K>>, A, X, M, N>
+        ).clone({
+            required: this.#required.filter(key => !optional.has(key)) as RemainingRequired<
+                P,
+                Exclude<R, K>
+            >[],
+        });
+    }
+
+    /**
      * Set `additionalProperties` of object.
      *
      * Objects that allow additionalProperties will be indexed with and additional
@@ -698,5 +787,20 @@ export class ObjectSchema<
         }
 
         return base;
+    }
+
+    /**
+     * Clone with only the properties (and `required` entries) whose key passes `filter`.
+     *
+     * @param filter - whether to keep the property
+     * @returns cloned object schema
+     */
+    #withProperties(filter: (key: string) => boolean): this {
+        return this.clone({
+            properties: Object.fromEntries(
+                Object.entries(this.#properties).filter(([key]) => filter(key))
+            ) as P,
+            required: this.#required.filter(key => filter(key)),
+        });
     }
 }

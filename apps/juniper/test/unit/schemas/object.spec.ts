@@ -1009,6 +1009,122 @@ suite('ObjectSchema', () => {
         });
     });
 
+    suite('pick, omit and partial', () => {
+        const user = objectSchema({
+            title: 'User',
+            properties: {
+                id: numberSchema(),
+                name: stringSchema(),
+                email: stringSchema(),
+            },
+            required: ['id', 'name'],
+            additionalProperties: false,
+        });
+
+        test('pick', () => {
+            const schema = user.pick(['id', 'email']);
+
+            expect(schema.toJSON()).to.deep.equal({
+                title: 'User',
+                type: 'object',
+                properties: {
+                    id: { type: 'number' },
+                    email: { type: 'string' },
+                },
+                required: ['id'],
+                additionalProperties: false,
+            });
+            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+                id: number;
+                email?: string;
+            }>();
+
+            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            expect(validator({ id: 1 })).to.equal(true);
+            expect(validator({ id: 1, name: 'name' })).to.equal(false);
+        });
+
+        test('omit', () => {
+            const schema = user.omit(['id']);
+
+            expect(schema.toJSON()).to.deep.equal({
+                title: 'User',
+                type: 'object',
+                properties: {
+                    name: { type: 'string' },
+                    email: { type: 'string' },
+                },
+                required: ['name'],
+                additionalProperties: false,
+            });
+            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+                name: string;
+                email?: string;
+            }>();
+        });
+
+        test('partial', () => {
+            const all = user.partial();
+            expect(all.toJSON()).to.not.have.property('required');
+            expectTypeOf<SchemaType<typeof all>>().branded.toEqualTypeOf<{
+                id?: number;
+                name?: string;
+                email?: string;
+            }>();
+
+            const some = user.partial(['name']);
+            expect(some.toJSON()).to.have.property('required').that.deep.equals(['id']);
+            expectTypeOf<SchemaType<typeof some>>().branded.toEqualTypeOf<{
+                id: number;
+                name?: string;
+                email?: string;
+            }>();
+        });
+
+        test('Does not change the original', () => {
+            user.pick(['id']);
+            user.omit(['id']);
+            user.partial();
+            expect(user.toJSON()).to.have.property('required').that.deep.equals(['id', 'name']);
+            expect(Object.keys(user.toJSON().properties!)).to.deep.equal(['id', 'name', 'email']);
+        });
+
+        test('Keeps nullable', () => {
+            const schema = user.nullable().pick(['id']);
+            expect(schema.toJSON()).to.have.property('type').that.deep.equals(['object', 'null']);
+            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+                id: number;
+            } | null>();
+        });
+
+        test('Constraints from combined schemas still apply', () => {
+            const schema = user.dependentRequired('email', ['name']).omit(['name']).partial();
+
+            expect(schema.toJSON()).to.deep.equal({
+                title: 'User',
+                type: 'object',
+                properties: {
+                    id: { type: 'number' },
+                    email: { type: 'string' },
+                },
+                additionalProperties: false,
+                dependentRequired: { email: ['name'] },
+            });
+            expectTypeOf<SchemaType<typeof schema>>().toExtend<
+                { email?: undefined } | { name: string }
+            >();
+        });
+
+        test('Rejects unknown properties', () => {
+            // @ts-expect-error
+            user.pick(['other']);
+            // @ts-expect-error
+            user.omit(['other']);
+            // @ts-expect-error
+            user.partial(['other']);
+        });
+    });
+
     suite('Invalid types', () => {
         suite('Required not exists', () => {
             test('create', () => {
