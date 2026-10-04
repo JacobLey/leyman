@@ -22,7 +22,7 @@ Tests run against compiled `dist/`, so a test run always rebuilds first (cached 
 
 Coverage is per package: only the package's own tests count, not tests of packages that depend on it. Every package must fully test itself.
 
-100% is the floor, not the goal: two `if`s are fully covered by two tests but have four paths. If code is hard to cover, it is usually missing an abstraction. Use `haywire` DI (see `haywire-launcher` for covering CLI entry points) rather than reaching into internals.
+100% is the floor, not the goal: two `if`s are fully covered by two tests but have four paths. If code is hard to cover, first try controlling its real inputs: write fixtures to a temp dir, or run the CLI as a subprocess (coverage of child processes counts). Reach for `haywire` DI only when the real dependency can't be put into the needed state — see "Dependency injection" in the [coding-patterns skill](../coding-patterns/SKILL.md#dependency-injection-when-to-use-it-when-not-to). Never reach into internals instead.
 
 ## Layout
 
@@ -54,7 +54,7 @@ Tests are compiled into `dist-test/` (`tsc-test`) and run against the package's 
 - **[`mocha-chain`](../../../tools/test-chain/mocha-chain/)** — import `suite`, `test`, `beforeEach`, etc. from here instead of using Mocha globals (TDD interface). Hooks can return values that become typed context for later hooks and tests. `mocha` itself is still a dev dependency as the runner. Use `vitest-chain` + the `vitest-unit-test` target only for Vitest-specific packages.
 - **[`@leyman/expect`](../../../leyman/expect/)** — `import { expect } from '@leyman/expect'`. Chai with `chai-as-promised` registered. Depend on it (dev) instead of `chai`.
 - **`expect-type`** — `expectTypeOf(...)` for compile-time type assertions alongside runtime ones.
-- **Sinon** + **[`sinon-typed-stub`](../../../tools/sinon-typed-stub/)** — stubs to inject via DI. Restore after every test:
+- **Sinon** + **[`sinon-typed-stub`](../../../tools/sinon-typed-stub/)** — stubs to inject via DI, only for dependencies that actually need DI (not file system or console access). Restore after every test:
 
 ```ts
 import { verifyAndRestore } from 'sinon';
