@@ -30,6 +30,9 @@ minimumReleaseAgeExclude:
   - juniper
 # Fail if a package's publish trust level (e.g. provenance) drops compared to earlier versions
 trustPolicy: no-downgrade
+trustPolicyExclude:
+  # Old releases (already in the lockfile) published without provenance after a newer major had it
+  - semver@6.3.1
 # Transitive dependencies may only come from the registry (no git/tarball URLs)
 blockExoticSubdeps: true
 # Fail on unapproved dependency build scripts instead of silently skipping them
@@ -43,8 +46,8 @@ catalog:
   '@biomejs/biome': ^2.5.14
   '@changesets/cli': ^2.30.0
   '@eslint/js': ^10.0.1
-  '@nx/devkit': ^22.6.1
-  '@nx/js': ^22.6.1
+  '@nx/devkit': ^22.7.12
+  '@nx/js': ^22.7.12
   '@pnpm/find-workspace-dir': ^7.0.3
   '@pnpm/lockfile.fs': ^1.1.0
   '@pnpm/lockfile.pruner': ^0.0.6
@@ -92,7 +95,7 @@ catalog:
   globby: ^16.1.1
   mocha: ^11.7.5
   npm: ^11.12.0
-  nx: ^22.6.1
+  nx: ^22.7.12
   p-defer: ^4.0.1
   prettier: ^3.8.1
   react: ^19.2.4

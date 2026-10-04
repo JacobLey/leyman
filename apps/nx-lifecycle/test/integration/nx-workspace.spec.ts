@@ -11,7 +11,12 @@ import { beforeEach, suite } from 'mocha-chain';
 const execFileAsync = promisify(execFile);
 
 const packageRoot = Path.join(import.meta.dirname, '../..');
-const nxRoot = Path.dirname(createRequire(import.meta.url).resolve('nx/package.json'));
+const nxPackageJsonPath = createRequire(import.meta.url).resolve('nx/package.json');
+const nxRoot = Path.dirname(nxPackageJsonPath);
+const nxPackageJson = JSON.parse(await readFile(nxPackageJsonPath, 'utf8')) as {
+    bin: { nx: string };
+};
+const nxBin = Path.join(nxRoot, nxPackageJson.bin.nx);
 
 // Keeps PATH for shell commands, but isolates from the Nx run executing these tests
 const env = {
@@ -67,14 +72,10 @@ suite('Nx workspace', () => {
         });
 
         const nx = async (...args: string[]): Promise<string> => {
-            const { stdout } = await execFileAsync(
-                process.execPath,
-                [Path.join(nxRoot, 'bin/nx.js'), ...args],
-                {
-                    cwd: root,
-                    env,
-                }
-            );
+            const { stdout } = await execFileAsync(process.execPath, [nxBin, ...args], {
+                cwd: root,
+                env,
+            });
             return stdout;
         };
 
@@ -133,7 +134,7 @@ suite('Nx workspace', () => {
                 ).to.be.rejectedWith(Error);
 
                 expect(thrown)
-                    .to.have.property('stdout')
+                    .to.have.property('stderr')
                     .that.includes(
                         'compile is bound to build:run, so it must depend on build:_. A dependsOn in project.json or nx.json targetDefaults replaces the inferred one, so add "build:_" to it'
                     );
