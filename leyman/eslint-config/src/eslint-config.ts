@@ -638,6 +638,8 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 'jsdoc/text-escaping': 'off',
+                // Duplicates @typescript-eslint/ban-ts-comment
+                'jsdoc/ts-ban-ts-comment': 'off',
 
                 // JSX a11y
                 ...nonDeprecatedRules('jsx-a11y', jsxA11yPlugin),

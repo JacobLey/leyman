@@ -81,13 +81,13 @@ export const curves = {
 /**
  * Linear Diophantine equations.
  *
- * @see {@link https://mathworld.wolfram.com/DiophantineEquation.html}
- *
  * ax + by = c.
  * Special case of c = 1.
  * Solve for base case of x0 and y0.
  *
- * [Validate Solutions]{@link https://planetcalc.com/3303/}
+ * @see {@link https://mathworld.wolfram.com/DiophantineEquation.html}
+ *
+ * @see {@link https://planetcalc.com/3303/|Validate Solutions}
  *
  * @param a - constant a
  * @param b - constant b
@@ -122,7 +122,7 @@ const euclidian = (a: bigint, b: bigint): Point => {
  *
  * @see {@link https://en.wikipedia.org/wiki/Modular_multiplicative_inverse}
  *
- * {@link https://planetcalc.com/3311/ Validate Solutions}
+ * @see {@link https://planetcalc.com/3311/|Validate Solutions}
  *
  * @param a - value
  * @param mod - modulus
@@ -158,9 +158,9 @@ const positiveMod = (x: bigint, mod: bigint): bigint => {
 /**
  * Add two points on the curve.
  *
- * @see {@link https://medium.com/asecuritysite-when-bob-met-alice/adding-points-in-elliptic-curve-cryptography-a1f0a1bce638}
- *
  * Note conditions like Infinity are ignored/improperly handled, but that is acceptable for expected use case.
+ *
+ * @see {@link https://medium.com/asecuritysite-when-bob-met-alice/adding-points-in-elliptic-curve-cryptography-a1f0a1bce638}
  *
  * @param p - first point
  * @param q - second point
@@ -244,12 +244,12 @@ const power = (x: bigint, y: bigint, p: bigint): bigint => {
 /**
  * Tonelli–Shanks algorithm.
  *
- * @see {@link https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm}
- *
  * y^2 = n % p
  * Solves for y.
  *
  * Implementation translated from [python](https://github.com/fabiomainardi/Tonelli-Shanks/blob/master/tonelli_shanks.py).
+ *
+ * @see {@link https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm}
  *
  * @param n - "quadratic residue" mod p
  * @param p - prime modulus

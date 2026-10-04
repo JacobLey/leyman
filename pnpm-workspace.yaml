@@ -83,7 +83,7 @@ catalog:
   eslint: ^9.39.5
   eslint-config-prettier: ^10.1.8
   eslint-plugin-import: ^2.32.0
-  eslint-plugin-jsdoc: ^62.9.0
+  eslint-plugin-jsdoc: ^64.5.4
   eslint-plugin-jsx-a11y: ^6.10.2
   eslint-plugin-n: ^17.24.0
   eslint-plugin-react: ^7.37.5
