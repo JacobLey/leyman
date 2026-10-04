@@ -52,9 +52,10 @@ func New(
 				".github",
 				".vscode",
 				"dagger",
-				"/AGENTS.md",
-				"/CLAUDE.md",
-				"/README.md",
+				// Root files only: patterns are relative to the root, and a leading slash never matches
+				"AGENTS.md",
+				"CLAUDE.md",
+				"README.md",
 			},
 		}),
 	}
@@ -64,7 +65,7 @@ func New(
 func (m *Ci) Test(
 	ctx context.Context,
 	// Nx remote cache server to share task results with (e.g. `tcp://localhost:3000`, see `.devcontainer/nx-cache-server.mjs`).
-	// Omitted, tasks reuse results from previous Dagger runs on this engine instead.
+	// Omitted, every task runs.
 	// +optional
 	nxCache *dagger.Service,
 ) error {
@@ -74,8 +75,6 @@ func (m *Ci) Test(
 		ctr = ctr.
 			WithServiceBinding("nx-cache", nxCache).
 			WithEnvVariable("NX_SELF_HOSTED_REMOTE_CACHE_SERVER", "http://nx-cache:3000")
-	} else {
-		ctr = ctr.WithMountedCache(workdir+"/.nx", dag.CacheVolume("nx"))
 	}
 	built := ctr.WithExec([]string{"nx", "run-many", "-t", "build"})
 
