@@ -32,11 +32,15 @@ import {
 } from '@tanstack/react-query';
 import { getLinksActive, Linked, setLinksActive } from './lib/linked.js';
 import {
-    getDummyQueryClient,
+    noopData,
     noopKey,
+    noopQueryFn,
     noopSelector,
+    noopSuspenseKey,
     Queryable,
     undefinedSelector,
+    useDisabledQueryClient,
+    withParams,
 } from './lib/queryable.js';
 
 /**
@@ -168,7 +172,7 @@ class Infinite<
         options: QueryFunctionContext<TQueryKey, TPageParam>,
         queryClient?: QueryClient
     ) => Promise<TData> {
-        return async options => this.#queryFn({ ...options, params });
+        return async options => this.#queryFn(withParams(options, params));
     }
 
     /**
@@ -872,6 +876,7 @@ export const useNormalizedPrefetchedInfiniteQuery = <
         select?: (data: InfiniteData<TPropagatedData, TPageParam>) => TSelectedData;
     } = {}
 ): UseInfiniteQueryResult<TSelectedData, unknown> => {
+    const disabledClient = useDisabledQueryClient();
     const disabled = !linked || linked === skipToken;
 
     return useInfiniteQuery(
@@ -892,7 +897,7 @@ export const useNormalizedPrefetchedInfiniteQuery = <
                           select,
                       }),
               },
-        disabled ? getDummyQueryClient() : linked.getQueryClient()
+        disabled ? disabledClient : linked.getQueryClient()
     );
 };
 
@@ -981,8 +986,10 @@ export const useNormalizedNullableSuspenseInfiniteQuery = <
     const result = useSuspenseInfiniteQuery(
         disabled
             ? {
-                  queryKey: noopKey as unknown as TQueryKey,
-                  queryFn: undefinedSelector as unknown as () => TData,
+                  queryKey: noopSuspenseKey as unknown as TQueryKey,
+                  queryFn: noopQueryFn as unknown as () => TData,
+                  initialData: noopData,
+                  staleTime: Infinity,
                   select: undefinedSelector as unknown as () => TSelectedData,
                   initialPageParam: null as unknown as TPageParam,
                   getNextPageParam: undefinedSelector,
@@ -992,7 +999,7 @@ export const useNormalizedNullableSuspenseInfiniteQuery = <
                   ...options,
                   ...inf.getUseSuspenseInfiniteQueryOptions(qc, params, { select }),
               },
-        disabled ? getDummyQueryClient() : qc
+        qc
     );
     return disabled ? null : result;
 };
@@ -1082,12 +1089,15 @@ export const useNormalizedNullablePrefetchedSuspenseInfiniteQuery = <
         select?: (data: InfiniteData<TPropagatedData, TPageParam>) => TSelectedData;
     } = {}
 ): UseSuspenseInfiniteQueryResult<TSelectedData, unknown> | null => {
+    const disabledClient = useDisabledQueryClient();
     const disabled = !linked || linked === skipToken;
     const result = useSuspenseInfiniteQuery(
         disabled
             ? {
-                  queryKey: noopKey as unknown as TQueryKey,
-                  queryFn: undefinedSelector as unknown as () => TData,
+                  queryKey: noopSuspenseKey as unknown as TQueryKey,
+                  queryFn: noopQueryFn as unknown as () => TData,
+                  initialData: noopData,
+                  staleTime: Infinity,
                   select: undefinedSelector as unknown as () => TSelectedData,
                   initialPageParam: null as unknown as TPageParam,
                   getNextPageParam: undefinedSelector,
@@ -1105,7 +1115,7 @@ export const useNormalizedNullablePrefetchedSuspenseInfiniteQuery = <
                           }
                       ),
               },
-        disabled ? getDummyQueryClient() : linked.getQueryClient()
+        disabled ? disabledClient : linked.getQueryClient()
     );
     return disabled ? null : result;
 };

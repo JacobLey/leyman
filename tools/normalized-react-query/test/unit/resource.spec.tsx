@@ -1,15 +1,11 @@
-import type { WrapperComponent } from '@testing-library/react-hooks';
-import type { ReactNode } from 'react';
-import type { LinkOf } from 'normalized-react-query';
+import type { SkipToken } from '@tanstack/react-query';
 import {
     QueryClient,
-    QueryClientProvider,
     skipToken,
     useQueries,
     useQueryClient,
     useSuspenseQueries,
 } from '@tanstack/react-query';
-import { renderHook } from '@testing-library/react-hooks/server/index.js';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import {
@@ -24,6 +20,7 @@ import {
 } from 'normalized-react-query';
 import { austenId, fellowshipOfTheRingId, prideAndPrejudiceId, tolkienId } from '../data/api.js';
 import { authors, books } from '../data/normalized.js';
+import { createWrapper, renderHook, waitFor } from '../data/render.js';
 import { Linked } from '#internal/lib/linked.js';
 
 const authorsWithFavoriteAuthor = authors.propagate(author => ({
@@ -446,14 +443,9 @@ suite('resource', () => {
     /* eslint-enable @typescript-eslint/no-deprecated, sonarjs/deprecation */
 
     suite('hooks', () => {
-        const contextWithWrapper = context.beforeEach(({ client }) => {
-            const wrapper: WrapperComponent<{ children: ReactNode }> = ({ children }) => (
-                <QueryClientProvider client={client}>{children}</QueryClientProvider>
-            );
-            return {
-                wrapper,
-            };
-        });
+        const contextWithWrapper = context.beforeEach(({ client }) => ({
+            wrapper: createWrapper(client),
+        }));
 
         const bookWithAuthorsFavorite = books.propagate(book => ({
             ...book,
@@ -497,7 +489,7 @@ suite('resource', () => {
                 };
             };
 
-            contextWithWrapper.test('Returns undefined when not loaded', ({ wrapper }) => {
+            contextWithWrapper.test('Renders data once loaded', async ({ wrapper }) => {
                 const { result } = renderHook(() => useHook({ bookId: fellowshipOfTheRingId }), {
                     wrapper,
                 });
@@ -505,6 +497,13 @@ suite('resource', () => {
                 expect(result.current.book.data).to.equal(undefined);
                 expect(result.current.author.data?.id).to.equal(undefined);
                 expect(result.current.favoriteAuthor.data).to.equal(undefined);
+
+                // Favorite author is already linked by the time it renders, so initial data is not used
+                await waitFor(() => {
+                    expect(result.current.favoriteAuthor.data?.id).to.equal(austenId);
+                });
+                expect(result.current.book.data?.id).to.equal(fellowshipOfTheRingId);
+                expect(result.current.author.data?.id).to.equal(tolkienId);
             });
 
             contextWithWrapper.test('Returns data when preloaded', async ({ client, wrapper }) => {
@@ -525,29 +524,20 @@ suite('resource', () => {
                     ),
                 ]);
 
-                const { result } = renderHook(
-                    () =>
-                        useHook({
-                            bookId: fellowshipOfTheRingId,
-                        }),
-                    { wrapper }
-                );
+                const { result, rerender } = renderHook(useHook, {
+                    initialProps: { bookId: fellowshipOfTheRingId },
+                    wrapper,
+                });
 
                 expect(result.current.book.data?.id).to.equal(fellowshipOfTheRingId);
                 expect(result.current.author.data?.id).to.equal(tolkienId);
                 expect(result.current.favoriteAuthor.data?.id).to.equal(austenId);
 
-                const { result: result2 } = renderHook(
-                    () =>
-                        useHook({
-                            bookId: prideAndPrejudiceId,
-                        }),
-                    { wrapper }
-                );
+                rerender({ bookId: prideAndPrejudiceId });
 
-                expect(result2.current.book.data?.id).to.equal(prideAndPrejudiceId);
-                expect(result2.current.author.data?.id).to.equal(austenId);
-                expect(result2.current.favoriteAuthor.data).to.equal(undefined);
+                expect(result.current.book.data?.id).to.equal(prideAndPrejudiceId);
+                expect(result.current.author.data?.id).to.equal(austenId);
+                expect(result.current.favoriteAuthor.data).to.equal(undefined);
             });
 
             contextWithWrapper.test(
@@ -557,13 +547,10 @@ suite('resource', () => {
                         bookId: fellowshipOfTheRingId,
                     });
 
-                    const { result } = renderHook(
-                        () =>
-                            useHook({
-                                bookId: fellowshipOfTheRingId,
-                            }),
-                        { wrapper }
-                    );
+                    const { result, rerender } = renderHook(useHook, {
+                        initialProps: { bookId: fellowshipOfTheRingId },
+                        wrapper,
+                    });
 
                     expect(result.current.book.data?.id).to.equal(fellowshipOfTheRingId);
                     expect(result.current.author.data?.id).to.equal(tolkienId);
@@ -573,17 +560,46 @@ suite('resource', () => {
                         bookId: prideAndPrejudiceId,
                     });
 
-                    const { result: result2 } = renderHook(
-                        () =>
-                            useHook({
-                                bookId: prideAndPrejudiceId,
-                            }),
-                        { wrapper }
+                    rerender({ bookId: prideAndPrejudiceId });
+
+                    expect(result.current.book.data?.id).to.equal(prideAndPrejudiceId);
+                    expect(result.current.author.data?.id).to.equal(austenId);
+                    expect(result.current.favoriteAuthor.data).to.equal(undefined);
+                }
+            );
+
+            contextWithWrapper.test(
+                'Re-renders when cache changes',
+                async ({ client, wrapper }) => {
+                    await bookWithAuthorsFavorite.query(
+                        client,
+                        { bookId: fellowshipOfTheRingId },
+                        { awaitLinks: true }
                     );
 
-                    expect(result2.current.book.data?.id).to.equal(prideAndPrejudiceId);
-                    expect(result2.current.author.data?.id).to.equal(austenId);
-                    expect(result2.current.favoriteAuthor.data).to.equal(undefined);
+                    const { result } = renderHook(
+                        () => useHook({ bookId: fellowshipOfTheRingId }),
+                        {
+                            wrapper,
+                        }
+                    );
+
+                    expect(result.current.author.data?.name).to.equal('J.R.R. Tolkien');
+
+                    authors.setQueryData(
+                        client,
+                        { authorId: tolkienId },
+                        {
+                            id: tolkienId,
+                            name: '<new-name>',
+                            favoriteAuthor: null,
+                        }
+                    );
+
+                    await waitFor(() => {
+                        expect(result.current.author.data?.name).to.equal('<new-name>');
+                    });
+                    expect(result.current.favoriteAuthor.data).to.equal(undefined);
                 }
             );
         });
@@ -623,8 +639,8 @@ suite('resource', () => {
                 });
             };
 
-            contextWithWrapper.test('useQueries', async ({ client, wrapper }) => {
-                let { result } = renderHook(() => useHook(), {
+            contextWithWrapper.test('useQueries', async ({ wrapper }) => {
+                const { result } = renderHook(() => useHook(), {
                     wrapper,
                 });
 
@@ -635,20 +651,13 @@ suite('resource', () => {
                     tolkienId: undefined,
                 });
 
-                await Promise.all([
-                    books.prefetchQuery(client, { bookId: fellowshipOfTheRingId }),
-                    books.prefetchQuery(client, { bookId: prideAndPrejudiceId }),
-                ]);
-
-                ({ result } = renderHook(() => useHook(), {
-                    wrapper,
-                }));
-
-                expect(result.current).to.deep.equal({
-                    austenId,
-                    tolkienId,
-                    fellowshipId: fellowshipOfTheRingId,
-                    skipped: undefined,
+                await waitFor(() => {
+                    expect(result.current).to.deep.equal({
+                        austenId,
+                        tolkienId,
+                        fellowshipId: fellowshipOfTheRingId,
+                        skipped: undefined,
+                    });
                 });
             });
         });
@@ -685,57 +694,55 @@ suite('resource', () => {
                 };
             };
 
-            contextWithWrapper.test('Returns data once loaded', async ({ client, wrapper }) => {
-                let { result } = renderHook(() => useHook({ bookId: fellowshipOfTheRingId }), {
+            contextWithWrapper.test('Renders data once loaded', async ({ client, wrapper }) => {
+                const { result } = renderHook(() => useHook({ bookId: fellowshipOfTheRingId }), {
                     wrapper,
                 });
 
                 expect(result.current.book.data).to.equal(undefined);
                 expect(result.current.author.data?.id).to.equal(undefined);
                 expect(result.current.favoriteAuthor.data).to.equal(undefined);
+                expect(
+                    bookWithAuthorsFavorite.isFetching(client, { bookId: fellowshipOfTheRingId })
+                ).to.equal(true);
 
-                const query = bookWithAuthorsFavorite.getCachedQuery(client, {
-                    bookId: fellowshipOfTheRingId,
+                // Favorite author is already linked by the time it renders, so initial data is not used
+                await waitFor(() => {
+                    expect(result.current.favoriteAuthor.data?.id).to.equal(austenId);
                 });
-                expect(query).to.not.equal(undefined);
-                await query!.promise;
-
-                ({ result } = renderHook(() => useHook({ bookId: fellowshipOfTheRingId }), {
-                    wrapper,
-                }));
-
                 expect(result.current.book.data?.id).to.equal(fellowshipOfTheRingId);
                 expect(result.current.author.data?.id).to.equal(tolkienId);
-                expect(result.current.favoriteAuthor.data?.id).to.equal('<fake-id-2>');
             });
 
-            contextWithWrapper.test(
-                'Returns more data when loading in parallel',
-                async ({ client, wrapper }) => {
-                    await bookWithAuthorsFavorite.prefetchQuery(client, {
-                        bookId: prideAndPrejudiceId,
-                    });
+            context.test('Renders disabled without a provider', () => {
+                const { result } = renderHook(() => useNormalizedPrefetchedQuery(skipToken));
 
-                    let { result } = renderHook(() => useHook({ bookId: fellowshipOfTheRingId }), {
-                        wrapper,
-                    });
-                    expect(result.current.book.data).to.equal(undefined);
+                expect(result.current.data).to.equal(undefined);
+            });
 
-                    const query = bookWithAuthorsFavorite.getCachedQuery(client, {
-                        bookId: fellowshipOfTheRingId,
-                    });
-                    expect(query).to.not.equal(undefined);
-                    await query!.promise;
+            context.test('Prefetches once in strict mode', async ({ client }) => {
+                let calls = 0;
+                const counted = resource<void, number>({
+                    key: ['counted'],
+                    queryFn: async () => {
+                        calls++;
+                        return calls;
+                    },
+                });
 
-                    ({ result } = renderHook(() => useHook({ bookId: fellowshipOfTheRingId }), {
-                        wrapper,
-                    }));
+                const { result } = renderHook(
+                    () =>
+                        useNormalizedPrefetchedQuery(
+                            useNormalizedPrefetchQuery(counted, undefined)
+                        ),
+                    { wrapper: createWrapper(client), reactStrictMode: true }
+                );
 
-                    expect(result.current.book.data?.id).to.equal(fellowshipOfTheRingId);
-                    expect(result.current.author.data?.id).to.equal(tolkienId);
-                    expect(result.current.favoriteAuthor.data?.id).to.equal(austenId);
-                }
-            );
+                await waitFor(() => {
+                    expect(result.current.data).to.equal(1);
+                });
+                expect(calls).to.equal(1);
+            });
         });
 
         suite('useNormalizedSuspenseQuery', () => {
@@ -764,21 +771,9 @@ suite('resource', () => {
             contextWithWrapper.test(
                 'Suspends as new data is loaded',
                 async ({ client, wrapper }) => {
-                    let prom: unknown;
-                    let suspended = renderHook(
-                        () => {
-                            try {
-                                return useHook();
-                            } catch (err) {
-                                prom = err;
-                            }
-                            return null;
-                        },
-                        { wrapper }
-                    );
-                    expect(suspended.result.current).to.equal(null);
+                    const { result } = renderHook(() => useHook(), { wrapper });
 
-                    expect(prom).to.be.an.instanceOf(Promise);
+                    expect(result.current).to.equal(null);
                     expect(
                         books.getQueryState(client, { bookId: fellowshipOfTheRingId })?.fetchStatus
                     ).to.equal('fetching');
@@ -788,34 +783,10 @@ suite('resource', () => {
                     expect(authors.getQueryState(client, { authorId: austenId })).to.equal(
                         undefined
                     );
-                    await (prom as Promise<void>);
-                    // eslint-disable-next-line require-atomic-updates -- explicitly want to reset before hook
-                    prom = null;
 
-                    suspended = renderHook(
-                        () => {
-                            try {
-                                return useHook();
-                            } catch (err) {
-                                prom = err;
-                            }
-                            return null;
-                        },
-                        { wrapper }
-                    );
-                    expect(suspended.result.current).to.equal(null);
-
-                    expect(prom).to.be.an.instanceOf(Promise);
-                    expect(
-                        authors.getQueryState(client, { authorId: tolkienId })?.fetchStatus
-                    ).to.equal('idle');
-                    expect(
-                        authors.getQueryState(client, { authorId: austenId })?.fetchStatus
-                    ).to.equal('fetching');
-                    await (prom as Promise<void>);
-
-                    const { result } = renderHook(() => useHook(), { wrapper });
-
+                    await waitFor(() => {
+                        expect(result.current).to.not.equal(null);
+                    });
                     expect(result.current.book.data.id).to.equal(fellowshipOfTheRingId);
                     expect(result.current.author.data.id).to.equal(tolkienId);
                     expect(result.current.favoriteAuthor.data.id).to.equal(austenId);
@@ -853,29 +824,16 @@ suite('resource', () => {
             };
 
             contextWithWrapper.test('useSuspenseQueries', async ({ wrapper }) => {
-                let prom: unknown;
-                const suspended = renderHook(
-                    () => {
-                        try {
-                            return useHook();
-                        } catch (err) {
-                            prom = err;
-                        }
-                        return null;
-                    },
-                    { wrapper }
-                );
-                expect(suspended.result.current).to.equal(null);
-
-                expect(prom).to.be.an.instanceOf(Promise);
-                await (prom as Promise<void>);
-
                 const { result } = renderHook(() => useHook(), { wrapper });
 
-                expect(result.current).to.deep.equal({
-                    austenId,
-                    tolkienId,
-                    fellowshipId: fellowshipOfTheRingId,
+                expect(result.current).to.equal(null);
+
+                await waitFor(() => {
+                    expect(result.current).to.deep.equal({
+                        austenId,
+                        tolkienId,
+                        fellowshipId: fellowshipOfTheRingId,
+                    });
                 });
             });
         });
@@ -904,35 +862,49 @@ suite('resource', () => {
             };
 
             contextWithWrapper.test('Suspends only when loading', async ({ wrapper }) => {
-                let prom: unknown;
-                const suspended = renderHook(
-                    () => {
-                        try {
-                            return useHook();
-                        } catch (err) {
-                            prom = err;
-                        }
-                        return null;
-                    },
-                    { wrapper }
-                );
-                expect(suspended.result.current).to.equal(null);
-
-                expect(prom).to.be.an.instanceOf(Promise);
-                await (prom as Promise<void>);
-
                 const { result } = renderHook(() => useHook(), { wrapper });
 
+                expect(result.current).to.equal(null);
+
+                await waitFor(() => {
+                    expect(result.current).to.not.equal(null);
+                });
                 expect(result.current.book).to.not.equal(null);
                 expect(result.current.book!.data.id).to.equal(prideAndPrejudiceId);
                 expect(result.current.author).to.not.equal(null);
                 expect(result.current.author!.data.id).to.equal(austenId);
                 expect(result.current.favoriteAuthor).to.equal(null);
             });
+
+            contextWithWrapper.test(
+                'Loads once params are provided',
+                async ({ client, wrapper }) => {
+                    const { result, rerender } = renderHook(
+                        ({ params }: { params: SkipToken | { authorId: string } }) => ({
+                            author: useNormalizedNullableSuspenseQuery(authors, params),
+                        }),
+                        { initialProps: { params: skipToken }, wrapper }
+                    );
+
+                    expect(result.current).to.deep.equal({ author: null });
+
+                    // Placeholder for skipped query is safe to refetch
+                    await client.refetchQueries();
+                    expect(result.current).to.deep.equal({ author: null });
+
+                    rerender({ params: { authorId: tolkienId } });
+
+                    await waitFor(() => {
+                        expect(result.current.author?.data.id).to.equal(tolkienId);
+                    });
+                }
+            );
         });
 
         suite('useNormalizedPrefetchedSuspenseQuery', () => {
-            const useHook = (prefetched: LinkOf<typeof bookWithAuthorsFavorite>) => {
+            const useHook = ({ bookId }: { bookId: string }) => {
+                const prefetched = useNormalizedPrefetchQuery(bookWithAuthorsFavorite, { bookId });
+
                 const book = useNormalizedPrefetchedSuspenseQuery(prefetched);
 
                 const author = useNormalizedPrefetchedSuspenseQuery(book.data.author);
@@ -958,25 +930,12 @@ suite('resource', () => {
             contextWithWrapper.test(
                 'Suspends before data is loaded',
                 async ({ client, wrapper }) => {
-                    let prom: unknown;
-                    const suspended = renderHook(
-                        () => {
-                            try {
-                                const prefetched = useNormalizedPrefetchQuery(
-                                    bookWithAuthorsFavorite,
-                                    { bookId: fellowshipOfTheRingId }
-                                );
-                                return useHook(prefetched);
-                            } catch (err) {
-                                prom = err;
-                            }
-                            return null;
-                        },
+                    const { result } = renderHook(
+                        () => useHook({ bookId: fellowshipOfTheRingId }),
                         { wrapper }
                     );
-                    expect(suspended.result.current).to.equal(null);
 
-                    expect(prom).to.be.an.instanceOf(Promise);
+                    expect(result.current).to.equal(null);
                     expect(
                         books.getQueryState(client, { bookId: fellowshipOfTheRingId })?.fetchStatus
                     ).to.equal('fetching');
@@ -984,38 +943,34 @@ suite('resource', () => {
                         undefined
                     );
 
-                    const [preload] = await Promise.all([
-                        bookWithAuthorsFavorite.prefetchQuery(client, {
-                            bookId: fellowshipOfTheRingId,
-                        }),
-                        prom as Promise<void>,
-                    ]);
-
-                    let { result } = renderHook(() => useHook(preload), { wrapper });
-
+                    await waitFor(() => {
+                        expect(result.current.favoriteAuthor.data.id).to.equal(austenId);
+                    });
                     expect(result.current.book.data.id).to.equal(fellowshipOfTheRingId);
                     expect(result.current.author.data.id).to.equal(tolkienId);
-                    expect(result.current.favoriteAuthor.data.id).to.equal('<fake-id>');
+                }
+            );
 
-                    // Wait for existing subqueries to flush...
-                    await Promise.all(
-                        client
-                            .getQueryCache()
-                            .findAll()
-                            .map(async x => x.promise)
+            contextWithWrapper.test(
+                'Renders initial data until link is loaded',
+                async ({ client, wrapper }) => {
+                    await books.prefetchQuery(client, { bookId: fellowshipOfTheRingId });
+                    await authors.prefetchQuery(client, { authorId: tolkienId });
+
+                    const { result } = renderHook(
+                        () => useHook({ bookId: fellowshipOfTheRingId }),
+                        { wrapper }
                     );
 
-                    ({ result } = renderHook(() => useHook(preload), { wrapper }));
-
-                    expect(result.current.book.data.id).to.equal(fellowshipOfTheRingId);
-                    expect(result.current.author.data.id).to.equal(tolkienId);
-                    expect(result.current.favoriteAuthor.data.id).to.equal(austenId);
+                    expect(result.current.favoriteAuthor.data.id).to.equal('<fake-id>');
                 }
             );
         });
 
         suite('useNormalizedNullablePrefetchedSuspenseQuery', () => {
-            const useHook = (prefetched: LinkOf<typeof bookWithAuthorsFavorite>) => {
+            const useHook = ({ bookId }: { bookId: string }) => {
+                const prefetched = useNormalizedPrefetchQuery(bookWithAuthorsFavorite, { bookId });
+
                 const book = useNormalizedNullablePrefetchedSuspenseQuery(prefetched);
 
                 const author = useNormalizedNullablePrefetchedSuspenseQuery(book?.data.author);
@@ -1038,59 +993,28 @@ suite('resource', () => {
                 };
             };
 
-            contextWithWrapper.test(
-                'Suspends before data is loaded',
-                async ({ client, wrapper }) => {
-                    let prom: unknown;
-                    const suspended = renderHook(
-                        () => {
-                            try {
-                                const prefetched = useNormalizedPrefetchQuery(
-                                    bookWithAuthorsFavorite,
-                                    { bookId: fellowshipOfTheRingId }
-                                );
-                                return useHook(prefetched);
-                            } catch (err) {
-                                prom = err;
-                            }
-                            return null;
-                        },
-                        { wrapper }
-                    );
+            contextWithWrapper.test('Suspends before data is loaded', async ({ wrapper }) => {
+                const { result, rerender } = renderHook(useHook, {
+                    initialProps: { bookId: fellowshipOfTheRingId },
+                    wrapper,
+                });
 
-                    expect(suspended.result.current).to.equal(null);
-                    expect(prom).to.be.an.instanceOf(Promise);
+                expect(result.current).to.equal(null);
 
-                    const [fellowshipPreload] = await Promise.all([
-                        bookWithAuthorsFavorite.prefetchQuery(client, {
-                            bookId: fellowshipOfTheRingId,
-                        }),
-                        prom as Promise<void>,
-                    ]);
-
-                    let { result } = renderHook(() => useHook(fellowshipPreload), { wrapper });
-
-                    expect(result.current.book?.data.id).to.equal(fellowshipOfTheRingId);
-                    expect(result.current.author?.data.id).to.equal(tolkienId);
-                    expect(result.current.favoriteAuthor?.data.id).to.equal('<fake-id>');
-
-                    const pridePreload = await bookWithAuthorsFavorite.prefetchQuery(client, {
-                        bookId: prideAndPrejudiceId,
-                    });
-
-                    ({ result } = renderHook(() => useHook(pridePreload), { wrapper }));
-
-                    expect(result.current.book?.data.id).to.equal(prideAndPrejudiceId);
-                    expect(result.current.author?.data.id).to.equal(austenId);
-                    expect(result.current.favoriteAuthor).to.equal(null);
-
-                    ({ result } = renderHook(() => useHook(fellowshipPreload), { wrapper }));
-
-                    expect(result.current.book?.data.id).to.equal(fellowshipOfTheRingId);
-                    expect(result.current.author?.data.id).to.equal(tolkienId);
+                await waitFor(() => {
                     expect(result.current.favoriteAuthor?.data.id).to.equal(austenId);
-                }
-            );
+                });
+                expect(result.current.book?.data.id).to.equal(fellowshipOfTheRingId);
+                expect(result.current.author?.data.id).to.equal(tolkienId);
+
+                rerender({ bookId: prideAndPrejudiceId });
+
+                await waitFor(() => {
+                    expect(result.current.book?.data.id).to.equal(prideAndPrejudiceId);
+                });
+                expect(result.current.author?.data.id).to.equal(austenId);
+                expect(result.current.favoriteAuthor).to.equal(null);
+            });
         });
     });
 });

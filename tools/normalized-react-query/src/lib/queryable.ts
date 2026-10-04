@@ -10,31 +10,61 @@ import type {
     ResetOptions,
 } from '@tanstack/react-query';
 import type { OverriddenQueryFilterFields, typeCache } from './types.js';
-import { QueryClient } from '@tanstack/react-query';
+import { QueryClient, useQueryClient } from '@tanstack/react-query';
 
 export const noopSelector = <T>(x: T): T => x;
 export const undefinedSelector = (): undefined => {};
 export const noopKey = ['__NORMALIZED_REACT_QUERY__', 'SKIP'];
-// A "dummy" client for times when we need a hook for consistency, but don't actually want to do anything.
-// Create a new client every time to prevent any accidental "caching".
-// Will be pre-populated with an "empty object" to prevent suspension, but users should never actually
-// be exposed to that
-export const getDummyQueryClient = (): QueryClient => {
-    const client = new QueryClient({
-        defaultOptions: {
-            queries: {
-                // Prevent any manual GC
-                staleTime: Infinity,
-            },
-        },
-    });
-    // Populate as if infinite. Required for infinite internals,
-    // and ignored for resource.
-    client.setQueryData(noopKey, {
-        pages: [],
-        pageParams: [],
-    });
-    return client;
+// Suspense hooks cannot be disabled, so a disabled one reads this placeholder instead.
+// Passed as `initialData` (and never stale) so it never suspends, and users are never exposed to it.
+// A manual refetch resolves to the same placeholder.
+// Its own key keeps it out of the (data-less) query that disabled non-suspense hooks share.
+export const noopSuspenseKey = ['__NORMALIZED_REACT_QUERY__', 'SKIP_SUSPENSE'];
+// Shaped as if infinite. Required for infinite internals, and ignored for resource.
+export const noopData = {
+    pages: [],
+    pageParams: [],
+};
+export const noopQueryFn = (): typeof noopData => noopData;
+
+/**
+ * Adds `params` to the context Tanstack passes to `queryFn`, without reading any of its properties.
+ *
+ * Tanstack cancels a query when its last observer unmounts mid-fetch only if `signal` was read.
+ * Spreading the context reads every property, so it would cancel (and later refetch) queries
+ * whose `queryFn` never uses `signal`, e.g. every query under `StrictMode`.
+ *
+ * @param context - context Tanstack passes to `queryFn`
+ * @param params - user provided params
+ * @returns context with params
+ */
+export const withParams = <TContext extends object, TParams>(
+    context: TContext,
+    params: TParams
+): TContext & { params: TParams } =>
+    Object.defineProperties({ params }, Object.getOwnPropertyDescriptors(context)) as TContext & {
+        params: TParams;
+    };
+
+/**
+ * Client for a hook to use while it has no link, so it is already on the right client once one arrives.
+ *
+ * Tanstack hooks stay on the client they first render with, so a hook that starts disabled
+ * would never read the link's client.
+ * Links from `useNormalizedPrefetch*` hooks use the context client, so prefer that.
+ *
+ * Without a `QueryClientProvider`, falls back to a new "dummy" client (to prevent any accidental "caching"),
+ * so a hook that renders disabled first will not load a later link.
+ *
+ * @returns query client to render a disabled hook with
+ */
+export const useDisabledQueryClient = (): QueryClient => {
+    try {
+        // Called unconditionally, so hook order is stable. It only throws when there is no provider.
+        return useQueryClient();
+    } catch {
+        return new QueryClient();
+    }
 };
 
 /**

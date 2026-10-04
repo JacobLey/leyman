@@ -22,11 +22,15 @@ import type {
 import { skipToken, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { getLinksActive, Linked, setLinksActive } from './lib/linked.js';
 import {
-    getDummyQueryClient,
+    noopData,
     noopKey,
+    noopQueryFn,
     noopSelector,
+    noopSuspenseKey,
     Queryable,
     undefinedSelector,
+    useDisabledQueryClient,
+    withParams,
 } from './lib/queryable.js';
 
 /**
@@ -104,7 +108,7 @@ class Resource<
     public getQueryFn(
         params: TParams
     ): (options: QueryFunctionContext<TQueryKey>, queryClient?: QueryClient) => Promise<TData> {
-        return async options => this.#queryFn({ ...options, params });
+        return async options => this.#queryFn(withParams(options, params));
     }
 
     /**
@@ -660,6 +664,7 @@ export const useNormalizedPrefetchedQuery = <
         select?: (data: TPropagatedData) => TSelectedData;
     } = {}
 ): UseQueryResult<TSelectedData, unknown> => {
+    const disabledClient = useDisabledQueryClient();
     const disabled = !linked || linked === skipToken;
     return useQuery(
         disabled
@@ -676,7 +681,7 @@ export const useNormalizedPrefetchedQuery = <
                           select,
                       }),
               },
-        disabled ? getDummyQueryClient() : linked.getQueryClient()
+        disabled ? disabledClient : linked.getQueryClient()
     );
 };
 
@@ -763,8 +768,10 @@ export const useNormalizedNullableSuspenseQuery = <
     const result = useSuspenseQuery(
         disabled
             ? {
-                  queryKey: noopKey as unknown as TQueryKey,
-                  queryFn: undefinedSelector as unknown as () => TData,
+                  queryKey: noopSuspenseKey as unknown as TQueryKey,
+                  queryFn: noopQueryFn as unknown as () => TData,
+                  initialData: noopData as unknown as TData,
+                  staleTime: Infinity,
                   select: undefinedSelector as unknown as () => TSelectedData,
               }
             : {
@@ -773,7 +780,7 @@ export const useNormalizedNullableSuspenseQuery = <
                       select,
                   }),
               },
-        disabled ? getDummyQueryClient() : qc
+        qc
     );
     return disabled ? null : result;
 };
@@ -848,13 +855,16 @@ export const useNormalizedNullablePrefetchedSuspenseQuery = <
         select?: (data: TPropagatedData) => TSelectedData;
     } = {}
 ): UseSuspenseQueryResult<TSelectedData, unknown> | null => {
+    const disabledClient = useDisabledQueryClient();
     const disabled = !linked || linked === skipToken;
 
     const result = useSuspenseQuery(
         disabled
             ? {
-                  queryKey: noopKey as unknown as TQueryKey,
-                  queryFn: undefinedSelector as unknown as () => TData,
+                  queryKey: noopSuspenseKey as unknown as TQueryKey,
+                  queryFn: noopQueryFn as unknown as () => TData,
+                  initialData: noopData as unknown as TData,
+                  staleTime: Infinity,
                   select: undefinedSelector as unknown as () => TSelectedData,
               }
             : {
@@ -865,7 +875,7 @@ export const useNormalizedNullablePrefetchedSuspenseQuery = <
                           select,
                       }),
               },
-        disabled ? getDummyQueryClient() : linked.getQueryClient()
+        disabled ? disabledClient : linked.getQueryClient()
     );
 
     return disabled ? null : result;
