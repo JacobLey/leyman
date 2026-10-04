@@ -1,5 +1,16 @@
 # sinon-typed-stub
 
+## 1.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Minor Changes
+
+- 5b26124: Update peer dependencies: mocha@12, sinon@22, @types/sinon@22
+- 6a6633f: Update dependencies: @swc/helpers@0.5.23, @types/sinon@21.0.1, ajv@8.20.0, fast-equals@6.0.4, globby@16.2.4, mocha@11.8.0, prettier@3.9.9, sinon@21.1.2, uint8array-extras@1.6.0, yargs@18.2.0
+
 ## 0.0.11
 
 ### Patch Changes

@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Patch Changes
+
+- 2ae16b8: Update READMEs to be more agent friendly
+
 ## 2.0.9
 
 ### Patch Changes

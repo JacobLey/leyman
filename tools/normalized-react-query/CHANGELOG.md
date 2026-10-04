@@ -1,5 +1,26 @@
 # normalized-react-query
 
+## 2.0.0
+
+### Major Changes
+
+- 6600e37: Complete refactor to be more based around tanstack query fundamentals, inspired by Relay
+- eaae490: Increase node engine requirement
+
+### Minor Changes
+
+- a87031f: Deprecate `fetchQuery`, `ensureQueryData`, `fetchInfiniteQuery` and `ensureInfiniteQueryData`, following React Query. Use `.query()` / `.infiniteQuery()`, with `{ staleTime: 'static', awaitLinks: true }` in place of the ensure methods.
+- 4f218d6: Add `.query()` and `.infiniteQuery()`, mirroring `queryClient.query` and `queryClient.infiniteQuery`. They accept a `select` applied after propagation, and `awaitLinks` to wait for linked queries. `prefetchQuery` and `prefetchInfiniteQuery` also accept `awaitLinks`.
+- 6233481: Update dependencies: @tanstack/react-query@5.104.0
+  
+  Load data with `queryClient.query` and `queryClient.infiniteQuery`, which replace the deprecated `fetchQuery`, `ensureQueryData` and their infinite counterparts. Requires `@tanstack/react-query` 5.104 or later.
+
+### Patch Changes
+
+- 712d034: Fix propagate typing
+- e9be601: Fix `ensureQueryData` and `ensureInfiniteQueryData` not waiting for linked queries after the first call on the same query client
+- 2ae16b8: Update READMEs to be more agent friendly
+
 ## 1.0.10
 
 ### Patch Changes

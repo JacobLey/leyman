@@ -1,6 +1,6 @@
 {
   "name": "nx-lifecycle",
-  "version": "0.2.1",
+  "version": "1.0.0",
   "description": "Keep high level nx lifecycle targets in sync",
   "engines": {
     "node": ">=24"

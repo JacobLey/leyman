@@ -1,5 +1,18 @@
 # Change Log
 
+## 4.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Patch Changes
+
+- 2ae16b8: Update READMEs to be more agent friendly
+- Updated dependencies [eaae490]
+- Updated dependencies [2ae16b8]
+  - default-import@3.0.0
+
 ## 3.0.9
 
 ### Patch Changes

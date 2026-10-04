@@ -1,6 +1,6 @@
 {
   "name": "vitest-chain",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Chain vitest methods together for deterministic and type safe tests",
   "engines": {
     "node": ">=24"

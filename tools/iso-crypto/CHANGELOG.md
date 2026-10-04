@@ -1,5 +1,15 @@
 # iso-crypto
 
+## 2.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Patch Changes
+
+- 9b882be: Export `Ciphers`, `Modes`, `Sizes` and `Algorithms` as regular enums. As `const enum`s, the published declarations could not be used by consumers compiling with `isolatedModules` (e.g. swc, esbuild, Vite). The emitted JavaScript is unchanged.
+
 ## 1.2.4
 
 ### Patch Changes

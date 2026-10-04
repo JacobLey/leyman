@@ -1,5 +1,16 @@
 # juniper
 
+## 2.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Patch Changes
+
+- 2ae16b8: Update READMEs to be more agent friendly
+- 935f6ae: Update typing to remove unnecessary generic
+
 ## 1.2.5
 
 ### Patch Changes

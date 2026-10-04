@@ -1,5 +1,29 @@
 # format-file
 
+## 1.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Minor Changes
+
+- a87d16e: Update dependencies: @biomejs/biome@2.5.14
+- 6a6633f: Update dependencies: @swc/helpers@0.5.23, @types/sinon@21.0.1, ajv@8.20.0, fast-equals@6.0.4, globby@16.2.4, mocha@11.8.0, prettier@3.9.9, sinon@21.1.2, uint8array-extras@1.6.0, yargs@18.2.0
+
+### Patch Changes
+
+- bb9d03d: Remove `haywire` dependency in favor of direct imports and constructor defaults
+- 543c387: Inject formatter install paths with `haywire`, and look up all other dependencies directly. Detect a prettier config in the current directory (previously only parent directories were searched)
+- 2ae16b8: Update READMEs to be more agent friendly
+- Updated dependencies [9221852]
+- Updated dependencies [3651dbf]
+- Updated dependencies [f8cdb0e]
+- Updated dependencies [eaae490]
+- Updated dependencies [2ae16b8]
+- Updated dependencies [b87bd62]
+  - haywire@1.0.0
+
 ## 0.1.5
 
 ### Patch Changes
