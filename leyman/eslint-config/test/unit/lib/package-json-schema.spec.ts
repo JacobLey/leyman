@@ -28,23 +28,22 @@ suite('assertIsPackageJson', () => {
                 },
             });
         })
-            .to.throw(Error)
-            .that.contains({
-                message: `Not a valid package.json file: ${JSON.stringify(
-                    [
-                        {
-                            instancePath: '',
-                            schemaPath: '#/required',
-                            keyword: 'required',
-                            params: {
-                                missingProperty: 'name',
-                            },
-                            message: "must have required property 'name'",
-                        },
-                    ],
-                    null,
-                    2
-                )}`,
+            .to.throw(Error, 'Not a valid package.json file')
+            .with.property('message')
+            .that.includes("must have required property 'name'");
+    });
+
+    test('Dependency versions must be strings', () => {
+        expect(() => {
+            assertIsPackageJson({
+                name: '<name>',
+                devDependencies: {
+                    foo: 123,
+                },
             });
+        })
+            .to.throw(Error, 'Not a valid package.json file')
+            .with.property('message')
+            .that.includes('/devDependencies/foo');
     });
 });
