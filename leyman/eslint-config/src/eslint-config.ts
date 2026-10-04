@@ -151,8 +151,8 @@ export const reactComponentNamingConvention = [
 
 /**
  * Generate flat eslint config for the specified project.
- * By default Eslint operates at the workspace level, but Nx operates at the project level.
- * So take the `configUrl` as input to properly normalize selected files for this directory.
+ * Patterns are relative to the project, so run ESLint from the project directory,
+ * or look up config from each file (`--flag v10_config_lookup_from_file`).
  *
  * @param params - parameters
  * @param params.configUrl - import.meta.url` of project-level `eslint.config.js` file.
@@ -175,12 +175,11 @@ export default function makeEslintConfigForPackage({
     assertIsPackageJson(packageJson);
 
     const projectUrl = Path.dirname(fileURLToPath(configUrl));
-    const relativePath = Path.relative(process.cwd(), Path.join(projectUrl));
 
     return [
         {
             ignores: ['coverage', 'dist', 'dist-test', 'node_modules', 'out', '.eslintcache'].map(
-                directory => Path.join(relativePath, directory, '**')
+                directory => `${directory}/**`
             ),
         },
         {
@@ -896,7 +895,7 @@ export default function makeEslintConfigForPackage({
         },
         {
             // Disable "best practice" rules for tests
-            files: [Path.join(relativePath, 'test/**/*.{c,m,}ts{x,}')],
+            files: ['test/**/*.{c,m,}ts{x,}'],
             rules: {
                 'no-magic-numbers': 'off',
                 '@typescript-eslint/explicit-function-return-type': 'off',

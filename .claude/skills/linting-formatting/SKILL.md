@@ -38,3 +38,5 @@ export default configGenerator({ configUrl: import.meta.url, packageJson });
 ```
 
 Rules are adopted liberally (often every rule a plugin offers) and then disabled where they don't fit. If a rule is wrong for this repo, change it in `@leyman/eslint-config` for every package rather than overriding it locally. Test files (`test/**`) have a relaxed rule set.
+
+The `eslint` target runs from the workspace root with `--flag v10_config_lookup_from_file`, so each file uses its package's config, with patterns relative to the package. Running from the root lets `eslint-plugin-sonarjs` find `pnpm-workspace.yaml` and resolve `catalog:` versions, which it only looks for up to ESLint's working directory. Running `eslint .` inside a package still works, but prints `could not be resolved for catalog` for each catalog dependency.
