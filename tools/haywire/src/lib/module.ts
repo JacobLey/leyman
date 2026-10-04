@@ -10,7 +10,7 @@ import type {
 import type { ExpandOutput, Extendable, InvalidInput, NonExtendable } from '#types';
 import { createAsyncContainer, createSyncContainer } from '#container';
 import { wireContainerFactory } from '#container-factory';
-import { HaywireDuplicateOutputError } from '#errors';
+import { HaywireBindingNotFoundError, HaywireDuplicateOutputError } from '#errors';
 
 type SimplifyDependencyType<T extends readonly GenericOutputHaywireId[]> = {
     [Index in keyof T]: [
@@ -198,6 +198,69 @@ type ValidateAddBindingInput<
 ] &
     [];
 
+/**
+ * Outputs after replacing every output that shares a base id with the incoming outputs.
+ *
+ * `any` stays `any`, like the unions other methods return, so every module remains assignable to {@link GenericModule}.
+ *
+ * @template ExistingOutputs - outputs already on module
+ * @template IncomingOutputs - outputs of the replacement
+ */
+type ReplaceOutputs<
+    ExistingOutputs extends [Extendable],
+    IncomingOutputs extends [Extendable],
+> = 0 extends 1 & ExistingOutputs
+    ? any
+    : IncomingOutputs | TakeXThatAreNotInY<ExistingOutputs, IncomingOutputs>;
+
+/**
+ * Validate that some existing output shares a base id with the incoming outputs, so there is a binding to replace.
+ *
+ * @template ExistingOutputs - outputs already on module
+ * @template IncomingOutputs - outputs of the replacement
+ */
+type ValidateOutputIdExists<
+    ExistingOutputs extends [Extendable],
+    IncomingOutputs extends [Extendable],
+> = [FilterIdType<ExistingOutputs, BaseIds<IncomingOutputs>>] extends [never]
+    ? [InvalidInput<'NoBindingToReplace'>]
+    : [];
+
+/**
+ * Type-based validations for `replaceBinding`. Will resolve to an impossible spreadable input if invalid.
+ *
+ * Enforces:
+ * > A binding for the output id already exists
+ * > The module's dependencies (including the replacement's) are satisfied by the incoming outputId
+ * > The module's remaining outputs satisfy incoming dependencies
+ *
+ * @template Outputs - existing module outputs
+ * @template ListOutputs - existing module list outputs
+ * @template Dependencies - existing module dependencies
+ * @template Binding - incoming binding
+ */
+type ValidateReplaceBindingInput<
+    Outputs extends [Extendable],
+    ListOutputs extends [Extendable],
+    Dependencies extends [Extendable],
+    Binding extends GenericBinding,
+> = [
+    ...ValidateOutputIdExists<
+        ListOutputs | Outputs,
+        BindingListOutputType<Binding['outputId']> | BindingOutputType<Binding['outputId']>
+    >,
+    ...ValidateOutputSatisfiesDependency<
+        Dependencies | SimplifyDependencyType<Binding['depIds']>,
+        BindingListOutputType<Binding['outputId']> | BindingOutputType<Binding['outputId']>
+    >,
+    ...ValidateDependenciesSatisfiedByOutput<
+        | TakeXThatAreNotInY<ListOutputs, BindingListOutputType<Binding['outputId']>>
+        | TakeXThatAreNotInY<Outputs, BindingOutputType<Binding['outputId']>>,
+        SimplifyDependencyType<Binding['depIds']>
+    >,
+] &
+    [];
+
 type ValidateMergeModuleInput<
     ExistingModule extends GenericModule,
     IncomingModule extends GenericModule,
@@ -361,6 +424,63 @@ export class Module<
             if (bindings.has(key)) {
                 throw new HaywireDuplicateOutputError([key]);
             }
+            bindings.set(key, binding);
+        }
+
+        return new Module(
+            (this.isAsync || binding.isAsync) as T['isAsync'] extends true ? true : Async,
+            bindings,
+            listBindings
+        );
+    }
+
+    /**
+     * Swap the binding for an output with a new one, such as a fake in tests.
+     *
+     * Creates a new module, rather than mutating the existing module.
+     * For a list output, the new binding replaces every existing binding of that list.
+     *
+     * Will produce an impossible input signature if:
+     * > No binding exists for the output id
+     * > A dependency exists on a more strict version of incoming output (e.g. replacing with a nullable output)
+     * > An existing output is laxer than the incoming dependency
+     *
+     * The replaced binding's own dependencies are still required by the module's types, even if the replacement
+     * does not need them.
+     *
+     * @param binding - binding to use instead of the existing binding for its output id
+     * @returns module with the binding replaced
+     * @throws when no binding exists for the output id. Enforced by type safety as well.
+     */
+    public replaceBinding<T extends GenericBinding>(
+        binding: T,
+        ...invalidInput: ValidateReplaceBindingInput<Outputs, ListOutputs, Dependencies, T>
+    ): Module<
+        ReplaceOutputs<Outputs, BindingOutputType<T['outputId']>>,
+        ReplaceOutputs<ListOutputs, BindingListOutputType<T['outputId']>>,
+        Dependencies | SimplifyDependencyType<T['depIds']>,
+        T['isAsync'] extends true ? true : Async
+    >;
+    public replaceBinding<T extends GenericBinding>(
+        binding: T
+    ): Module<
+        ReplaceOutputs<Outputs, BindingOutputType<T['outputId']>>,
+        ReplaceOutputs<ListOutputs, BindingListOutputType<T['outputId']>>,
+        Dependencies | SimplifyDependencyType<T['depIds']>,
+        T['isAsync'] extends true ? true : Async
+    > {
+        const bindings = new Map(this.#bindings);
+        const listBindings = new Map(this.#listBindings);
+
+        const id = binding.outputId;
+        const key = id.baseId();
+        const existing = id.annotations.list ? listBindings : bindings;
+        if (!existing.has(key)) {
+            throw new HaywireBindingNotFoundError([key]);
+        }
+        if (id.annotations.list) {
+            listBindings.set(key, [binding]);
+        } else {
             bindings.set(key, binding);
         }
 

@@ -41,6 +41,18 @@ export class HaywireDuplicateOutputError extends HaywireModuleValidationError {
 }
 
 /**
+ * Error thrown when replacing a binding on a module that has no binding for that output.
+ */
+export class HaywireBindingNotFoundError extends HaywireModuleValidationError {
+    public readonly outputIds: GenericHaywireId[];
+    public constructor(outputIds: HaywireBindingNotFoundError['outputIds']) {
+        super(`No existing binding to replace for module: ${stringifyIds(outputIds)}`);
+        this.name = 'HaywireBindingNotFoundError';
+        this.outputIds = outputIds;
+    }
+}
+
+/**
  * Generic error thrown when validating the container before use.
  *
  * All instances of this error will be of a subclass with a more specific failure reason.

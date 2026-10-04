@@ -14,7 +14,7 @@ If your container compiles, it is complete: missing bindings, mismatched types a
 - **Plain JavaScript** — constructor injection with no decorators, `experimentalDecorators` or `reflect-metadata`. Works with private fields, and in plain JS too.
 - **Type-based ids, not strings** — `identifier<T>()` distinguishes two `string` dependencies (say a database URL and password) at the type level.
 - **Real-world lifecycles** — singleton, request and transient scopes; opt-in async initialization; explicit circular dependencies; runtime values (like an HTTP request) supplied per call; `await using` disposal of what the container created.
-- **Immutable and independent** — modules never mutate, and containers share no global registry, so tests can build their own.
+- **Immutable and independent** — modules never mutate, and containers share no global registry, so tests can build their own and swap in fakes with a type-checked `replaceBinding()`.
 
 **Compared to** [InversifyJS](https://www.npmjs.com/package/inversify), [TSyringe](https://www.npmjs.com/package/tsyringe), [TypeDI](https://www.npmjs.com/package/typedi) and [NestJS](https://nestjs.com/)'s injector, which rely on decorators and string or token keys and find missing bindings at runtime, and [Awilix](https://www.npmjs.com/package/awilix), which avoids decorators but resolves by name at runtime.
 
@@ -31,6 +31,7 @@ For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.co
     - [Circular dependencies](#circular-dependencies)
     - [Lists](#lists)
     - [Collecting bindings in modules](#collecting-bindings-in-modules)
+    - [Replacing bindings in tests](#replacing-bindings-in-tests)
     - [Requesting instances from a container](#requesting-instances-from-a-container)
     - [Combining containers with dynamic runtime values](#combining-containers-with-dynamic-runtime-values)
     - [Disposing containers](#disposing-containers)
@@ -672,6 +673,31 @@ bModule.mergeModule(cModule);
 cModule.mergeModule(bModule);
 ```
 
+### Replacing bindings in tests
+
+Adding a second binding for an id is a type error, so swapping a real implementation for a fake uses `module.replaceBinding()` instead. It returns a new module, so the original stays untouched for other tests.
+
+```ts
+import { bind, createContainer } from 'haywire';
+import { appModule, databaseId } from './app.js';
+
+const fakeDatabase: IDatabase = { getRowById: () => ({ id: 1 }) };
+
+const container = createContainer(
+    appModule.replaceBinding(bind(databaseId).withInstance(fakeDatabase))
+);
+```
+
+The replacement is type-checked like any other binding:
+
+- There must already be a binding for the id.
+- It must still satisfy everything that depends on the id. Replacing a `Database` with a nullable one fails if a service needs a non-null `Database`.
+- Its own dependencies must be satisfied by the rest of the module.
+
+For a [list](#lists), the replacement takes the place of every binding in that list.
+
+The replaced binding's dependencies stay required by the module's types, even if the replacement doesn't use them. In practice the full app module already provides them.
+
 ### Requesting instances from a container
 
 So far we have:
@@ -1129,6 +1155,7 @@ Represents a collection of `Binding`s, each for a unique identifier.
 |--------|------------|-------------|-------|
 | `addBinding(binding)` | `Binding` | `Module` | Returns a _new_ module with extra binding attached. Type+runtime validations ensure it is a unique output (except [lists](#lists)) and all dependencies are still satisfied |
 | `mergeModule(module)` | `Module` | `Module` | Returns a _new_ module with two modules merged. Order does not matter (`A.mergeModule(B)` = `B.mergeModule(A)`). Type+runtime validations ensure all outputs are unique and all dependencies are still satisfied |
+| `replaceBinding(binding)` | `Binding` | `Module` | Returns a _new_ module with the existing binding for that output id (every binding, for a list) swapped for this one. Type+runtime validations ensure a binding already exists and all dependencies are still satisfied. See [Replacing bindings in tests](#replacing-bindings-in-tests) |
 | `toContainer()` | ❌ | `Container \| SyncContainer` | Returns a container of all bindings. Type enforcement ensures module is fully satisfied. Will be a `Container` if any binding's provider is async. |
 | `toContainerFactory()` | ❌ | `ContainerFactory` | Returns a container factory to bind instances for the remaining dependencies. |
 
@@ -1221,7 +1248,7 @@ It is also thrown directly when requesting an instance from a container that has
 
 Error potentially thrown during the `Module` stage of Haywire lifecycle.
 
-Specific instances include attempting to add a binding for an id that already exists on the module.
+Specific instances include attempting to add a binding for an id that already exists on the module, or replacing a binding for an id that has none.
 
 #### `HaywireContainerValidationError`
 

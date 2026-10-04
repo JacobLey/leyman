@@ -468,4 +468,86 @@ suite('module', () => {
             expect(createContainer(mod).get(countId)).to.equal(1);
         });
     });
+
+    suite('replaceBinding', () => {
+        interface Database {
+            query: () => string;
+        }
+        const dbId = identifier<Database>().named('db');
+        const urlId = identifier<string>().named('url');
+        const serviceId = identifier<{ db: Database }>().named('service');
+        const pluginId = identifier<string>().named('plugin').list();
+
+        const appModule = createModule(
+            bind(dbId)
+                .withDependencies([urlId])
+                .withProvider(url => ({ query: () => url }))
+        )
+            .addBinding(bind(urlId).withInstance('postgres://real'))
+            .addBinding(
+                bind(serviceId)
+                    .withDependencies([dbId])
+                    .withProvider(db => ({ db }))
+            )
+            .addBinding(bind(pluginId).withInstance('a'))
+            .addBinding(bind(pluginId).withInstance('b'));
+
+        test('Replaces a binding', () => {
+            const fake: Database = { query: () => 'fake' };
+            const testModule = appModule.replaceBinding(bind(dbId).withInstance(fake));
+            expectTypeOf(testModule).toEqualTypeOf<typeof appModule>();
+
+            expect(createContainer(testModule).get(serviceId).db).to.equal(fake);
+            // Original is untouched
+            expect(createContainer(appModule).get(serviceId).db).to.not.equal(fake);
+        });
+
+        test('Replaces every binding of a list', () => {
+            const testModule = appModule.replaceBinding(bind(pluginId).withInstance('fake'));
+            expect(createContainer(testModule).get(pluginId)).to.deep.equal(['fake']);
+        });
+
+        test('Replacing with an async binding makes the module async', () => {
+            const testModule = appModule.replaceBinding(
+                bind(dbId)
+                    .withDependencies([])
+                    .withAsyncProvider(async () => ({ query: () => 'async' }))
+            );
+            expectTypeOf(testModule.isAsync).toEqualTypeOf<true>();
+            expect(createContainer(testModule)).to.not.be.an.instanceOf(SyncContainer);
+        });
+
+        test('Requires an existing binding', () => {
+            const missingId = identifier<number>().named('missing');
+            expect(() => {
+                // @ts-expect-error
+                appModule.replaceBinding(bind(missingId).withInstance(1));
+            }).to.throw(HaywireModuleValidationError);
+            expect(() => {
+                // @ts-expect-error
+                appModule.replaceBinding(bind(missingId.list()).withInstance(1));
+            }).to.throw(HaywireModuleValidationError);
+        });
+
+        test('Replacement must still satisfy dependents', () => {
+            // `serviceId` needs a non-null database
+            // @ts-expect-error
+            appModule.replaceBinding(bind(dbId.nullable()).withInstance(null));
+        });
+
+        test('Replacement dependencies must be satisfied by the remaining outputs', () => {
+            const laxModule = createModule(bind(urlId.nullable()).withInstance(null)).addBinding(
+                bind(dbId)
+                    .withDependencies([urlId.nullable()])
+                    .withProvider(() => ({ query: () => 'lax' }))
+            );
+            // `urlId` is only provided as nullable
+            // @ts-expect-error
+            laxModule.replaceBinding(
+                bind(dbId)
+                    .withDependencies([urlId])
+                    .withProvider(url => ({ query: () => url }))
+            );
+        });
+    });
 });
