@@ -37,4 +37,4 @@ import packageJson from './package.json' with { type: 'json' };
 export default configGenerator({ configUrl: import.meta.url, packageJson });
 ```
 
-Rules are adopted liberally (often every rule a plugin offers) and then disabled where they don't fit. If a rule is wrong for this repo, change it in `@leyman/eslint-config` for every package rather than overriding it locally. Test files (`src/tests/**`) have a relaxed rule set.
+Rules are adopted liberally (often every rule a plugin offers) and then disabled where they don't fit. If a rule is wrong for this repo, change it in `@leyman/eslint-config` for every package rather than overriding it locally. Test files (`test/**`) have a relaxed rule set.

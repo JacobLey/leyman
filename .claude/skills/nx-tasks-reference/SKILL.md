@@ -15,9 +15,10 @@ Cache inputs are globs, so they only work if every package puts things in the sa
 
 | Path | Tracked | Role | Hashed as |
 |------|---------|------|-----------|
-| `src/` | yes | Source and tests. Only the package itself reads it | `ts-source` |
-| `src/tests/` | yes | Tests and their fixtures (fixtures can be any file type) | `ts-source` |
-| `dist/` | no | Build output (`tsc`). The only built code dependents may import | `dependency-builds`, for dependents |
+| `src/` | yes | Shipped source. Only the package itself reads it | `ts-source` |
+| `test/` | yes | Tests, fixtures (any file type) and `test/tsconfig.json` | `test-source` |
+| `dist/` | no | Build output (`tsc`): exactly what ships. The only built code dependents may import | `dependency-builds`, for dependents |
+| `dist-test/` | no | Compiled tests (`tsc-test`). Never seen by dependents | — |
 | `out/` | yes | Generated files that ship (`populate-files`, e.g. JSON schemas) | `package-files` |
 | `data/` | yes | Static files that ship and are read at runtime or by dependents | `package-files` |
 | `package.json`, `bin.mjs`, `executors.json`, `*.d.ts` at the root | yes | Package entry points | `package-files` |
@@ -25,9 +26,9 @@ Cache inputs are globs, so they only work if every package puts things in the sa
 Named inputs in [`nx.json`](../../../nx.json):
 
 - `ts-source`: the project's own source and build config. A change rebuilds the project.
-- `dependency-builds`: the `.js` and `.d.ts` files in dependencies' `dist/`, via `dependentTasksOutputFiles`. Dependents rebuild when a dependency's build output changes, not when its source changes. One known over-invalidation: compiled tests also land in `dist/tests/`, and `dependentTasksOutputFiles` cannot exclude a directory, so changing a dependency's tests rebuilds its dependents too.
+- `dependency-builds`: the `.js` and `.d.ts` files in dependencies' `dist/`, via `dependentTasksOutputFiles`. Dependents rebuild when a dependency's build output changes, not when its source changes. This is why tests compile to `dist-test/` rather than `dist/tests/`: `dependentTasksOutputFiles` ignores negated outputs, so tests inside `dist/` would rebuild every dependent when they change.
 - `^package-files`: dependencies' tracked entry points (`package.json`, `bin.mjs`, `out/`, `data/`…). Targets list it directly, because Nx does not allow `^` inside a named input.
-- `test-source`: `ts-source` plus the project's own `package-files`, its dependencies' builds, and the c8 config.
+- `test-source`: `ts-source` plus `test/`, `tsconfig.test.json`, the project's own `package-files`, the builds of its dependencies and itself, and the c8 config.
 - `shared-globals`: the Node version. The cache is shared between worktrees through the `nx-cache` sidecar.
 
 Gotchas, all verified on Nx 22:
@@ -89,6 +90,14 @@ Output goes to `./dist`.
 
 ---
 
+### `tsc-test`
+
+Deletes `./dist-test`, compiles `test/` into it with SWC, then type-checks the tests with `tsc -p ./test` (no emit; `test/tsconfig.json` extends the root [`tsconfig.test.json`](../../../tsconfig.test.json)). Runs in `test:compile`, after the package's own build, so tests are type-checked against its published `.d.ts` exactly as a consumer would see them.
+
+**Add when:** The package has tests. Add whenever `mocha-unit-test`, `mocha-integration-test`, or `vitest-unit-test` is present.
+
+---
+
 ### `populate-files`
 
 Generates static output files by running `load-populate-files` against `./dist/file-content.js`. Expects the package to export a default array of `PopulateFileParams` from `src/file-content.ts`. Output goes to `./out`.
@@ -99,23 +108,23 @@ Generates static output files by running `load-populate-files` against `./dist/f
 
 ### `mocha-unit-test`
 
-Clears its coverage directory, then runs Mocha unit tests from `./dist/tests/unit/**/*.spec.*js` under C8 coverage instrumentation.
+Clears its coverage directory, then runs Mocha unit tests from `./dist-test/unit/**/*.spec.*js` under C8 coverage instrumentation.
 
-**Add when:** The package has unit tests in `src/tests/unit/`. Add to virtually all packages.
+**Add when:** The package has unit tests in `test/unit/`. Add to virtually all packages.
 
 ---
 
 ### `mocha-integration-test`
 
-Clears its coverage directory, then runs Mocha integration tests from `./dist/tests/integration/**/*.spec.*js` under C8 coverage instrumentation.
+Clears its coverage directory, then runs Mocha integration tests from `./dist-test/integration/**/*.spec.*js` under C8 coverage instrumentation.
 
-**Add when:** The package has integration tests in `src/tests/integration/`.
+**Add when:** The package has integration tests in `test/integration/`.
 
 ---
 
 ### `vitest-unit-test`
 
-Clears its coverage directory, then runs Vitest unit tests from `./dist/tests/unit/**/*.spec.js` under C8 coverage instrumentation, using the shared [`configs/vitest.config.js`](../../../configs/vitest.config.js).
+Clears its coverage directory, then runs Vitest unit tests from `./dist-test/unit/**/*.spec.js` under C8 coverage instrumentation, using the shared [`configs/vitest.config.js`](../../../configs/vitest.config.js).
 
 The shared config runs pre-compiled tests with native `import` and the `threads` pool (so C8 can collect V8 coverage), and sets `sequence.hooks: "list"` (required by `vitest-chain`).
 
@@ -144,6 +153,7 @@ Validates 100% coverage using only the C8 data from this project's own test targ
     "eslint": {},
     "update-ts-references": {},
     "tsc": {},
+    "tsc-test": {},
     "mocha-unit-test": {},
     "coverage-report": {},
     "check:_": {},

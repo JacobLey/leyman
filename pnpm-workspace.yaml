@@ -3,7 +3,7 @@ packages:
   - leyman/*
   - tools/*
   - tools/test-chain/*
-  - '!**/src/tests/**'
+  - '!**/test/**'
 
 autoInstallPeers: false
 disallowWorkspaceCycles: true

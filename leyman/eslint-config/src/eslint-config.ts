@@ -857,9 +857,7 @@ export default function makeEslintConfigForPackage({
         },
         {
             // Disable "best practice" rules for tests
-            files: ['src/tests', 'test'].map(directory =>
-                Path.join(relativePath, directory, '**/*.{c,m,}ts{x,}')
-            ),
+            files: [Path.join(relativePath, 'test/**/*.{c,m,}ts{x,}')],
             rules: {
                 'no-magic-numbers': 'off',
                 '@typescript-eslint/explicit-function-return-type': 'off',

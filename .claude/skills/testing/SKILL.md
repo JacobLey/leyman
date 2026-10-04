@@ -27,11 +27,27 @@ Coverage is per package: only the package's own tests count, not tests of packag
 ## Layout
 
 ```
-src/tests/unit/          ← mirrors src/ (src/lib/foo.ts → src/tests/unit/lib/foo.spec.ts)
-src/tests/integration/   ← user-level workflows (CLI runs, real file system), not per-file
+test/unit/          ← mirrors src/ (src/lib/foo.ts → test/unit/lib/foo.spec.ts)
+test/integration/   ← user-level workflows (CLI runs, real file system), not per-file
+test/data/          ← fixtures (any file type)
+test/tsconfig.json  ← { "extends": "<relative>/tsconfig.test.json" }
 ```
 
 Not every file needs its own spec; files exercised as a side effect of other tests are fine.
+
+Tests are compiled into `dist-test/` (`tsc-test`) and run against the package's real `dist/`, type-checked against its published `.d.ts`. Paths built from `import.meta.dirname` resolve inside `dist-test/`, so use `../../test/data/...` to reach source fixtures.
+
+## Importing the code under test
+
+- **Public API first**: import the package by its own name (`import { identifier } from 'haywire'`). This tests what consumers get.
+- **Internals only when needed**: edge cases that are impractical to reach through the public API import `#internal/<path in dist>` (e.g. `#internal/lib/barrel.js`), mapped in `package.json`:
+
+  ```json
+  "imports": { "#internal/*": "./dist/*" }
+  ```
+
+  Reuse an existing `#alias` when the package already defines one for that file.
+- **Never import `../../src/...`**: it would load a second copy of the module (breaking `instanceof` and singletons) and skip the published types.
 
 ## Libraries
 
