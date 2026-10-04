@@ -18,8 +18,10 @@ import (
 // Keep in sync with `.devcontainer/Dockerfile` (see the devcontainer skill).
 const (
 	// node:24.21.0-trixie-slim
-	nodeImage   = "node:24.21.0-trixie-slim@sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe"
-	pnpmVersion = "12.7.0"
+	nodeImage = "node:24.21.0-trixie-slim@sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe"
+	// Exempt from `minimumReleaseAge` (it only covers lockfile dependencies). 12.9.1 fixes `--frozen-lockfile`
+	// rejecting the lockfile of injected workspace packages with `catalog:` peer dependencies.
+	pnpmVersion = "12.9.1"
 )
 
 const (

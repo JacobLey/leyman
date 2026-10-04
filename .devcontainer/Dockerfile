@@ -2,7 +2,8 @@
 FROM mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 
 ARG NODE_VERSION=24.21.0
-ARG PNPM_VERSION=12.7.0
+# Exempt from `minimumReleaseAge`, see `pnpmVersion` in `dagger/main.go`
+ARG PNPM_VERSION=12.9.1
 ARG DAGGER_VERSION=0.21.10
 ARG GO_VERSION=1.26.8
 
