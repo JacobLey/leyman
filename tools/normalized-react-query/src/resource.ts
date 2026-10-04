@@ -1,6 +1,4 @@
 import type {
-    EnsureQueryDataOptions,
-    FetchQueryOptions,
     QueryClient,
     QueryFunctionContext,
     SetDataOptions,
@@ -16,6 +14,8 @@ import type {
     LinksActive,
     OverriddenUseQueryFields,
     QueryFunctionContextWithParams,
+    ResourceEnsureOptions,
+    ResourceFetchOptions,
     typeCache,
 } from './lib/types.js';
 import { skipToken, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
@@ -213,12 +213,9 @@ class Resource<
     public async fetchQuery(
         queryClient: QueryClient,
         params: TParams,
-        options?: Omit<
-            FetchQueryOptions<TData, unknown, TData, TQueryKey>,
-            OverriddenUseQueryFields
-        >
+        options?: ResourceFetchOptions<TData, TQueryKey>
     ): Promise<TPropagatedData> {
-        const data = await queryClient.fetchQuery<TData, unknown, TData, TQueryKey>({
+        const data = await queryClient.query<TData, unknown, TData, TData, TQueryKey>({
             ...options,
             queryKey: this.getKey(params),
             queryFn: this.getQueryFn(params),
@@ -244,10 +241,7 @@ class Resource<
     public async prefetchQuery(
         queryClient: QueryClient,
         params: TParams,
-        options?: Omit<
-            FetchQueryOptions<TData, unknown, TData, TQueryKey>,
-            OverriddenUseQueryFields
-        >
+        options?: ResourceFetchOptions<TData, TQueryKey>
     ): Promise<Linked<TParams, TQueryKey, TData, this>> {
         // Can't just call prefetch from client because we need to route to the custom selectors
         // (which `fetch` is configured to do)
@@ -274,22 +268,30 @@ class Resource<
     public async ensureQueryData(
         queryClient: QueryClient,
         params: TParams,
-        options: Omit<
-            EnsureQueryDataOptions<TData, unknown, TData, TQueryKey>,
-            OverriddenUseQueryFields
-        > = {}
+        options: ResourceEnsureOptions<TData, TQueryKey> = {}
     ): Promise<TPropagatedData> {
-        const data = await queryClient.ensureQueryData({
-            ...options,
+        const { revalidateIfStale = false, ...rest } = options;
+        const queryOptions = {
+            ...rest,
             queryKey: this.getKey(params),
             queryFn: this.getQueryFn(params),
+        };
+        const isCached = this.getQueryData(queryClient, params) !== undefined;
+        // Cached data is never stale, so it is returned as-is
+        const data = await queryClient.query<TData, unknown, TData, TData, TQueryKey>({
+            ...queryOptions,
+            staleTime: 'static',
         });
+        if (isCached && revalidateIfStale) {
+            // Refetches in the background if stale by the requested `staleTime`
+            queryClient.query(queryOptions).catch(() => {});
+        }
         const prefetches: Promise<void>[] = [];
 
         const response = this.#getSelector<TPropagatedData>({
-            prefetches,
             client: queryClient,
-            revalidateIfStale: options.revalidateIfStale ?? false,
+            prefetches,
+            revalidateIfStale,
         })(data);
 
         await Promise.all(prefetches);
@@ -358,10 +360,7 @@ class Resource<
      */
     public link(
         params: TParams,
-        options: Omit<
-            EnsureQueryDataOptions<TData, unknown, TData, TQueryKey>,
-            OverriddenUseQueryFields
-        > & {
+        options: ResourceEnsureOptions<TData, TQueryKey> & {
             isolateErrors?: boolean | undefined;
         } = {}
     ): Linked<TParams, TQueryKey, TData, this> {
@@ -797,7 +796,7 @@ export const useNormalizedPrefetchQuery = <
 >(
     res: Resource<TParams, TData, TPropagatedData, TQueryKey>,
     params: TParams,
-    options?: Omit<FetchQueryOptions<TData, unknown, TData, TQueryKey>, OverriddenUseQueryFields>,
+    options?: ResourceFetchOptions<TData, TQueryKey>,
     queryClient?: QueryClient
 ): Linked<TParams, TQueryKey, TData, Resource<TParams, TData, TPropagatedData, TQueryKey>> => {
     const qc = useQueryClient(queryClient);

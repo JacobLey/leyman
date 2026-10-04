@@ -13,6 +13,7 @@ import { renderHook } from '@testing-library/react-hooks/server/index.js';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import {
+    resource,
     useNormalizedNullablePrefetchedSuspenseQuery,
     useNormalizedNullableSuspenseQuery,
     useNormalizedPrefetchedQuery,
@@ -292,6 +293,70 @@ suite('resource', () => {
                 ).to.be.fulfilled;
             }
         );
+    });
+
+    suite('revalidateIfStale', () => {
+        const withCounted = context.beforeEach(() => {
+            const counter = { calls: 0 };
+            const counted = resource<void, number>({
+                key: ['counted'],
+                queryFn: async () => {
+                    counter.calls++;
+                    return counter.calls;
+                },
+            });
+            return { counted, counter };
+        });
+
+        withCounted.test(
+            'Refetches stale cached data in the background',
+            async ({ client, counted, counter }) => {
+                counted.setQueryData(client, undefined, 0);
+
+                const data = await counted.ensureQueryData(client, undefined, {
+                    revalidateIfStale: true,
+                    staleTime: 0,
+                });
+                expect(data).to.equal(0);
+
+                await counted.getCachedQuery(client, undefined)!.promise;
+                expect(counter.calls).to.equal(1);
+                expect(counted.getQueryData(client, undefined)).to.equal(1);
+            }
+        );
+
+        withCounted.test(
+            'Does not refetch unless requested',
+            async ({ client, counted, counter }) => {
+                counted.setQueryData(client, undefined, 0);
+
+                const data = await counted.ensureQueryData(client, undefined, { staleTime: 0 });
+                expect(data).to.equal(0);
+                expect(client.isFetching()).to.equal(0);
+                expect(counter.calls).to.equal(0);
+            }
+        );
+
+        withCounted.test('Does not refetch fresh data', async ({ client, counted, counter }) => {
+            counted.setQueryData(client, undefined, 0);
+
+            const data = await counted.ensureQueryData(client, undefined, {
+                revalidateIfStale: true,
+            });
+            expect(data).to.equal(0);
+            expect(client.isFetching()).to.equal(0);
+            expect(counter.calls).to.equal(0);
+        });
+
+        withCounted.test('Fetches uncached data once', async ({ client, counted, counter }) => {
+            const data = await counted.ensureQueryData(client, undefined, {
+                revalidateIfStale: true,
+                staleTime: 0,
+            });
+            expect(data).to.equal(1);
+            expect(client.isFetching()).to.equal(0);
+            expect(counter.calls).to.equal(1);
+        });
     });
 
     suite('hooks', () => {

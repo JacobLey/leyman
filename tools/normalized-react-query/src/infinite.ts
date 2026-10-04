@@ -1,6 +1,4 @@
 import type {
-    EnsureInfiniteQueryDataOptions,
-    FetchInfiniteQueryOptions,
     GetNextPageParamFunction,
     GetPreviousPageParamFunction,
     InfiniteData,
@@ -16,6 +14,8 @@ import type {
     UseSuspenseInfiniteQueryResult,
 } from '@tanstack/react-query';
 import type {
+    InfiniteEnsureOptions,
+    InfiniteFetchOptions,
     InfiniteSet,
     LinksActive,
     OverriddenUseInfiniteQueryFields,
@@ -347,15 +347,12 @@ class Infinite<
     public async fetchInfiniteQuery(
         queryClient: QueryClient,
         params: TParams,
-        options?: Omit<
-            FetchInfiniteQueryOptions<TData, unknown, TData, TQueryKey, TPageParam>,
-            OverriddenUseInfiniteQueryFields
-        >
+        options?: InfiniteFetchOptions<TData, TQueryKey, TPageParam>
     ): Promise<InfiniteData<TPropagatedData, TPageParam>> {
-        const data = await queryClient.fetchInfiniteQuery<
+        const data = await queryClient.infiniteQuery<
             TData,
             unknown,
-            TData,
+            InfiniteData<TData, TPageParam>,
             TQueryKey,
             TPageParam
         >({
@@ -386,10 +383,7 @@ class Infinite<
     public async prefetchInfiniteQuery(
         queryClient: QueryClient,
         params: TParams,
-        options?: Omit<
-            FetchInfiniteQueryOptions<TData, unknown, TData, TQueryKey, TPageParam>,
-            OverriddenUseInfiniteQueryFields
-        >
+        options?: InfiniteFetchOptions<TData, TQueryKey, TPageParam>
     ): Promise<Linked<TParams, TQueryKey, InfiniteData<TData, TPageParam>, this>> {
         // Can't just call prefetch from client because we need to route to the custom selectors
         // (which `fetch` is configured to do)
@@ -428,23 +422,37 @@ class Infinite<
     public async ensureInfiniteQueryData(
         queryClient: QueryClient,
         params: TParams,
-        options: Omit<
-            EnsureInfiniteQueryDataOptions<TData, unknown, TData, TQueryKey, TPageParam>,
-            OverriddenUseInfiniteQueryFields
-        > = {}
+        options: InfiniteEnsureOptions<TData, TQueryKey, TPageParam> = {}
     ): Promise<InfiniteData<TPropagatedData, TPageParam>> {
-        const data = await queryClient.ensureInfiniteQueryData({
-            ...options,
+        const { revalidateIfStale = false, ...rest } = options;
+        const queryOptions = {
+            ...rest,
             getNextPageParam: this.getGetNextPageParam(params),
             initialPageParam: this.getInitialPageParam(params),
             queryFn: this.getQueryFn(params),
             queryKey: this.getKey(params),
+        };
+        const isCached = this.getQueryData(queryClient, params) !== undefined;
+        // Cached data is never stale, so it is returned as-is
+        const data = await queryClient.infiniteQuery<
+            TData,
+            unknown,
+            InfiniteData<TData, TPageParam>,
+            TQueryKey,
+            TPageParam
+        >({
+            ...queryOptions,
+            staleTime: 'static',
         });
+        if (isCached && revalidateIfStale) {
+            // Refetches in the background if stale by the requested `staleTime`
+            queryClient.infiniteQuery(queryOptions).catch(() => {});
+        }
         const prefetches: Promise<void>[] = [];
         const response = this.#getSelector<InfiniteData<TPropagatedData, TPageParam>>({
-            prefetches,
             client: queryClient,
-            revalidateIfStale: options.revalidateIfStale ?? false,
+            prefetches,
+            revalidateIfStale,
         })(data);
 
         await Promise.all(prefetches);
@@ -519,10 +527,7 @@ class Infinite<
      */
     public link(
         params: TParams,
-        options: Omit<
-            EnsureInfiniteQueryDataOptions<TData, unknown, TData, TQueryKey, TPageParam>,
-            OverriddenUseInfiniteQueryFields
-        > & {
+        options: InfiniteEnsureOptions<TData, TQueryKey, TPageParam> & {
             isolateErrors?: boolean | undefined;
         } = {}
     ): Linked<TParams, TQueryKey, InfiniteData<TData, TPageParam>, this> {
@@ -1014,10 +1019,7 @@ export const useNormalizedPrefetchInfiniteQuery = <
 >(
     inf: Infinite<TParams, TPageParam, TData, TPropagatedData, TQueryKey>,
     params: TParams,
-    options?: Omit<
-        FetchInfiniteQueryOptions<TData, unknown, TData, TQueryKey, TPageParam>,
-        OverriddenUseInfiniteQueryFields
-    >,
+    options?: InfiniteFetchOptions<TData, TQueryKey, TPageParam>,
     queryClient?: QueryClient
 ): Linked<
     TParams,

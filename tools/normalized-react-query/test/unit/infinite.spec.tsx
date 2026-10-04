@@ -12,6 +12,7 @@ import { renderHook } from '@testing-library/react-hooks/server/index.js';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import {
+    infinite,
     useNormalizedInfiniteQuery,
     useNormalizedNullablePrefetchedSuspenseInfiniteQuery,
     useNormalizedNullableSuspenseInfiniteQuery,
@@ -402,6 +403,49 @@ suite('infinite', () => {
                 ).to.be.fulfilled;
             }
         );
+    });
+
+    suite('revalidateIfStale', () => {
+        const withCounted = context.beforeEach(() => {
+            const counter = { calls: 0 };
+            const counted = infinite<void, number, number>({
+                key: ['counted'],
+                getInitialPageParam: 0,
+                getNextPageParam: () => null,
+                queryFn: async () => {
+                    counter.calls++;
+                    return counter.calls;
+                },
+            });
+            return { counted, counter };
+        });
+
+        withCounted.test(
+            'Refetches stale cached data in the background',
+            async ({ client, counted, counter }) => {
+                counted.setInfiniteQueryData(client, undefined, { pages: [0], pageParams: [0] });
+
+                const data = await counted.ensureInfiniteQueryData(client, undefined, {
+                    revalidateIfStale: true,
+                    staleTime: 0,
+                });
+                expect(data.pages).to.deep.equal([0]);
+
+                await counted.getCachedQuery(client, undefined)!.promise;
+                expect(counter.calls).to.equal(1);
+                expect(counted.getInfiniteQueryData(client, undefined)?.pages).to.deep.equal([1]);
+            }
+        );
+
+        withCounted.test('Fetches uncached data once', async ({ client, counted, counter }) => {
+            const data = await counted.ensureInfiniteQueryData(client, undefined, {
+                revalidateIfStale: true,
+                staleTime: 0,
+            });
+            expect(data.pages).to.deep.equal([1]);
+            expect(client.isFetching()).to.equal(0);
+            expect(counter.calls).to.equal(1);
+        });
     });
 
     suite('hooks', () => {
