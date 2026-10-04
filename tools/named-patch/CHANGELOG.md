@@ -1,5 +1,15 @@
 # named-patch
 
+## 2.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Patch Changes
+
+- 2ae16b8: Update READMEs to be more agent friendly
+
 ## 1.0.16
 
 ### Patch Changes

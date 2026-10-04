@@ -1,5 +1,18 @@
 # find-import
 
+## 2.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Patch Changes
+
+- 2ae16b8: Update READMEs to be more agent friendly
+- Updated dependencies [eaae490]
+- Updated dependencies [2ae16b8]
+  - parse-cwd@2.0.0
+
 ## 1.0.14
 
 ### Patch Changes

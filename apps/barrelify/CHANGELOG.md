@@ -1,5 +1,30 @@
 # barrelify
 
+## 2.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Patch Changes
+
+- d2e1a50: Remove `haywire` (and `haywire-launcher`, `juniper`, `juniper-validator`) dependencies in favor of direct imports
+- 2ee7a01: Use Node's `findPackageJSON` to determine module type instead of `find-import`. A malformed nearest `package.json` now errors rather than silently falling back to a parent `package.json`
+- d489ee1: Update dependencies: globby to 16.1.1, ci-info to 4.4.0, @swc/helpers to 0.5.19
+- d327056: Swap internal validations to use juniper-validator
+- 2ae16b8: Update READMEs to be more agent friendly
+- 6a6633f: Update dependencies: @swc/helpers@0.5.23, @types/sinon@21.0.1, ajv@8.20.0, fast-equals@6.0.4, globby@16.2.4, mocha@11.8.0, prettier@3.9.9, sinon@21.1.2, uint8array-extras@1.6.0, yargs@18.2.0
+- Updated dependencies [d489ee1]
+- Updated dependencies [ca44cd6]
+- Updated dependencies [a20b8a6]
+- Updated dependencies [fe61321]
+- Updated dependencies [eaae490]
+- Updated dependencies [2ae16b8]
+- Updated dependencies [6a6633f]
+  - populate-files@1.0.0
+  - entry-script@4.0.0
+  - parse-cwd@2.0.0
+
 ## 1.3.3
 
 ### Patch Changes

@@ -1,5 +1,19 @@
 # punycode-esm
 
+## 2.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Minor Changes
+
+- 82927ff: Sync with upstream punycode.js v2.3.1: do not encode U+007F DEL, do not decode non-alphanumeric ASCII in Punycode labels, and throw `Invalid input` (rather than overflow) for invalid digits. Add Credit section to README.
+
+### Patch Changes
+
+- 2ae16b8: Update READMEs to be more agent friendly
+
 ## 1.0.15
 
 ### Patch Changes

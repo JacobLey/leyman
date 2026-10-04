@@ -1,5 +1,41 @@
 # haywire-launcher
 
+## 1.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Minor Changes
+
+- 3651dbf: Rename haywire APIs to clearer, less overloaded names. This is a breaking change:
+  
+  | Before | After |
+  |--------|-------|
+  | `Factory` | `ContainerFactory` |
+  | `createFactory()` / `module.toFactory()` | `createContainerFactory()` / `module.toContainerFactory()` |
+  | `factory.register(id, instance)` | `containerFactory.bindInstance(id, instance)` |
+  | `AsyncContainer` | `Container` |
+  | `optimisticSingletonScope` / `optimisticRequestScope` | `eagerSingletonScope` / `eagerRequestScope` |
+  | `supplierScope` | `isolatedRequestScope` |
+  | `withGenerator()` / `withAsyncGenerator()` / `withConstructorGenerator()` | `withFactory()` / `withAsyncFactory()` / `withConstructorFactory()` |
+  | `id.lateBinding()` / `LateBinding<T>` / `id.annotations.lateBinding` | `id.deferred()` / `Deferred<T>` / `id.annotations.deferred` |
+  
+  `haywire-launcher` now requires the renamed `Container` type.
+
+### Patch Changes
+
+- 9221852: Add `list()` annotations to haywire, allowing multiple bindings to contribute elements to a single array dependency (`list('multi')` providers contribute several elements at once).
+- 2ae16b8: Update READMEs to be more agent friendly
+- Updated dependencies [9221852]
+- Updated dependencies [3651dbf]
+- Updated dependencies [f8cdb0e]
+- Updated dependencies [eaae490]
+- Updated dependencies [2ae16b8]
+- Updated dependencies [b87bd62]
+  - haywire@1.0.0
+  - entry-script@4.0.0
+
 ## 0.1.11
 
 ### Patch Changes

@@ -1,5 +1,26 @@
 # mocha-chain
 
+## 1.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Minor Changes
+
+- 5b26124: Update peer dependencies: mocha@12, sinon@22, @types/sinon@22
+- 6a6633f: Update dependencies: @swc/helpers@0.5.23, @types/sinon@21.0.1, ajv@8.20.0, fast-equals@6.0.4, globby@16.2.4, mocha@11.8.0, prettier@3.9.9, sinon@21.1.2, uint8array-extras@1.6.0, yargs@18.2.0
+
+### Patch Changes
+
+- a7a4187: Export `EmptyContext`, the context before any hook has added to it, and use it as the initial context of every chain
+- 778a3c2: Move framework-agnostic internals to `test-chain-core` and remove `haywire` dependency.
+  
+  Chained hooks that execute out of order now fail with `HookOrderError` rather than hanging or receiving an empty context, and hooks chained from a failed hook receive the context produced before the failure.
+- 2ae16b8: Update READMEs to be more agent friendly
+- Updated dependencies [a7a4187]
+  - test-chain-core@0.1.0
+
 ## 0.0.11
 
 ### Patch Changes

@@ -1,5 +1,35 @@
 # haywire
 
+## 1.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Minor Changes
+
+- 9221852: Add `list()` annotations to haywire, allowing multiple bindings to contribute elements to a single array dependency (`list('multi')` providers contribute several elements at once).
+- 3651dbf: Rename haywire APIs to clearer, less overloaded names. This is a breaking change:
+  
+  | Before | After |
+  |--------|-------|
+  | `Factory` | `ContainerFactory` |
+  | `createFactory()` / `module.toFactory()` | `createContainerFactory()` / `module.toContainerFactory()` |
+  | `factory.register(id, instance)` | `containerFactory.bindInstance(id, instance)` |
+  | `AsyncContainer` | `Container` |
+  | `optimisticSingletonScope` / `optimisticRequestScope` | `eagerSingletonScope` / `eagerRequestScope` |
+  | `supplierScope` | `isolatedRequestScope` |
+  | `withGenerator()` / `withAsyncGenerator()` / `withConstructorGenerator()` | `withFactory()` / `withAsyncFactory()` / `withConstructorFactory()` |
+  | `id.lateBinding()` / `LateBinding<T>` / `id.annotations.lateBinding` | `id.deferred()` / `Deferred<T>` / `id.annotations.deferred` |
+  
+  `haywire-launcher` now requires the renamed `Container` type.
+
+### Patch Changes
+
+- f8cdb0e: Fix `identifier()` and other class-accepting APIs rejecting classes whose private constructor takes arguments. TypeScript strips private constructor parameters from emitted declarations, so the published types only accepted private constructors with no arguments. `Constructable` is now a hand-written declaration that ships as-is.
+- 2ae16b8: Update READMEs to be more agent friendly
+- b87bd62: Fixed typos in README and docstrings
+
 ## 0.1.8
 
 ### Patch Changes

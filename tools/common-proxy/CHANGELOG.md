@@ -1,5 +1,20 @@
 # common-proxy
 
+## 1.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Patch Changes
+
+- d489ee1: Update dependencies: globby to 16.1.1, ci-info to 4.4.0, @swc/helpers to 0.5.19
+- 2ae16b8: Update READMEs to be more agent friendly
+- 6a6633f: Update dependencies: @swc/helpers@0.5.23, @types/sinon@21.0.1, ajv@8.20.0, fast-equals@6.0.4, globby@16.2.4, mocha@11.8.0, prettier@3.9.9, sinon@21.1.2, uint8array-extras@1.6.0, yargs@18.2.0
+- Updated dependencies [eaae490]
+- Updated dependencies [2ae16b8]
+  - default-import@3.0.0
+
 ## 0.1.3
 
 ### Patch Changes

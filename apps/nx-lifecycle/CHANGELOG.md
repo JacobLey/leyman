@@ -1,5 +1,61 @@
 # nx-lifecycle
 
+## 1.0.0
+
+### Major Changes
+
+- eaae490: Increase node engine requirement
+
+### Minor Changes
+
+- 96fcf7d: Update dependencies: @nx/devkit@23.2.1, nx@23.2.1
+- 2832537: Add an Nx plugin, `nx-lifecycle/plugin`, that infers lifecycle targets when Nx builds the project graph instead of writing them to `nx.json` and `project.json`. It checks the merged configuration, and fails if `targetDefaults` or `project.json` replace a bound target's lifecycle dependency.
+
+### Patch Changes
+
+- d489ee1: Update dependencies: globby to 16.1.1, ci-info to 4.4.0, @swc/helpers to 0.5.19
+- 39dc670: Update dependencies: @nx/devkit@22.7.12, nx@22.7.12
+- d327056: Swap internal validations to use juniper-validator
+- a20b8a6: Fix exposing schema.json (available at `./out/schema.json`)
+- 3651dbf: Rename haywire APIs to clearer, less overloaded names. This is a breaking change:
+  
+  | Before | After |
+  |--------|-------|
+  | `Factory` | `ContainerFactory` |
+  | `createFactory()` / `module.toFactory()` | `createContainerFactory()` / `module.toContainerFactory()` |
+  | `factory.register(id, instance)` | `containerFactory.bindInstance(id, instance)` |
+  | `AsyncContainer` | `Container` |
+  | `optimisticSingletonScope` / `optimisticRequestScope` | `eagerSingletonScope` / `eagerRequestScope` |
+  | `supplierScope` | `isolatedRequestScope` |
+  | `withGenerator()` / `withAsyncGenerator()` / `withConstructorGenerator()` | `withFactory()` / `withAsyncFactory()` / `withConstructorFactory()` |
+  | `id.lateBinding()` / `LateBinding<T>` / `id.annotations.lateBinding` | `id.deferred()` / `Deferred<T>` / `id.annotations.deferred` |
+  
+  `haywire-launcher` now requires the renamed `Container` type.
+- 26663c7: Load the executor as ES modules directly, dropping the `common-proxy` and `nx-plugin-handler` dependencies. Accept `{ "target": ..., "projects": [...] }` entries in a stage's `dependsOn`, which the schema wrongly rejected.
+- 26d3081: Name the offending dependency and suggest a fix when a stage depends on another stage's hook. Warn about bindings that no project declares. Describe `$schema` in the generated JSON schema.
+- 2ae16b8: Update READMEs to be more agent friendly
+- 6a6633f: Update dependencies: @swc/helpers@0.5.23, @types/sinon@21.0.1, ajv@8.20.0, fast-equals@6.0.4, globby@16.2.4, mocha@11.8.0, prettier@3.9.9, sinon@21.1.2, uint8array-extras@1.6.0, yargs@18.2.0
+- Updated dependencies [a87d16e]
+- Updated dependencies [d327056]
+- Updated dependencies [bb9d03d]
+- Updated dependencies [543c387]
+- Updated dependencies [9221852]
+- Updated dependencies [3651dbf]
+- Updated dependencies [f8cdb0e]
+- Updated dependencies [48e4571]
+- Updated dependencies [eaae490]
+- Updated dependencies [2ae16b8]
+- Updated dependencies [b87bd62]
+- Updated dependencies [935f6ae]
+- Updated dependencies [6a6633f]
+  - format-file@1.0.0
+  - juniper-validator@0.1.0
+  - haywire@1.0.0
+  - haywire-launcher@1.0.0
+  - entry-script@4.0.0
+  - parse-cwd@2.0.0
+  - juniper@2.0.0
+
 ## 0.2.1
 
 ### Patch Changes
