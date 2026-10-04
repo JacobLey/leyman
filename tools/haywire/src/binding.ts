@@ -8,6 +8,7 @@ export {
     Binding,
     type BindingBuilder,
     type DepsBindingBuilder,
+    type Disposer,
     type GenericBinding,
     type ProviderBindingBuilder,
 } from '#binding';

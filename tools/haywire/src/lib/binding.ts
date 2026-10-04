@@ -35,6 +35,14 @@ export type DependencyIdTypes<Dependencies extends readonly [...GenericHaywireId
 export type GenericBinding = Binding<GenericOutputHaywireId, any, boolean>;
 
 /**
+ * Releases an instance when the container that created it is disposed.
+ * May return a promise, which is awaited before disposing the next instance.
+ *
+ * @template T instance type
+ */
+export type Disposer<T> = (instance: T) => unknown;
+
+/**
  * Given the output id of a declared binding, produce the set of all output types.
  *
  * e.g. If the provided output is `A + nullable + deferred`,
@@ -173,6 +181,11 @@ export class Binding<
         ? HaywireIdType<OutputId> | Promise<HaywireIdType<OutputId>>
         : HaywireIdType<OutputId>;
     public readonly scope: Scopes = transientScope;
+    /**
+     * How instances are released when the container is disposed.
+     * `undefined` uses `Symbol.asyncDispose`/`Symbol.dispose` when the instance implements them, `null` never disposes.
+     */
+    public readonly disposer: Disposer<any> | null | undefined;
 
     /**
      * @param outputId - identifier of type returned by provider
@@ -180,6 +193,7 @@ export class Binding<
      * @param isAsync - flag to indicate provider returns a promise of the output id
      * @param provider - method to calculate output id based on dependencies. If `isAsync=true`, can return a promise
      * @param [scope=transientScope] - scope to use for provider. Allows caching of value between invocations.
+     * @param [disposer] - how instances are released when the container is disposed. See {@link withDisposer}.
      */
     public constructor(
         outputId: OutputId,
@@ -190,11 +204,13 @@ export class Binding<
         ) => Async extends true
             ? HaywireIdType<OutputId> | Promise<HaywireIdType<OutputId>>
             : HaywireIdType<OutputId>,
-        scope: Scopes = transientScope
+        scope: Scopes = transientScope,
+        disposer?: Disposer<any> | null
     ) {
         this.outputId = outputId;
         this.provider = provider;
         this.scope = scope;
+        this.disposer = disposer;
         this.depIds = depIds;
         this.isAsync = isAsync;
     }
@@ -219,7 +235,23 @@ export class Binding<
         if (scope === this.scope) {
             return this;
         }
-        return new Binding(this.outputId, this.depIds, this.isAsync, this.provider, scope) as this;
+        return this.#with({ scope }) as this;
+    }
+
+    /**
+     * Creates a new binding that releases its instances with `disposer` when the container is disposed
+     * (see `container.disposeAsync()`). Does not modify the existing immutable binding.
+     *
+     * By default, instances that implement `Symbol.asyncDispose` or `Symbol.dispose` are disposed with those.
+     * Bindings created with `withInstance()` default to `null`, as the instance belongs to the caller.
+     *
+     * Only singleton instances are disposed. Setting a disposer on any other scope fails `container.check()`.
+     *
+     * @param disposer - called with each non-null instance, or `null` to never dispose instances
+     * @returns new binding with the disposer
+     */
+    public withDisposer(disposer: Disposer<RawType<OutputId>> | null): this {
+        return this.#with({ disposer }) as this;
     }
 
     /**
@@ -278,14 +310,7 @@ export class Binding<
                 Async
             >;
         }
-        return new Binding(
-            this.outputId.named(named as ''),
-            this.depIds,
-            this.isAsync,
-            // Needed by TypeScript 7 to infer the output id from `outputId`, typescript-eslint checks with TypeScript 6
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-            this.provider as Binding<any, any, any>['provider']
-        );
+        return this.#with({ outputId: this.outputId.named(named as '') });
     }
 
     /**
@@ -328,14 +353,7 @@ export class Binding<
                 Async
             >;
         }
-        return new Binding(
-            this.outputId.nullable(),
-            this.depIds,
-            this.isAsync,
-            // Needed by TypeScript 7 to infer the output id from `outputId`, typescript-eslint checks with TypeScript 6
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-            this.provider as Binding<any, any, any>['provider']
-        );
+        return this.#with({ outputId: this.outputId.nullable() });
     }
 
     /**
@@ -378,14 +396,7 @@ export class Binding<
                 Async
             >;
         }
-        return new Binding(
-            this.outputId.undefinable(),
-            this.depIds,
-            this.isAsync,
-            // Needed by TypeScript 7 to infer the output id from `outputId`, typescript-eslint checks with TypeScript 6
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-            this.provider as Binding<any, any, any>['provider']
-        );
+        return this.#with({ outputId: this.outputId.undefinable() });
     }
 
     /**
@@ -429,15 +440,41 @@ export class Binding<
             >;
         }
         const outputId = this.outputId.list();
-        return new Binding(
+        return this.#with({
             outputId,
-            this.depIds,
-            this.isAsync,
-            providerToMaybeList(
+            provider: providerToMaybeList(
                 outputId,
                 this.isAsync,
                 this.provider as Binding<any, any, any>['provider']
-            )
+            ),
+        });
+    }
+
+    /**
+     * Copy this binding with some attributes replaced.
+     * Every modifier goes through here, so none of them drop the attributes they don't change.
+     *
+     * @param changes - attributes to replace
+     * @returns new binding
+     * @template NewOutputId when `changes` replaces the output id, its type
+     */
+    #with<NewOutputId extends GenericOutputHaywireId = OutputId>(changes: {
+        outputId?: NewOutputId;
+        provider?: Binding<any, any, any>['provider'];
+        scope?: Scopes;
+        disposer?: Disposer<any> | null;
+    }): Binding<NewOutputId, Dependencies, Async> {
+        return new Binding(
+            changes.outputId ?? (this.outputId as GenericOutputHaywireId as NewOutputId),
+            this.depIds,
+            this.isAsync,
+            (changes.provider ?? this.provider) as Binding<
+                NewOutputId,
+                Dependencies,
+                Async
+            >['provider'],
+            changes.scope ?? this.scope,
+            'disposer' in changes ? changes.disposer : this.disposer
         );
     }
 }
@@ -461,7 +498,8 @@ export class TempBinding<OutputId extends GenericOutputHaywireId> extends Bindin
             () => {
                 throw new HaywireProviderMissingError([outputId]);
             },
-            eagerSingletonScope
+            eagerSingletonScope,
+            null
         );
     }
 }
@@ -482,7 +520,8 @@ export class InstanceBinding<OutputId extends GenericHaywireId> extends Binding<
             [],
             false,
             providerToMaybeList(outputId, false, () => instance),
-            eagerSingletonScope
+            eagerSingletonScope,
+            null
         );
     }
 }
@@ -742,7 +781,9 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
             [],
             false,
             providerToMaybeList(this.#outputId, false, () => value),
-            eagerSingletonScope
+            eagerSingletonScope,
+            // The caller created the instance, so the caller owns it
+            null
         );
     }
 

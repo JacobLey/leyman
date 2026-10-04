@@ -1082,3 +1082,31 @@ suite('TempBinding', () => {
         binding.provider();
     }).to.throw(HaywireContainerValidationError);
 });
+
+test('Modifiers keep scope and disposer', () => {
+    const disposer = (): void => {};
+    const binding = bind(identifier<object>())
+        .withDependencies([])
+        .withProvider(() => ({}))
+        .scoped(requestScope)
+        .withDisposer(disposer);
+
+    for (const modified of [
+        binding.named('name'),
+        binding.nullable(),
+        binding.undefinable(),
+        binding.list(),
+        binding.scoped(requestScope),
+    ]) {
+        expect(modified.scope).to.equal(requestScope);
+        expect(modified.disposer).to.equal(disposer);
+    }
+    expect(binding.scoped(transientScope).disposer).to.equal(disposer);
+    expect(binding.withDisposer(null).disposer).to.equal(null);
+    expect(
+        bind(identifier<object>())
+            .withDependencies([])
+            .withProvider(() => ({})).disposer
+    ).to.equal(undefined);
+    expect(bind(identifier<object>()).withInstance({}).disposer).to.equal(null);
+});

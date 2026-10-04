@@ -174,6 +174,29 @@ export class HaywireProviderMissingError extends HaywireContainerValidationError
 }
 
 /**
+ * Error thrown when a binding that is not singleton-scoped declares a disposer.
+ * Containers only keep (and therefore only dispose) singleton instances, so the disposer would never run.
+ */
+export class HaywireDisposerScopeError extends HaywireContainerValidationError {
+    public readonly outputIds: GenericHaywireId[];
+    public constructor(outputIds: HaywireDisposerScopeError['outputIds']) {
+        super(`Disposers declared for non-singleton bindings: ${stringifyIds(outputIds)}`);
+        this.name = 'HaywireDisposerScopeError';
+        this.outputIds = outputIds;
+    }
+}
+
+/**
+ * Error thrown when an instance is requested from a container that has been disposed.
+ */
+export class HaywireContainerDisposedError extends HaywireError {
+    public constructor() {
+        super('Container has been disposed');
+        this.name = 'HaywireContainerDisposedError';
+    }
+}
+
+/**
  * Generic class to represent failures to generate the requested value during a request.
  *
  * All instances of this error will be of a subclass with a more specific failure reason.

@@ -13,7 +13,7 @@ If your container compiles, it is complete: missing bindings, mismatched types a
 - **Wiring mistakes are type errors** — a missing dependency, a duplicate binding, the wrong id passed to `container.get()`, or a nullable value injected into a non-nullable parameter all fail to build.
 - **Plain JavaScript** — constructor injection with no decorators, `experimentalDecorators` or `reflect-metadata`. Works with private fields, and in plain JS too.
 - **Type-based ids, not strings** — `identifier<T>()` distinguishes two `string` dependencies (say a database URL and password) at the type level.
-- **Real-world lifecycles** — singleton, request and transient scopes; opt-in async initialization; explicit circular dependencies; runtime values (like an HTTP request) supplied per call.
+- **Real-world lifecycles** — singleton, request and transient scopes; opt-in async initialization; explicit circular dependencies; runtime values (like an HTTP request) supplied per call; `await using` disposal of what the container created.
 - **Immutable and independent** — modules never mutate, and containers share no global registry, so tests can build their own.
 
 **Compared to** [InversifyJS](https://www.npmjs.com/package/inversify), [TSyringe](https://www.npmjs.com/package/tsyringe), [TypeDI](https://www.npmjs.com/package/typedi) and [NestJS](https://nestjs.com/)'s injector, which rely on decorators and string or token keys and find missing bindings at runtime, and [Awilix](https://www.npmjs.com/package/awilix), which avoids decorators but resolves by name at runtime.
@@ -33,6 +33,7 @@ For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.co
     - [Collecting bindings in modules](#collecting-bindings-in-modules)
     - [Requesting instances from a container](#requesting-instances-from-a-container)
     - [Combining containers with dynamic runtime values](#combining-containers-with-dynamic-runtime-values)
+    - [Disposing containers](#disposing-containers)
     - [Scope Gotchas](#scope-gotchas)
     - [Validation using types](#validation-using-types)
     - [Typescript configuration](#typescript-configuration)
@@ -786,6 +787,81 @@ express().get((req, res) => {
 
 Container factories can only be provided with instances, you cannot define a new provider or dependencies at this stage.
 
+### Disposing containers
+
+Singletons often hold resources that must be released on shutdown: database pools, sockets, file handles. `container.disposeAsync()` releases every singleton the container created, in reverse creation order, so each instance is disposed before the instances it depends on. Containers are also `AsyncDisposable`, so `await using` works too.
+
+By default, an instance is disposed with its own `Symbol.asyncDispose` or `Symbol.dispose` method, if it has one. Use `.withDisposer()` for anything else, or `.withDisposer(null)` to leave an instance alone.
+
+```ts
+import { bind, createContainer, createModule, identifier, singletonScope } from 'haywire';
+import pg from 'pg';
+
+const poolId = identifier<pg.Pool>();
+
+const container = createContainer(
+    createModule(
+        bind(poolId)
+            .withDependencies([])
+            .withProvider(() => new pg.Pool())
+            .scoped(singletonScope)
+            .withDisposer(pool => pool.end())
+    ).addBinding(
+        // Implements `Symbol.asyncDispose`, so needs no disposer
+        bind(UserRepository).withDependencies([poolId]).withConstructorProvider().scoped(singletonScope)
+    )
+);
+
+process.on('SIGTERM', async () => {
+    // Disposes the repository, then the pool
+    await container.disposeAsync();
+});
+```
+
+- **Only singletons are disposed.** Request-scoped and transient instances belong to whoever requested them. Setting a disposer on any other scope fails `container.check()`.
+- **Instances you provide are yours.** Bindings made with `withInstance()` or `factory.bindInstance()` are not disposed, unless you set a disposer on them.
+- **Once disposal starts, the container is closed.** Requests already in progress finish first, so their singletons are disposed too. Every new request, including from suppliers, throws.
+- If disposers fail, the rest still run, and `disposeAsync()` rejects with the error (or a `HaywireMultiError` of all of them).
+
+#### Per-request containers
+
+Every container made by a [`ContainerFactory`](#combining-containers-with-dynamic-runtime-values) has its own singletons. So for a container per request, `singletonScope` means "once per request", and disposing the container at the end of the request releases exactly what that request created. App-wide instances passed in with `bindInstance()` belong to the app, so they are left alone.
+
+```ts
+const poolId = identifier<pg.Pool>();
+const requestId = identifier<string>().named('requestId');
+const connectionId = identifier<pg.PoolClient>();
+
+// One pool for the whole app
+const pool = new pg.Pool();
+
+const requestFactory = createContainerFactory(
+    createModule(
+        bind(connectionId)
+            .withDependencies([poolId])
+            .withAsyncProvider(async pool => pool.connect())
+            // Once per request container
+            .scoped(singletonScope)
+            .withDisposer(connection => connection.release())
+    ).addBinding(
+        bind(RequestHandler).withDependencies([connectionId, requestId]).withConstructorProvider()
+    )
+);
+requestFactory.check();
+
+app.use(async (ctx, next) => {
+    await using container = requestFactory
+        .bindInstance(poolId, pool)
+        .bindInstance(requestId, crypto.randomUUID())
+        .toContainer();
+
+    await (await container.getAsync(RequestHandler)).handle(ctx);
+    // Leaving the block releases this request's connection. The pool is not touched.
+});
+```
+
+`requestScope` is narrower than an HTTP request: it is a single `get()` call. Those instances are never disposed by the container, so resources that should be released per HTTP request belong in `singletonScope` on a per-request container.
+
 ### Scope Gotchas
 
 Most scopes work as expected. Requesting a transient dependency results in a new value for every dependency. Requesting a singleton will share the same value across every request.
@@ -1043,6 +1119,7 @@ Represents a combination of provider and dependencies. Eventual output of `bind(
 | `named(name: string \| unique symbol \| null)` | A _literal_ string or a _unique_ symbol. | Marks the output as if you originally provided a `named()` id to original `bind()`. Useful if a class literal was used instead. |
 | `list(enabled?: true)` | _Only_ `true` | Converts the output to a list, where the provider's value is a single element. See [Lists](#lists) above |
 | `scoped(scope)` | scope (default=`transientScope`) | See [Binding an Implementation](#binding-an-implementation-to-an-id) above for more context about scopes and their impact on resource lifecycles |
+| `withDisposer(disposer)` | `(instance) => void \| Promise<void>`, or `null` | How the container releases instances when it is [disposed](#disposing-containers). Defaults to `Symbol.asyncDispose`/`Symbol.dispose` (`null` for `withInstance()`). Singletons only |
 
 #### `Module`
 
@@ -1065,6 +1142,7 @@ A collection of bindings that is capable of _asynchronously_ instantiating any r
 | `wire()` | ❌ | `void` | Wires internal mappings to ensure proper ordering of dependency instantiation and eager bindings. Result is cached, and any future calls will return immediately. Calls `check()` internally first. |
 | `preloadAsync()` | ❌ | `Promise<void>` | Instantiates all eager singletons. Result is cached, and any future calls will return immediately. Calls `wire()` internally first. |
 | `getAsync(idOrClass)` | `HaywireId` or raw class of requested value | `Promise<T>` | _Asynchronously_ instantiates the requested value. Each call counts as a separate "request" for scoping. Will throw error if requested value does not exist in bindings, including requesting a non-null value when binding is declared `.nullable()` |
+| `disposeAsync()` | ❌ | `Promise<void>` | Releases every singleton the container created, in reverse creation order, then rejects all further requests. See [Disposing containers](#disposing-containers). Safe to call multiple times. Also available as `[Symbol.asyncDispose]()` for `await using`. |
 
 #### `SyncContainer`
 
@@ -1137,6 +1215,8 @@ It is not recommended to instantiate and throw these errors in your own code. In
 
 All other errors thrown by Haywire will extend this class, and it is the most low level version.
 
+It is also thrown directly when requesting an instance from a container that has been [disposed](#disposing-containers).
+
 #### `HaywireModuleValidationError`
 
 Error potentially thrown during the `Module` stage of Haywire lifecycle.
@@ -1147,7 +1227,7 @@ Specific instances include attempting to add a binding for an id that already ex
 
 Error potentially thrown during the `Container.check()` stage.
 
-Specific instances may report circular dependencies, or sync suppliers that are incorrectly backed by async providers.
+Specific instances may report circular dependencies, sync suppliers that are incorrectly backed by async providers, or disposers declared on bindings that are not singletons.
 
 #### `HaywireInstanceValidationError`
 
