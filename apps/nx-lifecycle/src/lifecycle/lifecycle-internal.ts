@@ -185,14 +185,17 @@ export class LifecycleInternal {
             });
         }
 
+        for (const { path } of filesToUpdate) {
+            this.#logger.info(`Updating ${path}`);
+        }
+        if (options.dryRun) {
+            return;
+        }
+
         await Promise.all(
-            filesToUpdate.map(async ({ path, processed }) => {
-                this.#logger.info(`Updating ${path}`);
-                if (options.dryRun) {
-                    return;
-                }
-                return this.#writeFile(path, JSON.stringify(processed), 'utf8');
-            })
+            filesToUpdate.map(async ({ path, processed }) =>
+                this.#writeFile(path, JSON.stringify(processed), 'utf8')
+            )
         );
         await this.#formatFiles(filesToUpdate.map(file => file.path));
     }

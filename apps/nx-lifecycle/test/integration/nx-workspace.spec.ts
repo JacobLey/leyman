@@ -176,4 +176,55 @@ suite('Nx workspace', () => {
             expect(projectJson.targets).to.have.keys('compile', 'build:_', 'build:run', 'build');
         }
     );
+
+    suite('cli', () => {
+        const withConfig = withWorkspace.beforeEach(async ({ root }) => {
+            await writeJson(Path.join(root, 'nx.json'), {});
+            await writeJson(Path.join(root, 'lifecycle.json'), { stages, bindings });
+
+            const lifecycle = async (
+                ...args: string[]
+            ): Promise<{ stdout: string; stderr: string }> =>
+                execFileAsync(process.execPath, [Path.join(packageRoot, 'bin.mjs'), ...args], {
+                    cwd: root,
+                    env,
+                });
+
+            return { lifecycle };
+        });
+
+        withConfig.test(
+            'Writes lifecycle targets for the project graph',
+            async function (this: Context, { root, lifecycle }) {
+                this.timeout(60_000);
+
+                await lifecycle('--ci=false');
+
+                const projectJson = JSON.parse(
+                    await readFile(Path.join(root, 'packages/b/project.json'), 'utf8')
+                ) as { targets: Record<string, unknown> };
+                expect(projectJson.targets).to.have.keys(
+                    'compile',
+                    'build:_',
+                    'build:run',
+                    'build'
+                );
+            }
+        );
+
+        withConfig.test(
+            'Check fails when files are out of date',
+            async function (this: Context, { root, lifecycle }) {
+                this.timeout(60_000);
+
+                const thrown: unknown = await expect(lifecycle('--check')).to.be.rejectedWith(
+                    Error
+                );
+
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.includes(`File ${Path.join(root, 'nx.json')} is not up to date`);
+            }
+        );
+    });
 });
