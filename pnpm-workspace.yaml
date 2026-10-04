@@ -50,10 +50,6 @@ catalog:
   '@eslint/js': ^10.0.1
   '@nx/devkit': ^23.2.1
   '@nx/js': ^23.2.1
-  '@pnpm/find-workspace-dir': ^7.0.3
-  '@pnpm/lockfile.fs': ^1.1.0
-  '@pnpm/lockfile.pruner': ^0.0.6
-  '@pnpm/logger': ^5.2.0
   '@standard-schema/spec': ^1.1.0
   '@swc/cli': ^0.8.1
   '@swc/core': ^1.16.2
@@ -77,9 +73,7 @@ catalog:
   c8: ^12.0.0
   chai: ^6.2.2
   chai-as-promised: ^8.0.2
-  change-case: ^5.4.4
   ci-info: ^4.4.0
-  comment-json: ^4.5.1
   escape-string-regexp: ^5.0.0
   eslint: ^9.39.5
   eslint-config-prettier: ^10.1.8
@@ -91,7 +85,6 @@ catalog:
   eslint-plugin-react-hooks: ^7.1.1
   eslint-plugin-sonarjs: ^4.2.1
   eslint-plugin-unicorn: ^65.0.1
-  eta: ^4.5.0
   expect-type: ^1.4.0
   fast-equals: ^6.0.4
   find-up: ^8.0.0
