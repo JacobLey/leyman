@@ -121,8 +121,8 @@ suite('NumberSchema', () => {
                         .toJSON()
                 ).to.deep.equal({
                     $ref: '/path/to/ref',
-                    exclusiveMinimum: -1.797_693_134_862_315_7e308,
-                    maximum: 1.797_693_134_862_315_7e308,
+                    exclusiveMinimum: -1.7976931348623157e308,
+                    maximum: 1.7976931348623157e308,
                 });
             });
 
@@ -137,9 +137,9 @@ suite('NumberSchema', () => {
                         .toJSON({ openApi30: true })
                 ).to.deep.equal({
                     $ref: '/path/to/ref',
-                    maximum: 1.797_693_134_862_315_7e308,
+                    maximum: 1.7976931348623157e308,
                     exclusiveMaximum: false,
-                    minimum: -1.797_693_134_862_315_7e308,
+                    minimum: -1.7976931348623157e308,
                 });
             });
         });

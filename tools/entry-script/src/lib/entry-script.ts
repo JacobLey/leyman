@@ -75,4 +75,6 @@ export const runAsMain = async (url?: string): Promise<void> => {
     }
 };
 
+// Not awaited: the entry script imports this module, so awaiting its import here would deadlock
+// eslint-disable-next-line unicorn/prefer-top-level-await
 void runAsMain(bin);

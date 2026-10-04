@@ -1145,7 +1145,7 @@ suite('schema', () => {
                 expect(schema.toJSON()).to.deep.equal({
                     $ref: '/path/to/ref',
                     type: ['number', 'null'],
-                    exclusiveMinimum: -1.797_693_134_862_315_7e308,
+                    exclusiveMinimum: -1.7976931348623157e308,
                     maximum: 10,
                 });
 
@@ -1154,7 +1154,7 @@ suite('schema', () => {
                     type: 'number',
                     maximum: 10,
                     exclusiveMinimum: false,
-                    minimum: -1.797_693_134_862_315_7e308,
+                    minimum: -1.7976931348623157e308,
                 });
 
                 expect(

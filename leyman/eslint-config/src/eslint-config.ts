@@ -795,8 +795,14 @@ export default function makeEslintConfigForPackage({
                 // Unicorn
                 ...nonDeprecatedRules('unicorn', unicornPlugin),
                 'unicorn/catch-error-name': ['error', { ignore: [/^error$/u], name: 'err' }],
+                // Entry-script bins (`bin.mjs`) re-export their EntryScript as default
+                'unicorn/no-exports-in-scripts': 'off',
                 'unicorn/no-keyword-prefix': 'off',
+                // Comments are wrapped to fit the line width
+                'unicorn/no-manually-wrapped-comments': 'off',
                 'unicorn/no-null': 'off',
+                // `this` in functions is typed (`noImplicitThis`), and needed for Mocha contexts and wrappers that forward it
+                'unicorn/no-this-outside-of-class': 'off',
                 'unicorn/no-useless-undefined': ['error', { checkArguments: false }],
                 'unicorn/numeric-separators-style': [
                     'error',
@@ -806,11 +812,15 @@ export default function makeEslintConfigForPackage({
                         },
                     },
                 ],
-                'unicorn/prefer-export-from': ['error', { ignoreUsedVariables: true }],
+                'unicorn/prefer-export-from': ['error', { checkUsedVariables: false }],
+                // `Iterator.concat` is not available in Node 24
+                'unicorn/prefer-iterator-concat': 'off',
                 'unicorn/prefer-ternary': ['error', 'only-single-line'],
                 'unicorn/prevent-abbreviations': 'off',
                 'unicorn/template-indent': ['error', { indent: 4 }],
                 'unicorn/text-encoding-identifier-case': 'off',
+                // A complexity of 1 is too strict, and `try`/`finally` must wrap all the code it guards
+                'unicorn/try-complexity': 'off',
             },
         },
         {
