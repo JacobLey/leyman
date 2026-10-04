@@ -49,5 +49,8 @@
     "mocha-chain": "workspace:^",
     "sinon": "catalog:",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
   }
 }

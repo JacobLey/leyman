@@ -31,7 +31,8 @@
     "#schemas": {
       "types": "./src/schemas/index.ts",
       "default": "./dist/schemas/index.js"
-    }
+    },
+    "#internal/*": "./dist/*"
   },
   "bin": {
     "lifecycle": "./bin.mjs"

@@ -44,5 +44,8 @@
     "mocha-chain": "workspace:^",
     "tmp-promise": "catalog:",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
   }
 }

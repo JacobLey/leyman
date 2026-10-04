@@ -59,5 +59,8 @@
     "sinon-typed-stub": "workspace:^",
     "ts-dedent": "catalog:",
     "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
   }
 }
