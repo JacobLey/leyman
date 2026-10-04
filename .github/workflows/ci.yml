@@ -16,7 +16,7 @@ concurrency:
 
 env:
   # Keep in sync with `engineVersion` in `dagger/dagger.json` and `.devcontainer/Dockerfile`
-  DAGGER_VERSION: 0.20.3
+  DAGGER_VERSION: 0.21.10
   # Outside the checkout, so it is never part of the source Dagger tests
   NX_CACHE_DIR: /tmp/nx-cache
 
