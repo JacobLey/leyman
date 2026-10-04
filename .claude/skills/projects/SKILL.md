@@ -10,10 +10,11 @@ A project is any directory with a `project.json`. All current projects are TypeS
 - `tools/`: libraries consumed via `import`.
 - `apps/`: CLIs, Nx plugins, and larger packages that are used other than by plain `import`.
 - `leyman/`: private, repo-internal packages that are never published.
+- `e2e/`: private, test-only packages that check several packages together, in ways no single package can (e.g. because depending on each other would be circular). See [create-package](../create-package/SKILL.md#e2e-packages).
 
 ## Packages
 
-**When you add or remove a package, update the table in this file.** Add the new row in alphabetical order within the correct section (Apps, Tools, or Leyman). The description should match the one-line subtitle in the package's README.md.
+**When you add or remove a package, update the table in this file.** Add the new row in alphabetical order within the correct section (Apps, Tools, Leyman, or E2E). The description should match the one-line subtitle in the package's README.md.
 
 See each package's README.md for full usage documentation.
 
@@ -59,3 +60,9 @@ See each package's README.md for full usage documentation.
 | [`eslint-config`](../../../leyman/eslint-config) | Very opinionated eslint config used internally for package linting |
 | [`expect`](../../../leyman/expect) | Pre-configured chai assertions for internal tests |
 | [`main`](../../../leyman/main) | Workaround for installing "global" packages, and executing repo-wide tasks |
+
+### E2E
+
+| Package | Description |
+|---------|-------------|
+| [`eslint-config-schema`](../../../e2e/eslint-config-schema) | Checks that eslint-config's hand-written package.json schema matches what juniper builds |

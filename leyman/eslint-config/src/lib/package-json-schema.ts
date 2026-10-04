@@ -1,24 +1,35 @@
-import type { SchemaType } from 'npm-juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
-import { objectSchema, stringSchema } from 'npm-juniper';
 
-const dependenciesSchema = objectSchema({
-    additionalProperties: stringSchema(),
-});
+type Dependencies = Record<string, string>;
 
-const packageJsonSchema = objectSchema({
+export interface PackageJson {
+    name: string;
+    dependencies?: Dependencies;
+    devDependencies?: Dependencies;
+    optionalDependencies?: Dependencies;
+    peerDependencies?: Dependencies;
+}
+
+// Written out rather than built with juniper, which lints with this package, so depending on it would be circular.
+// `e2e/eslint-config-schema` checks that both stay equivalent to what juniper would build.
+const dependenciesSchema = {
+    type: 'object',
+    additionalProperties: { type: 'string' },
+};
+
+export const packageJsonSchema = {
+    type: 'object',
     properties: {
-        name: stringSchema(),
+        name: { type: 'string' },
         dependencies: dependenciesSchema,
         devDependencies: dependenciesSchema,
         optionalDependencies: dependenciesSchema,
         peerDependencies: dependenciesSchema,
     },
     required: ['name'],
-});
-export type PackageJson = SchemaType<typeof packageJsonSchema>;
+};
 
-const validator = new Ajv2020({ strict: true }).compile<PackageJson>(packageJsonSchema.toJSON());
+const validator = new Ajv2020({ strict: true }).compile<PackageJson>(packageJsonSchema);
 
 type PackageJsonAsserter = (packageJson: unknown) => asserts packageJson is PackageJson;
 export const assertIsPackageJson: PackageJsonAsserter = (

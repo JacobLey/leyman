@@ -35,3 +35,12 @@ nx run-many -t build            # syncs tsconfig references
 ```
 
 Also add a row to the table in the [projects skill](../projects/SKILL.md), and a changeset if the package will be published (see [versioning](../versioning/SKILL.md)).
+
+## E2E packages
+
+A test-only package under `e2e/` checks other workspace packages together, e.g. a pairing that can't depend on each other directly. Copy `e2e/eslint-config-schema`. Compared to a regular package:
+
+- `package.json`: named `@leyman/e2e-<name>`, `"private": true`, no `exports`, and only `devDependencies` (including the packages under test, via `workspace:^`).
+- No `src/`, root `tsconfig.json` or `.npmignore`. Tests go in `test/integration/`.
+- `project.json` targets: `biome`, `eslint`, `tsc-test`, `mocha-integration-test`. No `tsc` (nothing to build), and no `coverage-report` (no source of its own to cover).
+- Import the packages under test by their public exports only. Add an export to a package if needed, rather than reaching into its `dist/`.

@@ -180,10 +180,6 @@ catalogs:
     yargs:
       specifier: ^18.2.0
       version: 18.2.0
-  eslint-config:
-    npm-juniper:
-      specifier: npm:juniper@^1.2.5
-      version: 1.2.5
   leyman:
     npm-barrelify:
       specifier: npm:barrelify@^1.3.3
@@ -626,6 +622,54 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
+  e2e/eslint-config-schema:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.5.14
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: link:../../leyman/eslint-config
+      '@leyman/expect':
+        specifier: workspace:^
+        version: link:../../leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.2(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 9.39.5(supports-color@8.1.1)
+      expect-type:
+        specifier: 'catalog:'
+        version: 1.4.0
+      juniper:
+        specifier: workspace:^
+        version: link:../../apps/juniper
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.2
+      mocha-chain:
+        specifier: workspace:^
+        version: link:../../tools/test-chain/mocha-chain
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
   leyman/eslint-config:
     dependencies:
       '@eslint/js':
@@ -670,9 +714,6 @@ importers:
       eslint-plugin-unicorn:
         specifier: 'catalog:'
         version: 65.0.1(eslint@9.39.5(supports-color@8.1.1))
-      npm-juniper:
-        specifier: catalog:eslint-config
-        version: juniper@1.2.5
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'

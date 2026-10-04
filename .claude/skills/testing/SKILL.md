@@ -22,6 +22,8 @@ Tests run against compiled `dist/`, so a test run always rebuilds first (cached 
 
 Coverage is per package: only the package's own tests count, not tests of packages that depend on it. Every package must fully test itself.
 
+Checks that span packages, which no single package can test, go in a test-only package under `e2e/` (see [create-package](../create-package/SKILL.md#e2e-packages)). These have no source of their own, so no coverage report.
+
 100% is the floor, not the goal: two `if`s are fully covered by two tests but have four paths. If code is hard to cover, first try controlling its real inputs: write fixtures to a temp dir, or run the CLI as a subprocess (coverage of child processes counts). Reach for `haywire` DI only when the real dependency can't be put into the needed state — see "Dependency injection" in the [coding-patterns skill](../coding-patterns/SKILL.md#dependency-injection-when-to-use-it-when-not-to). Never reach into internals instead.
 
 ## Layout

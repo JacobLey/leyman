@@ -16,7 +16,8 @@
   },
   "sideEffects": false,
   "exports": {
-    ".": "./dist/eslint-config.js"
+    ".": "./dist/eslint-config.js",
+    "./package-json-schema": "./dist/lib/package-json-schema.js"
   },
   "dependencies": {
     "@eslint/js": "catalog:",
@@ -32,8 +33,7 @@
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-sonarjs": "catalog:",
-    "eslint-plugin-unicorn": "catalog:",
-    "npm-juniper": "catalog:eslint-config"
+    "eslint-plugin-unicorn": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

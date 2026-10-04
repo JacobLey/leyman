@@ -1,0 +1,30 @@
+{
+  "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/e2e-eslint-config-schema",
+  "targets": {
+    "biome": {},
+    "eslint": {},
+    "tsc-test": {},
+    "mocha-integration-test": {},
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}
