@@ -19,10 +19,10 @@ const createFakeVitest = () => {
         afterAll: [] as Registered[],
     };
     const hook = (name: keyof typeof registered) => (fn: () => Promise<void>) => {
-        registered[name].push(fn as Registered);
+        registered[name].push(fn);
     };
     const fakeTest = (_name: string, fn: () => Promise<void>) => {
-        registered.test.push(fn as Registered);
+        registered.test.push(fn);
     };
     const fakeDescribe = (_name: string, fn: () => Promise<void> | void) => {
         void fn();

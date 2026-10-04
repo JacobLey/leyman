@@ -74,10 +74,10 @@ export const createVitestChain = (methods: VitestMethods): VitestChain => {
     });
 
     return {
-        describe: chain.suite as unknown as ContextualDescribe,
+        describe: chain.suite,
         beforeAll: chain.before as unknown as EntrypointBeforeAllHook,
         beforeEach: chain.beforeEach as unknown as EntrypointBeforeEachHook,
-        test: chain.test as unknown as EntrypointTest,
+        test: chain.test,
         afterEach: chain.afterEach as unknown as EntrypointAfterEachHook,
         afterAll: chain.after as unknown as EntrypointAfterAllHook,
     };

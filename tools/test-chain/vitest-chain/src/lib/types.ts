@@ -1,5 +1,5 @@
 import type * as vitest from 'vitest';
-import type { AllowableAdditionalContext, MergeContext } from 'test-chain-core';
+import type { AllowableAdditionalContext, EmptyContext, MergeContext } from 'test-chain-core';
 
 /**
  * Arguments vitest passes to each kind of hook/test.
@@ -48,7 +48,7 @@ export interface AfterEachChain<
 }
 export type EntrypointAfterEachHook = <AdditionalContext extends AllowableAdditionalContext>(
     fn: (...args: AfterEachArgs) => AdditionalContext
-) => AfterEachChain<NonNullable<unknown>, AdditionalContext>;
+) => AfterEachChain<EmptyContext, AdditionalContext>;
 
 // After All
 
@@ -65,7 +65,7 @@ export interface AfterAllChain<
 }
 export type EntrypointAfterAllHook = <AdditionalContext extends AllowableAdditionalContext>(
     fn: (...args: AfterAllArgs) => AdditionalContext
-) => AfterAllChain<NonNullable<unknown>, AdditionalContext>;
+) => AfterAllChain<EmptyContext, AdditionalContext>;
 
 // Before Each
 
@@ -84,7 +84,7 @@ export interface BeforeEachChain<
 }
 export type EntrypointBeforeEachHook = <AdditionalContext extends AllowableAdditionalContext>(
     fn: (...args: BeforeEachArgs) => AdditionalContext
-) => BeforeEachChain<NonNullable<unknown>, AdditionalContext>;
+) => BeforeEachChain<EmptyContext, AdditionalContext>;
 
 // Before All
 
@@ -102,7 +102,7 @@ export interface BeforeAllChain<
 }
 export type EntrypointBeforeAllHook = <AdditionalContext extends AllowableAdditionalContext>(
     fn: (...args: BeforeAllArgs) => AdditionalContext
-) => BeforeAllChain<NonNullable<unknown>, AdditionalContext>;
+) => BeforeAllChain<EmptyContext, AdditionalContext>;
 
 // Describe
 

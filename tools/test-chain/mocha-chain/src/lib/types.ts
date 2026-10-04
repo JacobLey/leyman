@@ -1,5 +1,5 @@
 import type { Done, Context as MochaContext, Suite as MochaSuite, Test as MochaTest } from 'mocha';
-import type { AllowableAdditionalContext, MergeContext } from 'test-chain-core';
+import type { AllowableAdditionalContext, EmptyContext, MergeContext } from 'test-chain-core';
 
 export type ValidDoneReturnTypes = '' | 0 | 0n | false | null | undefined | void;
 
@@ -66,11 +66,11 @@ export interface AfterEachChain<
 export interface EntrypointAfterEachHook {
     <AdditionalContext extends AllowableAdditionalContext>(
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): AfterEachChain<NonNullable<unknown>, AdditionalContext>;
+    ): AfterEachChain<EmptyContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): AfterEachChain<NonNullable<unknown>, AdditionalContext>;
+    ): AfterEachChain<EmptyContext, AdditionalContext>;
 }
 
 // After
@@ -94,11 +94,11 @@ export interface AfterChain<
 export interface EntrypointAfterHook {
     <AdditionalContext extends AllowableAdditionalContext>(
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): AfterChain<NonNullable<unknown>, AdditionalContext>;
+    ): AfterChain<EmptyContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): AfterChain<NonNullable<unknown>, AdditionalContext>;
+    ): AfterChain<EmptyContext, AdditionalContext>;
 }
 
 // Before Each
@@ -130,11 +130,11 @@ export interface BeforeEachChain<
 export interface EntrypointBeforeEachHook {
     <AdditionalContext extends AllowableAdditionalContext>(
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): BeforeEachChain<NonNullable<unknown>, AdditionalContext>;
+    ): BeforeEachChain<EmptyContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): BeforeEachChain<NonNullable<unknown>, AdditionalContext>;
+    ): BeforeEachChain<EmptyContext, AdditionalContext>;
 }
 
 // Before
@@ -160,11 +160,11 @@ export interface BeforeChain<
 export interface EntrypointBeforeHook {
     <AdditionalContext extends AllowableAdditionalContext>(
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): BeforeChain<NonNullable<unknown>, AdditionalContext>;
+    ): BeforeChain<EmptyContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
         fn: (this: MochaContext, done: Done) => AdditionalContext
-    ): BeforeChain<NonNullable<unknown>, AdditionalContext>;
+    ): BeforeChain<EmptyContext, AdditionalContext>;
 }
 
 // Suite

@@ -1,6 +1,8 @@
 type Values<T> = T[Extract<keyof T, string>];
 
 type IfEmpty<Enum extends Record<string, unknown>, Else> =
+    // Only an empty enum is assignable from `{}`
+    // eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type
     Record<never, string> extends Enum ? [] : Else;
 
 /**

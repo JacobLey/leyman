@@ -102,7 +102,7 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
     public enums<EVal>(this: this, enums: readonly EVal[]): EnumSchema<EVal | T> {
         return this.clone({
             enum: [...this.#enum, ...enums] as T[],
-        }) as EnumSchema<EVal | T>;
+        });
     }
 
     /**

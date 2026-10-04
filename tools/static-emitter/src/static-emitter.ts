@@ -131,6 +131,8 @@ export class StaticEmitter<
         detail: Types.GetEventDetail<this, K>
     ): this {
         this.dispatchEvent(
+            // Required by `CustomEvent`'s conditional constructor parameters
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             new CustomEvent(this.#getEventName(eventName), { detail } as {
                 detail: unknown;
             }) as Types.EventListenerParam<this, Types.EventList<this>>

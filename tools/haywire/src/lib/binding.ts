@@ -134,6 +134,8 @@ const providerToMaybeList = <
 
     if (isAsync) {
         return (async (...deps) =>
+            // Marks the async provider's result as a promise for `await-thenable`
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
             toList(await (provider(...deps) as Promise<unknown>))) as WrappedProvider;
     }
     return ((...deps) => toList(provider(...deps))) as WrappedProvider;
@@ -280,7 +282,7 @@ export class Binding<
             this.outputId.named(named as ''),
             this.depIds,
             this.isAsync,
-            this.provider as Binding<any, any, any>['provider']
+            this.provider
         );
     }
 
@@ -324,12 +326,7 @@ export class Binding<
                 Async
             >;
         }
-        return new Binding(
-            this.outputId.nullable(),
-            this.depIds,
-            this.isAsync,
-            this.provider as Binding<any, any, any>['provider']
-        );
+        return new Binding(this.outputId.nullable(), this.depIds, this.isAsync, this.provider);
     }
 
     /**
@@ -372,12 +369,7 @@ export class Binding<
                 Async
             >;
         }
-        return new Binding(
-            this.outputId.undefinable(),
-            this.depIds,
-            this.isAsync,
-            this.provider as Binding<any, any, any>['provider']
-        );
+        return new Binding(this.outputId.undefinable(), this.depIds, this.isAsync, this.provider);
     }
 
     /**

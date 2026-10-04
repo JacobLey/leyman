@@ -96,6 +96,7 @@ suite('after', () => {
         order.push(7);
     }).suiteTeardown(ctx => {
         expect(ctx).to.deep.equal({});
+        // eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type
         expectTypeOf(ctx).toEqualTypeOf<NonNullable<unknown>>();
 
         expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);

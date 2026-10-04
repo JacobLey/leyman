@@ -1,3 +1,5 @@
+// Asserting `PatternProperties` is what types the pattern, even though a plain string is accepted
+/* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import type { EmptyObject, PatternProperties, SchemaType } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
