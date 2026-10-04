@@ -46,7 +46,7 @@ allowBuilds:
 
 catalog:
   '@biomejs/biome': ^2.5.14
-  '@changesets/cli': ^2.31.1
+  '@changesets/cli': ^3.0.3
   '@eslint/js': ^10.0.1
   '@nx/devkit': ^23.2.1
   '@nx/js': ^23.2.1

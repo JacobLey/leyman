@@ -106,7 +106,8 @@ func (m *Ci) Version(
 		WithExec([]string{"sh", "-c", "apt-get update && apt-get install --yes --no-install-recommends git"}).
 		WithExec([]string{"git", "config", "--global", "--add", "safe.directory", workdir}).
 		WithDirectory(workdir+"/.git", tree.Directory(".git")).
-		WithExec([]string{"changeset", "version"}).
+		// `changeset version` fails without pending changesets, which leaves nothing to change (and no version PR)
+		WithExec([]string{"sh", "-c", "if ls .changeset/*.md >/dev/null 2>&1; then changeset version; fi"}).
 		Directory(workdir).
 		Filter(dagger.DirectoryFilterOpts{
 			Gitignore: true,
