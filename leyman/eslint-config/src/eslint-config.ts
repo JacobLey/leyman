@@ -252,8 +252,11 @@ export default function makeEslintConfigForPackage({
                 'no-restricted-syntax': [
                     'error',
                     {
-                        selector: 'TSEnumDeclaration:not([const=true])',
-                        message: "Don't declare non-const enums",
+                        // Published declarations keep `const`, which consumers compiling with
+                        // `isolatedModules` (swc, esbuild...) cannot read. Emitted JS is identical.
+                        selector: 'ExportNamedDeclaration > TSEnumDeclaration[const=true]',
+                        message:
+                            "Don't export const enums; consumers using isolatedModules can't read them. Use a regular enum",
                     },
                     {
                         selector: 'LabeledStatement',

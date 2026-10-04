@@ -5,14 +5,14 @@
  */
 type EnumToString<E extends string> = `${E}`;
 
-export const enum Ciphers {
+export enum Ciphers {
     AES = 'AES',
 }
-export const enum Modes {
+export enum Modes {
     CBC = 'CBC',
     CTR = 'CTR',
 }
-export const enum Sizes {
+export enum Sizes {
     KEY_128 = 128,
     KEY_160 = 160,
     KEY_192 = 192,
@@ -38,7 +38,7 @@ export const defaultEncryption: Encryption = {
     mode: Modes.CTR,
 };
 
-export const enum Algorithms {
+export enum Algorithms {
     SHA1 = 'SHA1',
     SHA2 = 'SHA2',
     RAW = 'raw',
