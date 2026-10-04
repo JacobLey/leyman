@@ -21,7 +21,6 @@
     "@leyman/eslint-config": "workspace:^",
     "@typescript/native": "catalog:",
     "eslint": "catalog:",
-    "npm": "catalog:",
     "nx": "catalog:",
     "nx-lifecycle": "workspace:^",
     "typescript": "catalog:"
