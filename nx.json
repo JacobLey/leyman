@@ -212,9 +212,9 @@
       "options": {
         "commands": [
           "rm -rf ./dist-test",
-          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.ts?(x)'",
-          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
-          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
+          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C jsc.externalHelpers=false --only '**/*.ts?(x)'",
+          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C jsc.externalHelpers=false --only '**/*.mts?(x)' --out-file-extension mjs",
+          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C jsc.externalHelpers=false -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
           "tsc -p ./test"
         ],
         "parallel": false,
