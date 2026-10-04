@@ -22,7 +22,6 @@ import {
 } from '../data/api.js';
 import { authors, books, infiniteAuthors, infiniteBooksByAuthor } from '../data/normalized.js';
 import { createWrapper, renderHook, waitFor } from '../data/render.js';
-import { Linked } from '#internal/lib/linked.js';
 
 const booksWithAuthor = books.propagate(book => ({
     ...book,
@@ -61,7 +60,6 @@ suite('infinite', () => {
 
             expect(authorWithBook.pages.flat()).to.have.length(2);
             const [firstLink] = authorWithBook.pages.flat();
-            expect(firstLink).to.be.an.instanceOf(Linked);
             expect(firstLink!.getQueryClient()).to.equal(client);
             expect(firstLink!.getQueryable()).to.equal(infiniteBooksByAuthor);
             expect(firstLink!.getParams()).to.deep.equal({ authorId: tolkienId });

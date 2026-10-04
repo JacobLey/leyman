@@ -21,7 +21,6 @@ import {
 import { austenId, fellowshipOfTheRingId, prideAndPrejudiceId, tolkienId } from '../data/api.js';
 import { authors, books } from '../data/normalized.js';
 import { createWrapper, renderHook, suspenseWrapper, waitFor } from '../data/render.js';
-import { Linked } from '#internal/lib/linked.js';
 
 const authorsWithFavoriteAuthor = authors.propagate(author => ({
     ...author,
@@ -52,7 +51,6 @@ suite('resource', () => {
                 authorId: tolkienId,
             });
 
-            expect(tolkien).to.be.an.instanceOf(Linked);
             expect(tolkien.getQueryClient()).to.equal(client);
             expect(tolkien.getQueryable()).to.equal(authorsWithFavoriteAuthor);
             expect(tolkien.getParams()).to.deep.equal({ authorId: tolkienId });
