@@ -132,6 +132,76 @@ suite('resource', () => {
         });
     });
 
+    suite('query', () => {
+        context.test('Get direct data', async ({ client }) => {
+            const author = await authors.query(client, { authorId: tolkienId });
+
+            expect(author.name).to.equal('J.R.R. Tolkien');
+            expect(authors.getQueryData(client, { authorId: tolkienId })).to.equal(author);
+        });
+
+        context.test('Selects from propagated data', async ({ client }) => {
+            const name = await authorsWithFavoriteAuthor.query(
+                client,
+                { authorId: tolkienId },
+                { select: author => author.favoriteAuthor?.getParams().authorId }
+            );
+
+            expect(name).to.equal(austenId);
+            expect(authors.getQueryData(client, { authorId: tolkienId })?.name).to.equal(
+                'J.R.R. Tolkien'
+            );
+        });
+
+        context.test('Loads links in the background', async ({ client }) => {
+            await authorsWithFavoriteAuthor.query(client, { authorId: tolkienId });
+
+            expect(authors.isFetching(client, { authorId: austenId })).to.equal(true);
+        });
+
+        context.test('Waits for links', async ({ client }) => {
+            await authorsWithFavoriteAuthor.query(
+                client,
+                { authorId: tolkienId },
+                { awaitLinks: true }
+            );
+
+            expect(authors.isFetching(client, { authorId: austenId })).to.equal(false);
+            expect(authors.getQueryData(client, { authorId: austenId })?.name).to.equal(
+                'Jane Austen'
+            );
+        });
+
+        context.test('Throws when awaited link throws', async ({ client }) => {
+            const authorWithFakeFavoriteBook = authors.propagate(author => ({
+                ...author,
+                favoriteBook: books.link({ bookId: '<fake-book-id>' }),
+            }));
+
+            await expect(authorWithFakeFavoriteBook.query(client, { authorId: tolkienId })).to.be
+                .fulfilled;
+            await expect(
+                authorWithFakeFavoriteBook.query(
+                    client,
+                    { authorId: tolkienId },
+                    { awaitLinks: true }
+                )
+            ).to.be.rejected;
+        });
+
+        context.test('Returns cached data when static', async ({ client }) => {
+            const bookId = '<book-id>';
+            books.setQueryData(
+                client,
+                { bookId },
+                { id: bookId, title: '<title>', author: { authorId: tolkienId } }
+            );
+
+            const book = await books.query(client, { bookId }, { staleTime: 'static' });
+            expect(book.title).to.equal('<title>');
+        });
+    });
+
     suite('fetchQuery', () => {
         context.test('Get direct data', async ({ client }) => {
             const author = await authors.fetchQuery(client, { authorId: tolkienId });

@@ -177,6 +177,64 @@ suite('infinite', () => {
         });
     });
 
+    suite('infiniteQuery', () => {
+        context.test('Get direct data', async ({ client }) => {
+            const listedBooks = await infiniteBooksWithAuthor.infiniteQuery(
+                client,
+                { authorId: tolkienId },
+                { pages: 10 }
+            );
+
+            expect(listedBooks.pages).to.have.length(3);
+            expect(listedBooks.pages.flat().map(book => book.getParams().bookId)).to.include(
+                fellowshipOfTheRingId
+            );
+        });
+
+        context.test('Selects from propagated data', async ({ client }) => {
+            const bookIds = await infiniteBooksWithAuthor.infiniteQuery(
+                client,
+                { authorId: tolkienId },
+                {
+                    pages: 10,
+                    select: data => data.pages.flat().map(book => book.getParams().bookId),
+                }
+            );
+
+            expect(bookIds).to.include(fellowshipOfTheRingId);
+            expect(
+                infiniteBooksWithAuthor.getQueryData(client, { authorId: tolkienId })?.pages
+            ).to.have.length(3);
+        });
+
+        context.test('Waits for links', async ({ client }) => {
+            await infiniteBooksWithAuthor.infiniteQuery(
+                client,
+                { authorId: tolkienId },
+                { awaitLinks: true }
+            );
+
+            expect(books.isFetching(client, { bookId: fellowshipOfTheRingId })).to.equal(false);
+            expect(
+                booksWithAuthor.getQueryData(client, { bookId: fellowshipOfTheRingId })?.title
+            ).to.equal('Fellowship of the Ring');
+        });
+
+        context.test('Throws when awaited link throws', async ({ client }) => {
+            const authorWithFakeFavoriteBook = infiniteBooksByAuthor.propagate(({ page }) =>
+                page.map(book => authors.link({ authorId: book.bookId }))
+            );
+
+            await expect(
+                authorWithFakeFavoriteBook.infiniteQuery(
+                    client,
+                    { authorId: tolkienId },
+                    { awaitLinks: true }
+                )
+            ).to.be.rejected;
+        });
+    });
+
     suite('fetchInfiniteQuery', () => {
         context.test('Get direct data', async ({ client }) => {
             const listedAuthors = await infiniteAuthorsWithBooks.fetchInfiniteQuery(client);

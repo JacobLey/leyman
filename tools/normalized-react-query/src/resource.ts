@@ -16,6 +16,7 @@ import type {
     QueryFunctionContextWithParams,
     ResourceEnsureOptions,
     ResourceFetchOptions,
+    ResourceQueryOptions,
     typeCache,
 } from './lib/types.js';
 import { skipToken, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
@@ -200,6 +201,33 @@ class Resource<
     }
 
     /**
+     * Load result from queryFn, through the cache like `queryClient.query`: fresh cached data is returned as-is,
+     * otherwise the query is fetched.
+     * Results are "propagated", which loads linked queries.
+     *
+     * @param queryClient - instance of TanstackQuery QueryClient
+     * @param params - user provided params to inject into callback
+     * @param options - Everything that you can pass to `queryClient.query` besides query fn + key, plus:
+     *  - `select`: transforms the propagated result this call resolves with, without affecting the cache
+     *  - `awaitLinks`: also wait for linked queries to load, and reject if any fail (unless the link sets `isolateErrors`).
+     *    Otherwise they load in the background, and linked data that is already cached is refetched if stale.
+     *    Pair with `staleTime: 'static'` to load everything a server-side render needs.
+     * @returns result of queryFn + propagation (+ `select`)
+     */
+    public async query<TSelected = TPropagatedData>(
+        queryClient: QueryClient,
+        params: TParams,
+        options: ResourceQueryOptions<TData, TPropagatedData, TSelected, TQueryKey> = {}
+    ): Promise<TSelected> {
+        const { awaitLinks = false, select, ...rest } = options;
+        return this.#query(queryClient, params, rest, {
+            awaitLinks,
+            select,
+            revalidateIfStale: !awaitLinks,
+        });
+    }
+
+    /**
      * Load result from queryFn. Wraps TanstackQuery so results can and will be cached.
      * Results will be "propagated" to downstream queries.
      *
@@ -207,7 +235,7 @@ class Resource<
      *
      * @param queryClient - instance of TanstackQuery QueryClient
      * @param params - user provided params to inject into callback
-     * @param options - Everything that you can pass to `queryClient.fetchQuery` besides query fn + key
+     * @param options - Everything that you can pass to `queryClient.query` besides query fn + key
      * @returns result of queryFn + propagation
      */
     public async fetchQuery(
@@ -215,39 +243,31 @@ class Resource<
         params: TParams,
         options?: ResourceFetchOptions<TData, TQueryKey>
     ): Promise<TPropagatedData> {
-        const data = await queryClient.query<TData, unknown, TData, TData, TQueryKey>({
-            ...options,
-            queryKey: this.getKey(params),
-            queryFn: this.getQueryFn(params),
-        });
-        return this.#createSelector<TPropagatedData>({
-            client: queryClient,
-            prefetches: [],
-            revalidateIfStale: true,
-        })(data);
+        return this.query(queryClient, params, options);
     }
 
     /**
-     * Triggers fetching + propagation of downstream fields.
-     * Returns a promise that resolves once query resolves (not necessarily once downstream resources are resolved).
+     * Triggers fetching + propagation of downstream fields, to load data for someone else to use.
+     * Returns a promise that resolves once query resolves (not necessarily once downstream resources are resolved,
+     * unless `awaitLinks` is set).
      *
      * Will never throw.
      *
      * @param queryClient - instance of TanstackQuery QueryClient
      * @param params - user provided params to inject into callback
-     * @param options - Everything that you can pass to `queryClient.prefetchQuery` besides query fn + key
+     * @param options - Everything that you can pass to {@link query} besides `select`
      * @returns promise that this resource is available in cache (or failed internally, but promise still resolves)
      */
     public async prefetchQuery(
         queryClient: QueryClient,
         params: TParams,
-        options?: ResourceFetchOptions<TData, TQueryKey>
+        options?: Omit<
+            ResourceQueryOptions<TData, TPropagatedData, TPropagatedData, TQueryKey>,
+            'select'
+        >
     ): Promise<Linked<TParams, TQueryKey, TData, this>> {
-        // Can't just call prefetch from client because we need to route to the custom selectors
-        // (which `fetch` is configured to do)
-        // Actual implementation is a similar "call fetch and swallow" so easy enough to duplicate
         try {
-            await this.fetchQuery(queryClient, params, options);
+            await this.query(queryClient, params, options);
         } catch {}
         return new Linked(this, params, queryClient);
     }
@@ -262,7 +282,8 @@ class Resource<
      *
      * @param queryClient - instance of TanstackQuery QueryClient
      * @param params - user provided params to identify query
-     * @param options - everything normally provideable to `ensureQueryData` minus key + query
+     * @param options - everything normally provideable to `queryClient.query` minus key + query,
+     * plus `revalidateIfStale` to refetch stale cached data in the background
      * @returns stale data from cache or recent query data
      */
     public async ensureQueryData(
@@ -271,32 +292,7 @@ class Resource<
         options: ResourceEnsureOptions<TData, TQueryKey> = {}
     ): Promise<TPropagatedData> {
         const { revalidateIfStale = false, ...rest } = options;
-        const queryOptions = {
-            ...rest,
-            queryKey: this.getKey(params),
-            queryFn: this.getQueryFn(params),
-        };
-        const isCached = this.getQueryData(queryClient, params) !== undefined;
-        // Cached data is never stale, so it is returned as-is
-        const data = await queryClient.query<TData, unknown, TData, TData, TQueryKey>({
-            ...queryOptions,
-            staleTime: 'static',
-        });
-        if (isCached && revalidateIfStale) {
-            // Refetches in the background if stale by the requested `staleTime`
-            queryClient.query(queryOptions).catch(() => {});
-        }
-        const prefetches: Promise<void>[] = [];
-
-        const response = this.#createSelector<TPropagatedData>({
-            client: queryClient,
-            prefetches,
-            revalidateIfStale,
-        })(data);
-
-        await Promise.all(prefetches);
-
-        return response;
+        return this.#ensure(queryClient, params, rest, revalidateIfStale);
     }
 
     /**
@@ -373,10 +369,12 @@ class Resource<
             revalidateIfStale = linksActive.revalidateIfStale,
             ...rest
         } = options;
-        let promise: Promise<unknown> = this.ensureQueryData(linksActive.client, params, {
-            revalidateIfStale,
-            ...rest,
-        });
+        let promise: Promise<unknown> = this.#ensure(
+            linksActive.client,
+            params,
+            rest,
+            revalidateIfStale
+        );
         if (isolateErrors) {
             promise = promise.catch(() => {});
         }
@@ -410,6 +408,82 @@ class Resource<
         map: (source: TPropagatedData) => TData2
     ): Resource<TParams, TData, TData2, TQueryKey> {
         return new Resource(this, map);
+    }
+
+    /**
+     * Load through `queryClient.query`, then propagate.
+     *
+     * @param queryClient - instance of TanstackQuery QueryClient
+     * @param params - user provided params to inject into callback
+     * @param options - options for `queryClient.query` besides query fn + key
+     * @param propagation - how to propagate
+     * @param propagation.awaitLinks - wait for linked queries
+     * @param propagation.revalidateIfStale - default for linked queries that are cached
+     * @param propagation.select - user provided `select`
+     * @returns result of queryFn + propagation (+ `select`)
+     */
+    async #query<T>(
+        queryClient: QueryClient,
+        params: TParams,
+        options: ResourceFetchOptions<TData, TQueryKey>,
+        {
+            awaitLinks,
+            revalidateIfStale,
+            select,
+        }: {
+            awaitLinks: boolean;
+            revalidateIfStale: boolean;
+            select?: ((data: TPropagatedData) => T) | undefined;
+        }
+    ): Promise<T> {
+        const data = await queryClient.query<TData, unknown, TData, TData, TQueryKey>({
+            ...options,
+            queryKey: this.getKey(params),
+            queryFn: this.getQueryFn(params),
+        });
+        const prefetches: Promise<unknown>[] = [];
+        const response = this.#createSelector<T>(
+            { client: queryClient, prefetches, revalidateIfStale },
+            select
+        )(data);
+        if (awaitLinks) {
+            await Promise.all(prefetches);
+        }
+        return response;
+    }
+
+    /**
+     * Load from cache if available (`staleTime: 'static'`), waiting for linked queries.
+     *
+     * @param queryClient - instance of TanstackQuery QueryClient
+     * @param params - user provided params to identify query
+     * @param options - options for `queryClient.query` besides query fn + key
+     * @param revalidateIfStale - refetch stale cached data in the background, and default for linked queries
+     * @returns stale data from cache or recent query data
+     */
+    async #ensure(
+        queryClient: QueryClient,
+        params: TParams,
+        options: ResourceFetchOptions<TData, TQueryKey>,
+        revalidateIfStale: boolean
+    ): Promise<TPropagatedData> {
+        if (revalidateIfStale && this.getQueryData(queryClient, params) !== undefined) {
+            // Refetches in the background if stale by the requested `staleTime`
+            queryClient
+                .query({
+                    ...options,
+                    queryKey: this.getKey(params),
+                    queryFn: this.getQueryFn(params),
+                })
+                .catch(() => {});
+        }
+        // Cached data is never stale, so it is returned as-is
+        return this.#query(
+            queryClient,
+            params,
+            { ...options, staleTime: 'static' },
+            { revalidateIfStale, awaitLinks: true }
+        );
     }
 
     #getMemoizedSelector(

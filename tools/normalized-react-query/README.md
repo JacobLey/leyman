@@ -118,13 +118,22 @@ Returns options ready to spread into `useQuery` or `useQueries`. Supports `skipT
 
 Returns options ready to spread into `useSuspenseQuery` or `useSuspenseQueries`.
 
+##### `.query(queryClient, params, options?): Promise<TData>`
+
+Returns fresh cached data, or fetches it, like `queryClient.query`. Triggers propagation to downstream linked resources, which load in the background. Accepts every `queryClient.query` option besides the key and query function, plus:
+
+- `select`: transforms the propagated data this call resolves with, without affecting the cache.
+- `awaitLinks`: also waits for linked resources to load, and rejects if any fail (unless the link sets `isolateErrors`).
+
+To load everything a server-side render needs, pass `{ staleTime: 'static', awaitLinks: true }`: cached data is used as-is, and every link is loaded.
+
 ##### `.fetchQuery(queryClient, params, options?): Promise<TData>`
 
 Fetches (or reads from cache) and returns data. Triggers propagation to downstream linked resources.
 
 ##### `.prefetchQuery(queryClient, params, options?): Promise<Linked>`
 
-Prefetches without throwing. Returns a `Linked` reference usable with prefetched hooks.
+Loads data for someone else to use, like `.query()` but without throwing. Returns a `Linked` reference usable with prefetched hooks.
 
 ##### `.ensureQueryData(queryClient, params, options?): Promise<TData>`
 
@@ -232,13 +241,17 @@ Returns options ready to spread into `useInfiniteQuery`. Supports `skipToken`.
 
 Returns options ready to spread into `useSuspenseInfiniteQuery`.
 
+##### `.infiniteQuery(queryClient, params, options?): Promise<InfiniteData<TData>>`
+
+Like `.query()`, for every loaded page: wraps `queryClient.infiniteQuery`, and accepts the same `select` and `awaitLinks` options.
+
 ##### `.fetchInfiniteQuery(queryClient, params, options?): Promise<InfiniteData<TData>>`
 
 Fetches all loaded pages and triggers propagation.
 
 ##### `.prefetchInfiniteQuery(queryClient, params, options?): Promise<Linked>`
 
-Prefetches without throwing. Returns a `Linked` reference.
+Loads data for someone else to use, like `.infiniteQuery()` but without throwing. Returns a `Linked` reference.
 
 ##### `.ensureInfiniteQueryData(queryClient, params, options?): Promise<InfiniteData<TData>>`
 

@@ -53,6 +53,24 @@ export type ResourceEnsureOptions<
 };
 
 /**
+ * {@link ResourceFetchOptions}, plus normalized-react-query's own options.
+ *
+ * @template TData - return type of base `queryFn`
+ * @template TPropagatedData - data after propagation
+ * @template TSelected - data after `select`
+ * @template TQueryKey - type of TanstackQuery key computed from params
+ */
+export type ResourceQueryOptions<
+    TData,
+    TPropagatedData,
+    TSelected,
+    TQueryKey extends readonly unknown[],
+> = ResourceFetchOptions<TData, TQueryKey> & {
+    select?: ((data: TPropagatedData) => TSelected) | undefined;
+    awaitLinks?: boolean | undefined;
+};
+
+/**
  * Options for loading an infinite query with `queryClient.infiniteQuery`, minus the fields computed from params.
  *
  * @template TData - return type of base `queryFn`
@@ -69,6 +87,26 @@ export type InfiniteFetchOptions<TData, TQueryKey extends readonly unknown[], TP
     >,
     OverriddenUseInfiniteQueryFields
 >;
+
+/**
+ * {@link InfiniteFetchOptions}, plus normalized-react-query's own options.
+ *
+ * @template TData - return type of base `queryFn`
+ * @template TPropagatedData - data of each page after propagation
+ * @template TSelected - data after `select`
+ * @template TQueryKey - type of TanstackQuery key computed from params
+ * @template TPageParam - type of page params
+ */
+export type InfiniteQueryOptions<
+    TData,
+    TPropagatedData,
+    TSelected,
+    TQueryKey extends readonly unknown[],
+    TPageParam,
+> = InfiniteFetchOptions<TData, TQueryKey, TPageParam> & {
+    select?: ((data: InfiniteData<TPropagatedData, TPageParam>) => TSelected) | undefined;
+    awaitLinks?: boolean | undefined;
+};
 
 /**
  * {@link InfiniteFetchOptions}, plus whether to refetch stale cached data in the background.
