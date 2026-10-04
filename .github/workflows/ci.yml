@@ -27,6 +27,8 @@ env:
 jobs:
   test:
     runs-on: ubuntu-latest
+    # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
