@@ -1,12 +1,13 @@
-import type { readFile as ReadFile, writeFile as WriteFile } from 'node:fs/promises';
-import type { FilesFormatter } from 'format-file';
-import type { AssertNxJson, AssertProjectJson, NxJson, ProjectJson } from '#schemas';
-import type { Logger } from './dependencies.js';
-import type { NormalizedOptions, Normalizer } from './normalizer.js';
-import type { NxAndProjectJsonProcessor } from './processor.js';
+import type { NxJson, ProjectJson } from '#schemas';
+import type { NormalizedOptions } from './normalizer.js';
 import type { LifecycleOptionsOrConfig } from './schema.js';
 import type { NxContext } from './types.js';
+import { readFile, writeFile } from 'node:fs/promises';
 import { deepEqual } from 'fast-equals';
+import { formatFiles } from 'format-file';
+import { assertNxJson, assertProjectJson } from '#schemas';
+import { normalizeOptions } from './normalizer.js';
+import { processNxAndProjectJsons } from './processor.js';
 
 interface LoadedJsonConfig<T> {
     name: string;
@@ -17,10 +18,116 @@ interface ProcessedJsonConfig<T> extends LoadedJsonConfig<T> {
     processed: T;
 }
 
-export type ILifecycleInternal = (
-    options: LifecycleOptionsOrConfig,
-    context: NxContext
-) => Promise<void>;
+const loadJsonConfigs = async ({
+    nxJsonPath,
+    packageJsonPaths,
+}: NormalizedOptions): Promise<{
+    nxJson: LoadedJsonConfig<NxJson>;
+    projectJsons: LoadedJsonConfig<ProjectJson>[];
+}> => {
+    const [rawNxJson, ...rawProjectJsons] = await Promise.all([
+        readFile(nxJsonPath, 'utf8'),
+        ...packageJsonPaths.map(async ({ name, path }) => ({
+            name,
+            path,
+            rawData: await readFile(path, 'utf8'),
+        })),
+    ]);
+
+    const parsedNxJson: unknown = JSON.parse(rawNxJson);
+    try {
+        assertNxJson(parsedNxJson);
+    } catch (err) {
+        throw new Error('Failed to parse nx.json', { cause: err });
+    }
+
+    return {
+        nxJson: {
+            name: 'nx.json',
+            path: nxJsonPath,
+            data: parsedNxJson,
+        },
+        projectJsons: rawProjectJsons.map(({ name, path, rawData }) => {
+            const data: unknown = JSON.parse(rawData);
+            try {
+                assertProjectJson(data);
+            } catch (err) {
+                throw new Error(`Failed to parse ${path}`, { cause: err });
+            }
+
+            return {
+                name,
+                path,
+                data,
+            };
+        }),
+    };
+};
+
+/**
+ * A binding that no project declares is usually a typo.
+ * Only a warning, as targets inferred by Nx plugins are not declared in `project.json`.
+ *
+ * @param bindings - target names mapped to their hooks
+ * @param projectJsons - loaded project configs
+ */
+const warnUndeclaredBindings = (
+    bindings: NormalizedOptions['bindings'],
+    projectJsons: ProjectJson[]
+): void => {
+    const declaredTargets = new Set(
+        projectJsons.flatMap(projectJson => Object.keys(projectJson.targets ?? {}))
+    );
+    for (const targetName of Object.keys(bindings)) {
+        if (!declaredTargets.has(targetName)) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                `Bound target ${targetName} is not declared in any project.json. Is it a typo?`
+            );
+        }
+    }
+};
+
+const saveJsonConfigs = async ({
+    jsons,
+    options,
+}: {
+    jsons: ProcessedJsonConfig<unknown>[];
+    options: NormalizedOptions;
+}): Promise<void> => {
+    const filesToUpdate: {
+        path: string;
+        processed: unknown;
+    }[] = [];
+
+    for (const { path, data, processed } of jsons) {
+        if (deepEqual(data, processed)) {
+            continue;
+        }
+        if (options.check) {
+            throw new Error(`File ${path} is not up to date`);
+        }
+        filesToUpdate.push({
+            path,
+            processed,
+        });
+    }
+
+    for (const { path } of filesToUpdate) {
+        // eslint-disable-next-line no-console
+        console.info(`Updating ${path}`);
+    }
+    if (options.dryRun) {
+        return;
+    }
+
+    await Promise.all(
+        filesToUpdate.map(async ({ path, processed }) =>
+            writeFile(path, JSON.stringify(processed), 'utf8')
+        )
+    );
+    await formatFiles(filesToUpdate.map(file => file.path));
+};
 
 /**
  * Main logic for lifecycle file management.
@@ -28,175 +135,40 @@ export type ILifecycleInternal = (
  * Loads the `nx.json` + `project.json`s for all projects,
  * calculates the new targets and dependencies,
  * and re-writes files as appropriate.
+ *
+ * @param options - options provided directly, or where to load them from
+ * @param context - workspace root and projects
  */
-export class LifecycleInternal {
-    readonly #normalizer: Normalizer;
-    readonly #readFile: typeof ReadFile;
-    readonly #writeFile: typeof WriteFile;
-    readonly #formatFiles: FilesFormatter;
-    readonly #processNxAndProjectJsons: NxAndProjectJsonProcessor;
-    readonly #assertNxJson: AssertNxJson;
-    readonly #assertProjectJson: AssertProjectJson;
-    readonly #logger: Logger;
+export const lifecycleInternal = async (
+    options: LifecycleOptionsOrConfig,
+    context: NxContext
+): Promise<void> => {
+    const normalized = await normalizeOptions(options, context);
 
-    public readonly lifecycleInternal: ILifecycleInternal;
+    const { nxJson, projectJsons } = await loadJsonConfigs(normalized);
 
-    public constructor(
-        normalizer: Normalizer,
-        readFile: typeof ReadFile,
-        writeFile: typeof WriteFile,
-        formatFiles: FilesFormatter,
-        processNxAndProjectJsons: NxAndProjectJsonProcessor,
-        assertNxJson: AssertNxJson,
-        assertProjectJson: AssertProjectJson,
-        logger: Logger
-    ) {
-        this.#normalizer = normalizer;
-        this.#readFile = readFile;
-        this.#writeFile = writeFile;
-        this.#formatFiles = formatFiles;
-        this.#processNxAndProjectJsons = processNxAndProjectJsons;
-        this.#assertNxJson = assertNxJson;
-        this.#assertProjectJson = assertProjectJson;
-        this.#logger = logger;
+    warnUndeclaredBindings(
+        normalized.bindings,
+        projectJsons.map(({ data }) => data)
+    );
 
-        this.lifecycleInternal = this.#lifecycleInternal.bind(this);
-    }
+    const { processedNxJson, processedProjectJsons } = processNxAndProjectJsons({
+        nxJson: nxJson.data,
+        projectJsons: projectJsons.map(({ data }) => data),
+        options: normalized,
+    });
 
-    async #lifecycleInternal(options: LifecycleOptionsOrConfig, context: NxContext): Promise<void> {
-        const normalized = await this.#normalizer.normalizeOptions(options, context);
-
-        const { nxJson, projectJsons } = await this.#loadJsonConfigs(normalized);
-
-        this.#warnUndeclaredBindings(
-            normalized.bindings,
-            projectJsons.map(({ data }) => data)
-        );
-
-        const { processedNxJson, processedProjectJsons } = this.#processNxAndProjectJsons({
-            nxJson: nxJson.data,
-            projectJsons: projectJsons.map(({ data }) => data),
-            options: normalized,
-        });
-
-        await this.#saveJsonConfigs({
-            jsons: [
-                {
-                    ...nxJson,
-                    processed: processedNxJson,
-                },
-                ...projectJsons.map((projectJson, i) => ({
-                    ...projectJson,
-                    processed: processedProjectJsons[i]!,
-                })),
-            ],
-            options: normalized,
-        });
-    }
-
-    async #loadJsonConfigs({ nxJsonPath, packageJsonPaths }: NormalizedOptions): Promise<{
-        nxJson: LoadedJsonConfig<NxJson>;
-        projectJsons: LoadedJsonConfig<ProjectJson>[];
-    }> {
-        const [rawNxJson, ...rawProjectJsons] = await Promise.all([
-            this.#readFile(nxJsonPath, 'utf8'),
-            ...packageJsonPaths.map(async ({ name, path }) => ({
-                name,
-                path,
-                rawData: await this.#readFile(path, 'utf8'),
-            })),
-        ]);
-
-        const parsedNxJson: unknown = JSON.parse(rawNxJson);
-        try {
-            this.#assertNxJson(parsedNxJson);
-        } catch (err) {
-            throw new Error('Failed to parse nx.json', { cause: err });
-        }
-
-        return {
-            nxJson: {
-                name: 'nx.json',
-                path: nxJsonPath,
-                data: parsedNxJson,
+    await saveJsonConfigs({
+        jsons: [
+            {
+                ...nxJson,
+                processed: processedNxJson,
             },
-            projectJsons: rawProjectJsons.map(({ name, path, rawData }) => {
-                const data: unknown = JSON.parse(rawData);
-                try {
-                    this.#assertProjectJson(data);
-                } catch (err) {
-                    throw new Error(`Failed to parse ${path}`, { cause: err });
-                }
-
-                return {
-                    name,
-                    path,
-                    data,
-                };
-            }),
-        };
-    }
-
-    /**
-     * A binding that no project declares is usually a typo.
-     * Only a warning, as targets inferred by Nx plugins are not declared in `project.json`.
-     *
-     * @param bindings - target names mapped to their hooks
-     * @param projectJsons - loaded project configs
-     */
-    #warnUndeclaredBindings(
-        bindings: NormalizedOptions['bindings'],
-        projectJsons: ProjectJson[]
-    ): void {
-        const declaredTargets = new Set(
-            projectJsons.flatMap(projectJson => Object.keys(projectJson.targets ?? {}))
-        );
-        for (const targetName of Object.keys(bindings)) {
-            if (!declaredTargets.has(targetName)) {
-                this.#logger.warn(
-                    `Bound target ${targetName} is not declared in any project.json. Is it a typo?`
-                );
-            }
-        }
-    }
-
-    async #saveJsonConfigs({
-        jsons,
-        options,
-    }: {
-        jsons: ProcessedJsonConfig<unknown>[];
-        options: NormalizedOptions;
-    }): Promise<void> {
-        const filesToUpdate: {
-            path: string;
-            processed: unknown;
-        }[] = [];
-
-        for (const { path, data, processed } of jsons) {
-            if (deepEqual(data, processed)) {
-                continue;
-            }
-            if (options.check) {
-                throw new Error(`File ${path} is not up to date`);
-            }
-            filesToUpdate.push({
-                path,
-                processed,
-            });
-        }
-
-        for (const { path } of filesToUpdate) {
-            this.#logger.info(`Updating ${path}`);
-        }
-        if (options.dryRun) {
-            return;
-        }
-
-        await Promise.all(
-            filesToUpdate.map(async ({ path, processed }) =>
-                this.#writeFile(path, JSON.stringify(processed), 'utf8')
-            )
-        );
-        await this.#formatFiles(filesToUpdate.map(file => file.path));
-    }
-}
+            ...projectJsons.map((projectJson, i) => ({
+                ...projectJson,
+                processed: processedProjectJsons[i]!,
+            })),
+        ],
+        options: normalized,
+    });
+};

@@ -1,5 +1,5 @@
 import type { SchemaType } from 'juniper';
-import { identifier } from 'haywire';
+import type { JuniperValidator } from 'juniper-validator';
 import { objectSchema } from 'juniper';
 import { makeValidator } from 'juniper-validator';
 import { allTargetsSchema } from './target.js';
@@ -12,6 +12,5 @@ const projectJsonSchema = objectSchema({
 });
 export type ProjectJson = SchemaType<typeof projectJsonSchema>;
 
-export const assertProjectJson = makeValidator(projectJsonSchema).assert;
-export type AssertProjectJson = typeof assertProjectJson;
-export const assertProjectJsonIdentifier = identifier<AssertProjectJson>().named('projectJson');
+export const assertProjectJson: JuniperValidator<ProjectJson>['assert'] =
+    makeValidator(projectJsonSchema).assert;

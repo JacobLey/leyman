@@ -421,12 +421,6 @@ importers:
       format-file:
         specifier: workspace:^
         version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
-      haywire:
-        specifier: workspace:^
-        version: file:tools/haywire
-      haywire-launcher:
-        specifier: workspace:^
-        version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper:
         specifier: workspace:^
         version: file:apps/juniper

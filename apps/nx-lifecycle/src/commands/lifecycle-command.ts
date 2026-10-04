@@ -1,8 +1,7 @@
-import type { ProjectGraph } from '@nx/devkit';
-import type { Argv } from 'yargs';
-import type { ILifecycleInternal } from '../lifecycle/lifecycle-internal.js';
 import type { Command, LifecycleCommandInput } from './lib/types.js';
+import { createProjectGraphAsync, workspaceRoot } from '@nx/devkit';
 import { isCI } from 'ci-info';
+import { lifecycleInternal } from '../lifecycle/lifecycle-internal.js';
 
 interface LifecycleCommandExtendedInput extends LifecycleCommandInput {
     configFile: string;
@@ -13,31 +12,11 @@ interface LifecycleCommandExtendedInput extends LifecycleCommandInput {
 /**
  * Main `nx-lifecycle` command
  */
-export class LifecycleCommand implements Command<LifecycleCommandExtendedInput> {
-    public readonly command = ['$0', 'lifecycle'];
-    public readonly describe = 'Inject Nx targets as high level workflows';
-
-    readonly #getProjectGraph: () => Promise<ProjectGraph>;
-    readonly #workspaceRoot: string;
-    readonly #lifecycleInternal: ILifecycleInternal;
-
-    public constructor(
-        getProjectGraph: () => Promise<ProjectGraph>,
-        workspaceRoot: string,
-        lifecycleInternal: ILifecycleInternal
-    ) {
-        this.#getProjectGraph = getProjectGraph;
-        this.#workspaceRoot = workspaceRoot;
-        this.#lifecycleInternal = lifecycleInternal;
-
-        this.handler = this.handler.bind(this);
-    }
-
-    public builder(
-        this: void,
-        yargs: Argv<LifecycleCommandInput>
-    ): Argv<LifecycleCommandExtendedInput> {
-        return yargs
+export const lifecycleCommand: Command<LifecycleCommandExtendedInput> = {
+    command: ['$0', 'lifecycle'],
+    describe: 'Inject Nx targets as high level workflows',
+    builder: yargs =>
+        yargs
             .options({
                 configFile: {
                     describe: 'File that exports data content to populate',
@@ -56,12 +35,10 @@ export class LifecycleCommand implements Command<LifecycleCommandExtendedInput> 
                     default: false,
                 },
             })
-            .strict();
-    }
-
-    public async handler(options: LifecycleCommandExtendedInput): Promise<void> {
-        const projectGraph = await this.#getProjectGraph();
-        await this.#lifecycleInternal(
+            .strict(),
+    handler: async options => {
+        const projectGraph = await createProjectGraphAsync();
+        await lifecycleInternal(
             {
                 configFile: options.configFile,
                 cwd: options.cwd,
@@ -69,12 +46,12 @@ export class LifecycleCommand implements Command<LifecycleCommandExtendedInput> 
                 dryRun: options.dryRun,
             },
             {
-                root: this.#workspaceRoot,
+                root: workspaceRoot,
                 projects: Object.values(projectGraph.nodes).map(node => ({
                     name: node.name,
                     root: node.data.root,
                 })),
             }
         );
-    }
-}
+    },
+};

@@ -1,5 +1,5 @@
 import type { SchemaType } from 'juniper';
-import { identifier } from 'haywire';
+import type { JuniperValidator } from 'juniper-validator';
 import { objectSchema } from 'juniper';
 import { makeValidator } from 'juniper-validator';
 import { bindingsSchema, stagesSchema } from '../lifecycle/schema.js';
@@ -16,6 +16,5 @@ const lifecyclePluginOptionsSchema = objectSchema({
 });
 export type LifecyclePluginOptions = SchemaType<typeof lifecyclePluginOptionsSchema>;
 
-export const assertLifecyclePluginOptions = makeValidator(lifecyclePluginOptionsSchema).assert;
-export type AssertLifecyclePluginOptions = typeof assertLifecyclePluginOptions;
-export const assertLifecyclePluginOptionsId = identifier<AssertLifecyclePluginOptions>();
+export const assertLifecyclePluginOptions: JuniperValidator<LifecyclePluginOptions>['assert'] =
+    makeValidator(lifecyclePluginOptionsSchema).assert;

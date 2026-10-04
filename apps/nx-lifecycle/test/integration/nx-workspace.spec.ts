@@ -29,6 +29,19 @@ const env = {
     NX_SKIP_NX_CACHE: 'true',
 };
 
+/**
+ * Environment of a subprocess, which is CI only when requested.
+ * Setting `CI=false` overrides any other CI detection.
+ *
+ * @param [options] - optional
+ * @param [options.ci] - run as CI (default false)
+ * @returns environment variables
+ */
+const envFor = ({ ci = false }: { ci?: boolean } = {}): Record<string, string | undefined> => ({
+    ...env,
+    CI: String(ci),
+});
+
 const stages = {
     build: {
         hooks: ['run'],
@@ -71,10 +84,10 @@ suite('Nx workspace', () => {
             },
         });
 
-        const nx = async (...args: string[]): Promise<string> => {
+        const nx = async (args: string[], options?: { ci?: boolean }): Promise<string> => {
             const { stdout } = await execFileAsync(process.execPath, [nxBin, ...args], {
                 cwd: root,
-                env,
+                env: envFor(options),
             });
             return stdout;
         };
@@ -96,7 +109,7 @@ suite('Nx workspace', () => {
         withPlugin.test('Infers lifecycle targets', async function (this: Context, { nx }) {
             this.timeout(60_000);
 
-            const project = JSON.parse(await nx('show', 'project', 'b', '--json')) as {
+            const project = JSON.parse(await nx(['show', 'project', 'b', '--json'])) as {
                 targets: Record<string, { executor: string; dependsOn?: unknown[] }>;
             };
 
@@ -111,7 +124,7 @@ suite('Nx workspace', () => {
             this.timeout(60_000);
 
             // Outside a terminal, Nx hides the output of successful dependency tasks unless static
-            const output = await nx('run', 'b:build', '--outputStyle=static');
+            const output = await nx(['run', 'b:build', '--outputStyle=static']);
 
             expect(output).to.contain('compiled a');
             expect(output).to.contain('compiled b');
@@ -131,7 +144,7 @@ suite('Nx workspace', () => {
                 });
 
                 const thrown: unknown = await expect(
-                    nx('show', 'project', 'b', '--json')
+                    nx(['show', 'project', 'b', '--json'])
                 ).to.be.rejectedWith(Error);
 
                 expect(thrown)
@@ -143,39 +156,65 @@ suite('Nx workspace', () => {
         );
     });
 
-    withWorkspace.test(
-        'Executor writes lifecycle targets',
-        async function (this: Context, { root, nx }) {
-            this.timeout(60_000);
-
+    suite('executor', () => {
+        const withExecutor = withWorkspace.beforeEach(async ({ root }) => {
             await writeJson(Path.join(root, 'nx.json'), {});
             await writeJson(Path.join(root, 'project.json'), {
                 name: 'workspace',
                 targets: {
                     lifecycle: {
                         executor: 'nx-lifecycle:lifecycle',
-                        options: { stages, bindings, check: false },
+                        options: { stages, bindings },
                     },
                 },
             });
+        });
 
-            await nx('run', 'workspace:lifecycle');
+        withExecutor.test(
+            'Writes lifecycle targets outside CI',
+            async function (this: Context, { root, nx }) {
+                this.timeout(60_000);
 
-            const nxJson = JSON.parse(await readFile(Path.join(root, 'nx.json'), 'utf8')) as {
-                targetDefaults: Record<string, { dependsOn?: unknown[] }>;
-            };
-            expect(nxJson.targetDefaults.compile!.dependsOn).to.deep.equal(['build:_']);
-            expect(nxJson.targetDefaults['build:run']!.dependsOn).to.deep.equal([
-                'build:_',
-                'compile',
-            ]);
+                await nx(['run', 'workspace:lifecycle']);
 
-            const projectJson = JSON.parse(
-                await readFile(Path.join(root, 'packages/a/project.json'), 'utf8')
-            ) as { targets: Record<string, unknown> };
-            expect(projectJson.targets).to.have.keys('compile', 'build:_', 'build:run', 'build');
-        }
-    );
+                const nxJson = JSON.parse(await readFile(Path.join(root, 'nx.json'), 'utf8')) as {
+                    targetDefaults: Record<string, { dependsOn?: unknown[] }>;
+                };
+                expect(nxJson.targetDefaults.compile!.dependsOn).to.deep.equal(['build:_']);
+                expect(nxJson.targetDefaults['build:run']!.dependsOn).to.deep.equal([
+                    'build:_',
+                    'compile',
+                ]);
+
+                const projectJson = JSON.parse(
+                    await readFile(Path.join(root, 'packages/a/project.json'), 'utf8')
+                ) as { targets: Record<string, unknown> };
+                expect(projectJson.targets).to.have.keys(
+                    'compile',
+                    'build:_',
+                    'build:run',
+                    'build'
+                );
+            }
+        );
+
+        withExecutor.test(
+            'Checks instead of writing in CI',
+            async function (this: Context, { root, nx }) {
+                this.timeout(60_000);
+
+                const thrown: unknown = await expect(
+                    nx(['run', 'workspace:lifecycle'], { ci: true })
+                ).to.be.rejectedWith(Error);
+
+                // Nx reports executor failures on stderr
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.includes(`File ${Path.join(root, 'nx.json')} is not up to date`);
+                expect(await readFile(Path.join(root, 'nx.json'), 'utf8')).to.equal('{}');
+            }
+        );
+    });
 
     suite('cli', () => {
         const withConfig = withWorkspace.beforeEach(async ({ root }) => {
@@ -183,22 +222,23 @@ suite('Nx workspace', () => {
             await writeJson(Path.join(root, 'lifecycle.json'), { stages, bindings });
 
             const lifecycle = async (
-                ...args: string[]
+                args: string[],
+                options?: { ci?: boolean }
             ): Promise<{ stdout: string; stderr: string }> =>
                 execFileAsync(process.execPath, [Path.join(packageRoot, 'bin.mjs'), ...args], {
                     cwd: root,
-                    env,
+                    env: envFor(options),
                 });
 
             return { lifecycle };
         });
 
         withConfig.test(
-            'Writes lifecycle targets for the project graph',
+            'Writes lifecycle targets for the project graph outside CI',
             async function (this: Context, { root, lifecycle }) {
                 this.timeout(60_000);
 
-                await lifecycle('--ci=false');
+                await lifecycle([]);
 
                 const projectJson = JSON.parse(
                     await readFile(Path.join(root, 'packages/b/project.json'), 'utf8')
@@ -213,11 +253,27 @@ suite('Nx workspace', () => {
         );
 
         withConfig.test(
-            'Check fails when files are out of date',
+            'Checks instead of writing in CI',
             async function (this: Context, { root, lifecycle }) {
                 this.timeout(60_000);
 
-                const thrown: unknown = await expect(lifecycle('--check')).to.be.rejectedWith(
+                const thrown: unknown = await expect(
+                    lifecycle([], { ci: true })
+                ).to.be.rejectedWith(Error);
+
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.includes(`File ${Path.join(root, 'nx.json')} is not up to date`);
+                expect(await readFile(Path.join(root, 'nx.json'), 'utf8')).to.equal('{}');
+            }
+        );
+
+        withConfig.test(
+            '--check fails when files are out of date',
+            async function (this: Context, { root, lifecycle }) {
+                this.timeout(60_000);
+
+                const thrown: unknown = await expect(lifecycle(['--check'])).to.be.rejectedWith(
                     Error
                 );
 

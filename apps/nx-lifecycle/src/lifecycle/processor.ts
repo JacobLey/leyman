@@ -1,6 +1,5 @@
 import type { AllTargets, DependsOn, NxJson, ProjectJson, Target } from '#schemas';
 import type { NormalizedOptions } from './normalizer.js';
-import { identifier } from 'haywire';
 import { isEmpty } from '#schemas';
 import { NOOP_EXECUTOR } from './constants.js';
 
@@ -334,21 +333,7 @@ const processProjectJson = ({
     };
 };
 
-export type NxAndProjectJsonProcessor = ({
-    nxJson,
-    projectJsons,
-    options,
-}: {
-    nxJson: NxJson;
-    projectJsons: ProjectJson[];
-    options: ProcessorOptions;
-}) => {
-    processedNxJson: NxJson;
-    processedProjectJsons: ProjectJson[];
-};
-export const nxAndProjectJsonProcessorIdentifier = identifier<NxAndProjectJsonProcessor>();
-
-export const processNxAndProjectJsons: NxAndProjectJsonProcessor = ({
+export const processNxAndProjectJsons = ({
     nxJson,
     projectJsons,
     options,

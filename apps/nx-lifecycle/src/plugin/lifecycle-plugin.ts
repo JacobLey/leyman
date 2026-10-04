@@ -1,5 +1,4 @@
 import type {
-    CreateDependencies,
     CreateDependenciesContext,
     CreateNodes,
     CreateNodesContext,
@@ -8,15 +7,16 @@ import type {
     ProjectConfiguration,
     TargetConfiguration,
 } from '@nx/devkit';
-import type { AssertProjectJson, DependsOn } from '#schemas';
+import type { DependsOn } from '#schemas';
 import type { LifecyclePlan, LifecycleTarget } from '../lifecycle/processor.js';
-import type { PluginLogger, ReadJsonFile } from './dependencies.js';
-import type { AssertLifecyclePluginOptions, LifecyclePluginOptions } from './schema.js';
+import type { LifecyclePluginOptions } from './schema.js';
 import Path from 'node:path';
-import { createNodesFromFiles } from '@nx/devkit';
+import { createNodesFromFiles, logger, readJsonFile } from '@nx/devkit';
 import { deepEqual } from 'fast-equals';
+import { assertProjectJson } from '#schemas';
 import { NOOP_EXECUTOR } from '../lifecycle/constants.js';
 import { planLifecycle } from '../lifecycle/processor.js';
+import { assertLifecyclePluginOptions } from './schema.js';
 
 type Dependency = DependsOn[number];
 
@@ -108,159 +108,143 @@ const validateProject = (
     return errors;
 };
 
-/**
- * Nx plugin that infers lifecycle targets, instead of writing them to `nx.json` and `project.json`.
- *
- * `createNodes` adds the anchor, hook and stage targets to every project with a `project.json`,
- * and wires the bound targets declared there.
- *
- * Nx applies `nx.json` `targetDefaults` and `project.json` on top of inferred targets,
- * replacing `dependsOn` rather than merging it.
- * `createDependencies` runs on the merged configuration, and fails if a bound target lost its wiring.
- */
-export class LifecyclePlugin {
-    readonly #assertOptions: AssertLifecyclePluginOptions;
-    readonly #readJsonFile: ReadJsonFile;
-    readonly #assertProjectJson: AssertProjectJson;
-    readonly #logger: PluginLogger;
-
-    public readonly createNodes: CreateNodes<LifecyclePluginOptions>;
-    public readonly createDependencies: (
-        ...args: Parameters<CreateDependencies<LifecyclePluginOptions>>
-    ) => [];
-
-    public constructor(
-        assertOptions: AssertLifecyclePluginOptions,
-        readJsonFile: ReadJsonFile,
-        assertProjectJson: AssertProjectJson,
-        logger: PluginLogger
-    ) {
-        this.#assertOptions = assertOptions;
-        this.#readJsonFile = readJsonFile;
-        this.#assertProjectJson = assertProjectJson;
-        this.#logger = logger;
-
-        this.createNodes = ['**/project.json', this.#createNodes.bind(this)];
-        this.createDependencies = this.#createDependencies.bind(this);
-    }
-
-    #plan(options: LifecyclePluginOptions | undefined): LifecyclePlan {
-        try {
-            this.#assertOptions(options);
-        } catch (err) {
-            // Ajv errors, which Nx would not print
-            const issues = (err as Error).cause as { instancePath: string; message: string }[];
-            throw new Error(
-                [
-                    'Invalid nx-lifecycle plugin options in nx.json:',
-                    ...issues.map(
-                        ({ instancePath, message }) => `- options${instancePath} ${message}`
-                    ),
-                ].join('\n'),
-                { cause: err }
-            );
-        }
-        return planLifecycle(options);
-    }
-
-    async #createNodes(
-        projectJsonPaths: readonly string[],
-        options: LifecyclePluginOptions | undefined,
-        context: CreateNodesContext
-    ): Promise<CreateNodesResultArray> {
-        const plan = this.#plan(options);
-
-        return createNodesFromFiles(
-            projectJsonPath => this.#createProjectNode(projectJsonPath, plan, context),
-            projectJsonPaths,
-            options,
-            context
+const plan = (options: LifecyclePluginOptions | undefined): LifecyclePlan => {
+    try {
+        assertLifecyclePluginOptions(options);
+    } catch (err) {
+        // Ajv errors, which Nx would not print
+        const issues = (err as Error).cause as { instancePath: string; message: string }[];
+        throw new Error(
+            [
+                'Invalid nx-lifecycle plugin options in nx.json:',
+                ...issues.map(({ instancePath, message }) => `- options${instancePath} ${message}`),
+            ].join('\n'),
+            { cause: err }
         );
     }
+    return planLifecycle(options);
+};
 
-    #createProjectNode(
-        projectJsonPath: string,
-        { lifecycleTargets, registeredTargets }: LifecyclePlan,
-        context: CreateNodesContext
-    ): CreateNodesResult {
-        const projectJson = this.#readJsonFile(Path.join(context.workspaceRoot, projectJsonPath));
-        this.#assertProjectJson(projectJson);
-        const declaredTargets = projectJson.targets ?? {};
+const createProjectNode = (
+    projectJsonPath: string,
+    { lifecycleTargets, registeredTargets }: LifecyclePlan,
+    context: CreateNodesContext
+): CreateNodesResult => {
+    const projectJson: unknown = readJsonFile(Path.join(context.workspaceRoot, projectJsonPath));
+    assertProjectJson(projectJson);
+    const declaredTargets = projectJson.targets ?? {};
 
-        const targets: Record<
-            string,
-            Required<Pick<TargetConfiguration, 'dependsOn'>> & TargetConfiguration
-        > = {};
-        for (const [targetName, lifecycleTarget] of lifecycleTargets) {
-            targets[targetName] = {
-                executor: NOOP_EXECUTOR,
-                // The schema validates `params`, but types it as a plain string
-                dependsOn: [...lifecycleTarget.dependsOn] as NonNullable<
-                    TargetConfiguration['dependsOn']
-                >,
-                metadata: {
-                    description: describeTarget(lifecycleTarget),
-                },
-            };
-        }
-
-        for (const [targetName, lifecycleTarget] of registeredTargets) {
-            if (targetName in declaredTargets) {
-                targets[lifecycleTarget.name]!.dependsOn.push(targetName);
-                targets[targetName] = {
-                    dependsOn: [lifecycleTarget.previousHook],
-                };
-            }
-        }
-
-        return {
-            projects: {
-                [Path.dirname(projectJsonPath)]: { targets },
+    const targets: Record<
+        string,
+        Required<Pick<TargetConfiguration, 'dependsOn'>> & TargetConfiguration
+    > = {};
+    for (const [targetName, lifecycleTarget] of lifecycleTargets) {
+        targets[targetName] = {
+            executor: NOOP_EXECUTOR,
+            // The schema validates `params`, but types it as a plain string
+            dependsOn: [...lifecycleTarget.dependsOn] as NonNullable<
+                TargetConfiguration['dependsOn']
+            >,
+            metadata: {
+                description: describeTarget(lifecycleTarget),
             },
         };
     }
 
-    #createDependencies(
-        options: LifecyclePluginOptions | undefined,
-        context: CreateDependenciesContext
-    ): [] {
-        const plan = this.#plan(options);
-
-        // The same problem in many projects usually comes from nx.json targetDefaults, so report it once
-        const errors = new Map<string, string[]>();
-        const definedTargets = new Set<string>();
-
-        for (const [projectName, project] of Object.entries(context.projects)) {
-            for (const error of validateProject(project, plan)) {
-                const projectNames = errors.get(error) ?? [];
-                projectNames.push(projectName);
-                errors.set(error, projectNames);
-            }
-            for (const targetName of Object.keys(project.targets ?? {})) {
-                definedTargets.add(targetName);
-            }
+    for (const [targetName, lifecycleTarget] of registeredTargets) {
+        if (targetName in declaredTargets) {
+            targets[lifecycleTarget.name]!.dependsOn.push(targetName);
+            targets[targetName] = {
+                dependsOn: [lifecycleTarget.previousHook],
+            };
         }
-
-        if (errors.size > 0) {
-            throw new Error(
-                [
-                    'nx-lifecycle targets are not wired as configured:',
-                    ...[...errors].map(
-                        ([error, projectNames]) =>
-                            `- ${error}\n  Projects: ${projectNames.join(', ')}`
-                    ),
-                ].join('\n')
-            );
-        }
-
-        for (const targetName of plan.registeredTargets.keys()) {
-            if (!definedTargets.has(targetName)) {
-                this.#logger.warn(
-                    `Bound target ${targetName} is not defined in any project. Is it a typo?`
-                );
-            }
-        }
-
-        return [];
     }
-}
+
+    return {
+        projects: {
+            [Path.dirname(projectJsonPath)]: { targets },
+        },
+    };
+};
+
+/**
+ * Adds the anchor, hook and stage targets to every project with a `project.json`,
+ * and wires the bound targets declared there.
+ *
+ * This infers lifecycle targets, instead of writing them to `nx.json` and `project.json`.
+ *
+ * @param projectJsonPaths - every `project.json` in the workspace, relative to its root
+ * @param options - plugin options from `nx.json`
+ * @param context - workspace root and configuration
+ * @returns inferred targets of each project
+ */
+const createLifecycleNodes = async (
+    projectJsonPaths: readonly string[],
+    options: LifecyclePluginOptions | undefined,
+    context: CreateNodesContext
+): Promise<CreateNodesResultArray> => {
+    const lifecyclePlan = plan(options);
+
+    return createNodesFromFiles(
+        projectJsonPath => createProjectNode(projectJsonPath, lifecyclePlan, context),
+        projectJsonPaths,
+        options,
+        context
+    );
+};
+
+export const createNodes: CreateNodes<LifecyclePluginOptions> = [
+    '**/project.json',
+    createLifecycleNodes,
+];
+
+/**
+ * Nx applies `nx.json` `targetDefaults` and `project.json` on top of inferred targets,
+ * replacing `dependsOn` rather than merging it.
+ * This runs on the merged configuration, and fails if a bound target lost its wiring.
+ *
+ * @param options - plugin options from `nx.json`
+ * @param context - merged project configurations
+ * @returns no extra dependencies
+ * @throws {Error} when options are invalid, or a bound target lost its wiring
+ */
+export const createDependencies = (
+    options: LifecyclePluginOptions | undefined,
+    context: CreateDependenciesContext
+): [] => {
+    const lifecyclePlan = plan(options);
+
+    // The same problem in many projects usually comes from nx.json targetDefaults, so report it once
+    const errors = new Map<string, string[]>();
+    const definedTargets = new Set<string>();
+
+    for (const [projectName, project] of Object.entries(context.projects)) {
+        for (const error of validateProject(project, lifecyclePlan)) {
+            const projectNames = errors.get(error) ?? [];
+            projectNames.push(projectName);
+            errors.set(error, projectNames);
+        }
+        for (const targetName of Object.keys(project.targets ?? {})) {
+            definedTargets.add(targetName);
+        }
+    }
+
+    if (errors.size > 0) {
+        throw new Error(
+            [
+                'nx-lifecycle targets are not wired as configured:',
+                ...[...errors].map(
+                    ([error, projectNames]) => `- ${error}\n  Projects: ${projectNames.join(', ')}`
+                ),
+            ].join('\n')
+        );
+    }
+
+    for (const targetName of lifecyclePlan.registeredTargets.keys()) {
+        if (!definedTargets.has(targetName)) {
+            logger.warn(`Bound target ${targetName} is not defined in any project. Is it a typo?`);
+        }
+    }
+
+    return [];
+};

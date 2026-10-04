@@ -1,6 +1,3 @@
-import { lifecyclePluginContainer } from './container.js';
-import { LifecyclePlugin } from './lifecycle-plugin.js';
-
 export type { LifecyclePluginOptions } from './schema.js';
 
 /**
@@ -8,4 +5,4 @@ export type { LifecyclePluginOptions } from './schema.js';
  */
 export const name = 'nx-lifecycle';
 
-export const { createNodes, createDependencies } = lifecyclePluginContainer.get(LifecyclePlugin);
+export { createDependencies, createNodes } from './lifecycle-plugin.js';

@@ -53,8 +53,6 @@
     "entry-script": "workspace:^",
     "fast-equals": "catalog:",
     "format-file": "workspace:^",
-    "haywire": "workspace:^",
-    "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
     "juniper-validator": "workspace:^",
     "nx": "catalog:",
