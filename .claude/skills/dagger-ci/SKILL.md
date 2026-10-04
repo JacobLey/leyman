@@ -35,6 +35,7 @@ Run `test-ci` first; it is much faster. Use Dagger to confirm before pushing. Da
 
 ## Caching
 
+- **Whole function calls are cached** (Dagger ≥0.19), keyed on the module's code, the arguments and the source directory's contents. Re-running `dagger-test` with nothing changed prints only `Ci.test CACHED` and returns in about a second; that means the same inputs already passed, not that nothing was checked. Failures are not cached. `Publish` is marked `+cache="never"` because its result depends on the npm registry.
 - **Locally**, the Dagger engine persists, so unchanged steps are cached and Nx reuses results from previous Dagger runs (a cache volume). It never reads the devcontainer's Nx cache, so the run stays independent of local state.
 - **In GitHub Actions**, the engine starts cold every run. Nx results are kept between runs by running [`nx-cache-server.mjs`](../../../.devcontainer/nx-cache-server.mjs) on the runner, persisting its directory with `actions/cache`, and passing it to Dagger as a host service (`test --nx-cache=tcp://localhost:3000`). PRs read main's cache, never the reverse.
 

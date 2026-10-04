@@ -118,6 +118,9 @@ func (m *Ci) Version(
 // Publish every public package whose current version is not yet on npm, from a fresh (uncached) build.
 //
 // Returns the published packages as `name@version`, one per line.
+//
+// Never cached: what needs publishing depends on the registry, not just the inputs.
+// +cache="never"
 func (m *Ci) Publish(
 	ctx context.Context,
 	// Pack and validate with `npm publish --dry-run`, without publishing
