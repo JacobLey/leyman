@@ -23,7 +23,7 @@
     "ts-source": [
       "shared-globals",
       "{workspaceRoot}/configs/swcrc.jsonc",
-      "{workspaceRoot}/tsconfig.build.json",
+      "{workspaceRoot}/configs/tsconfig.build.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
       "{projectRoot}/src/**/*",
@@ -60,7 +60,7 @@
     "test-source": [
       "ts-source",
       "{projectRoot}/test/**/*",
-      "{workspaceRoot}/tsconfig.test.json",
+      "{workspaceRoot}/configs/tsconfig.test.json",
       "package-files",
       "dependency-builds",
       "{workspaceRoot}/configs/c8rc.json"

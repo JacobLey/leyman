@@ -30,7 +30,7 @@ Coverage is per package: only the package's own tests count, not tests of packag
 test/unit/          ← mirrors src/ (src/lib/foo.ts → test/unit/lib/foo.spec.ts)
 test/integration/   ← user-level workflows (CLI runs, real file system), not per-file
 test/data/          ← fixtures (any file type)
-test/tsconfig.json  ← { "extends": "<relative>/tsconfig.test.json" }
+test/tsconfig.json  ← { "extends": "<relative>/configs/tsconfig.test.json" }
 ```
 
 Not every file needs its own spec; files exercised as a side effect of other tests are fine.

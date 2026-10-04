@@ -44,8 +44,8 @@
     "useUnknownInCatchVariables": true
   },
   "exclude": [
-    "**/coverage/**/*.d.*ts",
-    "**/dist/**/*.d.*ts",
-    "**/nyc/**/*.d.*ts"
+    "${configDir}/**/coverage/**/*.d.*ts",
+    "${configDir}/**/dist/**/*.d.*ts",
+    "${configDir}/**/nyc/**/*.d.*ts"
   ]
 }

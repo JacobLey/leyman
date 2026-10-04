@@ -6,13 +6,13 @@ description: Building TypeScript packages (SWC, tsconfig, ESM)
 # TypeScript Build
 
 > Compiler docs: [SWC](https://swc.rs/docs/usage/swc-jsc) · [TypeScript](https://www.typescriptlang.org/tsconfig)
-> Configs: [`../../../tsconfig.build.json`](../../../tsconfig.build.json) · [`../../../configs/swcrc.jsonc`](../../../configs/swcrc.jsonc) · [`../../../nx.json`](../../../nx.json)
+> Configs: [`../../../configs/tsconfig.build.json`](../../../configs/tsconfig.build.json) · [`../../../configs/swcrc.jsonc`](../../../configs/swcrc.jsonc) · [`../../../nx.json`](../../../nx.json)
 
 ## Typescript usage
 
 All javascript code in this repo should use Typescript. The two exceptions are `cli.mjs` files that are required at the top-level for CLI-deployed packages, and `eslint.config.js` which needs to run pre-build. The logic in both should be trivial.
 
-Typescript usage is strict, enforced both by the compiler (`tsconfig.build.json`) and ESLint's type-aware rules. Functions declare their return types (`explicit-function-return-type`, relaxed in tests). Avoid `any` (see [coding-patterns](../coding-patterns/SKILL.md)).
+Typescript usage is strict, enforced both by the compiler (`configs/tsconfig.build.json`) and ESLint's type-aware rules. Functions declare their return types (`explicit-function-return-type`, relaxed in tests). Avoid `any` (see [coding-patterns](../coding-patterns/SKILL.md)).
 
 Prefer "chainable" immutable APIs, where each call returns a new instance with an updated type rather than mutating in place (see [mocha-chain](../../../tools/test-chain/mocha-chain/) and [juniper](../../../apps/juniper)).
 

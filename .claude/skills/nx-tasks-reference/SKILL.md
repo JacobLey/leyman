@@ -28,7 +28,7 @@ Named inputs in [`nx.json`](../../../nx.json):
 - `ts-source`: the project's own source and build config. A change rebuilds the project.
 - `dependency-builds`: the `.js` and `.d.ts` files in dependencies' `dist/`, via `dependentTasksOutputFiles`. Dependents rebuild when a dependency's build output changes, not when its source changes. This is why tests compile to `dist-test/` rather than `dist/tests/`: `dependentTasksOutputFiles` ignores negated outputs, so tests inside `dist/` would rebuild every dependent when they change.
 - `^package-files`: dependencies' tracked entry points (`package.json`, `bin.mjs`, `out/`, `data/`…). Targets list it directly, because Nx does not allow `^` inside a named input.
-- `test-source`: `ts-source` plus `test/`, `tsconfig.test.json`, the project's own `package-files`, the builds of its dependencies and itself, and the c8 config.
+- `test-source`: `ts-source` plus `test/`, `configs/tsconfig.test.json`, the project's own `package-files`, the builds of its dependencies and itself, and the c8 config.
 - `shared-globals`: the Node version. The cache is shared between worktrees through the `nx-cache` sidecar.
 
 Gotchas, all verified on Nx 22:
@@ -92,7 +92,7 @@ Output goes to `./dist`.
 
 ### `tsc-test`
 
-Deletes `./dist-test`, compiles `test/` into it with SWC, then type-checks the tests with `tsc -p ./test` (no emit; `test/tsconfig.json` extends the root [`tsconfig.test.json`](../../../tsconfig.test.json)). Runs in `test:compile`, after the package's own build, so tests are type-checked against its published `.d.ts` exactly as a consumer would see them.
+Deletes `./dist-test`, compiles `test/` into it with SWC, then type-checks the tests with `tsc -p ./test` (no emit; `test/tsconfig.json` extends the shared [`configs/tsconfig.test.json`](../../../configs/tsconfig.test.json)). Runs in `test:compile`, after the package's own build, so tests are type-checked against its published `.d.ts` exactly as a consumer would see them.
 
 **Add when:** The package has tests. Add whenever `mocha-unit-test`, `mocha-integration-test`, or `vitest-unit-test` is present.
 
