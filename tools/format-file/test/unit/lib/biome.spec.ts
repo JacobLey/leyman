@@ -1,44 +1,36 @@
-import type { findUp } from 'find-up';
-import { verifyAndRestore } from 'sinon';
 import { expect } from '@leyman/expect';
-import { afterEach, beforeEach, suite } from 'mocha-chain';
-import { stubMethod } from 'sinon-typed-stub';
-import { Biome } from '#lib';
+import { beforeEach, suite } from 'mocha-chain';
+import { createFormatters, createTmpCwd } from '../helpers.js';
 
 suite('Biome', () => {
-    afterEach(() => {
-        verifyAndRestore();
-    });
-
-    const withStubs = beforeEach(() => {
-        const stubbedGetBiomePath = stubMethod<() => string>();
-        const stubbedFindUp = stubMethod<typeof findUp>();
-        return {
-            stubbedGetBiomePath: stubbedGetBiomePath.stub,
-            stubbedFindUp: stubbedFindUp.stub,
-            biome: new Biome(stubbedGetBiomePath.method, stubbedFindUp.method),
-        };
+    const withTmpCwd = beforeEach(createTmpCwd);
+    withTmpCwd.afterEach(async ctx => {
+        await ctx.restore();
     });
 
     suite('canUseBiome', () => {
-        withStubs.test('Has valid config', async ctx => {
-            ctx.stubbedGetBiomePath.returns('<path>');
-            ctx.stubbedFindUp.withArgs(['biome.json', 'biome.jsonc']).resolves('<file>');
-
-            expect(await ctx.biome.canUseBiome()).to.equal(2);
+        withTmpCwd.test('Not installed', async () => {
+            expect(await createFormatters({ biome: false }).biome.canUseBiome()).to.equal(0);
         });
 
-        withStubs.test('Missing valid config', async ctx => {
-            ctx.stubbedGetBiomePath.returns('<path>');
-            ctx.stubbedFindUp.resolves();
-
-            expect(await ctx.biome.canUseBiome()).to.equal(1);
+        withTmpCwd.test('Installed without config', async () => {
+            expect(await createFormatters().biome.canUseBiome()).to.equal(1);
         });
 
-        withStubs.test('Fails to get path', async ctx => {
-            ctx.stubbedGetBiomePath.throws();
+        for (const config of ['biome.json', 'biome.jsonc']) {
+            withTmpCwd.test(`Configured with ${config}`, async ctx => {
+                await ctx.write(config, '{}');
 
-            expect(await ctx.biome.canUseBiome()).to.equal(0);
+                expect(await createFormatters().biome.canUseBiome()).to.equal(2);
+            });
+        }
+
+        withTmpCwd.test('Configured in parent directory', async ctx => {
+            await ctx.write('biome.json', '{}');
+            await ctx.write('nested/file.js', '');
+            process.chdir(ctx.resolve('nested'));
+
+            expect(await createFormatters().biome.canUseBiome()).to.equal(2);
         });
     });
 });

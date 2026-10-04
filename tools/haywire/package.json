@@ -46,11 +46,11 @@
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
-    "barrelify": "workspace:^",
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
     "mocha": "catalog:",
+    "npm-barrelify": "catalog:leyman",
     "typescript": "catalog:"
   }
 }

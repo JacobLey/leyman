@@ -1,5 +1,5 @@
-import { Formatter } from '#lib';
+import { formatFileContainer, Formatter } from '#lib';
 
 export type { FileFormatter, FilesFormatter, Formatters, TextFormatter } from '#types';
 
-export const { formatFiles, formatFile, formatText } = new Formatter();
+export const { formatFiles, formatFile, formatText } = formatFileContainer.get(Formatter);

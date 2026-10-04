@@ -11,7 +11,7 @@
   ],
   "references": [
     {
-      "path": "../sinon-typed-stub"
+      "path": "../haywire"
     },
     {
       "path": "../test-chain/mocha-chain"

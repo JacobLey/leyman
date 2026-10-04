@@ -1,55 +1,36 @@
-import type { resolveConfig } from 'prettier';
-import { verifyAndRestore } from 'sinon';
 import { expect } from '@leyman/expect';
-import { afterEach, beforeEach, suite } from 'mocha-chain';
-import { stubMethod } from 'sinon-typed-stub';
-import { Prettier } from '#lib';
+import { beforeEach, suite } from 'mocha-chain';
+import { createFormatters, createTmpCwd } from '../helpers.js';
 
 suite('Prettier', () => {
-    afterEach(() => {
-        verifyAndRestore();
-    });
-
-    const withStubs = beforeEach(() => {
-        const stubbedGetPrettierPath = stubMethod<() => string>();
-        const stubbedGetResolveConfig = stubMethod<() => Promise<typeof resolveConfig>>();
-        return {
-            stubbedGetPrettierPath: stubbedGetPrettierPath.stub,
-            stubbedGetResolveConfig: stubbedGetResolveConfig.stub,
-            prettier: new Prettier(stubbedGetPrettierPath.method, stubbedGetResolveConfig.method),
-        };
+    const withTmpCwd = beforeEach(createTmpCwd);
+    withTmpCwd.afterEach(async ctx => {
+        await ctx.restore();
     });
 
     suite('canUsePrettier', () => {
-        withStubs.test('Has valid config', async ctx => {
-            ctx.stubbedGetPrettierPath.returns('<path>');
-            const stubbedResolveConfig = stubMethod<typeof resolveConfig>();
-            ctx.stubbedGetResolveConfig.resolves(stubbedResolveConfig.method);
-            stubbedResolveConfig.stub.resolves({});
-
-            expect(await ctx.prettier.canUsePrettier()).to.equal(2);
+        withTmpCwd.test('Not installed', async () => {
+            expect(await createFormatters({ prettier: false }).prettier.canUsePrettier()).to.equal(
+                0
+            );
         });
 
-        withStubs.test('Missing valid config', async ctx => {
-            ctx.stubbedGetPrettierPath.returns('<path>');
-            const stubbedResolveConfig = stubMethod<typeof resolveConfig>();
-            ctx.stubbedGetResolveConfig.resolves(stubbedResolveConfig.method);
-            stubbedResolveConfig.stub.resolves(null);
-
-            expect(await ctx.prettier.canUsePrettier()).to.equal(1);
+        withTmpCwd.test('Installed without config', async () => {
+            expect(await createFormatters().prettier.canUsePrettier()).to.equal(1);
         });
 
-        withStubs.test('Fails to get resolveConfig', async ctx => {
-            ctx.stubbedGetPrettierPath.returns('<path>');
-            ctx.stubbedGetResolveConfig.rejects();
+        withTmpCwd.test('Configured in current directory', async ctx => {
+            await ctx.write('.prettierrc', '{}');
 
-            expect(await ctx.prettier.canUsePrettier()).to.equal(1);
+            expect(await createFormatters().prettier.canUsePrettier()).to.equal(2);
         });
 
-        withStubs.test('Fails to get path', async ctx => {
-            ctx.stubbedGetPrettierPath.throws();
+        withTmpCwd.test('Configured in parent directory', async ctx => {
+            await ctx.write('.prettierrc', '{}');
+            await ctx.write('nested/file.js', '');
+            process.chdir(ctx.resolve('nested'));
 
-            expect(await ctx.prettier.canUsePrettier()).to.equal(0);
+            expect(await createFormatters().prettier.canUsePrettier()).to.equal(2);
         });
     });
 });

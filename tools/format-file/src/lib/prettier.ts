@@ -1,39 +1,23 @@
-import type { resolveConfig } from 'prettier';
+import type { Supplier } from 'haywire';
 import type { CanUseFormatter } from '#types';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
-import { prettierPath } from './lib-path.js';
 
 const execFileAsync = promisify(execFile);
 
 /**
- * Prettier is an optional peer dependency, so only load it when actually needed.
- *
- * @returns function to locate a prettier config file
- */
-const getPrettierResolveConfig = async (): Promise<typeof resolveConfig> => {
-    const prettier = await import('prettier');
-    return prettier.resolveConfig;
-};
-
-/**
  * Prettier formatter.
  *
- * Path and config lookups are injectable so tests can simulate prettier being uninstalled or unconfigured.
+ * Prettier is an optional peer dependency, so its path is injected to allow simulating it being uninstalled.
  */
 export class Prettier {
-    readonly #getPrettierPath: () => string;
-    readonly #getResolveConfig: () => Promise<typeof resolveConfig>;
+    readonly #getPrettierPath: Supplier<string>;
 
     public readonly canUsePrettier: () => Promise<CanUseFormatter>;
     public readonly formatPrettierFiles: (files: string[]) => Promise<void>;
 
-    public constructor(
-        getPrettierPath: () => string = prettierPath,
-        getResolveConfig: () => Promise<typeof resolveConfig> = getPrettierResolveConfig
-    ) {
+    public constructor(getPrettierPath: Supplier<string>) {
         this.#getPrettierPath = getPrettierPath;
-        this.#getResolveConfig = getResolveConfig;
 
         this.canUsePrettier = this.#canUsePrettier.bind(this);
         this.formatPrettierFiles = this.#formatPrettierFiles.bind(this);
@@ -46,13 +30,11 @@ export class Prettier {
             return 0;
         }
 
-        try {
-            const configResolver = await this.#getResolveConfig();
-            if (await configResolver('.')) {
-                return 2;
-            }
-        } catch {}
-
+        // Only load prettier once known to be installed
+        const { resolveConfigFile } = await import('prettier');
+        if (await resolveConfigFile()) {
+            return 2;
+        }
         return 1;
     }
 

@@ -1,26 +1,24 @@
+import type { Supplier } from 'haywire';
 import type { CanUseFormatter } from '#types';
 import { execFile } from 'node:child_process';
 import { promisify } from 'node:util';
 import { findUp } from 'find-up';
-import { biomePath } from './lib-path.js';
 
 const execFileAsync = promisify(execFile);
 
 /**
  * Biome formatter.
  *
- * Path and config lookups are injectable so tests can simulate biome being uninstalled or unconfigured.
+ * Biome is an optional peer dependency, so its path is injected to allow simulating it being uninstalled.
  */
 export class Biome {
-    readonly #getBiomePath: () => string;
-    readonly #findUp: typeof findUp;
+    readonly #getBiomePath: Supplier<string>;
 
     public readonly canUseBiome: () => Promise<CanUseFormatter>;
     public readonly formatBiomeFiles: (files: string[]) => Promise<void>;
 
-    public constructor(getBiomePath: () => string = biomePath, find: typeof findUp = findUp) {
+    public constructor(getBiomePath: Supplier<string>) {
         this.#getBiomePath = getBiomePath;
-        this.#findUp = find;
 
         this.canUseBiome = this.#canUseBiome.bind(this);
         this.formatBiomeFiles = this.#formatBiomeFiles.bind(this);
@@ -33,7 +31,7 @@ export class Biome {
             return 0;
         }
 
-        const file = await this.#findUp(['biome.json', 'biome.jsonc']);
+        const file = await findUp(['biome.json', 'biome.jsonc']);
         if (file) {
             return 2;
         }

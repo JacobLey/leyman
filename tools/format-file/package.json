@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "find-up": "catalog:",
+    "haywire": "workspace:^",
     "tmp-promise": "catalog:"
   },
   "peerDependencies": {
@@ -51,7 +52,6 @@
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
-    "@types/sinon": "catalog:",
     "@types/tmp": "catalog:",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
@@ -61,8 +61,6 @@
     "mocha-chain": "workspace:^",
     "npm-barrelify": "catalog:leyman",
     "prettier": "catalog:",
-    "sinon": "catalog:",
-    "sinon-typed-stub": "workspace:^",
     "ts-dedent": "catalog:",
     "typescript": "catalog:"
   }

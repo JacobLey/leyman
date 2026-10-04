@@ -1,130 +1,114 @@
-import type { CanUseFormatter } from '#types';
-import { verifyAndRestore } from 'sinon';
 import { expect } from '@leyman/expect';
-import { afterEach, beforeEach, suite } from 'mocha-chain';
-import { stubMethod } from 'sinon-typed-stub';
-import { Formatter } from '#lib';
+import { beforeEach, suite } from 'mocha-chain';
+import { createFormatters, createTmpCwd, formatted, unformatted } from '../helpers.js';
 
 suite('Formatter', () => {
-    afterEach(() => {
-        verifyAndRestore();
-    });
-
-    const withStubs = beforeEach(() => {
-        const stubbedCanUseBiome = stubMethod<() => Promise<CanUseFormatter>>();
-        const stubbedFormatBiomeFiles = stubMethod<(files: string[]) => Promise<void>>();
-        const stubbedCanUsePrettier = stubMethod<() => Promise<CanUseFormatter>>();
-        const stubbedFormatPrettierFiles = stubMethod<(files: string[]) => Promise<void>>();
-        return {
-            stubbedCanUseBiome: stubbedCanUseBiome.stub,
-            stubbedFormatBiomeFiles: stubbedFormatBiomeFiles.stub,
-            stubbedCanUsePrettier: stubbedCanUsePrettier.stub,
-            stubbedFormatPrettierFiles: stubbedFormatPrettierFiles.stub,
-            formatter: new Formatter(
-                {
-                    canUseBiome: stubbedCanUseBiome.method,
-                    formatBiomeFiles: stubbedFormatBiomeFiles.method,
-                },
-                {
-                    canUsePrettier: stubbedCanUsePrettier.method,
-                    formatPrettierFiles: stubbedFormatPrettierFiles.method,
-                }
-            ),
-        };
+    const withTmpCwd = beforeEach(createTmpCwd);
+    withTmpCwd.afterEach(async ctx => {
+        await ctx.restore();
     });
 
     suite('formatFiles', () => {
-        withStubs.test('Empty input', async ctx => {
-            await ctx.formatter.formatFiles([]);
-
-            expect(ctx.stubbedCanUseBiome.notCalled).to.equal(true);
-            expect(ctx.stubbedFormatBiomeFiles.notCalled).to.equal(true);
-            expect(ctx.stubbedCanUsePrettier.notCalled).to.equal(true);
-            expect(ctx.stubbedFormatPrettierFiles.notCalled).to.equal(true);
+        withTmpCwd.test('Empty input', async () => {
+            await createFormatters().formatter.formatFiles([]);
         });
 
-        withStubs.test('Uses first valid formatter', async ctx => {
-            ctx.stubbedCanUseBiome.resolves(2);
-            ctx.stubbedCanUsePrettier.resolves(2);
-            ctx.stubbedFormatBiomeFiles.resolves();
+        withTmpCwd.test('Uses biome when neither is configured', async ctx => {
+            await ctx.write('file.js', unformatted.js);
 
-            await ctx.formatter.formatFiles(['<filename>'], { formatter: 'inherit' });
+            await createFormatters().formatter.formatFiles([ctx.resolve('file.js')]);
 
-            expect(ctx.stubbedFormatBiomeFiles.calledWith(['<filename>'])).to.equal(true);
-
-            expect(ctx.stubbedFormatPrettierFiles.notCalled).to.equal(true);
+            expect(await ctx.read('file.js')).to.equal(formatted.biome);
         });
 
-        withStubs.test('Prefers configured formatter', async ctx => {
-            ctx.stubbedCanUseBiome.resolves(1);
-            ctx.stubbedCanUsePrettier.resolves(2);
-            ctx.stubbedFormatPrettierFiles.rejects();
-            ctx.stubbedFormatBiomeFiles.resolves();
+        withTmpCwd.test('Prefers configured formatter', async ctx => {
+            await ctx.write('.prettierrc', '{}');
+            await ctx.write('file.js', unformatted.js);
 
-            await ctx.formatter.formatFiles.call(null, ['<filename>']);
+            await createFormatters().formatter.formatFiles([ctx.resolve('file.js')]);
 
-            expect(ctx.stubbedFormatPrettierFiles.calledWith(['<filename>'])).to.equal(true);
-            expect(ctx.stubbedFormatBiomeFiles.calledWith(['<filename>'])).to.equal(true);
-            expect(
-                ctx.stubbedFormatPrettierFiles.calledBefore(ctx.stubbedFormatBiomeFiles)
-            ).to.equal(true);
+            expect(await ctx.read('file.js')).to.equal(formatted.prettier);
         });
 
-        withStubs.test('Omits missing formatters', async ctx => {
-            ctx.stubbedCanUseBiome.resolves(0);
-            ctx.stubbedCanUsePrettier.resolves(1);
-            ctx.stubbedFormatBiomeFiles.resolves();
+        withTmpCwd.test('Falls back when a formatter fails', async ctx => {
+            // Biome does not support markdown
+            await ctx.write('file.md', unformatted.md);
 
-            await ctx.formatter.formatFiles.call(null, ['<filename>']);
+            await createFormatters().formatter.formatFiles([ctx.resolve('file.md')]);
 
-            expect(ctx.stubbedFormatPrettierFiles.calledWith(['<filename>'])).to.equal(true);
-
-            expect(ctx.stubbedFormatBiomeFiles.notCalled).to.equal(true);
+            expect(await ctx.read('file.md')).to.equal(formatted.md);
         });
 
-        withStubs.test('Specify formatter', async ctx => {
-            ctx.stubbedCanUseBiome.resolves(2);
-            ctx.stubbedCanUsePrettier.resolves(1);
-            ctx.stubbedFormatPrettierFiles.resolves();
+        withTmpCwd.test('Falls back when configured formatter has invalid config', async ctx => {
+            await ctx.write('.prettierrc', '{ invalid');
+            await ctx.write('file.js', unformatted.js);
 
-            await ctx.formatter.formatFiles(['<filename>'], { formatter: 'prettier' });
+            await createFormatters().formatter.formatFiles([ctx.resolve('file.js')]);
 
-            expect(ctx.stubbedFormatPrettierFiles.calledWith(['<filename>'])).to.equal(true);
-            expect(ctx.stubbedFormatBiomeFiles.notCalled).to.equal(true);
+            expect(await ctx.read('file.js')).to.equal(formatted.biome);
         });
 
-        withStubs.test('Resolves even if all formatters fail', async ctx => {
-            ctx.stubbedCanUseBiome.resolves(1);
-            ctx.stubbedCanUsePrettier.resolves(1);
-            ctx.stubbedFormatBiomeFiles.rejects();
-            ctx.stubbedFormatPrettierFiles.rejects();
+        withTmpCwd.test('Skips formatters that are not installed', async ctx => {
+            await ctx.write('biome.json', '{}');
+            await ctx.write('file.js', unformatted.js);
 
-            await ctx.formatter.formatFiles(['<filename>']);
+            await createFormatters({ biome: false }).formatter.formatFiles([
+                ctx.resolve('file.js'),
+            ]);
 
-            expect(ctx.stubbedFormatBiomeFiles.calledWith(['<filename>'])).to.equal(true);
-            expect(ctx.stubbedFormatPrettierFiles.calledWith(['<filename>'])).to.equal(true);
+            expect(await ctx.read('file.js')).to.equal(formatted.prettier);
         });
 
-        withStubs.test('Checks formatter availability once', async ctx => {
-            ctx.stubbedCanUseBiome.resolves(2);
-            ctx.stubbedCanUsePrettier.resolves(1);
-            ctx.stubbedFormatBiomeFiles.resolves();
+        withTmpCwd.test('Specify formatter', async ctx => {
+            await ctx.write('biome.json', '{}');
+            await ctx.write('file.js', unformatted.js);
 
-            await ctx.formatter.formatFiles(['<filename-1>']);
-            await ctx.formatter.formatFiles(['<filename-2>']);
+            await createFormatters().formatter.formatFiles([ctx.resolve('file.js')], {
+                formatter: 'prettier',
+            });
 
-            expect(ctx.stubbedCanUseBiome.calledOnce).to.equal(true);
-            expect(ctx.stubbedCanUsePrettier.calledOnce).to.equal(true);
+            expect(await ctx.read('file.js')).to.equal(formatted.prettier);
         });
 
-        withStubs.test('Resolves even if no formatters supported', async ctx => {
-            ctx.stubbedCanUseBiome.resolves(0);
-            ctx.stubbedCanUsePrettier.resolves(0);
+        withTmpCwd.test('Specified formatter does not fall back', async ctx => {
+            await ctx.write('file.md', unformatted.md);
 
-            await ctx.formatter.formatFiles(['<filename>']);
+            await createFormatters().formatter.formatFiles([ctx.resolve('file.md')], {
+                formatter: 'biome',
+            });
 
-            expect(ctx.stubbedFormatBiomeFiles.notCalled).to.equal(true);
-            expect(ctx.stubbedFormatPrettierFiles.notCalled).to.equal(true);
+            expect(await ctx.read('file.md')).to.equal(unformatted.md);
+        });
+
+        withTmpCwd.test('Resolves even if all formatters fail', async ctx => {
+            await ctx.write('file.js', unformatted.invalid);
+
+            await createFormatters().formatter.formatFiles([ctx.resolve('file.js')]);
+
+            expect(await ctx.read('file.js')).to.equal(unformatted.invalid);
+        });
+
+        withTmpCwd.test('Resolves even if no formatters installed', async ctx => {
+            await ctx.write('file.js', unformatted.js);
+
+            await createFormatters({ biome: false, prettier: false }).formatter.formatFiles([
+                ctx.resolve('file.js'),
+            ]);
+
+            expect(await ctx.read('file.js')).to.equal(unformatted.js);
+        });
+
+        withTmpCwd.test('Checks formatter availability once', async ctx => {
+            await ctx.write('first.js', unformatted.js);
+            await ctx.write('second.js', unformatted.js);
+            const { formatter } = createFormatters();
+
+            await formatter.formatFiles([ctx.resolve('first.js')]);
+            // Would be preferred if availability was re-checked
+            await ctx.write('.prettierrc', '{}');
+            await formatter.formatFiles([ctx.resolve('second.js')]);
+
+            expect(await ctx.read('second.js')).to.equal(formatted.biome);
         });
     });
 });

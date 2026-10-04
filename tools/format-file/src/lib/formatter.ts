@@ -6,23 +6,17 @@ import type {
     TextFormatter,
     TextFormatterOptions,
 } from '#types';
+import type { Biome } from './biome.js';
+import type { Prettier } from './prettier.js';
 import { readFile, writeFile } from 'node:fs/promises';
 import { file } from 'tmp-promise';
-import { Biome } from './biome.js';
-import { Prettier } from './prettier.js';
-
-type BiomeFormatter = Pick<Biome, 'canUseBiome' | 'formatBiomeFiles'>;
-type PrettierFormatter = Pick<Prettier, 'canUsePrettier' | 'formatPrettierFiles'>;
 
 /**
  * Core formatting logic, choosing between available formatters.
- *
- * Formatters are injectable so tests can exercise selection and fallback behavior,
- * which is not reproducible with the real (always installed) formatters.
  */
 export class Formatter {
-    readonly #biome: BiomeFormatter;
-    readonly #prettier: PrettierFormatter;
+    readonly #biome: Biome;
+    readonly #prettier: Prettier;
 
     /**
      * Formatter availability is determined once and reused,
@@ -34,10 +28,7 @@ export class Formatter {
     public readonly formatFile: FileFormatter;
     public readonly formatText: TextFormatter;
 
-    public constructor(
-        biome: BiomeFormatter = new Biome(),
-        prettier: PrettierFormatter = new Prettier()
-    ) {
+    public constructor(biome: Biome, prettier: Prettier) {
         this.#biome = biome;
         this.#prettier = prettier;
 
