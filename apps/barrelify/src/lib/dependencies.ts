@@ -1,9 +1,9 @@
 import type { Options as GlobbyOptions } from 'globby';
-import type { Directory, ParseCwd } from 'parse-cwd';
+import type { ParseCwd } from 'parse-cwd';
 import type { PopulateFile } from 'populate-files';
 import { readFile } from 'node:fs/promises';
+import { findPackageJSON } from 'node:module';
 import { globby } from 'globby';
-import { findImport } from 'find-import';
 import { bind, createModule, identifier } from 'haywire';
 import { parseCwd } from 'parse-cwd';
 import { populateFile } from 'populate-files';
@@ -17,11 +17,8 @@ export const readFileId = identifier<ReadFile>();
 export type ExitCode = (code: number) => void;
 export const exitCodeId = identifier<ExitCode>();
 
-export type FindImport = (
-    path: string,
-    options?: { cwd?: Directory }
-) => Promise<{ content: unknown } | null>;
-export const findImportId = identifier<FindImport>();
+export type FindPackageJSON = typeof findPackageJSON;
+export const findPackageJSONId = identifier<FindPackageJSON>();
 
 export type Globby = (patterns: string[], options?: GlobbyOptions) => Promise<string[]>;
 export const globbyId = identifier<Globby>();
@@ -48,7 +45,7 @@ export const dependenciesModule = createModule(
         })
     )
     .addBinding(bind(readFileId).withInstance(readFile))
-    .addBinding(bind(findImportId).withInstance(findImport))
+    .addBinding(bind(findPackageJSONId).withInstance(findPackageJSON))
     .addBinding(bind(globbyId).withInstance(globby))
     .addBinding(bind(parseCwdId).withInstance(parseCwd))
     .addBinding(bind(populateFileId).withInstance(populateFile));

@@ -1,4 +1,5 @@
-import type { FindImport } from '#internal/lib/dependencies.js';
+import type { FindPackageJSON, ReadFile } from '#internal/lib/dependencies.js';
+import { pathToFileURL } from 'node:url';
 import { verifyAndRestore } from 'sinon';
 import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
@@ -11,54 +12,60 @@ suite('FindPackageJson', () => {
     });
 
     const withStubs = beforeEach(() => {
-        const stubbedFindImport = stubMethod<FindImport>();
+        const stubbedFindPackageJSON = stubMethod<FindPackageJSON>();
+        const stubbedReadFile = stubMethod<ReadFile>();
         return {
-            stubbedFindImport: stubbedFindImport.stub,
-            findPackageJson: new FindPackageJson(stubbedFindImport.method),
+            stubbedFindPackageJSON: stubbedFindPackageJSON.stub,
+            stubbedReadFile: stubbedReadFile.stub,
+            findPackageJson: new FindPackageJson(
+                stubbedFindPackageJSON.method,
+                stubbedReadFile.method
+            ),
         };
     });
 
     suite('isExplicitlyModuleDirectory', () => {
         withStubs.test('Is module', async ctx => {
-            ctx.stubbedFindImport.resolves({
-                content: { name: '<name>', type: 'module' },
-            });
+            ctx.stubbedFindPackageJSON.returns('/<dir>/package.json');
+            ctx.stubbedReadFile.resolves(JSON.stringify({ name: '<name>', type: 'module' }));
 
-            expect(await ctx.findPackageJson.isExplicitlyModuleDirectory('<filename>')).to.equal(
+            expect(await ctx.findPackageJson.isExplicitlyModuleDirectory('/<filename>')).to.equal(
                 true
             );
 
             expect(
-                ctx.stubbedFindImport.calledOnceWithExactly('package.json', { cwd: '<filename>' })
+                ctx.stubbedFindPackageJSON.calledOnceWithExactly(pathToFileURL('/<filename>'))
+            ).to.equal(true);
+            expect(
+                ctx.stubbedReadFile.calledOnceWithExactly('/<dir>/package.json', 'utf8')
             ).to.equal(true);
         });
 
         withStubs.test('Is commonjs', async ctx => {
-            ctx.stubbedFindImport.resolves({
-                content: { name: '<name>', type: 'commonjs' },
-            });
+            ctx.stubbedFindPackageJSON.returns('/<dir>/package.json');
+            ctx.stubbedReadFile.resolves(JSON.stringify({ name: '<name>', type: 'commonjs' }));
 
-            expect(await ctx.findPackageJson.isExplicitlyModuleDirectory('<filename>')).to.equal(
+            expect(await ctx.findPackageJson.isExplicitlyModuleDirectory('/<filename>')).to.equal(
                 false
             );
         });
 
         withStubs.test('Omits type', async ctx => {
-            ctx.stubbedFindImport.resolves({
-                content: { name: '<name>', version: '<version>' },
-            });
+            ctx.stubbedFindPackageJSON.returns('/<dir>/package.json');
+            ctx.stubbedReadFile.resolves(JSON.stringify({ name: '<name>', version: '<version>' }));
 
-            expect(await ctx.findPackageJson.isExplicitlyModuleDirectory('<filename>')).to.equal(
+            expect(await ctx.findPackageJson.isExplicitlyModuleDirectory('/<filename>')).to.equal(
                 false
             );
         });
 
         withStubs.test('Cannot find package.json', async ctx => {
-            ctx.stubbedFindImport.resolves(null);
+            ctx.stubbedFindPackageJSON.returns(undefined);
 
-            expect(await ctx.findPackageJson.isExplicitlyModuleDirectory('<filename>')).to.equal(
+            expect(await ctx.findPackageJson.isExplicitlyModuleDirectory('/<filename>')).to.equal(
                 false
             );
+            expect(ctx.stubbedReadFile.called).to.equal(false);
         });
     });
 });

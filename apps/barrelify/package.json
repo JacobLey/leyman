@@ -30,7 +30,6 @@
   "dependencies": {
     "ci-info": "catalog:",
     "entry-script": "workspace:^",
-    "find-import": "workspace:^",
     "globby": "catalog:",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",

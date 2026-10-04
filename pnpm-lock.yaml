@@ -214,9 +214,6 @@ importers:
       entry-script:
         specifier: workspace:^
         version: link:../../tools/entry-script
-      find-import:
-        specifier: workspace:^
-        version: link:../../tools/find-import
       globby:
         specifier: 'catalog:'
         version: 16.2.4

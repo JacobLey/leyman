@@ -2,7 +2,7 @@ import { bind, singletonScope } from 'haywire';
 import { Barrel } from './barrel.js';
 import {
     dependenciesModule,
-    findImportId,
+    findPackageJSONId,
     globbyId,
     populateFileId,
     readFileId,
@@ -19,7 +19,7 @@ export const barrelModule = dependenciesModule
     )
     .addBinding(
         bind(FindPackageJson)
-            .withDependencies([findImportId])
+            .withDependencies([findPackageJSONId, readFileId])
             .withConstructorProvider()
             .scoped(singletonScope)
     )
