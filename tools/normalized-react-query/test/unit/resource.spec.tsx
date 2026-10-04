@@ -51,7 +51,7 @@ suite('resource', () => {
                 authorsWithFavoriteAuthor.link({ authorId: author.id })
             );
 
-            const tolkien = await recursiveAuthor.fetchQuery(client, {
+            const tolkien = await recursiveAuthor.query(client, {
                 authorId: tolkienId,
             });
 
@@ -95,7 +95,7 @@ suite('resource', () => {
             expect(data).to.not.equal(undefined);
             expect(data!.name).to.equal(name);
 
-            const fetchedData = await authors.fetchQuery(client, params);
+            const fetchedData = await authors.query(client, params);
             expect(fetchedData.name).to.equal(name);
 
             expect(authors.getQueryData(new QueryClient(), params)).to.equal(undefined);
@@ -202,6 +202,7 @@ suite('resource', () => {
         });
     });
 
+    /* eslint-disable @typescript-eslint/no-deprecated, sonarjs/deprecation -- Tests the deprecated methods until they are removed */
     suite('fetchQuery', () => {
         context.test('Get direct data', async ({ client }) => {
             const author = await authors.fetchQuery(client, { authorId: tolkienId });
@@ -253,6 +254,7 @@ suite('resource', () => {
             expect(authors.isFetching(client, { authorId: austenId })).to.equal(true);
         });
     });
+    /* eslint-enable @typescript-eslint/no-deprecated, sonarjs/deprecation */
 
     suite('prefetchQuery', () => {
         context.test('Get direct data', async ({ client }) => {
@@ -288,6 +290,7 @@ suite('resource', () => {
         });
     });
 
+    /* eslint-disable @typescript-eslint/no-deprecated, sonarjs/deprecation -- Tests the deprecated methods until they are removed */
     suite('ensureQueryData', () => {
         context.test('Does not reload existing data', async ({ client }) => {
             const bookId = '<book-id>';
@@ -374,7 +377,9 @@ suite('resource', () => {
             }
         );
     });
+    /* eslint-enable @typescript-eslint/no-deprecated, sonarjs/deprecation */
 
+    /* eslint-disable @typescript-eslint/no-deprecated, sonarjs/deprecation -- Tests the deprecated methods until they are removed */
     suite('revalidateIfStale', () => {
         const withCounted = context.beforeEach(() => {
             const counter = { calls: 0 };
@@ -438,6 +443,7 @@ suite('resource', () => {
             expect(counter.calls).to.equal(1);
         });
     });
+    /* eslint-enable @typescript-eslint/no-deprecated, sonarjs/deprecation */
 
     suite('hooks', () => {
         const contextWithWrapper = context.beforeEach(({ client }) => {
@@ -503,12 +509,20 @@ suite('resource', () => {
 
             contextWithWrapper.test('Returns data when preloaded', async ({ client, wrapper }) => {
                 await Promise.all([
-                    bookWithAuthorsFavorite.ensureQueryData(client, {
-                        bookId: fellowshipOfTheRingId,
-                    }),
-                    bookWithAuthorsFavorite.ensureQueryData(client, {
-                        bookId: prideAndPrejudiceId,
-                    }),
+                    bookWithAuthorsFavorite.query(
+                        client,
+                        {
+                            bookId: fellowshipOfTheRingId,
+                        },
+                        { staleTime: 'static', awaitLinks: true }
+                    ),
+                    bookWithAuthorsFavorite.query(
+                        client,
+                        {
+                            bookId: prideAndPrejudiceId,
+                        },
+                        { staleTime: 'static', awaitLinks: true }
+                    ),
                 ]);
 
                 const { result } = renderHook(

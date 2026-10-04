@@ -66,7 +66,7 @@ suite('infinite', () => {
                 page.map(author => infiniteBooksByAuthor.link(author))
             );
 
-            const authorWithBook = await authorsWithBooks.fetchInfiniteQuery(client);
+            const authorWithBook = await authorsWithBooks.infiniteQuery(client);
 
             expect(authorWithBook.pages.flat()).to.have.length(2);
             const [firstLink] = authorWithBook.pages.flat();
@@ -127,7 +127,7 @@ suite('infinite', () => {
             const listedBooks = infiniteBooksWithAuthor.getQueryState(client, { authorId });
             expect(listedBooks?.data?.pages[0]?.[0]?.bookId).to.equal(bookId);
 
-            const fetchedData = await infiniteAuthorsWithBooks.fetchInfiniteQuery(client);
+            const fetchedData = await infiniteAuthorsWithBooks.infiniteQuery(client);
             expect(
                 fetchedData.pages.flat().map(author => author.getParams().authorId)
             ).to.deep.equal([authorId]);
@@ -235,6 +235,7 @@ suite('infinite', () => {
         });
     });
 
+    /* eslint-disable @typescript-eslint/no-deprecated, sonarjs/deprecation -- Tests the deprecated methods until they are removed */
     suite('fetchInfiniteQuery', () => {
         context.test('Get direct data', async ({ client }) => {
             const listedAuthors = await infiniteAuthorsWithBooks.fetchInfiniteQuery(client);
@@ -293,6 +294,7 @@ suite('infinite', () => {
             );
         });
     });
+    /* eslint-enable @typescript-eslint/no-deprecated, sonarjs/deprecation */
 
     suite('prefetchQuery', () => {
         context.test('Get direct data', async ({ client }) => {
@@ -353,6 +355,7 @@ suite('infinite', () => {
         });
     });
 
+    /* eslint-disable @typescript-eslint/no-deprecated, sonarjs/deprecation -- Tests the deprecated methods until they are removed */
     suite('ensureQueryData', () => {
         context.test('Waits for propagated data every time', async ({ client }) => {
             const authorId = tolkienId;
@@ -473,7 +476,9 @@ suite('infinite', () => {
             }
         );
     });
+    /* eslint-enable @typescript-eslint/no-deprecated, sonarjs/deprecation */
 
+    /* eslint-disable @typescript-eslint/no-deprecated, sonarjs/deprecation -- Tests the deprecated methods until they are removed */
     suite('revalidateIfStale', () => {
         const withCounted = context.beforeEach(() => {
             const counter = { calls: 0 };
@@ -516,6 +521,7 @@ suite('infinite', () => {
             expect(counter.calls).to.equal(1);
         });
     });
+    /* eslint-enable @typescript-eslint/no-deprecated, sonarjs/deprecation */
 
     suite('hooks', () => {
         const contextWithWrapper = context.beforeEach(({ client }) => {
@@ -598,7 +604,10 @@ suite('infinite', () => {
             });
 
             contextWithWrapper.test('Returns data when preloaded', async ({ client, wrapper }) => {
-                await infiniteAuthorsWithBooks.ensureInfiniteQueryData(client);
+                await infiniteAuthorsWithBooks.infiniteQuery(client, undefined, {
+                    staleTime: 'static',
+                    awaitLinks: true,
+                });
 
                 let { result } = renderHook(() => useHook(), { wrapper });
 
@@ -747,7 +756,11 @@ suite('infinite', () => {
                     listedBooks: null,
                 });
 
-                await infiniteAuthors.ensureInfiniteQueryData(client, undefined, { pages: 2 });
+                await infiniteAuthors.infiniteQuery(client, undefined, {
+                    staleTime: 'static',
+                    awaitLinks: true,
+                    pages: 2,
+                });
 
                 ({ result } = renderHook(() => useHook({ pages: 0 }), {
                     wrapper,
@@ -1112,7 +1125,10 @@ suite('infinite', () => {
                     pageParams: [{ offset: -1 }],
                 });
 
-                await infiniteAuthorsWithBooks.ensureInfiniteQueryData(client);
+                await infiniteAuthorsWithBooks.infiniteQuery(client, undefined, {
+                    staleTime: 'static',
+                    awaitLinks: true,
+                });
 
                 const { result } = renderHook(
                     () => {

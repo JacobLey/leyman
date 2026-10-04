@@ -129,7 +129,7 @@ To load everything a server-side render needs, pass `{ staleTime: 'static', awai
 
 ##### `.fetchQuery(queryClient, params, options?): Promise<TData>`
 
-Fetches (or reads from cache) and returns data. Triggers propagation to downstream linked resources.
+**Deprecated:** use `.query()`. Fetches (or reads from cache) and returns data. Triggers propagation to downstream linked resources.
 
 ##### `.prefetchQuery(queryClient, params, options?): Promise<Linked>`
 
@@ -137,7 +137,7 @@ Loads data for someone else to use, like `.query()` but without throwing. Return
 
 ##### `.ensureQueryData(queryClient, params, options?): Promise<TData>`
 
-Returns stale cached data or fetches fresh data. Waits for all downstream propagated links to resolve.
+**Deprecated:** use `.query()` with `{ staleTime: 'static', awaitLinks: true }`. Returns stale cached data or fetches fresh data. Waits for all downstream propagated links to resolve.
 
 ##### `.setQueryData(queryClient, params, updater, options?): TData | undefined`
 
@@ -247,7 +247,7 @@ Like `.query()`, for every loaded page: wraps `queryClient.infiniteQuery`, and a
 
 ##### `.fetchInfiniteQuery(queryClient, params, options?): Promise<InfiniteData<TData>>`
 
-Fetches all loaded pages and triggers propagation.
+**Deprecated:** use `.infiniteQuery()`. Fetches all loaded pages and triggers propagation.
 
 ##### `.prefetchInfiniteQuery(queryClient, params, options?): Promise<Linked>`
 
@@ -255,7 +255,7 @@ Loads data for someone else to use, like `.infiniteQuery()` but without throwing
 
 ##### `.ensureInfiniteQueryData(queryClient, params, options?): Promise<InfiniteData<TData>>`
 
-Returns stale or fresh data and waits for all propagated links to resolve.
+**Deprecated:** use `.infiniteQuery()` with `{ staleTime: 'static', awaitLinks: true }`. Returns stale or fresh data and waits for all propagated links to resolve.
 
 ##### `.setInfiniteQueryData(queryClient, params, updater, options?): InfiniteData<TData> | undefined`
 

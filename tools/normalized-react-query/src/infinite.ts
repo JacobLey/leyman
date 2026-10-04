@@ -372,6 +372,7 @@ class Infinite<
      * @param params - user provided params to inject into callback
      * @param options - Everything that you can pass to `queryClient.infiniteQuery` besides query fn + key + page params
      * @returns result of queryFn + propagation
+     * @deprecated Use {@link infiniteQuery} instead. Will be removed in the next major version.
      */
     public async fetchInfiniteQuery(
         queryClient: QueryClient,
@@ -438,6 +439,7 @@ class Infinite<
      * @param options - everything normally provideable to `queryClient.infiniteQuery` minus key + query + page params,
      * plus `revalidateIfStale` to refetch stale cached data in the background
      * @returns stale data from cache or recent query data
+     * @deprecated Use {@link infiniteQuery} with `{ staleTime: 'static', awaitLinks: true }` instead. Will be removed in the next major version.
      */
     public async ensureInfiniteQueryData(
         queryClient: QueryClient,

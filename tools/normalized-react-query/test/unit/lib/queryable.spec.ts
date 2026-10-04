@@ -28,15 +28,15 @@ suite('queryable', () => {
                 },
             });
 
-            let fetched = await fetchableResource.fetchQuery(client);
+            let fetched = await fetchableResource.query(client);
             expect(fetched).to.equal(1);
 
-            fetched = await fetchableResource.fetchQuery(client);
+            fetched = await fetchableResource.query(client);
             expect(fetched).to.equal(1);
 
             await fetchableResource.refetchQuery(client);
 
-            fetched = await fetchableResource.fetchQuery(client);
+            fetched = await fetchableResource.query(client);
             expect(fetched).to.equal(2);
         });
 
@@ -71,7 +71,7 @@ suite('queryable', () => {
                 },
             });
 
-            const fetching = abortableResource.fetchQuery(client, {});
+            const fetching = abortableResource.query(client, {});
 
             await abortableResource.cancelQuery(client, []);
 
@@ -81,7 +81,7 @@ suite('queryable', () => {
             expect(queryState).to.not.equal(undefined);
             expect(queryState!.data).to.equal(undefined);
 
-            const refetched = await abortableResource.fetchQuery(client, {});
+            const refetched = await abortableResource.query(client, {});
             expect(refetched).to.equal(false);
         });
     });
@@ -132,7 +132,7 @@ suite('queryable', () => {
             expect(resettableResource.hasState(client, [1, 'a'])).to.equal(true);
             expect(resettableResource.hasData(client, [1, 'a'])).to.equal(false);
 
-            const updated = await resettableResource.fetchQuery(client, [1, 'a']);
+            const updated = await resettableResource.query(client, [1, 'a']);
             expect(updated).to.equal('a:3');
         });
 

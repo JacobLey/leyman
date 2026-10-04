@@ -237,6 +237,7 @@ class Resource<
      * @param params - user provided params to inject into callback
      * @param options - Everything that you can pass to `queryClient.query` besides query fn + key
      * @returns result of queryFn + propagation
+     * @deprecated Use {@link query} instead. Will be removed in the next major version.
      */
     public async fetchQuery(
         queryClient: QueryClient,
@@ -285,6 +286,7 @@ class Resource<
      * @param options - everything normally provideable to `queryClient.query` minus key + query,
      * plus `revalidateIfStale` to refetch stale cached data in the background
      * @returns stale data from cache or recent query data
+     * @deprecated Use {@link query} with `{ staleTime: 'static', awaitLinks: true }` instead. Will be removed in the next major version.
      */
     public async ensureQueryData(
         queryClient: QueryClient,
