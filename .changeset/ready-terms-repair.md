@@ -18,7 +18,6 @@
 "iso-crypto": major
 "parse-cwd": major
 "barrelify": major
-"nx-dagger": major
 "haywire": major
 "juniper": major
 ---
