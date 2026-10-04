@@ -2,7 +2,7 @@
 FROM mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 
 ARG NODE_VERSION=24.21.0
-ARG PNPM_VERSION=10.34.5
+ARG PNPM_VERSION=12.7.0
 ARG DAGGER_VERSION=0.21.10
 ARG GO_VERSION=1.26.8
 
@@ -30,7 +30,8 @@ ENV PATH="$HOME/.nvm/versions/node/v$NODE_VERSION/bin:$PATH"
 
 # Install pnpm
 ENV PNPM_HOME="$HOME/.local/share/pnpm"
-ENV PATH="$PNPM_HOME:$PATH"
+# pnpm 11+ installs global binaries (including itself) under `bin`
+ENV PATH="$PNPM_HOME/bin:$PATH"
 RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=$PNPM_VERSION SHELL=bash sh -
 
 # Install Go

@@ -19,12 +19,13 @@ import (
 const (
 	// node:24.21.0-trixie-slim
 	nodeImage   = "node:24.21.0-trixie-slim@sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe"
-	pnpmVersion = "10.34.5"
+	pnpmVersion = "12.7.0"
 )
 
 const (
 	workdir     = "/workspace"
 	storeDir    = "/pnpm-store"
+	cacheDir    = "/pnpm-cache"
 	tarballDir  = "/tarballs"
 	npmRegistry = "https://registry.npmjs.org"
 )
@@ -157,7 +158,7 @@ func (m *Ci) Publish(
 		return "", err
 	}
 
-	// npm (not pnpm 10) supports trusted publishing, so publish the tarballs with it
+	// Publish the tarballs with npm, which handles trusted publishing (OIDC) with provenance
 	publisher := dag.Container().
 		From(nodeImage).
 		WithDirectory(tarballDir, tarballs).
@@ -246,7 +247,8 @@ func (m *Ci) base() *dagger.Container {
 		WithExec([]string{"npm", "install", "--global", "pnpm@" + pnpmVersion}).
 		// Match the devcontainer, which removes npm so nothing silently depends on it
 		WithExec([]string{"npm", "uninstall", "--global", "npm"}).
-		WithEnvVariable("npm_config_store_dir", storeDir).
+		WithEnvVariable("pnpm_config_store_dir", storeDir).
+		WithEnvVariable("pnpm_config_cache_dir", cacheDir).
 		WithWorkdir(workdir)
 }
 
@@ -258,14 +260,16 @@ func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
 		Include: []string{"pnpm-lock.yaml", "pnpm-workspace.yaml"},
 	})
 
-	// Only keep the store: the `node_modules` that `pnpm fetch` leaves behind makes `pnpm install` skip linking projects
-	store := m.base().
+	// Only keep the store and metadata cache: the `node_modules` that `pnpm fetch` leaves behind makes
+	// `pnpm install` skip linking projects. The offline install needs the cached metadata to check the
+	// lockfile against the supply-chain policies.
+	fetched := m.base().
 		WithDirectory(workdir, lockfiles).
-		WithExec([]string{"pnpm", "fetch"}).
-		Directory(storeDir)
+		WithExec([]string{"pnpm", "fetch"})
 
 	return m.base().
-		WithDirectory(storeDir, store).
+		WithDirectory(storeDir, fetched.Directory(storeDir)).
+		WithDirectory(cacheDir, fetched.Directory(cacheDir)).
 		WithDirectory(workdir, source).
 		WithExec([]string{"pnpm", "install", "--frozen-lockfile", "--offline"}).
 		WithEnvVariable("PATH", "${PATH}:"+workdir+"/leyman/main/node_modules/.bin:"+workdir+"/scripts/commands", dagger.ContainerWithEnvVariableOpts{Expand: true})

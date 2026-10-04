@@ -15,7 +15,7 @@ Nx decides what to build and test; Dagger only provides the environment. Keep pi
 ## Pipeline (`dagger/main.go`)
 
 1. `node` image (pinned by digest) + pnpm (versions must match the devcontainer, see the [devcontainer skill](../devcontainer/SKILL.md))
-2. `pnpm fetch` from the lockfile alone, then copy the source (filtered by `.gitignore`) and `pnpm install --offline`. Source-only changes reuse the cached fetch.
+2. `pnpm fetch` from the lockfile alone, then copy the source (filtered by `.gitignore`) and `pnpm install --offline`, carrying over the store and the metadata cache (the install checks the lockfile against the supply-chain policies). Source-only changes reuse the cached fetch.
 3. `nx run-many -t build`
 4. In parallel: `test-ci`, and `nx run @leyman/main:lifecycle` (fails if generated lifecycle config is out of date)
 

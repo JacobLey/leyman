@@ -17,7 +17,7 @@ hoistPattern:
 publicHoistPattern:
   - '!*'
 
-# `storeDir` is intentionally unset: it would override `npm_config_store_dir`,
+# `storeDir` is intentionally unset: it would override `pnpm_config_store_dir`,
 # which Dagger and the devcontainer each set to point at their own store.
 
 # Supply-chain protections
@@ -31,17 +31,18 @@ minimumReleaseAgeExclude:
 # Fail if a package's publish trust level (e.g. provenance) drops compared to earlier versions
 trustPolicy: no-downgrade
 trustPolicyExclude:
-  # Old releases (already in the lockfile) published without provenance after a newer major had it
+  # Old releases (already in the lockfile) published by the same maintainers without provenance,
+  # after an earlier release or a newer major had it
   - chokidar@4.0.3
   - semver@6.3.1
+  - why-is-node-running@3.2.2
 # Transitive dependencies may only come from the registry (no git/tarball URLs)
 blockExoticSubdeps: true
 # Fail on unapproved dependency build scripts instead of silently skipping them
 strictDepBuilds: true
-onlyBuiltDependencies: []
-ignoredBuiltDependencies:
-  - '@swc/core'
-  - nx
+allowBuilds:
+  '@swc/core': false
+  nx: false
 
 catalog:
   '@biomejs/biome': ^2.5.14

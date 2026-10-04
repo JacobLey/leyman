@@ -82,7 +82,7 @@ To support another editor, add a case to `open_worktree` in `scripts/worktree` t
 | Thing | Scope | Mechanism |
 |-------|-------|-----------|
 | `node_modules` | per worktree | Normal `pnpm install` (via `postCreateCommand`) |
-| pnpm store | shared | `npm_config_store_dir=<worktrees>/.shared/pnpm-store` in `docker-compose.yml` |
+| pnpm store | shared | `pnpm_config_store_dir=<worktrees>/.shared/pnpm-store` in `docker-compose.yml` |
 | Nx local cache and project graph (`.nx/`) | per worktree | Nx default |
 | Nx task outputs | shared | `nx-cache` sidecar ([`nx-cache-server.mjs`](../../../.devcontainer/nx-cache-server.mjs)) via `NX_SELF_HOSTED_REMOTE_CACHE_SERVER` |
 | `nx`, `biome`, `eslint`, `scripts/commands` on `PATH` | per worktree | `remoteEnv` in `devcontainer.json` uses `${containerWorkspaceFolder}` |
@@ -90,7 +90,7 @@ To support another editor, add a case to `open_worktree` in `scripts/worktree` t
 
 Why Nx needs a server: Nx 22 only restores artifacts recorded in its per-worktree database (`.nx/workspace-data`). Pointing `NX_CACHE_DIRECTORY` at a shared folder therefore produces cache misses. The sidecar implements Nx's self-hosted remote cache API, and hits show as `[remote cache]` in Nx output. Each container runs its own sidecar, but they all read and write `.shared/nx-cache`.
 
-Dagger sets `npm_config_store_dir=.pnpm-store` and mounts its own cache volume at that path. Never set `storeDir` in `pnpm-workspace.yaml`: it takes precedence over the env var and would split the store.
+Dagger sets `pnpm_config_store_dir=.pnpm-store` and mounts its own cache volume at that path. Never set `storeDir` in `pnpm-workspace.yaml`: it takes precedence over the env var and would split the store.
 
 ---
 
