@@ -138,15 +138,17 @@ func (m *Ci) Publish(
 		return "", fmt.Errorf("publishing requires --github-env for npm trusted publishing (or use --dry-run)")
 	}
 
-	built := m.installed(m.Source).WithExec([]string{"nx", "run-many", "-t", "build", "--skip-nx-cache"})
-
-	unpublished, err := m.unpublishedPackages(ctx, built)
+	// Check the registry before building, so pushes with nothing to publish skip the uncached build
+	installed := m.installed(m.Source)
+	unpublished, err := m.unpublishedPackages(ctx, installed)
 	if err != nil {
 		return "", err
 	}
 	if len(unpublished) == 0 {
 		return "", nil
 	}
+
+	built := installed.WithExec([]string{"nx", "run-many", "-t", "build", "--skip-nx-cache"})
 
 	// pnpm resolves `workspace:` and `catalog:` specifiers while packing
 	packer := built
