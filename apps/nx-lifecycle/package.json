@@ -40,8 +40,6 @@
   "dependencies": {
     "@nx/devkit": "catalog:",
     "ci-info": "catalog:",
-    "common-proxy": "workspace:^",
-    "default-import": "workspace:^",
     "entry-script": "workspace:^",
     "fast-equals": "catalog:",
     "format-file": "workspace:^",
@@ -50,7 +48,6 @@
     "juniper": "workspace:^",
     "juniper-validator": "workspace:^",
     "nx": "catalog:",
-    "nx-plugin-handler": "workspace:^",
     "parse-cwd": "workspace:^",
     "yargs": "catalog:"
   },

@@ -45,11 +45,17 @@
                           "properties": {
                             "dependencies": {
                               "type": "boolean"
+                            },
+                            "projects": {
+                              "not": {}
                             }
                           }
                         },
                         {
                           "properties": {
+                            "dependencies": {
+                              "not": {}
+                            },
                             "projects": {
                               "oneOf": [
                                 {

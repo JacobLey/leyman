@@ -4,6 +4,7 @@ import {
     booleanSchema,
     enumSchema,
     mergeSchema,
+    neverSchema,
     objectSchema,
     stringSchema,
 } from 'juniper';
@@ -17,13 +18,16 @@ const dependencyObject = objectSchema({
     },
     required: ['target'],
 }).oneOf([
+    // Nx forbids `dependencies` and `projects` together
     objectSchema({
         properties: {
             dependencies: booleanSchema(),
+            projects: neverSchema(),
         },
     }),
     objectSchema({
         properties: {
+            dependencies: neverSchema(),
             projects: mergeSchema().oneOf([arraySchema(stringSchema()), stringSchema()]),
         },
         required: ['projects'],

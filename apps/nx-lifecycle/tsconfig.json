@@ -14,9 +14,6 @@
       "path": "../../tools/parse-cwd"
     },
     {
-      "path": "../../tools/nx-plugin-handler"
-    },
-    {
       "path": "../juniper-validator"
     },
     {
@@ -33,12 +30,6 @@
     },
     {
       "path": "../../tools/entry-script"
-    },
-    {
-      "path": "../../tools/default-import"
-    },
-    {
-      "path": "../../tools/common-proxy"
     },
     {
       "path": "../../tools/sinon-typed-stub"
