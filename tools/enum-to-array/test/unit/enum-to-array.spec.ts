@@ -3,7 +3,6 @@ import { expect } from '@leyman/expect';
 import * as EnumToArray from 'enum-to-array';
 import { suite, test } from 'mocha-chain';
 
-/* eslint-disable no-restricted-syntax */
 // This test suite implements multiple enum anti-patterns
 // to ensure it works as intended, hence eslint-disable abuse.
 

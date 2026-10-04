@@ -32,6 +32,7 @@ minimumReleaseAgeExclude:
 trustPolicy: no-downgrade
 trustPolicyExclude:
   # Old releases (already in the lockfile) published without provenance after a newer major had it
+  - chokidar@4.0.3
   - semver@6.3.1
 # Transitive dependencies may only come from the registry (no git/tarball URLs)
 blockExoticSubdeps: true
@@ -44,7 +45,7 @@ ignoredBuiltDependencies:
 
 catalog:
   '@biomejs/biome': ^2.5.14
-  '@changesets/cli': ^2.30.0
+  '@changesets/cli': ^2.31.1
   '@eslint/js': ^10.0.1
   '@nx/devkit': ^22.7.12
   '@nx/js': ^22.7.12
@@ -53,24 +54,24 @@ catalog:
   '@pnpm/lockfile.pruner': ^0.0.6
   '@pnpm/logger': ^5.2.0
   '@standard-schema/spec': ^1.1.0
-  '@swc/cli': ^0.8.0
-  '@swc/core': ^1.15.21
-  '@swc/helpers': ^0.5.19
+  '@swc/cli': ^0.8.1
+  '@swc/core': ^1.16.2
+  '@swc/helpers': ^0.5.23
   '@tanstack/react-query': ^5.95.2
   '@testing-library/react-hooks': ^8.0.1
   '@types/chai': ^5.2.3
   '@types/chai-as-promised': ^8.0.2
   '@types/eslint': ^9.6.1
   '@types/mocha': ^10.0.10
-  '@types/node': ^24.12.0
-  '@types/react': ^19.2.14
-  '@types/sinon': ^21.0.0
+  '@types/node': ^24.19.0
+  '@types/react': ^19.3.0
+  '@types/sinon': ^21.0.1
   '@types/tmp': ^0.2.6
   '@types/yargs': ^17.0.35
   '@typescript-eslint/eslint-plugin': ^8.57.2
   '@typescript-eslint/parser': ^8.57.2
   '@typescript-eslint/utils': ^8.57.2
-  ajv: ^8.18.0
+  ajv: ^8.20.0
   c8: ^11.0.0
   chai: ^6.2.2
   chai-as-promised: ^8.0.2
@@ -78,36 +79,36 @@ catalog:
   ci-info: ^4.4.0
   comment-json: ^4.5.1
   escape-string-regexp: ^5.0.0
-  eslint: ^9.39.4
+  eslint: ^9.39.5
   eslint-config-prettier: ^10.1.8
   eslint-plugin-import: ^2.32.0
-  eslint-plugin-jsdoc: ^62.8.0
+  eslint-plugin-jsdoc: ^62.9.0
   eslint-plugin-jsx-a11y: ^6.10.2
   eslint-plugin-n: ^17.24.0
   eslint-plugin-react: ^7.37.5
-  eslint-plugin-react-hooks: ^7.0.1
+  eslint-plugin-react-hooks: ^7.1.1
   eslint-plugin-sonarjs: ^4.0.2
   eslint-plugin-unicorn: ^63.0.0
   eta: ^4.5.0
-  expect-type: ^1.3.0
-  fast-equals: ^6.0.0
+  expect-type: ^1.4.0
+  fast-equals: ^6.0.4
   find-up: ^8.0.0
-  globby: ^16.1.1
-  mocha: ^11.7.5
-  npm: ^11.12.0
+  globby: ^16.2.4
+  mocha: ^11.8.0
+  npm: ^11.20.0
   nx: ^22.7.12
   p-defer: ^4.0.1
-  prettier: ^3.8.1
-  react: ^19.2.4
-  react-dom: ^19.2.4
-  sinon: ^21.0.3
+  prettier: ^3.9.9
+  react: ^19.3.0
+  react-dom: ^19.3.0
+  sinon: ^21.1.2
   tmp-promise: ^3.0.3
-  ts-dedent: ^2.2.0
-  typescript: ^6.0.2
-  uint8array-extras: ^1.5.0
+  ts-dedent: ^2.3.0
+  typescript: ^6.0.3
+  uint8array-extras: ^1.6.0
   vite: ^8.3.1
   vitest: ^5.0.2
-  yargs: ^18.0.0
+  yargs: ^18.2.0
 
 catalogs:
   # These are dependencies on local packages that can't actually be used locally
