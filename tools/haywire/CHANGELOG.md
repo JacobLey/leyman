@@ -1,5 +1,23 @@
 # haywire
 
+## 1.1.0
+
+### Minor Changes
+
+- 474fda9: Containers can now release the singletons they created. `container.disposeAsync()` (or `await using`) disposes every singleton in reverse creation order, using the instance's `Symbol.asyncDispose`/`Symbol.dispose` by default or a disposer set with `binding.withDisposer()`. Once disposed, a container rejects further requests.
+  
+  Also fixes `named()`, `nullable()`, `undefinable()` and `list()` on a binding resetting its scope to transient.
+- 898a75c: Add `module.replaceBinding(binding)` to swap a binding for another, such as a fake in tests. It is type-checked like `addBinding`: a binding for the id must already exist, the replacement must still satisfy everything that depends on it, and its own dependencies must be provided by the module. For a list, it replaces every binding of that list.
+
+### Patch Changes
+
+- a59b9b4: Faster type-checking of large modules built with `addBinding()`. `addBinding()`, `replaceBinding()` and `createModule()` no longer recompute the base ids of every existing output to validate the incoming binding's dependencies, cutting check time by about a quarter to a third for a 200-binding module.
+- 5ecdfe1: Type errors now say what is wrong, e.g. `{ error: "Error: an output is already bound. Use replaceBinding() on a module to swap it." }`, for module bindings, `toContainer()`/`createContainer()`, `container.get()`/`getAsync()` and `factory.bindInstance()`, instead of `'[]' is not assignable to 'never'` or `not assignable to 'IsClass'`.
+  
+  `module.toContainer()` now rejects a module with unbound dependencies at compile time, like `createContainer(module)` already did.
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+- ac478a2: Make the package easier to find and evaluate: a clearer npm description and keywords, and a README that opens with highlights and how it compares to alternatives.
+
 ## 1.0.0
 
 ### Major Changes

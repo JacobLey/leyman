@@ -1,6 +1,6 @@
 {
   "name": "iso-crypto",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES (including GCM), PBKDF2/HKDF key derivation and ECDH.",
   "engines": {
     "node": ">=24"

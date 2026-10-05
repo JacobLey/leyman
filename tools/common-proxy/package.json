@@ -1,6 +1,6 @@
 {
   "name": "common-proxy",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Wrap an ESM import so it is synchronously available as a promise-returning function in CommonJS.",
   "engines": {
     "node": ">=24"

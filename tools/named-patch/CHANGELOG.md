@@ -1,5 +1,12 @@
 # named-patch
 
+## 2.0.1
+
+### Patch Changes
+
+- b188e25: Patched methods expose the original method's own properties (e.g. static helpers), reading and writing through to the original, as their `PatchableInterface<T>` type already promised.
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+
 ## 2.0.0
 
 ### Major Changes

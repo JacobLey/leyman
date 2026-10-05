@@ -1,5 +1,24 @@
 # load-populate-files
 
+## 1.0.1
+
+### Patch Changes
+
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+- Updated dependencies [154d9b2]
+- Updated dependencies [f8f3040]
+- Updated dependencies [6e1b3d8]
+- Updated dependencies [8d4d541]
+- Updated dependencies [154d9b2]
+- Updated dependencies [15f5262]
+- Updated dependencies [ac478a2]
+  - juniper@2.1.0
+  - juniper-validator@0.2.0
+  - populate-files@1.0.1
+  - default-import@3.0.1
+  - entry-script@4.0.1
+  - parse-cwd@2.0.1
+
 ## 1.0.0
 
 ### Major Changes

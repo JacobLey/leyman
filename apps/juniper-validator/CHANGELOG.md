@@ -1,5 +1,23 @@
 # juniper-validator
 
+## 0.2.0
+
+### Minor Changes
+
+- 154d9b2: Validate standard formats (`email`, `uuid`, `date-time`, ...) with ajv-formats. Schemas using them previously failed to compile under Ajv's strict mode.
+
+### Patch Changes
+
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+- Updated dependencies [154d9b2]
+- Updated dependencies [f8f3040]
+- Updated dependencies [6e1b3d8]
+- Updated dependencies [8d4d541]
+- Updated dependencies [15f5262]
+- Updated dependencies [ac478a2]
+  - juniper@2.1.0
+  - default-import@3.0.1
+
 ## 0.1.0
 
 ### Minor Changes

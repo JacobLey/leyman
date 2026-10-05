@@ -1,5 +1,33 @@
 # juniper
 
+## 2.1.0
+
+### Minor Changes
+
+- 154d9b2: Add `schema.define(name)` for reusable definitions. A defined schema is emitted as a `$ref` wherever it is used, and `toJSON()` adds every definition it references to `$defs`, so references never point at a missing definition. Derived schemas keep the reference for annotations and `nullable()`, and are emitted inline otherwise. Add `components(schemas, options)` to collect definitions for OpenAPI's `components.schemas`, and a `definitionsPath` option to `toJSON`.
+  
+  Add `defineRecursive<T>(name, self => schema)` for schemas that reference themselves, such as trees or comment threads. The type is declared explicitly and the built schema is checked against it. `self` is emitted as a `$ref` to the definition, and supports `nullable()` and annotations.
+  
+  Fixes:
+  - A `.ref()` schema nested inside another schema (e.g. as a property) threw `this.getDefaultValues is not a function` when serialized.
+  - OpenAPI 3.0 output used `true`/`false` as property schemas, which OpenAPI 3.0 does not allow. They are now `{}` and `{ not: {} }`.
+  
+  `JsonSchema['type']` is now typed as the JSON Schema type names (exported as `JsonSchemaType`) rather than `string`.
+- f8f3040: Add `ObjectSchema.extend(schema)` to add the properties and `required` of another object schema. Duplicate properties are rejected, and `additionalProperties` applies to the combined properties, so a closed object stays closed.
+  
+  `required()` with no keys marks every property as required, the inverse of `partial()`.
+  
+  `StringSchema.format` autocompletes the formats defined by JSON Schema and OpenAPI 3.0 (exported as `KnownFormat`), and still accepts any string.
+  
+  `$defs` and `components()` are sorted by name, so output no longer depends on the order definitions are used in.
+- 6e1b3d8: Add `pick`, `omit` and `partial` to `ObjectSchema`, to derive variants of an object schema (such as create, update and response shapes) with matching types. Keys are checked against the schema's properties.
+
+### Patch Changes
+
+- 8d4d541: Type errors now say what is wrong: `properties()` names a property that is already defined, `items()`/`contains()` say they are already set, and `metadata()` names a reserved JSON Schema keyword. Previously these read as `Expected 2 arguments, but got 1` or `not assignable to '[never]'`.
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+- ac478a2: Make the package easier to find and evaluate: a clearer npm description and keywords, and a README that opens with highlights and how it compares to alternatives.
+
 ## 2.0.0
 
 ### Major Changes

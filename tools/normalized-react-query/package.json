@@ -1,6 +1,6 @@
 {
   "name": "normalized-react-query",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "Type-safe query definitions for TanStack Query — define each key and fetcher once, and link related queries so they prefetch together.",
   "engines": {
     "node": ">=24"
