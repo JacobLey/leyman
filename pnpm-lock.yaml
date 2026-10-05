@@ -4601,13 +4601,6 @@ packages:
       entry-script: ^3.0.9
       haywire: ^0.1.8
 
-  haywire-launcher@file:tools/haywire-launcher:
-    resolution: {directory: tools/haywire-launcher, type: directory}
-    engines: {node: '>=24'}
-    peerDependencies:
-      entry-script: workspace:^
-      haywire: workspace:^
-
   haywire@0.1.8:
     resolution: {integrity: sha512-6Vhb/EytmMXZg/G9Yph75hFsaQDVMCSDsZbLcMTCRLzZZlNNCWlrLr0JOnuKusAt3938NwcpP9kEbzQIzc4PjA==}
     engines: {node: '>=20'}
@@ -9367,11 +9360,6 @@ snapshots:
       entry-script: 3.0.9
       haywire: 0.1.8
 
-  haywire-launcher@file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire):
-    dependencies:
-      entry-script: file:tools/entry-script
-      haywire: file:tools/haywire
-
   haywire@0.1.8:
     dependencies:
       p-defer: 4.0.1
@@ -9921,8 +9909,6 @@ snapshots:
       entry-script: file:tools/entry-script
       fast-equals: 6.0.4
       format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
-      haywire: file:tools/haywire
-      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper: file:apps/juniper
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper)
       nx: 23.2.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
