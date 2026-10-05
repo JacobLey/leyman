@@ -22,6 +22,9 @@ const (
 	// Exempt from `minimumReleaseAge` (it only covers lockfile dependencies). 12.9.1 fixes `--frozen-lockfile`
 	// rejecting the lockfile of injected workspace packages with `catalog:` peer dependencies.
 	pnpmVersion = "12.9.1"
+	// Keep in sync with `playwright` in `pnpm-workspace.yaml`. Only installs the browsers' system libraries here;
+	// the `playwright-install` target downloads the browsers themselves.
+	playwrightVersion = "1.62.1"
 )
 
 const (
@@ -29,6 +32,7 @@ const (
 	storeDir    = "/pnpm-store"
 	cacheDir    = "/pnpm-cache"
 	tarballDir  = "/tarballs"
+	browsersDir = "/playwright-browsers"
 	npmRegistry = "https://registry.npmjs.org"
 )
 
@@ -73,7 +77,7 @@ func (m *Ci) Test(
 	nxCache *dagger.Service,
 ) error {
 	// Pending changesets don't affect tests, so keep them from invalidating the cache
-	ctr := m.installed(m.Source.WithoutDirectory(".changeset"))
+	ctr := m.installedOn(m.browserBase(), m.Source.WithoutDirectory(".changeset"))
 	if nxCache != nil {
 		ctr = ctr.
 			WithServiceBinding("nx-cache", nxCache).
@@ -257,10 +261,23 @@ func (m *Ci) base() *dagger.Container {
 		WithWorkdir(workdir)
 }
 
+// Base image plus the system libraries Playwright's browsers need, with the browsers kept in a cache volume.
+func (m *Ci) browserBase() *dagger.Container {
+	return m.base().
+		WithExec([]string{"pnpm", "dlx", "playwright@" + playwrightVersion, "install-deps", "chromium", "firefox", "webkit"}).
+		WithMountedCache(browsersDir, dag.CacheVolume("playwright-browsers-"+playwrightVersion)).
+		WithEnvVariable("PLAYWRIGHT_BROWSERS_PATH", browsersDir)
+}
+
 // Workspace with dependencies installed.
+func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
+	return m.installedOn(m.base(), source)
+}
+
+// Workspace with dependencies installed on top of `base`.
 //
 // Dependencies are fetched from the lockfile alone, so source-only changes reuse the cached fetch layer.
-func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
+func (m *Ci) installedOn(base *dagger.Container, source *dagger.Directory) *dagger.Container {
 	lockfiles := source.Filter(dagger.DirectoryFilterOpts{
 		Include: []string{"pnpm-lock.yaml", "pnpm-workspace.yaml"},
 	})
@@ -276,7 +293,7 @@ func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
 		WithExec([]string{"sh", "-c", `grep -oE 'resolution: \{directory: [^,]+' pnpm-lock.yaml | cut -d ' ' -f 3 | xargs -r mkdir -p`}).
 		WithExec([]string{"pnpm", "fetch"})
 
-	return m.base().
+	return base.
 		WithDirectory(storeDir, fetched.Directory(storeDir)).
 		WithDirectory(cacheDir, fetched.Directory(cacheDir)).
 		WithDirectory(workdir, source).

@@ -61,6 +61,7 @@
     "tsc": "build:run",
     "populate-files": "build:post",
     "tsc-test": "test:compile",
+    "playwright-install": "test:compile",
     "mocha-unit-test": "test:run",
     "mocha-integration-test": "test:run",
     "vitest-unit-test": "test:run",

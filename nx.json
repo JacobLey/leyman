@@ -268,6 +268,20 @@
         "build:post"
       ]
     },
+    "playwright-install": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "playwright install chromium firefox webkit"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "dependsOn": [
+        "test:_"
+      ]
+    },
     "mocha-unit-test": {
       "executor": "nx:run-commands",
       "options": {
@@ -512,7 +526,8 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test:_",
-        "tsc-test"
+        "tsc-test",
+        "playwright-install"
       ],
       "configurations": {
         "__lifecycle": {}

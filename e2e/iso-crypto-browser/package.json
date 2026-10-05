@@ -28,6 +28,7 @@
     "iso-crypto": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
+    "playwright": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:"
   }

@@ -104,6 +104,9 @@ catalog:
   openapi-types: ^12.1.3
   openapi3-ts: ^4.6.1
   p-defer: ^4.0.1
+  # Pinned: 1.63.0's browser downloader fails in the devcontainer and Docker. Browser builds are tied to this
+  # version, so keep `PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` and `dagger/main.go` in sync.
+  playwright: 1.62.1
   prettier: ^3.9.9
   react: ^19.3.0
   react-dom: ^19.3.0

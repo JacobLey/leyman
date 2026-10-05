@@ -23,6 +23,7 @@ Files live on the host, so they survive container rebuilds. Claude Code config i
 | pnpm | Package management | Version pinned via `ARG PNPM_VERSION` |
 | Go | Golang runtime (primarily used by Dagger) | Version pinned via `ARG GO_VERSION`; also installs `gopls` |
 | Dagger CLI | Mirror CI execution locally | Version pinned via `ARG DAGGER_VERSION` |
+| Playwright browser libraries | System libraries for Chromium, Firefox and WebKit | Version pinned via `ARG PLAYWRIGHT_VERSION`. The browsers themselves are downloaded by the `playwright-install` target to `PLAYWRIGHT_BROWSERS_PATH`, shared between worktrees |
 | Docker | `docker-outside-of-docker` devcontainer feature | Shares the host Docker socket — required to run Dagger |
 | Nx, Biome, ESLint | Workspace tooling | From `leyman/main/node_modules/.bin`, on `PATH` via `remoteEnv` after `postCreateCommand` runs `pnpm install` |
 | Local Scripts | Complicated combos of tasks in a single command | `<worktree>/scripts/commands` is on `PATH` (via `remoteEnv`), exposing these shortcuts |
@@ -39,5 +40,6 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 | pnpm | `ARG PNPM_VERSION` in `.devcontainer/Dockerfile` | `pnpmVersion` in `dagger/main.go` |
 | dagger | `ARG DAGGER_VERSION` in `.devcontainer/Dockerfile` | `engineVersion` in `dagger/dagger.json`, and `DAGGER_VERSION` in `.github/workflows/ci.yml` |
 | Debian | base image tag in `.devcontainer/Dockerfile` (`debian13`) | `nodeImage` variant in `dagger/main.go` (`trixie` = Debian 13) |
+| Playwright | `ARG PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` | `playwrightVersion` in `dagger/main.go`. Both must also match `playwright` in `pnpm-workspace.yaml` |
 
 **When upgrading a runtime version, update all locations in the table above.** `nodeImage` is pinned by digest; get the new one with `docker buildx imagetools inspect node:<tag>`. A mismatch means `dagger-test` runs under a different Node/pnpm version than local development — bugs that only reproduce in CI are a common symptom.

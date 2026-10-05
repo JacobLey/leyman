@@ -6,6 +6,8 @@ ARG NODE_VERSION=24.21.0
 ARG PNPM_VERSION=12.9.1
 ARG DAGGER_VERSION=0.21.10
 ARG GO_VERSION=1.26.8
+# Only for the browsers' system libraries; browsers themselves are installed by the `playwright-install` target
+ARG PLAYWRIGHT_VERSION=1.62.1
 
 RUN apt-get update \
     && apt-get upgrade -y \
@@ -47,6 +49,9 @@ RUN ARCH="$(dpkg --print-architecture)" && \
 # Install dagger
 RUN curl -fsSL https://dl.dagger.io/dagger/install.sh | \
     DAGGER_VERSION=${DAGGER_VERSION} BIN_DIR=$HOME/.local/bin sh
+
+# Install system libraries for Playwright's browsers (needs root, so it can't happen at test time)
+RUN pnpm dlx playwright@${PLAYWRIGHT_VERSION} install-deps chromium firefox webkit
 
 # Install brew https://brew.sh/
 #ENV PATH=/home/linuxbrew/.linuxbrew/bin:/home/linuxbrew/.linuxbrew/sbin:$PATH

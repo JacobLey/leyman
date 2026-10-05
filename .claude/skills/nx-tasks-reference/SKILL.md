@@ -116,6 +116,14 @@ A build outside Nx (e.g. running `tsc` directly) doesn't sync. Run the package's
 
 ---
 
+### `playwright-install`
+
+Downloads the Chromium, Firefox and WebKit builds for the project's Playwright version (`playwright install`), to `PLAYWRIGHT_BROWSERS_PATH`. Runs in `test:compile`, before the test suites. Never cached: the browsers live outside the workspace, and it is a quick no-op once they are downloaded. Their system libraries need root, so they come from the devcontainer image and the Dagger pipeline instead (see the [devcontainer skill](../devcontainer/SKILL.md)).
+
+**Add when:** The package's tests drive browsers with Playwright.
+
+---
+
 ### `mocha-unit-test`
 
 Clears its coverage directory, then runs Mocha unit tests from `./dist-test/unit/**/*.spec.*js` under C8 coverage instrumentation.

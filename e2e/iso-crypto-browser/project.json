@@ -5,6 +5,7 @@
     "biome": {},
     "eslint": {},
     "tsc-test": {},
+    "playwright-install": {},
     "mocha-integration-test": {},
     "install:_": {},
     "install": {},

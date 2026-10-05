@@ -19,6 +19,8 @@ services:
       CLAUDE_CONFIG_DIR: ${WORKTREES_DIR}/.shared/claude-config
       # Every worktree installs from one shared store
       pnpm_config_store_dir: ${WORKTREES_DIR}/.shared/pnpm-store
+      # Browsers for Playwright tests, downloaded once and kept across rebuilds
+      PLAYWRIGHT_BROWSERS_PATH: ${WORKTREES_DIR}/.shared/playwright-browsers
       NX_SELF_HOSTED_REMOTE_CACHE_SERVER: http://nx-cache:3000
 
     depends_on:
