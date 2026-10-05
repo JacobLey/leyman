@@ -394,7 +394,12 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      */
     public metadata<K extends string, V>(
         this: this,
-        ...meta: (K & ReservedWords extends never ? unknown[] : [never]) & ([K, V] | [Record<K, V>])
+        ...meta: (K & ReservedWords extends never
+            ? unknown[]
+            : [
+                  `Error: "${K & ReservedWords}" is a JSON Schema keyword. Set it with its own method.`,
+              ]) &
+            ([K, V] | [Record<K, V>])
     ): this {
         const metadata = { ...this.#metadata };
         if (meta.length === 1) {

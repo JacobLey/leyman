@@ -128,8 +128,8 @@ export class TupleSchema<
      */
     declare public contains: <C2 extends ToBaseType<P[number]>>(
         this: AnyTupleSchema,
-        items: AbstractSchema<SchemaGenerics<C2>>,
-        invalid: IsNever<C> extends true ? void : never
+        items: AbstractSchema<SchemaGenerics<C2>> &
+            (IsNever<C> extends true ? unknown : { error: 'Error: contains is already set.' })
     ) => TupleSchema<T, P, C2, M, N>;
 
     /**

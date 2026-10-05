@@ -329,20 +329,24 @@ export class ObjectSchema<
      */
     public properties<T extends BaseParameterSchemaObject>(
         this: this,
-        properties: T,
-        ...invalid: keyof P & keyof T extends never ? [] : [never]
+        properties: T &
+            (keyof P & keyof T extends never
+                ? unknown
+                : {
+                      error: `Error: property "${Extract<keyof P & keyof T, string>}" is already defined.`;
+                  })
     ): ObjectSchema<P & T, R, A, X, M, N>;
     /**
      * @inheritdoc
      */
     public properties<T extends BaseParameterSchemaObject>(
         this: this,
-        ...properties: [T, ...never[]]
+        properties: T
     ): ObjectSchema<P & T, R, A, X, M, N> {
         return (this as unknown as ObjectSchema<P & T, R, A, X, M, N>).clone({
             properties: {
                 ...(this.#properties as P),
-                ...properties[0],
+                ...properties,
             },
         });
     }

@@ -35,7 +35,9 @@ suite('ArraySchema', () => {
                     expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                         `${string}el${string}`[]
                     >();
-                    expectTypeOf<Parameters<(typeof schema)['items']>[1]>().toBeNever();
+                    expectTypeOf<Parameters<(typeof schema)['items']>[0]>().toExtend<{
+                        error: 'Error: items is already set.';
+                    }>();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'array',
@@ -64,7 +66,9 @@ suite('ArraySchema', () => {
                     expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                         `${string}el${string}`[][]
                     >();
-                    expectTypeOf<Parameters<(typeof schema)['items']>[1]>().toBeNever();
+                    expectTypeOf<Parameters<(typeof schema)['items']>[0]>().toExtend<{
+                        error: 'Error: items is already set.';
+                    }>();
 
                     expect(schema.toJSON()).to.deep.equal({
                         type: 'array',
@@ -105,8 +109,12 @@ suite('ArraySchema', () => {
                 .prependPrefixItem(arraySchema(stringSchema().endsWith('b')))
                 .contains(arraySchema(stringSchema().startsWith('ab')));
 
-            expectTypeOf<Parameters<(typeof schema)['contains']>[1]>().toBeNever();
-            expectTypeOf<Parameters<(typeof schema)['items']>[1]>().toBeNever();
+            expectTypeOf<Parameters<(typeof schema)['contains']>[0]>().toExtend<{
+                error: 'Error: contains is already set.';
+            }>();
+            expectTypeOf<Parameters<(typeof schema)['items']>[0]>().toExtend<{
+                error: 'Error: items is already set.';
+            }>();
 
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                 [`${string}b`[], `${string}c`, `${string}d`, ...`a${string}`[][]]
@@ -261,7 +269,9 @@ suite('ArraySchema', () => {
         test('Unsets nullable', () => {
             const baseSchema = arraySchema().items(neverSchema());
             expectTypeOf<SchemaType<typeof baseSchema>>().toEqualTypeOf<[]>();
-            expectTypeOf<Parameters<(typeof baseSchema)['items']>[1]>().toBeNever();
+            expectTypeOf<Parameters<(typeof baseSchema)['items']>[0]>().toExtend<{
+                error: 'Error: items is already set.';
+            }>();
 
             const nullableSchema = baseSchema.nullable();
             expectTypeOf<SchemaType<typeof nullableSchema>>().toEqualTypeOf<[] | null>();

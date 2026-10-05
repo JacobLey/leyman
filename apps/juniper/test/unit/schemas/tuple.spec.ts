@@ -41,7 +41,9 @@ suite('TupleSchema', () => {
                 .prependPrefixItem(stringSchema().endsWith('b'))
                 .contains(stringSchema().startsWith('ab'));
 
-            expectTypeOf<Parameters<(typeof schema)['contains']>[1]>().toBeNever();
+            expectTypeOf<Parameters<(typeof schema)['contains']>[0]>().toExtend<{
+                error: 'Error: contains is already set.';
+            }>();
 
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                 [`${string}b`, `${string}c`, `${string}d`]

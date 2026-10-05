@@ -239,8 +239,8 @@ export class ArraySchema<
      */
     public items<T2>(
         this: this,
-        items: AbstractSchema<SchemaGenerics<T2>>,
-        invalid: IsAny<T> extends true ? void : never
+        items: AbstractSchema<SchemaGenerics<T2>> &
+            (IsAny<T> extends true ? unknown : { error: 'Error: items is already set.' })
     ): ArraySchema<T2, P, C, unknown, N>;
     /**
      * @inheritdoc
@@ -320,8 +320,8 @@ export class ArraySchema<
      */
     public contains<C2 extends ToBaseType<P[number] | T>>(
         this: this,
-        items: AbstractSchema<SchemaGenerics<C2>>,
-        invalid: IsNever<C> extends true ? void : never
+        items: AbstractSchema<SchemaGenerics<C2>> &
+            (IsNever<C> extends true ? unknown : { error: 'Error: contains is already set.' })
     ): ArraySchema<T, P, C2, M, N>;
     /**
      * @inheritdoc
