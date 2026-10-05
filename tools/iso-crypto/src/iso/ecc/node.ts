@@ -7,6 +7,7 @@ import { decrypt, encrypt } from '#encrypt';
 import { padBytes } from '../lib/bytes-length.js';
 import { eccMeta } from '../lib/size-meta.js';
 import { Algorithms, defaultCurve, defaultEncryption } from '../lib/types.js';
+import { eccKey } from './key.js';
 
 const getECDH = (curve: Curve): ECDH =>
     createECDH(curve === 'p256' ? 'prime256v1' : `sec${curve}r1`);
@@ -38,7 +39,7 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
     const encrypted = await encrypt(
         {
             data,
-            secret: ecdh.computeSecret(decode(publicKey)),
+            secret: await eccKey(ecdh.computeSecret(decode(publicKey)), curve, encryption),
         },
         { encryption, hash: Algorithms.RAW }
     );
@@ -59,7 +60,7 @@ export const eccDecrypt: (typeof Ecc)['eccDecrypt'] = async (
         {
             encrypted,
             iv,
-            secret: ecdh.computeSecret(decode(publicKey)),
+            secret: await eccKey(ecdh.computeSecret(decode(publicKey)), curve, encryption),
         },
         { encryption, hash: Algorithms.RAW }
     );

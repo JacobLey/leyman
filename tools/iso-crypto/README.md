@@ -329,7 +329,9 @@ Given one parties public key (a point), and another's private key (an integer), 
 
 This module focuses on the point mathematics required by ECC (relying on native modules as much as possible). Once a shared secret can be calculated, encryption is performed by the symmetric encryption algorithms provided by this module.
 
-Since the secret is determined by the private key + public key combination, it can be used directly without any need for hashing. As such, no hash algorithm is used with ECC encryption.
+With GCM, the AES key is derived from the shared secret with HKDF-SHA256 (no salt, with `iso-crypto ECDH <curve> AES-<size>-GCM` as the `info`). The shared secret is a curve coordinate rather than uniformly random bytes, and the `info` keeps one key pair from producing the same key for two algorithms.
+
+With CBC and CTR, the shared secret is used as the key directly (trimmed to the key size), as it always has been, so existing data stays readable. No `hash` option applies to ECC encryption.
 
 Any public keys returned by this module will use the compressed form of a public key by default, however both forms are accepted as input.
 

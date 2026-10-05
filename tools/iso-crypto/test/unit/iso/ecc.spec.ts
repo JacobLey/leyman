@@ -1,5 +1,7 @@
 import type { Context } from 'mocha';
 import type * as Ecc from '#ecc';
+import { createECDH, hkdf } from 'node:crypto';
+import { promisify } from 'node:util';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import * as IsoCrypto from 'iso-crypto';
@@ -47,6 +49,16 @@ suite('Ecc', () => {
                 cipher: Ciphers.AES,
                 size: 192,
                 mode: Modes.CTR,
+            },
+            {
+                cipher: Ciphers.AES,
+                size: 128,
+                mode: Modes.GCM,
+            },
+            {
+                cipher: Ciphers.AES,
+                size: 256,
+                mode: Modes.GCM,
             },
         ] as const) {
             for (const curve of [null, undefined, 'p256', 'p384', 'p521'] as const) {
@@ -240,6 +252,56 @@ suite('Ecc', () => {
         }
     };
 
+    const gcmKeyTest = async ({ source }: EccSourceContext) => {
+        const data = 'Is the kettle on?';
+        for (const curve of ['p256', 'p384', 'p521'] as const) {
+            for (const size of [128, 256] as const) {
+                const encryption = { size, cipher: Ciphers.AES, mode: Modes.GCM } as const;
+                const privateKey = await source.generateEccPrivateKey(curve);
+                const receiver = await source.generateEccPrivateKey(curve);
+
+                const encrypted = await source.eccEncrypt(
+                    {
+                        data,
+                        privateKey,
+                        publicKey: source.generateEccPublicKey(receiver, curve),
+                    },
+                    { curve, encryption }
+                );
+
+                const ecdh = createECDH(
+                    { p256: 'prime256v1', p384: 'secp384r1', p521: 'secp521r1' }[curve]
+                );
+                ecdh.setPrivateKey(receiver);
+                const sharedSecret = ecdh.computeSecret(encrypted.publicKey);
+                const key = new Uint8Array(
+                    await promisify(hkdf)(
+                        'sha256',
+                        sharedSecret,
+                        new Uint8Array(0),
+                        `iso-crypto ECDH ${curve} AES-${size}-GCM`,
+                        size / 8
+                    )
+                );
+
+                // The key is HKDF-SHA256 of the shared secret
+                const decrypted = await IsoCrypto.decrypt(
+                    { ...encrypted, secret: key },
+                    { encryption, hash: 'raw' }
+                );
+                expect(IsoCrypto.encode(decrypted)).to.equal(data);
+
+                // Not the shared secret itself
+                await expect(
+                    IsoCrypto.decrypt(
+                        { ...encrypted, secret: new Uint8Array(sharedSecret).slice(0, size / 8) },
+                        { encryption, hash: 'raw' }
+                    )
+                ).to.be.rejectedWith(Error);
+            }
+        }
+    };
+
     suite('From Browser', () => {
         const browserSource = before(() => ({
             source: BrowserEcc,
@@ -263,6 +325,7 @@ suite('Ecc', () => {
 
         browserSource.test('eccDecrypt', eccDecryptTest);
         browserSource.test('compression', compressionTest);
+        browserSource.test('GCM keys come from HKDF', gcmKeyTest);
     });
 
     suite('From Node', () => {
@@ -288,5 +351,6 @@ suite('Ecc', () => {
 
         nodeSource.test('eccDecrypt', eccDecryptTest);
         nodeSource.test('compression', compressionTest);
+        nodeSource.test('GCM keys come from HKDF', gcmKeyTest);
     });
 });

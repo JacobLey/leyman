@@ -8,6 +8,7 @@ import { curves, derivePublicKey } from '../lib/math.js';
 import { eccMeta } from '../lib/size-meta.js';
 import { Algorithms, defaultCurve, defaultEncryption } from '../lib/types.js';
 import { decompressEccPublicKey } from './compression.js';
+import { eccKey } from './key.js';
 
 const BITS_PER_BYTE = 8;
 const HEX_SIZE = 16;
@@ -127,7 +128,7 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
         encrypt(
             {
                 data,
-                secret: secretKey.secret,
+                secret: await eccKey(secretKey.secret, curve, encryption),
             },
             { encryption, hash: Algorithms.RAW }
         ),
@@ -156,7 +157,7 @@ export const eccDecrypt: (typeof Ecc)['eccDecrypt'] = async (
         {
             encrypted,
             iv,
-            secret,
+            secret: await eccKey(secret, curve, encryption),
         },
         { encryption, hash: Algorithms.RAW }
     );
