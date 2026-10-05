@@ -1,5 +1,14 @@
 # mocha-chain
 
+## 1.0.1
+
+### Patch Changes
+
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+- ac478a2: Make the package easier to find and evaluate: a clearer npm description and keywords, and a README that opens with highlights and how it compares to alternatives.
+- Updated dependencies [15f5262]
+  - test-chain-core@0.1.1
+
 ## 1.0.0
 
 ### Major Changes

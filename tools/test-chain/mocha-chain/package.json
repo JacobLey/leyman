@@ -1,6 +1,6 @@
 {
   "name": "mocha-chain",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Chain mocha BDD methods together for deterministic and type safe tests.",
   "engines": {
     "node": ">=24"

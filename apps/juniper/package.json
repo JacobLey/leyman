@@ -1,6 +1,6 @@
 {
   "name": "juniper",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output.",
   "engines": {
     "node": ">=24"

@@ -1,6 +1,6 @@
 {
   "name": "barrelify",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.",
   "engines": {
     "node": ">=24"

@@ -1,5 +1,17 @@
 # normalized-react-query
 
+## 2.0.1
+
+### Patch Changes
+
+- aed2e55: Document the suspense and prefetch infinite hooks (`useNormalizedSuspenseInfiniteQuery`, `useNormalizedNullableSuspenseInfiniteQuery`, `useNormalizedPrefetchInfiniteQuery`, `useNormalizedPrefetchedSuspenseInfiniteQuery`, `useNormalizedNullablePrefetchedSuspenseInfiniteQuery`) and the `getParams`, `Infinite#getQueryFn` and `Infinite#getInfiniteQueryData` methods in the README.
+- 7604ec7: Fix hooks that render without a link (or with `skipToken`) before they get one. Tanstack hooks stay on the client they first render with, so these hooks never read the link's client and kept rendering placeholder data (or, for the nullable suspense hooks, suspended forever when params were later skipped). Disabled hooks now render with the context client.
+  
+  Stop cancelling in-flight queries whose last observer unmounts (e.g. every query under `StrictMode`). The query context was spread to add `params`, which reads `signal` and tells Tanstack the query can be aborted.
+- bd095c3: Fix `useNormalizedPrefetchedSuspenseQuery` reading from the context client instead of the link's client. It required a `QueryClientProvider`, and a link from another client suspended and refetched into the provider's cache, while its own links loaded into the link's client.
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+- ac478a2: Make the package easier to find and evaluate: a clearer npm description and keywords, and a README that opens with highlights and how it compares to alternatives.
+
 ## 2.0.0
 
 ### Major Changes

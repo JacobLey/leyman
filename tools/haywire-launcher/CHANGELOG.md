@@ -1,5 +1,19 @@
 # haywire-launcher
 
+## 1.0.1
+
+### Patch Changes
+
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+- Updated dependencies [a59b9b4]
+- Updated dependencies [474fda9]
+- Updated dependencies [5ecdfe1]
+- Updated dependencies [898a75c]
+- Updated dependencies [15f5262]
+- Updated dependencies [ac478a2]
+  - haywire@1.1.0
+  - entry-script@4.0.1
+
 ## 1.0.0
 
 ### Major Changes

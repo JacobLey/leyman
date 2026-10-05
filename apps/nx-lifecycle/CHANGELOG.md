@@ -1,5 +1,30 @@
 # nx-lifecycle
 
+## 1.1.0
+
+### Minor Changes
+
+- 9cdad1b: Add `nx-lifecycle explain <project> [stage]`, which prints a project's stages in the order they run, with their hooks, the bound targets the project declares, and the upstream projects of `^` dependencies.
+
+### Patch Changes
+
+- 07de8ec: Drop the `haywire` and `haywire-launcher` dependencies. The executor, CLI and plugin call their dependencies directly, with no behavior change.
+- b1c6c12: `--dry-run` no longer formats out of date files, so it leaves the workspace untouched.
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+- ac478a2: Make the package easier to find and evaluate: a clearer npm description and keywords, and a README that opens with highlights and how it compares to alternatives.
+- Updated dependencies [154d9b2]
+- Updated dependencies [f8f3040]
+- Updated dependencies [6e1b3d8]
+- Updated dependencies [8d4d541]
+- Updated dependencies [154d9b2]
+- Updated dependencies [15f5262]
+- Updated dependencies [ac478a2]
+  - juniper@2.1.0
+  - juniper-validator@0.2.0
+  - entry-script@4.0.1
+  - format-file@1.0.1
+  - parse-cwd@2.0.1
+
 ## 1.0.0
 
 ### Major Changes

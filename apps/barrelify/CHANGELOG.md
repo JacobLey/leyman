@@ -1,5 +1,20 @@
 # barrelify
 
+## 2.1.0
+
+### Minor Changes
+
+- 2e241de: Re-export `.tsx` files (as `./Component.js`) and manage `index.tsx` barrels. Declaration files (`.d.ts`) are no longer re-exported, which produced unresolvable `./foo.d.js` imports.
+
+### Patch Changes
+
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+- ac478a2: Make the package easier to find and evaluate: a clearer npm description and keywords, and a README that opens with highlights and how it compares to alternatives.
+- Updated dependencies [15f5262]
+  - populate-files@1.0.1
+  - entry-script@4.0.1
+  - parse-cwd@2.0.1
+
 ## 2.0.0
 
 ### Major Changes

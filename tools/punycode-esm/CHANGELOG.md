@@ -1,5 +1,11 @@
 # punycode-esm
 
+## 2.0.1
+
+### Patch Changes
+
+- 15f5262: Fix README links that were broken on npm: relative links (such as WHY files and sibling packages) are now absolute, table-of-contents anchors match their headings, LICENSE badges point at the right path, and `repository` now names the package's directory in the monorepo.
+
 ## 2.0.0
 
 ### Major Changes
