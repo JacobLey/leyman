@@ -3,7 +3,7 @@ import type * as Encrypt from './types.js';
 import { decode } from '#encode';
 import { hash } from '#hash';
 import { randomBytes } from '#random';
-import { fixBytes } from '../lib/bytes-length.js';
+import { fitKey } from '../lib/fit-key.js';
 import { encryptionMeta } from '../lib/size-meta.js';
 import { defaultEncryption, defaultHash } from '../lib/types.js';
 
@@ -35,7 +35,7 @@ export const encrypt: (typeof Encrypt)['encrypt'] = async (
 
     const key = await crypto.subtle.importKey(
         'raw',
-        fixBytes(secretHash, sizes.secret),
+        fitKey(secretHash, encryption, hashAlgorithm),
         algorithm.name,
         false,
         ['encrypt']
@@ -60,14 +60,13 @@ export const decrypt: (typeof Encrypt)['decrypt'] = async (
     { encrypted, iv, secret },
     { encryption = defaultEncryption, hash: hashAlgorithm = defaultHash } = {}
 ) => {
-    const sizes = encryptionMeta(encryption);
     const algorithm = encryptionToAlgorithm(encryption);
 
     const hashedSecret = await hash(secret, hashAlgorithm);
 
     const key = await crypto.subtle.importKey(
         'raw',
-        fixBytes(hashedSecret, sizes.secret),
+        fitKey(hashedSecret, encryption, hashAlgorithm),
         algorithm.name,
         false,
         ['decrypt']

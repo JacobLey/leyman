@@ -275,7 +275,7 @@ Any method that performs symmetric encryption can take the encryption algorithm 
 
 Similarly the default ECC algorithm is `prime256v1` (`{ curve: 'p256' }`).
 
-Many algorithms required keys/buffers of fixed size. However there is no enforcement by this library that the provided values meet that size. The general approach is to hash the input, then adjust the bytes to fix. Buffers that are too small have `0` prepended, and similarly when too large are stripped from their beginning to match the desired size.
+Many algorithms require keys of a fixed size. The general approach is to hash the input, then adjust the bytes to fit: buffers that are too large are stripped from their beginning to match the desired size. With CBC and CTR, buffers that are too small have `0` prepended, as they always have. GCM rejects them instead (a raw key must be exactly the key size, and a hash at least that long), since padding silently weakens the key.
 
 It is important to note that encryption _IS NOT_ the same as compression. In fact encryption methods will generally be slightly larger than the original input.
 
@@ -299,7 +299,7 @@ Symmetric encryption algorithms take a message (a.k.a. `data`) and a "key" (a.k.
 
 The same key (this is what makes it "symmetric") can then be used decrypt the output and retrieve the original message.
 
-The key length is specified by the algorithm (e.g. `aes-256-ctr` requires 32 bytes), which may not necessarily match the actual length of the secret provided. Similarly the provided secret may not have "uniform distribution" of bytes (e.g. `Password123` only has bytes between `30`-`7A`). To mediate, the secret is hashed, and has bytes prepended/removed from the beginning of the buffer to match.
+The key length is specified by the algorithm (e.g. `aes-256-ctr` requires 32 bytes), which may not necessarily match the actual length of the secret provided. Similarly the provided secret may not have "uniform distribution" of bytes (e.g. `Password123` only has bytes between `30`-`7A`). To mediate, the secret is hashed, and has bytes removed from (or, for CBC and CTR, prepended to) the beginning of the buffer to match. A single hash is not enough for passwords: derive the key with `deriveKey` and pass it with `{ hash: 'raw' }`.
 
 These algorithms also require an effectively random "Initialization Vector" (a.k.a. `iv`). This buffer is not necessarily private, it just cannot be known ahead of time, and should never be reused. Encryption methods in `iso-crypto` will generate this `iv` internally from a random number generator (see `randomBytes`) and exposed in the output alongside the encrypted data.
 

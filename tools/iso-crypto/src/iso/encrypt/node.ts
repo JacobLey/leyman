@@ -5,7 +5,7 @@ import { createCipheriv, createDecipheriv } from 'node:crypto';
 import { decode } from '#encode';
 import { hash } from '#hash';
 import { randomBytes } from '#random';
-import { fixBytes } from '../lib/bytes-length.js';
+import { fitKey } from '../lib/fit-key.js';
 import { encryptionMeta, GCM_TAG_BYTES } from '../lib/size-meta.js';
 import { defaultEncryption, defaultHash } from '../lib/types.js';
 
@@ -34,7 +34,7 @@ export const encrypt: (typeof Encrypt)['encrypt'] = async (
 
     const cipher = createCipheriv(
         encryptionToCipher(encryption),
-        fixBytes(secretHash, sizes.secret),
+        fitKey(secretHash, encryption, hashAlgorithm),
         iv
     );
 
@@ -53,13 +53,11 @@ export const decrypt: (typeof Encrypt)['decrypt'] = async (
     { encrypted, iv, secret },
     { encryption = defaultEncryption, hash: hashAlgorithm = defaultHash } = {}
 ) => {
-    const sizes = encryptionMeta(encryption);
-
     const hashedSecret = await hash(secret, hashAlgorithm);
 
     const decipher = createDecipheriv(
         encryptionToCipher(encryption),
-        fixBytes(hashedSecret, sizes.secret),
+        fitKey(hashedSecret, encryption, hashAlgorithm),
         decode(iv)
     );
 

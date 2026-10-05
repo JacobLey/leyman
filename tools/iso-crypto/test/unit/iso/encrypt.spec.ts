@@ -182,6 +182,65 @@ suite('Encrypt', () => {
         ).to.be.rejectedWith(Error);
     };
 
+    const keyLengthTest = async ({ source }: SourceEncrypt) => {
+        const data = 'Mind the gap';
+        const gcm256 = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
+
+        const roundTrip = async (
+            secret: string | Uint8Array<ArrayBuffer>,
+            options: Parameters<typeof source.encrypt>[1]
+        ): Promise<string> => {
+            const encrypted = await source.encrypt({ data, secret }, options);
+            return IsoCrypto.encode(await source.decrypt({ ...encrypted, secret }, options));
+        };
+
+        // GCM needs a raw key of exactly the key size
+        expect(
+            await roundTrip(new Uint8Array(32).fill(1), { encryption: gcm256, hash: 'raw' })
+        ).to.equal(data);
+        for (const secret of [new Uint8Array(16).fill(1), new Uint8Array(33).fill(1)]) {
+            await expect(
+                source.encrypt({ data, secret }, { encryption: gcm256, hash: 'raw' })
+            ).to.be.rejectedWith(
+                RangeError,
+                `AES-256-GCM needs a 32 byte key, got ${secret.length}`
+            );
+            await expect(
+                source.decrypt(
+                    { encrypted: new Uint8Array(32), iv: new Uint8Array(12), secret },
+                    { encryption: gcm256, hash: 'raw' }
+                )
+            ).to.be.rejectedWith(
+                RangeError,
+                `AES-256-GCM needs a 32 byte key, got ${secret.length}`
+            );
+        }
+
+        // ...and a hash at least that long
+        await expect(
+            source.encrypt(
+                { data, secret: 'Short hash' },
+                { encryption: gcm256, hash: { algorithm: 'SHA1' } }
+            )
+        ).to.be.rejectedWith(RangeError, 'the hash is only 20 bytes');
+        expect(
+            await roundTrip('Long enough hash', {
+                encryption: { cipher: 'AES', size: 128, mode: 'GCM' },
+                hash: { algorithm: 'SHA1' },
+            })
+        ).to.equal(data);
+
+        // CBC and CTR still pad, so existing data stays readable
+        for (const mode of ['CBC', 'CTR'] as const) {
+            expect(
+                await roundTrip('short', {
+                    encryption: { cipher: 'AES', size: 256, mode },
+                    hash: 'raw',
+                })
+            ).to.equal(data);
+        }
+    };
+
     const counterTest = async ({ source }: SourceEncrypt) => {
         const data = 'The counter overflows into the high bits of the block';
         for (const size of [128, 192, 256] as const) {
@@ -232,6 +291,7 @@ suite('Encrypt', () => {
 
         browserSource.test('decrypt', decryptTest);
         browserSource.test('CTR counter carries across all 128 bits', counterTest);
+        browserSource.test('key length', keyLengthTest);
     });
 
     suite('From Node', () => {
@@ -267,5 +327,6 @@ suite('Encrypt', () => {
 
         nodeSource.test('decrypt', decryptTest);
         nodeSource.test('CTR counter carries across all 128 bits', counterTest);
+        nodeSource.test('key length', keyLengthTest);
     });
 });
