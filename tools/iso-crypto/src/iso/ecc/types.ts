@@ -34,7 +34,7 @@ export declare const generateEccPublicKey: (
  * @param params.publicKey - "receiver's" public key
  * @param [options] - optional
  * @param [options.curve] - curve algorithm, defaults to p256
- * @param [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-gcm`
  * @param [options.additionalData] - GCM only, data to authenticate but not encrypt
  * @returns encrypted data and initialization vector.
  * Also the "sender's" public key for convenience.
@@ -60,7 +60,7 @@ export declare const eccEncrypt: (
          */
         curve?: Curve | undefined;
         /**
-         * Symmetric encryption algorithm to use, defaults to `aes-256-ctr`.
+         * Symmetric encryption algorithm to use, defaults to `aes-256-gcm`.
          */
         encryption?: Encryption | undefined;
         /**
@@ -90,7 +90,8 @@ export declare const eccEncrypt: (
  * @param params.publicKey - "sender's" public key. See output of `eccEncrypt`.
  * @param [options] - optional
  * @param [options.curve] - curve algorithm, defaults to p256
- * @param [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-gcm`
+ * Pass `unsafeLegacyEncryption` for data encrypted with the default before iso-crypto 3 (`aes-256-ctr`).
  * @param [options.additionalData] - GCM only, data to authenticate but not encrypt
  * @returns decrypted data
  */
@@ -119,7 +120,8 @@ export declare const eccDecrypt: (
          */
         curve?: Curve | undefined;
         /**
-         * Symmetric encryption algorithm to use, defaults to `aes-256-ctr`.
+         * Symmetric encryption algorithm to use, defaults to `aes-256-gcm`.
+         * Pass `unsafeLegacyEncryption` for data encrypted with the default before iso-crypto 3 (`aes-256-ctr`).
          */
         encryption?: Encryption | undefined;
         /**

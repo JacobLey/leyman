@@ -23,6 +23,7 @@ suite('Encrypt', () => {
             mode: 'GCM';
         }>().not.toExtend<IsoCrypto.Encryption>();
         expectTypeOf<{ cipher: 'AES'; size: 192; mode: 'CTR' }>().toExtend<IsoCrypto.Encryption>();
+        expectTypeOf(IsoCrypto.unsafeLegacyEncryption).toEqualTypeOf<IsoCrypto.Encryption>();
     });
 
     interface SourceEncrypt {
@@ -240,6 +241,34 @@ suite('Encrypt', () => {
         ).to.be.rejectedWith(Error);
     };
 
+    const legacyTest = async ({ source }: SourceEncrypt) => {
+        // Encrypted with the default before iso-crypto 3 (AES-256-CTR, SHA256 secret)
+        const legacy = {
+            encrypted: {
+                text: 'f3372dafb8df1f291adb1289f16fd7e6a5c595832dc0486e65ce4c4eee',
+                encoding: 'hex',
+            },
+            iv: { text: 'ecde51db0d9f786c435d8fe569046bff', encoding: 'hex' },
+            secret: 'Old default secret',
+        } as const;
+
+        const decrypted = await source.decrypt(legacy, {
+            encryption: IsoCrypto.unsafeLegacyEncryption,
+        });
+        expect(IsoCrypto.encode(decrypted)).to.equal('Encrypted before iso-crypto 3');
+
+        // The default is now AES-256-GCM, which rejects it rather than returning garbage
+        await expect(source.decrypt(legacy)).to.be.rejectedWith(Error);
+
+        const encrypted = await source.encrypt({ data: 'New data', secret: 'New secret' });
+        expect(encrypted.iv).to.have.length(12);
+        const decryptedNew = await source.decrypt(
+            { ...encrypted, secret: 'New secret' },
+            { encryption: { cipher: 'AES', size: 256, mode: 'GCM' } }
+        );
+        expect(IsoCrypto.encode(decryptedNew)).to.equal('New data');
+    };
+
     const keyLengthTest = async ({ source }: SourceEncrypt) => {
         const data = 'Mind the gap';
         const gcm256 = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
@@ -360,6 +389,7 @@ suite('Encrypt', () => {
         browserSource.test('decrypt', decryptTest);
         browserSource.test('CTR counter carries across all 128 bits', counterTest);
         browserSource.test('key length', keyLengthTest);
+        browserSource.test('legacy default', legacyTest);
     });
 
     suite('From Node', () => {
@@ -406,5 +436,6 @@ suite('Encrypt', () => {
         nodeSource.test('decrypt', decryptTest);
         nodeSource.test('CTR counter carries across all 128 bits', counterTest);
         nodeSource.test('key length', keyLengthTest);
+        nodeSource.test('legacy default', legacyTest);
     });
 });

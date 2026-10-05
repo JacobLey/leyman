@@ -10,13 +10,13 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 
 - **Same code everywhere** — one async API that uses `node:crypto` on Node.js and `crypto.subtle` in the browser, picked by package `imports` conditions.
 - **Less ceremony than raw WebCrypto** — no `importKey`/`CryptoKey` handling; secrets, keys and IVs are plain `Uint8Array`s or strings.
-- **Authenticated encryption** — AES-GCM detects tampering: `decrypt` rejects altered content or the wrong secret, and can bind a ciphertext to its context with additional authenticated data.
+- **Authenticated encryption by default** — AES-256-GCM detects tampering: `decrypt` rejects altered content or the wrong secret, and can bind a ciphertext to its context with additional authenticated data.
 - **Password-safe keys** — `deriveKey` with PBKDF2 (passwords) or HKDF (high-entropy secrets), on both platforms.
 - **ECDH encryption in one call** — `eccEncrypt`/`eccDecrypt` derive a shared secret from one party's private key and the other's public key, then encrypt with AES.
 - **ECC key utilities** — generate keys and compress/decompress public keys on P-256, P-384 and P-521.
 - **Encoding helpers** — isomorphic text, hex, base64 and base64url encoding, plus secure random bytes.
 
-**When not to use it:** the default encryption is still AES-CTR without authentication, for compatibility, so pass `{ mode: 'GCM' }` to detect tampering. `encrypt` stretches its secret with a single hash, so derive keys from passwords with `deriveKey` first. There is no scrypt, Argon2, secp256k1 or X25519; for those see [@noble/hashes](https://www.npmjs.com/package/@noble/hashes) and [@noble/curves](https://www.npmjs.com/package/@noble/curves).
+**When not to use it:** `encrypt` stretches its secret with a single hash, so derive keys from passwords with `deriveKey` first. There is no scrypt, Argon2, secp256k1 or X25519; for those see [@noble/hashes](https://www.npmjs.com/package/@noble/hashes) and [@noble/curves](https://www.npmjs.com/package/@noble/curves).
 
 ## Contents
 - [Supported Algorithms](#supported-algorithms)
@@ -31,6 +31,7 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
   - [Symmetric Encryption](#symmetric-encryption-1)
   - [ECC](#ecc)
 - [Usage](#usage)
+- [Upgrading to 3.0](#upgrading-to-30)
 - [Implementation Details](#implementation-details)
   - [Hashing](#hashing)
   - [Symmetric Encryption](#symmetric-encryption-2)
@@ -187,12 +188,11 @@ import { decrypt, deriveKey, encrypt, randomBytes } from 'iso-crypto';
 const salt = await randomBytes(16);
 const key = await deriveKey({ secret: 'correct horse battery staple', salt });
 
-const encryption = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
 // The key is already the right size, so skip hashing it
-const encrypted = await encrypt({ data: 'This is my message', secret: key }, { encryption, hash: 'raw' });
+const encrypted = await encrypt({ data: 'This is my message', secret: key }, { hash: 'raw' });
 
 // Rejects if `encrypted` was altered, or the key is wrong
-const decrypted = await decrypt({ ...encrypted, secret: key }, { encryption, hash: 'raw' });
+const decrypted = await decrypt({ ...encrypted, secret: key }, { hash: 'raw' });
 ```
 
 ### ECC
@@ -223,7 +223,7 @@ const fromBobEncrypted = await eccEncrypt(
         encryption: {
             cipher: 'AES',
             size: 128,
-            mode: 'CTR',
+            mode: 'GCM',
         },
     }
 );
@@ -236,7 +236,7 @@ const fromBobDecrypted = encode(await eccDecrypt(
         encryption: {
             cipher: 'AES',
             size: 128,
-            mode: 'CTR',
+            mode: 'GCM',
         },
     }
 )); // 'I am more of a coffee drinker myself'
@@ -271,7 +271,7 @@ await encrypt(
 );
 ```
 
-Any method that performs symmetric encryption can take the encryption algorithm as an option. The default algorithm is `aes-256-ctr` (`{ cipher: 'AES', size: 256, mode: 'CTR' }`).
+Any method that performs symmetric encryption can take the encryption algorithm as an option. The default algorithm is `aes-256-gcm` (`{ cipher: 'AES', size: 256, mode: 'GCM' }`). Before iso-crypto 3 it was `aes-256-ctr`, see [Upgrading to 3.0](#upgrading-to-30).
 
 Similarly the default ECC algorithm is `prime256v1` (`{ curve: 'p256' }`).
 
@@ -284,6 +284,20 @@ Ideally any cryptographic output should have statistically uniform distribution 
 As such, if you intend to combine encryption with compression, it is important to apply compression _before_ encryption, to take advantage of repeated and common patterns in the input.
 
 Many methods in this module deal with "private" or "secret" values. Proper handling of those values are not explicitly covered by this module. Make sure you understand how to securely transfer and access these values before deploying encryption in production, as improper handling and data leaks can effectively render even the most secure encryption algorithms moot.
+
+## Upgrading to 3.0
+
+- **The default encryption is AES-256-GCM**, instead of AES-256-CTR. GCM detects tampering, so `decrypt` rejects altered content or the wrong secret. Data encrypted with the old default, by `encrypt` or `eccEncrypt` without an `encryption` option, no longer decrypts with the default: it rejects rather than returning garbage. Pass `unsafeLegacyEncryption`, the old default, to `decrypt` or `eccDecrypt` to read it:
+
+    ```ts
+    import { decrypt, unsafeLegacyEncryption } from 'iso-crypto';
+
+    await decrypt({ encrypted, iv, secret }, { encryption: unsafeLegacyEncryption });
+    ```
+
+    Data encrypted with an explicit `encryption` option is unaffected. Consider re-encrypting old data with the new default.
+- **`decode` rejects invalid hex.** Hex text with characters other than `0-9` and `a-f` throws a `TypeError`, where those characters used to decode as `0`. Valid hex decodes as before.
+- **192-bit AES keys are deprecated**, as Chromium-based browsers do not support them. They still work for CBC and CTR where supported.
 
 ## Implementation Details
 
@@ -371,7 +385,7 @@ Asynchronously hashes the input, and returns the output buffer. Defaults to `SHA
 
 ### encrypt(params: { data: InputText; secret: InputText }, options?: { hash?: Hash; encryption?: Encryption })
 
-Asynchronously encrypts the input using the provided algorithms (defaults to `aes-256-ctr`). Hashes the secret internally with the provided hashing algorithm (defaults to `SHA256`).
+Asynchronously encrypts the input using the provided algorithms (defaults to `aes-256-gcm`). Hashes the secret internally with the provided hashing algorithm (defaults to `SHA256`).
 
 Returns both the `encrypted` data as a Uint8Array, as well as the internally generated `iv`.
 
@@ -437,7 +451,7 @@ NOOP if public key is already uncompressed (idempotent).
 
 ### eccEncrypt(params: { data: InputText; privateKey: InputText; publicKey: InputText }, options?: { curve?: Curve; encryption?: Encryption })
 
-Asynchronously determines the shared secret between public + private key, and encrypts the data using the specified encryption algorithm (defaults to `aes-256-ctr`).
+Asynchronously determines the shared secret between public + private key, and encrypts the data using the specified encryption algorithm (defaults to `aes-256-gcm`).
 
 Ensure that the keys are generated using the same curve algorithm provided.
 
@@ -471,7 +485,7 @@ Type used to represent a specific hash algorithm.
 
 To avoid hashing (as it is sometimes used internally by algorithms) provide the `'raw'` option to return the input unchanged.
 
-Generally defaults to `{ cipher: 'AES', size: 256, mode: 'CTR' }`.
+Generally defaults to `{ algorithm: 'SHA2', size: 256 }`.
 
 ### Encryption
 
@@ -480,6 +494,8 @@ Type used to represent a specific symmetric encryption algorithm.
 `{ cipher: 'AES'; size: 128 | 192 | 256; mode: 'CBC' | 'CTR' } | { cipher: 'AES'; size: 128 | 256; mode: 'GCM' }`.
 
 A `size` of 192 is deprecated, see [Symmetric Encryption](#symmetric-encryption).
+
+Defaults to `{ cipher: 'AES', size: 256, mode: 'GCM' }`. `unsafeLegacyEncryption` is the default before iso-crypto 3, `{ cipher: 'AES', size: 256, mode: 'CTR' }`.
 
 ### Curve
 

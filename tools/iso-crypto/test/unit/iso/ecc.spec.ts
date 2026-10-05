@@ -142,6 +142,8 @@ suite('Ecc', () => {
                 iv: '128e4cea8d498b5651323ff5f3e8d2d8',
                 publicKey: '02575ccf97b1c75a042b727c943bb06656267fbd3ab802cae990693d69df9f31fd',
                 privateKey: '77fbbd22556c898c57784f33d50f41e741c2dbc696694f35f891d9a6465cb923',
+                // Encrypted with the default before iso-crypto 3
+                encryption: IsoCrypto.unsafeLegacyEncryption,
             },
             {
                 output: 'Erised stra ehru oyt ube cafru oyt on wohsi',
@@ -177,6 +179,8 @@ suite('Ecc', () => {
             {
                 output: 'What does Bilbo have in his pocket?',
                 curve: 'p521',
+                // Encrypted with the default before iso-crypto 3
+                encryption: IsoCrypto.unsafeLegacyEncryption,
                 encrypted: 'da131ad629eaba7ccba366ce1c95fc564a9b4e2e44faa6c240ab2e4e9ce197312b765e',
                 iv: '61fa349704fa9e6b9036fb5e3c3da8ca',
                 publicKey:

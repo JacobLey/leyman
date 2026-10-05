@@ -7,7 +7,7 @@ import type { Encryption, Hash, InputText, Uint8ArrayBuffer } from '../lib/types
  * @param params.data - content to encrypt
  * @param params.secret - secret key for encryption
  * @param [options] - optional
- * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-gcm`
  * @param [options.additionalData] - GCM only, data to authenticate but not encrypt
  * @param [options.hash] - Hash algorithm to use to fit secret to the required key size.
  * Defaults to SHA256. Set to `'raw'` to avoid hashing.
@@ -27,7 +27,7 @@ export declare const encrypt: (
     },
     options?: {
         /**
-         * Encryption algorithm to use, defaults to `aes-256-ctr`.
+         * Encryption algorithm to use, defaults to `aes-256-gcm`.
          */
         encryption?: Encryption | undefined;
         /**
@@ -56,7 +56,8 @@ export declare const encrypt: (
  * @param params.iv - initialization vector used during encryption, see output of `encrypt`
  * @param params.secret - secret key for encryption
  * @param [options] - optional
- * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-gcm`
+ * Pass `unsafeLegacyEncryption` for data encrypted with the default before iso-crypto 3 (`aes-256-ctr`).
  * @param [options.additionalData] - GCM only, data to authenticate but not encrypt
  * @param [options.hash] - hash algorithm to use to fit secret to the required key size.
  * Defaults to SHA256. Set to `'raw'` to avoid hashing.
@@ -80,7 +81,8 @@ export declare const decrypt: (
     },
     options?: {
         /**
-         * Encryption algorithm to use, defaults to `aes-256-ctr`.
+         * Encryption algorithm to use, defaults to `aes-256-gcm`.
+         * Pass `unsafeLegacyEncryption` for data encrypted with the default before iso-crypto 3 (`aes-256-ctr`).
          */
         encryption?: Encryption | undefined;
         /**

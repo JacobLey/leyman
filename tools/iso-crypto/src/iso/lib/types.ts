@@ -52,11 +52,28 @@ export type Encryption =
           size: AesSize;
           mode: EnumToString<Modes.CTR>;
       };
+/**
+ * AES-256-GCM, which detects tampering.
+ */
 export const defaultEncryption: Encryption = {
     cipher: Ciphers.AES,
     size: Sizes.KEY_256,
-    mode: Modes.CTR,
+    mode: Modes.GCM,
 };
+/**
+ * AES-256-CTR, the default encryption before iso-crypto 3. It does not detect tampering: altered data
+ * decrypts to garbage instead of throwing.
+ *
+ * Pass as the `encryption` option to decrypt data that was encrypted with the old default.
+ *
+ * @example
+ * await decrypt({ encrypted, iv, secret }, { encryption: unsafeLegacyEncryption });
+ */
+export const unsafeLegacyEncryption: Encryption = Object.freeze({
+    cipher: Ciphers.AES,
+    size: Sizes.KEY_256,
+    mode: Modes.CTR,
+});
 
 export enum Algorithms {
     SHA1 = 'SHA1',
