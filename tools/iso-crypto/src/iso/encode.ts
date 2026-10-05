@@ -37,8 +37,19 @@ const base64standard = (text: string): string => {
     return appendEquals;
 };
 
-const toBase64 = (buf: ArrayBuffer | number[] | Uint8ArrayBuffer): string =>
-    base64url(btoa(String.fromCodePoint(...new Uint8Array(buf))));
+/**
+ * Bytes converted to characters per call, as spreading a large buffer into arguments overflows the stack.
+ */
+const BINARY_CHUNK_BYTES = 0x8000;
+const toBinaryString = (buf: Uint8ArrayBuffer): string => {
+    let binary = '';
+    for (let i = 0; i < buf.length; i += BINARY_CHUNK_BYTES) {
+        binary += String.fromCodePoint(...buf.subarray(i, i + BINARY_CHUNK_BYTES));
+    }
+    return binary;
+};
+
+const toBase64 = (buf: Uint8ArrayBuffer): string => base64url(btoa(toBinaryString(buf)));
 const fromBase64 = (str: string): Uint8ArrayBuffer =>
     Uint8Array.from(atob(base64standard(str)), x => x.codePointAt(0)!);
 

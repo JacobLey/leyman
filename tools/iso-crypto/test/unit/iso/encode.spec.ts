@@ -179,6 +179,14 @@ suite('Encode', () => {
             }
         });
 
+        test('base64 large input', () => {
+            const input = new Uint8Array(1_000_000).map((_, i) => i);
+            for (const encoding of ['base64', 'base64url'] as const) {
+                const encoded = Encode.encode(input, encoding);
+                expect(Encode.decode({ text: encoded, encoding })).to.deep.equal(input);
+            }
+        });
+
         test('base64url', () => {
             for (const { input, output } of [
                 {
