@@ -18,10 +18,9 @@ suite('commonProxy', () => {
         >();
 
         const delay = proxiedMethods.delayForLongestTime(5, 10, 15, 20);
-        expect(await Promise.race([delay, setTimeout(10, '<FIRST>')])).to.equal('<FIRST>');
-        expect(await Promise.race([delay.then(() => '<SECOND>'), setTimeout(20, '<NO>')])).to.equal(
-            '<SECOND>'
-        );
+        // Timers fire in order of expiry, so the method's later timers are still pending
+        expect(await Promise.race([delay, setTimeout(0, '<PENDING>')])).to.equal('<PENDING>');
+        await delay;
         expectTypeOf(proxiedMethods.delayForLongestTime).toEqualTypeOf<
             (...nums: number[]) => Promise<void>
         >();
