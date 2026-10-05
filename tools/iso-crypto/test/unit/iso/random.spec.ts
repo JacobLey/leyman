@@ -19,7 +19,8 @@ suite('Random', () => {
 
     suite('randomBytes', () => {
         const randomTest = async ({ random }: { random: typeof NodeRandom }) => {
-            for (const size of [0, 1, 10, 32, 100, 1234]) {
+            // Includes sizes beyond the 65,536 byte limit of a single `getRandomValues` call
+            for (const size of [0, 1, 10, 32, 100, 1234, 65_536, 100_000]) {
                 const bytes = await random.randomBytes(size);
                 expect(bytes.length).to.equal(size);
                 expect(bytes).to.be.an.instanceOf(Uint8Array);
