@@ -100,11 +100,12 @@ type NormalizedOutputId<T extends GenericHaywireId> = HaywireId<
     false,
     false
 >;
-export const normalizeOutputId = <T extends GenericHaywireId>(id: T): NormalizedOutputId<T> =>
-    id
-        .supplier(false)
-        .deferred(false)
-        .list((id.annotations.list !== false) as false) as NormalizedOutputId<T>;
+export const normalizeOutputId = <T extends GenericHaywireId>(id: T): NormalizedOutputId<T> => {
+    const direct = id.supplier(false).deferred(false);
+    return (
+        id.annotations.list === false ? direct.list(false) : direct.list(true)
+    ) as NormalizedOutputId<T>;
+};
 
 const providerToMaybeList = <
     OutputId extends GenericHaywireId,
@@ -853,7 +854,9 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
         ConstructorParameters<NonNullable<HaywireIdConstructor<OutputId>>>
     > {
         return new ProviderBindingBuilder(
-            this.#outputId.list((this.#outputId.annotations.list !== false) as false),
+            this.#outputId.annotations.list === false
+                ? this.#outputId.list(false)
+                : this.#outputId.list(true),
             (...args) => new (this.#outputId.construct as DepsClass<unknown, unknown[]>)(...args)
         ) as ProviderBindingBuilder<
             OutputId,
