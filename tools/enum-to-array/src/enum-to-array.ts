@@ -33,17 +33,14 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
     }[] = [];
 
     for (const [key, value] of Object.entries(enumDict)) {
-        if (typeof value === 'string') {
-            if (value in enumDict) {
-                if (typeof enumDict[value] === 'string') {
-                    knownValues.push({ key, value });
-                }
-            } else {
-                // Value never appears as a key, has to be a value
-                knownValues.push({ key, value });
-            }
-        } else {
-            // All non-strings must be values
+        // Non-string members get a reverse mapping (`{ FOO: 0, 0: 'FOO' }`),
+        // identified by pointing back at a member whose stringified value is that key.
+        const isReverseMapping =
+            typeof value === 'string' &&
+            Object.hasOwn(enumDict, value) &&
+            typeof enumDict[value] !== 'string' &&
+            String(enumDict[value]) === key;
+        if (!isReverseMapping) {
             knownValues.push({ key, value });
         }
     }

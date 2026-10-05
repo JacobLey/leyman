@@ -264,6 +264,21 @@ suite('enumToArray', () => {
         >();
     });
 
+    test('String value names a numeric member', () => {
+        enum Mixed {
+            B = 1,
+            // eslint-disable-next-line @typescript-eslint/no-mixed-enums
+            A = 'B',
+        }
+
+        expect(EnumToArray.enumToArray(Mixed)).to.deep.equal([
+            { key: 'B', value: Mixed.B },
+            { key: 'A', value: Mixed.A },
+        ]);
+        expect(EnumToArray.enumToValues(Mixed)).to.deep.equal([Mixed.B, Mixed.A]);
+        expect(EnumToArray.enumToKeys(Mixed)).to.deep.equal(['B', 'A']);
+    });
+
     test('Computed values', () => {
         enum Computed {
             /* eslint-disable @typescript-eslint/prefer-literal-enum-member */
