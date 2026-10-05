@@ -77,7 +77,7 @@ The wrapper preserves the full TypeScript type of `fn`, including generics, `asy
 |-----------|------|---------|-------------|
 | `fn` | `(...args: any[]) => any` | — | Required. The function to make patchable. |
 
-**Returns** `PatchableInterface<T>` — a wrapper with the same signature as `fn` plus a writable `[patchKey]` property.
+**Returns** `PatchableInterface<T>` — a wrapper with the same signature as `fn` plus a writable `[patchKey]` property. The wrapper also exposes `fn`'s own properties (e.g. static helpers), reading and writing through to `fn`.
 
 ```ts
 import { patch } from 'named-patch';

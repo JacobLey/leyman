@@ -57,6 +57,19 @@ export const patch = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {
         value: fn,
     });
     Object.defineProperty(patched, 'length', { value: fn.length });
+    // Forward the method's own properties (e.g. static helpers), so the wrapper matches `T`
+    for (const key of Reflect.ownKeys(fn)) {
+        if (!Object.hasOwn(patched, key)) {
+            Object.defineProperty(patched, key, {
+                configurable: true,
+                enumerable: Object.prototype.propertyIsEnumerable.call(fn, key),
+                get: (): unknown => Reflect.get(fn, key),
+                set: (value: unknown) => {
+                    Reflect.set(fn, key, value);
+                },
+            });
+        }
+    }
 
     patchableMap.set(fn, patched);
 

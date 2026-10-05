@@ -92,6 +92,26 @@ suite('namedPatch', () => {
             container.contextMethod();
             expect(counter).to.equal(1);
         });
+
+        test('With own properties', () => {
+            const symbolKey = Symbol('symbolKey');
+            const method = Object.assign((): number => 1, {
+                helper: (): number => 2,
+                [symbolKey]: 'symbol',
+            });
+
+            const patched = Patch.patch(method);
+
+            expect(patched.helper()).to.equal(2);
+            expect(patched[symbolKey]).to.equal('symbol');
+            expect(Object.keys(patched)).to.deep.equal(['helper']);
+
+            // Shares state with the original method
+            patched.helper = () => 3;
+            expect(method.helper()).to.equal(3);
+            method.helper = () => 4;
+            expect(patched.helper()).to.equal(4);
+        });
     });
 
     suite('getPatched', () => {
