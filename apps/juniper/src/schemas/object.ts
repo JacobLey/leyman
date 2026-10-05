@@ -714,11 +714,12 @@ export class ObjectSchema<
         const schemaToProperty = (
             schema: AbstractSchema<SchemaGenerics<unknown>>
         ): boolean | JsonSchema<unknown> => {
+            // OpenAPI 3.0 schemas must be objects, so use the object equivalent of `true`/`false`
             if (schema === trueSchema) {
-                return true;
+                return params.openApi30 ? {} : true;
             }
             if (schema === falseSchema) {
-                return false;
+                return params.openApi30 ? { not: {} } : false;
             }
             return ObjectSchema.getSchema(schema, params);
         };

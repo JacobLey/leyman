@@ -1,6 +1,7 @@
 import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
 import type {
     JsonSchema,
+    JsonSchemaType,
     ReservedWords,
     Schema,
     SchemaType,
@@ -39,11 +40,26 @@ export interface SchemaParams<T> {
     [notSym]?: AbstractSchema<SchemaGenerics<T>>[];
     [nullableSym]?: boolean;
     [oneOfSym]?: AbstractSchema<SchemaGenerics<T>>[][];
-    [refSym]?: {
-        path: string;
-        schema: AbstractSchema<SchemaGenerics<T>>;
-    } | null;
+    [refSym]?: SchemaRef<AbstractSchema<SchemaGenerics<T>>> | null;
 }
+
+/**
+ * Reference to another schema, emitted as `$ref`.
+ * Either an explicit `path` (`.ref()`), or a definition `name` (`.define()`) whose path is resolved when serializing.
+ *
+ * @template S - referenced schema
+ */
+type SchemaRef<S> =
+    | {
+          name: null;
+          path: string;
+          schema: S;
+      }
+    | {
+          name: string;
+          path: null;
+          schema: S;
+      };
 
 export interface SchemaGenerics<T> {
     type: T;
@@ -64,6 +80,23 @@ export type ConditionalResult<T, E = T> =
           else: E;
       };
 
+/**
+ * Definitions referenced while serializing, collected so they can be emitted once.
+ */
+export interface Definitions {
+    /**
+     * Prefix of every definition's `$ref`, e.g. `#/$defs/`.
+     */
+    path: string;
+    /**
+     * Serialized definitions by name. `json` is `null` while the definition itself is being serialized.
+     */
+    schemas: Map<
+        string,
+        { schema: AbstractSchema<SchemaGenerics<unknown>>; json: JsonSchema<unknown> | null }
+    >;
+}
+
 export interface SerializationParams {
     /**
      * Inside composition (e.g. `allOf`).
@@ -78,7 +111,58 @@ export interface SerializationParams {
      * Comply with OpenAPI 3.0 spec.
      */
     openApi30: boolean;
+    /**
+     * Collects definitions (`.define()`) referenced while serializing.
+     */
+    definitions?: Definitions | undefined;
 }
+
+const DEFS_PATH = '#/$defs/';
+const COMPONENTS_PATH = '#/components/schemas/';
+
+/**
+ * Keywords that only annotate a schema, so they can sit next to a `$ref` without changing what it accepts.
+ */
+const annotationKeywords = new Set([
+    'default',
+    'deprecated',
+    'description',
+    'example',
+    'examples',
+    'readOnly',
+    'title',
+    'writeOnly',
+]);
+
+/**
+ * Create an empty definitions collector.
+ *
+ * @param params - serialization params
+ * @param params.openApi30 - OpenAPI 3.0 refs point at `components.schemas`
+ * @param params.definitionsPath - explicit `$ref` prefix for definitions
+ * @returns definitions collector
+ */
+const createDefinitions = ({
+    openApi30,
+    definitionsPath,
+}: {
+    openApi30: boolean;
+    definitionsPath: string | undefined;
+}): Definitions => ({
+    path: definitionsPath ?? (openApi30 ? COMPONENTS_PATH : DEFS_PATH),
+    schemas: new Map(),
+});
+
+/**
+ * Options for {@link components}.
+ */
+export type ComponentsParams = Pick<ToJsonParams, 'definitionsPath' | 'openApi30'>;
+
+// Assigned in `AbstractSchema`'s static block, which can access its private serialization.
+let collectDefinitions: (
+    schemas: readonly Schema<unknown>[],
+    params: ComponentsParams
+) => Record<string, JsonSchema<unknown>>;
 
 /**
  * Base class for JSON Schema generation and serialization.
@@ -110,14 +194,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     readonly #nullable: boolean;
     readonly #oneOf: AbstractSchema<T>[][];
     readonly #readOnly: boolean;
-    readonly #ref: {
-        path: string;
-        schema: AbstractSchema<T>;
-    } | null;
+    readonly #ref: SchemaRef<AbstractSchema<T>> | null;
     readonly #title: string | null;
     readonly #writeOnly: boolean;
 
-    declare protected readonly schemaType?: string;
+    declare protected readonly schemaType?: JsonSchemaType;
 
     /**
      * Used to store type information.
@@ -182,10 +263,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         this.#nots = (options[notSym] ?? []) as AbstractSchema<T>[];
         this.#nullable = options[nullableSym] ?? false;
         this.#oneOf = (options[oneOfSym] ?? []) as AbstractSchema<T>[][];
-        this.#ref = (options[refSym] ?? null) as {
-            path: string;
-            schema: AbstractSchema<T>;
-        } | null;
+        this.#ref = (options[refSym] ?? null) as SchemaRef<AbstractSchema<T>> | null;
     }
 
     /**
@@ -229,14 +307,26 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @param [options.id] - $id property of schema
      * @param [options.openApi30=false] - Use syntax complaint with OpenAPI 3.0.
      * @param [options.schema=false] - Include `$schema` keyword for draft 2020-12.
+     * @param [options.definitionsPath] - `$ref` prefix for defined schemas (see `define`).
+     * Defaults to `#/$defs/`, which embeds the definitions in `$defs`,
+     * or `#/components/schemas/` for OpenAPI 3.0. Other paths are not embedded, see `components()`.
      * @returns serializable JSON Schema
      */
     public toJSON({
+        definitionsPath,
         id,
         openApi30 = false,
         schema = false,
     }: ToJsonParams = {}): JsonSchema<T['type']> {
-        const base = this.getChildSchema<T['type']>({ openApi30 });
+        const definitions = createDefinitions({ openApi30, definitionsPath });
+        const base = this.getChildSchema<T['type']>({ openApi30, definitions });
+        // `$defs` only resolve from the root of this document, which OpenAPI 3.0 does not support.
+        // Other paths (e.g. `#/components/schemas/`) are placed by the caller, see `components()`.
+        if (definitions.schemas.size > 0 && definitions.path === DEFS_PATH && !openApi30) {
+            base.$defs = Object.fromEntries(
+                [...definitions.schemas].map(([name, { json }]) => [name, json])
+            );
+        }
         if (!openApi30) {
             if (id) {
                 base.$id = id;
@@ -443,6 +533,35 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         return this.clone({
             [refSym]: {
                 path,
+                name: null,
+                schema: this,
+            },
+        });
+    }
+
+    /**
+     * Make this schema a reusable definition.
+     *
+     * Wherever it is used, it is emitted as a `$ref` to the definition, and `toJSON()` includes the definition in `$defs`.
+     * So a reference never points at a missing definition.
+     *
+     * Schemas derived from it keep the reference when they only add annotations (e.g. `description`)
+     * or make it nullable. Any other change (e.g. `omit`, extra constraints) is emitted inline instead,
+     * as it is no longer the same schema.
+     *
+     * Two different schemas defined with the same name fail to serialize.
+     *
+     * @see {@link https://json-schema.org/understanding-json-schema/structuring#defs}
+     *
+     * @param this - this instance
+     * @param name - name of the definition, e.g. `User`
+     * @returns cloned schema
+     */
+    public define(this: this, name: string): this {
+        return this.clone({
+            [refSym]: {
+                name,
+                path: null,
                 schema: this,
             },
         });
@@ -804,10 +923,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      */
     protected static getSchema<T2>(
         schema: AbstractSchema<SchemaGenerics<T2>>,
-        { openApi30 }: SerializationParams
+        { openApi30, definitions }: SerializationParams
     ): JsonSchema<T2> {
         return AbstractSchema.#getChildSchema.bind(this.constructor)(schema, {
             openApi30,
+            definitions,
         });
     }
 
@@ -825,17 +945,88 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         params: SerializationParams
     ): JsonSchema<T2> {
         const baseSchema = schema.toSchema(params);
-        if (schema.#ref) {
-            const refSchema = schema.#ref.schema.toSchema({
-                openApi30: params.openApi30,
-            });
+        if (!schema.#ref) {
+            return baseSchema;
+        }
+        const refParams: SerializationParams = {
+            openApi30: params.openApi30,
+            definitions: params.definitions,
+        };
+        // Only compared against, never emitted, so definitions it uses are collected separately
+        const refSchema = schema.#ref.schema.toSchema({
+            openApi30: params.openApi30,
+            definitions: params.definitions && {
+                path: params.definitions.path,
+                schemas: new Map(params.definitions.schemas),
+            },
+        });
+        // From the schema's own class: `this` is not always a schema class (e.g. when called via `getSchema`)
+        const defaultValues = (): Record<string, unknown> =>
+            (schema.constructor as typeof AbstractSchema).getDefaultValues(params);
+        if (schema.#ref.name === null) {
             return mergeRef<T2>({
                 baseSchema,
                 refSchema,
-                defaultValues: this.getDefaultValues(params),
+                defaultValues: defaultValues(),
                 refPath: schema.#ref.path,
             });
         }
+
+        const definitions = params.definitions!;
+        const { name } = schema.#ref;
+        const refPath = definitions.path + name;
+        const { $ref, ...differences } = mergeRef<T2>({
+            baseSchema,
+            refSchema,
+            refPath,
+            defaultValues: defaultValues(),
+        });
+        const annotations: JsonSchema<T2> = {};
+        const constraints: Record<string, unknown> = {};
+        for (const [key, value] of Object.entries(differences)) {
+            if (annotationKeywords.has(key)) {
+                annotations[key] = value;
+            } else {
+                constraints[key] = value;
+            }
+        }
+
+        const constraintKeys = Object.keys(constraints);
+        const register = (): void => {
+            const existing = definitions.schemas.get(name);
+            if (!existing) {
+                const definition = {
+                    schema: schema.#ref!.schema as AbstractSchema<SchemaGenerics<unknown>>,
+                    json: null as JsonSchema<unknown> | null,
+                };
+                // Registered before serializing, so references back to this definition resolve to it.
+                definitions.schemas.set(name, definition);
+                definition.json = AbstractSchema.#getChildSchema(schema.#ref!.schema, refParams);
+            } else if (existing.schema !== schema.#ref!.schema) {
+                throw new Error(`Different schemas are defined with the same name: "${name}"`);
+            }
+        };
+        if (constraintKeys.length === 0) {
+            register();
+            return { ...annotations, $ref };
+        }
+        // Only made nullable: `$ref` siblings must all match, so nullability wraps the reference instead.
+        if (params.openApi30) {
+            if (constraintKeys.length === 1 && constraints.nullable === true) {
+                register();
+                return { ...annotations, nullable: true, allOf: [{ $ref }] };
+            }
+        } else if (
+            constraintKeys.length === 1 &&
+            Array.isArray(constraints.type) &&
+            constraints.type.length === 2 &&
+            constraints.type[0] === refSchema.type &&
+            constraints.type[1] === 'null'
+        ) {
+            register();
+            return { ...annotations, anyOf: [{ $ref }, { type: 'null' }] };
+        }
+        // Changed what the schema accepts, so it is no longer the definition.
         return baseSchema;
     }
 
@@ -913,7 +1104,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @param params - serialization params
      * @returns schema type
      */
-    #getSchemaType(params: SerializationParams): string | null {
+    #getSchemaType(params: SerializationParams): JsonSchemaType | null {
         const { schemaType } = this;
 
         if (
@@ -930,7 +1121,52 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
 
         return schemaType ?? null;
     }
+
+    static {
+        collectDefinitions = (schemas, { definitionsPath, openApi30 = false }) => {
+            const definitions = createDefinitions({
+                openApi30,
+                definitionsPath: definitionsPath ?? COMPONENTS_PATH,
+            });
+            for (const schema of schemas as readonly AbstractSchema<SchemaGenerics<unknown>>[]) {
+                AbstractSchema.#getChildSchema.bind(schema.constructor as typeof AbstractSchema)(
+                    schema,
+                    { openApi30, definitions }
+                );
+            }
+            return Object.fromEntries(
+                [...definitions.schemas].map(([name, { json }]) => [name, json!])
+            );
+        };
+    }
 }
 
 export const isSchema = <T>(schema: unknown): schema is Schema<T> =>
     schema instanceof AbstractSchema;
+
+/**
+ * Collect every definition (see `define`) used by `schemas`, keyed by name.
+ *
+ * For documents that keep definitions outside the schema, such as OpenAPI's `components.schemas`.
+ * Serialize each schema with the same options, so their `$ref`s point here.
+ *
+ * @example
+ * const spec = {
+ *     components: { schemas: components([user, post], { openApi30: true }) },
+ *     paths: { '/user': { get: { responses: { 200: { content: { 'application/json': {
+ *         schema: user.toJSON({ openApi30: true }),
+ *     } } } } } } },
+ * };
+ *
+ * @param schemas - schemas whose definitions to collect. Defined schemas are included themselves.
+ * @param [options] - optional
+ * @param [options.openApi30] - serialize definitions for OpenAPI 3.0, referenced at `#/components/schemas/`
+ * @param [options.definitionsPath] - `$ref` prefix, defaults to `#/components/schemas/`.
+ * Pass the same value to `toJSON` for the schemas that use them (OpenAPI 3.0 does so by default).
+ * @returns definitions by name
+ * @throws when different schemas are defined with the same name
+ */
+export const components = (
+    schemas: readonly Schema<unknown>[],
+    options: ComponentsParams = {}
+): Record<string, JsonSchema<unknown>> => collectDefinitions(schemas, options);

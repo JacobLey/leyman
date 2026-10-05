@@ -95,6 +95,11 @@ export class CustomSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
     /**
      * Not applicable.
      */
+    declare public define: never;
+
+    /**
+     * Not applicable.
+     */
     declare public ref: never;
 
     /**

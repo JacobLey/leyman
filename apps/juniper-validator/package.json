@@ -29,6 +29,8 @@
   "dependencies": {
     "@standard-schema/spec": "catalog:",
     "ajv": "catalog:",
+    "ajv-formats": "catalog:",
+    "default-import": "workspace:^",
     "escape-string-regexp": "catalog:"
   },
   "peerDependencies": {

@@ -1009,6 +1009,18 @@ suite('ObjectSchema', () => {
         });
     });
 
+    test('OpenAPI 3.0 uses object schemas for true and false properties', () => {
+        const schema = objectSchema({ properties: { anything: true, nothing: false } });
+        expect(schema.toJSON({ openApi30: true })).to.deep.equal({
+            type: 'object',
+            properties: { anything: {}, nothing: { not: {} } },
+        });
+        expect(schema.toJSON()).to.deep.equal({
+            type: 'object',
+            properties: { anything: true, nothing: false },
+        });
+    });
+
     suite('pick, omit and partial', () => {
         const user = objectSchema({
             title: 'User',

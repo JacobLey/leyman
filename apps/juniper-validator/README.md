@@ -75,7 +75,7 @@ Creates a `JuniperValidator` from a Juniper `Schema` instance or a compiled `Jso
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `schema` | `Schema \| JsonSchema` | — | Required. A Juniper `Schema` instance or plain JSON Schema object. |
-| `options` | `AjvOptions` | `{}` | Optional. [Ajv constructor options](https://ajv.js.org/options.html). The `strict` option is always forced to `true`. |
+| `options` | `AjvOptions` | `{}` | Optional. [Ajv constructor options](https://ajv.js.org/options.html). The `strict` option is always forced to `true`. Standard `format`s (`email`, `uuid`, `date-time`, ...) are validated with [ajv-formats](https://www.npmjs.com/package/ajv-formats). |
 
 **Returns** `JuniperValidator<T>` — a validator instance typed to the schema's inferred type.
 

@@ -12,6 +12,7 @@ Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-read
 - **Mistakes are compile errors** — each schema type only exposes the keywords that apply to it, so `maxLength` on an array or a `required` key missing from `properties` fails to build instead of silently validating everything.
 - **Strict output** — emitted schemas pass [Ajv's strict mode](https://ajv.js.org/strict-mode.html), so they work with any standard JSON Schema validator.
 - **Multiple targets** — emit JSON Schema 2020-12 (and OpenAPI 3.1), or `toJSON({ openApi30: true })` for OpenAPI 3.0's `nullable` dialect, from the same definition.
+- **Reusable definitions** — `.define('User')` emits a schema as a `$ref` and bundles it into `$defs` (or OpenAPI `components`) automatically, so references never dangle.
 - **Immutable builders** — every method returns a new schema, so shared base schemas can be safely extended, or narrowed with `pick`, `omit` and `partial`.
 
 **Compared to**
@@ -29,6 +30,7 @@ For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https:
 - [Example](#example)
 - [Usage](#usage)
 - [Schemas](#schemas)
+- [Reusing schemas with define](#reusing-schemas-with-define)
 - [API](#api)
 - [Recipes](#recipes)
 - [Also See](#also-see)
@@ -177,6 +179,78 @@ Notes:
 - `CustomSchema` is for breaking out of the Juniper environment. Its use is discouraged but may be the best option when integrating with existing JSON Schemas or for gradual adoption.
 - There is no `any` schema. Use `MergeSchema` for `unknown`. If `any` is truly required, use `CustomSchema` (default output is an always-valid empty schema).
 
+## Reusing schemas with define
+
+`.define(name)` makes a schema a reusable definition. Wherever it is used, it is emitted as a `$ref`, and `toJSON()` adds every definition it references to `$defs`. You reference the schema variable itself, so types flow exactly as they do without `define`, and a reference can never point at a missing definition.
+
+```ts
+import { arraySchema, objectSchema, SchemaType, stringSchema } from 'juniper';
+
+const address = objectSchema({
+    properties: { city: stringSchema() },
+    required: ['city'],
+}).define('Address');
+
+const user = objectSchema({
+    properties: { home: address, work: address.nullable() },
+}).define('User');
+
+arraySchema(user).toJSON();
+/**
+ * {
+ *   type: 'array',
+ *   items: { $ref: '#/$defs/User' },
+ *   $defs: {
+ *     Address: { type: 'object', properties: { city: { type: 'string' } }, required: ['city'] },
+ *     User: {
+ *       type: 'object',
+ *       properties: {
+ *         home: { $ref: '#/$defs/Address' },
+ *         work: { anyOf: [{ $ref: '#/$defs/Address' }, { type: 'null' }] },
+ *       },
+ *     },
+ *   },
+ * }
+ */
+
+// { home?: { city: string }; work?: { city: string } | null }
+type User = SchemaType<typeof user>;
+```
+
+- **Derived schemas:** a schema derived from a definition keeps the `$ref` when it only adds annotations (`description`, `title`, `examples`, ...) or is made `nullable()`. Any other change, such as `omit()` or an extra constraint, makes it a different schema, so it is emitted inline. Define it under its own name to share it too: `user.omit(['id']).define('NewUser')`.
+- **Names are unique:** two different schemas defined with the same name throw when serialized. The same schema can be used any number of times.
+- **`.ref(path)`** remains for schemas Juniper doesn't own, where the path is up to you.
+
+### OpenAPI
+
+OpenAPI keeps shared schemas in `components.schemas`. `components()` collects every definition reachable from the given schemas, ready to place there. With `openApi30: true`, references already point at `#/components/schemas/`. For OpenAPI 3.1 (JSON Schema 2020-12), pass `definitionsPath`.
+
+```ts
+import { components } from 'juniper';
+
+// OpenAPI 3.0: { openApi30: true }
+const options = { definitionsPath: '#/components/schemas/' };
+
+const spec = {
+    openapi: '3.1.0',
+    components: { schemas: components([user, newUser, post], options) },
+    paths: {
+        '/users/{userId}': {
+            get: {
+                responses: {
+                    200: {
+                        description: 'User',
+                        content: { 'application/json': { schema: user.toJSON(options) } },
+                    },
+                },
+            },
+        },
+    },
+};
+```
+
+A complete users and posts API, built with [openapi3-ts](https://www.npmjs.com/package/openapi3-ts) and checked to be valid OpenAPI 3.0 and 3.1, is in [e2e/juniper-openapi](https://github.com/JacobLey/leyman/blob/main/e2e/juniper-openapi/test/data/api.ts).
+
 ## API
 
 ### Helper Types
@@ -224,6 +298,7 @@ Renders the JSON Schema document. The result should be immediately passed to a v
 | `openApi30` | `boolean` | `false` | Output a JSON Schema compliant with OpenAPI 3.0. Not every property is fully supported — see implementation warnings. |
 | `id` | `string` | — | Value to place in the `$id` field of the document. |
 | `schema` | `boolean` | `false` | Include the draft as the `$schema` property. |
+| `definitionsPath` | `string` | `'#/$defs/'` (`'#/components/schemas/'` with `openApi30`) | `$ref` prefix for [defined](#reusing-schemas-with-define) schemas. Only `#/$defs/` is embedded in the output; use `components()` for other paths. |
 
 **Returns** `object` — the rendered JSON Schema document.
 
@@ -232,6 +307,8 @@ Renders the JSON Schema document. The result should be immediately passed to a v
 #### `.ref(path)`
 
 Returns a schema (which can be modified further) that extends the schema via the [`$ref`](https://json-schema.org/understanding-json-schema/structuring.html#ref) property.
+
+Prefer [`.define(name)`](#reusing-schemas-with-define) for schemas you build with Juniper: it places the definition for you. `.ref(path)` is for schemas stored somewhere Juniper doesn't control.
 
 **Parameters**
 
@@ -303,6 +380,30 @@ const nullableResourceSchema = mergeSchema().oneOf([
     nullSchema
 ]);
 ```
+
+---
+
+#### `.define(name)`
+
+Makes the schema a reusable definition, emitted as `$ref` and collected into `$defs`. See [Reusing schemas with define](#reusing-schemas-with-define).
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `name` | `string` | — | Required. Name of the definition, e.g. `User`. Must be unique per document. |
+
+---
+
+#### `components(schemas, options?)`
+
+Collects every definition used by `schemas` (including defined schemas themselves), keyed by name. For documents that keep definitions outside the schema, such as OpenAPI's `components.schemas`.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `schemas` | `Schema[]` | — | Required. Schemas whose definitions to collect. |
+| `options.openApi30` | `boolean` | `false` | Serialize definitions for OpenAPI 3.0. |
+| `options.definitionsPath` | `string` | `'#/components/schemas/'` | `$ref` prefix. Pass the same options to `toJSON` for schemas that use them. |
+
+**Throws** when different schemas are defined with the same name.
 
 ---
 

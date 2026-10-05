@@ -134,4 +134,14 @@ suite('juniper-validator', () => {
             ]);
         });
     });
+
+    test('Validates standard formats', () => {
+        const email = makeValidator(stringSchema({ format: 'email' }));
+        expect(email.is('ann@example.com')).to.equal(true);
+        expect(email.is('not an email')).to.equal(false);
+
+        const uuid = makeValidator(stringSchema({ format: 'uuid' }));
+        expect(uuid.is('3f2c0a3e-6e8a-4a59-9c2b-1d2f3a4b5c6d')).to.equal(true);
+        expect(uuid.is('123')).to.equal(false);
+    });
 });

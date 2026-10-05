@@ -11,16 +11,19 @@
   ],
   "references": [
     {
+      "path": "../../tools/default-import"
+    },
+    {
       "path": "../../tools/test-chain/mocha-chain"
     },
     {
       "path": "../../leyman/expect"
     },
     {
-      "path": "../juniper"
+      "path": "../../leyman/eslint-config"
     },
     {
-      "path": "../../leyman/eslint-config"
+      "path": "../juniper"
     }
   ]
 }

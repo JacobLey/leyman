@@ -2,7 +2,11 @@ import type { StandardSchemaV1 } from '@standard-schema/spec';
 import type { Options as AjvOptions, ErrorObject } from 'ajv/dist/2020.js';
 import type { JsonSchema, Schema } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
+import ajvFormats from 'ajv-formats';
+import { defaultImport } from 'default-import';
 import { isSchema } from 'juniper';
+
+const addFormats = defaultImport(ajvFormats);
 
 export interface JuniperValidator<T> extends StandardSchemaV1<T> {
     is: (x: unknown) => x is T;
@@ -18,7 +22,8 @@ export const makeValidator = <T>(
     options?: Omit<AjvOptions, 'strict'>
 ): JuniperValidator<T> => {
     const json = isSchema(schema) ? schema.toJSON({ schema: true }) : schema;
-    const validator = new Ajv2020({ ...options, strict: true }).compile<T>(json);
+    // Standard formats (`email`, `uuid`, `date-time`, ...), which strict mode otherwise rejects as unknown
+    const validator = addFormats(new Ajv2020({ ...options, strict: true })).compile<T>(json);
 
     const validate = (value: unknown): StandardSchemaV1.Result<T> => {
         if (validator(value)) {

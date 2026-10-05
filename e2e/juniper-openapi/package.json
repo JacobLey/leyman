@@ -1,0 +1,38 @@
+{
+  "name": "@leyman/e2e-juniper-openapi",
+  "version": "0.0.1",
+  "description": "Builds an example users and posts OpenAPI spec with juniper, and checks it is valid OpenAPI 3.0 and 3.1.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/e2e/juniper-openapi#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "catalog:",
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "juniper": "workspace:^",
+    "juniper-validator": "workspace:^",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "openapi-types": "catalog:",
+    "openapi3-ts": "catalog:",
+    "typescript": "catalog:"
+  }
+}

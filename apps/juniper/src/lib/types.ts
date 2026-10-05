@@ -2,6 +2,18 @@ import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
 
 export declare const typeCache: unique symbol;
 
+/**
+ * Value of a JSON Schema `type` keyword.
+ */
+export type JsonSchemaType =
+    | 'array'
+    | 'boolean'
+    | 'integer'
+    | 'null'
+    | 'number'
+    | 'object'
+    | 'string';
+
 export interface JsonSchema<T> {
     [key: string]: unknown;
     [typeCache]?: { type: T };
@@ -14,10 +26,15 @@ export interface JsonSchema<T> {
     patternProperties?: Record<string, boolean | JsonSchema<unknown>>;
     properties?: Record<string, boolean | JsonSchema<unknown>>;
     then?: JsonSchema<any>;
-    type?: string | string[];
+    type?: JsonSchemaType | JsonSchemaType[];
 }
 
 export interface ToJsonParams {
+    /**
+     * `$ref` prefix for defined schemas (see `define`).
+     * Defaults to `#/$defs/` (embedded as `$defs`), or `#/components/schemas/` for OpenAPI 3.0.
+     */
+    definitionsPath?: string;
     /**
      * $id of schema
      */

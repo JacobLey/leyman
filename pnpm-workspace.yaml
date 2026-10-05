@@ -50,6 +50,7 @@ allowBuilds:
   nx: false
 
 catalog:
+  '@apidevtools/swagger-parser': ^13.1.0
   '@biomejs/biome': ^2.5.14
   '@changesets/cli': ^3.0.3
   '@eslint/js': ^10.0.1
@@ -78,6 +79,7 @@ catalog:
   '@typescript-eslint/utils': ^8.70.1
   '@typescript/native': npm:typescript@^7.0.2
   ajv: ^8.20.0
+  ajv-formats: ^3.0.1
   c8: ^12.0.0
   chai: ^6.2.2
   chai-as-promised: ^8.0.2
@@ -99,6 +101,8 @@ catalog:
   globby: ^16.2.4
   mocha: ^12.0.2
   nx: ^23.2.1
+  openapi-types: ^12.1.3
+  openapi3-ts: ^4.6.1
   p-defer: ^4.0.1
   prettier: ^3.9.9
   react: ^19.3.0
