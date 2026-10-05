@@ -13,7 +13,14 @@ import type {
     ValidateOutputIdDoesNotExist,
     ValidateOutputSatisfiesDependency,
 } from '#module';
-import type { Extendable, InstanceOfClass, InvalidInput, IsClass } from '#types';
+import type {
+    Extendable,
+    InstanceOfClass,
+    Invalid,
+    InvalidInput,
+    IsClass,
+    ValidateConcrete,
+} from '#types';
 import { InstanceBinding, normalizeOutputId, TempBinding } from '#binding';
 import { addBoundInstances, createAsyncContainer, createSyncContainer } from '#container';
 import { HaywireDuplicateOutputError, HaywireProviderMissingError } from '#errors';
@@ -35,8 +42,7 @@ type ValidateBindInstance<
         Dependencies,
         BindingListOutputType<OutputId> | BindingOutputType<OutputId>
     >,
-] &
-    [];
+];
 
 /**
  * Verify that the container has no dependencies remaining unbound before exposing the container.
@@ -45,10 +51,33 @@ type ValidateBindInstance<
  *
  * @template F - factory
  */
-type ValidateToContainer<F extends GenericContainerFactory> = [] &
-    ([Exclude<F[typeof idType]['dependencies'], F[typeof idType]['outputs']>] extends [never]
-        ? []
-        : [InvalidInput<'MissingOutput'>]);
+type ValidateToContainer<F extends GenericContainerFactory> = [
+    Exclude<F[typeof idType]['dependencies'], F[typeof idType]['outputs']>,
+] extends [never]
+    ? []
+    : [InvalidInput<'MissingOutput'>];
+
+/**
+ * Output id for an id or class passed to `bindInstance`.
+ *
+ * @template IdOrClass - what the caller passed to `bindInstance`
+ */
+type BoundOutputId<IdOrClass> = IdOrClass extends GenericHaywireId
+    ? IdOrClass
+    : IdOrClass extends IsClass
+      ? ClassToConstructable<IdOrClass>
+      : never;
+
+/**
+ * Instance type accepted by `bindInstance` for an id or class.
+ *
+ * @template IdOrClass - what the caller passed to `bindInstance`
+ */
+type BoundInstance<IdOrClass> = IdOrClass extends GenericHaywireId
+    ? HaywireIdProviderType<IdOrClass>
+    : IdOrClass extends IsClass
+      ? InstanceOfClass<IdOrClass>
+      : never;
 
 const wireContainerFactorySym = Symbol('wireContainerFactory');
 
@@ -254,39 +283,31 @@ export class ContainerFactory<
      * Returns a new instance of ContainerFactory, so the original is not mutated and can have multiple different types injected to it.
      * The new ContainerFactory also has types updated, to prevent duplicate output ids in future registrations.
      *
-     * @param outputId - id defining type of instance
+     * @param idOrClass - id (or class) defining type of instance
      * @param instance - instance to provide to all bindings
-     * @param invalidInput - Enforces that incoming `outputId` is not a duplicate of existing ids
      */
-    public bindInstance<OutputId extends GenericHaywireId>(
-        outputId: OutputId,
-        instance: HaywireIdProviderType<OutputId>,
-        ...invalidInput: ValidateBindInstance<
-            Outputs,
-            Dependencies,
-            Bindings,
-            OutputHaywireId<OutputId>
-        >
+    public bindInstance<IdOrClass extends GenericHaywireId | IsClass>(
+        idOrClass: IdOrClass &
+            Invalid<
+                ValidateConcrete<
+                    Outputs,
+                    ValidateBindInstance<
+                        Outputs,
+                        Dependencies,
+                        Bindings,
+                        OutputHaywireId<BoundOutputId<IdOrClass>>
+                    >
+                >
+            >,
+        instance: BoundInstance<IdOrClass>
     ): ContainerFactory<
-        CombineListOutputs<Outputs, BindingListOutputType<OutputHaywireId<OutputId>>>,
-        Exclude<Dependencies, BindingOutputType<OutputHaywireId<OutputId>>>,
-        Async,
-        Bindings | InstanceBinding<OutputId>
-    >;
-    public bindInstance<Constructor extends IsClass>(
-        clazz: Constructor,
-        instance: InstanceOfClass<Constructor>,
-        ...invalidInput: ValidateBindInstance<
+        CombineListOutputs<
             Outputs,
-            Dependencies,
-            Bindings,
-            ClassToConstructable<Constructor>
-        >
-    ): ContainerFactory<
-        Outputs,
-        Exclude<Dependencies, BindingOutputType<ClassToConstructable<Constructor>>>,
+            BindingListOutputType<OutputHaywireId<BoundOutputId<IdOrClass>>>
+        >,
+        Exclude<Dependencies, BindingOutputType<OutputHaywireId<BoundOutputId<IdOrClass>>>>,
         Async,
-        Bindings | InstanceBinding<ClassToConstructable<Constructor>>
+        Bindings | InstanceBinding<BoundOutputId<IdOrClass>>
     >;
     public bindInstance<OutputId extends GenericHaywireId>(
         outputIdOrClass: OutputId,
@@ -360,7 +381,8 @@ export class ContainerFactory<
      * the call will fail (and be typed as invalid).
      */
     public toContainer(
-        ...invalidInput: ValidateToContainer<this>
+        // Factories are usually incomplete, so a `this` check would stop them matching `GenericContainerFactory`
+        ...invalidInput: ValidateToContainer<this> & []
     ): ExpandedContainer<Outputs, Bindings, Async>;
     public toContainer(): ExpandedContainer<Outputs, Bindings, Async> {
         if (this.#missingDependencyOutputsByBaseId.size > 0) {
@@ -374,8 +396,7 @@ export class ContainerFactory<
 
     public static createContainer<F extends GenericContainerFactory>(
         this: void,
-        factory: F,
-        ...invalidInput: ValidateToContainer<F>
+        factory: F & Invalid<ValidateToContainer<F>>
     ): ReturnType<F['toContainer']>;
     public static createContainer<F extends GenericContainerFactory>(
         this: void,

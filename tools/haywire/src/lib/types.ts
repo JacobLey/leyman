@@ -135,3 +135,53 @@ type ExpandOutputNullable<
           | ExpandOutputUndefinable<T, Construct, Named, List, true, Undefinable>;
 
 export type { ExpandOutputNullable as ExpandOutput };
+
+/**
+ * Error messages for each failed validation (keyed by `InvalidInput` reason), shown by TypeScript when a call is invalid.
+ */
+interface ValidationMessages {
+    bindingExists: 'Error: an output is already bound. Use replaceBinding() on a module to swap it.';
+    dependenciesNotSatisfiedByOutput: 'Error: a dependency is stricter than the output provided for it, e.g. it needs a non-null value but the output is nullable.';
+    missingOutput: 'Error: some dependencies have no binding. Add bindings for them before creating a container.';
+    noBindingDeclared: 'Error: the container has no binding for this id.';
+    noBindingToReplace: 'Error: the module has no binding for this output to replace. Use addBinding() instead.';
+    outputDoesNotSatisfyDependency: 'Error: the output is laxer than what depends on it, e.g. it is nullable but a non-null value is needed.';
+}
+
+/**
+ * Messages for every failed validation in `Validation`, or `never` if it passed.
+ *
+ * @template Validation - tuple of `InvalidInput`s, empty when valid
+ */
+type ValidationMessage<Validation extends readonly unknown[]> =
+    Validation[number] extends infer Failure
+        ? Failure extends InvalidInput<infer Reason>
+            ? ValidationMessages[Uncapitalize<Reason> & keyof ValidationMessages]
+            : never
+        : never;
+
+/**
+ * `unknown` when `Validation` passes, otherwise an object requiring its error messages.
+ *
+ * Intersected with a parameter type, so an invalid argument fails with a readable message:
+ * `Property 'error' is missing in type ... but required in type '{ error: "Error: ..." }'`.
+ * An intersection (rather than replacing the parameter type) keeps the parameter's generic inferable.
+ *
+ * @template Validation - tuple of `InvalidInput`s, empty when valid
+ */
+export type Invalid<Validation extends readonly unknown[]> = [
+    ValidationMessage<Validation>,
+] extends [never]
+    ? unknown
+    : { error: ValidationMessage<Validation> };
+
+/**
+ * Skips `Validation` when `Outputs` is `any`, as in `GenericModule` and `GenericContainerFactory`.
+ * Otherwise the error each method requires would differ, and no concrete instance would be assignable to them.
+ *
+ * @template Outputs - outputs of the module or factory
+ * @template Validation - validation to apply to a concrete module
+ */
+export type ValidateConcrete<Outputs, Validation extends readonly unknown[]> = 0 extends 1 & Outputs
+    ? []
+    : Validation;

@@ -10,7 +10,14 @@ import type {
     StripAnnotations,
 } from '#identifier';
 import type { Scopes } from '#scopes';
-import type { Extendable, InstanceOfClass, InvalidInput, IsClass, NonExtendable } from '#types';
+import type {
+    Extendable,
+    InstanceOfClass,
+    Invalid,
+    InvalidInput,
+    IsClass,
+    NonExtendable,
+} from '#types';
 import pDefer from 'p-defer';
 import { normalizeOutputId, TempBinding } from '#binding';
 import {
@@ -117,6 +124,47 @@ export type ExpandedContainer<
 > = MaybeSyncContainer<BindingOutputType<Bindings['outputId']> | Outputs, Async>;
 
 type NoBindingDeclared = [InvalidInput<'NoBindingDeclared'>];
+
+/**
+ * Output that a requested id or class must match in the container.
+ *
+ * @template IdOrClass - what the caller asked the container for
+ */
+type RequestedOutput<IdOrClass> = IdOrClass extends GenericHaywireId
+    ? NonExtendable<
+          RawType<IdOrClass>,
+          IdOrClass['construct'],
+          IdOrClass['annotations']['named'],
+          IdOrClass['annotations']['list'] extends 'multi' | true ? true : false,
+          IdOrClass['annotations']['nullable'],
+          IdOrClass['annotations']['undefinable']
+      >
+    : IdOrClass extends IsClass
+      ? NonExtendable<InstanceOfClass<IdOrClass>, IdOrClass, null, false, false, false>
+      : never;
+
+/**
+ * Validate that the container declares a binding for the requested id or class.
+ *
+ * @template Outputs - container outputs
+ * @template IdOrClass - what the caller asked the container for
+ */
+type ValidateRequest<Outputs extends [Extendable], IdOrClass> = [
+    RequestedOutput<IdOrClass>,
+] extends Outputs
+    ? []
+    : NoBindingDeclared;
+
+/**
+ * Instance type returned for a requested id or class.
+ *
+ * @template IdOrClass - what the caller asked the container for
+ */
+type RequestedType<IdOrClass> = IdOrClass extends GenericHaywireId
+    ? StripAnnotations<HaywireIdType<IdOrClass>, 'deferred' | 'supplier'>
+    : IdOrClass extends IsClass
+      ? InstanceOfClass<IdOrClass>
+      : never;
 
 declare const typeTracking: unique symbol;
 const createContainerSym = Symbol('createContainer');
@@ -730,31 +778,9 @@ export class Container<Outputs extends [Extendable]> {
      *
      * @param id - {@link HaywireId} to instantiate
      */
-    public getAsync<Id extends GenericHaywireId>(
-        id: Id,
-        ...invalidInput: [] &
-            ([
-                NonExtendable<
-                    RawType<Id>,
-                    Id['construct'],
-                    Id['annotations']['named'],
-                    Id['annotations']['list'] extends 'multi' | true ? true : false,
-                    Id['annotations']['nullable'],
-                    Id['annotations']['undefinable']
-                >,
-            ] extends Outputs
-                ? []
-                : NoBindingDeclared)
-    ): Promise<StripAnnotations<HaywireIdType<Id>, 'deferred' | 'supplier'>>;
-    public getAsync<Constructor extends IsClass>(
-        clazz: Constructor,
-        ...invalidInput: [] &
-            ([
-                NonExtendable<InstanceOfClass<Constructor>, Constructor, null, false, false, false>,
-            ] extends Outputs
-                ? []
-                : NoBindingDeclared)
-    ): Promise<InstanceOfClass<Constructor>>;
+    public getAsync<IdOrClass extends GenericHaywireId | IsClass>(
+        idOrClass: IdOrClass & Invalid<ValidateRequest<Outputs, IdOrClass>>
+    ): Promise<RequestedType<IdOrClass>>;
     public async getAsync<Id extends GenericHaywireId>(
         idOrClass: Id
     ): Promise<StripAnnotations<HaywireIdType<Id>, 'deferred' | 'supplier'>> {
@@ -2281,31 +2307,11 @@ export class SyncContainer<Outputs extends [Extendable]> extends Container<Outpu
      *
      * Will preload all singletons if not already done.
      */
-    public get<Id extends GenericHaywireId>(
-        id: Id,
-        ...invalidInput: [] &
-            ([
-                NonExtendable<
-                    RawType<Id>,
-                    Id['construct'],
-                    Id['annotations']['named'],
-                    Id['annotations']['list'] extends 'multi' | true ? true : false,
-                    Id['annotations']['nullable'],
-                    Id['annotations']['undefinable']
-                >,
-            ] extends Outputs
-                ? []
-                : [InvalidInput<'NoBindingExists'>])
-    ): HaywireIdType<OutputHaywireId<Id>>;
-    public get<Constructor extends IsClass>(
-        clazz: Constructor,
-        ...invalidInput: [] &
-            ([
-                NonExtendable<InstanceOfClass<Constructor>, Constructor, null, false, false, false>,
-            ] extends Outputs
-                ? []
-                : [InvalidInput<'NoBindingExists'>])
-    ): InstanceOfClass<Constructor>;
+    public get<IdOrClass extends GenericHaywireId | IsClass>(
+        idOrClass: IdOrClass & Invalid<ValidateRequest<Outputs, IdOrClass>>
+    ): IdOrClass extends GenericHaywireId
+        ? HaywireIdType<OutputHaywireId<IdOrClass>>
+        : RequestedType<IdOrClass>;
     public get<Id extends GenericHaywireId>(idOrClass: Id): HaywireIdType<OutputHaywireId<Id>> {
         const id = normalizeOutputId(unsafeIdentifier(idOrClass));
         const hasBindings = id.annotations.list

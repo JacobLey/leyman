@@ -71,8 +71,8 @@ suite('module', () => {
                 .withDependencies([numberId])
                 .withProvider(() => 1)
         );
-        // @ts-expect-error
         Module.fromBinding(
+            // @ts-expect-error
             bind(numberId.nullable())
                 .withDependencies([numberId])
                 .withProvider(() => 1)
@@ -159,8 +159,8 @@ suite('module', () => {
                     });
 
                 expect(() => {
-                    // @ts-expect-error
                     barModule.addBinding(
+                        // @ts-expect-error
                         bind(identifier(Bar).nullable().undefinable()).withInstance({} as Bar)
                     );
                 })
@@ -469,6 +469,19 @@ suite('module', () => {
         });
     });
 
+    test('toContainer requires every dependency to be bound', () => {
+        const incomplete = createModule(
+            bind(identifier<string>().named('needsNum'))
+                .withDependencies([numberId])
+                .withProvider(String)
+        );
+        // @ts-expect-error
+        const container = incomplete.toContainer();
+        expect(() => {
+            container.check();
+        }).to.throw(HaywireContainerValidationError);
+    });
+
     suite('replaceBinding', () => {
         interface Database {
             query: () => string;
@@ -542,8 +555,8 @@ suite('module', () => {
                     .withProvider(() => ({ query: () => 'lax' }))
             );
             // `urlId` is only provided as nullable
-            // @ts-expect-error
             laxModule.replaceBinding(
+                // @ts-expect-error
                 bind(dbId)
                     .withDependencies([urlId])
                     .withProvider(url => ({ query: () => url }))

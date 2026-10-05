@@ -948,7 +948,16 @@ So typescript enforces you can only pass a boolean, easy enough!
 
 Other validations are much more complex though. Such as enforcing that a module does not have duplicate bindings, that a container's dependencies are all satisfied, or that a binding's dependencies match the type of the provider.
 
-This is implemented by attaching a type-only parameter (does not exist at runtime) called `invalidInput` that when satisfied is spread as an empty array, but when not satisfied results in `never` which will cause typescript errors.
+Where possible, the error says what is wrong. Adding a second binding for an id, for example, fails with:
+
+```
+Property 'error' is missing in type 'Binding<...>' but required in type
+'{ error: "Error: an output is already bound. Use replaceBinding() on a module to swap it."; }'.
+```
+
+The same applies to bindings that are laxer or stricter than what they connect to, `replaceBinding()` without an existing binding, `toContainer()`/`createContainer()` on a module with unbound dependencies, and `get()`/`getAsync()` for an id the container doesn't bind.
+
+Some validations instead attach a type-only parameter (does not exist at runtime) called `invalidInput` that when satisfied is spread as an empty array, but when not satisfied results in `never` which will cause typescript errors.
 
 The best way to see this in action is the source code of this package, but a small example below can show an example of a "Set" that _only_ allows adding values that do not already exist.
 

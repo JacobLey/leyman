@@ -336,8 +336,8 @@ suite('factory', () => {
             const outId = identifier<number>().named('lax-out');
 
             const laxModule = createModule(bind(numId.nullable()).withFactory(() => 1));
-            // @ts-expect-error
             const invalidModule = laxModule.addBinding(
+                // @ts-expect-error
                 bind(outId)
                     .withDependencies([numId])
                     .withProvider(num => num)

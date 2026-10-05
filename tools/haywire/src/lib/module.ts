@@ -7,7 +7,14 @@ import type {
     GenericOutputHaywireId,
     RawType,
 } from '#identifier';
-import type { ExpandOutput, Extendable, InvalidInput, NonExtendable } from '#types';
+import type {
+    ExpandOutput,
+    Extendable,
+    Invalid,
+    InvalidInput,
+    NonExtendable,
+    ValidateConcrete,
+} from '#types';
 import { createAsyncContainer, createSyncContainer } from '#container';
 import { wireContainerFactory } from '#container-factory';
 import { HaywireBindingNotFoundError, HaywireDuplicateOutputError } from '#errors';
@@ -148,7 +155,7 @@ export type ValidateDependenciesSatisfiedByOutput<
         : [InvalidInput<'DependenciesNotSatisfiedByOutput'>];
 
 /**
- * Type-based validations for `fromBinding`. Will resolve to an impossible spreadable input if invalid.
+ * Type-based validations for `fromBinding`. Resolves to an `InvalidInput` per failure, empty if valid.
  *
  * Enforces:
  * > The module's dependencies are satisfied by the incoming outputId
@@ -168,7 +175,7 @@ type ValidateFromBindingInput<Binding extends GenericBinding> = [
 ];
 
 /**
- * Type-based validations for `addBinding`. Will resolve to an impossible spreadable input if invalid.
+ * Type-based validations for `addBinding`. Resolves to an `InvalidInput` per failure, empty if valid.
  *
  * Enforces:
  * > The specified outputId does not already exist (skipped for list)
@@ -195,8 +202,7 @@ type ValidateAddBindingInput<
         ListOutputs | Outputs,
         SimplifyDependencyType<Binding['depIds']>
     >,
-] &
-    [];
+];
 
 /**
  * Outputs after replacing every output that shares a base id with the incoming outputs.
@@ -227,7 +233,7 @@ type ValidateOutputIdExists<
     : [];
 
 /**
- * Type-based validations for `replaceBinding`. Will resolve to an impossible spreadable input if invalid.
+ * Type-based validations for `replaceBinding`. Resolves to an `InvalidInput` per failure, empty if valid.
  *
  * Enforces:
  * > A binding for the output id already exists
@@ -258,8 +264,7 @@ type ValidateReplaceBindingInput<
         | TakeXThatAreNotInY<Outputs, BindingOutputType<Binding['outputId']>>,
         SimplifyDependencyType<Binding['depIds']>
     >,
-] &
-    [];
+];
 
 type ValidateMergeModuleInput<
     ExistingModule extends GenericModule,
@@ -274,8 +279,7 @@ type ValidateMergeModuleInput<
         ModuleListOutputs<ExistingModule> | ModuleOutputs<ExistingModule>,
         ModuleDependencies<IncomingModule>
     >,
-] &
-    [];
+];
 
 /**
  * List dependencies of a module.
@@ -351,7 +355,7 @@ export class Module<
      */
     public static fromBinding<T extends GenericBinding>(
         this: void,
-        ...[binding]: [T, ...ValidateFromBindingInput<T>]
+        binding: Invalid<ValidateFromBindingInput<T>> & T
     ): Module<
         BindingOutputType<T['outputId']>,
         BindingListOutputType<T['outputId']>,
@@ -393,8 +397,13 @@ export class Module<
      * @throws when binding's output id is not unique. Enforced by type safety as well.
      */
     public addBinding<T extends GenericBinding>(
-        binding: T,
-        ...invalidInput: ValidateAddBindingInput<Outputs, ListOutputs, Dependencies, T>
+        binding: Invalid<
+            ValidateConcrete<
+                Outputs,
+                ValidateAddBindingInput<Outputs, ListOutputs, Dependencies, T>
+            >
+        > &
+            T
     ): Module<
         BindingOutputType<T['outputId']> | Outputs,
         CombineListOutputs<ListOutputs, BindingListOutputType<T['outputId']>>,
@@ -453,8 +462,13 @@ export class Module<
      * @throws when no binding exists for the output id. Enforced by type safety as well.
      */
     public replaceBinding<T extends GenericBinding>(
-        binding: T,
-        ...invalidInput: ValidateReplaceBindingInput<Outputs, ListOutputs, Dependencies, T>
+        binding: Invalid<
+            ValidateConcrete<
+                Outputs,
+                ValidateReplaceBindingInput<Outputs, ListOutputs, Dependencies, T>
+            >
+        > &
+            T
     ): Module<
         ReplaceOutputs<Outputs, BindingOutputType<T['outputId']>>,
         ReplaceOutputs<ListOutputs, BindingListOutputType<T['outputId']>>,
@@ -499,7 +513,6 @@ export class Module<
      * Returns a new module with both sets of bindings, rather than mutating the existing modules.
      *
      * @param mod - module to merge into this one
-     * @param invalidInput - typescript-only input that enforces valid types
      * @returns module with both sets of bindings
      */
     public mergeModule<
@@ -508,11 +521,16 @@ export class Module<
         Dependencies2 extends [Extendable],
         Async2 extends boolean,
     >(
-        mod: Module<Outputs2, ListOutputs2, Dependencies2, Async2>,
-        ...invalidInput: ValidateMergeModuleInput<
-            this,
+        mod: Invalid<
+            ValidateConcrete<
+                Outputs,
+                ValidateMergeModuleInput<
+                    this,
+                    Module<Outputs2, ListOutputs2, Dependencies2, Async2>
+                >
+            >
+        > &
             Module<Outputs2, ListOutputs2, Dependencies2, Async2>
-        >
     ): Module<
         Outputs | Outputs2,
         CombineListOutputs<ListOutputs, ListOutputs2>,
@@ -566,9 +584,9 @@ export class Module<
      * Type checking enforces that that the current module setup declares an output for every dependency.
      */
     public toContainer(
-        ...invalidInput: [any] extends [Outputs]
-            ? []
-            : ValidateToContainer<ListOutputs | Outputs, Dependencies>
+        this: Invalid<
+            ValidateConcrete<Outputs, ValidateToContainer<ListOutputs | Outputs, Dependencies>>
+        >
     ): MaybeSyncContainer<ListOutputs | Outputs, Async>;
     public toContainer(): Container<ListOutputs | Outputs> {
         const bindings = new Map(this.#bindings);
@@ -588,11 +606,13 @@ export class Module<
      */
     public static createContainer<T extends GenericModule>(
         this: void,
-        mod: T,
-        ...invalidInput: ValidateToContainer<
-            T[typeof idType]['listOutputs'] | T[typeof idType]['outputs'],
-            T[typeof idType]['dependencies']
-        >
+        mod: Invalid<
+            ValidateToContainer<
+                T[typeof idType]['listOutputs'] | T[typeof idType]['outputs'],
+                T[typeof idType]['dependencies']
+            >
+        > &
+            T
     ): MaybeSyncContainer<
         T[typeof idType]['listOutputs'] | T[typeof idType]['outputs'],
         T['isAsync']
