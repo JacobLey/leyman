@@ -56,6 +56,10 @@ const fromBase64 = (str: string): Uint8ArrayBuffer =>
 const toHex = (buf: Uint8ArrayBuffer): string =>
     [...buf].map(x => x.toString(HEX_SIZE).padStart(2, '0')).join('');
 const fromHex = (str: string): Uint8ArrayBuffer => {
+    if (!/^[\da-f]*$/iu.test(str)) {
+        throw new TypeError('Hex text contains characters other than 0-9 and a-f');
+    }
+    // Odd lengths imply a leading 0, e.g. from `bigint.toString(16)`
     const length = str.length % 2 ? str.length + 1 : str.length;
     return new Uint8Array(
         (str.padStart(length, '0').match(/.{2}/gu) ?? []).map(byte =>
@@ -71,6 +75,7 @@ const fromHex = (str: string): Uint8ArrayBuffer => {
  *
  * @param input - text to decode
  * @returns decoded
+ * @throws {TypeError} for hex text with characters other than 0-9 and a-f (in either case)
  */
 export const decode = (input: InputText): Uint8ArrayBuffer => {
     const { encoding, text } = inputToEncoding(input);

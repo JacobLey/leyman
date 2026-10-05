@@ -345,6 +345,8 @@ Produces a promise of Uint8Array of length `size` filled with random bytes.
 
 Decodes any input as Uint8Array, given the provided encoding (see `InputText`).
 
+Throws a `TypeError` for hex text with characters other than `0-9` and `a-f` (in either case). Odd-length hex implies a leading `0`.
+
 ### encode(input: InputText, outputEncoding?: string)
 
 Encodes any input (ideally as Uint8Array, but potentially as a differently encoded text) as the desired encoding.

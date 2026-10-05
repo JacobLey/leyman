@@ -87,6 +87,10 @@ suite('Encode', () => {
                     output: [1, 35],
                 },
                 {
+                    input: 'ABC123',
+                    output: [171, 193, 35],
+                },
+                {
                     input: '0000120000',
                     output: [0, 0, 18, 0, 0],
                 },
@@ -101,6 +105,13 @@ suite('Encode', () => {
                         encoding: 'hex',
                     }),
                 ]).to.deep.equal(output);
+            }
+
+            for (const input of ['abcg', '0x12', 'ab cd', 'zz']) {
+                expect(() => Encode.decode({ text: input, encoding: 'hex' })).to.throw(
+                    TypeError,
+                    'Hex text contains characters other than 0-9 and a-f'
+                );
             }
         });
 
