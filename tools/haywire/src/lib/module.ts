@@ -155,6 +155,40 @@ export type ValidateDependenciesSatisfiedByOutput<
         : [InvalidInput<'DependenciesNotSatisfiedByOutput'>];
 
 /**
+ * Equivalent to {@link ValidateDependenciesSatisfiedByOutput}, for when the incoming dependencies are few (a single binding's).
+ *
+ * Checks each dependency against the existing outputs, rather than computing the base ids of every existing output.
+ * That would happen on every `addBinding`, so type-checking a module grows quadratically with its size.
+ * When the incoming dependencies are many as well (merging modules), the original is faster.
+ *
+ * @template ExistingOutputs - outputs on existing resource
+ * @template IncomingDependencies - dependencies on the incoming binding
+ */
+type ValidateBindingDependenciesSatisfiedByOutput<
+    ExistingOutputs extends [Extendable],
+    IncomingDependencies extends [Extendable],
+> = [UnsatisfiedDependencies<ExistingOutputs, IncomingDependencies>] extends [never]
+    ? []
+    : [InvalidInput<'DependenciesNotSatisfiedByOutput'>];
+
+/**
+ * Incoming dependencies that share a "base id" with an existing output, but are not satisfied by it.
+ *
+ * @template ExistingOutputs - outputs on existing resource
+ * @template IncomingDependencies - dependencies on the incoming binding
+ */
+type UnsatisfiedDependencies<
+    ExistingOutputs extends [Extendable],
+    IncomingDependencies extends [Extendable],
+> = IncomingDependencies extends [Extendable]
+    ? [FilterIdType<ExistingOutputs, BaseIds<IncomingDependencies>>] extends [never]
+        ? never
+        : [IncomingDependencies] extends [ExistingOutputs]
+          ? never
+          : IncomingDependencies
+    : never;
+
+/**
  * Type-based validations for `fromBinding`. Resolves to an `InvalidInput` per failure, empty if valid.
  *
  * Enforces:
@@ -168,7 +202,7 @@ type ValidateFromBindingInput<Binding extends GenericBinding> = [
         SimplifyDependencyType<Binding['depIds']>,
         BindingListOutputType<Binding['outputId']> | BindingOutputType<Binding['outputId']>
     >,
-    ...ValidateDependenciesSatisfiedByOutput<
+    ...ValidateBindingDependenciesSatisfiedByOutput<
         BindingListOutputType<Binding['outputId']> | BindingOutputType<Binding['outputId']>,
         SimplifyDependencyType<Binding['depIds']>
     >,
@@ -198,7 +232,7 @@ type ValidateAddBindingInput<
         Dependencies | SimplifyDependencyType<Binding['depIds']>,
         BindingListOutputType<Binding['outputId']> | BindingOutputType<Binding['outputId']>
     >,
-    ...ValidateDependenciesSatisfiedByOutput<
+    ...ValidateBindingDependenciesSatisfiedByOutput<
         ListOutputs | Outputs,
         SimplifyDependencyType<Binding['depIds']>
     >,
@@ -259,7 +293,7 @@ type ValidateReplaceBindingInput<
         Dependencies | SimplifyDependencyType<Binding['depIds']>,
         BindingListOutputType<Binding['outputId']> | BindingOutputType<Binding['outputId']>
     >,
-    ...ValidateDependenciesSatisfiedByOutput<
+    ...ValidateBindingDependenciesSatisfiedByOutput<
         | TakeXThatAreNotInY<ListOutputs, BindingListOutputType<Binding['outputId']>>
         | TakeXThatAreNotInY<Outputs, BindingOutputType<Binding['outputId']>>,
         SimplifyDependencyType<Binding['depIds']>
