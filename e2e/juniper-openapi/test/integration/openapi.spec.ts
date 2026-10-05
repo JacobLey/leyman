@@ -1,4 +1,5 @@
-import type { NewPost, NewUser, Post, PostPage, User, UserUpdate } from '../data/api.js';
+import type { SchemaType } from 'juniper';
+import type { Comment, NewPost, NewUser, Post, PostPage, User, UserUpdate } from '../data/api.js';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
@@ -6,6 +7,7 @@ import { makeValidator } from 'juniper-validator';
 import { suite, test } from 'mocha-chain';
 import {
     buildSpec,
+    commentSchema,
     newPostSchema,
     newUserSchema,
     postPageSchema,
@@ -29,6 +31,7 @@ suite('OpenAPI spec built with juniper', () => {
                         a.localeCompare(b, 'en')
                     )
                 ).to.deep.equal([
+                    'Comment',
                     'Error',
                     'NewPost',
                     'NewUser',
@@ -40,6 +43,11 @@ suite('OpenAPI spec built with juniper', () => {
                 expect(spec).to.have.deep.nested.property(
                     'paths./users/{userId}.get.responses.200.content.application/json.schema',
                     { $ref: '#/components/schemas/User' }
+                );
+                // Comment threads reference themselves
+                expect(spec.components!.schemas!.Comment).to.have.deep.nested.property(
+                    'properties.replies.items',
+                    { $ref: '#/components/schemas/Comment' }
                 );
                 // `PostPage` references `Post` rather than repeating it
                 expect(spec.components!.schemas!.PostPage).to.have.nested.property(
@@ -85,6 +93,7 @@ suite('OpenAPI spec built with juniper', () => {
             body: string;
             tags: string[];
         }>();
+        expectTypeOf<SchemaType<typeof commentSchema>>().toEqualTypeOf<Comment>();
         expectTypeOf<PostPage>().branded.toEqualTypeOf<{
             items: Post[];
             nextCursor: string | null;
@@ -122,5 +131,18 @@ suite('OpenAPI spec built with juniper', () => {
                 nextCursor: null,
             })
         ).to.equal(true);
+
+        const comment = {
+            id: '0b8f6a2e-1c3d-4e5f-8a9b-0c1d2e3f4a5b',
+            authorId: '3f2c0a3e-6e8a-4a59-9c2b-1d2f3a4b5c6d',
+            body: 'First!',
+        };
+        expect(
+            makeValidator(commentSchema).is({
+                ...comment,
+                replies: [{ ...comment, id: '0b8f6a2e-1c3d-4e5f-8a9b-0c1d2e3f4a5c', replies: [] }],
+            })
+        ).to.equal(true);
+        expect(makeValidator(commentSchema).is({ ...comment, replies: [comment] })).to.equal(false);
     });
 });

@@ -221,6 +221,51 @@ type User = SchemaType<typeof user>;
 - **Names are unique:** two different schemas defined with the same name throw when serialized. The same schema can be used any number of times.
 - **`.ref(path)`** remains for schemas Juniper doesn't own, where the path is up to you.
 
+### Recursive schemas
+
+`defineRecursive` defines a schema that references itself, such as a tree or a comment thread. TypeScript can't infer a recursive type from a builder that uses itself, so declare the type, and the built schema is checked against it.
+
+```ts
+import { arraySchema, defineRecursive, numberSchema, objectSchema } from 'juniper';
+
+interface TreeNode {
+    value: number;
+    children: TreeNode[];
+    parent?: TreeNode | null;
+}
+
+const tree = defineRecursive<TreeNode>('TreeNode', self =>
+    objectSchema({
+        properties: {
+            value: numberSchema(),
+            children: arraySchema(self),
+            parent: self.nullable(),
+        },
+        required: ['value', 'children'],
+    })
+);
+
+tree.toJSON();
+/**
+ * {
+ *   $ref: '#/$defs/TreeNode',
+ *   $defs: {
+ *     TreeNode: {
+ *       type: 'object',
+ *       properties: {
+ *         value: { type: 'number' },
+ *         children: { type: 'array', items: { $ref: '#/$defs/TreeNode' } },
+ *         parent: { anyOf: [{ $ref: '#/$defs/TreeNode' }, { type: 'null' }] },
+ *       },
+ *       required: ['value', 'children'],
+ *     },
+ *   },
+ * }
+ */
+```
+
+`self`, and the returned schema, are references to the definition: they support `nullable()` and annotations such as `description()`, and are used like any other defined schema. Definitions can also reference each other by nesting `defineRecursive` calls.
+
 ### OpenAPI
 
 OpenAPI keeps shared schemas in `components.schemas`. `components()` collects every definition reachable from the given schemas, ready to place there. With `openApi30: true`, references already point at `#/components/schemas/`. For OpenAPI 3.1 (JSON Schema 2020-12), pass `definitionsPath`.
@@ -390,6 +435,19 @@ Makes the schema a reusable definition, emitted as `$ref` and collected into `$d
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `name` | `string` | — | Required. Name of the definition, e.g. `User`. Must be unique per document. |
+
+---
+
+#### `defineRecursive<T>(name, build)`
+
+Defines a schema that references itself. See [Recursive schemas](#recursive-schemas).
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `name` | `string` | — | Required. Name of the definition. |
+| `build` | `(self: RecursiveSchema<T>) => Schema<T>` | — | Required. Builds the definition, given a reference to itself. Must produce `T`. |
+
+**Returns** `RecursiveSchema<T>` — a reference to the definition.
 
 ---
 

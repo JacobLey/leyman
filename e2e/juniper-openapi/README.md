@@ -5,7 +5,7 @@ Builds an example OpenAPI spec for a small users and posts API, with [`juniper`]
 The tests check that:
 
 - the spec is valid OpenAPI 3.0 and 3.1, with every `$ref` resolving ([`@apidevtools/swagger-parser`](https://www.npmjs.com/package/@apidevtools/swagger-parser))
-- shared schemas are emitted once in `components.schemas`, via juniper's `define()` and `components()`
+- shared schemas are emitted once in `components.schemas`, via juniper's `define()` and `components()`, including recursive comment threads (`defineRecursive()`)
 - request and response types inferred from the schemas match the API's TypeScript types
 - example payloads validate with [`juniper-validator`](../../apps/juniper-validator)
 

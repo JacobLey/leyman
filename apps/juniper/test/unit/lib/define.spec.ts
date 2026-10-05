@@ -1,13 +1,16 @@
 import type { SchemaType } from 'juniper';
+import type { AvailableProperties } from '../../types.js';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import {
     arraySchema,
     components,
+    defineRecursive,
     mergeSchema,
     numberSchema,
     objectSchema,
+    RecursiveSchema,
     stringSchema,
 } from 'juniper';
 import { suite, test } from 'mocha-chain';
@@ -191,6 +194,150 @@ suite('define', () => {
         ).to.deep.equal({
             type: 'object',
             properties: { id: { $ref: '#/external' } },
+        });
+    });
+
+    suite('defineRecursive', () => {
+        interface TreeNode {
+            value: number;
+            children: TreeNode[];
+            parent?: TreeNode | null;
+        }
+        const tree = defineRecursive<TreeNode>('TreeNode', self =>
+            objectSchema({
+                properties: {
+                    value: numberSchema(),
+                    children: arraySchema(self),
+                    parent: self.nullable().description('Parent'),
+                },
+                required: ['value', 'children'],
+                additionalProperties: false,
+            })
+        );
+        const treeJson = {
+            type: 'object',
+            properties: {
+                value: { type: 'number' },
+                children: { type: 'array', items: { $ref: '#/$defs/TreeNode' } },
+                parent: {
+                    description: 'Parent',
+                    anyOf: [{ $ref: '#/$defs/TreeNode' }, { type: 'null' }],
+                },
+            },
+            required: ['value', 'children'],
+            additionalProperties: false,
+        };
+
+        test('References itself', () => {
+            expect(tree.toJSON()).to.deep.equal({
+                $ref: '#/$defs/TreeNode',
+                $defs: { TreeNode: treeJson },
+            });
+            expectTypeOf<SchemaType<typeof tree>>().toEqualTypeOf<TreeNode>();
+        });
+
+        test('Validates nested values', () => {
+            const validate = new Ajv2020({ strict: true }).compile(tree.toJSON());
+            expect(
+                validate({
+                    value: 1,
+                    children: [{ value: 2, children: [], parent: null }],
+                })
+            ).to.equal(true);
+            expect(validate({ value: 1, children: [{ value: 2 }] })).to.equal(false);
+        });
+
+        test('Usable like any definition', () => {
+            const forest = objectSchema({ properties: { trees: arraySchema(tree.nullable()) } });
+            expect(forest.toJSON({ openApi30: true })).to.deep.equal({
+                type: 'object',
+                properties: {
+                    trees: {
+                        type: 'array',
+                        items: {
+                            nullable: true,
+                            allOf: [{ $ref: '#/components/schemas/TreeNode' }],
+                        },
+                    },
+                },
+            });
+            expect(components([forest], { openApi30: true })).to.have.deep.nested.property(
+                'TreeNode.properties.parent',
+                {
+                    description: 'Parent',
+                    nullable: true,
+                    allOf: [{ $ref: '#/components/schemas/TreeNode' }],
+                }
+            );
+            expect(() =>
+                objectSchema({
+                    properties: { a: tree, b: objectSchema().define('TreeNode') },
+                }).toJSON()
+            ).to.throw('Different schemas are defined with the same name: "TreeNode"');
+        });
+
+        test('Mutually recursive definitions', () => {
+            interface Folder {
+                files: File[];
+            }
+            interface File {
+                folder: Folder;
+            }
+            const folder = defineRecursive<Folder>('Folder', self =>
+                objectSchema({
+                    properties: {
+                        files: arraySchema(
+                            defineRecursive<File>('File', () =>
+                                objectSchema({ properties: { folder: self }, required: ['folder'] })
+                            )
+                        ),
+                    },
+                    required: ['files'],
+                })
+            );
+            expect(folder.toJSON()).to.deep.equal({
+                $ref: '#/$defs/Folder',
+                $defs: {
+                    Folder: {
+                        type: 'object',
+                        properties: { files: { type: 'array', items: { $ref: '#/$defs/File' } } },
+                        required: ['files'],
+                    },
+                    File: {
+                        type: 'object',
+                        properties: { folder: { $ref: '#/$defs/Folder' } },
+                        required: ['folder'],
+                    },
+                },
+            });
+        });
+
+        test('The built schema must produce the declared type', () => {
+            defineRecursive<TreeNode>('TreeNode', self =>
+                // @ts-expect-error
+                objectSchema({ properties: { value: stringSchema(), children: arraySchema(self) } })
+            );
+        });
+
+        test('Only annotations and nullable apply to the reference', () => {
+            defineRecursive<TreeNode>('TreeNode', self => {
+                expect(self).to.be.an.instanceOf(RecursiveSchema);
+                expectTypeOf<AvailableProperties<typeof self>>().toEqualTypeOf<
+                    | '~standard'
+                    | 'cast'
+                    | 'default'
+                    | 'deprecated'
+                    | 'description'
+                    | 'example'
+                    | 'examples'
+                    | 'nullable'
+                    | 'readOnly'
+                    | 'title'
+                    | 'toJSON'
+                    | 'writeOnly'
+                >();
+                return tree;
+            });
         });
     });
 });

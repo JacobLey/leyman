@@ -2,7 +2,14 @@
 import type { oas31 } from 'openapi3-ts';
 import type { ComponentsParams, Schema, SchemaType } from 'juniper';
 import { OpenApiBuilder } from 'openapi3-ts/oas31';
-import { arraySchema, components, numberSchema, objectSchema, stringSchema } from 'juniper';
+import {
+    arraySchema,
+    components,
+    defineRecursive,
+    numberSchema,
+    objectSchema,
+    stringSchema,
+} from 'juniper';
 
 const idSchema = stringSchema({ format: 'uuid' });
 const timestampSchema = stringSchema({ format: 'date-time' });
@@ -41,6 +48,28 @@ export const postPageSchema = objectSchema({
     required: ['items', 'nextCursor'],
     additionalProperties: false,
 }).define('PostPage');
+
+/**
+ * A comment, with its replies threaded below it.
+ */
+export interface Comment {
+    id: string;
+    authorId: string;
+    body: string;
+    replies: Comment[];
+}
+export const commentSchema = defineRecursive<Comment>('Comment', self =>
+    objectSchema({
+        properties: {
+            id: idSchema,
+            authorId: idSchema,
+            body: stringSchema({ minLength: 1 }),
+            replies: arraySchema(self),
+        },
+        required: ['id', 'authorId', 'body', 'replies'],
+        additionalProperties: false,
+    })
+);
 
 export const errorSchema = objectSchema({
     properties: {
@@ -101,6 +130,7 @@ export const buildSpec = (version: '3.0.3' | '3.1.0'): oas31.OpenAPIObject => {
                     postSchema,
                     newPostSchema,
                     postPageSchema,
+                    commentSchema,
                     errorSchema,
                 ],
                 options
@@ -163,6 +193,19 @@ export const buildSpec = (version: '3.0.3' | '3.1.0'): oas31.OpenAPIObject => {
                 responses: {
                     201: { description: 'Created', content: json(postSchema) },
                     400: errors[400],
+                },
+            },
+        })
+        .addPath('/posts/{postId}/comments', {
+            parameters: [pathId('postId')],
+            get: {
+                operationId: 'listPostComments',
+                responses: {
+                    200: {
+                        description: 'Comment threads',
+                        content: json(arraySchema(commentSchema)),
+                    },
+                    404: errors[404],
                 },
             },
         })

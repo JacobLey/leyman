@@ -11,6 +11,7 @@ import { StringSchema } from './schemas/string.js';
 import { TupleSchema } from './schemas/tuple.js';
 
 export { components, type ComponentsParams, isSchema } from './lib/schema.js';
+export { defineRecursive, RecursiveSchema } from './schemas/recursive.js';
 
 export type { EmptyObject, PatternProperties } from './schemas/object.js';
 export type {

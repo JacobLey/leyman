@@ -19,7 +19,10 @@ const metadataSym = Symbol('metadata');
 const notSym = Symbol('not');
 const nullableSym = Symbol('nullable');
 const oneOfSym = Symbol('oneOf');
-const refSym = Symbol('ref');
+/**
+ * Internal: constructor param for a schema's reference. Not part of the public API.
+ */
+export const refSym = Symbol('ref');
 
 export interface SchemaParams<T> {
     default?: T;
@@ -49,16 +52,27 @@ export interface SchemaParams<T> {
  *
  * @template S - referenced schema
  */
-type SchemaRef<S> =
+export type SchemaRef<S> =
     | {
           name: null;
           path: string;
           schema: S;
+          recursive?: undefined;
+      }
+    | {
+          name: string;
+          path: null;
+          schema: null;
+          /**
+           * Definition that references itself. `schema` is set once the definition is built.
+           */
+          recursive: { schema: S | null };
       }
     | {
           name: string;
           path: null;
           schema: S;
+          recursive?: undefined;
       };
 
 export interface SchemaGenerics<T> {
@@ -952,6 +966,28 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             openApi30: params.openApi30,
             definitions: params.definitions,
         };
+
+        if (schema.#ref.recursive) {
+            const definitions = params.definitions!;
+            AbstractSchema.#registerDefinition(
+                definitions,
+                schema.#ref.name,
+                schema.#ref.recursive.schema!,
+                refParams
+            );
+            const $ref = definitions.path + schema.#ref.name;
+            const annotations: JsonSchema<T2> = {};
+            for (const [key, value] of Object.entries(baseSchema)) {
+                if (annotationKeywords.has(key)) {
+                    annotations[key] = value;
+                }
+            }
+            if (schema.#nullable) {
+                return AbstractSchema.#nullableRef($ref, annotations, params.openApi30);
+            }
+            return { ...annotations, $ref };
+        }
+
         // Only compared against, never emitted, so definitions it uses are collected separately
         const refSchema = schema.#ref.schema.toSchema({
             openApi30: params.openApi30,
@@ -992,19 +1028,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         }
 
         const constraintKeys = Object.keys(constraints);
+        const definitionSchema = schema.#ref.schema;
         const register = (): void => {
-            const existing = definitions.schemas.get(name);
-            if (!existing) {
-                const definition = {
-                    schema: schema.#ref!.schema as AbstractSchema<SchemaGenerics<unknown>>,
-                    json: null as JsonSchema<unknown> | null,
-                };
-                // Registered before serializing, so references back to this definition resolve to it.
-                definitions.schemas.set(name, definition);
-                definition.json = AbstractSchema.#getChildSchema(schema.#ref!.schema, refParams);
-            } else if (existing.schema !== schema.#ref!.schema) {
-                throw new Error(`Different schemas are defined with the same name: "${name}"`);
-            }
+            AbstractSchema.#registerDefinition(definitions, name, definitionSchema, refParams);
         };
         if (constraintKeys.length === 0) {
             register();
@@ -1014,7 +1040,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         if (params.openApi30) {
             if (constraintKeys.length === 1 && constraints.nullable === true) {
                 register();
-                return { ...annotations, nullable: true, allOf: [{ $ref }] };
+                return AbstractSchema.#nullableRef(refPath, annotations, true);
             }
         } else if (
             constraintKeys.length === 1 &&
@@ -1024,10 +1050,60 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             constraints.type[1] === 'null'
         ) {
             register();
-            return { ...annotations, anyOf: [{ $ref }, { type: 'null' }] };
+            return AbstractSchema.#nullableRef(refPath, annotations, false);
         }
         // Changed what the schema accepts, so it is no longer the definition.
         return baseSchema;
+    }
+
+    /**
+     * Add a definition to `definitions`, serializing it the first time it is used.
+     *
+     * @param definitions - definitions collector
+     * @param name - definition name
+     * @param schema - definition schema
+     * @param params - serialization params
+     * @throws when a different schema is already defined with `name`
+     */
+    static #registerDefinition(
+        definitions: Definitions,
+        name: string,
+        schema: AbstractSchema<SchemaGenerics<any>>,
+        params: SerializationParams
+    ): void {
+        const existing = definitions.schemas.get(name);
+        if (!existing) {
+            const definition: {
+                schema: AbstractSchema<SchemaGenerics<unknown>>;
+                json: JsonSchema<unknown> | null;
+            } = {
+                schema,
+                json: null,
+            };
+            // Registered before serializing, so references back to this definition resolve to it.
+            definitions.schemas.set(name, definition);
+            definition.json = AbstractSchema.#getChildSchema(schema, params);
+        } else if (existing.schema !== schema) {
+            throw new Error(`Different schemas are defined with the same name: "${name}"`);
+        }
+    }
+
+    /**
+     * A nullable reference. `$ref` siblings must all match, so nullability wraps the reference instead.
+     *
+     * @param $ref - reference path
+     * @param annotations - annotations to keep alongside
+     * @param openApi30 - OpenAPI 3.0 dialect
+     * @returns JSON Schema
+     */
+    static #nullableRef<T2>(
+        $ref: string,
+        annotations: JsonSchema<T2>,
+        openApi30: boolean
+    ): JsonSchema<T2> {
+        return openApi30
+            ? { ...annotations, nullable: true, allOf: [{ $ref }] }
+            : { ...annotations, anyOf: [{ $ref }, { type: 'null' }] };
     }
 
     /**
@@ -1039,7 +1115,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      */
     #getNullable(params: SerializationParams): boolean {
         if (params.composition?.type && !params.composition.nullable) {
-            return this.#ref
+            return this.#ref?.schema
                 ? this.#ref.schema.#getNullable({
                       openApi30: params.openApi30,
                   })
@@ -1111,7 +1187,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             (schemaType === 'integer' || schemaType === 'number') &&
             this.#canOptimizeInteger(params) &&
             // Ensure $ref (if exists) is also integer, or else this optimization is worse.
-            (!this.#ref ||
+            (!this.#ref?.schema ||
                 this.#ref.schema.#getSchemaType({
                     openApi30: params.openApi30,
                 }) !== 'number')
