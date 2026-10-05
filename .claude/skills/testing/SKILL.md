@@ -37,6 +37,10 @@ test/tsconfig.json  ← { "extends": "<relative>/configs/tsconfig.test.json" }
 
 Not every file needs its own spec; files exercised as a side effect of other tests are fine.
 
+Unit tests keep Mocha's 2s timeout. Integration tests get 10s, since starting processes is slow on a loaded machine. Give a test more with `this.timeout()` when it runs something heavier, like Nx or a bundler.
+
+Never make a test depend on how long something takes. Assert on order or state, not elapsed time: timers fire in order of expiry, and a timer callback runs only after pending promises settle.
+
 Tests are compiled into `dist-test/` (`tsc-test`) and run against the package's real `dist/`, type-checked against its published `.d.ts`. Paths built from `import.meta.dirname` resolve inside `dist-test/`, so use `../../test/data/...` to reach source fixtures.
 
 ## Importing the code under test

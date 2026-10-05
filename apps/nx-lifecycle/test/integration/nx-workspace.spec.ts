@@ -269,6 +269,23 @@ suite('Nx workspace', () => {
         );
 
         withConfig.test(
+            'Fails on a missing config file',
+            async function (this: Context, { root, lifecycle }) {
+                this.timeout(60_000);
+
+                const thrown: unknown = await expect(
+                    lifecycle(['--config-file', './does-not-exist.json'])
+                ).to.be.rejectedWith(Error);
+
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.includes(
+                        `ENOENT: no such file or directory, open '${Path.join(root, 'does-not-exist.json')}'`
+                    );
+            }
+        );
+
+        withConfig.test(
             '--check fails when files are out of date',
             async function (this: Context, { root, lifecycle }) {
                 this.timeout(60_000);

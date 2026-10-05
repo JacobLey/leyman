@@ -294,7 +294,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --recursive \"$PWD/dist-test/integration/**/*.spec.*js\""
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/integration --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none mocha --timeout 10000 --recursive \"$PWD/dist-test/integration/**/*.spec.*js\""
         ],
         "parallel": true,
         "color": true,
