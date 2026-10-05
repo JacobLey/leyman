@@ -1,5 +1,6 @@
 import yargs from 'yargs';
 import { EntryScript } from 'entry-script';
+import { explainCommand } from './commands/explain-command.js';
 import { lifecycleCommand } from './commands/lifecycle-command.js';
 
 /**
@@ -33,6 +34,7 @@ export class LifecycleCli extends EntryScript {
             .alias('help', 'info')
             .version(packageJson.default.version)
             .command(lifecycleCommand)
+            .command(explainCommand)
             .parseAsync(argv, {}, LifecycleCli.#yargsOutput);
     }
 

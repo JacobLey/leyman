@@ -92,7 +92,16 @@ suite('Nx workspace', () => {
             return stdout;
         };
 
-        return { root, nx };
+        const lifecycle = async (
+            args: string[],
+            options?: { ci?: boolean }
+        ): Promise<{ stdout: string; stderr: string }> =>
+            execFileAsync(process.execPath, [Path.join(packageRoot, 'bin.mjs'), ...args], {
+                cwd: root,
+                env: envFor(options),
+            });
+
+        return { root, nx, lifecycle };
     });
 
     withWorkspace.afterEach(async ({ root }) => {
@@ -119,6 +128,27 @@ suite('Nx workspace', () => {
             expect(project.targets.build!.dependsOn).to.deep.equal(['build:run']);
             expect(project.targets.compile!.dependsOn).to.deep.equal(['build:_']);
         });
+
+        withPlugin.test(
+            'Explains the stages of a project',
+            async function (this: Context, { lifecycle }) {
+                this.timeout(60_000);
+
+                const { stdout } = await lifecycle(['explain', 'b']);
+
+                expect(stdout).to.equal(
+                    [
+                        'b',
+                        '',
+                        '1. build',
+                        '   after: ^build (a)',
+                        '   build:run',
+                        '     compile',
+                        '',
+                    ].join('\n')
+                );
+            }
+        );
 
         withPlugin.test('Runs stages in order', async function (this: Context, { nx }) {
             this.timeout(60_000);
@@ -220,17 +250,6 @@ suite('Nx workspace', () => {
         const withConfig = withWorkspace.beforeEach(async ({ root }) => {
             await writeJson(Path.join(root, 'nx.json'), {});
             await writeJson(Path.join(root, 'lifecycle.json'), { stages, bindings });
-
-            const lifecycle = async (
-                args: string[],
-                options?: { ci?: boolean }
-            ): Promise<{ stdout: string; stderr: string }> =>
-                execFileAsync(process.execPath, [Path.join(packageRoot, 'bin.mjs'), ...args], {
-                    cwd: root,
-                    env: envFor(options),
-                });
-
-            return { lifecycle };
         });
 
         withConfig.test(
@@ -282,6 +301,40 @@ suite('Nx workspace', () => {
                     .that.includes(
                         `ENOENT: no such file or directory, open '${Path.join(root, 'does-not-exist.json')}'`
                     );
+            }
+        );
+
+        withConfig.test(
+            'Explains a stage from the config file',
+            async function (this: Context, { lifecycle }) {
+                this.timeout(60_000);
+
+                const { stdout } = await lifecycle(['explain', 'a', 'build']);
+
+                expect(stdout).to.equal(
+                    [
+                        'a',
+                        '',
+                        '1. build',
+                        '   after: ^build (no upstream projects)',
+                        '   build:run',
+                        '     compile',
+                        '',
+                    ].join('\n')
+                );
+            }
+        );
+
+        withConfig.test(
+            'Fails to explain an unknown project',
+            async function (this: Context, { lifecycle }) {
+                this.timeout(60_000);
+
+                const thrown: unknown = await expect(
+                    lifecycle(['explain', 'unknown'])
+                ).to.be.rejectedWith(Error);
+
+                expect(thrown).to.have.property('stderr', 'Project unknown not found\n');
             }
         );
 

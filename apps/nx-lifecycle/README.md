@@ -32,6 +32,7 @@ For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](http
     - [check](#check)
     - [dryRun](#dryrun)
 - [CLI](#cli)
+    - [explain](#explain)
 
 ## Install
 
@@ -338,3 +339,32 @@ pnpx nx-lifecycle --config-file ./my-lifecycle.json --dry-run
 | `--config-file` | `string` | `lifecycle.json` | Path to the lifecycle config file. |
 | `--dry-run` | `boolean` | `false` | Compute changes without writing files. |
 | `--check` | `boolean` | `true` in CI | Fail if any file is out of sync. |
+
+### `explain`
+
+Prints what runs, in which order, for the stages of a project: each stage after the stages it depends on, its hooks, and the bound targets the project declares. A `^` dependency lists the upstream projects it runs.
+
+```sh
+pnpx nx-lifecycle explain my-lib       # every stage
+pnpx nx-lifecycle explain my-lib test  # test, and the stages it runs after
+```
+
+```
+my-lib
+
+1. build
+   after: ^build (my-utils)
+   build:pre (nothing bound)
+   build:run
+     tsc
+
+2. test
+   after: build
+   test:run
+     mocha
+     e2e-test (also after: my-server:build)
+   test:report
+     coverage-report
+```
+
+Stages and bindings come from the [plugin](#plugin) options in `nx.json`, or else from `--config-file` (default `lifecycle.json`). Bound targets and their other dependencies come from the project as Nx resolves it, after `targetDefaults` and `project.json`.

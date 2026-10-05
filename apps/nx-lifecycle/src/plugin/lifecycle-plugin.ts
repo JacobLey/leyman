@@ -109,7 +109,14 @@ const validateProject = (
     return errors;
 };
 
-const plan = (options: LifecyclePluginOptions | undefined): LifecyclePlan => {
+/**
+ * Validates plugin options, with errors Nx prints, and plans the lifecycle from them.
+ *
+ * @param options - plugin options from `nx.json`
+ * @returns lifecycle targets and bindings
+ * @throws {Error} when options are invalid, or stages and bindings are inconsistent
+ */
+export const planPluginOptions = (options: LifecyclePluginOptions | undefined): LifecyclePlan => {
     try {
         assertLifecyclePluginOptions(options);
     } catch (err) {
@@ -184,7 +191,7 @@ const createLifecycleNodes = async (
     options: LifecyclePluginOptions | undefined,
     context: CreateNodesContext
 ): Promise<CreateNodesResultArray> => {
-    const lifecyclePlan = plan(options);
+    const lifecyclePlan = planPluginOptions(options);
 
     return createNodesFromFiles(
         projectJsonPath => createProjectNode(projectJsonPath, lifecyclePlan, context),
@@ -213,7 +220,7 @@ export const createDependencies = (
     options: LifecyclePluginOptions | undefined,
     context: CreateDependenciesContext
 ): [] => {
-    const lifecyclePlan = plan(options);
+    const lifecyclePlan = planPluginOptions(options);
 
     // The same problem in many projects usually comes from nx.json targetDefaults, so report it once
     const errors = new Map<string, string[]>();
