@@ -16,6 +16,13 @@ suite('Encrypt', () => {
         expectTypeOf<typeof Encrypt>().toEqualTypeOf(BrowserEncrypt);
         expectTypeOf<typeof Encrypt>().toEqualTypeOf(NodeEncrypt);
         expectTypeOf(IsoCrypto).toExtend<typeof Encrypt>();
+        // GCM only allows key sizes every browser supports
+        expectTypeOf<{
+            cipher: 'AES';
+            size: 192;
+            mode: 'GCM';
+        }>().not.toExtend<IsoCrypto.Encryption>();
+        expectTypeOf<{ cipher: 'AES'; size: 192; mode: 'CTR' }>().toExtend<IsoCrypto.Encryption>();
     });
 
     interface SourceEncrypt {
@@ -60,11 +67,6 @@ suite('Encrypt', () => {
             {
                 cipher: 'AES',
                 size: 128,
-                mode: 'GCM',
-            },
-            {
-                cipher: 'AES',
-                size: 192,
                 mode: 'GCM',
             },
             {

@@ -131,9 +131,15 @@ suite('iso-crypto in the browser', () => {
     for (const browserType of [chromium, firefox, webkit] as BrowserType[]) {
         suite(browserType.name(), () => {
             const sizes = aesSizes(browserType);
-            const encryptions = (['CBC', 'CTR', 'GCM'] as const).flatMap(mode =>
-                sizes.map(size => ({ cipher: 'AES', size, mode }) as const)
-            );
+            const encryptions: NodeIsoCrypto.Encryption[] = [
+                ...(['CBC', 'CTR'] as const).flatMap(mode =>
+                    sizes.map(size => ({ cipher: 'AES', size, mode }) as const)
+                ),
+                // GCM has no 192-bit keys
+                ...([128, 256] as const).map(
+                    size => ({ size, cipher: 'AES', mode: 'GCM' }) as const
+                ),
+            ];
 
             const withBrowser = withBundle.before(async function (this: Context) {
                 this.timeout(30_000);

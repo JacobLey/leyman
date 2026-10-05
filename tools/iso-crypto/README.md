@@ -68,14 +68,15 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 ### Symmetric Encryption
 
 - ✅ aes-128-cbc
-- ✅ aes-192-cbc
+- ⚠️ aes-192-cbc (deprecated)
 - ✅ aes-256-cbc
 - ✅ aes-128-ctr
-- ✅ aes-192-ctr
+- ⚠️ aes-192-ctr (deprecated)
 - ✅ aes-256-ctr
 - ✅ aes-128-gcm
-- ✅ aes-192-gcm
 - ✅ aes-256-gcm
+
+192-bit keys are deprecated: Chromium-based browsers (Chrome, Edge, …) do not support them, so `aes-192-*` rejects there. They still work on Node.js, Firefox and Safari, so existing data stays readable, but use 128 or 256 bits for anything new. GCM only accepts 128 or 256 bits.
 
 ### Key Derivation
 
@@ -156,7 +157,7 @@ const customAlgEncrypted = await encrypt(
         hash: { algorithm: 'SHA1' },
         encryption: {
             cipher: 'AES',
-            size: 192,
+            size: 128,
             mode: 'CBC',
         },
     }
@@ -170,7 +171,7 @@ const customAlgDecrypted = encode(await decrypt(
         hash: { algorithm: 'SHA1' },
         encryption: {
             cipher: 'AES',
-            size: 192,
+            size: 128,
             mode: 'CBC',
         },
     }
@@ -458,7 +459,9 @@ Generally defaults to `{ cipher: 'AES', size: 256, mode: 'CTR' }`.
 
 Type used to represent a specific symmetric encryption algorithm.
 
-`{ cipher: 'AES'; size: 128 | 192 | 256; mode: 'CBC' | 'CTR' | 'GCM' }`.
+`{ cipher: 'AES'; size: 128 | 192 | 256; mode: 'CBC' | 'CTR' } | { cipher: 'AES'; size: 128 | 256; mode: 'GCM' }`.
+
+A `size` of 192 is deprecated, see [Symmetric Encryption](#symmetric-encryption).
 
 ### Curve
 

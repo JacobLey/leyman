@@ -16,27 +16,41 @@ export enum Modes {
 export enum Sizes {
     KEY_128 = 128,
     KEY_160 = 160,
+    /**
+     * @deprecated as an AES key size. Chromium-based browsers do not support 192-bit AES keys,
+     * so it only works on Node.js, Firefox and Safari. Use 128 or 256 bits.
+     */
     KEY_192 = 192,
     KEY_256 = 256,
     KEY_384 = 384,
     KEY_512 = 512,
 }
 
+/**
+ * AES key sizes. 192 bits is deprecated, as Chromium-based browsers do not support it.
+ */
+type AesSize =
+    | Sizes.KEY_128
+    // eslint-disable-next-line @typescript-eslint/no-deprecated -- still accepted, so existing data stays readable
+    | Sizes.KEY_192
+    | Sizes.KEY_256;
+
 export type Encryption =
     | {
           cipher: EnumToString<Ciphers.AES>;
-          size: Sizes.KEY_128 | Sizes.KEY_192 | Sizes.KEY_256;
+          // Only key sizes every browser supports
+          size: Sizes.KEY_128 | Sizes.KEY_256;
+          mode: EnumToString<Modes.GCM>;
+      }
+    | {
+          cipher: EnumToString<Ciphers.AES>;
+          size: AesSize;
           mode: EnumToString<Modes.CBC>;
       }
     | {
           cipher: EnumToString<Ciphers.AES>;
-          size: Sizes.KEY_128 | Sizes.KEY_192 | Sizes.KEY_256;
+          size: AesSize;
           mode: EnumToString<Modes.CTR>;
-      }
-    | {
-          cipher: EnumToString<Ciphers.AES>;
-          size: Sizes.KEY_128 | Sizes.KEY_192 | Sizes.KEY_256;
-          mode: EnumToString<Modes.GCM>;
       };
 export const defaultEncryption: Encryption = {
     cipher: Ciphers.AES,
