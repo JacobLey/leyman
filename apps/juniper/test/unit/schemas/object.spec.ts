@@ -1135,6 +1135,193 @@ suite('ObjectSchema', () => {
             // @ts-expect-error
             user.partial(['other']);
         });
+
+        test('required() makes every property required', () => {
+            const schema = user.partial().required();
+
+            expect(schema.toJSON())
+                .to.have.property('required')
+                .that.deep.equals(['id', 'name', 'email']);
+            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+                id: number;
+                name: string;
+                email: string;
+            }>();
+        });
+
+        test('required() leaves forbidden properties optional', () => {
+            const schema = user.properties({ secret: false }).required();
+
+            expect(schema.toJSON())
+                .to.have.property('required')
+                .that.deep.equals(['id', 'name', 'email']);
+            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+                id: number;
+                name: string;
+                email: string;
+                secret?: never;
+            }>();
+        });
+    });
+
+    suite('extend', () => {
+        const timestamps = objectSchema({
+            properties: {
+                createdAt: stringSchema(),
+                updatedAt: stringSchema(),
+            },
+            required: ['createdAt'],
+        });
+        const user = objectSchema({
+            title: 'User',
+            properties: {
+                id: numberSchema(),
+                name: stringSchema(),
+            },
+            required: ['id'],
+            additionalProperties: false,
+        });
+
+        test('Combines properties and required', () => {
+            const schema = user.extend(timestamps);
+
+            expect(schema.toJSON()).to.deep.equal({
+                title: 'User',
+                type: 'object',
+                properties: {
+                    id: { type: 'number' },
+                    name: { type: 'string' },
+                    createdAt: { type: 'string' },
+                    updatedAt: { type: 'string' },
+                },
+                required: ['id', 'createdAt'],
+                additionalProperties: false,
+            });
+            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+                id: number;
+                name?: string;
+                createdAt: string;
+                updatedAt?: string;
+            }>();
+
+            // `additionalProperties: false` covers the added properties
+            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            expect(validator({ id: 1, createdAt: 'now' })).to.equal(true);
+            expect(validator({ id: 1, createdAt: 'now', other: true })).to.equal(false);
+        });
+
+        test('Replaces keywords that the argument sets', () => {
+            const open = objectSchema({
+                properties: { tag: stringSchema() },
+                additionalProperties: numberSchema(),
+                minProperties: 2,
+                unevaluatedProperties: true,
+            });
+            const schema = user.maxProperties(5).extend(open);
+
+            expect(schema.toJSON()).to.deep.equal({
+                title: 'User',
+                type: 'object',
+                properties: {
+                    id: { type: 'number' },
+                    name: { type: 'string' },
+                    tag: { type: 'string' },
+                },
+                required: ['id'],
+                additionalProperties: { type: 'number' },
+                minProperties: 2,
+                maxProperties: 5,
+                unevaluatedProperties: true,
+            });
+            expect(
+                user.minProperties(1).extend(objectSchema().maxProperties(8)).toJSON()
+            ).to.include({ minProperties: 1, maxProperties: 8 });
+            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
+                Record<string, number> & {
+                    id: number;
+                    name?: string;
+                    tag?: string;
+                }
+            >();
+        });
+
+        test('Keeps constraints of both', () => {
+            const vendor = stringSchema();
+            const left = user
+                .patternProperties('^x-' as PatternProperties<`x-${string}`>, vendor)
+                .patternProperties('^y-' as PatternProperties<`y-${string}`>, numberSchema())
+                .dependentRequired('name', ['id']);
+            const right = timestamps
+                .patternProperties('^x-' as PatternProperties<`x-${string}`>, vendor)
+                .patternProperties(
+                    '^y-' as PatternProperties<`y-${string}`>,
+                    numberSchema({ type: 'integer' })
+                )
+                .dependentSchemas('updatedAt', objectSchema({ required: [] }).minProperties(2))
+                .allOf(objectSchema().maxProperties(10));
+            const schema = left.extend(right);
+
+            expect(schema.toJSON()).to.deep.equal({
+                title: 'User',
+                type: 'object',
+                properties: {
+                    id: { type: 'number' },
+                    name: { type: 'string' },
+                    createdAt: { type: 'string' },
+                    updatedAt: { type: 'string' },
+                },
+                required: ['id', 'createdAt'],
+                additionalProperties: false,
+                patternProperties: {
+                    '^x-': { type: 'string' },
+                    '^y-': { type: 'number' },
+                },
+                dependentRequired: { name: ['id'] },
+                dependentSchemas: { updatedAt: { minProperties: 2 } },
+                allOf: [
+                    { maxProperties: 10 },
+                    { patternProperties: { '^y-': { type: 'integer' } } },
+                ],
+            });
+            expectTypeOf<SchemaType<typeof schema>>().toExtend<
+                Record<`x-${string}`, string> & Record<`y-${string}`, number>
+            >();
+
+            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            expect(validator({ id: 1, createdAt: 'now', 'x-a': 'a', 'y-a': 1 })).to.equal(true);
+            expect(validator({ id: 1, createdAt: 'now', 'y-a': 1.5 })).to.equal(false);
+            expect(validator({ id: 1, createdAt: 'now', updatedAt: 'now' })).to.equal(true);
+            expect(validator({ createdAt: 'now', updatedAt: 'now' })).to.equal(false);
+        });
+
+        test('Keeps nullable and annotations of this schema', () => {
+            const schema = user.nullable().extend(timestamps.title('Timestamps').nullable());
+
+            expect(schema.toJSON()).to.include({ title: 'User' });
+            expect(schema.toJSON()).to.have.property('type').that.deep.equals(['object', 'null']);
+            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+                id: number;
+                name?: string;
+                createdAt: string;
+                updatedAt?: string;
+            } | null>();
+
+            expect(timestamps.extend(user.nullable()).toJSON()).to.have.property('type', 'object');
+        });
+
+        test('Does not change either schema', () => {
+            user.extend(timestamps);
+            expect(Object.keys(user.toJSON().properties!)).to.deep.equal(['id', 'name']);
+            expect(Object.keys(timestamps.toJSON().properties!)).to.deep.equal([
+                'createdAt',
+                'updatedAt',
+            ]);
+        });
+
+        test('Rejects duplicate properties', () => {
+            // @ts-expect-error
+            user.extend(objectSchema({ properties: { id: stringSchema() } }));
+        });
     });
 
     suite('Invalid types', () => {

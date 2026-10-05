@@ -1,4 +1,4 @@
-import type { SchemaType } from 'juniper';
+import type { KnownFormat, SchemaType, StringSchema } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
@@ -92,6 +92,21 @@ suite('StringSchema', () => {
                 `${string}$c${string}` & `${string}d^${string}` & `${string}f` & `a${string}`
             >();
             expect(validator('ab$cd^ef')).to.equal(true);
+        });
+
+        test('format accepts known and custom formats', () => {
+            // Known formats stay in the type (for autocomplete) instead of widening to `string`
+            expectTypeOf<Parameters<StringSchema<string>['format']>[0]>().toEqualTypeOf<
+                KnownFormat | (string & {}) | null
+            >();
+            expect(stringSchema().format('uuid').toJSON()).to.deep.equal({
+                type: 'string',
+                format: 'uuid',
+            });
+            expect(stringSchema({ format: 'my-format' }).toJSON()).to.deep.equal({
+                type: 'string',
+                format: 'my-format',
+            });
         });
 
         test('Unset options', () => {

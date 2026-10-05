@@ -168,6 +168,19 @@ const createDefinitions = ({
 });
 
 /**
+ * Serialized definitions, sorted by name so the output does not depend on the order they are used in.
+ *
+ * @param definitions - definitions collector
+ * @returns definitions keyed by name
+ */
+const sortedDefinitions = (definitions: Definitions): Record<string, JsonSchema<unknown>> =>
+    Object.fromEntries(
+        [...definitions.schemas.keys()]
+            .toSorted((a, b) => (a < b ? -1 : Number(a > b)))
+            .map(name => [name, definitions.schemas.get(name)!.json!])
+    );
+
+/**
  * Options for {@link components}.
  */
 export type ComponentsParams = Pick<ToJsonParams, 'definitionsPath' | 'openApi30'>;
@@ -313,6 +326,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      *
      * The structure being described by the schema can be extracted via `SchemaType`.
      *
+     * The output is deterministic: the same schema always serializes to the same JSON,
+     * and `$defs` are sorted by name, so committed output only changes when the schema does.
+     *
      * @example
      * const schema = StringSchema.create().enums(['a', 'b'] as const).toJSON();
      * type MyString = SchemaType<typeof schema>; // 'a' | 'b'
@@ -337,9 +353,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         // `$defs` only resolve from the root of this document, which OpenAPI 3.0 does not support.
         // Other paths (e.g. `#/components/schemas/`) are placed by the caller, see `components()`.
         if (definitions.schemas.size > 0 && definitions.path === DEFS_PATH && !openApi30) {
-            base.$defs = Object.fromEntries(
-                [...definitions.schemas].map(([name, { json }]) => [name, json])
-            );
+            base.$defs = sortedDefinitions(definitions);
         }
         if (!openApi30) {
             if (id) {
@@ -738,6 +752,27 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             [nullableSym]: this.#nullable,
             [oneOfSym]: [...this.#oneOf],
             [refSym]: this.#ref,
+        };
+    }
+
+    /**
+     * Params that combine the compositions (`allOf`, `anyOf`, `if`, `not`, `oneOf`) of this schema and `schema`.
+     * Pass to `clone()`.
+     *
+     * @param schema - schema whose compositions are appended
+     * @param [allOf] - additional `allOf` schemas
+     * @returns partial schema params
+     */
+    protected getMergedCompositionParams(
+        schema: AbstractSchema<SchemaGenerics<any>>,
+        allOf: AbstractSchema<SchemaGenerics<any>>[] = []
+    ): Partial<SchemaParams<T['type']>> {
+        return {
+            [allOfSym]: [...this.#allOf, ...schema.#allOf, ...allOf],
+            [anyOfSym]: [...this.#anyOf, ...schema.#anyOf],
+            [conditionalsSym]: [...this.#conditionals, ...schema.#conditionals],
+            [notSym]: [...this.#nots, ...schema.#nots],
+            [oneOfSym]: [...this.#oneOf, ...schema.#oneOf],
         };
     }
 
@@ -1210,9 +1245,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                     { openApi30, definitions }
                 );
             }
-            return Object.fromEntries(
-                [...definitions.schemas].map(([name, { json }]) => [name, json!])
-            );
+            return sortedDefinitions(definitions);
         };
     }
 }

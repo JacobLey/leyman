@@ -16,13 +16,46 @@ import { maxInt } from '../lib/constants.js';
 import { AbstractSchema } from '../lib/schema.js';
 import { mergeAllOf } from '../lib/utils.js';
 
+/**
+ * String `format`s defined by JSON Schema 2020-12 and OpenAPI 3.0.
+ * Any other string is accepted as a custom format.
+ *
+ * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7.3}
+ */
+export type KnownFormat =
+    | 'binary'
+    | 'byte'
+    | 'date-time'
+    | 'date'
+    | 'duration'
+    | 'email'
+    | 'hostname'
+    | 'idn-email'
+    | 'idn-hostname'
+    | 'ipv4'
+    | 'ipv6'
+    | 'iri-reference'
+    | 'iri'
+    | 'json-pointer'
+    | 'password'
+    | 'regex'
+    | 'relative-json-pointer'
+    | 'time'
+    | 'uri-reference'
+    | 'uri-template'
+    | 'uri'
+    | 'uuid';
+
+// `string & {}` keeps autocomplete for known formats, while accepting any string
+type Format = KnownFormat | (string & {});
+
 interface StringParams<T extends string, N extends boolean> extends SchemaParams<Nullable<T, N>> {
     /**
      * Content encoding.
      */
     contentEncoding?: string | null;
     contentMediaType?: string | null;
-    format?: string | null;
+    format?: Format | null;
     maxLength?: number;
     minLength?: number;
     pattern?: string | string[];
@@ -143,6 +176,8 @@ export class StringSchema<
      * Set the `format` of the string.
      * Set to `null` to effectively clear restriction.
      *
+     * Known formats (see `KnownFormat`) autocomplete, and any other string is accepted as a custom format.
+     *
      * Usage and restrictions of `format` are implementation-specific. No enforcement is guaranteed
      * by default in JSON Schema.
      *
@@ -155,7 +190,7 @@ export class StringSchema<
      * @param format - format property
      * @returns cloned schema
      */
-    public format(this: this, format: string | null): this {
+    public format(this: this, format: Format | null): this {
         return this.clone({ format });
     }
 

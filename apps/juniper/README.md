@@ -13,7 +13,7 @@ Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-read
 - **Strict output** — emitted schemas pass [Ajv's strict mode](https://ajv.js.org/strict-mode.html), so they work with any standard JSON Schema validator.
 - **Multiple targets** — emit JSON Schema 2020-12 (and OpenAPI 3.1), or `toJSON({ openApi30: true })` for OpenAPI 3.0's `nullable` dialect, from the same definition.
 - **Reusable definitions** — `.define('User')` emits a schema as a `$ref` and bundles it into `$defs` (or OpenAPI `components`) automatically, so references never dangle.
-- **Immutable builders** — every method returns a new schema, so shared base schemas can be safely extended, or narrowed with `pick`, `omit` and `partial`.
+- **Immutable builders** — every method returns a new schema, so shared base schemas can be safely reused: narrowed with `pick`, `omit` and `partial`, or combined with `extend`.
 
 **Compared to**
 
@@ -307,6 +307,7 @@ A complete users and posts API, built with [openapi3-ts](https://www.npmjs.com/p
 | `JSONSchema` | `JSONSchema<number>` | A JSON Schema object describing the specified TypeScript type. |
 | `EmptyObject` | `EmptyObject` | Describes an actually-empty object. Mostly internal but exposed for convenience. |
 | `PatternProperties` | ``PatternProperties<`abc${string}`>`` | Describes a string pattern type. See [`ObjectSchema.patternProperties`](#objectschema). |
+| `KnownFormat` | `KnownFormat` | String formats defined by JSON Schema and OpenAPI 3.0. See [`StringSchema.format`](#stringschema). |
 
 ### Constructors
 
@@ -335,6 +336,8 @@ The following methods are available on every schema instance for rendering and t
 #### `.toJSON(options?)`
 
 Renders the JSON Schema document. The result should be immediately passed to a validator or serializer. The internal structure is not guaranteed and should not be modified.
+
+The output is deterministic: the same schema always renders the same JSON, and `$defs` (like `components()`) are sorted by name rather than by where they are used. Committed schema or OpenAPI files only change when the schema does.
 
 **Parameters**
 
@@ -453,7 +456,7 @@ Defines a schema that references itself. See [Recursive schemas](#recursive-sche
 
 #### `components(schemas, options?)`
 
-Collects every definition used by `schemas` (including defined schemas themselves), keyed by name. For documents that keep definitions outside the schema, such as OpenAPI's `components.schemas`.
+Collects every definition used by `schemas` (including defined schemas themselves), keyed and sorted by name. For documents that keep definitions outside the schema, such as OpenAPI's `components.schemas`.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
@@ -649,6 +652,27 @@ const summary = user.pick(['id', 'name']).partial(['name']);
 
 Keys are checked against the schema's properties, so a typo is a compile error. Constraints added by combining schemas (`allOf`, `if`, `dependentRequired`, ...) still apply to the result, in both the JSON Schema and its type. For example, a property required through `dependentRequired` stays required after `partial()`.
 
+`required()` with no keys marks every property as required, the inverse of `partial()`:
+
+```ts
+// { id: number; name: string; email: string }
+const fullUser = user.required();
+```
+
+**Combining schemas with `extend`:** Add the properties of another object schema, such as fields shared by many resources. Duplicate properties are a compile error, and `required` is combined.
+
+```ts
+const timestamps = objectSchema({
+    properties: { createdAt: stringSchema(), updatedAt: stringSchema() },
+    required: ['createdAt'],
+});
+
+// { id: number; name: string; email?: string; createdAt: string; updatedAt?: string }
+const storedUser = user.extend(timestamps);
+```
+
+Unlike `allOf`, `additionalProperties` applies to the combined properties, so `storedUser` is still closed over all five. When the added schema sets `additionalProperties`, `unevaluatedProperties`, `minProperties` or `maxProperties`, its value replaces the original's, in both the JSON Schema and its type. `patternProperties`, `dependentRequired`, `dependentSchemas` and combined schemas (`allOf`, `if`, ...) of both apply. Annotations (`title`, ...), `nullable()` and `define()` come from the schema `extend` is called on.
+
 ---
 
 ### `StringSchema`
@@ -668,6 +692,8 @@ Represents `type: 'string'`. TypeScript type: `string`.
 | [`contentMediaType`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype) | ✅ | ✅ | ❌ | ✅ |
 
 `startsWith`, `endsWith`, and `contains` are wrappers around the `pattern` property with special TypeScript handling to narrow the inferred string type (e.g. `startsWith('abc')` produces `` `abc${string}` ``).
+
+`format` autocompletes the formats defined by JSON Schema and OpenAPI 3.0 (`date-time`, `email`, `uuid`, `uri`, ..., exported as the `KnownFormat` type), and accepts any other string as a custom format.
 
 ---
 

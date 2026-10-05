@@ -188,6 +188,34 @@ suite('define', () => {
         });
     });
 
+    suite('Deterministic output', () => {
+        const build = (order: 'address-first' | 'user-first'): string => {
+            const tag = stringSchema().define('Tag');
+            const post = objectSchema({ properties: { tag } }).define('Post');
+            const schema =
+                order === 'address-first'
+                    ? objectSchema({ properties: { address, post, user } })
+                    : objectSchema({ properties: { user, post, address } });
+            return JSON.stringify([
+                Object.keys(schema.toJSON().$defs!),
+                Object.keys(components([schema])),
+            ]);
+        };
+
+        test('Same schema, same JSON', () => {
+            expect(JSON.stringify(user.toJSON())).to.equal(JSON.stringify(user.toJSON()));
+            expect(build('address-first')).to.equal(build('address-first'));
+        });
+
+        test('Definitions are sorted by name, not by use', () => {
+            expect(build('user-first')).to.equal(build('address-first'));
+            expect(JSON.parse(build('user-first'))).to.deep.equal([
+                ['Address', 'Post', 'Tag', 'User'],
+                ['Address', 'Post', 'Tag', 'User'],
+            ]);
+        });
+    });
+
     test('Nested .ref() schemas serialize', () => {
         expect(
             objectSchema({ properties: { id: stringSchema().ref('#/external') } }).toJSON()

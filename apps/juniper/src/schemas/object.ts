@@ -59,6 +59,26 @@ type RemainingRequired<NewP extends BaseParameterSchemaObject, R> = Extract<
     StripString<Extract<keyof NewP, string>>
 >;
 
+/**
+ * Keys of `P` that may be present, i.e. not set to `false`.
+ *
+ * @template P - properties
+ */
+type AllowedKeys<P extends BaseParameterSchemaObject> = StripString<
+    Extract<{ [K in keyof P]: P[K] extends false ? never : K }[keyof P], string>
+>;
+
+/**
+ * Pattern properties of two object schemas combined.
+ *
+ * @template X - types matched by this schema's `patternProperties`
+ * @template X2 - types matched by the added schema's `patternProperties`
+ */
+type MergedPatternProperties<
+    X extends Record<string, unknown>,
+    X2 extends Record<string, unknown>,
+> = [X2] extends [EmptyIndex] ? X : [X] extends [EmptyIndex] ? X2 : X & X2;
+
 type ObjectType<
     // Properties
     P extends BaseSchemaObject,
@@ -388,21 +408,40 @@ export class ObjectSchema<
     /**
      * Mark a property as `required`.
      * Requires property schema to already be set.
+     * Without `required`, marks every property as required (the inverse of `partial()`),
+     * except properties set to `false`, which must stay absent.
      *
      * Extends existing `required`.
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.3}
      *
      * @param this - this instance
-     * @param required - required properties
+     * @param [required] - required properties, defaults to every property
      * @returns cloned object schema
+     */
+    public required(this: this): ObjectSchema<P, AllowedKeys<P> | R, A, X, M, N>;
+    /**
+     * @inheritdoc
      */
     public required<K extends StripString<Extract<keyof P, string>>>(
         this: this,
         required: K | K[]
+    ): ObjectSchema<P, K | R, A, X, M, N>;
+    /**
+     * @inheritdoc
+     */
+    public required<K extends StripString<Extract<keyof P, string>>>(
+        this: this,
+        required?: K | K[]
     ): ObjectSchema<P, K | R, A, X, M, N> {
+        const added =
+            required === undefined
+                ? (Object.keys(this.#properties).filter(
+                      key => this.#properties[key] !== falseSchema
+                  ) as K[])
+                : ([required].flat() as K[]);
         return (this as ObjectSchema<P, K | R, A, X, M, N>).clone({
-            required: [...this.#required, ...[required].flat()] as (K | R)[],
+            required: [...this.#required, ...added],
         });
     }
 
@@ -481,6 +520,84 @@ export class ObjectSchema<
                 P,
                 Exclude<R, K>
             >[],
+        });
+    }
+
+    /**
+     * Add the properties (and `required`) of another object schema, such as a shared base.
+     * Duplicate properties are rejected.
+     *
+     * Unlike `allOf`, `additionalProperties` applies to the combined properties, so a closed object stays closed
+     * over every property. When `schema` sets `additionalProperties`, `unevaluatedProperties`,
+     * `minProperties` or `maxProperties`, its value replaces this schema's.
+     * `patternProperties`, `dependentRequired`, `dependentSchemas` and combined schemas (`allOf`, `if`, ...)
+     * of both apply to the result.
+     * Annotations (`title`, `description`, ...), `nullable` and definitions (`define`) are kept from this schema only.
+     *
+     * @param this - this instance
+     * @param schema - object schema to add
+     * @returns cloned object schema
+     */
+    public extend<
+        P2 extends BaseParameterSchemaObject,
+        R2 extends StripString<Extract<keyof P2, string>>,
+        A2 extends boolean | AbstractSchema<SchemaGenerics<unknown>>,
+        X2 extends Record<string, unknown>,
+        M2,
+    >(
+        this: this,
+        schema: ObjectSchema<P2, R2, A2, X2, M2, boolean> &
+            (keyof P & keyof P2 extends never
+                ? unknown
+                : {
+                      error: `Error: property "${Extract<keyof P & keyof P2, string>}" is already defined.`;
+                  })
+    ): ObjectSchema<
+        P & P2,
+        R | R2,
+        boolean extends A2 ? A : A2,
+        MergedPatternProperties<X, X2>,
+        M & M2,
+        N
+    >;
+    /**
+     * @inheritdoc
+     */
+    public extend(this: this, schema: AnyObjectSchema): this {
+        const other = schema as this;
+
+        // The same pattern with a different schema: both apply, the other one via `allOf`
+        const overlapping: AnyObjectSchema[] = [];
+        const patternProperties = { ...this.#patternProperties };
+        for (const [pattern, patternSchema] of Object.entries(other.#patternProperties)) {
+            const existing = patternProperties[pattern];
+            if (existing && existing !== patternSchema) {
+                overlapping.push(
+                    new ObjectSchema({ [patternPropertiesSym]: { [pattern]: patternSchema } })
+                );
+            } else {
+                patternProperties[pattern] = patternSchema;
+            }
+        }
+
+        return this.clone({
+            ...this.getMergedCompositionParams(other, overlapping),
+            additionalProperties: (other.#additionalProperties ?? this.#additionalProperties)!,
+            minProperties: other.#minProperties > 0 ? other.#minProperties : this.#minProperties,
+            maxProperties:
+                other.#maxProperties < Number.POSITIVE_INFINITY
+                    ? other.#maxProperties
+                    : this.#maxProperties,
+            properties: { ...(this.#properties as P), ...other.#properties },
+            required: [...this.#required, ...other.#required],
+            unevaluatedProperties:
+                other.#unevaluatedProperties === ignoreUnevaluatedProperties
+                    ? this.#unevaluatedProperties
+                    : other.#unevaluatedProperties,
+            // Keyed by own properties, which do not overlap
+            [dependentRequiredSym]: { ...this.#dependentRequired, ...other.#dependentRequired },
+            [dependentSchemasSym]: { ...this.#dependentSchemas, ...other.#dependentSchemas },
+            [patternPropertiesSym]: patternProperties,
         });
     }
 
