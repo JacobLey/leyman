@@ -119,6 +119,10 @@ All methods that interact with the cache accept `queryClient` as the first argum
 
 Returns the computed query key for the given params.
 
+##### `.getParams(params): TParams`
+
+Returns `params` unchanged. Useful for checking params against the resource's type before storing them for later.
+
 ##### `.getQueryFn(params): QueryFn`
 
 Returns the query function bound to the given params, suitable for passing to TanStack directly.
@@ -232,7 +236,7 @@ Creates a type-safe, singleton reference to an infinite (paginated) query, backe
 
 #### `Infinite` instance methods
 
-`Infinite` extends `Queryable` and shares `getKey`, `invalidateQuery`, `refetchQuery`, `cancelQuery`, `removeQuery`, `resetQuery`, `getQueryData`, `getQueryState`, `getCachedQuery`, `isFetching`, `hasData`, and `hasState` with `Resource`.
+`Infinite` extends `Queryable` and shares `getKey`, `getParams`, `invalidateQuery`, `refetchQuery`, `cancelQuery`, `removeQuery`, `resetQuery`, `getQueryData`, `getQueryState`, `getCachedQuery`, `isFetching`, `hasData`, and `hasState` with `Resource`.
 
 ##### `.getInitialPageParam(params): TPageParam`
 
@@ -245,6 +249,10 @@ Returns the `getNextPageParam` callback bound to the given params.
 ##### `.getGetPreviousPageParam(params): GetPreviousPageParamFunction`
 
 Returns the `getPreviousPageParam` callback bound to the given params.
+
+##### `.getQueryFn(params): QueryFn`
+
+Returns the page query function bound to the given params, without propagation, suitable for passing to TanStack directly.
 
 ##### `.getUseInfiniteQueryOptions(queryClient, params | skipToken, options?)`
 
@@ -273,6 +281,10 @@ Loads data for someone else to use, like `.infiniteQuery()` but without throwing
 ##### `.setInfiniteQueryData(queryClient, params, updater, options?): InfiniteData<TData> | undefined`
 
 Sets paginated data directly in the cache.
+
+##### `.getInfiniteQueryData(queryClient, params): InfiniteData<TData> | undefined`
+
+Alias of `.getQueryData()`, named to match `.setInfiniteQueryData()`.
 
 ##### `.populate(queryClient, params, updater, options?): TParams`
 
@@ -326,15 +338,35 @@ Wraps `useSuspenseQuery` with `skipToken` support for prefetched data. Returns `
 
 Wraps `useInfiniteQuery`. Pass `skipToken` as `params` to disable.
 
+#### `useNormalizedSuspenseInfiniteQuery(inf, params, options?, queryClient?)`
+
+Wraps `useSuspenseInfiniteQuery`.
+
+#### `useNormalizedNullableSuspenseInfiniteQuery(inf, params | skipToken, options?, queryClient?)`
+
+Wraps `useSuspenseInfiniteQuery` with `skipToken` support. Returns `null` when `skipToken` is passed.
+
+#### `useNormalizedPrefetchInfiniteQuery(inf, params, options?, queryClient?): Linked`
+
+Wraps `usePrefetchInfiniteQuery`. Triggers a prefetch on first render and returns a `Linked` reference for use with prefetched hooks.
+
 #### `useNormalizedPrefetchedInfiniteQuery(linked | skipToken | null, options?)`
 
-Wraps `useInfiniteQuery` for prefetched infinite data.
+Wraps `useInfiniteQuery` for data that has already been prefetched via `prefetchInfiniteQuery` or `useNormalizedPrefetchInfiniteQuery`.
+
+#### `useNormalizedPrefetchedSuspenseInfiniteQuery(linked, options?)`
+
+Wraps `useSuspenseInfiniteQuery` for prefetched infinite data.
+
+#### `useNormalizedNullablePrefetchedSuspenseInfiniteQuery(linked | skipToken | null, options?)`
+
+Wraps `useSuspenseInfiniteQuery` with `skipToken` support for prefetched infinite data. Returns `null` when disabled.
 
 ---
 
 ### `Linked`
 
-A `Linked<TParams, TQueryKey, TData, TQueryable>` is a reference to a specific query that has been (or is being) prefetched. It is produced by `.prefetchQuery()`, `.prefetchInfiniteQuery()`, `.link()`, and `useNormalizedPrefetchQuery()`.
+A `Linked<TParams, TQueryKey, TData, TQueryable>` is a reference to a specific query that has been (or is being) prefetched. It is produced by `.prefetchQuery()`, `.prefetchInfiniteQuery()`, `.link()`, `useNormalizedPrefetchQuery()` and `useNormalizedPrefetchInfiniteQuery()`.
 
 Pass `Linked` instances to the `useNormalizedPrefetched*` hooks to subscribe to their data.
 
