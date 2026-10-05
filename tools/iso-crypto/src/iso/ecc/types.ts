@@ -35,6 +35,7 @@ export declare const generateEccPublicKey: (
  * @param [options] - optional
  * @param [options.curve] - curve algorithm, defaults to p256
  * @param [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.additionalData] - GCM only, data to authenticate but not encrypt
  * @returns encrypted data and initialization vector.
  * Also the "sender's" public key for convenience.
  */
@@ -62,6 +63,11 @@ export declare const eccEncrypt: (
          * Symmetric encryption algorithm to use, defaults to `aes-256-ctr`.
          */
         encryption?: Encryption | undefined;
+        /**
+         * Additional authenticated data, GCM only (throws for other modes). It is not encrypted or part of the
+         * output, but decryption rejects unless given the same value, e.g. to bind a ciphertext to a record ID.
+         */
+        additionalData?: InputText | undefined;
     }
 ) => Promise<{
     encrypted: Uint8ArrayBuffer;
@@ -85,6 +91,7 @@ export declare const eccEncrypt: (
  * @param [options] - optional
  * @param [options.curve] - curve algorithm, defaults to p256
  * @param [options.encryption] - symmetric encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.additionalData] - GCM only, data to authenticate but not encrypt
  * @returns decrypted data
  */
 export declare const eccDecrypt: (
@@ -115,5 +122,10 @@ export declare const eccDecrypt: (
          * Symmetric encryption algorithm to use, defaults to `aes-256-ctr`.
          */
         encryption?: Encryption | undefined;
+        /**
+         * Additional authenticated data, GCM only (throws for other modes). It is not encrypted or part of the
+         * output, but decryption rejects unless given the same value, e.g. to bind a ciphertext to a record ID.
+         */
+        additionalData?: InputText | undefined;
     }
 ) => Promise<Uint8ArrayBuffer>;

@@ -120,7 +120,7 @@ const eccSecret = async ({
 
 export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
     { data, publicKey, privateKey },
-    { curve = defaultCurve, encryption = defaultEncryption } = {}
+    { curve = defaultCurve, encryption = defaultEncryption, additionalData } = {}
 ) => {
     const secretKey = await eccSecret({ curve, privateKey, publicKey });
 
@@ -130,7 +130,7 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
                 data,
                 secret: await eccKey(secretKey.secret, curve, encryption),
             },
-            { encryption, hash: Algorithms.RAW }
+            { encryption, additionalData, hash: Algorithms.RAW }
         ),
         crypto.subtle.exportKey('jwk', secretKey.privateEc),
     ]);
@@ -149,7 +149,7 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
 };
 export const eccDecrypt: (typeof Ecc)['eccDecrypt'] = async (
     { encrypted, iv, publicKey, privateKey },
-    { curve = defaultCurve, encryption = defaultEncryption } = {}
+    { curve = defaultCurve, encryption = defaultEncryption, additionalData } = {}
 ) => {
     const { secret } = await eccSecret({ curve, privateKey, publicKey });
 
@@ -159,6 +159,6 @@ export const eccDecrypt: (typeof Ecc)['eccDecrypt'] = async (
             iv,
             secret: await eccKey(secret, curve, encryption),
         },
-        { encryption, hash: Algorithms.RAW }
+        { encryption, additionalData, hash: Algorithms.RAW }
     );
 };

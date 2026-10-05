@@ -5,6 +5,7 @@ import { createCipheriv, createDecipheriv } from 'node:crypto';
 import { decode } from '#encode';
 import { hash } from '#hash';
 import { randomBytes } from '#random';
+import { decodeAdditionalData } from '../lib/additional-data.js';
 import { fitKey } from '../lib/fit-key.js';
 import { encryptionMeta, GCM_TAG_BYTES } from '../lib/size-meta.js';
 import { defaultEncryption, defaultHash } from '../lib/types.js';
@@ -23,9 +24,10 @@ const mergeUint8Array = (a: Uint8ArrayBuffer, b: Uint8ArrayBuffer): Uint8ArrayBu
 
 export const encrypt: (typeof Encrypt)['encrypt'] = async (
     { data, secret },
-    { encryption = defaultEncryption, hash: hashAlgorithm = defaultHash } = {}
+    { encryption = defaultEncryption, hash: hashAlgorithm = defaultHash, additionalData } = {}
 ) => {
     const sizes = encryptionMeta(encryption);
+    const aad = decodeAdditionalData(encryption, additionalData);
 
     const [iv, secretHash] = await Promise.all([
         randomBytes(sizes.iv),
@@ -38,6 +40,9 @@ export const encrypt: (typeof Encrypt)['encrypt'] = async (
         iv
     );
 
+    if (aad) {
+        (cipher as CipherGCM).setAAD(aad);
+    }
     const encrypted = mergeUint8Array(cipher.update(decode(data)), cipher.final());
 
     return {
@@ -51,8 +56,9 @@ export const encrypt: (typeof Encrypt)['encrypt'] = async (
 };
 export const decrypt: (typeof Encrypt)['decrypt'] = async (
     { encrypted, iv, secret },
-    { encryption = defaultEncryption, hash: hashAlgorithm = defaultHash } = {}
+    { encryption = defaultEncryption, hash: hashAlgorithm = defaultHash, additionalData } = {}
 ) => {
+    const aad = decodeAdditionalData(encryption, additionalData);
     const hashedSecret = await hash(secret, hashAlgorithm);
 
     const decipher = createDecipheriv(
@@ -63,6 +69,9 @@ export const decrypt: (typeof Encrypt)['decrypt'] = async (
 
     let content = decode(encrypted);
     if (encryption.mode === 'GCM') {
+        if (aad) {
+            (decipher as DecipherGCM).setAAD(aad);
+        }
         (decipher as DecipherGCM).setAuthTag(content.subarray(-GCM_TAG_BYTES));
         content = content.subarray(0, -GCM_TAG_BYTES) as Uint8ArrayBuffer;
     }

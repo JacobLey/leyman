@@ -10,7 +10,7 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 
 - **Same code everywhere** — one async API that uses `node:crypto` on Node.js and `crypto.subtle` in the browser, picked by package `imports` conditions.
 - **Less ceremony than raw WebCrypto** — no `importKey`/`CryptoKey` handling; secrets, keys and IVs are plain `Uint8Array`s or strings.
-- **Authenticated encryption** — AES-GCM detects tampering: `decrypt` rejects altered content or the wrong secret.
+- **Authenticated encryption** — AES-GCM detects tampering: `decrypt` rejects altered content or the wrong secret, and can bind a ciphertext to its context with additional authenticated data.
 - **Password-safe keys** — `deriveKey` with PBKDF2 (passwords) or HKDF (high-entropy secrets), on both platforms.
 - **ECDH encryption in one call** — `eccEncrypt`/`eccDecrypt` derive a shared secret from one party's private key and the other's public key, then encrypt with AES.
 - **ECC key utilities** — generate keys and compress/decompress public keys on P-256, P-384 and P-521.
@@ -382,6 +382,20 @@ Asynchronously decrypts the data using the provided algorithms. Make sure that t
 Both the `encrypted` + `iv` comes from the output of `encrypt`, alongside the original `secret`.
 
 With `GCM`, the last 16 bytes of `encrypted` are the authentication tag (the same layout as Web Crypto), and `decrypt` rejects if the content, IV or secret don't match what was encrypted.
+
+#### Additional authenticated data
+
+With GCM, `encrypt`, `decrypt`, `eccEncrypt` and `eccDecrypt` take an `additionalData` option: data that is authenticated but not encrypted, and not part of the output. Decryption rejects unless it is given the same value, which binds a ciphertext to its context, e.g. a record ID, so it can't be swapped into another record.
+
+```ts
+const encryption = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
+const encrypted = await encrypt({ data, secret }, { encryption, additionalData: `user:${userId}` });
+
+// Rejects if `encrypted` was stored under a different user
+await decrypt({ ...encrypted, secret }, { encryption, additionalData: `user:${userId}` });
+```
+
+Other modes don't authenticate anything, so they throw a `TypeError` rather than ignore it.
 
 ### deriveKey(params: { secret: InputText; salt: InputText }, options?: Pbkdf2Options | HkdfOptions)
 

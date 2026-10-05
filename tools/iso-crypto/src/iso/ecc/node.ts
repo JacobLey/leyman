@@ -31,7 +31,7 @@ export const generateEccPublicKey: (typeof Ecc)['generateEccPublicKey'] = (
 
 export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
     { data, publicKey, privateKey },
-    { curve = defaultCurve, encryption = defaultEncryption } = {}
+    { curve = defaultCurve, encryption = defaultEncryption, additionalData } = {}
 ) => {
     const ecdh = getECDH(curve);
     ecdh.setPrivateKey(decode(privateKey));
@@ -41,7 +41,7 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
             data,
             secret: await eccKey(ecdh.computeSecret(decode(publicKey)), curve, encryption),
         },
-        { encryption, hash: Algorithms.RAW }
+        { encryption, additionalData, hash: Algorithms.RAW }
     );
 
     return {
@@ -51,7 +51,7 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
 };
 export const eccDecrypt: (typeof Ecc)['eccDecrypt'] = async (
     { encrypted, iv, publicKey, privateKey },
-    { curve = defaultCurve, encryption = defaultEncryption } = {}
+    { curve = defaultCurve, encryption = defaultEncryption, additionalData } = {}
 ) => {
     const ecdh = getECDH(curve);
     ecdh.setPrivateKey(decode(privateKey));
@@ -62,6 +62,6 @@ export const eccDecrypt: (typeof Ecc)['eccDecrypt'] = async (
             iv,
             secret: await eccKey(ecdh.computeSecret(decode(publicKey)), curve, encryption),
         },
-        { encryption, hash: Algorithms.RAW }
+        { encryption, additionalData, hash: Algorithms.RAW }
     );
 };

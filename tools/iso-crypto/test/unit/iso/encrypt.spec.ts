@@ -164,6 +164,64 @@ suite('Encrypt', () => {
         }
     };
 
+    const additionalDataTest = async ({ source, target }: SourceTargetEncrypt) => {
+        const encryption = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
+        const data = 'Balance: 100';
+        const secret = 'Bank vault';
+
+        const encrypted = await source.encrypt(
+            { data, secret },
+            { encryption, additionalData: 'account-1' }
+        );
+        // Not part of the output
+        expect(encrypted.encrypted).to.have.length(data.length + 16);
+
+        for (const additionalData of [
+            'account-1',
+            { text: '6163636f756e742d31', encoding: 'hex' },
+            new TextEncoder().encode('account-1'),
+        ] as const) {
+            const decrypted = await target.decrypt(
+                { ...encrypted, secret },
+                { encryption, additionalData }
+            );
+            expect(IsoCrypto.encode(decrypted)).to.equal(data);
+        }
+
+        // Rejects different or missing additional data
+        await expect(
+            target.decrypt({ ...encrypted, secret }, { encryption, additionalData: 'account-2' })
+        ).to.be.rejectedWith(Error);
+        await expect(target.decrypt({ ...encrypted, secret }, { encryption })).to.be.rejectedWith(
+            Error
+        );
+        const withoutAdditionalData = await source.encrypt({ data, secret }, { encryption });
+        await expect(
+            target.decrypt(
+                { ...withoutAdditionalData, secret },
+                { encryption, additionalData: 'account-1' }
+            )
+        ).to.be.rejectedWith(Error);
+
+        // Only GCM authenticates it
+        for (const mode of ['CBC', 'CTR'] as const) {
+            const options = {
+                encryption: { cipher: 'AES', size: 256, mode },
+                additionalData: 'account-1',
+            } as const;
+            await expect(source.encrypt({ data, secret }, options)).to.be.rejectedWith(
+                TypeError,
+                `AES-${mode} does not authenticate additional data, only GCM does`
+            );
+            await expect(
+                target.decrypt({ encrypted: '00', iv: '00', secret }, options)
+            ).to.be.rejectedWith(
+                TypeError,
+                `AES-${mode} does not authenticate additional data, only GCM does`
+            );
+        }
+    };
+
     const tamperTest = async ({ source, target }: SourceTargetEncrypt) => {
         const encryption = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
         const secret = 'Holy Grail';
@@ -274,6 +332,11 @@ suite('Encrypt', () => {
                     target: BrowserEncrypt,
                 }))
                 .test('GCM detects tampering', tamperTest);
+            browserSource
+                .before(() => ({
+                    target: BrowserEncrypt,
+                }))
+                .test('additional data', additionalDataTest);
         });
 
         suite('To Node', () => {
@@ -287,6 +350,11 @@ suite('Encrypt', () => {
                     target: NodeEncrypt,
                 }))
                 .test('GCM detects tampering', tamperTest);
+            browserSource
+                .before(() => ({
+                    target: NodeEncrypt,
+                }))
+                .test('additional data', additionalDataTest);
         });
 
         browserSource.test('decrypt', decryptTest);
@@ -310,6 +378,11 @@ suite('Encrypt', () => {
                     target: BrowserEncrypt,
                 }))
                 .test('GCM detects tampering', tamperTest);
+            nodeSource
+                .before(() => ({
+                    target: BrowserEncrypt,
+                }))
+                .test('additional data', additionalDataTest);
         });
 
         suite('To Node', () => {
@@ -323,6 +396,11 @@ suite('Encrypt', () => {
                     target: NodeEncrypt,
                 }))
                 .test('GCM detects tampering', tamperTest);
+            nodeSource
+                .before(() => ({
+                    target: NodeEncrypt,
+                }))
+                .test('additional data', additionalDataTest);
         });
 
         nodeSource.test('decrypt', decryptTest);

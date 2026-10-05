@@ -102,6 +102,34 @@ suite('Ecc', () => {
         }
     };
 
+    const additionalDataTest = async ({ source, target }: EccContext) => {
+        const options = {
+            encryption: { cipher: Ciphers.AES, size: 256, mode: Modes.GCM },
+            additionalData: 'message-7',
+        } as const;
+        const sender = await source.generateEccPrivateKey();
+        const receiver = await target.generateEccPrivateKey();
+
+        const encrypted = await source.eccEncrypt(
+            {
+                data: 'See you at noon',
+                privateKey: sender,
+                publicKey: target.generateEccPublicKey(receiver),
+            },
+            options
+        );
+
+        const decrypted = await target.eccDecrypt({ ...encrypted, privateKey: receiver }, options);
+        expect(IsoCrypto.encode(decrypted)).to.equal('See you at noon');
+
+        await expect(
+            target.eccDecrypt(
+                { ...encrypted, privateKey: receiver },
+                { ...options, additionalData: 'message-8' }
+            )
+        ).to.be.rejectedWith(Error);
+    };
+
     const eccDecryptTest = async function (this: Context, { source }: EccSourceContext) {
         this.timeout(8000);
 
@@ -313,6 +341,11 @@ suite('Ecc', () => {
                     target: BrowserEcc,
                 }))
                 .test('success', successTest);
+            browserSource
+                .before(() => ({
+                    target: BrowserEcc,
+                }))
+                .test('additional data', additionalDataTest);
         });
 
         suite('To Node', () => {
@@ -321,6 +354,11 @@ suite('Ecc', () => {
                     target: NodeEcc,
                 }))
                 .test('success', successTest);
+            browserSource
+                .before(() => ({
+                    target: NodeEcc,
+                }))
+                .test('additional data', additionalDataTest);
         });
 
         browserSource.test('eccDecrypt', eccDecryptTest);
@@ -339,6 +377,11 @@ suite('Ecc', () => {
                     target: BrowserEcc,
                 }))
                 .test('success', successTest);
+            nodeSource
+                .before(() => ({
+                    target: BrowserEcc,
+                }))
+                .test('additional data', additionalDataTest);
         });
 
         suite('To Node', () => {
@@ -347,6 +390,11 @@ suite('Ecc', () => {
                     target: NodeEcc,
                 }))
                 .test('success', successTest);
+            nodeSource
+                .before(() => ({
+                    target: NodeEcc,
+                }))
+                .test('additional data', additionalDataTest);
         });
 
         nodeSource.test('eccDecrypt', eccDecryptTest);

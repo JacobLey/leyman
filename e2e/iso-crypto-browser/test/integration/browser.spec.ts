@@ -312,6 +312,68 @@ suite('iso-crypto in the browser', () => {
                 );
             }
 
+            withPage.test(
+                'Authenticates additional data, both ways with Node.js',
+                async ({ page }) => {
+                    const data = 'Balance: 100';
+                    const secret = 'Bank vault';
+                    const options = {
+                        encryption: { cipher: 'AES', size: 256, mode: 'GCM' },
+                        additionalData: 'account-1',
+                    } as const;
+
+                    const fromBrowser = await page.evaluate(
+                        async input => {
+                            const { encrypted, iv } = await globalThis.isoCrypto.encrypt(
+                                { data: input.data, secret: input.secret },
+                                input.options
+                            );
+                            return globalThis.isoCrypto.encodeObject({ encrypted, iv }, 'hex');
+                        },
+                        { data, secret, options }
+                    );
+                    const decrypted = await NodeIsoCrypto.decrypt(
+                        {
+                            encrypted: fromHex(fromBrowser.encrypted),
+                            iv: fromHex(fromBrowser.iv),
+                            secret,
+                        },
+                        options
+                    );
+                    expect(NodeIsoCrypto.encode(decrypted)).to.equal(data);
+
+                    const fromNode = await NodeIsoCrypto.encrypt({ data, secret }, options);
+                    const inBrowser = await page.evaluate(
+                        async input => {
+                            const params = {
+                                encrypted: { text: input.encrypted, encoding: 'hex' },
+                                iv: { text: input.iv, encoding: 'hex' },
+                                secret: input.secret,
+                            } as const;
+                            const matching = globalThis.isoCrypto.encode(
+                                await globalThis.isoCrypto.decrypt(params, input.options)
+                            );
+                            try {
+                                await globalThis.isoCrypto.decrypt(params, {
+                                    ...input.options,
+                                    additionalData: 'account-2',
+                                });
+                                return { matching, rejectsOther: false };
+                            } catch {
+                                return { matching, rejectsOther: true };
+                            }
+                        },
+                        {
+                            encrypted: hex(fromNode.encrypted),
+                            iv: hex(fromNode.iv),
+                            secret,
+                            options,
+                        }
+                    );
+                    expect(inBrowser).to.deep.equal({ matching: data, rejectsOther: true });
+                }
+            );
+
             withPage.test('AES-GCM rejects tampering', async ({ page }) => {
                 const rejected = await page.evaluate(async () => {
                     const encryption = { cipher: 'AES', size: 256, mode: 'GCM' } as const;

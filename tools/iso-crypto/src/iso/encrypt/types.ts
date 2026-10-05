@@ -8,6 +8,7 @@ import type { Encryption, Hash, InputText, Uint8ArrayBuffer } from '../lib/types
  * @param params.secret - secret key for encryption
  * @param [options] - optional
  * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.additionalData] - GCM only, data to authenticate but not encrypt
  * @param [options.hash] - Hash algorithm to use to fit secret to the required key size.
  * Defaults to SHA256. Set to `'raw'` to avoid hashing.
  * @returns encrypted text and accompanying initialization vector.
@@ -30,6 +31,11 @@ export declare const encrypt: (
          */
         encryption?: Encryption | undefined;
         /**
+         * Additional authenticated data, GCM only (throws for other modes). It is not encrypted or part of the
+         * output, but decryption rejects unless given the same value, e.g. to bind a ciphertext to a record ID.
+         */
+        additionalData?: InputText | undefined;
+        /**
          * Hash algorithm to use to fit secret to the required key size.
          * Defaults to SHA256. Set to `'raw'` to avoid hashing.
          */
@@ -51,6 +57,7 @@ export declare const encrypt: (
  * @param params.secret - secret key for encryption
  * @param [options] - optional
  * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
+ * @param [options.additionalData] - GCM only, data to authenticate but not encrypt
  * @param [options.hash] - hash algorithm to use to fit secret to the required key size.
  * Defaults to SHA256. Set to `'raw'` to avoid hashing.
  * @returns decrypted content
@@ -76,6 +83,11 @@ export declare const decrypt: (
          * Encryption algorithm to use, defaults to `aes-256-ctr`.
          */
         encryption?: Encryption | undefined;
+        /**
+         * Additional authenticated data, GCM only (throws for other modes). It is not encrypted or part of the
+         * output, but decryption rejects unless given the same value, e.g. to bind a ciphertext to a record ID.
+         */
+        additionalData?: InputText | undefined;
         /**
          * Hash algorithm to use to fit secret to the required key size.
          * Defaults to SHA256. Set to `'raw'` to avoid hashing.
