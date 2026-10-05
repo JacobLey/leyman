@@ -145,7 +145,10 @@ suite('iso-crypto in the browser', () => {
                 this.timeout(30_000);
                 return { browser: await browserType.launch() };
             });
-            withBrowser.after(async ({ browser }) => browser.close());
+            withBrowser.after(async ({ browser }) => {
+                // Missing when launching failed, which would otherwise be reported twice
+                await (browser as Browser | undefined)?.close();
+            });
 
             const withPage = withBrowser.beforeEach(async ({ browser, code }) => ({
                 page: await openPage(browser, code),
