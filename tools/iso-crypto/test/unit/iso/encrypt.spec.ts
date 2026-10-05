@@ -1,4 +1,5 @@
 import type * as Encrypt from '#encrypt';
+import { createCipheriv } from 'node:crypto';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import * as IsoCrypto from 'iso-crypto';
@@ -179,6 +180,23 @@ suite('Encrypt', () => {
         ).to.be.rejectedWith(Error);
     };
 
+    const counterTest = async ({ source }: SourceEncrypt) => {
+        const data = 'The counter overflows into the high bits of the block';
+        for (const size of [128, 192, 256] as const) {
+            const secret = new Uint8Array(size / 8).fill(7);
+            // Low 64 bits of the counter block are all ones, so the second block carries into the high bits
+            const iv = new Uint8Array(16).fill(0xff, 8);
+            const cipher = createCipheriv(`aes-${size}-ctr`, secret, iv);
+            const encrypted = new Uint8Array([...cipher.update(data), ...cipher.final()]);
+
+            const decrypted = await source.decrypt(
+                { encrypted, iv, secret },
+                { encryption: { size, cipher: 'AES', mode: 'CTR' }, hash: 'raw' }
+            );
+            expect(IsoCrypto.encode(decrypted)).to.equal(data);
+        }
+    };
+
     suite('From Browser', () => {
         const browserSource = before(() => ({
             source: BrowserEncrypt,
@@ -211,6 +229,7 @@ suite('Encrypt', () => {
         });
 
         browserSource.test('decrypt', decryptTest);
+        browserSource.test('CTR counter carries across all 128 bits', counterTest);
     });
 
     suite('From Node', () => {
@@ -245,5 +264,6 @@ suite('Encrypt', () => {
         });
 
         nodeSource.test('decrypt', decryptTest);
+        nodeSource.test('CTR counter carries across all 128 bits', counterTest);
     });
 });

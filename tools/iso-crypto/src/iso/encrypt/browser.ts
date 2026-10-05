@@ -9,9 +9,16 @@ import { defaultEncryption, defaultHash } from '../lib/types.js';
 
 const { crypto } = globalThis;
 
-const encryptionToAlgorithm = (encryption: Encryption): AesDerivedKeyParams => ({
+/**
+ * Bits of the CTR counter block that increment, as opposed to a fixed nonce.
+ * All 128 matches `node:crypto`, which carries across the entire block.
+ */
+const CTR_COUNTER_BITS = 128;
+
+const encryptionToAlgorithm = (encryption: Encryption): { name: string; length: number } => ({
     name: `${encryption.cipher}-${encryption.mode}`,
-    length: encryption.size / 2,
+    // Only read by CTR
+    length: CTR_COUNTER_BITS,
 });
 
 export const encrypt: (typeof Encrypt)['encrypt'] = async (
