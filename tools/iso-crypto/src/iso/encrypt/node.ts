@@ -1,3 +1,4 @@
+import type { CipherGCM, DecipherGCM } from 'node:crypto';
 import type { Encryption, Uint8ArrayBuffer } from '../lib/types.js';
 import type * as Encrypt from './types.js';
 import { createCipheriv, createDecipheriv } from 'node:crypto';
@@ -5,7 +6,7 @@ import { decode } from '#encode';
 import { hash } from '#hash';
 import { randomBytes } from '#random';
 import { fixBytes } from '../lib/bytes-length.js';
-import { encryptionMeta } from '../lib/size-meta.js';
+import { encryptionMeta, GCM_TAG_BYTES } from '../lib/size-meta.js';
 import { defaultEncryption, defaultHash } from '../lib/types.js';
 
 const encryptionToCipher = (encryption: Encryption): string =>
@@ -37,8 +38,14 @@ export const encrypt: (typeof Encrypt)['encrypt'] = async (
         iv
     );
 
+    const encrypted = mergeUint8Array(cipher.update(decode(data)), cipher.final());
+
     return {
-        encrypted: mergeUint8Array(cipher.update(decode(data)), cipher.final()),
+        // Matches Web Crypto, which appends the authentication tag to the encrypted content
+        encrypted:
+            encryption.mode === 'GCM'
+                ? mergeUint8Array(encrypted, (cipher as CipherGCM).getAuthTag())
+                : encrypted,
         iv,
     } as const;
 };
@@ -56,5 +63,12 @@ export const decrypt: (typeof Encrypt)['decrypt'] = async (
         decode(iv)
     );
 
-    return mergeUint8Array(decipher.update(decode(encrypted)), decipher.final());
+    let content = decode(encrypted);
+    if (encryption.mode === 'GCM') {
+        (decipher as DecipherGCM).setAuthTag(content.subarray(-GCM_TAG_BYTES));
+        content = content.subarray(0, -GCM_TAG_BYTES) as Uint8ArrayBuffer;
+    }
+
+    // Throws for GCM if the content or tag was altered
+    return mergeUint8Array(decipher.update(content), decipher.final());
 };

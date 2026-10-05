@@ -156,4 +156,46 @@ suite('iso-crypto in the browser', () => {
             expect(webCryptoCalls).to.include('crypto.subtle.deriveKey');
         }
     );
+
+    withBrowser.test(
+        'Encrypts with AES-GCM in Web Crypto, readable by Node.js',
+        async ({ isoCrypto, webCryptoCalls }) => {
+            const secret = 'Super duper secret password';
+            const encryption = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
+            const { encrypted, iv } = await isoCrypto.encrypt(
+                { data: 'This is my message', secret },
+                { encryption }
+            );
+
+            const decrypted = await NodeIsoCrypto.decrypt(
+                {
+                    encrypted: { text: isoCrypto.encode(encrypted, 'hex'), encoding: 'hex' },
+                    iv: { text: isoCrypto.encode(iv, 'hex'), encoding: 'hex' },
+                    secret,
+                },
+                { encryption }
+            );
+
+            expect(NodeIsoCrypto.encode(decrypted)).to.equal('This is my message');
+            expect(webCryptoCalls).to.include('crypto.subtle.encrypt');
+        }
+    );
+
+    withBrowser.test(
+        'Derives keys with Web Crypto, matching Node.js',
+        async ({ isoCrypto, webCryptoCalls }) => {
+            for (const options of [
+                { iterations: 1000 },
+                { algorithm: 'HKDF', info: 'context' },
+            ] as const) {
+                const params = { secret: 'password', salt: 'salt' };
+                expect(
+                    isoCrypto.encode(await isoCrypto.deriveKey(params, options), 'hex')
+                ).to.equal(
+                    NodeIsoCrypto.encode(await NodeIsoCrypto.deriveKey(params, options), 'hex')
+                );
+            }
+            expect(webCryptoCalls).to.include('crypto.subtle.deriveBits');
+        }
+    );
 });

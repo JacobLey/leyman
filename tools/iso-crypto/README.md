@@ -10,11 +10,13 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 
 - **Same code everywhere** — one async API that uses `node:crypto` on Node.js and `crypto.subtle` in the browser, picked by package `imports` conditions.
 - **Less ceremony than raw WebCrypto** — no `importKey`/`CryptoKey` handling; secrets, keys and IVs are plain `Uint8Array`s or strings.
+- **Authenticated encryption** — AES-GCM detects tampering: `decrypt` rejects altered content or the wrong secret.
+- **Password-safe keys** — `deriveKey` with PBKDF2 (passwords) or HKDF (high-entropy secrets), on both platforms.
 - **ECDH encryption in one call** — `eccEncrypt`/`eccDecrypt` derive a shared secret from one party's private key and the other's public key, then encrypt with AES.
 - **ECC key utilities** — generate keys and compress/decompress public keys on P-256, P-384 and P-521.
 - **Encoding helpers** — isomorphic text, hex, base64 and base64url encoding, plus secure random bytes.
 
-**When not to use it:** encryption is AES-CBC/CTR without authentication (no GCM or MAC), so ciphertext tampering is not detected, and secrets are stretched with a single hash, not a password KDF like PBKDF2, scrypt or Argon2. For those needs, or curves like secp256k1 and X25519, see [@noble/ciphers](https://www.npmjs.com/package/@noble/ciphers) and [@noble/curves](https://www.npmjs.com/package/@noble/curves).
+**When not to use it:** the default encryption is still AES-CTR without authentication, for compatibility, so pass `{ mode: 'GCM' }` to detect tampering. `encrypt` stretches its secret with a single hash, so derive keys from passwords with `deriveKey` first. There is no scrypt, Argon2, secp256k1 or X25519; for those see [@noble/hashes](https://www.npmjs.com/package/@noble/hashes) and [@noble/curves](https://www.npmjs.com/package/@noble/curves).
 
 ## Contents
 - [Supported Algorithms](#supported-algorithms)
@@ -39,6 +41,7 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
   - [decodeObject](#decodeobjectinput-recordstring-string)
   - [encodeObject](#encodeobjectinput-recordstring-uint8array)
   - [hash](#hashinput-inputtext-algorithm-algorithm)
+  - [deriveKey](#derivekeyparams--secret-inputtext-salt-inputtext--options-pbkdf2options--hkdfoptions)
   - [decrypt](#decryptparams--encrypted-inputtext-iv-inputtext-secret-inputtext--options--hash-hash-encryption-encryption-)
   - [encrypt](#encryptparams--data-inputtext-secret-inputtext--options--hash-hash-encryption-encryption-)
   - [generateEccPrivateKey](#generateeccprivatekeycurve-curve)
@@ -70,6 +73,14 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 - ✅ aes-128-ctr
 - ✅ aes-192-ctr
 - ✅ aes-256-ctr
+- ✅ aes-128-gcm
+- ✅ aes-192-gcm
+- ✅ aes-256-gcm
+
+### Key Derivation
+
+- ✅ PBKDF2
+- ✅ HKDF
 
 ### ECDH (Asymmetric)
 
@@ -164,6 +175,23 @@ const customAlgDecrypted = encode(await decrypt(
         },
     }
 )); // 'This is my response'
+```
+
+### Authenticated encryption with a password
+
+```ts
+import { decrypt, deriveKey, encrypt, randomBytes } from 'iso-crypto';
+
+// Store the salt alongside the encrypted data
+const salt = await randomBytes(16);
+const key = await deriveKey({ secret: 'correct horse battery staple', salt });
+
+const encryption = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
+// The key is already the right size, so skip hashing it
+const encrypted = await encrypt({ data: 'This is my message', secret: key }, { encryption, hash: 'raw' });
+
+// Rejects if `encrypted` was altered, or the key is wrong
+const decrypted = await decrypt({ ...encrypted, secret: key }, { encryption, hash: 'raw' });
 ```
 
 ### ECC
@@ -350,6 +378,22 @@ Asynchronously decrypts the data using the provided algorithms. Make sure that t
 
 Both the `encrypted` + `iv` comes from the output of `encrypt`, alongside the original `secret`.
 
+With `GCM`, the last 16 bytes of `encrypted` are the authentication tag (the same layout as Web Crypto), and `decrypt` rejects if the content, IV or secret don't match what was encrypted.
+
+### deriveKey(params: { secret: InputText; salt: InputText }, options?: Pbkdf2Options | HkdfOptions)
+
+Asynchronously derives a key of a fixed size from a secret. Use the result as the `secret` of `encrypt`/`decrypt` with `{ hash: 'raw' }`.
+
+`salt` is a random value (e.g. `randomBytes(16)`) stored alongside whatever the key protects, so equal secrets derive different keys.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `algorithm` | `'PBKDF2' \| 'HKDF'` | `'PBKDF2'` | PBKDF2 is deliberately slow, for passwords. HKDF is fast, for secrets that are already random, such as an ECDH shared secret. |
+| `hash` | `HashAlgorithm` | SHA256 | Hash the derivation is built on. |
+| `size` | `number` | `256` | Size of the key in bits. |
+| `iterations` | `number` | `600_000` | PBKDF2 only. OWASP's recommendation for PBKDF2 with SHA256. |
+| `info` | `InputText` | `''` | HKDF only. Context for the key, so one secret can derive several unrelated keys. |
+
 ### generateEccPrivateKey(curve?: Curve)
 
 Asynchronously generates an ECC private key as a Uint8Array.
@@ -414,7 +458,7 @@ Generally defaults to `{ cipher: 'AES', size: 256, mode: 'CTR' }`.
 
 Type used to represent a specific symmetric encryption algorithm.
 
-`{ cipher: string; size: number; mode: string }`.
+`{ cipher: 'AES'; size: 128 | 192 | 256; mode: 'CBC' | 'CTR' | 'GCM' }`.
 
 ### Curve
 

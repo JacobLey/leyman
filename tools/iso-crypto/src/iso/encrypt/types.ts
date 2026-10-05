@@ -10,7 +10,8 @@ import type { Encryption, Hash, InputText, Uint8ArrayBuffer } from '../lib/types
  * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
  * @param [options.hash] - Hash algorithm to use to fit secret to the required key size.
  * Defaults to SHA256. Set to `'raw'` to avoid hashing.
- * @returns encrypted text and accompanying initialization vector
+ * @returns encrypted text and accompanying initialization vector.
+ * For `GCM`, the encrypted text ends with the 16 byte authentication tag.
  */
 export declare const encrypt: (
     params: {
@@ -52,7 +53,8 @@ export declare const encrypt: (
  * @param [options.encryption] - encryption algorithm to use, defaults to `aes-256-ctr`
  * @param [options.hash] - hash algorithm to use to fit secret to the required key size.
  * Defaults to SHA256. Set to `'raw'` to avoid hashing.
- * @returns encrypted text and accompanying initialization vector
+ * @returns decrypted content
+ * @throws for `GCM`, when the encrypted content, IV or secret do not match what was encrypted
  */
 export declare const decrypt: (
     params: {

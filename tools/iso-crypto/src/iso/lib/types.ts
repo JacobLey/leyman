@@ -11,6 +11,7 @@ export enum Ciphers {
 export enum Modes {
     CBC = 'CBC',
     CTR = 'CTR',
+    GCM = 'GCM',
 }
 export enum Sizes {
     KEY_128 = 128,
@@ -31,6 +32,11 @@ export type Encryption =
           cipher: EnumToString<Ciphers.AES>;
           size: Sizes.KEY_128 | Sizes.KEY_192 | Sizes.KEY_256;
           mode: EnumToString<Modes.CTR>;
+      }
+    | {
+          cipher: EnumToString<Ciphers.AES>;
+          size: Sizes.KEY_128 | Sizes.KEY_192 | Sizes.KEY_256;
+          mode: EnumToString<Modes.GCM>;
       };
 export const defaultEncryption: Encryption = {
     cipher: Ciphers.AES,

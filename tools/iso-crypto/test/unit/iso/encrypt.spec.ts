@@ -56,6 +56,21 @@ suite('Encrypt', () => {
                 size: 256,
                 mode: 'CTR',
             },
+            {
+                cipher: 'AES',
+                size: 128,
+                mode: 'GCM',
+            },
+            {
+                cipher: 'AES',
+                size: 192,
+                mode: 'GCM',
+            },
+            {
+                cipher: 'AES',
+                size: 256,
+                mode: 'GCM',
+            },
             undefined,
             null,
         ] as const) {
@@ -125,6 +140,14 @@ suite('Encrypt', () => {
                 encrypted: 'cca33059a64e376493d855321b352616466d23c726fff6be7cd9cd6dec4a9dd2',
                 iv: '2be4b60e9b83352a31ca278a4eae5e42',
             },
+            {
+                output: 'The Last Supper',
+                secret: 'Opus Dei',
+                encryption: { cipher: 'AES', size: 128, mode: 'GCM' },
+                hash: { algorithm: 'SHA2', size: 256 },
+                encrypted: 'c1a3501d16b1301f6b8f098973ca232aee0a103e3c52fa5dec61069904b36a',
+                iv: '2211e15b3538484597b85ec5',
+            },
         ] as const) {
             const decrypted = await source.decrypt(
                 {
@@ -138,6 +161,24 @@ suite('Encrypt', () => {
         }
     };
 
+    const tamperTest = async ({ source, target }: SourceTargetEncrypt) => {
+        const encryption = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
+        const secret = 'Holy Grail';
+        const encrypted = await source.encrypt({ data: 'Rosslyn Chapel', secret }, { encryption });
+        expect(encrypted.iv).to.have.length(12);
+        // 14 bytes of content + 16 byte authentication tag
+        expect(encrypted.encrypted).to.have.length(30);
+
+        const altered = new Uint8Array(encrypted.encrypted);
+        altered[0] = altered[0] === 0 ? 1 : 0;
+        await expect(
+            target.decrypt({ ...encrypted, encrypted: altered, secret }, { encryption })
+        ).to.be.rejectedWith(Error);
+        await expect(
+            target.decrypt({ ...encrypted, secret: 'Wrong secret' }, { encryption })
+        ).to.be.rejectedWith(Error);
+    };
+
     suite('From Browser', () => {
         const browserSource = before(() => ({
             source: BrowserEncrypt,
@@ -149,6 +190,11 @@ suite('Encrypt', () => {
                     target: BrowserEncrypt,
                 }))
                 .test('success', successTest);
+            browserSource
+                .before(() => ({
+                    target: BrowserEncrypt,
+                }))
+                .test('GCM detects tampering', tamperTest);
         });
 
         suite('To Node', () => {
@@ -157,6 +203,11 @@ suite('Encrypt', () => {
                     target: NodeEncrypt,
                 }))
                 .test('success', successTest);
+            browserSource
+                .before(() => ({
+                    target: NodeEncrypt,
+                }))
+                .test('GCM detects tampering', tamperTest);
         });
 
         browserSource.test('decrypt', decryptTest);
@@ -173,6 +224,11 @@ suite('Encrypt', () => {
                     target: BrowserEncrypt,
                 }))
                 .test('success', successTest);
+            nodeSource
+                .before(() => ({
+                    target: BrowserEncrypt,
+                }))
+                .test('GCM detects tampering', tamperTest);
         });
 
         suite('To Node', () => {
@@ -181,6 +237,11 @@ suite('Encrypt', () => {
                     target: NodeEncrypt,
                 }))
                 .test('success', successTest);
+            nodeSource
+                .before(() => ({
+                    target: NodeEncrypt,
+                }))
+                .test('GCM detects tampering', tamperTest);
         });
 
         nodeSource.test('decrypt', decryptTest);

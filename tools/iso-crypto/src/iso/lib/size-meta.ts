@@ -2,6 +2,14 @@ import type { Curve, Encryption } from './types.js';
 
 const BITS_PER_BYTE = 8;
 const BYTE_PAIR = BITS_PER_BYTE * 2;
+/**
+ * GCM uses a 96 bit IV, the size its specification recommends.
+ */
+const GCM_IV_BYTES = 12;
+/**
+ * Size of a GCM authentication tag, appended to the encrypted content.
+ */
+export const GCM_TAG_BYTES = 16;
 
 /**
  * Get input/output sizes for encryption.
@@ -17,7 +25,7 @@ export const encryptionMeta = (
     iv: number;
 } => ({
     secret: encryption.size / BITS_PER_BYTE,
-    iv: BYTE_PAIR,
+    iv: encryption.mode === 'GCM' ? GCM_IV_BYTES : BYTE_PAIR,
 });
 
 export const eccMeta = (

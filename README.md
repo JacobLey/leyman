@@ -19,7 +19,7 @@ Published to npm:
 | [`format-file`](https://www.npmjs.com/package/format-file) | Utility API to format files via biome | [`tools/format-file`](./tools/format-file) |
 | [`haywire`](https://www.npmjs.com/package/haywire) | Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state. | [`tools/haywire`](./tools/haywire) |
 | [`haywire-launcher`](https://www.npmjs.com/package/haywire-launcher) | Instantiate and execute your script in one line. | [`tools/haywire-launcher`](./tools/haywire-launcher) |
-| [`iso-crypto`](https://www.npmjs.com/package/iso-crypto) | Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES and ECDH. | [`tools/iso-crypto`](./tools/iso-crypto) |
+| [`iso-crypto`](https://www.npmjs.com/package/iso-crypto) | Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES (including GCM), PBKDF2/HKDF key derivation and ECDH. | [`tools/iso-crypto`](./tools/iso-crypto) |
 | [`juniper`](https://www.npmjs.com/package/juniper) | Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output. | [`apps/juniper`](./apps/juniper) |
 | [`juniper-validator`](https://www.npmjs.com/package/juniper-validator) | StandardSchema compliance for juniper. | [`apps/juniper-validator`](./apps/juniper-validator) |
 | [`load-populate-files`](https://www.npmjs.com/package/load-populate-files) | Load and dynamically populate file content | [`apps/populate-files/load-populate-files`](./apps/populate-files/load-populate-files) |
