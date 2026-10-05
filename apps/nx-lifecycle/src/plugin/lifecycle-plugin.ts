@@ -18,7 +18,8 @@ import { NOOP_EXECUTOR } from '../lifecycle/constants.js';
 import { planLifecycle } from '../lifecycle/processor.js';
 import { assertLifecyclePluginOptions } from './schema.js';
 
-type Dependency = DependsOn[number];
+// Nx's own config may hold any dependency it accepts, not only those the lifecycle schema allows
+type Dependency = DependsOn[number] | NonNullable<TargetConfiguration['dependsOn']>[number];
 
 const describeTarget = ({ kind, name, stage }: LifecycleTarget): string => {
     if (kind === 'anchor') {
@@ -52,7 +53,7 @@ const dependsOnIncludes = (
 ): boolean => {
     const normalizedExpected = normalizeDependency(expected);
     return (dependsOn ?? []).some(dependency =>
-        deepEqual(normalizeDependency(dependency as Dependency), normalizedExpected)
+        deepEqual(normalizeDependency(dependency), normalizedExpected)
     );
 };
 
