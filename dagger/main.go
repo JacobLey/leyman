@@ -19,8 +19,9 @@ import (
 const (
 	// node:24.21.0-trixie-slim
 	nodeImage = "node:24.21.0-trixie-slim@sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe"
-	// Exempt from `minimumReleaseAge` (it only covers lockfile dependencies). 12.9.1 fixes `--frozen-lockfile`
-	// rejecting the lockfile of injected workspace packages with `catalog:` peer dependencies.
+	// Outside the lockfile, so `minimumReleaseAge` can't check it: only bump to a release at least 7 days old.
+	// 12.9.1 fixes `--frozen-lockfile` rejecting the lockfile of injected workspace packages with `catalog:`
+	// peer dependencies.
 	pnpmVersion = "12.9.1"
 	// Keep in sync with `playwright` in `pnpm-workspace.yaml`. Only installs the browsers' system libraries here;
 	// the `playwright-install` target downloads the browsers themselves.

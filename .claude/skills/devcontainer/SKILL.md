@@ -20,7 +20,7 @@ Files live on the host, so they survive container rebuilds. Claude Code config i
 | Tool | Purpose | Notes |
 |---------|--------------------|-------|
 | Node.js | JS runtime | Version pinned via `ARG NODE_VERSION` in `Dockerfile` |
-| pnpm | Package management | Version pinned via `ARG PNPM_VERSION` |
+| pnpm | Package management | Version pinned via `ARG PNPM_VERSION`. Installed outside the lockfile, so `minimumReleaseAge` can't hold it back: only bump to a release at least 7 days old |
 | Go | Golang runtime (primarily used by Dagger) | Version pinned via `ARG GO_VERSION`; also installs `gopls` |
 | Dagger CLI | Mirror CI execution locally | Version pinned via `ARG DAGGER_VERSION` |
 | Playwright browser libraries | System libraries for Chromium, Firefox and WebKit | Version pinned via `ARG PLAYWRIGHT_VERSION`. The browsers themselves are downloaded by the `playwright-install` target to `PLAYWRIGHT_BROWSERS_PATH`, shared between worktrees |
