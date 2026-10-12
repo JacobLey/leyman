@@ -13,6 +13,13 @@ suite('cli', () => {
         expect(result.stderr).to.equal('');
     });
 
+    test('--help lists every command', async () => {
+        const result = await execAsync('./bin.mjs --help');
+
+        expect(result.stdout).to.contain('lifecycle lifecycle');
+        expect(result.stdout).to.contain('lifecycle explain <project> [stage]');
+    });
+
     test('--version', async () => {
         const result = await execAsync('./bin.mjs --version');
 

@@ -1,14 +1,25 @@
+import type { Argv } from 'yargs';
+import type { Main } from 'entry-script';
+import type { LifecycleCommandInput, RegisterCommand } from './commands/lib/types.js';
 import yargs from 'yargs';
-import { EntryScript } from 'entry-script';
-import { explainCommand } from './commands/explain-command.js';
-import { lifecycleCommand } from './commands/lifecycle-command.js';
+import { bind } from 'haywire';
+import { commandId } from './commands/lib/types.js';
 
 /**
  * Lifecycle CLI. Run `./bin.mjs --help` for options.
  *
  * Uses `yargs` package for command line parsing and logic flow.
  */
-export class LifecycleCli extends EntryScript {
+export class LifecycleCli implements Main {
+    readonly #commands: readonly RegisterCommand[];
+
+    /**
+     * @param commands - every command the CLI runs
+     */
+    public constructor(commands: readonly RegisterCommand[]) {
+        this.#commands = commands;
+    }
+
     /**
      * Entry point to CLI script.
      *
@@ -16,11 +27,11 @@ export class LifecycleCli extends EntryScript {
      *
      * @param argv - process arguments
      */
-    public static override async main(argv: string[]): Promise<void> {
+    public async main(argv: string[]): Promise<void> {
         // eslint-disable-next-line import-x/no-relative-parent-imports
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
-        await yargs()
+        let cli: Argv<LifecycleCommandInput> = yargs()
             .scriptName('lifecycle')
             .option({
                 cwd: {
@@ -32,10 +43,13 @@ export class LifecycleCli extends EntryScript {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(packageJson.default.version)
-            .command(lifecycleCommand)
-            .command(explainCommand)
-            .parseAsync(argv, {}, LifecycleCli.#yargsOutput);
+            .version(packageJson.default.version);
+
+        for (const register of this.#commands) {
+            cli = register(cli);
+        }
+
+        await cli.parseAsync(argv, {}, LifecycleCli.#yargsOutput);
     }
 
     static #yargsOutput(this: void, e: unknown, _argv: unknown, log: string): void {
@@ -51,3 +65,7 @@ export class LifecycleCli extends EntryScript {
         }
     }
 }
+
+export const lifecycleCliBinding = bind(LifecycleCli)
+    .withDependencies([commandId])
+    .withConstructorProvider();

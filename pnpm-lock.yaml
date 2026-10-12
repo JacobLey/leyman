@@ -442,6 +442,12 @@ importers:
       format-file:
         specifier: workspace:^
         version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      haywire:
+        specifier: workspace:^
+        version: file:tools/haywire
+      haywire-launcher:
+        specifier: workspace:^
+        version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper:
         specifier: workspace:^
         version: file:apps/juniper
@@ -11903,6 +11909,8 @@ snapshots:
       entry-script: file:tools/entry-script
       fast-equals: 6.0.4
       format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      haywire: file:tools/haywire
+      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper: file:apps/juniper
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper)
       nx: 23.2.1(@swc/core@1.16.2(@swc/helpers@0.5.23))

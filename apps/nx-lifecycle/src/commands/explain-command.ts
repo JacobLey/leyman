@@ -3,10 +3,12 @@ import type { LifecyclePlan } from '../lifecycle/processor.js';
 import type { Command, LifecycleCommandInput } from './lib/types.js';
 import Path from 'node:path';
 import { createProjectGraphAsync, readJsonFile, workspaceRoot } from '@nx/devkit';
+import { bind } from 'haywire';
 import { explainLifecycle, formatExplanation } from '../lifecycle/explain.js';
 import { loadOptions } from '../lifecycle/normalizer.js';
 import { planLifecycle } from '../lifecycle/processor.js';
 import { planPluginOptions } from '../plugin/lifecycle-plugin.js';
+import { commandId } from './lib/types.js';
 
 interface ExplainCommandExtendedInput extends LifecycleCommandInput {
     project: string;
@@ -101,3 +103,7 @@ export const explainCommand: Command<ExplainCommandExtendedInput> = {
         console.log(formatExplanation(explanation));
     },
 };
+
+export const explainCommandBinding = bind(commandId).withInstance(cli =>
+    cli.command(explainCommand)
+);

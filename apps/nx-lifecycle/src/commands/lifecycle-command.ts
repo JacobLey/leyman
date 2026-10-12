@@ -1,7 +1,9 @@
 import type { Command, LifecycleCommandInput } from './lib/types.js';
 import { createProjectGraphAsync, workspaceRoot } from '@nx/devkit';
 import { isCI } from 'ci-info';
+import { bind } from 'haywire';
 import { lifecycleInternal } from '../lifecycle/lifecycle-internal.js';
+import { commandId } from './lib/types.js';
 
 interface LifecycleCommandExtendedInput extends LifecycleCommandInput {
     configFile: string;
@@ -55,3 +57,7 @@ export const lifecycleCommand: Command<LifecycleCommandExtendedInput> = {
         );
     },
 };
+
+export const lifecycleCommandBinding = bind(commandId).withInstance(cli =>
+    cli.command(lifecycleCommand)
+);
