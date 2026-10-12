@@ -1,4 +1,5 @@
 export type { AbstractPrivateClass } from '#identifier';
+export type { CombineListOutputs } from '#module';
 export type {
     AsyncSupplier,
     Constructable,
