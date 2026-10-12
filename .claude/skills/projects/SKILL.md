@@ -75,3 +75,4 @@ See each package's README.md for full usage documentation.
 | [`eslint-config-schema`](../../../e2e/eslint-config-schema) | Checks that eslint-config's hand-written package.json schema matches what juniper builds |
 | [`normalized-react-query-ssr`](../../../e2e/normalized-react-query-ssr) | Checks that normalized-react-query's preloading carries across a server render into client hydration |
 | [`iso-crypto-browser`](../../../e2e/iso-crypto-browser) | Checks that iso-crypto's browser build runs on web APIs alone, with no Node.js APIs |
+| [`published-entrypoints`](../../../e2e/published-entrypoints) | Imports every entry point of every published package from the files it publishes, with only its runtime dependencies |
