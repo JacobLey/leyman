@@ -1,7 +1,9 @@
 import type { Argv } from 'yargs';
 import type { Command, LoadPopulateFilesCommandInput } from './lib/types.js';
 import { isCI } from 'ci-info';
+import { bind } from 'haywire';
 import { loadAndPopulateFiles } from '../lib/load-populate-files.js';
+import { commandId } from './lib/types.js';
 
 interface LoadPopulateFilesCommandExtendedInput extends LoadPopulateFilesCommandInput {
     filePath: string;
@@ -60,3 +62,7 @@ export const loadPopulateFilesCommand: Command<LoadPopulateFilesCommandExtendedI
         );
     },
 };
+
+export const loadPopulateFilesCommandBinding = bind(commandId).withInstance(cli =>
+    cli.command(loadPopulateFilesCommand)
+);

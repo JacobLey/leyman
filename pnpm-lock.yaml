@@ -536,6 +536,12 @@ importers:
       entry-script:
         specifier: workspace:^
         version: file:tools/entry-script
+      haywire:
+        specifier: workspace:^
+        version: file:tools/haywire
+      haywire-launcher:
+        specifier: workspace:^
+        version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper:
         specifier: workspace:^
         version: file:apps/juniper
@@ -11466,6 +11472,8 @@ snapshots:
       ci-info: 4.4.0
       default-import: file:tools/default-import
       entry-script: file:tools/entry-script
+      haywire: file:tools/haywire
+      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper: file:apps/juniper
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper)
       parse-cwd: file:tools/parse-cwd

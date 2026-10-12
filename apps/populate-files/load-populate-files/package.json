@@ -40,6 +40,8 @@
     "ci-info": "catalog:",
     "default-import": "workspace:^",
     "entry-script": "workspace:^",
+    "haywire": "workspace:^",
+    "haywire-launcher": "workspace:^",
     "juniper": "workspace:^",
     "juniper-validator": "workspace:^",
     "parse-cwd": "workspace:^",
