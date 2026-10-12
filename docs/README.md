@@ -2,7 +2,7 @@
 
 Documentation site for the packages in this repo, built with [VitePress](https://vitepress.dev/) and deployed to GitHub Pages from `main`. Not published to npm.
 
-Proof of concept: only [`juniper`](../apps/juniper) is documented so far.
+Documents [`juniper`](../apps/juniper) and [`haywire`](../tools/haywire) so far.
 
 ## Type-checked examples
 

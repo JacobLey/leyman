@@ -79,6 +79,33 @@ export default defineConfig({
                     { text: 'Why Juniper', link: '/juniper/why' },
                 ],
             },
+            {
+                text: 'Haywire',
+                items: [
+                    { text: 'Overview', link: '/haywire/' },
+                    { text: 'Getting started', link: '/haywire/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [
+                            { text: 'Scopes', link: '/haywire/guides/scopes' },
+                            { text: 'Suppliers', link: '/haywire/guides/suppliers' },
+                            {
+                                text: 'Circular dependencies',
+                                link: '/haywire/guides/circular-dependencies',
+                            },
+                            { text: 'Lists', link: '/haywire/guides/lists' },
+                            { text: 'Runtime values', link: '/haywire/guides/runtime-values' },
+                            { text: 'Disposal', link: '/haywire/guides/disposal' },
+                            { text: 'Testing', link: '/haywire/guides/testing' },
+                        ],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/haywire/reference/api' }],
+                    },
+                    { text: 'Why Haywire', link: '/haywire/why' },
+                ],
+            },
         ],
     },
 });

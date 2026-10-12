@@ -682,6 +682,9 @@ importers:
       floating-vue:
         specifier: 'catalog:'
         version: 5.4.0(vue@3.5.43(@typescript/typescript6@6.0.2))
+      haywire:
+        specifier: workspace:^
+        version: file:tools/haywire
       juniper:
         specifier: workspace:^
         version: file:apps/juniper
