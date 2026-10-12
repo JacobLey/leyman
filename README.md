@@ -37,7 +37,7 @@ Published to npm:
 
 Private workspace packages (shared configs and tooling) are listed in the [projects skill](./.claude/skills/projects/SKILL.md).
 
-A documentation site, with every code example type-checked, is in progress in [`docs/`](./docs) (`juniper` and `haywire` so far).
+A documentation site, with every code example type-checked, is in [`docs/`](./docs) (`barrelify`, `haywire`, `juniper`, `juniper-validator` and `nx-lifecycle` so far).
 
 ## Getting Started
 

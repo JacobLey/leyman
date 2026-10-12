@@ -19,6 +19,8 @@ Description of the change, written for the package's CHANGELOG.
 
 Use the npm package name (from `package.json`), not the directory name. One file can list several packages.
 
+A changeset for a package on the [docs site](../docs-site/SKILL.md#documented-packages) usually means its pages need updating too.
+
 ## No changeset needed for
 
 - Packages under `leyman/` (private, never published)

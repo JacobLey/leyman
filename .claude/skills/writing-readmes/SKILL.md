@@ -169,3 +169,5 @@ Do NOT create a WHY file for:
 ## Updating READMEs
 
 When the API changes, update the signature header, parameter table and examples in the same change. When restructuring an existing README, move motivation content into the WHY file first.
+
+If the package is on the [docs site](../docs-site/SKILL.md#documented-packages), update its pages in the same change too.
