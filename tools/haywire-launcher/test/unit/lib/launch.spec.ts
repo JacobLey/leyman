@@ -96,10 +96,10 @@ suite('launch', () => {
         const withContainerId = withFake.beforeEach(({ fakeMain }) => {
             class MyEntry extends EntryScript {
                 public override main = fakeMain;
-                public readonly withId: boolean;
-                public constructor(withId = false) {
+                public readonly hasId: boolean;
+                public constructor(hasId = false) {
                     super();
-                    this.withId = withId;
+                    this.hasId = hasId;
                 }
             }
             const id = identifier<Main>();
@@ -132,7 +132,7 @@ suite('launch', () => {
             const entry = launch(container);
 
             expect(await entry.getOriginal()).to.contain({
-                withId: false,
+                hasId: false,
             });
 
             const args = ['--foo', 'bar'];
@@ -145,7 +145,7 @@ suite('launch', () => {
             const entry = launch(container, id);
 
             expect(await entry.getOriginal()).to.contain({
-                withId: true,
+                hasId: true,
             });
 
             const args = ['--foo', 'bar'];
