@@ -152,7 +152,7 @@ export const reactComponentNamingConvention = [
 /**
  * Generate flat eslint config for the specified project.
  * Patterns are relative to the project, so run ESLint from the project directory,
- * or look up config from each file (`--flag v10_config_lookup_from_file`).
+ * or from a parent directory, where ESLint looks up the config from each file.
  *
  * @param params - parameters
  * @param params.configUrl - import.meta.url` of project-level `eslint.config.js` file.

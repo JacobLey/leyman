@@ -52,6 +52,13 @@ allowBuilds:
   nx: false
   unrs-resolver: false
 
+peerDependencyRules:
+  allowedVersions:
+    # No release declares ESLint 10 yet, but they run on it (`@leyman/eslint-config` adapts eslint-plugin-react's rules).
+    # Remove once they do: jsx-eslint/eslint-plugin-jsx-a11y#1081 and jsx-eslint/eslint-plugin-react#4022.
+    eslint-plugin-jsx-a11y>eslint: '10'
+    eslint-plugin-react>eslint: '10'
+
 catalog:
   '@apidevtools/swagger-parser': ^13.1.0
   '@arethetypeswrong/core': ^0.18.5
@@ -90,7 +97,7 @@ catalog:
   chai-as-promised: ^8.0.2
   ci-info: ^4.4.0
   escape-string-regexp: ^5.0.0
-  eslint: ^9.39.5
+  eslint: ^10.12.0
   eslint-config-prettier: ^10.1.8
   eslint-plugin-import-x: ^4.17.1
   eslint-plugin-jsdoc: ^65.1.0

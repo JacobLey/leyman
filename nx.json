@@ -111,7 +111,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "{projectRoot}/node_modules/.bin/eslint {projectRoot} --flag v10_config_lookup_from_file --color"
+          "{projectRoot}/node_modules/.bin/eslint {projectRoot} --color"
         ],
         "color": true
       },
