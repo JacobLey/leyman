@@ -10,14 +10,25 @@
 // Never cached: dependents' cache keys hash this package's build output, so they must never run against a stale copy.
 
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
+import {
+    copyFileSync,
+    mkdirSync,
+    readdirSync,
+    readFileSync,
+    rmdirSync,
+    rmSync,
+    statSync,
+    writeFileSync,
+} from 'node:fs';
 import path from 'node:path';
 
 const workspaceRoot = process.env.NX_WORKSPACE_ROOT;
 const projectRoot = process.cwd();
 
 // Exactly the files pnpm would publish, and so inject
-const { name, files } = JSON.parse(execFileSync('pnpm', ['pack', '--dry-run', '--json'], { encoding: 'utf8' }));
+const { name, files } = JSON.parse(
+    execFileSync('pnpm', ['pack', '--dry-run', '--json'], { encoding: 'utf8' })
+);
 const packed = new Set(files.map(file => file.path));
 
 // pnpm names each copy `<name>@file+<path>`, with `/` replaced by `+`, plus a suffix for its resolved peers
@@ -29,7 +40,10 @@ const copies = readdirSync(virtualStore)
 
 const isSameFile = (source, target) => {
     try {
-        return statSync(source).size === statSync(target).size && readFileSync(source).equals(readFileSync(target));
+        return (
+            statSync(source).size === statSync(target).size &&
+            readFileSync(source).equals(readFileSync(target))
+        );
     } catch {
         return false;
     }

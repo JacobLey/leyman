@@ -134,7 +134,7 @@ Generates static output files by running `load-populate-files` against `./dist/f
 
 ### `sync-injected`
 
-Mirrors the package's published files (`pnpm pack --dry-run`) into its injected copies in `node_modules/.pnpm` (`scripts/nx/sync-injected.mjs`). Workspace dependencies are installed as copies (`injectWorkspacePackages`), made at install time, so without this dependents would keep seeing the `dist/` from the last `pnpm install`. Never cached: it must also run when `tsc` is a cache hit, since restoring `dist/` doesn't update the copies.
+Mirrors the package's published files (`pnpm pack --dry-run`) into its injected copies in `node_modules/.pnpm` (`leyman/main/scripts/sync-injected.mjs`). Workspace dependencies are installed as copies (`injectWorkspacePackages`), made at install time, so without this dependents would keep seeing the `dist/` from the last `pnpm install`. Never cached: it must also run when `tsc` is a cache hit, since restoring `dist/` doesn't update the copies.
 
 A build outside Nx (e.g. running `tsc` directly) doesn't sync. Run the package's `build`, or `pnpm install`, which also refreshes every copy.
 

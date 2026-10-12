@@ -318,7 +318,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "${NX_WORKSPACE_ROOT}/scripts/nx/sync-injected.mjs"
+          "${NX_WORKSPACE_ROOT}/leyman/main/scripts/sync-injected.mjs"
         ],
         "color": true,
         "cwd": "{projectRoot}"
