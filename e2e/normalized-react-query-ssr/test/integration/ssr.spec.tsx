@@ -76,7 +76,7 @@ suite('Server-side rendering', () => {
         const { container, recoverableErrors } = hydrateOnClient(client, serverRender);
 
         expect(recoverableErrors).to.deep.equal([]);
-        expect(container.innerHTML).to.equal(serverRender.html);
+        expect(container.getHTML()).to.equal(serverRender.html);
         expect(requests).to.deep.equal([]);
     });
 

@@ -3,6 +3,7 @@ import type { Browser, BrowserType, Page } from 'playwright';
 import type { Rolldown } from 'vite';
 import { createCipheriv } from 'node:crypto';
 import { builtinModules } from 'node:module';
+import { fileURLToPath } from 'node:url';
 import { chromium, firefox, webkit } from 'playwright';
 import { build } from 'vite';
 import { expect } from '@leyman/expect';
@@ -35,11 +36,9 @@ const bundleForBrowser = async (): Promise<string> => {
             {
                 name: 'no-node-modules',
                 enforce: 'pre',
-                resolveId(id, importer) {
+                resolveId(id, importer = 'the entry') {
                     if (nodeModules.has(id)) {
-                        this.error(
-                            `Browser build imports Node.js module ${id} from ${importer ?? 'the entry'}`
-                        );
+                        this.error(`Browser build imports Node.js module ${id} from ${importer}`);
                     }
                 },
             },
@@ -48,7 +47,7 @@ const bundleForBrowser = async (): Promise<string> => {
             write: false,
             minify: false,
             lib: {
-                entry: new URL('../data/entry.js', import.meta.url).pathname,
+                entry: fileURLToPath(new URL('../data/entry.js', import.meta.url)),
                 formats: ['iife'],
                 name: 'isoCrypto',
             },
@@ -65,7 +64,8 @@ const trackWebCrypto = (): void => {
     globalThis.webCryptoCalls = new Set();
 
     const track = (proto: object, prefix: string): void => {
-        for (const [name, descriptor] of Object.entries(Object.getOwnPropertyDescriptors(proto))) {
+        const descriptors = Object.entries(Object.getOwnPropertyDescriptors(proto));
+        for (const [name, descriptor] of descriptors) {
             // Read descriptors, as reading an accessor (e.g. `subtle`) on the prototype throws
             const value: unknown = descriptor.value;
             if (name !== 'constructor' && typeof value === 'function') {
@@ -167,7 +167,7 @@ suite('iso-crypto in the browser', () => {
             });
 
             withPage.test('Encodes large input as base64', async ({ page }) => {
-                const bytes = new Uint8Array(1_000_000).map((_, i) => i);
+                const bytes = Uint8Array.from({ length: 1_000_000 }, (_, i) => i);
                 const encoded = await page.evaluate(
                     input =>
                         globalThis.isoCrypto.encode({ text: input, encoding: 'hex' }, 'base64'),
@@ -258,9 +258,10 @@ suite('iso-crypto in the browser', () => {
                 async ({ page }) => {
                     const data = 'The counter overflows into the high bits of the block';
                     for (const size of sizes) {
-                        const secret = new Uint8Array(size / 8).fill(7);
+                        const secret = Uint8Array.from({ length: size / 8 }, () => 7);
                         // Low 64 bits of the counter block are all ones, so the second block carries into the high bits
-                        const iv = new Uint8Array(16).fill(0xff, 8);
+                        const iv = new Uint8Array(16);
+                        iv.fill(0xff, 8);
                         const cipher = createCipheriv(`aes-${size}-ctr`, secret, iv);
                         const encrypted = new Uint8Array([
                             ...cipher.update(data),
@@ -375,7 +376,7 @@ suite('iso-crypto in the browser', () => {
             );
 
             withPage.test('AES-GCM rejects tampering', async ({ page }) => {
-                const rejected = await page.evaluate(async () => {
+                const isRejected = await page.evaluate(async () => {
                     const encryption = { cipher: 'AES', size: 256, mode: 'GCM' } as const;
                     const secret = 'Holy Grail';
                     const { encrypted, iv } = await globalThis.isoCrypto.encrypt(
@@ -394,7 +395,7 @@ suite('iso-crypto in the browser', () => {
                     }
                 });
 
-                expect(rejected).to.equal(true);
+                expect(isRejected).to.equal(true);
             });
 
             withPage.test('ECC keys match Node.js', async ({ page }) => {
