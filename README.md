@@ -30,7 +30,6 @@ Published to npm:
 | [`parse-cwd`](https://www.npmjs.com/package/parse-cwd) | Convert relative path or URL to full path | [`tools/parse-cwd`](./tools/parse-cwd) |
 | [`populate-files`](https://www.npmjs.com/package/populate-files) | Dynamically populate file content | [`apps/populate-files/populate-files`](./apps/populate-files/populate-files) |
 | [`punycode-esm`](https://www.npmjs.com/package/punycode-esm) | Typescript + ESM version of punycode.js | [`tools/punycode-esm`](./tools/punycode-esm) |
-| [`sinon-typed-stub`](https://www.npmjs.com/package/sinon-typed-stub) | Utility methods to better typed sinon stubs | [`tools/sinon-typed-stub`](./tools/sinon-typed-stub) |
 | [`static-emitter`](https://www.npmjs.com/package/static-emitter) | Statically typed event emitter. | [`tools/static-emitter`](./tools/static-emitter) |
 | [`test-chain-core`](https://www.npmjs.com/package/test-chain-core) | Framework-agnostic internals for chaining test hooks with typed context | [`tools/test-chain/test-chain-core`](./tools/test-chain/test-chain-core) |
 | [`vitest-chain`](https://www.npmjs.com/package/vitest-chain) | Chain vitest methods together for deterministic and type safe tests | [`tools/test-chain/vitest-chain`](./tools/test-chain/vitest-chain) |

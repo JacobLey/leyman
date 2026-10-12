@@ -49,7 +49,6 @@
     "punycode-esm": "workspace:^",
     "react": "catalog:",
     "sinon": "catalog:",
-    "sinon-typed-stub": "workspace:^",
     "static-emitter": "workspace:^",
     "test-chain-core": "workspace:^",
     "typescript": "catalog:",

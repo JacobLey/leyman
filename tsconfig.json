@@ -17,9 +17,6 @@
       "path": "./tools/haywire-launcher"
     },
     {
-      "path": "./tools/sinon-typed-stub"
-    },
-    {
       "path": "./leyman/eslint-config"
     },
     {

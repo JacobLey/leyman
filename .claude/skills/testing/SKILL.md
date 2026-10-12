@@ -62,7 +62,7 @@ Tests are compiled into `dist-test/` (`tsc-test`) and run against the package's 
 - **[`mocha-chain`](../../../tools/test-chain/mocha-chain/)** — import `suite`, `test`, `beforeEach`, etc. from here instead of using Mocha globals (TDD interface). Hooks can return values that become typed context for later hooks and tests. `mocha` itself is still a dev dependency as the runner. Use `vitest-chain` + the `vitest-unit-test` target only for Vitest-specific packages.
 - **[`@leyman/expect`](../../../leyman/expect/)** — `import { expect } from '@leyman/expect'`. Chai with `chai-as-promised` registered. Depend on it (dev) instead of `chai`.
 - **`expect-type`** — `expectTypeOf(...)` for compile-time type assertions alongside runtime ones.
-- **Sinon** + **[`sinon-typed-stub`](../../../tools/sinon-typed-stub/)** — stubs to inject via DI, only for dependencies that actually need DI (not file system or console access). Restore after every test:
+- **Sinon** — stubs to inject via DI, only for dependencies that actually need DI (not file system or console access). Restore after every test:
 
 ```ts
 import { verifyAndRestore } from 'sinon';

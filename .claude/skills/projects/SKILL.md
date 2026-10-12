@@ -50,7 +50,6 @@ See each package's README.md for full usage documentation.
 | [`normalized-react-query`](../../../tools/normalized-react-query/) | Type-safe React Query wrappers that enforce consistent key/query pairing |
 | [`parse-cwd`](../../../tools/parse-cwd/) | Resolve and validate a working directory from string, URL, or undefined |
 | [`punycode-esm`](../../../tools/punycode-esm/) | ESM port of the Punycode encoding library |
-| [`sinon-typed-stub`](../../../tools/sinon-typed-stub/) | Type-safe Sinon spy, stub, and mock wrappers |
 | [`static-emitter`](../../../tools/static-emitter/) | Typed EventEmitter/EventTarget for Node.js and Browser |
 
 
