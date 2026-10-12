@@ -862,6 +862,8 @@ export default function makeEslintConfigForPackage({
                 // `Iterator.concat` is not available in Node 24
                 'unicorn/prefer-iterator-concat': 'off',
                 'unicorn/prefer-ternary': ['error', 'only-single-line'],
+                // Contradicts `@typescript-eslint/sort-type-constituents`
+                'unicorn/prefer-type-literal-last': 'off',
                 // `Uint8Array.fromBase64` and `Uint8Array#toBase64` are not available in Node 24
                 'unicorn/prefer-uint8array-base64': 'off',
                 'unicorn/prevent-abbreviations': 'off',
