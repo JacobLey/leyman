@@ -126,6 +126,38 @@ export default defineConfig({
                     { text: 'Why Haywire', link: '/haywire/why' },
                 ],
             },
+            {
+                text: 'nx-lifecycle',
+                items: [
+                    { text: 'Overview', link: '/nx-lifecycle/' },
+                    { text: 'Getting started', link: '/nx-lifecycle/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [
+                            {
+                                text: 'Stages and hooks',
+                                link: '/nx-lifecycle/guides/stages-and-hooks',
+                            },
+                            {
+                                text: 'Overriding inferred targets',
+                                link: '/nx-lifecycle/guides/overriding-targets',
+                            },
+                            { text: 'Executor', link: '/nx-lifecycle/guides/executor' },
+                        ],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [
+                            {
+                                text: 'Configuration',
+                                link: '/nx-lifecycle/reference/configuration',
+                            },
+                            { text: 'CLI', link: '/nx-lifecycle/reference/cli' },
+                        ],
+                    },
+                    { text: 'Why nx-lifecycle', link: '/nx-lifecycle/why' },
+                ],
+            },
         ],
     },
 });

@@ -24,6 +24,7 @@
     "haywire": "workspace:^",
     "juniper": "workspace:^",
     "juniper-validator": "workspace:^",
+    "nx-lifecycle": "workspace:^",
     "typescript": "catalog:",
     "vitepress": "catalog:",
     "vue": "catalog:"
