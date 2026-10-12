@@ -9,7 +9,7 @@ There are no generators. Copy an existing package of similar shape and adapt it:
 
 - Simple library: `tools/parse-cwd`, `tools/enum-to-array`
 - Library with DI: `tools/haywire`
-- CLI app: `apps/barrelify`
+- CLI app: `apps/barrelify`, structured as in the [cli skill](../cli/SKILL.md)
 
 Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)).
 

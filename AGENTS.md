@@ -43,6 +43,7 @@ Focused guides for common workflows in this repo:
 
 | Task | Skill |
 |------|-------|
+| Building a package's CLI (yargs commands, haywire list, launcher) | [`.claude/skills/cli/SKILL.md`](./.claude/skills/cli/SKILL.md) |
 | Writing and running tests (Mocha, mocha-chain, Sinon, C8) | [`.claude/skills/testing/SKILL.md`](./.claude/skills/testing/SKILL.md) |
 | Building TypeScript packages (SWC, tsconfig, ESM) | [`.claude/skills/typescript/SKILL.md`](./.claude/skills/typescript/SKILL.md) |
 | Linting and formatting (ESLint, Biome, auto-fix) | [`.claude/skills/linting-formatting/SKILL.md`](./.claude/skills/linting-formatting/SKILL.md) |
