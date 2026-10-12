@@ -185,6 +185,23 @@ const getIdToListBindingsSym = Symbol('getIdToListBindings');
  */
 const isListId = (id: GenericHaywireId): boolean => id.annotations.list !== false;
 
+/**
+ * Create the promise passed to a provider for a deferred dependency.
+ *
+ * If the dependency fails, the request reports it, so the promise is marked as handled. Otherwise a provider
+ * that only stores the promise (or chains `.then()`) causes an unhandled rejection. Handlers the provider
+ * attaches still run.
+ *
+ * @returns deferred promise, already handled
+ */
+const deferDependency = (): DeferredPromise<unknown> => {
+    const deferred = pDefer();
+    // Attaches a handler without waiting for the promise
+    // eslint-disable-next-line unicorn/prefer-await
+    deferred.promise.catch(() => {});
+    return deferred;
+};
+
 const validateOutputElement = (outputId: GenericOutputHaywireId, value: unknown): void => {
     if (value === null) {
         if (!outputId.annotations.nullable) {
@@ -1487,7 +1504,7 @@ export class Container<Outputs extends [Extendable]> {
             const settled = await Promise.allSettled(
                 binding.dependencyIds.map(async (dependencyId): Promise<readonly [unknown]> => {
                     if (dependencyId.annotations.deferred) {
-                        const deferred = pDefer();
+                        const deferred = deferDependency();
                         deferredPromises.push(deferred.promise);
                         const registry: DeferredCache = new Map();
                         deferredRequests.push({
@@ -1748,7 +1765,7 @@ export class Container<Outputs extends [Extendable]> {
 
         for (const dependencyId of binding.dependencyIds) {
             if (dependencyId.annotations.deferred) {
-                const deferred = pDefer();
+                const deferred = deferDependency();
                 const registry: DeferredCache = new Map();
                 deferredRequests.push({
                     ...deferred,

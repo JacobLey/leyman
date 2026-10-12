@@ -2425,6 +2425,54 @@ suite('container', () => {
                     await Promise.all(rejectionExpectations);
                 }
             });
+            suite('Failed deferred dependency is not an unhandled rejection', () => {
+                // The failure is reported by the request, so a provider that only stores the
+                // deferred promise (or chains `.then()`) must not crash the process.
+                for (const isSynchronous of [true, false]) {
+                    test(isSynchronous ? 'Sync provider' : 'Async provider', async () => {
+                        const unhandled: unknown[] = [];
+                        const onUnhandled = (reason: unknown): void => {
+                            unhandled.push(reason);
+                        };
+                        const existingListeners = process.listeners('unhandledRejection');
+                        process.removeAllListeners('unhandledRejection');
+                        process.on('unhandledRejection', onUnhandled);
+
+                        try {
+                            const aBinding = bind(A).withDependencies([identifier(B).deferred()]);
+                            const container = createContainer(
+                                createModule(
+                                    isSynchronous
+                                        ? aBinding.withConstructorProvider()
+                                        : aBinding.withAsyncProvider(async b => new A(b))
+                                )
+                                    .addBinding(
+                                        bind(B).withDependencies([C]).withConstructorProvider()
+                                    )
+                                    .addBinding(
+                                        bind(C).withFactory(() => {
+                                            throw new Error('<ERROR>');
+                                        })
+                                    )
+                            );
+
+                            if (isSyncContainer(container)) {
+                                expect(() => container.get(A)).to.throw('<ERROR>');
+                            }
+                            await expect(container.getAsync(A)).to.be.rejectedWith('<ERROR>');
+
+                            // Unhandled rejections are reported after the microtask queue drains
+                            await setTimeout(0);
+                            expect(unhandled).to.deep.equal([]);
+                        } finally {
+                            process.off('unhandledRejection', onUnhandled);
+                            for (const listener of existingListeners) {
+                                process.on('unhandledRejection', listener);
+                            }
+                        }
+                    });
+                }
+            });
         });
     });
 
