@@ -32,8 +32,10 @@ Checks that span packages, which no single package can test, go in a test-only p
 test/unit/          ← mirrors src/ (src/lib/foo.ts → test/unit/lib/foo.spec.ts)
 test/integration/   ← user-level workflows (CLI runs, real file system), not per-file
 test/data/          ← fixtures (any file type)
-test/tsconfig.json  ← { "extends": "<relative>/configs/tsconfig.test.json" }
+test/tsconfig.json  ← { "extends": "<relative>/configs/tsconfig.test.json", "references": [{ "path": ".." }] }
 ```
+
+The reference to the package's own project is for the editor: tests import the package by name, which resolves to its `dist/`, and builds delete and rewrite `dist/`. With the reference, the language server reads `src/` instead, so a rebuild doesn't break types in open test files. `tsc -p ./test` still checks against `dist/`. e2e packages have no project of their own to reference.
 
 Not every file needs its own spec; files exercised as a side effect of other tests are fine.
 
