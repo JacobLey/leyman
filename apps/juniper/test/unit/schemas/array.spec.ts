@@ -1,9 +1,9 @@
 import type { SchemaType } from 'juniper';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { arraySchema, neverSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
+import { compile } from '../../ajv.js';
 
 suite('ArraySchema', () => {
     suite('keywords', () => {
@@ -159,10 +159,10 @@ suite('ArraySchema', () => {
                 ],
             });
 
-            const validator = new Ajv2020({
+            const validator = compile(schema.toJSON(), {
                 strict: true,
                 strictTuples: false,
-            }).compile(schema.toJSON());
+            });
             expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abbc']])).to.equal(true);
             // Not unique
             expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abc']])).to.equal(false);
@@ -212,9 +212,7 @@ suite('ArraySchema', () => {
                 schema.toJSON({ openApi30: true })
             );
 
-            const oaValidator = new Ajv2020({ strict: true }).compile(
-                schema.toJSON({ openApi30: true })
-            );
+            const oaValidator = compile(schema.toJSON({ openApi30: true }));
             expect(validator([['xb'], 'xc', 'xd', ['abc'], ['abbc']])).to.equal(true);
             expect(oaValidator([['xb'], 'xc', 'xd', ['abc'], ['abc']])).to.equal(false);
             // Contains not enforced

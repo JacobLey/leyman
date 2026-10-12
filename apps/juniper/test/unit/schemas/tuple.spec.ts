@@ -1,9 +1,9 @@
 import type { SchemaType } from 'juniper';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { ArraySchema, arraySchema, stringSchema, TupleSchema, tupleSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
+import { compile } from '../../ajv.js';
 
 suite('TupleSchema', () => {
     suite('keywords', () => {
@@ -77,7 +77,7 @@ suite('TupleSchema', () => {
                 ],
             });
 
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const validator = compile(schema.toJSON());
             expect(validator(['ab', 'xc', 'xd'])).to.equal(true);
             // Second tuple is invalid
             expect(validator(['ab', 'xx', 'xd'])).to.equal(false);
@@ -114,9 +114,7 @@ suite('TupleSchema', () => {
                 schema.toJSON({ openApi30: true })
             );
 
-            const oaValidator = new Ajv2020({ strict: true }).compile(
-                schema.toJSON({ openApi30: true })
-            );
+            const oaValidator = compile(schema.toJSON({ openApi30: true }));
             expect(oaValidator(['ab', 'xc', 'xd'])).to.equal(true);
             // Tuple order not enforced
             expect(oaValidator(['ab', 'xd', 'xc'])).to.equal(true);
@@ -193,8 +191,8 @@ suite('TupleSchema', () => {
                     },
                 },
             });
-            new Ajv2020({ strict: true }).compile(stillNullableSchema.toJSON());
-            new Ajv2020({ strict: true }).compile(stillNullableSchema.toJSON({ openApi30: true }));
+            compile(stillNullableSchema.toJSON());
+            compile(stillNullableSchema.toJSON({ openApi30: true }));
 
             const notNullableSchema = stillNullableSchema
                 .not(arraySchema().items(stringSchema()).nullable())
@@ -269,8 +267,8 @@ suite('TupleSchema', () => {
                     },
                 ],
             });
-            new Ajv2020({ strict: true }).compile(notNullableSchema.toJSON());
-            new Ajv2020({ strict: true }).compile(notNullableSchema.toJSON({ openApi30: true }));
+            compile(notNullableSchema.toJSON());
+            compile(notNullableSchema.toJSON({ openApi30: true }));
         });
     });
 

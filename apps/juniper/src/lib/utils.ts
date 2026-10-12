@@ -7,7 +7,7 @@ import type { JsonSchema } from './types.js';
  * @param b - second value to compare
  * @returns are deeply equal
  */
-const deepStrictEqual = (a: unknown, b: unknown): boolean => {
+const isDeepStrictEqual = (a: unknown, b: unknown): boolean => {
     if (typeof a === 'object' && a !== null) {
         if (typeof b !== 'object' || b === null) {
             return false;
@@ -17,7 +17,7 @@ const deepStrictEqual = (a: unknown, b: unknown): boolean => {
         return (
             aKeys.length === bKeys.length &&
             aKeys.every(key =>
-                deepStrictEqual(
+                isDeepStrictEqual(
                     (a as Record<string, unknown>)[key],
                     (b as Record<string, unknown>)[key]
                 )
@@ -65,22 +65,14 @@ export const mergeAllOf = <S extends JsonSchema<any>>(
     }
     const { allOf: baseAllOf = [] } = base;
     for (const schema of allOf) {
-        let i = 0;
         const schemaKeys = new Set(Object.keys(schema));
-        while (true) {
-            const baseAll = baseAllOf[i];
-            if (
-                !(
-                    baseAll &&
-                    Object.keys(baseAll).some(
-                        key => schemaKeys.has(key) && !deepStrictEqual(schema[key], baseAll[key])
-                    )
-                )
-            ) {
-                break;
-            }
-            ++i;
-        }
+        // Merge into the first `allOf` entry that does not set any of the same keys differently
+        const compatibleIndex = baseAllOf.findIndex(baseAll =>
+            Object.keys(baseAll).every(
+                key => !schemaKeys.has(key) || isDeepStrictEqual(schema[key], baseAll[key])
+            )
+        );
+        const i = compatibleIndex === -1 ? baseAllOf.length : compatibleIndex;
         baseAllOf[i] = {
             ...baseAllOf[i],
             ...schema,
@@ -99,7 +91,7 @@ export const mergeAllOf = <S extends JsonSchema<any>>(
  * @param params.defaultValues - dictionary of default values (defined per schema)
  * @param params.refPath - path to ref
  * @param params.refSchema - schema pointed to by `$ref`
- * @returns json schema with `$ref`
+ * @returns JSON schema with `$ref`
  */
 export const mergeRef = <T>({
     baseSchema,
@@ -117,13 +109,13 @@ export const mergeRef = <T>({
     const baseKeys = Object.keys(baseSchema);
 
     for (const baseKey of baseKeys) {
-        if (!deepStrictEqual(baseSchema[baseKey], refSchema[baseKey])) {
+        if (!isDeepStrictEqual(baseSchema[baseKey], refSchema[baseKey])) {
             output[baseKey] = baseSchema[baseKey];
         }
     }
 
     for (const refKey of Object.keys(refSchema)) {
-        if (!(refKey in baseSchema) && refKey in defaultValues) {
+        if (!Object.hasOwn(baseSchema, refKey) && Object.hasOwn(defaultValues, refKey)) {
             output[refKey] = defaultValues[refKey];
         }
     }

@@ -1,6 +1,5 @@
 import type { SchemaType } from 'juniper';
 import type { AvailableProperties } from '../../types.js';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import {
@@ -14,6 +13,7 @@ import {
     stringSchema,
 } from 'juniper';
 import { suite, test } from 'mocha-chain';
+import { compile } from '../../ajv.js';
 
 suite('define', () => {
     const address = objectSchema({
@@ -77,9 +77,7 @@ suite('define', () => {
     });
 
     test('Validates with Ajv in strict mode', () => {
-        const validate = new Ajv2020({ strict: true }).compile<SchemaType<typeof user>>(
-            arraySchema(user).toJSON()
-        );
+        const validate = compile<SchemaType<typeof user>>(arraySchema(user).toJSON());
         expect(validate([{ id: 1, name: 'Ann', home: { city: 'Paris' } }])).to.equal(true);
         expect(validate([{ id: 1, name: 'Ann', home: {} }])).to.equal(false);
         expect(validate([{ id: 1.5, name: 'Ann' }])).to.equal(false);
@@ -114,7 +112,7 @@ suite('define', () => {
                 },
             });
 
-            const validate = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const validate = compile(schema.toJSON());
             expect(validate({ home: null })).to.equal(true);
             expect(validate({ home: { city: 'Paris' } })).to.equal(true);
             expect(validate({ home: {} })).to.equal(false);
@@ -192,10 +190,10 @@ suite('define', () => {
         const build = (order: 'address-first' | 'user-first'): string => {
             const tag = stringSchema().define('Tag');
             const post = objectSchema({ properties: { tag } }).define('Post');
-            const schema =
-                order === 'address-first'
-                    ? objectSchema({ properties: { address, post, user } })
-                    : objectSchema({ properties: { user, post, address } });
+            const schema = objectSchema({
+                properties:
+                    order === 'address-first' ? { address, post, user } : { user, post, address },
+            });
             return JSON.stringify([
                 Object.keys(schema.toJSON().$defs!),
                 Object.keys(components([schema])),
@@ -265,7 +263,7 @@ suite('define', () => {
         });
 
         test('Validates nested values', () => {
-            const validate = new Ajv2020({ strict: true }).compile(tree.toJSON());
+            const validate = compile(tree.toJSON());
             expect(
                 validate({
                     value: 1,

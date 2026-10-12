@@ -2,11 +2,11 @@
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import type { EmptyObject, PatternProperties, SchemaType } from 'juniper';
 import type { Flatten } from '../../types.js';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { numberSchema, objectSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
+import { compile } from '../../ajv.js';
 
 suite('ObjectSchema', () => {
     suite('keywords', () => {
@@ -191,7 +191,7 @@ suite('ObjectSchema', () => {
                     unevaluatedProperties: true,
                 });
 
-                const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+                const validator = compile(schema.toJSON());
                 expect(
                     validator({
                         bar: 123,
@@ -487,10 +487,8 @@ suite('ObjectSchema', () => {
                 ],
             });
 
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
-            const subSchemaValidator = new Ajv2020({ strict: true }).compile(
-                withSubSchema.toJSON()
-            );
+            const validator = compile(schema.toJSON());
+            const subSchemaValidator = compile(withSubSchema.toJSON());
             for (const [val, expected, subSchemaExpected] of [
                 [{}, true, true],
                 [{ a: 'foobar' }, true, true],
@@ -548,11 +546,11 @@ suite('ObjectSchema', () => {
                 anyOf: [{ not: { required: ['a'] } }, { required: ['b', 'c'] }],
             });
 
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
-            const oaValidator = new Ajv2020({
+            const validator = compile(schema.toJSON());
+            const oaValidator = compile(schema.toJSON({ openApi30: true }), {
                 strict: true,
                 strictRequired: false,
-            }).compile(schema.toJSON({ openApi30: true }));
+            });
             for (const [val, expected] of [
                 [null, false],
                 [
@@ -602,28 +600,25 @@ suite('ObjectSchema', () => {
             if (typeof example.a === 'number') {
                 expectTypeOf(example.a).toEqualTypeOf<number>();
                 expectTypeOf(example.b).toEqualTypeOf<number>();
-                expectTypeOf(example.c).toEqualTypeOf<number>();
             } else {
                 expectTypeOf(example.a).toEqualTypeOf<undefined>();
                 expectTypeOf(example.b).toEqualTypeOf<number | undefined>();
-                expectTypeOf(example.c).toEqualTypeOf<number>();
             }
+            expectTypeOf(example.c).toEqualTypeOf<number>();
 
             if (example.a) {
                 expectTypeOf(example.a).toEqualTypeOf<number>();
                 expectTypeOf(example.b).toEqualTypeOf<number>();
-                expectTypeOf(example.c).toEqualTypeOf<number>();
             } else {
                 expectTypeOf(example.a).toEqualTypeOf<number | undefined>();
                 expectTypeOf(example.b).toEqualTypeOf<number | undefined>();
-                expectTypeOf(example.c).toEqualTypeOf<number>();
             }
+            expectTypeOf(example.c).toEqualTypeOf<number>();
 
+            expectTypeOf(example.a).toEqualTypeOf<number | undefined>();
             if (typeof example.b === 'number') {
-                expectTypeOf(example.a).toEqualTypeOf<number | undefined>();
                 expectTypeOf(example.b).toEqualTypeOf<number>();
             } else {
-                expectTypeOf(example.a).toEqualTypeOf<number | undefined>();
                 expectTypeOf(example.b).toEqualTypeOf<undefined>();
             }
 
@@ -710,10 +705,11 @@ suite('ObjectSchema', () => {
                 ],
             });
 
-            new Ajv2020({ strict: true, strictRequired: false }).compile(withIfSchema.toJSON());
-            new Ajv2020({ strict: true, strictRequired: false }).compile(
-                withIfSchema.toJSON({ openApi30: true })
-            );
+            compile(withIfSchema.toJSON(), { strict: true, strictRequired: false });
+            compile(withIfSchema.toJSON({ openApi30: true }), {
+                strict: true,
+                strictRequired: false,
+            });
         });
     });
 
@@ -786,11 +782,11 @@ suite('ObjectSchema', () => {
                 ],
             });
 
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
-            const oaValidator = new Ajv2020({
+            const validator = compile(schema.toJSON());
+            const oaValidator = compile(schema.toJSON({ openApi30: true }), {
                 strict: true,
                 strictRequired: false,
-            }).compile(schema.toJSON({ openApi30: true }));
+            });
             for (const [val, expected] of [
                 [null, true],
                 [
@@ -872,10 +868,12 @@ suite('ObjectSchema', () => {
                 expectTypeOf(example.c).toEqualTypeOf<number>();
             }
 
-            if ('e' in example) {
-                expectTypeOf(example.a).toEqualTypeOf<number | undefined>();
-                expectTypeOf(example.b).toEqualTypeOf<number>();
+            if (!('e' in example)) {
+                return;
             }
+
+            expectTypeOf(example.a).toEqualTypeOf<number | undefined>();
+            expectTypeOf(example.b).toEqualTypeOf<number>();
         });
     });
 
@@ -1040,7 +1038,7 @@ suite('ObjectSchema', () => {
                 email?: string;
             }>();
 
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const validator = compile(schema.toJSON());
             expect(validator({ id: 1 })).to.equal(true);
             expect(validator({ id: 1, name: 'name' })).to.equal(false);
         });
@@ -1194,7 +1192,7 @@ suite('ObjectSchema', () => {
             }>();
 
             // `additionalProperties: false` covers the added properties
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const validator = compile(schema.toJSON());
             expect(validator({ id: 1, createdAt: 'now' })).to.equal(true);
             expect(validator({ id: 1, createdAt: 'now', other: true })).to.equal(false);
         });
@@ -1278,7 +1276,7 @@ suite('ObjectSchema', () => {
                 Record<`x-${string}`, string> & Record<`y-${string}`, number>
             >();
 
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const validator = compile(schema.toJSON());
             expect(validator({ id: 1, createdAt: 'now', 'x-a': 'a', 'y-a': 1 })).to.equal(true);
             expect(validator({ id: 1, createdAt: 'now', 'y-a': 1.5 })).to.equal(false);
             expect(validator({ id: 1, createdAt: 'now', updatedAt: 'now' })).to.equal(true);

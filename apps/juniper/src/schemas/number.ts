@@ -74,8 +74,8 @@ type AnyNumberSchema = NumberSchema<number, boolean>;
  *
  * Defaults to `type=number` (any valid number) but can be overwritten to `type=integer` (no fraction).
  *
- * Some `pattern` assertions are built in to help typescript, but most
- * likely end typescript result will just be `string`.
+ * Some `pattern` assertions are built in to help TypeScript, but most
+ * likely end TypeScript result will just be `string`.
  *
  * Supports multiple `multipleOf`s.
  *
@@ -341,8 +341,9 @@ export class NumberSchema<
             }
         }
 
-        const integerMultiples = this.#multipleOfs.filter(x => Number.isInteger(x));
-        const floatMultiples = this.#multipleOfs.filter(x => !Number.isInteger(x));
+        // Least common multiple is only exact for safe integers
+        const integerMultiples = this.#multipleOfs.filter(x => Number.isSafeInteger(x));
+        const floatMultiples = this.#multipleOfs.filter(x => !Number.isSafeInteger(x));
 
         if (integerMultiples.length > 0) {
             // eslint-disable-next-line unicorn/no-array-reduce

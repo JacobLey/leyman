@@ -12,7 +12,7 @@ type AnyMergeSchema = MergeSchema<any>;
  * Current typing is not able to detect duplicate/overlap types. Users must take caution
  * when merging types (e.g. multiple `nullable` schemas effectively makes `null` an invalid type).
  *
- * Similarly typescript types are not mutually exclusive.
+ * Similarly TypeScript types are not mutually exclusive.
  * e.g. `{ foo: 1, bar: 2 }` fulfills type `{ foo: number } | { bar: number }`;
  *
  * This schema without any conditions is effectively an `unknown` schema, allowing everything

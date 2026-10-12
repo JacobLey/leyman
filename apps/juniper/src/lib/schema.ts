@@ -175,7 +175,9 @@ const createDefinitions = ({
  */
 const sortedDefinitions = (definitions: Definitions): Record<string, JsonSchema<unknown>> =>
     Object.fromEntries(
-        [...definitions.schemas.keys()]
+        definitions.schemas
+            .keys()
+            .toArray()
             .toSorted((a, b) => (a < b ? -1 : Number(a > b)))
             .map(name => [name, definitions.schemas.get(name)!.json!])
     );
@@ -352,7 +354,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         const base = this.getChildSchema<T['type']>({ openApi30, definitions });
         // `$defs` only resolve from the root of this document, which OpenAPI 3.0 does not support.
         // Other paths (e.g. `#/components/schemas/`) are placed by the caller, see `components()`.
-        if (definitions.schemas.size > 0 && definitions.path === DEFS_PATH && !openApi30) {
+        if (!openApi30 && definitions.schemas.size > 0 && definitions.path === DEFS_PATH) {
             base.$defs = sortedDefinitions(definitions);
         }
         if (!openApi30) {
@@ -423,11 +425,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.3}
      *
      * @param this - this instance
-     * @param deprecated - deprecated property
+     * @param isDeprecated - deprecated property
      * @returns cloned schema
      */
-    public deprecated(this: this, deprecated: boolean): this {
-        return this.clone({ deprecated });
+    public deprecated(this: this, isDeprecated: boolean): this {
+        return this.clone({ deprecated: isDeprecated });
     }
 
     /**
@@ -468,11 +470,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4}
      *
      * @param this - this instance
-     * @param readOnly - read only property
+     * @param isReadOnly - read only property
      * @returns cloned schema
      */
-    public readOnly(this: this, readOnly: boolean): this {
-        return this.clone({ readOnly });
+    public readOnly(this: this, isReadOnly: boolean): this {
+        return this.clone({ readOnly: isReadOnly });
     }
 
     /**
@@ -483,11 +485,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4}
      *
      * @param this - this instance
-     * @param writeOnly - write only property
+     * @param isWriteOnly - write only property
      * @returns cloned schema
      */
-    public writeOnly(this: this, writeOnly: boolean): this {
-        return this.clone({ writeOnly });
+    public writeOnly(this: this, isWriteOnly: boolean): this {
+        return this.clone({ writeOnly: isWriteOnly });
     }
 
     /**
@@ -521,7 +523,8 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     ): this {
         const metadata = { ...this.#metadata };
         if (meta.length === 1) {
-            for (const key of Object.keys(meta[0])) {
+            const keys = Object.keys(meta[0]);
+            for (const key of keys) {
                 if (reservedWords.has(key)) {
                     throw new Error(`Illegal use of reserved word: ${key}`);
                 }
@@ -666,7 +669,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     /**
      * A schema definition that would render the schema invalid.
      *
-     * Does not alter types, as the closest typescript equivalent `Exclude`
+     * Does not alter types, as the closest TypeScript equivalent `Exclude`
      * doesn't actually ensure excluded types.
      *
      * ```ts
@@ -806,13 +809,13 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     protected toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
         const base: JsonSchema<SchemaType<this>> = { ...this.#metadata };
 
-        const nullable = this.#getNullable(params);
+        const isNullable = this.#getNullable(params);
         const schemaType = this.#getSchemaType(params);
 
         if (schemaType) {
             if (params.composition && !this.#ref) {
                 if (params.composition.type !== schemaType) {
-                    if (nullable) {
+                    if (isNullable) {
                         if (params.openApi30) {
                             base.type = schemaType;
                             base.nullable = true;
@@ -822,10 +825,10 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                     } else {
                         base.type = schemaType;
                     }
-                } else if (params.composition.nullable && !nullable) {
+                } else if (!isNullable && params.composition.nullable) {
                     base.type = schemaType;
                 }
-            } else if (nullable) {
+            } else if (isNullable) {
                 if (params.openApi30) {
                     base.type = schemaType;
                     base.nullable = true;
@@ -873,7 +876,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             ...params,
             composition: {
                 type: schemaType,
-                nullable,
+                nullable: isNullable,
             },
         };
 
@@ -917,11 +920,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                   return mergeSchema;
               });
         if (conditional?.then) {
-            conditionals.unshift(conditional);
+            mergeAllOf(base, [conditional, ...conditionals]);
         } else {
             Object.assign(base, conditional);
+            mergeAllOf(base, conditionals);
         }
-        mergeAllOf(base, conditionals);
 
         const [not, ...nots] = this.#nots.map(schema => ({
             not: schema.getChildSchema(compositionParams),
@@ -933,14 +936,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             schemas.map(schema => schema.getChildSchema(compositionParams))
         );
         if (anyOf) {
-            if (base.anyOf) {
-                anyOfs.unshift(anyOf);
-            } else {
-                base.anyOf = anyOf;
-            }
+            const extraAnyOfs = base.anyOf ? [anyOf, ...anyOfs] : anyOfs;
+            base.anyOf ??= anyOf;
             mergeAllOf(
                 base,
-                anyOfs.map(o => ({ anyOf: o }))
+                extraAnyOfs.map(o => ({ anyOf: o }))
             );
         }
 
@@ -967,7 +967,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      *
      * @param schema - juniper schema
      * @param params - serialization params (stripped of composition context)
-     * @param params.openApi30 - open api 3.0 compliant
+     * @param params.openApi30 - open API 3.0 compliant
      * @returns JSON Schema
      */
     protected static getSchema<T2>(
@@ -1017,10 +1017,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                     annotations[key] = value;
                 }
             }
-            if (schema.#nullable) {
-                return AbstractSchema.#nullableRef($ref, annotations, params.openApi30);
-            }
-            return { ...annotations, $ref };
+            return schema.#nullable
+                ? AbstractSchema.#nullableRef($ref, annotations, params.openApi30)
+                : { ...annotations, $ref };
         }
 
         // Only compared against, never emitted, so definitions it uses are collected separately
@@ -1128,15 +1127,15 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      *
      * @param $ref - reference path
      * @param annotations - annotations to keep alongside
-     * @param openApi30 - OpenAPI 3.0 dialect
+     * @param isOpenApi30 - OpenAPI 3.0 dialect
      * @returns JSON Schema
      */
     static #nullableRef<T2>(
         $ref: string,
         annotations: JsonSchema<T2>,
-        openApi30: boolean
+        isOpenApi30: boolean
     ): JsonSchema<T2> {
-        return openApi30
+        return isOpenApi30
             ? { ...annotations, nullable: true, allOf: [{ $ref }] }
             : { ...annotations, anyOf: [{ $ref }, { type: 'null' }] };
     }
@@ -1158,12 +1157,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         }
         return (
             this.#nullable &&
-            this.#conditionals.every(predicate => {
-                if (predicate.if.#getNullable(params)) {
-                    return predicate.then ? predicate.then.#getNullable(params) : true;
-                }
-                return predicate.else ? predicate.else.#getNullable(params) : true;
-            }) &&
+            this.#conditionals.every(predicate =>
+                predicate.if.#getNullable(params)
+                    ? !predicate.then || predicate.then.#getNullable(params)
+                    : !predicate.else || predicate.else.#getNullable(params)
+            ) &&
             this.#nots.every(not => !not.#getNullable(params)) &&
             this.#allOf.every(allOf => allOf.#getNullable(params)) &&
             this.#anyOf.every(anyOf => anyOf.some(any => any.#getNullable(params))) &&

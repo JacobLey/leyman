@@ -1,9 +1,9 @@
 import type { SchemaType } from 'juniper';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { neverSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
+import { compile } from '../../ajv.js';
 
 suite('NeverSchema', () => {
     suite('toJSON', () => {
@@ -13,9 +13,7 @@ suite('NeverSchema', () => {
             expect(schema).to.deep.equal({
                 not: {},
             });
-            const validator = new Ajv2020({ strict: true }).compile<SchemaType<typeof schema>>(
-                schema
-            );
+            const validator = compile<SchemaType<typeof schema>>(schema);
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<never>();
             expect(validator(null)).to.equal(false);
         });

@@ -1,9 +1,9 @@
 import type { KnownFormat, SchemaType, StringSchema } from 'juniper';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { stringSchema } from 'juniper';
 import { before, suite, test } from 'mocha-chain';
+import { compile } from '../../ajv.js';
 
 suite('StringSchema', () => {
     suite('keywords', () => {
@@ -83,11 +83,11 @@ suite('StringSchema', () => {
                 ],
             });
 
-            const validator = new Ajv2020({
+            const validator = compile(schema, {
                 formats: {
                     'date-time': true,
                 },
-            }).compile(schema);
+            });
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                 `${string}$c${string}` & `${string}d^${string}` & `${string}f` & `a${string}`
             >();
@@ -164,7 +164,7 @@ suite('StringSchema', () => {
                     ],
                 });
 
-                const validator = new Ajv2020({ strict: true }).compile(json);
+                const validator = compile(json);
                 expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                     `${string}b${string}` | (`${string}c` & `a${string}`)
                 >();
@@ -215,7 +215,7 @@ suite('StringSchema', () => {
                     ],
                 });
 
-                const validator = new Ajv2020({ strict: true }).compile(json);
+                const validator = compile(json);
                 expect(validator('12b34')).to.equal(true);
                 expect(validator('a12c')).to.equal(true);
                 expect(validator('a1b2c')).to.equal(true);
@@ -259,7 +259,7 @@ suite('StringSchema', () => {
                     ],
                 });
 
-                const validator = new Ajv2020({ strict: true }).compile(json);
+                const validator = compile(json);
                 expect(validator('abc')).to.equal(true);
                 expect(validator('b')).to.equal(true);
                 expect(validator('ab')).to.equal(false);
@@ -283,7 +283,7 @@ suite('StringSchema', () => {
                     ],
                 });
 
-                const validator = new Ajv2020({ strict: true }).compile(json);
+                const validator = compile(json);
                 expect(validator('abc')).to.equal(true);
                 expect(validator('b')).to.equal(true);
                 expect(validator('ab')).to.equal(false);
@@ -319,7 +319,7 @@ suite('StringSchema', () => {
                     },
                 });
 
-                const validator = new Ajv2020({ strict: true }).compile(json);
+                const validator = compile(json);
                 expect(validator('ab')).to.equal(true);
                 expect(validator('bc')).to.equal(true);
                 expect(validator('abc')).to.equal(true);
@@ -342,7 +342,7 @@ suite('StringSchema', () => {
                     ],
                 });
 
-                const validator = new Ajv2020({ strict: true }).compile(json);
+                const validator = compile(json);
                 expect(validator('ab')).to.equal(true);
                 expect(validator('bc')).to.equal(true);
                 expect(validator('abc')).to.equal(true);

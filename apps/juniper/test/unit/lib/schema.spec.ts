@@ -1,10 +1,10 @@
 import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
 import type { JsonSchema, Schema, SchemaType } from 'juniper';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { isSchema, mergeSchema, numberSchema, NumberSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
+import { compile } from '../../ajv.js';
 
 // Schema itself is an abstract class, so use NumberSchema
 suite('schema', () => {
@@ -67,7 +67,7 @@ suite('schema', () => {
                     readOnly: true,
                     writeOnly: true,
                 });
-                const validator = new Ajv2020({ strict: true }).compile(json);
+                const validator = compile(json);
                 expectTypeOf<SchemaType<typeof json>>().toEqualTypeOf<number>();
                 expect(validator(123)).to.equal(true);
             });
@@ -213,7 +213,7 @@ suite('schema', () => {
                             minimum: 15,
                         },
                     });
-                    const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+                    const validator = compile(schema.toJSON());
                     expect(validator(4.5)).to.equal(true);
                     expect(validator(12)).to.equal(true);
                     expect(validator(null)).to.equal(false);
@@ -232,9 +232,7 @@ suite('schema', () => {
                             minimum: 15,
                         },
                     });
-                    const oaValidator = new Ajv2020({ strict: true }).compile(
-                        schema.toJSON({ openApi30: true })
-                    );
+                    const oaValidator = compile(schema.toJSON({ openApi30: true }));
                     expect(oaValidator(4.5)).to.equal(true);
                     expect(oaValidator(12)).to.equal(true);
                     expect(oaValidator(null)).to.equal(false);
@@ -276,7 +274,7 @@ suite('schema', () => {
                             },
                         ],
                     });
-                    const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+                    const validator = compile(schema.toJSON());
                     expect(validator(4)).to.equal(true);
                     expect(validator(4.5)).to.equal(false);
                     expect(validator(7)).to.equal(false);
@@ -308,9 +306,7 @@ suite('schema', () => {
                             },
                         ],
                     });
-                    const oaValidator = new Ajv2020({ strict: true }).compile(
-                        schema.toJSON({ openApi30: true })
-                    );
+                    const oaValidator = compile(schema.toJSON({ openApi30: true }));
                     expect(oaValidator(4)).to.equal(true);
                     expect(oaValidator(4.5)).to.equal(false);
                     expect(oaValidator(7)).to.equal(false);
@@ -378,7 +374,7 @@ suite('schema', () => {
                             type: 'integer',
                         },
                     });
-                    const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+                    const validator = compile(schema.toJSON());
                     expect(validator(4.5)).to.equal(true);
                     expect(validator(12)).to.equal(false);
                     expect(validator(null)).to.equal(false);
@@ -389,9 +385,7 @@ suite('schema', () => {
                             type: 'integer',
                         },
                     });
-                    const oaValidator = new Ajv2020({ strict: true }).compile(
-                        schema.toJSON({ openApi30: true })
-                    );
+                    const oaValidator = compile(schema.toJSON({ openApi30: true }));
                     expect(oaValidator(4.5)).to.equal(true);
                     expect(oaValidator(12)).to.equal(false);
                     expect(oaValidator(null)).to.equal(false);
@@ -421,7 +415,7 @@ suite('schema', () => {
                                 minimum: 10,
                             },
                         });
-                        const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+                        const validator = compile(schema.toJSON());
                         expect(validator(4.5)).to.equal(true);
                         expect(validator(7)).to.equal(false);
                         expect(validator(12)).to.equal(true);
@@ -440,9 +434,7 @@ suite('schema', () => {
                                 },
                             ],
                         });
-                        const oaValidator = new Ajv2020({ strict: true }).compile(
-                            schema.toJSON({ openApi30: true })
-                        );
+                        const oaValidator = compile(schema.toJSON({ openApi30: true }));
                         expect(oaValidator(4.5)).to.equal(true);
                         expect(oaValidator(7)).to.equal(false);
                         expect(oaValidator(12)).to.equal(true);
@@ -478,7 +470,7 @@ suite('schema', () => {
                                 },
                             ],
                         });
-                        const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+                        const validator = compile(schema.toJSON());
                         expect(validator(4)).to.equal(true);
                         expect(validator(4.5)).to.equal(false);
                         expect(validator(7)).to.equal(true);
@@ -500,9 +492,7 @@ suite('schema', () => {
                                 },
                             ],
                         });
-                        const oaValidator = new Ajv2020({ strict: true }).compile(
-                            schema.toJSON({ openApi30: true })
-                        );
+                        const oaValidator = compile(schema.toJSON({ openApi30: true }));
                         expect(oaValidator(4)).to.equal(true);
                         expect(oaValidator(4.5)).to.equal(false);
                         expect(oaValidator(7)).to.equal(true);
@@ -540,7 +530,7 @@ suite('schema', () => {
                                 },
                             ],
                         });
-                        const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+                        const validator = compile(schema.toJSON());
                         expect(validator(4)).to.equal(true);
                         expect(validator(4.5)).to.equal(false);
                         expect(validator(12)).to.equal(true);
@@ -574,9 +564,7 @@ suite('schema', () => {
                                 },
                             ],
                         });
-                        const oaValidator = new Ajv2020({ strict: true }).compile(
-                            schema.toJSON({ openApi30: true })
-                        );
+                        const oaValidator = compile(schema.toJSON({ openApi30: true }));
                         expect(oaValidator(4)).to.equal(true);
                         expect(oaValidator(4.5)).to.equal(false);
                         expect(oaValidator(12)).to.equal(true);
@@ -606,10 +594,10 @@ suite('schema', () => {
                             minimum: 10,
                         },
                     });
-                    const validator = new Ajv2020({
+                    const validator = compile(schema.toJSON(), {
                         strict: true,
                         strictTypes: false,
-                    }).compile(schema.toJSON());
+                    });
                     expect(validator(4)).to.equal(true);
                     expect(validator(3.5)).to.equal(false);
                     expect(validator(12.5)).to.equal(true);
@@ -627,10 +615,10 @@ suite('schema', () => {
                             },
                         ],
                     });
-                    const oaValidator = new Ajv2020({
+                    const oaValidator = compile(schema.toJSON({ openApi30: true }), {
                         strict: true,
                         strictTypes: false,
-                    }).compile(schema.toJSON({ openApi30: true }));
+                    });
                     expect(oaValidator(4)).to.equal(true);
                     expect(oaValidator(3.5)).to.equal(false);
                     expect(oaValidator(12.5)).to.equal(true);
@@ -650,10 +638,10 @@ suite('schema', () => {
                             minimum: 10,
                         },
                     });
-                    const nullableValidator = new Ajv2020({
+                    const nullableValidator = compile(nullable.toJSON(), {
                         strict: true,
                         strictTypes: false,
-                    }).compile(nullable.toJSON());
+                    });
                     expect(nullableValidator(4)).to.equal(true);
                     expect(nullableValidator(3.5)).to.equal(false);
                     expect(nullableValidator(12.5)).to.equal(true);
@@ -674,10 +662,10 @@ suite('schema', () => {
                             },
                         ],
                     });
-                    const nullableOaValidator = new Ajv2020({
+                    const nullableOaValidator = compile(nullable.toJSON({ openApi30: true }), {
                         strict: true,
                         strictTypes: false,
-                    }).compile(nullable.toJSON({ openApi30: true }));
+                    });
                     expect(nullableOaValidator(4)).to.equal(true);
                     expect(nullableOaValidator(3.5)).to.equal(false);
                     expect(nullableOaValidator(12.5)).to.equal(true);
@@ -773,10 +761,10 @@ suite('schema', () => {
                             minimum: 10,
                         },
                     });
-                    const validator = new Ajv2020({
+                    const validator = compile(schema.toJSON(), {
                         strict: true,
                         strictTypes: false,
-                    }).compile(schema.toJSON());
+                    });
                     expect(validator(4)).to.equal(true);
                     expect(validator(3)).to.equal(false);
                     expect(validator(3.5)).to.equal(true);
@@ -806,10 +794,10 @@ suite('schema', () => {
                             },
                         ],
                     });
-                    const oaValidator = new Ajv2020({
+                    const oaValidator = compile(schema.toJSON({ openApi30: true }), {
                         strict: true,
                         strictTypes: false,
-                    }).compile(schema.toJSON({ openApi30: true }));
+                    });
                     expect(oaValidator(4)).to.equal(true);
                     expect(oaValidator(3)).to.equal(false);
                     expect(oaValidator(3.5)).to.equal(true);
@@ -831,7 +819,7 @@ suite('schema', () => {
                             type: 'integer',
                         },
                     });
-                    const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+                    const validator = compile(schema.toJSON());
                     expect(validator(3.5)).to.equal(true);
                     expect(validator(11)).to.equal(false);
                     expect(validator(null)).to.equal(false);
@@ -863,9 +851,9 @@ suite('schema', () => {
                     });
                     expectTypeOf<SchemaType<typeof stillNotNullable>>().toEqualTypeOf<number>();
 
-                    const stillNotNullableValidator = new Ajv2020({
+                    const stillNotNullableValidator = compile(schema.toJSON(), {
                         strict: true,
-                    }).compile(schema.toJSON());
+                    });
                     expect(stillNotNullableValidator(3.5)).to.equal(true);
                     expect(stillNotNullableValidator(11)).to.equal(false);
                     expect(stillNotNullableValidator(null)).to.equal(false);
@@ -884,7 +872,7 @@ suite('schema', () => {
                             type: 'integer',
                         },
                     });
-                    const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+                    const validator = compile(schema.toJSON());
                     expect(validator(3.5)).to.equal(true);
                     expect(validator(11)).to.equal(false);
                     expect(validator(null)).to.equal(true);
@@ -896,9 +884,7 @@ suite('schema', () => {
                             type: 'integer',
                         },
                     });
-                    const oaValidator = new Ajv2020({ strict: true }).compile(
-                        schema.toJSON({ openApi30: true })
-                    );
+                    const oaValidator = compile(schema.toJSON({ openApi30: true }));
                     expect(oaValidator(3.5)).to.equal(true);
                     expect(oaValidator(11)).to.equal(false);
                     expect(oaValidator(null)).to.equal(true);
@@ -924,10 +910,10 @@ suite('schema', () => {
                             },
                         },
                     });
-                    const validator = new Ajv2020({
+                    const validator = compile(schema.toJSON(), {
                         strict: true,
                         strictTypes: false,
-                    }).compile(schema.toJSON());
+                    });
                     expect(validator(3.5)).to.equal(true);
                     expect(validator(4)).to.equal(false);
                     expect(validator(11)).to.equal(true);
@@ -943,10 +929,10 @@ suite('schema', () => {
                             },
                         },
                     });
-                    const oaValidator = new Ajv2020({
+                    const oaValidator = compile(schema.toJSON({ openApi30: true }), {
                         strict: true,
                         strictTypes: false,
-                    }).compile(schema.toJSON({ openApi30: true }));
+                    });
                     expect(oaValidator(3.5)).to.equal(true);
                     expect(oaValidator(4)).to.equal(false);
                     expect(oaValidator(11)).to.equal(true);
@@ -1101,7 +1087,7 @@ suite('schema', () => {
                     },
                 },
             });
-            const validator = new Ajv2020({ strict: true }).compile(schema);
+            const validator = compile(schema);
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<number>();
             expect(validator(11)).to.equal(true);
             expect(validator(13)).to.equal(false);

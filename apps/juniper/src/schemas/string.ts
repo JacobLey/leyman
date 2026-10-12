@@ -73,8 +73,8 @@ type AnyStringSchema = StringSchema<string, boolean>;
 /**
  * Schema for defining `string` types.
  *
- * Some `pattern` assertions are built in to help typescript, but most
- * likely end typescript result will just be `string`.
+ * Some `pattern` assertions are built in to help TypeScript, but most
+ * likely end TypeScript result will just be `string`.
  *
  * Supports multiple `patterns`.
  *

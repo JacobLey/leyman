@@ -1,9 +1,9 @@
 import type { SchemaType } from 'juniper';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { enumSchema, mergeSchema, numberSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
+import { compile } from '../../ajv.js';
 
 suite('MergeSchema', () => {
     suite('allOf', () => {
@@ -21,7 +21,7 @@ suite('MergeSchema', () => {
                     { type: ['number', 'null'] },
                 ],
             });
-            const validator = new Ajv2020({ strict: true }).compile(schema);
+            const validator = compile(schema);
             expect(validator(null)).to.equal(true);
             expect(validator('abc')).to.equal(false);
             expect(validator(123)).to.equal(false);
@@ -56,7 +56,7 @@ suite('MergeSchema', () => {
                     { type: 'number' },
                 ],
             });
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const validator = compile(schema.toJSON());
             expect(validator('abcefg')).to.equal(true);
             expect(validator('aabcefg')).to.equal(false);
             expect(validator('aabcabc')).to.equal(true);
@@ -107,7 +107,7 @@ suite('MergeSchema', () => {
                     },
                 ],
             });
-            const numValidator = new Ajv2020({ strict: true }).compile(numSchema.toJSON());
+            const numValidator = compile(numSchema.toJSON());
             expect(numValidator('abcefg')).to.equal(false);
             expect(numValidator(123.456)).to.equal(false);
             expect(numValidator(123)).to.equal(true);
@@ -151,7 +151,7 @@ suite('MergeSchema', () => {
                     const: 'abc',
                 },
             });
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const validator = compile(schema.toJSON());
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<unknown>();
             expect(validator(123)).to.equal(true);
             expect(validator('xyz')).to.equal(true);
@@ -189,9 +189,7 @@ suite('MergeSchema', () => {
                     enum: ['abc'],
                 },
             });
-            const oaValidator = new Ajv2020({ strict: true }).compile(
-                schema.toJSON({ openApi30: true })
-            );
+            const oaValidator = compile(schema.toJSON({ openApi30: true }));
             expect(oaValidator(123)).to.equal(true);
             expect(oaValidator('xyz')).to.equal(true);
             expect(oaValidator('a')).to.equal(false);
@@ -220,7 +218,7 @@ suite('MergeSchema', () => {
                     { type: 'number' },
                 ],
             });
-            const validator = new Ajv2020({ strict: true }).compile(schema.toJSON());
+            const validator = compile(schema.toJSON());
             expect(validator('abcefg')).to.equal(true);
             expect(validator('aabcefg')).to.equal(false);
             expect(validator('aabcabc')).to.equal(true);
@@ -244,7 +242,7 @@ suite('MergeSchema', () => {
                     },
                 ],
             });
-            const numValidator = new Ajv2020({ strict: true }).compile(numSchema.toJSON());
+            const numValidator = compile(numSchema.toJSON());
             expect(numValidator('abcefg')).to.equal(false);
             expect(numValidator(123.456)).to.equal(false);
             expect(numValidator(123)).to.equal(true);

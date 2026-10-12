@@ -298,11 +298,11 @@ export class ArraySchema<
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3}
      *
      * @param this - this instance
-     * @param uniqueItems - unique items property
+     * @param isUnique - unique items property
      * @returns cloned schema
      */
-    public uniqueItems(this: this, uniqueItems: boolean): this {
-        return this.clone({ uniqueItems });
+    public uniqueItems(this: this, isUnique: boolean): this {
+        return this.clone({ uniqueItems: isUnique });
     }
 
     /**

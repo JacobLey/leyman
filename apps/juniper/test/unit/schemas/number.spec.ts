@@ -1,9 +1,9 @@
 import type { SchemaType } from 'juniper';
-import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { numberSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
+import { compile } from '../../ajv.js';
 
 suite('NumberSchema', () => {
     suite('keywords', () => {
@@ -37,7 +37,7 @@ suite('NumberSchema', () => {
                 exclusiveMinimum: -5,
             });
 
-            const validator = new Ajv2020({ strict: true }).compile(schema);
+            const validator = compile(schema);
             expect(validator(10)).to.equal(true);
             expect(validator(20)).to.equal(false);
             expect(validator(1.5)).to.equal(false);
@@ -73,6 +73,26 @@ suite('NumberSchema', () => {
                 allOf: [
                     {
                         multipleOf: 1.5,
+                    },
+                ],
+            });
+        });
+
+        test('Unsafe integers are not merged', () => {
+            const unsafe = 2 ** 53 + 2;
+            const schema = numberSchema({
+                multipleOf: 3,
+            })
+                .multipleOf(unsafe)
+                .toJSON();
+
+            // Least common multiple (3 * unsafe) is not representable as a number
+            expect(schema).to.deep.equal({
+                type: 'number',
+                multipleOf: 3,
+                allOf: [
+                    {
+                        multipleOf: unsafe,
                     },
                 ],
             });
@@ -222,7 +242,7 @@ suite('NumberSchema', () => {
                     },
                 ],
             });
-            new Ajv2020({ strict: true }).compile(integerSchema.toJSON({ openApi30: true }));
+            compile(integerSchema.toJSON({ openApi30: true }));
 
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
 
@@ -282,7 +302,7 @@ suite('NumberSchema', () => {
                     },
                 ],
             });
-            new Ajv2020({ strict: true }).compile(integerSchema.toJSON({ openApi30: true }));
+            compile(integerSchema.toJSON({ openApi30: true }));
 
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
 

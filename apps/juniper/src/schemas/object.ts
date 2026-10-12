@@ -620,7 +620,7 @@ export class ObjectSchema<
      *
      * This library is not able to deterministically parse the "type" of the pattern
      * so it relies on manual typing. Use the `PatternProperties` type to case the
-     * RegExp pattern to a Typescript string type.
+     * RegExp pattern to a TypeScript string type.
      *
      * This library is not able to detect overlap of patterns, so setting multiple
      * patterns may have unintentional overlap that is not reflected in the typing.
@@ -639,7 +639,7 @@ export class ObjectSchema<
      *
      * @param this - this instance
      * @param pattern - regexp pattern, typed as PatternProperties
-     * @param schema - Json Schema
+     * @param schema - JSON Schema
      * @returns cloned object schema
      */
     public patternProperties<
@@ -785,12 +785,12 @@ export class ObjectSchema<
      * @see {@link https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties}
      *
      * @param this - this instance
-     * @param unevaluatedProperties - allow unevaluated properties
+     * @param isAllowed - allow unevaluated properties
      * @returns cloned object schema
      */
-    public unevaluatedProperties(this: this, unevaluatedProperties: boolean): this {
+    public unevaluatedProperties(this: this, isAllowed: boolean): this {
         return this.clone({
-            unevaluatedProperties,
+            unevaluatedProperties: isAllowed,
         });
     }
 
@@ -892,12 +892,9 @@ export class ObjectSchema<
                 })),
             ];
             if (anyOf) {
-                if (base.anyOf) {
-                    anyOfs.unshift(anyOf);
-                } else {
-                    Object.assign(base, anyOf);
-                }
-                mergeAllOf(base, anyOfs);
+                const extraAnyOfs = base.anyOf ? [anyOf, ...anyOfs] : anyOfs;
+                base.anyOf ??= anyOf.anyOf;
+                mergeAllOf(base, extraAnyOfs);
             }
         } else {
             if (dependentRequiredEntries.length > 0) {
@@ -930,15 +927,15 @@ export class ObjectSchema<
     /**
      * Clone with only the properties (and `required` entries) whose key passes `filter`.
      *
-     * @param filter - whether to keep the property
+     * @param shouldKeep - whether to keep the property
      * @returns cloned object schema
      */
-    #withProperties(filter: (key: string) => boolean): this {
+    #withProperties(shouldKeep: (key: string) => boolean): this {
         return this.clone({
             properties: Object.fromEntries(
-                Object.entries(this.#properties).filter(([key]) => filter(key))
+                Object.entries(this.#properties).filter(([key]) => shouldKeep(key))
             ) as P,
-            required: this.#required.filter(key => filter(key)),
+            required: this.#required.filter(key => shouldKeep(key)),
         });
     }
 }
