@@ -48,14 +48,9 @@ const getExtensions = async (filePath: string): Promise<string> => {
         return COMMON_OR_MODULE;
     }
     if (filePath.endsWith('.ts') || filePath.endsWith('.tsx')) {
-        if (await isExplicitlyModuleDirectory(filePath)) {
-            return COMMON_OR_MODULE;
-        }
-        return DEFAULT_OR_COMMON;
-    } else if (await isExplicitlyModuleDirectory(filePath)) {
-        return COMMON_ONLY;
+        return (await isExplicitlyModuleDirectory(filePath)) ? COMMON_OR_MODULE : DEFAULT_OR_COMMON;
     }
-    return DEFAULT_OR_COMMON;
+    return (await isExplicitlyModuleDirectory(filePath)) ? COMMON_ONLY : DEFAULT_OR_COMMON;
 };
 
 /**

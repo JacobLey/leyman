@@ -73,7 +73,7 @@ export const parseTypes = (file: string): Set<string> => {
  * @param param.filePath - fully resolved path to file
  * @returns true if updated
  */
-const barrelFile = async ({
+const didUpdateBarrelFile = async ({
     dryRun,
     filePath,
 }: {
@@ -128,7 +128,7 @@ export const barrelFiles = async ({
     const updated = await Promise.all(
         indexFiles.map(async file => {
             const filePath = Path.resolve(cwd, file);
-            return (await barrelFile({ dryRun, filePath })) ? filePath : null;
+            return (await didUpdateBarrelFile({ dryRun, filePath })) ? filePath : null;
         })
     );
 
