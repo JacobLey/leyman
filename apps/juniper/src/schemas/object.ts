@@ -8,6 +8,8 @@ import type {
     AbstractStrip,
     ConditionalNullable,
     EmptyIndex,
+    EmptyObject,
+    FlattenObject,
     IsNever,
     JsonSchema,
     Nullable,
@@ -43,8 +45,6 @@ type StripBoolean<S extends boolean | Schema<unknown>> = S extends boolean
 type StripBooleanParameterSchemaObject<P extends BaseParameterSchemaObject> = {
     [k in keyof P]: StripBoolean<P[k]>;
 };
-
-export type EmptyObject = Omit<EmptyIndex, number | string>;
 
 type StripString<T extends string> = AbstractStrip<T, string>;
 
@@ -93,32 +93,24 @@ type ObjectType<
     N extends boolean,
     Stripped extends AbstractStrip<P, EmptyIndex> = AbstractStrip<P, EmptyObject>,
 > = Nullable<
-    AbstractStrip<
-        AbstractStrip<
-            AbstractStrip<X, EmptyIndex, unknown> &
-                EmptyObject &
-                M &
-                ([A] extends [true] ? Record<string, unknown> : unknown) &
-                (A extends AbstractSchema<SchemaGenerics<infer V>> ? Record<string, V> : unknown) &
-                (IsNever<Stripped> extends true
-                    ? unknown
-                    : Partial<{
-                          [K in keyof Stripped]: SchemaType<Stripped[K]>;
-                      }> &
-                          Required<
-                              Pick<
-                                  {
-                                      [K in keyof Stripped]: SchemaType<Stripped[K]>;
-                                  },
-                                  R
-                              >
-                          >),
-            EmptyObject,
-            EmptyObject
-        >,
-        // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-        {},
-        EmptyObject
+    FlattenObject<
+        AbstractStrip<X, EmptyIndex, unknown> &
+            M &
+            ([A] extends [true] ? Record<string, unknown> : unknown) &
+            (A extends AbstractSchema<SchemaGenerics<infer V>> ? Record<string, V> : unknown) &
+            (IsNever<Stripped> extends true
+                ? unknown
+                : Partial<{
+                      [K in keyof Stripped]: SchemaType<Stripped[K]>;
+                  }> &
+                      Required<
+                          Pick<
+                              {
+                                  [K in keyof Stripped]: SchemaType<Stripped[K]>;
+                              },
+                              R
+                          >
+                      >)
     >,
     N
 >;
@@ -729,7 +721,22 @@ export class ObjectSchema<
             ),
         N
     > {
-        return this.clone({
+        return (
+            this as unknown as ObjectSchema<
+                P,
+                R,
+                A,
+                X,
+                M &
+                    (
+                        | Partial<Record<K, never>>
+                        | {
+                              [k in D]: SchemaType<StripBooleanParameterSchemaObject<P>[k]>;
+                          }
+                    ),
+                N
+            >
+        ).clone({
             [dependentRequiredSym]: {
                 ...this.#dependentRequired,
                 [key]: [...dependents],
@@ -755,7 +762,16 @@ export class ObjectSchema<
         key: K,
         schema: S
     ): ObjectSchema<P, R, A, X, M & (NonNullable<SchemaType<S>> | Partial<Record<K, never>>), N> {
-        return this.clone({
+        return (
+            this as unknown as ObjectSchema<
+                P,
+                R,
+                A,
+                X,
+                M & (NonNullable<SchemaType<S>> | Partial<Record<K, never>>),
+                N
+            >
+        ).clone({
             [dependentSchemasSym]: {
                 ...this.#dependentSchemas,
                 [key]: schema,

@@ -70,6 +70,47 @@ export interface EmptyIndex {
     [emptyObject]?: never;
 }
 
+/**
+ * An object with no known keys. Unlike `{}`, rejects primitives.
+ */
+// Not an interface, which would lack the implicit index signature to extend `Record<string, unknown>`
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+export type EmptyObject = { [emptyObject]?: never };
+
+/**
+ * Flatten an intersection of object types into a single object type, so editors display
+ * `{ a: string; b?: number }` instead of `Partial<{ ... }> & Required<Pick<{ ... }, 'a'>>`.
+ *
+ * Distributes over unions. Property types, modifiers and index signatures are unchanged,
+ * so the result is mutually assignable with `T`. The `EmptyObject` marker key is dropped,
+ * and restored as `EmptyObject` if no other keys remain.
+ *
+ * @template T object type to flatten
+ */
+export type FlattenObject<T> =
+    IsAny<T> extends true
+        ? T
+        : T extends unknown
+          ? [Exclude<keyof T, typeof emptyObject>] extends [never]
+              ? EmptyObject
+              : { [K in keyof T as K extends typeof emptyObject ? never : K]: T[K] }
+          : never;
+
+/**
+ * Intersect two types, flattening any resulting object types (see {@link FlattenObject}).
+ * Arrays and primitives (e.g. template literals) are intersected as is.
+ *
+ * Either side being `unknown` returns the other side untouched, so a lone named type
+ * (e.g. an interface from `customSchema`) keeps its name.
+ *
+ * @template A type to intersect
+ * @template B type to intersect
+ */
+export type Intersect<A, B> =
+    IsUnknown<A> extends true ? B : IsUnknown<B> extends true ? A : FlattenObjects<A & B>;
+
+type FlattenObjects<T> = T extends readonly unknown[] ? T : T extends object ? FlattenObject<T> : T;
+
 // From `expect-types`
 type Not<T extends boolean> = T extends true ? false : true;
 export type IsNever<T> = [T] extends [never] ? true : false;

@@ -1,6 +1,7 @@
 // Asserting `PatternProperties` is what types the pattern, even though a plain string is accepted
 /* eslint-disable @typescript-eslint/no-unnecessary-type-assertion */
 import type { EmptyObject, PatternProperties, SchemaType } from 'juniper';
+import type { Flatten } from '../../types.js';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
@@ -42,13 +43,12 @@ suite('ObjectSchema', () => {
                     additionalProperties: true,
                     unevaluatedProperties: false,
                 });
-                expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                    Record<string, unknown> & {
-                        foo: `abc${string}`;
-                        bar?: number;
-                        baz?: unknown;
-                    }
-                >();
+                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
+                    [x: string]: unknown;
+                    foo: `abc${string}`;
+                    bar?: number;
+                    baz?: unknown;
+                }>();
             });
 
             test('Only properties', () => {
@@ -137,15 +137,14 @@ suite('ObjectSchema', () => {
                     )
                     .unevaluatedProperties(true);
 
-                expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                    | (Record<`${string}abc`, 1 | 2> &
-                          Record<`abc${string}`, EmptyObject | null> &
-                          Record<string, { x: number } & { x?: number }> & {
-                              bar: number;
-                              foo?: string;
-                          })
-                    | null
-                >();
+                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<Flatten<
+                    Record<`${string}abc`, 1 | 2> &
+                        Record<`abc${string}`, EmptyObject | null> &
+                        Record<string, { x: number }> & {
+                            bar: number;
+                            foo?: string;
+                        }
+                > | null>();
 
                 const example = {} as unknown as NonNullable<SchemaType<typeof schema>>;
                 expectTypeOf(example.bar).toEqualTypeOf<number>();
@@ -155,7 +154,7 @@ suite('ObjectSchema', () => {
                 expectTypeOf(example.abc).toEqualTypeOf<
                     ((1 | 2) & (EmptyObject | null)) | undefined
                 >();
-                expectTypeOf(example.random).branded.toEqualTypeOf<{ x: number } | undefined>();
+                expectTypeOf(example.random).toEqualTypeOf<{ x: number } | undefined>();
 
                 expect(schema.toJSON()).to.deep.equal({
                     type: ['object', 'null'],
@@ -295,15 +294,16 @@ suite('ObjectSchema', () => {
                 }
             );
 
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                 | {
-                      foo?: number;
-                  }
-                | (Record<`a${string}`, number> & {
+                      [x: `a${string}`]: number;
                       bar: string;
                       baz?: number;
                       foo?: number;
-                  })
+                  }
+                | {
+                      foo?: number;
+                  }
             >();
         });
 
@@ -330,7 +330,7 @@ suite('ObjectSchema', () => {
                 }
             );
 
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                 | {
                       bar: string;
                       baz?: number;
@@ -366,17 +366,15 @@ suite('ObjectSchema', () => {
                 )
                 .nullable();
 
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                {
-                    foo?: number;
-                } & (
-                    | {
-                          bar: string;
-                      }
-                    | {
-                          baz?: number;
-                      }
-                )
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                | {
+                      bar: string;
+                      foo?: number;
+                  }
+                | {
+                      baz?: number;
+                      foo?: number;
+                  }
             >();
         });
     });
@@ -393,18 +391,18 @@ suite('ObjectSchema', () => {
             }>();
 
             const nullableSchema = baseSchema.nullable().required(['x']);
-            expectTypeOf<SchemaType<typeof nullableSchema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof nullableSchema>>().toEqualTypeOf<{
                 x: string;
             } | null>();
 
             const stillNullableSchema = nullableSchema.not(objectSchema());
-            expectTypeOf<SchemaType<typeof stillNullableSchema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof stillNullableSchema>>().toEqualTypeOf<{
                 x: string;
             } | null>();
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const notNullableSchema = stillNullableSchema.not(objectSchema().nullable());
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<{
                 x: string;
             }>();
         });
@@ -448,18 +446,19 @@ suite('ObjectSchema', () => {
                     .patternProperties('a' as PatternProperties<`${string}abc${string}`>, strSchema)
             );
 
-            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                Record<`${string}a${string}`, number> &
-                    Record<`${string}abc${string}`, string> &
-                    Record<`${string}b${string}`, unknown> &
-                    Record<`${string}c${string}`, never>
-            >();
-            expectTypeOf<SchemaType<typeof withSubSchema>>().branded.toEqualTypeOf<
-                Record<`${string}a${string}`, number> &
-                    Record<`${string}abc${string}`, string> &
-                    Record<`${string}b${string}`, never> &
-                    Record<`${string}c${string}`, never>
-            >();
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
+                [x: `${string}a${string}`]: number;
+                // Also matches `a` and `c`
+                [x: `${string}abc${string}`]: never;
+                [x: `${string}b${string}`]: unknown;
+                [x: `${string}c${string}`]: never;
+            }>();
+            expectTypeOf<SchemaType<typeof withSubSchema>>().toEqualTypeOf<{
+                [x: `${string}a${string}`]: number;
+                [x: `${string}abc${string}`]: never;
+                [x: `${string}b${string}`]: never;
+                [x: `${string}c${string}`]: never;
+            }>();
 
             expect(schema.toJSON()).to.deep.equal({
                 type: 'object',
@@ -519,13 +518,9 @@ suite('ObjectSchema', () => {
                 },
                 required: ['c', 'd'],
             }).dependentRequired('a', ['b', 'c']);
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                {
-                    a?: number;
-                    b?: number;
-                    c: number;
-                    d: number;
-                } & ({ a?: never } | { b: number; c: number })
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                | { a?: never; b?: number; c: number; d: number }
+                | { a?: number; b: number; c: number; d: number }
             >();
 
             expect(schema.toJSON()).to.deep.equal({
@@ -744,13 +739,9 @@ suite('ObjectSchema', () => {
                     }).nullable()
                 )
                 .nullable();
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                | ({
-                      a?: number;
-                      b?: number;
-                      c: number;
-                      d: number;
-                  } & ({ a?: never } | { b: number; e?: string }))
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                | { a?: never; b?: number; c: number; d: number }
+                | { a?: number; b: number; c: number; d: number; e?: string }
                 | null
             >();
 
@@ -905,7 +896,7 @@ suite('ObjectSchema', () => {
                     }).nullable()
                 );
 
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
                 foo?: number;
                 bar: string;
             } | null>();
@@ -915,8 +906,8 @@ suite('ObjectSchema', () => {
                 objectSchema().additionalProperties(stringSchema().startsWith('a'))
             );
 
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().branded.toEqualTypeOf<
-                Record<string, `a${string}`> & { foo?: number; bar: string }
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
+                Flatten<Record<string, `a${string}`> & { foo?: number; bar: string }>
             >();
         });
 
@@ -940,18 +931,17 @@ suite('ObjectSchema', () => {
                 ])
                 .nullable();
 
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                | ({ foo?: number } & (
-                      | Record<`abc${string}`, EmptyObject | null>
-                      | { bar: string }
-                  ))
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                | { [x: `abc${string}`]: EmptyObject | null; foo?: number }
+                | { bar: string; foo?: number }
                 | null
             >();
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const notNullableSchema = schema.anyOf([objectSchema()]);
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().branded.toEqualTypeOf<
-                { foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
+                | { [x: `abc${string}`]: EmptyObject | null; foo?: number }
+                | { bar: string; foo?: number }
             >();
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -984,18 +974,17 @@ suite('ObjectSchema', () => {
                 ])
                 .nullable();
 
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                | ({ foo?: number } & (
-                      | Record<`abc${string}`, EmptyObject | null>
-                      | { bar: string }
-                  ))
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                | { [x: `abc${string}`]: EmptyObject | null; foo?: number }
+                | { bar: string; foo?: number }
                 | null
             >();
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const notNullableSchema = schema.oneOf([objectSchema()]);
-            expectTypeOf<SchemaType<typeof notNullableSchema>>().branded.toEqualTypeOf<
-                { foo?: number } & (Record<`abc${string}`, EmptyObject | null> | { bar: string })
+            expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<
+                | { [x: `abc${string}`]: EmptyObject | null; foo?: number }
+                | { bar: string; foo?: number }
             >();
 
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -1046,7 +1035,7 @@ suite('ObjectSchema', () => {
                 required: ['id'],
                 additionalProperties: false,
             });
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
                 id: number;
                 email?: string;
             }>();
@@ -1069,7 +1058,7 @@ suite('ObjectSchema', () => {
                 required: ['name'],
                 additionalProperties: false,
             });
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
                 name: string;
                 email?: string;
             }>();
@@ -1078,7 +1067,7 @@ suite('ObjectSchema', () => {
         test('partial', () => {
             const all = user.partial();
             expect(all.toJSON()).to.not.have.property('required');
-            expectTypeOf<SchemaType<typeof all>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof all>>().toEqualTypeOf<{
                 id?: number;
                 name?: string;
                 email?: string;
@@ -1086,7 +1075,7 @@ suite('ObjectSchema', () => {
 
             const some = user.partial(['name']);
             expect(some.toJSON()).to.have.property('required').that.deep.equals(['id']);
-            expectTypeOf<SchemaType<typeof some>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof some>>().toEqualTypeOf<{
                 id: number;
                 name?: string;
                 email?: string;
@@ -1104,7 +1093,7 @@ suite('ObjectSchema', () => {
         test('Keeps nullable', () => {
             const schema = user.nullable().pick(['id']);
             expect(schema.toJSON()).to.have.property('type').that.deep.equals(['object', 'null']);
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
                 id: number;
             } | null>();
         });
@@ -1142,7 +1131,7 @@ suite('ObjectSchema', () => {
             expect(schema.toJSON())
                 .to.have.property('required')
                 .that.deep.equals(['id', 'name', 'email']);
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
                 id: number;
                 name: string;
                 email: string;
@@ -1155,7 +1144,7 @@ suite('ObjectSchema', () => {
             expect(schema.toJSON())
                 .to.have.property('required')
                 .that.deep.equals(['id', 'name', 'email']);
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
                 id: number;
                 name: string;
                 email: string;
@@ -1197,7 +1186,7 @@ suite('ObjectSchema', () => {
                 required: ['id', 'createdAt'],
                 additionalProperties: false,
             });
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
                 id: number;
                 name?: string;
                 createdAt: string;
@@ -1236,12 +1225,14 @@ suite('ObjectSchema', () => {
             expect(
                 user.minProperties(1).extend(objectSchema().maxProperties(8)).toJSON()
             ).to.include({ minProperties: 1, maxProperties: 8 });
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                Record<string, number> & {
-                    id: number;
-                    name?: string;
-                    tag?: string;
-                }
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                Flatten<
+                    Record<string, number> & {
+                        id: number;
+                        name?: string;
+                        tag?: string;
+                    }
+                >
             >();
         });
 
@@ -1299,7 +1290,7 @@ suite('ObjectSchema', () => {
 
             expect(schema.toJSON()).to.include({ title: 'User' });
             expect(schema.toJSON()).to.have.property('type').that.deep.equals(['object', 'null']);
-            expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<{
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
                 id: number;
                 name?: string;
                 createdAt: string;

@@ -1,5 +1,5 @@
 import type { ConditionalResult, SchemaGenerics, SchemaParams } from '../lib/schema.js';
-import type { Schema, SchemaType } from '../lib/types.js';
+import type { Intersect, Schema, SchemaType } from '../lib/types.js';
 import { AbstractSchema } from '../lib/schema.js';
 
 type AnyMergeSchema = MergeSchema<any>;
@@ -24,12 +24,12 @@ export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
     declare public allOf: <S extends Schema<unknown>>(
         this: AnyMergeSchema,
         schema: S
-    ) => MergeSchema<SchemaType<S> & T>;
+    ) => MergeSchema<Intersect<T, SchemaType<S>>>;
 
     declare public anyOf: <S extends Schema<unknown>>(
         this: AnyMergeSchema,
         schemas: S[]
-    ) => MergeSchema<SchemaType<S> & T>;
+    ) => MergeSchema<Intersect<T, SchemaType<S>>>;
 
     declare public if: <
         If extends AbstractSchema<SchemaGenerics<unknown>>,
@@ -39,7 +39,7 @@ export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
         this: AnyMergeSchema,
         schema: If,
         conditionals: ConditionalResult<Then, Else>
-    ) => MergeSchema<T & (SchemaType<Else> | (SchemaType<If> & SchemaType<Then>))>;
+    ) => MergeSchema<Intersect<T, Intersect<SchemaType<If>, SchemaType<Then>> | SchemaType<Else>>>;
 
     declare public not: (this: AnyMergeSchema, schemas: Schema<unknown>) => this;
 
@@ -51,7 +51,7 @@ export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
     declare public oneOf: <S extends Schema<unknown>>(
         this: AnyMergeSchema,
         schemas: S[]
-    ) => MergeSchema<SchemaType<S> & T>;
+    ) => MergeSchema<Intersect<T, SchemaType<S>>>;
 
     /**
      * Create a new instance of MergeSchema.

@@ -53,7 +53,7 @@ suite('define', () => {
             $ref: '#/$defs/User',
             $defs: { Address: addressJson, User: userJson },
         });
-        expectTypeOf<SchemaType<typeof user>>().branded.toEqualTypeOf<{
+        expectTypeOf<SchemaType<typeof user>>().toEqualTypeOf<{
             id: number;
             name: string;
             home?: { city: string };

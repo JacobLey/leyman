@@ -165,10 +165,8 @@ suite('StringSchema', () => {
                 });
 
                 const validator = new Ajv2020({ strict: true }).compile(json);
-                expectTypeOf<SchemaType<typeof schema>>().branded.toEqualTypeOf<
-                    | `${string}b${string}`
-                    | (`${string}b${string}` & `${string}c` & `a${string}`)
-                    | (`${string}c` & `a${string}`)
+                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                    `${string}b${string}` | (`${string}c` & `a${string}`)
                 >();
                 expect(validator('12b34')).to.equal(true);
                 expect(validator('a12c')).to.equal(true);
