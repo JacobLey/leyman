@@ -97,6 +97,15 @@ func (m *Ci) Test(
 	return eg.Wait()
 }
 
+// Build the documentation site (`docs/`), type-checking every example, ready to deploy as static files.
+//
+// Export it (`docs export --path ./site`) to upload to GitHub Pages.
+func (m *Ci) Docs() *dagger.Directory {
+	return m.installed(m.Source.WithoutDirectory(".changeset")).
+		WithExec([]string{"nx", "run", "@leyman/docs:build"}).
+		Directory(workdir + "/docs/dist")
+}
+
 // Apply the committed changesets at HEAD: bump package versions and write changelogs.
 //
 // Export the result over a checkout of HEAD (`version export --path .`) to open a version PR.

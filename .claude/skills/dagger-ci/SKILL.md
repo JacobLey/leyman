@@ -45,12 +45,16 @@ Every push to `main` runs, after `test` passes:
 
 - **`version`**: `dagger call version` applies pending changesets (bumps versions, writes changelogs), and the workflow opens or updates a "Version Packages" PR from the result. It needs full git history, which Dagger loads from the checkout as a `GitRepository`, so changelogs can cite the commit that added each changeset.
 - **`publish`**: `dagger call publish` builds from scratch (no Nx cache), finds every public package whose version is not on npm, `pnpm pack`s it (resolving `workspace:`/`catalog:`), and publishes the tarball with `npm` using trusted publishing (OIDC) with provenance. The workflow then pushes a `name@version` tag for each package published. With nothing new to publish it does nothing, so merging a version PR is what triggers a release.
+- **`docs`**: `dagger call docs export --path ./site` builds the [docs site](../../../docs/README.md), and the workflow deploys it to GitHub Pages (`actions/deploy-pages`, authenticated with OIDC). Requires Pages to be set to deploy from GitHub Actions in the repo settings.
 
 Rehearse locally:
 
 ```bash
 # What would be published, validated with `npm publish --dry-run`
 dagger call --mod ./dagger publish --dry-run
+
+# The docs site that would be deployed
+dagger call --mod ./dagger docs export --path ./site
 
 # What a version PR would change. A worktree's `.git` points outside it, so pass a normal clone
 # (or a remote URL such as https://github.com/JacobLey/leyman); it versions that repo's HEAD.
