@@ -205,7 +205,7 @@ export default function makeEslintConfigForPackage({
             },
             plugins: {
                 '@typescript-eslint': typescriptPlugin as unknown as ESLint.Plugin,
-                import: importPlugin,
+                'import-x': importPlugin,
                 jsdoc: jsDocPlugin,
                 'jsx-a11y': jsxA11yPlugin,
                 n: nodePlugin,
@@ -215,7 +215,7 @@ export default function makeEslintConfigForPackage({
                 unicorn: unicornPlugin,
             },
             settings: {
-                'import/internal-regex': getInternalRegex(packageJson),
+                'import-x/internal-regex': getInternalRegex(packageJson),
                 react: {
                     // Keep in sync with `react` in the workspace catalog
                     version: '19.3.0',
@@ -506,33 +506,36 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint/unified-signatures': 'off',
 
                 // Import
-                ...nonDeprecatedRules('import', importPlugin),
-                'import/consistent-type-specifier-style': ['error', 'prefer-top-level'],
-                'import/dynamic-import-chunkname': 'off',
-                'import/enforce-node-protocol-usage': ['error', 'always'],
-                'import/exports-last': 'off',
-                'import/extensions': 'off',
-                'import/group-exports': 'off',
-                'import/max-dependencies': 'off',
-                'import/named': 'off',
+                ...nonDeprecatedRules('import-x', importPlugin),
+                'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+                'import-x/dynamic-import-chunkname': 'off',
+                'import-x/exports-last': 'off',
+                'import-x/extensions': 'off',
+                'import-x/group-exports': 'off',
+                'import-x/max-dependencies': 'off',
+                'import-x/named': 'off',
                 // TypeScript already checks namespace members, and this rule can't follow `export *` from CommonJS (e.g. mocha 12)
-                'import/namespace': 'off',
-                'import/newline-after-import': ['error', { count: 1 }],
-                'import/no-anonymous-default-export': 'off',
-                'import/no-commonjs': 'off',
-                'import/no-default-export': 'off',
-                'import/no-extraneous-dependencies': 'off',
-                'import/no-internal-modules': 'off',
-                'import/no-mutable-exports': 'off',
-                'import/no-named-as-default-member': 'off',
-                'import/no-named-export': 'off',
-                'import/no-namespace': 'off',
-                'import/no-nodejs-modules': 'off',
-                'import/no-unassigned-import': ['error', { allow: ['**/*.css'] }],
-                'import/no-unresolved': 'off',
-                'import/no-unused-modules': 'off',
-                'import/no-useless-path-segments': ['error', { commonjs: true }],
-                'import/order': [
+                'import-x/namespace': 'off',
+                'import-x/newline-after-import': ['error', { count: 1 }],
+                'import-x/no-anonymous-default-export': 'off',
+                'import-x/no-commonjs': 'off',
+                'import-x/no-default-export': 'off',
+                'import-x/no-extraneous-dependencies': 'off',
+                'import-x/no-internal-modules': 'off',
+                'import-x/no-mutable-exports': 'off',
+                'import-x/no-named-as-default-member': 'off',
+                'import-x/no-named-export': 'off',
+                'import-x/no-namespace': 'off',
+                'import-x/no-nodejs-modules': 'off',
+                // Only check relative paths. Package and subpath (`#internal/*`) imports are the alternatives to `../`,
+                // even when they resolve to a parent directory
+                'import-x/no-relative-parent-imports': ['error', { ignore: ['^[^.]'] }],
+                'import-x/no-rename-default': 'off',
+                'import-x/no-unassigned-import': ['error', { allow: ['**/*.css'] }],
+                'import-x/no-unresolved': 'off',
+                'import-x/no-unused-modules': 'off',
+                'import-x/no-useless-path-segments': ['error', { commonjs: true }],
+                'import-x/order': [
                     'error',
                     {
                         alphabetize: { caseInsensitive: true, order: 'asc' },
@@ -550,7 +553,7 @@ export default function makeEslintConfigForPackage({
                         'newlines-between': 'never',
                         pathGroups: [
                             {
-                                pattern: String.raw`\#*`,
+                                pattern: String.raw`\#*{,/**}`,
                                 group: 'internal',
                                 position: 'after',
                             },
@@ -559,7 +562,7 @@ export default function makeEslintConfigForPackage({
                         warnOnUnassignedImports: true,
                     },
                 ],
-                'import/prefer-default-export': 'off',
+                'import-x/prefer-default-export': 'off',
 
                 // JS Doc
                 ...nonDeprecatedRules('jsdoc', jsDocPlugin),

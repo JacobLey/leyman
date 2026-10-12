@@ -32,7 +32,7 @@
     "ajv": "catalog:",
     "escape-string-regexp": "catalog:",
     "eslint-config-prettier": "catalog:",
-    "eslint-plugin-import": "catalog:",
+    "eslint-plugin-import-x": "catalog:",
     "eslint-plugin-jsdoc": "catalog:",
     "eslint-plugin-jsx-a11y": "catalog:",
     "eslint-plugin-n": "catalog:",

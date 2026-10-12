@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/unambiguous
+// eslint-disable-next-line import-x/unambiguous
 declare module '@eslint/js' {
     const configs: {
         all: {
@@ -14,11 +14,6 @@ declare module '@eslint/js' {
 }
 
 declare module 'eslint-config-prettier' {
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    export default import('eslint').ESLint.Plugin;
-}
-
-declare module 'eslint-plugin-import' {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
     export default import('eslint').ESLint.Plugin;
 }

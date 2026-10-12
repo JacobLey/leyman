@@ -17,7 +17,7 @@ export class LifecycleCli extends EntryScript {
      * @param argv - process arguments
      */
     public static override async main(argv: string[]): Promise<void> {
-        // eslint-disable-next-line import/no-relative-parent-imports
+        // eslint-disable-next-line import-x/no-relative-parent-imports
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
         await yargs()

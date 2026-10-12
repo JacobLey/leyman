@@ -1,4 +1,4 @@
-// eslint-disable-next-line import/no-unassigned-import, import/order -- registers DOM globals, so must load before `react-dom`
+// eslint-disable-next-line import-x/no-unassigned-import, import-x/order -- registers DOM globals, so must load before `react-dom`
 import './dom.js';
 import type { QueryClient } from '@tanstack/react-query';
 import type { ReactNode } from 'react';

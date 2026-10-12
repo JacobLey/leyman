@@ -1,6 +1,6 @@
 import type { ESLint } from 'eslint';
 import rawPrettierConfig from 'eslint-config-prettier';
-import rawImportPlugin from 'eslint-plugin-import';
+import rawImportPlugin from 'eslint-plugin-import-x';
 import rawJsDocPlugin from 'eslint-plugin-jsdoc';
 import rawJsxA11yPlugin from 'eslint-plugin-jsx-a11y';
 import rawNodePlugin from 'eslint-plugin-n';

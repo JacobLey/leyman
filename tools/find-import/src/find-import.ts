@@ -64,7 +64,7 @@ export const findImport = async (
                 if (file.endsWith('.json')) {
                     return {
                         filePath,
-                        // eslint-disable-next-line import/no-dynamic-require
+                        // eslint-disable-next-line import-x/no-dynamic-require
                         content: require(filePath),
                     };
                 }
