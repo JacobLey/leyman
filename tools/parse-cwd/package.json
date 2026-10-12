@@ -25,9 +25,7 @@
   "sideEffects": false,
   "types": "./dist/parse-cwd.js",
   "exports": {
-    ".": {
-      "node": "./dist/parse-cwd.js"
-    }
+    ".": "./dist/parse-cwd.js"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
