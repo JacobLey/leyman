@@ -64,6 +64,19 @@ Lints with the project's `eslint.config.js`. `-c fix` auto-fixes.
 
 ---
 
+### `check-package`
+
+Packs the package with `pnpm pack`, exactly as it would be published, and checks the tarball (`leyman/main/scripts/check-package.mjs`):
+
+- [publint](https://publint.dev/), in strict mode: `exports`, `bin` and other entry points exist in the tarball and are well formed.
+- [Are The Types Wrong](https://arethetypeswrong.github.io/): every entry point resolves to JavaScript and types for ESM consumers, under both Node.js (`node16`) and bundler resolution. CommonJS and `node10` resolution are expected to fail for ESM-only packages, so they are not checked.
+
+Runs in `check:lint`, after the package's own build, so a packaging mistake fails CI on the PR rather than after a release.
+
+**Add when:** The package is published (not `"private"`).
+
+---
+
 ### `barrelify`
 
 Rewrites `index.ts` files that contain an `// AUTO-BARREL` marker with correct re-export statements.
@@ -179,6 +192,7 @@ Validates 100% coverage using only the C8 data from this project's own test targ
   "targets": {
     "biome": {},
     "eslint": {},
+    "check-package": {},
     "update-ts-references": {},
     "tsc": {},
     "tsc-test": {},

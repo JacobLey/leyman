@@ -58,6 +58,7 @@
     "update-ts-references": "prepare:generate",
     "biome": "prepare:format",
     "eslint": "check:lint",
+    "check-package": "check:lint",
     "tsc": "build:run",
     "vitepress-build": "build:run",
     "populate-files": "build:post",

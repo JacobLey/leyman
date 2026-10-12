@@ -53,6 +53,7 @@ allowBuilds:
 
 catalog:
   '@apidevtools/swagger-parser': ^13.1.0
+  '@arethetypeswrong/core': ^0.18.5
   '@biomejs/biome': ^2.5.14
   '@changesets/cli': ^3.0.3
   '@eslint/js': ^10.0.1
@@ -112,6 +113,7 @@ catalog:
   # version, so keep `PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` and `dagger/main.go` in sync.
   playwright: 1.62.1
   prettier: ^3.9.9
+  publint: ^0.3.25
   react: ^19.3.0
   react-dom: ^19.3.0
   sinon: ^22.1.0

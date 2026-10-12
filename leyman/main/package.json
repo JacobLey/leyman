@@ -16,6 +16,7 @@
   },
   "sideEffects": false,
   "dependencies": {
+    "@arethetypeswrong/core": "catalog:",
     "@biomejs/biome": "catalog:",
     "@changesets/cli": "catalog:",
     "@leyman/eslint-config": "workspace:^",
@@ -23,6 +24,7 @@
     "eslint": "catalog:",
     "nx": "catalog:",
     "nx-lifecycle": "workspace:^",
+    "publint": "catalog:",
     "typescript": "catalog:"
   }
 }
