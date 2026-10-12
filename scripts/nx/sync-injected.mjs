@@ -4,10 +4,13 @@
 // package's published files in the virtual store, made at install time. Those copies don't follow
 // later builds, or Nx restoring `dist/` from cache, so mirror the package into them after every build.
 //
+// Declaration maps aren't published, but each copy gets one pointing back at this package's source,
+// so editors' go-to-definition opens the workspace source instead of the copied `.d.ts`.
+//
 // Never cached: dependents' cache keys hash this package's build output, so they must never run against a stale copy.
 
 import { execFileSync } from 'node:child_process';
-import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmdirSync, rmSync, statSync } from 'node:fs';
+import { copyFileSync, mkdirSync, readdirSync, readFileSync, rmdirSync, rmSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const workspaceRoot = process.env.NX_WORKSPACE_ROOT;
@@ -32,10 +35,39 @@ const isSameFile = (source, target) => {
     }
 };
 
+const declarationMaps = [...packed]
+    .filter(file => /\.d\.[cm]?ts$/u.test(file))
+    .map(file => `${file}.map`)
+    .filter(file => {
+        try {
+            return statSync(path.join(projectRoot, file)).isFile();
+        } catch {
+            return false;
+        }
+    });
+const expected = new Set([...packed, ...declarationMaps]);
+
+// Map sources are relative to the map, so re-resolve them from the copy back to this package
+const redirectDeclarationMap = (source, target) => {
+    const map = JSON.parse(readFileSync(source, 'utf8'));
+    const sourceDir = path.resolve(path.dirname(source), map.sourceRoot ?? '');
+    map.sourceRoot = '';
+    map.sources = map.sources.map(file =>
+        path.relative(path.dirname(target), path.resolve(sourceDir, file)).replaceAll(path.sep, '/')
+    );
+    const content = JSON.stringify(map);
+    try {
+        if (readFileSync(target, 'utf8') === content) {
+            return;
+        }
+    } catch {}
+    writeFileSync(target, content);
+};
+
 for (const copy of copies) {
     for (const entry of readdirSync(copy, { recursive: true, withFileTypes: true })) {
         const file = path.relative(copy, path.join(entry.parentPath, entry.name));
-        if (!entry.isDirectory() && !packed.has(file)) {
+        if (!entry.isDirectory() && !expected.has(file)) {
             rmSync(path.join(copy, file));
         }
     }
@@ -56,5 +88,8 @@ for (const copy of copies) {
             mkdirSync(path.dirname(target), { recursive: true });
             copyFileSync(source, target);
         }
+    }
+    for (const file of declarationMaps) {
+        redirectDeclarationMap(path.join(projectRoot, file), path.join(copy, file));
     }
 }
