@@ -26,6 +26,11 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "imports": {
     "#contextual-module": "./dist/lib/contextual-module.js",
     "#mocha-module": "./dist/lib/mocha-module.js"

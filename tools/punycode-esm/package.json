@@ -25,6 +25,11 @@
   ],
   "sideEffects": false,
   "types": "./dist/punycode.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "exports": {
     ".": "./dist/punycode.js"
   },

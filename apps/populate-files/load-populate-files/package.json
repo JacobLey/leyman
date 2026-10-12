@@ -27,6 +27,12 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "bin.mjs"
+  ],
   "bin": {
     "load-populate-files": "./bin.mjs"
   },

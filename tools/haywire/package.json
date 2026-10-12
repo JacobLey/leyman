@@ -33,6 +33,13 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "constructable.d.ts",
+    "WHY-HAYWIRE.md"
+  ],
   "imports": {
     "#binding": "./dist/lib/binding.js",
     "#container": "./dist/lib/container.js",

@@ -27,6 +27,11 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "dependencies": {
     "test-chain-core": "workspace:^"
   },

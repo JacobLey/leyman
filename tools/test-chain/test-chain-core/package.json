@@ -26,6 +26,11 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "dependencies": {
     "p-defer": "catalog:"
   },

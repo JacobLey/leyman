@@ -25,6 +25,11 @@
   ],
   "sideEffects": false,
   "types": "./dist/launch.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "exports": {
     ".": "./dist/launch.js"
   },

@@ -31,6 +31,11 @@
       "default": "./dist/noop.js"
     }
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@leyman/eslint-config": "workspace:^",

@@ -21,7 +21,7 @@ Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)
 | `src/`, `test/`, `data/`, `out/` | Where files go decides what is cached; see [Project layout and caching](../nx-tasks-reference/SKILL.md#project-layout-and-caching). |
 | `tsconfig.json` | `{ "extends": "<relative>/configs/tsconfig.build.json", "compilerOptions": { "outDir": "dist", "rootDir": "src", "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo" }, "include": ["src", "*.d.ts"] }`. `references` are generated. |
 | `test/tsconfig.json` | `{ "extends": "<relative>/configs/tsconfig.test.json" }`. See the [testing skill](../testing/SKILL.md#layout). |
-| `.npmignore` | Copy from a sibling package; it excludes `src/`, `test/` and `dist-test/`. |
+| `files` (in `package.json`) | Allow-list of what is published, which is also what workspace dependents get (see [`sync-injected`](../nx-tasks-reference/SKILL.md#sync-injected)): `["dist", "!dist/**/*.map", "!dist/tsconfig.tsbuildinfo"]`, plus any other entry points (`bin.mjs`, `out`, root `*.d.ts`) and `WHY-<PACKAGE>.md`. `package.json`, `README.md` and `LICENSE` are always included. Check the result with `pnpm pack --dry-run`. |
 | `project.json` | List only the work targets the package uses, as `{}` (see [nx-tasks-reference](../nx-tasks-reference/SKILL.md)). Orchestration targets are added by the lifecycle command. |
 | `eslint.config.js` | Export `configGenerator(...)` from `@leyman/eslint-config` (see [linting-formatting](../linting-formatting/SKILL.md)). |
 | `README.md` | Required. See [writing-readmes](../writing-readmes/SKILL.md). Published packages also get a row in the root `README.md` package table. |
@@ -41,6 +41,6 @@ Also add a row to the table in the [projects skill](../projects/SKILL.md), and a
 A test-only package under `e2e/` checks other workspace packages together, e.g. a pairing that can't depend on each other directly. Copy `e2e/eslint-config-schema`. Compared to a regular package:
 
 - `package.json`: named `@leyman/e2e-<name>`, `"private": true`, no `exports`, and only `devDependencies` (including the packages under test, via `workspace:^`).
-- No `src/`, root `tsconfig.json` or `.npmignore`. Tests go in `test/integration/`.
+- No `src/`, root `tsconfig.json` or `files`. Tests go in `test/integration/`.
 - `project.json` targets: `biome`, `eslint`, `tsc-test`, `mocha-integration-test`. No `tsc` or `sync-injected` (nothing to build), and no `coverage-report` (no source of its own to cover).
 - Import the packages under test by their public exports only. Add an export to a package if needed, rather than reaching into its `dist/`.

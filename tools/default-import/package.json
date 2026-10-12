@@ -26,6 +26,11 @@
   ],
   "sideEffects": false,
   "types": "./dist/default-import.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "exports": {
     ".": "./dist/default-import.js"
   },

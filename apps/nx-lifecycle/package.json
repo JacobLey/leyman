@@ -37,6 +37,16 @@
       "default": "./package.json"
     }
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "!dist/file-content.*",
+    "bin.mjs",
+    "executors.json",
+    "out",
+    "WHY-NX-LIFECYCLE.md"
+  ],
   "imports": {
     "#schemas": {
       "types": "./src/schemas/index.ts",

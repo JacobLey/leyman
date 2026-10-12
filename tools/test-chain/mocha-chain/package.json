@@ -32,6 +32,12 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "WHY-MOCHA-CHAIN.md"
+  ],
   "dependencies": {
     "test-chain-core": "workspace:^"
   },

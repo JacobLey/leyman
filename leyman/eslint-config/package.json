@@ -19,6 +19,12 @@
     ".": "./dist/eslint-config.js",
     "./package-json-schema": "./dist/lib/package-json-schema.js"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "types.d.ts"
+  ],
   "dependencies": {
     "@eslint/js": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",

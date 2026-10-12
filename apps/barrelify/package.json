@@ -32,6 +32,12 @@
   ],
   "sideEffects": false,
   "types": "./dist/index.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "bin.mjs"
+  ],
   "exports": {
     ".": "./dist/index.js"
   },

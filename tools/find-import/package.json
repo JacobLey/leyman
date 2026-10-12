@@ -24,6 +24,11 @@
   ],
   "sideEffects": false,
   "types": "./dist/find-import.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "exports": {
     ".": "./dist/find-import.js"
   },

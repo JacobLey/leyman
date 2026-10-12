@@ -18,6 +18,11 @@
   "exports": {
     ".": "./dist/expect.js"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "dependencies": {
     "@types/chai": "catalog:",
     "@types/chai-as-promised": "catalog:",

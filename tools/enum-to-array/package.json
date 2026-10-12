@@ -24,6 +24,11 @@
   ],
   "sideEffects": false,
   "types": "./dist/enum-to-array.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "exports": {
     ".": "./dist/enum-to-array.js"
   },

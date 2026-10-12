@@ -27,6 +27,11 @@
   "exports": {
     ".": "./dist/index.js"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "imports": {
     "#lib": "./dist/lib/index.js",
     "#types": "./dist/lib/lib/types.js"

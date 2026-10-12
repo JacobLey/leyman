@@ -30,6 +30,11 @@
   "exports": {
     ".": "./dist/index.cjs"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "dependencies": {
     "@swc/helpers": "catalog:",
     "default-import": "workspace:^"
