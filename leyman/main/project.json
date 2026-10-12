@@ -3,6 +3,17 @@
   "name": "@leyman/main",
   "targets": {
     "biome": {},
+    "eslint": {
+      "inputs": [
+        "eslint-input",
+        "ts-source",
+        "{projectRoot}/test/**/*",
+        "package-files",
+        "dependency-builds",
+        "^package-files",
+        "{projectRoot}/scripts/**/*"
+      ]
+    },
     "lifecycle": {
       "executor": "nx:run-commands",
       "options": {

@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // Workspace dependencies are injected (`injectWorkspacePackages`): each dependent gets a copy of the
 // package's published files in the virtual store, made at install time. Those copies don't follow
 // later builds, or Nx restoring `dist/` from cache, so mirror the package into them after every build.
@@ -27,11 +25,12 @@ const projectRoot = process.cwd();
 
 // Exactly the files pnpm would publish, and so inject
 const { name, files } = JSON.parse(
+    // eslint-disable-next-line sonarjs/no-os-command-from-path -- Run the workspace's pnpm, like Nx itself
     execFileSync('pnpm', ['pack', '--dry-run', '--json'], { encoding: 'utf8' })
 );
 const packed = new Set(files.map(file => file.path));
 
-// pnpm names each copy `<name>@file+<path>`, with `/` replaced by `+`, plus a suffix for its resolved peers
+// Each copy is named `<name>@file+<path>` by pnpm, with `/` replaced by `+`, plus a suffix for its resolved peers
 const prefix = `${name.replace('/', '+')}@file+${path.relative(workspaceRoot, projectRoot).replaceAll(path.sep, '+')}`;
 const virtualStore = path.join(workspaceRoot, 'node_modules', '.pnpm');
 const copies = readdirSync(virtualStore)
@@ -79,7 +78,8 @@ const redirectDeclarationMap = (source, target) => {
 };
 
 for (const copy of copies) {
-    for (const entry of readdirSync(copy, { recursive: true, withFileTypes: true })) {
+    const entries = readdirSync(copy, { recursive: true, withFileTypes: true });
+    for (const entry of entries) {
         const file = path.relative(copy, path.join(entry.parentPath, entry.name));
         if (!entry.isDirectory() && !expected.has(file)) {
             rmSync(path.join(copy, file));
@@ -89,7 +89,7 @@ for (const copy of copies) {
     const dirs = readdirSync(copy, { recursive: true, withFileTypes: true })
         .filter(entry => entry.isDirectory())
         .map(entry => path.join(entry.parentPath, entry.name))
-        .sort((a, b) => b.length - a.length);
+        .toSorted((a, b) => b.length - a.length);
     for (const dir of dirs) {
         if (readdirSync(dir).length === 0) {
             rmdirSync(dir);
@@ -98,10 +98,11 @@ for (const copy of copies) {
     for (const file of packed) {
         const source = path.join(projectRoot, file);
         const target = path.join(copy, file);
-        if (!isSameFile(source, target)) {
-            mkdirSync(path.dirname(target), { recursive: true });
-            copyFileSync(source, target);
+        if (isSameFile(source, target)) {
+            continue;
         }
+        mkdirSync(path.dirname(target), { recursive: true });
+        copyFileSync(source, target);
     }
     for (const file of declarationMaps) {
         redirectDeclarationMap(path.join(projectRoot, file), path.join(copy, file));

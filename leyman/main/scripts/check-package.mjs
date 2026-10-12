@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 // Checks the package exactly as it would be published: packs it with pnpm (resolving `workspace:` and `catalog:`),
 // then lints the tarball with publint and checks its types resolve with Are The Types Wrong.
 //
@@ -36,13 +34,14 @@ const workspaceRoot = process.env.NX_WORKSPACE_ROOT;
 if (!workspaceRoot) {
     throw new Error('Run as an Nx target, which sets NX_WORKSPACE_ROOT');
 }
-// Build output and other untracked files. Read from .gitignore rather than git, which CI's source has no history for.
+// Build output and other untracked files. Read from .gitignore rather than Git, which CI's source has no history for.
 const gitignored = ignore().add(readFileSync(path.join(workspaceRoot, '.gitignore'), 'utf8'));
 const projectPath = path.relative(workspaceRoot, process.cwd()).replaceAll(path.sep, '/');
 
 const packDir = mkdtempSync(path.join(tmpdir(), 'check-package-'));
 try {
     const { filename, files } = JSON.parse(
+        // eslint-disable-next-line sonarjs/no-os-command-from-path -- Run the workspace's pnpm, like Nx itself
         execFileSync('pnpm', ['pack', '--pack-destination', packDir, '--json'], {
             encoding: 'utf8',
         })
@@ -51,8 +50,9 @@ try {
 
     const errors = [];
 
-    const published = new Set(files.map(file => file.path.split('/')[0]));
-    for (const entry of readdirSync(process.cwd(), { withFileTypes: true })) {
+    const published = new Set(files.map(file => file.path.split('/', 1)[0]));
+    const entries = readdirSync(process.cwd(), { withFileTypes: true });
+    for (const entry of entries) {
         const entryPath = `${projectPath}/${entry.name}${entry.isDirectory() ? '/' : ''}`;
         if (gitignored.ignores(entryPath)) {
             continue;
@@ -92,13 +92,14 @@ try {
             const affected = esmResolutionKinds.filter(kind =>
                 problemAffectsResolutionKind(problem, kind, analysis)
             );
-            if (affected.length > 0) {
-                const where = 'entrypoint' in problem ? ` "${problem.entrypoint}"` : '';
-                const { emoji, description, docsUrl } = problemKindInfo[problem.kind];
-                errors.push(
-                    `attw${where} (${affected.join(', ')}): ${emoji} ${description} ${docsUrl}`
-                );
+            if (affected.length === 0) {
+                continue;
             }
+            const where = 'entrypoint' in problem ? ` "${problem.entrypoint}"` : '';
+            const { emoji, description, docsUrl } = problemKindInfo[problem.kind];
+            errors.push(
+                `attw${where} (${affected.join(', ')}): ${emoji} ${description} ${docsUrl}`
+            );
         }
     } else {
         errors.push('attw: the package has no types');
