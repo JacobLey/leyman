@@ -21,13 +21,15 @@ const checkAndDryRunSchema = objectSchema({
     },
 });
 
+const hooksSchema = arraySchema(stringSchema());
+
 export const stagesSchema = objectSchema({
     description: 'Lifecycle stages by name',
     properties: {},
     additionalProperties: objectSchema({
         properties: {
             dependsOn: dependsOnSchema,
-            hooks: arraySchema(stringSchema()),
+            hooks: hooksSchema,
         },
     }),
 });

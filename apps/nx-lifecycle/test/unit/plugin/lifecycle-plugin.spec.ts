@@ -7,9 +7,9 @@ import { AggregateCreateNodesError, logger } from '@nx/devkit';
 import { stub, verifyAndRestore } from 'sinon';
 import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite } from 'mocha-chain';
-import { createDependencies, createNodes as createNodesTuple } from 'nx-lifecycle/plugin';
+import { createDependencies, createNodes as lifecycleNodes } from 'nx-lifecycle/plugin';
 
-const [, createNodes] = createNodesTuple;
+const [, createNodes] = lifecycleNodes;
 
 suite('LifecyclePlugin', () => {
     const options = {

@@ -25,10 +25,7 @@ const describeTarget = ({ kind, name, stage }: LifecycleTarget): string => {
     if (kind === 'anchor') {
         return `Start of the ${stage} stage. Waits for the dependencies of the stage`;
     }
-    if (kind === 'hook') {
-        return `Runs the targets bound to ${name}`;
-    }
-    return `Runs the ${stage} stage`;
+    return kind === 'hook' ? `Runs the targets bound to ${name}` : `Runs the ${stage} stage`;
 };
 
 /**
@@ -41,13 +38,12 @@ const normalizeDependency = (dependency: Dependency): Exclude<Dependency, string
     if (typeof dependency !== 'string') {
         return dependency;
     }
-    if (dependency.startsWith('^')) {
-        return { target: dependency.slice(1), dependencies: true };
-    }
-    return { target: dependency };
+    return dependency.startsWith('^')
+        ? { target: dependency.slice(1), dependencies: true }
+        : { target: dependency };
 };
 
-const dependsOnIncludes = (
+const hasDependency = (
     dependsOn: TargetConfiguration['dependsOn'],
     expected: Dependency
 ): boolean => {
@@ -75,8 +71,8 @@ const validateProject = (
         if (
             target &&
             (target.executor !== NOOP_EXECUTOR ||
-                !lifecycleTarget.dependsOn.every(dependency =>
-                    dependsOnIncludes(target.dependsOn, dependency)
+                lifecycleTarget.dependsOn.some(
+                    dependency => !hasDependency(target.dependsOn, dependency)
                 ))
         ) {
             errors.push(
@@ -87,19 +83,19 @@ const validateProject = (
 
     for (const [targetName, lifecycleTarget] of registeredTargets) {
         const target = targets[targetName];
-        const hook = targets[lifecycleTarget.name];
         if (!target) {
             continue;
         }
+        const hook = targets[lifecycleTarget.name];
         if (!hook) {
             errors.push(
                 `${targetName} is bound to ${lifecycleTarget.name}, but nx-lifecycle only adds lifecycle targets to projects with a project.json. Add one`
             );
-        } else if (!dependsOnIncludes(hook.dependsOn, targetName)) {
+        } else if (!hasDependency(hook.dependsOn, targetName)) {
             errors.push(
                 `${targetName} is bound to ${lifecycleTarget.name}, but is not declared in project.json. Declare it there so nx-lifecycle can wire it`
             );
-        } else if (!dependsOnIncludes(target.dependsOn, lifecycleTarget.previousHook)) {
+        } else if (!hasDependency(target.dependsOn, lifecycleTarget.previousHook)) {
             errors.push(
                 `${targetName} is bound to ${lifecycleTarget.name}, so it must depend on ${lifecycleTarget.previousHook}. A dependsOn in project.json or nx.json targetDefaults replaces the inferred one, so add "${lifecycleTarget.previousHook}" to it`
             );
@@ -160,12 +156,14 @@ const createProjectNode = (
     }
 
     for (const [targetName, lifecycleTarget] of registeredTargets) {
-        if (targetName in declaredTargets) {
-            targets[lifecycleTarget.name]!.dependsOn.push(targetName);
-            targets[targetName] = {
-                dependsOn: [lifecycleTarget.previousHook],
-            };
+        if (!Object.hasOwn(declaredTargets, targetName)) {
+            continue;
         }
+
+        targets[lifecycleTarget.name]!.dependsOn.push(targetName);
+        targets[targetName] = {
+            dependsOn: [lifecycleTarget.previousHook],
+        };
     }
 
     return {
@@ -232,8 +230,10 @@ export const createDependencies = (
             projectNames.push(projectName);
             errors.set(error, projectNames);
         }
-        for (const targetName of Object.keys(project.targets ?? {})) {
-            definedTargets.add(targetName);
+        if (project.targets) {
+            for (const targetName of Object.keys(project.targets)) {
+                definedTargets.add(targetName);
+            }
         }
     }
 

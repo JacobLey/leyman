@@ -53,10 +53,9 @@ const normalizeDependency = (
     if (typeof dependency !== 'string') {
         return dependency;
     }
-    if (dependency.startsWith('^')) {
-        return { target: dependency.slice(1), dependencies: true };
-    }
-    return { target: dependency };
+    return dependency.startsWith('^')
+        ? { target: dependency.slice(1), dependencies: true }
+        : { target: dependency };
 };
 
 /**
@@ -73,14 +72,18 @@ const resolveUpstream = (graph: ProjectGraph, projectName: string, target: strin
     const visited = new Set<string>([projectName]);
 
     const visit = (name: string): void => {
-        for (const dependency of graph.dependencies[name] ?? []) {
+        const dependencies = graph.dependencies[name];
+        if (!dependencies) {
+            return;
+        }
+        for (const dependency of dependencies) {
             const node = graph.nodes[dependency.target];
             // External npm nodes and already checked projects
             if (!node || visited.has(dependency.target)) {
                 continue;
             }
             visited.add(dependency.target);
-            if (node.data.targets && target in node.data.targets) {
+            if (node.data.targets && Object.hasOwn(node.data.targets, target)) {
                 upstream.add(dependency.target);
             } else {
                 visit(dependency.target);
@@ -189,9 +192,11 @@ export const explainLifecycle = ({
     }
     const targets = node.data.targets ?? {};
 
-    const stageNames = [...plan.lifecycleTargets.values()]
+    const stageNames = plan.lifecycleTargets
+        .values()
         .filter(target => target.kind === 'base')
-        .map(target => target.name);
+        .map(target => target.name)
+        .toArray();
     if (stage !== undefined && !stageNames.includes(stage)) {
         throw new Error(`Stage ${stage} not found. Stages: ${stageNames.join(', ')}`);
     }
@@ -229,11 +234,14 @@ export const explainLifecycle = ({
         (stageName): StageExplanation => {
             const base = plan.lifecycleTargets.get(stageName)!;
             const anchor = plan.lifecycleTargets.get(`${stageName}:_`)!;
-            const hookTargets = [...plan.lifecycleTargets.values()].filter(
-                target =>
-                    target.stage === stageName &&
-                    (target.kind === 'hook' || (target.kind === 'base' && !target.hasHooks))
-            );
+            const hookTargets = plan.lifecycleTargets
+                .values()
+                .filter(
+                    target =>
+                        target.stage === stageName &&
+                        (target.kind === 'hook' || (target.kind === 'base' && !target.hasHooks))
+                )
+                .toArray();
 
             return {
                 name: stageName,
@@ -245,7 +253,8 @@ export const explainLifecycle = ({
                     targets: [...plan.registeredTargets]
                         .filter(
                             ([targetName, lifecycleTarget]) =>
-                                lifecycleTarget.name === hook.name && targetName in targets
+                                lifecycleTarget.name === hook.name &&
+                                Object.hasOwn(targets, targetName)
                         )
                         .map(([targetName, lifecycleTarget]) =>
                             explainTarget(targetName, lifecycleTarget.previousHook)

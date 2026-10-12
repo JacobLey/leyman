@@ -33,7 +33,7 @@ suite('explain', () => {
     const node = (name: string, targets?: Record<string, TargetConfiguration>) => ({
         name,
         type: 'lib' as const,
-        data: { root: `packages/${name}`, ...(targets ? { targets } : {}) },
+        data: { root: `packages/${name}`, ...(targets && { targets }) },
     });
 
     // `a` -> `b` -> `c`, `a` -> `npm:foo`

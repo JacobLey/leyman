@@ -87,7 +87,7 @@ export const explainCommand: Command<ExplainCommandExtendedInput> = {
                 plan,
                 graph,
                 project: options.project,
-                ...(options.stage === undefined ? {} : { stage: options.stage }),
+                ...(options.stage !== undefined && { stage: options.stage }),
             });
         } catch (err) {
             // Only a mistyped project or stage, which a stack trace would bury

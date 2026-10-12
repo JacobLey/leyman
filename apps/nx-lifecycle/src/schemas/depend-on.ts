@@ -9,6 +9,8 @@ import {
     stringSchema,
 } from 'juniper';
 
+const projectsSchema = mergeSchema().oneOf([arraySchema(stringSchema()), stringSchema()]);
+
 const dependencyObject = objectSchema({
     properties: {
         target: stringSchema(),
@@ -28,7 +30,7 @@ const dependencyObject = objectSchema({
     objectSchema({
         properties: {
             dependencies: neverSchema(),
-            projects: mergeSchema().oneOf([arraySchema(stringSchema()), stringSchema()]),
+            projects: projectsSchema,
         },
         required: ['projects'],
     }),

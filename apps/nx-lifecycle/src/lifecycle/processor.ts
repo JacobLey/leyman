@@ -121,13 +121,17 @@ const calculateTargetsToRemove = ({
 }): Set<string> => {
     const targetsToRemove = new Set<string>();
 
-    for (const [targetName, target] of lifecycleTargets.entries()) {
+    for (const [targetName, target] of lifecycleTargets) {
         if (target.kind !== 'base') {
             targetsToRemove.add(targetName);
         }
     }
 
-    for (const [targetName, target] of Object.entries(nxJson.targetDefaults ?? {})) {
+    if (!nxJson.targetDefaults) {
+        return targetsToRemove;
+    }
+
+    for (const [targetName, target] of Object.entries(nxJson.targetDefaults)) {
         if (!lifecycleTargets.has(targetName) && '__lifecycle' in (target.configurations ?? {})) {
             targetsToRemove.add(targetName);
         }
@@ -162,13 +166,16 @@ const validateLifecycleDependencies = ({
     options: ProcessorOptions;
 }): void => {
     for (const [stageName, { dependsOn }] of Object.entries(options.stages)) {
-        for (const dependency of dependsOn ?? []) {
+        if (!dependsOn) {
+            continue;
+        }
+        for (const dependency of dependsOn) {
             const dependencyTarget = getDependencyTarget(dependency);
             const normalized = normalizeDependencyTarget(dependencyTarget);
 
             const lifecycleTarget = lifecycleTargets.get(normalized);
             if (lifecycleTarget && lifecycleTarget.kind !== 'base') {
-                const suggested = dependencyTarget.replace(normalized, lifecycleTarget.stage);
+                const suggested = dependencyTarget.replace(normalized, () => lifecycleTarget.stage);
                 throw new Error(
                     `Lifecycle stage ${stageName} cannot depend on ${dependencyTarget}, which is internal to stage ${lifecycleTarget.stage}. Depend on ${suggested} instead`
                 );
@@ -185,7 +192,10 @@ const validateStaleDependencies = ({
     targetsToRemove: Set<string>;
 }): void => {
     for (const [stageName, { dependsOn }] of Object.entries(options.stages)) {
-        for (const dependency of dependsOn ?? []) {
+        if (!dependsOn) {
+            continue;
+        }
+        for (const dependency of dependsOn) {
             const dependencyTarget = getDependencyTarget(dependency);
             if (targetsToRemove.has(normalizeDependencyTarget(dependencyTarget))) {
                 throw new Error(
@@ -228,7 +238,7 @@ const processNxJson = ({
     const originalTargets = nxJson.targetDefaults ?? {};
     const targetDefaults = { ...originalTargets };
     const lifecycles: AllTargets = {};
-    for (const [targetName, target] of lifecycleTargets.entries()) {
+    for (const [targetName, target] of lifecycleTargets) {
         lifecycles[targetName] = {
             executor: NOOP_EXECUTOR,
             dependsOn: [...target.dependsOn],
@@ -256,7 +266,7 @@ const processNxJson = ({
         }
     }
 
-    for (const [targetName, lifecycleTarget] of registeredTargets.entries()) {
+    for (const [targetName, lifecycleTarget] of registeredTargets) {
         const registeredTarget = targetDefaults[targetName] ?? {};
         registeredTarget.dependsOn ??= [];
         registeredTarget.dependsOn.push(lifecycleTarget.previousHook);
@@ -268,11 +278,13 @@ const processNxJson = ({
     Object.assign(targetDefaults, lifecycles);
 
     for (const [targetName, target] of Object.entries(targetDefaults)) {
-        if (target.dependsOn!.length === 0) {
-            const originalTarget = originalTargets[targetName] ?? {};
-            if (!originalTarget.dependsOn) {
-                delete target.dependsOn;
-            }
+        if (target.dependsOn!.length > 0) {
+            continue;
+        }
+
+        const originalTarget = originalTargets[targetName] ?? {};
+        if (!originalTarget.dependsOn) {
+            delete target.dependsOn;
         }
     }
 
