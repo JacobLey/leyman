@@ -17,6 +17,8 @@ A project is any directory with a `project.json`. All current projects are TypeS
 
 **When you add or remove a package, update the table in this file.** Add the new row in alphabetical order within the correct section (Apps, Tools, Leyman, or E2E). The description should match the one-line subtitle in the package's README.md.
 
+**When you remove a published package, add it to the top of [`DEPRECATED_PACKAGES.md`](../../../DEPRECATED_PACKAGES.md)**, linking its source at the last commit before the removal.
+
 See each package's README.md for full usage documentation.
 
 ### Apps

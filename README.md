@@ -36,6 +36,8 @@ Published to npm:
 
 Private workspace packages (shared configs and tooling) are listed in the [projects skill](./.claude/skills/projects/SKILL.md).
 
+Packages that have been removed from the repo but are still on npm are listed in [`DEPRECATED_PACKAGES.md`](./DEPRECATED_PACKAGES.md).
+
 A documentation site, with every code example type-checked, is in [`docs/`](./docs) (`barrelify`, `haywire`, `juniper`, `juniper-validator` and `nx-lifecycle` so far).
 
 ## Getting Started
