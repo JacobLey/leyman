@@ -158,7 +158,7 @@ export class ContainerFactory<
         isAsync: Async
     ): ContainerFactory<Outputs, Dependencies, Async, never> {
         const outputIds = new Set(
-            [...bindings.values()].flatMap(binding => [...expandOutputId(binding.outputId)])
+            bindings.values().flatMap(binding => expandOutputId(binding.outputId))
         );
         const listOutputIdsByBaseId = new Map(
             [...listBindings].map(([baseId, bindingsForList]) => [
@@ -184,7 +184,7 @@ export class ContainerFactory<
             GenericBaseHaywireId,
             GenericOutputHaywireId[]
         >();
-        // Widen type, `normalizeOutputId` loses track of the list annotation (see container `checkIsList`)
+        // Widen type, `normalizeOutputId` loses track of the list annotation (see container `isListId`)
         for (const dependencyId of dependencyIds as Set<GenericOutputHaywireId>) {
             const baseId = dependencyId.baseId();
             let isMissing: boolean;
@@ -196,11 +196,12 @@ export class ContainerFactory<
             } else {
                 isMissing = !outputIds.has(dependencyId);
             }
-            if (isMissing) {
-                const allMissing = missingDependencyOutputsByBaseId.get(baseId) ?? [];
-                allMissing.push(dependencyId);
-                missingDependencyOutputsByBaseId.set(baseId, allMissing);
+            if (!isMissing) {
+                continue;
             }
+            const allMissing = missingDependencyOutputsByBaseId.get(baseId) ?? [];
+            allMissing.push(dependencyId);
+            missingDependencyOutputsByBaseId.set(baseId, allMissing);
         }
 
         const missingImplementationBindings = new Map<GenericBaseHaywireId, GenericBinding>();
@@ -327,9 +328,8 @@ export class ContainerFactory<
             listOutputIds = (
                 this.#listOutputIdsByBaseId.get(baseId) ?? expandOutputId(baseId)
             ).intersection(expandOutputId(normalizedOutputId));
-            const stillMissing = new Set(
-                this.#listDependencyOutputsByBaseId.get(baseId)
-            ).difference(listOutputIds);
+            const listDependencyOutputs = new Set(this.#listDependencyOutputsByBaseId.get(baseId));
+            const stillMissing = listDependencyOutputs.difference(listOutputIds);
             if (stillMissing.size > 0) {
                 throw new HaywireProviderMissingError([...stillMissing]);
             }
@@ -337,7 +337,8 @@ export class ContainerFactory<
             const missingDependencyOutputs = this.#missingDependencyOutputsByBaseId.get(baseId);
             if (missingDependencyOutputs) {
                 const actualOutputs = expandOutputId(normalizedOutputId);
-                const stillMissing = new Set(missingDependencyOutputs).difference(actualOutputs);
+                const missingOutputs = new Set(missingDependencyOutputs);
+                const stillMissing = missingOutputs.difference(actualOutputs);
                 if (stillMissing.size > 0) {
                     throw new HaywireProviderMissingError([...stillMissing]);
                 }
@@ -387,7 +388,7 @@ export class ContainerFactory<
     public toContainer(): ExpandedContainer<Outputs, Bindings, Async> {
         if (this.#missingDependencyOutputsByBaseId.size > 0) {
             throw new HaywireProviderMissingError(
-                [...this.#missingDependencyOutputsByBaseId.values()].flat()
+                this.#missingDependencyOutputsByBaseId.values().toArray().flat()
             );
         }
 

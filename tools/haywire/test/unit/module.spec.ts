@@ -148,9 +148,9 @@ suite('module', () => {
 
                 const symNumberBinding = bind(numberId.named(uniqueSym)).withInstance(123);
                 expect(() => {
-                    const hasUniqueNumberModule = module.addBinding(numberBinding.named(uniqueSym));
+                    const uniqueNumberModule = module.addBinding(numberBinding.named(uniqueSym));
                     // @ts-expect-error
-                    hasUniqueNumberModule.addBinding(symNumberBinding);
+                    uniqueNumberModule.addBinding(symNumberBinding);
                 })
                     .to.throw(HaywireModuleValidationError)
                     .contains({
@@ -266,9 +266,9 @@ suite('module', () => {
                     bind(numberId.named(uniqueSym)).withInstance(123)
                 );
                 expect(() => {
-                    const hasUniqueNumberodule = module.addBinding(numberBinding.named(uniqueSym));
+                    const uniqueNumberModule = module.addBinding(numberBinding.named(uniqueSym));
                     // @ts-expect-error
-                    hasUniqueNumberodule.mergeModule(symNumberModule);
+                    uniqueNumberModule.mergeModule(symNumberModule);
                 })
                     .to.throw(HaywireModuleValidationError)
                     .contains({

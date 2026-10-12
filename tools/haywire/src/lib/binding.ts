@@ -233,10 +233,7 @@ export class Binding<
      * @returns new binding with scope
      */
     public scoped(scope: Scopes): this {
-        if (scope === this.scope) {
-            return this;
-        }
-        return this.#with({ scope }) as this;
+        return scope === this.scope ? this : (this.#with({ scope }) as this);
     }
 
     /**
@@ -318,11 +315,11 @@ export class Binding<
      * Set the output id of the provider to nullable, even if the provider itself is not expected to return null.
      * Useful for future proofing where a value _should_ be treated as nullable even though it is not currently the case.
      *
-     * @param [val=true] - supports setting a value for consistency with other APIs and clarity, but is otherwise ignored
+     * @param [isNullable=true] - supports setting a value for consistency with other APIs and clarity, but is otherwise ignored
      * @returns new binding with output id set to nullable. Does not mutate existing binding.
      */
     public nullable(
-        val?: true
+        isNullable?: true
     ): Binding<
         HaywireId<
             RawType<this['outputId']>,
@@ -361,11 +358,11 @@ export class Binding<
      * Set the output id of the provider to undefinable, even if the provider itself is not expected to return undefined.
      * Useful for future proofing where a value _should_ be treated as undefinable even though it is not currently the case.
      *
-     * @param [val=true] - supports setting a value for consistency with other APIs and clarity, but is otherwise ignored
+     * @param [isUndefinable=true] - supports setting a value for consistency with other APIs and clarity, but is otherwise ignored
      * @returns new binding with output id set to undefinable. Does not mutate existing binding.
      */
     public undefinable(
-        val?: true
+        isUndefinable?: true
     ): Binding<
         HaywireId<
             RawType<this['outputId']>,
@@ -404,11 +401,11 @@ export class Binding<
      * Set the output id of the provider to list, even if the provider itself is returning a single instance.
      * Useful for converting a single-value provider to merge with other providers of the same time.
      *
-     * @param [val=true] - supports setting a value for consistency with other APIs and clarity, but is otherwise ignored
+     * @param [isList=true] - supports setting a value for consistency with other APIs and clarity, but is otherwise ignored
      * @returns new binding with output id set to list. Does not mutate existing binding.
      */
     public list(
-        val?: true
+        isList?: true
     ): Binding<
         HaywireId<
             RawType<this['outputId']>,
@@ -580,19 +577,16 @@ export class DepsBindingBuilder<
             normalized,
             this.#depIds,
             false,
-            providerToMaybeList(
-                normalized,
-                false,
-                ((...deps: DependencyIdTypes<DependencyIds>) =>
-                    new (
-                        this.#outputId.construct as DepsClass<
-                            RawType<OutputId>,
-                            DependencyIdTypes<DependencyIds>
-                        >
-                    )(...deps)) as (
-                    ...deps: DependencyIdTypes<DependencyIds>
-                ) => HaywireIdProviderType<NormalizedOutputId<OutputId>>
-            )
+            providerToMaybeList(normalized, false, ((...deps: DependencyIdTypes<DependencyIds>) =>
+                Reflect.construct(
+                    this.#outputId.construct as DepsClass<
+                        RawType<OutputId>,
+                        DependencyIdTypes<DependencyIds>
+                    >,
+                    deps
+                )) as (
+                ...deps: DependencyIdTypes<DependencyIds>
+            ) => HaywireIdProviderType<NormalizedOutputId<OutputId>>)
         );
     }
 
@@ -804,9 +798,10 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
                 normalized,
                 false,
                 () =>
-                    new (
-                        this.#outputId.construct as DepsClass<RawType<OutputId>, []>
-                    )() as HaywireIdProviderType<NormalizedOutputId<OutputId>>
+                    Reflect.construct(
+                        this.#outputId.construct as DepsClass<RawType<OutputId>, []>,
+                        []
+                    ) as HaywireIdProviderType<NormalizedOutputId<OutputId>>
             )
         );
     }
@@ -857,7 +852,8 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
             this.#outputId.annotations.list === false
                 ? this.#outputId.list(false)
                 : this.#outputId.list(true),
-            (...args) => new (this.#outputId.construct as DepsClass<unknown, unknown[]>)(...args)
+            (...args) =>
+                Reflect.construct(this.#outputId.construct as DepsClass<unknown, unknown[]>, args)
         ) as ProviderBindingBuilder<
             OutputId,
             ConstructorParameters<NonNullable<HaywireIdConstructor<OutputId>>>

@@ -144,7 +144,7 @@ suite('annotations', () => {
         expect(symbolNamed.annotations.named).to.equal(sym);
 
         expect(id.named(sym)).to.equal(symbolNamed);
-        expect(id.named(Symbol.metadata)).to.not.equal(symbolNamed);
+        expect(id.named(Symbol.iterator)).to.not.equal(symbolNamed);
         expect(symbolNamed.named(sym)).to.equal(symbolNamed);
         expect(id).to.not.equal(symbolNamed);
         expect(symbolNamed.named()).to.equal(id);
@@ -164,7 +164,7 @@ suite('annotations', () => {
         // @ts-expect-error
         id.named(Math.random() ? sym : ('a' as const));
         // @ts-expect-error
-        id.named(Math.random() ? sym : Symbol.metadata);
+        id.named(Math.random() ? sym : Symbol.iterator);
         // @ts-expect-error
         id.named<string>('a');
         // @ts-expect-error

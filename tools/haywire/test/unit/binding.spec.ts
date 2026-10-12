@@ -100,14 +100,13 @@ suite('bind', () => {
             barBind.withInstance(null);
 
             const extendsBarBinding = extendsBarBind.withInstance(new ExtendsBar(123));
-            expectTypeOf(
-                new Binding(
-                    identifier(ExtendsBar),
-                    [],
-                    false,
-                    () => new ExtendsBar(456)
-                ).undefinable()
-            ).toEqualTypeOf(extendsBarBinding);
+            const extendsBarProviderBinding = new Binding(
+                identifier(ExtendsBar),
+                [],
+                false,
+                () => new ExtendsBar(456)
+            );
+            expectTypeOf(extendsBarProviderBinding.undefinable()).toEqualTypeOf(extendsBarBinding);
 
             const thingBinding = thingBind.withInstance({
                 stuff: () => [],

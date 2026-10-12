@@ -2,7 +2,7 @@ import type { GenericHaywireId } from '#identifier';
 
 /**
  * Generic class to represent errors explicitly thrown by Haywire
- * rather than a provider or other javascript failure.
+ * rather than a provider or other JavaScript failure.
  *
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
@@ -29,7 +29,7 @@ export abstract class HaywireModuleValidationError extends HaywireError {}
  * Haywire will not be able to determine which is the correct provider for the requested type
  * so rejects when merging the bindings in the module.
  *
- * Using Haywire with Typescript should avoid getting this error, as duplicates are caught as compile time.
+ * Using Haywire with TypeScript should avoid getting this error, as duplicates are caught as compile time.
  */
 export class HaywireDuplicateOutputError extends HaywireModuleValidationError {
     public readonly outputIds: GenericHaywireId[];
@@ -174,7 +174,7 @@ export class HaywireSyncSupplierError extends HaywireContainerValidationError {
  * Error thrown when a container is constructed with declared dependencies that do not exist in the
  * the module's providers.
  *
- * Using Haywire with Typescript should avoid getting this error, as missing providers are caught as compile time.
+ * Using Haywire with TypeScript should avoid getting this error, as missing providers are caught as compile time.
  */
 export class HaywireProviderMissingError extends HaywireContainerValidationError {
     public readonly dependencyIds: GenericHaywireId[];
@@ -300,7 +300,7 @@ export class HaywireMultiError extends HaywireInstanceValidationError {
         );
         super(
             `Multiple errors: [${causes
-                .map(err => (err instanceof Error ? err.message : err))
+                .map(err => (Error.isError(err) ? err.message : err))
                 .join(', ')}]`,
             { cause: causes[0] }
         );

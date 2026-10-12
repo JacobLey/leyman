@@ -2558,19 +2558,19 @@ suite('container', () => {
 
         const extraId = identifier<123>().named('A').nullable();
 
-        for (const sync of [false, true]) {
-            suite(sync ? 'sync' : 'async', () => {
+        for (const isSynchronous of [false, true]) {
+            suite(isSynchronous ? 'sync' : 'async', () => {
                 for (const action of ['unchecked', 'checked', 'wired'] as const) {
                     suite(action, () => {
-                        const container = sync
-                            ? createContainer(module)
-                            : createContainer(
-                                  module.addBinding(
+                        const container = createContainer(
+                            isSynchronous
+                                ? module
+                                : module.addBinding(
                                       bind(F)
                                           .withAsyncFactory(() => new F())
                                           .named('async')
                                   )
-                              );
+                        );
 
                         if (action === 'checked') {
                             container.check();
@@ -2633,8 +2633,8 @@ suite('container', () => {
             toContainer: () => { getAsync: (id: unknown) => Promise<unknown> };
         }
 
-        for (const wired of [false, true] as const) {
-            suite(wired ? 'wired' : 'unwired', () => {
+        for (const isWired of [false, true] as const) {
+            suite(isWired ? 'wired' : 'unwired', () => {
                 test('Replaces a temp list binding and appends further instances', async () => {
                     // A missing list dependency becomes a temp binding in the factory. Registering
                     // the first instance replaces that temp, and the second appends to it.
@@ -2659,7 +2659,7 @@ suite('container', () => {
                     const factory = createContainerFactory(
                         module
                     ) as unknown as ListBindInstanceContainerFactory;
-                    if (wired) {
+                    if (isWired) {
                         factory.wire();
                     }
 
@@ -2685,7 +2685,7 @@ suite('container', () => {
                     );
 
                     const container = createContainer(module);
-                    if (wired) {
+                    if (isWired) {
                         container.wire();
                     }
 
@@ -2704,7 +2704,7 @@ suite('container', () => {
                     );
 
                     const container = createContainer(module);
-                    if (wired) {
+                    if (isWired) {
                         container.wire();
                     }
 
@@ -3544,8 +3544,8 @@ suite('container', () => {
         });
 
         suite('Deferred dependencies through list elements', () => {
-            for (const sync of [true, false]) {
-                suite(sync ? 'sync' : 'async', () => {
+            for (const isSynchronous of [true, false]) {
+                suite(isSynchronous ? 'sync' : 'async', () => {
                     const buildModule = () => {
                         const itemId = identifier<string>().named('item').list();
                         const summaryId = identifier<string[]>().named('summary');
@@ -3560,7 +3560,7 @@ suite('container', () => {
                                 })
                         )
                             .addBinding(
-                                sync
+                                isSynchronous
                                     ? bind(itemId).withFactory(() => 'b')
                                     : bind(itemId).withAsyncFactory(async () => 'b')
                             )
@@ -3575,7 +3575,7 @@ suite('container', () => {
                     test('Deferred dependency in an element receives the full list', async () => {
                         const { itemId, lateSummaries, module } = buildModule();
                         const container = createContainer(module);
-                        expect(isSyncContainer(container)).to.equal(sync);
+                        expect(isSyncContainer(container)).to.equal(isSynchronous);
 
                         const result = await container.getAsync(itemId);
                         expect(result).to.have.members(['a', 'b']);
@@ -3600,7 +3600,7 @@ suite('container', () => {
 
                         const container = createContainer(
                             createModule(
-                                sync
+                                isSynchronous
                                     ? bind(selfId).withFactory(() => 1)
                                     : bind(selfId).withAsyncFactory(async () => 1)
                             )

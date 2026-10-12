@@ -304,22 +304,22 @@ export class HaywireId<
      *
      * Does not mutate existing immutable id, but creates a new id that internally references the same base id.
      *
-     * @param [nullable=true] - whethe to (un)set the nullable value. Defaults to true (sets value).
+     * @param [isNullable=true] - whether to (un)set the nullable value. Defaults to true (sets value).
      * @returns new identifier with nullable set
      */
     public nullable(
-        nullable: false
+        isNullable: false
     ): HaywireId<T, Constructor, Named, List, false, Undefinable, Supply, Defer>;
     public nullable(
-        nullable?: true
+        isNullable?: true
     ): HaywireId<T, Constructor, Named, List, true, Undefinable, Supply, Defer>;
-    public nullable(nullable = true): GenericHaywireId {
-        if (this.annotations.nullable === nullable) {
+    public nullable(isNullable = true): GenericHaywireId {
+        if (this.annotations.nullable === isNullable) {
             return this;
         }
         return this.#extend({
             ...this.annotations,
-            nullable,
+            nullable: isNullable,
         });
     }
 
@@ -328,22 +328,22 @@ export class HaywireId<
      *
      * Does not mutate existing immutable id, but creates a new id that internally references the same base id.
      *
-     * @param [undefinable=true] - whethe to (un)set the undefinable value. Defaults to true (sets value).
+     * @param [isUndefinable=true] - whether to (un)set the undefinable value. Defaults to true (sets value).
      * @returns new identifier with undefinable set
      */
     public undefinable(
-        undefinable: false
+        isUndefinable: false
     ): HaywireId<T, Constructor, Named, List, Nullable, false, Supply, Defer>;
     public undefinable(
-        undefinable?: true
+        isUndefinable?: true
     ): HaywireId<T, Constructor, Named, List, Nullable, true, Supply, Defer>;
-    public undefinable(undefinable = true): GenericHaywireId {
-        if (this.annotations.undefinable === undefinable) {
+    public undefinable(isUndefinable = true): GenericHaywireId {
+        if (this.annotations.undefinable === isUndefinable) {
             return this;
         }
         return this.#extend({
             ...this.annotations,
-            undefinable,
+            undefinable: isUndefinable,
         });
     }
 
@@ -419,22 +419,22 @@ export class HaywireId<
      *
      * It will create a new identifier with the annotation set, rather than mutate the existing.
      *
-     * @param [supplier=true] - (un)sets the deferred annotation
+     * @param [isDeferred=true] - (un)sets the deferred annotation
      * @returns new identifier with annotation
      */
     public deferred(
-        deferred: false
+        isDeferred: false
     ): HaywireId<T, Constructor, Named, List, Nullable, Undefinable, Supply, false>;
     public deferred(
-        deferred?: true
+        isDeferred?: true
     ): HaywireId<T, Constructor, Named, List, Nullable, Undefinable, Supply, true>;
-    public deferred(deferred = true): GenericHaywireId {
-        if (this.annotations.deferred === deferred) {
+    public deferred(isDeferred = true): GenericHaywireId {
+        if (this.annotations.deferred === isDeferred) {
             return this;
         }
         return this.#extend({
             ...this.annotations,
-            deferred,
+            deferred: isDeferred,
         });
     }
 
@@ -595,12 +595,8 @@ export class HaywireId<
         annotations: Annotations<Named2, List2, Nullable2, Undefinable2, Supply2, Defer2>
     ): HaywireId<T, Constructor, Named2, List2, Nullable2, Undefinable2, Supply2, Defer2> {
         const existing = this.#childIds.get(HaywireId.#annotationKey(annotations));
-        if (existing) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            return existing;
-        }
-
-        return new HaywireId(this.id, this.construct, annotations, this.#childIds);
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        return existing ?? new HaywireId(this.id, this.construct, annotations, this.#childIds);
     }
 }
 
@@ -744,13 +740,13 @@ export const expandOutputId = <OutputId extends GenericHaywireId>(
     const expandedIds = new Set<ExpandOutputId<OutputId>>();
     const outputId = id.supplier(false).deferred(false);
 
-    for (const nullable of [false, true]) {
-        for (const undefinable of [false, true]) {
+    for (const isNullable of [false, true]) {
+        for (const isUndefinable of [false, true]) {
             let expandedId = outputId;
-            if (nullable) {
+            if (isNullable) {
                 expandedId = expandedId.nullable();
             }
-            if (undefinable) {
+            if (isUndefinable) {
                 expandedId = expandedId.undefinable();
             }
             expandedIds.add(expandedId);

@@ -16,9 +16,7 @@ export {
 type CreateContainer = typeof createContainerFromFactory & typeof createContainerFromModule;
 export const createContainer: CreateContainer = ((
     factoryOrModule: GenericContainerFactory | GenericModule
-) => {
-    if (factoryOrModule instanceof ContainerFactory) {
-        return createContainerFromFactory(factoryOrModule);
-    }
-    return createContainerFromModule(factoryOrModule);
-}) as CreateContainer;
+) =>
+    factoryOrModule instanceof ContainerFactory
+        ? createContainerFromFactory(factoryOrModule)
+        : createContainerFromModule(factoryOrModule)) as CreateContainer;

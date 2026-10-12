@@ -179,9 +179,9 @@ const getIdToListBindingsSym = Symbol('getIdToListBindings');
  * Wrap in helper to handle type casting and just check the list field.
  *
  * @param id - output/dependency id
- * @returns is list id
+ * @returns whether the id resolves to a list
  */
-const checkIsList = (id: GenericHaywireId): boolean => id.annotations.list !== false;
+const isListId = (id: GenericHaywireId): boolean => id.annotations.list !== false;
 
 const validateOutputElement = (outputId: GenericOutputHaywireId, value: unknown): void => {
     if (value === null) {
@@ -221,9 +221,9 @@ const disposeInstance = async (binding: GenericBinding, instance: unknown): Prom
         await binding.disposer(instance);
         return;
     }
-    const { [Symbol.asyncDispose]: asyncDispose, [Symbol.dispose]: dispose } = instance as Partial<
-        AsyncDisposable & Disposable
-    >;
+    const disposable = instance as Partial<AsyncDisposable & Disposable>;
+    const asyncDispose = disposable[Symbol.asyncDispose];
+    const dispose = disposable[Symbol.dispose];
     if (typeof asyncDispose === 'function') {
         await asyncDispose.call(instance);
     } else if (typeof dispose === 'function') {
@@ -233,7 +233,7 @@ const disposeInstance = async (binding: GenericBinding, instance: unknown): Prom
 
 const validateProviderOutput = (outputId: GenericOutputHaywireId, value: unknown): void => {
     // TODO move these checks into binding instead
-    if (checkIsList(outputId)) {
+    if (isListId(outputId)) {
         if (!Array.isArray(value)) {
             throw new HaywireListResponseError(outputId, value);
         }
@@ -398,9 +398,11 @@ export class Container<Outputs extends [Extendable]> {
             this.#baseIdToListBindings = new Map(baseIdToListBindings);
 
             this.#idToBinding = new Map(
-                [...baseIdToBinding.values()].flatMap(binding =>
-                    [...expandOutputId(binding.outputId)].map(id => [id, binding])
-                )
+                baseIdToBinding
+                    .values()
+                    .flatMap(binding =>
+                        [...expandOutputId(binding.outputId)].map(id => [id, binding] as const)
+                    )
             );
             this.#idToListBindings = new Map(
                 [...baseIdToListBindings].flatMap(([baseId, listBindings]) =>
@@ -467,12 +469,13 @@ export class Container<Outputs extends [Extendable]> {
         container: MaybeSyncContainer<Outputs, Async>,
         bindings: Bindings[]
     ): ExpandedContainer<Outputs, Bindings, Async> {
-        const cloned = new (container.constructor as typeof Container | typeof SyncContainer)(
-            container
-        ) as ExpandedContainer<Outputs, Bindings, Async>;
+        // Same class as the container, which may be a `SyncContainer`
+        const cloned = Reflect.construct(container.constructor as typeof Container, [
+            container,
+        ]) as ExpandedContainer<Outputs, Bindings, Async>;
 
         for (const binding of bindings) {
-            if (checkIsList(binding.outputId)) {
+            if (isListId(binding.outputId)) {
                 const existingListBinding = cloned.#baseIdToListBindings.get(
                     binding.outputId.baseId()
                 )?.[0];
@@ -491,12 +494,7 @@ export class Container<Outputs extends [Extendable]> {
                             const replaceBinding = (
                                 arr: readonly GenericBinding[]
                             ): GenericBinding[] =>
-                                arr.map(bind => {
-                                    if (bind === existingListBinding) {
-                                        return binding;
-                                    }
-                                    return bind;
-                                });
+                                arr.map(bind => (bind === existingListBinding ? binding : bind));
                             for (const dependent of upstreamDependents) {
                                 cloned.#singletonMap.set(
                                     dependent,
@@ -564,12 +562,7 @@ export class Container<Outputs extends [Extendable]> {
                             const replaceBinding = (
                                 arr: readonly GenericBinding[]
                             ): GenericBinding[] =>
-                                arr.map(bind => {
-                                    if (bind === existingBinding) {
-                                        return binding;
-                                    }
-                                    return bind;
-                                });
+                                arr.map(bind => (bind === existingBinding ? binding : bind));
                             for (const dependent of upstreamDependents) {
                                 cloned.#singletonMap.set(
                                     dependent,
@@ -592,7 +585,7 @@ export class Container<Outputs extends [Extendable]> {
                 );
             }
 
-            if (checkIsList(binding.outputId)) {
+            if (isListId(binding.outputId)) {
                 // Map every valid output id variant to the full set of list bindings, mirroring
                 // how the constructor builds `#idToListBindings`. Without this a freshly bound
                 // list output would be absent from the map that `getAsync` consults.
@@ -631,11 +624,13 @@ export class Container<Outputs extends [Extendable]> {
 
             (cloned.#bindings as Set<GenericBinding>).add(binding);
 
-            if (container.#wired) {
-                cloned.#singletonMap.set(binding, []);
-                cloned.#requestMap.set(binding, []);
-                cloned.#isAsyncImplementationMap.set(binding, false);
+            if (!container.#wired) {
+                continue;
             }
+
+            cloned.#singletonMap.set(binding, []);
+            cloned.#requestMap.set(binding, []);
+            cloned.#isAsyncImplementationMap.set(binding, false);
         }
 
         return cloned;
@@ -693,7 +688,7 @@ export class Container<Outputs extends [Extendable]> {
      * The checks performed are:
      * Ensuring all dependencies have a binding
      *   Ideally module logic protect against this, but it is possible to accidentially re-instantiate an identifier, or to
-     *     have classes that _should_ be treated separately, but actually are exact matches in Typescript's duck typing.
+     *     have classes that _should_ be treated separately, but actually are exact matches in TypeScript's duck typing.
      * Protect Circular dependencies
      *   Circular dependencies can be tricky to see directly, as they may be the result of large chains including suppliers.
      *     The type system does not attempt to protect against circulars for this reason, so a check must be performed to ensure
@@ -757,7 +752,7 @@ export class Container<Outputs extends [Extendable]> {
                     await this.#getMaybeSync(binding, reqScope, reqScope);
                 };
                 await Promise.all(
-                    [...this.#singletonMap.keys()].map(async binding => requestSingleton(binding))
+                    this.#singletonMap.keys().map(async binding => requestSingleton(binding))
                 );
             })
             .catch(async (err: unknown) => {
@@ -836,10 +831,10 @@ export class Container<Outputs extends [Extendable]> {
      * The two main ways that type safety may fail (so this check still neeeds to exist):
      * Accidentally redefining the same identifier.
      *   The issue arises from `identifier() !== identifier()`.
-     *     So even if the exact same types/names are provided, the actual values seen by javascript are different.
+     *     So even if the exact same types/names are provided, the actual values seen by JavaScript are different.
      *   note classes are generally protected from this (`identifier(Foo) === identifier(Foo)`) but can still result in other errors (see second point).
      * Using class constructors for instances that are exact matches via duck-typing.
-     *   According to typescript, classes that have the exact same interface are replaceable with eachother.
+     *   According to TypeScript, classes that have the exact same interface are replaceable with eachother.
      *     Often times this is actually desired behavior, but can result in unexpected behavior.
      *     ```
      *     class Foo {
@@ -867,7 +862,7 @@ export class Container<Outputs extends [Extendable]> {
         const noProviderFoundIds: GenericOutputHaywireId[] = [];
 
         for (const dependencyId of uniqueDependencyIds) {
-            if (checkIsList(dependencyId)) {
+            if (isListId(dependencyId)) {
                 if (!this.#idToListBindings.has(dependencyId)) {
                     noProviderFoundIds.push(dependencyId);
                 }
@@ -907,7 +902,7 @@ export class Container<Outputs extends [Extendable]> {
 
         const errors: unknown[] = [];
         for (const { binding, value } of this.#singletonInstances.toReversed()) {
-            const instances: unknown[] = checkIsList(binding.outputId)
+            const instances: unknown[] = isListId(binding.outputId)
                 ? (value as unknown[])
                 : [value];
             for (const instance of instances) {
@@ -1040,7 +1035,7 @@ export class Container<Outputs extends [Extendable]> {
                 return true;
             }
 
-            const bindings = checkIsList(baseId)
+            const bindings = isListId(baseId)
                 ? this.#baseIdToListBindings.get(baseId)!
                 : [this.#baseIdToBinding.get(baseId)!];
 
@@ -1049,12 +1044,12 @@ export class Container<Outputs extends [Extendable]> {
                 // sub-chain is already aligned: its first link is the binding that produces
                 // `baseId`, and its last link's `outgoing` is the current `dependencyId` that
                 // closes the loop. No re-alignment needed.
-                let foundCircular = false;
+                let isFoundCircular = false;
                 const circularChain = [...dependencyChain].filter(link => {
                     if (link.binding.outputId.baseId() === baseId) {
-                        foundCircular = true;
+                        isFoundCircular = true;
                     }
-                    return foundCircular;
+                    return isFoundCircular;
                 });
                 if (isChainSafe(circularChain)) {
                     return true;
@@ -1151,7 +1146,7 @@ export class Container<Outputs extends [Extendable]> {
                     return true;
                 }
                 const dependencyBaseId = dependencyId.baseId();
-                const dependencyBindings = checkIsList(dependencyBaseId)
+                const dependencyBindings = isListId(dependencyBaseId)
                     ? this.#baseIdToListBindings.get(dependencyBaseId)!
                     : [this.#baseIdToBinding.get(dependencyBaseId)!];
                 // Continue checking dependencies
@@ -1180,23 +1175,25 @@ export class Container<Outputs extends [Extendable]> {
         }[] = [];
         const addUnsafePair = (
             dependencyBinding: GenericBinding,
-            propagateScope: boolean
+            shouldPropagateScope: boolean
         ): void => {
             const dependencyBaseId = dependencyBinding.outputId.baseId();
             for (const binding of this.#bindings) {
                 for (const depId of binding.dependencyIds) {
-                    if (depId.baseId() === dependencyBaseId) {
-                        const { supplier } = depId.annotations;
-                        if (
-                            typeof supplier === 'object' &&
-                            supplier.sync &&
-                            supplier.propagateScope === propagateScope
-                        ) {
-                            unsafeSupplierBindings.push({
-                                bindingOutputId: dependencyBinding.outputId,
-                                supplierId: depId,
-                            });
-                        }
+                    if (depId.baseId() !== dependencyBaseId) {
+                        continue;
+                    }
+
+                    const { supplier } = depId.annotations;
+                    if (
+                        typeof supplier === 'object' &&
+                        supplier.sync &&
+                        supplier.propagateScope === shouldPropagateScope
+                    ) {
+                        unsafeSupplierBindings.push({
+                            bindingOutputId: dependencyBinding.outputId,
+                            supplierId: depId,
+                        });
                     }
                 }
             }
@@ -1228,12 +1225,11 @@ export class Container<Outputs extends [Extendable]> {
                         ([binding]) =>
                             (binding.scope === isolatedRequestScope) === isIsolatedRequestScope
                     )
-                    .flatMap(([, id]) => {
-                        if (checkIsList(id)) {
-                            return this.#baseIdToListBindings.get(id.baseId())!;
-                        }
-                        return this.#baseIdToBinding.get(id.baseId())!;
-                    })
+                    .flatMap(([, id]) =>
+                        isListId(id)
+                            ? this.#baseIdToListBindings.get(id.baseId())!
+                            : this.#baseIdToBinding.get(id.baseId())!
+                    )
                     .filter(binding => !safeBindings.has(binding) && !unsafeBindings.has(binding))
             );
 
@@ -1276,28 +1272,25 @@ export class Container<Outputs extends [Extendable]> {
                 if (deferred || (typeof supplier === 'object' && !supplier.sync)) {
                     continue;
                 }
-                const dependencyBindings = checkIsList(dependencyId)
+                const dependencyBindings = isListId(dependencyId)
                     ? this.#baseIdToListBindings.get(dependencyId.baseId())!
                     : [this.#baseIdToBinding.get(dependencyId.baseId())!];
+                const dependencyStack = new Set([...stack, dependencyId.baseId()]);
                 for (const dependencyBinding of dependencyBindings) {
                     if (dependencyBinding.scope === eagerSingletonScope) {
                         collected.push(dependencyBinding);
                     } else {
-                        collected.push(
-                            ...collectBindings(
-                                dependencyBinding,
-                                new Set([...stack, dependencyId.baseId()])
-                            )
-                        );
+                        collected.push(...collectBindings(dependencyBinding, dependencyStack));
                     }
                 }
             }
             return collected;
         };
 
-        for (const binding of [...this.#bindings].filter(
-            bind => bind.scope === eagerSingletonScope
-        )) {
+        for (const binding of this.#bindings) {
+            if (binding.scope !== eagerSingletonScope) {
+                continue;
+            }
             const singletonBindings = [...new Set(collectBindings(binding, new Set()))];
             this.#singletonMap.set(binding, singletonBindings);
             for (const singletonBinding of singletonBindings) {
@@ -1329,13 +1322,14 @@ export class Container<Outputs extends [Extendable]> {
             const collected: GenericBinding[] = [];
             for (const dependencyId of binding.dependencyIds) {
                 const dependencyBaseId = dependencyId.baseId();
-                const dependencyBindings = checkIsList(dependencyId)
+                const dependencyBindings = isListId(dependencyId)
                     ? this.#baseIdToListBindings.get(dependencyBaseId)!
                     : [this.#baseIdToBinding.get(dependencyBaseId)!];
                 for (const dependencyBinding of dependencyBindings) {
                     if (dependencyBinding.scope === eagerSingletonScope) {
                         continue;
-                    } else if (dependencyBinding.scope === eagerRequestScope) {
+                    }
+                    if (dependencyBinding.scope === eagerRequestScope) {
                         collected.push(dependencyBinding);
                     } else {
                         collected.push(
@@ -1389,7 +1383,7 @@ export class Container<Outputs extends [Extendable]> {
                     // Suppliers are resolved "immediately" so that is sync
                     return false;
                 }
-                const dependencyBindings = checkIsList(dependencyId)
+                const dependencyBindings = isListId(dependencyId)
                     ? this.#baseIdToListBindings.get(dependencyId.baseId())!
                     : [this.#baseIdToBinding.get(dependencyId.baseId())!];
                 return dependencyBindings.some(dependencyBinding => {
@@ -1445,7 +1439,7 @@ export class Container<Outputs extends [Extendable]> {
         // is handled by callers, which check `deferredCache` by the requested id before reaching here.
         // List element bindings share a base id with the full list, so they only ever register the full list
         // via those callers, never their own portion.
-        const isListBinding = checkIsList(binding.outputId);
+        const isListBinding = isListId(binding.outputId);
 
         const relevantCache = {
             [transientScope]: null,
@@ -1541,27 +1535,27 @@ export class Container<Outputs extends [Extendable]> {
             // Note the cache value does not _immediately_ have `value` attached to it.
             // While risky, this is safe because it will only be accessed by the sync equivalent
             // if this async method was actually generated "eagerly" and therefore fully resolved.
-            const cacheValue = Object.assign(cacheContainer, {
-                promise: outputPromise
-                    .then(async ([value]) => {
-                        cacheValue.value = value;
-                        await Promise.all(deferredPromises);
-                        return [value] as const;
-                    })
-                    .catch((err: unknown) => {
-                        // Failures may occur because of deferred dependencies,
-                        // or because the actual generation promise rejects
-                        // (which we still have not actually awaited and checked!)
-                        // so if that does happen, we need to evict this value from cache.
-                        if (relevantCache.get(binding) === cacheContainer) {
-                            relevantCache.delete(binding);
-                        }
-                        throw err;
-                    }),
-            }) as {
+            const cacheValue = cacheContainer as {
                 promise: Promise<[unknown]>;
                 value: unknown;
             };
+            cacheValue.promise = (async (): Promise<[unknown]> => {
+                try {
+                    const [value] = await outputPromise;
+                    cacheValue.value = value;
+                    await Promise.all(deferredPromises);
+                    return [value];
+                } catch (err) {
+                    // Failures may occur because of deferred dependencies,
+                    // or because the actual generation promise rejects
+                    // (which we still have not actually awaited and checked!)
+                    // so if that does happen, we need to evict this value from cache.
+                    if (relevantCache.get(binding) === cacheContainer) {
+                        relevantCache.delete(binding);
+                    }
+                    throw err;
+                }
+            })();
 
             relevantCache.set(binding, cacheValue);
         }
@@ -1634,7 +1628,7 @@ export class Container<Outputs extends [Extendable]> {
             };
         }
 
-        const isList = checkIsList(dependencyId);
+        const isList = isListId(dependencyId);
 
         let result: {
             value: unknown;
@@ -1720,7 +1714,7 @@ export class Container<Outputs extends [Extendable]> {
         deferredRequests: DeferredRequest[];
     } {
         // Re-use of instances already created in the same request chain is handled by callers (see async version).
-        const isListBinding = checkIsList(binding.outputId);
+        const isListBinding = isListId(binding.outputId);
 
         const relevantCache = {
             [transientScope]: null,
@@ -1862,7 +1856,7 @@ export class Container<Outputs extends [Extendable]> {
             };
         }
 
-        const isList = checkIsList(dependencyId);
+        const isList = isListId(dependencyId);
 
         let result: {
             value: unknown;
@@ -1995,7 +1989,7 @@ export class Container<Outputs extends [Extendable]> {
         // If this instance could be implemented entire synchronously, do it.
         // Note this logic has to come _after_ the eager requests, because the async implementation map
         // relies on the logic that these values do already exist.
-        if (!bindingsList.some(binding => this.#isAsyncImplementationMap.get(binding))) {
+        if (bindingsList.every(binding => !this.#isAsyncImplementationMap.get(binding))) {
             // Pass `bindings` (not `bindingsList`) to preserve single-vs-array semantics:
             // `#getSync` flattens to an array only when handed an array.
             return this.#getSync({
@@ -2041,7 +2035,7 @@ export class Container<Outputs extends [Extendable]> {
                         deferredRequest.resolve(cachedValue.value);
                         return;
                     }
-                    const dependencyBindings = checkIsList(dependencyId)
+                    const dependencyBindings = isListId(dependencyId)
                         ? this.#baseIdToListBindings.get(dependencyBaseId)!
                         : this.#baseIdToBinding.get(dependencyBaseId)!;
                     if (typeof supplier === 'object') {
@@ -2105,7 +2099,7 @@ export class Container<Outputs extends [Extendable]> {
         this.#assertNotDisposed();
         const baseId = id.baseId();
         const request = this.#getMaybeSync(
-            checkIsList(baseId)
+            isListId(baseId)
                 ? this.#baseIdToListBindings.get(baseId)!
                 : this.#baseIdToBinding.get(baseId)!,
             requestCache,
@@ -2185,7 +2179,7 @@ export class Container<Outputs extends [Extendable]> {
                     deferredRequest.resolve(cachedValue.value);
                     continue;
                 }
-                const dependencyBindings = checkIsList(dependencyId)
+                const dependencyBindings = isListId(dependencyId)
                     ? this.#baseIdToListBindings.get(dependencyBaseId)!
                     : this.#baseIdToBinding.get(dependencyBaseId)!;
                 if (typeof supplier === 'object') {
@@ -2234,7 +2228,7 @@ export class Container<Outputs extends [Extendable]> {
         this.#assertNotDisposed();
         const baseId = id.baseId();
         return this.#getSync({
-            bindings: checkIsList(baseId)
+            bindings: isListId(baseId)
                 ? this.#baseIdToListBindings.get(baseId)!
                 : this.#baseIdToBinding.get(baseId)!,
             requestCache,
