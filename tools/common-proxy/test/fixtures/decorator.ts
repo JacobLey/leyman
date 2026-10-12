@@ -11,9 +11,9 @@ export default function appendExtras(
 export const asyncDecorator =
     (
         handler: (a: number, b: string) => Promise<{ a: number; b: string }>,
-        extra: boolean
+        isExtra: boolean
     ): ((a: number, b: string) => Promise<{ a: number; b: string; c: boolean }>) =>
     async (a: number, b: string) => {
         const original = await handler(a, b);
-        return { ...original, c: extra };
+        return { ...original, c: isExtra };
     };

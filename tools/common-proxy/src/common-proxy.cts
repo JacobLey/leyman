@@ -2,7 +2,8 @@
 import type * as DefaultImport from 'default-import' with { 'resolution-mode': 'import' };
 import type { ImportableHandler } from './lib/types.cjs';
 
-let cachedDefaultImportProm: Promise<typeof DefaultImport> | null = null;
+// Loaded on first use
+const cached: { defaultImportProm?: Promise<typeof DefaultImport> } = {};
 
 type ProxyReturnType<Handler extends (...args: any[]) => unknown> =
     ReturnType<Handler> extends Promise<unknown>
@@ -14,8 +15,8 @@ type ProxyReturnType<Handler extends (...args: any[]) => unknown> =
 export const commonProxy = <Handler extends (...args: any[]) => unknown>(
     promiseOfHandler: ImportableHandler<Handler> | Promise<ImportableHandler<Handler>>
 ): ProxyReturnType<Handler> => {
-    cachedDefaultImportProm ??= import('default-import');
-    const defaultImportProm = cachedDefaultImportProm;
+    cached.defaultImportProm ??= import('default-import');
+    const { defaultImportProm } = cached;
     return (async (...args: unknown[]): Promise<Awaited<ReturnType<Handler>>> => {
         const [{ defaultImport }, mod] = await Promise.all([defaultImportProm, promiseOfHandler]);
 
