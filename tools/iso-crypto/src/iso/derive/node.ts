@@ -9,12 +9,8 @@ import { BITS_PER_BYTE, defaultIterations, defaultSize } from './defaults.js';
 const hkdfAsync = promisify(hkdf);
 const pbkdf2Async = promisify(pbkdf2);
 
-const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
-    if (algorithm === 'SHA1') {
-        return 'sha1';
-    }
-    return `sha${size}`;
-};
+const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string =>
+    algorithm === 'SHA1' ? 'sha1' : `sha${size}`;
 
 export const deriveKey: (typeof Derive)['deriveKey'] = async ({ secret, salt }, options = {}) => {
     const digest = hashAlgorithm(options.hash ?? defaultHash);

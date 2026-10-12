@@ -177,10 +177,11 @@ suite('Encrypt', () => {
         // Not part of the output
         expect(encrypted.encrypted).to.have.length(data.length + 16);
 
+        const textEncoder = new TextEncoder();
         for (const additionalData of [
             'account-1',
             { text: '6163636f756e742d31', encoding: 'hex' },
-            new TextEncoder().encode('account-1'),
+            textEncoder.encode('account-1'),
         ] as const) {
             const decrypted = await target.decrypt(
                 { ...encrypted, secret },
@@ -283,9 +284,14 @@ suite('Encrypt', () => {
 
         // GCM needs a raw key of exactly the key size
         expect(
-            await roundTrip(new Uint8Array(32).fill(1), { encryption: gcm256, hash: 'raw' })
+            await roundTrip(
+                Uint8Array.from({ length: 32 }, () => 1),
+                { encryption: gcm256, hash: 'raw' }
+            )
         ).to.equal(data);
-        for (const secret of [new Uint8Array(16).fill(1), new Uint8Array(33).fill(1)]) {
+        const shortKey = Uint8Array.from({ length: 16 }, () => 1);
+        const longKey = Uint8Array.from({ length: 33 }, () => 1);
+        for (const secret of [shortKey, longKey]) {
             await expect(
                 source.encrypt({ data, secret }, { encryption: gcm256, hash: 'raw' })
             ).to.be.rejectedWith(
@@ -331,9 +337,10 @@ suite('Encrypt', () => {
     const counterTest = async ({ source }: SourceEncrypt) => {
         const data = 'The counter overflows into the high bits of the block';
         for (const size of [128, 192, 256] as const) {
-            const secret = new Uint8Array(size / 8).fill(7);
+            const secret = Uint8Array.from({ length: size / 8 }, () => 7);
             // Low 64 bits of the counter block are all ones, so the second block carries into the high bits
-            const iv = new Uint8Array(16).fill(0xff, 8);
+            const iv = new Uint8Array(16);
+            iv.fill(0xff, 8);
             const cipher = createCipheriv(`aes-${size}-ctr`, secret, iv);
             const encrypted = new Uint8Array([...cipher.update(data), ...cipher.final()]);
 

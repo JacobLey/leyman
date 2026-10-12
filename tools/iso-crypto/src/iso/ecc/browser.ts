@@ -33,8 +33,10 @@ const getPublicKey = (privateKey: InputText, curve: Curve): Point => {
 
     return derivePublicKey(BigInt(`0x${hex}`), curves[curve]);
 };
-const bigIntToBase64Url = (x: bigint, bytes: number): string =>
-    encode(padBytes(decode({ text: x.toString(HEX_SIZE), encoding: 'hex' }), bytes), 'base64url');
+const bigIntToBase64Url = (x: bigint, bytes: number): string => {
+    const decoded = decode({ text: x.toString(HEX_SIZE), encoding: 'hex' });
+    return encode(padBytes(decoded, bytes), 'base64url');
+};
 const derivePublicKeyBase64 = (privateKey: InputText, curve: Curve): { x: string; y: string } => {
     const { x, y } = getPublicKey(privateKey, curve);
     const { bytes } = eccMeta(curve);
@@ -50,11 +52,12 @@ export const generateEccPublicKey: (typeof Ecc)['generateEccPublicKey'] = (
 ) => {
     const { x, y } = getPublicKey(privateKey, curve);
     const { bytes } = eccMeta(curve);
+    const decodedX = decode({ text: x.toString(HEX_SIZE), encoding: 'hex' });
 
     return new Uint8Array([
         // eslint-disable-next-line no-bitwise
         2 + Number(y & 1n),
-        ...padBytes(decode({ text: x.toString(HEX_SIZE), encoding: 'hex' }), bytes),
+        ...padBytes(decodedX, bytes),
     ]);
 };
 
@@ -124,14 +127,9 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
 ) => {
     const secretKey = await eccSecret({ curve, privateKey, publicKey });
 
+    const secret = await eccKey(secretKey.secret, curve, encryption);
     const [encrypted, jwk] = await Promise.all([
-        encrypt(
-            {
-                data,
-                secret: await eccKey(secretKey.secret, curve, encryption),
-            },
-            { encryption, additionalData, hash: Algorithms.RAW }
-        ),
+        encrypt({ data, secret }, { encryption, additionalData, hash: Algorithms.RAW }),
         crypto.subtle.exportKey('jwk', secretKey.privateEc),
     ]);
 

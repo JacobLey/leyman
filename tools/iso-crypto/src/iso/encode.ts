@@ -71,7 +71,7 @@ const fromHex = (str: string): Uint8ArrayBuffer => {
 /**
  * Decodes the incoming text to a Uint8Array.
  *
- * Encoding of text is inferred as UTF8 if not otherwise specified.
+ * Encoding of text is inferred as UTF-8 if not otherwise specified.
  *
  * @param input - text to decode
  * @returns decoded
@@ -86,18 +86,14 @@ export const decode = (input: InputText): Uint8ArrayBuffer => {
     if (encoding === 'utf8') {
         return encoder.encode(text);
     }
-    if (encoding === 'hex') {
-        return fromHex(text);
-    }
-
-    return fromBase64(text);
+    return encoding === 'hex' ? fromHex(text) : fromBase64(text);
 };
 
 /**
  * Encodes the incoming content as text.
  *
  * @param input - content to encoded
- * @param [encoding] - encoding to use, defaults to UTF8
+ * @param [encoding] - encoding to use, defaults to UTF-8
  * @returns encoded
  */
 export const encode = (
@@ -114,9 +110,5 @@ export const encode = (
     }
 
     const url = toBase64(buffer);
-    if (encoding === 'base64') {
-        return base64standard(url);
-    }
-
-    return url;
+    return encoding === 'base64' ? base64standard(url) : url;
 };

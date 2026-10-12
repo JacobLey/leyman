@@ -191,7 +191,7 @@ suite('Ecc', () => {
                     '9ae6b64459a0f96757e49b224a425cb5a615bb7bbd8c61304eaa191c7b1c3c2fd242a',
             },
         ] as const) {
-            for (const compressed of [true, false]) {
+            for (const isCompressed of [true, false]) {
                 const decrypted = await source.eccDecrypt(
                     {
                         ...IsoCrypto.decodeObject(
@@ -202,7 +202,7 @@ suite('Ecc', () => {
                             },
                             'hex'
                         ),
-                        publicKey: compressed
+                        publicKey: isCompressed
                             ? { text: publicKey, encoding: 'hex' }
                             : IsoCrypto.decompressEccPublicKey({
                                   text: publicKey,
@@ -326,7 +326,10 @@ suite('Ecc', () => {
                 // Not the shared secret itself
                 await expect(
                     IsoCrypto.decrypt(
-                        { ...encrypted, secret: new Uint8Array(sharedSecret).slice(0, size / 8) },
+                        {
+                            ...encrypted,
+                            secret: new Uint8Array(sharedSecret.subarray(0, size / 8)),
+                        },
                         { encryption, hash: 'raw' }
                     )
                 ).to.be.rejectedWith(Error);

@@ -30,13 +30,8 @@ export const padBytes = (arr: Uint8ArrayBuffer, bytes: number): Uint8ArrayBuffer
  * @param bytes - desired max length
  * @returns properly sized array.
  */
-export const trimBytes = (arr: Uint8ArrayBuffer, bytes: number): Uint8ArrayBuffer => {
-    if (arr.byteLength <= bytes) {
-        return arr;
-    }
-
-    return arr.slice(arr.length - bytes);
-};
+export const trimBytes = (arr: Uint8ArrayBuffer, bytes: number): Uint8ArrayBuffer =>
+    arr.byteLength <= bytes ? arr : arr.slice(arr.length - bytes);
 
 /**
  * Restrict an Uint8Array to be _exactly_ `bytes` long.

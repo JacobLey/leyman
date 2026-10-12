@@ -130,10 +130,7 @@ const euclidian = (a: bigint, b: bigint): Point => {
  */
 const modularInverse = (a: bigint, mod: bigint): bigint => {
     const inverse = euclidian(a < 0n ? a + mod : a, mod).x;
-    if (inverse < 0n) {
-        return inverse + mod;
-    }
-    return inverse;
+    return inverse < 0n ? inverse + mod : inverse;
 };
 
 /**
@@ -149,10 +146,7 @@ const modularInverse = (a: bigint, mod: bigint): bigint => {
  */
 const positiveMod = (x: bigint, mod: bigint): bigint => {
     const result = x % mod;
-    if (result < 0n) {
-        return result + mod;
-    }
-    return result;
+    return result < 0n ? result + mod : result;
 };
 
 /**
@@ -295,10 +289,10 @@ const modSqrt = (n: bigint, p: bigint): bigint => {
     return r;
 };
 
-export const deriveYCoordinate = (x: bigint, odd: boolean, curve: Curve): bigint => {
+export const deriveYCoordinate = (x: bigint, isOdd: boolean, curve: Curve): bigint => {
     const y = modSqrt(x ** 3n + curve.a * x + curve.b, curve.p);
     // eslint-disable-next-line no-bitwise
-    const isOdd = !!(y & 1n);
+    const isRootOdd = !!(y & 1n);
 
-    return isOdd === odd ? y : curve.p - y;
+    return isRootOdd === isOdd ? y : curve.p - y;
 };

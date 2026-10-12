@@ -54,11 +54,8 @@ export const decompressEccPublicKey = (
     }
     const x = decoded.slice(1);
     // eslint-disable-next-line no-bitwise
-    const odd = !!(decoded[0]! & 1);
-    const y = deriveYCoordinate(BigInt(`0x${encode(x, 'hex')}`), odd, curves[curve]);
-    return new Uint8Array([
-        DECOMPRESSED_KEY_PREFIX,
-        ...x,
-        ...padBytes(decode({ text: y.toString(HEX_SIZE), encoding: 'hex' }), bytes),
-    ]);
+    const isOdd = !!(decoded[0]! & 1);
+    const y = deriveYCoordinate(BigInt(`0x${encode(x, 'hex')}`), isOdd, curves[curve]);
+    const decodedY = decode({ text: y.toString(HEX_SIZE), encoding: 'hex' });
+    return new Uint8Array([DECOMPRESSED_KEY_PREFIX, ...x, ...padBytes(decodedY, bytes)]);
 };

@@ -33,6 +33,6 @@ export const eccMeta = (
 ): {
     bytes: number;
 } => {
-    const bytePairs = Number.parseInt(curve.slice(1), 10) / BYTE_PAIR;
+    const bytePairs = Number(curve.slice(1)) / BYTE_PAIR;
     return { bytes: Math.ceil(bytePairs) * 2 };
 };

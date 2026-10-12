@@ -6,12 +6,8 @@ import { defaultIterations, defaultSize } from './defaults.js';
 
 const { crypto } = globalThis;
 
-const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string => {
-    if (algorithm === 'SHA1') {
-        return 'SHA-1';
-    }
-    return `SHA-${size}`;
-};
+const hashAlgorithm = ({ algorithm, size }: HashAlgorithm): string =>
+    algorithm === 'SHA1' ? 'SHA-1' : `SHA-${size}`;
 
 export const deriveKey: (typeof Derive)['deriveKey'] = async ({ secret, salt }, options = {}) => {
     const hash = hashAlgorithm(options.hash ?? defaultHash);

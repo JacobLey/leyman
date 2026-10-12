@@ -126,7 +126,7 @@ suite('Encode', () => {
                     output: [],
                 },
                 {
-                    input: '\u0000\u00012\u3456',
+                    input: '\0\u{1}2\u{3456}',
                     output: [0, 1, 50, 227, 145, 150],
                 },
             ]) {
@@ -191,7 +191,7 @@ suite('Encode', () => {
         });
 
         test('base64 large input', () => {
-            const input = new Uint8Array(1_000_000).map((_, i) => i);
+            const input = Uint8Array.from({ length: 1_000_000 }, (_, i) => i);
             for (const encoding of ['base64', 'base64url'] as const) {
                 const encoded = Encode.encode(input, encoding);
                 expect(Encode.decode({ text: encoded, encoding })).to.deep.equal(input);
@@ -272,7 +272,7 @@ suite('Encode', () => {
                 },
                 {
                     input: [0, 1, 50, 227, 145, 150],
-                    output: '\u0000\u00012\u3456',
+                    output: '\0\u{1}2\u{3456}',
                 },
             ]) {
                 const bufInput = Uint8Array.from(input);

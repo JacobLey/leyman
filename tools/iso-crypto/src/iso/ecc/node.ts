@@ -36,10 +36,11 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
     const ecdh = getECDH(curve);
     ecdh.setPrivateKey(decode(privateKey));
 
+    const sharedSecret = ecdh.computeSecret(decode(publicKey));
     const encrypted = await encrypt(
         {
             data,
-            secret: await eccKey(ecdh.computeSecret(decode(publicKey)), curve, encryption),
+            secret: await eccKey(sharedSecret, curve, encryption),
         },
         { encryption, additionalData, hash: Algorithms.RAW }
     );
@@ -56,11 +57,12 @@ export const eccDecrypt: (typeof Ecc)['eccDecrypt'] = async (
     const ecdh = getECDH(curve);
     ecdh.setPrivateKey(decode(privateKey));
 
+    const sharedSecret = ecdh.computeSecret(decode(publicKey));
     return decrypt(
         {
             encrypted,
             iv,
-            secret: await eccKey(ecdh.computeSecret(decode(publicKey)), curve, encryption),
+            secret: await eccKey(sharedSecret, curve, encryption),
         },
         { encryption, additionalData, hash: Algorithms.RAW }
     );
