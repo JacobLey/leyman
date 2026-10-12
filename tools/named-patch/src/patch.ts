@@ -16,7 +16,7 @@ const patchableMap = new WeakMap<AnyFunc, PatchableInterface<AnyFunc>>();
  * Patching a method should only be done in for purposes of testing.
  *
  * Different patches of the same method will yield the same patch! This is important as exporting a patched
- * method can be tricky (typescript reference errors) so "recalculating" the patch works just as well.
+ * method can be tricky (TypeScript reference errors) so "recalculating" the patch works just as well.
  * Useful for cases of patching a third party module that only exports a method.
  *
  * Patches are also idempotent. Re-patching a method (although probably an anti-pattern) will result in the
@@ -44,7 +44,7 @@ export const patch = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {
         return patchableMap.get(fn)! as PatchableInterface<T>;
     }
 
-    if (patchKey in fn) {
+    if (Object.hasOwn(fn, patchKey)) {
         return fn as PatchableInterface<T>;
     }
 
@@ -52,11 +52,13 @@ export const patch = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {
         return patched[patchKey].call(this, ...args);
     } as PatchableInterface<T>;
 
-    Object.defineProperty(patched, patchKey, {
-        configurable: true,
-        value: fn,
+    Object.defineProperties(patched, {
+        [patchKey]: {
+            configurable: true,
+            value: fn,
+        },
+        length: { value: fn.length },
     });
-    Object.defineProperty(patched, 'length', { value: fn.length });
     // Forward the method's own properties (e.g. static helpers), so the wrapper matches `T`
     for (const key of Reflect.ownKeys(fn)) {
         if (!Object.hasOwn(patched, key)) {
@@ -92,5 +94,5 @@ export const getPatched = <T extends AnyFunc>(fn: T): PatchableInterface<T> => {
     if (patchableMap.has(fn)) {
         return patchableMap.get(fn)! as PatchableInterface<T>;
     }
-    throw new Error(`Method is ${patchKey in fn ? 'already ' : 'un-'}patched`);
+    throw new Error(`Method is ${Object.hasOwn(fn, patchKey) ? 'already ' : 'un-'}patched`);
 };
