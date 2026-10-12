@@ -217,7 +217,8 @@ export default function makeEslintConfigForPackage({
             settings: {
                 'import/internal-regex': getInternalRegex(packageJson),
                 react: {
-                    version: '18.2.0',
+                    // Keep in sync with `react` in the workspace catalog
+                    version: '19.3.0',
                 },
             },
             rules: {
