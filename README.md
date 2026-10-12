@@ -24,7 +24,6 @@ Published to npm:
 | [`juniper-validator`](https://www.npmjs.com/package/juniper-validator) | StandardSchema compliance for juniper. | [`apps/juniper-validator`](./apps/juniper-validator) |
 | [`load-populate-files`](https://www.npmjs.com/package/load-populate-files) | Load and dynamically populate file content | [`apps/populate-files/load-populate-files`](./apps/populate-files/load-populate-files) |
 | [`mocha-chain`](https://www.npmjs.com/package/mocha-chain) | Chain mocha BDD methods together for deterministic and type safe tests. | [`tools/test-chain/mocha-chain`](./tools/test-chain/mocha-chain) |
-| [`named-patch`](https://www.npmjs.com/package/named-patch) | Higher order function for patching named export functions. | [`tools/named-patch`](./tools/named-patch) |
 | [`normalized-react-query`](https://www.npmjs.com/package/normalized-react-query) | Type-safe query definitions for TanStack Query — define each key and fetcher once, and link related queries so they prefetch together. | [`tools/normalized-react-query`](./tools/normalized-react-query) |
 | [`nx-lifecycle`](https://www.npmjs.com/package/nx-lifecycle) | Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, …) and the targets bound to them. | [`apps/nx-lifecycle`](./apps/nx-lifecycle) |
 | [`parse-cwd`](https://www.npmjs.com/package/parse-cwd) | Convert relative path or URL to full path | [`tools/parse-cwd`](./tools/parse-cwd) |

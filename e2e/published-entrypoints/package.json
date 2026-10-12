@@ -41,7 +41,6 @@
     "load-populate-files": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "named-patch": "workspace:^",
     "normalized-react-query": "workspace:^",
     "nx-lifecycle": "workspace:^",
     "parse-cwd": "workspace:^",

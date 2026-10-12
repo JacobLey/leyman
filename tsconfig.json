@@ -44,9 +44,6 @@
       "path": "./tools/format-file"
     },
     {
-      "path": "./tools/named-patch"
-    },
-    {
       "path": "./apps/nx-lifecycle"
     },
     {
