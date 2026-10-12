@@ -146,12 +146,14 @@
       "cache": true,
       "inputs": [
         "shared-globals",
-        "package-files",
+        "{projectRoot}/**/*",
+        "{workspaceRoot}/.gitignore",
         "dependency-builds",
         "{workspaceRoot}/leyman/main/scripts/check-package.mjs",
         {
           "externalDependencies": [
             "@arethetypeswrong/core",
+            "ignore",
             "publint"
           ]
         }

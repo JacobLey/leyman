@@ -22,6 +22,7 @@
     "@leyman/eslint-config": "workspace:^",
     "@typescript/native": "catalog:",
     "eslint": "catalog:",
+    "ignore": "catalog:",
     "nx": "catalog:",
     "nx-lifecycle": "workspace:^",
     "publint": "catalog:",
