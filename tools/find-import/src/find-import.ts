@@ -60,7 +60,7 @@ export const findImport = async (
             try {
                 const filePath = Path.join(basePath, file);
 
-                // In future could parallel `import` json (once experimental warnings disabled)
+                // In future could parallel `import` JSON (once experimental warnings disabled)
                 if (file.endsWith('.json')) {
                     return {
                         filePath,
