@@ -21,13 +21,21 @@ import {
     unicornPlugin,
 } from './lib/plugins.js';
 
+// Rules without `meta.languages` support every language
+const isForJavaScript = (rule: {
+    meta?: { languages?: readonly string[] | undefined } | undefined;
+}): boolean => {
+    const languages = rule.meta?.languages;
+    return !languages || languages.includes('*') || languages.includes('js/js');
+};
+
 interface PluginRules {
     rules?: Record<string, Rule.RuleModule | RuleModule<string, unknown[]>> | undefined;
 }
 export const nonDeprecatedRules = (name: string, plugin: PluginRules): Linter.RulesRecord => {
     const rules: Linter.RulesRecord = {};
     for (const [ruleName, rule] of Object.entries(plugin.rules!)) {
-        if (typeof rule === 'object' && rule.meta?.deprecated !== true) {
+        if (typeof rule === 'object' && rule.meta?.deprecated !== true && isForJavaScript(rule)) {
             rules[`${name}/${ruleName}`] = 'error';
         }
     }
@@ -150,7 +158,7 @@ export const reactComponentNamingConvention = [
 ];
 
 /**
- * Generate flat eslint config for the specified project.
+ * Generate flat ESLint config for the specified project.
  * Patterns are relative to the project, so run ESLint from the project directory,
  * or from a parent directory, where ESLint looks up the config from each file.
  *
@@ -310,7 +318,7 @@ export default function makeEslintConfigForPackage({
                 ],
                 'vars-on-top': 'off',
 
-                // Typescript
+                // TypeScript
                 ...disableReplacedTypeRules(),
                 ...nonDeprecatedRules('@typescript-eslint', typescriptPlugin),
                 '@typescript-eslint/ban-ts-comment': [
@@ -407,6 +415,14 @@ export default function makeEslintConfigForPackage({
                     {
                         allow: ['private readonly'],
                         prefer: 'class-property',
+                    },
+                ],
+                '@typescript-eslint/prefer-destructuring': [
+                    'error',
+                    {
+                        VariableDeclarator: { array: true, object: true },
+                        // `unicorn/no-unreadable-array-destructuring` forbids destructuring into properties
+                        AssignmentExpression: { array: false, object: true },
                     },
                 ],
                 '@typescript-eslint/prefer-nullish-coalescing': [
@@ -811,6 +827,16 @@ export default function makeEslintConfigForPackage({
                 // Unicorn
                 ...nonDeprecatedRules('unicorn', unicornPlugin),
                 'unicorn/catch-error-name': ['error', { ignore: [/^error$/u], name: 'err' }],
+                // Contradicts `arrow-body-style`
+                'unicorn/consistent-arrow-return-style': 'off',
+                // Contradicts `@typescript-eslint/member-ordering`
+                'unicorn/consistent-class-member-order': 'off',
+                // Successor to `unicorn/prevent-abbreviations`
+                'unicorn/name-replacements': 'off',
+                // Documentation comments are JSDoc, which prefixes each line with an asterisk
+                'unicorn/no-asterisk-prefix-in-documentation-comments': 'off',
+                // Re-exporting entry points (`index.ts`, `bin.mjs`) is how packages expose their API, and what barrelify generates
+                'unicorn/no-barrel-files': 'off',
                 // Entry-script bins (`bin.mjs`) re-export their EntryScript as default
                 'unicorn/no-exports-in-scripts': 'off',
                 'unicorn/no-keyword-prefix': 'off',
@@ -819,6 +845,8 @@ export default function makeEslintConfigForPackage({
                 'unicorn/no-null': 'off',
                 // `this` in functions is typed (`noImplicitThis`), and needed for Mocha contexts and wrappers that forward it
                 'unicorn/no-this-outside-of-class': 'off',
+                // `eslint.config.js` and other config modules export the result of a call
+                'unicorn/no-top-level-side-effects': 'off',
                 'unicorn/no-useless-undefined': ['error', { checkArguments: false }],
                 'unicorn/numeric-separators-style': [
                     'error',
@@ -829,9 +857,13 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 'unicorn/prefer-export-from': ['error', { checkUsedVariables: false }],
+                // Contradicts `unicorn/prefer-number-properties`
+                'unicorn/prefer-global-number-constants': 'off',
                 // `Iterator.concat` is not available in Node 24
                 'unicorn/prefer-iterator-concat': 'off',
                 'unicorn/prefer-ternary': ['error', 'only-single-line'],
+                // `Uint8Array.fromBase64` and `Uint8Array#toBase64` are not available in Node 24
+                'unicorn/prefer-uint8array-base64': 'off',
                 'unicorn/prevent-abbreviations': 'off',
                 'unicorn/template-indent': ['error', { indent: 4 }],
                 'unicorn/text-encoding-identifier-case': 'off',
@@ -847,14 +879,15 @@ export default function makeEslintConfigForPackage({
                 const rules: Linter.Config['rules'] = {};
 
                 for (const [ruleName, ruleSettings] of Object.entries(typescriptPlugin.rules)) {
-                    if (ruleSettings.meta.docs.requiresTypeChecking) {
-                        rules[`@typescript-eslint/${ruleName}`] = 'off';
-                        const { extendsBaseRule } = ruleSettings.meta.docs;
-                        if (typeof extendsBaseRule === 'string') {
-                            rules[extendsBaseRule] = 'error';
-                        } else if (extendsBaseRule) {
-                            rules[ruleName] = 'error';
-                        }
+                    if (!ruleSettings.meta.docs.requiresTypeChecking) {
+                        continue;
+                    }
+                    rules[`@typescript-eslint/${ruleName}`] = 'off';
+                    const { extendsBaseRule } = ruleSettings.meta.docs;
+                    if (typeof extendsBaseRule === 'string') {
+                        rules[extendsBaseRule] = 'error';
+                    } else if (extendsBaseRule) {
+                        rules[ruleName] = 'error';
                     }
                 }
 
@@ -918,6 +951,8 @@ export default function makeEslintConfigForPackage({
                 'sonarjs/pseudo-random': 'off',
                 'sonarjs/use-type-alias': 'off',
                 'unicorn/consistent-function-scoping': 'off',
+                // Fluent test setup (e.g. haywire's `bind(identifier(A).nullable())`) nests calls by design
+                'unicorn/max-nested-calls': 'off',
             },
         },
         // Disable all formatting rules

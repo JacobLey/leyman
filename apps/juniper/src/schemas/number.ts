@@ -353,7 +353,7 @@ export class NumberSchema<
                 floatMultiples.map(multipleOf => ({ multipleOf }))
             );
         } else if (floatMultiples.length > 0) {
-            [base.multipleOf] = floatMultiples;
+            base.multipleOf = floatMultiples[0];
             mergeAllOf(
                 base,
                 floatMultiples.slice(1).map(multipleOf => ({ multipleOf }))

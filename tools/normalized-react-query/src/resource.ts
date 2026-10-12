@@ -382,6 +382,8 @@ class Resource<
             revalidateIfStale
         );
         if (isolateErrors) {
+            // Stored for the links to await later, so a failure must not reject them
+            // eslint-disable-next-line unicorn/prefer-await
             promise = promise.catch(() => {});
         }
         linksActive.prefetches.push(promise);
@@ -474,13 +476,14 @@ class Resource<
         shouldRevalidate: boolean
     ): Promise<TPropagatedData> {
         if (shouldRevalidate && this.getQueryData(queryClient, params) !== undefined) {
-            // Refetches in the background if stale by the requested `staleTime`
+            // Refetches in the background if stale by the requested `staleTime`, without waiting for it
             queryClient
                 .query({
                     ...options,
                     queryKey: this.getKey(params),
                     queryFn: this.getQueryFn(params),
                 })
+                // eslint-disable-next-line unicorn/prefer-await
                 .catch(() => {});
         }
         // Cached data is never stale, so it is returned as-is

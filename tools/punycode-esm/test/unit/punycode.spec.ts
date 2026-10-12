@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-unicode-code-point-escapes -- Test vectors are UTF-16 code units from RFC 3492 and punycode.js, including deliberate (and lone) surrogates */
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import * as Punycode from 'punycode-esm';

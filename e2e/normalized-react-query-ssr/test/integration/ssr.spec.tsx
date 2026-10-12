@@ -10,6 +10,8 @@ import { afterEach, beforeEach, suite } from 'mocha-chain';
 import { fellowshipId, requests } from '../data/api.js';
 import { App } from '../data/app.js';
 
+// Compiled from `server.tsx` alongside this file
+// eslint-disable-next-line unicorn/no-missing-local-resource
 const serverPath = new URL('../data/server.js', import.meta.url);
 
 const renderOnServer = async (
@@ -31,6 +33,8 @@ const hydrateOnClient = (
     hydrate(client, state);
 
     const container = globalThis.document.createElement('div');
+    // Server-rendered markup, as the browser would receive it
+    // eslint-disable-next-line unicorn/no-unsafe-dom-html
     container.innerHTML = html;
     globalThis.document.body.append(container);
 

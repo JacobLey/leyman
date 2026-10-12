@@ -31,8 +31,9 @@ const legacyPlugin: ESLint.Plugin = {
     },
 };
 
+const linter = new Linter({ cwd: '/cwd' });
 const lint = (plugin: ESLint.Plugin): Linter.LintMessage[] =>
-    new Linter({ cwd: '/cwd' }).verify(
+    linter.verify(
         'const a = 1;',
         { plugins: { test: plugin }, rules: { 'test/legacy': 'error' } },
         '/cwd/file.js'

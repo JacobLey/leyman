@@ -124,7 +124,7 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
         const enums = [...new Set(this.#enum)];
 
         if (enums.length === 1 && !params.openApi30) {
-            [base.const] = enums;
+            base.const = enums[0];
         } else {
             base.enum = enums;
         }

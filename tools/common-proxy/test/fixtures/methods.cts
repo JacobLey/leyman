@@ -1,3 +1,4 @@
+/* eslint-disable unicorn/prefer-await -- CommonJS has no top-level `await`, and common-proxy takes a promise of the handler */
 import { commonProxy } from 'common-proxy';
 
 const methodsProm = import('./methods.js');

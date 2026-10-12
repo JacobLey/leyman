@@ -30,7 +30,6 @@
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "ajv": "catalog:",
-    "escape-string-regexp": "catalog:",
     "eslint-config-prettier": "catalog:",
     "eslint-plugin-import-x": "catalog:",
     "eslint-plugin-jsdoc": "catalog:",

@@ -854,7 +854,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
 
         if (this.#examples.length > 0) {
             if (params.openApi30) {
-                [base.example] = this.#examples;
+                base.example = this.#examples[0];
             } else {
                 base.examples = this.#examples;
             }

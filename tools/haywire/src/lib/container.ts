@@ -167,12 +167,14 @@ type RequestedType<IdOrClass> = IdOrClass extends GenericHaywireId
       : never;
 
 declare const typeTracking: unique symbol;
+/* eslint-disable unicorn/no-non-function-verb-prefix -- Keys of the methods they are named after */
 const createContainerSym = Symbol('createContainer');
 const preloadSyncSym = Symbol('preloadSync');
 const getSyncSym = Symbol('getSync');
 const addBoundInstancesSym = Symbol('addBoundInstances');
 const getIdToBindingSym = Symbol('getIdToBinding');
 const getIdToListBindingsSym = Symbol('getIdToListBindings');
+/* eslint-enable unicorn/no-non-function-verb-prefix */
 
 /**
  * TODO: Current generic logic accidentally computes this as false
@@ -741,7 +743,10 @@ export class Container<Outputs extends [Extendable]> {
         }
         this.wire();
 
+        // Starts after `#preloaded` is assigned, so a failure can reset it
+        // eslint-disable-next-line unicorn/prefer-promise-try
         this.#preloaded = Promise.resolve()
+            // eslint-disable-next-line unicorn/prefer-await
             .then(async () => {
                 const reqScope: ScopeCache = new Map();
                 const requestSingleton = async (binding: GenericBinding): Promise<void> => {
@@ -755,6 +760,7 @@ export class Container<Outputs extends [Extendable]> {
                     this.#singletonMap.keys().map(async binding => requestSingleton(binding))
                 );
             })
+            // eslint-disable-next-line unicorn/prefer-await
             .catch(async (err: unknown) => {
                 this.#preloaded = null;
                 throw err;

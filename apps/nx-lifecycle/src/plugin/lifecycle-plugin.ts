@@ -199,6 +199,8 @@ const createLifecycleNodes = async (
     );
 };
 
+// Nx loads plugins by this export name
+// eslint-disable-next-line unicorn/no-non-function-verb-prefix
 export const createNodes: CreateNodes<LifecyclePluginOptions> = [
     '**/project.json',
     createLifecycleNodes,

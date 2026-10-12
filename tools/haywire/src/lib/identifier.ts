@@ -359,6 +359,8 @@ export class HaywireId<
      * @returns a new identifier with annotation
      */
     public supplier(
+        // One of the overloads of `supplier(supplier)`, which also takes `'async'` or an object
+        // eslint-disable-next-line unicorn/consistent-boolean-name
         supplier: false
     ): HaywireId<T, Constructor, Named, List, Nullable, Undefinable, false, Defer>;
     public supplier(
@@ -454,9 +456,13 @@ export class HaywireId<
      * @returns new identifier with annotation
      */
     public list(
+        // One of the overloads of `list(list)`, which also takes `'multi'`
+        // eslint-disable-next-line unicorn/consistent-boolean-name
         list: false
     ): HaywireId<T, Constructor, Named, false, Nullable, Undefinable, Supply, Defer>;
     public list(
+        // One of the overloads of `list(list)`, which also takes `'multi'`
+        // eslint-disable-next-line unicorn/consistent-boolean-name
         list?: true
     ): HaywireId<T, Constructor, Named, true, Nullable, Undefinable, Supply, Defer>;
     public list(

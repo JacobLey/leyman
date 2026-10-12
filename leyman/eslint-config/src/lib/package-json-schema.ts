@@ -29,7 +29,8 @@ export const packageJsonSchema = {
     required: ['name'],
 };
 
-const validator = new Ajv2020({ strict: true }).compile<PackageJson>(packageJsonSchema);
+const ajv = new Ajv2020({ strict: true });
+const validator = ajv.compile<PackageJson>(packageJsonSchema);
 
 type PackageJsonAsserter = (packageJson: unknown) => asserts packageJson is PackageJson;
 export const assertIsPackageJson: PackageJsonAsserter = (

@@ -1,8 +1,7 @@
 import type { PackageJson } from './package-json-schema.js';
-import escapeStringRegexp from 'escape-string-regexp';
 
 const packageRegex = (packageName: string): string => {
-    const escaped = escapeStringRegexp(packageName);
+    const escaped = RegExp.escape(packageName);
     // Either the package name standalone, or with extra export path.
     return `${escaped}(?:$|/)`;
 };
@@ -16,7 +15,10 @@ export const getInternalRegex = (packageJson: PackageJson): RegExp => {
         packageJson.optionalDependencies,
         packageJson.peerDependencies,
     ]) {
-        for (const [packageName, versionSpecifier] of Object.entries(dependencies ?? {})) {
+        if (!dependencies) {
+            continue;
+        }
+        for (const [packageName, versionSpecifier] of Object.entries(dependencies)) {
             if (versionSpecifier.startsWith('workspace:')) {
                 internalPackages.add(packageName);
             }
