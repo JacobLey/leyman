@@ -1,13 +1,25 @@
+import type { Argv } from 'yargs';
+import type { Main } from 'entry-script';
+import type { BarrelCommandInput, RegisterCommand } from './commands/lib/types.js';
 import yargs from 'yargs';
-import { EntryScript } from 'entry-script';
-import { barrelCommand } from './commands/barrel-command.js';
+import { bind } from 'haywire';
+import { commandId } from './commands/lib/types.js';
 
 /**
  * Barrelify CLI. Run `./bin.mjs --help` for options.
  *
  * Uses `yargs` package for command line parsing and logic flow.
  */
-export class BarrelCli extends EntryScript {
+export class BarrelCli implements Main {
+    readonly #commands: readonly RegisterCommand[];
+
+    /**
+     * @param commands - every command the CLI runs
+     */
+    public constructor(commands: readonly RegisterCommand[]) {
+        this.#commands = commands;
+    }
+
     /**
      * Entry point to CLI script.
      *
@@ -15,11 +27,11 @@ export class BarrelCli extends EntryScript {
      *
      * @param argv - process arguments
      */
-    public static override async main(argv: string[]): Promise<void> {
+    public async main(argv: string[]): Promise<void> {
         // eslint-disable-next-line import-x/no-relative-parent-imports
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
-        await yargs()
+        let cli: Argv<BarrelCommandInput> = yargs()
             .scriptName('barrelify')
             .option({
                 cwd: {
@@ -36,9 +48,13 @@ export class BarrelCli extends EntryScript {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(packageJson.default.version)
-            .command(barrelCommand)
-            .parseAsync(argv, {}, BarrelCli.#yargsOutput);
+            .version(packageJson.default.version);
+
+        for (const register of this.#commands) {
+            cli = register(cli);
+        }
+
+        await cli.parseAsync(argv, {}, BarrelCli.#yargsOutput);
     }
 
     static #yargsOutput(this: void, e: unknown, _argv: unknown, log: string): void {
@@ -54,3 +70,7 @@ export class BarrelCli extends EntryScript {
         }
     }
 }
+
+export const barrelCliBinding = bind(BarrelCli)
+    .withDependencies([commandId])
+    .withConstructorProvider();

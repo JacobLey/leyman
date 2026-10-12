@@ -1,7 +1,9 @@
 import type { BarrelCommandInput, Command } from './lib/types.js';
 import { isCI } from 'ci-info';
+import { bind } from 'haywire';
 import { parseCwd } from 'parse-cwd';
 import { barrelFiles } from '../lib/barrel.js';
+import { commandId } from './lib/types.js';
 
 interface BarrelCommandExtendedInput extends BarrelCommandInput {
     ci: boolean;
@@ -47,3 +49,5 @@ export const barrelCommand: Command<BarrelCommandExtendedInput> = {
         }
     },
 };
+
+export const barrelCommandBinding = bind(commandId).withInstance(cli => cli.command(barrelCommand));

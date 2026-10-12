@@ -250,6 +250,12 @@ importers:
       globby:
         specifier: 'catalog:'
         version: 16.2.4
+      haywire:
+        specifier: workspace:^
+        version: file:tools/haywire
+      haywire-launcher:
+        specifier: workspace:^
+        version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -9861,6 +9867,8 @@ snapshots:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
       globby: 16.2.4
+      haywire: file:tools/haywire
+      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
       yargs: 18.2.0
