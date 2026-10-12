@@ -1,87 +1,75 @@
-import type { events } from 'static-emitter';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { CustomEvent } from 'static-emitter/custom-event';
 import { StaticEventTarget } from 'static-emitter/static-event-target';
+import { TypedCustomEvent } from 'static-emitter/typed-custom-event';
 import { ExtendTarget, NativeEvent } from '../data/extend-event-target.js';
 import { ServerEvent } from '../data/server-event.js';
 
 suite('StaticEventTarget', () => {
-    suite('success', () => {
-        test('Unchanged EventTarget', () => {
-            expect(StaticEventTarget).to.eq(EventTarget);
+    test('Extends EventTarget', () => {
+        const target = new StaticEventTarget();
+
+        expect(target).to.be.an.instanceOf(EventTarget);
+        expectTypeOf(target).toExtend<EventTarget>();
+    });
+
+    test('Types listeners by event name', () => {
+        const target = new ExtendTarget();
+
+        target.addEventListener('foo', event => {
+            expectTypeOf(event).toEqualTypeOf<TypedCustomEvent<'foo', 123>>();
+        });
+        target.addEventListener('foo', {
+            handleEvent: event => {
+                expectTypeOf(event).toEqualTypeOf<TypedCustomEvent<'foo', 123>>();
+            },
+        });
+        target.addEventListener('bar', event => {
+            expectTypeOf(event).toEqualTypeOf<ServerEvent<'bar'>>();
+        });
+        target.addEventListener('onStuff', event => {
+            expectTypeOf(event).toEqualTypeOf<NativeEvent>();
+        });
+        // @ts-expect-error
+        target.addEventListener('unknown', () => {});
+    });
+
+    test('Types dispatched events', () => {
+        const target = new ExtendTarget();
+
+        target.dispatchEvent(new TypedCustomEvent('foo', { detail: 123 }));
+        target.dispatchEvent(new ServerEvent('bar', '<server-data>'));
+        target.dispatchEvent(new NativeEvent('onStuff'));
+        // @ts-expect-error
+        target.dispatchEvent(new TypedCustomEvent('foo', { detail: 456 }));
+        // @ts-expect-error
+        target.dispatchEvent(new ServerEvent('foo', '<server-data>'));
+    });
+
+    test('Dispatches to and removes native listeners', () => {
+        const target = new ExtendTarget();
+        const received: string[] = [];
+        const listener = (event: ServerEvent<'bar'>): void => {
+            received.push(event.serverData);
+        };
+
+        target.addEventListener('bar', listener);
+        target.dispatchEvent(new ServerEvent('bar', '<first>'));
+        target.removeEventListener('bar', listener);
+        target.dispatchEvent(new ServerEvent('bar', '<second>'));
+
+        expect(received).to.deep.equal(['<first>']);
+    });
+
+    test('Returns whether default was prevented', () => {
+        const target = new ExtendTarget();
+        target.addEventListener('onStuff', event => {
+            event.preventDefault();
         });
 
-        suite('Declare event types', () => {
-            test('Generic parameter', () => {
-                const extendTarget = new ExtendTarget();
-                extendTarget.addEventListener('foo', event => {
-                    expectTypeOf(event).toEqualTypeOf<CustomEvent<'foo', 123>>();
-                });
-                extendTarget.addEventListener('foo', {
-                    handleEvent: event => {
-                        expectTypeOf(event).toEqualTypeOf<CustomEvent<'foo', 123>>();
-                    },
-                });
-                extendTarget.addEventListener('bar', event => {
-                    expectTypeOf(event).toEqualTypeOf<ServerEvent<'bar'>>();
-                });
-                extendTarget.addEventListener('onStuff', event => {
-                    expectTypeOf(event).toEqualTypeOf<NativeEvent>();
-                });
-
-                extendTarget.dispatchEvent(new CustomEvent('foo', { detail: 123 }));
-                extendTarget.dispatchEvent(new ServerEvent('bar', '<server-data>'));
-                extendTarget.dispatchEvent(new NativeEvent('onStuff'));
-                extendTarget.dispatchEvent(
-                    // @ts-expect-error
-                    new CustomEvent('foo', { detail: 456 })
-                );
-
-                // eslint-disable-next-line unicorn/no-invalid-remove-event-listener
-                extendTarget.removeEventListener('foo', event => {
-                    expectTypeOf(event).toEqualTypeOf<CustomEvent<'foo', 123>>();
-                });
-                extendTarget.removeEventListener('bar', {
-                    handleEvent: event => {
-                        expectTypeOf(event).toEqualTypeOf<ServerEvent<'bar'>>();
-                    },
-                });
-            });
-
-            test('Explicit event declaration', () => {
-                /**
-                 * @override
-                 */
-                class ExtendTargetDeclare extends StaticEventTarget {
-                    declare public [events]: {
-                        foo: 123;
-                        bar: ServerEvent<'bar'>;
-                        onStuff: NativeEvent;
-                    };
-                }
-
-                expectTypeOf<ExtendTargetDeclare>().branded.toEqualTypeOf<ExtendTarget>();
-            });
-
-            test('Both generics and event param', () => {
-                /**
-                 * @override
-                 */
-                class ExtendTargetCombo extends StaticEventTarget<{
-                    foo: 123;
-                }> {
-                    declare public [events]: StaticEventTarget<{
-                        foo: 123;
-                    }>[typeof events] & {
-                        bar: ServerEvent<'bar'>;
-                        onStuff: NativeEvent;
-                    };
-                }
-
-                expectTypeOf<ExtendTargetCombo>().branded.toEqualTypeOf<ExtendTarget>();
-            });
-        });
+        expect(target.dispatchEvent(new NativeEvent('onStuff', { cancelable: true }))).to.equal(
+            false
+        );
     });
 });

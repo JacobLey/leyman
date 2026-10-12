@@ -31,21 +31,12 @@
   ],
   "exports": {
     ".": "./dist/index.js",
-    "./custom-event": "./dist/custom-event.js",
     "./static-emitter": "./dist/static-emitter.js",
     "./static-event-target": "./dist/static-event-target.js",
+    "./typed-custom-event": "./dist/typed-custom-event.js",
     "./typed-event": "./dist/typed-event.js"
   },
   "imports": {
-    "#custom-event": "./dist/lib/custom-event/custom-event.js",
-    "#typed-event": {
-      "types": "./dist/lib/typed-event/type.js",
-      "default": "./dist/lib/typed-event/typed-event.js"
-    },
-    "#static-event-target": {
-      "types": "./dist/lib/static-event-target/type.js",
-      "default": "./dist/lib/static-event-target/static-event-target.js"
-    },
     "#internal/*": "./dist/*"
   },
   "devDependencies": {

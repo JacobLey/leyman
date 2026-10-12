@@ -1,137 +1,80 @@
-import type CustomEvent from '#custom-event';
-
-export declare const events: unique symbol;
+import type { TypedCustomEvent } from '../typed-custom-event.js';
 
 /**
- * First property is event "type", second is "detail".
+ * Map of event name to either an `Event` (dispatched as-is) or a detail value
+ * (wrapped in a `TypedCustomEvent`).
  */
-export type EventDict = Record<string | symbol, unknown>;
-
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions, @typescript-eslint/no-empty-object-type
-export type EmptyObject = {};
+export type EventMap = Record<string, unknown>;
 
 /**
- * Typing interface of emitter.
- *
- * `events` indicates events declared explicitly (e.g. via class extensions),
- * and via generic parameters.
- *
- * @template T map of event to type
+ * Default event map, which declares no events.
  */
-export interface IEmitter<T extends EventDict = EventDict> {
-    [events]: T;
+// eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type -- intentionally declares no keys
+export type NoEvents = Record<never, never>;
+
+/**
+ * All declared event names.
+ *
+ * @template Events event map
+ */
+export type EventName<Events extends EventMap> = Extract<keyof Events, string>;
+
+/**
+ * Event names whose value is a detail rather than an `Event`.
+ * Only these can be used with the `StaticEmitter` helper methods.
+ *
+ * @template Events event map
+ */
+export type DetailEventName<Events extends EventMap> = {
+    [K in EventName<Events>]: Events[K] extends Event ? never : K;
+}[EventName<Events>];
+
+/**
+ * The event object dispatched for an event name.
+ *
+ * @template Events event map
+ * @template K event name
+ */
+export type EventOf<Events extends EventMap, K extends EventName<Events>> = Events[K] extends Event
+    ? Events[K]
+    : TypedCustomEvent<K, Events[K]>;
+
+/**
+ * Union of every event object that may be dispatched.
+ *
+ * @template Events event map
+ */
+export type AnyEventOf<Events extends EventMap> = {
+    [K in EventName<Events>]: EventOf<Events, K>;
+}[EventName<Events>];
+
+/**
+ * Native listener object, typed for a single event.
+ *
+ * @template Events event map
+ * @template K event name
+ */
+export interface TypedEventListenerObject<Events extends EventMap, K extends EventName<Events>> {
+    handleEvent: (event: EventOf<Events, K>) => void;
 }
 
 /**
- * List of all registered events for an emitter.
+ * Native listener (function or `handleEvent` object), typed for a single event.
  *
- * @template Emitter emitter type
+ * @template Events event map
+ * @template K event name
  */
-export type AllEventTypes<Emitter extends IEmitter> = keyof Emitter[typeof events];
+export type TypedEventListener<Events extends EventMap, K extends EventName<Events>> =
+    | TypedEventListenerObject<Events, K>
+    | ((event: EventOf<Events, K>) => void);
 
 /**
- * Helper type to access "detail" of event given "type".
+ * `StaticEmitter` listener, which receives the unwrapped detail first.
  *
- * @template Emitter emitter type
- * @template Event event name
+ * @template Events event map
+ * @template K event name
  */
-export type GetEventDetail<
-    Emitter extends IEmitter,
-    Event extends AllEventTypes<Emitter>,
-> = Emitter[typeof events][Event];
-
-/**
- * List _all_ registered event names, both native `Event` and wrapped `CustomEvent`.
- *
- * Restricted to `string` as that is native implementation requirement.
- *
- * @template Emitter emitter type
- */
-export type EventList<Emitter extends IEmitter> = Extract<AllEventTypes<Emitter>, string>;
-
-/**
- * List of events that support being wrapped by custom event.
- *
- * Not restricted to string as non-strings are replaced with pseudo-random strings.
- *
- * Events that declare explicit Event types are not allowed and must use native methods.
- *
- * @template Emitter emitter type
- */
-export type CustomEventList<Emitter extends IEmitter> = {
-    [K in AllEventTypes<Emitter>]: GetEventDetail<Emitter, K> extends Event ? never : K;
-}[AllEventTypes<Emitter>] &
-    (string | symbol);
-
-/**
- * Convenience wrapper for assigning the `type` + `detail` to a custom event if possible.
- *
- * If `type` is declared as a symbol | number, it will be typed as a generic `string`.
- *
- * @template Type event name
- * @template Detail context
- */
-export type EventType<Type extends number | string | symbol, Detail> = Detail extends Event
-    ? Detail
-    : CustomEvent<Type extends string ? Type : string, Detail>;
-
-export type EventListenerParam<
-    Emitter extends IEmitter,
-    EventName extends EventList<Emitter>,
-> = EventType<EventName, GetEventDetail<Emitter, EventName>>;
-
-/**
- * Native EventTarget listener, with additional types for event + detail.
- *
- * @template Emitter event mapper
- * @template EventName event id
- */
-type EventTargetCallback<Emitter extends IEmitter, EventName extends EventList<Emitter>> = (
-    event: EventListenerParam<Emitter, EventName>
-) => void;
-
-/**
- * Native EventTarget listeners can also be an object with `handleEvent` method.
- *
- * @template Emitter event mapper
- * @template EventName event id
- */
-interface EventTargetHandler<Emitter extends IEmitter, EventName extends EventList<Emitter>> {
-    handleEvent: EventTargetCallback<Emitter, EventName>;
-}
-
-/**
- * Convenience union of both allowed native listener signatures.
- *
- * @template Emitter event mapper
- * @template EventName event id
- */
-export type EventTargetListener<Emitter extends IEmitter, EventName extends EventList<Emitter>> =
-    | EventTargetCallback<Emitter, EventName>
-    | EventTargetHandler<Emitter, EventName>;
-
-/**
- * Null is required for consistency with default types.
- * Usage of null is NOOP, and will often log internal warnings.
- *
- * @template Emitter event mapper
- * @template EventName event id
- */
-export type NullishEventTargetListener<
-    Emitter extends IEmitter,
-    EventName extends EventList<Emitter>,
-> = EventTargetListener<Emitter, EventName> | null;
-
-/**
- * CustomEvent listener that is internally wrapped for EventTarget.
- *
- * @template Emitter event mapper
- * @template EventName event id
- */
-export type CustomEventListener<
-    Emitter extends IEmitter,
-    EventName extends CustomEventList<Emitter>,
-> = (
-    eventDetail: GetEventDetail<Emitter, EventName>,
-    customEvent: EventType<EventName, GetEventDetail<Emitter, EventName>>
+export type DetailListener<Events extends EventMap, K extends DetailEventName<Events>> = (
+    detail: Events[K],
+    event: TypedCustomEvent<K, Events[K]>
 ) => void;

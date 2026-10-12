@@ -1,9 +1,7 @@
 import { suite, test } from 'mocha-chain';
 
-suite('static-emitter', () => {
+suite('types', () => {
     test('coverage', async () => {
-        await import('#internal/lib/types.js');
-        await import('#internal/lib/static-event-target/type.js');
-        await import('#internal/lib/typed-event/type.js');
+        await Promise.all([import('#internal/lib/types.js'), import('#internal/types.js')]);
     });
 });

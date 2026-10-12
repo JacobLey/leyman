@@ -1,144 +1,199 @@
-import type { events } from 'static-emitter';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
-import { CustomEvent, StaticEmitter } from 'static-emitter';
-import { CustomEmitter, eventSym } from '../data/custom-emitter.js';
+import { StaticEmitter, StaticEventTarget, TypedCustomEvent } from 'static-emitter';
+import { CustomEmitter } from '../data/custom-emitter.js';
 import { ServerEvent } from '../data/server-event.js';
 
 suite('StaticEmitter', () => {
-    suite('success', () => {
-        test('Extends EventTarget', () => {
-            expect(new StaticEmitter()).to.be.an.instanceOf(EventTarget);
+    test('Extends StaticEventTarget', () => {
+        expect(new StaticEmitter()).to.be.an.instanceOf(StaticEventTarget);
+    });
+
+    test('Only detail events are allowed in helpers', () => {
+        const emitter = new CustomEmitter();
+
+        // @ts-expect-error
+        emitter.on('bar', () => {});
+        // @ts-expect-error
+        emitter.emit('bar', new ServerEvent('bar', '<server-data>'));
+        // @ts-expect-error
+        emitter.emit('foo', 456);
+    });
+
+    test('Subclasses can extend events via generic', () => {
+        /**
+         * @override
+         * @template Events additional events
+         */
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters -- the generic is the extension point under test
+        class BaseEmitter<Events extends Record<string, unknown>> extends StaticEmitter<
+            Events & { base: string }
+        > {}
+        /**
+         * @override
+         */
+        class ChildEmitter extends BaseEmitter<{ child: number }> {}
+
+        const emitter = new ChildEmitter();
+        emitter.on('base', detail => {
+            expectTypeOf(detail).toEqualTypeOf<string>();
+        });
+        emitter.on('child', detail => {
+            expectTypeOf(detail).toEqualTypeOf<number>();
+        });
+    });
+
+    suite('on', () => {
+        test('Receives detail and event', () => {
+            const emitter = new CustomEmitter();
+            const received: unknown[] = [];
+
+            emitter.on('data', (detail, event) => {
+                expectTypeOf(detail).toEqualTypeOf<{ myData: string }>();
+                expectTypeOf(event).toEqualTypeOf<TypedCustomEvent<'data', { myData: string }>>();
+                received.push(detail, event.type, event instanceof TypedCustomEvent);
+            });
+            emitter.emit('data', { myData: '<my-data>' });
+
+            expect(received).to.deep.equal([{ myData: '<my-data>' }, 'data', true]);
         });
 
-        suite('Declare event types', () => {
-            test('Generic parameter', () => {
-                const customEmitter = new CustomEmitter();
-                customEmitter.on('foo', (...args) => {
-                    expectTypeOf(args).toEqualTypeOf<[123, CustomEvent<'foo', 123>]>();
-                });
-                customEmitter.addListener('foo', (...args) => {
-                    expectTypeOf(args).toEqualTypeOf<[123, CustomEvent<'foo', 123>]>();
-                });
-                // @ts-expect-error
-                customEmitter.on('bar', () => {});
+        test('Visible to native listeners', () => {
+            const emitter = new CustomEmitter();
+            const received: number[] = [];
 
-                customEmitter.emit('foo', 123);
-                customEmitter.emit(eventSym, { myData: '<my-data>' });
-                customEmitter.emit(
-                    // @ts-expect-error
-                    'bar',
-                    new ServerEvent('bar', '<server-data>')
-                );
-
-                customEmitter.off('foo', (detail: 123) => {
-                    expectTypeOf(detail).toEqualTypeOf<123>();
-                });
-                // @ts-expect-error
-                customEmitter.off('foo', (detail: 124) => {
-                    expectTypeOf(detail).toEqualTypeOf<124>();
-                });
-                customEmitter.off('foo', {
-                    handleEvent: detail => {
-                        expectTypeOf(detail).toEqualTypeOf<CustomEvent<'foo', 123>>();
-                    },
-                });
-                customEmitter.off('bar', event => {
-                    expectTypeOf(event).toEqualTypeOf<ServerEvent<'bar'>>();
-                });
-                customEmitter.off('bar', event => {
-                    expectTypeOf(event).toEqualTypeOf<ServerEvent<'bar'>>();
-                });
-                customEmitter.removeListener(eventSym, (...args) => {
-                    expectTypeOf(args).toEqualTypeOf<
-                        [{ myData: string }, CustomEvent<string, { myData: string }>]
-                    >();
-                });
+            emitter.addEventListener('foo', event => {
+                received.push(event.detail);
             });
+            emitter.emit('foo', 123);
 
-            test('Explicit event declaration', () => {
-                /**
-                 * @override
-                 */
-                class CustomEmitterDeclare extends StaticEmitter {
-                    declare public [events]: {
-                        foo: 123;
-                        bar: ServerEvent<'bar'>;
-                        [eventSym]: { myData: string };
-                    };
-                }
-
-                expectTypeOf<CustomEmitterDeclare>().branded.toEqualTypeOf<CustomEmitter>();
-            });
-
-            test('Both generics and event param', () => {
-                /**
-                 * @override
-                 */
-                class CustomEmitterCombo extends StaticEmitter<{
-                    foo: 123 | 456;
-                    bar: ServerEvent<'bar'>;
-                }> {
-                    declare public [events]: StaticEmitter<{
-                        foo: 123 | 456;
-                        bar: ServerEvent<'bar'>;
-                    }>[typeof events] & {
-                        foo: 123 | 789;
-                        [eventSym]: { myData: string };
-                    };
-                }
-
-                expectTypeOf<CustomEmitterCombo>().branded.toEqualTypeOf<CustomEmitter>();
-            });
+            expect(received).to.deep.equal([123]);
         });
 
-        test('Wrap custom event listeners', () => {
-            let order = 0;
-
-            const customEmitter = new CustomEmitter();
-
-            const listener = (detail: number, event: CustomEvent<string, number>): void => {
-                ++order;
-                expect(order).to.equal(1);
-                expect(detail).to.equal(123);
-                expect(event).to.be.an.instanceOf(CustomEvent);
-                expect(event.type).to.equal('foo');
-                expect(event.detail).to.equal(123);
+        test('Registers the same listener each time', () => {
+            const emitter = new CustomEmitter();
+            let count = 0;
+            const listener = (): void => {
+                ++count;
             };
-            customEmitter.once('foo', listener);
-            // Ignored
-            customEmitter.once('foo', listener);
-            customEmitter.emit('foo', 123);
 
-            const handler = {
-                handleEvent: (event: CustomEvent<'foo', 123>): void => {
-                    ++order;
-                    expect(order).to.equal(2);
-                    expect(event).to.be.an.instanceOf(CustomEvent);
-                    expect(event.type).to.equal('foo');
-                    expect(event.detail).to.equal(123);
+            emitter.on('foo', listener);
+            emitter.on('foo', listener);
+            emitter.emit('foo', 123);
+
+            expect(count).to.equal(2);
+        });
+
+        test('Returns unsubscribe', () => {
+            const emitter = new CustomEmitter();
+            let count = 0;
+
+            const unsubscribe = emitter.on('foo', () => {
+                ++count;
+            });
+            emitter.emit('foo', 123);
+            unsubscribe();
+            emitter.emit('foo', 123);
+
+            expect(count).to.equal(1);
+        });
+
+        test('Unsubscribes on abort', () => {
+            const emitter = new CustomEmitter();
+            const controller = new AbortController();
+            let count = 0;
+
+            emitter.on(
+                'foo',
+                () => {
+                    ++count;
                 },
-            };
-            customEmitter.addEventListener('foo', handler);
-            customEmitter.emit('foo', 123);
+                { signal: controller.signal }
+            );
+            controller.abort();
+            emitter.emit('foo', 123);
 
-            customEmitter.off('foo', handler);
-            customEmitter.emit('foo', 123);
+            expect(count).to.equal(0);
+        });
+    });
 
-            customEmitter.addListener(eventSym, (detail, event) => {
-                ++order;
-                expect(order).to.equal(3);
-                expect(detail).to.deep.equal({ myData: '<my-data>' });
-                expect(event).to.be.an.instanceOf(CustomEvent);
-                expect(event.detail).to.deep.equal({ myData: '<my-data>' });
+    suite('once', () => {
+        test('Only invoked once', () => {
+            const emitter = new CustomEmitter();
+            let count = 0;
+
+            emitter.once('foo', () => {
+                ++count;
             });
-            customEmitter.emit(eventSym, { myData: '<my-data>' });
+            emitter.emit('foo', 123);
+            emitter.emit('foo', 123);
 
-            customEmitter.off(eventSym, () => {});
+            expect(count).to.equal(1);
+        });
+    });
 
-            ++order;
-            expect(order).to.equal(4);
+    suite('next', () => {
+        test('Resolves with next detail', async () => {
+            const emitter = new CustomEmitter();
+
+            const next = emitter.next('data');
+            emitter.emit('data', { myData: '<my-data>' });
+
+            expectTypeOf(next).toEqualTypeOf<Promise<{ myData: string }>>();
+            await expect(next).to.eventually.deep.equal({ myData: '<my-data>' });
+        });
+
+        test('Releases signal after resolving', async () => {
+            const emitter = new CustomEmitter();
+            const controller = new AbortController();
+
+            const next = emitter.next('foo', { signal: controller.signal });
+            emitter.emit('foo', 123);
+            controller.abort();
+
+            await expect(next).to.eventually.equal(123);
+        });
+
+        test('Rejects when aborted', async () => {
+            const emitter = new CustomEmitter();
+            const controller = new AbortController();
+            const reason = new Error('<aborted>');
+
+            const next = emitter.next('foo', { signal: controller.signal });
+            controller.abort(reason);
+
+            await expect(next).to.be.rejectedWith(reason);
+        });
+
+        test('Rejects when already aborted', async () => {
+            const emitter = new CustomEmitter();
+            const reason = new Error('<aborted>');
+
+            await expect(
+                emitter.next('foo', { signal: AbortSignal.abort(reason) })
+            ).to.be.rejectedWith(reason);
+        });
+    });
+
+    suite('emit', () => {
+        test('Detail is optional when it accepts undefined', () => {
+            const emitter = new CustomEmitter();
+            const received: unknown[] = [];
+
+            emitter.on('ready', detail => {
+                received.push(detail);
+            });
+            emitter.emit('ready');
+
+            expect(received).to.deep.equal([undefined]);
+        });
+
+        test('Detail is otherwise required', () => {
+            const emitter = new CustomEmitter();
+
+            // @ts-expect-error
+            emitter.emit('foo');
         });
     });
 });
