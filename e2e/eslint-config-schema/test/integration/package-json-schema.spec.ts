@@ -27,6 +27,6 @@ suite('package.json schema', () => {
     });
 
     test('Type matches the type juniper infers', () => {
-        expectTypeOf<PackageJson>().branded.toEqualTypeOf<SchemaType<typeof juniperSchema>>();
+        expectTypeOf<PackageJson>().toEqualTypeOf<SchemaType<typeof juniperSchema>>();
     });
 });
