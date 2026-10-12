@@ -2,10 +2,14 @@
 
 import { checkOverflow, rangeError } from '#errors';
 
-/** Highest positive signed 32-bit float value */
+//
+// Highest positive signed 32-bit float value
+//
 const maxInt = 0x7fffffff;
 
-/** Bootstring parameters */
+//
+// Bootstring parameters
+//
 const base = 36;
 const tMin = 1;
 const tMax = 26;
@@ -17,9 +21,11 @@ const delimiter = '-'; // '\x2D'
 
 const baseMinusTMin = base - tMin;
 
-/** Regular expressions */
-const regexNonASCII = /[^\0-\u007F]/u; // Non-ASCII chars. Note: U+007F DEL is excluded too.
-const regexSeparators = /[\u002E\u3002\uFF0E\uFF61]/gu; // RFC 3490 separators
+//
+// Regular expressions
+//
+const regexNonASCII = /[^\0-\u{7F}]/u; // Non-ASCII chars. Note: U+007F DEL is excluded too.
+const regexSeparators = /[\u{2E}\u{3002}\u{FF0E}\u{FF61}]/gu; // RFC 3490 separators
 
 /**
  * A simple `Array#map`-like wrapper to work with domain name strings or email addresses.
@@ -114,10 +120,7 @@ const basicToDigit = (codePoint: number): number => {
     if (codePoint >= 0x41 && codePoint < 0x5b) {
         return codePoint - 0x41;
     }
-    if (codePoint >= 0x61 && codePoint < 0x7b) {
-        return codePoint - 0x61;
-    }
-    return base;
+    return codePoint >= 0x61 && codePoint < 0x7b ? codePoint - 0x61 : base;
 };
 
 /**
@@ -144,13 +147,13 @@ const digitToBasic = (digit: number): number => {
  *
  * @param delta - encoded delta
  * @param numPoints - number of points points
- * @param firstTime - is first time
+ * @param isFirstTime - whether this is the first adaptation
  * @returns bias adaptation
  */
-const adapt = (delta: number, numPoints: number, firstTime: boolean): number => {
+const adapt = (delta: number, numPoints: number, isFirstTime: boolean): number => {
     let k = 0;
     // eslint-disable-next-line no-bitwise
-    let newDelta = firstTime ? Math.floor(delta / damp) : delta >> 1;
+    let newDelta = isFirstTime ? Math.floor(delta / damp) : delta >> 1;
     newDelta += Math.floor(newDelta / numPoints);
     // eslint-disable-next-line no-bitwise
     const minCheck = (baseMinusTMin * tMax) >> 1;
@@ -159,6 +162,96 @@ const adapt = (delta: number, numPoints: number, firstTime: boolean): number => 
         k += base;
     }
     return Math.floor(k + ((baseMinusTMin + 1) * newDelta) / (newDelta + skew));
+};
+
+/**
+ * Threshold for the digit at position `k` of a generalized variable-length integer, as per section 3.3 of RFC 3492.
+ *
+ * @see {@link https://tools.ietf.org/html/rfc3492#section-3.3}
+ *
+ * @param k - position of the digit, as a multiple of `base`
+ * @param bias - current bias
+ * @returns threshold, clamped to `tMin` and `tMax`
+ */
+const threshold = (k: number, bias: number): number => {
+    if (k <= bias) {
+        return tMin;
+    }
+    return k >= bias + tMax ? tMax : k - bias;
+};
+
+/**
+ * Decode a generalized variable-length integer, as per section 3.3 of RFC 3492.
+ *
+ * The overflow checking is easier if we increase `i` as we go,
+ * so the integer is added to `i` rather than returned on its own.
+ *
+ * @param input - Punycode string
+ * @param start - index of the first character of the integer
+ * @param i - value to add the integer to
+ * @param bias - current bias
+ * @returns index of the next character to be consumed, and `i` plus the integer
+ */
+const decodeInteger = (
+    input: string,
+    start: number,
+    i: number,
+    bias: number
+): { index: number; i: number } => {
+    let index = start;
+    let sum = i;
+    let w = 1;
+    let k = base;
+    while (true) {
+        checkOverflow(index, input.length, {
+            gte: true,
+            error: 'invalid-input',
+        });
+
+        const digit = basicToDigit(input.codePointAt(index)!);
+        ++index;
+
+        checkOverflow(digit, base, { gte: true, error: 'invalid-input' });
+        checkOverflow(digit, Math.floor((maxInt - sum) / w));
+
+        sum += digit * w;
+        const t = threshold(k, bias);
+
+        if (digit < t) {
+            return { index, i: sum };
+        }
+
+        const baseMinusT = base - t;
+        checkOverflow(w, Math.floor(maxInt / baseMinusT));
+
+        w *= baseMinusT;
+        k += base;
+    }
+};
+
+/**
+ * Encode a generalized variable-length integer, as per section 3.3 of RFC 3492.
+ *
+ * @param delta - integer to encode
+ * @param bias - current bias
+ * @returns basic code points representing the integer
+ */
+const encodeInteger = (delta: number, bias: number): string[] => {
+    const output: string[] = [];
+    let q = delta;
+    let k = base;
+    while (true) {
+        const t = threshold(k, bias);
+        if (q < t) {
+            output.push(String.fromCodePoint(digitToBasic(q)));
+            return output;
+        }
+        const qMinusT = q - t;
+        const baseMinusT = base - t;
+        output.push(String.fromCodePoint(digitToBasic(t + (qMinusT % baseMinusT))));
+        q = Math.floor(qMinusT / baseMinusT);
+        k += base;
+    }
 };
 
 /**
@@ -200,38 +293,9 @@ export const decode = (input: string): string => {
     while (index < inputLength) {
         // `index` is the index of the next character to be consumed.
         // Decode a generalized variable-length integer into `delta`,
-        // which gets added to `i`. The overflow checking is easier
-        // if we increase `i` as we go, then subtract off its starting
-        // value at the end to obtain `delta`.
+        // which gets added to `i`.
         const oldi = i;
-        let w = 1;
-        let k = base;
-        while (true) {
-            checkOverflow(index, inputLength, {
-                gte: true,
-                error: 'invalid-input',
-            });
-
-            const digit = basicToDigit(input.codePointAt(index)!);
-            ++index;
-
-            checkOverflow(digit, base, { gte: true, error: 'invalid-input' });
-            checkOverflow(digit, Math.floor((maxInt - i) / w));
-
-            i += digit * w;
-            // eslint-disable-next-line no-nested-ternary, sonarjs/no-nested-conditional
-            const t = k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
-
-            if (digit < t) {
-                break;
-            }
-
-            const baseMinusT = base - t;
-            checkOverflow(w, Math.floor(maxInt / baseMinusT));
-
-            w *= baseMinusT;
-            k += base;
-        }
+        ({ index, i } = decodeInteger(input, index, i, bias));
 
         const out = output.length + 1;
         bias = adapt(i - oldi, out, oldi === 0);
@@ -314,29 +378,14 @@ export const encode = (input: string): string => {
                 ++delta;
                 checkOverflow(delta, maxInt);
             }
-            if (currentValue === n) {
-                // Represent delta as a generalized variable-length integer.
-                let q = delta;
-                let k = base;
-                while (true) {
-                    const t =
-                        // eslint-disable-next-line no-nested-ternary, sonarjs/no-nested-conditional
-                        k <= bias ? tMin : k >= bias + tMax ? tMax : k - bias;
-                    if (q < t) {
-                        break;
-                    }
-                    const qMinusT = q - t;
-                    const baseMinusT = base - t;
-                    output.push(String.fromCodePoint(digitToBasic(t + (qMinusT % baseMinusT))));
-                    q = Math.floor(qMinusT / baseMinusT);
-                    k += base;
-                }
-
-                output.push(String.fromCodePoint(digitToBasic(q)));
-                bias = adapt(delta, handledCPCountPlusOne, handledCPCount === basicLength);
-                delta = 0;
-                ++handledCPCount;
+            if (currentValue !== n) {
+                continue;
             }
+            // Represent delta as a generalized variable-length integer.
+            output.push(...encodeInteger(delta, bias));
+            bias = adapt(delta, handledCPCountPlusOne, handledCPCount === basicLength);
+            delta = 0;
+            ++handledCPCount;
         }
 
         ++delta;

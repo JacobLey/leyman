@@ -204,7 +204,7 @@ const testData = {
     },
     separators: {
         'Using U+002E as separator': {
-            decoded: 'ma\u00F1ana\u002Ecom',
+            decoded: 'ma\u00F1ana.com',
             encoded: 'xn--maana-pta.com',
         },
         'Using U+3002 as separator': {
