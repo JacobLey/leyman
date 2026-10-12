@@ -9,12 +9,15 @@ import { isPopulateFileParams } from './lib/populate-files-validator.js';
  * @returns list of populate-files params exported by the file
  */
 export const loadFile = async (filePath: string): Promise<PopulateFileParams[]> => {
-    const mod: unknown = await import(filePath).catch((err: unknown) => {
+    let mod: unknown;
+    try {
+        mod = await import(filePath);
+    } catch (err) {
         if (String(err).includes('ERR_MODULE_NOT_FOUND')) {
-            throw new Error(`JS file not found: ${filePath}`);
+            throw new Error(`JS file not found: ${filePath}`, { cause: err });
         }
         throw err;
-    });
+    }
     const params = defaultImport(mod);
 
     if (isPopulateFileParams(params)) {
