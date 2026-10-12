@@ -32,10 +32,7 @@ export class Prettier {
 
         // Only load prettier once known to be installed
         const { resolveConfigFile } = await import('prettier');
-        if (await resolveConfigFile()) {
-            return 2;
-        }
-        return 1;
+        return (await resolveConfigFile()) ? 2 : 1;
     }
 
     async #formatPrettierFiles(files: string[]): Promise<void> {

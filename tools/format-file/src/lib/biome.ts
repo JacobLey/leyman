@@ -32,10 +32,7 @@ export class Biome {
         }
 
         const file = await findUp(['biome.json', 'biome.jsonc']);
-        if (file) {
-            return 2;
-        }
-        return 1;
+        return file ? 2 : 1;
     }
 
     async #formatBiomeFiles(files: string[]): Promise<void> {

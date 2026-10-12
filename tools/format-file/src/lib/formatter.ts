@@ -61,12 +61,7 @@ export class Formatter {
                 format: this.#prettier.formatPrettierFiles,
             },
         ]
-            .filter(({ name }) => {
-                if (formatter === 'inherit') {
-                    return true;
-                }
-                return formatter === name;
-            })
+            .filter(({ name }) => formatter === 'inherit' || formatter === name)
             .filter(({ usable }) => usable > 0)
             .toSorted((a, b) => b.usable - a.usable);
 
