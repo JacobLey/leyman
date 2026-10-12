@@ -11,15 +11,15 @@ suite('framework', () => {
         test('Invokes native suite', () => {
             const fake = createFakeFramework();
             const chain = createChain(fake.framework);
-            let invoked = false;
+            let isInvoked = false;
 
             chain.suite('suite', () => {
-                invoked = true;
+                isInvoked = true;
             });
             chain.suite.only('suite.only', () => {});
             chain.suite.skip('suite.skip', () => {});
 
-            expect(invoked).to.equal(true);
+            expect(isInvoked).to.equal(true);
             expect(fake.registrations.map(({ method }) => method)).to.deep.equal([
                 'suite',
                 'suite.only',
@@ -30,14 +30,14 @@ suite('framework', () => {
         test('Binds native this', () => {
             const fake = createFakeFramework();
             const chain = createChain(fake.framework);
-            let invoked = false;
+            let isInvoked = false;
 
             chain.suite('suite', function (this: unknown) {
                 expect(this).to.deep.equal({ suite: 'suite' });
-                invoked = true;
+                isInvoked = true;
             });
 
-            expect(invoked).to.equal(true);
+            expect(isInvoked).to.equal(true);
         });
 
         test('Rejects async callbacks', () => {
@@ -53,15 +53,15 @@ suite('framework', () => {
         test('Allows async callbacks when supported', async () => {
             const fake = createFakeFramework({ allowAsyncSuites: true });
             const chain = createChain(fake.framework);
-            let invoked = false;
+            let isInvoked = false;
 
             const result = chain.suite('suite', async () => {
-                invoked = true;
+                isInvoked = true;
             });
 
             expect(result).to.be.an.instanceOf(Promise);
             await result;
-            expect(invoked).to.equal(true);
+            expect(isInvoked).to.equal(true);
         });
     });
 

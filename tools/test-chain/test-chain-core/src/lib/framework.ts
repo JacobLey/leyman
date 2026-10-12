@@ -75,10 +75,10 @@ export interface ChainFramework<Key extends object> {
  * Hooks/tests/suites declared while one is executing are either silently ignored
  * or rejected by the framework, so reject them up front.
  */
-let executing = 0;
+const executing = { count: 0 };
 
 export const checkLock = (): void => {
-    if (executing > 0) {
+    if (executing.count > 0) {
         throw new Error('Cannot create new hook/suite/test while executing a hook/test');
     }
 };
@@ -115,12 +115,12 @@ const toNativeCallback = <Key extends object>(
 ): NativeMethod => {
     if (framework.supportsDone && cb.length > 1) {
         return function (this: unknown, done: Done): void {
-            ++executing;
-            let finished = false;
+            ++executing.count;
+            let isFinished = false;
             const finish: Done = err => {
-                if (!finished) {
-                    finished = true;
-                    --executing;
+                if (!isFinished) {
+                    isFinished = true;
+                    --executing.count;
                 }
 
                 done(err);
@@ -141,14 +141,14 @@ const toNativeCallback = <Key extends object>(
     return async function (this: unknown): Promise<void> {
         // eslint-disable-next-line prefer-rest-params, sonarjs/arguments-usage
         const args: unknown[] = [...arguments];
-        ++executing;
+        ++executing.count;
         try {
             await handler({
                 key: getKey(this, args),
                 call: async ctx => cb.call(this, ctx, ...args),
             });
         } finally {
-            --executing;
+            --executing.count;
         }
     };
 };
