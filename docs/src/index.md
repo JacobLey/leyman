@@ -16,4 +16,7 @@ features:
   - title: nx-lifecycle
     details: Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, …) and the targets bound to them.
     link: /nx-lifecycle/
+  - title: Barrelify
+    details: Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.
+    link: /barrelify/
 ---

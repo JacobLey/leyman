@@ -158,6 +158,23 @@ export default defineConfig({
                     { text: 'Why nx-lifecycle', link: '/nx-lifecycle/why' },
                 ],
             },
+            {
+                text: 'Barrelify',
+                items: [
+                    { text: 'Overview', link: '/barrelify/' },
+                    { text: 'Getting started', link: '/barrelify/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [
+                            { text: 'Module systems', link: '/barrelify/guides/module-systems' },
+                        ],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API and CLI', link: '/barrelify/reference/api' }],
+                    },
+                ],
+            },
         ],
     },
 });

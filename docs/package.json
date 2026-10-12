@@ -19,6 +19,7 @@
     "@shikijs/vitepress-twoslash": "catalog:",
     "@standard-schema/spec": "catalog:",
     "ajv": "catalog:",
+    "barrelify": "workspace:^",
     "enum-to-array": "workspace:^",
     "floating-vue": "catalog:",
     "haywire": "workspace:^",
