@@ -128,8 +128,8 @@ catalogs:
       specifier: ^4.17.1
       version: 4.17.1
     eslint-plugin-jsdoc:
-      specifier: ^64.5.4
-      version: 64.5.4
+      specifier: ^65.1.0
+      version: 65.1.0
     eslint-plugin-jsx-a11y:
       specifier: ^6.10.2
       version: 6.10.2
@@ -1074,7 +1074,7 @@ importers:
         version: 4.17.1(@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-jsdoc:
         specifier: 'catalog:'
-        version: 64.5.4(@typescript/typescript6@6.0.2)(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 65.1.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-jsx-a11y:
         specifier: 'catalog:'
         version: 6.10.2(eslint@9.39.5(supports-color@8.1.1))
@@ -5033,8 +5033,8 @@ packages:
       eslint-import-resolver-node:
         optional: true
 
-  eslint-plugin-jsdoc@64.5.4:
-    resolution: {integrity: sha512-xfRhXPSSWT612muJ6XTvxuVJ8zYHv99qNgBqPVqF28aSqoy4s4XbSkrWXnYA2hl5ejC02yEpk6fqkj3BmJ6Xbg==}
+  eslint-plugin-jsdoc@65.1.0:
+    resolution: {integrity: sha512-P7levv6MorzYZ85Yy/UVOAY9FKxwU6NJ9+c02QPYhzoIVg007OCtMi+9na8Xkho64Bu89QguoLSxH78YSmy1Zg==}
     engines: {node: ^22.22.2 || >=24.15.0}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
@@ -8684,7 +8684,7 @@ snapshots:
       escape-string-regexp: 5.0.0
       eslint-config-prettier: 10.1.8(eslint@9.39.5(supports-color@8.1.1))
       eslint-plugin-import-x: 4.17.1(@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1)
-      eslint-plugin-jsdoc: 64.5.4(@typescript/typescript6@6.0.2)(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1)
+      eslint-plugin-jsdoc: 65.1.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-jsx-a11y: 6.10.2(eslint@9.39.5(supports-color@8.1.1))
       eslint-plugin-n: 18.4.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(supports-color@8.1.1))
       eslint-plugin-react: 7.37.5(eslint@9.39.5(supports-color@8.1.1))
@@ -10557,7 +10557,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-jsdoc@64.5.4(@typescript/typescript6@6.0.2)(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1):
+  eslint-plugin-jsdoc@65.1.0(@typescript/typescript6@6.0.2)(eslint@9.39.5(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
       '@es-joy/jsdoccomment': 0.98.0
       '@es-joy/resolve.exports': 1.2.0
