@@ -23,8 +23,8 @@ const parseContent = async (content: FileContent): Promise<Uint8Array> => {
     return stringToUint8Array(str);
 };
 
-const normalizeCheck = (check?: boolean | null): boolean => check ?? isCI;
-const normalizeDryRun = (dryRun?: boolean | null): boolean => dryRun ?? false;
+const shouldCheck = (check?: boolean | null): boolean => check ?? isCI;
+const isDryRun = (dryRun?: boolean | null): boolean => dryRun === true;
 
 /**
  * Normalize and standardize user input for populating a single file.
@@ -42,8 +42,8 @@ export const normalizeFileParams = async (
     return {
         filePath: Path.resolve(targetDir, params.filePath),
         content: await parseContent(loadedContent),
-        check: normalizeCheck(options.check),
-        dryRun: normalizeDryRun(options.dryRun),
+        check: shouldCheck(options.check),
+        dryRun: isDryRun(options.dryRun),
     };
 };
 
@@ -78,8 +78,8 @@ export const normalizeFilesParams = async (
     return {
         files,
         targetDir,
-        check: normalizeCheck(options.check),
-        dryRun: normalizeDryRun(options.dryRun),
+        check: shouldCheck(options.check),
+        dryRun: isDryRun(options.dryRun),
         clean: options.clean ?? false,
     };
 };

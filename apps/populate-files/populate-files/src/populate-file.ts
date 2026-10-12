@@ -1,3 +1,4 @@
+import type { Dirent } from 'node:fs';
 import type {
     PopulateFileParams,
     PopulationResponse,
@@ -23,6 +24,17 @@ export type PopulateFiles = (
 export const populateFile: PopulateFile = async (params, options) => {
     const normalized = await normalizeFileParams(params, options);
     return internalPopulateFile(normalized);
+};
+
+const readdirIfExists = async (dir: string): Promise<Dirent[]> => {
+    try {
+        return await readdir(dir, { recursive: true, withFileTypes: true });
+    } catch (err) {
+        if (Error.isError(err) && 'code' in err && err.code === 'ENOENT') {
+            return [];
+        }
+        throw err;
+    }
 };
 
 export const populateFiles: PopulateFiles = async (params, options) => {
@@ -52,15 +64,7 @@ export const populateFiles: PopulateFiles = async (params, options) => {
     if (clean) {
         const generatedPaths = new Set(files.map(f => f.filePath));
 
-        const entries = await readdir(targetDir, {
-            recursive: true,
-            withFileTypes: true,
-        }).catch((err: unknown) => {
-            if (err instanceof Error && 'code' in err && err.code === 'ENOENT') {
-                return [];
-            }
-            throw err;
-        });
+        const entries = await readdirIfExists(targetDir);
 
         const stalePaths = entries
             .filter(e => e.isFile())
