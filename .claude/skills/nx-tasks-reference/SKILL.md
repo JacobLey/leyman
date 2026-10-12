@@ -90,6 +90,16 @@ Output goes to `./dist`.
 
 ---
 
+### `vitepress-build`
+
+Builds a [VitePress](https://vitepress.dev/) site from `src/` into `./dist`, clearing it first.
+
+Dependencies' builds are inputs, since the docs site type-checks its examples against them (see [`docs/README.md`](../../../docs/README.md)).
+
+**Add when:** The project is a VitePress site. Only `docs/` today.
+
+---
+
 ### `tsc-test`
 
 Deletes `./dist-test`, compiles `test/` into it with SWC, then type-checks the tests with `tsc -p ./test` (no emit; `test/tsconfig.json` extends the shared [`configs/tsconfig.test.json`](../../../configs/tsconfig.test.json)). Runs in `test:compile`, after the package's own build, so tests are type-checked against its published `.d.ts` exactly as a consumer would see them.

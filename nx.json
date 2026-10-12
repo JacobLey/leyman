@@ -206,6 +206,37 @@
         "build:_"
       ]
     },
+    "vitepress-build": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "rm -rf ./dist",
+          "vitepress build"
+        ],
+        "parallel": false,
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "shared-globals",
+        "{projectRoot}/package.json",
+        "{projectRoot}/tsconfig.twoslash.json",
+        "{projectRoot}/.vitepress/**/*",
+        "{projectRoot}/src/**/*",
+        {
+          "externalDependencies": []
+        },
+        "dependency-builds",
+        "^package-files"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "dependsOn": [
+        "build:_"
+      ]
+    },
     "tsc-test": {
       "executor": "nx:run-commands",
       "options": {
@@ -478,7 +509,8 @@
       "executor": "nx:noop",
       "dependsOn": [
         "build:_",
-        "tsc"
+        "tsc",
+        "vitepress-build"
       ],
       "configurations": {
         "__lifecycle": {}

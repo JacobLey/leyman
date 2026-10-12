@@ -10,6 +10,7 @@ A project is any directory with a `project.json`. All current projects are TypeS
 - `tools/`: libraries consumed via `import`.
 - `apps/`: CLIs, Nx plugins, and larger packages that are used other than by plain `import`.
 - `leyman/`: private, repo-internal packages that are never published.
+- `docs/`: the documentation site (private, never published). See its [README](../../../docs/README.md).
 - `e2e/`: private, test-only packages that check several packages together, in ways no single package can (e.g. because depending on each other would be circular). See [create-package](../create-package/SKILL.md#e2e-packages).
 
 ## Packages
@@ -60,6 +61,12 @@ See each package's README.md for full usage documentation.
 | [`eslint-config`](../../../leyman/eslint-config) | Very opinionated eslint config used internally for package linting |
 | [`expect`](../../../leyman/expect) | Pre-configured chai assertions for internal tests |
 | [`main`](../../../leyman/main) | Workaround for installing "global" packages, and executing repo-wide tasks |
+
+### Docs
+
+| Package | Description |
+|---------|-------------|
+| [`docs`](../../../docs) | Documentation site, with every code example type-checked against the packages it documents |
 
 ### E2E
 

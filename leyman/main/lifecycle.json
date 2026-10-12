@@ -59,6 +59,7 @@
     "biome": "prepare:format",
     "eslint": "check:lint",
     "tsc": "build:run",
+    "vitepress-build": "build:run",
     "populate-files": "build:post",
     "tsc-test": "test:compile",
     "playwright-install": "test:compile",

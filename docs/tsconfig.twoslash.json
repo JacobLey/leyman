@@ -1,0 +1,17 @@
+{
+  "//": "Compiler options for type-checking code blocks with twoslash. Not a buildable project, so Nx doesn't sync references into it.",
+  "compilerOptions": {
+    "exactOptionalPropertyTypes": true,
+    "lib": [
+      "DOM",
+      "ESNext"
+    ],
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "target": "ESNext",
+    "types": []
+  }
+}

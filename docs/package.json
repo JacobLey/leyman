@@ -1,0 +1,29 @@
+{
+  "name": "@leyman/docs",
+  "version": "0.0.1",
+  "description": "Documentation site for the packages in this repo.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/docs#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@shikijs/vitepress-twoslash": "catalog:",
+    "ajv": "catalog:",
+    "enum-to-array": "workspace:^",
+    "floating-vue": "catalog:",
+    "juniper": "workspace:^",
+    "juniper-validator": "workspace:^",
+    "typescript": "catalog:",
+    "vitepress": "catalog:",
+    "vue": "catalog:"
+  }
+}

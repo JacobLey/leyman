@@ -4,6 +4,7 @@ packages:
   - tools/*
   - tools/test-chain/*
   - e2e/*
+  - docs
   - '!**/test/**'
 
 autoInstallPeers: false
@@ -47,6 +48,7 @@ blockExoticSubdeps: true
 strictDepBuilds: true
 allowBuilds:
   '@swc/core': false
+  esbuild: false
   nx: false
 
 catalog:
@@ -57,6 +59,7 @@ catalog:
   '@happy-dom/global-registrator': ^20.14.5
   '@nx/devkit': ^23.2.1
   '@nx/js': ^23.2.1
+  '@shikijs/vitepress-twoslash': ^4.5.0
   '@standard-schema/spec': ^1.1.0
   '@swc/cli': ^0.8.1
   '@swc/core': ^1.16.2
@@ -98,6 +101,7 @@ catalog:
   expect-type: ^1.4.0
   fast-equals: ^6.0.4
   find-up: ^8.0.0
+  floating-vue: ^5.2.2
   globby: ^16.2.4
   mocha: ^12.0.2
   nx: ^23.2.1
@@ -119,7 +123,11 @@ catalog:
   typescript: npm:@typescript/typescript6@^6.0.2
   uint8array-extras: ^1.6.0
   vite: ^8.3.1
+  # Pinned: VitePress 2 is in alpha, where any release may change its config. The docs build (which
+  # type-checks every example) catches breakage, so bump it deliberately and run `nx run @leyman/docs:build`.
+  vitepress: 2.0.0-alpha.20
   vitest: ^5.0.2
+  vue: ^3.5.41
   yargs: ^18.2.0
 
 catalogs:
