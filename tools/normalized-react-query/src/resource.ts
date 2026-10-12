@@ -464,16 +464,16 @@ class Resource<
      * @param queryClient - instance of TanstackQuery QueryClient
      * @param params - user provided params to identify query
      * @param options - options for `queryClient.query` besides query fn + key
-     * @param revalidateIfStale - refetch stale cached data in the background, and default for linked queries
+     * @param shouldRevalidate - refetch stale cached data in the background, and default for linked queries
      * @returns stale data from cache or recent query data
      */
     async #ensure(
         queryClient: QueryClient,
         params: TParams,
         options: ResourceFetchOptions<TData, TQueryKey>,
-        revalidateIfStale: boolean
+        shouldRevalidate: boolean
     ): Promise<TPropagatedData> {
-        if (revalidateIfStale && this.getQueryData(queryClient, params) !== undefined) {
+        if (shouldRevalidate && this.getQueryData(queryClient, params) !== undefined) {
             // Refetches in the background if stale by the requested `staleTime`
             queryClient
                 .query({
@@ -488,7 +488,7 @@ class Resource<
             queryClient,
             params,
             { ...options, staleTime: 'static' },
-            { revalidateIfStale, awaitLinks: true }
+            { revalidateIfStale: shouldRevalidate, awaitLinks: true }
         );
     }
 
@@ -665,9 +665,9 @@ export const useNormalizedPrefetchedQuery = <
     } = {}
 ): UseQueryResult<TSelectedData, unknown> => {
     const disabledClient = useDisabledQueryClient();
-    const disabled = !linked || linked === skipToken;
+    const isDisabled = !linked || linked === skipToken;
     return useQuery(
-        disabled
+        isDisabled
             ? {
                   queryKey: noopKey as unknown as TQueryKey,
                   queryFn: skipToken,
@@ -681,7 +681,7 @@ export const useNormalizedPrefetchedQuery = <
                           select,
                       }),
               },
-        disabled ? disabledClient : linked.getQueryClient()
+        isDisabled ? disabledClient : linked.getQueryClient()
     );
 };
 
@@ -763,10 +763,10 @@ export const useNormalizedNullableSuspenseQuery = <
 ): UseSuspenseQueryResult<TSelectedData, unknown> | null => {
     const qc = useQueryClient(queryClient);
 
-    const disabled = params === skipToken;
+    const isDisabled = params === skipToken;
 
     const result = useSuspenseQuery(
-        disabled
+        isDisabled
             ? {
                   queryKey: noopSuspenseKey as unknown as TQueryKey,
                   queryFn: noopQueryFn as unknown as () => TData,
@@ -782,7 +782,7 @@ export const useNormalizedNullableSuspenseQuery = <
               },
         qc
     );
-    return disabled ? null : result;
+    return isDisabled ? null : result;
 };
 
 /**
@@ -859,10 +859,10 @@ export const useNormalizedNullablePrefetchedSuspenseQuery = <
     } = {}
 ): UseSuspenseQueryResult<TSelectedData, unknown> | null => {
     const disabledClient = useDisabledQueryClient();
-    const disabled = !linked || linked === skipToken;
+    const isDisabled = !linked || linked === skipToken;
 
     const result = useSuspenseQuery(
-        disabled
+        isDisabled
             ? {
                   queryKey: noopSuspenseKey as unknown as TQueryKey,
                   queryFn: noopQueryFn as unknown as () => TData,
@@ -878,10 +878,10 @@ export const useNormalizedNullablePrefetchedSuspenseQuery = <
                           select,
                       }),
               },
-        disabled ? disabledClient : linked.getQueryClient()
+        isDisabled ? disabledClient : linked.getQueryClient()
     );
 
-    return disabled ? null : result;
+    return isDisabled ? null : result;
 };
 
 /**

@@ -59,15 +59,15 @@ suite('queryable', () => {
             const abortableResource = resource({
                 key: ['key'],
                 queryFn: ({ signal }) => {
-                    let aborted = false;
+                    let isAborted = false;
                     signal.addEventListener(
                         'abort',
                         () => {
-                            aborted = true;
+                            isAborted = true;
                         },
                         { once: true }
                     );
-                    return aborted;
+                    return isAborted;
                 },
             });
 
@@ -81,8 +81,8 @@ suite('queryable', () => {
             expect(queryState).to.not.equal(undefined);
             expect(queryState!.data).to.equal(undefined);
 
-            const refetched = await abortableResource.query(client, {});
-            expect(refetched).to.equal(false);
+            const isRefetched = await abortableResource.query(client, {});
+            expect(isRefetched).to.equal(false);
         });
     });
 
@@ -114,7 +114,8 @@ suite('queryable', () => {
 
             const resettableResource = resource({
                 key: (input: [number, string]) => input,
-                queryFn: ({ params: [num, str] }) => {
+                queryFn: ({ params }) => {
+                    const [num, str] = params;
                     count++;
                     return `${str}:${num + count}`;
                 },

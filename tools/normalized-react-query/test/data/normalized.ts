@@ -15,12 +15,8 @@ export const authors = resource({
 export const infiniteAuthors = infinite<void, { authorId: string }[], { offset: number }>({
     key: ['authors'],
     getInitialPageParam: { offset: 0 },
-    getNextPageParam: ({ lastPage, lastPageParam }) => {
-        if (lastPage.length === 0) {
-            return null;
-        }
-        return { offset: lastPageParam.offset + lastPage.length };
-    },
+    getNextPageParam: ({ lastPage, lastPageParam }) =>
+        lastPage.length === 0 ? null : { offset: lastPageParam.offset + lastPage.length },
     queryFn: async ({ client, pageParam }) => {
         const listedAuthors = await listAuthors(pageParam);
 
@@ -84,10 +80,6 @@ export const infiniteBooksByAuthor = infinite({
             )
         );
     },
-    getNextPageParam: ({ lastPage, lastPageParam }) => {
-        if (lastPage.length === 0) {
-            return null;
-        }
-        return { offset: lastPageParam.offset + lastPage.length };
-    },
+    getNextPageParam: ({ lastPage, lastPageParam }) =>
+        lastPage.length === 0 ? null : { offset: lastPageParam.offset + lastPage.length },
 });

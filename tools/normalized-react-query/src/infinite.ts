@@ -140,14 +140,15 @@ class Infinite<
     ) {
         super(options[0]);
         if (options.length === 1) {
-            const [{ getInitialPageParam, getNextPageParam, getPreviousPageParam, queryFn }] =
-                options;
+            const [
+                { getInitialPageParam, getNextPageParam, getPreviousPageParam = null, queryFn },
+            ] = options;
             this.#getInitialPageParam =
                 typeof getInitialPageParam === 'function'
                     ? (getInitialPageParam as (params: TParams) => TPageParam)
                     : () => getInitialPageParam;
             this.#getNextPageParam = getNextPageParam;
-            this.#getPreviousPageParam = getPreviousPageParam ?? null;
+            this.#getPreviousPageParam = getPreviousPageParam;
             this.#queryFn = queryFn;
             this.#selectors = [];
         } else {
@@ -629,16 +630,16 @@ class Infinite<
      * @param queryClient - instance of TanstackQuery QueryClient
      * @param params - user provided params to identify query
      * @param options - options for `queryClient.infiniteQuery` besides query fn + key + page params
-     * @param revalidateIfStale - refetch stale cached data in the background, and default for linked queries
+     * @param shouldRevalidate - refetch stale cached data in the background, and default for linked queries
      * @returns stale data from cache or recent query data
      */
     async #ensure(
         queryClient: QueryClient,
         params: TParams,
         options: InfiniteFetchOptions<TData, TQueryKey, TPageParam>,
-        revalidateIfStale: boolean
+        shouldRevalidate: boolean
     ): Promise<InfiniteData<TPropagatedData, TPageParam>> {
-        if (revalidateIfStale && this.getQueryData(queryClient, params) !== undefined) {
+        if (shouldRevalidate && this.getQueryData(queryClient, params) !== undefined) {
             // Refetches in the background if stale by the requested `staleTime`
             queryClient.infiniteQuery(this.#getQueryOptions(params, options)).catch(() => {});
         }
@@ -647,7 +648,7 @@ class Infinite<
             queryClient,
             params,
             { ...options, staleTime: 'static' },
-            { revalidateIfStale, awaitLinks: true }
+            { revalidateIfStale: shouldRevalidate, awaitLinks: true }
         );
     }
 
@@ -877,10 +878,10 @@ export const useNormalizedPrefetchedInfiniteQuery = <
     } = {}
 ): UseInfiniteQueryResult<TSelectedData, unknown> => {
     const disabledClient = useDisabledQueryClient();
-    const disabled = !linked || linked === skipToken;
+    const isDisabled = !linked || linked === skipToken;
 
     return useInfiniteQuery(
-        disabled
+        isDisabled
             ? {
                   queryKey: noopKey as unknown as TQueryKey,
                   queryFn: skipToken,
@@ -897,7 +898,7 @@ export const useNormalizedPrefetchedInfiniteQuery = <
                           select,
                       }),
               },
-        disabled ? disabledClient : linked.getQueryClient()
+        isDisabled ? disabledClient : linked.getQueryClient()
     );
 };
 
@@ -981,10 +982,10 @@ export const useNormalizedNullableSuspenseInfiniteQuery = <
 ): UseSuspenseInfiniteQueryResult<TSelectedData, unknown> | null => {
     const qc = useQueryClient(queryClient);
 
-    const disabled = params === skipToken;
+    const isDisabled = params === skipToken;
 
     const result = useSuspenseInfiniteQuery(
-        disabled
+        isDisabled
             ? {
                   queryKey: noopSuspenseKey as unknown as TQueryKey,
                   queryFn: noopQueryFn as unknown as () => TData,
@@ -1001,7 +1002,7 @@ export const useNormalizedNullableSuspenseInfiniteQuery = <
               },
         qc
     );
-    return disabled ? null : result;
+    return isDisabled ? null : result;
 };
 
 /**
@@ -1090,9 +1091,9 @@ export const useNormalizedNullablePrefetchedSuspenseInfiniteQuery = <
     } = {}
 ): UseSuspenseInfiniteQueryResult<TSelectedData, unknown> | null => {
     const disabledClient = useDisabledQueryClient();
-    const disabled = !linked || linked === skipToken;
+    const isDisabled = !linked || linked === skipToken;
     const result = useSuspenseInfiniteQuery(
-        disabled
+        isDisabled
             ? {
                   queryKey: noopSuspenseKey as unknown as TQueryKey,
                   queryFn: noopQueryFn as unknown as () => TData,
@@ -1115,9 +1116,9 @@ export const useNormalizedNullablePrefetchedSuspenseInfiniteQuery = <
                           }
                       ),
               },
-        disabled ? disabledClient : linked.getQueryClient()
+        isDisabled ? disabledClient : linked.getQueryClient()
     );
-    return disabled ? null : result;
+    return isDisabled ? null : result;
 };
 
 /**

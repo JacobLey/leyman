@@ -110,7 +110,10 @@ export const getAuthor = async (id: string): Promise<Author> => {
 export const listAuthors = async ({ offset }: { offset: number }): Promise<Author[]> => {
     await delayImmediate();
 
-    return [...authorsMap.values()].slice(offset, offset + 2);
+    return authorsMap
+        .values()
+        .toArray()
+        .slice(offset, offset + 2);
 };
 
 const booksMap = new Map(
@@ -156,12 +159,14 @@ export const listBooksByAuthor = async ({
 
     const author = await getAuthor(authorId);
 
-    const books = [...booksMap.values()]
+    const books = booksMap
+        .values()
         .filter(book => book.authorId === author.id)
         .map(book => ({
             id: book.id,
             title: book.title,
-        }));
+        }))
+        .toArray();
 
     return books.slice(offset, offset + 2);
 };

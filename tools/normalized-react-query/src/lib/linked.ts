@@ -2,11 +2,11 @@ import type { QueryClient } from '@tanstack/react-query';
 import type { Queryable } from './queryable.js';
 import type { LinksActive } from './types.js';
 
-let linksActive: LinksActive | null = null;
-export const setLinksActive = (val: typeof linksActive): void => {
-    linksActive = val;
+const links: { active: LinksActive | null } = { active: null };
+export const setLinksActive = (val: LinksActive | null): void => {
+    links.active = val;
 };
-export const getLinksActive = (): typeof linksActive => linksActive;
+export const getLinksActive = (): LinksActive | null => links.active;
 
 /**
  * At a high level, just a combination of "queryable" + some params capable of
