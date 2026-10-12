@@ -67,8 +67,8 @@ export * from './ts.js';
 // AUTO-BARREL
 
 export * from './cts.cjs';
-export * from './ts.js';
 export * from './esm.mjs';
+export * from './ts.js';
 ```
 
 The `// AUTO-BARREL` comment is preserved so subsequent runs stay in sync.
@@ -97,7 +97,7 @@ Programmatic entry point. Scans for `// AUTO-BARREL` index files and rewrites th
 |-----------|------|---------|-------------|
 | `options` | `BarrelifyOptions` | `{}` | Optional. See [Options](#options). |
 
-**Returns** `Promise<void>` — resolves when all barrel files have been written.
+**Returns** `Promise<string[]>` — absolute paths of the barrel files that changed (or would change, with `dryRun`).
 
 ```ts
 import { barrelify } from 'barrelify';
@@ -109,7 +109,7 @@ await barrelify({ cwd: './src', ignore: ['**/generated/**'] });
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `cwd` | `string` | `process.cwd()` | Root directory to start searching for index files. Searches recursively. |
+| `cwd` | `string \| URL` | `process.cwd()` | Root directory to start searching for index files. Searches recursively. |
 | `dryRun` | `boolean` | `false` | If `true`, computes barrel output but does not write any files. |
 | `ignore` | `string[]` | `[]` | Glob patterns for index files to skip. |
 
@@ -122,7 +122,7 @@ npx barrelify [options]
 
 | Flag | Description |
 |------|-------------|
-| `--ci` | Dry-run mode that exits with a non-zero code if any barrel file is out of sync. Use in CI to verify files were committed. |
+| `--ci` | Dry-run mode that exits with a non-zero code if any barrel file is out of sync. On by default in CI; pass `--no-ci` to write files there. |
 | `--cwd <path>` | Root directory to search. Defaults to `process.cwd()`. |
 | `--dry-run` | Compute barrel output without writing files. |
 | `--ignore <globs...>` | Glob patterns for index files to skip. |
