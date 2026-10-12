@@ -3,7 +3,10 @@
  */
 export class MainNotImplementedError extends Error {
     public override readonly name = 'MainNotImplementedError';
-    public constructor(isInstance: boolean) {
-        super(`"main" not implemented on EntryScript child ${isInstance ? 'instance' : 'class'}.`);
+    public constructor(isInstance: boolean, options?: ErrorOptions) {
+        super(
+            `"main" not implemented on EntryScript child ${isInstance ? 'instance' : 'class'}.`,
+            options
+        );
     }
 }

@@ -17,7 +17,7 @@ export interface Main {
 /**
  * Base class for all entry script executable files.
  * Extend this class and export the result as "default"
- * to run automatically, when that file is NodeJS' entry point.
+ * to run automatically, when that file is Node.js' entry point.
  */
 export abstract class EntryScript implements Main {
     /**
@@ -62,16 +62,23 @@ const isEntryScript = (x: object): x is typeof EntryScript =>
  * Should not be called elsewhere.
  *
  * @private
- * @param url - NodeJS process entry point.
+ * @param url - Node.js process entry point.
  */
 export const runAsMain = async (url?: string): Promise<void> => {
-    if (url) {
-        const rawEntryScript: unknown = await import(url).catch(() => null);
-        const script = defaultImport(rawEntryScript);
+    if (!url) {
+        return;
+    }
 
-        if (script && (script instanceof EntryScript || isEntryScript(script))) {
-            await script.main(args);
-        }
+    let rawEntryScript: unknown = null;
+    try {
+        rawEntryScript = await import(url);
+    } catch {
+        // Not importable, so not an entry script
+    }
+    const script = defaultImport(rawEntryScript);
+
+    if (script && (script instanceof EntryScript || isEntryScript(script))) {
+        await script.main(args);
     }
 };
 
