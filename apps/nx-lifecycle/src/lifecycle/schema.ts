@@ -9,7 +9,7 @@ const checkAndDryRunSchema = objectSchema({
             description: 'Path or URL to the JSON schema for this file',
             format: 'uri-reference',
         }).example(
-            'https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-lifecycle/src/lifecycle/schema.json'
+            'https://raw.githubusercontent.com/JacobLey/leyman/refs/heads/main/apps/nx-lifecycle/out/schema.json'
         ),
         check: booleanSchema({
             description:
