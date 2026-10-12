@@ -1888,6 +1888,164 @@ suite('container', () => {
                 ]);
             });
         });
+
+        suite('Eager values behind other bindings', () => {
+            // Eager bindings may be async, and their dependents still treated as sync, because the
+            // eager value is created first. That must hold however deep the eager binding is.
+            const makeAsyncEager = (scope: typeof eagerRequestScope | typeof eagerSingletonScope) =>
+                bind(C)
+                    .withAsyncFactory(async () => new C())
+                    .scoped(scope);
+
+            for (const scope of [eagerRequestScope, eagerSingletonScope] as const) {
+                suite(scope === eagerRequestScope ? 'Eager request' : 'Eager singleton', () => {
+                    test('Two dependencies deep', async () => {
+                        const container = createContainer(
+                            createModule(makeAsyncEager(scope))
+                                .addBinding(bind(B).withDependencies([C]).withConstructorProvider())
+                                .addBinding(bind(A).withDependencies([B]).withConstructorProvider())
+                        );
+
+                        const a = await container.getAsync(A);
+                        const b = a.params[0] as B;
+                        expect(b.params[0]).to.be.an.instanceOf(C);
+                    });
+
+                    test('Behind a sync propagating supplier', async () => {
+                        const container = createContainer(
+                            createModule(makeAsyncEager(scope))
+                                .addBinding(bind(B).withDependencies([C]).withConstructorProvider())
+                                .addBinding(
+                                    bind(A)
+                                        .withDependencies([
+                                            identifier(B).supplier({
+                                                sync: true,
+                                                propagateScope: true,
+                                            }),
+                                        ])
+                                        .withConstructorProvider()
+                                )
+                        );
+                        container.check();
+
+                        const a = await container.getAsync(A);
+                        const b = (a.params[0] as Supplier<B>)();
+                        expect(b.params[0]).to.be.an.instanceOf(C);
+                    });
+
+                    test('Behind an async propagating supplier', async () => {
+                        const container = createContainer(
+                            createModule(makeAsyncEager(scope))
+                                .addBinding(bind(B).withDependencies([C]).withConstructorProvider())
+                                .addBinding(
+                                    bind(A)
+                                        .withDependencies([
+                                            identifier(B).supplier({
+                                                sync: false,
+                                                propagateScope: true,
+                                            }),
+                                        ])
+                                        .withConstructorProvider()
+                                )
+                        );
+
+                        const a = await container.getAsync(A);
+                        const b = await (a.params[0] as AsyncSupplier<B>)();
+                        expect(b.params[0]).to.be.an.instanceOf(C);
+                    });
+
+                    test('Behind a deferred dependency', async () => {
+                        const container = createContainer(
+                            createModule(makeAsyncEager(scope))
+                                .addBinding(bind(D).withDependencies([C]).withConstructorProvider())
+                                .addBinding(bind(B).withDependencies([D]).withConstructorProvider())
+                                .addBinding(
+                                    bind(A)
+                                        .withDependencies([identifier(B).deferred()])
+                                        .withConstructorProvider()
+                                )
+                        );
+
+                        const a = await container.getAsync(A);
+                        const b = await (a.params[0] as Deferred<B>);
+                        const d = b.params[0] as D;
+                        expect(d.params[0]).to.be.an.instanceOf(C);
+                    });
+                });
+            }
+
+            test('Request scoped value is shared with an intermediate binding', () => {
+                const container = createContainer(
+                    createModule(bind(C).withConstructorFactory().scoped(eagerRequestScope))
+                        .addBinding(bind(B).withDependencies([C]).withConstructorProvider())
+                        .addBinding(bind(A).withDependencies([B, C]).withConstructorProvider())
+                );
+
+                const a = container.get(A);
+                const b = a.params[0] as B;
+                expect(b.params[0]).to.equal(a.params[1]);
+                expect(container.get(A).params[1]).to.not.equal(a.params[1]);
+            });
+
+            test('Eager singleton waits for an eager singleton behind a transient binding', async () => {
+                const order: string[] = [];
+                const container = createContainer(
+                    createModule(
+                        bind(C)
+                            .withAsyncFactory(async () => {
+                                order.push('C');
+                                return new C();
+                            })
+                            .scoped(eagerSingletonScope)
+                    )
+                        .addBinding(bind(B).withDependencies([C]).withConstructorProvider())
+                        .addBinding(
+                            bind(A)
+                                .withDependencies([B])
+                                .withProvider(b => {
+                                    order.push('A');
+                                    return new A(b);
+                                })
+                                .scoped(eagerSingletonScope)
+                        )
+                );
+
+                await container.preloadAsync();
+                expect(order).to.deep.equal(['C', 'A']);
+
+                const a = await container.getAsync(A);
+                const b = a.params[0] as B;
+                expect(b.params[0]).to.be.an.instanceOf(C);
+            });
+
+            test('Non-propagating supplier creates eager request values in its own request', () => {
+                let created = 0;
+                const container = createContainer(
+                    createModule(
+                        bind(C)
+                            .withFactory(() => {
+                                ++created;
+                                return new C();
+                            })
+                            .scoped(eagerRequestScope)
+                    )
+                        .addBinding(bind(B).withDependencies([C]).withConstructorProvider())
+                        .addBinding(
+                            bind(A)
+                                .withDependencies([identifier(B).supplier()])
+                                .withConstructorProvider()
+                        )
+                );
+
+                const a = container.get(A);
+                // The supplier starts a new request, so A's request has no use for C
+                expect(created).to.equal(0);
+
+                const supplyB = a.params[0] as Supplier<B>;
+                expect(supplyB().params[0]).to.not.equal(supplyB().params[0]);
+                expect(created).to.equal(2);
+            });
+        });
     });
 
     suite('Deferred dependency', () => {
@@ -2425,6 +2583,7 @@ suite('container', () => {
                     await Promise.all(rejectionExpectations);
                 }
             });
+
             suite('Failed deferred dependency is not an unhandled rejection', () => {
                 // The failure is reported by the request, so a provider that only stores the
                 // deferred promise (or chains `.then()`) must not crash the process.

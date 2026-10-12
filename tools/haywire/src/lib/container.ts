@@ -1281,14 +1281,8 @@ export class Container<Outputs extends [Extendable]> {
      * Does not actually perform the instantations.
      */
     #wireSingletons(): void {
-        const collectBindings = (
-            binding: GenericBinding,
-            stack: Set<GenericBaseHaywireId>
-        ): GenericBinding[] => {
-            if (stack.has(binding.outputId.baseId())) {
-                return [];
-            }
-
+        // Walks only the edges `check()` rejects cycles through (it runs before wiring), so needs no cycle guard
+        const collectBindings = (binding: GenericBinding): GenericBinding[] => {
             const collected: GenericBinding[] = [];
             for (const dependencyId of binding.dependencyIds) {
                 const { deferred, supplier } = dependencyId.annotations;
@@ -1298,12 +1292,11 @@ export class Container<Outputs extends [Extendable]> {
                 const dependencyBindings = isListId(dependencyId)
                     ? this.#baseIdToListBindings.get(dependencyId.baseId())!
                     : [this.#baseIdToBinding.get(dependencyId.baseId())!];
-                const dependencyStack = new Set([...stack, dependencyId.baseId()]);
                 for (const dependencyBinding of dependencyBindings) {
                     if (dependencyBinding.scope === eagerSingletonScope) {
                         collected.push(dependencyBinding);
                     } else {
-                        collected.push(...collectBindings(dependencyBinding, dependencyStack));
+                        collected.push(...collectBindings(dependencyBinding));
                     }
                 }
             }
@@ -1314,7 +1307,7 @@ export class Container<Outputs extends [Extendable]> {
             if (binding.scope !== eagerSingletonScope) {
                 continue;
             }
-            const singletonBindings = [...new Set(collectBindings(binding, new Set()))];
+            const singletonBindings = [...new Set(collectBindings(binding))];
             this.#singletonMap.set(binding, singletonBindings);
             for (const singletonBinding of singletonBindings) {
                 this.#upstreamDependents.get(singletonBinding)!.add(binding);
@@ -1343,7 +1336,14 @@ export class Container<Outputs extends [Extendable]> {
             }
 
             const collected: GenericBinding[] = [];
+            // Track the bindings being walked (not their dependencies), so only a cycle stops the walk
+            const dependencyStack = new Set([...stack, binding.outputId.baseId()]);
             for (const dependencyId of binding.dependencyIds) {
+                const { supplier } = dependencyId.annotations;
+                if (typeof supplier === 'object' && !supplier.propagateScope) {
+                    // Starts a new request, which creates its own eager request values
+                    continue;
+                }
                 const dependencyBaseId = dependencyId.baseId();
                 const dependencyBindings = isListId(dependencyId)
                     ? this.#baseIdToListBindings.get(dependencyBaseId)!
@@ -1355,19 +1355,15 @@ export class Container<Outputs extends [Extendable]> {
                     if (dependencyBinding.scope === eagerRequestScope) {
                         collected.push(dependencyBinding);
                     } else {
-                        collected.push(
-                            ...collectBindings(
-                                dependencyBinding,
-                                new Set([...stack, dependencyBaseId])
-                            )
-                        );
+                        collected.push(...collectBindings(dependencyBinding, dependencyStack));
                     }
                 }
             }
             return collected;
         };
         for (const binding of this.#bindings) {
-            this.#requestMap.set(binding, [...collectBindings(binding, new Set())]);
+            const eagerBindings = new Set(collectBindings(binding, new Set()));
+            this.#requestMap.set(binding, [...eagerBindings]);
         }
     }
 
@@ -1961,6 +1957,25 @@ export class Container<Outputs extends [Extendable]> {
     }
 
     /**
+     * Eager request bindings to create at the start of a request for `bindings`.
+     *
+     * Eager bindings can reach each other, and themselves, through suppliers and deferred dependencies.
+     * Those already being created earlier in the request are skipped, which ends the cycle.
+     *
+     * @param bindings - requested binding(s)
+     * @param creatingEager - eager request bindings already being created earlier in this request
+     * @returns eager bindings to create, and the bindings being created while they are
+     */
+    #eagerRequestsFor(
+        bindings: readonly GenericBinding[],
+        creatingEager: ReadonlySet<GenericBinding>
+    ): { eagerBindings: GenericBinding[]; creating: ReadonlySet<GenericBinding> } {
+        const creating = new Set([...creatingEager, ...bindings]);
+        const eagerBindings = new Set(bindings.flatMap(binding => this.#requestMap.get(binding)!));
+        return { eagerBindings: [...eagerBindings.difference(creating)], creating };
+    }
+
+    /**
      * Handle the top-level request for an instance.
      * Attempts to defer to sync version if possible.
      *
@@ -1977,13 +1992,15 @@ export class Container<Outputs extends [Extendable]> {
      * which can be used to determine if request singletons need to be instantiated first
      * @param deferredCache - map of any bindings that have been calculated already in the current request chain,
      * to be passed to actual implementations.
+     * @param creatingEager - eager request bindings already being created earlier in this request
      * @returns promise of instantiated value, with all deferred values resolved
      */
     async #getMaybeSync(
         bindings: GenericBinding | readonly GenericBinding[],
         requestCache: ScopeCache,
         supplierCache: ScopeCache,
-        deferredCache?: DeferredCache
+        deferredCache?: DeferredCache,
+        creatingEager: ReadonlySet<GenericBinding> = new Set()
     ): Promise<unknown> {
         const bindingsList = [bindings].flat();
 
@@ -1991,16 +2008,16 @@ export class Container<Outputs extends [Extendable]> {
             // If the caches are the same, this is a "top level" request. Note that could be either
             // a `container.get()` _or_ a supplier that does not propagate scope. Either one will
             // require all eager request instances to be create before the rest of dependency chain can begin.
+            const { eagerBindings, creating } = this.#eagerRequestsFor(bindingsList, creatingEager);
             const settled = await Promise.allSettled(
-                // Note: the outer callback must _not_ be `async`. flatMap only flattens a
-                // returned array, not a promise of one, so an async callback would leave the
-                // inner eager requests unawaited.
-                bindingsList.flatMap(binding =>
-                    this.#requestMap
-                        .get(binding)!
-                        .map(async eagerBinding =>
-                            this.#getMaybeSync(eagerBinding, requestCache, supplierCache)
-                        )
+                eagerBindings.map(async eagerBinding =>
+                    this.#getMaybeSync(
+                        eagerBinding,
+                        requestCache,
+                        supplierCache,
+                        undefined,
+                        creating
+                    )
                 )
             );
 
@@ -2148,6 +2165,7 @@ export class Container<Outputs extends [Extendable]> {
      * @param params.requestCache - current request cache
      * @param params.supplierCache - current scope cache
      * @param params.deferredCache - map of any bindings that have been calculated already in the current request chain
+     * @param params.creatingEager - eager request bindings already being created earlier in this request
      * @returns instantiated value, with all deferred requests immediately resolving on the next event loop.
      * If provided array of bindings, returns a single array of all results merged.
      * @throws if instantiation of providers fails, or when one of the deferred chains fails after instantiation
@@ -2157,19 +2175,25 @@ export class Container<Outputs extends [Extendable]> {
         requestCache,
         supplierCache,
         deferredCache,
+        creatingEager = new Set(),
     }: {
         bindings: GenericBinding | readonly GenericBinding[];
         requestCache: ScopeCache;
         supplierCache: ScopeCache;
         deferredCache?: DeferredCache;
+        creatingEager?: ReadonlySet<GenericBinding>;
     }): unknown {
         const bindingsList = [bindings].flat();
 
         if (requestCache === supplierCache && !deferredCache) {
-            for (const binding of bindingsList) {
-                for (const eagerBinding of this.#requestMap.get(binding)!) {
-                    this.#getSync({ bindings: eagerBinding, requestCache, supplierCache });
-                }
+            const { eagerBindings, creating } = this.#eagerRequestsFor(bindingsList, creatingEager);
+            for (const eagerBinding of eagerBindings) {
+                this.#getSync({
+                    requestCache,
+                    supplierCache,
+                    bindings: eagerBinding,
+                    creatingEager: creating,
+                });
             }
         }
 
