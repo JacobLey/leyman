@@ -103,14 +103,14 @@ suite('defaultImport', () => {
         test('No default is found', () => {
             expect(DefaultImport.defaultImport(noDefault)).to.equal(noDefault);
             expectTypeOf(DefaultImport.defaultImport(noDefault)).toEqualTypeOf<{
-                readonly noDefault: true;
+                readonly isNamedExport: true;
             }>();
 
             expect(DefaultImport.defaultImport(noDefault)).to.eq(
                 DefaultImport.defaultImport(dynamicNoDefault)
             );
             expectTypeOf(DefaultImport.defaultImport(dynamicNoDefault)).toEqualTypeOf<{
-                readonly noDefault: true;
+                readonly isNamedExport: true;
             }>();
 
             expect(DefaultImport.defaultImport(DefaultImport.defaultImport(noDefault))).to.eq(
@@ -118,11 +118,11 @@ suite('defaultImport', () => {
             );
             expectTypeOf(
                 DefaultImport.defaultImport(DefaultImport.defaultImport(noDefault))
-            ).toEqualTypeOf<{ readonly noDefault: true }>();
+            ).toEqualTypeOf<{ readonly isNamedExport: true }>();
 
             expect(DefaultImport.defaultImport(noDefault)).to.deep.equal(
                 Object.create(null, {
-                    noDefault: {
+                    isNamedExport: {
                         value: true,
                         enumerable: true,
                     },

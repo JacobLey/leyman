@@ -28,11 +28,10 @@ export const defaultImport = <T>(mod: T): ExtractDefault<T> => {
         return mod as ExtractDefault<T>;
     }
 
-    // Webpack provides a Module tag to match NodeJS' Module module
+    // Webpack provides a Module tag to match Node.js' Module module
     const defaultVal =
-        Symbol.toStringTag in mod &&
-        (mod as unknown as { [Symbol.toStringTag]: string; default: T })[Symbol.toStringTag] ===
-            'Module'
+        (mod as unknown as { [Symbol.toStringTag]?: string; default: T })[Symbol.toStringTag] ===
+        'Module'
             ? ((
                   mod as unknown as {
                       [Symbol.toStringTag]: 'Module';

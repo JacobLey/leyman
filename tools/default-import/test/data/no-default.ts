@@ -1,1 +1,1 @@
-export const noDefault = true;
+export const isNamedExport = true;
