@@ -54,7 +54,6 @@
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
-    "@types/sinon": "catalog:",
     "@typescript/native": "catalog:",
     "ajv": "catalog:",
     "c8": "catalog:",
@@ -62,7 +61,6 @@
     "expect-type": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
-    "sinon": "catalog:",
     "typescript": "catalog:"
   },
   "imports": {
