@@ -42,4 +42,4 @@ Hover over any identifier in the examples on this site to see its inferred type.
 - [zod](https://zod.dev/) and [joi](https://www.npmjs.com/package/joi) are validation libraries with their own schema formats; JSON Schema is an export, not the source.
 - [typescript-json-schema](https://www.npmjs.com/package/typescript-json-schema) and [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) are code generators that convert one way between TypeScript and JSON Schema, and can't stop you authoring a bad schema.
 
-Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](https://www.npmjs.com/package/juniper-validator).
+Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](/juniper-validator/).

@@ -80,6 +80,26 @@ export default defineConfig({
                 ],
             },
             {
+                text: 'Juniper Validator',
+                items: [
+                    { text: 'Overview', link: '/juniper-validator/' },
+                    { text: 'Getting started', link: '/juniper-validator/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [
+                            {
+                                text: 'Standard Schema',
+                                link: '/juniper-validator/guides/standard-schema',
+                            },
+                        ],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/juniper-validator/reference/api' }],
+                    },
+                ],
+            },
+            {
                 text: 'Haywire',
                 items: [
                     { text: 'Overview', link: '/haywire/' },

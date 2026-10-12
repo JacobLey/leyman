@@ -17,6 +17,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@shikijs/vitepress-twoslash": "catalog:",
+    "@standard-schema/spec": "catalog:",
     "ajv": "catalog:",
     "enum-to-array": "workspace:^",
     "floating-vue": "catalog:",

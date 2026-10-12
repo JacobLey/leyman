@@ -673,6 +673,9 @@ importers:
       '@shikijs/vitepress-twoslash':
         specifier: 'catalog:'
         version: 4.5.0(@typescript/typescript6@6.0.2)(supports-color@8.1.1)
+      '@standard-schema/spec':
+        specifier: 'catalog:'
+        version: 1.1.0
       ajv:
         specifier: 'catalog:'
         version: 8.20.0

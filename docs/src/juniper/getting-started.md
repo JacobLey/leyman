@@ -82,7 +82,7 @@ Juniper builds schemas; it does not validate data. Pass the output to any JSON S
 
 ### With juniper-validator
 
-[juniper-validator](https://www.npmjs.com/package/juniper-validator) wraps Ajv, and implements [Standard Schema](https://standardschema.dev/), so it works with any library that accepts standard validators.
+[juniper-validator](/juniper-validator/) wraps Ajv, and implements [Standard Schema](https://standardschema.dev/), so it works with any library that accepts standard validators.
 
 ```ts
 import { objectSchema, stringSchema } from 'juniper';
