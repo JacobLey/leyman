@@ -37,9 +37,9 @@ suite('before', () => {
         }
     );
 
-    let firstRun = true;
+    let isFirstRun = true;
     const mergedBeforeEach = mergedContextualBefore.beforeEach((_ctx, done) => {
-        expect(order).to.deep.equal(firstRun ? [1, 2, 3] : [1, 2, 3, 4, 5]);
+        expect(order).to.deep.equal(isFirstRun ? [1, 2, 3] : [1, 2, 3, 4, 5]);
 
         done();
 
@@ -48,7 +48,7 @@ suite('before', () => {
 
     suite('Chained with beforeEach', () => {
         const tested = mergedBeforeEach.test('Done can be called', (ctx, done) => {
-            firstRun = false;
+            isFirstRun = false;
             expect(order).to.deep.equal([1, 2, 3]);
 
             expect(ctx).to.deep.equal({

@@ -50,10 +50,12 @@ suite('test', () => {
 
         let shouldFailAsync = true;
         test('Async test fails first time', async () => {
-            if (shouldFailAsync) {
-                shouldFailAsync = false;
-                throw new Error('<ERROR>');
+            if (!shouldFailAsync) {
+                return;
             }
+
+            shouldFailAsync = false;
+            throw new Error('<ERROR>');
         });
 
         let shouldFailDone = true;

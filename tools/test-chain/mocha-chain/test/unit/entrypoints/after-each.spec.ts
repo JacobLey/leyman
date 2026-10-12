@@ -4,15 +4,16 @@ import { expect } from '@leyman/expect';
 import { afterEach, suite, teardown } from 'mocha-chain';
 
 const order: number[] = [];
-let activeTest = false;
 
 suite('afterEach', () => {
+    let isActiveTest = false;
+
     suite('Inside a suite', function (this) {
         this.retries(2);
 
         let shouldFail = true;
         mocha.test('Fails first time', done => {
-            activeTest = false;
+            isActiveTest = false;
             const isShouldFail = shouldFail;
             shouldFail = false;
             done(isShouldFail ? new Error('<ERROR>') : null);
@@ -20,7 +21,7 @@ suite('afterEach', () => {
 
         suite('Inside another suite', () => {
             const compareTest = mocha.test('afterEach is teardown', () => {
-                activeTest = true;
+                isActiveTest = true;
                 expect(afterEach).to.equal(teardown);
                 expectTypeOf(afterEach).toEqualTypeOf(teardown);
             });
@@ -41,7 +42,7 @@ suite('afterEach', () => {
         });
 
         const contextualAfterEach = afterEach(function (this) {
-            if (activeTest) {
+            if (isActiveTest) {
                 expect(order).to.deep.equal([1]);
                 order.push(2);
             }
@@ -52,10 +53,12 @@ suite('afterEach', () => {
         });
 
         mocha.teardown(() => {
-            if (activeTest) {
-                expect(order).to.deep.equal([1, 2]);
-                order.push(3);
+            if (!isActiveTest) {
+                return;
             }
+
+            expect(order).to.deep.equal([1, 2]);
+            order.push(3);
         });
 
         const mergedContextualAfterEach = contextualAfterEach.teardown(async (ctx, done) => {
@@ -68,7 +71,7 @@ suite('afterEach', () => {
             expectTypeOf(contextualAfterEach.afterEach).toEqualTypeOf(contextualAfterEach.teardown);
 
             setTimeout(() => {
-                if (activeTest) {
+                if (isActiveTest) {
                     expect(order).to.deep.equal([1, 2, 3]);
                     order.push(4);
                 }
@@ -84,7 +87,7 @@ suite('afterEach', () => {
                 abc: number;
             }>();
 
-            if (activeTest) {
+            if (isActiveTest) {
                 expect(order).to.deep.equal([1, 2, 3, 4]);
                 order.push(5);
             }
@@ -99,10 +102,12 @@ suite('afterEach', () => {
                 readonly efg: true;
             }>();
 
-            if (activeTest) {
-                expect(order).to.deep.equal([1, 2, 3, 4, 5]);
-                order.push(6);
+            if (!isActiveTest) {
+                return;
             }
+
+            expect(order).to.deep.equal([1, 2, 3, 4, 5]);
+            order.push(6);
         });
     });
 
@@ -111,7 +116,7 @@ suite('afterEach', () => {
     });
 
     afterEach('afterEach with a title', async done => {
-        if (activeTest) {
+        if (isActiveTest) {
             expect(order).to.deep.equal([1, 2, 3, 4, 5, 6]);
             order.push(7);
         }
@@ -121,16 +126,20 @@ suite('afterEach', () => {
         expect(ctx).to.deep.equal({});
         expectTypeOf(ctx).toEqualTypeOf({});
 
-        if (activeTest) {
-            expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);
-            order.push(8);
+        if (!isActiveTest) {
+            return;
         }
+
+        expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7]);
+        order.push(8);
     });
 
     mocha.afterEach('Mocha enforced afterEach completion', () => {
-        if (activeTest) {
-            expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8]);
-            order.push(9);
+        if (!isActiveTest) {
+            return;
         }
+
+        expect(order).to.deep.equal([1, 2, 3, 4, 5, 6, 7, 8]);
+        order.push(9);
     });
 });
