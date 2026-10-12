@@ -5,7 +5,7 @@ import { StaticEventTarget } from '#static-event-target';
 /**
  * Wrapper around EventTarget to provide static typing to events
  * rather than the dreaded `any[]`. Types override native `addListener`/`dispatch` methods,
- * as well as implement strongly typed `on`/`emit` methods similar to NodeJS.
+ * as well as implement strongly typed `on`/`emit` methods similar to Node.js.
  *
  * Declare events via `events` symbol (type-only) in format `{ eventName: [args] }`
  *
