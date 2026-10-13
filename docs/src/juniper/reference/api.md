@@ -51,12 +51,32 @@ The output is deterministic: the same schema always renders the same JSON, and `
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `openApi30` | `boolean` | `false` | Output a JSON Schema compliant with OpenAPI 3.0. Not every property is fully supported — see implementation warnings. |
+| `openApi30` | `boolean` | `false` | Output a JSON Schema compliant with OpenAPI 3.0. Keywords 3.0 lacks are rewritten where possible, and dropped otherwise, so the schema may accept more than its 2020-12 form. The [OpenAPI 3.0 column](/juniper/reference/schemas) lists which keywords are kept. |
 | `id` | `string` | — | Value to place in the `$id` field of the document. |
 | `schema` | `boolean` | `false` | Include the draft as the `$schema` property. |
 | `definitionsPath` | `string` | `'#/$defs/'` (`'#/components/schemas/'` with `openApi30`) | `$ref` prefix for [defined](/juniper/guides/reusing-schemas) schemas. Only `#/$defs/` is embedded in the output; use `components()` for other paths. |
 
 **Returns** `object` — the rendered JSON Schema document.
+
+## `['~standard']`
+
+Every schema implements [Standard JSON Schema](https://standardschema.dev/), so libraries that accept it can render Juniper schemas themselves.
+
+```ts
+import { stringSchema } from 'juniper';
+
+const schema = stringSchema().nullable();
+
+schema['~standard'].jsonSchema.input({ target: 'openapi-3.0' });
+// { type: 'string', nullable: true }
+```
+
+| Target | Same as |
+|--------|---------|
+| `'draft-2020-12'` | `toJSON()` |
+| `'openapi-3.0'` | `toJSON({ openApi30: true })` |
+
+Other targets throw. `input` and `output` render the same schema, and accept the other `toJSON` options as a second argument.
 
 ## `.ref(path)`
 

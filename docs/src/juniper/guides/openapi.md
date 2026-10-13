@@ -18,7 +18,7 @@ schema.toJSON({ openApi30: true });
 // { type: 'string', nullable: true }
 ```
 
-Keywords that 3.0 lacks are converted where possible. For example, `if`/`then`/`else` becomes a pair of `anyOf` branches. The [schema reference](/juniper/reference/schemas) lists which keywords each version supports.
+Keywords that 3.0 lacks are converted where possible. For example, `if`/`then`/`else` and `dependentRequired` become `anyOf` branches. Keywords with no 3.0 equivalent, like `contains`, are dropped, so the 3.0 schema may accept more than the 2020-12 one. The [schema reference](/juniper/reference/schemas) lists which keywords each version supports.
 
 ## Components
 

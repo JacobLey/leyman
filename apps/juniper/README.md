@@ -10,8 +10,9 @@ Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-read
 
 - **One source of truth** — write the schema once, get its TypeScript type with `SchemaType<typeof schema>`. Nothing to keep in sync.
 - **Mistakes are compile errors** — each schema type only exposes the keywords that apply to it, so `maxLength` on an array or a `required` key missing from `properties` fails to build instead of silently validating everything.
-- **Strict output** — emitted schemas pass [Ajv's strict mode](https://ajv.js.org/strict-mode.html), so they work with any standard JSON Schema validator.
-- **Multiple targets** — emit JSON Schema 2020-12 (and OpenAPI 3.1), or `toJSON({ openApi30: true })` for OpenAPI 3.0's `nullable` dialect, from the same definition.
+- **Strict, deterministic output** — emitted schemas pass [Ajv's strict mode](https://ajv.js.org/strict-mode.html), with no unknown or misapplied keywords, and render the same JSON every time, so a committed spec only changes when a schema does.
+- **Multiple targets** — emit JSON Schema 2020-12 (and OpenAPI 3.1), or `toJSON({ openApi30: true })` for OpenAPI 3.0, from the same definition. Keywords 3.0 lacks are rewritten where possible, and dropped otherwise.
+- **Standard JSON Schema** — every schema implements [Standard JSON Schema](https://standardschema.dev/), so tools that accept it can take Juniper schemas directly.
 - **Reusable definitions** — `.define('User')` emits a schema as a `$ref` and bundles it into `$defs` (or OpenAPI `components`) automatically, so references never dangle.
 - **Immutable builders** — every method returns a new schema, so shared base schemas can be safely reused: narrowed with `pick`, `omit` and `partial`, or combined with `extend`.
 
@@ -338,12 +339,34 @@ The output is deterministic: the same schema always renders the same JSON, and `
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `openApi30` | `boolean` | `false` | Output a JSON Schema compliant with OpenAPI 3.0. Not every property is fully supported — see implementation warnings. |
+| `openApi30` | `boolean` | `false` | Output a JSON Schema compliant with OpenAPI 3.0. Keywords 3.0 lacks are rewritten where possible, and dropped otherwise, so the schema may accept more than its 2020-12 form. The OpenAPI 3.0 column of each [schema](#schemas) lists which keywords are kept. |
 | `id` | `string` | — | Value to place in the `$id` field of the document. |
 | `schema` | `boolean` | `false` | Include the draft as the `$schema` property. |
 | `definitionsPath` | `string` | `'#/$defs/'` (`'#/components/schemas/'` with `openApi30`) | `$ref` prefix for [defined](#reusing-schemas-with-define) schemas. Only `#/$defs/` is embedded in the output; use `components()` for other paths. |
 
 **Returns** `object` — the rendered JSON Schema document.
+
+---
+
+#### `['~standard']`
+
+Every schema implements [Standard JSON Schema](https://standardschema.dev/), so libraries that accept it can render Juniper schemas themselves.
+
+```ts
+import { stringSchema } from 'juniper';
+
+const schema = stringSchema().nullable();
+
+schema['~standard'].jsonSchema.input({ target: 'openapi-3.0' });
+// { type: 'string', nullable: true }
+```
+
+| Target | Same as |
+|--------|---------|
+| `'draft-2020-12'` | `toJSON()` |
+| `'openapi-3.0'` | `toJSON({ openApi30: true })` |
+
+Other targets throw. `input` and `output` render the same schema, and accept the other `toJSON` options as a second argument.
 
 ---
 
@@ -773,9 +796,10 @@ enumSchema({
 
 ## Compared to alternatives
 
-- [TypeBox](https://www.npmjs.com/package/@sinclair/typebox) — also builds JSON Schema and types together, but focuses on covering JSON Schema rather than rejecting schemas that don't make sense.
-- [zod](https://zod.dev/) / [joi](https://www.npmjs.com/package/joi) — validation libraries with their own schema formats; JSON Schema is an export, not the source.
-- [typescript-json-schema](https://www.npmjs.com/package/typescript-json-schema) / [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) — code generators that convert one way between TypeScript and JSON Schema, and can't stop you authoring a bad schema.
+- [TypeBox](https://www.npmjs.com/package/typebox) — also builds JSON Schema and types together, and ships a validator. But its options accept any keyword, so `maxLength` on an array compiles, and it has no OpenAPI 3.0 output.
+- [zod](https://zod.dev/) / [Valibot](https://valibot.dev/) / [joi](https://www.npmjs.com/package/joi) — validation libraries with their own schema formats. Zod and Valibot export JSON Schema, but refinements and transforms don't carry over, so the export isn't the source of truth.
+- [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts) / [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) — derive types from a plain JSON Schema, so nothing checks the schema itself.
+- [ts-json-schema-generator](https://www.npmjs.com/package/ts-json-schema-generator) — the other direction: generates JSON Schema from TypeScript types as a build step, with constraints like `maxLength` written as unchecked JSDoc tags.
 
 ## Also See
 

@@ -48,7 +48,7 @@ This appears to enforce an array of numbers. But because `"type": "array"` is om
 
 `foobar` and `fooBar` are different keys. The `required` entry refers to a property that does not exist in `properties`. The schema will almost certainly reject everything it receives, but nothing in the tooling points to why.
 
-Libraries like Ajv have a `{ strict: true }` mode to catch some of these issues — but only after you run your validator. By then you have already shipped the broken schema.
+Ajv's `{ strict: true }` mode catches all three of these, but only when the schema is compiled: at startup, or in a test that happens to cover it. Nothing flags the mistake while you write it.
 
 ---
 
@@ -66,7 +66,7 @@ Juniper solves this by generating both the JSON Schema and the TypeScript types 
 
 JSON Schema has multiple versions ("drafts"), and they are not always compatible. The most well-known breaking change is OpenAPI 3.0's `nullable` keyword, which replaces the `type: ['string', 'null']` form used in JSON Schema Draft 2020-12. Supporting both environments with a static JSON file requires either duplicating schemas or applying transformations manually.
 
-Juniper generates schemas dynamically, which means it can emit the correct form for the target environment. Pass `openApi30: true` to `toJSON()` and Juniper handles the conversion automatically.
+Juniper generates schemas dynamically, which means it can emit the correct form for the target environment. Pass `openApi30: true` to `toJSON()` and Juniper handles the conversion automatically. Keywords 3.0 has no equivalent for, like `if`/`then`/`else` and `dependentRequired`, are rewritten as `anyOf` branches. The few that can't be rewritten, like `contains`, are dropped, so the 3.0 schema may accept more than the 2020-12 one.
 
 ---
 
@@ -79,7 +79,7 @@ Juniper has the following goals for generating JSON Schema:
 - **Generate strict schemas** — Every outputted JSON Schema should pass [Ajv's `strict: true` mode](https://ajv.js.org/strict-mode.html) without errors.
 - **Enforce best practice** — Juniper is opinionated. It only generates schemas that make logical sense. For example, `BooleanSchema` does not allow setting the `not` keyword — with only two or three possible values, the appropriate tool is `EnumSchema`.
 - **Multi-draft support** — Outputted schemas should be compatible with multiple drafts where possible. For example, `if`/`then`/`else` conditionals are converted to [`anyOf` pairs](https://json-schema.org/understanding-json-schema/reference/conditionals.html#implication) when rendered with `openApi30: true`.
-- **Catch errors at build time** — Any validation enforcing schema structure should be applied at TypeScript compile time. Code that compiles should never throw at runtime due to schema validation errors.
+- **Catch errors at build time** — Any validation enforcing schema structure should be applied at TypeScript compile time. Code that compiles should never throw at runtime due to schema validation errors. The one exception is definition names: two different schemas defined with the same name compile, and throw when rendered.
 
 ### Non-Goals
 
@@ -107,25 +107,30 @@ Juniper emits TypeScript types for related JSON Schemas on a best-effort basis. 
 
 ## Comparisons
 
-There are many other tools available for dealing with JSON Schema in a TypeScript environment. None cover the same combination of concerns as Juniper.
+There are many other tools for working with JSON Schema in TypeScript. None cover the same combination of concerns as Juniper.
 
-### Dynamic Schema Generation (similar approach)
+### Schema builders
 
-- [TypeBox](https://www.npmjs.com/package/@sinclair/typebox) — Generates JSON Schema and TypeScript types together. More focused on JSON Schema compatibility than strict schema enforcement.
-- [JTD for Ajv](https://ajv.js.org/json-type-definition.html) — Uses JSON Type Definition rather than JSON Schema; not interchangeable.
+- [TypeBox](https://www.npmjs.com/package/typebox) — Builds JSON Schema and TypeScript types together, and ships its own validator. Because `required` is derived from which properties are optional, and every type emits its `type`, it avoids two of the problems above. But its options accept any keyword, so `Type.Array(Type.Number(), { maxLength: 10 })` compiles, and it has no OpenAPI 3.0 output.
 
-### JavaScript Validation Libraries
+### Validation libraries
 
-- [joi](https://www.npmjs.com/package/joi) — Runtime validation with its own schema format. Does not emit standard JSON Schema.
-- [zod](https://zod.dev/) — TypeScript-first validation. Can export JSON Schema via plugins, but validation is the primary concern, not schema generation.
-
-### TypeScript → JSON Schema
-
-- [typescript-json-schema](https://www.npmjs.com/package/typescript-json-schema) — Generates JSON Schema from TypeScript type annotations. Works from the TS side outward; does not let you author the schema directly.
-- [ts-json-schema-generator](https://www.npmjs.com/package/ts-json-schema-generator) — Similar to above; parses TypeScript source to emit schema.
+- [zod](https://zod.dev/) — Validation first. Zod 4's built-in `z.toJSONSchema()` targets JSON Schema 2020-12, draft-07 and OpenAPI 3.0, and its schemas implement Standard JSON Schema. But refinements and transforms can't be expressed in JSON Schema, so they are dropped from the export or make it throw. The Zod schema is the source of truth; the JSON Schema is a partial view of it.
+- [Valibot](https://valibot.dev/) — The same trade-off, with JSON Schema export in a separate package, `@valibot/to-json-schema`.
+- [joi](https://www.npmjs.com/package/joi) — Runtime validation with its own schema format. No JSON Schema output.
 
 ### JSON Schema → TypeScript
 
-- [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) — Generates TypeScript interfaces from existing JSON Schema files. Works from the schema side inward; does not prevent you from writing a bad schema.
+- [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts) — Infers a TypeScript type from a JSON Schema written `as const`, with no runtime code. It shares Juniper's single source of truth, but the schema is plain JSON, so nothing stops `maxLength` on an array or a typo in `required`.
+- [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) — Generates TypeScript files from JSON Schema files as a build step. The schema itself is not checked either.
+
+### TypeScript → JSON Schema
+
+- [ts-json-schema-generator](https://www.npmjs.com/package/ts-json-schema-generator) / [typescript-json-schema](https://www.npmjs.com/package/typescript-json-schema) — Generate JSON Schema from TypeScript types as a build step. You don't write the schema directly: constraints TypeScript can't express, like `maxLength` or `pattern`, are JSDoc tags, which aren't type-checked.
+
+### Ajv
+
+- [`JSONSchemaType<T>`](https://ajv.js.org/guide/typescript.html) — Type-checks a hand-written schema against a TypeScript type, so a missing `type` or a typo in `required` fails to compile. But the schema and the type are written separately, and `maxLength` on an array still compiles.
+- [JTD for Ajv](https://ajv.js.org/json-type-definition.html) — Uses JSON Type Definition rather than JSON Schema; not interchangeable.
 
 Juniper's position: author the schema with full TypeScript safety, get types for free, and output valid JSON Schema for any target environment. It does not require you to choose between schema authoring and type safety — it provides both from a single definition.
