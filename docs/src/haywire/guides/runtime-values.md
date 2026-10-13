@@ -51,6 +51,8 @@ const handleRequest = (request: IncomingRequest, user: User) => {
 
 Each container shares the factory's checking and wiring, so it is cheap to create, but has its own [singletons](/haywire/guides/scopes). `createContainer(factory)` and `factory.toContainer()` are equivalent.
 
+See [Web frameworks](/haywire/guides/frameworks) for this pattern in Hono, Fastify and Next.js.
+
 Container factories are immutable: `bindInstance()` returns a new factory, so one factory can serve many requests at once.
 
 ## Checks

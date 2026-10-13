@@ -110,8 +110,11 @@ catalog:
   eslint-plugin-unicorn: ^77.0.0
   expect-type: ^1.4.0
   fast-equals: ^6.0.4
+  fastify: ^5.12.5
   find-up: ^8.0.0
+  hono: ^4.13.13
   ignore: ^7.0.5
+  inversify: ^8.2.3
   mocha: ^12.0.2
   normalize-exception: ^4.0.1
   nx: ^23.2.1
@@ -126,11 +129,13 @@ catalog:
   publint: ^0.3.25
   react: ^19.3.0
   react-dom: ^19.3.0
+  reflect-metadata: ^0.2.2
   serialize-error: ^13.0.2
   sinon: ^22.1.0
   tinyglobby: ^0.2.17
   tmp-promise: ^3.0.3
   ts-dedent: ^2.3.0
+  tsyringe: ^4.10.0
   # TypeScript 7 ships no compiler API (expected in 7.1), so `typescript` stays TypeScript 6 for tools that
   # load it as a library (Nx's `@nx/js/typescript` plugin, typescript-eslint), while `@typescript/native`
   # provides TypeScript 7's `tsc`. Packages that compile TypeScript depend on both.

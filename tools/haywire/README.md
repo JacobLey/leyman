@@ -889,6 +889,8 @@ app.use(async (ctx, next) => {
 
 `requestScope` is narrower than an HTTP request: it is a single `get()` call. Those instances are never disposed by the container, so resources that should be released per HTTP request belong in `singletonScope` on a per-request container.
 
+For this pattern in Hono, Fastify and Next.js route handlers, see [Web frameworks](https://jacobley.github.io/leyman/haywire/guides/frameworks). Moving from InversifyJS or TSyringe? See [Migrating](https://jacobley.github.io/leyman/haywire/guides/migrating).
+
 ### Debugging a container
 
 Errors from `container.check()` name the bindings involved. A missing binding lists every binding that needs it, and a sync supplier of an async value shows the chain down to the async binding:

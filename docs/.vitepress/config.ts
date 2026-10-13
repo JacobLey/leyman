@@ -118,6 +118,8 @@ export default defineConfig({
                             { text: 'Disposal', link: '/haywire/guides/disposal' },
                             { text: 'Testing', link: '/haywire/guides/testing' },
                             { text: 'Debugging', link: '/haywire/guides/debugging' },
+                            { text: 'Web frameworks', link: '/haywire/guides/frameworks' },
+                            { text: 'Migrating', link: '/haywire/guides/migrating' },
                         ],
                     },
                     {

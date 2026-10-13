@@ -110,3 +110,5 @@ const handleRequest = async () => {
 ```
 
 [`requestScope`](/haywire/guides/scopes#requests) is narrower than an HTTP request: it is a single `get()` call, and those instances are never disposed. Resources to release per HTTP request belong in `singletonScope` on a per-request container.
+
+See [Web frameworks](/haywire/guides/frameworks) for per-request containers in Hono, Fastify and Next.js.
