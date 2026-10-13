@@ -1,5 +1,15 @@
 # haywire
 
+## 1.1.1
+
+### Patch Changes
+
+- 9469c47: Eager values are created first however deep they are in the dependency graph. Previously an async `eagerRequestScope` value more than one dependency away from the requested value, or reached only through a propagating supplier or deferred dependency, was passed to its dependent as an unresolved `Promise` (or rejected with `HaywireInstanceOfResponseError` for a class). Likewise an eager singleton reached through another binding was not always created before the eager singletons that depend on it.
+  
+  A supplier that does not propagate scope no longer creates eager request values in the request that receives it, since its own requests create them.
+- ec5c0e6: Export the `CombineListOutputs` type. A module or container with list bindings could not be exported from a package that emits declarations, as TypeScript could not name its type (`TS2883`).
+- 04f66c2: When a deferred dependency fails, the promise passed to the provider no longer causes an unhandled rejection. The request still rejects with the error, and handlers the provider attaches to the promise still run.
+
 ## 1.1.0
 
 ### Minor Changes

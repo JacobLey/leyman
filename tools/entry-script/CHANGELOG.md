@@ -1,5 +1,11 @@
 # Change Log
 
+## 4.1.0
+
+### Minor Changes
+
+- 6fc113c: `MainNotImplementedError` accepts `ErrorOptions` (such as `cause`) as an optional second argument, like `Error`.
+
 ## 4.0.1
 
 ### Patch Changes

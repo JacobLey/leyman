@@ -1,5 +1,16 @@
 # iso-crypto
 
+## 3.0.0
+
+### Major Changes
+
+- 3cfb04d: The default encryption for `encrypt`, `decrypt`, `eccEncrypt` and `eccDecrypt` is AES-256-GCM, which detects tampering, instead of AES-256-CTR. Data encrypted with the old default no longer decrypts with the default (it rejects rather than returning garbage). Pass the new `unsafeLegacyEncryption` export, the old default, as the `encryption` option to read it. Data encrypted with an explicit `encryption` option is unaffected.
+- 0223af7: `decode` throws a `TypeError` for hex text with characters other than `0-9` and `a-f`, which were silently decoded as `0`. Valid hex, in either case and of odd length, decodes as before.
+
+### Minor Changes
+
+- b212ca0: Add an `additionalData` option to `encrypt`, `decrypt`, `eccEncrypt` and `eccDecrypt` for AES-GCM: data that is authenticated but not encrypted, so decryption rejects unless given the same value (e.g. binding a ciphertext to a record ID). Other modes throw a `TypeError` rather than ignore it.
+
 ## 2.1.0
 
 ### Minor Changes
