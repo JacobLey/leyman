@@ -78,3 +78,4 @@ See each package's README.md for full usage documentation.
 | [`iso-crypto-browser`](../../../e2e/iso-crypto-browser) | Checks that iso-crypto's browser build runs on web APIs alone, with no Node.js APIs |
 | [`published-entrypoints`](../../../e2e/published-entrypoints) | Imports every entry point of every published package from the files it publishes, with only its runtime dependencies |
 | [`unknown-error-comparison`](../../../e2e/unknown-error-comparison) | Runs unknown-error and the libraries it is compared to through the same edge cases, to keep its comparison table accurate |
+| [`unknown-error-browser`](../../../e2e/unknown-error-browser) | Checks that unknown-error runs in real browsers, with and without `Error.isError` |
