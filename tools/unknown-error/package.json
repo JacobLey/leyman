@@ -33,7 +33,8 @@
   "files": [
     "dist",
     "!dist/**/*.map",
-    "!dist/tsconfig.tsbuildinfo"
+    "!dist/tsconfig.tsbuildinfo",
+    "WHY-UNKNOWN-ERROR.md"
   ],
   "exports": {
     ".": "./dist/index.js"

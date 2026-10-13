@@ -14,6 +14,8 @@ Turn any caught `unknown` into a real Error without throwing, even for hostile v
 - **Whole error trees**: Walks `cause` chains and `AggregateError` entries without recursion, so circular or 100,000-deep chains end instead of overflowing the stack.
 - **Doesn't modify your errors**: Errors are returned as they are, never patched in place.
 
+For why it exists and the design decisions behind it, see [WHY-UNKNOWN-ERROR.md](https://github.com/JacobLey/leyman/blob/main/tools/unknown-error/WHY-UNKNOWN-ERROR.md).
+
 ## Contents
 - [Install](#install)
 - [Example](#example)
@@ -25,6 +27,7 @@ Turn any caught `unknown` into a real Error without throwing, even for hostile v
   - [`NonError`](#nonerror)
   - [`walkErrors(value, options?)`](#walkerrorsvalue-options)
   - [`formatError(value, options?)`](#formaterrorvalue-options)
+- [Compared to alternatives](#compared-to-alternatives)
 
 ## Install
 
@@ -177,3 +180,16 @@ console.log(formatError(new Error('request failed', { cause: new Error('ECONNREF
 ```
 
 Causes are labelled `Caused by:`, and `AggregateError` entries `-`. Each error is printed as its `stack`, with a `Name: message` line added first when the stack doesn't start with one (as in Firefox and Safari). Where `maxDepth` cut the walk short, a `… more causes omitted` line says so.
+
+## Compared to alternatives
+
+| | unknown-error | [normalize-exception](https://www.npmjs.com/package/normalize-exception) | [ensure-error](https://www.npmjs.com/package/ensure-error) | [serialize-error](https://www.npmjs.com/package/serialize-error) | [pony-cause](https://www.npmjs.com/package/pony-cause) |
+|---|---|---|---|---|---|
+| Never throws on hostile values | ✅ | ✅ | ❌ | ❌ | — |
+| Errors from other realms | ✅ | ✅ | ❌ | ✅ | ❌ |
+| Readable circular and BigInt values | ✅ | ❌ | ❌ | ❌ | — |
+| Leaves your errors unmodified | ✅ | ❌ | ❌ | ✅ | — |
+| Causes and `AggregateError` | ✅ | ✅ | ✅ | — | Causes only |
+| 10,000-deep cause chains | ✅ | ❌ | ❌ | — | ❌ |
+
+Each cell is checked by a [comparison test suite](https://github.com/JacobLey/leyman/blob/main/e2e/unknown-error-comparison/test/integration/comparison.spec.ts). For every case, and where hand-written conversions fall short, see [WHY-UNKNOWN-ERROR.md](https://github.com/JacobLey/leyman/blob/main/tools/unknown-error/WHY-UNKNOWN-ERROR.md#comparison).
