@@ -143,6 +143,7 @@ An immutable module with some dependencies left unbound, that can be checked and
 |--------|-------------|
 | `check()` | Like `container.check()`, assuming the values bound later are synchronous singletons with no dependencies. Shared by every container it creates. |
 | `wire()` | Like `container.wire()`. Shared by every container it creates. |
+| `describe()`, `toMermaid()` | Like `container.describe()` and `container.toMermaid()`, for the containers the factory creates. Ids still to be bound are marked `unbound`. See [Debugging](/haywire/guides/debugging#drawing-the-dependency-graph). |
 | `bindInstance(idOrClass, value)` | Returns a new factory with the value bound. List ids can be bound repeatedly, each adding elements. |
 | `toContainer()` | Same as [`createContainer(factory)`](#createcontainer-moduleorfactory). |
 

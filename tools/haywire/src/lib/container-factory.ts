@@ -1,8 +1,10 @@
 import type { BindingListOutputType, BindingOutputType, GenericBinding } from '#binding';
 import type {
     Container,
+    ContainerDescription,
     ContainerOptions,
     ExpandedContainer,
+    GenericContainer,
     MaybeSyncContainer,
 } from '#container';
 import type {
@@ -285,6 +287,26 @@ export class ContainerFactory<
     }
 
     /**
+     * Describe the bindings of the containers this factory creates: the module's, the instances bound so far,
+     * and the ids still to be bound (marked `unbound`). See {@link Container.describe}.
+     *
+     * @returns every binding, with its dependencies
+     */
+    public describe(): ContainerDescription {
+        return this.#withBoundInstances().describe();
+    }
+
+    /**
+     * Render the dependency graph of the containers this factory creates as a Mermaid flowchart.
+     * Ids still to be bound are drawn with a dashed border. See {@link Container.toMermaid}.
+     *
+     * @returns Mermaid `flowchart` source
+     */
+    public toMermaid(): string {
+        return this.#withBoundInstances().toMermaid();
+    }
+
+    /**
      * Bind an output id to a corresponding instance.
      *
      * Equivalent to adding a `bind(outputId).withInstance(instance)` binding, so there is no provider, dependencies, or ability to make it async.
@@ -416,6 +438,16 @@ export class ContainerFactory<
         factory: F
     ): ReturnType<F['toContainer']> {
         return (factory as GenericContainerFactory).toContainer() as ReturnType<F['toContainer']>;
+    }
+
+    /**
+     * The factory's container with the instances bound so far, whether or not every id is bound yet.
+     * Ids still to be bound keep their placeholder binding.
+     *
+     * @returns container to describe
+     */
+    #withBoundInstances(): Pick<GenericContainer, 'describe' | 'toMermaid'> {
+        return addBoundInstances(this.#container, this.#registeredBindings);
     }
 }
 

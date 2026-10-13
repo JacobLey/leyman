@@ -913,6 +913,8 @@ console.log(container.toMermaid());
 
 `container.describe()` returns the same information as data: each binding's `outputId`, `scope`, `async`, and `dependencies` (each with its declared `id` and the `providers` bound for it). Neither method checks the container, so both work on one that fails `check()`.
 
+A [`ContainerFactory`](#combining-containers-with-dynamic-runtime-values) has both methods too, describing the containers it creates. Ids still to be bound with `bindInstance()` are marked `unbound`, and drawn with a dashed border labelled `bindInstance()`.
+
 ### Scope Gotchas
 
 Most scopes work as expected. Requesting a transient dependency results in a new value for every dependency. Requesting a singleton will share the same value across every request.
@@ -1265,6 +1267,8 @@ Collection of incomplete bindings that can still be checked and wired like a con
 |--------|------------|-------------|-------|
 | `check()` | ❌ | `void` | Similar to `container.check()`. Assumes that all to-be-bound instances are synchronous, eager singletons, with no dependencies. Operation will be cached for all containers generated. |
 | `wire()` | ❌ | `void` | Similar to `container.wire()`. Operation will be cached for all containers generated. |
+| `describe()` | ❌ | `ContainerDescription` | Like `container.describe()`, for the containers the factory creates: the module's bindings, the instances bound so far, and the ids still to be bound (marked `unbound`). See [Debugging a container](#debugging-a-container). |
+| `toMermaid()` | ❌ | `string` | Like `container.toMermaid()`. Ids still to be bound are drawn with a dashed border. |
 | `bindInstance(idOrClass, instance)` | First parameter is either a `HaywireId` or raw class declaring the type. Second parameter is an instance satisfying the requested type. | `ContainerFactory` | Returns a _new_ container factory with the value bound. [List](#lists) ids may be bound multiple times, each adding an element (or elements for `'multi'`). Because of this, a factory instance may be shared across multiple contexts. If the factory has been checked/wired, that state will persist. |
 | `toContainer()` | ❌ | `Container \| SyncContainer` | Returns a container with bound instances attached. Will inherit factory's checked/wired state. Will be a `Container` if any module binding's provider is async. |
 
@@ -1316,6 +1320,7 @@ Returned by `container.describe()`. Has a `bindings` array of `BindingDescriptio
 | `outputId` | `HaywireId` | Id the binding provides. |
 | `scope` | `Scopes` | One of the [scope](#binding-an-implementation-to-an-id) symbols. |
 | `async` | `boolean` | Whether the provider is async. |
+| `unbound` | `boolean` | Whether the id still has to be bound with `bindInstance()`. Only ever `true` in a container factory's description, where `scope` and `async` don't apply. |
 | `dependencies` | `{ id: HaywireId; providers: HaywireId[] }[]` | Dependencies in provider order, as declared (including `.supplier()` and `.deferred()`), with the output ids of the bindings that provide each. `providers` has one entry per element for a [list](#lists), and is empty when no binding provides it. |
 
 ### Errors

@@ -299,6 +299,11 @@ export interface BindingDescription {
      */
     readonly async: boolean;
     /**
+     * Whether the id still has to be bound with `bindInstance()`. Only ever true in a container factory's description.
+     * Such a binding has no provider, so its `scope` and `async` don't apply.
+     */
+    readonly unbound: boolean;
+    /**
      * Dependencies in the order they are passed to the provider.
      */
     readonly dependencies: readonly {
@@ -847,6 +852,7 @@ export class Container<Outputs extends [Extendable]> {
                 outputId: binding.outputId,
                 scope: binding.scope,
                 async: binding.isAsync,
+                unbound: binding instanceof TempBinding,
                 dependencies: binding.dependencyIds.map(id => ({
                     id,
                     providers: this.#dependencyProviders(id).map(provider => provider.outputId),
@@ -860,7 +866,8 @@ export class Container<Outputs extends [Extendable]> {
      *
      * Each binding is a node labelled with its output id and scope (and `async`). An arrow points from a binding to each of
      * its dependencies, dotted for suppliers and deferred dependencies (which are not created before the binding).
-     * A dependency with no binding is drawn with a dashed red border.
+     * A dependency with no binding is drawn with a dashed red border. In a container factory's graph, an id still to be
+     * bound with `bindInstance()` is drawn with a dashed border.
      *
      * @returns Mermaid `flowchart` source
      */
@@ -869,14 +876,20 @@ export class Container<Outputs extends [Extendable]> {
         const nodeIds = new Map(bindings.map((binding, i) => [binding, `b${i}`]));
         const missingNodeIds = new Map<GenericOutputHaywireId, string>();
         const lines = ['flowchart LR'];
+        let hasUnbound = false;
 
         for (const [binding, nodeId] of nodeIds) {
+            const label = escapeMermaid(binding.outputId.toString());
+            if (binding instanceof TempBinding) {
+                // A factory's placeholder until an instance is bound, its scope is an implementation detail
+                hasUnbound = true;
+                lines.push(`    ${nodeId}["${label}<br/>bindInstance()"]:::unbound`);
+                continue;
+            }
             const details = [binding.scope.description, binding.isAsync && 'async']
                 .filter(Boolean)
                 .join(', ');
-            lines.push(
-                `    ${nodeId}["${escapeMermaid(binding.outputId.toString())}<br/>${details}"]`
-            );
+            lines.push(`    ${nodeId}["${label}<br/>${details}"]`);
         }
         for (const [binding, nodeId] of nodeIds) {
             for (const dependencyId of binding.dependencyIds) {
@@ -905,6 +918,9 @@ export class Container<Outputs extends [Extendable]> {
                     lines.push(`    ${nodeId} ${arrow} ${nodeIds.get(provider)!}`);
                 }
             }
+        }
+        if (hasUnbound) {
+            lines.push('    classDef unbound stroke-dasharray:4');
         }
         if (missingNodeIds.size > 0) {
             lines.push('    classDef missing stroke:#d33,stroke-dasharray:4');

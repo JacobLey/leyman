@@ -359,4 +359,72 @@ suite('factory', () => {
             }).to.throw(HaywireDuplicateOutputError);
         });
     });
+
+    suite('Describing', () => {
+        class Handler {
+            public readonly handler = true;
+        }
+        const requestId = identifier<{ url: string }>('Request');
+        const userId = identifier<{ id: string }>('User');
+        const pluginId = identifier<string>('plugin').list();
+        const factory = createContainerFactory(
+            createModule(
+                bind(Handler)
+                    .withDependencies([requestId, userId.nullable(), pluginId])
+                    .withProvider(() => new Handler())
+            )
+        );
+        const partial = factory.bindInstance(requestId, { url: '/' });
+
+        test('describe', () => {
+            expect(
+                partial.describe().bindings.map(({ outputId, unbound, dependencies }) => ({
+                    unbound,
+                    outputId: outputId.toString(),
+                    providers: dependencies.map(({ providers }) =>
+                        providers.map(provider => provider.toString())
+                    ),
+                }))
+            ).to.deep.equal([
+                {
+                    unbound: false,
+                    outputId: 'Handler',
+                    providers: [['Request'], ['User(nullable)'], ['plugin(list)']],
+                },
+                // Placeholders for the ids still to be bound
+                { unbound: true, outputId: 'User(nullable)', providers: [] },
+                { unbound: true, outputId: 'plugin(list)', providers: [] },
+                // Bound instances follow the module's bindings
+                { unbound: false, outputId: 'Request', providers: [] },
+            ]);
+        });
+
+        test('toMermaid', () => {
+            expect(partial.toMermaid()).to.equal(
+                [
+                    'flowchart LR',
+                    '    b0["Handler<br/>transient"]',
+                    '    b1["User(nullable)<br/>bindInstance()"]:::unbound',
+                    '    b2["plugin(list)<br/>bindInstance()"]:::unbound',
+                    '    b3["Request<br/>eager-singleton"]',
+                    '    b0 --> b3',
+                    '    b0 --> b1',
+                    '    b0 --> b2',
+                    '    classDef unbound stroke-dasharray:4',
+                ].join('\n')
+            );
+        });
+
+        test('Describing does not change the factory', () => {
+            partial.describe();
+            partial.toMermaid();
+            const container = partial
+                .bindInstance(userId, { id: 'user' })
+                .bindInstance(pluginId, 'a')
+                .toContainer();
+            expect(container.get(Handler)).to.be.instanceOf(Handler);
+            expect(container.describe().bindings.every(({ unbound }) => !unbound)).to.equal(true);
+            expect(container.toMermaid()).to.not.include('unbound');
+        });
+    });
 });

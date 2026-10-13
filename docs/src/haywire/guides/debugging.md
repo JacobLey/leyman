@@ -106,3 +106,33 @@ for (const binding of container.describe().bindings) {
 ```
 
 Each binding has its `outputId`, `scope`, whether it is `async`, and its `dependencies` in provider order. Each dependency has the `id` it was declared with, and the `providers` that satisfy it: one per element for a [list](/haywire/guides/lists), and none when it is missing.
+
+### Container factories
+
+A [container factory](/haywire/guides/runtime-values) has `describe()` and `toMermaid()` too, describing the containers it creates. Ids still to be bound with `bindInstance()` are marked `unbound` (and `scope` and `async` don't apply to them), and `toMermaid()` draws them with a dashed border:
+
+```ts
+import { bind, createContainerFactory, createModule, identifier } from 'haywire';
+
+interface IncomingRequest {
+    url: string;
+}
+const requestId = identifier<IncomingRequest>('Request');
+class RequestHandler {
+    constructor(private readonly request: IncomingRequest) {}
+}
+// ---cut---
+const factory = createContainerFactory(
+    createModule(bind(RequestHandler).withDependencies([requestId]).withConstructorProvider())
+);
+
+console.log(factory.toMermaid());
+```
+
+```sh
+flowchart LR
+    b0["RequestHandler<br/>transient"]
+    b1["Request<br/>bindInstance()"]:::unbound
+    b0 --> b1
+    classDef unbound stroke-dasharray:4
+```
