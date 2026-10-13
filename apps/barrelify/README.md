@@ -14,8 +14,6 @@ Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/C
 - **CI check** — `barrel --ci` fails when a committed barrel is stale.
 - **Keeps type-only exports** — lines you change to `export type *` stay type-only on later runs.
 
-**Compared to** [barrelsby](https://www.npmjs.com/package/barrelsby) and [ctix](https://www.npmjs.com/package/ctix), which generate barrels across a directory tree from configuration, barrelify keeps one opt-in marker per file and no config.
-
 ## Contents
 - [Install](#install)
 - [Example](#example)
@@ -23,6 +21,7 @@ Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/C
 - [API](#api)
   - [barrelify](#barrelifyoptions)
 - [CLI](#cli)
+- [Compared to alternatives](#compared-to-alternatives)
 
 ## Install
 
@@ -133,3 +132,7 @@ npx barrel --cwd ./src    # limit search to ./src
 npx barrel --dry-run      # preview changes without writing
 npx barrel --ignore '**/generated/**'
 ```
+
+## Compared to alternatives
+
+[barrelsby](https://www.npmjs.com/package/barrelsby) and [ctix](https://www.npmjs.com/package/ctix) generate barrels across a directory tree from configuration. barrelify keeps one opt-in marker per file, and no config.

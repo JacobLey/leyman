@@ -14,11 +14,6 @@ Type-safe query definitions for TanStack Query — define each key and fetcher o
 - **SSR in one call** — `.query(client, params, { awaitLinks: true })` loads a query and everything it links to, ready to dehydrate.
 - **Every hook flavour** — plain, suspense, nullable (`skipToken`), infinite and prefetched variants of TanStack's hooks.
 
-**Compared to**
-
-- TanStack's own [`queryOptions`](https://tanstack.com/query/latest/docs/framework/react/guides/query-options) — also pairs a key with its fetcher, but per call site; there are no params-typed cache helpers or linked prefetching.
-- [@lukemorales/query-key-factory](https://www.npmjs.com/package/@lukemorales/query-key-factory) — organizes keys (and optionally fetchers) into a typed tree; it does not link queries or wrap the hooks.
-
 For the full motivation, see [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md).
 
 ## Contents
@@ -36,6 +31,7 @@ For the full motivation, see [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/
   - [QueryParams](#queryparamst)
   - [QueryKey](#querykeyt)
   - [LinkOf](#linkoft)
+- [Compared to alternatives](#compared-to-alternatives)
 - [Also See](#also-see)
 
 ## Install
@@ -412,6 +408,11 @@ Extracts the `Linked` type for a given `Resource` or `Infinite` instance type. U
 type UserLink = LinkOf<typeof fetchUser>;
 // Linked<{ id: number }, readonly unknown[], User, Resource<...>>
 ```
+
+## Compared to alternatives
+
+- TanStack's own [`queryOptions`](https://tanstack.com/query/latest/docs/framework/react/guides/query-options) — also pairs a key with its fetcher, but per call site; there are no params-typed cache helpers or linked prefetching.
+- [@lukemorales/query-key-factory](https://www.npmjs.com/package/@lukemorales/query-key-factory) — organizes keys (and optionally fetchers) into a typed tree; it does not link queries or wrap the hooks.
 
 ## Also See
 

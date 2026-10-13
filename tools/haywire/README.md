@@ -16,8 +16,6 @@ If your container compiles, it is complete: missing bindings, mismatched types a
 - **Real-world lifecycles** — singleton, request and transient scopes; opt-in async initialization; explicit circular dependencies; runtime values (like an HTTP request) supplied per call; `await using` disposal of what the container created.
 - **Immutable and independent** — modules never mutate, and containers share no global registry, so tests can build their own and swap in fakes with a type-checked `replaceBinding()`.
 
-**Compared to** [InversifyJS](https://www.npmjs.com/package/inversify), [TSyringe](https://www.npmjs.com/package/tsyringe), [TypeDI](https://www.npmjs.com/package/typedi) and [NestJS](https://nestjs.com/)'s injector, which rely on decorators and string or token keys and find missing bindings at runtime, and [Awilix](https://www.npmjs.com/package/awilix), which avoids decorators but resolves by name at runtime.
-
 For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.com/JacobLey/leyman/blob/main/tools/haywire/WHY-HAYWIRE.md).
 
 ## Table of Contents
@@ -64,6 +62,7 @@ For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.co
         - [HaywireModuleValidationError](#haywiremodulevalidationerror)
         - [HaywireContainerValidationError](#haywirecontainervalidationerror)
         - [HaywireInstanceValidationError](#haywireinstancevalidationerror)
+- [Compared to alternatives](#compared-to-alternatives)
 - [Also See](#also-see)
 
 ## Installation
@@ -1270,6 +1269,10 @@ Specific instances may report circular dependencies, sync suppliers that are inc
 Error thrown during request time, during `preload()` or `get()` (or will be rejected when using async versions).
 
 Specific instances may report a value that is `null` for an id that is not declared as `.nullable()`, or the response is not an `instanceof` the requested class. For [lists](#lists) these checks apply to each element, and a `list('multi')` provider that does not return an array is rejected.
+
+## Compared to alternatives
+
+[InversifyJS](https://www.npmjs.com/package/inversify), [TSyringe](https://www.npmjs.com/package/tsyringe), [TypeDI](https://www.npmjs.com/package/typedi) and [NestJS](https://nestjs.com/)'s injector rely on decorators and string or token keys, and find missing bindings at runtime. [Awilix](https://www.npmjs.com/package/awilix) avoids decorators, but resolves by name at runtime.
 
 ## Also See
 

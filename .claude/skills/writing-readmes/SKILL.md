@@ -11,11 +11,11 @@ description: Writing and maintaining package READMEs
 
 Every package needs a README. It is published to npm, so it is written for people using the package, and it doubles as the precise API reference agents read. Repo-internal conventions belong in SKILL.md files, not READMEs.
 
-The README is also how the package is found and judged. npm search, web search, LLM crawlers and coding agents read the npm page (often only its first screen) and `node_modules/<pkg>/README.md`. Few follow links to other files. So the first screen of the README must say what the package does, why to pick it over the alternatives, and when not to.
+The README is also how the package is found and judged. npm search, web search, LLM crawlers and coding agents read the npm page (often only its first screen) and `node_modules/<pkg>/README.md`. Few follow links to other files. So the first screen of the README must say what the package does, what sets it apart, and when not to use it. It leads with the package's own merits: a comparison with alternatives belongs near the end (see below), not in the opening.
 
 ## README vs WHY File
 
-**README.md** — How to use the package, opened by a short pitch: a few **Highlights** bullets naming what sets it apart, and (when alternatives exist) a short **Compared to** table or list naming them. The pitch is a summary, at most ~25 lines; everything after it guides an active user.
+**README.md** — How to use the package, opened by a short pitch: a few **Highlights** bullets naming what sets it apart, and a link to the WHY file. The pitch is a summary, at most ~25 lines; everything after it guides an active user. When alternatives exist, a short **Compared to alternatives** section near the end (before **Also See**) names them in a table or list.
 
 **WHY-\<PACKAGE\>.md** — The long form: the problem it solves with worked examples, design decisions, non-goals, and the full comparison to alternatives. Especially useful for more complicated packages. Link it from the end of the README's pitch.
 
@@ -39,10 +39,6 @@ One-sentence description of what it does (same as `package.json` `description`).
 - **Highlight** — what sets it apart, in a line.
 - **Highlight** — 3–5 of these.
 
-| | <package> | <alternative> | <alternative> |
-|---|---|---|---|
-| <deciding feature> | ✅ | ❌ | ✅ |
-
 For the full motivation and comparison, see [WHY-<PACKAGE>.md](https://github.com/JacobLey/leyman/blob/main/<path>/WHY-<PACKAGE>.md).
 
 ## Contents
@@ -50,6 +46,7 @@ For the full motivation and comparison, see [WHY-<PACKAGE>.md](https://github.co
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
+- [Compared to alternatives](#compared-to-alternatives)   ← only if alternatives exist
 - [Also See](#also-see)   ← only if cross-references exist
 
 ## Install
@@ -111,6 +108,14 @@ Constructor parameters.
 
 Method description.
 
+## Compared to alternatives
+
+| | <package> | <alternative> | <alternative> |
+|---|---|---|---|
+| <deciding feature> | ✅ | ❌ | ✅ |
+
+Or a short list, one line per alternative. Link the WHY file for the full comparison.
+
 ## Also See
 
 - [`other-package`](https://example.com/link-to-other-package) — brief description of relationship
@@ -144,7 +149,7 @@ The same applies to WHY files, which link back to the README via its npm page.
 ## What NOT to Put in a README
 
 - Extended motivation or "the problem this solves" → WHY file (the pitch keeps a few bullets)
-- Detailed comparison to alternative libraries → WHY file (the pitch keeps a short table)
+- Detailed comparison to alternative libraries → WHY file (the README keeps a short table or list near the end)
 - Implementation details (how it works internally) → code comments
 - Changelog → CHANGELOG.md (managed by changesets)
 - Contributing instructions → root README

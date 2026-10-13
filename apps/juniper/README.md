@@ -15,12 +15,6 @@ Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-read
 - **Reusable definitions** — `.define('User')` emits a schema as a `$ref` and bundles it into `$defs` (or OpenAPI `components`) automatically, so references never dangle.
 - **Immutable builders** — every method returns a new schema, so shared base schemas can be safely reused: narrowed with `pick`, `omit` and `partial`, or combined with `extend`.
 
-**Compared to**
-
-- [TypeBox](https://www.npmjs.com/package/@sinclair/typebox) — also builds JSON Schema and types together, but focuses on covering JSON Schema rather than rejecting schemas that don't make sense.
-- [zod](https://zod.dev/) / [joi](https://www.npmjs.com/package/joi) — validation libraries with their own schema formats; JSON Schema is an export, not the source.
-- [typescript-json-schema](https://www.npmjs.com/package/typescript-json-schema) / [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) — code generators that convert one way between TypeScript and JSON Schema, and can't stop you authoring a bad schema.
-
 Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](https://www.npmjs.com/package/juniper-validator).
 
 For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md).
@@ -33,6 +27,7 @@ For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https:
 - [Reusing schemas with define](#reusing-schemas-with-define)
 - [API](#api)
 - [Recipes](#recipes)
+- [Compared to alternatives](#compared-to-alternatives)
 - [Also See](#also-see)
 
 ## Install
@@ -775,6 +770,12 @@ enumSchema({
 }).toJSON();
 // { enum: ['BAR', 123] }
 ```
+
+## Compared to alternatives
+
+- [TypeBox](https://www.npmjs.com/package/@sinclair/typebox) — also builds JSON Schema and types together, but focuses on covering JSON Schema rather than rejecting schemas that don't make sense.
+- [zod](https://zod.dev/) / [joi](https://www.npmjs.com/package/joi) — validation libraries with their own schema formats; JSON Schema is an export, not the source.
+- [typescript-json-schema](https://www.npmjs.com/package/typescript-json-schema) / [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) — code generators that convert one way between TypeScript and JSON Schema, and can't stop you authoring a bad schema.
 
 ## Also See
 

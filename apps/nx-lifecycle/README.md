@@ -14,8 +14,6 @@ Declare your workflow once — `build` runs hooks `pre` → `run` → `post`, `t
 - **Per-project implementations** — each project opts into the bound targets it declares, so TypeScript, Go and Java projects can all answer to the same `build` and `test`.
 - **Nothing to commit** — the plugin infers targets when Nx builds the project graph, and fails with the fix if a project's `dependsOn` breaks the wiring. An executor that writes the config to files is also available.
 
-**Compared to** hand-written `dependsOn` in `targetDefaults` and each `project.json`: there, adding a step between two existing ones means editing every target that depended on the first, in every project that has it.
-
 For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
 
 ## Contents
@@ -33,6 +31,7 @@ For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](http
     - [dryRun](#dryrun)
 - [CLI](#cli)
     - [explain](#explain)
+- [Compared to alternatives](#compared-to-alternatives)
 
 ## Install
 
@@ -368,3 +367,7 @@ my-lib
 ```
 
 Stages and bindings come from the [plugin](#plugin) options in `nx.json`, or else from `--config-file` (default `lifecycle.json`). Bound targets and their other dependencies come from the project as Nx resolves it, after `targetDefaults` and `project.json`.
+
+## Compared to alternatives
+
+Without nx-lifecycle, `dependsOn` is written by hand in `targetDefaults` and each `project.json`. Adding a step between two existing ones then means editing every target that depended on the first, in every project that has it.
