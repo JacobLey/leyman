@@ -78,6 +78,9 @@
     },
     {
       "path": "./tools/unknown-error"
+    },
+    {
+      "path": "./tools/constant-consistent-hash"
     }
   ]
 }

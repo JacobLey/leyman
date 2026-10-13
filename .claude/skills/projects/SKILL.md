@@ -37,6 +37,7 @@ See each package's README.md for full usage documentation.
 | Package | Description |
 |---------|-------------|
 | [`common-proxy`](../../../tools/common-proxy/) | Synchronously expose ESM-backed functions from CommonJS |
+| [`constant-consistent-hash`](../../../tools/constant-consistent-hash/) | Stateless consistent hashing in constant time, with minimal key movement |
 | [`default-import`](../../../tools/default-import/) | Correctly extract default exports from CJS modules in ESM |
 | [`entry-script`](../../../tools/entry-script/) | Safe CLI entry point pattern — runs only as the Node entrypoint |
 | [`enum-to-array`](../../../tools/enum-to-array/) | Convert TypeScript enums to typed arrays of keys/values |

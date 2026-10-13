@@ -1,0 +1,60 @@
+{
+  "name": "constant-consistent-hash",
+  "version": "0.0.1",
+  "description": "Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages.",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "tools/constant-consistent-hash"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "consistent-hashing",
+    "consistent-hash",
+    "jump-hash",
+    "hash",
+    "sharding",
+    "load-balancing",
+    "partitioning",
+    "constant-time",
+    "stateless",
+    "minimal-disruption"
+  ],
+  "sideEffects": false,
+  "types": "./dist/constant-consistent-hash.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "SPEC.md",
+    "WHY-CONSTANT-CONSISTENT-HASH.md"
+  ],
+  "exports": {
+    ".": "./dist/constant-consistent-hash.js"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  }
+}
