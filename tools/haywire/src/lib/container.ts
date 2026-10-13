@@ -25,10 +25,12 @@ import {
     HaywireContainerDisposedError,
     HaywireDisposerScopeError,
     HaywireDuplicateOutputError,
+    HaywireError,
     HaywireInstanceOfResponseError,
     HaywireListResponseError,
     HaywireMultiError,
     HaywireNullResponseError,
+    HaywireProviderError,
     HaywireProviderMissingError,
     HaywireSyncSupplierError,
     HaywireUndefinedResponseError,
@@ -273,6 +275,17 @@ const disposeInstance = async (binding: GenericBinding, instance: unknown): Prom
 };
 
 /**
+ * Options for a container created from a module.
+ */
+export interface ContainerOptions {
+    /**
+     * Throw errors from providers as they are, rather than wrapped in a `HaywireProviderError` naming the request path.
+     * The behavior before Haywire 2. Defaults to `false`.
+     */
+    unsafeRawProviderErrors?: boolean;
+}
+
+/**
  * A binding in a {@link ContainerDescription}.
  */
 export interface BindingDescription {
@@ -380,6 +393,10 @@ export class Container<Outputs extends [Extendable]> {
     declare public [typeTracking]: Outputs;
     readonly #isSync: boolean;
     /**
+     * Throw provider errors as they are, see {@link ContainerOptions}.
+     */
+    readonly #rawProviderErrors: boolean;
+    /**
      * All bindings found in the original modules, merging both non-list and all list.
      */
     readonly #bindings: ReadonlySet<GenericBinding>;
@@ -459,20 +476,23 @@ export class Container<Outputs extends [Extendable]> {
      * So if a wired container will remain wired after clone.
      * Note that in order to properly clone a SyncContainer, the SyncContainer constructor must be called first.
      *
-     * @param params - Either a container to clone, or two values:
+     * @param params - Either a container to clone, or three values:
      *  1) map of id->binding or container
      *  2) map of base id to list bindings, providing multiple providers for list outputs
+     *  3) container options
      */
     protected constructor(
         ...params:
             | readonly [
                   ReadonlyMap<GenericBaseHaywireId, GenericBinding>,
                   ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>,
+                  ContainerOptions,
               ]
             | readonly [Container<Outputs>]
     ) {
         if (params.length === 1) {
             const [container] = params;
+            this.#rawProviderErrors = container.#rawProviderErrors;
             this.#bindings = new Set(container.#bindings);
             this.#baseIdToBinding = new Map(container.#baseIdToBinding);
             this.#baseIdToListBindings = new Map(container.#baseIdToListBindings);
@@ -490,7 +510,8 @@ export class Container<Outputs extends [Extendable]> {
             this.#requestMap = new Map(container.#requestMap);
             this.#isAsyncImplementationMap = new Map(container.#isAsyncImplementationMap);
         } else {
-            const [baseIdToBinding, baseIdToListBindings] = params;
+            const [baseIdToBinding, baseIdToListBindings, options] = params;
+            this.#rawProviderErrors = options.unsafeRawProviderErrors ?? false;
             this.#bindings = new Set(
                 [...baseIdToBinding.values(), ...baseIdToListBindings.values()].flat()
             );
@@ -532,13 +553,15 @@ export class Container<Outputs extends [Extendable]> {
      *
      * @param bindings - module bindings
      * @param listBindings - map of base id to list bindings
+     * @param options - how the container handles provider errors
      * @returns type-safe async container
      */
     public static [createContainerSym]?<Outputs extends [Extendable]>(
         bindings: ReadonlyMap<GenericBaseHaywireId, GenericBinding>,
-        listBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>
+        listBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>,
+        options: ContainerOptions
     ): Container<Outputs> {
-        return new Container<Outputs>(bindings, listBindings);
+        return new Container<Outputs>(bindings, listBindings, options);
     }
 
     /**
@@ -1009,6 +1032,21 @@ export class Container<Outputs extends [Extendable]> {
      */
     public async [Symbol.asyncDispose](): Promise<void> {
         return this.disposeAsync();
+    }
+
+    /**
+     * Wrap an error thrown by a provider with the request path, unless Haywire threw it
+     * (e.g. a supplier the provider called) or the container keeps raw provider errors.
+     *
+     * @param binding - binding whose provider threw
+     * @param err - thrown value
+     * @param path - request path to the binding
+     * @returns error to throw
+     */
+    #providerError(binding: GenericBinding, err: unknown, path: RequestPath): unknown {
+        return this.#rawProviderErrors || err instanceof HaywireError
+            ? err
+            : new HaywireProviderError(binding.outputId, err, requestPathIds(path));
     }
 
     /**
@@ -1721,9 +1759,14 @@ export class Container<Outputs extends [Extendable]> {
             validateAllSettled(settled);
 
             const dependencies = settled.flatMap(settle => settle.value);
-            const value = binding.isAsync
-                ? await binding.provider(...dependencies)
-                : binding.provider(...dependencies);
+            let value: unknown;
+            try {
+                value = binding.isAsync
+                    ? await binding.provider(...dependencies)
+                    : binding.provider(...dependencies);
+            } catch (err) {
+                throw this.#providerError(binding, err, path);
+            }
 
             validateProviderOutput(binding.outputId, value, path);
             if (relevantCache === this.#singletonCache) {
@@ -2003,7 +2046,12 @@ export class Container<Outputs extends [Extendable]> {
             deferredRequests.push(...dependency.deferredRequests);
             parameters.push(dependency.value);
         }
-        const value = binding.provider(...parameters);
+        let value: unknown;
+        try {
+            value = binding.provider(...parameters);
+        } catch (err) {
+            throw this.#providerError(binding, err, path);
+        }
 
         validateProviderOutput(binding.outputId, value, path);
         if (relevantCache === this.#singletonCache) {
@@ -2568,13 +2616,15 @@ export class SyncContainer<Outputs extends [Extendable]> extends Container<Outpu
      *
      * @param bindings - module bindings to create container from
      * @param listBindings - map of base id to list bindings
+     * @param options - how the container handles provider errors
      * @returns synchronous container (that also supports async)
      */
     public static override [createContainerSym]?<Outputs extends [Extendable]>(
         bindings: ReadonlyMap<GenericBaseHaywireId, GenericBinding>,
-        listBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>
+        listBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>,
+        options: ContainerOptions
     ): SyncContainer<Outputs> {
-        return new SyncContainer<Outputs>(bindings, listBindings);
+        return new SyncContainer<Outputs>(bindings, listBindings, options);
     }
 
     /**

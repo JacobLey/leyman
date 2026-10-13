@@ -30,6 +30,12 @@ When a provider returns a value its id doesn't allow, like `null` for an id that
 Null value returned for non-nullable provider: Config (requested via App -> Repo(supplier(sync)) -> Config)
 ```
 
+A provider that throws is reported the same way, with what it threw kept as the error's `cause`:
+
+```sh
+HaywireProviderError: Provider for DB_URL failed (requested via App -> Database -> DB_URL): DB_URL is missing
+```
+
 There is no path when the failing id is the one requested. [Eager](/haywire/guides/scopes) values are created at the start of a request, or by `preload()`, so their path starts at the eager binding. A failing singleton is shared by every request waiting for it, so they all get the path of the request that started creating it.
 
 ## Drawing the dependency graph

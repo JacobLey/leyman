@@ -385,6 +385,46 @@ export class HaywireListResponseError extends HaywireInstanceValidationError {
 }
 
 /**
+ * Thrown when a provider throws (or its promise rejects). The thrown value is kept as the `cause`, unchanged.
+ *
+ * Errors thrown by Haywire itself (e.g. by a supplier the provider called) are not wrapped again.
+ * Containers created with `unsafeRawProviderErrors` throw the provider's error as is instead.
+ */
+export class HaywireProviderError extends HaywireInstanceValidationError {
+    public readonly outputId: GenericHaywireId;
+    /**
+     * Ids followed from the requested id to the failing binding, each as its dependent declared it.
+     * Empty when not created by a request. Not enumerable, see {@link hideRequestPath}.
+     */
+    declare public readonly requestPath: readonly GenericHaywireId[];
+    public constructor(
+        outputId: GenericHaywireId,
+        cause: unknown,
+        requestPath: HaywireProviderError['requestPath'] = []
+    ) {
+        super(
+            `Provider for ${outputId.toString()} failed${requestedVia(requestPath)}: ${HaywireProviderError.#describe(cause)}`,
+            { cause }
+        );
+        this.name = 'HaywireProviderError';
+        this.outputId = outputId;
+        hideRequestPath(this, requestPath);
+    }
+
+    static #describe(cause: unknown): string {
+        if (Error.isError(cause)) {
+            return cause.message;
+        }
+        try {
+            return String(cause);
+        } catch {
+            // For example `Object.create(null)`, which has no `toString()`
+            return typeof cause;
+        }
+    }
+}
+
+/**
  * Thrown when multiple providers fail to generate the required value.
  * These errors may have been thrown explicitly by the provider itself, or as part of other validations
  * that are `HaywireInstanceValidationError`.

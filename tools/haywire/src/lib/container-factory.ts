@@ -1,5 +1,10 @@
 import type { BindingListOutputType, BindingOutputType, GenericBinding } from '#binding';
-import type { Container, ExpandedContainer, MaybeSyncContainer } from '#container';
+import type {
+    Container,
+    ContainerOptions,
+    ExpandedContainer,
+    MaybeSyncContainer,
+} from '#container';
 import type {
     ClassToConstructable,
     GenericBaseHaywireId,
@@ -161,7 +166,8 @@ export class ContainerFactory<
         this: void,
         bindings: ReadonlyMap<GenericBaseHaywireId, GenericBinding>,
         listBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>,
-        isAsync: Async
+        isAsync: Async,
+        options: ContainerOptions
     ): ContainerFactory<Outputs, Dependencies, Async, never> {
         const outputIds = new Set(
             bindings.values().flatMap(binding => expandOutputId(binding.outputId))
@@ -237,8 +243,8 @@ export class ContainerFactory<
         const mergedListBindings = new Map([...listBindings, ...missingImplementationListBindings]);
 
         const container: Container<Outputs> = isAsync
-            ? createAsyncContainer(mergedBindings, mergedListBindings)
-            : createSyncContainer(mergedBindings, mergedListBindings);
+            ? createAsyncContainer(mergedBindings, mergedListBindings, options)
+            : createSyncContainer(mergedBindings, mergedListBindings, options);
 
         const existingOutputBaseIds = new Set(
             // Only need to track non-list, because duplicating lists are explicitly allowed

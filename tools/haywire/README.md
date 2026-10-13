@@ -38,6 +38,7 @@ For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.co
     - [Validation using types](#validation-using-types)
     - [Typescript configuration](#typescript-configuration)
     - [Generics on classes and methods](#generics-on-classes-and-methods)
+- [Upgrading to 2.0](#upgrading-to-20)
 - [API](#api)
     - [Methods](#methods)
         - [identifier](#identifier)
@@ -1073,6 +1074,37 @@ The two exceptions to this rule are:
 - `identifier<T>()` allows a generic to define a type
 - All types publicly exposed in the [Types](#types) section of API.
 
+## Upgrading to 2.0
+
+- **Errors thrown by providers are wrapped in a `HaywireProviderError`**, which names the path from the requested id to the failing binding. The original error is its `cause`, unchanged, so Node still prints its stack:
+
+    ```
+    HaywireProviderError: Provider for DB_URL failed (requested via App -> Database -> DB_URL): DB_URL is missing
+        at ...
+      [cause]: MissingEnvError: DB_URL is missing
+          at ...
+    ```
+
+    Code that catches a provider's error by type around `get()` or `getAsync()` must check the `cause` instead:
+
+    ```ts
+    try {
+        container.get(App);
+    } catch (err) {
+        if (err instanceof HaywireProviderError && err.cause instanceof MissingEnvError) {
+            // ...
+        }
+    }
+    ```
+
+    Or create the container with `unsafeRawProviderErrors` to throw provider errors as they are, as before 2.0:
+
+    ```ts
+    const container = createContainer(appModule, { unsafeRawProviderErrors: true });
+    ```
+
+    Errors thrown by Haywire itself, errors thrown inside a value's own methods after it is created, and errors from disposers are not wrapped.
+
 ## API
 
 ### Methods
@@ -1125,6 +1157,14 @@ Also creates a container from a container factory that has all dependencies boun
 
 If the module/container factory is not complete, will result in a type error.
 
+For a module, takes optional `ContainerOptions` as a second parameter:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `unsafeRawProviderErrors` | `boolean` | `false` | Throw errors from providers as they are, rather than wrapped in a `HaywireProviderError`. See [Upgrading to 2.0](#upgrading-to-20). |
+
+A container created from a factory uses the factory's options.
+
 #### `isSyncContainer`
 
 Takes a parameter of a `Container` or `SyncContainer`. Will return true if value is a `SyncContainer` and unlocks usage of the synchronous `preload()` and `get()` methods.
@@ -1134,6 +1174,8 @@ Persists types better than a class `instanceof SyncContainer` check (although th
 #### `createContainerFactory`
 
 Create a container factory from a module that does not have all dependencies satisfied.
+
+Takes the same optional `ContainerOptions` as `createContainer`, used by every container the factory creates.
 
 ### Classes
 
@@ -1189,8 +1231,8 @@ Represents a collection of `Binding`s, each for a unique identifier.
 | `addBinding(binding)` | `Binding` | `Module` | Returns a _new_ module with extra binding attached. Type+runtime validations ensure it is a unique output (except [lists](#lists)) and all dependencies are still satisfied |
 | `mergeModule(module)` | `Module` | `Module` | Returns a _new_ module with two modules merged. Order does not matter (`A.mergeModule(B)` = `B.mergeModule(A)`). Type+runtime validations ensure all outputs are unique and all dependencies are still satisfied |
 | `replaceBinding(binding)` | `Binding` | `Module` | Returns a _new_ module with the existing binding for that output id (every binding, for a list) swapped for this one. Type+runtime validations ensure a binding already exists and all dependencies are still satisfied. See [Replacing bindings in tests](#replacing-bindings-in-tests) |
-| `toContainer()` | ❌ | `Container \| SyncContainer` | Returns a container of all bindings. Type enforcement ensures module is fully satisfied. Will be a `Container` if any binding's provider is async. |
-| `toContainerFactory()` | ❌ | `ContainerFactory` | Returns a container factory to bind instances for the remaining dependencies. |
+| `toContainer(options?)` | `ContainerOptions` | `Container \| SyncContainer` | Returns a container of all bindings. Type enforcement ensures module is fully satisfied. Will be a `Container` if any binding's provider is async. Same as [`createContainer(module, options)`](#createcontainer). |
+| `toContainerFactory(options?)` | `ContainerOptions` | `ContainerFactory` | Returns a container factory to bind instances for the remaining dependencies. |
 
 #### `Container`
 
@@ -1299,6 +1341,7 @@ Every specific error is exported too, with the details of the failure as propert
 | `HaywireUndefinedResponseError` | `HaywireInstanceValidationError` | `undefined` for an id that isn't `.undefinable()` | `outputId`, `requestPath` |
 | `HaywireInstanceOfResponseError` | `HaywireInstanceValidationError` | A value that isn't an instance of the id's class | `outputId`, `value`, `requestPath` |
 | `HaywireListResponseError` | `HaywireInstanceValidationError` | A `list('multi')` provider that doesn't return an array | `outputId`, `value`, `requestPath` |
+| `HaywireProviderError` | `HaywireInstanceValidationError` | A provider throwing, unless the container has `unsafeRawProviderErrors` | `cause` (the thrown value), `outputId`, `requestPath` |
 | `HaywireMultiError` | `HaywireInstanceValidationError` | Several dependencies failing at once | `causes` |
 
 #### `HaywireError`
@@ -1323,7 +1366,7 @@ Specific instances may report missing providers (with the bindings that need the
 
 Error thrown during request time, during `preload()` or `get()` (or will be rejected when using async versions).
 
-Specific instances may report a value that is `null` for an id that is not declared as `.nullable()`, or the response is not an `instanceof` the requested class. For [lists](#lists) these checks apply to each element, and a `list('multi')` provider that does not return an array is rejected.
+Specific instances may report a provider that threw (wrapping the thrown value as `cause`), a value that is `null` for an id that is not declared as `.nullable()`, or the response is not an `instanceof` the requested class. For [lists](#lists) these checks apply to each element, and a `list('multi')` provider that does not return an array is rejected.
 
 These errors name the path from the requested id to the failing binding, each id as its dependent declared it: `Null value returned for non-nullable provider: Config (requested via App -> Repo(supplier(sync)) -> Config)`. Eager values are created at the start of a request or during preload, so their path starts at the eager binding. A failing singleton is shared by every request waiting on it, so they all receive the path of the request that started creating it.
 

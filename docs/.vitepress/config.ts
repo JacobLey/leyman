@@ -126,6 +126,7 @@ export default defineConfig({
                         text: 'Reference',
                         items: [{ text: 'API', link: '/haywire/reference/api' }],
                     },
+                    { text: 'Upgrading to 2.0', link: '/haywire/upgrading' },
                     { text: 'Why Haywire', link: '/haywire/why' },
                 ],
             },

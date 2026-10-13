@@ -29,6 +29,7 @@ import {
     HaywireListResponseError,
     HaywireMultiError,
     HaywireNullResponseError,
+    HaywireProviderError,
     HaywireProviderMissingError,
     HaywireSyncSupplierError,
     HaywireUndefinedResponseError,
@@ -699,7 +700,7 @@ suite('container', () => {
                             'Undefined value returned for non-undefinable provider: B (requested via A -> B)',
                             'Undefined value returned for non-undefinable provider: B(named: sync) (requested via A -> B(named: sync))',
                             'Null value returned for non-nullable provider: D (requested via A -> C(nullable) -> D(undefinable))',
-                            '<ERROR>',
+                            'Provider for E failed (requested via A -> C(nullable) -> E): <ERROR>',
                         ].join(', '),
                         ']',
                     ].join(''),
@@ -790,6 +791,177 @@ suite('container', () => {
                 await expect(container.getAsync(identifier<123>())).to.be.rejectedWith(
                     HaywireProviderMissingError
                 );
+            });
+
+            suite('Provider errors', () => {
+                class MissingEnvError extends Error {
+                    public override name = 'MissingEnvError';
+                }
+                const urlId = identifier<string>('DB_URL');
+                const throwingModule = createModule(
+                    bind(A).withDependencies([B]).withConstructorProvider()
+                )
+                    .addBinding(bind(B).withDependencies([urlId]).withConstructorProvider())
+                    .addBinding(
+                        bind(urlId).withFactory(() => {
+                            throw new MissingEnvError('DB_URL is missing');
+                        })
+                    );
+
+                test('Sync provider', async () => {
+                    const thrown = await catchThrown(() => createContainer(throwingModule).get(A));
+                    expect(thrown).to.be.instanceOf(HaywireProviderError).and.contains({
+                        message:
+                            'Provider for DB_URL failed (requested via A -> B -> DB_URL): DB_URL is missing',
+                    });
+                    const { cause, outputId, requestPath } = thrown as HaywireProviderError;
+                    expect(cause).to.be.instanceOf(MissingEnvError);
+                    expect(outputId).to.equal(urlId);
+                    expect(requestPath).to.deep.equal([identifier(A), identifier(B), urlId]);
+                });
+
+                test('Async provider', async () => {
+                    const cause = new MissingEnvError('DB_URL is missing');
+                    const container = createContainer(
+                        throwingModule.replaceBinding(
+                            bind(urlId).withAsyncFactory(async () => {
+                                throw cause;
+                            })
+                        )
+                    );
+                    const thrown = await catchThrown(async () => container.getAsync(A));
+                    expect(thrown).to.be.instanceOf(HaywireProviderError).and.contains({
+                        message:
+                            'Provider for DB_URL failed (requested via A -> B -> DB_URL): DB_URL is missing',
+                    });
+                    expect((thrown as HaywireProviderError).cause).to.equal(cause);
+                });
+
+                test('Thrown values that are not errors', async () => {
+                    for (const [value, message] of [
+                        ['oops', 'oops'],
+                        [123, '123'],
+                        // No `toString()`
+                        [Object.create(null), 'object'],
+                    ] as const) {
+                        const container = createContainer(
+                            createModule(
+                                bind(A).withFactory(() => {
+                                    throw value;
+                                })
+                            )
+                        );
+                        const thrown = await catchThrown(() => container.get(A));
+                        expect(thrown).to.contains({
+                            message: `Provider for A failed: ${message}`,
+                        });
+                        expect((thrown as HaywireProviderError).cause).to.equal(value);
+                    }
+                });
+
+                test('Errors from Haywire are not wrapped again', async () => {
+                    const container = createContainer(
+                        createModule(
+                            bind(A)
+                                .withDependencies([identifier(B).supplier()])
+                                .withProvider(supplyB => new A(supplyB()))
+                        )
+                            .addBinding(bind(B).withDependencies([urlId]).withConstructorProvider())
+                            .addBinding(
+                                bind(urlId).withFactory(() => {
+                                    throw new MissingEnvError('DB_URL is missing');
+                                })
+                            )
+                    );
+                    const thrown = await catchThrown(() => container.get(A));
+                    // Thrown by the supplier, so the path continues through it
+                    expect(thrown).to.contains({
+                        message:
+                            'Provider for DB_URL failed (requested via A -> B(supplier(sync)) -> DB_URL): DB_URL is missing',
+                    });
+                    expect((thrown as HaywireProviderError).cause).to.be.instanceOf(
+                        MissingEnvError
+                    );
+                });
+
+                test('Each failure is wrapped', async () => {
+                    const container = createContainer(
+                        createModule(bind(A).withDependencies([B, C]).withConstructorProvider())
+                            .addBinding(
+                                bind(B).withAsyncFactory(async () => {
+                                    throw new Error('Bad B');
+                                })
+                            )
+                            .addBinding(
+                                bind(C).withAsyncFactory(async () => {
+                                    throw new Error('Bad C');
+                                })
+                            )
+                    );
+                    const thrown = await catchThrown(async () => container.getAsync(A));
+                    expect(thrown).to.contains({
+                        message:
+                            'Multiple errors: [Provider for B failed (requested via A -> B): Bad B, Provider for C failed (requested via A -> C): Bad C]',
+                    });
+                });
+
+                test('Eager singleton during preload', async () => {
+                    const container = createContainer(
+                        throwingModule.replaceBinding(
+                            bind(urlId)
+                                .withFactory(() => {
+                                    throw new MissingEnvError('DB_URL is missing');
+                                })
+                                .scoped(eagerSingletonScope)
+                        )
+                    );
+                    const thrown = await catchThrown(() => {
+                        container.preload();
+                    });
+                    expect(thrown).to.contains({
+                        message: 'Provider for DB_URL failed: DB_URL is missing',
+                    });
+                });
+
+                test('unsafeRawProviderErrors', async () => {
+                    const options = { unsafeRawProviderErrors: true };
+                    const containers = [
+                        createContainer(throwingModule, options),
+                        throwingModule.toContainer(options),
+                        createContainer(createContainerFactory(throwingModule, options)),
+                        throwingModule.toContainerFactory(options).toContainer(),
+                    ];
+                    for (const container of containers) {
+                        expect(await catchThrown(() => container.get(A))).to.be.instanceOf(
+                            MissingEnvError
+                        );
+                    }
+                    // Values that are not errors reach a multi error as they are
+                    const multiContainer = createContainer(
+                        createModule(bind(A).withDependencies([B, C]).withConstructorProvider())
+                            .addBinding(
+                                bind(B).withAsyncFactory(async () => {
+                                    throw 'Bad B';
+                                })
+                            )
+                            .addBinding(
+                                bind(C).withAsyncFactory(async () => {
+                                    throw 'Bad C';
+                                })
+                            ),
+                        options
+                    );
+                    expect(await catchThrown(async () => multiContainer.getAsync(A))).to.contains({
+                        message: 'Multiple errors: [Bad B, Bad C]',
+                    });
+
+                    // Defaults to wrapping, also for factories
+                    expect(
+                        await catchThrown(() =>
+                            createContainerFactory(throwingModule).toContainer().get(A)
+                        )
+                    ).to.be.instanceOf(HaywireProviderError);
+                });
             });
 
             suite('Request path', () => {
@@ -911,17 +1083,19 @@ suite('container', () => {
                 message:
                     'Value 123 returned by provider is not instance of class: B (requested via haywire-id -> A(supplier(async, propagating)) -> B)',
             });
-            expect(causes[1]).to.be.an.instanceOf(Error).that.contains({
-                message: 'Bad C',
+            expect(causes[1]).to.be.an.instanceOf(HaywireProviderError).that.contains({
+                message:
+                    'Provider for C failed (requested via haywire-id -> A(supplier(async, propagating)) -> C): Bad C',
             });
+            expect((causes[1] as HaywireProviderError).cause).to.contain({ message: 'Bad C' });
 
             // Invoking B + C result in same looking errors
             expect(errors[2]).to.be.an.instanceOf(HaywireInstanceOfResponseError).that.contains({
                 message: 'Value 123 returned by provider is not instance of class: B',
             });
-            expect(errors[3]).to.be.an.instanceOf(Error).that.contains({
-                message: 'Bad C',
-            });
+            // The singleton C was already being created for the supplier's request, so this request
+            // shares its failure, including the path of the request that started creating it
+            expect(errors[3]).to.equal(causes[1]);
 
             // B is not cached because it is sync
             expect(causes[0]).to.not.equal(errors[2]);
@@ -1042,7 +1216,10 @@ suite('container', () => {
                     catchThrown(async () => container.getAsync(A)),
                     catchThrown(async () => container.getAsync(A)),
                 ]);
-                expect(throwns[0]).to.contain({ message: '<ERROR>' });
+                expect(throwns[0]).to.contain({
+                    message:
+                        'Provider for F failed (requested via A -> C(deferred) -> D(deferred) -> E(deferred) -> F(deferred)): <ERROR>',
+                });
                 expect(throwns[0]).to.equal(throwns[1]);
                 const thrown: unknown = await expect(container.getAsync(A)).to.be.rejectedWith(
                     Error
@@ -1467,9 +1644,12 @@ suite('container', () => {
                     )
             );
 
-            const thrown: unknown = await expect(container.getAsync(A)).to.be.rejectedWith(Error);
+            const thrown: unknown = await expect(container.getAsync(A)).to.be.rejectedWith(
+                HaywireProviderError
+            );
+            // Eager request bindings start their own request path
             expect(thrown).to.include({
-                message: '<ERROR>',
+                message: 'Provider for C failed: <ERROR>',
             });
 
             const { dSupplier } = await container.getAsync(dSupplierIdentifier);
@@ -2566,7 +2746,9 @@ suite('container', () => {
                                     dSupplier,
                                 }))
                                 .scoped(singletonScope)
-                        )
+                        ),
+                    // Checks the provider's own error reaches every request
+                    { unsafeRawProviderErrors: true }
                 );
 
                 const rejectionExpectations: PromiseLike<unknown>[] = [];
@@ -2644,7 +2826,9 @@ suite('container', () => {
                                     dSupplier,
                                 }))
                                 .scoped(singletonScope)
-                        )
+                        ),
+                    // Checks the provider's own error reaches every request
+                    { unsafeRawProviderErrors: true }
                 );
 
                 const rejectionExpectations: PromiseLike<unknown>[] = [];

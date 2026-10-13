@@ -1,5 +1,5 @@
 import type { BindingListOutputType, BindingOutputType, GenericBinding } from '#binding';
-import type { Container, MaybeSyncContainer } from '#container';
+import type { Container, ContainerOptions, MaybeSyncContainer } from '#container';
 import type { ContainerFactory } from '#container-factory';
 import type {
     GenericBaseHaywireId,
@@ -616,18 +616,21 @@ export class Module<
      * Otherwise the container will be async and require async usage for external calls to container.
      *
      * Type checking enforces that that the current module setup declares an output for every dependency.
+     *
+     * @param options - how the container handles provider errors
      */
     public toContainer(
         this: Invalid<
             ValidateConcrete<Outputs, ValidateToContainer<ListOutputs | Outputs, Dependencies>>
-        >
+        >,
+        options?: ContainerOptions
     ): MaybeSyncContainer<ListOutputs | Outputs, Async>;
-    public toContainer(): Container<ListOutputs | Outputs> {
+    public toContainer(options: ContainerOptions = {}): Container<ListOutputs | Outputs> {
         const bindings = new Map(this.#bindings);
 
         return this.isAsync
-            ? createAsyncContainer(bindings, this.#listBindings)
-            : createSyncContainer(bindings, this.#listBindings);
+            ? createAsyncContainer(bindings, this.#listBindings, options)
+            : createSyncContainer(bindings, this.#listBindings, options);
     }
 
     /**
@@ -637,6 +640,9 @@ export class Module<
      * Otherwise the container will be async and require async usage for external calls to container.
      *
      * Type checking enforces that that the current module setup declares an output for every dependency.
+     *
+     * @param mod - module to create the container from
+     * @param options - how the container handles provider errors
      */
     public static createContainer<T extends GenericModule>(
         this: void,
@@ -646,25 +652,35 @@ export class Module<
                 T[typeof idType]['dependencies']
             >
         > &
-            T
+            T,
+        options?: ContainerOptions
     ): MaybeSyncContainer<
         T[typeof idType]['listOutputs'] | T[typeof idType]['outputs'],
         T['isAsync']
     >;
     public static createContainer<T extends GenericModule>(
         this: void,
-        mod: T
+        mod: T,
+        options?: ContainerOptions
     ): Container<T[typeof idType]['listOutputs'] | T[typeof idType]['outputs']> {
-        return mod.toContainer();
+        return mod.toContainer(options);
     }
 
-    public toContainerFactory(): ContainerFactory<
+    /**
+     * Create a container factory, to bind instances for the remaining dependencies.
+     *
+     * @param options - how every container the factory creates handles provider errors
+     * @returns factory, whose containers need instances bound for the missing dependencies
+     */
+    public toContainerFactory(
+        options: ContainerOptions = {}
+    ): ContainerFactory<
         ListOutputs | Outputs,
         Exclude<Dependencies, ListOutputs | Outputs> | ListDependencies<Dependencies>,
         Async,
         never
     > {
-        return wireContainerFactory(this.#bindings, this.#listBindings, this.isAsync);
+        return wireContainerFactory(this.#bindings, this.#listBindings, this.isAsync, options);
     }
 
     public static createContainerFactory<
@@ -674,14 +690,15 @@ export class Module<
         Async extends boolean,
     >(
         this: void,
-        mod: Module<Outputs, ListOutputs, Dependencies, Async>
+        mod: Module<Outputs, ListOutputs, Dependencies, Async>,
+        options?: ContainerOptions
     ): ContainerFactory<
         ListOutputs | Outputs,
         Exclude<Dependencies, ListOutputs | Outputs> | ListDependencies<Dependencies>,
         Async,
         never
     > {
-        return mod.toContainerFactory();
+        return mod.toContainerFactory(options);
     }
 }
 

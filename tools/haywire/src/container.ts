@@ -1,3 +1,4 @@
+import type { ContainerOptions } from '#container';
 import type { GenericContainerFactory } from '#container-factory';
 import type { GenericModule } from '#module';
 import {
@@ -10,6 +11,7 @@ export {
     type BindingDescription,
     Container,
     type ContainerDescription,
+    type ContainerOptions,
     type GenericContainer,
     isSyncContainer,
     SyncContainer,
@@ -17,8 +19,9 @@ export {
 
 type CreateContainer = typeof createContainerFromFactory & typeof createContainerFromModule;
 export const createContainer: CreateContainer = ((
-    factoryOrModule: GenericContainerFactory | GenericModule
+    factoryOrModule: GenericContainerFactory | GenericModule,
+    options?: ContainerOptions
 ) =>
     factoryOrModule instanceof ContainerFactory
         ? createContainerFromFactory(factoryOrModule)
-        : createContainerFromModule(factoryOrModule)) as CreateContainer;
+        : createContainerFromModule(factoryOrModule, options)) as CreateContainer;

@@ -34,9 +34,15 @@ Creates a [container](#container) from a module whose dependencies are all bound
 
 Returns a [`SyncContainer`](#synccontainer) when every binding is synchronous, otherwise a [`Container`](#container).
 
+For a module, takes optional `ContainerOptions` as a second argument. A container from a factory uses the factory's options.
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `unsafeRawProviderErrors` | `false` | Throw errors from providers as they are, rather than wrapped in a `HaywireProviderError`. See [Upgrading to 2.0](/haywire/upgrading). |
+
 ### `createContainerFactory(module)`
 
-Creates a [`ContainerFactory`](#containerfactory) from a module that may have unbound dependencies. See [Runtime values](/haywire/guides/runtime-values).
+Creates a [`ContainerFactory`](#containerfactory) from a module that may have unbound dependencies. See [Runtime values](/haywire/guides/runtime-values). Takes the same optional `ContainerOptions` as `createContainer()`, for every container the factory creates.
 
 ### `isSyncContainer(container)`
 
@@ -103,8 +109,8 @@ An immutable collection of bindings, one per id (except [lists](/haywire/guides/
 | `addBinding(binding)` | Adds a binding. |
 | `mergeModule(module)` | Adds every binding of another module. Order doesn't matter. |
 | `replaceBinding(binding)` | Replaces the binding for an id, or every binding of a list. See [Replacing bindings](/haywire/guides/testing#replacing-bindings). |
-| `toContainer()` | Same as [`createContainer(module)`](#createcontainer-moduleorfactory). |
-| `toContainerFactory()` | Same as [`createContainerFactory(module)`](#createcontainerfactory-module). |
+| `toContainer(options?)` | Same as [`createContainer(module, options)`](#createcontainer-moduleorfactory). |
+| `toContainerFactory(options?)` | Same as [`createContainerFactory(module, options)`](#createcontainerfactory-module). |
 
 ## `Container`
 
@@ -166,6 +172,7 @@ The exceptions are `identifier<T>()`, and these types:
 | `AsyncSupplier<T>` | `() => Promise<T>`, as depended on with `.supplier('async')`. |
 | `Deferred<T>` | `Promise<T>`, as depended on with `.deferred()`. |
 | `ContainerDescription`, `BindingDescription` | Returned by `container.describe()`. |
+| `ContainerOptions` | Options for `createContainer()` and `createContainerFactory()`. |
 
 ```ts
 import { identifier, type HaywireIdType } from 'haywire';
@@ -185,7 +192,7 @@ Haywire throws these, or subclasses of them. Compare thrown errors with `instanc
 | `HaywireError` | Base class of every error, and when requesting from a [disposed](/haywire/guides/disposal) container. |
 | `HaywireModuleValidationError` | When building a module: a duplicate binding, or replacing a binding that doesn't exist. |
 | `HaywireContainerValidationError` | By `check()`: a circular dependency, a sync supplier of an async value, or a disposer on a binding that isn't a singleton. |
-| `HaywireInstanceValidationError` | When building a value: `null` or `undefined` for an id that doesn't allow it, a value that isn't an instance of the requested class, or a `list('multi')` provider that doesn't return an array. The message names the path from the requested id, see [Debugging](/haywire/guides/debugging#reading-request-errors). |
+| `HaywireInstanceValidationError` | When building a value: a provider that threw (wrapping what it threw as `cause`), `null` or `undefined` for an id that doesn't allow it, a value that isn't an instance of the requested class, or a `list('multi')` provider that doesn't return an array. The message names the path from the requested id, see [Debugging](/haywire/guides/debugging#reading-request-errors). |
 
 Each of these is thrown as a more specific subclass, also exported, with the details of the failure as properties:
 
@@ -202,4 +209,5 @@ Each of these is thrown as a more specific subclass, also exported, with the det
 | `HaywireUndefinedResponseError` | `HaywireInstanceValidationError` | `undefined` for an id that isn't `.undefinable()` | `outputId`, `requestPath` |
 | `HaywireInstanceOfResponseError` | `HaywireInstanceValidationError` | A value that isn't an instance of the id's class | `outputId`, `value`, `requestPath` |
 | `HaywireListResponseError` | `HaywireInstanceValidationError` | A `list('multi')` provider that doesn't return an array | `outputId`, `value`, `requestPath` |
+| `HaywireProviderError` | `HaywireInstanceValidationError` | A provider throwing, unless the container has `unsafeRawProviderErrors` | `cause` (the thrown value), `outputId`, `requestPath` |
 | `HaywireMultiError` | `HaywireInstanceValidationError` | Several dependencies failing at once | `causes` |

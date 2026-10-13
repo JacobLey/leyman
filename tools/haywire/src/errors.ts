@@ -12,6 +12,7 @@ export {
     HaywireModuleValidationError,
     HaywireMultiError,
     HaywireNullResponseError,
+    HaywireProviderError,
     HaywireProviderMissingError,
     HaywireSyncSupplierError,
     HaywireUndefinedResponseError,
