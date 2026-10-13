@@ -44,3 +44,14 @@ A test-only package under `e2e/` checks other workspace packages together, e.g. 
 - No `src/`, root `tsconfig.json` or `files`. Tests go in `test/integration/`.
 - `project.json` targets: `biome`, `eslint`, `tsc-test`, `mocha-integration-test`. No `tsc` or `sync-injected` (nothing to build), and no `coverage-report` (no source of its own to cover).
 - Import the packages under test by their public exports only. Add an export to a package if needed, rather than reaching into its `dist/`.
+
+## Go projects
+
+Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go-impl`. Go is in the devcontainer and the Dagger pipeline (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)), and the gonx plugin makes a project of every `go.mod` (see [Go projects](../nx-tasks-reference/SKILL.md#go-projects)). Compared to a regular package:
+
+- No `package.json`: pnpm doesn't need to know about it. Add a `project.json` named `@leyman/<name>` for the targets gonx doesn't infer.
+- `go.mod`: module `github.com/JacobLey/leyman/<path>`, with a `go` directive no newer than the pinned Go version (Dagger sets `GOTOOLCHAIN=local`, so it never downloads a newer toolchain).
+- Depend on another workspace Go module with `require <module> v0.0.0` plus `replace <module> => ../<path>`, and import it. gonx infers the Nx dependency from the import. To share data with TypeScript, give the other project a `go.mod` too, and `//go:embed` the data (see `tools/constant-consistent-hash/test-vectors`).
+- Source and `_test.go` files at the project root.
+- `project.json` targets: `biome` (formats `project.json`), `gofmt`, and `go-coverage-report` when it has tests (see the [Go template](../nx-tasks-reference/SKILL.md#go-project)). `go-vet` and `go-test` are inferred. No `tsconfig.json`, `eslint.config.js` or TypeScript targets.
+- Not published: nothing deploys Go modules yet.

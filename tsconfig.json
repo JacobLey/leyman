@@ -80,7 +80,7 @@
       "path": "./tools/unknown-error"
     },
     {
-      "path": "./tools/constant-consistent-hash"
+      "path": "./tools/constant-consistent-hash/constant-consistent-hash"
     }
   ]
 }

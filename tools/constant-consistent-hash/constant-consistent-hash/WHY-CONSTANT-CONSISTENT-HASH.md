@@ -97,7 +97,7 @@ The lanes themselves supply the 48 bits that pick a block, and each other value 
 
 - **Not cryptographic**, as keys are expected to be self-generated (e.g. UUIDs), so speed matters more than resisting crafted keys. A cryptographic hash such as SHA-1 is several times slower, and does not stop an attacker who can find colliding keys offline anyway.
 - **UTF-8 bytes**, rather than JavaScript's UTF-16 code units, so any language can hash the same input.
-- **32-bit integer operations, and IEEE-754 doubles only where results are exact or rounded once**, so every language produces the same bucket. See [SPEC.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/SPEC.md).
+- **32-bit integer operations, and IEEE-754 doubles only where results are exact or rounded once**, so every language produces the same bucket. See [SPEC.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/SPEC.md).
 
 ## Compared to alternatives
 

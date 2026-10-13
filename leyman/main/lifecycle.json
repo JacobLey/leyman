@@ -57,8 +57,10 @@
     "barrelify": "prepare:generate",
     "update-ts-references": "prepare:generate",
     "biome": "prepare:format",
+    "gofmt": "prepare:format",
     "eslint": "check:lint",
     "check-package": "check:lint",
+    "go-vet": "check:lint",
     "tsc": "build:run",
     "vitepress-build": "build:run",
     "populate-files": "build:post",
@@ -67,7 +69,9 @@
     "mocha-unit-test": "test:run",
     "mocha-integration-test": "test:run",
     "vitest-unit-test": "test:run",
+    "go-test": "test:run",
     "coverage-report": "test:report",
+    "go-coverage-report": "test:report",
     "sync-injected": "build:sync"
   }
 }

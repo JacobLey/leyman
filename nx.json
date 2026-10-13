@@ -107,6 +107,26 @@
         "{projectRoot}/test/**/*.json"
       ]
     },
+    "gofmt": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "${NX_WORKSPACE_ROOT}/scripts/nx/gofmt.sh"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "inputs": [
+        "{projectRoot}/**/*.go"
+      ],
+      "outputs": [
+        "{projectRoot}/**/*.go"
+      ],
+      "dependsOn": [
+        "prepare:generate"
+      ]
+    },
     "eslint": {
       "executor": "nx:run-commands",
       "options": {
@@ -159,6 +179,25 @@
         }
       ],
       "outputs": [],
+      "dependsOn": [
+        "check:_"
+      ]
+    },
+    "go-vet": {
+      "options": {
+        "linter": "go",
+        "args": [
+          "vet"
+        ]
+      },
+      "cache": true,
+      "inputs": [
+        "goSource",
+        "^goSource",
+        {
+          "runtime": "go version"
+        }
+      ],
       "dependsOn": [
         "check:_"
       ]
@@ -410,6 +449,27 @@
         "test:compile"
       ]
     },
+    "go-test": {
+      "options": {
+        "cover": true,
+        "coverProfile": "cover.out"
+      },
+      "cache": true,
+      "inputs": [
+        "goSource",
+        "^goSource",
+        "^package-files",
+        {
+          "runtime": "go version"
+        }
+      ],
+      "dependsOn": [
+        "test:compile"
+      ],
+      "outputs": [
+        "{projectRoot}/cover.out"
+      ]
+    },
     "coverage-report": {
       "executor": "nx:run-commands",
       "options": {
@@ -433,6 +493,31 @@
       "outputs": [
         "{workspaceRoot}/.coverage/project/{projectName}/report"
       ],
+      "dependsOn": [
+        "test:run"
+      ]
+    },
+    "go-coverage-report": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "${NX_WORKSPACE_ROOT}/scripts/nx/go-coverage-report.sh"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "goSource",
+        {
+          "runtime": "go version"
+        },
+        "{workspaceRoot}/scripts/nx/go-coverage-report.sh",
+        {
+          "dependentTasksOutputFiles": "**/cover.out"
+        }
+      ],
+      "outputs": [],
       "dependsOn": [
         "test:run"
       ]
@@ -479,7 +564,8 @@
       "executor": "nx:noop",
       "dependsOn": [
         "prepare:generate",
-        "biome"
+        "biome",
+        "gofmt"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -510,7 +596,8 @@
       "dependsOn": [
         "check:_",
         "eslint",
-        "check-package"
+        "check-package",
+        "go-vet"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -601,7 +688,8 @@
         "test:compile",
         "mocha-unit-test",
         "mocha-integration-test",
-        "vitest-unit-test"
+        "vitest-unit-test",
+        "go-test"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -611,7 +699,8 @@
       "executor": "nx:noop",
       "dependsOn": [
         "test:run",
-        "coverage-report"
+        "coverage-report",
+        "go-coverage-report"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -653,6 +742,21 @@
         "typecheck": {
           "targetName": "typecheck"
         }
+      }
+    },
+    {
+      "plugin": "@naxodev/gonx",
+      "exclude": [
+        "dagger/**"
+      ],
+      "options": {
+        "buildTargetName": "go-build",
+        "testTargetName": "go-test",
+        "lintTargetName": "go-vet",
+        "tidyTargetName": "go-tidy",
+        "generateTargetName": "go-generate",
+        "runTargetName": "go-serve",
+        "releasePublishTargetName": "go-release-publish"
       }
     }
   ],

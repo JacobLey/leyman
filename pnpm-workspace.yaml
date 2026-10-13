@@ -2,6 +2,7 @@ packages:
   - apps/**
   - leyman/*
   - tools/*
+  - tools/constant-consistent-hash/*
   - tools/test-chain/*
   - e2e/*
   - docs
@@ -50,6 +51,8 @@ allowBuilds:
   '@swc/core': false
   esbuild: false
   nx: false
+  # Native bindings, but gonx only loads the `tree-sitter-go.wasm` the package ships
+  tree-sitter-go: false
   unrs-resolver: false
 
 peerDependencyRules:
@@ -66,6 +69,7 @@ catalog:
   '@changesets/cli': ^3.0.3
   '@eslint/js': ^10.0.1
   '@happy-dom/global-registrator': ^20.14.5
+  '@naxodev/gonx': ^4.1.2
   '@nx/devkit': ^23.2.1
   '@nx/js': ^23.2.1
   '@shikijs/vitepress-twoslash': ^4.5.0

@@ -1,5 +1,5 @@
 {
-  "extends": "../../configs/tsconfig.build.json",
+  "extends": "../../../configs/tsconfig.build.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
@@ -11,13 +11,13 @@
   ],
   "references": [
     {
-      "path": "../test-chain/mocha-chain"
+      "path": "../../test-chain/mocha-chain"
     },
     {
-      "path": "../../leyman/expect"
+      "path": "../../../leyman/expect"
     },
     {
-      "path": "../../leyman/eslint-config"
+      "path": "../../../leyman/eslint-config"
     }
   ]
 }

@@ -1,0 +1,24 @@
+{
+  "name": "@leyman/constant-consistent-hash-test-vectors",
+  "version": "0.0.1",
+  "description": "Test vectors shared by every constant-consistent-hash implementation.",
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/test-vectors#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    "./test-vectors.json": "./data/test-vectors.json"
+  },
+  "files": [
+    "data"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "catalog:"
+  }
+}

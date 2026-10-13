@@ -26,6 +26,8 @@ const (
 	// Keep in sync with `playwright` in `pnpm-workspace.yaml`. Only installs the browsers' system libraries here;
 	// the `playwright-install` target downloads the browsers themselves.
 	playwrightVersion = "1.62.1"
+	// golang:1.26.8-trixie. Only its Go toolchain is copied into the Node image, for projects written in Go.
+	goImage = "golang:1.26.8-trixie@sha256:aae9c439b447d24c93ee483408992857cf39a3fb6ab7fe53affc65d834891fa8"
 )
 
 const (
@@ -34,6 +36,7 @@ const (
 	cacheDir    = "/pnpm-cache"
 	tarballDir  = "/tarballs"
 	browsersDir = "/playwright-browsers"
+	goRoot      = "/usr/local/go"
 	npmRegistry = "https://registry.npmjs.org"
 )
 
@@ -258,10 +261,14 @@ func versionExists(ctx context.Context, pkg workspacePackage) (bool, error) {
 	}
 }
 
-// Node + pnpm, matching the devcontainer
+// Node + pnpm + Go, matching the devcontainer
 func (m *Ci) base() *dagger.Container {
 	return dag.Container().
 		From(nodeImage).
+		WithDirectory(goRoot, dag.Container().From(goImage).Directory(goRoot)).
+		WithEnvVariable("PATH", "${PATH}:"+goRoot+"/bin", dagger.ContainerWithEnvVariableOpts{Expand: true}).
+		// Use the pinned toolchain, never one downloaded for a newer `go` directive in a go.mod
+		WithEnvVariable("GOTOOLCHAIN", "local").
 		WithEnvVariable("CI", "1").
 		WithExec([]string{"npm", "install", "--global", "pnpm@" + pnpmVersion}).
 		// Match the devcontainer, which removes npm so nothing silently depends on it

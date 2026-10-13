@@ -29,6 +29,7 @@ Named inputs in [`nx.json`](../../../nx.json):
 - `dependency-builds`: the `.js` and `.d.ts` files in dependencies' `dist/`, via `dependentTasksOutputFiles`. Dependents rebuild when a dependency's build output changes, not when its source changes. This is why tests compile to `dist-test/` rather than `dist/tests/`: `dependentTasksOutputFiles` ignores negated outputs, so tests inside `dist/` would rebuild every dependent when they change.
 - `^package-files`: dependencies' tracked entry points (`package.json`, `bin.mjs`, `out/`, `data/`…). Targets list it directly, because Nx does not allow `^` inside a named input.
 - `test-source`: `ts-source` plus `test/`, `configs/tsconfig.test.json`, the project's own `package-files`, the builds of its dependencies and itself, and the c8 config.
+- `goSource`: a Go project's `go.mod`, `go.sum` and `.go` files, defined per project by gonx. Go targets also hash `^goSource` and the Go version.
 - `shared-globals`: the Node version. The cache is shared between worktrees through the `nx-cache` sidecar.
 
 Gotchas, all verified on Nx 22:
@@ -56,6 +57,14 @@ Formats with Biome (`scripts/nx/biome-format.sh`). Writes changes, except in CI 
 
 ---
 
+### `gofmt`
+
+Formats Go source with `gofmt` (`scripts/nx/gofmt.sh`). Like `biome`, writes changes, except in CI where it fails listing the unformatted files.
+
+**Add when:** Go projects (has `go.mod`).
+
+---
+
 ### `eslint`
 
 Lints with the project's `eslint.config.js`. `-c fix` auto-fixes.
@@ -77,6 +86,14 @@ Packs the package with `pnpm pack`, exactly as it would be published, and checks
 Runs in `check:lint`, after the package's own build, so a packaging mistake fails CI on the PR rather than after a release.
 
 **Add when:** The package is published (not `"private"`).
+
+---
+
+### `go-vet`
+
+Runs `go vet ./...`, Go's built-in static checks. Runs in `check:lint`, like `eslint`. Inferred by gonx (see [Go projects](#go-projects)).
+
+**Add when:** Never: inferred for every Go project.
 
 ---
 
@@ -176,6 +193,22 @@ The shared config runs pre-compiled tests with native `import` and the `threads`
 
 ---
 
+### `go-test`
+
+Runs `go test -cover ./...`, writing Go's coverage profile to `cover.out` (gitignored). Inferred by gonx (see [Go projects](#go-projects)). Hashes dependencies' `package-files` too, since a Go module can `//go:embed` files (like `data/`) that gonx's `goSource` input does not cover.
+
+**Add when:** Never: inferred for every Go project.
+
+---
+
+### `go-coverage-report`
+
+Fails unless `go-test`'s `cover.out` shows 100% coverage (`scripts/nx/go-coverage-report.sh`), as `coverage-report` does for TypeScript. Runs in `test:report`.
+
+**Add when:** Go projects with tests.
+
+---
+
 ### `coverage-report`
 
 Validates 100% coverage using only the C8 data from this project's own test targets (`scripts/nx/coverage-report.sh`). Runs in `test:report`, after the test suites. Coverage from dependents' tests does not count.
@@ -183,6 +216,14 @@ Validates 100% coverage using only the C8 data from this project's own test targ
 **Add when:** The package has any test target.
 
 ---
+
+## Go projects
+
+The [`@naxodev/gonx`](https://gonx.naxo.dev/) plugin (in `nx.json` `plugins`) turns every `go.mod` into a project, except under `dagger/` (`exclude`). It also infers dependencies between them from Go `import`s, following `replace` directives, the way Nx reads `package.json` dependencies. No `implicitDependencies` needed.
+
+Its inferred targets are renamed with a `go-` prefix, so they don't collide with lifecycle targets like `build` and `test`. Only `go-vet` and `go-test` are bound in `lifecycle.json`, configured through name-keyed `targetDefaults` (inputs, `dependsOn`, and options such as `go vet` instead of gonx's default `go fmt`). Keep those defaults without an `executor`: a default naming a different executor than the inferred target is ignored. The others (`go-build`, `go-tidy`, `go-generate`, `go-serve`, `go-release-publish`) are unbound, and only run when called directly.
+
+`gofmt` stays a repo target, since gonx's formatter always rewrites and can't only check in CI.
 
 ## Typical `project.json` Templates
 
@@ -204,6 +245,21 @@ Validates 100% coverage using only the C8 data from this project's own test targ
     "sync-injected": {},
     "check:_": {},
     "check:lint": {},
+    // lots more of ignorable nx-lifecycle managed targets
+  }
+}
+```
+
+### Go project
+
+```json
+{
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/my-go-project",
+  "targets": {
+    "biome": {},
+    "gofmt": {},
+    "go-coverage-report": {},
     // lots more of ignorable nx-lifecycle managed targets
   }
 }

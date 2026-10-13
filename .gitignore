@@ -8,6 +8,8 @@
 
 **/.eslintcache
 **/coverage
+# Go coverage profiles, from `go-test`
+**/cover.out
 **/dist
 **/dist-test
 **/.swcrc

@@ -1,5 +1,8 @@
 import type { ConsistentHashOptions } from 'constant-consistent-hash';
 import { expectTypeOf } from 'expect-type';
+import testVectors from '@leyman/constant-consistent-hash-test-vectors/test-vectors.json' with {
+    type: 'json',
+};
 import { expect } from '@leyman/expect';
 import { consistentHash } from 'constant-consistent-hash';
 import { suite, test } from 'mocha-chain';
@@ -33,42 +36,14 @@ suite('consistentHash', () => {
     });
 
     suite('Matches test vectors', () => {
-        // Shared with other language implementations, see SPEC.md
-        test('Default seed', () => {
-            expect(
-                ['', 'a', '00000000-0000-4000-8000-000000000000', 'héllo 🌍'].map(key =>
-                    ranges.map(range => consistentHash(key, range))
-                )
-            ).to.deep.equal([
-                [0, 1, 3, 3, 492_999_177, 8_355_416_591, 196_931_321_734_519],
-                [0, 1, 1, 1, 2_155_994_471, 2_155_994_471, 251_679_376_480_816],
-                [0, 1, 2, 72, 646_540_009, 646_540_009, 220_601_612_818_386],
-                [0, 1, 4, 35, 2_134_807_116, 5_732_551_356, 264_896_018_877_297],
-            ]);
-        });
-
-        test('Each UTF-8 encoded length', () => {
-            expect(
-                ['߿', '￿', '\u{10FFFF}'].map(key => ranges.map(range => consistentHash(key, range)))
-            ).to.deep.equal([
-                [0, 1, 3, 32, 385_317_643, 385_317_643, 182_888_553_428_527],
-                [0, 1, 2, 35, 1_496_020_030, 7_148_775_881, 37_524_400_643_132],
-                [0, 0, 0, 77, 2_520_267_493, 6_849_465_656, 106_265_442_010_545],
-            ]);
-        });
-
-        test('Seeded', () => {
-            expect(
-                [1, 2 ** 32 - 1].map(seed =>
-                    ranges.map(range =>
-                        consistentHash('00000000-0000-4000-8000-000000000000', range, { seed })
-                    )
-                )
-            ).to.deep.equal([
-                [0, 0, 0, 90, 1_046_419_957, 1_046_419_957, 143_379_080_937_832],
-                [0, 0, 3, 23, 1_128_034_004, 1_128_034_004, 130_044_798_712_786],
-            ]);
-        });
+        // Shared with every implementation, see SPEC.md
+        for (const { description, key, seed, buckets } of testVectors.vectors) {
+            test(description, () => {
+                expect(
+                    testVectors.ranges.map(range => consistentHash(key, range, { seed }))
+                ).to.deep.equal(buckets);
+            });
+        }
     });
 
     test('Lone surrogates hash as U+FFFD', () => {

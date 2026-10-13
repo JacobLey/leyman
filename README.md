@@ -12,7 +12,7 @@ Published to npm:
 |---|---|---|
 | [`barrelify`](https://www.npmjs.com/package/barrelify) | Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions. | [`apps/barrelify`](./apps/barrelify) |
 | [`common-proxy`](https://www.npmjs.com/package/common-proxy) | Wrap an ESM import so it is synchronously available as a promise-returning function in CommonJS. | [`tools/common-proxy`](./tools/common-proxy) |
-| [`constant-consistent-hash`](https://www.npmjs.com/package/constant-consistent-hash) | Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages. | [`tools/constant-consistent-hash`](./tools/constant-consistent-hash) |
+| [`constant-consistent-hash`](https://www.npmjs.com/package/constant-consistent-hash) | Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages. | [`tools/constant-consistent-hash/constant-consistent-hash`](./tools/constant-consistent-hash/constant-consistent-hash) |
 | [`default-import`](https://www.npmjs.com/package/default-import) | Properly handle CJS imports in ESM. | [`tools/default-import`](./tools/default-import) |
 | [`entry-script`](https://www.npmjs.com/package/entry-script) | Modular control for entry script execution. | [`tools/entry-script`](./tools/entry-script) |
 | [`enum-to-array`](https://www.npmjs.com/package/enum-to-array) | Convert Typescript Enums to a strongly typed array. | [`tools/enum-to-array`](./tools/enum-to-array) |

@@ -11,9 +11,9 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JacobLey/leyman.git",
-    "directory": "tools/constant-consistent-hash"
+    "directory": "tools/constant-consistent-hash/constant-consistent-hash"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash#readme",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/constant-consistent-hash#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@leyman/constant-consistent-hash-test-vectors": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",
     "@swc/cli": "catalog:",

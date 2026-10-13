@@ -5,7 +5,7 @@ description: Understanding the various projects/packages available
 
 # Projects
 
-A project is any directory with a `project.json`. All current projects are TypeScript packages with a `package.json` and a README.md.
+A project is any directory with a `project.json`. Every project has a README.md. Almost all are TypeScript packages with a `package.json`. A `go.mod` makes a Go project (see [create-package](../create-package/SKILL.md#go-projects)): [`go-impl`](../../../tools/constant-consistent-hash/go-impl/) is only Go, and [`test-vectors`](../../../tools/constant-consistent-hash/test-vectors/) is both an npm package and a Go module.
 
 - `tools/`: libraries consumed via `import`.
 - `apps/`: CLIs, Nx plugins, and larger packages that are used other than by plain `import`.
@@ -37,7 +37,9 @@ See each package's README.md for full usage documentation.
 | Package | Description |
 |---------|-------------|
 | [`common-proxy`](../../../tools/common-proxy/) | Synchronously expose ESM-backed functions from CommonJS |
-| [`constant-consistent-hash`](../../../tools/constant-consistent-hash/) | Stateless consistent hashing in constant time, with minimal key movement |
+| [`constant-consistent-hash`](../../../tools/constant-consistent-hash/constant-consistent-hash/) | Stateless consistent hashing in constant time, with minimal key movement |
+| [`constant-consistent-hash-go`](../../../tools/constant-consistent-hash/go-impl/) | Go implementation of constant-consistent-hash, tested against the shared test vectors (private, Go) |
+| [`constant-consistent-hash-test-vectors`](../../../tools/constant-consistent-hash/test-vectors/) | Test vectors shared by every constant-consistent-hash implementation (private) |
 | [`default-import`](../../../tools/default-import/) | Correctly extract default exports from CJS modules in ESM |
 | [`entry-script`](../../../tools/entry-script/) | Safe CLI entry point pattern — runs only as the Node entrypoint |
 | [`enum-to-array`](../../../tools/enum-to-array/) | Convert TypeScript enums to typed arrays of keys/values |

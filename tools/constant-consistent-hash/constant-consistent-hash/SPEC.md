@@ -2,7 +2,7 @@
 
 Back to the [README](https://www.npmjs.com/package/constant-consistent-hash).
 
-This describes `consistentHash(key, range, { seed })` precisely enough for any language to return the same buckets as the JavaScript implementation. For why the algorithm works, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/WHY-CONSTANT-CONSISTENT-HASH.md).
+This describes `consistentHash(key, range, { seed })` precisely enough for any language to return the same buckets as the JavaScript implementation. For why the algorithm works, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/WHY-CONSTANT-CONSISTENT-HASH.md).
 
 ## Conventions
 
@@ -115,18 +115,8 @@ In the first f64 step, the left side is rounded twice, after each multiplication
 
 ## Test vectors
 
-`consistentHash(key, range, { seed })`:
+[`test-vectors.json`](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/test-vectors/data/test-vectors.json) lists `consistentHash(key, range, { seed })` for keys covering every UTF-8 encoded length, seeds, and ranges up to 2^48. `buckets[i]` is the bucket for `ranges[i]`.
 
-| key | seed | 1 | 2 | 7 | 100 | 2^32 + 1 | 2^33 | 2^48 |
-|---|---|---|---|---|---|---|---|---|
-| `""` | 0 | 0 | 1 | 3 | 3 | 492999177 | 8355416591 | 196931321734519 |
-| `"a"` | 0 | 0 | 1 | 1 | 1 | 2155994471 | 2155994471 | 251679376480816 |
-| `"00000000-0000-4000-8000-000000000000"` | 0 | 0 | 1 | 2 | 72 | 646540009 | 646540009 | 220601612818386 |
-| `"héllo 🌍"` | 0 | 0 | 1 | 4 | 35 | 2134807116 | 5732551356 | 264896018877297 |
-| `"߿"` (2 bytes) | 0 | 0 | 1 | 3 | 32 | 385317643 | 385317643 | 182888553428527 |
-| `"￿"` (3 bytes) | 0 | 0 | 1 | 2 | 35 | 1496020030 | 7148775881 | 37524400643132 |
-| `"\u{10FFFF}"` (4 bytes) | 0 | 0 | 0 | 0 | 77 | 2520267493 | 6849465656 | 106265442010545 |
-| `"00000000-0000-4000-8000-000000000000"` | 1 | 0 | 0 | 0 | 90 | 1046419957 | 1046419957 | 143379080937832 |
-| `"00000000-0000-4000-8000-000000000000"` | 4294967295 | 0 | 0 | 3 | 23 | 1128034004 | 1128034004 | 130044798712786 |
+Both this package and the [Go implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/go-impl) are tested against them.
 
 A complete implementation should also pass the package's property tests: for many keys, growing `range` by one never moves a key anywhere but the new bucket `range`.
