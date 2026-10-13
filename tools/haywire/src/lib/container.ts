@@ -32,6 +32,7 @@ import {
     HaywireProviderMissingError,
     HaywireSyncSupplierError,
     HaywireUndefinedResponseError,
+    validateAllSettled,
 } from '#errors';
 import { expandOutputId, expandSharedOutputIds, unsafeIdentifier } from '#identifier';
 import {
@@ -1717,7 +1718,7 @@ export class Container<Outputs extends [Extendable]> {
                 })
             );
 
-            HaywireMultiError.validateAllSettled(settled);
+            validateAllSettled(settled);
 
             const dependencies = settled.flatMap(settle => settle.value);
             const value = binding.isAsync
@@ -1874,7 +1875,7 @@ export class Container<Outputs extends [Extendable]> {
                           })
                 )
             );
-            HaywireMultiError.validateAllSettled(settled);
+            validateAllSettled(settled);
             result = {
                 value: settled.flatMap(({ value }) => value.value as unknown[]),
                 deferredRequests: settled.flatMap(({ value }) => value.deferredRequests),
@@ -2243,7 +2244,7 @@ export class Container<Outputs extends [Extendable]> {
                 )
             );
 
-            HaywireMultiError.validateAllSettled(settled);
+            validateAllSettled(settled);
         }
         const chainDeferredCache =
             deferredCache ?? new Map<GenericBaseHaywireId, { value: unknown }>();
@@ -2277,7 +2278,7 @@ export class Container<Outputs extends [Extendable]> {
                 })
             )
         );
-        HaywireMultiError.validateAllSettled(allResults);
+        validateAllSettled(allResults);
         const listValue: unknown[] = [];
         const deferredRequests: DeferredRequest[] = [];
         for (const bindingResult of allResults) {
@@ -2343,7 +2344,7 @@ export class Container<Outputs extends [Extendable]> {
                 })
             );
 
-            HaywireMultiError.validateAllSettled(settled);
+            validateAllSettled(settled);
         } catch (err) {
             // Generally speaking, the failure to invoke any deferred value means the entire dependency chain failed.
             // e.g. A depends on deferred dependencies of B + C.

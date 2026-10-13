@@ -396,17 +396,24 @@ export class HaywireMultiError extends HaywireInstanceValidationError {
         this.name = 'HaywireMultiError';
         this.causes = causes;
     }
-
-    public static validateAllSettled<T>(
-        settled: PromiseSettledResult<T>[]
-    ): asserts settled is PromiseFulfilledResult<T>[] {
-        const rejected = settled.filter(
-            (settle): settle is PromiseRejectedResult => settle.status === 'rejected'
-        );
-        if (rejected.length > 0) {
-            throw rejected.length === 1
-                ? rejected[0]!.reason
-                : new HaywireMultiError(rejected.map(err => err.reason as unknown));
-        }
-    }
 }
+
+/**
+ * Throw the error of the one rejected promise, or a {@link HaywireMultiError} of every rejection.
+ * Not exported from the package: it is not part of the error's API.
+ *
+ * @param settled - results of `Promise.allSettled()`
+ * @throws the rejection, or a `HaywireMultiError` of every rejection
+ */
+export const validateAllSettled: <T>(
+    settled: PromiseSettledResult<T>[]
+) => asserts settled is PromiseFulfilledResult<T>[] = settled => {
+    const rejected = settled.filter(
+        (settle): settle is PromiseRejectedResult => settle.status === 'rejected'
+    );
+    if (rejected.length > 0) {
+        throw rejected.length === 1
+            ? rejected[0]!.reason
+            : new HaywireMultiError(rejected.map(err => err.reason as unknown));
+    }
+};

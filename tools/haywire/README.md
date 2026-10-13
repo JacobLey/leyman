@@ -1284,6 +1284,23 @@ The actual error types may be more specific than what is provided, but will exte
 
 It is not recommended to instantiate and throw these errors in your own code. Instead they can be used to detect existing thrown errors by comparing via `instanceof`.
 
+Every specific error is exported too, with the details of the failure as properties:
+
+| Error | Extends | Thrown | Properties |
+|-------|---------|--------|------------|
+| `HaywireDuplicateOutputError` | `HaywireModuleValidationError` | Two bindings for the same id | `outputIds` |
+| `HaywireBindingNotFoundError` | `HaywireModuleValidationError` | `replaceBinding()` for an id with no binding | `outputIds` |
+| `HaywireProviderMissingError` | `HaywireContainerValidationError` | A dependency, or a requested id, with no binding | `dependencyIds`, `dependentIds` (bindings that need each id) |
+| `HaywireCircularDependencyError` | `HaywireContainerValidationError` | A cycle with no deferred dependency | `circularChains` |
+| `HaywireSyncSupplierError` | `HaywireContainerValidationError` | A sync supplier of a value that must be async | `unsafeSupplierBindings` (each with `dependentOutputId` and `asyncChain`) |
+| `HaywireDisposerScopeError` | `HaywireContainerValidationError` | A disposer on a binding that isn't a singleton | `outputIds` |
+| `HaywireContainerDisposedError` | `HaywireError` | A request to a disposed container | |
+| `HaywireNullResponseError` | `HaywireInstanceValidationError` | `null` for an id that isn't `.nullable()` | `outputId`, `requestPath` |
+| `HaywireUndefinedResponseError` | `HaywireInstanceValidationError` | `undefined` for an id that isn't `.undefinable()` | `outputId`, `requestPath` |
+| `HaywireInstanceOfResponseError` | `HaywireInstanceValidationError` | A value that isn't an instance of the id's class | `outputId`, `value`, `requestPath` |
+| `HaywireListResponseError` | `HaywireInstanceValidationError` | A `list('multi')` provider that doesn't return an array | `outputId`, `value`, `requestPath` |
+| `HaywireMultiError` | `HaywireInstanceValidationError` | Several dependencies failing at once | `causes` |
+
 #### `HaywireError`
 
 All other errors thrown by Haywire will extend this class, and it is the most low level version.

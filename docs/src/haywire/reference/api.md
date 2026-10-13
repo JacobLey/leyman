@@ -186,3 +186,20 @@ Haywire throws these, or subclasses of them. Compare thrown errors with `instanc
 | `HaywireModuleValidationError` | When building a module: a duplicate binding, or replacing a binding that doesn't exist. |
 | `HaywireContainerValidationError` | By `check()`: a circular dependency, a sync supplier of an async value, or a disposer on a binding that isn't a singleton. |
 | `HaywireInstanceValidationError` | When building a value: `null` or `undefined` for an id that doesn't allow it, a value that isn't an instance of the requested class, or a `list('multi')` provider that doesn't return an array. The message names the path from the requested id, see [Debugging](/haywire/guides/debugging#reading-request-errors). |
+
+Each of these is thrown as a more specific subclass, also exported, with the details of the failure as properties:
+
+| Error | Extends | Thrown | Properties |
+|-------|---------|--------|------------|
+| `HaywireDuplicateOutputError` | `HaywireModuleValidationError` | Two bindings for the same id | `outputIds` |
+| `HaywireBindingNotFoundError` | `HaywireModuleValidationError` | `replaceBinding()` for an id with no binding | `outputIds` |
+| `HaywireProviderMissingError` | `HaywireContainerValidationError` | A dependency, or a requested id, with no binding | `dependencyIds`, `dependentIds` (bindings that need each id) |
+| `HaywireCircularDependencyError` | `HaywireContainerValidationError` | A cycle with no deferred dependency | `circularChains` |
+| `HaywireSyncSupplierError` | `HaywireContainerValidationError` | A sync supplier of a value that must be async | `unsafeSupplierBindings` (each with `dependentOutputId` and `asyncChain`) |
+| `HaywireDisposerScopeError` | `HaywireContainerValidationError` | A disposer on a binding that isn't a singleton | `outputIds` |
+| `HaywireContainerDisposedError` | `HaywireError` | A request to a disposed container | |
+| `HaywireNullResponseError` | `HaywireInstanceValidationError` | `null` for an id that isn't `.nullable()` | `outputId`, `requestPath` |
+| `HaywireUndefinedResponseError` | `HaywireInstanceValidationError` | `undefined` for an id that isn't `.undefinable()` | `outputId`, `requestPath` |
+| `HaywireInstanceOfResponseError` | `HaywireInstanceValidationError` | A value that isn't an instance of the id's class | `outputId`, `value`, `requestPath` |
+| `HaywireListResponseError` | `HaywireInstanceValidationError` | A `list('multi')` provider that doesn't return an array | `outputId`, `value`, `requestPath` |
+| `HaywireMultiError` | `HaywireInstanceValidationError` | Several dependencies failing at once | `causes` |
