@@ -1,0 +1,37 @@
+{
+  "name": "@leyman/e2e-unknown-error-comparison",
+  "version": "0.0.1",
+  "description": "Runs unknown-error and the libraries it is compared to through the same edge cases, to keep its comparison table accurate.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/e2e/unknown-error-comparison#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "ensure-error": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "normalize-exception": "catalog:",
+    "pony-cause": "catalog:",
+    "serialize-error": "catalog:",
+    "typescript": "catalog:",
+    "unknown-error": "workspace:^"
+  }
+}

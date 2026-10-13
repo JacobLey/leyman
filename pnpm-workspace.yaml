@@ -96,6 +96,7 @@ catalog:
   chai: ^6.2.2
   chai-as-promised: ^8.0.2
   ci-info: ^4.4.0
+  ensure-error: ^5.0.0
   escape-string-regexp: ^5.0.0
   eslint: ^10.12.0
   eslint-config-prettier: ^10.1.8
@@ -112,6 +113,7 @@ catalog:
   find-up: ^8.0.0
   ignore: ^7.0.5
   mocha: ^12.0.2
+  normalize-exception: ^4.0.1
   nx: ^23.2.1
   openapi-types: ^12.1.3
   openapi3-ts: ^4.6.1
@@ -119,10 +121,12 @@ catalog:
   # Pinned: 1.63.0's browser downloader fails in the devcontainer and Docker. Browser builds are tied to this
   # version, so keep `PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` and `dagger/main.go` in sync.
   playwright: 1.62.1
+  pony-cause: ^2.1.11
   prettier: ^3.9.9
   publint: ^0.3.25
   react: ^19.3.0
   react-dom: ^19.3.0
+  serialize-error: ^13.0.2
   sinon: ^22.1.0
   tinyglobby: ^0.2.17
   tmp-promise: ^3.0.3
