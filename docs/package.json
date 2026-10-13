@@ -26,6 +26,7 @@
     "juniper-validator": "workspace:^",
     "nx-lifecycle": "workspace:^",
     "typescript": "catalog:",
+    "unknown-error": "workspace:^",
     "vitepress": "catalog:"
   }
 }

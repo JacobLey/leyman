@@ -19,4 +19,7 @@ features:
   - title: Barrelify
     details: Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.
     link: /barrelify/
+  - title: unknown-error
+    details: Turn any caught unknown into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains.
+    link: /unknown-error/
 ---

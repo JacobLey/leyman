@@ -18,6 +18,7 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 | [`juniper`](../../../apps/juniper/) | [`docs/src/juniper/`](../../../docs/src/juniper/) |
 | [`juniper-validator`](../../../apps/juniper-validator/) | [`docs/src/juniper-validator/`](../../../docs/src/juniper-validator/) |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | [`docs/src/nx-lifecycle/`](../../../docs/src/nx-lifecycle/) |
+| [`unknown-error`](../../../tools/unknown-error/) | [`docs/src/unknown-error/`](../../../docs/src/unknown-error/) |
 
 **When you document a new package, add a row here and to the `paths` of [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**
 

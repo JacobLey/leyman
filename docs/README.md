@@ -2,7 +2,7 @@
 
 Documentation site for the packages in this repo, built with [VitePress](https://vitepress.dev/) and deployed to GitHub Pages from `main`. Not published to npm.
 
-Documents [`barrelify`](../apps/barrelify), [`haywire`](../tools/haywire), [`juniper`](../apps/juniper), [`juniper-validator`](../apps/juniper-validator) and [`nx-lifecycle`](../apps/nx-lifecycle) so far. Keep their pages in sync with the packages: see the [docs-site skill](../.claude/skills/docs-site/SKILL.md).
+Documents [`barrelify`](../apps/barrelify), [`haywire`](../tools/haywire), [`juniper`](../apps/juniper), [`juniper-validator`](../apps/juniper-validator), [`nx-lifecycle`](../apps/nx-lifecycle) and [`unknown-error`](../tools/unknown-error) so far. Keep their pages in sync with the packages: see the [docs-site skill](../.claude/skills/docs-site/SKILL.md).
 
 ## Type-checked examples
 

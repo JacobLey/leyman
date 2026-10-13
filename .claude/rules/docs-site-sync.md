@@ -13,6 +13,9 @@ paths:
   - "tools/haywire/src/**"
   - "tools/haywire/README.md"
   - "tools/haywire/WHY-HAYWIRE.md"
+  - "tools/unknown-error/src/**"
+  - "tools/unknown-error/README.md"
+  - "tools/unknown-error/WHY-UNKNOWN-ERROR.md"
 ---
 
 # Documented package

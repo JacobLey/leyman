@@ -175,6 +175,28 @@ export default defineConfig({
                     },
                 ],
             },
+            {
+                text: 'unknown-error',
+                items: [
+                    { text: 'Overview', link: '/unknown-error/' },
+                    { text: 'Getting started', link: '/unknown-error/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [
+                            {
+                                text: 'Converting caught values',
+                                link: '/unknown-error/guides/converting',
+                            },
+                            { text: 'Cause chains', link: '/unknown-error/guides/cause-chains' },
+                        ],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/unknown-error/reference/api' }],
+                    },
+                    { text: 'Why unknown-error', link: '/unknown-error/why' },
+                ],
+            },
         ],
     },
 });
