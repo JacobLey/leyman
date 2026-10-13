@@ -7,6 +7,7 @@ import type {
     Supplier,
 } from 'haywire';
 import type { AbstractPrivateClass } from '#identifier';
+import { inspect } from 'node:util';
 import { expectTypeOf } from 'expect-type';
 import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
@@ -363,4 +364,13 @@ test('exapndOutputId', () => {
     expect(expandOutputId(numId.nullable())).to.deep.equal(
         new Set([numId.nullable(), numId.nullable().undefinable()])
     );
+});
+
+test('Node inspects ids by name', () => {
+    class Foo {
+        public readonly foo = true;
+    }
+    const id = identifier(Foo).named('foo').nullable();
+    expect(inspect(id)).to.equal('HaywireId<Foo(named: foo, nullable)>');
+    expect(inspect({ ids: [id] })).to.equal('{ ids: [ HaywireId<Foo(named: foo, nullable)> ] }');
 });

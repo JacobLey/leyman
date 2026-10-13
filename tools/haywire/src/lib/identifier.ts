@@ -233,6 +233,16 @@ export class HaywireId<
     }
 
     /**
+     * Show the id by name when Node inspects it (`console.log()`, or an error's properties in a crash),
+     * rather than every field. Uses the shared symbol, so works without importing `node:util`.
+     *
+     * @returns readable form of the id
+     */
+    public [Symbol.for('nodejs.util.inspect.custom')](): string {
+        return `HaywireId<${this.toString()}>`;
+    }
+
+    /**
      * Get the most generic form of the identifier, which is just the unique identifier instance,
      * possibly with the class constructor attached.
      *
