@@ -157,9 +157,6 @@ catalogs:
     find-up:
       specifier: ^8.0.0
       version: 8.0.0
-    floating-vue:
-      specifier: ^5.2.2
-      version: 5.4.0
     globby:
       specifier: ^16.2.4
       version: 16.2.4
@@ -220,9 +217,6 @@ catalogs:
     vitest:
       specifier: ^5.0.2
       version: 5.0.2
-    vue:
-      specifier: ^3.5.41
-      version: 3.5.43
     yargs:
       specifier: ^18.2.0
       version: 18.2.0
@@ -670,9 +664,6 @@ importers:
       enum-to-array:
         specifier: workspace:^
         version: file:tools/enum-to-array
-      floating-vue:
-        specifier: 'catalog:'
-        version: 5.4.0(vue@3.5.43(@typescript/typescript6@6.0.2))
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -691,9 +682,6 @@ importers:
       vitepress:
         specifier: 'catalog:'
         version: 2.0.0-alpha.20(@types/node@24.19.0)(@typescript/typescript6@6.0.2)(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))(change-case@5.4.4)(esbuild@0.28.2)(postcss@8.5.28)(yaml@2.9.0)
-      vue:
-        specifier: 'catalog:'
-        version: 3.5.43(@typescript/typescript6@6.0.2)
 
   e2e/eslint-config-schema:
     devDependencies:
@@ -1021,9 +1009,6 @@ importers:
       react:
         specifier: 'catalog:'
         version: 19.3.0
-      sinon:
-        specifier: 'catalog:'
-        version: 22.1.0
       static-emitter:
         specifier: workspace:^
         version: file:tools/static-emitter
@@ -1501,9 +1486,6 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 10.12.0(supports-color@8.1.1)
-      expect-type:
-        specifier: 'catalog:'
-        version: 1.4.0
       mocha:
         specifier: 'catalog:'
         version: 12.0.2
@@ -1994,9 +1976,6 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 10.12.0(supports-color@8.1.1)
-      expect-type:
-        specifier: 'catalog:'
-        version: 1.4.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'

@@ -47,7 +47,6 @@
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
-    "expect-type": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

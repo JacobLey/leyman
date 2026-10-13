@@ -21,13 +21,11 @@
     "ajv": "catalog:",
     "barrelify": "workspace:^",
     "enum-to-array": "workspace:^",
-    "floating-vue": "catalog:",
     "haywire": "workspace:^",
     "juniper": "workspace:^",
     "juniper-validator": "workspace:^",
     "nx-lifecycle": "workspace:^",
     "typescript": "catalog:",
-    "vitepress": "catalog:",
-    "vue": "catalog:"
+    "vitepress": "catalog:"
   }
 }

@@ -65,7 +65,6 @@
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
-    "expect-type": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "npm-barrelify": "catalog:leyman",

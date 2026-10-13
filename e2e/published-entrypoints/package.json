@@ -47,7 +47,6 @@
     "populate-files": "workspace:^",
     "punycode-esm": "workspace:^",
     "react": "catalog:",
-    "sinon": "catalog:",
     "static-emitter": "workspace:^",
     "test-chain-core": "workspace:^",
     "typescript": "catalog:",
