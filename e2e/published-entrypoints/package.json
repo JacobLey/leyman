@@ -27,6 +27,7 @@
     "barrelify": "workspace:^",
     "c8": "catalog:",
     "common-proxy": "workspace:^",
+    "constant-consistent-hash": "workspace:^",
     "default-import": "workspace:^",
     "entry-script": "workspace:^",
     "enum-to-array": "workspace:^",

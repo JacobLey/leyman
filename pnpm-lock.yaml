@@ -1027,6 +1027,9 @@ importers:
       common-proxy:
         specifier: workspace:^
         version: file:tools/common-proxy
+      constant-consistent-hash:
+        specifier: workspace:^
+        version: file:tools/constant-consistent-hash
       default-import:
         specifier: workspace:^
         version: file:tools/default-import
@@ -4954,6 +4957,10 @@ packages:
 
   concat-map@0.0.1:
     resolution: {integrity: sha512-/Srv4dswyQNBfohGpz9o6Yb3Gz3SrUDqBH5rTuhGR7ahtlbYKnVxw2bCFMRljaA7EXHaXZ8wsHdodFvbkhKmqg==}
+
+  constant-consistent-hash@file:tools/constant-consistent-hash:
+    resolution: {directory: tools/constant-consistent-hash, type: directory}
+    engines: {node: '>=24'}
 
   content-disposition@2.0.1:
     resolution: {integrity: sha512-e+H0ZXHSWYrENhQzw1LPuP4oF5MzVKmDU6d3hxlvaPEYLLg62MxtQNPRx4SYSuYJSBUgnQIG4HIN2tEtNv7Dog==}
@@ -10625,6 +10632,8 @@ snapshots:
       default-import: file:tools/default-import
 
   concat-map@0.0.1: {}
+
+  constant-consistent-hash@file:tools/constant-consistent-hash: {}
 
   content-disposition@2.0.1: {}
 
