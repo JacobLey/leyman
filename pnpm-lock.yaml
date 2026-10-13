@@ -277,6 +277,9 @@ importers:
       tinyglobby:
         specifier: 'catalog:'
         version: 0.2.17
+      unknown-error:
+        specifier: workspace:^
+        version: file:tools/unknown-error
       yargs:
         specifier: 'catalog:'
         version: 18.2.0
@@ -10088,6 +10091,7 @@ snapshots:
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
       tinyglobby: 0.2.17
+      unknown-error: file:tools/unknown-error
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'

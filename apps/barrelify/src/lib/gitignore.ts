@@ -3,6 +3,7 @@ import { access, readFile } from 'node:fs/promises';
 import Path from 'node:path';
 import ignore from 'ignore';
 import { glob } from 'tinyglobby';
+import { hasCode } from 'unknown-error';
 
 /**
  * Returns true if the file is ignored by a `.gitignore`.
@@ -78,7 +79,7 @@ const readGitignore = async (filePath: string): Promise<Gitignore | null> => {
         const content = await readFile(filePath, 'utf8');
         return { dir: Path.dirname(filePath), matcher: ignore().add(content) };
     } catch (error) {
-        if (Error.isError(error) && 'code' in error && error.code === 'ENOENT') {
+        if (hasCode(error, 'ENOENT')) {
             return null;
         }
         throw error;

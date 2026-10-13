@@ -54,6 +54,7 @@
     "parse-cwd": "workspace:^",
     "populate-files": "workspace:^",
     "tinyglobby": "catalog:",
+    "unknown-error": "workspace:^",
     "yargs": "catalog:"
   },
   "devDependencies": {
