@@ -33,14 +33,14 @@ const skuValidator = makeValidator(stringSchema().format('sku'), {
 
 ## `JuniperValidator<T>`
 
-Returned by `makeValidator`, and implements [`StandardSchemaV1<T>`](/juniper-validator/guides/standard-schema).
+Returned by `makeValidator`, and implements [`StandardSchemaV1<T>`](/juniper-validator/guides/standard-schema) and [`StandardJSONSchemaV1<T>`](/juniper-validator/guides/standard-schema#json-schema).
 
 | Member | Type | Description |
 |--------|------|-------------|
 | `is` | `(value: unknown) => value is T` | Returns whether the value matches, narrowing it to `T`. |
 | `assert` | `(value: unknown) => asserts value is T` | Throws when the value doesn't match, and narrows it to `T` after the call. |
 | `validate` | `(value: unknown) => StandardSchemaV1.Result<T>` | Returns `{ value }` when the value matches, or `{ issues }` when it doesn't. |
-| `~standard` | `StandardSchemaV1.Props<T>` | The [Standard Schema](/juniper-validator/guides/standard-schema#the-standard-property) interface. |
+| `~standard` | `StandardJSONSchemaV1.Props<T> & StandardSchemaV1.Props<T>` | The [Standard Schema](/juniper-validator/guides/standard-schema#the-standard-property) and [Standard JSON Schema](/juniper-validator/guides/standard-schema#json-schema) interfaces. |
 
 `assert` throws an `Error` with the message `Value does not match schema`, and Ajv's [error objects](https://ajv.js.org/api.html#error-objects) as its `cause`. To narrow with it, its type must be written out. See [`assert()`](/juniper-validator/getting-started#assert-throw).
 

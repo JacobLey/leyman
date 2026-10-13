@@ -1,4 +1,4 @@
-import type { StandardSchemaV1 } from '@standard-schema/spec';
+import type { StandardJSONSchemaV1, StandardSchemaV1 } from '@standard-schema/spec';
 import type { SchemaType } from 'juniper';
 import type { AssertionType, JuniperValidator, ValidatorType } from 'juniper-validator';
 import { expectTypeOf } from 'expect-type';
@@ -127,6 +127,37 @@ suite('juniper-validator', () => {
                 expect(nested.validate(['5']).issues!.map(issue => issue.path)).to.deep.equal([
                     [0],
                 ]);
+            });
+        });
+    });
+
+    suite('StandardJSONSchema', () => {
+        expectTypeOf(validator).toExtend<StandardJSONSchemaV1<SchemaType<typeof schema>>>();
+
+        test('Uses the Juniper schema', () => {
+            expect(validator['~standard'].jsonSchema).to.equal(schema['~standard'].jsonSchema);
+            expect(
+                validator['~standard'].jsonSchema.input({ target: 'draft-2020-12' })
+            ).to.deep.equal(schema.toJSON());
+        });
+
+        suite('JSON schema', () => {
+            const json = { type: 'number' } as const;
+            const jsonValidator = makeValidator<number>(json);
+
+            test('draft-2020-12', () => {
+                expect(
+                    jsonValidator['~standard'].jsonSchema.input({ target: 'draft-2020-12' })
+                ).to.equal(json);
+                expect(
+                    jsonValidator['~standard'].jsonSchema.output({ target: 'draft-2020-12' })
+                ).to.equal(json);
+            });
+
+            test('Other targets are not supported', () => {
+                expect(() =>
+                    jsonValidator['~standard'].jsonSchema.input({ target: 'draft-07' })
+                ).to.throw(Error, 'JSON Schema target: "draft-07" not supported');
             });
         });
     });

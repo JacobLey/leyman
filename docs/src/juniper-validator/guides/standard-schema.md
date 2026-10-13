@@ -38,6 +38,7 @@ Libraries call `validator['~standard'].validate(value)`. It is the same function
 | `version` | `1` |
 | `vendor` | `'juniper'` |
 | `validate` | Returns `{ value }` when the value matches, or `{ issues }` when it doesn't. Always synchronous. |
+| `jsonSchema` | Renders the schema as JSON Schema. See [JSON Schema](#json-schema). |
 
 ## Issues
 
@@ -67,3 +68,9 @@ validator.validate({ scores: [1, 'two'] }).issues?.map(issue => issue.path);
 Ajv stops at the first issue unless `allErrors` is set, so set it to show every field's issue at once.
 
 With Ajv's `messages: false`, each `message` is a generic one naming the keyword, like `must pass "type" keyword validation`.
+
+## JSON Schema
+
+The validator also implements [Standard JSON Schema](https://standardschema.dev/), so libraries that need both a JSON Schema and a validator, like tool and API definitions, can take the validator alone. `validator['~standard'].jsonSchema` is the same as the [Juniper schema's](/juniper/reference/api#standard), and supports the same targets.
+
+A validator made from a rendered JSON Schema object returns that object for the `draft-2020-12` target, and throws for any other.

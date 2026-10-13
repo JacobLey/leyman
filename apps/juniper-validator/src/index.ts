@@ -1,4 +1,4 @@
-import type { StandardSchemaV1 } from '@standard-schema/spec';
+import type { StandardJSONSchemaV1, StandardSchemaV1 } from '@standard-schema/spec';
 import type { Options as AjvOptions, ErrorObject } from 'ajv/dist/2020.js';
 import type { JsonSchema, Schema } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
@@ -8,7 +8,10 @@ import { isSchema } from 'juniper';
 
 const addFormats = defaultImport(ajvFormats);
 
-export interface JuniperValidator<T> extends StandardSchemaV1<T> {
+export interface JuniperValidator<T> extends StandardSchemaV1<T>, StandardJSONSchemaV1<T> {
+    // Both interfaces declare `~standard`, so it must be declared as their combination
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    readonly '~standard': StandardJSONSchemaV1.Props<T> & StandardSchemaV1.Props<T>;
     is: (x: unknown) => x is T;
     assert: (x: unknown) => asserts x is T;
     /**
@@ -130,6 +133,18 @@ export const makeValidator = <T>(
         };
     };
 
+    const jsonSchema: StandardJSONSchemaV1.Converter = isSchema(schema)
+        ? schema['~standard'].jsonSchema
+        : {
+              input: ({ target }) => {
+                  if (target === 'draft-2020-12') {
+                      return schema;
+                  }
+                  throw new Error(`JSON Schema target: "${target}" not supported`);
+              },
+              output: standard => jsonSchema.input(standard),
+          };
+
     return {
         is: x => validator(x),
         assert: x => {
@@ -142,6 +157,7 @@ export const makeValidator = <T>(
             version: 1,
             vendor: 'juniper',
             validate,
+            jsonSchema,
         },
         validate,
     };

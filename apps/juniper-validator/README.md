@@ -64,6 +64,8 @@ Pass a Juniper `Schema` instance (or a plain `JsonSchema` object) to `makeValida
 
 Ajv is used internally to compile and run validation. The `strict` option is always `true`; keywords added with Juniper's `.metadata()` are registered as annotations, so they pass it.
 
+The validator also implements [Standard JSON Schema](https://standardschema.dev/), the same as the Juniper schema it was made from.
+
 ## API
 
 ### `makeValidator(schema, options?)`
@@ -83,7 +85,7 @@ Creates a `JuniperValidator` from a Juniper `Schema` instance or a compiled `Jso
 
 ### `JuniperValidator<T>`
 
-Implements the [StandardSchema v1](https://standardschema.dev/) interface. Returned by `makeValidator`.
+Implements the [StandardSchema v1](https://standardschema.dev/) and Standard JSON Schema v1 interfaces. Returned by `makeValidator`.
 
 #### `.is(value): value is T`
 
