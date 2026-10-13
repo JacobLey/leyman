@@ -7,6 +7,7 @@ import type {
 } from './lib/lib/types.js';
 import { readdir, rm } from 'node:fs/promises';
 import Path from 'node:path';
+import { hasCode } from 'unknown-error';
 import { formatErrorMessage } from './lib/lib/errors.js';
 import { normalizeFileParams, normalizeFilesParams } from './lib/normalize.js';
 import { internalPopulateFile } from './lib/populate-file.js';
@@ -30,7 +31,7 @@ const readdirIfExists = async (dir: string): Promise<Dirent[]> => {
     try {
         return await readdir(dir, { recursive: true, withFileTypes: true });
     } catch (err) {
-        if (Error.isError(err) && 'code' in err && err.code === 'ENOENT') {
+        if (hasCode(err, 'ENOENT')) {
             return [];
         }
         throw err;

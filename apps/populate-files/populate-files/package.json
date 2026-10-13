@@ -35,7 +35,8 @@
     "ci-info": "catalog:",
     "format-file": "workspace:^",
     "parse-cwd": "workspace:^",
-    "uint8array-extras": "catalog:"
+    "uint8array-extras": "catalog:",
+    "unknown-error": "workspace:^"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

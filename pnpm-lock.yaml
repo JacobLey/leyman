@@ -633,6 +633,9 @@ importers:
       uint8array-extras:
         specifier: 'catalog:'
         version: 1.6.0
+      unknown-error:
+        specifier: workspace:^
+        version: file:tools/unknown-error
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -12512,6 +12515,7 @@ snapshots:
       format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
       parse-cwd: file:tools/parse-cwd
       uint8array-extras: 1.6.0
+      unknown-error: file:tools/unknown-error
     transitivePeerDependencies:
       - '@biomejs/biome'
       - prettier
