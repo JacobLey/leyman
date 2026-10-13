@@ -384,9 +384,6 @@ importers:
       default-import:
         specifier: workspace:^
         version: file:tools/default-import
-      escape-string-regexp:
-        specifier: 'catalog:'
-        version: 5.0.0
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -11381,7 +11378,6 @@ snapshots:
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       default-import: file:tools/default-import
-      escape-string-regexp: 5.0.0
       juniper: file:apps/juniper
 
   juniper@1.2.5:
