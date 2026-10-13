@@ -31,6 +31,7 @@ Published to npm:
 | [`punycode-esm`](https://www.npmjs.com/package/punycode-esm) | Typescript + ESM version of punycode.js | [`tools/punycode-esm`](./tools/punycode-esm) |
 | [`static-emitter`](https://www.npmjs.com/package/static-emitter) | Statically typed event emitter. | [`tools/static-emitter`](./tools/static-emitter) |
 | [`test-chain-core`](https://www.npmjs.com/package/test-chain-core) | Framework-agnostic internals for chaining test hooks with typed context | [`tools/test-chain/test-chain-core`](./tools/test-chain/test-chain-core) |
+| [`unknown-error`](https://www.npmjs.com/package/unknown-error) | Turn any caught `unknown` into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains. | [`tools/unknown-error`](./tools/unknown-error) |
 | [`vitest-chain`](https://www.npmjs.com/package/vitest-chain) | Chain vitest methods together for deterministic and type safe tests | [`tools/test-chain/vitest-chain`](./tools/test-chain/vitest-chain) |
 
 Private workspace packages (shared configs and tooling) are listed in the [projects skill](./.claude/skills/projects/SKILL.md).

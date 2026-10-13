@@ -49,6 +49,7 @@
     "react": "catalog:",
     "static-emitter": "workspace:^",
     "test-chain-core": "workspace:^",
+    "unknown-error": "workspace:^",
     "typescript": "catalog:",
     "vitest": "catalog:",
     "vitest-chain": "workspace:^"

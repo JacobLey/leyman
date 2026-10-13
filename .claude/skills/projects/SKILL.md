@@ -52,6 +52,7 @@ See each package's README.md for full usage documentation.
 | [`parse-cwd`](../../../tools/parse-cwd/) | Resolve and validate a working directory from string, URL, or undefined |
 | [`punycode-esm`](../../../tools/punycode-esm/) | ESM port of the Punycode encoding library |
 | [`static-emitter`](../../../tools/static-emitter/) | Typed EventEmitter/EventTarget for Node.js and Browser |
+| [`unknown-error`](../../../tools/unknown-error/) | Convert caught `unknown` values to real Errors, and walk or format cause chains, without throwing |
 
 
 ### Leyman

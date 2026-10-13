@@ -1,0 +1,63 @@
+{
+  "name": "unknown-error",
+  "version": "0.0.1",
+  "description": "Turn any caught `unknown` into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "tools/unknown-error"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/unknown-error#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "error",
+    "unknown",
+    "catch",
+    "normalize",
+    "to-error",
+    "error-message",
+    "cause",
+    "aggregate-error",
+    "typescript"
+  ],
+  "sideEffects": false,
+  "types": "./dist/index.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "imports": {
+    "#safe": "./dist/lib/safe.js",
+    "#to-error": "./dist/lib/to-error.js",
+    "#walk": "./dist/lib/walk.js"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "npm-barrelify": "catalog:leyman",
+    "typescript": "catalog:"
+  }
+}
