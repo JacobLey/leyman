@@ -51,8 +51,10 @@
     "globby": "catalog:",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
+    "ignore": "catalog:",
     "parse-cwd": "workspace:^",
     "populate-files": "workspace:^",
+    "tinyglobby": "catalog:",
     "yargs": "catalog:"
   },
   "devDependencies": {

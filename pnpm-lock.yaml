@@ -196,6 +196,9 @@ catalogs:
     sinon:
       specifier: ^22.1.0
       version: 22.1.0
+    tinyglobby:
+      specifier: ^0.2.17
+      version: 0.2.17
     tmp-promise:
       specifier: ^3.0.3
       version: 3.0.3
@@ -256,12 +259,18 @@ importers:
       haywire-launcher:
         specifier: workspace:^
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      ignore:
+        specifier: 'catalog:'
+        version: 7.0.5
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      tinyglobby:
+        specifier: 'catalog:'
+        version: 0.2.17
       yargs:
         specifier: 'catalog:'
         version: 18.2.0
@@ -9880,8 +9889,10 @@ snapshots:
       globby: 16.2.4
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      ignore: 7.0.5
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      tinyglobby: 0.2.17
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'
