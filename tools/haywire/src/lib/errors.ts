@@ -20,6 +20,17 @@ const requestedVia = (requestPath: readonly GenericHaywireId[]): string =>
         ? ` (requested via ${requestPath.map(id => id.toString()).join(' -> ')})`
         : '';
 
+/**
+ * Set `requestPath` as a non-enumerable property. Node prints an error's enumerable properties when it crashes the
+ * process, and doesn't use ids' custom inspect there, so a path would add a dozen lines per id before the cause.
+ *
+ * @param error - error to set the path on
+ * @param requestPath - ids from the requested id to the failing binding
+ */
+const hideRequestPath = (error: Error, requestPath: readonly GenericHaywireId[]): void => {
+    Object.defineProperty(error, 'requestPath', { value: requestPath });
+};
+
 const stringifyIds = (ids: readonly GenericHaywireId[]): string =>
     ids
         .map(id => id.toString())
@@ -268,9 +279,9 @@ export class HaywireNullResponseError extends HaywireInstanceValidationError {
     public readonly outputId: GenericHaywireId;
     /**
      * Ids followed from the requested id to the failing binding, each as its dependent declared it.
-     * Empty when not created by a request.
+     * Empty when not created by a request. Not enumerable, see {@link hideRequestPath}.
      */
-    public readonly requestPath: readonly GenericHaywireId[];
+    declare public readonly requestPath: readonly GenericHaywireId[];
     public constructor(
         outputId: HaywireNullResponseError['outputId'],
         requestPath: HaywireNullResponseError['requestPath'] = []
@@ -280,7 +291,7 @@ export class HaywireNullResponseError extends HaywireInstanceValidationError {
         );
         this.name = 'HaywireNullResponseError';
         this.outputId = outputId;
-        this.requestPath = requestPath;
+        hideRequestPath(this, requestPath);
     }
 }
 
@@ -291,9 +302,9 @@ export class HaywireUndefinedResponseError extends HaywireInstanceValidationErro
     public readonly outputId: GenericHaywireId;
     /**
      * Ids followed from the requested id to the failing binding, each as its dependent declared it.
-     * Empty when not created by a request.
+     * Empty when not created by a request. Not enumerable, see {@link hideRequestPath}.
      */
-    public readonly requestPath: readonly GenericHaywireId[];
+    declare public readonly requestPath: readonly GenericHaywireId[];
     public constructor(
         outputId: HaywireUndefinedResponseError['outputId'],
         requestPath: HaywireUndefinedResponseError['requestPath'] = []
@@ -303,7 +314,7 @@ export class HaywireUndefinedResponseError extends HaywireInstanceValidationErro
         );
         this.name = 'HaywireUndefinedResponseError';
         this.outputId = outputId;
-        this.requestPath = requestPath;
+        hideRequestPath(this, requestPath);
     }
 }
 
@@ -315,9 +326,9 @@ export class HaywireInstanceOfResponseError extends HaywireInstanceValidationErr
     public readonly value: unknown;
     /**
      * Ids followed from the requested id to the failing binding, each as its dependent declared it.
-     * Empty when not created by a request.
+     * Empty when not created by a request. Not enumerable, see {@link hideRequestPath}.
      */
-    public readonly requestPath: readonly GenericHaywireId[];
+    declare public readonly requestPath: readonly GenericHaywireId[];
     public constructor(
         outputId: GenericHaywireId,
         value: unknown,
@@ -331,7 +342,7 @@ export class HaywireInstanceOfResponseError extends HaywireInstanceValidationErr
         this.name = 'HaywireInstanceOfResponseError';
         this.outputId = outputId;
         this.value = value;
-        this.requestPath = requestPath;
+        hideRequestPath(this, requestPath);
     }
 
     static #stringify(value: unknown): string {
@@ -355,9 +366,9 @@ export class HaywireListResponseError extends HaywireInstanceValidationError {
     public readonly value: unknown;
     /**
      * Ids followed from the requested id to the failing binding, each as its dependent declared it.
-     * Empty when not created by a request.
+     * Empty when not created by a request. Not enumerable, see {@link hideRequestPath}.
      */
-    public readonly requestPath: readonly GenericHaywireId[];
+    declare public readonly requestPath: readonly GenericHaywireId[];
     public constructor(
         outputId: GenericHaywireId,
         value: unknown,
@@ -369,7 +380,7 @@ export class HaywireListResponseError extends HaywireInstanceValidationError {
         this.name = 'HaywireListResponseError';
         this.outputId = outputId;
         this.value = value;
-        this.requestPath = requestPath;
+        hideRequestPath(this, requestPath);
     }
 }
 
