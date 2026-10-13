@@ -3,7 +3,7 @@ import type { SchemaType } from 'juniper';
 import type { AssertionType, JuniperValidator, ValidatorType } from 'juniper-validator';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
-import { mergeSchema, numberSchema, stringSchema } from 'juniper';
+import { arraySchema, mergeSchema, numberSchema, objectSchema, stringSchema } from 'juniper';
 import { makeValidator } from 'juniper-validator';
 import { suite, test } from 'mocha-chain';
 
@@ -50,6 +50,30 @@ suite('juniper-validator', () => {
                     'must match a schema in anyOf',
                 ]);
             });
+        });
+    });
+
+    suite('Metadata', () => {
+        test('Juniper metadata is allowed in strict mode', () => {
+            const withMetadata = makeValidator(
+                objectSchema({
+                    properties: {
+                        list: arraySchema({ items: stringSchema().metadata('x-item', 1) }),
+                        either: mergeSchema().anyOf([numberSchema().metadata('x-option', 2)]),
+                    },
+                    additionalProperties: false,
+                }).metadata({ 'x-root': true })
+            );
+            expect(withMetadata.is({ list: ['a'], either: 1 })).to.equal(true);
+            expect(withMetadata.is({ list: [1] })).to.equal(false);
+            expect(withMetadata.is({ extra: 1 })).to.equal(false);
+        });
+
+        test('Unknown keywords in JSON schemas are still rejected', () => {
+            expect(() => makeValidator({ type: 'number', 'x-raw': 1 })).to.throw(
+                Error,
+                'strict mode: unknown keyword: "x-raw"'
+            );
         });
     });
 

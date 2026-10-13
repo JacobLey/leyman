@@ -62,7 +62,7 @@ if (result.issues) {
 
 Pass a Juniper `Schema` instance (or a plain `JsonSchema` object) to `makeValidator`. The returned validator implements the [StandardSchema v1](https://standardschema.dev/) interface, making it compatible with any library that accepts standard validators (e.g. form libraries, OpenAPI tooling).
 
-Ajv is used internally to compile and run validation. The `strict` option is always `true`.
+Ajv is used internally to compile and run validation. The `strict` option is always `true`; keywords added with Juniper's `.metadata()` are registered as annotations, so they pass it.
 
 ## API
 

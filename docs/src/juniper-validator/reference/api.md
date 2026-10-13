@@ -17,7 +17,7 @@ Compiles a schema into a validator. Compiling is the slow part, so make each val
 
 Validation uses Ajv's JSON Schema 2020-12 validator ([`Ajv2020`](https://ajv.js.org/json-schema.html#draft-2020-12)), which matches Juniper's output.
 
-- **Always strict.** [Strict mode](https://ajv.js.org/strict-mode.html) is always on, and `strict` can't be passed. Juniper's output always passes it.
+- **Always strict.** [Strict mode](https://ajv.js.org/strict-mode.html) is always on, and `strict` can't be passed. Juniper's output always passes it: keywords added with [`.metadata()`](/juniper/reference/api#metadata-key-value-metadata-record) are registered as annotations. A rendered JSON Schema with an unknown keyword is rejected; register it with Ajv's `keywords` option.
 - **Standard formats.** `email`, `uuid`, `date-time` and the other formats of [ajv-formats](https://www.npmjs.com/package/ajv-formats) are validated. Add your own with Ajv's `formats` option:
 
 ```ts
