@@ -43,4 +43,4 @@ Libraries call `validator['~standard'].validate(value)`. It is the same function
 
 Each issue is one of Ajv's [error objects](https://ajv.js.org/api.html#error-objects), so it has Ajv's fields, like `instancePath` and `keyword`, as well as Standard Schema's `message`. Ajv doesn't fill Standard Schema's `path`, so libraries that show errors next to a field can't place them. Read `instancePath` (a [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901), like `/address/city`) to place them yourself.
 
-Errors without a message are left out.
+With Ajv's `messages: false`, each `message` is a generic one naming the keyword, like `must pass "type" keyword validation`.

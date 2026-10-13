@@ -50,6 +50,13 @@ suite('juniper-validator', () => {
                     'must match a schema in anyOf',
                 ]);
             });
+
+            test('Falls back to keyword when Ajv omits messages', () => {
+                const quiet = makeValidator(numberSchema(), { messages: false });
+                expect(quiet.validate('5').issues!.map(issue => issue.message)).to.deep.equal([
+                    'must pass "type" keyword validation',
+                ]);
+            });
         });
     });
 

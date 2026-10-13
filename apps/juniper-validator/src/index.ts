@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { Options as AjvOptions, ErrorObject } from 'ajv/dist/2020.js';
+import type { Options as AjvOptions } from 'ajv/dist/2020.js';
 import type { JsonSchema, Schema } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import ajvFormats from 'ajv-formats';
@@ -87,10 +87,11 @@ export const makeValidator = <T>(
             };
         }
         return {
-            issues: validator.errors!.filter(
-                (issue): issue is ErrorObject & StandardSchemaV1.Issue =>
-                    typeof issue.message === 'string'
-            ),
+            issues: validator.errors!.map(error => ({
+                ...error,
+                // Ajv omits messages with `messages: false`
+                message: error.message ?? `must pass "${error.keyword}" keyword validation`,
+            })),
         };
     };
 
