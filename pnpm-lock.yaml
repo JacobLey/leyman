@@ -484,6 +484,9 @@ importers:
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
+      unknown-error:
+        specifier: workspace:^
+        version: file:tools/unknown-error
       yargs:
         specifier: 'catalog:'
         version: 18.2.0
@@ -12154,6 +12157,7 @@ snapshots:
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper)
       nx: 23.2.1(@swc/core@1.16.2(@swc/helpers@0.5.23))
       parse-cwd: file:tools/parse-cwd
+      unknown-error: file:tools/unknown-error
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'

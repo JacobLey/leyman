@@ -11,6 +11,9 @@
   ],
   "references": [
     {
+      "path": "../../tools/unknown-error"
+    },
+    {
       "path": "../../tools/parse-cwd"
     },
     {

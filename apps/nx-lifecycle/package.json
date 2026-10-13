@@ -69,6 +69,7 @@
     "juniper-validator": "workspace:^",
     "nx": "catalog:",
     "parse-cwd": "workspace:^",
+    "unknown-error": "workspace:^",
     "yargs": "catalog:"
   },
   "devDependencies": {

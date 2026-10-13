@@ -4,6 +4,7 @@ import type { Command, LifecycleCommandInput } from './lib/types.js';
 import Path from 'node:path';
 import { createProjectGraphAsync, readJsonFile, workspaceRoot } from '@nx/devkit';
 import { bind } from 'haywire';
+import { getErrorMessage } from 'unknown-error';
 import { explainLifecycle, formatExplanation } from '../lifecycle/explain.js';
 import { loadOptions } from '../lifecycle/normalizer.js';
 import { planLifecycle } from '../lifecycle/processor.js';
@@ -94,7 +95,7 @@ export const explainCommand: Command<ExplainCommandExtendedInput> = {
         } catch (err) {
             // Only a mistyped project or stage, which a stack trace would bury
             // eslint-disable-next-line no-console
-            console.error((err as Error).message);
+            console.error(getErrorMessage(err));
             process.exitCode = 1;
             return;
         }
