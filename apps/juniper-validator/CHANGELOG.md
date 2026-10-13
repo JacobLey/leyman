@@ -1,5 +1,14 @@
 # juniper-validator
 
+## 0.2.1
+
+### Patch Changes
+
+- 9562c45: Remove the unused `escape-string-regexp` dependency.
+- Updated dependencies [1957cf8]
+- Updated dependencies [d46a4d2]
+  - juniper@2.2.0
+
 ## 0.2.0
 
 ### Minor Changes

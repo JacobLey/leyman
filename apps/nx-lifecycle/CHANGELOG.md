@@ -1,5 +1,25 @@
 # nx-lifecycle
 
+## 1.1.1
+
+### Patch Changes
+
+- 113505a: The CLI collects its commands from a haywire list instead of registering each by hand. No change to commands or options.
+- ddac689: Point the `$schema` example in the published JSON Schemas at `out/schema.json`, which exists, instead of `src/lifecycle/schema.json`, which doesn't.
+- Updated dependencies [6fc113c]
+- Updated dependencies [9469c47]
+- Updated dependencies [ec5c0e6]
+- Updated dependencies [04f66c2]
+- Updated dependencies [1957cf8]
+- Updated dependencies [d46a4d2]
+- Updated dependencies [9562c45]
+- Updated dependencies [d253201]
+  - entry-script@4.1.0
+  - haywire@1.1.1
+  - juniper@2.2.0
+  - juniper-validator@0.2.1
+  - parse-cwd@2.0.2
+
 ## 1.1.0
 
 ### Minor Changes

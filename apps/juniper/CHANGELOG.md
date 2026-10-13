@@ -1,5 +1,17 @@
 # juniper
 
+## 2.2.0
+
+### Minor Changes
+
+- 1957cf8: Object types inferred by `SchemaType` (and by `mergeSchema`'s `allOf`, `anyOf`, `oneOf` and `if`) are now flattened into a single object type, so editors show `{ foo: string; bar?: number }` instead of `Partial<{ ... }> & Required<Pick<{ ... }, 'foo'>>`. Combined schemas show as a union of flat objects.
+  
+  The types are equivalent to before: properties, optional modifiers and index signatures are unchanged, and values that were assignable still are. Only exact type assertions (e.g. `expect-type`'s `toEqualTypeOf`) see the new shapes. `EmptyObject` now displays by name.
+
+### Patch Changes
+
+- d46a4d2: `multipleOf` values above `Number.MAX_SAFE_INTEGER` are kept as separate `allOf` entries, rather than merged with integer multiples into a least common multiple that a number can't represent exactly.
+
 ## 2.1.0
 
 ### Minor Changes

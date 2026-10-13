@@ -1,5 +1,20 @@
 # barrelify
 
+## 2.1.1
+
+### Patch Changes
+
+- ea651e2: The CLI collects its commands from a haywire list instead of registering each by hand. No change to commands or options.
+- 5fee97f: Fix the README: `barrelify()` resolves to the paths of the changed barrel files, `cwd` also takes a `URL`, `--ci` is on by default in CI, and exports are sorted by file name.
+- Updated dependencies [6fc113c]
+- Updated dependencies [9469c47]
+- Updated dependencies [ec5c0e6]
+- Updated dependencies [04f66c2]
+- Updated dependencies [d253201]
+  - entry-script@4.1.0
+  - haywire@1.1.1
+  - parse-cwd@2.0.2
+
 ## 2.1.0
 
 ### Minor Changes
