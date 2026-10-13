@@ -13,7 +13,7 @@ Types catch most wiring mistakes, but not all. `container.check()` validates the
 - Every [sync supplier](/haywire/guides/suppliers#sync-suppliers-of-async-values) can be built synchronously.
 - [Disposers](/haywire/guides/disposal) are only set on singletons.
 
-It throws a `HaywireContainerValidationError` describing the problem. Export your container, or its module, and check it in a test:
+It throws a `HaywireContainerValidationError` describing the problem, naming the bindings involved (see [Debugging](/haywire/guides/debugging)). Export your container, or its module, and check it in a test:
 
 ```ts
 import { bind, createContainer, createModule, identifier } from 'haywire';

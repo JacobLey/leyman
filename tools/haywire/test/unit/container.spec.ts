@@ -180,6 +180,29 @@ suite('container', () => {
     });
 
     suite('Validation failures', () => {
+        test('Missing provider reports every binding that needs it', async () => {
+            const urlId = identifier<string>('DB_URL');
+            const module = createModule(
+                bind(A).withDependencies([urlId]).withConstructorProvider()
+            ).addBinding(
+                bind(B)
+                    .withDependencies([urlId.supplier(), identifier(C).nullable()])
+                    .withConstructorProvider()
+            );
+
+            const thrown = await catchThrown(() => {
+                // @ts-expect-error
+                createContainer(module).check();
+            });
+            expect(thrown).to.be.instanceOf(HaywireProviderMissingError).and.contains({
+                message:
+                    'Providers missing for container: C(nullable) (needed by B), DB_URL (needed by A, B)',
+            });
+            const { dependencyIds, dependentIds } = thrown as HaywireProviderMissingError;
+            expect(dependencyIds).to.deep.equal([urlId, identifier(C).nullable()]);
+            expect(dependentIds.get(urlId)).to.deep.equal([identifier(A), identifier(B)]);
+        });
+
         test('No dependency defined', () => {
             class Simple {
                 public readonly foo: number = 1;
@@ -502,9 +525,9 @@ suite('container', () => {
                         message: [
                             'Binding has dependency on syncronous supplier that must be async:',
                             [
-                                '[output id: B, dependency supplier id: B(supplier(sync))]',
-                                '[output id: C, dependency supplier id: C(supplier(sync))]',
-                                '[output id: E, dependency supplier id: E(supplier(sync))]',
+                                '[output id: B, dependency supplier id: B(supplier(sync)), needed by: A, async: B]',
+                                '[output id: C, dependency supplier id: C(supplier(sync)), needed by: A, async: C->D]',
+                                '[output id: E, dependency supplier id: E(supplier(sync)), needed by: A, async: E->F]',
                             ].join(', '),
                         ].join(' '),
                     });
@@ -556,9 +579,9 @@ suite('container', () => {
                         message: [
                             'Binding has dependency on syncronous supplier that must be async:',
                             [
-                                '[output id: B, dependency supplier id: B(supplier(sync))]',
-                                '[output id: C, dependency supplier id: C(supplier(sync, propagating))]',
-                                '[output id: D, dependency supplier id: D(supplier(sync))]',
+                                '[output id: B, dependency supplier id: B(supplier(sync)), needed by: E, async: B]',
+                                '[output id: C, dependency supplier id: C(supplier(sync, propagating)), needed by: E, async: C]',
+                                '[output id: D, dependency supplier id: D(supplier(sync)), needed by: E, async: D]',
                             ].join(', '),
                         ].join(' '),
                     });
@@ -3987,6 +4010,142 @@ suite('container', () => {
             // C is freshly created rather than leaking from a previously captured scope cache.
             expect(a1).to.not.equal(a2);
             expect(a1.params[0]).to.not.equal(a2.params[0]);
+        });
+    });
+
+    suite('Describing', () => {
+        const urlId = identifier<string>('DB_URL');
+        const pluginId = identifier<string>('<plugin>').list();
+        const describedModule = createModule(
+            bind(A)
+                .withDependencies([B, identifier(C).supplier(), identifier(D).deferred()])
+                .withConstructorProvider()
+                .scoped(singletonScope)
+        )
+            .addBinding(
+                bind(B)
+                    .withDependencies([pluginId, urlId])
+                    .withAsyncProvider(async () => new B())
+            )
+            .addBinding(bind(C).withConstructorFactory())
+            .addBinding(
+                bind(D)
+                    .withDependencies([identifier(C).supplier('async')])
+                    .withConstructorProvider()
+            )
+            .addBinding(bind(pluginId).withInstance('x'))
+            .addBinding(bind(pluginId).withFactory(() => 'y'));
+        // @ts-expect-error
+        const container = createContainer(describedModule);
+
+        test('describe', () => {
+            const { bindings } = container.describe();
+            expect(
+                bindings.map(binding => ({
+                    outputId: binding.outputId.toString(),
+                    scope: binding.scope,
+                    async: binding.async,
+                    dependencies: binding.dependencies.map(({ id, providers }) => ({
+                        id: id.toString(),
+                        providers: providers.map(provider => provider.toString()),
+                    })),
+                }))
+            ).to.deep.equal([
+                {
+                    outputId: 'A',
+                    scope: singletonScope,
+                    async: false,
+                    dependencies: [
+                        { id: 'B', providers: ['B'] },
+                        { id: 'C(supplier(sync))', providers: ['C'] },
+                        { id: 'D(deferred)', providers: ['D'] },
+                    ],
+                },
+                {
+                    outputId: 'B',
+                    scope: transientScope,
+                    async: true,
+                    dependencies: [
+                        {
+                            id: '<plugin>(list)',
+                            providers: ['<plugin>(list)', '<plugin>(list)'],
+                        },
+                        { id: 'DB_URL', providers: [] },
+                    ],
+                },
+                { outputId: 'C', scope: transientScope, async: false, dependencies: [] },
+                {
+                    outputId: 'D',
+                    scope: transientScope,
+                    async: false,
+                    dependencies: [{ id: 'C(supplier(async))', providers: ['C'] }],
+                },
+                {
+                    outputId: '<plugin>(list)',
+                    scope: eagerSingletonScope,
+                    async: false,
+                    dependencies: [],
+                },
+                {
+                    outputId: '<plugin>(list)',
+                    scope: transientScope,
+                    async: false,
+                    dependencies: [],
+                },
+            ]);
+        });
+
+        test('toMermaid', () => {
+            expect(container.toMermaid()).to.equal(
+                [
+                    'flowchart LR',
+                    '    b0["A<br/>singleton"]',
+                    '    b1["B<br/>transient, async"]',
+                    '    b2["C<br/>transient"]',
+                    '    b3["D<br/>transient"]',
+                    '    b4["#60;plugin#62;(list)<br/>eager-singleton"]',
+                    '    b5["#60;plugin#62;(list)<br/>transient"]',
+                    '    b0 --> b1',
+                    '    b0 -. supplier .-> b2',
+                    '    b0 -. deferred .-> b3',
+                    '    b1 --> b4',
+                    '    b1 --> b5',
+                    '    m0["DB_URL<br/>missing"]:::missing',
+                    '    b1 --> m0',
+                    '    b3 -. async supplier .-> b2',
+                    '    classDef missing stroke:#d33,stroke-dasharray:4',
+                ].join('\n')
+            );
+        });
+
+        test('Missing list dependency', () => {
+            const listContainer = createContainer(
+                // @ts-expect-error
+                createModule(
+                    bind(A).withDependencies([pluginId]).withConstructorProvider()
+                ).addBinding(bind(B).withDependencies([pluginId]).withConstructorProvider())
+            );
+            expect(listContainer.describe().bindings[0]!.dependencies).to.deep.equal([
+                { id: pluginId, providers: [] },
+            ]);
+            // Both point at the same missing node
+            expect(listContainer.toMermaid()).to.equal(
+                [
+                    'flowchart LR',
+                    '    b0["A<br/>transient"]',
+                    '    b1["B<br/>transient"]',
+                    '    m0["#60;plugin#62;(list)<br/>missing"]:::missing',
+                    '    b0 --> m0',
+                    '    b1 --> m0',
+                    '    classDef missing stroke:#d33,stroke-dasharray:4',
+                ].join('\n')
+            );
+        });
+
+        test('Describing does not check the container', () => {
+            expect(() => {
+                container.check();
+            }).to.throw(HaywireProviderMissingError, 'DB_URL (needed by B)');
         });
     });
 });

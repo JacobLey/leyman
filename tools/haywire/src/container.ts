@@ -7,7 +7,9 @@ import {
 import { createContainer as createContainerFromModule } from '#module';
 
 export {
+    type BindingDescription,
     Container,
+    type ContainerDescription,
     type GenericContainer,
     isSyncContainer,
     SyncContainer,

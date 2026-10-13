@@ -19,7 +19,7 @@ import type {
     NonExtendable,
 } from '#types';
 import pDefer from 'p-defer';
-import { normalizeOutputId, TempBinding } from '#binding';
+import { collectDependentIds, normalizeOutputId, TempBinding } from '#binding';
 import {
     HaywireCircularDependencyError,
     HaywireContainerDisposedError,
@@ -249,6 +249,50 @@ const disposeInstance = async (binding: GenericBinding, instance: unknown): Prom
         dispose.call(instance);
     }
 };
+
+/**
+ * A binding in a {@link ContainerDescription}.
+ */
+export interface BindingDescription {
+    /**
+     * Id the binding provides.
+     */
+    readonly outputId: GenericHaywireId;
+    readonly scope: Scopes;
+    /**
+     * Whether the provider is async.
+     */
+    readonly async: boolean;
+    /**
+     * Dependencies in the order they are passed to the provider.
+     */
+    readonly dependencies: readonly {
+        /**
+         * Dependency as declared, including annotations like `.supplier()` and `.deferred()`.
+         */
+        readonly id: GenericHaywireId;
+        /**
+         * Output ids of the bindings that provide it (one for each element of a list). Empty when no binding does.
+         */
+        readonly providers: readonly GenericHaywireId[];
+    }[];
+}
+
+/**
+ * Every binding in a container, returned by `container.describe()`.
+ */
+export interface ContainerDescription {
+    readonly bindings: readonly BindingDescription[];
+}
+
+/**
+ * Escape text for a quoted Mermaid label, which would otherwise end at `"` and render `<...>` as HTML.
+ *
+ * @param text - label text
+ * @returns text with special characters as Mermaid entity codes
+ */
+const escapeMermaid = (text: string): string =>
+    text.replaceAll(/["#&<>]/gu, char => `#${char.codePointAt(0)!};`);
 
 const validateProviderOutput = (outputId: GenericOutputHaywireId, value: unknown): void => {
     // TODO move these checks into binding instead
@@ -730,6 +774,86 @@ export class Container<Outputs extends [Extendable]> {
     }
 
     /**
+     * Describe every binding in the container and how they depend on each other. Meant for debugging and documentation,
+     * see {@link toMermaid} for a diagram.
+     *
+     * Does not check the container, so a dependency with no binding is described (with no providers) rather than thrown.
+     *
+     * @returns every binding, in the order they were added to the module (list elements after the rest)
+     */
+    public describe(): ContainerDescription {
+        return {
+            bindings: [...this.#bindings].map(binding => ({
+                outputId: binding.outputId,
+                scope: binding.scope,
+                async: binding.isAsync,
+                dependencies: binding.dependencyIds.map(id => ({
+                    id,
+                    providers: this.#dependencyProviders(id).map(provider => provider.outputId),
+                })),
+            })),
+        };
+    }
+
+    /**
+     * Render the dependency graph as a Mermaid flowchart, e.g. to paste in a Markdown file.
+     *
+     * Each binding is a node labelled with its output id and scope (and `async`). An arrow points from a binding to each of
+     * its dependencies, dotted for suppliers and deferred dependencies (which are not created before the binding).
+     * A dependency with no binding is drawn with a dashed red border.
+     *
+     * @returns Mermaid `flowchart` source
+     */
+    public toMermaid(): string {
+        const bindings = [...this.#bindings];
+        const nodeIds = new Map(bindings.map((binding, i) => [binding, `b${i}`]));
+        const missingNodeIds = new Map<GenericOutputHaywireId, string>();
+        const lines = ['flowchart LR'];
+
+        for (const [binding, nodeId] of nodeIds) {
+            const details = [binding.scope.description, binding.isAsync && 'async']
+                .filter(Boolean)
+                .join(', ');
+            lines.push(
+                `    ${nodeId}["${escapeMermaid(binding.outputId.toString())}<br/>${details}"]`
+            );
+        }
+        for (const [binding, nodeId] of nodeIds) {
+            for (const dependencyId of binding.dependencyIds) {
+                const { deferred, supplier } = dependencyId.annotations;
+                let arrow = '-->';
+                if (typeof supplier === 'object') {
+                    arrow = `-. ${supplier.sync ? 'supplier' : 'async supplier'} .->`;
+                } else if (deferred) {
+                    arrow = '-. deferred .->';
+                }
+
+                const providers = this.#dependencyProviders(dependencyId);
+                if (providers.length === 0) {
+                    const missingId = normalizeOutputId(dependencyId) as GenericOutputHaywireId;
+                    let missingNodeId = missingNodeIds.get(missingId);
+                    if (!missingNodeId) {
+                        missingNodeId = `m${missingNodeIds.size}`;
+                        missingNodeIds.set(missingId, missingNodeId);
+                        lines.push(
+                            `    ${missingNodeId}["${escapeMermaid(missingId.toString())}<br/>missing"]:::missing`
+                        );
+                    }
+                    lines.push(`    ${nodeId} ${arrow} ${missingNodeId}`);
+                }
+                for (const provider of providers) {
+                    lines.push(`    ${nodeId} ${arrow} ${nodeIds.get(provider)!}`);
+                }
+            }
+        }
+        if (missingNodeIds.size > 0) {
+            lines.push('    classDef missing stroke:#d33,stroke-dasharray:4');
+        }
+
+        return lines.join('\n');
+    }
+
+    /**
      * Pre-calculate all eager singletons.
      *
      * Conceptually it is safe to run multiple times, due to scope caching. Attempts to improve performance
@@ -846,6 +970,21 @@ export class Container<Outputs extends [Extendable]> {
     }
 
     /**
+     * Bindings that would provide a dependency, matched the same way {@link check} does.
+     *
+     * @param dependencyId - dependency as declared on a binding
+     * @returns every list element for a list dependency, otherwise the single binding. Empty when no binding matches.
+     */
+    #dependencyProviders(dependencyId: GenericHaywireId): readonly GenericBinding[] {
+        const outputId = normalizeOutputId(dependencyId) as GenericOutputHaywireId;
+        if (isListId(outputId)) {
+            return this.#idToListBindings.get(outputId) ?? [];
+        }
+        const binding = this.#idToBinding.get(outputId);
+        return binding ? [binding] : [];
+    }
+
+    /**
      * Check that every dependency declared in bindings has an equivalent binding declared.
      *
      * For the most part, we are protected against this by strongly-typed modules and container creation, but there are ways to
@@ -874,17 +1013,11 @@ export class Container<Outputs extends [Extendable]> {
      * @throws when a binding declares a dependency that is not found within the container
      */
     #checkForDependenciesOutput(): void {
-        const uniqueDependencyIds = new Set(
-            [...this.#bindings].flatMap(binding =>
-                binding.dependencyIds.map(id =>
-                    normalizeOutputId(id.deferred(false).supplier(false))
-                )
-            )
-        );
+        const dependentIds = collectDependentIds(this.#bindings);
 
         const noProviderFoundIds: GenericOutputHaywireId[] = [];
 
-        for (const dependencyId of uniqueDependencyIds) {
+        for (const dependencyId of dependentIds.keys()) {
             if (isListId(dependencyId)) {
                 if (!this.#idToListBindings.has(dependencyId)) {
                     noProviderFoundIds.push(dependencyId);
@@ -895,7 +1028,7 @@ export class Container<Outputs extends [Extendable]> {
         }
 
         if (noProviderFoundIds.length > 0) {
-            throw new HaywireProviderMissingError(noProviderFoundIds);
+            throw new HaywireProviderMissingError(noProviderFoundIds, dependentIds);
         }
     }
 
@@ -1141,46 +1274,59 @@ export class Container<Outputs extends [Extendable]> {
      * @throws When a synchronous supplier is declared for a provider that must be async
      */
     #checkForAsyncSupplier(): void {
-        const isSafeForSyncSupplier = (
+        /**
+         * Find whether a binding can be supplied synchronously.
+         *
+         * @param binding - binding a supplier would request
+         * @param chain - base ids already visited on the way to this binding
+         * @param eagerScopes - scopes created before the supplier is called
+         * @returns `null` when the binding is safe to supply synchronously. Otherwise the chain of output ids
+         * from the binding to the first async binding found, to explain the failure.
+         */
+        const findAsyncChain = (
             binding: GenericBinding,
             chain: Set<GenericOutputHaywireId>,
             eagerScopes: Set<Scopes>
-        ): boolean => {
+        ): GenericOutputHaywireId[] | null => {
             const baseId = binding.outputId.baseId();
             if (chain.has(baseId)) {
                 // Part of circular dependency.
                 // If we are sync up until this point, it can remain sync.
-                return true;
+                return null;
             }
             if (eagerScopes.has(binding.scope)) {
                 // If the "parent" scopes have already eagerly created these resources,
                 // will be synchronously available
-                return true;
+                return null;
             }
             if (binding.isAsync) {
                 // Value cannot guaranteed to be present, even if belonging to "parent" scope.
-                return false;
+                return [binding.outputId];
             }
-            return binding.dependencyIds.every(dependencyId => {
+            for (const dependencyId of binding.dependencyIds) {
                 const { supplier } = dependencyId.annotations;
                 if (typeof supplier === 'object' && (!supplier.propagateScope || !supplier.sync)) {
                     // Either async boundary or separate request.
                     // Separate requests are validated in separate iteration
-                    return true;
+                    continue;
                 }
                 const dependencyBaseId = dependencyId.baseId();
                 const dependencyBindings = isListId(dependencyBaseId)
                     ? this.#baseIdToListBindings.get(dependencyBaseId)!
                     : [this.#baseIdToBinding.get(dependencyBaseId)!];
                 // Continue checking dependencies
-                return dependencyBindings.every(dependencyBinding =>
-                    isSafeForSyncSupplier(
+                for (const dependencyBinding of dependencyBindings) {
+                    const asyncChain = findAsyncChain(
                         dependencyBinding,
                         new Set([...chain, baseId]),
                         eagerScopes
-                    )
-                );
-            });
+                    );
+                    if (asyncChain) {
+                        return [binding.outputId, ...asyncChain];
+                    }
+                }
+            }
+            return null;
         };
 
         const syncSuppliers = [...this.#bindings]
@@ -1192,13 +1338,11 @@ export class Container<Outputs extends [Extendable]> {
 
         const safeBindings = new Set<GenericBinding>();
         const unsafeBindings = new Set<GenericBinding>();
-        const unsafeSupplierBindings: {
-            bindingOutputId: GenericOutputHaywireId;
-            supplierId: GenericHaywireId;
-        }[] = [];
+        const unsafeSupplierBindings: HaywireSyncSupplierError['unsafeSupplierBindings'] = [];
         const addUnsafePair = (
             dependencyBinding: GenericBinding,
-            shouldPropagateScope: boolean
+            shouldPropagateScope: boolean,
+            asyncChain: GenericOutputHaywireId[]
         ): void => {
             const dependencyBaseId = dependencyBinding.outputId.baseId();
             for (const binding of this.#bindings) {
@@ -1216,6 +1360,8 @@ export class Container<Outputs extends [Extendable]> {
                         unsafeSupplierBindings.push({
                             bindingOutputId: dependencyBinding.outputId,
                             supplierId: depId,
+                            dependentOutputId: binding.outputId,
+                            asyncChain,
                         });
                     }
                 }
@@ -1257,11 +1403,12 @@ export class Container<Outputs extends [Extendable]> {
             );
 
             for (const syncBinding of syncBindings) {
-                if (isSafeForSyncSupplier(syncBinding, new Set(), eagerScopes)) {
-                    safeBindings.add(syncBinding);
-                } else {
+                const asyncChain = findAsyncChain(syncBinding, new Set(), eagerScopes);
+                if (asyncChain) {
                     unsafeBindings.add(syncBinding);
-                    addUnsafePair(syncBinding, propagateScope);
+                    addUnsafePair(syncBinding, propagateScope, asyncChain);
+                } else {
+                    safeBindings.add(syncBinding);
                 }
             }
         }

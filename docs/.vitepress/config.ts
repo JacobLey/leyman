@@ -117,6 +117,7 @@ export default defineConfig({
                             { text: 'Runtime values', link: '/haywire/guides/runtime-values' },
                             { text: 'Disposal', link: '/haywire/guides/disposal' },
                             { text: 'Testing', link: '/haywire/guides/testing' },
+                            { text: 'Debugging', link: '/haywire/guides/debugging' },
                         ],
                     },
                     {

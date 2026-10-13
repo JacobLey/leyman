@@ -107,6 +107,32 @@ export const normalizeOutputId = <T extends GenericHaywireId>(id: T): Normalized
     ) as NormalizedOutputId<T>;
 };
 
+/**
+ * Map every dependency (compared as an output, so suppliers and deferred dependencies are their underlying output)
+ * to the output ids of the bindings that depend on it. Used to report who needs a missing provider.
+ *
+ * @param bindings - every binding in the container
+ * @returns map of normalized dependency id to dependent output ids, in binding order
+ */
+export const collectDependentIds = (
+    bindings: Iterable<GenericBinding>
+): Map<GenericOutputHaywireId, GenericOutputHaywireId[]> => {
+    const dependentIds = new Map<GenericOutputHaywireId, GenericOutputHaywireId[]>();
+    for (const binding of bindings) {
+        for (const dependencyId of binding.dependencyIds) {
+            // Widen type, `normalizeOutputId` loses track of the list annotation
+            const outputId = normalizeOutputId(dependencyId) as GenericOutputHaywireId;
+            const dependents = dependentIds.get(outputId) ?? [];
+            // Several list elements may share an output id
+            if (!dependents.includes(binding.outputId)) {
+                dependents.push(binding.outputId);
+            }
+            dependentIds.set(outputId, dependents);
+        }
+    }
+    return dependentIds;
+};
+
 const providerToMaybeList = <
     OutputId extends GenericHaywireId,
     Dependencies extends readonly [...GenericHaywireId[]],

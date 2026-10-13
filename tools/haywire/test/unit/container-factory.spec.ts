@@ -60,7 +60,12 @@ suite('factory', () => {
         expect(() => {
             // @ts-expect-error
             factory.toContainer();
-        }).to.throw(HaywireProviderMissingError);
+        })
+            .to.throw(HaywireProviderMissingError)
+            .that.contains({
+                message:
+                    'Providers missing for container: D(named: d, nullable) (needed by B), D(named: d, undefinable) (needed by c), E (needed by c), F(nullable, undefinable) (needed by c)',
+            });
     });
 
     suite('sync', () => {

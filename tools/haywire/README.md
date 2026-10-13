@@ -33,6 +33,7 @@ For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.co
     - [Requesting instances from a container](#requesting-instances-from-a-container)
     - [Combining containers with dynamic runtime values](#combining-containers-with-dynamic-runtime-values)
     - [Disposing containers](#disposing-containers)
+    - [Debugging a container](#debugging-a-container)
     - [Scope Gotchas](#scope-gotchas)
     - [Validation using types](#validation-using-types)
     - [Typescript configuration](#typescript-configuration)
@@ -57,6 +58,7 @@ For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.co
         - [AsyncSupplier](#asyncsupplier)
         - [Supplier](#supplier)
         - [Deferred](#deferred)
+        - [ContainerDescription](#containerdescription)
     - [Errors](#errors)
         - [HaywireError](#haywireerror)
         - [HaywireModuleValidationError](#haywiremodulevalidationerror)
@@ -887,6 +889,27 @@ app.use(async (ctx, next) => {
 
 `requestScope` is narrower than an HTTP request: it is a single `get()` call. Those instances are never disposed by the container, so resources that should be released per HTTP request belong in `singletonScope` on a per-request container.
 
+### Debugging a container
+
+Errors from `container.check()` name the bindings involved. A missing binding lists every binding that needs it, and a sync supplier of an async value shows the chain down to the async binding:
+
+```
+Providers missing for container: DB_URL (needed by Database, MigrationRunner)
+Binding has dependency on syncronous supplier that must be async: [output id: Repository, dependency supplier id: Repository(supplier(sync)), needed by: Handler, async: Repository->Database]
+```
+
+To see the whole graph, `container.toMermaid()` returns it as a [Mermaid](https://mermaid.js.org/) flowchart, which GitHub and most Markdown editors render. Each binding is a node labelled with its id and scope. Arrows point to dependencies, dotted for suppliers and deferred dependencies, and a dependency with no binding is drawn as a dashed red node.
+
+```ts
+console.log(container.toMermaid());
+// flowchart LR
+//     b0["haywire-id(named: dbUrl)<br/>eager-singleton"]
+//     b1["Database<br/>singleton"]
+//     b1 --> b0
+```
+
+`container.describe()` returns the same information as data: each binding's `outputId`, `scope`, `async`, and `dependencies` (each with its declared `id` and the `providers` bound for it). Neither method checks the container, so both work on one that fails `check()`.
+
 ### Scope Gotchas
 
 Most scopes work as expected. Requesting a transient dependency results in a new value for every dependency. Requesting a singleton will share the same value across every request.
@@ -1178,6 +1201,8 @@ A collection of bindings that is capable of _asynchronously_ instantiating any r
 | `preloadAsync()` | ❌ | `Promise<void>` | Instantiates all eager singletons. Result is cached, and any future calls will return immediately. Calls `wire()` internally first. |
 | `getAsync(idOrClass)` | `HaywireId` or raw class of requested value | `Promise<T>` | _Asynchronously_ instantiates the requested value. Each call counts as a separate "request" for scoping. Will throw error if requested value does not exist in bindings, including requesting a non-null value when binding is declared `.nullable()` |
 | `disposeAsync()` | ❌ | `Promise<void>` | Releases every singleton the container created, in reverse creation order, then rejects all further requests. See [Disposing containers](#disposing-containers). Safe to call multiple times. Also available as `[Symbol.asyncDispose]()` for `await using`. |
+| `describe()` | ❌ | `ContainerDescription` | Every binding with its output id, scope, whether it is async, and its dependencies with the bindings that provide them. Does not check the container. See [Debugging a container](#debugging-a-container). |
+| `toMermaid()` | ❌ | `string` | The dependency graph as a Mermaid flowchart. See [Debugging a container](#debugging-a-container). |
 
 #### `SyncContainer`
 
@@ -1238,6 +1263,17 @@ Includes additional internal type annotations to distinguish between a normal pr
 
 This is the type used internally to represent `identifier<T>().deferred()`.
 
+#### `ContainerDescription`
+
+Returned by `container.describe()`. Has a `bindings` array of `BindingDescription`:
+
+| Property | Type | Description |
+|----------|------|-------------|
+| `outputId` | `HaywireId` | Id the binding provides. |
+| `scope` | `Scopes` | One of the [scope](#binding-an-implementation-to-an-id) symbols. |
+| `async` | `boolean` | Whether the provider is async. |
+| `dependencies` | `{ id: HaywireId; providers: HaywireId[] }[]` | Dependencies in provider order, as declared (including `.supplier()` and `.deferred()`), with the output ids of the bindings that provide each. `providers` has one entry per element for a [list](#lists), and is empty when no binding provides it. |
+
 ### Errors
 
 These are errors that may be thrown by Haywire throughout the lifecycle of binding, wiring, and instantiating dependencies.
@@ -1262,7 +1298,7 @@ Specific instances include attempting to add a binding for an id that already ex
 
 Error potentially thrown during the `Container.check()` stage.
 
-Specific instances may report circular dependencies, sync suppliers that are incorrectly backed by async providers, or disposers declared on bindings that are not singletons.
+Specific instances may report missing providers (with the bindings that need them), circular dependencies, sync suppliers that are incorrectly backed by async providers (with the chain to the async binding), or disposers declared on bindings that are not singletons.
 
 #### `HaywireInstanceValidationError`
 

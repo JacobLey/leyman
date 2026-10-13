@@ -21,7 +21,7 @@ import type {
     IsClass,
     ValidateConcrete,
 } from '#types';
-import { InstanceBinding, normalizeOutputId, TempBinding } from '#binding';
+import { collectDependentIds, InstanceBinding, normalizeOutputId, TempBinding } from '#binding';
 import { addBoundInstances, createAsyncContainer, createSyncContainer } from '#container';
 import { HaywireDuplicateOutputError, HaywireProviderMissingError } from '#errors';
 import { expandOutputId, expandSharedOutputIds, unsafeIdentifier } from '#identifier';
@@ -124,6 +124,10 @@ export class ContainerFactory<
      */
     readonly #listOutputIdsByBaseId: Map<GenericBaseHaywireId, ReadonlySet<GenericOutputHaywireId>>;
     readonly #registeredBindings: Bindings[];
+    /**
+     * Output ids of the module bindings that depend on each dependency, to report who needs a missing instance.
+     */
+    readonly #dependentIds: ReadonlyMap<GenericOutputHaywireId, readonly GenericOutputHaywireId[]>;
 
     private constructor(
         container: MaybeSyncContainer<Outputs, Async>,
@@ -137,7 +141,8 @@ export class ContainerFactory<
             GenericBaseHaywireId,
             ReadonlySet<GenericOutputHaywireId>
         >,
-        registeredBindings: Bindings[]
+        registeredBindings: Bindings[],
+        dependentIds: ReadonlyMap<GenericOutputHaywireId, readonly GenericOutputHaywireId[]>
     ) {
         this.#container = container;
         this.#missingDependencyOutputsByBaseId = new Map(missingDependencyOutputsByBaseId);
@@ -145,6 +150,7 @@ export class ContainerFactory<
         this.#listDependencyOutputsByBaseId = listDependencyOutputsByBaseId;
         this.#listOutputIdsByBaseId = new Map(listOutputIdsByBaseId);
         this.#registeredBindings = [...registeredBindings];
+        this.#dependentIds = dependentIds;
     }
 
     public static [wireContainerFactorySym]?<
@@ -170,10 +176,8 @@ export class ContainerFactory<
             ])
         );
         // Dependencies are compared as outputs, so suppliers + deferred dependencies are satisfied by the underlying output.
-        const dependencyIds = new Set(
-            [...bindings.values(), ...listBindings.values()]
-                .flat()
-                .flatMap(binding => binding.dependencyIds.map(id => normalizeOutputId(id)))
+        const dependentIds = collectDependentIds(
+            [...bindings.values(), ...listBindings.values()].flat()
         );
 
         const listDependencyOutputsByBaseId = new Map<
@@ -184,8 +188,7 @@ export class ContainerFactory<
             GenericBaseHaywireId,
             GenericOutputHaywireId[]
         >();
-        // Widen type, `normalizeOutputId` loses track of the list annotation (see container `isListId`)
-        for (const dependencyId of dependencyIds as Set<GenericOutputHaywireId>) {
+        for (const dependencyId of dependentIds.keys()) {
             const baseId = dependencyId.baseId();
             let isMissing: boolean;
             if (dependencyId.annotations.list) {
@@ -248,7 +251,8 @@ export class ContainerFactory<
             existingOutputBaseIds,
             listDependencyOutputsByBaseId,
             listOutputIdsByBaseId,
-            []
+            [],
+            dependentIds
         );
     }
 
@@ -331,7 +335,7 @@ export class ContainerFactory<
             const listDependencyOutputs = new Set(this.#listDependencyOutputsByBaseId.get(baseId));
             const stillMissing = listDependencyOutputs.difference(listOutputIds);
             if (stillMissing.size > 0) {
-                throw new HaywireProviderMissingError([...stillMissing]);
+                throw new HaywireProviderMissingError([...stillMissing], this.#dependentIds);
             }
         } else {
             const missingDependencyOutputs = this.#missingDependencyOutputsByBaseId.get(baseId);
@@ -340,7 +344,7 @@ export class ContainerFactory<
                 const missingOutputs = new Set(missingDependencyOutputs);
                 const stillMissing = missingOutputs.difference(actualOutputs);
                 if (stillMissing.size > 0) {
-                    throw new HaywireProviderMissingError([...stillMissing]);
+                    throw new HaywireProviderMissingError([...stillMissing], this.#dependentIds);
                 }
             }
         }
@@ -356,7 +360,8 @@ export class ContainerFactory<
             this.#existingOutputBaseIds,
             this.#listDependencyOutputsByBaseId,
             this.#listOutputIdsByBaseId,
-            this.#registeredBindings
+            this.#registeredBindings,
+            this.#dependentIds
         );
         factory.#missingDependencyOutputsByBaseId.delete(baseId);
         if (listOutputIds) {
@@ -388,7 +393,8 @@ export class ContainerFactory<
     public toContainer(): ExpandedContainer<Outputs, Bindings, Async> {
         if (this.#missingDependencyOutputsByBaseId.size > 0) {
             throw new HaywireProviderMissingError(
-                this.#missingDependencyOutputsByBaseId.values().toArray().flat()
+                this.#missingDependencyOutputsByBaseId.values().toArray().flat(),
+                this.#dependentIds
             );
         }
 

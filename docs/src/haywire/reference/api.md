@@ -117,6 +117,8 @@ Builds values asynchronously. A container goes through four stages. Each runs th
 | `preloadAsync()` | Builds every `eagerSingletonScope` value. Run it at startup. |
 | `getAsync(idOrClass)` | Builds a value. Each call is a new [request](/haywire/guides/scopes#requests). Requesting an id the container doesn't bind, or a non-null id bound as nullable, is a compile error and throws. |
 | `disposeAsync()` | Releases every singleton the container created, then rejects all further requests. Also `[Symbol.asyncDispose]()`. See [Disposal](/haywire/guides/disposal). |
+| `describe()` | Returns every binding with its scope and dependencies, as a `ContainerDescription`. Doesn't check the container. See [Debugging](/haywire/guides/debugging#drawing-the-dependency-graph). |
+| `toMermaid()` | Returns the dependency graph as a Mermaid flowchart. See [Debugging](/haywire/guides/debugging#drawing-the-dependency-graph). |
 
 ### `SyncContainer`
 
@@ -163,6 +165,7 @@ The exceptions are `identifier<T>()`, and these types:
 | `Supplier<T>` | `() => T`, as depended on with `.supplier()`. |
 | `AsyncSupplier<T>` | `() => Promise<T>`, as depended on with `.supplier('async')`. |
 | `Deferred<T>` | `Promise<T>`, as depended on with `.deferred()`. |
+| `ContainerDescription`, `BindingDescription` | Returned by `container.describe()`. |
 
 ```ts
 import { identifier, type HaywireIdType } from 'haywire';

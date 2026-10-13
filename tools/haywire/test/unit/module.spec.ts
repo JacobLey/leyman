@@ -181,7 +181,7 @@ suite('module', () => {
                     .to.throw(HaywireContainerValidationError)
                     .contains({
                         message:
-                            'Providers missing for container: <custom-name>(named: AorB, nullable, undefinable), haywire-id(named: num)',
+                            'Providers missing for container: <custom-name>(named: AorB, nullable, undefinable) (needed by Baz), haywire-id(named: num) (needed by Baz)',
                     });
             });
 
@@ -197,7 +197,7 @@ suite('module', () => {
                     .to.throw(HaywireContainerValidationError)
                     .contains({
                         message:
-                            'Providers missing for container: <custom-name>(named: AorB, nullable, undefinable), haywire-id(named: num)',
+                            'Providers missing for container: <custom-name>(named: AorB, nullable, undefinable) (needed by Baz), haywire-id(named: num) (needed by Baz)',
                     });
             });
         });
@@ -293,7 +293,8 @@ suite('module', () => {
                 })
                     .to.throw(HaywireContainerValidationError)
                     .contains({
-                        message: 'Providers missing for container: Foo(named: Symbol(abc))',
+                        message:
+                            'Providers missing for container: Foo(named: Symbol(abc)) (needed by haywire-id)',
                     });
             });
 
@@ -308,7 +309,8 @@ suite('module', () => {
                 })
                     .to.throw(HaywireContainerValidationError)
                     .contains({
-                        message: 'Providers missing for container: Bar(nullable)',
+                        message:
+                            'Providers missing for container: Bar(nullable) (needed by Foo(named: Symbol(abc), nullable, undefinable))',
                     });
 
                 const nullableAndUndefinableBarModule = createModule(
@@ -401,7 +403,8 @@ suite('module', () => {
             })
                 .to.throw(HaywireContainerValidationError)
                 .contains({
-                    message: 'Providers missing for container: haywire-id(named: dep)',
+                    message:
+                        'Providers missing for container: haywire-id(named: dep) (needed by haywire-id(named: num, list))',
                 });
         });
 
@@ -420,7 +423,8 @@ suite('module', () => {
             })
                 .to.throw(HaywireContainerValidationError)
                 .contains({
-                    message: 'Providers missing for container: haywire-id(named: num, list)',
+                    message:
+                        'Providers missing for container: haywire-id(named: num, list) (needed by haywire-id(named: consume, nullable, undefinable))',
                 });
 
             const validModule = createModule(bind(numListId).withFactory(() => 1)).addBinding(

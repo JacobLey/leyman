@@ -9,7 +9,7 @@ import type { GenericHaywireId } from '#identifier';
 // eslint-disable-next-line unicorn/custom-error-definition
 export abstract class HaywireError extends Error {}
 
-const stringifyIds = (ids: GenericHaywireId[]): string =>
+const stringifyIds = (ids: readonly GenericHaywireId[]): string =>
     ids
         .map(id => id.toString())
         .toSorted((a, b) => a.localeCompare(b, 'en'))
@@ -147,14 +147,29 @@ export class HaywireCircularDependencyError extends HaywireContainerValidationEr
  */
 export class HaywireSyncSupplierError extends HaywireContainerValidationError {
     public readonly unsafeSupplierBindings: {
+        /**
+         * Output of the binding the supplier would request.
+         */
         bindingOutputId: GenericHaywireId;
+        /**
+         * Supplier id, as declared in the dependencies of `dependentOutputId`'s binding.
+         */
         supplierId: GenericHaywireId;
+        /**
+         * Output of the binding that declares the supplier.
+         */
+        dependentOutputId: GenericHaywireId;
+        /**
+         * Chain of dependencies from `bindingOutputId` to the binding that is async (and not eagerly created).
+         * A single id when `bindingOutputId` is async itself.
+         */
+        asyncChain: GenericHaywireId[];
     }[];
     public constructor(unsafeSupplierBindings: HaywireSyncSupplierError['unsafeSupplierBindings']) {
         const bindingToMessage = new Map(
             unsafeSupplierBindings.map(unsafeBinding => [
                 unsafeBinding,
-                `[output id: ${unsafeBinding.bindingOutputId.toString()}, dependency supplier id: ${unsafeBinding.supplierId.toString()}]`,
+                `[output id: ${unsafeBinding.bindingOutputId.toString()}, dependency supplier id: ${unsafeBinding.supplierId.toString()}, needed by: ${unsafeBinding.dependentOutputId.toString()}, async: ${unsafeBinding.asyncChain.map(id => id.toString()).join('->')}]`,
             ])
         );
         unsafeSupplierBindings.sort((a, b) =>
@@ -178,10 +193,29 @@ export class HaywireSyncSupplierError extends HaywireContainerValidationError {
  */
 export class HaywireProviderMissingError extends HaywireContainerValidationError {
     public readonly dependencyIds: GenericHaywireId[];
-    public constructor(dependencyIds: HaywireProviderMissingError['dependencyIds']) {
-        super(`Providers missing for container: ${stringifyIds(dependencyIds)}`);
+    /**
+     * Output ids of the bindings that depend on each missing id.
+     * Has no entry for an id that was requested from the container directly.
+     */
+    public readonly dependentIds: ReadonlyMap<GenericHaywireId, readonly GenericHaywireId[]>;
+    public constructor(
+        dependencyIds: HaywireProviderMissingError['dependencyIds'],
+        dependentIds: HaywireProviderMissingError['dependentIds'] = new Map()
+    ) {
+        super(
+            `Providers missing for container: ${dependencyIds
+                .map(id => {
+                    const dependents = dependentIds.get(id);
+                    return dependents?.length
+                        ? `${id.toString()} (needed by ${stringifyIds(dependents)})`
+                        : id.toString();
+                })
+                .toSorted((a, b) => a.localeCompare(b, 'en'))
+                .join(', ')}`
+        );
         this.name = 'HaywireProviderMissingError';
         this.dependencyIds = dependencyIds;
+        this.dependentIds = dependentIds;
     }
 }
 
