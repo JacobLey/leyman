@@ -58,6 +58,77 @@ suite('juniper-validator', () => {
                 ]);
             });
         });
+
+        suite('path', () => {
+            const objectValidator = makeValidator(
+                objectSchema({
+                    properties: {
+                        list: arraySchema({
+                            items: objectSchema({
+                                properties: { 'a/~b': numberSchema() },
+                            }),
+                        }),
+                        name: stringSchema(),
+                    },
+                    required: ['list', 'name'],
+                }),
+                { allErrors: true }
+            );
+
+            test('Root', () => {
+                expect(validator.validate([]).issues!.map(issue => issue.path)).to.deep.equal([
+                    [],
+                    [],
+                    [],
+                ]);
+            });
+
+            test('Array indices and escaped keys', () => {
+                expect(
+                    objectValidator.validate({ list: [{}, { 'a/~b': 'x' }], name: 'Ada' }).issues
+                ).to.deep.equal([
+                    {
+                        instancePath: '/list/1/a~1~0b',
+                        schemaPath: '#/properties/list/items/properties/a~1~0b/type',
+                        keyword: 'type',
+                        params: { type: 'number' },
+                        message: 'must be number',
+                        path: ['list', 1, 'a/~b'],
+                    },
+                ]);
+            });
+
+            test('Missing properties', () => {
+                expect(
+                    objectValidator.validate({ list: [] }).issues!.map(issue => issue.path)
+                ).to.deep.equal([['name']]);
+
+                const dependent = makeValidator<object>({
+                    type: 'object',
+                    dependentRequired: { a: ['b'] },
+                });
+                expect(dependent.validate({ a: 1 }).issues!.map(issue => issue.path)).to.deep.equal(
+                    [['b']]
+                );
+            });
+
+            test('Ignores jsPropertySyntax', () => {
+                const jsSyntax = makeValidator(
+                    numberSchema(),
+                    // @ts-expect-error - not a JSON Pointer, so not supported
+                    { jsPropertySyntax: true }
+                );
+                const nested = makeValidator(
+                    arraySchema({ items: numberSchema() }),
+                    // @ts-expect-error - not a JSON Pointer, so not supported
+                    { jsPropertySyntax: true }
+                );
+                expect(jsSyntax.validate('5').issues!.map(issue => issue.path)).to.deep.equal([[]]);
+                expect(nested.validate(['5']).issues!.map(issue => issue.path)).to.deep.equal([
+                    [0],
+                ]);
+            });
+        });
     });
 
     suite('Metadata', () => {

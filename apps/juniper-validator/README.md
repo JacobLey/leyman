@@ -75,7 +75,7 @@ Creates a `JuniperValidator` from a Juniper `Schema` instance or a compiled `Jso
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `schema` | `Schema \| JsonSchema` | — | Required. A Juniper `Schema` instance or plain JSON Schema object. |
-| `options` | `AjvOptions` | `{}` | Optional. [Ajv constructor options](https://ajv.js.org/options.html). The `strict` option is always forced to `true`. Standard `format`s (`email`, `uuid`, `date-time`, ...) are validated with [ajv-formats](https://www.npmjs.com/package/ajv-formats). |
+| `options` | `AjvOptions` | `{}` | Optional. [Ajv constructor options](https://ajv.js.org/options.html). The `strict` option is always forced to `true`, and `jsPropertySyntax` is not supported. Standard `format`s (`email`, `uuid`, `date-time`, ...) are validated with [ajv-formats](https://www.npmjs.com/package/ajv-formats). |
 
 **Returns** `JuniperValidator<T>` — a validator instance typed to the schema's inferred type.
 
@@ -106,7 +106,7 @@ validator.assert(value);
 
 #### `.validate(value): StandardSchemaV1.Result<T>`
 
-Convenience shorthand for the StandardSchema `~standard.validate` method. Returns `{ value: T }` on success, or `{ issues: StandardSchemaV1.Issue[] }` on failure. Each issue has a `message` string.
+Convenience shorthand for the StandardSchema `~standard.validate` method. Returns `{ value: T }` on success, or `{ issues: StandardSchemaV1.Issue[] }` on failure. Each issue is an [Ajv error object](https://ajv.js.org/api.html#error-objects) with a `message` string and a `path` to the invalid value (array indices as numbers, and missing properties at that property).
 
 ```ts
 const result = validator.validate(value);

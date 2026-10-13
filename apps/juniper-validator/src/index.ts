@@ -1,5 +1,5 @@
 import type { StandardSchemaV1 } from '@standard-schema/spec';
-import type { Options as AjvOptions } from 'ajv/dist/2020.js';
+import type { Options as AjvOptions, ErrorObject } from 'ajv/dist/2020.js';
 import type { JsonSchema, Schema } from 'juniper';
 import { Ajv2020 } from 'ajv/dist/2020.js';
 import ajvFormats from 'ajv-formats';
@@ -68,13 +68,47 @@ const addMetadataKeywords = (ajv: Ajv2020, schema: unknown): void => {
     }
 };
 
+/**
+ * Convert Ajv's `instancePath` (a JSON Pointer) to a Standard Schema path.
+ * Array indices become numbers, and a missing property is placed at that property
+ * rather than the object that lacks it.
+ *
+ * @param error - Ajv error
+ * @param value - validated value, used to tell array indices from object keys
+ * @returns path to the invalid value
+ */
+const toPath = (error: ErrorObject, value: unknown): PropertyKey[] => {
+    const path: PropertyKey[] = [];
+    if (error.instancePath) {
+        let current = value;
+        for (const segment of error.instancePath.slice(1).split('/')) {
+            const key = segment.replaceAll('~1', '/').replaceAll('~0', '~');
+            if (Array.isArray(current)) {
+                const index = Number(key);
+                path.push(index);
+                current = current[index];
+            } else {
+                path.push(key);
+                current = (current as Record<string, unknown>)[key];
+            }
+        }
+    }
+    if (error.keyword === 'required' || error.keyword === 'dependentRequired') {
+        path.push((error.params as { missingProperty: string }).missingProperty);
+    }
+    return path;
+};
+
 export const makeValidator = <T>(
     schema: JsonSchema<T> | Schema<T>,
-    options?: Omit<AjvOptions, 'strict'>
+    options?: Omit<AjvOptions, 'jsPropertySyntax' | 'strict'>
 ): JuniperValidator<T> => {
     const json = isSchema(schema) ? schema.toJSON({ schema: true }) : schema;
+    // Dropped (even for untyped callers) so `instancePath`, which issue paths are parsed from, stays a JSON Pointer
+    // eslint-disable-next-line @typescript-eslint/no-deprecated, sonarjs/deprecation
+    const { jsPropertySyntax, ...ajvOptions }: AjvOptions = { ...options };
     // Standard formats (`email`, `uuid`, `date-time`, ...), which strict mode otherwise rejects as unknown
-    const ajv = addFormats(new Ajv2020({ ...options, strict: true }));
+    const ajv = addFormats(new Ajv2020({ ...ajvOptions, strict: true }));
     if (isSchema(schema)) {
         addMetadataKeywords(ajv, json);
     }
@@ -91,6 +125,7 @@ export const makeValidator = <T>(
                 ...error,
                 // Ajv omits messages with `messages: false`
                 message: error.message ?? `must pass "${error.keyword}" keyword validation`,
+                path: toPath(error, value),
             })),
         };
     };

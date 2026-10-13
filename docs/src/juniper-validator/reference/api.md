@@ -11,13 +11,15 @@ Compiles a schema into a validator. Compiling is the slow part, so make each val
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `schema` | `Schema<T> \| JsonSchema<T>` | — | A Juniper schema, or a rendered JSON Schema object. Juniper schemas are rendered with `$schema`. |
-| `options` | `Omit<AjvOptions, 'strict'>` | `{}` | [Ajv options](https://ajv.js.org/options.html). |
+| `options` | `Omit<AjvOptions, 'jsPropertySyntax' \| 'strict'>` | `{}` | [Ajv options](https://ajv.js.org/options.html). |
 
 **Returns** `JuniperValidator<T>`, typed by the schema.
 
 Validation uses Ajv's JSON Schema 2020-12 validator ([`Ajv2020`](https://ajv.js.org/json-schema.html#draft-2020-12)), which matches Juniper's output.
 
 - **Always strict.** [Strict mode](https://ajv.js.org/strict-mode.html) is always on, and `strict` can't be passed. Juniper's output always passes it: keywords added with [`.metadata()`](/juniper/reference/api#metadata-key-value-metadata-record) are registered as annotations. A rendered JSON Schema with an unknown keyword is rejected; register it with Ajv's `keywords` option.
+- **JSON Pointer paths.** `jsPropertySyntax` can't be passed, so each issue's `instancePath` is a [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901), which its [`path`](/juniper-validator/guides/standard-schema#issues) is read from.
+- **Options that change the value.** `coerceTypes`, `useDefaults` and `removeAdditional` change the value passed in, and `validate()` returns that same value.
 - **Standard formats.** `email`, `uuid`, `date-time` and the other formats of [ajv-formats](https://www.npmjs.com/package/ajv-formats) are validated. Add your own with Ajv's `formats` option:
 
 ```ts

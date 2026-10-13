@@ -41,6 +41,29 @@ Libraries call `validator['~standard'].validate(value)`. It is the same function
 
 ## Issues
 
-Each issue is one of Ajv's [error objects](https://ajv.js.org/api.html#error-objects), so it has Ajv's fields, like `instancePath` and `keyword`, as well as Standard Schema's `message`. Ajv doesn't fill Standard Schema's `path`, so libraries that show errors next to a field can't place them. Read `instancePath` (a [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901), like `/address/city`) to place them yourself.
+Each issue is one of Ajv's [error objects](https://ajv.js.org/api.html#error-objects), so it has Ajv's fields, like `instancePath` and `keyword`, as well as Standard Schema's `message` and `path`.
+
+`path` lists the keys from the value down to the invalid part, so libraries that show errors next to a field can place them. Array indices are numbers. An issue for a missing property (`required` or `dependentRequired`) is placed at that property, not the object missing it:
+
+```ts
+import { arraySchema, numberSchema, objectSchema, stringSchema } from 'juniper';
+import { makeValidator } from 'juniper-validator';
+
+const validator = makeValidator(
+    objectSchema({
+        properties: {
+            name: stringSchema(),
+            scores: arraySchema({ items: numberSchema() }),
+        },
+        required: ['name'],
+    }),
+    { allErrors: true }
+);
+
+validator.validate({ scores: [1, 'two'] }).issues?.map(issue => issue.path);
+// [['name'], ['scores', 1]]
+```
+
+Ajv stops at the first issue unless `allErrors` is set, so set it to show every field's issue at once.
 
 With Ajv's `messages: false`, each `message` is a generic one naming the keyword, like `must pass "type" keyword validation`.
