@@ -96,20 +96,9 @@ Dagger sets `pnpm_config_store_dir=.pnpm-store` and mounts its own cache volume 
 
 ---
 
-## Agents working inside a container
+## Agents
 
-Every container mounts both folders, so an agent can create and use another worktree without starting a new container:
-
-```sh
-scripts/worktree new feat/y --no-open    # prints "Created <path>"
-cd <path>
-pnpm install                             # fast: shared store
-./leyman/main/node_modules/.bin/nx run-many -t test
-```
-
-Inside that worktree, call `nx` by its relative path. The `nx` on `PATH` belongs to the worktree the window was opened on.
-
-To give the user a worktree to open, pass along the `Open in devcontainer:` link that `new`/`open --print` prints.
+If you are already in a worktree, do the work there, on its branch. Don't create another worktree: `scripts/worktree new` is only for starting a branch from the main checkout.
 
 Never `rm` the worktree you are running in; `scripts/worktree` refuses to do it.
 
