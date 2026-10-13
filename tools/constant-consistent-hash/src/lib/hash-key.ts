@@ -19,9 +19,12 @@ const utf8Length = (code: number): number => {
 };
 
 /**
- * Hash of a key: two 32 bit lanes, from which independent words are derived on demand (see {@link keyWord}).
+ * Hash of a key: two unsigned 32 bit lanes.
+ *
+ * Read by index rather than destructured, as array destructuring goes through
+ * the iterator protocol, which made lookups ~40% slower.
  */
-export type KeyHash = readonly [h1: number, lane: number];
+export type KeyHash = readonly [lane0: number, lane1: number];
 
 /**
  * Non-cryptographic hash of the UTF-8 bytes of a string (two 32 bit lanes, as in cyrb53).
@@ -32,7 +35,7 @@ export type KeyHash = readonly [h1: number, lane: number];
  *
  * @param key - value to be hashed
  * @param seed - unsigned 32 bit integer, selects an independent hash function
- * @returns two 32 bit lanes, to derive words from with {@link keyWord}
+ * @returns two unsigned 32 bit lanes
  */
 export const hashKey = (key: string, seed: number): KeyHash => {
     let h1 = 0xdeadbeef ^ seed;
@@ -40,29 +43,38 @@ export const hashKey = (key: string, seed: number): KeyHash => {
     let { length } = key;
 
     for (let i = 0; i < key.length; i++) {
-        // Combines surrogate pairs, but returns a lone surrogate as is
-        const code = key.codePointAt(i)!;
+        // eslint-disable-next-line unicorn/prefer-code-point -- `codePointAt` is slower, even for ASCII
+        let code = key.charCodeAt(i);
         if (code < 0x80) {
             // ASCII is a single byte, kept inline as by far the most common case
             h1 = Math.imul(h1 ^ code, 2_654_435_761);
             h2 = Math.imul(h2 ^ code, 1_597_334_677);
-        } else {
-            const char = code >= 0xd800 && code < 0xe000 ? 0xfffd : code;
-            const byteLength = utf8Length(char);
-            // `length` already counted each UTF-16 code unit once
-            length += byteLength - (char > 0xffff ? 2 : 1);
-            if (char > 0xffff) {
-                // Skip the low surrogate
+            continue;
+        }
+        if (code >= 0xd800 && code < 0xe000) {
+            // A high surrogate followed by a low surrogate is one code point, anything else is lone
+            // eslint-disable-next-line unicorn/prefer-code-point -- Pairs surrogates by hand, see above
+            const low = code < 0xdc00 ? key.charCodeAt(i + 1) : 0;
+            if (low >= 0xdc00 && low < 0xe000) {
+                code = 0x10000 + ((code - 0xd800) << 10) + (low - 0xdc00);
                 i++;
+            } else {
+                code = 0xfffd;
             }
-            // Leading byte, then continuation bytes of 6 bits each
-            const leadShift = 6 * (byteLength - 1);
-            let byte = LEAD_BYTES[byteLength]! | (char >>> leadShift);
-            for (let shift = leadShift; shift >= 0; shift -= 6) {
-                h1 = Math.imul(h1 ^ byte, 2_654_435_761);
-                h2 = Math.imul(h2 ^ byte, 1_597_334_677);
-                byte = 0x80 | ((char >>> (shift - 6)) & 0x3f);
-            }
+            // Either 2 code units become 4 bytes, or 1 becomes 3
+            length += 2;
+        } else {
+            // `length` already counted the code unit as 1 byte
+            length += code < 0x800 ? 1 : 2;
+        }
+        // Leading byte, then continuation bytes of 6 bits each
+        const byteLength = utf8Length(code);
+        const leadShift = 6 * (byteLength - 1);
+        let byte = LEAD_BYTES[byteLength]! | (code >>> leadShift);
+        for (let shift = leadShift; shift >= 0; shift -= 6) {
+            h1 = Math.imul(h1 ^ byte, 2_654_435_761);
+            h2 = Math.imul(h2 ^ byte, 1_597_334_677);
+            byte = 0x80 | ((code >>> (shift - 6)) & 0x3f);
         }
     }
 
@@ -70,19 +82,5 @@ export const hashKey = (key: string, seed: number): KeyHash => {
     h1 ^= Math.imul(h2 ^ (h2 >>> 13), 3_266_489_909);
     h2 = Math.imul(h2 ^ (h2 >>> 16), 2_246_822_507);
     h2 ^= Math.imul(h1 ^ (h1 >>> 13), 3_266_489_909);
-    return [h1, mix32(h2, length)];
+    return [h1 >>> 0, mix32(h2, length)];
 };
-
-/**
- * Independent 32 bit word of a key's hash.
- *
- * Derived on demand, as most lookups only need the first 3.
- * Indexes `hash` rather than destructuring it, as array destructuring goes through
- * the iterator protocol, which made lookups ~40% slower.
- *
- * @param hash - lanes from {@link hashKey}
- * @param index - 0 to 4
- * @returns unsigned 32 bit integer
- */
-export const keyWord = (hash: KeyHash, index: number): number =>
-    mix32(hash[0] ^ mix32(hash[1], index), index);

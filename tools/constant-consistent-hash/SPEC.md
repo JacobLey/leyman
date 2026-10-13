@@ -36,7 +36,7 @@ x = x ^ (x >>> 16)
 return x
 ```
 
-### `hashKey(bytes, seed)` → `w[0..4]`, five u32
+### `hashKey(bytes, seed)` → `a, b`, two u32
 
 ```
 h1 = 0xdeadbeef ^ seed
@@ -50,57 +50,65 @@ h1 = h1 ^ imul(h2 ^ (h2 >>> 13), 3266489909)
 h2 = imul(h2 ^ (h2 >>> 16), 2246822507)
 h2 = h2 ^ imul(h1 ^ (h1 >>> 13), 3266489909)
 
-lane = mix32(h2, length of bytes)
-w[i] = mix32(h1 ^ mix32(lane, i), i)    for i = 0..4
+a = h1
+b = mix32(h2, length of bytes)
 ```
 
-### `random53(seed, block, salt)` → 53-bit integer
+### `random(block, salt)` → `hi, lo`, two u32
 
-`salt` is `0` (top), `1` (pair) or `2` (second).
+The 64-bit random value `hi × 2^32 + lo` for a block. `salt` is `0` (top), `1` (pair) or `2` (second).
 
 ```
-index = block × 6 + salt × 2
-hi = mix32(seed, index)
-lo = mix32(seed, index + 1)
-return hi × 2^21 + (lo >>> 11)
+index = block × 3 + salt
+hi = mix32(b, index)
+lo = mix32(a, index)
 ```
 
-`uniform(seed, block, salt)` is `random53(seed, block, salt) / 2^53`, which is exact in f64.
+Only its top bits are used, so `lo` is only needed for `random53`, and for `offset` above block 32:
+
+- `random53(block, salt) = hi × 2^21 + (lo >>> 11)`, the top 53 bits. `uniform(block, salt)` is `random53(block, salt) / 2^53`, which is exact in f64.
+- `offset(block)` is the top `block` bits of `random(block, 0)`:
+
+```
+if block = 0:  return 0
+if block ≤ 32: return hi >>> (32 - block)
+               return hi × 2^(block - 32) + (lo >>> (64 - block))
+```
+
+The first two cases are separate as many languages (JavaScript included) do not shift a u32 by 32.
 
 ### `bitLength(x)`
 
 Number of bits needed to represent `x`: `0` for `0`, otherwise one more than the index of the highest set bit.
 
-### `f(w, m)` → integer in `[0, m)`, for a power of 2 `m ≤ 2^48`
+### `f(m)` → integer in `[0, m)`, for a power of 2 `m ≤ 2^48`
 
 ```
-bits = (w[0] & 0xffff) × 2^32 + w[1]          48-bit integer
+bits = (b >>> 16) × 2^32 + a                   48-bit integer
 k = bits mod m                                 the low log2(m) bits
 if k = 0: return 0
 j = bitLength(k) - 1
-return 2^j + (random53(w[2], j, 0) >> (53 - j))
+return 2^j + offset(j)
 ```
-
-`random53(...) >> (53 - j)` is the top `j` bits, the same as `floor(uniform(w[2], j, 0) × 2^j)`.
 
 ### `consistentHash(key, range, seed)`
 
 ```
-w = hashKey(UTF-8 bytes of key, seed)
+a, b = hashKey(UTF-8 bytes of key, seed)
 p = bitLength(range - 1)
 m = 2^p
 
-top = f(w, m)
+top = f(m)
 if top < range: return top
 
 j = p - 1
 h = 2^j
 
-[f64]  if (uniform(w[3], j, 1) × top) × (top + 1) < 2h × (top - h):
-[f64]      second = h + floor(uniform(w[4], j, 2) × (top - h))
+[f64]  if (uniform(j, 1) × top) × (top + 1) < 2h × (top - h):
+[f64]      second = h + floor(uniform(j, 2) × (top - h))
            if second < range: return second
 
-return f(w, h)
+return f(h)
 ```
 
 In the first f64 step, the left side is rounded twice, after each multiplication, and the right side is exact. In the second, `uniform × (top - h)` is rounded once before `floor`.
@@ -109,16 +117,16 @@ In the first f64 step, the left side is rounded twice, after each multiplication
 
 `consistentHash(key, range, { seed })`:
 
-| key | seed | 1 | 2 | 7 | 100 | 2^32 + 1 | 2^48 |
-|---|---|---|---|---|---|---|---|
-| `""` | 0 | 0 | 0 | 5 | 40 | 1032688306 | 274793043325099 |
-| `"a"` | 0 | 0 | 0 | 0 | 33 | 2312967350 | 47323351833859 |
-| `"00000000-0000-4000-8000-000000000000"` | 0 | 0 | 1 | 6 | 28 | 112258478 | 181633977207240 |
-| `"héllo 🌍"` | 0 | 0 | 0 | 0 | 17 | 1733140221 | 200283044854715 |
-| `"߿"` (2 bytes) | 0 | 0 | 1 | 2 | 37 | 1981301467 | 179045220803231 |
-| `"￿"` (3 bytes) | 0 | 0 | 1 | 1 | 17 | 3841734732 | 156173929975538 |
-| `"\u{10FFFF}"` (4 bytes) | 0 | 0 | 1 | 5 | 50 | 3118155352 | 165607780543953 |
-| `"00000000-0000-4000-8000-000000000000"` | 1 | 0 | 0 | 4 | 74 | 1283474075 | 207493669313094 |
-| `"00000000-0000-4000-8000-000000000000"` | 4294967295 | 0 | 1 | 2 | 9 | 2973883913 | 43496619248832 |
+| key | seed | 1 | 2 | 7 | 100 | 2^32 + 1 | 2^33 | 2^48 |
+|---|---|---|---|---|---|---|---|---|
+| `""` | 0 | 0 | 1 | 3 | 3 | 492999177 | 8355416591 | 196931321734519 |
+| `"a"` | 0 | 0 | 1 | 1 | 1 | 2155994471 | 2155994471 | 251679376480816 |
+| `"00000000-0000-4000-8000-000000000000"` | 0 | 0 | 1 | 2 | 72 | 646540009 | 646540009 | 220601612818386 |
+| `"héllo 🌍"` | 0 | 0 | 1 | 4 | 35 | 2134807116 | 5732551356 | 264896018877297 |
+| `"߿"` (2 bytes) | 0 | 0 | 1 | 3 | 32 | 385317643 | 385317643 | 182888553428527 |
+| `"￿"` (3 bytes) | 0 | 0 | 1 | 2 | 35 | 1496020030 | 7148775881 | 37524400643132 |
+| `"\u{10FFFF}"` (4 bytes) | 0 | 0 | 0 | 0 | 77 | 2520267493 | 6849465656 | 106265442010545 |
+| `"00000000-0000-4000-8000-000000000000"` | 1 | 0 | 0 | 0 | 90 | 1046419957 | 1046419957 | 143379080937832 |
+| `"00000000-0000-4000-8000-000000000000"` | 4294967295 | 0 | 0 | 3 | 23 | 1128034004 | 1128034004 | 130044798712786 |
 
 A complete implementation should also pass the package's property tests: for many keys, growing `range` by one never moves a key anywhere but the new bucket `range`.

@@ -93,6 +93,8 @@ The package's tests check this directly: across every count from 1 to 200 (and n
 
 The algorithm needs a few independent random values per key. They come from one pass over the key's UTF-8 bytes, with two 32-bit multiply/xor lanes (as in [cyrb53](https://github.com/bryc/code/blob/master/jshash/experimental/cyrb53.js)), expanded with the [lowbias32](https://github.com/skeeto/hash-prospector) integer hash.
 
+The lanes themselves supply the 48 bits that pick a block, and each other value is a single lowbias32 call on one lane, indexed by block and purpose. Only the top bits a value needs are drawn: a position within a block up to 2^32 is one call, while larger blocks combine both lanes, so every position stays reachable rather than the 2^32 a single 32-bit seed could reach.
+
 - **Not cryptographic**, as keys are expected to be self-generated (e.g. UUIDs), so speed matters more than resisting crafted keys. A cryptographic hash such as SHA-1 is several times slower, and does not stop an attacker who can find colliding keys offline anyway.
 - **UTF-8 bytes**, rather than JavaScript's UTF-16 code units, so any language can hash the same input.
 - **32-bit integer operations, and IEEE-754 doubles only where results are exact or rounded once**, so every language produces the same bucket. See [SPEC.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/SPEC.md).

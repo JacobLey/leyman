@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, no-bitwise -- Hashing is defined by its bit operations and constants */
 
+import type { KeyHash } from './hash-key.js';
+
 /**
  * Distinguishes the random values drawn for the same block.
  */
@@ -37,21 +39,70 @@ export const mix32 = (seed: number, index: number): number => {
 };
 
 /**
- * Uniform value in [0, 1) with 53 bits of precision, derived from a seed and block.
+ * Highest block below 2^power that holds a jump, one random bit per block.
  *
- * Built from two 32 bit words so that it is exact in IEEE-754 binary64,
+ * The 48 bits are the first lane (bits 0 to 31) and the top half of the second lane (bits 32 to 47),
+ * read with `Math.clz32` instead of floating point modulo and logarithms.
+ *
+ * @param hash - lanes from {@link hashKey}
+ * @param power - number of blocks, 0 to 48
+ * @returns index of the highest set bit among the low `power` bits, or -1 when none are set
+ */
+export const highestBlock = (hash: KeyHash, power: number): number => {
+    if (power > 32) {
+        const high = (hash[1] >>> 16) & ((1 << (power - 32)) - 1);
+        return high === 0 ? 31 - Math.clz32(hash[0]) : 63 - Math.clz32(high);
+    }
+    // `>>> 32` does not shift at all, so 0 blocks are handled separately
+    return power === 0 ? -1 : 31 - Math.clz32(hash[0] & (0xffffffff >>> (32 - power)));
+};
+
+/**
+ * Index of the random value drawn for a block and salt.
+ *
+ * @param block - index of the power of 2 block
+ * @param salt - distinguishes values for the same block
+ * @returns non-negative integer
+ */
+const drawIndex = (block: number, salt: Salt): number => block * 3 + salt;
+
+/**
+ * Position of the highest bucket a key lands on within block [2^block, 2^(block+1)).
+ *
+ * The top `block` bits of the 64 bit random value for the block. The high word is drawn from the second lane,
+ * and the low word from the first lane only for blocks above 2^32, so ranges up to 2^33 draw a single word.
+ * One 32 bit seed would only reach 2^32 positions within a larger block.
+ *
+ * @param hash - lanes from {@link hashKey}
+ * @param block - index of the power of 2 block, 0 to 47
+ * @returns integer between 0 and 2^block - 1
+ */
+export const blockOffset = (hash: KeyHash, block: number): number => {
+    // Block 0 holds a single bucket, and `>>> 32` would not shift at all
+    if (block === 0) {
+        return 0;
+    }
+    const index = drawIndex(block, Salt.TOP);
+    const hi = mix32(hash[1], index);
+    return block <= 32
+        ? hi >>> (32 - block)
+        : hi * 2 ** (block - 32) + (mix32(hash[0], index) >>> (64 - block));
+};
+
+/**
+ * Uniform value in [0, 1) with 53 bits of precision, derived from a block and salt.
+ *
+ * Built from the top 53 bits of the 64 bit random value, so that it is exact in IEEE-754 binary64,
  * and reproducible in any language.
  *
- * @param seed - 32 bit word of the key's hash
+ * @param hash - lanes from {@link hashKey}
  * @param block - index of the power of 2 block
  * @param salt - distinguishes values for the same block
  * @returns value in [0, 1)
  */
-export const uniform = (seed: number, block: number, salt: Salt): number => {
-    const index = block * 6 + salt * 2;
-    const hi = mix32(seed, index);
-    const lo = mix32(seed, index + 1);
-    return (hi * 2 ** 21 + (lo >>> 11)) / 2 ** 53;
+export const uniform = (hash: KeyHash, block: number, salt: Salt): number => {
+    const index = drawIndex(block, salt);
+    return (mix32(hash[1], index) * 2 ** 21 + (mix32(hash[0], index) >>> 11)) / 2 ** 53;
 };
 
 /**

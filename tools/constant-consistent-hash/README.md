@@ -37,7 +37,7 @@ npm i constant-consistent-hash
 import { consistentHash } from 'constant-consistent-hash';
 
 const shard = consistentHash('00000000-0000-4000-8000-000000000000', 7);
-// 6
+// 2
 
 // Adding an 8th shard either leaves the key where it was, or moves it to shard 7
 consistentHash('00000000-0000-4000-8000-000000000000', 8);
@@ -71,7 +71,7 @@ Maps a key to a bucket.
 **Throws** `RangeError` — when `range` or `seed` is not an integer within its bounds.
 
 ```ts
-consistentHash('00000000-0000-4000-8000-000000000000', 100); // 28
+consistentHash('00000000-0000-4000-8000-000000000000', 100); // 72
 ```
 
 #### Seeds

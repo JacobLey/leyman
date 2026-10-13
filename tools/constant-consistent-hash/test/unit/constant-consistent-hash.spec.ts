@@ -9,7 +9,7 @@ const keys = Array.from(
     (_, i) => `00000000-0000-4000-8000-${i.toString(16).padStart(12, '0')}`
 );
 
-const ranges = [1, 2, 7, 100, 2 ** 32 + 1, 2 ** 48];
+const ranges = [1, 2, 7, 100, 2 ** 32 + 1, 2 ** 33, 2 ** 48];
 
 /**
  * Number of keys that changed bucket when range grew by one, but not to the new bucket.
@@ -40,10 +40,10 @@ suite('consistentHash', () => {
                     ranges.map(range => consistentHash(key, range))
                 )
             ).to.deep.equal([
-                [0, 0, 5, 40, 1_032_688_306, 274_793_043_325_099],
-                [0, 0, 0, 33, 2_312_967_350, 47_323_351_833_859],
-                [0, 1, 6, 28, 112_258_478, 181_633_977_207_240],
-                [0, 0, 0, 17, 1_733_140_221, 200_283_044_854_715],
+                [0, 1, 3, 3, 492_999_177, 8_355_416_591, 196_931_321_734_519],
+                [0, 1, 1, 1, 2_155_994_471, 2_155_994_471, 251_679_376_480_816],
+                [0, 1, 2, 72, 646_540_009, 646_540_009, 220_601_612_818_386],
+                [0, 1, 4, 35, 2_134_807_116, 5_732_551_356, 264_896_018_877_297],
             ]);
         });
 
@@ -51,9 +51,9 @@ suite('consistentHash', () => {
             expect(
                 ['߿', '￿', '\u{10FFFF}'].map(key => ranges.map(range => consistentHash(key, range)))
             ).to.deep.equal([
-                [0, 1, 2, 37, 1_981_301_467, 179_045_220_803_231],
-                [0, 1, 1, 17, 3_841_734_732, 156_173_929_975_538],
-                [0, 1, 5, 50, 3_118_155_352, 165_607_780_543_953],
+                [0, 1, 3, 32, 385_317_643, 385_317_643, 182_888_553_428_527],
+                [0, 1, 2, 35, 1_496_020_030, 7_148_775_881, 37_524_400_643_132],
+                [0, 0, 0, 77, 2_520_267_493, 6_849_465_656, 106_265_442_010_545],
             ]);
         });
 
@@ -65,8 +65,8 @@ suite('consistentHash', () => {
                     )
                 )
             ).to.deep.equal([
-                [0, 0, 4, 74, 1_283_474_075, 207_493_669_313_094],
-                [0, 1, 2, 9, 2_973_883_913, 43_496_619_248_832],
+                [0, 0, 0, 90, 1_046_419_957, 1_046_419_957, 143_379_080_937_832],
+                [0, 0, 3, 23, 1_128_034_004, 1_128_034_004, 130_044_798_712_786],
             ]);
         });
     });
@@ -149,6 +149,20 @@ suite('consistentHash', () => {
 
         // Expect 100, standard deviation ~9.5
         expect(moved).to.be.within(70, 130);
+    });
+
+    test('Moves almost no keys when a large range grows by one', () => {
+        // Each block boundary where positions switch from one random word to two
+        const froms = [2 ** 31, 2 ** 32, 2 ** 32 + 2 ** 31, 2 ** 33, 2 ** 47, 2 ** 48 - 1];
+
+        // Expect 1000/range keys to move, so about 0
+        expect(
+            froms.map(
+                from =>
+                    keys.filter(key => consistentHash(key, from) !== consistentHash(key, from + 1))
+                        .length
+            )
+        ).to.deep.equal(froms.map(() => 0));
     });
 
     suite('Seed', () => {
