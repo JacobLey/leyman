@@ -300,6 +300,97 @@ suite('barrelify', () => {
             expect(await ctx.read('node_modules/pkg/index.ts')).to.equal(HEADER);
         });
 
+        withTmpDir.test('Applies nested .gitignore files to their own directory', async ctx => {
+            await ctx.writeFiles({
+                'a.ts': '',
+                'generated.ts': '',
+                'index.ts': HEADER,
+                'sub/.gitignore': 'generated.ts\n',
+                'sub/a.ts': '',
+                'sub/generated.ts': '',
+                'sub/index.ts': HEADER,
+            });
+
+            await barrelify({ cwd: ctx.tmpDir.path });
+
+            expect(await ctx.read('index.ts')).to.equal(
+                barrel("export * from './a.js';", "export * from './generated.js';")
+            );
+            expect(await ctx.read('sub/index.ts')).to.equal(barrel("export * from './a.js';"));
+        });
+
+        withTmpDir.test('Re-includes files negated by a .gitignore', async ctx => {
+            await ctx.writeFiles({
+                '.gitignore': '*.gen.ts\n!kept.gen.ts\n',
+                'dropped.gen.ts': '',
+                'kept.gen.ts': '',
+                'index.ts': HEADER,
+            });
+
+            await barrelify({ cwd: ctx.tmpDir.path });
+
+            expect(await ctx.read('index.ts')).to.equal(barrel("export * from './kept.gen.js';"));
+        });
+
+        withTmpDir.test('Applies .gitignore files above cwd up to the git root', async ctx => {
+            await ctx.writeFiles({
+                '.git/HEAD': '',
+                '.gitignore': 'generated.ts\n',
+                'pkg/a.ts': '',
+                'pkg/generated.ts': '',
+                'pkg/index.ts': HEADER,
+            });
+
+            await barrelify({ cwd: ctx.resolve('pkg') });
+
+            expect(await ctx.read('pkg/index.ts')).to.equal(barrel("export * from './a.js';"));
+        });
+
+        withTmpDir.test('Accepts a .git file as the git root', async ctx => {
+            await ctx.writeFiles({
+                '.git': 'gitdir: ../.git/worktrees/repo\n',
+                '.gitignore': 'generated.ts\n',
+                'pkg/a.ts': '',
+                'pkg/generated.ts': '',
+                'pkg/index.ts': HEADER,
+            });
+
+            await barrelify({ cwd: ctx.resolve('pkg') });
+
+            expect(await ctx.read('pkg/index.ts')).to.equal(barrel("export * from './a.js';"));
+        });
+
+        withTmpDir.test('Skips .gitignore files above the git root', async ctx => {
+            await ctx.writeFiles({
+                '.gitignore': 'generated.ts\n',
+                'repo/.git/HEAD': '',
+                'repo/a.ts': '',
+                'repo/generated.ts': '',
+                'repo/index.ts': HEADER,
+            });
+
+            await barrelify({ cwd: ctx.resolve('repo') });
+
+            expect(await ctx.read('repo/index.ts')).to.equal(
+                barrel("export * from './a.js';", "export * from './generated.js';")
+            );
+        });
+
+        withTmpDir.test('Skips .gitignore files above cwd outside a git repository', async ctx => {
+            await ctx.writeFiles({
+                '.gitignore': 'generated.ts\n',
+                'pkg/a.ts': '',
+                'pkg/generated.ts': '',
+                'pkg/index.ts': HEADER,
+            });
+
+            await barrelify({ cwd: ctx.resolve('pkg') });
+
+            expect(await ctx.read('pkg/index.ts')).to.equal(
+                barrel("export * from './a.js';", "export * from './generated.js';")
+            );
+        });
+
         withTmpDir.test('Defaults to process cwd', async ctx => {
             await ctx.writeFiles({ 'a.ts': '', 'index.ts': HEADER });
 
