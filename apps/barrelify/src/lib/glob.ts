@@ -1,5 +1,6 @@
+import type { IsGitignored } from './gitignore.js';
 import Path from 'node:path';
-import { globby } from 'globby';
+import { glob } from 'tinyglobby';
 import { isExplicitlyModuleDirectory } from './find-package-json.js';
 
 // `.tsx` compiles like `.ts`: to `.js`, in the module system of the nearest package.json
@@ -16,26 +17,25 @@ const INDEX = 'index.@(ts|cts|mts|tsx)';
  * @param param - params
  * @param param.dir - directory to search
  * @param param.ignore - files/blobs to exclude from results
- * @returns list of found filenames
+ * @param param.isGitignored - gitignore rules covering `dir`
+ * @returns list of found filenames, relative to `dir`
  */
 export const findIndexFiles = async ({
     dir,
     ignore,
+    isGitignored,
 }: {
     dir: string;
     ignore: string[];
-}): Promise<string[]> =>
-    globby(
-        [
-            `**/${INDEX}`,
-            '!**/node_modules/**',
-            ...ignore.map(i => `!${i.replaceAll(Path.win32.sep, '/')}`),
-        ],
-        {
-            cwd: dir,
-            gitignore: true,
-        }
-    );
+    isGitignored: IsGitignored;
+}): Promise<string[]> => {
+    const files = await glob(`**/${INDEX}`, {
+        cwd: dir,
+        expandDirectories: false,
+        ignore: ['**/node_modules/**', ...ignore.map(i => i.replaceAll(Path.win32.sep, '/'))],
+    });
+    return files.filter(file => !isGitignored(Path.resolve(dir, file)));
+};
 
 /**
  * Extensions an index file may re-export, based on its own extension and package type.
@@ -57,12 +57,19 @@ const getExtensions = async (filePath: string): Promise<string> => {
  * Load all sibling files that should be re-exported by the index file.
  *
  * @param filePath - path to index file
+ * @param isGitignored - gitignore rules covering the index file
  * @returns list of sibling filenames
  */
-export const findFilesForIndex = async (filePath: string): Promise<string[]> => {
+export const findFilesForIndex = async (
+    filePath: string,
+    isGitignored: IsGitignored
+): Promise<string[]> => {
+    const dir = Path.dirname(filePath);
     const extensions = await getExtensions(filePath);
-    return globby([`*.${extensions}`, `!${INDEX}`, '!*.d.@(ts|cts|mts)'], {
-        cwd: Path.dirname(filePath),
-        gitignore: true,
+    const files = await glob(`*.${extensions}`, {
+        cwd: dir,
+        expandDirectories: false,
+        ignore: [INDEX, '*.d.@(ts|cts|mts)'],
     });
+    return files.filter(file => !isGitignored(Path.resolve(dir, file)));
 };

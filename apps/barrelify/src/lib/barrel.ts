@@ -1,6 +1,8 @@
+import type { IsGitignored } from './gitignore.js';
 import { readFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { populateFile } from 'populate-files';
+import { loadGitignore } from './gitignore.js';
 import { findFilesForIndex, findIndexFiles } from './glob.js';
 
 /**
@@ -71,14 +73,17 @@ export const parseTypes = (file: string): Set<string> => {
  * @param param - params
  * @param param.dryRun - if true, do not actually write file
  * @param param.filePath - fully resolved path to file
+ * @param param.isGitignored - gitignore rules covering the file
  * @returns true if updated
  */
 const didUpdateBarrelFile = async ({
     dryRun,
     filePath,
+    isGitignored,
 }: {
     dryRun: boolean;
     filePath: string;
+    isGitignored: IsGitignored;
 }): Promise<boolean> => {
     const data = await readFile(filePath, 'utf8');
 
@@ -86,7 +91,7 @@ const didUpdateBarrelFile = async ({
         return false;
     }
 
-    const files = await findFilesForIndex(filePath);
+    const files = await findFilesForIndex(filePath, isGitignored);
 
     const { updated } = await populateFile(
         {
@@ -123,12 +128,16 @@ export const barrelFiles = async ({
     dryRun: boolean;
     ignore: string[];
 }): Promise<string[]> => {
-    const indexFiles = await findIndexFiles({ dir: cwd, ignore });
+    // Loaded once: every index file is inside `cwd`, so the same rules cover all of them
+    const isGitignored = await loadGitignore(cwd);
+    const indexFiles = await findIndexFiles({ dir: cwd, ignore, isGitignored });
 
     const updated = await Promise.all(
         indexFiles.map(async file => {
             const filePath = Path.resolve(cwd, file);
-            return (await didUpdateBarrelFile({ dryRun, filePath })) ? filePath : null;
+            return (await didUpdateBarrelFile({ dryRun, filePath, isGitignored }))
+                ? filePath
+                : null;
         })
     );
 

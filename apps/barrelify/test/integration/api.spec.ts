@@ -376,6 +376,22 @@ suite('barrelify', () => {
             );
         });
 
+        withTmpDir.test(
+            'Applies cwd .gitignore to subdirectories outside a git repository',
+            async ctx => {
+                await ctx.writeFiles({
+                    '.gitignore': 'generated.ts\n',
+                    'sub/a.ts': '',
+                    'sub/generated.ts': '',
+                    'sub/index.ts': HEADER,
+                });
+
+                await barrelify({ cwd: ctx.tmpDir.path });
+
+                expect(await ctx.read('sub/index.ts')).to.equal(barrel("export * from './a.js';"));
+            }
+        );
+
         withTmpDir.test('Skips .gitignore files above cwd outside a git repository', async ctx => {
             await ctx.writeFiles({
                 '.gitignore': 'generated.ts\n',

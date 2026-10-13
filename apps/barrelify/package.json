@@ -48,7 +48,6 @@
   "dependencies": {
     "ci-info": "catalog:",
     "entry-script": "workspace:^",
-    "globby": "catalog:",
     "haywire": "workspace:^",
     "haywire-launcher": "workspace:^",
     "ignore": "catalog:",
