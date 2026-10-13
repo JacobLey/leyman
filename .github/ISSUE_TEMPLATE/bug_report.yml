@@ -1,0 +1,77 @@
+name: Bug report
+description: Report something that isn't working as documented
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug! Please search [existing issues](https://github.com/JacobLey/leyman/issues) first.
+
+        **Do not report security vulnerabilities here.** See the [security policy](https://github.com/JacobLey/leyman/blob/main/SECURITY.md) instead.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      description: Which package is affected?
+      options:
+        - barrelify
+        - common-proxy
+        - default-import
+        - entry-script
+        - enum-to-array
+        - find-import
+        - format-file
+        - haywire
+        - haywire-launcher
+        - iso-crypto
+        - juniper
+        - juniper-validator
+        - load-populate-files
+        - mocha-chain
+        - normalized-react-query
+        - nx-lifecycle
+        - parse-cwd
+        - populate-files
+        - punycode-esm
+        - static-emitter
+        - test-chain-core
+        - vitest-chain
+        - Other / not sure
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Package version
+      placeholder: 1.2.3
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What happened, and what did you expect to happen instead?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: A minimal code sample or repository link that reproduces the problem.
+      render: typescript
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Node.js version, TypeScript version, OS, bundler, and anything else that may be relevant.
+      placeholder: |
+        Node.js: 24.x
+        TypeScript: 5.x
+        OS: macOS 15
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs or error output
+      render: shell

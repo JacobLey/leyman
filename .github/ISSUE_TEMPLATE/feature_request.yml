@@ -1,0 +1,57 @@
+name: Feature request
+description: Suggest a new feature or an improvement to an existing one
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: Thanks for the suggestion! Please search [existing issues](https://github.com/JacobLey/leyman/issues) first.
+  - type: dropdown
+    id: package
+    attributes:
+      label: Package
+      description: Which package is this for?
+      options:
+        - barrelify
+        - common-proxy
+        - default-import
+        - entry-script
+        - enum-to-array
+        - find-import
+        - format-file
+        - haywire
+        - haywire-launcher
+        - iso-crypto
+        - juniper
+        - juniper-validator
+        - load-populate-files
+        - mocha-chain
+        - normalized-react-query
+        - nx-lifecycle
+        - parse-cwd
+        - populate-files
+        - punycode-esm
+        - static-emitter
+        - test-chain-core
+        - vitest-chain
+        - New package
+        - Repository tooling
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What problem are you trying to solve? Describe the use case rather than the solution.
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+      description: How would you like it to work? Example code showing the API you have in mind is very helpful.
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives considered
+      description: Workarounds or other approaches you've tried.

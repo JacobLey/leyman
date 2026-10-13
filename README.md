@@ -75,10 +75,14 @@ Agent docs start at [`AGENTS.md`](./AGENTS.md) (also linked as `CLAUDE.md`). In 
 
 ## Contributing
 
+Contributions are welcome! See [`CONTRIBUTING.md`](./CONTRIBUTING.md) for setup, conventions and how to submit a pull request. In short:
+
 1. Make your changes
 2. Run `test-ci` to verify
 3. Run `changeset` and follow the prompts to document your changes
 4. Submit a PR — GitHub Actions runs Dagger automatically
+
+This project follows the [Contributor Covenant Code of Conduct](./CODE_OF_CONDUCT.md). To report a security vulnerability, see [`SECURITY.md`](./SECURITY.md).
 
 ## Tooling
 
@@ -94,3 +98,7 @@ Agent docs start at [`AGENTS.md`](./AGENTS.md) (also linked as `CLAUDE.md`). In 
 | [C8](https://github.com/bcoe/c8) | Coverage (100% required) |
 | [Dagger](https://dagger.io/) | CI pipeline |
 | [Changesets](https://github.com/changesets/changesets) | Versioning and changelogs |
+
+## License
+
+[MIT](./LICENSE) © Jacob Ley
