@@ -614,14 +614,16 @@ suite('container', () => {
                 expect(() => container.get(A))
                     .to.throw(HaywireNullResponseError)
                     .that.contains({
-                        message: 'Null value returned for non-nullable provider: B',
+                        message:
+                            'Null value returned for non-nullable provider: B (requested via A -> B)',
                     });
 
                 const thrown: unknown = await expect(container.getAsync(A)).to.be.rejectedWith(
                     HaywireNullResponseError
                 );
                 expect(thrown).to.include({
-                    message: 'Null value returned for non-nullable provider: B',
+                    message:
+                        'Null value returned for non-nullable provider: B (requested via A -> B)',
                 });
 
                 const asyncContainer = createContainer(
@@ -694,9 +696,9 @@ suite('container', () => {
                     message: [
                         'Multiple errors: [',
                         [
-                            'Undefined value returned for non-undefinable provider: B',
-                            'Undefined value returned for non-undefinable provider: B(named: sync)',
-                            'Null value returned for non-nullable provider: D',
+                            'Undefined value returned for non-undefinable provider: B (requested via A -> B)',
+                            'Undefined value returned for non-undefinable provider: B(named: sync) (requested via A -> B(named: sync))',
+                            'Null value returned for non-nullable provider: D (requested via A -> C(nullable) -> D(undefinable))',
                             '<ERROR>',
                         ].join(', '),
                         ']',
@@ -738,12 +740,14 @@ suite('container', () => {
                 expect(failures[0].reason)
                     .to.be.an.instanceOf(HaywireInstanceOfResponseError)
                     .that.contains({
-                        message: 'Value E returned by provider is not instance of class: D',
+                        message:
+                            'Value E returned by provider is not instance of class: D (requested via A -> B(nullable, undefinable, supplier(async, propagating)) -> C -> D)',
                     });
                 expect(failures[1].reason)
                     .to.be.an.instanceOf(HaywireInstanceOfResponseError)
                     .that.contains({
-                        message: 'Value E returned by provider is not instance of class: D',
+                        message:
+                            'Value E returned by provider is not instance of class: D (requested via A -> B(nullable, undefinable, supplier(async, propagating)) -> C -> D)',
                     });
                 // Sync error -> no caching
                 expect(failures[0].reason !== failures[1].reason).to.equal(true);
@@ -786,6 +790,60 @@ suite('container', () => {
                 await expect(container.getAsync(identifier<123>())).to.be.rejectedWith(
                     HaywireProviderMissingError
                 );
+            });
+
+            suite('Request path', () => {
+                const pluginId = identifier<string>('plugin').list();
+
+                test('List element', async () => {
+                    const container = createContainer(
+                        createModule(bind(A).withDependencies([pluginId]).withConstructorProvider())
+                            .addBinding(bind(pluginId).withInstance('ok'))
+                            .addBinding(bind(pluginId).withFactory(() => null as unknown as string))
+                    );
+
+                    const thrown = await catchThrown(() => container.get(A));
+                    expect(thrown).to.be.instanceOf(HaywireNullResponseError).and.contains({
+                        message:
+                            'Null value returned for non-nullable provider: plugin(list) (requested via A -> plugin(list))',
+                    });
+                    expect((thrown as HaywireNullResponseError).requestPath).to.deep.equal([
+                        identifier(A),
+                        pluginId,
+                    ]);
+                });
+
+                test('Direct request', async () => {
+                    const container = createContainer(
+                        createModule(bind(A).withFactory(() => null as unknown as A))
+                    );
+
+                    const thrown = await catchThrown(() => container.get(A));
+                    expect(thrown).to.contains({
+                        message: 'Null value returned for non-nullable provider: A',
+                    });
+                    expect((thrown as HaywireNullResponseError).requestPath).to.deep.equal([
+                        identifier(A),
+                    ]);
+                });
+
+                test('Eager request starts its own path', async () => {
+                    const container = createContainer(
+                        createModule(bind(A).withDependencies([B]).withConstructorProvider())
+                            .addBinding(bind(B).withDependencies([C]).withConstructorProvider())
+                            .addBinding(
+                                bind(C)
+                                    .withFactory(() => null as unknown as C)
+                                    .scoped(eagerRequestScope)
+                            )
+                    );
+
+                    // Created at the start of the request, before resolving A's dependencies reaches it
+                    const thrown = await catchThrown(() => container.get(A));
+                    expect((thrown as HaywireNullResponseError).requestPath).to.deep.equal([
+                        identifier(C),
+                    ]);
+                });
             });
         });
     });
@@ -850,7 +908,8 @@ suite('container', () => {
 
             // Causes are related to B + C failures
             expect(causes[0]).to.be.an.instanceOf(HaywireInstanceOfResponseError).that.contains({
-                message: 'Value 123 returned by provider is not instance of class: B',
+                message:
+                    'Value 123 returned by provider is not instance of class: B (requested via haywire-id -> A(supplier(async, propagating)) -> B)',
             });
             expect(causes[1]).to.be.an.instanceOf(Error).that.contains({
                 message: 'Bad C',
@@ -925,7 +984,8 @@ suite('container', () => {
                 expect(throwns[0])
                     .to.be.an.instanceOf(HaywireInstanceOfResponseError)
                     .that.contains({
-                        message: 'Value {} returned by provider is not instance of class: F',
+                        message:
+                            'Value {} returned by provider is not instance of class: F (requested via A -> C(deferred) -> D(deferred) -> E(deferred) -> F(deferred))',
                     });
                 expect(throwns[1]).to.be.an.instanceOf(HaywireInstanceOfResponseError);
                 expect(throwns[0]).to.not.equal(throwns[1]);

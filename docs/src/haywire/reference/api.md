@@ -185,4 +185,4 @@ Haywire throws these, or subclasses of them. Compare thrown errors with `instanc
 | `HaywireError` | Base class of every error, and when requesting from a [disposed](/haywire/guides/disposal) container. |
 | `HaywireModuleValidationError` | When building a module: a duplicate binding, or replacing a binding that doesn't exist. |
 | `HaywireContainerValidationError` | By `check()`: a circular dependency, a sync supplier of an async value, or a disposer on a binding that isn't a singleton. |
-| `HaywireInstanceValidationError` | When building a value: `null` or `undefined` for an id that doesn't allow it, a value that isn't an instance of the requested class, or a `list('multi')` provider that doesn't return an array. |
+| `HaywireInstanceValidationError` | When building a value: `null` or `undefined` for an id that doesn't allow it, a value that isn't an instance of the requested class, or a `list('multi')` provider that doesn't return an array. The message names the path from the requested id, see [Debugging](/haywire/guides/debugging#reading-request-errors). |

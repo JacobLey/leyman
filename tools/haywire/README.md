@@ -1308,6 +1308,8 @@ Error thrown during request time, during `preload()` or `get()` (or will be reje
 
 Specific instances may report a value that is `null` for an id that is not declared as `.nullable()`, or the response is not an `instanceof` the requested class. For [lists](#lists) these checks apply to each element, and a `list('multi')` provider that does not return an array is rejected.
 
+These errors name the path from the requested id to the failing binding, each id as its dependent declared it: `Null value returned for non-nullable provider: Config (requested via App -> Repo(supplier(sync)) -> Config)`. Eager values are created at the start of a request or during preload, so their path starts at the eager binding. A failing singleton is shared by every request waiting on it, so they all receive the path of the request that started creating it.
+
 ## Compared to alternatives
 
 [InversifyJS](https://www.npmjs.com/package/inversify), [TSyringe](https://www.npmjs.com/package/tsyringe), [TypeDI](https://www.npmjs.com/package/typedi) and [NestJS](https://nestjs.com/)'s injector rely on decorators and string or token keys, and find missing bindings at runtime. [Awilix](https://www.npmjs.com/package/awilix) avoids decorators, but resolves by name at runtime.

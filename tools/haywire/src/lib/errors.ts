@@ -9,6 +9,17 @@ import type { GenericHaywireId } from '#identifier';
 // eslint-disable-next-line unicorn/custom-error-definition
 export abstract class HaywireError extends Error {}
 
+/**
+ * Message suffix naming the path a request followed to the failing binding.
+ *
+ * @param requestPath - ids from the requested id to the binding that failed
+ * @returns message suffix naming the path, or nothing when the binding was requested directly
+ */
+const requestedVia = (requestPath: readonly GenericHaywireId[]): string =>
+    requestPath.length > 1
+        ? ` (requested via ${requestPath.map(id => id.toString()).join(' -> ')})`
+        : '';
+
 const stringifyIds = (ids: readonly GenericHaywireId[]): string =>
     ids
         .map(id => id.toString())
@@ -255,10 +266,21 @@ export abstract class HaywireInstanceValidationError extends HaywireError {}
  */
 export class HaywireNullResponseError extends HaywireInstanceValidationError {
     public readonly outputId: GenericHaywireId;
-    public constructor(outputId: HaywireNullResponseError['outputId']) {
-        super(`Null value returned for non-nullable provider: ${outputId.toString()}`);
+    /**
+     * Ids followed from the requested id to the failing binding, each as its dependent declared it.
+     * Empty when not created by a request.
+     */
+    public readonly requestPath: readonly GenericHaywireId[];
+    public constructor(
+        outputId: HaywireNullResponseError['outputId'],
+        requestPath: HaywireNullResponseError['requestPath'] = []
+    ) {
+        super(
+            `Null value returned for non-nullable provider: ${outputId.toString()}${requestedVia(requestPath)}`
+        );
         this.name = 'HaywireNullResponseError';
         this.outputId = outputId;
+        this.requestPath = requestPath;
     }
 }
 
@@ -267,10 +289,21 @@ export class HaywireNullResponseError extends HaywireInstanceValidationError {
  */
 export class HaywireUndefinedResponseError extends HaywireInstanceValidationError {
     public readonly outputId: GenericHaywireId;
-    public constructor(outputId: HaywireUndefinedResponseError['outputId']) {
-        super(`Undefined value returned for non-undefinable provider: ${outputId.toString()}`);
+    /**
+     * Ids followed from the requested id to the failing binding, each as its dependent declared it.
+     * Empty when not created by a request.
+     */
+    public readonly requestPath: readonly GenericHaywireId[];
+    public constructor(
+        outputId: HaywireUndefinedResponseError['outputId'],
+        requestPath: HaywireUndefinedResponseError['requestPath'] = []
+    ) {
+        super(
+            `Undefined value returned for non-undefinable provider: ${outputId.toString()}${requestedVia(requestPath)}`
+        );
         this.name = 'HaywireUndefinedResponseError';
         this.outputId = outputId;
+        this.requestPath = requestPath;
     }
 }
 
@@ -280,15 +313,25 @@ export class HaywireUndefinedResponseError extends HaywireInstanceValidationErro
 export class HaywireInstanceOfResponseError extends HaywireInstanceValidationError {
     public readonly outputId: GenericHaywireId;
     public readonly value: unknown;
-    public constructor(outputId: GenericHaywireId, value: unknown) {
+    /**
+     * Ids followed from the requested id to the failing binding, each as its dependent declared it.
+     * Empty when not created by a request.
+     */
+    public readonly requestPath: readonly GenericHaywireId[];
+    public constructor(
+        outputId: GenericHaywireId,
+        value: unknown,
+        requestPath: HaywireInstanceOfResponseError['requestPath'] = []
+    ) {
         super(
             `Value ${HaywireInstanceOfResponseError.#stringify(
                 value
-            )} returned by provider is not instance of class: ${outputId.toString()}`
+            )} returned by provider is not instance of class: ${outputId.toString()}${requestedVia(requestPath)}`
         );
         this.name = 'HaywireInstanceOfResponseError';
         this.outputId = outputId;
         this.value = value;
+        this.requestPath = requestPath;
     }
 
     static #stringify(value: unknown): string {
@@ -310,11 +353,23 @@ export class HaywireInstanceOfResponseError extends HaywireInstanceValidationErr
 export class HaywireListResponseError extends HaywireInstanceValidationError {
     public readonly outputId: GenericHaywireId;
     public readonly value: unknown;
-    public constructor(outputId: GenericHaywireId, value: unknown) {
-        super(`Non-array value returned by list provider: ${outputId.toString()}`);
+    /**
+     * Ids followed from the requested id to the failing binding, each as its dependent declared it.
+     * Empty when not created by a request.
+     */
+    public readonly requestPath: readonly GenericHaywireId[];
+    public constructor(
+        outputId: GenericHaywireId,
+        value: unknown,
+        requestPath: HaywireListResponseError['requestPath'] = []
+    ) {
+        super(
+            `Non-array value returned by list provider: ${outputId.toString()}${requestedVia(requestPath)}`
+        );
         this.name = 'HaywireListResponseError';
         this.outputId = outputId;
         this.value = value;
+        this.requestPath = requestPath;
     }
 }
 

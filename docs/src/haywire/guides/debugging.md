@@ -1,5 +1,5 @@
 ---
-description: Read Haywire's container errors, and draw a container's dependency graph with describe() and toMermaid().
+description: Read Haywire's container and request errors, and draw a container's dependency graph with describe() and toMermaid().
 ---
 
 # Debugging
@@ -21,6 +21,16 @@ Binding has dependency on syncronous supplier that must be async: [output id: Re
 ```
 
 Here `Handler` depends on `identifier(Repository).supplier()`, and `Repository` depends on `Database`, which has an async provider. Make the supplier async, or make `Database` an [eager singleton](/haywire/guides/scopes) so it is ready before the supplier is called.
+
+## Reading request errors
+
+When a provider returns a value its id doesn't allow, like `null` for an id that isn't `.nullable()`, the error names the path from the id you requested to the binding that failed. Each id is shown as its dependent declared it:
+
+```sh
+Null value returned for non-nullable provider: Config (requested via App -> Repo(supplier(sync)) -> Config)
+```
+
+There is no path when the failing id is the one requested. [Eager](/haywire/guides/scopes) values are created at the start of a request, or by `preload()`, so their path starts at the eager binding. A failing singleton is shared by every request waiting for it, so they all get the path of the request that started creating it.
 
 ## Drawing the dependency graph
 
