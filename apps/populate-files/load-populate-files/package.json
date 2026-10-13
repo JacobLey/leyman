@@ -46,6 +46,7 @@
     "juniper-validator": "workspace:^",
     "parse-cwd": "workspace:^",
     "populate-files": "workspace:^",
+    "unknown-error": "workspace:^",
     "yargs": "catalog:"
   },
   "devDependencies": {

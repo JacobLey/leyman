@@ -572,6 +572,9 @@ importers:
       populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      unknown-error:
+        specifier: workspace:^
+        version: file:tools/unknown-error
       yargs:
         specifier: 'catalog:'
         version: 18.2.0
@@ -11690,6 +11693,7 @@ snapshots:
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper)
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      unknown-error: file:tools/unknown-error
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'

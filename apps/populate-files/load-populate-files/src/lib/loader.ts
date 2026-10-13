@@ -1,5 +1,6 @@
 import type { PopulateFileParams } from 'populate-files';
 import { defaultImport } from 'default-import';
+import { hasCode } from 'unknown-error';
 import { isPopulateFileParams } from './lib/populate-files-validator.js';
 
 /**
@@ -13,7 +14,7 @@ export const loadFile = async (filePath: string): Promise<PopulateFileParams[]> 
     try {
         mod = await import(filePath);
     } catch (err) {
-        if (String(err).includes('ERR_MODULE_NOT_FOUND')) {
+        if (hasCode(err, 'ERR_MODULE_NOT_FOUND')) {
             throw new Error(`JS file not found: ${filePath}`, { cause: err });
         }
         throw err;
