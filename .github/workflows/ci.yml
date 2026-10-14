@@ -1,6 +1,8 @@
 name: CI
 
 on:
+  # Never run PR code from `pull_request_target` or `workflow_run`: they run with main's cache
+  # scope and secrets, so the PR could poison main's Nx cache or steal tokens
   pull_request:
   push:
     branches:
@@ -64,6 +66,9 @@ jobs:
           version: ${{ env.DAGGER_VERSION }}
           verb: call
           module: ./dagger
+          # Only for Dagger Cloud traces when debugging. PR runs get this token too, so never
+          # enable Dagger Cloud caching on it: that cache isn't scoped by branch like actions/cache,
+          # so a PR could write results that main's runs then trust.
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: test --nx-cache=tcp://localhost:3000
 
