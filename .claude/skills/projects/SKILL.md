@@ -56,6 +56,7 @@ See each package's README.md for full usage documentation.
 | [`punycode-esm`](../../../tools/punycode-esm/) | ESM port of the Punycode encoding library |
 | [`static-emitter`](../../../tools/static-emitter/) | Typed EventEmitter/EventTarget for Node.js and Browser |
 | [`unknown-error`](../../../tools/unknown-error/) | Convert caught `unknown` values to real Errors, and walk or format cause chains, without throwing |
+| [`weighted-rendezvous-hash`](../../../tools/constant-consistent-hash/weighted-rendezvous-hash/) | Weighted rendezvous hashing for any set of nodes, in any order |
 
 
 ### Leyman

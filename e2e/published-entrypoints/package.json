@@ -50,9 +50,10 @@
     "react": "catalog:",
     "static-emitter": "workspace:^",
     "test-chain-core": "workspace:^",
-    "unknown-error": "workspace:^",
     "typescript": "catalog:",
+    "unknown-error": "workspace:^",
     "vitest": "catalog:",
-    "vitest-chain": "workspace:^"
+    "vitest-chain": "workspace:^",
+    "weighted-rendezvous-hash": "workspace:^"
   }
 }

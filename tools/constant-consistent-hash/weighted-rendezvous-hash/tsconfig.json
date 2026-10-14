@@ -1,0 +1,26 @@
+{
+  "extends": "../../../configs/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "include": [
+    "src",
+    "*.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../constant-consistent-hash"
+    },
+    {
+      "path": "../../test-chain/mocha-chain"
+    },
+    {
+      "path": "../../../leyman/expect"
+    },
+    {
+      "path": "../../../leyman/eslint-config"
+    }
+  ]
+}

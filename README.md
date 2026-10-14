@@ -34,6 +34,7 @@ Published to npm:
 | [`test-chain-core`](https://www.npmjs.com/package/test-chain-core) | Framework-agnostic internals for chaining test hooks with typed context | [`tools/test-chain/test-chain-core`](./tools/test-chain/test-chain-core) |
 | [`unknown-error`](https://www.npmjs.com/package/unknown-error) | Turn any caught `unknown` into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains. | [`tools/unknown-error`](./tools/unknown-error) |
 | [`vitest-chain`](https://www.npmjs.com/package/vitest-chain) | Chain vitest methods together for deterministic and type safe tests | [`tools/test-chain/vitest-chain`](./tools/test-chain/vitest-chain) |
+| [`weighted-rendezvous-hash`](https://www.npmjs.com/package/weighted-rendezvous-hash) | Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion, moving few keys when the set changes. | [`tools/constant-consistent-hash/weighted-rendezvous-hash`](./tools/constant-consistent-hash/weighted-rendezvous-hash) |
 
 Private workspace packages (shared configs and tooling) are listed in the [projects skill](./.claude/skills/projects/SKILL.md).
 

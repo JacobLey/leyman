@@ -1,0 +1,59 @@
+{
+  "name": "weighted-rendezvous-hash",
+  "version": "0.0.1",
+  "description": "Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion, moving few keys when the set changes.",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "tools/constant-consistent-hash/weighted-rendezvous-hash"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/weighted-rendezvous-hash#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "rendezvous-hashing",
+    "highest-random-weight",
+    "hrw",
+    "consistent-hashing",
+    "weighted",
+    "load-balancing",
+    "sharding",
+    "stateless"
+  ],
+  "sideEffects": false,
+  "types": "./dist/weighted-rendezvous-hash.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "exports": {
+    ".": "./dist/weighted-rendezvous-hash.js"
+  },
+  "dependencies": {
+    "constant-consistent-hash": "workspace:^"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  }
+}

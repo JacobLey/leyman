@@ -81,6 +81,9 @@
     },
     {
       "path": "./tools/constant-consistent-hash/constant-consistent-hash"
+    },
+    {
+      "path": "./tools/constant-consistent-hash/weighted-rendezvous-hash"
     }
   ]
 }

@@ -88,7 +88,7 @@ Changing the seed moves almost every key, so a seed is fixed for the lifetime of
 
 ### `hashKey(key, options?)`
 
-The hash `consistentHash` places a key with: two independent unsigned 32-bit integers, from the key's UTF-8 bytes. For building other hashing schemes on, such as rendezvous hashing, with the same results in every language that implements SPEC.md.
+The hash `consistentHash` places a key with: two independent unsigned 32-bit integers, from the key's UTF-8 bytes. For building other hashing schemes on, such as [weighted-rendezvous-hash](https://www.npmjs.com/package/weighted-rendezvous-hash), with the same results in every language that implements SPEC.md.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
