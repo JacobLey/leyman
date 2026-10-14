@@ -1,5 +1,34 @@
 # haywire
 
+## 2.0.0
+
+### Major Changes
+
+- f6c298e: Errors thrown by providers are wrapped in a `HaywireProviderError`, which names the path from the requested id to the binding that failed. The original error is its `cause`, unchanged:
+  
+  ```
+  HaywireProviderError: Provider for DB_URL failed (requested via App -> Database -> DB_URL): DB_URL is missing
+  ```
+  
+  Code that catches a provider's error by type around `get()` or `getAsync()` must check `err.cause` instead. To keep throwing provider errors as they are, create the container with `createContainer(module, { unsafeRawProviderErrors: true })` (also accepted by `createContainerFactory()`, `module.toContainer()` and `module.toContainerFactory()`).
+  
+  Errors thrown by Haywire itself, by a value's methods after it is created, and by disposers are not wrapped.
+
+### Minor Changes
+
+- 23a101a: Make containers easier to debug.
+  
+  - Missing provider errors name the bindings that need each missing id: `Providers missing for container: DB_URL (needed by Database, MigrationRunner)`.
+  - Sync supplier errors name the binding that declares the supplier, and the chain of dependencies down to the async binding: `needed by: Handler, async: Repository->Database`.
+  - `container.describe()` returns every binding with its scope, whether it is async, and its dependencies with the bindings that provide them. `container.toMermaid()` renders the same graph as a Mermaid flowchart. Neither checks the container, so both work on one that fails `check()`. The `ContainerDescription` and `BindingDescription` types are exported.
+- 981857a: Errors for a provider's invalid value (`null` or `undefined` where the id doesn't allow it, the wrong class, or a `list('multi')` provider not returning an array) name the path from the requested id: `Null value returned for non-nullable provider: Config (requested via App -> Repo(supplier(sync)) -> Config)`.
+- 20d431b: Export every error class, not only the abstract bases, so their properties are typed: for example `requestPath` on `HaywireNullResponseError`, or `dependentIds` on `HaywireProviderMissingError`.
+- 54037a8: `ContainerFactory` has `describe()` and `toMermaid()`, describing the containers it creates. Ids still to be bound with `bindInstance()` are marked `unbound` in the description (a new `BindingDescription` property), and drawn with a dashed border labelled `bindInstance()`.
+
+### Patch Changes
+
+- 2851c68: Node prints haywire ids by name, e.g. `HaywireId<DB_URL(nullable)>`, in `console.log()` and in the properties of a crashed error, instead of every field of the id.
+
 ## 1.1.1
 
 ### Patch Changes

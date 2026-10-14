@@ -1,5 +1,29 @@
 # nx-lifecycle
 
+## 1.1.2
+
+### Patch Changes
+
+- b116870: `explain` prints the message of whatever its lookup throws, using [`unknown-error`](https://www.npmjs.com/package/unknown-error)'s `getErrorMessage`, instead of assuming an Error (which printed `undefined` for anything else).
+- Updated dependencies [23a101a]
+- Updated dependencies [e0f1654]
+- Updated dependencies [2f23848]
+- Updated dependencies [ab93f0e]
+- Updated dependencies [753e513]
+- Updated dependencies [0461679]
+- Updated dependencies [981857a]
+- Updated dependencies [20d431b]
+- Updated dependencies [54037a8]
+- Updated dependencies [2851c68]
+- Updated dependencies [10e4fe6]
+- Updated dependencies [f6c298e]
+  - haywire@2.0.0
+  - juniper@2.2.1
+  - juniper-validator@0.3.0
+  - unknown-error@0.1.0
+  - format-file@1.0.2
+  - haywire-launcher@1.0.2
+
 ## 1.1.1
 
 ### Patch Changes

@@ -1,5 +1,17 @@
 # haywire-launcher
 
+## 1.0.2
+
+### Patch Changes
+
+- Updated dependencies [23a101a]
+- Updated dependencies [981857a]
+- Updated dependencies [20d431b]
+- Updated dependencies [54037a8]
+- Updated dependencies [2851c68]
+- Updated dependencies [f6c298e]
+  - haywire@2.0.0
+
 ## 1.0.1
 
 ### Patch Changes

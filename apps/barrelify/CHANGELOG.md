@@ -1,5 +1,24 @@
 # barrelify
 
+## 2.1.2
+
+### Patch Changes
+
+- 8029081: Find files with `tinyglobby` and apply `.gitignore` rules itself, instead of with `globby`, whose `micromatch` dependency pulls in `braces` (vulnerable to a stack-exhaustion denial of service, with no fix released). `.gitignore` files are read once per run instead of once per barrel file. Outside a Git repository, a `.gitignore` in the searched directory now also applies to the siblings of barrel files in its subdirectories.
+- abeca1a: Detect a missing `.gitignore` with [`unknown-error`](https://www.npmjs.com/package/unknown-error)'s `hasCode`, replacing a hand-written check.
+- Updated dependencies [23a101a]
+- Updated dependencies [981857a]
+- Updated dependencies [20d431b]
+- Updated dependencies [3268880]
+- Updated dependencies [54037a8]
+- Updated dependencies [2851c68]
+- Updated dependencies [10e4fe6]
+- Updated dependencies [f6c298e]
+  - haywire@2.0.0
+  - populate-files@1.0.2
+  - unknown-error@0.1.0
+  - haywire-launcher@1.0.2
+
 ## 2.1.1
 
 ### Patch Changes

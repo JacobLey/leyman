@@ -1,5 +1,30 @@
 # load-populate-files
 
+## 1.0.3
+
+### Patch Changes
+
+- 2b8de27: Recognize a missing JS file by its `ERR_MODULE_NOT_FOUND` code (with [`unknown-error`](https://www.npmjs.com/package/unknown-error)'s `hasCode`) instead of searching the error's text, which also matched any other error that mentioned it, and could throw on a thrown value whose `toString` throws.
+- Updated dependencies [23a101a]
+- Updated dependencies [e0f1654]
+- Updated dependencies [2f23848]
+- Updated dependencies [ab93f0e]
+- Updated dependencies [753e513]
+- Updated dependencies [0461679]
+- Updated dependencies [981857a]
+- Updated dependencies [20d431b]
+- Updated dependencies [3268880]
+- Updated dependencies [54037a8]
+- Updated dependencies [2851c68]
+- Updated dependencies [10e4fe6]
+- Updated dependencies [f6c298e]
+  - haywire@2.0.0
+  - juniper@2.2.1
+  - juniper-validator@0.3.0
+  - populate-files@1.0.2
+  - unknown-error@0.1.0
+  - haywire-launcher@1.0.2
+
 ## 1.0.2
 
 ### Patch Changes
