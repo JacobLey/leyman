@@ -38,6 +38,8 @@ return x
 
 ### `hashKey(bytes, seed)` → `a, b`, two u32
 
+Also exported on its own, as `hashKey(key, { seed })`, returning `[a, b]`.
+
 ```
 h1 = 0xdeadbeef ^ seed
 h2 = 0x41c6ce57 ^ seed
@@ -115,7 +117,7 @@ In the first f64 step, the left side is rounded twice, after each multiplication
 
 ## Test vectors
 
-[`test-vectors.json`](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/test-vectors/data/test-vectors.json) lists `consistentHash(key, range, { seed })` for keys covering every UTF-8 encoded length, seeds, and ranges up to 2^48. `buckets[i]` is the bucket for `ranges[i]`.
+[`test-vectors.json`](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/test-vectors/data/test-vectors.json) lists `hashKey` and `consistentHash(key, range, { seed })` for keys covering every UTF-8 encoded length, seeds, and ranges up to 2^48. `hash` is `[a, b]`, and `buckets[i]` is the bucket for `ranges[i]`.
 
 Both this package and the [Go implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/go-impl) are tested against them.
 

@@ -24,12 +24,12 @@ The module is not published, so require it with a `replace` pointing at this dir
 {
   "ranges": [1, 2, 7],
   "vectors": [
-    { "description": "UUID", "key": "00000000-0000-4000-8000-000000000000", "seed": 0, "buckets": [0, 1, 2] }
+    { "description": "UUID", "key": "00000000-0000-4000-8000-000000000000", "seed": 0, "hash": [865118427, 3574204183], "buckets": [0, 1, 2] }
   ]
 }
 ```
 
-`buckets[i]` is `consistentHash(key, ranges[i], { seed })`. Keys are Unicode strings, hashed as UTF-8.
+`hash` is `hashKey(key, { seed })`, and `buckets[i]` is `consistentHash(key, ranges[i], { seed })`. Keys are Unicode strings, hashed as UTF-8.
 
 Ranges go past 2^32 and up to 2^48, where a position within a block draws both 32-bit words, so read buckets and ranges as 64-bit integers (or doubles).
 

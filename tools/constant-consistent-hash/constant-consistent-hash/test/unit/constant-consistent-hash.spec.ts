@@ -4,7 +4,7 @@ import testVectors from '@leyman/constant-consistent-hash-test-vectors/test-vect
     type: 'json',
 };
 import { expect } from '@leyman/expect';
-import { consistentHash } from 'constant-consistent-hash';
+import { consistentHash, hashKey } from 'constant-consistent-hash';
 import { suite, test } from 'mocha-chain';
 
 const keys = Array.from(
@@ -33,12 +33,16 @@ suite('consistentHash', () => {
         expectTypeOf(consistentHash).toEqualTypeOf<
             (key: string, range: number, options?: ConsistentHashOptions) => number
         >();
+        expectTypeOf(hashKey).toEqualTypeOf<
+            (key: string, options?: ConsistentHashOptions) => readonly [number, number]
+        >();
     });
 
     suite('Matches test vectors', () => {
         // Shared with every implementation, see SPEC.md
-        for (const { description, key, seed, buckets } of testVectors.vectors) {
+        for (const { description, key, seed, hash, buckets } of testVectors.vectors) {
             test(description, () => {
+                expect(hashKey(key, { seed })).to.deep.equal(hash);
                 expect(
                     testVectors.ranges.map(range => consistentHash(key, range, { seed }))
                 ).to.deep.equal(buckets);
@@ -167,6 +171,7 @@ suite('consistentHash', () => {
         test('Seed must be an integer between 0 and 2^32 - 1', () => {
             for (const seed of [-1, 1.5, Number.NaN, 2 ** 32]) {
                 expect(() => consistentHash('key', 10, { seed })).to.throw(RangeError);
+                expect(() => hashKey('key', { seed })).to.throw(RangeError);
             }
         });
     });

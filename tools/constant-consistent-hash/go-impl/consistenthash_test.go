@@ -12,10 +12,11 @@ import (
 type testVectors struct {
 	Ranges  []uint64 `json:"ranges"`
 	Vectors []struct {
-		Description string   `json:"description"`
-		Key         string   `json:"key"`
-		Seed        uint32   `json:"seed"`
-		Buckets     []uint64 `json:"buckets"`
+		Description string    `json:"description"`
+		Key         string    `json:"key"`
+		Seed        uint32    `json:"seed"`
+		Hash        [2]uint32 `json:"hash"`
+		Buckets     []uint64  `json:"buckets"`
 	} `json:"vectors"`
 }
 
@@ -65,6 +66,9 @@ func TestMatchesTestVectors(t *testing.T) {
 
 	for _, vector := range vectors.Vectors {
 		t.Run(vector.Description, func(t *testing.T) {
+			if got := HashKey(vector.Key, vector.Seed); got != vector.Hash {
+				t.Errorf("HashKey(%q, %d) = %v, want %v", vector.Key, vector.Seed, got, vector.Hash)
+			}
 			for i, buckets := range vectors.Ranges {
 				if got := mustBucket(t, vector.Key, buckets, vector.Seed); got != vector.Buckets[i] {
 					t.Errorf("Bucket(%q, %d, %d) = %d, want %d", vector.Key, buckets, vector.Seed, got, vector.Buckets[i])

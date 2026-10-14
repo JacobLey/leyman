@@ -57,6 +57,14 @@ func hashKey(key string, seed uint32) lanes {
 	return lanes{a: h1, b: mix32(h2, uint32(len(key)))}
 }
 
+// HashKey is the hash of a key's bytes Bucket places it with: two independent 32 bit words.
+//
+// For building other hashing schemes on, such as rendezvous hashing. Not cryptographic.
+func HashKey(key string, seed uint32) [2]uint32 {
+	l := hashKey(key, seed)
+	return [2]uint32{l.a, l.b}
+}
+
 // random is the 64 bit random value for a block and salt.
 func (l lanes) random(block int, salt uint32) uint64 {
 	index := uint32(block)*3 + salt

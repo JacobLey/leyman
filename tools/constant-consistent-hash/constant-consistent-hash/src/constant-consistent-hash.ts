@@ -1,6 +1,8 @@
 import type { KeyHash } from './lib/hash-key.js';
-import { hashKey } from './lib/hash-key.js';
+import { hashKey as hashLanes } from './lib/hash-key.js';
 import { bitLength, blockOffset, highestBlock, Salt, uniform } from './lib/random.js';
+
+export type { KeyHash } from './lib/hash-key.js';
 
 // The key's hash provides 48 bits for selecting blocks, one per power of 2
 const BLOCK_BITS = 48;
@@ -23,6 +25,39 @@ export interface ConsistentHashOptions {
      */
     seed?: number;
 }
+
+/**
+ * Seed from options, validated.
+ *
+ * @param [options] - optional
+ * @returns unsigned 32 bit integer, 0 by default
+ * @throws {RangeError} when the seed is out of bounds
+ */
+const parseSeed = (options?: ConsistentHashOptions): number => {
+    const seed = options?.seed ?? 0;
+    if (!Number.isSafeInteger(seed) || seed < 0 || seed > MAX_SEED) {
+        throw new RangeError(`seed must be an integer between 0 and 2^32 - 1, received ${seed}`);
+    }
+    return seed;
+};
+
+/**
+ * Hash of a key: two independent unsigned 32 bit words, from its UTF-8 bytes.
+ *
+ * The same hash `consistentHash` places keys with, specified in SPEC.md, so other languages compute the same words.
+ * For building other hashing schemes on, such as rendezvous hashing. Not cryptographic.
+ *
+ * @example
+ * hashKey('00000000-0000-4000-8000-000000000000'); // [865118427, 3574204183]
+ *
+ * @param key - value to be hashed (as UTF-8)
+ * @param [options] - optional
+ * @param [options.seed=0] - selects an independent hash function
+ * @returns two unsigned 32 bit integers
+ * @throws {RangeError} when seed is out of bounds
+ */
+export const hashKey = (key: string, options?: ConsistentHashOptions): KeyHash =>
+    hashLanes(key, parseSeed(options));
 
 /**
  * Uniform value in [0, 2^power) that only changes as power grows if it moves to one of the new blocks.
@@ -67,12 +102,7 @@ export const consistentHash = (
     if (!Number.isSafeInteger(range) || range < 1 || range > MAX_RANGE) {
         throw new RangeError(`range must be an integer between 1 and 2^48, received ${range}`);
     }
-    const seed = options?.seed ?? 0;
-    if (!Number.isSafeInteger(seed) || seed < 0 || seed > MAX_SEED) {
-        throw new RangeError(`seed must be an integer between 0 and 2^32 - 1, received ${seed}`);
-    }
-
-    const hash = hashKey(key, seed);
+    const hash = hashLanes(key, parseSeed(options));
     const power = bitLength(range - 1);
     const top = blockHash(hash, power);
     if (top < range) {

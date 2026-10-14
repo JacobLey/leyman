@@ -13,6 +13,10 @@
       "description": "Empty",
       "key": "",
       "seed": 0,
+      "hash": [
+        451841411,
+        2877679100
+      ],
       "buckets": [
         0,
         1,
@@ -27,6 +31,10 @@
       "description": "ASCII",
       "key": "a",
       "seed": 0,
+      "hash": [
+        2194241793,
+        2887170896
+      ],
       "buckets": [
         0,
         1,
@@ -41,6 +49,10 @@
       "description": "UUID",
       "key": "00000000-0000-4000-8000-000000000000",
       "seed": 0,
+      "hash": [
+        865118427,
+        3574204183
+      ],
       "buckets": [
         0,
         1,
@@ -55,6 +67,10 @@
       "description": "Mixed UTF-8 lengths",
       "key": "héllo 🌍",
       "seed": 0,
+      "hash": [
+        1628880037,
+        2831791050
+      ],
       "buckets": [
         0,
         1,
@@ -69,6 +85,10 @@
       "description": "Largest 2 byte UTF-8 code point",
       "key": "\u07ff",
       "seed": 0,
+      "hash": [
+        422335675,
+        3336892321
+      ],
       "buckets": [
         0,
         1,
@@ -83,6 +103,10 @@
       "description": "Largest 3 byte UTF-8 code point",
       "key": "\uffff",
       "seed": 0,
+      "hash": [
+        1876003183,
+        1052077438
+      ],
       "buckets": [
         0,
         1,
@@ -97,6 +121,10 @@
       "description": "Largest 4 byte UTF-8 code point",
       "key": "\udbff\udfff",
       "seed": 0,
+      "hash": [
+        4072451304,
+        1968286968
+      ],
       "buckets": [
         0,
         0,
@@ -111,6 +139,10 @@
       "description": "Seeded",
       "key": "00000000-0000-4000-8000-000000000000",
       "seed": 1,
+      "hash": [
+        1001542208,
+        2336679028
+      ],
       "buckets": [
         0,
         0,
@@ -125,6 +157,10 @@
       "description": "Largest seed",
       "key": "00000000-0000-4000-8000-000000000000",
       "seed": 4294967295,
+      "hash": [
+        1801944730,
+        1603460457
+      ],
       "buckets": [
         0,
         0,

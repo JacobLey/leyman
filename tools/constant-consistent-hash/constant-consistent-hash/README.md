@@ -22,6 +22,7 @@ Not suited to removing arbitrary buckets from the middle, or to keys chosen by a
 - [Usage](#usage)
 - [API](#api)
   - [consistentHash](#consistenthashkey-range-options)
+  - [hashKey](#hashkeykey-options)
 - [Other languages](#other-languages)
 - [Compared to alternatives](#compared-to-alternatives)
 
@@ -84,6 +85,25 @@ const node = consistentHash(key, nodesPerShard, { seed: 2 });
 ```
 
 Changing the seed moves almost every key, so a seed is fixed for the lifetime of the data it places. It is not a secret: it does not stop crafted keys from targeting a bucket.
+
+### `hashKey(key, options?)`
+
+The hash `consistentHash` places a key with: two independent unsigned 32-bit integers, from the key's UTF-8 bytes. For building other hashing schemes on, such as rendezvous hashing, with the same results in every language that implements SPEC.md.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `key` | `string` | — | Required. Value to be hashed, as UTF-8. |
+| `options.seed` | `number` | `0` | Integer between 0 and 2^32 - 1 that selects an independent hash function. |
+
+**Returns** `readonly [number, number]`.
+
+**Throws** `RangeError` — when `seed` is not an integer within its bounds.
+
+```ts
+hashKey('00000000-0000-4000-8000-000000000000'); // [865118427, 3574204183]
+```
+
+Like `consistentHash`, it is fast but not cryptographic.
 
 ## Other languages
 
