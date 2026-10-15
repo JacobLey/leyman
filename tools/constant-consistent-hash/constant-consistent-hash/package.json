@@ -1,6 +1,6 @@
 {
   "name": "constant-consistent-hash",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages.",
   "engines": {
     "node": ">=24"

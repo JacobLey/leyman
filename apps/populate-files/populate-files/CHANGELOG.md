@@ -1,5 +1,14 @@
 # populate-files
 
+## 1.0.2
+
+### Patch Changes
+
+- 3268880: Detect a missing directory with [`unknown-error`](https://www.npmjs.com/package/unknown-error)'s `hasCode`, replacing a hand-written check.
+- Updated dependencies [10e4fe6]
+  - unknown-error@0.1.0
+  - format-file@1.0.2
+
 ## 1.0.1
 
 ### Patch Changes

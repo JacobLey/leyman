@@ -1,5 +1,11 @@
 # juniper
 
+## 2.2.1
+
+### Patch Changes
+
+- e0f1654: Correct the README and WHY-JUNIPER.md comparisons with TypeBox, Zod and other alternatives, document Standard JSON Schema support (`['~standard']`), and note which keywords OpenAPI 3.0 output drops.
+
 ## 2.2.0
 
 ### Minor Changes
