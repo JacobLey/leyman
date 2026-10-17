@@ -22,6 +22,7 @@ Files live on the host, so they survive container rebuilds. Claude Code config i
 | Node.js | JS runtime | Version pinned via `ARG NODE_VERSION` in `Dockerfile` |
 | pnpm | Package management | Version pinned via `ARG PNPM_VERSION`. Installed outside the lockfile, so `minimumReleaseAge` can't hold it back: only bump to a release at least 7 days old |
 | Go | Golang runtime, for Dagger and Go projects (e.g. `tools/constant-consistent-hash/go-impl`) | Version pinned via `ARG GO_VERSION`; also installs `gopls` |
+| Python | Ad-hoc scripting (no projects use it) | Version pinned via `ARG PYTHON_VERSION`, prebuilt by [python-build-standalone](https://github.com/astral-sh/python-build-standalone) at release `ARG PYTHON_BUILD`: only bump to a release at least 7 days old. Not mirrored in Dagger |
 | Dagger CLI | Mirror CI execution locally | Version pinned via `ARG DAGGER_VERSION` |
 | Playwright browser libraries | System libraries for Chromium, Firefox and WebKit | Version pinned via `ARG PLAYWRIGHT_VERSION`. The browsers themselves are downloaded by the `playwright-install` target to `PLAYWRIGHT_BROWSERS_PATH`, shared between worktrees |
 | Docker | `docker-outside-of-docker` devcontainer feature | Shares the host Docker socket — required to run Dagger |

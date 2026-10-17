@@ -6,6 +6,10 @@ ARG NODE_VERSION=24.21.0
 ARG PNPM_VERSION=12.9.1
 ARG DAGGER_VERSION=0.21.10
 ARG GO_VERSION=1.26.8
+# For ad-hoc scripts only, so not mirrored in Dagger.
+# PYTHON_BUILD is the python-build-standalone release tag; only bump to a release at least 7 days old
+ARG PYTHON_VERSION=3.14.8
+ARG PYTHON_BUILD=20261009
 # Only for the browsers' system libraries; browsers themselves are installed by the `playwright-install` target
 ARG PLAYWRIGHT_VERSION=1.62.1
 
@@ -45,6 +49,13 @@ RUN ARCH="$(dpkg --print-architecture)" && \
     mv $HOME/go $HOME/.go && \
     rm /tmp/go.tar.gz && \
     go install golang.org/x/tools/gopls@latest
+
+# Install Python (prebuilt CPython from https://github.com/astral-sh/python-build-standalone)
+ENV PATH=$PATH:$HOME/.python/bin
+RUN wget "https://github.com/astral-sh/python-build-standalone/releases/download/${PYTHON_BUILD}/cpython-${PYTHON_VERSION}+${PYTHON_BUILD}-$(uname -m)-unknown-linux-gnu-install_only.tar.gz" -O /tmp/python.tar.gz && \
+    tar -C $HOME -xzf /tmp/python.tar.gz && \
+    mv $HOME/python $HOME/.python && \
+    rm /tmp/python.tar.gz
 
 # Install dagger
 RUN curl -fsSL https://dl.dagger.io/dagger/install.sh | \
