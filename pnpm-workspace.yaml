@@ -34,7 +34,14 @@ minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   # Packages published from this repo, consumed via `npm:` aliases in catalogs below (or as their dependencies)
   - barrelify
+  - entry-script
+  - format-file
+  - haywire
+  - haywire-launcher
   - juniper
+  - parse-cwd
+  - populate-files
+  - unknown-error
 # Fail if a package's publish trust level (e.g. provenance) drops compared to earlier versions
 trustPolicy: no-downgrade
 trustPolicyExclude:
@@ -159,4 +166,4 @@ catalogs:
   # that would not be included in the published build.
   # Ideally they are packages that are not even `imported` but rather a separate CLI command
   leyman:
-    npm-barrelify: npm:barrelify@^1.3.3
+    npm-barrelify: npm:barrelify@^2.1.2
