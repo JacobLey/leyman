@@ -81,7 +81,7 @@ Juniper has the following goals for generating JSON Schema:
 - **Predictable JSON Schema output** — Juniper applies internal optimizations to ensure correctness and strictness. The exact structure of a rendered schema is not guaranteed and should be treated as opaque — pass it to a validator or serializer, do not inspect or modify it manually.
 - **Sensible defaults** — JSON Schema does not apply defaults to properties that are not explicitly required. Neither does Juniper. Properties like `required`, `additionalProperties`, and `unevaluatedProperties` must be set explicitly. The one exception is `TupleSchema`, which handles some values internally to ensure a strict tuple.
 - **Performance** — Juniper optimizes for correctness over speed during schema generation. Schemas should be generated once, at startup.
-  - Note that _validation_ (via tools like [juniper-validator](https://www.npmjs.com/package/juniper-validator) or just plain [AJV](https://www.npmjs.com/package/ajv) should be incredibly fast, _because_ the generation occurs outside the critical path.)
+  - Note that _validation_ (via tools like [juniper-validator](https://www.npmjs.com/package/juniper-validator) or just plain [Ajv](https://www.npmjs.com/package/ajv)) should be incredibly fast, _because_ the generation occurs outside the critical path.
 
 ## Limitations
 

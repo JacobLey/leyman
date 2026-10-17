@@ -80,6 +80,8 @@ schema.toJSON();
 
 Juniper builds schemas; it does not validate data. Pass the output to any JSON Schema validator.
 
+Juniper writes the `format` keyword as given, and does not check it. If a schema uses `format`, use a validator that supports the formats you need: [juniper-validator](/juniper-validator/) does, and Ajv needs [ajv-formats](https://www.npmjs.com/package/ajv-formats).
+
 ### With juniper-validator
 
 [juniper-validator](/juniper-validator/) wraps Ajv, and implements [Standard Schema](https://standardschema.dev/), so it works with any library that accepts standard validators.
