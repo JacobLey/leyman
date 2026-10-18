@@ -28,7 +28,7 @@
     "c8": "catalog:",
     "common-proxy": "workspace:^",
     "constant-consistent-hash": "workspace:^",
-    "decant": "workspace:^",
+    "genever": "workspace:^",
     "default-import": "workspace:^",
     "entry-script": "workspace:^",
     "enum-to-array": "workspace:^",

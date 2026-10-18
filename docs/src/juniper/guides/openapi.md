@@ -106,6 +106,6 @@ Pass the same options to `components()` and to every `toJSON()` in the spec, so 
 
 Output is deterministic: definitions are sorted by name, not by where they are used, so a committed spec only changes when a schema does.
 
-To type the spec's schemas in another project, without depending on the code that built it, generate them with [decant](/decant/guides/openapi), which gives the same types Juniper inferred.
+To type the spec's schemas in another project, without depending on the code that built it, generate them with [genever](/genever/guides/openapi), which gives the same types Juniper inferred.
 
 A complete users and posts API, built with [openapi3-ts](https://www.npmjs.com/package/openapi3-ts) and checked to be valid OpenAPI 3.0 and 3.1, is in [e2e/juniper-openapi](https://github.com/JacobLey/leyman/blob/main/e2e/juniper-openapi/test/data/api.ts).

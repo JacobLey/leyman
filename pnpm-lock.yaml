@@ -357,7 +357,7 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
-  apps/decant:
+  apps/genever:
     dependencies:
       ci-info:
         specifier: 'catalog:'
@@ -812,15 +812,15 @@ importers:
       barrelify:
         specifier: workspace:^
         version: file:apps/barrelify(@biomejs/biome@2.5.14)(prettier@3.9.9)
-      decant:
-        specifier: workspace:^
-        version: file:apps/decant(@biomejs/biome@2.5.14)(prettier@3.9.9)
       enum-to-array:
         specifier: workspace:^
         version: file:tools/enum-to-array
       fastify:
         specifier: 'catalog:'
         version: 5.12.5
+      genever:
+        specifier: workspace:^
+        version: file:apps/genever(@biomejs/biome@2.5.14)(prettier@3.9.9)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -1124,9 +1124,6 @@ importers:
       constant-consistent-hash:
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/constant-consistent-hash
-      decant:
-        specifier: workspace:^
-        version: file:apps/decant(@biomejs/biome@2.5.14)(prettier@3.9.9)
       default-import:
         specifier: workspace:^
         version: file:tools/default-import
@@ -1145,6 +1142,9 @@ importers:
       format-file:
         specifier: workspace:^
         version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      genever:
+        specifier: workspace:^
+        version: file:apps/genever(@biomejs/biome@2.5.14)(prettier@3.9.9)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -5166,11 +5166,6 @@ packages:
       supports-color:
         optional: true
 
-  decant@file:apps/decant:
-    resolution: {directory: apps/decant, type: directory}
-    engines: {node: '>=24'}
-    hasBin: true
-
   decode-named-character-reference@1.3.0:
     resolution: {integrity: sha512-GtpQYB283KrPp6nRw50q3U9/VfOutZOe103qlN7BPP6Ad27xYnOIWv4lPzo8HCAL+mMZofJ9KEy30fq6MfaK6Q==}
 
@@ -5730,6 +5725,11 @@ packages:
 
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
+
+  genever@file:apps/genever:
+    resolution: {directory: apps/genever, type: directory}
+    engines: {node: '>=24'}
+    hasBin: true
 
   gensync@1.0.0-beta.2:
     resolution: {integrity: sha512-3hN7NaskYvMDLQY55gnW3NQ+mesEAepTqlg+VEbj7zzqEMBVNhzcGYYeqFo/TlYz6eQiFcp1HcsCZO+nGgS8zg==}
@@ -10732,21 +10732,6 @@ snapshots:
     optionalDependencies:
       supports-color: 8.1.1
 
-  decant@file:apps/decant(@biomejs/biome@2.5.14)(prettier@3.9.9):
-    dependencies:
-      ci-info: 4.4.0
-      entry-script: file:tools/entry-script
-      format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
-      haywire: file:tools/haywire
-      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
-      parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
-      yaml: 2.9.1
-      yargs: 18.2.0
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - prettier
-
   decode-named-character-reference@1.3.0:
     dependencies:
       character-entities: 2.0.2
@@ -11498,6 +11483,21 @@ snapshots:
   functional-red-black-tree@1.0.1: {}
 
   functions-have-names@1.2.3: {}
+
+  genever@file:apps/genever(@biomejs/biome@2.5.14)(prettier@3.9.9):
+    dependencies:
+      ci-info: 4.4.0
+      entry-script: file:tools/entry-script
+      format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      haywire: file:tools/haywire
+      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      parse-cwd: file:tools/parse-cwd
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      yaml: 2.9.1
+      yargs: 18.2.0
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - prettier
 
   gensync@1.0.0-beta.2: {}
 

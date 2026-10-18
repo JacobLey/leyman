@@ -13,12 +13,12 @@ Published to npm:
 | [`barrelify`](https://www.npmjs.com/package/barrelify) | Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions. | [`apps/barrelify`](./apps/barrelify) |
 | [`common-proxy`](https://www.npmjs.com/package/common-proxy) | Wrap an ESM import so it is synchronously available as a promise-returning function in CommonJS. | [`tools/common-proxy`](./tools/common-proxy) |
 | [`constant-consistent-hash`](https://www.npmjs.com/package/constant-consistent-hash) | Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages. | [`tools/constant-consistent-hash/constant-consistent-hash`](./tools/constant-consistent-hash/constant-consistent-hash) |
-| [`decant`](https://www.npmjs.com/package/decant) | Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers. | [`apps/decant`](./apps/decant) |
 | [`default-import`](https://www.npmjs.com/package/default-import) | Properly handle CJS imports in ESM. | [`tools/default-import`](./tools/default-import) |
 | [`entry-script`](https://www.npmjs.com/package/entry-script) | Modular control for entry script execution. | [`tools/entry-script`](./tools/entry-script) |
 | [`enum-to-array`](https://www.npmjs.com/package/enum-to-array) | Convert Typescript Enums to a strongly typed array. | [`tools/enum-to-array`](./tools/enum-to-array) |
 | [`find-import`](https://www.npmjs.com/package/find-import) | Find and load first instance of js/json in parent directories. | [`tools/find-import`](./tools/find-import) |
 | [`format-file`](https://www.npmjs.com/package/format-file) | Utility API to format files via biome | [`tools/format-file`](./tools/format-file) |
+| [`genever`](https://www.npmjs.com/package/genever) | Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers. | [`apps/genever`](./apps/genever) |
 | [`haywire`](https://www.npmjs.com/package/haywire) | Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state. | [`tools/haywire`](./tools/haywire) |
 | [`haywire-launcher`](https://www.npmjs.com/package/haywire-launcher) | Instantiate and execute your script in one line. | [`tools/haywire-launcher`](./tools/haywire-launcher) |
 | [`iso-crypto`](https://www.npmjs.com/package/iso-crypto) | Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES (including GCM), PBKDF2/HKDF key derivation and ECDH. | [`tools/iso-crypto`](./tools/iso-crypto) |
@@ -41,7 +41,7 @@ Private workspace packages (shared configs and tooling) are listed in the [proje
 
 Packages that have been removed from the repo but are still on npm are listed in [`DEPRECATED_PACKAGES.md`](./DEPRECATED_PACKAGES.md).
 
-A documentation site, with every code example type-checked, is in [`docs/`](./docs) (`barrelify`, `decant`, `haywire`, `juniper`, `juniper-validator`, `nx-lifecycle` and `unknown-error` so far).
+A documentation site, with every code example type-checked, is in [`docs/`](./docs) (`barrelify`, `genever`, `haywire`, `juniper`, `juniper-validator`, `nx-lifecycle` and `unknown-error` so far).
 
 ## Getting Started
 

@@ -100,33 +100,33 @@ export default defineConfig({
                 ],
             },
             {
-                text: 'decant',
+                text: 'genever',
                 items: [
-                    { text: 'Overview', link: '/decant/' },
-                    { text: 'Getting started', link: '/decant/getting-started' },
+                    { text: 'Overview', link: '/genever/' },
+                    { text: 'Getting started', link: '/genever/getting-started' },
                     {
                         text: 'Guides',
                         items: [
-                            { text: 'Strict mode', link: '/decant/guides/strict-mode' },
-                            { text: 'OpenAPI documents', link: '/decant/guides/openapi' },
+                            { text: 'Strict mode', link: '/genever/guides/strict-mode' },
+                            { text: 'OpenAPI documents', link: '/genever/guides/openapi' },
                             {
                                 text: 'References to other files',
-                                link: '/decant/guides/references',
+                                link: '/genever/guides/references',
                             },
                             {
                                 text: 'Juniper round trip',
-                                link: '/decant/guides/juniper-round-trip',
+                                link: '/genever/guides/juniper-round-trip',
                             },
                         ],
                     },
                     {
                         text: 'Reference',
                         items: [
-                            { text: 'Type mapping', link: '/decant/reference/types' },
-                            { text: 'API and CLI', link: '/decant/reference/api' },
+                            { text: 'Type mapping', link: '/genever/reference/types' },
+                            { text: 'API and CLI', link: '/genever/reference/api' },
                         ],
                     },
-                    { text: 'Why decant', link: '/decant/why' },
+                    { text: 'Why genever', link: '/genever/why' },
                 ],
             },
             {

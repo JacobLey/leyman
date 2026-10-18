@@ -834,4 +834,4 @@ enumSchema({
 
 - [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md) — Motivation, design decisions, and comparison to alternative libraries.
 - [juniper-validator](https://www.npmjs.com/package/juniper-validator) — Validation companion for Juniper schemas.
-- [decant](https://www.npmjs.com/package/decant) — the reverse: generates TypeScript types from a JSON Schema file, matching the types Juniper infers.
+- [genever](https://www.npmjs.com/package/genever) — the reverse: generates TypeScript types from a JSON Schema file, matching the types Juniper infers.

@@ -86,7 +86,7 @@
       "path": "./tools/constant-consistent-hash/weighted-rendezvous-hash"
     },
     {
-      "path": "./apps/decant"
+      "path": "./apps/genever"
     }
   ]
 }

@@ -2,9 +2,9 @@
 paths:
   - "apps/barrelify/src/**"
   - "apps/barrelify/README.md"
-  - "apps/decant/src/**"
-  - "apps/decant/README.md"
-  - "apps/decant/WHY-DECANT.md"
+  - "apps/genever/src/**"
+  - "apps/genever/README.md"
+  - "apps/genever/WHY-GENEVER.md"
   - "apps/juniper/src/**"
   - "apps/juniper/README.md"
   - "apps/juniper/WHY-JUNIPER.md"

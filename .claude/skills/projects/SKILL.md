@@ -26,7 +26,7 @@ See each package's README.md for full usage documentation.
 | Package | Description |
 |---------|-------------|
 | [`barrelify`](../../../apps/barrelify/) | Auto-generate TypeScript barrel (`index.ts`) files |
-| [`decant`](../../../apps/decant/) | Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers |
+| [`genever`](../../../apps/genever/) | Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers |
 | [`juniper`](../../../apps/juniper/) | JSON Schema builder with static TypeScript inference |
 | [`juniper-validator`](../../../apps/juniper-validator/) | StandardSchema-compliant validator wrapping Juniper schemas |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | Nx plugin for managing ordered task dependency lifecycles |
