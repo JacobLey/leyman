@@ -841,15 +841,26 @@ export class Converter {
 
         const index = this.#patternProperties(schema, pointer, properties);
         const { additionalProperties } = schema;
+        const nameKeys = this.#propertyNameKeys(schema, pointer);
         if (additionalProperties !== undefined && additionalProperties !== false) {
-            index.push({
-                key: stringType,
-                value: this.#convert(
-                    additionalProperties,
-                    childPointer(pointer, 'additionalProperties'),
-                    emptyScope
-                ),
-            });
+            const value = this.#convert(
+                additionalProperties,
+                childPointer(pointer, 'additionalProperties'),
+                emptyScope
+            );
+            for (const key of nameKeys) {
+                if (key.kind !== 'literal') {
+                    index.push({ key, value });
+                } else if (properties.every(property => property.name !== key.value)) {
+                    // A literal key can't be an index signature, so it is an optional property
+                    properties.push({
+                        name: key.value as string,
+                        doc: null,
+                        optional: true,
+                        type: value,
+                    });
+                }
+            }
         }
 
         const dependents = this.#dependents(schema, pointer, scope);
@@ -861,10 +872,43 @@ export class Converter {
             properties: [],
             index: [{ key: stringType, value: neverType }],
         };
+        // `propertyNames: false` allows no keys, as `additionalProperties: false` does without properties
         return intersection([
-            additionalProperties === false ? noProperties : objectType,
+            additionalProperties === false || nameKeys.length === 0 ? noProperties : objectType,
             ...dependents,
         ]);
+    }
+
+    /**
+     * Keys `propertyNames` allows, as the keys of `additionalProperties`.
+     *
+     * @param schema - schema with `propertyNames`
+     * @param pointer - JSON Pointer to the schema
+     * @returns key types: `string`, template literals, or string literals
+     */
+    #propertyNameKeys(schema: SchemaObject, pointer: string): TsType[] {
+        if (schema.propertyNames === undefined) {
+            return [stringType];
+        }
+        const names = this.#convert(schema.propertyNames, childPointer(pointer, 'propertyNames'), {
+            properties: new Map(),
+            types: ['string'],
+        });
+        const members = names.kind === 'union' ? names.members : [names];
+        return members.flatMap(member => {
+            if (
+                member.kind === 'template' ||
+                (member.kind === 'literal' && typeof member.value === 'string')
+            ) {
+                return [member];
+            }
+            // Any other string type (e.g. an intersection of patterns) is as wide as `string`
+            const isString =
+                member.kind === 'intersection' ||
+                (member.kind === 'keyword' &&
+                    (member.keyword === 'string' || member.keyword === 'unknown'));
+            return isString ? [stringType] : [];
+        });
     }
 
     /**

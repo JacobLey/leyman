@@ -4,6 +4,10 @@
 export interface TsDoc {
     readonly deprecated: boolean;
     readonly description: string | null;
+    /**
+     * JSDoc tags, e.g. `{ name: 'default', text: '5' }` for `@default 5`.
+     */
+    readonly tags: readonly { readonly name: string; readonly text: string }[];
     readonly title: string | null;
 }
 

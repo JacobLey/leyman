@@ -30,9 +30,15 @@ export const printDoc = (doc: TsDoc | null, indent: string): string => {
         return '';
     }
     const paragraphs = [doc.title, doc.description].filter(text => !!text) as string[];
+    const tags = [
+        ...doc.tags.map(tag => `@${tag.name} ${tag.text}`),
+        ...(doc.deprecated ? ['@deprecated'] : []),
+    ];
     const lines = [
         ...paragraphs.flatMap((text, i) => [...(i > 0 ? [''] : []), ...text.split('\n')]),
-        ...(doc.deprecated ? ['@deprecated'] : []),
+        // A blank line between the description and its tags
+        ...(paragraphs.length > 0 && tags.length > 0 ? [''] : []),
+        ...tags,
     ];
     const body = lines
         .map(line => {

@@ -153,23 +153,66 @@ export const readPattern = (value: unknown, pointer: string): string => {
 };
 
 /**
+ * Keywords documented as JSDoc tags: annotations, and constraints TypeScript can't express.
+ */
+const documentedKeywords = [
+    'format',
+    'minLength',
+    'maxLength',
+    'pattern',
+    'minimum',
+    'exclusiveMinimum',
+    'maximum',
+    'exclusiveMaximum',
+    'multipleOf',
+    'minItems',
+    'maxItems',
+    'uniqueItems',
+    'minProperties',
+    'maxProperties',
+    'default',
+] as const;
+
+/**
+ * OpenAPI's single `example`, if any.
+ *
+ * @param schema - schema that may have an `example`
+ * @returns the example, in an array, or nothing
+ */
+const exampleOf = (schema: SchemaObject): unknown[] =>
+    Object.hasOwn(schema, 'example') ? [schema.example] : [];
+
+/**
  * Read the annotations of a schema that document its type.
  * Annotations of the wrong type are ignored, as they don't change what the schema accepts.
  *
  * @param schema - any schema
- * @returns title, description and deprecation, or `null` if there are none
+ * @returns title, description, deprecation and JSDoc tags, or `null` if there are none
  */
 export const readDoc = (schema: unknown): TsDoc | null => {
     if (!isSchemaObject(schema)) {
         return null;
     }
-    const { deprecated, description, title } = schema;
+    const { deprecated, description, examples, title } = schema;
+    const exampleValues: unknown[] = [
+        ...(Array.isArray(examples) ? (examples as unknown[]) : []),
+        ...exampleOf(schema),
+    ];
+    const tags = [
+        ...documentedKeywords.flatMap(keyword =>
+            schema[keyword] === undefined
+                ? []
+                : { name: keyword, text: JSON.stringify(schema[keyword]) }
+        ),
+        ...exampleValues.map(example => ({ name: 'example', text: JSON.stringify(example) })),
+    ];
     const doc: TsDoc = {
+        tags,
         deprecated: deprecated === true,
         description: typeof description === 'string' ? description : null,
         title: typeof title === 'string' ? title : null,
     };
-    return doc.deprecated || doc.description || doc.title ? doc : null;
+    return doc.deprecated || doc.description || doc.title || tags.length > 0 ? doc : null;
 };
 
 /**

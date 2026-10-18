@@ -3,6 +3,7 @@ import { expect } from '@leyman/expect';
 import { decant } from 'decant';
 import { suite, test } from 'mocha-chain';
 import { expectDecanted } from '../../lib/expect-decanted.js';
+import { jsDoc } from '../../lib/js-doc.js';
 import { typeCheck } from '../../lib/type-check.js';
 
 suite('objects', () => {
@@ -145,6 +146,63 @@ suite('objects', () => {
         });
     });
 
+    suite('propertyNames', () => {
+        test('pattern narrows the keys', () => {
+            expectDecanted(
+                {
+                    type: 'object',
+                    propertyNames: { pattern: '^x-' },
+                    additionalProperties: { type: 'number' },
+                },
+                { Schema: 'Record<`x-${string}`, number>' }
+            );
+        });
+
+        test('enum names the keys', () => {
+            expectDecanted(
+                {
+                    type: 'object',
+                    properties: { a: { type: 'string' } },
+                    propertyNames: { enum: ['a', 'b', 'c'] },
+                    additionalProperties: { type: 'number' },
+                },
+                { Schema: '{ a?: string; b?: number; c?: number }' }
+            );
+        });
+
+        test('other constraints allow any key', () => {
+            expectDecanted(
+                {
+                    type: 'object',
+                    propertyNames: { maxLength: 3, allOf: [{ pattern: '^a' }, { pattern: 'b$' }] },
+                    additionalProperties: true,
+                },
+                { Schema: 'Record<string, unknown>' }
+            );
+        });
+
+        test('true allows any key', () => {
+            expectDecanted(
+                { type: 'object', propertyNames: true, additionalProperties: { type: 'number' } },
+                { Schema: 'Record<string, number>' }
+            );
+        });
+
+        test('false allows no keys', () => {
+            expectDecanted(
+                { type: 'object', propertyNames: false, additionalProperties: { type: 'number' } },
+                { Schema: 'Record<string, never>' }
+            );
+        });
+
+        test('without additionalProperties', () => {
+            expectDecanted(
+                { type: 'object', properties: { a: true }, propertyNames: { pattern: '^a' } },
+                { Schema: '{ a?: unknown }' }
+            );
+        });
+    });
+
     suite('required', () => {
         test('required inherited from a parent', () => {
             expectDecanted(
@@ -231,22 +289,71 @@ suite('objects', () => {
             title: 'Root',
             description: 'Multiple\nlines, and a */ comment end',
             properties: {
-                a: { type: 'string', deprecated: true },
-                b: { type: 'string', description: 'B' },
-                c: { type: 'string', title: 42, description: false },
+                old: { type: 'string', deprecated: true },
+                described: { type: 'string', description: 'Described' },
+                constrained: {
+                    type: 'string',
+                    format: 'email',
+                    minLength: 3,
+                    pattern: '^[a-z]+$',
+                    default: 'abc',
+                    examples: ['def', 'ghi'],
+                },
+                wrongTypes: { type: 'string', title: 42, description: false },
             },
         };
-
-        test('is written as JSDoc', () => {
-            const source = decant(documented);
-
-            expect(source).to.contain('@deprecated');
-            expect(source).to.contain(' * B');
-            expect(source).to.contain('Multiple');
-        });
+        const source = decant(documented);
 
         test('compiles', () => {
-            expect(typeCheck({ 'decanted.ts': decant(documented) })).to.deep.equal([]);
+            expect(typeCheck({ 'decanted.ts': source })).to.deep.equal([]);
+        });
+
+        test('title and description', () => {
+            expect(jsDoc(source, 'Schema')).to.deep.equal({
+                description: 'Root\n\nMultiple\nlines, and a *\\/ comment end',
+                tags: [],
+            });
+        });
+
+        test('deprecated', () => {
+            expect(jsDoc(source, 'Schema', 'old')).to.deep.equal({
+                description: undefined,
+                tags: [{ name: 'deprecated', text: undefined }],
+            });
+        });
+
+        test('description of a property', () => {
+            expect(jsDoc(source, 'Schema', 'described')).to.have.property(
+                'description',
+                'Described'
+            );
+        });
+
+        test('constraints, default and examples are tags', () => {
+            expect(jsDoc(source, 'Schema', 'constrained')).to.deep.equal({
+                description: undefined,
+                tags: [
+                    { name: 'format', text: '"email"' },
+                    { name: 'minLength', text: '3' },
+                    { name: 'pattern', text: '"^[a-z]+$"' },
+                    { name: 'default', text: '"abc"' },
+                    { name: 'example', text: '"def"' },
+                    { name: 'example', text: '"ghi"' },
+                ],
+            });
+        });
+
+        test('annotations of the wrong type are left out', () => {
+            expect(jsDoc(source, 'Schema', 'wrongTypes')).to.equal(undefined);
+        });
+
+        test('OpenAPI example', () => {
+            const openApi = decant({ type: 'string', example: 'abc' }, { openApi30: true });
+
+            expect(jsDoc(openApi, 'Schema')).to.deep.equal({
+                description: undefined,
+                tags: [{ name: 'example', text: '"abc"' }],
+            });
         });
     });
 });

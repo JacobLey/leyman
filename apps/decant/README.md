@@ -143,7 +143,9 @@ Each row is one of the probes in [WHY-DECANT.md](https://github.com/JacobLey/ley
 | `if` / `then` / `else` | `(If & Then) \| Else` |
 | `not` of `null` or literal values | removes them from a union; any other `not` leaves the type |
 | `$ref` | the referenced named type |
+| `propertyNames` with a literal prefix or `enum` | the keys of `additionalProperties`: `` `x-${string}` ``, or optional properties `a`, `b` |
 | `title`, `description`, `deprecated` | JSDoc |
+| `default`, `examples`, `format`, and constraints such as `minLength` or `maximum` | JSDoc tags, e.g. `@minLength 3`, so editors show them |
 
 Subschemas of `allOf`, `anyOf`, `oneOf`, `if`/`then`/`else` and `not` without a `type` of their own apply to their parent's types, as Juniper writes them. So `{ "type": ["string", "null"], "allOf": [{ "pattern": "^a" }] }` is `` `a${string}` | null ``.
 
@@ -152,7 +154,7 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 ### Not supported
 
 - `$ref` to another file (`other.json#/...`), to an anchor, `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`.
-- `unevaluatedProperties`, `unevaluatedItems`, `propertyNames` and `contains` are accepted, but don't change the type.
+- `unevaluatedProperties`, `unevaluatedItems` and `contains` are accepted, but don't change the type.
 - OpenAPI's `discriminator` is accepted, but not checked against the `oneOf` branches. The branches still narrow on the property as a union does.
 - Swagger 2.0 documents.
 
