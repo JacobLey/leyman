@@ -20,6 +20,7 @@
     "@standard-schema/spec": "catalog:",
     "ajv": "catalog:",
     "barrelify": "workspace:^",
+    "decant": "workspace:^",
     "enum-to-array": "workspace:^",
     "fastify": "catalog:",
     "haywire": "workspace:^",

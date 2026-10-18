@@ -44,4 +44,4 @@ Hover over any identifier in the examples on this site to see its inferred type.
 - [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts) and [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) derive types from a plain JSON Schema, so nothing checks the schema itself.
 - [ts-json-schema-generator](https://www.npmjs.com/package/ts-json-schema-generator) goes the other way, generating JSON Schema from TypeScript types as a build step, with constraints like `maxLength` written as unchecked JSDoc tags.
 
-Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](/juniper-validator/).
+Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](/juniper-validator/). To get Juniper's types back from a schema serialized elsewhere, generate them with [decant](/decant/).

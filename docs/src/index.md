@@ -10,6 +10,9 @@ features:
   - title: Juniper Validator
     details: Standard Schema compliant validators for Juniper schemas, with type guards and assertions.
     link: /juniper-validator/
+  - title: decant
+    details: Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers.
+    link: /decant/
   - title: Haywire
     details: Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state.
     link: /haywire/

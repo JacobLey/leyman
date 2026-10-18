@@ -806,6 +806,9 @@ importers:
       barrelify:
         specifier: workspace:^
         version: file:apps/barrelify(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      decant:
+        specifier: workspace:^
+        version: file:apps/decant(@biomejs/biome@2.5.14)(prettier@3.9.9)
       enum-to-array:
         specifier: workspace:^
         version: file:tools/enum-to-array

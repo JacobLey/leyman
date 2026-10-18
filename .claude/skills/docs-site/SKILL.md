@@ -14,6 +14,7 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 | Package | Pages |
 |---------|-------|
 | [`barrelify`](../../../apps/barrelify/) | [`docs/src/barrelify/`](../../../docs/src/barrelify/) |
+| [`decant`](../../../apps/decant/) | [`docs/src/decant/`](../../../docs/src/decant/) |
 | [`haywire`](../../../tools/haywire/) | [`docs/src/haywire/`](../../../docs/src/haywire/) |
 | [`juniper`](../../../apps/juniper/) | [`docs/src/juniper/`](../../../docs/src/juniper/) |
 | [`juniper-validator`](../../../apps/juniper-validator/) | [`docs/src/juniper-validator/`](../../../docs/src/juniper-validator/) |

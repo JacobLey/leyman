@@ -100,6 +100,32 @@ export default defineConfig({
                 ],
             },
             {
+                text: 'decant',
+                items: [
+                    { text: 'Overview', link: '/decant/' },
+                    { text: 'Getting started', link: '/decant/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [
+                            { text: 'Strict mode', link: '/decant/guides/strict-mode' },
+                            { text: 'OpenAPI documents', link: '/decant/guides/openapi' },
+                            {
+                                text: 'Juniper round trip',
+                                link: '/decant/guides/juniper-round-trip',
+                            },
+                        ],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [
+                            { text: 'Type mapping', link: '/decant/reference/types' },
+                            { text: 'API and CLI', link: '/decant/reference/api' },
+                        ],
+                    },
+                    { text: 'Why decant', link: '/decant/why' },
+                ],
+            },
+            {
                 text: 'Haywire',
                 items: [
                     { text: 'Overview', link: '/haywire/' },
