@@ -195,6 +195,20 @@ suite('references', () => {
             );
         });
 
+        test('an alias of a resource is not a type', () => {
+            expectDecanted(
+                {
+                    type: 'object',
+                    properties: { a: { $ref: 'alias.json' } },
+                    $defs: {
+                        Alias: { $id: 'alias.json', $ref: 'real.json' },
+                        Real: { $id: 'real.json', type: 'string' },
+                    },
+                },
+                { Schema: '{ a?: Real }', Real: 'string' }
+            );
+        });
+
         test('$anchor', () => {
             expectDecanted(
                 {

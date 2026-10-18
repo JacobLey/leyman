@@ -56,6 +56,13 @@ suite('errors', () => {
             '$ref is not encoded': { $ref: '#/%E0%A4%A' },
             '$ref is not a URI': { $ref: 'https://[' },
             '$ref names a missing anchor': { $ref: '#missing' },
+            '$ref through aliases to itself': {
+                $ref: 'a.json',
+                $defs: {
+                    A: { $id: 'a.json', $ref: 'b.json' },
+                    B: { $id: 'b.json', $ref: 'a.json' },
+                },
+            },
             '$id is not a string': { $id: 1 },
             '$id has a fragment': { $defs: { A: { $id: 'a.json#b' } } },
             '$id is not a URI': { $defs: { A: { $id: 'https://[' } } },

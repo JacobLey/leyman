@@ -103,7 +103,7 @@ A `$ref` may point at another file, or a URL, relative to the schema it is in: `
 - Files without a `$schema` are read in the input's dialect: JSON Schema 2020-12, or the OpenAPI version of an OpenAPI document.
 - A file or URL that can't be loaded throws a `DecantLoadError`. Loaded documents must be JSON.
 
-Files are bundled with [@hyperjump/json-schema](https://www.npmjs.com/package/@hyperjump/json-schema), following the bundling process of JSON Schema 2020-12. `decant()` itself reads one document, and doesn't load anything: bundle first, or use `decantFile`.
+Loaded files are embedded with an absolute `$id`, following the bundling process of JSON Schema 2020-12, so `$ref`s resolve to them unchanged, and `$id` and `$anchor` inside them work as in the original files. `--no-fetch` (or `fetch: false`) loads files only, never URLs. `decant()` itself reads one document, and doesn't load anything: bundle first, or use `decantFile`.
 
 ### OpenAPI documents
 
@@ -257,6 +257,7 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 | `options.cwd` | `string \| URL` | `process.cwd()` | Directory relative paths resolve from. |
 | `options.check` | `boolean` | `false` | Fail, rather than write, if the output file is not up to date. |
 | `options.dryRun` | `boolean` | `false` | Do not write the output file. |
+| `options.fetch` | `boolean` | `true` | Load `http:` and `https:` URLs the schema references. Otherwise only files are loaded. |
 | `options.name`, `options.strict`, `options.openApi30`, `options.typedMinItems` | | | Same as [`decant`](#decantschema-options). |
 
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
@@ -291,6 +292,7 @@ decant <input> [options]
 | `--open-api-30` | `false` | Read the schema as an OpenAPI 3.0 schema. An OpenAPI document's own version is used instead. |
 | `--ci` | `true` in CI | Fail if the output file is not up to date. Implies `--dry-run`. |
 | `--dry-run` | `false` | Do not write the output file. |
+| `--fetch` | `true` | Load URLs the schema references. `--no-fetch` loads only files. |
 | `--cwd` | `.` | Directory relative paths resolve from. |
 
 The path of a written file is logged. Nothing is logged when it was already up to date.

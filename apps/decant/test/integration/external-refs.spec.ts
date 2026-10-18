@@ -136,6 +136,84 @@ suite('external references', () => {
         expect(second).to.contain('CycleChild');
     });
 
+    withTmpDir.test(
+        'a file whose $id is not its path, a draft 7 anchor, and a boolean schema',
+        async ctx => {
+            // `elsewhere` is never loaded (fetch is off), but another file declares it
+            await decantFile(data('assorted.json'), {
+                output: ctx.resolve('assorted.ts'),
+                fetch: false,
+            });
+
+            expectTypes(await ctx.read('assorted.ts'), {
+                Schema: '{ declared?: Declared; thing?: AnchorId; nothing?: Nothing; elsewhere?: Elsewhere; declaring?: Elsewhere; everything?: Everything }',
+                Declared: 'string',
+                AnchorId: 'number',
+                Nothing: 'never',
+                Elsewhere: 'boolean',
+                Everything: 'unknown',
+            });
+        }
+    );
+
+    suite('can not load', () => {
+        const unloadable = {
+            'a file that is not JSON': './broken.json',
+            'a file that is not a schema': './array.json',
+            'an unsupported scheme': 'ftp://example.test/schema.json',
+        };
+        for (const [name, ref] of Object.entries(unloadable)) {
+            withTmpDir.test(name, async ctx => {
+                await writeFile(ctx.resolve('input.json'), JSON.stringify({ $ref: ref }));
+                await writeFile(ctx.resolve('broken.json'), '{ not json');
+                await writeFile(ctx.resolve('array.json'), '[]');
+
+                await expect(
+                    decantFile(ctx.resolve('input.json'), { output: ctx.resolve('input.ts') })
+                ).to.be.rejectedWith(DecantLoadError);
+            });
+        }
+
+        withTmpDir.test('a URL, with fetch disabled', async ctx => {
+            const server = await startSchemaServer();
+            try {
+                await writeFile(
+                    ctx.resolve('input.json'),
+                    JSON.stringify({ $ref: `${server.url}/remote.json` })
+                );
+
+                await expect(
+                    decantFile(ctx.resolve('input.json'), {
+                        output: ctx.resolve('input.ts'),
+                        fetch: false,
+                    })
+                ).to.be.rejectedWith(DecantLoadError, /disabled/u);
+            } finally {
+                await server.close();
+            }
+        });
+
+        withTmpDir.test('a URL that is not found', async ctx => {
+            const server = await startSchemaServer();
+            try {
+                await writeFile(
+                    ctx.resolve('input.json'),
+                    JSON.stringify({ properties: { a: { $ref: `${server.url}/missing.json` } } })
+                );
+
+                const thrown: unknown = await expect(
+                    decantFile(ctx.resolve('input.json'), {
+                        output: ctx.resolve('input.ts'),
+                        strict: false,
+                    })
+                ).to.be.rejectedWith(DecantLoadError, /404/u);
+                expect(thrown).to.have.property('pointer', '#/properties/a/$ref');
+            } finally {
+                await server.close();
+            }
+        });
+    });
+
     withTmpDir.test('a file that does not exist', async ctx => {
         await expect(
             decantFile(data('missing.json'), { output: ctx.resolve('missing.ts') })

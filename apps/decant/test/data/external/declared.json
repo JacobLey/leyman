@@ -1,0 +1,5 @@
+{
+  "$id": "https://example.test/schemas/declared.json",
+  "title": "Declared",
+  "type": "string"
+}

@@ -77,9 +77,10 @@ export interface DocumentIndex {
      */
     readonly anchors: ReadonlyMap<string, Target>;
     /**
-     * URIs (without a fragment) of every `$ref`, resolved against the base URI of its schema.
+     * URIs (without a fragment) of every `$ref`, resolved against the base URI of its schema,
+     * with the JSON Pointer to the first `$ref` to each.
      */
-    readonly references: ReadonlySet<string>;
+    readonly references: ReadonlyMap<string, string>;
     /**
      * Schema resources, keyed by their URI (without a fragment).
      */
@@ -170,7 +171,7 @@ const followPointer = (target: Target, pointer: string): Target | null => {
 class Indexer {
     readonly #anchors = new Map<string, Target>();
     readonly #baseUris = new Map<string, string>();
-    readonly #references = new Set<string>();
+    readonly #references = new Map<string, string>();
     readonly #resources = new Map<string, Target>();
 
     /**
@@ -198,8 +199,8 @@ class Indexer {
         const baseUri = this.#identify(schema, pointer, parentBaseUri);
         this.#baseUris.set(pointer, baseUri);
         const reference = typeof schema.$ref === 'string' ? resolveUri(schema.$ref, baseUri) : null;
-        if (reference) {
-            this.#references.add(reference.uri);
+        if (reference && !this.#references.has(reference.uri)) {
+            this.#references.set(reference.uri, childPointer(pointer, '$ref'));
         }
 
         for (const keyword of schemaKeywords) {
@@ -363,7 +364,7 @@ export const resolveReference = (
  */
 export const externalResources = (index: DocumentIndex): string[] =>
     index.references
-        .values()
+        .keys()
         .filter(uri => !index.resources.has(uri))
         .toArray();
 

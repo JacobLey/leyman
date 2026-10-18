@@ -328,6 +328,19 @@ const isDefinitionGroup = (schema: unknown): boolean =>
     Object.keys(schema).every(keyword => groupKeywords.has(keyword));
 
 /**
+ * Whether a schema only gives another URI to a resource, with an `$id` and a `$ref` (e.g. a file whose own
+ * `$id` is not where it was loaded from). References see through it, so it is not a type of its own.
+ *
+ * @param schema - a schema
+ * @returns true if the schema has only `$id` and `$ref`
+ */
+const isResourceAlias = (schema: unknown): schema is SchemaObject & { $ref: string } =>
+    isSchemaObject(schema) &&
+    typeof schema.$id === 'string' &&
+    typeof schema.$ref === 'string' &&
+    Object.keys(schema).length === 2;
+
+/**
  * Converts a JSON Schema document to types.
  *
  * The root schema, every definition (`$defs`/`definitions`) at the root of the document,
@@ -438,7 +451,7 @@ export class Converter {
             container = readObject(container[key], containerPointer);
         }
         for (const [name, schema] of Object.entries(container)) {
-            if (!isDefinitionGroup(schema)) {
+            if (!isDefinitionGroup(schema) && !isResourceAlias(schema)) {
                 this.#register(childPointer(containerPointer, name), name, schema);
             }
         }
@@ -460,7 +473,17 @@ export class Converter {
             throw new DecantInvalidSchemaError('$ref must be a string', { pointer: refPointer });
         }
         const schemaPointer = refPointer.slice(0, refPointer.lastIndexOf('/'));
-        const target = resolveReference(this.#index!, ref, schemaPointer);
+        let target = resolveReference(this.#index!, ref, schemaPointer);
+        const aliases = new Set<string>();
+        while (isResourceAlias(target.schema)) {
+            if (aliases.has(target.pointer)) {
+                throw new DecantInvalidSchemaError(`$ref "${ref}" only refers to itself`, {
+                    pointer: refPointer,
+                });
+            }
+            aliases.add(target.pointer);
+            target = resolveReference(this.#index!, target.schema.$ref, target.pointer);
+        }
         return {
             kind: 'reference',
             name: this.#register(target.pointer, referenceName(target.pointer), target.schema),

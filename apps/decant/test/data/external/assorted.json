@@ -1,0 +1,23 @@
+{
+  "type": "object",
+  "properties": {
+    "declared": {
+      "$ref": "./declared.json"
+    },
+    "thing": {
+      "$ref": "./anchor-id.json#thing"
+    },
+    "nothing": {
+      "$ref": "./nothing.json"
+    },
+    "elsewhere": {
+      "$ref": "https://example.test/elsewhere.json"
+    },
+    "declaring": {
+      "$ref": "./declares-elsewhere.json"
+    },
+    "everything": {
+      "$ref": "./everything.json"
+    }
+  }
+}

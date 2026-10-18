@@ -8,6 +8,7 @@ import { commandId } from './lib/types.js';
 interface DecantCommandExtendedInput extends DecantCommandInput {
     ci: boolean;
     dryRun: boolean;
+    fetch: boolean;
     input: string;
     name: string;
     openApi30: boolean;
@@ -62,6 +63,12 @@ export const decantCommand: Command<DecantCommandExtendedInput> = {
                     type: 'number',
                     default: defaultTypedMinItems,
                 },
+                fetch: {
+                    describe:
+                        'Load URLs the schema references. Disable with --no-fetch to load only files',
+                    type: 'boolean',
+                    default: true,
+                },
                 ci: {
                     describe: 'Fail if the output file is not up to date. Implies --dry-run',
                     type: 'boolean',
@@ -80,6 +87,7 @@ export const decantCommand: Command<DecantCommandExtendedInput> = {
             check: options.ci,
             cwd: options.cwd,
             dryRun: options.dryRun,
+            fetch: options.fetch,
             name: options.name,
             openApi30: options.openApi30,
             ...(options.output !== undefined && { output: options.output }),

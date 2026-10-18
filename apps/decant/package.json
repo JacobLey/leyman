@@ -46,8 +46,6 @@
     "decant": "./bin.mjs"
   },
   "dependencies": {
-    "@hyperjump/browser": "catalog:",
-    "@hyperjump/json-schema": "catalog:",
     "ci-info": "catalog:",
     "entry-script": "workspace:^",
     "format-file": "workspace:^",

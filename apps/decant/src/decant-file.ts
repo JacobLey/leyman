@@ -7,7 +7,7 @@ import { formatText } from 'format-file';
 import { parseCwd } from 'parse-cwd';
 import { populateFile } from 'populate-files';
 import { decant } from './decant.js';
-import { bundleReferences } from './lib/bundle.js';
+import { loadReferences } from './lib/load.js';
 import { openApiDialect } from './lib/openapi.js';
 
 /**
@@ -26,6 +26,12 @@ export interface DecantFileOptions extends DecantOptions {
      * @default process.cwd()
      */
     cwd?: Directory;
+    /**
+     * Load `http:` and `https:` URLs the schema references. Otherwise, only files are loaded.
+     *
+     * @default true
+     */
+    fetch?: boolean;
     /**
      * Do not write the output file.
      *
@@ -65,9 +71,9 @@ export const decantFile = async (
     const schema: unknown = JSON.parse(await readFile(inputPath, 'utf8'));
     const baseUri = pathToFileURL(inputPath).href;
     const documentDialect = openApiDialect(schema);
-    const bundled = await bundleReferences(schema, {
+    const bundled = await loadReferences(schema, {
         baseUri,
-        dialect: documentDialect ?? (options.openApi30 ? 'openapi-3.0' : 'draft-2020-12'),
+        fetch: options.fetch ?? true,
         isDocument: documentDialect !== null,
     });
     const content = await formatText(decant(bundled, { ...options, baseUri }), { ext: '.ts' });
