@@ -8,9 +8,11 @@ import type {
     AbstractClean,
     ConditionalNullable,
     JsonSchema,
+    NotNullParameter,
     Nullable,
     SchemaType,
 } from '../lib/types.js';
+import type { NullSchema } from './null.js';
 import escapeStringRegexp from 'escape-string-regexp';
 import { maxInt } from '../lib/constants.js';
 import { AbstractSchema } from '../lib/schema.js';
@@ -121,10 +123,19 @@ export class StringSchema<
         ConditionalNullable<N, IfN, ThenN, ElseN>
     >;
 
-    declare public not: <NotN extends boolean>(
+    /**
+     * `.not(nullSchema())` makes a nullable schema non-nullable.
+     * Any other schema is excluded in JSON Schema, but TypeScript can't express it,
+     * so it only removes `null` from the type when the schema is nullable.
+     */
+    declare public not: ((
         this: AnyStringSchema,
-        schema: StringSchema<string, NotN>
-    ) => NotN extends true ? StringSchema<T, boolean> : this;
+        schema: NotNullParameter<N> & NullSchema
+    ) => StringSchema<T, boolean>) &
+        (<NotN extends boolean>(
+            this: AnyStringSchema,
+            schema: StringSchema<string, NotN>
+        ) => NotN extends true ? StringSchema<T, boolean> : this);
 
     declare public nullable: (
         this: AnyStringSchema

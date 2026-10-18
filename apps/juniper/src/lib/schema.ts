@@ -926,9 +926,12 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             mergeAllOf(base, conditionals);
         }
 
-        const [not, ...nots] = this.#nots.map(schema => ({
-            not: schema.getChildSchema(compositionParams),
-        }));
+        // A `not` of `null` is redundant once `type` excludes null
+        const [not, ...nots] = this.#nots
+            .filter(schema => !schemaType || isNullable || schema.schemaType !== 'null')
+            .map(schema => ({
+                not: schema.getChildSchema(compositionParams),
+            }));
         Object.assign(base, not);
         mergeAllOf(base, nots);
 
@@ -1162,7 +1165,8 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                     ? !predicate.then || predicate.then.#getNullable(params)
                     : !predicate.else || predicate.else.#getNullable(params)
             ) &&
-            this.#nots.every(not => !not.#getNullable(params)) &&
+            // `not` of a nullable schema, or of `null` itself, rejects null
+            this.#nots.every(not => !not.#getNullable(params) && not.schemaType !== 'null') &&
             this.#allOf.every(allOf => allOf.#getNullable(params)) &&
             this.#anyOf.every(anyOf => anyOf.some(any => any.#getNullable(params))) &&
             this.#oneOf.every(oneOf => oneOf.filter(one => one.#getNullable(params)).length === 1)

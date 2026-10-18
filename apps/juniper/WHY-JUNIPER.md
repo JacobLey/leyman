@@ -101,7 +101,7 @@ Juniper emits TypeScript types for related JSON Schemas on a best-effort basis. 
   // Legal in TypeScript, despite appearances
   const notAbc: Exclude<string, 'abc'> = 'abc';
   ```
-  The general exception is nullability — Juniper can enforce that a schema cannot be null.
+  The general exception is nullability — `.not(nullSchema())` makes a nullable schema non-nullable, in both the JSON Schema and its type.
 
 ---
 

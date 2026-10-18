@@ -107,6 +107,9 @@ export const allOf = mergeSchema()
     .allOf(objectSchema({ properties: { b: numberSchema() } }));
 export const stringAllOf = stringSchema().allOf(stringSchema().startsWith('a'));
 
+export const notNull = stringSchema().nullable().not(nullSchema());
+export const mergeNotNull = mergeSchema().anyOf([stringSchema(), nullSchema()]).not(nullSchema());
+
 // Definitions
 const address = objectSchema({
     properties: { city: stringSchema(), zip: stringSchema({ pattern: '^[0-9]{5}$' }) },

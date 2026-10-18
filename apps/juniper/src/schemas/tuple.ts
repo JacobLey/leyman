@@ -1,6 +1,14 @@
 import type { AbstractSchema, ConditionalResult, SchemaGenerics } from '../lib/schema.js';
-import type { ConditionalNullable, IsNever, Schema, SchemaType, ToBaseType } from '../lib/types.js';
+import type {
+    ConditionalNullable,
+    IsNever,
+    NotNullParameter,
+    Schema,
+    SchemaType,
+    ToBaseType,
+} from '../lib/types.js';
 import type { ArrayParams, ArrayType } from './array.js';
+import type { NullSchema } from './null.js';
 import { ArraySchema, ArraySchemaOverride, prefixItemsSym } from './array.js';
 
 type TupleParams<T, P extends any[], C extends P[number], M, N extends boolean> = Omit<
@@ -101,12 +109,21 @@ export class TupleSchema<
         >
     >;
 
-    declare public not: <NotN extends boolean>(
+    /**
+     * `.not(nullSchema())` makes a nullable schema non-nullable.
+     * Any other schema is excluded in JSON Schema, but TypeScript can't express it,
+     * so it only removes `null` from the type when the schema is nullable.
+     */
+    declare public not: ((
         this: AnyTupleSchema,
-        schema:
-            | ArraySchema<any, any[], any, unknown, NotN>
-            | TupleSchema<any, any[], any, unknown, NotN>
-    ) => NotN extends true ? TupleSchema<T, P, C, unknown, boolean> : this;
+        schema: NotNullParameter<N> & NullSchema
+    ) => TupleSchema<T, P, C, unknown, boolean>) &
+        (<NotN extends boolean>(
+            this: AnyTupleSchema,
+            schema:
+                | ArraySchema<any, any[], any, unknown, NotN>
+                | TupleSchema<any, any[], any, unknown, NotN>
+        ) => NotN extends true ? TupleSchema<T, P, C, unknown, boolean> : this);
 
     declare public nullable: (
         this: AnyTupleSchema

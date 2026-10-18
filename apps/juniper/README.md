@@ -551,6 +551,17 @@ The following methods are available on every schema. All methods return a new (c
 
 Individual schemas may not expose every method when the result would be nonsensical or forbidden (e.g. `EnumSchema` cannot be `nullable`).
 
+`not(schema)` rejects everything `schema` accepts, including `null` when `schema` is nullable. To make a nullable schema non-nullable, pass `nullSchema()`:
+
+```ts
+import { nullSchema, stringSchema } from 'juniper';
+
+// string, emitted as { type: 'string' }
+const name = stringSchema().nullable().not(nullSchema());
+```
+
+By contrast, `.not(stringSchema().nullable())` rejects every string as well as `null`, so nothing passes.
+
 ---
 
 ### `ArraySchema`
@@ -807,3 +818,4 @@ enumSchema({
 
 - [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md) — Motivation, design decisions, and comparison to alternative libraries.
 - [juniper-validator](https://www.npmjs.com/package/juniper-validator) — Validation companion for Juniper schemas.
+- [decant](https://www.npmjs.com/package/decant) — the reverse: generates TypeScript types from a JSON Schema file, matching the types Juniper infers.

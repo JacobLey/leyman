@@ -2,7 +2,17 @@ import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
 import type { JsonSchema, Schema, SchemaType } from 'juniper';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
-import { isSchema, mergeSchema, numberSchema, NumberSchema, stringSchema } from 'juniper';
+import {
+    arraySchema,
+    isSchema,
+    mergeSchema,
+    nullSchema,
+    numberSchema,
+    NumberSchema,
+    objectSchema,
+    stringSchema,
+    tupleSchema,
+} from 'juniper';
 import { suite, test } from 'mocha-chain';
 import { compile } from '../../ajv.js';
 
@@ -1092,6 +1102,90 @@ suite('schema', () => {
             expect(validator(11)).to.equal(true);
             expect(validator(13)).to.equal(false);
             expect(validator(9)).to.equal(false);
+        });
+    });
+
+    suite('not null', () => {
+        test('removes null', () => {
+            const schema = stringSchema().nullable().not(nullSchema());
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<string>();
+            expect(schema.toJSON()).to.deep.equal({ type: 'string' });
+        });
+
+        test('rejects null', () => {
+            const validator = compile(stringSchema().nullable().not(nullSchema()).toJSON());
+
+            expect(validator('abc')).to.equal(true);
+            expect(validator(null)).to.equal(false);
+        });
+
+        test('OpenAPI 3.0', () => {
+            const schema = numberSchema().nullable().not(nullSchema());
+
+            expect(schema.toJSON({ openApi30: true })).to.deep.equal({ type: 'number' });
+        });
+
+        test('nullable is a no-op afterwards', () => {
+            const schema = stringSchema().nullable().not(nullSchema()).nullable();
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<string>();
+            expect(schema.toJSON()).to.deep.equal({ type: 'string' });
+        });
+
+        test('every nullable schema', () => {
+            const number = numberSchema().nullable().not(nullSchema());
+            const object = objectSchema({ properties: { a: stringSchema() }, required: ['a'] })
+                .nullable()
+                .not(nullSchema());
+            const array = arraySchema(stringSchema()).nullable().not(nullSchema());
+            const tuple = tupleSchema().prefixItem(stringSchema()).nullable().not(nullSchema());
+
+            expectTypeOf<SchemaType<typeof number>>().toEqualTypeOf<number>();
+            expectTypeOf<SchemaType<typeof object>>().toEqualTypeOf<{ a: string }>();
+            expectTypeOf<SchemaType<typeof array>>().toEqualTypeOf<string[]>();
+            expectTypeOf<SchemaType<typeof tuple>>().toEqualTypeOf<[string]>();
+            expect(
+                [number, object, array, tuple].map(schema => schema.toJSON().type)
+            ).to.deep.equal(['number', 'object', 'array', 'array']);
+        });
+
+        test('merge schema', () => {
+            const schema = mergeSchema().anyOf([stringSchema(), nullSchema()]).not(nullSchema());
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<string>();
+            expect(schema.toJSON()).to.deep.equal({
+                anyOf: [{ type: 'string' }, { type: 'null' }],
+                not: { type: 'null' },
+            });
+        });
+
+        test('defined schema', () => {
+            const defined = stringSchema().define('Name');
+            const schema = objectSchema({
+                properties: { name: defined.nullable().not(nullSchema()) },
+            });
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{ name?: string }>();
+            expect(schema.toJSON()).to.deep.equal({
+                type: 'object',
+                properties: { name: { $ref: '#/$defs/Name' } },
+                $defs: { Name: { type: 'string' } },
+            });
+        });
+
+        test('in a composition', () => {
+            const schema = stringSchema()
+                .nullable()
+                .allOf(stringSchema().nullable().not(nullSchema()));
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<string>();
+            expect(compile(schema.toJSON())(null)).to.equal(false);
+        });
+
+        test('only on nullable schemas', () => {
+            // @ts-expect-error
+            stringSchema().not(nullSchema());
         });
     });
 

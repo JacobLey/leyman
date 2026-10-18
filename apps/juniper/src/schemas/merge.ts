@@ -1,5 +1,6 @@
 import type { ConditionalResult, SchemaGenerics, SchemaParams } from '../lib/schema.js';
 import type { Intersect, Schema, SchemaType } from '../lib/types.js';
+import type { NullSchema } from './null.js';
 import { AbstractSchema } from '../lib/schema.js';
 
 type AnyMergeSchema = MergeSchema<any>;
@@ -41,7 +42,15 @@ export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
         conditionals: ConditionalResult<Then, Else>
     ) => MergeSchema<Intersect<T, Intersect<SchemaType<If>, SchemaType<Then>> | SchemaType<Else>>>;
 
-    declare public not: (this: AnyMergeSchema, schemas: Schema<unknown>) => this;
+    /**
+     * `.not(nullSchema())` removes `null` from the type.
+     * Any other schema is excluded in JSON Schema, but TypeScript can't express it, so the type is unchanged.
+     */
+    declare public not: ((
+        this: AnyMergeSchema,
+        schema: NullSchema
+    ) => MergeSchema<Exclude<T, null>>) &
+        ((this: AnyMergeSchema, schemas: Schema<unknown>) => this);
 
     /**
      * Not applicable.

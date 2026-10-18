@@ -150,6 +150,15 @@ export type AbstractStrip<Base, ToStrip, Replacement = never> = Base extends inf
  */
 export type Nullable<T, N extends boolean> = [N] extends [true] ? T | null : T;
 
+/**
+ * Accepts `nullSchema()` in `not` only when the schema is nullable, as it would do nothing otherwise.
+ *
+ * @template N nullability of the schema `not` is called on
+ */
+export type NotNullParameter<N extends boolean> = [N] extends [true]
+    ? unknown
+    : { error: 'Error: schema is not nullable.' };
+
 export type ConditionalNullable<
     Base extends boolean,
     If extends boolean,

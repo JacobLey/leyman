@@ -41,6 +41,19 @@ Available on every schema, except where the result would be nonsensical (for exa
 | [`if then else`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else) | ❌ | ❌ | ✅ |
 | [`nullable`](https://swagger.io/docs/specification/data-models/data-types/#null) | ❌ | ❌ | ✅ |
 
+`not(schema)` rejects everything `schema` accepts, including `null` when `schema` is nullable. To make a nullable schema non-nullable, pass `nullSchema()`:
+
+```ts
+import { nullSchema, stringSchema } from 'juniper';
+
+// string, emitted as { type: 'string' }
+const name = stringSchema().nullable().not(nullSchema());
+```
+
+By contrast, `.not(stringSchema().nullable())` rejects every string as well as `null`, so nothing passes.
+
+## `ArraySchema`
+
 Represents `type: 'array'`. TypeScript type: `unknown[]`.
 
 | Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |

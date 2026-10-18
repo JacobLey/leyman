@@ -9,11 +9,13 @@ import type {
     IsAny,
     IsNever,
     JsonSchema,
+    NotNullParameter,
     Nullable,
     Schema,
     SchemaType,
     ToBaseType,
 } from '../lib/types.js';
+import type { NullSchema } from './null.js';
 import { maxInt } from '../lib/constants.js';
 import { AbstractSchema } from '../lib/schema.js';
 import { NeverSchema } from './never.js';
@@ -154,10 +156,19 @@ export class ArraySchema<
         >
     >;
 
-    declare public not: <NotN extends boolean>(
+    /**
+     * `.not(nullSchema())` makes a nullable schema non-nullable.
+     * Any other schema is excluded in JSON Schema, but TypeScript can't express it,
+     * so it only removes `null` from the type when the schema is nullable.
+     */
+    declare public not: ((
         this: AnyArraySchema,
-        schema: ArraySchema<any, any[], any, unknown, NotN>
-    ) => NotN extends true ? ArraySchema<T, P, C, unknown, boolean> : this;
+        schema: NotNullParameter<N> & NullSchema
+    ) => ArraySchema<T, P, C, unknown, boolean>) &
+        (<NotN extends boolean>(
+            this: AnyArraySchema,
+            schema: ArraySchema<any, any[], any, unknown, NotN>
+        ) => NotN extends true ? ArraySchema<T, P, C, unknown, boolean> : this);
 
     declare public nullable: (
         this: AnyArraySchema

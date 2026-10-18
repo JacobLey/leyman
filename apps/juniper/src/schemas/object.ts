@@ -12,10 +12,12 @@ import type {
     FlattenObject,
     IsNever,
     JsonSchema,
+    NotNullParameter,
     Nullable,
     Schema,
     SchemaType,
 } from '../lib/types.js';
+import type { NullSchema } from './null.js';
 import { maxInt } from '../lib/constants.js';
 import { AbstractSchema } from '../lib/schema.js';
 import { mergeAllOf } from '../lib/utils.js';
@@ -247,14 +249,23 @@ export class ObjectSchema<
         >
     >;
 
-    declare public not: <
-        NotP extends BaseParameterSchemaObject,
-        NotR extends StripString<Extract<keyof NotP, string>>,
-        NotN extends boolean,
-    >(
+    /**
+     * `.not(nullSchema())` makes a nullable schema non-nullable.
+     * Any other schema is excluded in JSON Schema, but TypeScript can't express it,
+     * so it only removes `null` from the type when the schema is nullable.
+     */
+    declare public not: ((
         this: AnyObjectSchema,
-        schema: ObjectSchema<NotP, NotR, any, any, any, NotN>
-    ) => NotN extends true ? ObjectSchema<P, R, A, X, M, boolean> : this;
+        schema: NotNullParameter<N> & NullSchema
+    ) => ObjectSchema<P, R, A, X, M, boolean>) &
+        (<
+            NotP extends BaseParameterSchemaObject,
+            NotR extends StripString<Extract<keyof NotP, string>>,
+            NotN extends boolean,
+        >(
+            this: AnyObjectSchema,
+            schema: ObjectSchema<NotP, NotR, any, any, any, NotN>
+        ) => NotN extends true ? ObjectSchema<P, R, A, X, M, boolean> : this);
 
     declare public nullable: (
         this: AnyObjectSchema
