@@ -107,6 +107,19 @@ suite('cli', () => {
             expect(thrown).to.have.property('stderr').that.includes('#/properties/a/type');
         });
 
+        withTmpDir.test('OpenAPI document', async ctx => {
+            await ctx.writeJson('openapi.json', {
+                openapi: '3.0.3',
+                info: { title: 'API', version: '1.0.0' },
+                paths: {},
+                components: { schemas: { User: userSchema } },
+            });
+
+            await execAsync(`./bin.mjs openapi.json --ci=false --cwd ${ctx.tmpDir.path}`);
+
+            expect(await ctx.read('openapi.ts')).to.contain('export type User');
+        });
+
         withTmpDir.test('--no-strict', async ctx => {
             await ctx.writeJson('user.json', { type: 'string', unknownKeyword: true });
 

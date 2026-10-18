@@ -101,6 +101,22 @@ export const genericKeywords: ReadonlySet<string> = new Set([
 export const unsupportedKeywords: ReadonlySet<string> = new Set(['$dynamicRef', '$recursiveRef']);
 
 /**
- * Keywords only allowed with the OpenAPI 3.0 dialect.
+ * Keywords OpenAPI (3.0 and 3.1) adds to its schemas. None of them change the type.
  */
-export const openApi30Keywords: ReadonlySet<string> = new Set(['example', 'nullable']);
+export const openApiKeywords: ReadonlySet<string> = new Set([
+    'discriminator',
+    'example',
+    'externalDocs',
+    'xml',
+]);
+
+/**
+ * Keywords only OpenAPI 3.0 has.
+ */
+export const openApi30Keywords: ReadonlySet<string> = new Set(['nullable']);
+
+/**
+ * Which flavour of JSON Schema a schema is written in.
+ * OpenAPI 3.0 has its own (e.g. `nullable`), and OpenAPI 3.1 uses 2020-12 with a few extra keywords.
+ */
+export type Dialect = 'draft-2020-12' | 'openapi-3.0' | 'openapi-3.1';

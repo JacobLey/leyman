@@ -1,7 +1,7 @@
 {
   "name": "decant",
   "version": "0.0.1",
-  "description": "Generate TypeScript types from JSON Schema files, with strict schema checks and the same types Juniper infers.",
+  "description": "Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers.",
   "engines": {
     "node": ">=24"
   },

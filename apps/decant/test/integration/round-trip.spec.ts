@@ -2,7 +2,14 @@ import type { DecantOptions } from 'decant';
 import type { Schema } from 'juniper';
 import { expect } from '@leyman/expect';
 import { decant } from 'decant';
-import { arraySchema, enumSchema, numberSchema, objectSchema, stringSchema } from 'juniper';
+import {
+    arraySchema,
+    components,
+    enumSchema,
+    numberSchema,
+    objectSchema,
+    stringSchema,
+} from 'juniper';
 import { suite, test } from 'mocha-chain';
 import {
     assertionImports,
@@ -12,6 +19,7 @@ import {
 } from '../lib/expect-decanted.js';
 import { typeCheck } from '../lib/type-check.js';
 import * as fixtures from './fixtures/juniper-schemas.js';
+import * as openApiFixtures from './fixtures/openapi-schemas.js';
 
 /**
  * Serialize a Juniper schema, decant it, and check the generated type is equivalent to Juniper's.
@@ -84,6 +92,45 @@ suite('round trip', () => {
                 expectRoundTrip(name, { openApi30: true }, schema =>
                     schema.toJSON({ openApi30: true })
                 );
+            });
+        }
+    });
+
+    suite('OpenAPI documents', () => {
+        const versions = [
+            { openapi: '3.0.3', options: { openApi30: true } },
+            { openapi: '3.1.0', options: { definitionsPath: '#/components/schemas/' } },
+        ] as const;
+        for (const { openapi, options } of versions) {
+            test(openapi, () => {
+                const document = {
+                    openapi,
+                    info: { title: 'API', version: '1.0.0' },
+                    paths: {},
+                    components: {
+                        schemas: components([openApiFixtures.user, openApiFixtures.tree], options),
+                    },
+                };
+                // eslint-disable-next-line unicorn/prefer-structured-clone
+                const source = decant(JSON.parse(JSON.stringify(document)));
+                const assertion = [
+                    ...assertionImports,
+                    "import type { SchemaType } from 'juniper';",
+                    "import type * as fixtures from '../integration/fixtures/openapi-schemas.js';",
+                    "import type { Address, TreeNode, User } from './decanted.js';",
+                    equivalentAssertion('Address', 'SchemaType<typeof fixtures.address>'),
+                    equivalentAssertion('User', 'SchemaType<typeof fixtures.user>'),
+                    equivalentAssertion('TreeNode', 'SchemaType<typeof fixtures.tree>'),
+                ].join('\n');
+
+                expect(
+                    typeCheck({
+                        'assertion.ts': assertion,
+                        'decanted.ts': source,
+                        'normalize.ts': normalizeModule,
+                    }),
+                    `Generated:\n${source}`
+                ).to.deep.equal([]);
             });
         }
     });

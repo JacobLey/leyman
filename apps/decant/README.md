@@ -1,7 +1,7 @@
 <div style="text-align:center">
 
 # decant
-Generate TypeScript types from JSON Schema files, with strict schema checks and the same types Juniper infers.
+Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers.
 
 [![npm package](https://badge.fury.io/js/decant.svg)](https://www.npmjs.com/package/decant)
 [![License](https://img.shields.io/npm/l/decant.svg)](https://github.com/JacobLey/leyman/blob/main/apps/decant/LICENSE)
@@ -92,6 +92,16 @@ The programmatic API is the same: `decant(schema)` returns the TypeScript source
 
 The root schema becomes a type named `Schema` (or `--name`). Every definition in the root `$defs` (or draft 7 `definitions`) becomes an exported type named after its key, in PascalCase. A schema referenced by `$ref` from elsewhere in the document becomes a named type too. Everything else is inlined.
 
+### OpenAPI documents
+
+An OpenAPI 3.0 or 3.1 document (a JSON file with an `openapi` version) is read too. Each of its `components.schemas` becomes an exported type named after its key, and there is no root type. The version decides the dialect: 3.0 schemas may use `nullable`, and 3.1 schemas are JSON Schema 2020-12. Either may use OpenAPI's own keywords (`discriminator`, `xml`, `externalDocs`, `example`), which don't change the type.
+
+```sh
+npx decant openapi.json -o src/api-types.ts
+```
+
+The document must be JSON. Convert a YAML document first.
+
 The generated file is formatted with [format-file](https://www.npmjs.com/package/format-file), using your project's Biome or Prettier config if either is installed.
 
 ## Precise types
@@ -143,7 +153,8 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 
 - `$ref` to another file (`other.json#/...`), to an anchor, `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`.
 - `unevaluatedProperties`, `unevaluatedItems`, `propertyNames` and `contains` are accepted, but don't change the type.
-- OpenAPI documents. Pass a schema, not a whole document. With `openApi30: true`, OpenAPI 3.0 schemas (`nullable`, `example`) are read.
+- OpenAPI's `discriminator` is accepted, but not checked against the `oneOf` branches. The branches still narrow on the property as a union does.
+- Swagger 2.0 documents.
 
 ### Differences from Juniper
 
@@ -160,7 +171,7 @@ Strict mode (the default) fails with a `DecantStrictModeError` on schemas that a
 
 Keywords that do nothing:
 
-- An unknown keyword. Keywords starting with `x-` are allowed, as are `nullable` and `example` with `openApi30`.
+- An unknown keyword. Keywords starting with `x-` are allowed, as are OpenAPI's keywords in an OpenAPI document or with `openApi30`.
 - A type specific keyword (e.g. `maxLength`) in a schema without a `type`, or whose `type` it doesn't apply to (e.g. `maxLength` on a number). Subschemas inherit their parent's type.
 - A `required` property that isn't in `properties`, of the schema or a parent.
 - `then` or `else` without `if`.
@@ -199,10 +210,10 @@ Generate TypeScript types from a JSON Schema.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `schema` | `unknown` | — | Required. Parsed JSON Schema document. |
-| `options.name` | `string` | `'Schema'` | Name of the root schema's type. |
+| `schema` | `unknown` | — | Required. Parsed JSON Schema, or OpenAPI document. |
+| `options.name` | `string` | `'Schema'` | Name of the root schema's type. Not used for an OpenAPI document. |
 | `options.strict` | `boolean` | `true` | Fail on likely mistakes. See [Strict mode](#strict-mode). |
-| `options.openApi30` | `boolean` | `false` | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. |
+| `options.openApi30` | `boolean` | `false` | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead. |
 
 **Returns** `string` — TypeScript source, not formatted.
 
@@ -255,9 +266,9 @@ decant <input> [options]
 | Option | Default | Description |
 |--------|---------|-------------|
 | `-o`, `--output` | input path with `.ts` | Path of the TypeScript file to write. |
-| `--name` | `Schema` | Name of the root schema's type. |
+| `--name` | `Schema` | Name of the root schema's type. Not used for an OpenAPI document. |
 | `--strict` | `true` | Fail on likely mistakes. Disable with `--no-strict`. |
-| `--open-api-30` | `false` | Read the schema as an OpenAPI 3.0 schema. |
+| `--open-api-30` | `false` | Read the schema as an OpenAPI 3.0 schema. An OpenAPI document's own version is used instead. |
 | `--ci` | `true` in CI | Fail if the output file is not up to date. Implies `--dry-run`. |
 | `--dry-run` | `false` | Do not write the output file. |
 | `--cwd` | `.` | Directory relative paths resolve from. |

@@ -1,4 +1,4 @@
-import type { JsonType } from './keywords.js';
+import type { Dialect, JsonType } from './keywords.js';
 import type { SchemaObject } from './read-keyword.js';
 import type { TsDoc, TsIndex, TsProperty, TsType } from './ts-type.js';
 import {
@@ -9,6 +9,7 @@ import {
 import {
     genericKeywords,
     openApi30Keywords,
+    openApiKeywords,
     typeKeywords,
     unsupportedKeywords,
 } from './keywords.js';
@@ -42,9 +43,9 @@ import {
 
 export interface ConvertOptions {
     /**
-     * Read OpenAPI 3.0 keywords, such as `nullable`.
+     * Flavour of JSON Schema, which decides the keywords allowed (e.g. `nullable` in OpenAPI 3.0).
      */
-    readonly openApi30: boolean;
+    readonly dialect: Dialect;
     /**
      * Fail on schemas that are valid, but likely mistakes. See the README for the rules.
      */
@@ -257,6 +258,21 @@ const objectContradiction = (
 };
 
 /**
+ * Check an OpenAPI `discriminator` names a property. It doesn't change the type.
+ *
+ * @param discriminator - value of the keyword
+ * @param pointer - JSON Pointer to the keyword
+ * @throws {DecantInvalidSchemaError} if it has no `propertyName`
+ */
+const checkDiscriminator = (discriminator: unknown, pointer: string): void => {
+    if (typeof readObject(discriminator, pointer).propertyName !== 'string') {
+        throw new DecantInvalidSchemaError('discriminator must have a propertyName', {
+            pointer: childPointer(pointer, 'propertyName'),
+        });
+    }
+};
+
+/**
  * Converts a JSON Schema document to types.
  *
  * The root schema, every definition (`$defs`/`definitions`) at the root of the document,
@@ -296,6 +312,22 @@ export class Converter {
         this.#register('#', rootName, this.#root);
         this.#registerDefinitions();
 
+        const [root, ...rest] = this.#convertPending();
+        return [root!, ...rest.toSorted(compareNames)];
+    }
+
+    /**
+     * Convert an OpenAPI document. Each of its `components.schemas` becomes a named type.
+     *
+     * @returns named types, sorted by name
+     * @throws {DecantError} if a schema is invalid, breaks a strict mode rule, or is not supported
+     */
+    public convertDocument(): NamedType[] {
+        this.#registerContainer(['components', 'schemas']);
+        return this.#convertPending().toSorted(compareNames);
+    }
+
+    #convertPending(): NamedType[] {
         const types: NamedType[] = [];
         // `#pending` grows while converting, as references are found. An array iterator includes them.
         for (const { pointer, schema } of this.#pending) {
@@ -305,27 +337,38 @@ export class Converter {
                 type: this.#convert(schema, pointer, emptyScope),
             });
         }
-        const [root, ...rest] = types;
-        return [root!, ...rest.toSorted(compareNames)];
+        return types;
     }
 
     /**
      * Name every definition at the root of the document, so each is generated even if it is not referenced.
      */
     #registerDefinitions(): void {
+        this.#registerContainer(['$defs']);
+        this.#registerContainer(['definitions']);
+    }
+
+    /**
+     * Name every schema of a container, such as `$defs`.
+     *
+     * @param path - keys of the container, from the root of the document
+     * @throws {DecantInvalidSchemaError} if the container, or an object on the way to it, is not an object
+     */
+    #registerContainer(path: readonly string[]): void {
         if (!isSchemaObject(this.#root)) {
             return;
         }
-        for (const container of ['$defs', 'definitions'] as const) {
-            const definitions = this.#root[container];
-            if (definitions === undefined) {
-                continue;
+        let container = this.#root;
+        let containerPointer = '#';
+        for (const key of path) {
+            if (container[key] === undefined) {
+                return;
             }
-            const containerPointer = childPointer('#', container);
-            const entries = Object.entries(readObject(definitions, containerPointer));
-            for (const [name, schema] of entries) {
-                this.#register(childPointer(containerPointer, name), name, schema);
-            }
+            containerPointer = childPointer(containerPointer, key);
+            container = readObject(container[key], containerPointer);
+        }
+        for (const [name, schema] of Object.entries(container)) {
+            this.#register(childPointer(containerPointer, name), name, schema);
         }
     }
 
@@ -393,11 +436,7 @@ export class Converter {
             if (family) {
                 families.add(family);
                 this.#checkFamily(keyword, family, types, keywordPointer);
-            } else if (
-                !keyword.startsWith('x-') &&
-                !genericKeywords.has(keyword) &&
-                !(this.#options.openApi30 && openApi30Keywords.has(keyword))
-            ) {
+            } else if (!this.#isKnownKeyword(keyword)) {
                 this.#strictError(`Unknown keyword "${keyword}"`, keywordPointer);
             }
         }
@@ -434,6 +473,16 @@ export class Converter {
         }
     }
 
+    #isKnownKeyword(keyword: string): boolean {
+        const { dialect } = this.#options;
+        return (
+            keyword.startsWith('x-') ||
+            genericKeywords.has(keyword) ||
+            (dialect !== 'draft-2020-12' && openApiKeywords.has(keyword)) ||
+            (dialect === 'openapi-3.0' && openApi30Keywords.has(keyword))
+        );
+    }
+
     #checkFamily(
         keyword: string,
         family: string,
@@ -459,6 +508,9 @@ export class Converter {
         const object = readObject(schema, pointer);
         const types = this.#types(object, pointer, scope);
         this.#checkValues(object, pointer, types);
+        if (this.#options.dialect !== 'draft-2020-12' && object.discriminator !== undefined) {
+            checkDiscriminator(object.discriminator, childPointer(pointer, 'discriminator'));
+        }
         const subScope: Scope = {
             properties: new Map([...scope.properties, ...this.#propertyTypes(object, pointer)]),
             types,
@@ -569,7 +621,7 @@ export class Converter {
      * @throws {DecantInvalidSchemaError} if `nullable` is not a boolean
      */
     #nullable(schema: SchemaObject, pointer: string, type: TsType): TsType {
-        if (!this.#options.openApi30 || schema.nullable === undefined) {
+        if (this.#options.dialect !== 'openapi-3.0' || schema.nullable === undefined) {
             return type;
         }
         if (typeof schema.nullable !== 'boolean') {
@@ -632,7 +684,7 @@ export class Converter {
                 schema[keyword],
                 childPointer(pointer, keyword),
                 // OpenAPI 3.0 marks `minimum` and `maximum` exclusive with booleans
-                this.#options.openApi30 && keyword.startsWith('exclusive')
+                this.#options.dialect === 'openapi-3.0' && keyword.startsWith('exclusive')
             );
         const [minimum, exclusiveMinimum, maximum, exclusiveMaximum] = [
             'minimum',
