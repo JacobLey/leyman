@@ -156,6 +156,58 @@ suite('external references', () => {
         }
     );
 
+    suite('draft-04', () => {
+        // eslint-disable-next-line unicorn/prefer-https -- draft-04's own $schema is http
+        const draft04 = 'http://json-schema.org/draft-04/schema#';
+
+        withTmpDir.test('a loaded file names resources with id', async ctx => {
+            await ctx.writeJson('input.json', {
+                type: 'object',
+                properties: { legacy: { $ref: './legacy.json' } },
+            });
+            await ctx.writeJson('legacy.json', {
+                $schema: draft04,
+                id: 'https://example.test/legacy.json',
+                type: 'object',
+                properties: { item: { $ref: 'item.json' } },
+                definitions: { Item: { id: 'item.json', type: 'string' } },
+            });
+            await geneverFile(ctx.resolve('input.json'), {
+                output: ctx.resolve('input.ts'),
+                fetch: false,
+            });
+
+            expectTypes(await ctx.read('input.ts'), {
+                Schema: '{ legacy?: Legacy }',
+                Legacy: '{ item?: Item }',
+                Item: 'string',
+            });
+        });
+
+        withTmpDir.test("a file without a $schema is in the input's dialect", async ctx => {
+            await ctx.writeJson('input.json', {
+                $schema: draft04,
+                type: 'object',
+                properties: { plain: { $ref: './plain.json' } },
+            });
+            await ctx.writeJson('plain.json', {
+                type: 'object',
+                properties: { b: { $ref: 'https://example.test/b' } },
+                definitions: { B: { id: 'https://example.test/b', type: 'number' } },
+            });
+            await geneverFile(ctx.resolve('input.json'), {
+                output: ctx.resolve('input.ts'),
+                fetch: false,
+            });
+
+            expectTypes(await ctx.read('input.ts'), {
+                Schema: '{ plain?: Plain }',
+                Plain: '{ b?: B }',
+                B: 'number',
+            });
+        });
+    });
+
     suite('can not load', () => {
         // Each `$ref`, and the name of the error that caused the failure, if there was one
         const unloadable = {

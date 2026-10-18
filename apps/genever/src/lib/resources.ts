@@ -45,6 +45,34 @@ export const schemaMapKeywords = [
 ] as const;
 
 /**
+ * `$schema` of draft-04, which names a schema's resource with `id` rather than `$id`.
+ */
+const draft04Schema = /^https?:\/\/json-schema\.org\/draft-04\/(?:hyper-)?schema#?$/u;
+
+/**
+ * Whether a schema declares itself draft-04 by its `$schema`, or `null` if it declares no dialect.
+ *
+ * @param schema - schema object
+ * @returns whether the schema, and every schema it contains, is draft-04, or `null` to inherit its parent's
+ */
+export const declaresDraft04 = (schema: Readonly<Record<string, unknown>>): boolean | null =>
+    typeof schema.$schema === 'string' ? draft04Schema.test(schema.$schema) : null;
+
+/**
+ * Keyword that names a schema's resource: `$id`, or `id` in draft-04.
+ *
+ * A draft-04 schema with an `$id` is a loaded file, which is given one to be embedded.
+ *
+ * @param schema - schema object
+ * @param isDraft04 - whether the schema is draft-04
+ * @returns `id` if the schema names its resource with it, else `$id`
+ */
+export const idKeywordOf = (
+    schema: Readonly<Record<string, unknown>>,
+    isDraft04: boolean
+): '$id' | 'id' => (isDraft04 && schema.$id === undefined ? 'id' : '$id');
+
+/**
  * Syntax of an `$anchor`, from JSON Schema 2020-12.
  */
 const anchorName = /^[A-Z_a-z][\w.-]*$/u;
@@ -72,6 +100,10 @@ export interface DocumentIndex {
      * Base URI of each schema, keyed by its JSON Pointer.
      */
     readonly baseUris: ReadonlyMap<string, string>;
+    /**
+     * JSON Pointers of the schemas that are draft-04, by their own or a parent's `$schema`.
+     */
+    readonly draft04: ReadonlySet<string>;
     /**
      * Schemas named by `$anchor` (or `$dynamicAnchor`), keyed by base URI and anchor, e.g. `https://a.com/b.json#name`.
      */
@@ -171,6 +203,7 @@ const followPointer = (target: Target, pointer: string): Target | null => {
 class Indexer {
     readonly #anchors = new Map<string, Target>();
     readonly #baseUris = new Map<string, string>();
+    readonly #draft04 = new Set<string>();
     readonly #references = new Map<string, string>();
     readonly #resources = new Map<string, Target>();
 
@@ -187,16 +220,35 @@ class Indexer {
         return {
             anchors: this.#anchors,
             baseUris: this.#baseUris,
+            draft04: this.#draft04,
             references: this.#references,
             resources: this.#resources,
         };
     }
 
-    public visit(schema: unknown, pointer: string, parentBaseUri: string): void {
+    /**
+     * Index a schema, and every schema it contains.
+     *
+     * @param schema - schema to index
+     * @param pointer - JSON Pointer to the schema
+     * @param parentBaseUri - base URI of the schema's parent
+     * @param isParentDraft04 - whether the schema's parent is draft-04
+     * @throws {GeneverInvalidSchemaError} if an identifier is invalid or declared twice
+     */
+    public visit(
+        schema: unknown,
+        pointer: string,
+        parentBaseUri: string,
+        isParentDraft04: boolean
+    ): void {
         if (!isSchemaObject(schema)) {
             return;
         }
-        const baseUri = this.#identify(schema, pointer, parentBaseUri);
+        const isDraft04 = declaresDraft04(schema) ?? isParentDraft04;
+        if (isDraft04) {
+            this.#draft04.add(pointer);
+        }
+        const baseUri = this.#identify(schema, pointer, parentBaseUri, isDraft04);
         this.#baseUris.set(pointer, baseUri);
         const reference = typeof schema.$ref === 'string' ? resolveUri(schema.$ref, baseUri) : null;
         if (reference && !this.#references.has(reference.uri)) {
@@ -204,7 +256,7 @@ class Indexer {
         }
 
         for (const keyword of schemaKeywords) {
-            this.visit(schema[keyword], childPointer(pointer, keyword), baseUri);
+            this.visit(schema[keyword], childPointer(pointer, keyword), baseUri, isDraft04);
         }
         for (const keyword of schemaArrayKeywords) {
             const value = schema[keyword];
@@ -213,7 +265,7 @@ class Indexer {
             }
             const keywordPointer = childPointer(pointer, keyword);
             for (const [i, member] of value.entries()) {
-                this.visit(member, childPointer(keywordPointer, i), baseUri);
+                this.visit(member, childPointer(keywordPointer, i), baseUri, isDraft04);
             }
         }
         for (const keyword of schemaMapKeywords) {
@@ -223,7 +275,7 @@ class Indexer {
             }
             const keywordPointer = childPointer(pointer, keyword);
             for (const [key, member] of Object.entries(value)) {
-                this.visit(member, childPointer(keywordPointer, key), baseUri);
+                this.visit(member, childPointer(keywordPointer, key), baseUri, isDraft04);
             }
         }
     }
@@ -234,31 +286,35 @@ class Indexer {
      * @param schema - schema object
      * @param pointer - JSON Pointer to the schema
      * @param parentBaseUri - base URI of the schema's parent
+     * @param isDraft04 - whether the schema is draft-04, which names its resource with `id`
      * @returns base URI of the schema
      * @throws {GeneverInvalidSchemaError} if an identifier is invalid or declared twice
      */
     #identify(
         schema: Readonly<Record<string, unknown>>,
         pointer: string,
-        parentBaseUri: string
+        parentBaseUri: string,
+        isDraft04: boolean
     ): string {
         let baseUri = parentBaseUri;
-        const { $id } = schema;
+        const idKeyword = idKeywordOf(schema, isDraft04);
+        const $id = schema[idKeyword];
         const anchors: [string, unknown][] = [
             ['$anchor', schema.$anchor],
             ['$dynamicAnchor', schema.$dynamicAnchor],
         ];
         if ($id !== undefined) {
-            const idPointer = childPointer(pointer, '$id');
+            const idPointer = childPointer(pointer, idKeyword);
             if (typeof $id === 'string' && $id.startsWith('#')) {
                 // Draft 7 and earlier name a plain anchor with `$id`
-                anchors.push(['$id', $id.slice(1)]);
+                anchors.push([idKeyword, $id.slice(1)]);
             } else {
                 const resolved = typeof $id === 'string' ? resolveUri($id, parentBaseUri) : null;
                 if (resolved?.fragment !== '') {
-                    throw new GeneverInvalidSchemaError('$id must be a URI without a fragment', {
-                        pointer: idPointer,
-                    });
+                    throw new GeneverInvalidSchemaError(
+                        `${idKeyword} must be a URI without a fragment`,
+                        { pointer: idPointer }
+                    );
                 }
                 baseUri = resolved.uri;
                 addTarget(this.#resources, baseUri, { pointer, schema }, idPointer);
@@ -286,22 +342,53 @@ class Indexer {
  * @param root - the whole document, a resource itself even without an `$id`
  * @param schemas - schemas to search, with their JSON Pointers: the root schema, or an OpenAPI document's components
  * @param baseUri - URI the document was read from, which relative `$id`s and `$ref`s resolve against
+ * @param [isDraft04] - whether the document is draft-04, without a `$schema` of its own
  * @returns resources, anchors and base URIs of the document's schemas
  * @throws {GeneverInvalidSchemaError} if an `$id` or anchor is invalid, or declared twice
  */
 export const indexDocument = (
     root: unknown,
     schemas: readonly { pointer: string; schema: unknown }[],
-    baseUri: string
+    baseUri: string,
+    isDraft04 = false
 ): DocumentIndex => {
-    const rootId = isSchemaObject(root) && typeof root.$id === 'string' ? root.$id : null;
-    const documentUri = (rootId === null ? null : resolveUri(rootId, baseUri)?.uri) ?? baseUri;
+    const rootId = isSchemaObject(root)
+        ? root[idKeywordOf(root, declaresDraft04(root) ?? isDraft04)]
+        : undefined;
+    const documentUri =
+        (typeof rootId === 'string' ? resolveUri(rootId, baseUri)?.uri : null) ?? baseUri;
     const indexer = new Indexer(documentUri, root);
     for (const { pointer, schema } of schemas) {
-        indexer.visit(schema, pointer, documentUri);
+        indexer.visit(schema, pointer, documentUri, isDraft04);
     }
     return indexer.index;
 };
+
+/**
+ * The nearest indexed schema at or above a pointer. A schema in a location no keyword makes a schema
+ * (e.g. an extension) is not indexed, and has its nearest parent's base URI and dialect.
+ *
+ * @param index - index of the document
+ * @param pointer - JSON Pointer to a schema
+ * @returns JSON Pointer to the schema, or its nearest indexed parent
+ */
+const indexedAncestor = (index: DocumentIndex, pointer: string): string => {
+    let ancestor = pointer;
+    while (!index.baseUris.has(ancestor)) {
+        ancestor = ancestor.slice(0, ancestor.lastIndexOf('/'));
+    }
+    return ancestor;
+};
+
+/**
+ * Whether a schema is draft-04, by its own or a parent's `$schema`.
+ *
+ * @param index - index of the document
+ * @param pointer - JSON Pointer to the schema
+ * @returns true if the schema is draft-04
+ */
+export const isDraft04Schema = (index: DocumentIndex, pointer: string): boolean =>
+    index.draft04.has(indexedAncestor(index, pointer));
 
 /**
  * Resolve a `$ref`, against the base URI of the schema it is in.
@@ -319,12 +406,7 @@ export const resolveReference = (
     schemaPointer: string
 ): Target => {
     const refPointer = childPointer(schemaPointer, '$ref');
-    // A schema in a location no keyword makes a schema (e.g. an extension) has its nearest parent's base URI
-    let ancestor = schemaPointer;
-    while (!index.baseUris.has(ancestor)) {
-        ancestor = ancestor.slice(0, ancestor.lastIndexOf('/'));
-    }
-    const baseUri = index.baseUris.get(ancestor)!;
+    const baseUri = index.baseUris.get(indexedAncestor(index, schemaPointer))!;
     const resolved = resolveUri(ref, baseUri);
     if (!resolved) {
         throw new GeneverInvalidSchemaError(`Invalid $ref "${ref}"`, { pointer: refPointer });

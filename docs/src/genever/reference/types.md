@@ -27,6 +27,7 @@ description: How each JSON Schema keyword becomes a TypeScript type, and what ge
 | `if` / `then` / `else` | `(If & Then) \| Else` |
 | `not` of `null` or literal values | removes them from a union; any other `not` leaves the type |
 | `$ref` | the referenced named type. It resolves against the nearest `$id`, so `#/$defs/A` inside an embedded resource is that resource's `A`, and may name an `$anchor` |
+| draft-04 `id`, and boolean `exclusiveMinimum`/`exclusiveMaximum` | in a schema whose `$schema` is draft-04, or inside one: `id` names a resource as `$id` does, and the booleans make `minimum` and `maximum` exclusive. Elsewhere, `id` is an unknown keyword |
 | `propertyNames` with a literal prefix or `enum` | the keys of `additionalProperties`: `` `x-${string}` ``, or optional properties `a`, `b` |
 | `title`, `description`, `deprecated` | JSDoc |
 | `default`, `examples`, `format`, and constraints such as `minLength` or `maximum` | JSDoc tags, e.g. `@minLength 3`, so editors show them |

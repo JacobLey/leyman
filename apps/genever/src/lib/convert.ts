@@ -29,7 +29,7 @@ import {
     readSchemaArray,
     readTypes,
 } from './read-keyword.js';
-import { indexDocument, inputSchemas, resolveReference } from './resources.js';
+import { indexDocument, inputSchemas, isDraft04Schema, resolveReference } from './resources.js';
 import {
     booleanType,
     exclude,
@@ -210,7 +210,7 @@ type KeywordBound = boolean | number | null;
  * Bound of a number range, from its inclusive and exclusive keywords.
  *
  * @param inclusive - `minimum` or `maximum`
- * @param exclusive - `exclusiveMinimum` or `exclusiveMaximum`, which is a boolean in OpenAPI 3.0
+ * @param exclusive - `exclusiveMinimum` or `exclusiveMaximum`, which is a boolean in OpenAPI 3.0 and draft-04
  * @param direction - `1` for a lower bound, `-1` for an upper bound
  * @returns the tighter bound, or `null` if there is none
  */
@@ -637,7 +637,7 @@ export class Converter {
             if (family) {
                 families.add(family);
                 this.#checkFamily(keyword, family, types, keywordPointer);
-            } else if (!this.#isKnownKeyword(keyword)) {
+            } else if (!this.#isKnownKeyword(keyword, pointer)) {
                 this.#strictError(`Unknown keyword "${keyword}"`, keywordPointer);
             }
         }
@@ -674,10 +674,12 @@ export class Converter {
         }
     }
 
-    #isKnownKeyword(keyword: string): boolean {
+    #isKnownKeyword(keyword: string, pointer: string): boolean {
         const { dialect } = this.#options;
         return (
             keyword.startsWith('x-') ||
+            // Draft-04 names a schema's resource with `id`
+            (keyword === 'id' && isDraft04Schema(this.#index!, pointer)) ||
             genericKeywords.has(keyword) ||
             (dialect !== 'draft-2020-12' && openApiKeywords.has(keyword)) ||
             (dialect === 'openapi-3.0' && openApi30Keywords.has(keyword))
@@ -885,8 +887,10 @@ export class Converter {
             readBound(
                 schema[keyword],
                 childPointer(pointer, keyword),
-                // OpenAPI 3.0 marks `minimum` and `maximum` exclusive with booleans
-                this.#options.dialect === 'openapi-3.0' && keyword.startsWith('exclusive')
+                // OpenAPI 3.0 and draft-04 mark `minimum` and `maximum` exclusive with booleans
+                (this.#options.dialect === 'openapi-3.0' ||
+                    isDraft04Schema(this.#index!, pointer)) &&
+                    keyword.startsWith('exclusive')
             );
         const [minimum, exclusiveMinimum, maximum, exclusiveMaximum] = [
             'minimum',

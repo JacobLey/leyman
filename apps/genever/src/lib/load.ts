@@ -6,7 +6,13 @@ import { fileURLToPath } from 'node:url';
 import { GeneverLoadError } from './errors.js';
 import { isYaml, parseText } from './parse.js';
 import { isSchemaObject } from './read-keyword.js';
-import { externalResources, indexDocument, inputSchemas } from './resources.js';
+import {
+    declaresDraft04,
+    externalResources,
+    idKeywordOf,
+    indexDocument,
+    inputSchemas,
+} from './resources.js';
 
 export interface LoadOptions {
     /**
@@ -103,11 +109,13 @@ const readText = async (
  *
  * @param uri - absolute URI, without a fragment
  * @param options - how to load
+ * @param isInputDraft04 - whether the input is draft-04, which a file without a `$schema` is too
  * @returns the resource, or why it can't be loaded
  */
 const loadResource = async (
     uri: string,
-    options: LoadOptions
+    options: LoadOptions,
+    isInputDraft04: boolean
 ): Promise<LoadedResource | Unloadable> => {
     const read = await readText(uri, options);
     if ('reason' in read) {
@@ -128,13 +136,15 @@ const loadResource = async (
     if (!isSchemaObject(parsed)) {
         return { reason: 'not a schema' };
     }
-    const { $id } = parsed;
+    // A file without a `$schema` is read in the input's dialect
+    const isDraft04 = declaresDraft04(parsed) ?? isInputDraft04;
+    const $id = parsed[idKeywordOf(parsed, isDraft04)];
     const schema: SchemaObject =
         // Draft 7 names a plain anchor with `$id`, which can't name the schema's resource
         typeof $id === 'string' && $id.startsWith('#')
             ? { ...parsed, $id: uri, $anchor: $id.slice(1) }
             : { ...parsed, $id: $id ?? uri };
-    const index = indexDocument(schema, inputSchemas(schema, false), uri);
+    const index = indexDocument(schema, inputSchemas(schema, false), uri, isDraft04);
     // The `$id` of a schema may be relative to where it was loaded from
     const id = index.baseUris.get('#')!;
     return {
@@ -208,6 +218,8 @@ const embed = (
  * @throws {GeneverLoadError} if a referenced file or URL can't be loaded
  */
 export const loadReferences = async (input: unknown, options: LoadOptions): Promise<unknown> => {
+    const isInputDraft04 =
+        !options.isDocument && isSchemaObject(input) && declaresDraft04(input) === true;
     const inputIndex = indexDocument(
         input,
         inputSchemas(input, options.isDocument),
@@ -227,7 +239,7 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
     };
 
     const load = async (uri: string, index: DocumentIndex): Promise<void> => {
-        const loaded = await loadResource(uri, options);
+        const loaded = await loadResource(uri, options, isInputDraft04);
         if ('reason' in loaded) {
             failures.push({ ...loaded, pointer: index.references.get(uri)!, uri });
             return;
