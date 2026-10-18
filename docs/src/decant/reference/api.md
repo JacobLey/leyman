@@ -97,4 +97,4 @@ Every error extends `DecantError`, with a `pointer` property: the JSON Pointer t
 | `DecantInvalidSchemaError` | The input is not a valid JSON Schema, e.g. `properties` is not an object, or a `$ref` does not resolve. |
 | `DecantStrictModeError` | A [strict mode](/decant/guides/strict-mode) rule is broken. |
 | `DecantUnsupportedError` | The schema uses a feature decant can't generate types for. See [Not supported](/decant/reference/types#not-supported). |
-| `DecantLoadError` | A file or URL the schema references could not be loaded. Its `cause` is the underlying error. |
+| `DecantLoadError` | A file or URL the schema references could not be loaded. Its `cause` is the underlying error, such as the file system's or the parser's, if there was one. |

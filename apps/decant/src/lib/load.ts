@@ -39,11 +39,21 @@ interface LoadedResource {
 }
 
 /**
+ * Why a resource can't be loaded.
+ */
+interface Unloadable {
+    /**
+     * Underlying error, e.g. the file system's or the parser's, if there was one.
+     */
+    readonly cause?: unknown;
+    readonly reason: string;
+}
+
+/**
  * A resource that failed to load, and the `$ref` that needed it.
  */
-interface Failure {
+interface Failure extends Unloadable {
     readonly pointer: string;
-    readonly reason: string;
     readonly uri: string;
 }
 
@@ -57,7 +67,7 @@ interface Failure {
 const readText = async (
     uri: string,
     options: LoadOptions
-): Promise<{ reason: string } | { text: string; yaml: boolean }> => {
+): Promise<Unloadable | { text: string; yaml: boolean }> => {
     const { protocol } = new URL(uri);
     try {
         if (protocol === 'file:') {
@@ -81,7 +91,7 @@ const readText = async (
               }
             : { reason: `HTTP ${response.status}` };
     } catch (error) {
-        return { reason: String(error) };
+        return { cause: error, reason: String(error) };
     }
 };
 
@@ -98,7 +108,7 @@ const readText = async (
 const loadResource = async (
     uri: string,
     options: LoadOptions
-): Promise<LoadedResource | { reason: string }> => {
+): Promise<LoadedResource | Unloadable> => {
     const read = await readText(uri, options);
     if ('reason' in read) {
         return read;
@@ -108,6 +118,7 @@ const loadResource = async (
         parsed = parseText(read.text, read.yaml);
     } catch (error) {
         return {
+            cause: error,
             reason: read.yaml ? `not valid YAML: ${(error as Error).message}` : 'not valid JSON',
         };
     }
@@ -218,7 +229,7 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
     const load = async (uri: string, index: DocumentIndex): Promise<void> => {
         const loaded = await loadResource(uri, options);
         if ('reason' in loaded) {
-            failures.push({ pointer: index.references.get(uri)!, reason: loaded.reason, uri });
+            failures.push({ ...loaded, pointer: index.references.get(uri)!, uri });
             return;
         }
         resources.push(...loaded.schemas);
@@ -242,6 +253,7 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
     const failure = failures.find(({ uri }) => !known.has(uri));
     if (failure) {
         throw new DecantLoadError(`Could not load "${failure.uri}": ${failure.reason}`, {
+            ...('cause' in failure && { cause: failure.cause }),
             pointer: failure.pointer,
         });
     }

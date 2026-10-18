@@ -245,9 +245,10 @@ suite('YAML', () => {
             await writeFile(ctx.resolve('input.yaml'), '$ref: ./broken.yaml');
             await writeFile(ctx.resolve('broken.yaml'), 'maximum: .inf');
 
-            await expect(
+            const thrown: unknown = await expect(
                 decantFile(ctx.resolve('input.yaml'), { output: ctx.resolve('input.ts') })
             ).to.be.rejectedWith(DecantLoadError, /not valid YAML: YAML number Infinity/u);
+            expect((thrown as Error).cause).to.be.instanceOf(DecantInvalidSchemaError);
         });
     });
 });

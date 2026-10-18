@@ -157,20 +157,23 @@ suite('external references', () => {
     );
 
     suite('can not load', () => {
+        // Each `$ref`, and the name of the error that caused the failure, if there was one
         const unloadable = {
-            'a file that is not JSON': './broken.json',
-            'a file that is not a schema': './array.json',
-            'an unsupported scheme': 'ftp://example.test/schema.json',
-        };
-        for (const [name, ref] of Object.entries(unloadable)) {
+            'a file that is not JSON': ['./broken.json', 'SyntaxError'],
+            'a file that is not a schema': ['./array.json', null],
+            'an unsupported scheme': ['ftp://example.test/schema.json', null],
+        } as const;
+        for (const [name, [ref, causeName]] of Object.entries(unloadable)) {
             withTmpDir.test(name, async ctx => {
                 await writeFile(ctx.resolve('input.json'), JSON.stringify({ $ref: ref }));
                 await writeFile(ctx.resolve('broken.json'), '{ not json');
                 await writeFile(ctx.resolve('array.json'), '[]');
 
-                await expect(
+                const thrown: unknown = await expect(
                     decantFile(ctx.resolve('input.json'), { output: ctx.resolve('input.ts') })
                 ).to.be.rejectedWith(DecantLoadError);
+                const { cause } = thrown as { cause?: Error };
+                expect(cause?.name).to.equal(causeName ?? undefined);
             });
         }
 
@@ -208,6 +211,7 @@ suite('external references', () => {
                     })
                 ).to.be.rejectedWith(DecantLoadError, /404/u);
                 expect(thrown).to.have.property('pointer', '#/properties/a/$ref');
+                expect(thrown).not.to.have.property('cause');
             } finally {
                 await server.close();
             }
@@ -215,9 +219,10 @@ suite('external references', () => {
     });
 
     withTmpDir.test('a file that does not exist', async ctx => {
-        await expect(
+        const thrown: unknown = await expect(
             decantFile(data('missing.json'), { output: ctx.resolve('missing.ts') })
         ).to.be.rejectedWith(DecantLoadError);
+        expect((thrown as Error).cause).to.have.property('code', 'ENOENT');
     });
 
     withTmpDir.test('loads again after a failure', async ctx => {
