@@ -54,6 +54,15 @@ suite('errors', () => {
             '$ref does not resolve': { $ref: '#/$defs/Missing' },
             '$ref through a primitive': { $ref: '#/type/foo', type: 'string' },
             '$ref is not encoded': { $ref: '#/%E0%A4%A' },
+            '$ref is not a URI': { $ref: 'https://[' },
+            '$ref names a missing anchor': { $ref: '#missing' },
+            '$id is not a string': { $id: 1 },
+            '$id has a fragment': { $defs: { A: { $id: 'a.json#b' } } },
+            '$id is not a URI': { $defs: { A: { $id: 'https://[' } } },
+            '$id declared twice': { $defs: { A: { $id: 'a.json' }, B: { $id: 'a.json' } } },
+            'anchor declared twice': { $defs: { A: { $anchor: 'a' }, B: { $anchor: 'a' } } },
+            'anchor is not a name': { $defs: { A: { $anchor: '1a' } } },
+            'anchor is not a string': { $defs: { A: { $anchor: 1 } } },
             '$defs is not an object': { $defs: [] },
             'dependentRequired is not an object': { type: 'object', dependentRequired: [] },
             'nullable is not a boolean': { type: 'string', nullable: 'yes' },
@@ -128,10 +137,6 @@ suite('errors', () => {
             expect(() => decant({ $dynamicRef: '#node' }, { strict: false })).to.throw(
                 DecantUnsupportedError
             );
-        });
-
-        test('$ref to an anchor', () => {
-            expect(() => decant({ $ref: '#anchor' })).to.throw(DecantUnsupportedError);
         });
     });
 });

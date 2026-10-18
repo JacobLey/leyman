@@ -1,5 +1,6 @@
 import type { Dialect, JsonType } from './keywords.js';
 import type { SchemaObject } from './read-keyword.js';
+import type { DocumentIndex } from './resources.js';
 import type { TsDoc, TsIndex, TsProperty, TsType } from './ts-type.js';
 import {
     DecantInvalidSchemaError,
@@ -15,7 +16,7 @@ import {
 } from './keywords.js';
 import { TypeNames } from './names.js';
 import { patternType } from './pattern.js';
-import { childPointer, resolveRef } from './pointer.js';
+import { childPointer } from './pointer.js';
 import {
     isSchemaObject,
     jsonLiteral,
@@ -28,6 +29,7 @@ import {
     readSchemaArray,
     readTypes,
 } from './read-keyword.js';
+import { indexDocument, resolveReference } from './resources.js';
 import {
     booleanType,
     exclude,
@@ -88,9 +90,24 @@ interface Scope {
 const emptyScope: Scope = { properties: new Map(), types: null };
 
 /**
- * JSON Pointers of the objects whose keys name definitions. A definition's type is named after its key.
+ * Name of the type of a referenced schema: a definition (in any `$defs`, `definitions`, or OpenAPI's
+ * `components.schemas`) is named after its key, and anything else after its whole path.
+ *
+ * @param pointer - canonical JSON Pointer to the schema
+ * @returns name, before it is made a valid and unique type name
  */
-const definitionContainers = new Set(['#/$defs', '#/definitions', '#/components/schemas']);
+const referenceName = (pointer: string): string => {
+    const parent = pointer.slice(0, pointer.lastIndexOf('/'));
+    const isDefinition =
+        parent.endsWith('/$defs') ||
+        parent.endsWith('/definitions') ||
+        parent === '#/components/schemas';
+    const segments = pointer
+        .slice(isDefinition ? parent.length + 1 : 2)
+        .split('/')
+        .map(segment => segment.replaceAll('~1', '/').replaceAll('~0', '~'));
+    return segments.join(' ');
+};
 
 /**
  * Types without keywords that narrow them.
@@ -300,6 +317,10 @@ export class Converter {
      * Named schemas, in the order they were found. Converting one may find more.
      */
     readonly #pending: { pointer: string; schema: unknown }[] = [];
+    /**
+     * Schema resources and anchors of the document, which references resolve to.
+     */
+    #index: DocumentIndex | null = null;
 
     /**
      * @param root - root schema document
@@ -318,6 +339,7 @@ export class Converter {
      * @throws {DecantError} if the schema is invalid, breaks a strict mode rule, or is not supported
      */
     public convert(rootName: string): NamedType[] {
+        this.#index = indexDocument(this.#root, [{ pointer: '#', schema: this.#root }]);
         this.#register('#', rootName, this.#root);
         this.#registerDefinitions();
 
@@ -333,6 +355,8 @@ export class Converter {
      */
     public convertDocument(): NamedType[] {
         this.#registerContainer(['components', 'schemas']);
+        // A document is not a schema, but each of its components is
+        this.#index = indexDocument(this.#root, this.#pending);
         return this.#convertPending().toSorted(compareNames);
     }
 
@@ -396,20 +420,11 @@ export class Converter {
         if (typeof ref !== 'string') {
             throw new DecantInvalidSchemaError('$ref must be a string', { pointer: refPointer });
         }
-        const target = resolveRef(this.#root, ref, refPointer);
-        const parent = target.pointer.slice(0, target.pointer.lastIndexOf('/'));
-        const segments = target.pointer.split('/');
-        // Name a definition after its key, and anything else after its whole path
-        const name = definitionContainers.has(parent)
-            ? segments.at(-1)!
-            : segments.slice(1).join(' ');
+        const schemaPointer = refPointer.slice(0, refPointer.lastIndexOf('/'));
+        const target = resolveReference(this.#index!, ref, schemaPointer);
         return {
             kind: 'reference',
-            name: this.#register(
-                target.pointer,
-                name.replaceAll('~1', '/').replaceAll('~0', '~'),
-                target.schema
-            ),
+            name: this.#register(target.pointer, referenceName(target.pointer), target.schema),
         };
     }
 

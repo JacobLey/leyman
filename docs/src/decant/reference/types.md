@@ -26,7 +26,7 @@ description: How each JSON Schema keyword becomes a TypeScript type, and what de
 | `anyOf`, `oneOf` | union |
 | `if` / `then` / `else` | `(If & Then) \| Else` |
 | `not` of `null` or literal values | removes them from a union; any other `not` leaves the type |
-| `$ref` | the referenced named type |
+| `$ref` | the referenced named type. It resolves against the nearest `$id`, so `#/$defs/A` inside an embedded resource is that resource's `A`, and may name an `$anchor` |
 | `propertyNames` with a literal prefix or `enum` | the keys of `additionalProperties`: `` `x-${string}` ``, or optional properties `a`, `b` |
 | `title`, `description`, `deprecated` | JSDoc |
 | `default`, `examples`, `format`, and constraints such as `minLength` or `maximum` | JSDoc tags, e.g. `@minLength 3`, so editors show them |
@@ -37,7 +37,7 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 
 ## Not supported
 
-- `$ref` to another file (`other.json#/...`), to an anchor, `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`.
+- `$ref` to another file (`other.json#/...`), `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`. References within the document may use `$id` and `$anchor`.
 - `unevaluatedProperties`, `unevaluatedItems` and `contains` are accepted, but don't change the type.
 - OpenAPI's `discriminator` is accepted, but not checked against the `oneOf` branches. The branches still narrow on the property as a union does.
 - Swagger 2.0 documents.

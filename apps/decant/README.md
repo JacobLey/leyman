@@ -90,7 +90,7 @@ decant is an ESM module, and a CLI. Most projects run the CLI as a build step, a
 
 The programmatic API is the same: `decant(schema)` returns the TypeScript source, and `decantFile(path)` reads a schema file and writes the types next to it.
 
-The root schema becomes a type named `Schema` (or `--name`). Every definition in the root `$defs` (or draft 7 `definitions`) becomes an exported type named after its key, in PascalCase. A schema referenced by `$ref` from elsewhere in the document becomes a named type too. Everything else is inlined.
+The root schema becomes a type named `Schema` (or `--name`). Every definition in the root `$defs` (or draft 7 `definitions`) becomes an exported type named after its key, in PascalCase. A schema referenced by `$ref` from elsewhere in the document becomes a named type too, named after its key in any nested `$defs`, or else after its path. Everything else is inlined.
 
 ### OpenAPI documents
 
@@ -143,7 +143,7 @@ Each row is one of the probes in [WHY-DECANT.md](https://github.com/JacobLey/ley
 | `anyOf`, `oneOf` | union |
 | `if` / `then` / `else` | `(If & Then) \| Else` |
 | `not` of `null` or literal values | removes them from a union; any other `not` leaves the type |
-| `$ref` | the referenced named type |
+| `$ref` | the referenced named type. It resolves against the nearest `$id`, so `#/$defs/A` inside an embedded resource is that resource's `A`, and may name an `$anchor` |
 | `propertyNames` with a literal prefix or `enum` | the keys of `additionalProperties`: `` `x-${string}` ``, or optional properties `a`, `b` |
 | `title`, `description`, `deprecated` | JSDoc |
 | `default`, `examples`, `format`, and constraints such as `minLength` or `maximum` | JSDoc tags, e.g. `@minLength 3`, so editors show them |
@@ -154,7 +154,7 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 
 ### Not supported
 
-- `$ref` to another file (`other.json#/...`), to an anchor, `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`.
+- `$ref` to another file (`other.json#/...`), `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`. References within the document may use `$id` and `$anchor`.
 - `unevaluatedProperties`, `unevaluatedItems` and `contains` are accepted, but don't change the type.
 - OpenAPI's `discriminator` is accepted, but not checked against the `oneOf` branches. The branches still narrow on the property as a union does.
 - Swagger 2.0 documents.
