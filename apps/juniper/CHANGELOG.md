@@ -1,5 +1,18 @@
 # juniper
 
+## 2.3.0
+
+### Minor Changes
+
+- 3b3d68b: `minItems` up to 3 is now part of an array's type: `arraySchema(stringSchema()).minItems(1)` is `[string, ...string[]]` rather than `string[]`. Building an array with fewer items than the schema allows is now a type error, as it already was a validation error. Prefix items count towards `minItems`. Larger values, or a `number` variable, leave the type as an array.
+  
+  This is a type fix: every value the schema accepts is still assignable. Code that builds such arrays may need to narrow them first, e.g. with `(array): array is [T, ...T[]] => array.length > 0`, as a length check alone does not narrow an array.
+- 2b86149: Add `.not(nullSchema())` to make a nullable schema non-nullable. It removes `null` from the type, and from the JSON Schema: `type: ['string', 'null']` becomes `type: 'string'`, or `not: { type: 'null' }` is emitted where there is no `type` (as on `mergeSchema()`). It is available on nullable string, number, object, array and tuple schemas, and on merge schemas. Previously the only way to remove `null` was `.not(stringSchema().nullable())`, which also rejects every string, so its JSON Schema accepted nothing.
+
+### Patch Changes
+
+- c76e471: Fix the README's Ajv example to import `{ Ajv2020 }`, which type-checks under NodeNext, and compile in strict mode. Note that `format` is emitted unchecked, so schemas using it need a validator that supports the formats they use.
+
 ## 2.2.1
 
 ### Patch Changes
