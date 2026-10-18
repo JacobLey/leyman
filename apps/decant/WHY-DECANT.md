@@ -53,7 +53,7 @@ Tests never compare generated text, only the types TypeScript reads. A formattin
 
 ### Strict, like Juniper
 
-A schema can be valid JSON Schema and still be a mistake: `maxLength` on a number, a misspelled keyword, a `required` property that was never declared. Validators ignore these, so the schema silently accepts more than intended. decant fails on them by default, with a JSON Pointer to the problem, as Juniper refuses to build them. Every schema Juniper builds passes. Strict mode can be disabled for schemas you don't control.
+A schema can be valid JSON Schema and still be a mistake: `maxLength` on a number, a misspelled keyword, a `required` property that was never declared, `minLength` over `maxLength`. Validators ignore these, so the schema silently accepts more, or less, than intended. decant fails on them by default, with a JSON Pointer to the problem, as Juniper refuses to build them. Every schema Juniper builds passes. Strict mode can be disabled for schemas you don't control. The type then follows what a validator accepts, and is never narrower: a schema without a `type` accepts every type, and a contradiction accepts nothing (`never`).
 
 ## Non-goals
 

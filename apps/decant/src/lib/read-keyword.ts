@@ -65,6 +65,51 @@ export const readPropertyNames = (value: unknown, pointer: string): readonly str
 };
 
 /**
+ * Read a keyword that counts something, such as `minLength` or `maxItems`.
+ *
+ * @param value - value of the keyword, or `undefined` if absent
+ * @param pointer - JSON Pointer to the keyword
+ * @returns the count, or `null` if absent
+ * @throws {DecantInvalidSchemaError} if the value is not a non-negative integer
+ */
+export const readCount = (value: unknown, pointer: string): number | null => {
+    if (value === undefined) {
+        return null;
+    }
+    // Not `Number.isSafeInteger`: Juniper writes an unlimited count as `1e308`
+    if (typeof value !== 'number' || value < 0 || value % 1 !== 0) {
+        throw new DecantInvalidSchemaError('Must be a non-negative integer', { pointer });
+    }
+    return value;
+};
+
+/**
+ * Read a keyword that bounds a number, such as `minimum`.
+ *
+ * @param value - value of the keyword, or `undefined` if absent
+ * @param pointer - JSON Pointer to the keyword
+ * @param isBooleanAllowed - accept a boolean, as OpenAPI 3.0's `exclusiveMinimum` and `exclusiveMaximum` are
+ * @returns the bound (or boolean), or `null` if absent
+ * @throws {DecantInvalidSchemaError} if the value is not a finite number (or boolean, when allowed)
+ */
+export const readBound = (
+    value: unknown,
+    pointer: string,
+    isBooleanAllowed: boolean
+): boolean | number | null => {
+    if (value === undefined) {
+        return null;
+    }
+    if ((isBooleanAllowed && typeof value === 'boolean') || Number.isFinite(value)) {
+        return value as boolean | number;
+    }
+    throw new DecantInvalidSchemaError(
+        isBooleanAllowed ? 'Must be a number or boolean' : 'Must be a number',
+        { pointer }
+    );
+};
+
+/**
  * Read the `type` keyword.
  *
  * @param value - value of `type`, or `undefined` if absent

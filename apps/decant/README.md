@@ -10,7 +10,7 @@ Generate TypeScript types from JSON Schema files, with strict schema checks and 
 
 - **Types that match the schema** — tuples (`prefixItems`), `oneOf` unions you can narrow, `patternProperties` keys like `` `x-${string}` ``, recursive `$defs` and `if`/`then`/`else` all become precise types, not `any` or `unknown[]`.
 - **Round-trips Juniper** — a schema built with [Juniper](https://www.npmjs.com/package/juniper), serialized and read back by decant, gives the same type Juniper inferred. Every release is tested against that.
-- **Strict by default** — unknown keywords, keywords that don't apply to the schema's type, and `required` properties that aren't declared fail generation instead of silently loosening the type.
+- **Strict by default** — unknown keywords, keywords that don't apply to the schema's type, undeclared `required` properties, and contradictions like `minLength` over `maxLength` fail generation, instead of silently changing what the schema accepts. Without strict mode, the type follows exactly what a validator accepts.
 - **Generated files stay in sync** — a `--ci` mode fails when a committed file is out of date, like [populate-files](https://www.npmjs.com/package/populate-files).
 - **Types only** — the output is plain TypeScript types, with no runtime dependency.
 
@@ -20,6 +20,7 @@ For the motivation, and how it compares to other generators, see [WHY-DECANT.md]
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
+- [Precise types](#precise-types)
 - [How schemas become types](#how-schemas-become-types)
 - [Strict mode](#strict-mode)
 - [Stability of generated files](#stability-of-generated-files)
@@ -93,6 +94,21 @@ The root schema becomes a type named `Schema` (or `--name`). Every definition in
 
 The generated file is formatted with [format-file](https://www.npmjs.com/package/format-file), using your project's Biome or Prettier config if either is installed.
 
+## Precise types
+
+Where other generators commonly lose type information, decant keeps it:
+
+| Schema | decant | Often generated instead |
+|---|---|---|
+| `prefixItems: [{ number }, { number }]`, `items: false` | `[number, number]` | `never[]`, `any[]`, or `[number, number, ...number[]]` |
+| `oneOf` of objects with a `kind` const | a union that narrows on `kind` | one object, with each branch's properties optional, or `any` |
+| `pattern: "^usr_"` | `` `usr_${string}` `` | `string` |
+| `patternProperties: { "^x-": string }`, `additionalProperties: false` | `` { [key: `x-${string}`]: string } `` | `{ [k: string]: unknown }`, or `string` for every key |
+| recursive `$defs` | recursive named types | `any` after a few levels, or `undefined` |
+| `enum: ["a", 42, null]` | `"a" \| 42 \| null` | `string \| number \| null` |
+
+Each row is one of the probes in [WHY-DECANT.md](https://github.com/JacobLey/leyman/blob/main/apps/decant/WHY-DECANT.md#compared-to-alternatives), which compares decant with five other tools on the same schema.
+
 ## How schemas become types
 
 | JSON Schema | TypeScript |
@@ -140,14 +156,34 @@ decant is tested to generate the same type Juniper infers, for Juniper schemas c
 
 ## Strict mode
 
-Strict mode (the default) fails on schemas that are valid JSON Schema, but most likely mistakes, with a `DecantStrictModeError`:
+Strict mode (the default) fails with a `DecantStrictModeError` on schemas that are valid JSON Schema, but most likely mistakes. Validators ignore these, so the schema silently accepts more, or less, than it appears to.
+
+Keywords that do nothing:
 
 - An unknown keyword. Keywords starting with `x-` are allowed, as are `nullable` and `example` with `openApi30`.
 - A type specific keyword (e.g. `maxLength`) in a schema without a `type`, or whose `type` it doesn't apply to (e.g. `maxLength` on a number). Subschemas inherit their parent's type.
 - A `required` property that isn't in `properties`, of the schema or a parent.
 - `then` or `else` without `if`.
 
-Every schema Juniper builds passes. Disable strict mode (`strict: false`, `--no-strict`) to generate types for other schemas anyway: unknown keywords are ignored, and a schema without a `type` is assumed to be of the types its keywords apply to.
+Schemas that accept nothing, or less than they declare:
+
+- `minLength` greater than `maxLength`, and the same for `minItems`/`maxItems`, `minProperties`/`maxProperties` and `minContains`/`maxContains`.
+- `minimum`/`exclusiveMinimum` and `maximum`/`exclusiveMaximum` that no number (or no integer, for `integer`) fits between.
+- An `enum` or `const` value that isn't of the schema's `type`.
+- A `required` property whose schema is never valid (e.g. `false`), or more required properties than `maxProperties` allows.
+- `minProperties` more than an object with `additionalProperties: false` can have.
+- A tuple (`prefixItems` with `items: false`) shorter than `minItems`, or longer than `maxItems`.
+
+Every schema Juniper builds passes.
+
+### Without strict mode
+
+Disable strict mode (`strict: false`, `--no-strict`) for schemas you don't control. The generated type then follows what a validator accepts, and is never narrower:
+
+- Unknown keywords, and keywords that don't apply to the type, are ignored.
+- A schema without a `type` accepts every type. `{ "properties": { "a": … } }` is the object type, or any string, number, boolean, `null` or array.
+- A type whose constraints contradict each other is `never`. For `{ "type": ["string", "null"], "minLength": 3, "maxLength": 2 }`, only `null` is valid.
+- Tuple items beyond `maxItems` are left out.
 
 ## Stability of generated files
 

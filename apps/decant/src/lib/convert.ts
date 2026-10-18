@@ -18,6 +18,8 @@ import { childPointer, resolveRef } from './pointer.js';
 import {
     isSchemaObject,
     jsonLiteral,
+    readBound,
+    readCount,
     readDoc,
     readObject,
     readPattern,
@@ -97,6 +99,82 @@ const primitiveTypes: Readonly<Partial<Record<JsonType, TsType>>> = {
  * @param b - other type to compare
  * @returns negative if `a` sorts first, positive if `b` does
  */
+/**
+ * Every JSON type. `integer` is left out, as `number` includes it.
+ */
+const everyType: readonly JsonType[] = ['array', 'boolean', 'null', 'number', 'object', 'string'];
+
+/**
+ * JSON type of a value, as used by `enum` and `const`.
+ *
+ * @param value - an allowed value
+ * @returns the most specific type of the value
+ */
+const typeOfValue = (value: unknown): JsonType => {
+    if (value === null) {
+        return 'null';
+    }
+    if (Array.isArray(value)) {
+        return 'array';
+    }
+    if (typeof value === 'number') {
+        // JSON Schema integers include those too large to be safe, e.g. `1e20`
+        // eslint-disable-next-line unicorn/prefer-number-is-safe-integer
+        return Number.isInteger(value) ? 'integer' : 'number';
+    }
+    return typeof value as 'boolean' | 'object' | 'string';
+};
+
+/**
+ * Lowest (or highest) value of a number range, and whether it is excluded.
+ */
+interface Bound {
+    exclusive: boolean;
+    value: number;
+}
+
+/**
+ * The tighter of two bounds of a number range.
+ *
+ * @param a - a bound, or `null` if absent
+ * @param b - another bound, or `null` if absent
+ * @param direction - `1` for a lower bound (the larger value is tighter), `-1` for an upper bound
+ * @returns the tighter bound, or `null` if both are absent
+ */
+const tighterBound = (a: Bound | null, b: Bound | null, direction: -1 | 1): Bound | null => {
+    if (!a || !b) {
+        return a ?? b;
+    }
+    if (a.value === b.value) {
+        return { exclusive: a.exclusive || b.exclusive, value: a.value };
+    }
+    return (a.value - b.value) * direction > 0 ? a : b;
+};
+
+/**
+ * Value of a number bound keyword, or `null` if absent.
+ */
+type KeywordBound = boolean | number | null;
+
+/**
+ * Bound of a number range, from its inclusive and exclusive keywords.
+ *
+ * @param inclusive - `minimum` or `maximum`
+ * @param exclusive - `exclusiveMinimum` or `exclusiveMaximum`, which is a boolean in OpenAPI 3.0
+ * @param direction - `1` for a lower bound, `-1` for an upper bound
+ * @returns the tighter bound, or `null` if there is none
+ */
+const numberBound = (
+    inclusive: KeywordBound,
+    exclusive: KeywordBound,
+    direction: -1 | 1
+): Bound | null =>
+    tighterBound(
+        typeof inclusive === 'number' ? { exclusive: exclusive === true, value: inclusive } : null,
+        typeof exclusive === 'number' ? { exclusive: true, value: exclusive } : null,
+        direction
+    );
+
 const compareNames = (a: NamedType, b: NamedType): number =>
     // eslint-disable-next-line sonarjs/strings-comparison
     a.name < b.name ? -1 : Number(a.name > b.name);
@@ -136,6 +214,46 @@ const valueTypes = (schema: SchemaObject, pointer: string): TsType[] => {
         values.push(jsonLiteral(schema.const));
     }
     return values;
+};
+
+/**
+ * Why an object schema accepts no objects, if it doesn't.
+ *
+ * @param schema - schema of the objects
+ * @param pointer - JSON Pointer to the schema
+ * @param required - required property names
+ * @param scope - context of the schema, including its own properties
+ * @returns description of the contradiction, or `null` if there is none
+ */
+const objectContradiction = (
+    schema: SchemaObject,
+    pointer: string,
+    required: readonly string[],
+    scope: Scope
+): string | null => {
+    const minProperties =
+        readCount(schema.minProperties, childPointer(pointer, 'minProperties')) ?? 0;
+    const maxProperties = readCount(schema.maxProperties, childPointer(pointer, 'maxProperties'));
+    const unique = new Set(required);
+    if (maxProperties !== null && Math.max(minProperties, unique.size) > maxProperties) {
+        return '"minProperties" or "required" need more properties than "maxProperties" allows';
+    }
+    const never = required.find(name => {
+        const type = scope.properties.get(name);
+        return type?.kind === 'keyword' && type.keyword === 'never';
+    });
+    if (never !== undefined) {
+        return `Required property "${never}" is never valid`;
+    }
+    const declared = Object.keys(schema.properties ?? {}).length;
+    if (
+        schema.additionalProperties === false &&
+        schema.patternProperties === undefined &&
+        minProperties > declared
+    ) {
+        return '"minProperties" is more than the properties allowed';
+    }
+    return null;
 };
 
 /**
@@ -284,8 +402,36 @@ export class Converter {
             }
         }
 
-        // Without strict mode, a schema with no type is assumed to be of the types its keywords apply to
-        return types ?? (families.size > 0 ? [...families] : null);
+        // A schema without a type accepts every type. Its keywords constrain only their own,
+        // so (outside strict mode, which requires a type) list every type for them to apply to
+        return types ?? (families.size > 0 ? everyType : null);
+    }
+
+    /**
+     * In strict mode, check every `enum` and `const` value is of the schema's types.
+     *
+     * @param schema - schema with the keywords
+     * @param pointer - JSON Pointer to the schema
+     * @param types - types of the schema, or `null` if any
+     * @throws {DecantStrictModeError} if a value can never be valid, in strict mode
+     */
+    #checkValues(schema: SchemaObject, pointer: string, types: readonly JsonType[] | null): void {
+        if (!types) {
+            return;
+        }
+        const values = [
+            ...(Array.isArray(schema.enum) ? (schema.enum as unknown[]) : []),
+            ...(Object.hasOwn(schema, 'const') ? [schema.const] : []),
+        ];
+        for (const value of values) {
+            const valueType = typeOfValue(value);
+            if (types.every(type => !isApplicable(type, valueType))) {
+                this.#strictError(
+                    `${JSON.stringify(value)} is never valid, as it is not of the schema's type`,
+                    pointer
+                );
+            }
+        }
     }
 
     #checkFamily(
@@ -312,6 +458,7 @@ export class Converter {
         }
         const object = readObject(schema, pointer);
         const types = this.#types(object, pointer, scope);
+        this.#checkValues(object, pointer, types);
         const subScope: Scope = {
             properties: new Map([...scope.properties, ...this.#propertyTypes(object, pointer)]),
             types,
@@ -444,9 +591,10 @@ export class Converter {
      */
     #typed(schema: SchemaObject, pointer: string, type: JsonType, scope: Scope): TsType {
         if (type === 'string') {
-            return schema.pattern === undefined
-                ? stringType
-                : patternType(readPattern(schema.pattern, childPointer(pointer, 'pattern')));
+            return this.#string(schema, pointer);
+        }
+        if (type === 'number' || type === 'integer') {
+            return this.#number(schema, pointer, type);
         }
         if (type === 'array') {
             return this.#array(schema, pointer);
@@ -454,12 +602,78 @@ export class Converter {
         return type === 'object' ? this.#objectType(schema, pointer, scope) : primitiveTypes[type]!;
     }
 
+    /**
+     * A type no value can match, because the schema contradicts itself. Fails in strict mode.
+     *
+     * @param message - why no value can match
+     * @param pointer - JSON Pointer to the schema
+     * @returns `never`
+     * @throws {DecantStrictModeError} in strict mode
+     */
+    #contradiction(message: string, pointer: string): TsType {
+        this.#strictError(`${message}, so no value is valid`, pointer);
+        return neverType;
+    }
+
+    #string(schema: SchemaObject, pointer: string): TsType {
+        const minLength = readCount(schema.minLength, childPointer(pointer, 'minLength')) ?? 0;
+        const maxLength = readCount(schema.maxLength, childPointer(pointer, 'maxLength'));
+        if (maxLength !== null && minLength > maxLength) {
+            return this.#contradiction('"minLength" is greater than "maxLength"', pointer);
+        }
+        return schema.pattern === undefined
+            ? stringType
+            : patternType(readPattern(schema.pattern, childPointer(pointer, 'pattern')));
+    }
+
+    #number(schema: SchemaObject, pointer: string, type: 'integer' | 'number'): TsType {
+        const read = (keyword: string): KeywordBound =>
+            readBound(
+                schema[keyword],
+                childPointer(pointer, keyword),
+                // OpenAPI 3.0 marks `minimum` and `maximum` exclusive with booleans
+                this.#options.openApi30 && keyword.startsWith('exclusive')
+            );
+        const [minimum, exclusiveMinimum, maximum, exclusiveMaximum] = [
+            'minimum',
+            'exclusiveMinimum',
+            'maximum',
+            'exclusiveMaximum',
+        ].map(keyword => read(keyword));
+        const lower = numberBound(minimum!, exclusiveMinimum!, 1);
+        const upper = numberBound(maximum!, exclusiveMaximum!, -1);
+        if (!lower || !upper) {
+            return numberType;
+        }
+
+        // The integers nearest to each bound, within it
+        const lowest = lower.exclusive ? Math.floor(lower.value) + 1 : Math.ceil(lower.value);
+        const highest = upper.exclusive ? Math.ceil(upper.value) - 1 : Math.floor(upper.value);
+        const isEmpty =
+            type === 'integer'
+                ? lowest > highest
+                : lower.value > upper.value ||
+                  (lower.value === upper.value && (lower.exclusive || upper.exclusive));
+        return isEmpty
+            ? this.#contradiction(`The minimum and maximum allow no ${type}`, pointer)
+            : numberType;
+    }
+
     #array(schema: SchemaObject, pointer: string): TsType {
-        const { minItems = 0 } = schema;
-        if (!Number.isSafeInteger(minItems) || (minItems as number) < 0) {
-            throw new DecantInvalidSchemaError('minItems must be a non-negative integer', {
-                pointer: childPointer(pointer, 'minItems'),
-            });
+        const minItems = readCount(schema.minItems, childPointer(pointer, 'minItems')) ?? 0;
+        const maxItems = readCount(schema.maxItems, childPointer(pointer, 'maxItems'));
+        const minContains = readCount(schema.minContains, childPointer(pointer, 'minContains'));
+        const maxContains = readCount(schema.maxContains, childPointer(pointer, 'maxContains'));
+        if (maxItems !== null && minItems > maxItems) {
+            return this.#contradiction('"minItems" is greater than "maxItems"', pointer);
+        }
+        // `minContains` and `maxContains` only apply with `contains`
+        if (
+            maxContains !== null &&
+            schema.contains !== undefined &&
+            (minContains ?? 1) > maxContains
+        ) {
+            return this.#contradiction('"minContains" is greater than "maxContains"', pointer);
         }
 
         // Draft 2020-12 `prefixItems` + `items`, or the older array form of `items` + `additionalItems`
@@ -483,19 +697,33 @@ export class Converter {
                   );
 
         const isRestNever = rest.kind === 'keyword' && rest.keyword === 'never';
+        if (isRestNever && minItems > prefix.length) {
+            return this.#contradiction(
+                '"minItems" is greater than the number of "prefixItems", and "items" is false',
+                pointer
+            );
+        }
+        if (maxItems !== null && maxItems < prefix.length) {
+            this.#strictError(
+                `"maxItems" is less than the number of "${prefixKeyword}", so the last are never valid`,
+                pointer
+            );
+        }
         if (prefix.length === 0) {
             return isRestNever
                 ? { kind: 'tuple', elements: [], rest: null }
                 : { kind: 'array', element: rest };
         }
+        // Items beyond `maxItems` can't be present
+        const isTruncated = maxItems !== null && maxItems < prefix.length;
         return {
             kind: 'tuple',
             // Items beyond `minItems` may be missing
-            elements: prefix.map((item, i) => ({
-                optional: i >= (minItems as number),
+            elements: prefix.slice(0, maxItems ?? prefix.length).map((item, i) => ({
+                optional: i >= minItems,
                 type: item,
             })),
-            rest: isRestNever ? null : rest,
+            rest: isRestNever || isTruncated ? null : rest,
         };
     }
 
@@ -553,6 +781,10 @@ export class Converter {
                 );
             }
             properties.push({ name, doc: null, optional: false, type: type ?? unknownType });
+        }
+        const contradiction = objectContradiction(schema, pointer, required, scope);
+        if (contradiction) {
+            return this.#contradiction(contradiction, pointer);
         }
 
         const index = this.#patternProperties(schema, pointer, properties);

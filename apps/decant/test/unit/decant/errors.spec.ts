@@ -57,6 +57,13 @@ suite('errors', () => {
             '$defs is not an object': { $defs: [] },
             'dependentRequired is not an object': { type: 'object', dependentRequired: [] },
             'nullable is not a boolean': { type: 'string', nullable: 'yes' },
+            'minLength is not an integer': { type: 'string', minLength: 'a' },
+            'maxItems is negative': { type: 'array', maxItems: -1 },
+            'minimum is not a number': { type: 'number', minimum: '1' },
+            'exclusiveMaximum is not a number or boolean': {
+                type: 'number',
+                exclusiveMaximum: '1',
+            },
         };
         for (const [name, schema] of Object.entries(invalid)) {
             test(name, () => {
@@ -81,6 +88,21 @@ suite('errors', () => {
             // eslint-disable-next-line unicorn/no-thenable
             'then without if': { type: 'string', then: { maxLength: 1 } },
             'else without if': { type: 'string', else: { maxLength: 1 } },
+            'enum value of another type': { type: 'string', enum: ['a', 1] },
+            'const of another type': { type: 'integer', const: 1.5 },
+            'minLength greater than maxLength': { type: 'string', minLength: 3, maxLength: 2 },
+            'minimum greater than maximum': { type: 'number', minimum: 3, maximum: 2 },
+            'minItems greater than maxItems': { type: 'array', minItems: 3, maxItems: 2 },
+            'maxItems less than prefixItems': {
+                type: 'array',
+                prefixItems: [true, true],
+                maxItems: 1,
+            },
+            'required property that is never valid': {
+                type: 'object',
+                properties: { a: false },
+                required: ['a'],
+            },
         };
         for (const [name, schema] of Object.entries(nonStrict)) {
             test(name, () => {

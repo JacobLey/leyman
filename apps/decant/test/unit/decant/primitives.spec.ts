@@ -29,6 +29,36 @@ suite('primitives', () => {
             expectDecanted({ type: 'integer', minimum: 0 }, { Schema: 'number' });
         });
 
+        test('bounds that allow values', () => {
+            expectDecanted(
+                {
+                    type: ['number', 'integer'],
+                    minimum: 1,
+                    exclusiveMinimum: 1,
+                    maximum: 4,
+                    exclusiveMaximum: 3,
+                },
+                { Schema: 'number' }
+            );
+        });
+
+        test('inclusive bounds of one value', () => {
+            expectDecanted({ type: 'number', minimum: 2, maximum: 2 }, { Schema: 'number' });
+        });
+
+        test('looser bounds are ignored', () => {
+            expectDecanted(
+                {
+                    type: 'integer',
+                    exclusiveMinimum: 0,
+                    minimum: 1,
+                    maximum: 5,
+                    exclusiveMaximum: 9,
+                },
+                { Schema: 'number' }
+            );
+        });
+
         test('boolean', () => {
             expectDecanted({ type: 'boolean' }, { Schema: 'boolean' });
         });
@@ -121,12 +151,15 @@ suite('primitives', () => {
             expectDecanted({ enum: [{ a: [1, 'b'] }, []] }, { Schema: '{ a: [1, "b"] } | []' });
         });
 
-        test('empty enum is never', () => {
-            expectDecanted({ enum: [] }, { Schema: 'never' });
+        test('values of the declared type', () => {
+            expectDecanted(
+                { type: ['array', 'object', 'boolean'], enum: [[1], { a: null }, false] },
+                { Schema: '[1] | { a: null } | false' }
+            );
         });
 
-        test('values not of the type are dropped', () => {
-            expectDecanted({ type: 'string', enum: ['a', 1, null] }, { Schema: '"a"' });
+        test('empty enum is never', () => {
+            expectDecanted({ enum: [] }, { Schema: 'never' });
         });
 
         test('many values', () => {
