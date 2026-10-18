@@ -1,6 +1,6 @@
 import type { Dialect, JsonType } from './keywords.js';
 import type { SchemaObject } from './read-keyword.js';
-import type { DocumentIndex } from './resources.js';
+import type { DocumentIndex, Target } from './resources.js';
 import type { TsDoc, TsIndex, TsProperty, TsType } from './ts-type.js';
 import {
     DecantInvalidSchemaError,
@@ -89,9 +89,28 @@ interface Scope {
      * Types of the parent schema. Type specific keywords without a `type` of their own apply to these.
      */
     readonly types: readonly JsonType[] | null;
+    /**
+     * Canonical JSON Pointers of the referenced schemas this one is part of, without a property or item
+     * in between, so it applies to the same value: the named type being converted, and any schema inlined
+     * into it. A `$ref` back to one of them never matches anything a terminating validator could accept.
+     */
+    readonly unguarded: readonly string[];
 }
 
-const emptyScope: Scope = { properties: new Map(), types: null };
+const emptyScope: Scope = { properties: new Map(), types: null, unguarded: [] };
+
+/**
+ * Keywords whose subschemas apply to the same value as their schema, rather than to a property or item:
+ * one schema, or a collection (array or map) of them.
+ */
+const sameValueKeywords = ['if', 'then', 'else', 'not'] as const;
+const sameValueCollectionKeywords = [
+    'allOf',
+    'anyOf',
+    'oneOf',
+    'dependentSchemas',
+    'dependencies',
+] as const;
 
 /**
  * Name of the type of a referenced schema: a definition (in any `$defs`, `definitions`, or OpenAPI's
@@ -363,6 +382,10 @@ export class Converter {
      * Schema resources and anchors of the document, which references resolve to.
      */
     #index: DocumentIndex | null = null;
+    /**
+     * Result of {@link #sameValueReferences}, keyed by the referenced schema's pointer.
+     */
+    readonly #sameValueCache = new Map<string, ReadonlySet<string>>();
 
     /**
      * @param root - root schema document
@@ -417,7 +440,7 @@ export class Converter {
             types.push({
                 doc: readDoc(schema),
                 name: this.#named.get(pointer)!,
-                type: this.#convert(schema, pointer, emptyScope),
+                type: this.#convert(schema, pointer, { ...emptyScope, unguarded: [pointer] }),
             });
         }
         return types;
@@ -468,7 +491,16 @@ export class Converter {
         return reserved;
     }
 
-    #reference(ref: unknown, refPointer: string): TsType {
+    /**
+     * Resolve a `$ref`, seeing through resource aliases.
+     *
+     * @param ref - value of the `$ref` keyword
+     * @param refPointer - JSON Pointer to the `$ref` keyword
+     * @returns the schema it refers to
+     * @throws {DecantInvalidSchemaError} if the `$ref` is invalid, or only refers to itself
+     * @throws {DecantUnsupportedError} if the `$ref` is to another document
+     */
+    #resolve(ref: unknown, refPointer: string): Target {
         if (typeof ref !== 'string') {
             throw new DecantInvalidSchemaError('$ref must be a string', { pointer: refPointer });
         }
@@ -483,6 +515,89 @@ export class Converter {
             }
             aliases.add(target.pointer);
             target = resolveReference(this.#index!, target.schema.$ref, target.pointer);
+        }
+        return target;
+    }
+
+    /**
+     * Every schema a schema refers to, directly or through others, that applies to the same value:
+     * by `$ref`s outside any property or item.
+     *
+     * @param target - referenced schema
+     * @returns canonical JSON Pointers of the schemas
+     */
+    #sameValueReferences(target: Target): ReadonlySet<string> {
+        const cached = this.#sameValueCache.get(target.pointer);
+        if (cached) {
+            return cached;
+        }
+        const found = new Set<string>();
+        const visit = (schema: unknown, pointer: string): void => {
+            if (!isSchemaObject(schema)) {
+                return;
+            }
+            for (const keyword of sameValueKeywords) {
+                visit(schema[keyword], childPointer(pointer, keyword));
+            }
+            for (const keyword of sameValueCollectionKeywords) {
+                const value = schema[keyword];
+                // `dependencies` values may also be arrays of property names, which are skipped
+                if (Array.isArray(value) || isSchemaObject(value)) {
+                    for (const [key, subschema] of Object.entries(value)) {
+                        visit(subschema, childPointer(childPointer(pointer, keyword), key));
+                    }
+                }
+            }
+            if (schema.$ref === undefined) {
+                return;
+            }
+            let referenced: Target;
+            try {
+                referenced = this.#resolve(schema.$ref, childPointer(pointer, '$ref'));
+            } catch {
+                // Thrown when the reference itself is converted
+                return;
+            }
+            if (found.has(referenced.pointer)) {
+                return;
+            }
+            found.add(referenced.pointer);
+            visit(referenced.schema, referenced.pointer);
+        };
+        visit(target.schema, target.pointer);
+        this.#sameValueCache.set(target.pointer, found);
+        return found;
+    }
+
+    /**
+     * The type of a `$ref`: usually the referenced schema's named type.
+     *
+     * A reference back to a schema it is part of, applying to the same value, is `never`: it can never be
+     * why a value is valid, and a validator would recurse forever on it. A schema that would only reach
+     * back to this one (e.g. a mutual `anyOf`) is inlined, as TypeScript rejects a type alias that refers
+     * to itself outside an object or array.
+     *
+     * @param ref - value of the `$ref` keyword
+     * @param refPointer - JSON Pointer to the `$ref` keyword
+     * @param scope - context of the schema with the `$ref`
+     * @returns type of the referenced schema
+     * @throws {DecantStrictModeError} if it refers back to a schema it is part of, in strict mode
+     */
+    #reference(ref: unknown, refPointer: string, scope: Scope): TsType {
+        const target = this.#resolve(ref, refPointer);
+        if (scope.unguarded.includes(target.pointer)) {
+            this.#strictError(
+                `$ref "${ref as string}" refers back to a schema it is part of, without a property or item in between, so it never matches`,
+                refPointer
+            );
+            return neverType;
+        }
+        const reachable = this.#sameValueReferences(target);
+        if (scope.unguarded.some(pointer => reachable.has(pointer))) {
+            return this.#convert(target.schema, target.pointer, {
+                ...emptyScope,
+                unguarded: [...scope.unguarded, target.pointer],
+            });
         }
         return {
             kind: 'reference',
@@ -599,6 +714,7 @@ export class Converter {
         }
         const subScope: Scope = {
             properties: new Map([...scope.properties, ...this.#propertyTypes(object, pointer)]),
+            unguarded: scope.unguarded,
             types,
         };
 
@@ -614,7 +730,7 @@ export class Converter {
             ...this.#compositions(object, pointer, subScope),
         ];
         if (object.$ref !== undefined) {
-            parts.push(this.#reference(object.$ref, childPointer(pointer, '$ref')));
+            parts.push(this.#reference(object.$ref, childPointer(pointer, '$ref'), scope));
         }
 
         let type = intersection(parts);
@@ -988,6 +1104,7 @@ export class Converter {
         const names = this.#convert(schema.propertyNames, childPointer(pointer, 'propertyNames'), {
             properties: new Map(),
             types: ['string'],
+            unguarded: [],
         });
         const members = names.kind === 'union' ? names.members : [names];
         return members.flatMap(member => {
@@ -1050,7 +1167,7 @@ export class Converter {
      */
     #dependents(schema: SchemaObject, pointer: string, scope: Scope): TsType[] {
         const dependents: TsType[] = [];
-        const objectScope: Scope = { properties: scope.properties, types: ['object'] };
+        const objectScope: Scope = { ...scope, types: ['object'] };
         for (const keyword of ['dependentRequired', 'dependentSchemas', 'dependencies'] as const) {
             if (schema[keyword] === undefined) {
                 continue;

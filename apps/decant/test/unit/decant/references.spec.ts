@@ -1,5 +1,5 @@
 import { expect } from '@leyman/expect';
-import { decant } from 'decant';
+import { decant, DecantStrictModeError } from 'decant';
 import { suite, test } from 'mocha-chain';
 import { expectDecanted } from '../../lib/expect-decanted.js';
 import { typeCheck } from '../../lib/type-check.js';
@@ -116,6 +116,94 @@ suite('references', () => {
             { Schema: '{ a?: A | null }', A: 'string' },
             { openApi30: true }
         );
+    });
+
+    suite('a reference back to the same value', () => {
+        const loose = { strict: false };
+
+        test('is never, outside strict mode', () => {
+            expectDecanted(
+                { anyOf: [{ $ref: '#' }, { type: 'string' }] },
+                { Schema: 'string' },
+                loose
+            );
+            expectDecanted(
+                { allOf: [{ $ref: '#' }, { type: 'string' }] },
+                { Schema: 'never' },
+                loose
+            );
+        });
+
+        test('is a strict mode error', () => {
+            expect(() => decant({ anyOf: [{ $ref: '#' }, { type: 'string' }] }))
+                .to.throw(DecantStrictModeError, /refers back/u)
+                .with.property('pointer', '#/anyOf/0/$ref');
+        });
+
+        test('through another definition, which is inlined', () => {
+            expectDecanted(
+                {
+                    $defs: {
+                        A: { anyOf: [{ $ref: '#/$defs/B' }, { type: 'string' }] },
+                        B: { anyOf: [{ $ref: '#/$defs/A' }, { type: 'number' }] },
+                    },
+                },
+                { Schema: 'unknown', A: 'number | string', B: 'string | number' },
+                loose
+            );
+        });
+
+        suite('through each keyword for the same value', () => {
+            const shapes: Record<string, (ref: string) => unknown> = {
+                allOf: ref => ({ allOf: [{ $ref: ref }] }),
+                oneOf: ref => ({ oneOf: [{ $ref: ref }] }),
+                if: ref => ({ if: { $ref: ref } }),
+                // eslint-disable-next-line unicorn/no-thenable
+                then: ref => ({ if: true, then: { $ref: ref } }),
+                else: ref => ({ if: false, else: { $ref: ref } }),
+                not: ref => ({ not: { $ref: ref } }),
+                dependentSchemas: ref => ({
+                    type: 'object',
+                    dependentSchemas: { a: { $ref: ref } },
+                }),
+                dependencies: ref => ({
+                    type: 'object',
+                    dependencies: { a: { $ref: ref }, b: ['a'] },
+                }),
+            };
+            for (const [keyword, shape] of Object.entries(shapes)) {
+                test(keyword, () => {
+                    expect(() =>
+                        decant({ $defs: { A: shape('#/$defs/B'), B: shape('#/$defs/A') } })
+                    ).to.throw(DecantStrictModeError, /refers back/u);
+                });
+            }
+        });
+
+        test('through a property or item is a recursive type', () => {
+            const source = decant({
+                $defs: {
+                    A: { anyOf: [{ $ref: '#/$defs/B' }, { type: 'string' }] },
+                    B: { type: 'array', items: { $ref: '#/$defs/A' } },
+                },
+            });
+
+            expect(typeCheck({ 'decanted.ts': source })).to.deep.equal([]);
+        });
+
+        test('an invalid reference is still an error', () => {
+            expect(() =>
+                decant(
+                    {
+                        $defs: {
+                            A: { anyOf: [{ $ref: '#/$defs/B' }] },
+                            B: { anyOf: [{ $ref: '#/$defs/A' }, { $ref: '#/$defs/Missing' }] },
+                        },
+                    },
+                    loose
+                )
+            ).to.throw(/Missing/u);
+        });
     });
 
     suite('resources and anchors', () => {

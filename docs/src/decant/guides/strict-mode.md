@@ -21,6 +21,7 @@ A schema can be valid JSON Schema and still be a mistake. Validators ignore thes
 - A `required` property whose schema is never valid (such as `false`), or more required properties than `maxProperties` allows.
 - `minProperties` more than an object with `additionalProperties: false` can have.
 - A tuple (`prefixItems` with `items: false`) shorter than `minItems`, or longer than `maxItems`.
+- A `$ref` back to a schema it is part of, without a property or item in between, such as `{ "anyOf": [{ "$ref": "#" }, { "type": "string" }] }`. It applies to the same value again, so a validator never finishes checking it, and JSON Schema leaves its behaviour undefined.
 
 Every schema Juniper builds passes.
 
@@ -32,5 +33,6 @@ For schemas you don't control, disable strict mode with `--no-strict` (or `stric
 - A schema without a `type` accepts every type. `{ "properties": { "a": … } }` is the object, or any string, number, boolean, `null` or array.
 - A type whose constraints contradict each other is `never`. For `{ "type": ["string", "null"], "minLength": 3, "maxLength": 2 }`, only `null` is valid.
 - Tuple items beyond `maxItems` are left out.
+- A `$ref` back to a schema it is part of, without a property or item in between, is `never`: it can't be why a value is valid. The `anyOf` above is `string`. A schema it passes through on the way back is inlined, as TypeScript rejects a type that refers to itself outside an object or array.
 
 Some features are unsupported in either mode, as ignoring them would loosen the type: `$dynamicRef` and `$recursiveRef` throw a `DecantUnsupportedError`.

@@ -202,6 +202,7 @@ Schemas that accept nothing, or less than they declare:
 - A tuple (`prefixItems` with `items: false`) shorter than `minItems`, or longer than `maxItems`.
 
 Every schema Juniper builds passes.
+- A `$ref` back to a schema it is part of, without a property or item in between, such as `{ "anyOf": [{ "$ref": "#" }, { "type": "string" }] }`. It applies to the same value again, so a validator never finishes checking it, and JSON Schema leaves its behaviour undefined.
 
 ### Without strict mode
 
@@ -213,6 +214,7 @@ Disable strict mode (`strict: false`, `--no-strict`) for schemas you don't contr
 - Tuple items beyond `maxItems` are left out.
 
 ## Stability of generated files
+- A `$ref` back to a schema it is part of, without a property or item in between, is `never`: it can't be why a value is valid. The `anyOf` above is `string`. A schema it passes through on the way back is inlined, as TypeScript rejects a type that refers to itself outside an object or array.
 
 The text of a generated file is not part of decant's API. Formatting, ordering, and how a type is written (e.g. `Record<string, number>` or `{ [key: string]: number }`) may change in any release.
 
