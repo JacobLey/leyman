@@ -1,0 +1,115 @@
+import { expect } from '@leyman/expect';
+import {
+    decant,
+    DecantError,
+    DecantInvalidSchemaError,
+    DecantStrictModeError,
+    DecantUnsupportedError,
+} from 'decant';
+import { suite, test } from 'mocha-chain';
+
+suite('errors', () => {
+    suite('error details', () => {
+        const invalid = { type: 'object', properties: { a: { type: 'foo' } } };
+
+        test('extends DecantError', () => {
+            expect(() => decant(invalid)).to.throw(DecantError);
+        });
+
+        test('has a name', () => {
+            expect(() => decant(invalid))
+                .to.throw(DecantInvalidSchemaError)
+                .with.property('name', 'DecantInvalidSchemaError');
+        });
+
+        test('has a pointer to the problem', () => {
+            expect(() => decant(invalid))
+                .to.throw(DecantInvalidSchemaError)
+                .with.property('pointer', '#/properties/a/type');
+        });
+    });
+
+    suite('invalid schema', () => {
+        const invalid: Record<string, unknown> = {
+            'schema is not an object': { type: 'array', items: 'string' },
+            'schema is an array': [],
+            'type is empty': { type: [] },
+            'type is unknown': { type: 'date' },
+            'enum is not an array': { enum: 'a' },
+            'allOf is empty': { allOf: [] },
+            'anyOf is not an array': { anyOf: {} },
+            'properties is not an object': { type: 'object', properties: [] },
+            'required is not strings': { type: 'object', required: [1] },
+            'required is not an array': { type: 'object', required: 'a' },
+            'patternProperties is not an object': { type: 'object', patternProperties: true },
+            'pattern is not a string': { type: 'string', pattern: 1 },
+            'pattern is not a regular expression': { type: 'string', pattern: '(' },
+            'property pattern is not a regular expression': {
+                type: 'object',
+                patternProperties: { '(': true },
+            },
+            'minItems is negative': { type: 'array', minItems: -1 },
+            'minItems is not an integer': { type: 'array', minItems: 1.5 },
+            '$ref is not a string': { $ref: 1 },
+            '$ref does not resolve': { $ref: '#/$defs/Missing' },
+            '$ref through a primitive': { $ref: '#/type/foo', type: 'string' },
+            '$ref is not encoded': { $ref: '#/%E0%A4%A' },
+            '$defs is not an object': { $defs: [] },
+            'dependentRequired is not an object': { type: 'object', dependentRequired: [] },
+            'nullable is not a boolean': { type: 'string', nullable: 'yes' },
+        };
+        for (const [name, schema] of Object.entries(invalid)) {
+            test(name, () => {
+                expect(() => decant(schema, { openApi30: true })).to.throw(
+                    DecantInvalidSchemaError
+                );
+            });
+        }
+    });
+
+    suite('strict mode', () => {
+        const nonStrict: Record<string, unknown> = {
+            'unknown keyword': { type: 'string', foo: 1 },
+            'OpenAPI 3.0 keyword': { type: 'string', nullable: true },
+            'type keyword without a type': { maxLength: 1 },
+            'keyword for another type': { type: 'number', maxLength: 1 },
+            'required property not declared': {
+                type: 'object',
+                properties: { a: true },
+                required: ['b'],
+            },
+            // eslint-disable-next-line unicorn/no-thenable
+            'then without if': { type: 'string', then: { maxLength: 1 } },
+            'else without if': { type: 'string', else: { maxLength: 1 } },
+        };
+        for (const [name, schema] of Object.entries(nonStrict)) {
+            test(name, () => {
+                expect(() => decant(schema)).to.throw(DecantStrictModeError);
+            });
+        }
+
+        test('extension keywords are allowed', () => {
+            expect(() => decant({ type: 'string', 'x-foo': 1 })).not.to.throw();
+        });
+
+        test('number keywords apply to integers', () => {
+            expect(() => decant({ type: 'integer', minimum: 0 })).not.to.throw();
+        });
+    });
+
+    suite('unsupported', () => {
+        test('$ref to another document', () => {
+            expect(() => decant({ $ref: 'other.json#/$defs/A' })).to.throw(DecantUnsupportedError);
+        });
+
+        test('$dynamicRef', () => {
+            expect(() => decant({ $dynamicRef: '#node' }, { strict: false })).to.throw(
+                DecantUnsupportedError
+            );
+        });
+
+        test('$ref to an anchor', () => {
+            expect(() => decant({ $ref: '#anchor' })).to.throw(DecantUnsupportedError);
+        });
+    });
+});

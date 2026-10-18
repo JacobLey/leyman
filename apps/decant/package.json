@@ -1,0 +1,78 @@
+{
+  "name": "decant",
+  "version": "0.0.1",
+  "description": "Generate TypeScript types from JSON Schema files, with strict schema checks and the same types Juniper infers.",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "apps/decant"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/decant#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "json-schema",
+    "typescript",
+    "codegen",
+    "types",
+    "type-generation",
+    "json-schema-to-typescript",
+    "juniper",
+    "openapi",
+    "cli"
+  ],
+  "sideEffects": false,
+  "types": "./dist/index.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "bin.mjs",
+    "WHY-DECANT.md"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "bin": {
+    "decant": "./bin.mjs"
+  },
+  "dependencies": {
+    "ci-info": "catalog:",
+    "entry-script": "workspace:^",
+    "format-file": "workspace:^",
+    "haywire": "workspace:^",
+    "haywire-launcher": "workspace:^",
+    "parse-cwd": "workspace:^",
+    "populate-files": "workspace:^",
+    "yargs": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/yargs": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "juniper": "workspace:^",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "tmp-promise": "catalog:",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  }
+}

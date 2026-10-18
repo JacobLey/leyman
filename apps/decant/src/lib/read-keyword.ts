@@ -1,0 +1,160 @@
+import type { JsonType } from './keywords.js';
+import type { TsDoc, TsType } from './ts-type.js';
+import { DecantInvalidSchemaError } from './errors.js';
+import { jsonTypes } from './keywords.js';
+import { childPointer } from './pointer.js';
+import { nullType } from './ts-type.js';
+
+export type SchemaObject = Readonly<Record<string, unknown>>;
+
+/**
+ * Whether a value is a JSON object (not an array or `null`).
+ *
+ * @param value - schema, or the value of a keyword
+ * @returns true if the value is an object
+ */
+export const isSchemaObject = (value: unknown): value is SchemaObject =>
+    typeof value === 'object' && value !== null && !Array.isArray(value);
+
+/**
+ * Read a keyword whose value must be an object, such as `properties`.
+ *
+ * @param value - value of the keyword, or a schema
+ * @param pointer - JSON Pointer to the keyword
+ * @returns the value, known to be a JSON object
+ * @throws {DecantInvalidSchemaError} if the value is not an object
+ */
+export const readObject = (value: unknown, pointer: string): SchemaObject => {
+    if (!isSchemaObject(value)) {
+        throw new DecantInvalidSchemaError('Must be an object', { pointer });
+    }
+    return value;
+};
+
+/**
+ * Read a keyword whose value must be a non-empty array of schemas, such as `allOf`.
+ *
+ * @param value - keyword value
+ * @param pointer - JSON Pointer to the keyword
+ * @returns the schemas, each still to be validated
+ * @throws {DecantInvalidSchemaError} if the value is not a non-empty array
+ */
+export const readSchemaArray = (value: unknown, pointer: string): readonly unknown[] => {
+    if (!Array.isArray(value) || value.length === 0) {
+        throw new DecantInvalidSchemaError('Must be a non-empty array of schemas', { pointer });
+    }
+    return value;
+};
+
+/**
+ * Read a keyword whose value must be an array of property names, such as `required`.
+ *
+ * @param value - keyword value, or `undefined` if absent
+ * @param pointer - JSON Pointer to the keyword
+ * @returns property names, empty if absent
+ * @throws {DecantInvalidSchemaError} if the value is not an array of strings
+ */
+export const readPropertyNames = (value: unknown, pointer: string): readonly string[] => {
+    if (value === undefined) {
+        return [];
+    }
+    if (!Array.isArray(value) || value.some(name => typeof name !== 'string')) {
+        throw new DecantInvalidSchemaError('Must be an array of strings', { pointer });
+    }
+    return value as string[];
+};
+
+/**
+ * Read the `type` keyword.
+ *
+ * @param value - value of `type`, or `undefined` if absent
+ * @param pointer - JSON Pointer to the schema
+ * @returns declared types, or `null` if there is no `type`
+ * @throws {DecantInvalidSchemaError} if the value is not a type, or a non-empty array of types
+ */
+export const readTypes = (value: unknown, pointer: string): JsonType[] | null => {
+    if (value === undefined) {
+        return null;
+    }
+    const types: unknown[] = Array.isArray(value) ? value : [value];
+    if (types.length === 0 || types.some(type => !jsonTypes.has(type as string))) {
+        const allowed = [...jsonTypes].join(', ');
+        throw new DecantInvalidSchemaError(`type must be one of, or an array of, ${allowed}`, {
+            pointer: childPointer(pointer, 'type'),
+        });
+    }
+    return types as JsonType[];
+};
+
+/**
+ * Read a regular expression, such as `pattern` or a key of `patternProperties`.
+ *
+ * @param value - regular expression source
+ * @param pointer - JSON Pointer to the keyword
+ * @returns the regular expression source
+ * @throws {DecantInvalidSchemaError} if the value is not a valid regular expression
+ */
+export const readPattern = (value: unknown, pointer: string): string => {
+    if (typeof value !== 'string') {
+        throw new DecantInvalidSchemaError('pattern must be a string', { pointer });
+    }
+    try {
+        // eslint-disable-next-line no-new
+        new RegExp(value, 'u');
+    } catch {
+        throw new DecantInvalidSchemaError(`Invalid regular expression "${value}"`, { pointer });
+    }
+    return value;
+};
+
+/**
+ * Read the annotations of a schema that document its type.
+ * Annotations of the wrong type are ignored, as they don't change what the schema accepts.
+ *
+ * @param schema - any schema
+ * @returns title, description and deprecation, or `null` if there are none
+ */
+export const readDoc = (schema: unknown): TsDoc | null => {
+    if (!isSchemaObject(schema)) {
+        return null;
+    }
+    const { deprecated, description, title } = schema;
+    const doc: TsDoc = {
+        deprecated: deprecated === true,
+        description: typeof description === 'string' ? description : null,
+        title: typeof title === 'string' ? title : null,
+    };
+    return doc.deprecated || doc.description || doc.title ? doc : null;
+};
+
+/**
+ * Type of exactly one JSON value, as used by `enum` and `const`.
+ *
+ * @param value - an allowed value
+ * @returns literal type of the value
+ */
+export const jsonLiteral = (value: unknown): TsType => {
+    if (value === null) {
+        return nullType;
+    }
+    if (Array.isArray(value)) {
+        return {
+            kind: 'tuple',
+            elements: value.map(element => ({ optional: false, type: jsonLiteral(element) })),
+            rest: null,
+        };
+    }
+    if (typeof value === 'object') {
+        return {
+            kind: 'object',
+            index: [],
+            properties: Object.entries(value).map(([name, property]) => ({
+                name,
+                doc: null,
+                optional: false,
+                type: jsonLiteral(property),
+            })),
+        };
+    }
+    return { kind: 'literal', value: value as boolean | number | string };
+};
