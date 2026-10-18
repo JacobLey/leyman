@@ -110,6 +110,10 @@ export default defineConfig({
                             { text: 'Strict mode', link: '/decant/guides/strict-mode' },
                             { text: 'OpenAPI documents', link: '/decant/guides/openapi' },
                             {
+                                text: 'References to other files',
+                                link: '/decant/guides/references',
+                            },
+                            {
                                 text: 'Juniper round trip',
                                 link: '/decant/guides/juniper-round-trip',
                             },

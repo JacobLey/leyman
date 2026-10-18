@@ -2,10 +2,13 @@ import type { Directory } from 'parse-cwd';
 import type { DecantOptions } from './decant.js';
 import { readFile } from 'node:fs/promises';
 import Path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { formatText } from 'format-file';
 import { parseCwd } from 'parse-cwd';
 import { populateFile } from 'populate-files';
 import { decant } from './decant.js';
+import { bundleReferences } from './lib/bundle.js';
+import { openApiDialect } from './lib/openapi.js';
 
 /**
  * Options for {@link decantFile}.
@@ -39,11 +42,13 @@ export interface DecantFileOptions extends DecantOptions {
 
 /**
  * Generate a TypeScript file of types from a JSON Schema file.
+ * Files and URLs it references are bundled into it first, so they become types in the same file.
  *
  * @param input - path to the JSON Schema file
  * @param [options] - optional, see {@link DecantFileOptions}
  * @returns path of the output file, and whether it changed
  * @throws {DecantError} if the schema is invalid, breaks a strict mode rule, or is not supported
+ * @throws {DecantLoadError} if a referenced file or URL can't be loaded
  */
 export const decantFile = async (
     input: string,
@@ -58,7 +63,14 @@ export const decantFile = async (
     );
 
     const schema: unknown = JSON.parse(await readFile(inputPath, 'utf8'));
-    const content = await formatText(decant(schema, options), { ext: '.ts' });
+    const baseUri = pathToFileURL(inputPath).href;
+    const documentDialect = openApiDialect(schema);
+    const bundled = await bundleReferences(schema, {
+        baseUri,
+        dialect: documentDialect ?? (options.openApi30 ? 'openapi-3.0' : 'draft-2020-12'),
+        isDocument: documentDialect !== null,
+    });
+    const content = await formatText(decant(bundled, { ...options, baseUri }), { ext: '.ts' });
 
     const { updated } = await populateFile(
         { filePath: output, content },

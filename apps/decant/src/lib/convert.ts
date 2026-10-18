@@ -29,7 +29,7 @@ import {
     readSchemaArray,
     readTypes,
 } from './read-keyword.js';
-import { indexDocument, resolveReference } from './resources.js';
+import { indexDocument, inputSchemas, resolveReference } from './resources.js';
 import {
     booleanType,
     exclude,
@@ -49,6 +49,10 @@ import {
 export const defaultTypedMinItems = 3;
 
 export interface ConvertOptions {
+    /**
+     * URI the document was read from, which relative `$id`s and `$ref`s resolve against.
+     */
+    readonly baseUri: string;
     /**
      * Flavour of JSON Schema, which decides the keywords allowed (e.g. `nullable` in OpenAPI 3.0).
      */
@@ -299,6 +303,31 @@ const checkDiscriminator = (discriminator: unknown, pointer: string): void => {
 };
 
 /**
+ * Keywords of a schema that only groups definitions, such as a bundled file of shared `$defs`.
+ */
+const groupKeywords = new Set([
+    '$comment',
+    '$defs',
+    '$id',
+    '$schema',
+    'definitions',
+    'description',
+    'title',
+]);
+
+/**
+ * Whether a schema only groups other definitions, and so is not a type of its own.
+ * Its definitions are still types when referenced, and it is too if referenced itself.
+ *
+ * @param schema - a definition
+ * @returns true if the schema has definitions, and no keywords other than annotations
+ */
+const isDefinitionGroup = (schema: unknown): boolean =>
+    isSchemaObject(schema) &&
+    (schema.$defs !== undefined || schema.definitions !== undefined) &&
+    Object.keys(schema).every(keyword => groupKeywords.has(keyword));
+
+/**
  * Converts a JSON Schema document to types.
  *
  * The root schema, every definition (`$defs`/`definitions`) at the root of the document,
@@ -339,7 +368,11 @@ export class Converter {
      * @throws {DecantError} if the schema is invalid, breaks a strict mode rule, or is not supported
      */
     public convert(rootName: string): NamedType[] {
-        this.#index = indexDocument(this.#root, [{ pointer: '#', schema: this.#root }]);
+        this.#index = indexDocument(
+            this.#root,
+            inputSchemas(this.#root, false),
+            this.#options.baseUri
+        );
         this.#register('#', rootName, this.#root);
         this.#registerDefinitions();
 
@@ -356,7 +389,11 @@ export class Converter {
     public convertDocument(): NamedType[] {
         this.#registerContainer(['components', 'schemas']);
         // A document is not a schema, but each of its components is
-        this.#index = indexDocument(this.#root, this.#pending);
+        this.#index = indexDocument(
+            this.#root,
+            inputSchemas(this.#root, true),
+            this.#options.baseUri
+        );
         return this.#convertPending().toSorted(compareNames);
     }
 
@@ -401,7 +438,9 @@ export class Converter {
             container = readObject(container[key], containerPointer);
         }
         for (const [name, schema] of Object.entries(container)) {
-            this.#register(childPointer(containerPointer, name), name, schema);
+            if (!isDefinitionGroup(schema)) {
+                this.#register(childPointer(containerPointer, name), name, schema);
+            }
         }
     }
 

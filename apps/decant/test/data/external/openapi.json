@@ -1,0 +1,18 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "API",
+    "version": "1.0.0"
+  },
+  "paths": {},
+  "components": {
+    "schemas": {
+      "User": {
+        "$ref": "./common/address.json"
+      },
+      "Tree": {
+        "$ref": "./tree.json"
+      }
+    }
+  }
+}

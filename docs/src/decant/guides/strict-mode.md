@@ -33,4 +33,4 @@ For schemas you don't control, disable strict mode with `--no-strict` (or `stric
 - A type whose constraints contradict each other is `never`. For `{ "type": ["string", "null"], "minLength": 3, "maxLength": 2 }`, only `null` is valid.
 - Tuple items beyond `maxItems` are left out.
 
-Some features are unsupported in either mode, as ignoring them would loosen the type: `$ref` to another file, `$dynamicRef` and `$recursiveRef` throw a `DecantUnsupportedError`.
+Some features are unsupported in either mode, as ignoring them would loosen the type: `$dynamicRef` and `$recursiveRef` throw a `DecantUnsupportedError`.

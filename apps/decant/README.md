@@ -11,6 +11,7 @@ Generate TypeScript types from JSON Schema files and OpenAPI documents, with str
 - **Types that match the schema** — tuples (`prefixItems`), `oneOf` unions you can narrow, `patternProperties` keys like `` `x-${string}` ``, recursive `$defs` and `if`/`then`/`else` all become precise types, not `any` or `unknown[]`.
 - **Round-trips Juniper** — a schema built with [Juniper](https://www.npmjs.com/package/juniper), serialized and read back by decant, gives the same type Juniper inferred. Every release is tested against that.
 - **Strict by default** — unknown keywords, keywords that don't apply to the schema's type, undeclared `required` properties, and contradictions like `minLength` over `maxLength` fail generation, instead of silently changing what the schema accepts. Without strict mode, the type follows exactly what a validator accepts.
+- **One file from many** — `$ref`s to other files and URLs are loaded and generated into the same output, with `$id` and `$anchor` resolved as the spec says.
 - **Generated files stay in sync** — a `--ci` mode fails when a committed file is out of date, like [populate-files](https://www.npmjs.com/package/populate-files).
 - **Types only** — the output is plain TypeScript types, with no runtime dependency.
 
@@ -92,6 +93,18 @@ The programmatic API is the same: `decant(schema)` returns the TypeScript source
 
 The root schema becomes a type named `Schema` (or `--name`). Every definition in the root `$defs` (or draft 7 `definitions`) becomes an exported type named after its key, in PascalCase. A schema referenced by `$ref` from elsewhere in the document becomes a named type too, named after its key in any nested `$defs`, or else after its path. Everything else is inlined.
 
+### References to other files
+
+A `$ref` may point at another file, or a URL, relative to the schema it is in: `{ "$ref": "./address.json" }`, `{ "$ref": "https://example.com/schemas/user.json#/$defs/Name" }`. The CLI and `decantFile` load each one, and everything it references in turn, and the output is still one file:
+
+- Each referenced file becomes a type named after its `title`, or else its file name (`address.json` is `Address`). Two of the same name are numbered (`Address2`).
+- A file referenced twice is one type.
+- A file that only holds `$defs` (shared definitions) is not a type itself, but its definitions are, when referenced.
+- Files without a `$schema` are read in the input's dialect: JSON Schema 2020-12, or the OpenAPI version of an OpenAPI document.
+- A file or URL that can't be loaded throws a `DecantLoadError`. Loaded documents must be JSON.
+
+Files are bundled with [@hyperjump/json-schema](https://www.npmjs.com/package/@hyperjump/json-schema), following the bundling process of JSON Schema 2020-12. `decant()` itself reads one document, and doesn't load anything: bundle first, or use `decantFile`.
+
 ### OpenAPI documents
 
 An OpenAPI 3.0 or 3.1 document (a JSON file with an `openapi` version) is read too. Each of its `components.schemas` becomes an exported type named after its key, and there is no root type. The version decides the dialect: 3.0 schemas may use `nullable`, and 3.1 schemas are JSON Schema 2020-12. Either may use OpenAPI's own keywords (`discriminator`, `xml`, `externalDocs`, `example`), which don't change the type.
@@ -154,7 +167,7 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 
 ### Not supported
 
-- `$ref` to another file (`other.json#/...`), `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`. References within the document may use `$id` and `$anchor`.
+- `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`. `decant()` only reads one document, so with it, a `$ref` to another file does too (see [References to other files](#references-to-other-files)). References may use `$id` and `$anchor`.
 - `unevaluatedProperties`, `unevaluatedItems` and `contains` are accepted, but don't change the type.
 - OpenAPI's `discriminator` is accepted, but not checked against the `oneOf` branches. The branches still narrow on the property as a union does.
 - Swagger 2.0 documents.
@@ -216,6 +229,7 @@ Generate TypeScript types from a JSON Schema.
 | `schema` | `unknown` | — | Required. Parsed JSON Schema, or OpenAPI document. |
 | `options.name` | `string` | `'Schema'` | Name of the root schema's type. Not used for an OpenAPI document. |
 | `options.strict` | `boolean` | `true` | Fail on likely mistakes. See [Strict mode](#strict-mode). |
+| `options.baseUri` | `string` | a placeholder | URI the schema was read from, which relative `$id`s and `$ref`s resolve against. |
 | `options.typedMinItems` | `number` | `3` | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper. |
 | `options.openApi30` | `boolean` | `false` | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead. |
 
@@ -260,6 +274,7 @@ Every error extends `DecantError`, with a `pointer` property: the JSON Pointer t
 | `DecantInvalidSchemaError` | The input is not a valid JSON Schema, e.g. `properties` is not an object, or a `$ref` does not resolve. |
 | `DecantStrictModeError` | A [strict mode](#strict-mode) rule is broken. |
 | `DecantUnsupportedError` | The schema uses a feature decant can't generate types for. See [Not supported](#not-supported). |
+| `DecantLoadError` | A file or URL the schema references could not be loaded. Its `cause` is the underlying error. |
 
 ## CLI
 

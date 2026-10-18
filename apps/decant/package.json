@@ -18,6 +18,8 @@
     "url": "https://github.com/JacobLey/leyman/issues"
   },
   "keywords": [
+    "json-schema-bundler",
+    "json-ref",
     "json-schema",
     "typescript",
     "codegen",
@@ -44,6 +46,8 @@
     "decant": "./bin.mjs"
   },
   "dependencies": {
+    "@hyperjump/browser": "catalog:",
+    "@hyperjump/json-schema": "catalog:",
     "ci-info": "catalog:",
     "entry-script": "workspace:^",
     "format-file": "workspace:^",

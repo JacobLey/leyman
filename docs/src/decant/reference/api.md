@@ -32,6 +32,7 @@ Generate TypeScript types from a JSON Schema.
 | `schema` | `unknown` | — | Required. Parsed JSON Schema, or OpenAPI document. |
 | `options.name` | `string` | `'Schema'` | Name of the root schema's type. Not used for an OpenAPI document. |
 | `options.strict` | `boolean` | `true` | Fail on likely mistakes. See [Strict mode](/decant/guides/strict-mode). |
+| `options.baseUri` | `string` | a placeholder | URI the schema was read from, which relative `$id`s and `$ref`s resolve against. |
 | `options.typedMinItems` | `number` | `3` | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper. |
 | `options.openApi30` | `boolean` | `false` | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead. |
 
@@ -76,3 +77,4 @@ Every error extends `DecantError`, with a `pointer` property: the JSON Pointer t
 | `DecantInvalidSchemaError` | The input is not a valid JSON Schema, e.g. `properties` is not an object, or a `$ref` does not resolve. |
 | `DecantStrictModeError` | A [strict mode](/decant/guides/strict-mode) rule is broken. |
 | `DecantUnsupportedError` | The schema uses a feature decant can't generate types for. See [Not supported](/decant/reference/types#not-supported). |
+| `DecantLoadError` | A file or URL the schema references could not be loaded. Its `cause` is the underlying error. |

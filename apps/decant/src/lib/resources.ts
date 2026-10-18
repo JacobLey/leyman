@@ -3,10 +3,11 @@ import { childPointer } from './pointer.js';
 import { isSchemaObject } from './read-keyword.js';
 
 /**
- * Base URI of a document without its own `$id`. Only used to resolve references within the document,
- * so any URI works, as long as relative `$id`s and `$ref`s resolve against the same one.
+ * Base URI of a document without its own `$id`, read from nowhere in particular. Only used to resolve
+ * references within the document, so any URI works, as long as relative `$id`s and `$ref`s resolve
+ * against the same one.
  */
-const defaultBaseUri = 'https://decant.invalid/decant-document';
+export const defaultBaseUri = 'https://decant.invalid/decant-document';
 
 /**
  * Keywords whose value is a schema.
@@ -75,6 +76,10 @@ export interface DocumentIndex {
      * Schemas named by `$anchor` (or `$dynamicAnchor`), keyed by base URI and anchor, e.g. `https://a.com/b.json#name`.
      */
     readonly anchors: ReadonlyMap<string, Target>;
+    /**
+     * URIs (without a fragment) of every `$ref`, resolved against the base URI of its schema.
+     */
+    readonly references: ReadonlySet<string>;
     /**
      * Schema resources, keyed by their URI (without a fragment).
      */
@@ -165,6 +170,7 @@ const followPointer = (target: Target, pointer: string): Target | null => {
 class Indexer {
     readonly #anchors = new Map<string, Target>();
     readonly #baseUris = new Map<string, string>();
+    readonly #references = new Set<string>();
     readonly #resources = new Map<string, Target>();
 
     /**
@@ -180,6 +186,7 @@ class Indexer {
         return {
             anchors: this.#anchors,
             baseUris: this.#baseUris,
+            references: this.#references,
             resources: this.#resources,
         };
     }
@@ -190,6 +197,10 @@ class Indexer {
         }
         const baseUri = this.#identify(schema, pointer, parentBaseUri);
         this.#baseUris.set(pointer, baseUri);
+        const reference = typeof schema.$ref === 'string' ? resolveUri(schema.$ref, baseUri) : null;
+        if (reference) {
+            this.#references.add(reference.uri);
+        }
 
         for (const keyword of schemaKeywords) {
             this.visit(schema[keyword], childPointer(pointer, keyword), baseUri);
@@ -273,16 +284,17 @@ class Indexer {
  *
  * @param root - the whole document, a resource itself even without an `$id`
  * @param schemas - schemas to search, with their JSON Pointers: the root schema, or an OpenAPI document's components
+ * @param baseUri - URI the document was read from, which relative `$id`s and `$ref`s resolve against
  * @returns resources, anchors and base URIs of the document's schemas
  * @throws {DecantInvalidSchemaError} if an `$id` or anchor is invalid, or declared twice
  */
 export const indexDocument = (
     root: unknown,
-    schemas: readonly { pointer: string; schema: unknown }[]
+    schemas: readonly { pointer: string; schema: unknown }[],
+    baseUri: string
 ): DocumentIndex => {
     const rootId = isSchemaObject(root) && typeof root.$id === 'string' ? root.$id : null;
-    const documentUri =
-        (rootId === null ? null : resolveUri(rootId, defaultBaseUri)?.uri) ?? defaultBaseUri;
+    const documentUri = (rootId === null ? null : resolveUri(rootId, baseUri)?.uri) ?? baseUri;
     const indexer = new Indexer(documentUri, root);
     for (const { pointer, schema } of schemas) {
         indexer.visit(schema, pointer, documentUri);
@@ -341,4 +353,38 @@ export const resolveReference = (
         );
     }
     return target;
+};
+
+/**
+ * Resources a document refers to, but does not contain, such as other files.
+ *
+ * @param index - index of the document
+ * @returns URIs of the resources, without fragments
+ */
+export const externalResources = (index: DocumentIndex): string[] =>
+    index.references
+        .values()
+        .filter(uri => !index.resources.has(uri))
+        .toArray();
+
+/**
+ * Schemas of an input: the schema itself, or each of an OpenAPI document's component schemas.
+ *
+ * @param input - JSON Schema, or OpenAPI document
+ * @param isDocument - whether the input is an OpenAPI document
+ * @returns schemas, with their JSON Pointers
+ */
+export const inputSchemas = (input: unknown, isDocument: boolean): Target[] => {
+    if (!isDocument) {
+        return [{ pointer: '#', schema: input }];
+    }
+    // An OpenAPI document is always an object
+    const { components } = input as Readonly<Record<string, unknown>>;
+    const schemas = isSchemaObject(components) ? components.schemas : undefined;
+    return isSchemaObject(schemas)
+        ? Object.entries(schemas).map(([name, schema]) => ({
+              pointer: childPointer(childPointer(childPointer('#', 'components'), 'schemas'), name),
+              schema,
+          }))
+        : [];
 };

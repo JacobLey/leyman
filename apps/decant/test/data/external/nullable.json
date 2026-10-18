@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "nickname": {
+      "type": "string",
+      "nullable": true
+    },
+    "age": {
+      "type": "number",
+      "maximum": 10,
+      "exclusiveMaximum": true
+    }
+  }
+}

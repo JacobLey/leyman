@@ -59,4 +59,4 @@ A schema can be valid JSON Schema and still be a mistake: `maxLength` on a numbe
 
 - **Validation.** decant generates types; it doesn't check data. Use [Ajv](https://ajv.js.org/) or [juniper-validator](https://www.npmjs.com/package/juniper-validator) with the same schema.
 - **Constraints TypeScript can't express.** `minLength`, `maximum`, `format` and most patterns have no type. They stay in the schema.
-- **References to other files**, for now. A schema must be one self-contained document.
+- **Bundling for its own sake.** Referenced files are bundled with Hyperjump, which implements JSON Schema's own bundling process, rather than another resolver: of the six resolvers tested, it was the only one to resolve `$anchor` and embedded `$id` correctly.

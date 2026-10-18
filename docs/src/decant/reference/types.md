@@ -37,7 +37,7 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 
 ## Not supported
 
-- `$ref` to another file (`other.json#/...`), `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`. References within the document may use `$id` and `$anchor`.
+- `$dynamicRef` and `$recursiveRef` throw `DecantUnsupportedError`. `decant()` only reads one document, so with it, a `$ref` to another file does too. The CLI and `decantFile` load referenced files and URLs: see [References to other files](/decant/guides/references). References may use `$id` and `$anchor`.
 - `unevaluatedProperties`, `unevaluatedItems` and `contains` are accepted, but don't change the type.
 - OpenAPI's `discriminator` is accepted, but not checked against the `oneOf` branches. The branches still narrow on the property as a union does.
 - Swagger 2.0 documents.

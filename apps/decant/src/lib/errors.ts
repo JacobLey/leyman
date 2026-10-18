@@ -73,3 +73,18 @@ export class DecantUnsupportedError extends DecantError {
         this.name = 'DecantUnsupportedError';
     }
 }
+
+/**
+ * A file or URL the schema references could not be loaded.
+ */
+export class DecantLoadError extends DecantError {
+    /**
+     * @param message - description of the problem
+     * @param options - error details
+     * @param options.pointer - JSON Pointer to the document whose references failed to load
+     */
+    public constructor(message: string, options: ErrorOptions & { pointer: string }) {
+        super(withPointer(message, options.pointer), options);
+        this.name = 'DecantLoadError';
+    }
+}

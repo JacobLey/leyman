@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "type": "object",
+  "properties": {
+    "home": {
+      "$ref": "./common/address.json"
+    },
+    "work": {
+      "$ref": "./common/address.json"
+    },
+    "billing": {
+      "$ref": "./other/address.json"
+    },
+    "name": {
+      "$ref": "./common/defs.json#/$defs/Name"
+    },
+    "email": {
+      "$ref": "./common/defs.json#email"
+    },
+    "tree": {
+      "$ref": "./tree.json"
+    },
+    "money": {
+      "$ref": "https://example.test/money"
+    }
+  },
+  "required": [
+    "home"
+  ],
+  "$defs": {
+    "Currency": {
+      "type": "number"
+    },
+    "Money": {
+      "$id": "https://example.test/money",
+      "type": "object",
+      "properties": {
+        "currency": {
+          "$ref": "#/$defs/Currency"
+        }
+      },
+      "$defs": {
+        "Currency": {
+          "enum": [
+            "USD",
+            "EUR"
+          ]
+        }
+      }
+    }
+  }
+}

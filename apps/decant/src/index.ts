@@ -5,6 +5,7 @@ export { decantFile } from './decant-file.js';
 export {
     DecantError,
     DecantInvalidSchemaError,
+    DecantLoadError,
     DecantStrictModeError,
     DecantUnsupportedError,
 } from './lib/errors.js';

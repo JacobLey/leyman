@@ -1,0 +1,8 @@
+{
+  "type": "object",
+  "properties": {
+    "id": {
+      "$ref": "./remote2.json"
+    }
+  }
+}

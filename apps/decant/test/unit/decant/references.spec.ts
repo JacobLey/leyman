@@ -2,6 +2,7 @@ import { expect } from '@leyman/expect';
 import { decant } from 'decant';
 import { suite, test } from 'mocha-chain';
 import { expectDecanted } from '../../lib/expect-decanted.js';
+import { typeCheck } from '../../lib/type-check.js';
 
 suite('references', () => {
     test('$defs are named types', () => {
@@ -18,6 +19,28 @@ suite('references', () => {
                 },
             },
             { Schema: '{ home?: Address }', Address: '{ city: string }' }
+        );
+    });
+
+    test('a definition that only groups definitions is not generated', () => {
+        const source = decant({
+            type: 'object',
+            properties: { a: { $ref: '#/$defs/Group/$defs/A' } },
+            $defs: { Group: { title: 'Shared', $defs: { A: { type: 'string' } } } },
+        });
+
+        expect(source).not.to.contain('Group');
+        expect(typeCheck({ 'decanted.ts': source })).to.deep.equal([]);
+    });
+
+    test('a referenced group is generated', () => {
+        expectDecanted(
+            {
+                type: 'object',
+                properties: { group: { $ref: '#/$defs/Group' } },
+                $defs: { Group: { $defs: {} } },
+            },
+            { Schema: '{ group?: Group }', Group: 'unknown' }
         );
     });
 

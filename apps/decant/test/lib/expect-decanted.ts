@@ -29,22 +29,13 @@ const assertionImports = [
 ];
 
 /**
- * Assert the types generated for a schema are equivalent to the expected types.
+ * Assert the types of generated TypeScript source are equivalent to the expected types.
  *
- * Compares the types TypeScript reads, never the generated text,
- * so formatting and equivalent ways of writing a type are free to change.
- *
- * @param schema - JSON Schema
+ * @param source - generated TypeScript source
  * @param expected - TypeScript source of each expected type, keyed by type name.
  * Expected types may refer to the other generated types by name.
- * @param [options] - decant options
  */
-export const expectDecanted = (
-    schema: unknown,
-    expected: Readonly<Record<string, string>>,
-    options: DecantOptions = {}
-): void => {
-    const source = decant(schema, options);
+export const expectTypes = (source: string, expected: Readonly<Record<string, string>>): void => {
     const entries = Object.entries(expected);
     const assertion = [
         ...assertionImports,
@@ -61,6 +52,25 @@ export const expectDecanted = (
         }),
         `Generated:\n${source}`
     ).to.deep.equal([]);
+};
+
+/**
+ * Assert the types generated for a schema are equivalent to the expected types.
+ *
+ * Compares the types TypeScript reads, never the generated text,
+ * so formatting and equivalent ways of writing a type are free to change.
+ *
+ * @param schema - JSON Schema
+ * @param expected - TypeScript source of each expected type, keyed by type name.
+ * Expected types may refer to the other generated types by name.
+ * @param [options] - decant options
+ */
+export const expectDecanted = (
+    schema: unknown,
+    expected: Readonly<Record<string, string>>,
+    options: DecantOptions = {}
+): void => {
+    expectTypes(decant(schema, options), expected);
 };
 
 export { assertionImports };
