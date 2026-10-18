@@ -58,7 +58,7 @@ export class TupleSchema<
     declare public maxItems: never;
     declare public minItems: never;
 
-    declare public allOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    declare public allOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyTupleSchema,
         schema: S
     ) => TupleSchema<
@@ -69,7 +69,7 @@ export class TupleSchema<
         null extends SchemaType<S> ? N : boolean
     >;
 
-    declare public anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    declare public anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyTupleSchema,
         schemas: S[]
     ) => TupleSchema<
@@ -86,11 +86,12 @@ export class TupleSchema<
         IfC extends IfP[number] | IfT,
         IfM,
         IfN extends boolean,
+        IfI extends number,
         Then extends Schema<unknown[] | null> = TupleSchema,
         Else extends Schema<unknown[] | null> = TupleSchema,
     >(
         this: AnyTupleSchema,
-        schema: ArraySchema<IfT, IfP, IfC, IfM, IfN>,
+        schema: ArraySchema<IfT, IfP, IfC, IfM, IfN, IfI>,
         conditionals: ConditionalResult<Then, Else>
     ) => TupleSchema<
         T,
@@ -99,7 +100,7 @@ export class TupleSchema<
         M &
             (
                 | NonNullable<SchemaType<Else>>
-                | (ArrayType<IfT, IfP, IfM, false> & NonNullable<SchemaType<Then>>)
+                | (ArrayType<IfT, IfP, IfM, false, IfI> & NonNullable<SchemaType<Then>>)
             ),
         ConditionalNullable<
             N,
@@ -121,7 +122,7 @@ export class TupleSchema<
         (<NotN extends boolean>(
             this: AnyTupleSchema,
             schema:
-                | ArraySchema<any, any[], any, unknown, NotN>
+                | ArraySchema<any, any[], any, unknown, NotN, any>
                 | TupleSchema<any, any[], any, unknown, NotN>
         ) => NotN extends true ? TupleSchema<T, P, C, unknown, boolean> : this);
 
@@ -129,7 +130,7 @@ export class TupleSchema<
         this: AnyTupleSchema
     ) => TupleSchema<T, P, C, M, boolean extends N ? boolean : true>;
 
-    declare public oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    declare public oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyTupleSchema,
         schemas: S[]
     ) => TupleSchema<
@@ -174,7 +175,8 @@ export class TupleSchema<
             ...options,
             items: ArraySchema.falseItems,
             maxItems: prefixItemsSize,
-            minItems: prefixItemsSize,
+            // The prefix items already type every required item
+            minItems: prefixItemsSize as 0,
         });
     }
 

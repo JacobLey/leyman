@@ -1,7 +1,7 @@
 import type { SchemaType } from 'juniper';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
-import { arraySchema, neverSchema, stringSchema } from 'juniper';
+import { ArraySchema, arraySchema, neverSchema, numberSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
 import { compile } from '../../ajv.js';
 
@@ -280,6 +280,102 @@ suite('ArraySchema', () => {
             // eslint-disable-next-line @typescript-eslint/no-unused-vars
             const notNullableSchema = stillNullableSchema.not(arraySchema().nullable());
             expectTypeOf<SchemaType<typeof notNullableSchema>>().toEqualTypeOf<[]>();
+        });
+    });
+
+    suite('minItems type', () => {
+        test('requires that many items', () => {
+            const one = arraySchema(stringSchema()).minItems(1);
+            const three = arraySchema(stringSchema()).minItems(3);
+
+            expectTypeOf<SchemaType<typeof one>>().toEqualTypeOf<[string, ...string[]]>();
+            expectTypeOf<SchemaType<typeof three>>().toEqualTypeOf<
+                [string, string, string, ...string[]]
+            >();
+            expect([one.toJSON().minItems, three.toJSON().minItems]).to.deep.equal([1, 3]);
+        });
+
+        test('rejects too few items', () => {
+            const schema = arraySchema(stringSchema()).minItems(1);
+
+            // @ts-expect-error
+            const empty: SchemaType<typeof schema> = [];
+            expect(compile(schema.toJSON())(empty)).to.equal(false);
+        });
+
+        test('beyond the cap is a plain array', () => {
+            const schema = arraySchema(stringSchema()).minItems(4);
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<string[]>();
+            expect(schema.toJSON()).to.have.property('type', 'array');
+        });
+
+        test('a number variable is a plain array', () => {
+            const minItems = Number('2');
+            const schema = arraySchema(stringSchema()).minItems(minItems);
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<string[]>();
+            expect(schema.toJSON()).to.have.property('type', 'array');
+        });
+
+        test('resetting to 0 is a plain array', () => {
+            const schema = arraySchema(stringSchema()).minItems(2).minItems(0);
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<string[]>();
+            expect(schema.toJSON()).to.have.property('type', 'array');
+        });
+
+        test('from the constructor', () => {
+            const schema = arraySchema({ items: stringSchema(), minItems: 2 });
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                [string, string, ...string[]]
+            >();
+            expect(schema.toJSON()).to.have.property('type', 'array');
+        });
+
+        test('without items', () => {
+            const schema = arraySchema().minItems(1);
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<[unknown, ...unknown[]]>();
+            expect(schema.toJSON()).to.have.property('type', 'array');
+        });
+
+        test('after prefix items', () => {
+            const schema = arraySchema(stringSchema()).prefixItem(numberSchema()).minItems(2);
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                [number, string, ...string[]]
+            >();
+            expect(schema.toJSON()).to.have.property('type', 'array');
+        });
+
+        test('within prefix items', () => {
+            const schema = arraySchema(stringSchema())
+                .prefixItem(numberSchema())
+                .prefixItem(numberSchema())
+                .minItems(1);
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                [number, number, ...string[]]
+            >();
+            expect(schema.toJSON()).to.have.property('type', 'array');
+        });
+
+        test('more than prefix items, without items, is never', () => {
+            const schema = arraySchema(ArraySchema.falseItems)
+                .prefixItem(numberSchema())
+                .minItems(2);
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<never>();
+            expect(schema.toJSON()).to.have.property('type', 'array');
+        });
+
+        test('nullable', () => {
+            const schema = arraySchema(stringSchema()).minItems(1).nullable();
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<[string, ...string[]] | null>();
+            expect(schema.toJSON()).to.deep.include({ type: ['array', 'null'], minItems: 1 });
         });
     });
 

@@ -130,6 +130,7 @@ Each row is one of the probes in [WHY-DECANT.md](https://github.com/JacobLey/ley
 | any other `pattern`, `format`, lengths, ranges | the plain type, as TypeScript can't express them |
 | `enum`, `const` | literal types, including objects and arrays |
 | `items` | `T[]` |
+| `items` + `minItems` up to 3 | `[T, ...T[]]`, with `minItems` leading items. Larger values stay `T[]` (see `typedMinItems`) |
 | `prefixItems` + `items: false` | `[A, B]`, with items beyond `minItems` optional |
 | `prefixItems` + `items` | `[A, B, ...T[]]` |
 | draft 7 `items` array + `additionalItems` | same as `prefixItems` + `items` |
@@ -215,6 +216,7 @@ Generate TypeScript types from a JSON Schema.
 | `schema` | `unknown` | — | Required. Parsed JSON Schema, or OpenAPI document. |
 | `options.name` | `string` | `'Schema'` | Name of the root schema's type. Not used for an OpenAPI document. |
 | `options.strict` | `boolean` | `true` | Fail on likely mistakes. See [Strict mode](#strict-mode). |
+| `options.typedMinItems` | `number` | `3` | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper. |
 | `options.openApi30` | `boolean` | `false` | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead. |
 
 **Returns** `string` — TypeScript source, not formatted.
@@ -241,7 +243,7 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 | `options.cwd` | `string \| URL` | `process.cwd()` | Directory relative paths resolve from. |
 | `options.check` | `boolean` | `false` | Fail, rather than write, if the output file is not up to date. |
 | `options.dryRun` | `boolean` | `false` | Do not write the output file. |
-| `options.name`, `options.strict`, `options.openApi30` | | | Same as [`decant`](#decantschema-options). |
+| `options.name`, `options.strict`, `options.openApi30`, `options.typedMinItems` | | | Same as [`decant`](#decantschema-options). |
 
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
 
@@ -270,6 +272,7 @@ decant <input> [options]
 | `-o`, `--output` | input path with `.ts` | Path of the TypeScript file to write. |
 | `--name` | `Schema` | Name of the root schema's type. Not used for an OpenAPI document. |
 | `--strict` | `true` | Fail on likely mistakes. Disable with `--no-strict`. |
+| `--typed-min-items` | `3` | Largest `minItems` typed as required items. `0` turns it off. |
 | `--open-api-30` | `false` | Read the schema as an OpenAPI 3.0 schema. An OpenAPI document's own version is used instead. |
 | `--ci` | `true` in CI | Fail if the output file is not up to date. Implies `--dry-run`. |
 | `--dry-run` | `false` | Do not write the output file. |

@@ -41,6 +41,11 @@ import {
     unknownType,
 } from './ts-type.js';
 
+/**
+ * Default for `typedMinItems`, the same as Juniper's.
+ */
+export const defaultTypedMinItems = 3;
+
 export interface ConvertOptions {
     /**
      * Flavour of JSON Schema, which decides the keywords allowed (e.g. `nullable` in OpenAPI 3.0).
@@ -50,6 +55,10 @@ export interface ConvertOptions {
      * Fail on schemas that are valid, but likely mistakes. See the README for the rules.
      */
     readonly strict: boolean;
+    /**
+     * Largest `minItems` typed as that many required items, e.g. `[T, ...T[]]` for `minItems: 1`.
+     */
+    readonly typedMinItems: number;
 }
 
 /**
@@ -761,7 +770,13 @@ export class Converter {
                 pointer
             );
         }
-        if (prefix.length === 0) {
+        // Up to `typedMinItems`, the items `minItems` requires beyond the prefix items are typed,
+        // e.g. `[T, ...T[]]`. (Without `items`, more items than the prefix are a contradiction, above.)
+        const required =
+            minItems <= this.#options.typedMinItems
+                ? Array.from({ length: Math.max(minItems - prefix.length, 0) }, () => rest)
+                : [];
+        if (prefix.length === 0 && required.length === 0) {
             return isRestNever
                 ? { kind: 'tuple', elements: [], rest: null }
                 : { kind: 'array', element: rest };
@@ -770,11 +785,14 @@ export class Converter {
         const isTruncated = maxItems !== null && maxItems < prefix.length;
         return {
             kind: 'tuple',
-            // Items beyond `minItems` may be missing
-            elements: prefix.slice(0, maxItems ?? prefix.length).map((item, i) => ({
-                optional: i >= minItems,
-                type: item,
-            })),
+            elements: [
+                // Prefix items beyond `minItems` may be missing
+                ...prefix.slice(0, maxItems ?? prefix.length).map((item, i) => ({
+                    optional: i >= minItems,
+                    type: item,
+                })),
+                ...required.map(type => ({ optional: false, type })),
+            ],
             rest: isRestNever || isTruncated ? null : rest,
         };
     }

@@ -53,7 +53,45 @@ suite('composition', () => {
         test('narrows arrays', () => {
             expectDecanted(
                 { type: 'array', allOf: [{ items: { type: 'string' } }, { minItems: 1 }] },
+                { Schema: '[string, ...string[]]' }
+            );
+        });
+
+        test('narrows the items of arrays', () => {
+            expectDecanted(
+                {
+                    allOf: [
+                        { type: 'array', items: { type: ['string', 'number'] } },
+                        { type: 'array', items: { type: 'string' } },
+                    ],
+                },
                 { Schema: 'string[]' }
+            );
+        });
+
+        test('narrows the items of a tuple', () => {
+            expectDecanted(
+                {
+                    type: 'array',
+                    allOf: [
+                        { prefixItems: [true], items: false, minItems: 1 },
+                        { items: { type: 'number' } },
+                    ],
+                },
+                { Schema: '[number]' }
+            );
+        });
+
+        test('two tuples stay an intersection', () => {
+            expectDecanted(
+                {
+                    type: 'array',
+                    allOf: [
+                        { prefixItems: [{ type: 'string' }], minItems: 1 },
+                        { prefixItems: [true, { type: 'number' }], minItems: 2 },
+                    ],
+                },
+                { Schema: '[string, ...unknown[]] & [unknown, number, ...unknown[]]' }
             );
         });
 

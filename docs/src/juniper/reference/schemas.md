@@ -60,12 +60,28 @@ Represents `type: 'array'`. TypeScript type: `unknown[]`.
 |--------|:--------------------:|:------------:|:-------------:|:-----------:|
 | [`items`](https://json-schema.org/understanding-json-schema/reference/array.html#items) | ✅ | ❌ | ✅ | ✅ |
 | [`maxItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.1) | ✅ | ✅ | ❌ | ✅ |
-| [`minItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2) | ✅ | ✅ | ❌ | ✅ |
+| [`minItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2) | ✅ | ✅ | ✅ | ✅ |
 | [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3) | ✅ | ✅ | ❌ | ✅ |
 | [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains) | ❌ | ❌ | ✅ | ❌ |
 | [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4) | ✅ | ✅ | ❌ | ❌ |
 | [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5) | ✅ | ✅ | ❌ | ❌ |
 | [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) | ❌ | ❌ | ✅ | ❌ |
+
+`minItems` up to 3 makes those items required in the type, so an empty array is rejected where the schema rejects it:
+
+```ts
+import { arraySchema, stringSchema, type SchemaType } from 'juniper';
+
+const tags = arraySchema(stringSchema()).minItems(1);
+type Tags = SchemaType<typeof tags>;
+//   ^?
+```
+
+Larger values, or a `number` variable, leave the type as an array. To build a value from an array of unknown length, narrow it first, as a length check alone does not:
+
+```ts
+const isNonEmpty = <T>(array: T[]): array is [T, ...T[]] => array.length > 0;
+```
 
 ## `EnumSchema`
 

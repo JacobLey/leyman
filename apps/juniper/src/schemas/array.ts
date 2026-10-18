@@ -23,34 +23,92 @@ import { NeverSchema } from './never.js';
 const containsSym = Symbol('contains');
 export const prefixItemsSym = Symbol('prefixItems');
 
-export type ArrayType<T, P extends any[], M, N extends boolean> = Nullable<
+/**
+ * `I` copies of `T`, for `minItems` up to 3. Longer (or non-literal) `minItems` are left out of the type,
+ * as long tuples are hard to read and to construct.
+ *
+ * @template T type of each array item
+ * @template I value of `minItems`
+ */
+type MinItemsTuple<T, I extends number> = number extends I
+    ? []
+    : I extends 1
+      ? [T]
+      : I extends 2
+        ? [T, T]
+        : // The cap on `minItems` in the type
+          // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+          I extends 3
+          ? [T, T, T]
+          : [];
+
+/**
+ * Elements of `R` beyond the length of `P`.
+ *
+ * @template R elements required by `minItems`
+ * @template P prefix items
+ */
+type BeyondPrefix<R extends unknown[], P extends unknown[]> = P extends [unknown, ...infer PRest]
+    ? R extends [unknown, ...infer RRest]
+        ? BeyondPrefix<RRest, PRest>
+        : []
+    : R;
+
+type ArrayItem<T> = IsAny<T> extends true ? unknown : T;
+
+/**
+ * Items `minItems` requires, after the prefix items.
+ *
+ * @template T type of each array item
+ * @template P types of the prefix items
+ * @template I value of `minItems`
+ */
+type MinItemsRequired<T, P extends unknown[], I extends number> = BeyondPrefix<
+    MinItemsTuple<ArrayItem<T>, I>,
+    P
+>;
+
+export type ArrayType<T, P extends any[], M, N extends boolean, I extends number = 0> = Nullable<
     M &
-        (IsAny<T> extends true
-            ? [...P, ...unknown[]]
-            : IsNever<T> extends true
-              ? P
-              : [...P, ...T[]]),
+        (IsNever<T> extends true
+            ? // Without items, an array can't reach `minItems` beyond its prefix items
+              MinItemsRequired<T, P, I> extends []
+                ? P
+                : never
+            : [...P, ...MinItemsRequired<T, P, I>, ...ArrayItem<T>[]]),
     N
 >;
 
-export interface ArrayParams<T, P extends any[], C extends P[number] | T, M, N extends boolean>
-    extends SchemaParams<ArrayType<T, P, M, N>> {
+export interface ArrayParams<
+    T,
+    P extends any[],
+    C extends P[number] | T,
+    M,
+    N extends boolean,
+    I extends number = 0,
+> extends SchemaParams<ArrayType<T, P, M, N, I>> {
     items?: AbstractSchema<SchemaGenerics<T>> | null;
     maxContains?: number;
     maxItems?: number;
     minContains?: number;
-    minItems?: number;
+    minItems?: I;
     uniqueItems?: boolean;
     [containsSym]?: AbstractSchema<SchemaGenerics<C>> | null;
     [prefixItemsSym]?: AbstractSchema<SchemaGenerics<P[number]>>[];
 }
 
-interface ArrayGenerics<T, P extends any[], C extends P[number] | T, M, N extends boolean>
-    extends SchemaGenerics<ArrayType<T, P, M, N>> {
-    params: ArrayParams<T, P, C, M, N>;
+interface ArrayGenerics<
+    T,
+    P extends any[],
+    C extends P[number] | T,
+    M,
+    N extends boolean,
+    I extends number,
+> extends SchemaGenerics<ArrayType<T, P, M, N, I>> {
+    params: ArrayParams<T, P, C, M, N, I>;
 }
 
-export type AnyArraySchema = ArraySchema<any, any[], any, unknown, boolean>;
+export type AnyArraySchema = ArraySchema<any, any[], any, unknown, boolean, any>;
 
 /**
  * Schema for defining `array` types.
@@ -74,6 +132,7 @@ export type AnyArraySchema = ArraySchema<any, any[], any, unknown, boolean>;
  * @template C
  * @template M
  * @template N
+ * @template I
  */
 export class ArraySchema<
     T = any,
@@ -85,7 +144,9 @@ export class ArraySchema<
     M = unknown,
     // Nullable,
     N extends boolean = false,
-> extends AbstractSchema<ArrayGenerics<T, P, C, M, N>> {
+    // Min items
+    I extends number = 0,
+> extends AbstractSchema<ArrayGenerics<T, P, C, M, N, I>> {
     /**
      * Specific instance of `NeverSchema`.
      *
@@ -105,7 +166,7 @@ export class ArraySchema<
 
     protected override readonly schemaType = 'array';
 
-    declare public allOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    declare public allOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyArraySchema,
         schema: S
     ) => ArraySchema<
@@ -113,10 +174,11 @@ export class ArraySchema<
         P,
         C,
         M & NonNullable<SchemaType<S>>,
-        null extends SchemaType<S> ? N : boolean
+        null extends SchemaType<S> ? N : boolean,
+        I
     >;
 
-    declare public anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    declare public anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyArraySchema,
         schemas: S[]
     ) => ArraySchema<
@@ -124,7 +186,8 @@ export class ArraySchema<
         P,
         C,
         M & NonNullable<SchemaType<S>>,
-        null extends SchemaType<S> ? N : boolean
+        null extends SchemaType<S> ? N : boolean,
+        I
     >;
 
     declare public if: <
@@ -133,11 +196,12 @@ export class ArraySchema<
         IfC extends IfP[number] | IfT,
         IfM,
         IfN extends boolean,
+        IfI extends number,
         Then extends Schema<unknown[] | null> = ArraySchema,
         Else extends Schema<unknown[] | null> = ArraySchema,
     >(
         this: AnyArraySchema,
-        schema: ArraySchema<IfT, IfP, IfC, IfM, IfN>,
+        schema: ArraySchema<IfT, IfP, IfC, IfM, IfN, IfI>,
         conditionals: ConditionalResult<Then, Else>
     ) => ArraySchema<
         T,
@@ -146,14 +210,15 @@ export class ArraySchema<
         M &
             (
                 | NonNullable<SchemaType<Else>>
-                | (ArrayType<IfT, IfP, IfM, false> & NonNullable<SchemaType<Then>>)
+                | (ArrayType<IfT, IfP, IfM, false, IfI> & NonNullable<SchemaType<Then>>)
             ),
         ConditionalNullable<
             N,
             IfN,
             null extends SchemaType<Then> ? true : boolean,
             null extends SchemaType<Else> ? true : boolean
-        >
+        >,
+        I
     >;
 
     /**
@@ -164,17 +229,17 @@ export class ArraySchema<
     declare public not: ((
         this: AnyArraySchema,
         schema: NotNullParameter<N> & NullSchema
-    ) => ArraySchema<T, P, C, unknown, boolean>) &
+    ) => ArraySchema<T, P, C, unknown, boolean, I>) &
         (<NotN extends boolean>(
             this: AnyArraySchema,
-            schema: ArraySchema<any, any[], any, unknown, NotN>
-        ) => NotN extends true ? ArraySchema<T, P, C, unknown, boolean> : this);
+            schema: ArraySchema<any, any[], any, unknown, NotN, any>
+        ) => NotN extends true ? ArraySchema<T, P, C, unknown, boolean, I> : this);
 
     declare public nullable: (
         this: AnyArraySchema
-    ) => ArraySchema<T, P, C, unknown, boolean extends N ? boolean : true>;
+    ) => ArraySchema<T, P, C, unknown, boolean extends N ? boolean : true, I>;
 
-    declare public oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean>>(
+    declare public oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyArraySchema,
         schemas: S[]
     ) => ArraySchema<
@@ -182,13 +247,16 @@ export class ArraySchema<
         P,
         C,
         M & NonNullable<SchemaType<S>>,
-        null extends SchemaType<S> ? N : boolean
+        null extends SchemaType<S> ? N : boolean,
+        I
     >;
 
     /**
      * @override
      */
-    public constructor(items: AbstractSchema<SchemaGenerics<T>> | ArrayParams<T, P, C, M, N> = {}) {
+    public constructor(
+        items: AbstractSchema<SchemaGenerics<T>> | ArrayParams<T, P, C, M, N, I> = {}
+    ) {
         const options = items instanceof AbstractSchema ? { items } : items;
         super(options);
         this.#items = options.items ?? null;
@@ -230,10 +298,12 @@ export class ArraySchema<
      * @param [options.writeOnly] - value should be hidden
      * @returns array schema instance
      */
-    public static override create<T2 = any>(
+    public static override create<T2 = any, I2 extends number = 0>(
         this: void,
-        options?: AbstractSchema<SchemaGenerics<T2>> | ArrayParams<T2, [], never, unknown, false>
-    ): ArraySchema<T2> {
+        options?:
+            | AbstractSchema<SchemaGenerics<T2>>
+            | ArrayParams<T2, [], never, unknown, false, I2>
+    ): ArraySchema<T2, [], never, unknown, false, I2> {
         return new ArraySchema(options);
     }
 
@@ -252,15 +322,15 @@ export class ArraySchema<
         this: this,
         items: AbstractSchema<SchemaGenerics<T2>> &
             (IsAny<T> extends true ? unknown : { error: 'Error: items is already set.' })
-    ): ArraySchema<T2, P, C, unknown, N>;
+    ): ArraySchema<T2, P, C, unknown, N, I>;
     /**
      * @inheritdoc
      */
     public items<T2>(
         this: this,
         items: AbstractSchema<SchemaGenerics<T2>>
-    ): ArraySchema<T2, P, C, unknown, N> {
-        return (this as unknown as ArraySchema<T2, P, C, unknown, N>).clone({
+    ): ArraySchema<T2, P, C, unknown, N, I> {
+        return (this as unknown as ArraySchema<T2, P, C, unknown, N, I>).clone({
             items,
         });
     }
@@ -286,7 +356,8 @@ export class ArraySchema<
      * Set the `minItems` of the array.
      * Set to `0` to effectively clear restriction.
      *
-     * Does not alter typings.
+     * Up to 3, the type requires that many items, e.g. `minItems(1)` types `[T, ...T[]]`.
+     * Larger values (or a `number` variable) do not alter typings.
      * Overwrites existing restriction.
      *
      * @see {@link https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2}
@@ -295,8 +366,8 @@ export class ArraySchema<
      * @param minItems - min items property
      * @returns cloned schema
      */
-    public minItems(this: this, minItems: number): this {
-        return this.clone({ minItems });
+    public minItems<I2 extends number>(this: this, minItems: I2): ArraySchema<T, P, C, M, N, I2> {
+        return (this as unknown as ArraySchema<T, P, C, M, N, I2>).clone({ minItems });
     }
 
     /**
@@ -333,15 +404,15 @@ export class ArraySchema<
         this: this,
         items: AbstractSchema<SchemaGenerics<C2>> &
             (IsNever<C> extends true ? unknown : { error: 'Error: contains is already set.' })
-    ): ArraySchema<T, P, C2, M, N>;
+    ): ArraySchema<T, P, C2, M, N, I>;
     /**
      * @inheritdoc
      */
     public contains<C2 extends ToBaseType<P[number] | T>>(
         this: this,
         contains: AbstractSchema<SchemaGenerics<C2>>
-    ): ArraySchema<T, P, C2, M, N> {
-        return (this as unknown as ArraySchema<T, P, C2, M, N>).clone({
+    ): ArraySchema<T, P, C2, M, N, I> {
+        return (this as unknown as ArraySchema<T, P, C2, M, N, I>).clone({
             [containsSym]: contains,
         });
     }
@@ -392,10 +463,10 @@ export class ArraySchema<
     public prefixItem<NewP>(
         this: this,
         schema: AbstractSchema<SchemaGenerics<NewP>>
-    ): ArraySchema<T, [...P, NewP], C, M, N> {
+    ): ArraySchema<T, [...P, NewP], C, M, N, I> {
         return this.clone({
             [prefixItemsSym]: [...this.#prefixItems, schema],
-        }) as unknown as ArraySchema<T, [...P, NewP], C, M, N>;
+        }) as unknown as ArraySchema<T, [...P, NewP], C, M, N, I>;
     }
 
     /**
@@ -410,23 +481,23 @@ export class ArraySchema<
     public prependPrefixItem<NewP>(
         this: this,
         schema: AbstractSchema<SchemaGenerics<NewP>>
-    ): ArraySchema<T, [NewP, ...P], C, M, N> {
+    ): ArraySchema<T, [NewP, ...P], C, M, N, I> {
         return this.clone({
             [prefixItemsSym]: [schema, ...this.#prefixItems],
-        }) as unknown as ArraySchema<T, [NewP, ...P], C, M, N>;
+        }) as unknown as ArraySchema<T, [NewP, ...P], C, M, N, I>;
     }
 
     /**
      * @override
      */
-    protected override getCloneParams(): Required<ArrayParams<T, P, C, M, N>> {
+    protected override getCloneParams(): Required<ArrayParams<T, P, C, M, N, I>> {
         return {
             ...super.getCloneParams(),
             items: this.#items,
             maxContains: this.#maxContains,
             maxItems: this.#maxItems,
             minContains: this.#minContains,
-            minItems: this.#minItems,
+            minItems: this.#minItems as I,
             uniqueItems: this.#uniqueItems,
             [containsSym]: this.#contains,
             [prefixItemsSym]: [...this.#prefixItems],
@@ -542,12 +613,12 @@ export declare class IArraySchemaOverride<
 
     declare public allOf: (
         this: any,
-        schema: ArraySchema<any, any[], any, unknown, boolean>
+        schema: ArraySchema<any, any[], any, unknown, boolean, any>
     ) => any;
 
     declare public anyOf: (
         this: any,
-        schemas: ArraySchema<any, any[], any, unknown, boolean>[]
+        schemas: ArraySchema<any, any[], any, unknown, boolean, any>[]
     ) => any;
 
     declare public if: <
@@ -556,11 +627,12 @@ export declare class IArraySchemaOverride<
         IfC extends IfP[number] | IfT,
         IfM,
         IfN extends boolean,
+        IfI extends number,
         Then extends Schema<unknown[] | null> = ArraySchema,
         Else extends Schema<unknown[] | null> = ArraySchema,
     >(
         this: any,
-        schema: ArraySchema<IfT, IfP, IfC, IfM, IfN>,
+        schema: ArraySchema<IfT, IfP, IfC, IfM, IfN, IfI>,
         conditionals: ConditionalResult<Then, Else>
     ) => any;
 
@@ -570,7 +642,7 @@ export declare class IArraySchemaOverride<
 
     declare public oneOf: (
         this: any,
-        schemas: ArraySchema<any, any[], any, unknown, boolean>[]
+        schemas: ArraySchema<any, any[], any, unknown, boolean, any>[]
     ) => any;
 
     declare public contains: any;

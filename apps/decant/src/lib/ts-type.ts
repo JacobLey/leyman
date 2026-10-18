@@ -202,6 +202,41 @@ const mergeObjects = (objects: readonly (TsType & { kind: 'object' })[]): TsType
 };
 
 /**
+ * Merge the arrays of an intersection (and at most one tuple) into one, intersecting their items,
+ * e.g. `string[] & [unknown, ...unknown[]]` => `[string, ...string[]]`.
+ * Two tuples are left as an intersection.
+ *
+ * @param members - members of an intersection
+ * @returns members, with the arrays merged
+ */
+const mergeArrays = (members: TsType[]): TsType[] => {
+    const arrays = members.filter(member => member.kind === 'array');
+    const tuples = members.filter(member => member.kind === 'tuple');
+    const [tuple] = tuples;
+    if (arrays.length === 0 || tuples.length > 1 || (!tuple && arrays.length === 1)) {
+        return members;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const element = intersection(arrays.map(array => array.element));
+    const merged: TsType = tuple
+        ? {
+              kind: 'tuple',
+              elements: tuple.elements.map(item => ({
+                  optional: item.optional,
+                  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                  type: intersection([item.type, element]),
+              })),
+              // eslint-disable-next-line @typescript-eslint/no-use-before-define
+              rest: tuple.rest && intersection([tuple.rest, element]),
+          }
+        : { kind: 'array', element };
+    return [
+        ...members.filter(member => member.kind !== 'array' && member.kind !== 'tuple'),
+        merged,
+    ];
+};
+
+/**
  * Intersect types whose members are not unions.
  *
  * @param members - types to intersect, none of which are unions
@@ -244,12 +279,14 @@ const intersectFlat = (members: readonly TsType[]): TsType => {
     // A type that allows every value of its class (e.g. `string` or `unknown[]`)
     // is redundant next to a narrower type of the same class, e.g. `string & 'a'`
     const kept = [...(objects.length > 0 ? [mergeObjects(objects)] : []), ...literals, ...others];
-    const narrowed = kept.filter(
-        member =>
-            !(
-                isClassTop(member) &&
-                kept.some(other => other !== member && valueClass(other) === valueClass(member))
-            )
+    const narrowed = mergeArrays(
+        kept.filter(
+            member =>
+                !(
+                    isClassTop(member) &&
+                    kept.some(other => other !== member && valueClass(other) === valueClass(member))
+                )
+        )
     );
 
     if (narrowed.length === 0) {

@@ -21,6 +21,61 @@ suite('arrays', () => {
         );
     });
 
+    suite('minItems', () => {
+        test('requires that many items', () => {
+            expectDecanted(
+                { type: 'array', items: { type: 'string' }, minItems: 1 },
+                { Schema: '[string, ...string[]]' }
+            );
+        });
+
+        test('up to 3', () => {
+            expectDecanted(
+                { type: 'array', items: { type: 'string' }, minItems: 3 },
+                { Schema: '[string, string, string, ...string[]]' }
+            );
+        });
+
+        test('beyond 3 is a plain array', () => {
+            expectDecanted(
+                { type: 'array', items: { type: 'string' }, minItems: 4 },
+                { Schema: 'string[]' }
+            );
+        });
+
+        test('without items', () => {
+            expectDecanted({ type: 'array', minItems: 1 }, { Schema: '[unknown, ...unknown[]]' });
+        });
+
+        test('after prefix items', () => {
+            expectDecanted(
+                {
+                    type: 'array',
+                    prefixItems: [{ type: 'number' }],
+                    items: { type: 'string' },
+                    minItems: 2,
+                },
+                { Schema: '[number, string, ...string[]]' }
+            );
+        });
+
+        test('typedMinItems 0 turns it off', () => {
+            expectDecanted(
+                { type: 'array', items: { type: 'string' }, minItems: 1 },
+                { Schema: 'string[]' },
+                { typedMinItems: 0 }
+            );
+        });
+
+        test('typedMinItems raises the cap', () => {
+            expectDecanted(
+                { type: 'array', items: { type: 'string' }, minItems: 4 },
+                { Schema: '[string, string, string, string, ...string[]]' },
+                { typedMinItems: 4 }
+            );
+        });
+    });
+
     suite('tuples', () => {
         test('prefixItems with items false', () => {
             expectDecanted(

@@ -2,6 +2,7 @@ import type { Command, DecantCommandInput } from './lib/types.js';
 import { isCI } from 'ci-info';
 import { bind } from 'haywire';
 import { decantFile } from '../decant-file.js';
+import { defaultTypedMinItems } from '../lib/convert.js';
 import { commandId } from './lib/types.js';
 
 interface DecantCommandExtendedInput extends DecantCommandInput {
@@ -12,6 +13,7 @@ interface DecantCommandExtendedInput extends DecantCommandInput {
     openApi30: boolean;
     output: string | undefined;
     strict: boolean;
+    typedMinItems: number;
 }
 
 /**
@@ -53,6 +55,13 @@ export const decantCommand: Command<DecantCommandExtendedInput> = {
                     type: 'boolean',
                     default: false,
                 },
+                typedMinItems: {
+                    alias: 'typed-min-items',
+                    describe:
+                        'Largest minItems typed as required items, e.g. [T, ...T[]] for minItems 1. 0 turns it off',
+                    type: 'number',
+                    default: defaultTypedMinItems,
+                },
                 ci: {
                     describe: 'Fail if the output file is not up to date. Implies --dry-run',
                     type: 'boolean',
@@ -75,6 +84,7 @@ export const decantCommand: Command<DecantCommandExtendedInput> = {
             openApi30: options.openApi30,
             ...(options.output !== undefined && { output: options.output }),
             strict: options.strict,
+            typedMinItems: options.typedMinItems,
         });
 
         if (updated) {

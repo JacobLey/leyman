@@ -120,6 +120,16 @@ suite('cli', () => {
             expect(await ctx.read('openapi.ts')).to.contain('export type User');
         });
 
+        withTmpDir.test('--typed-min-items', async ctx => {
+            await ctx.writeJson('user.json', { type: 'array', minItems: 1 });
+
+            await execAsync(
+                `./bin.mjs user.json --ci=false --typed-min-items 0 --cwd ${ctx.tmpDir.path}`
+            );
+
+            expect(await ctx.read('user.ts')).not.to.contain('[unknown');
+        });
+
         withTmpDir.test('--no-strict', async ctx => {
             await ctx.writeJson('user.json', { type: 'string', unknownKeyword: true });
 
