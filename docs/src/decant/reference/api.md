@@ -12,7 +12,7 @@ decant <input> [options]
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `-o`, `--output` | input path with `.ts` | Path of the TypeScript file to write. |
+| `-o`, `--output` | input path with `.ts` | Path of the TypeScript file to write. `.json`, `.yaml` and `.yml` are replaced. |
 | `--name` | `Schema` | Name of the root schema's type. Not used for an OpenAPI document. |
 | `--strict` | `true` | Fail on likely mistakes. Disable with `--no-strict`. |
 | `--typed-min-items` | `3` | Largest `minItems` typed as required items. `0` turns it off. |
@@ -52,12 +52,12 @@ decant({ type: 'array', items: { type: 'string' } }, { name: 'Tags' });
 
 ## `decantFile(input, options?)`
 
-Read a JSON Schema file, and write its types to a TypeScript file.
+Read a JSON Schema file, or OpenAPI document, in JSON or YAML, and write its types to a TypeScript file.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `input` | `string` | — | Required. Path to the JSON Schema file. |
-| `options.output` | `string` | input path with `.ts` instead of `.json` | Path of the TypeScript file to write. |
+| `input` | `string` | — | Required. Path to the JSON Schema file, or OpenAPI document. |
+| `options.output` | `string` | input path with `.ts` instead of `.json`, `.yaml` or `.yml` | Path of the TypeScript file to write. |
 | `options.cwd` | `string \| URL` | `process.cwd()` | Directory relative paths resolve from. |
 | `options.check` | `boolean` | `false` | Fail, rather than write, if the output file is not up to date. |
 | `options.dryRun` | `boolean` | `false` | Do not write the output file. |
@@ -69,6 +69,24 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 **Throws** `DecantError` — see [Errors](#errors). With `check`, also throws if the file is out of date.
 
 ---
+
+## YAML
+
+A `.yaml` or `.yml` file is read as YAML 1.2, whether it is the input or a file it references, and so is a URL served with a YAML media type. YAML 1.2 reads `on`, `off`, `yes` and `no` as strings, not booleans.
+
+Anchors and aliases are expanded, and merge keys (`<<: *base`) are merged. An alias inside the schema it names, a recursive schema, becomes a `$ref` to that schema:
+
+```yaml
+# node.yaml: `decant node.yaml --name Node` writes `type Node = { children?: Node[] }`
+&node
+type: object
+properties:
+  children: { type: array, items: *node }
+```
+
+The `$ref` follows the usual rules: one that applies to the same value again, such as `&a { anyOf: [*a, …] }`, breaks [strict mode](/decant/guides/strict-mode). A recursive schema with another `$id` between the alias and its anchor throws a `DecantUnsupportedError`.
+
+Anything else JSON can't hold is an error. Tags beyond YAML's core schema (such as `!!binary`), keys that aren't strings, duplicate keys and more than one document throw the [`yaml`](https://www.npmjs.com/package/yaml) package's `YAMLError`, as invalid JSON throws a `SyntaxError`. `.inf`, `.nan`, and an alias inside a value that isn't a schema (such as a `const`) throw a `DecantInvalidSchemaError`. In a referenced file, any of these is a `DecantLoadError`.
 
 ## Errors
 

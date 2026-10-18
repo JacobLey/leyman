@@ -247,6 +247,9 @@ catalogs:
     vitest:
       specifier: ^5.0.2
       version: 5.0.2
+    yaml:
+      specifier: ^2.9.1
+      version: 2.9.1
     yargs:
       specifier: ^18.2.0
       version: 18.2.0
@@ -377,6 +380,9 @@ importers:
       populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      yaml:
+        specifier: 'catalog:'
+        version: 2.9.1
       yargs:
         specifier: 'catalog:'
         version: 18.2.0
@@ -10735,6 +10741,7 @@ snapshots:
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      yaml: 2.9.1
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'

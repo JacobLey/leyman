@@ -1,0 +1,5 @@
+title: Item
+type: object
+properties:
+  name: { type: string }
+  count: { type: integer, minimum: 0 }

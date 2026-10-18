@@ -7,10 +7,10 @@ description: Generate a type for every component schema of an OpenAPI 3.0 or 3.1
 Most schemas arrive inside an OpenAPI document. Pass the document itself:
 
 ```sh
-npx decant openapi.json -o src/api-types.ts
+npx decant openapi.yaml -o src/api-types.ts
 ```
 
-decant reads any JSON file with an `openapi` version as a document:
+decant reads any JSON or YAML file with an `openapi` version as a document:
 
 - Every `components.schemas` entry becomes an exported type, named after its key. There is no root type, so `--name` is not used.
 - A `$ref` to `#/components/schemas/User` is the type `User`.
@@ -52,7 +52,7 @@ export type User = {
 };
 ```
 
-The document must be JSON. Convert a YAML document first, for example with `yq -o json openapi.yaml > openapi.json`.
+A `.yaml` or `.yml` document is read as YAML 1.2. See [YAML](/decant/reference/api#yaml).
 
 A single OpenAPI 3.0 schema, outside a document, needs `--open-api-30` to allow `nullable`.
 

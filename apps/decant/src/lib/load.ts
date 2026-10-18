@@ -4,6 +4,7 @@ import { readFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { DecantLoadError } from './errors.js';
+import { isYaml, parseText } from './parse.js';
 import { isSchemaObject } from './read-keyword.js';
 import { externalResources, indexDocument, inputSchemas } from './resources.js';
 
@@ -51,16 +52,16 @@ interface Failure {
  *
  * @param uri - absolute URI, without a fragment
  * @param options - how to load
- * @returns the text, or why it can't be read
+ * @returns the text, and whether it is YAML, or why it can't be read
  */
 const readText = async (
     uri: string,
     options: LoadOptions
-): Promise<{ reason: string } | { text: string }> => {
+): Promise<{ reason: string } | { text: string; yaml: boolean }> => {
     const { protocol } = new URL(uri);
     try {
         if (protocol === 'file:') {
-            return { text: await readFile(fileURLToPath(uri), 'utf8') };
+            return { text: await readFile(fileURLToPath(uri), 'utf8'), yaml: isYaml(uri) };
         }
         if (protocol !== 'http:' && protocol !== 'https:') {
             return { reason: `${protocol} URIs can't be loaded` };
@@ -69,10 +70,15 @@ const readText = async (
             return { reason: 'loading URLs is disabled' };
         }
         const response = await globalThis.fetch(uri, {
-            headers: { accept: 'application/schema+json, application/json' },
+            headers: {
+                accept: 'application/schema+json, application/json, application/yaml;q=0.9',
+            },
         });
         return response.ok
-            ? { text: await response.text() }
+            ? {
+                  text: await response.text(),
+                  yaml: isYaml(uri, response.headers.get('content-type')),
+              }
             : { reason: `HTTP ${response.status}` };
     } catch (error) {
         return { reason: String(error) };
@@ -99,9 +105,11 @@ const loadResource = async (
     }
     let parsed: unknown;
     try {
-        parsed = JSON.parse(read.text);
-    } catch {
-        return { reason: 'not valid JSON' };
+        parsed = parseText(read.text, read.yaml);
+    } catch (error) {
+        return {
+            reason: read.yaml ? `not valid YAML: ${(error as Error).message}` : 'not valid JSON',
+        };
     }
     if (typeof parsed === 'boolean') {
         parsed = parsed ? {} : { not: {} };

@@ -53,6 +53,7 @@
     "haywire-launcher": "workspace:^",
     "parse-cwd": "workspace:^",
     "populate-files": "workspace:^",
+    "yaml": "catalog:",
     "yargs": "catalog:"
   },
   "devDependencies": {

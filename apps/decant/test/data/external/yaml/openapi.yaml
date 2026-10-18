@@ -1,0 +1,15 @@
+openapi: 3.0.3
+info:
+  title: API
+  version: 1.0.0
+paths: {}
+components:
+  schemas:
+    User:
+      type: object
+      properties:
+        nickname:
+          type: string
+          nullable: true
+        item:
+          $ref: ./item.yml

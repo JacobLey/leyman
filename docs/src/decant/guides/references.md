@@ -10,7 +10,8 @@ A `$ref` may point at another file, or a URL, relative to the schema it is in: `
 - A file referenced twice is one type.
 - A file that only holds `$defs` (shared definitions) is not a type itself, but its definitions are, when referenced.
 - Files without a `$schema` are read in the input's dialect: JSON Schema 2020-12, or the OpenAPI version of an OpenAPI document.
-- A file or URL that can't be loaded throws a `DecantLoadError`. Loaded documents must be JSON.
+- A file or URL that can't be loaded throws a `DecantLoadError`.
+- A `.yaml` or `.yml` file, or a URL served as YAML, is read as YAML. See [YAML](/decant/reference/api#yaml).
 
 Loaded files are embedded with an absolute `$id`, following the bundling process of JSON Schema 2020-12, so `$ref`s resolve to them unchanged, and `$id` and `$anchor` inside them work as in the original files. `--no-fetch` (or `fetch: false`) loads files only, never URLs. `decant()` itself reads one document, and doesn't load anything: bundle first, or use `decantFile`.
 

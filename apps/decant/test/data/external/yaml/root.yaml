@@ -1,0 +1,9 @@
+# Comments, anchors and both extensions
+type: object
+properties:
+  home: &address
+    $ref: ../common/address.json
+  work: *address
+  item:
+    $ref: ./item.yml
+required: [home]

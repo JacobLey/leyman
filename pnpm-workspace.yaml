@@ -157,6 +157,7 @@ catalog:
   # type-checks every example) catches breakage, so bump it deliberately and run `nx run @leyman/docs:build`.
   vitepress: 2.0.0-alpha.20
   vitest: ^5.0.2
+  yaml: ^2.9.1
   yargs: ^18.2.0
 
 catalogs:

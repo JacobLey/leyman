@@ -101,19 +101,21 @@ A `$ref` may point at another file, or a URL, relative to the schema it is in: `
 - A file referenced twice is one type.
 - A file that only holds `$defs` (shared definitions) is not a type itself, but its definitions are, when referenced.
 - Files without a `$schema` are read in the input's dialect: JSON Schema 2020-12, or the OpenAPI version of an OpenAPI document.
-- A file or URL that can't be loaded throws a `DecantLoadError`. Loaded documents must be JSON.
+- A file or URL that can't be loaded throws a `DecantLoadError`.
 
 Loaded files are embedded with an absolute `$id`, following the bundling process of JSON Schema 2020-12, so `$ref`s resolve to them unchanged, and `$id` and `$anchor` inside them work as in the original files. `--no-fetch` (or `fetch: false`) loads files only, never URLs. `decant()` itself reads one document, and doesn't load anything: bundle first, or use `decantFile`.
 
 ### OpenAPI documents
 
-An OpenAPI 3.0 or 3.1 document (a JSON file with an `openapi` version) is read too. Each of its `components.schemas` becomes an exported type named after its key, and there is no root type. The version decides the dialect: 3.0 schemas may use `nullable`, and 3.1 schemas are JSON Schema 2020-12. Either may use OpenAPI's own keywords (`discriminator`, `xml`, `externalDocs`, `example`), which don't change the type.
+An OpenAPI 3.0 or 3.1 document (a JSON or YAML file with an `openapi` version) is read too. Each of its `components.schemas` becomes an exported type named after its key, and there is no root type. The version decides the dialect: 3.0 schemas may use `nullable`, and 3.1 schemas are JSON Schema 2020-12. Either may use OpenAPI's own keywords (`discriminator`, `xml`, `externalDocs`, `example`), which don't change the type.
 
 ```sh
-npx decant openapi.json -o src/api-types.ts
+npx decant openapi.yaml -o src/api-types.ts
 ```
 
-The document must be JSON. Convert a YAML document first.
+### YAML
+
+A `.yaml` or `.yml` file is read as YAML 1.2, whether it is the input or a file it references, and so is a URL served with a YAML media type. Anchors and aliases are expanded, and merge keys (`<<: *base`) merged. An alias inside the schema it names, a recursive schema, becomes a `$ref` to that schema, so it is a recursive type. Anything else JSON can't hold is an error: an alias inside a value that isn't a schema (such as a `const`), tags beyond YAML's core schema (such as `!!binary`), keys that aren't strings, duplicate keys, and `.inf` or `.nan`.
 
 The generated file is formatted with [format-file](https://www.npmjs.com/package/format-file), using your project's Biome or Prettier config if either is installed.
 
@@ -200,6 +202,7 @@ Schemas that accept nothing, or less than they declare:
 - A `required` property whose schema is never valid (e.g. `false`), or more required properties than `maxProperties` allows.
 - `minProperties` more than an object with `additionalProperties: false` can have.
 - A tuple (`prefixItems` with `items: false`) shorter than `minItems`, or longer than `maxItems`.
+- A `$ref` back to a schema it is part of, without a property or item in between, such as `{ "anyOf": [{ "$ref": "#" }, { "type": "string" }] }`. It applies to the same value again, so a validator never finishes checking it, and JSON Schema leaves its behaviour undefined.
 
 Every schema Juniper builds passes.
 - A `$ref` back to a schema it is part of, without a property or item in between, such as `{ "anyOf": [{ "$ref": "#" }, { "type": "string" }] }`. It applies to the same value again, so a validator never finishes checking it, and JSON Schema leaves its behaviour undefined.
@@ -212,6 +215,7 @@ Disable strict mode (`strict: false`, `--no-strict`) for schemas you don't contr
 - A schema without a `type` accepts every type. `{ "properties": { "a": … } }` is the object type, or any string, number, boolean, `null` or array.
 - A type whose constraints contradict each other is `never`. For `{ "type": ["string", "null"], "minLength": 3, "maxLength": 2 }`, only `null` is valid.
 - Tuple items beyond `maxItems` are left out.
+- A `$ref` back to a schema it is part of, without a property or item in between, is `never`: it can't be why a value is valid. The `anyOf` above is `string`. A schema it passes through on the way back is inlined, as TypeScript rejects a type that refers to itself outside an object or array.
 
 ## Stability of generated files
 - A `$ref` back to a schema it is part of, without a property or item in between, is `never`: it can't be why a value is valid. The `anyOf` above is `string`. A schema it passes through on the way back is inlined, as TypeScript rejects a type that refers to itself outside an object or array.

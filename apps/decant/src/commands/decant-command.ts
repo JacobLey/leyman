@@ -27,7 +27,8 @@ export const decantCommand: Command<DecantCommandExtendedInput> = {
     builder: yargs =>
         yargs
             .positional('input', {
-                describe: 'Path to the JSON Schema file, or OpenAPI document',
+                describe:
+                    'Path to the JSON Schema file, or OpenAPI document. A .yaml or .yml file is read as YAML',
                 type: 'string',
                 demandOption: true,
             })

@@ -9,6 +9,7 @@ import { populateFile } from 'populate-files';
 import { decant } from './decant.js';
 import { loadReferences } from './lib/load.js';
 import { openApiDialect } from './lib/openapi.js';
+import { isYaml, parseText } from './lib/parse.js';
 
 /**
  * Options for {@link decantFile}.
@@ -41,20 +42,21 @@ export interface DecantFileOptions extends DecantOptions {
     /**
      * Path of the TypeScript file to write.
      *
-     * @default the input path, with a `.ts` extension instead of `.json`
+     * @default the input path, with a `.ts` extension instead of `.json`, `.yaml` or `.yml`
      */
     output?: string;
 }
 
 /**
- * Generate a TypeScript file of types from a JSON Schema file.
+ * Generate a TypeScript file of types from a JSON Schema file, or OpenAPI document, in JSON or YAML.
  * Files and URLs it references are bundled into it first, so they become types in the same file.
  *
- * @param input - path to the JSON Schema file
+ * @param input - path to the JSON Schema file, or OpenAPI document. A `.yaml` or `.yml` file is read as YAML
  * @param [options] - optional, see {@link DecantFileOptions}
  * @returns path of the output file, and whether it changed
  * @throws {DecantError} if the schema is invalid, breaks a strict mode rule, or is not supported
  * @throws {DecantLoadError} if a referenced file or URL can't be loaded
+ * @throws {SyntaxError | YAMLError} if the input can't be parsed
  */
 export const decantFile = async (
     input: string,
@@ -64,12 +66,11 @@ export const decantFile = async (
     const inputPath = Path.resolve(cwd, input);
     const output = Path.resolve(
         cwd,
-        options.output ??
-            Path.join(Path.dirname(inputPath), `${Path.basename(inputPath, '.json')}.ts`)
+        options.output ?? `${inputPath.replace(/\.(?:json|ya?ml)$/iu, '')}.ts`
     );
 
-    const schema: unknown = JSON.parse(await readFile(inputPath, 'utf8'));
     const baseUri = pathToFileURL(inputPath).href;
+    const schema = parseText(await readFile(inputPath, 'utf8'), isYaml(baseUri));
     const documentDialect = openApiDialect(schema);
     const bundled = await loadReferences(schema, {
         baseUri,

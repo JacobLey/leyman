@@ -12,19 +12,26 @@ export interface SchemaServer {
 
 /**
  * Serve the schemas in `test/data/external/remote` over HTTP, as `application/json`,
- * and a boolean schema at the root path.
+ * and a boolean schema at the root path. `/as-yaml/<name>` serves `<name>.yaml` as `application/yaml`,
+ * without an extension in its URL.
  *
  * @returns URL of the server, and a function to stop it
  */
 export const startSchemaServer = async (): Promise<SchemaServer> => {
     const server = createServer(async (request, response) => {
-        const name = Path.basename(request.url ?? '/');
+        const url = request.url ?? '/';
+        const isYaml = url.startsWith('/as-yaml/');
+        const name = `${Path.basename(url)}${isYaml ? '.yaml' : ''}`;
         try {
             const body =
                 name === ''
                     ? '{ "type": "boolean" }'
                     : await readFile(Path.join(remoteDirectory, name));
-            response.writeHead(200, { 'content-type': 'application/json' }).end(body);
+            response
+                .writeHead(200, {
+                    'content-type': isYaml ? 'application/yaml' : 'application/json',
+                })
+                .end(body);
         } catch {
             response.writeHead(404).end();
         }

@@ -12,7 +12,7 @@ export const defaultBaseUri = 'https://decant.invalid/decant-document';
 /**
  * Keywords whose value is a schema.
  */
-const schemaKeywords = [
+export const schemaKeywords = [
     'additionalItems',
     'additionalProperties',
     'contains',
@@ -30,12 +30,12 @@ const schemaKeywords = [
 /**
  * Keywords whose value is an array of schemas.
  */
-const schemaArrayKeywords = ['allOf', 'anyOf', 'items', 'oneOf', 'prefixItems'] as const;
+export const schemaArrayKeywords = ['allOf', 'anyOf', 'items', 'oneOf', 'prefixItems'] as const;
 
 /**
  * Keywords whose value is an object of schemas.
  */
-const schemaMapKeywords = [
+export const schemaMapKeywords = [
     '$defs',
     'definitions',
     'dependencies',
