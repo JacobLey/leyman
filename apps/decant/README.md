@@ -299,7 +299,7 @@ The path of a written file is logged. Nothing is logged when it was already up t
 
 [Juniper](https://www.npmjs.com/package/juniper) builds schemas with their types. Once serialized, a schema is bottled up as plain JSON, and its types are left behind. Decanting pours it back out into something you can use: the same types, restored.
 
-It's also a nod to Juniper itself: juniper berries are what gives gin its flavor. `genever`, gin's Dutch ancestor, was the runner-up name.
+It's also a nod to Juniper itself: juniper berries are what gives gin its flavor.
 
 ## Compared to alternatives
 
