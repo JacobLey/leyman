@@ -17,6 +17,7 @@ export const normalizeParams = async (
             targetDir: options.targetDir,
             clean: options.clean,
             force: options.force,
+            manifest: options.manifest,
         },
     };
 };

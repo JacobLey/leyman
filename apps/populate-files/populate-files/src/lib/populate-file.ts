@@ -1,3 +1,4 @@
+import type { ManifestEntry } from 'generated-signature';
 import type {
     NormalizedFileParams,
     PopulationResponse,
@@ -8,6 +9,7 @@ import Path from 'node:path';
 import { areUint8ArraysEqual, stringToUint8Array, uint8ArrayToString } from 'uint8array-extras';
 import { formatErrorMessage } from './lib/errors.js';
 import { safeLoadFile } from './loader.js';
+import { assertOwnedByManifest } from './manifest.js';
 import { signContent } from './sign-content.js';
 
 const createPathAndWrite = async ({
@@ -34,10 +36,12 @@ const createPathAndWrite = async ({
  * Internal file population logic, operating on already-normalized params.
  *
  * @param params - normalized file params
+ * @param manifest - with a manifest, the file's entry in it (if any), to check ownership against
  * @returns whether the file was (or would be) updated, and why
  */
 export const internalPopulateFile = async (
-    params: NormalizedFileParams
+    params: NormalizedFileParams,
+    manifest: { entry: ManifestEntry | undefined } | null = null
 ): Promise<PopulationResponse> => {
     const { filePath, check, dryRun } = params;
     const rawFile = await safeLoadFile(filePath);
@@ -69,6 +73,11 @@ export const internalPopulateFile = async (
     }
 
     reason = 'content-changed';
+
+    // Signed files prove ownership with their own token, checked while signing
+    if (manifest && !params.signed && !params.force) {
+        assertOwnedByManifest({ filePath, existing: rawFile, entry: manifest.entry });
+    }
 
     if (check) {
         throw new Error(formatErrorMessage({ filePath, reason }));

@@ -88,6 +88,7 @@ Options are passed through to the underlying `populateFiles()` call. They are al
 | `targetDir` | `--target-dir`, `-t` | `string` | `'.'` | Target directory for resolving output file paths. Resolved relative to `cwd`. |
 | `clean` | `--clean` | `boolean` | `false` | If `true`, removes files in `targetDir` that were not generated. In `--ci` mode, fails instead of removing. |
 | `force` | `--force` | `boolean` | `false` | Only applies to `signed` files. If `true`, overwrites files that were edited outside manual sections, are not signed, or are malformed. See [`populate-files`](https://www.npmjs.com/package/populate-files#signed-files). |
+| `manifest` | `--manifest` | `string` | — | Path of a manifest (relative to `cwd`) recording the generated files, to detect edits to any file type and `clean` only files it lists. See [`populate-files`](https://www.npmjs.com/package/populate-files#manifest). |
 
 ## Types
 

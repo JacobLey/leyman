@@ -29,6 +29,7 @@ suite('normalize', () => {
                 dryRun: true,
                 check: false,
                 force: false,
+                manifestPath: null,
             });
         });
 
@@ -45,6 +46,7 @@ suite('normalize', () => {
                 dryRun: false,
                 check: isCI,
                 force: false,
+                manifestPath: null,
             });
         });
     });
@@ -89,6 +91,7 @@ suite('normalize', () => {
                 dryRun: true,
                 clean: true,
                 force: false,
+                manifestPath: null,
             });
         });
 
@@ -116,6 +119,7 @@ suite('normalize', () => {
                 dryRun: false,
                 clean: false,
                 force: false,
+                manifestPath: null,
             });
         });
     });

@@ -11,6 +11,7 @@ interface LoadPopulateFilesCommandExtendedInput extends LoadPopulateFilesCommand
     dryRun: boolean;
     clean: boolean;
     force: boolean;
+    manifest: string | undefined;
 }
 
 /**
@@ -52,6 +53,11 @@ export const loadPopulateFilesCommand: Command<LoadPopulateFilesCommandExtendedI
                     type: 'boolean',
                     default: false,
                 },
+                manifest: {
+                    describe:
+                        'Record generated files in this manifest (relative to --cwd), to detect edits to them and only --clean files it lists',
+                    type: 'string',
+                },
             })
             .strict(),
     handler: async options => {
@@ -66,6 +72,7 @@ export const loadPopulateFilesCommand: Command<LoadPopulateFilesCommandExtendedI
                 dryRun: options.dryRun,
                 clean: options.clean,
                 force: options.force,
+                manifest: options.manifest,
             }
         );
     },

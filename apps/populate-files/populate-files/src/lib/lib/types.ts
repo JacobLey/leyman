@@ -1,3 +1,4 @@
+import type { ManifestInputs } from 'generated-signature';
 import type { Directory } from 'parse-cwd';
 
 export type FileContent = object | string | Uint8Array;
@@ -6,6 +7,10 @@ export interface UnsignedPopulateFileParams {
     filePath: string;
     content: FileContent | Promise<FileContent>;
     signed?: false;
+    /**
+     * Hashes of what produced the file, recorded in the manifest (with the `manifest` option).
+     */
+    manifestInputs?: ManifestInputs;
 }
 /**
  * Signed with `generated-signature`, so only text content is allowed.
@@ -14,10 +19,14 @@ export interface SignedPopulateFileParams {
     filePath: string;
     content: string | Promise<string>;
     signed: true;
+    /**
+     * Hashes of what produced the file, recorded in the manifest (with the `manifest` option).
+     */
+    manifestInputs?: ManifestInputs;
 }
 export type PopulateFileParams = SignedPopulateFileParams | UnsignedPopulateFileParams;
 
-export type NormalizedParams =
+export type NormalizedParams = { inputs?: ManifestInputs } & (
     | {
           filePath: string;
           content: string;
@@ -27,7 +36,8 @@ export type NormalizedParams =
           filePath: string;
           content: Uint8Array;
           signed: false;
-      };
+      }
+);
 
 export interface RawOptions {
     check?: boolean | null | undefined;
@@ -36,11 +46,16 @@ export interface RawOptions {
     targetDir?: string | null | undefined;
     clean?: boolean | null | undefined;
     force?: boolean | null | undefined;
+    manifest?: string | null | undefined;
 }
 export interface NormalizedOptions {
     check: boolean;
     dryRun: boolean;
     force: boolean;
+    /**
+     * Absolute path of the manifest, or `null` without one.
+     */
+    manifestPath: string | null;
 }
 
 export type NormalizedFileParams = NormalizedOptions & NormalizedParams;
