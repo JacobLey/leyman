@@ -17,6 +17,9 @@
       "path": "../../../tools/parse-cwd"
     },
     {
+      "path": "../../../tools/generated-signature/generated-signature"
+    },
+    {
       "path": "../../../tools/test-chain/mocha-chain"
     },
     {

@@ -10,6 +10,7 @@ export interface RawOptions {
     check?: boolean | null | undefined;
     dryRun?: boolean | null | undefined;
     clean?: boolean | null | undefined;
+    force?: boolean | null | undefined;
 }
 
 export interface NormalizedParams {
@@ -20,5 +21,6 @@ export interface NormalizedParams {
         check?: boolean | null | undefined;
         dryRun?: boolean | null | undefined;
         clean?: boolean | null | undefined;
+        force?: boolean | null | undefined;
     };
 }

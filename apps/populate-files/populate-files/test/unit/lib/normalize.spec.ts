@@ -25,8 +25,10 @@ suite('normalize', () => {
             ).to.deep.equal({
                 filePath: Path.join(cwd, 'file/path'),
                 content: stringToUint8Array('<content>'),
+                signed: false,
                 dryRun: true,
                 check: false,
+                force: false,
             });
         });
 
@@ -39,8 +41,10 @@ suite('normalize', () => {
             ).to.deep.equal({
                 filePath: '/file/path',
                 content: stringToUint8Array('{\n  "foo": "bar"\n}\n'),
+                signed: false,
                 dryRun: false,
                 check: isCI,
+                force: false,
             });
         });
     });
@@ -72,16 +76,19 @@ suite('normalize', () => {
                     {
                         filePath: Path.join(cwd, 'target/file/path/1'),
                         content: stringToUint8Array('<content>'),
+                        signed: false,
                     },
                     {
                         filePath: '/file/path/2',
                         content: new Uint8Array([1, 2, 3, 4]),
+                        signed: false,
                     },
                 ],
                 targetDir: Path.join(cwd, 'target'),
                 check: false,
                 dryRun: true,
                 clean: true,
+                force: false,
             });
         });
 
@@ -96,16 +103,19 @@ suite('normalize', () => {
                     {
                         filePath: Path.resolve('file/path/1'),
                         content: stringToUint8Array('{\n  "foo": "bar"\n}\n'),
+                        signed: false,
                     },
                     {
                         filePath: '/file/path/2',
                         content: stringToUint8Array('<data>'),
+                        signed: false,
                     },
                 ],
                 targetDir: Path.resolve(),
                 check: isCI,
                 dryRun: false,
                 clean: false,
+                force: false,
             });
         });
     });

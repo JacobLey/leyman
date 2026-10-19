@@ -2,14 +2,32 @@ import type { Directory } from 'parse-cwd';
 
 export type FileContent = object | string | Uint8Array;
 
-export interface PopulateFileParams {
+export interface UnsignedPopulateFileParams {
     filePath: string;
     content: FileContent | Promise<FileContent>;
+    signed?: false;
 }
-export interface NormalizedParams {
+/**
+ * Signed with `generated-signature`, so only text content is allowed.
+ */
+export interface SignedPopulateFileParams {
     filePath: string;
-    content: Uint8Array;
+    content: string | Promise<string>;
+    signed: true;
 }
+export type PopulateFileParams = SignedPopulateFileParams | UnsignedPopulateFileParams;
+
+export type NormalizedParams =
+    | {
+          filePath: string;
+          content: string;
+          signed: true;
+      }
+    | {
+          filePath: string;
+          content: Uint8Array;
+          signed: false;
+      };
 
 export interface RawOptions {
     check?: boolean | null | undefined;
@@ -17,13 +35,15 @@ export interface RawOptions {
     cwd?: Directory | null | undefined;
     targetDir?: string | null | undefined;
     clean?: boolean | null | undefined;
+    force?: boolean | null | undefined;
 }
 export interface NormalizedOptions {
     check: boolean;
     dryRun: boolean;
+    force: boolean;
 }
 
-export interface NormalizedFileParams extends NormalizedOptions, NormalizedParams {}
+export type NormalizedFileParams = NormalizedOptions & NormalizedParams;
 export interface NormalizedFilesParams extends NormalizedOptions {
     files: NormalizedParams[];
     clean: boolean;
@@ -31,6 +51,10 @@ export interface NormalizedFilesParams extends NormalizedOptions {
 }
 
 export type PopulationResponseUpdateReason = 'content-changed' | 'file-not-exist' | 'stale-file';
+/**
+ * Why a signed file was not overwritten.
+ */
+export type OwnershipReason = 'edited' | 'malformed' | 'not-owned' | 'orphaned-section';
 export interface AbstractPopulationResponse {
     filePath: string;
 }

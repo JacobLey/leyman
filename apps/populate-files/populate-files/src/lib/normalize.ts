@@ -2,6 +2,7 @@ import type {
     FileContent,
     NormalizedFileParams,
     NormalizedFilesParams,
+    NormalizedParams,
     PopulateFileParams,
     RawOptions,
 } from './lib/types.js';
@@ -23,6 +24,32 @@ const parseContent = async (content: FileContent): Promise<Uint8Array> => {
     return stringToUint8Array(str);
 };
 
+/**
+ * Load and parse a file's content. Signed content stays a string, since it is merged with the
+ * existing file and signed before writing.
+ *
+ * @param params - raw file params
+ * @param targetDirPromise - directory relative file paths resolve from
+ * @returns normalized file params
+ */
+const normalizeParams = async (
+    params: PopulateFileParams,
+    targetDirPromise: Promise<string>
+): Promise<NormalizedParams> => {
+    const [targetDir, content] = await Promise.all([targetDirPromise, params.content]);
+    const filePath = Path.resolve(targetDir, params.filePath);
+    if (params.signed === true) {
+        if (typeof content !== 'string') {
+            throw new TypeError(`Signed content must be a string: ${filePath}`);
+        }
+        return { filePath, content, signed: true };
+    }
+    return { filePath, content: await parseContent(content), signed: false };
+};
+
+const resolveTargetDir = async (options: RawOptions): Promise<string> =>
+    Path.resolve(await parseCwd(options.cwd), options.targetDir ?? '.');
+
 const shouldCheck = (check?: boolean | null): boolean => check ?? isCI;
 const isDryRun = (dryRun?: boolean | null): boolean => dryRun === true;
 
@@ -36,16 +63,12 @@ const isDryRun = (dryRun?: boolean | null): boolean => dryRun === true;
 export const normalizeFileParams = async (
     params: PopulateFileParams,
     options: RawOptions = {}
-): Promise<NormalizedFileParams> => {
-    const [cwd, loadedContent] = await Promise.all([parseCwd(options.cwd), params.content]);
-    const targetDir = Path.resolve(cwd, options.targetDir ?? '.');
-    return {
-        filePath: Path.resolve(targetDir, params.filePath),
-        content: await parseContent(loadedContent),
-        check: shouldCheck(options.check),
-        dryRun: isDryRun(options.dryRun),
-    };
-};
+): Promise<NormalizedFileParams> => ({
+    ...(await normalizeParams(params, resolveTargetDir(options))),
+    check: shouldCheck(options.check),
+    dryRun: isDryRun(options.dryRun),
+    force: options.force ?? false,
+});
 
 /**
  * Normalize and standardize user input for populating multiple files.
@@ -58,28 +81,18 @@ export const normalizeFilesParams = async (
     params: PopulateFileParams[],
     options: RawOptions = {}
 ): Promise<NormalizedFilesParams> => {
-    const loadedContentsPromise = Promise.all(
-        params.map(async param => ({
-            filePath: param.filePath,
-            content: await param.content,
-        }))
-    );
-
-    const [cwd, loadedContents] = await Promise.all([parseCwd(options.cwd), loadedContentsPromise]);
-    const targetDir = Path.resolve(cwd, options.targetDir ?? '.');
-
-    const files = await Promise.all(
-        loadedContents.map(async loadedContent => ({
-            filePath: Path.resolve(targetDir, loadedContent.filePath),
-            content: await parseContent(loadedContent.content),
-        }))
-    );
+    const targetDirPromise = resolveTargetDir(options);
+    const [targetDir, files] = await Promise.all([
+        targetDirPromise,
+        Promise.all(params.map(async param => normalizeParams(param, targetDirPromise))),
+    ]);
 
     return {
         files,
         targetDir,
         check: shouldCheck(options.check),
         dryRun: isDryRun(options.dryRun),
+        force: options.force ?? false,
         clean: options.clean ?? false,
     };
 };

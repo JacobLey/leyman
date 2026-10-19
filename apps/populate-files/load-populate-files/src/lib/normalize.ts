@@ -16,6 +16,7 @@ export const normalizeParams = async (
             dryRun: options.dryRun,
             targetDir: options.targetDir,
             clean: options.clean,
+            force: options.force,
         },
     };
 };

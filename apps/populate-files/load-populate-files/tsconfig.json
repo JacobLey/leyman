@@ -41,6 +41,9 @@
       "path": "../../../tools/test-chain/mocha-chain"
     },
     {
+      "path": "../../../tools/generated-signature/generated-signature"
+    },
+    {
       "path": "../../../leyman/expect"
     },
     {

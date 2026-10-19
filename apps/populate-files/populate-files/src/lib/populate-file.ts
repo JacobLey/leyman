@@ -5,9 +5,10 @@ import type {
 } from './lib/types.js';
 import { mkdir, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
-import { areUint8ArraysEqual } from 'uint8array-extras';
+import { areUint8ArraysEqual, stringToUint8Array, uint8ArrayToString } from 'uint8array-extras';
 import { formatErrorMessage } from './lib/errors.js';
 import { safeLoadFile } from './loader.js';
+import { signContent } from './sign-content.js';
 
 const createPathAndWrite = async ({
     filePath,
@@ -38,8 +39,18 @@ const createPathAndWrite = async ({
 export const internalPopulateFile = async (
     params: NormalizedFileParams
 ): Promise<PopulationResponse> => {
-    const { filePath, content, check, dryRun } = params;
+    const { filePath, check, dryRun } = params;
     const rawFile = await safeLoadFile(filePath);
+    const content = params.signed
+        ? stringToUint8Array(
+              signContent({
+                  filePath,
+                  generated: params.content,
+                  existing: rawFile && uint8ArrayToString(rawFile),
+                  force: params.force,
+              })
+          )
+        : params.content;
 
     let reason: PopulationResponseUpdateReason;
 

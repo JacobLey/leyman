@@ -10,6 +10,7 @@ interface LoadPopulateFilesCommandExtendedInput extends LoadPopulateFilesCommand
     ci: boolean;
     dryRun: boolean;
     clean: boolean;
+    force: boolean;
 }
 
 /**
@@ -45,6 +46,12 @@ export const loadPopulateFilesCommand: Command<LoadPopulateFilesCommandExtendedI
                     type: 'boolean',
                     default: false,
                 },
+                force: {
+                    describe:
+                        'Overwrite signed files even if they were edited, are not signed, or would lose manual sections',
+                    type: 'boolean',
+                    default: false,
+                },
             })
             .strict(),
     handler: async options => {
@@ -58,6 +65,7 @@ export const loadPopulateFilesCommand: Command<LoadPopulateFilesCommandExtendedI
                 check: options.ci,
                 dryRun: options.dryRun,
                 clean: options.clean,
+                force: options.force,
             }
         );
     },

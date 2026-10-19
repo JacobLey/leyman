@@ -34,6 +34,7 @@
   "dependencies": {
     "ci-info": "catalog:",
     "format-file": "workspace:^",
+    "generated-signature": "workspace:^",
     "parse-cwd": "workspace:^",
     "uint8array-extras": "catalog:",
     "unknown-error": "workspace:^"

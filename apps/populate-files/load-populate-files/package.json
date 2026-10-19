@@ -61,8 +61,10 @@
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
+    "generated-signature": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
+    "tmp-promise": "catalog:",
     "typescript": "catalog:"
   },
   "imports": {

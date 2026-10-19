@@ -721,12 +721,18 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 10.12.0(supports-color@8.1.1)
+      generated-signature:
+        specifier: workspace:^
+        version: file:tools/generated-signature/generated-signature
       mocha:
         specifier: 'catalog:'
         version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+      tmp-promise:
+        specifier: 'catalog:'
+        version: 3.0.3
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -739,6 +745,9 @@ importers:
       format-file:
         specifier: workspace:^
         version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      generated-signature:
+        specifier: workspace:^
+        version: file:tools/generated-signature/generated-signature
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -12932,6 +12941,7 @@ snapshots:
     dependencies:
       ci-info: 4.4.0
       format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      generated-signature: file:tools/generated-signature/generated-signature
       parse-cwd: file:tools/parse-cwd
       uint8array-extras: 1.6.0
       unknown-error: file:tools/unknown-error

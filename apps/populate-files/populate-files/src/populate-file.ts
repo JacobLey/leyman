@@ -14,12 +14,12 @@ import { internalPopulateFile } from './lib/populate-file.js';
 
 export type PopulateFile = (
     params: PopulateFileParams,
-    options: RawOptions
+    options?: RawOptions
 ) => Promise<PopulationResponse>;
 
 export type PopulateFiles = (
     params: PopulateFileParams[],
-    options: RawOptions
+    options?: RawOptions
 ) => Promise<PopulationResponse[]>;
 
 export const populateFile: PopulateFile = async (params, options) => {
@@ -39,15 +39,18 @@ const readdirIfExists = async (dir: string): Promise<Dirent[]> => {
 };
 
 export const populateFiles: PopulateFiles = async (params, options) => {
-    const { files, check, dryRun, clean, targetDir } = await normalizeFilesParams(params, options);
+    const { files, check, dryRun, force, clean, targetDir } = await normalizeFilesParams(
+        params,
+        options
+    );
 
     const populateResults = await Promise.all(
-        files.map(async ({ filePath, content }) =>
+        files.map(async file =>
             internalPopulateFile({
-                filePath,
-                content,
+                ...file,
                 dryRun: dryRun || check,
                 check: false,
+                force,
             })
         )
     );

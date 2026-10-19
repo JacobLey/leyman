@@ -87,6 +87,7 @@ Options are passed through to the underlying `populateFiles()` call. They are al
 | `cwd` | `--cwd` | `string \| URL` | `process.env.PWD` | Used as the current working directory for `filePath` and re-used for relative `filePath`s in the loaded config. |
 | `targetDir` | `--target-dir`, `-t` | `string` | `'.'` | Target directory for resolving output file paths. Resolved relative to `cwd`. |
 | `clean` | `--clean` | `boolean` | `false` | If `true`, removes files in `targetDir` that were not generated. In `--ci` mode, fails instead of removing. |
+| `force` | `--force` | `boolean` | `false` | Only applies to `signed` files. If `true`, overwrites files that were edited outside manual sections, are not signed, or are malformed. See [`populate-files`](https://www.npmjs.com/package/populate-files#signed-files). |
 
 ## Types
 
@@ -104,6 +105,8 @@ export default {
 ```
 
 This type can also be imported directly from [`populate-files`](https://www.npmjs.com/package/populate-files).
+
+Configs may set `signed: true` (with string content) to sign the file and keep its manual sections, see [signed files](https://www.npmjs.com/package/populate-files#signed-files).
 
 ## Also See
 
