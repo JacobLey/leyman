@@ -122,6 +122,13 @@ An OpenAPI 3.0 or 3.1 document (a JSON or YAML file with an `openapi` version) i
 npx genever openapi.yaml -o src/api-types.ts
 ```
 
+A document with `paths` also gets `Paths` (by path, then method) and `Operations` (by `operationId`) types, in the shape [openapi-typescript](https://openapi-ts.dev/) generates: each operation's `parameters` by location, `requestBody`, and `responses` by status code with `headers` and `content` by media type.
+
+```ts
+type User = Paths['/users/{id}']['get']['responses'][200]['content']['application/json'];
+type NewUser = Operations['createUser']['requestBody']['content']['application/json'];
+```
+
 ### YAML
 
 A `.yaml` or `.yml` file is read as YAML 1.2, whether it is the input or a file it references, and so is a URL served with a YAML media type. Anchors and aliases are expanded, and merge keys (`<<: *base`) merged. An alias inside the schema it names, a recursive schema, becomes a `$ref` to that schema, so it is a recursive type. Anything else JSON can't hold is an error: an alias inside a value that isn't a schema (such as a `const`), tags beyond YAML's core schema (such as `!!binary`), keys that aren't strings, duplicate keys, and `.inf` or `.nan`.

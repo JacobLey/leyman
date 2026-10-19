@@ -15,6 +15,7 @@ import {
     unsupportedKeywords,
 } from './keywords.js';
 import { TypeNames } from './names.js';
+import { operationTypes } from './operations.js';
 import { patternType } from './pattern.js';
 import { childPointer } from './pointer.js';
 import {
@@ -417,9 +418,10 @@ export class Converter {
     }
 
     /**
-     * Convert an OpenAPI document. Each of its `components.schemas` becomes a named type.
+     * Convert an OpenAPI document. Each of its `components.schemas` becomes a named type, followed by
+     * `Paths` and `Operations` for its operations, if it has any.
      *
-     * @returns named types, sorted by name
+     * @returns named types: components sorted by name, then the operation types
      * @throws {GeneverError} if a schema is invalid, breaks a strict mode rule, or is not supported
      */
     public convertDocument(): NamedType[] {
@@ -430,7 +432,26 @@ export class Converter {
             inputSchemas(this.#root, true),
             this.#options.baseUri
         );
-        return this.#convertPending().toSorted(compareNames);
+        // Reserved after the components, so they keep their names
+        const pathsName = this.#names.reserve('Paths');
+        const operationsName = this.#names.reserve('Operations');
+        const operations = operationTypes(
+            this.#root,
+            {
+                convert: (schema, pointer) => this.#convert(schema, pointer, emptyScope),
+                resolve: (ref, refPointer) => this.#resolve(ref, refPointer),
+            },
+            operationsName
+        );
+        return [
+            ...this.#convertPending().toSorted(compareNames),
+            ...(operations
+                ? [
+                      { doc: null, name: pathsName, type: operations.paths },
+                      { doc: null, name: operationsName, type: operations.operations },
+                  ]
+                : []),
+        ];
     }
 
     #convertPending(): NamedType[] {

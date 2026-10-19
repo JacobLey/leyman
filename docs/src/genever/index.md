@@ -45,7 +45,7 @@ Commit the result, and run `genever --ci` in CI to fail when it is out of date.
 - **Round-trips Juniper**: a schema built with [Juniper](/juniper/), serialized and read back, gives the same type Juniper inferred. See [Juniper round trip](/genever/guides/juniper-round-trip).
 - **Strict by default**: unknown keywords, keywords that don't apply to the type, undeclared `required` properties and contradictions like `minLength` over `maxLength` fail generation. Without strict mode, types follow exactly what a validator accepts. See [Strict mode](/genever/guides/strict-mode).
 - **One file from many**: `$ref`s to other files and URLs are loaded and generated into the same output, with `$id` and `$anchor` resolved as the spec says. See [References to other files](/genever/guides/references).
-- **OpenAPI documents**: every `components.schemas` entry of an OpenAPI 3.0 or 3.1 document becomes a type. See [OpenAPI documents](/genever/guides/openapi).
+- **OpenAPI documents**: every `components.schemas` entry of an OpenAPI 3.0 or 3.1 document becomes a type, and its operations become `Paths` and `Operations` types, shaped like openapi-typescript's. See [OpenAPI documents](/genever/guides/openapi).
 - **Types only**: the output is plain TypeScript, with no runtime dependency.
 
 ## Compared to

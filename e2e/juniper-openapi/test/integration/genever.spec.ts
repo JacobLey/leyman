@@ -20,6 +20,20 @@ const expected = {
     UserUpdate: 'api.UserUpdate',
 };
 
+// Operation types, against the schemas the spec was built with
+const json = '["content"]["application/json"]';
+// An OpenAPI path template, not a JavaScript one
+const userGet = 'G.Paths["/users/{userId}"]["get"]';
+const operations = {
+    [`${userGet}["responses"][200]${json}`]: 'api.User',
+    [`${userGet}["parameters"]["path"]`]: '{ userId: string }',
+    [`G.Operations["createUser"]["requestBody"]${json}`]: 'api.NewUser',
+    [`G.Operations["updateUser"]["responses"][404]${json}`]: 'SchemaType<typeof api.errorSchema>',
+    [`G.Operations["listUserPosts"]["parameters"]["query"]`]:
+        '{ cursor?: string; limit?: number } | undefined',
+    [`G.Operations["listPostComments"]["responses"][200]${json}`]: 'api.Comment[]',
+};
+
 suite('genever reads the spec back', () => {
     for (const version of ['3.0.3', '3.1.0'] as const) {
         test(`OpenAPI ${version} gives the types juniper inferred`, () => {
@@ -33,7 +47,8 @@ suite('genever reads the spec back', () => {
                 "import type * as api from '../data/api.js';",
                 `import type { ${names.join(', ')} } from './generated.js';`,
                 "import type { Normalize } from './normalize.js';",
-                ...Object.entries(expected).map(
+                "import type * as G from './generated.js';",
+                ...Object.entries({ ...expected, ...operations }).map(
                     ([name, type]) =>
                         `expectTypeOf<Normalize<${name}>>().toEqualTypeOf<Normalize<${type}>>();`
                 ),
