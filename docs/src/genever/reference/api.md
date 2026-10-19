@@ -20,6 +20,7 @@ genever <input> [options]
 | `--ci` | `true` in CI | Fail if the output file is not up to date. Implies `--dry-run`. |
 | `--dry-run` | `false` | Do not write the output file. |
 | `--fetch` | `true` | Load URLs the schema references. `--no-fetch` loads only files. |
+| `--fetch-host` | | Load only URLs of this host, e.g. `example.com`, `localhost:8080`, or `*.example.com` for its subdomains. Repeat for more hosts. |
 | `--cwd` | `.` | Directory relative paths resolve from. |
 
 The path of a written file is logged. Nothing is logged when it was already up to date.
@@ -61,12 +62,12 @@ Read a JSON Schema file, or OpenAPI document, in JSON or YAML, and write its typ
 | `options.cwd` | `string \| URL` | `process.cwd()` | Directory relative paths resolve from. |
 | `options.check` | `boolean` | `false` | Fail, rather than write, if the output file is not up to date. |
 | `options.dryRun` | `boolean` | `false` | Do not write the output file. |
-| `options.fetch` | `boolean` | `true` | Load `http:` and `https:` URLs the schema references. Otherwise only files are loaded. |
+| `options.fetch` | `boolean \| string[]` | `true` | Load `http:` and `https:` URLs the schema references, or only those of the hosts listed. Otherwise only files are loaded. See [References to other files](/genever/guides/references). |
 | `options.name`, `options.strict`, `options.openApi30`, `options.typedMinItems` | | | Same as [`genever`](#genever-schema-options). |
 
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
 
-**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws if the file is out of date.
+**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws if the file is out of date. Throws a `TypeError` if `fetch` lists something that is not a host.
 
 ---
 

@@ -103,7 +103,7 @@ A `$ref` may point at another file, or a URL, relative to the schema it is in: `
 - Files without a `$schema` are read in the input's dialect: JSON Schema 2020-12, or the OpenAPI version of an OpenAPI document.
 - A file or URL that can't be loaded throws a `GeneverLoadError`.
 
-Loaded files are embedded with an absolute `$id`, following the bundling process of JSON Schema 2020-12, so `$ref`s resolve to them unchanged, and `$id` and `$anchor` inside them work as in the original files. `--no-fetch` (or `fetch: false`) loads files only, never URLs. `genever()` itself reads one document, and doesn't load anything: bundle first, or use `geneverFile`.
+Loaded files are embedded with an absolute `$id`, following the bundling process of JSON Schema 2020-12, so `$ref`s resolve to them unchanged, and `$id` and `$anchor` inside them work as in the original files. `--no-fetch` (or `fetch: false`) loads files only, never URLs: a `$ref` to a URL fails with a `GeneverLoadError`, unless a loaded schema declares that URL as its `$id`, such as a copy committed next to the input. `--fetch-host example.com` (or `fetch: ['example.com']`) loads only URLs of the hosts listed, and only follows redirects to them. A host matches on any port unless it names one (`localhost:8080`), and `*.example.com` matches subdomains of `example.com`, but not `example.com` itself. `genever()` itself reads one document, and doesn't load anything: bundle first, or use `geneverFile`.
 
 ### OpenAPI documents
 
@@ -262,12 +262,12 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 | `options.cwd` | `string \| URL` | `process.cwd()` | Directory relative paths resolve from. |
 | `options.check` | `boolean` | `false` | Fail, rather than write, if the output file is not up to date. |
 | `options.dryRun` | `boolean` | `false` | Do not write the output file. |
-| `options.fetch` | `boolean` | `true` | Load `http:` and `https:` URLs the schema references. Otherwise only files are loaded. |
+| `options.fetch` | `boolean \| string[]` | `true` | Load `http:` and `https:` URLs the schema references, or only those of the hosts listed. Otherwise only files are loaded. See [References to other files](#references-to-other-files). |
 | `options.name`, `options.strict`, `options.openApi30`, `options.typedMinItems` | | | Same as [`genever`](#geneverschema-options). |
 
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
 
-**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws if the file is out of date.
+**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws if the file is out of date. Throws a `TypeError` if `fetch` lists something that is not a host.
 
 ---
 
@@ -298,6 +298,7 @@ genever <input> [options]
 | `--ci` | `true` in CI | Fail if the output file is not up to date. Implies `--dry-run`. |
 | `--dry-run` | `false` | Do not write the output file. |
 | `--fetch` | `true` | Load URLs the schema references. `--no-fetch` loads only files. |
+| `--fetch-host` | | Load only URLs of this host, e.g. `example.com`, `localhost:8080`, or `*.example.com` for its subdomains. Repeat for more hosts. |
 | `--cwd` | `.` | Directory relative paths resolve from. |
 
 The path of a written file is logged. Nothing is logged when it was already up to date.

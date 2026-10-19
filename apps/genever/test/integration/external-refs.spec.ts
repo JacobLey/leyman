@@ -1,10 +1,12 @@
 /* eslint-disable no-template-curly-in-string -- expected types are TypeScript source, with template literal types */
+import type { TmpDirContext } from './lib/fixtures.js';
 import { readFile, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { expect } from '@leyman/expect';
 import { geneverFile, GeneverLoadError } from 'genever';
 import { beforeEach, suite } from 'mocha-chain';
 import { expectTypes } from '../lib/expect-generated.js';
+import { fakeFetch } from './lib/fake-fetch.js';
 import { createTmpDir } from './lib/fixtures.js';
 import { startSchemaServer } from './lib/server.js';
 
@@ -205,6 +207,170 @@ suite('external references', () => {
                 Plain: '{ b?: B }',
                 B: 'number',
             });
+        });
+    });
+
+    suite('allowed hosts', () => {
+        // Keyed as `fetch` is called with it, e.g. lowercase
+        const schemaAt = (url: string): Record<string, string> => {
+            const { href } = new URL(url);
+            return { [href]: '{ "type": "string" }' };
+        };
+
+        /**
+         * Generate types for a schema that references a URL.
+         *
+         * @param ctx - test context
+         * @param url - URL of a schema, whose file name is `a.json`
+         * @param fetch - allowed hosts
+         * @returns generated TypeScript source
+         */
+        const generateFor = async (
+            ctx: TmpDirContext,
+            url: string,
+            fetch: readonly string[]
+        ): Promise<string> => {
+            await ctx.writeJson('input.json', {
+                type: 'object',
+                properties: { a: { $ref: url } },
+            });
+            await geneverFile(ctx.resolve('input.json'), {
+                output: ctx.resolve('input.ts'),
+                fetch,
+            });
+            return ctx.read('input.ts');
+        };
+
+        // Allowed hosts, and a URL they allow
+        const allowed: Record<string, [readonly string[], string]> = {
+            'a host': [['example.test'], 'https://example.test/a.json'],
+            'a host on any port': [['example.test'], 'https://example.test:8443/a.json'],
+            'a host and port': [['example.test:8443'], 'https://example.test:8443/a.json'],
+            'the default port': [['example.test:443'], 'https://example.test/a.json'],
+            'any case': [['EXAMPLE.test'], 'https://example.TEST/a.json'],
+            'an IPv6 address': [['[::1]:8080'], 'http://[0::1]:8080/a.json'],
+            'a subdomain': [['*.example.test'], 'https://api.example.test/a.json'],
+            'a nested subdomain': [['*.example.test'], 'https://v1.api.example.test/a.json'],
+            'one of many hosts': [['other.test', 'example.test'], 'https://example.test/a.json'],
+        };
+        for (const [name, [hosts, url]] of Object.entries(allowed)) {
+            withTmpDir.test(`allows ${name}`, async ctx => {
+                const fake = fakeFetch({ schemas: schemaAt(url) });
+                try {
+                    expectTypes(await generateFor(ctx, url, hosts), {
+                        Schema: '{ a?: A }',
+                        A: 'string',
+                    });
+                } finally {
+                    fake.restore();
+                }
+            });
+        }
+
+        // Allowed hosts, and a URL they don't allow
+        const disallowed: Record<string, [readonly string[], string]> = {
+            'a subdomain of a host': [['example.test'], 'https://api.example.test/a.json'],
+            'another port': [['example.test:8443'], 'https://example.test/a.json'],
+            'the domain of its subdomains': [['*.example.test'], 'https://example.test/a.json'],
+            'a host that ends the same': [['*.example.test'], 'https://badexample.test/a.json'],
+            'no hosts': [[], 'https://example.test/a.json'],
+        };
+        for (const [name, [hosts, url]] of Object.entries(disallowed)) {
+            withTmpDir.test(`does not allow ${name}`, async ctx => {
+                const fake = fakeFetch({ schemas: schemaAt(url) });
+                try {
+                    await expect(generateFor(ctx, url, hosts)).to.be.rejectedWith(
+                        GeneverLoadError,
+                        /not an allowed host/u
+                    );
+                    expect(fake.requested).to.deep.equal([]);
+                } finally {
+                    fake.restore();
+                }
+            });
+        }
+
+        withTmpDir.test('follows redirects to allowed hosts', async ctx => {
+            const fake = fakeFetch({
+                redirects: { 'https://example.test/a.json': 'https://cdn.example.test/v2/a.json' },
+                schemas: schemaAt('https://cdn.example.test/v2/a.json'),
+            });
+            try {
+                expectTypes(
+                    await generateFor(ctx, 'https://example.test/a.json', [
+                        'example.test',
+                        '*.example.test',
+                    ]),
+                    { Schema: '{ a?: A }', A: 'string' }
+                );
+            } finally {
+                fake.restore();
+            }
+        });
+
+        withTmpDir.test('does not follow redirects to other hosts', async ctx => {
+            const fake = fakeFetch({
+                redirects: { 'https://example.test/a.json': 'https://elsewhere.test/a.json' },
+                schemas: schemaAt('https://elsewhere.test/a.json'),
+            });
+            try {
+                await expect(
+                    generateFor(ctx, 'https://example.test/a.json', ['example.test'])
+                ).to.be.rejectedWith(GeneverLoadError, /elsewhere\.test is not an allowed host/u);
+                expect(fake.requested).to.deep.equal(['https://example.test/a.json']);
+            } finally {
+                fake.restore();
+            }
+        });
+
+        withTmpDir.test('does not follow redirects to files', async ctx => {
+            const fake = fakeFetch({
+                redirects: { 'https://example.test/a.json': 'file:///etc/passwd' },
+                schemas: {},
+            });
+            try {
+                await expect(
+                    generateFor(ctx, 'https://example.test/a.json', ['example.test'])
+                ).to.be.rejectedWith(GeneverLoadError, /redirected to a file: URI/u);
+            } finally {
+                fake.restore();
+            }
+        });
+
+        withTmpDir.test('does not follow redirects forever', async ctx => {
+            const fake = fakeFetch({
+                redirects: { 'https://example.test/a.json': 'https://example.test/a.json' },
+                schemas: {},
+            });
+            try {
+                await expect(
+                    generateFor(ctx, 'https://example.test/a.json', ['example.test'])
+                ).to.be.rejectedWith(GeneverLoadError, /too many redirects/u);
+            } finally {
+                fake.restore();
+            }
+        });
+
+        withTmpDir.test('a server, and its relative references', async ctx => {
+            const server = await startSchemaServer();
+            const { host } = new URL(server.url);
+            try {
+                await ctx.writeJson('input.json', { $ref: `${server.url}/remote.json` });
+                await geneverFile(ctx.resolve('input.json'), {
+                    output: ctx.resolve('input.ts'),
+                    fetch: [host],
+                });
+
+                expectTypes(await ctx.read('input.ts'), { Remote2: '`rem_${string}`' });
+            } finally {
+                await server.close();
+            }
+        });
+
+        withTmpDir.test('something that is not a host', async ctx => {
+            await expect(
+                generateFor(ctx, 'https://example.test/a.json', ['https://example.test'])
+            ).to.be.rejectedWith(TypeError, 'Not a host: "https://example.test"');
         });
     });
 

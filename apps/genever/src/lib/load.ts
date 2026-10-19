@@ -1,9 +1,11 @@
+import type { HostFilter } from './hosts.js';
 import type { SchemaObject } from './read-keyword.js';
 import type { DocumentIndex } from './resources.js';
 import { readFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GeneverLoadError } from './errors.js';
+import { hostFilter } from './hosts.js';
 import { isYaml, parseText } from './parse.js';
 import { isSchemaObject } from './read-keyword.js';
 import {
@@ -20,9 +22,9 @@ export interface LoadOptions {
      */
     readonly baseUri: string;
     /**
-     * Load `http:` and `https:` URLs. Otherwise only files are loaded.
+     * Load `http:` and `https:` URLs, or only those of these hosts. Otherwise only files are loaded.
      */
-    readonly fetch: boolean;
+    readonly fetch: boolean | readonly string[];
     /**
      * Whether the input is an OpenAPI document.
      */
@@ -63,16 +65,55 @@ interface Failure extends Unloadable {
     readonly uri: string;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-magic-numbers -- the HTTP statuses that redirect
+const redirectStatuses = new Set([301, 302, 303, 307, 308]);
+
+/**
+ * As many redirects as `fetch` follows.
+ */
+const maxRedirects = 20;
+
+/**
+ * Fetch a URL, following redirects only to hosts that are allowed.
+ *
+ * @param uri - absolute `http:` or `https:` URL
+ * @param isAllowed - hosts that may be fetched
+ * @returns the response, or why it can't be fetched
+ */
+const fetchAllowed = async (uri: string, isAllowed: HostFilter): Promise<Response | Unloadable> => {
+    let url = new URL(uri);
+    for (let redirects = 0; redirects <= maxRedirects; redirects++) {
+        if (!isAllowed(url)) {
+            return { reason: `${url.host} is not an allowed host` };
+        }
+        const response = await globalThis.fetch(url, {
+            headers: {
+                accept: 'application/schema+json, application/json, application/yaml;q=0.9',
+            },
+            redirect: 'manual',
+        });
+        const location = response.headers.get('location');
+        if (location === null || !redirectStatuses.has(response.status)) {
+            return response;
+        }
+        url = new URL(location, url);
+        if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+            return { reason: `redirected to a ${url.protocol} URI` };
+        }
+    }
+    return { reason: 'too many redirects' };
+};
+
 /**
  * Read the text of a file or URL.
  *
  * @param uri - absolute URI, without a fragment
- * @param options - how to load
+ * @param isAllowed - hosts that may be fetched, or null to load only files
  * @returns the text, and whether it is YAML, or why it can't be read
  */
 const readText = async (
     uri: string,
-    options: LoadOptions
+    isAllowed: HostFilter | null
 ): Promise<Unloadable | { text: string; yaml: boolean }> => {
     const { protocol } = new URL(uri);
     try {
@@ -82,14 +123,13 @@ const readText = async (
         if (protocol !== 'http:' && protocol !== 'https:') {
             return { reason: `${protocol} URIs can't be loaded` };
         }
-        if (!options.fetch) {
+        if (!isAllowed) {
             return { reason: 'loading URLs is disabled' };
         }
-        const response = await globalThis.fetch(uri, {
-            headers: {
-                accept: 'application/schema+json, application/json, application/yaml;q=0.9',
-            },
-        });
+        const response = await fetchAllowed(uri, isAllowed);
+        if ('reason' in response) {
+            return response;
+        }
         return response.ok
             ? {
                   text: await response.text(),
@@ -108,16 +148,16 @@ const readText = async (
  * so it can be embedded in another document, and still resolve its own references.
  *
  * @param uri - absolute URI, without a fragment
- * @param options - how to load
+ * @param isAllowed - hosts that may be fetched, or null to load only files
  * @param isInputDraft04 - whether the input is draft-04, which a file without a `$schema` is too
  * @returns the resource, or why it can't be loaded
  */
 const loadResource = async (
     uri: string,
-    options: LoadOptions,
+    isAllowed: HostFilter | null,
     isInputDraft04: boolean
 ): Promise<LoadedResource | Unloadable> => {
-    const read = await readText(uri, options);
+    const read = await readText(uri, isAllowed);
     if ('reason' in read) {
         return read;
     }
@@ -216,8 +256,10 @@ const embed = (
  * @param options - how to read the input, and what to load
  * @returns the input with every referenced schema embedded, or the input itself if it references none
  * @throws {GeneverLoadError} if a referenced file or URL can't be loaded
+ * @throws {TypeError} if an allowed host is not a host
  */
 export const loadReferences = async (input: unknown, options: LoadOptions): Promise<unknown> => {
+    const isAllowed = hostFilter(options.fetch);
     const isInputDraft04 =
         !options.isDocument && isSchemaObject(input) && declaresDraft04(input) === true;
     const inputIndex = indexDocument(
@@ -239,7 +281,7 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
     };
 
     const load = async (uri: string, index: DocumentIndex): Promise<void> => {
-        const loaded = await loadResource(uri, options, isInputDraft04);
+        const loaded = await loadResource(uri, isAllowed, isInputDraft04);
         if ('reason' in loaded) {
             failures.push({ ...loaded, pointer: index.references.get(uri)!, uri });
             return;

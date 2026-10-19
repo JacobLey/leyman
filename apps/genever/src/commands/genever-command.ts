@@ -9,6 +9,7 @@ interface GeneverCommandExtendedInput extends GeneverCommandInput {
     ci: boolean;
     dryRun: boolean;
     fetch: boolean;
+    fetchHost: string[] | undefined;
     input: string;
     name: string;
     openApi30: boolean;
@@ -70,6 +71,13 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
                     type: 'boolean',
                     default: true,
                 },
+                fetchHost: {
+                    alias: 'fetch-host',
+                    describe:
+                        'Load only URLs of this host, e.g. example.com, localhost:8080, or *.example.com for its subdomains. Repeat for more hosts',
+                    type: 'string',
+                    array: true,
+                },
                 ci: {
                     describe: 'Fail if the output file is not up to date. Implies --dry-run',
                     type: 'boolean',
@@ -82,13 +90,19 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
                     default: false,
                 },
             })
+            .check(({ fetch, fetchHost }) => {
+                if (!fetch && fetchHost !== undefined) {
+                    throw new Error('--fetch-host loads URLs, which --no-fetch disables');
+                }
+                return true;
+            })
             .strict(),
     handler: async options => {
         const { output, updated } = await geneverFile(options.input, {
             check: options.ci,
             cwd: options.cwd,
             dryRun: options.dryRun,
-            fetch: options.fetch,
+            fetch: options.fetch ? (options.fetchHost ?? true) : false,
             name: options.name,
             openApi30: options.openApi30,
             ...(options.output !== undefined && { output: options.output }),

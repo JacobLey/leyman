@@ -30,9 +30,13 @@ export interface GeneverFileOptions extends GeneverOptions {
     /**
      * Load `http:` and `https:` URLs the schema references. Otherwise, only files are loaded.
      *
+     * A list of hosts loads only URLs of those hosts, including where they redirect to.
+     * A host matches on any port, unless it names one (`localhost:8080`), and `*.example.com`
+     * matches subdomains of `example.com`, but not `example.com` itself.
+     *
      * @default true
      */
-    fetch?: boolean;
+    fetch?: boolean | readonly string[];
     /**
      * Do not write the output file.
      *
@@ -56,6 +60,7 @@ export interface GeneverFileOptions extends GeneverOptions {
  * @returns path of the output file, and whether it changed
  * @throws {GeneverError} if the schema is invalid, breaks a strict mode rule, or is not supported
  * @throws {GeneverLoadError} if a referenced file or URL can't be loaded
+ * @throws {TypeError} if `fetch` lists something that is not a host
  * @throws {SyntaxError | YAMLError} if the input can't be parsed
  */
 export const geneverFile = async (

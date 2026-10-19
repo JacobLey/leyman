@@ -1,9 +1,11 @@
+import type { TmpDirContext } from './lib/fixtures.js';
 import { exec } from 'node:child_process';
 import { access } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { createTmpDir, userSchema } from './lib/fixtures.js';
+import { startSchemaServer } from './lib/server.js';
 
 const execAsync = promisify(exec);
 
@@ -146,6 +148,57 @@ suite('cli', () => {
             );
 
             expect(await ctx.read('user.ts')).to.contain('null');
+        });
+
+        suite('URLs', () => {
+            /**
+             * Generate types for a schema that references the test server.
+             *
+             * @param ctx - test context
+             * @param flags - CLI flags
+             * @returns stdout and stderr
+             */
+            const generateRemote = async (
+                ctx: TmpDirContext,
+                flags: string
+            ): Promise<{ stderr: string; stdout: string }> => {
+                const server = await startSchemaServer();
+                try {
+                    await ctx.writeJson('user.json', { $ref: `${server.url}/remote.json` });
+                    return await execAsync(
+                        `./bin.mjs user.json --ci=false ${flags} --cwd ${ctx.tmpDir.path}`
+                    );
+                } finally {
+                    await server.close();
+                }
+            };
+
+            withTmpDir.test('--fetch-host', async ctx => {
+                await generateRemote(ctx, '--fetch-host example.test --fetch-host 127.0.0.1');
+
+                expect(await ctx.read('user.ts')).to.contain('export type Remote');
+            });
+
+            withTmpDir.test('--fetch-host fails on other hosts', async ctx => {
+                const thrown: unknown = await expect(
+                    generateRemote(ctx, '--fetch-host example.test')
+                ).to.be.rejectedWith(Error);
+                expect(thrown).to.have.property('stderr').that.includes('not an allowed host');
+            });
+
+            withTmpDir.test('--no-fetch', async ctx => {
+                const thrown: unknown = await expect(
+                    generateRemote(ctx, '--no-fetch')
+                ).to.be.rejectedWith(Error);
+                expect(thrown).to.have.property('stderr').that.includes('disabled');
+            });
+
+            withTmpDir.test('--no-fetch with --fetch-host', async ctx => {
+                const thrown: unknown = await expect(
+                    generateRemote(ctx, '--no-fetch --fetch-host example.test')
+                ).to.be.rejectedWith(Error);
+                expect(thrown).to.have.property('stderr').that.includes('--no-fetch disables');
+            });
         });
     });
 });
