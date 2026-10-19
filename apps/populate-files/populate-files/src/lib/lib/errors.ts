@@ -9,7 +9,7 @@ export const formatErrorMessage = ({
 }): string => `File ${filePath} not up to date. Reason: ${reason}`;
 
 const ownershipMessages = {
-    edited: 'was edited outside of manual sections',
+    edited: 'was edited since it was generated',
     malformed: 'has a malformed signature or manual sections',
     'not-owned': 'exists but is not signed, so it may not be generated',
     'orphaned-section': 'has manual sections with content that would be removed',
