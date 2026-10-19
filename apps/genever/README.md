@@ -105,6 +105,15 @@ A `$ref` may point at another file, or a URL, relative to the schema it is in: `
 
 Loaded files are embedded with an absolute `$id`, following the bundling process of JSON Schema 2020-12, so `$ref`s resolve to them unchanged, and `$id` and `$anchor` inside them work as in the original files. `--no-fetch` (or `fetch: false`) loads files only, never URLs: a `$ref` to a URL fails with a `GeneverLoadError`, unless a loaded schema declares that URL as its `$id`, such as a copy committed next to the input. `--fetch-host example.com` (or `fetch: ['example.com']`) loads only URLs of the hosts listed, and only follows redirects to them. A host matches on any port unless it names one (`localhost:8080`), and `*.example.com` matches subdomains of `example.com`, but not `example.com` itself. `genever()` itself reads one document, and doesn't load anything: bundle first, or use `geneverFile`.
 
+#### Checking without fetching
+
+`--ci` regenerates the file, so it fetches every URL again, and fails when a remote schema changed even though nothing in the repository did. With `--manifest generated.json` (or `manifest`), genever also records the output in a [populate-files manifest](https://www.npmjs.com/package/populate-files#manifest), with hashes of everything it read, its own version, and the options. `--ci` with the same manifest then passes without loading anything if all of these hold: the version and options match, the output is unedited, and every *file* it read is unchanged. URLs are trusted as recorded. Otherwise it regenerates as usual, and fails with what is out of date. Run genever without `--ci` to pick up remote changes, which then show up as a diff in review.
+
+```sh
+npx genever schema.json --manifest generated.json         # writes schema.ts and generated.json
+npx genever schema.json --manifest generated.json --ci    # in CI: no network needed
+```
+
 ### OpenAPI documents
 
 An OpenAPI 3.0 or 3.1 document (a JSON or YAML file with an `openapi` version) is read too. Each of its `components.schemas` becomes an exported type named after its key, and there is no root type. The version decides the dialect: 3.0 schemas may use `nullable`, and 3.1 schemas are JSON Schema 2020-12. Either may use OpenAPI's own keywords (`discriminator`, `xml`, `externalDocs`, `example`), which don't change the type.
@@ -264,6 +273,7 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 | `options.dryRun` | `boolean` | `false` | Do not write the output file. |
 | `options.signed` | `boolean` | `false` | Sign the output file with [`generated-signature`](https://www.npmjs.com/package/generated-signature), so edits to it are detected. An output file that was edited, or is not signed yet, is not overwritten (a `PopulateFilesOwnershipError` from [`populate-files`](https://www.npmjs.com/package/populate-files#errors)). |
 | `options.force` | `boolean` | `false` | With `signed`, overwrite the output file anyway. Use it once to start signing an existing file. |
+| `options.manifest` | `string` | — | Path of a manifest (relative to `cwd`) to record the output and hashes of its inputs in. With `check`, an output matching its entry is up to date without loading anything. See [Checking without fetching](#checking-without-fetching). |
 | `options.fetch` | `boolean \| string[]` | `true` | Load `http:` and `https:` URLs the schema references, or only those of the hosts listed. Otherwise only files are loaded. See [References to other files](#references-to-other-files). |
 | `options.name`, `options.strict`, `options.openApi30`, `options.typedMinItems` | | | Same as [`genever`](#geneverschema-options). |
 
@@ -301,6 +311,7 @@ genever <input> [options]
 | `--dry-run` | `false` | Do not write the output file. |
 | `--signed` | `false` | Sign the output file, so edits to it are detected, and refuse to overwrite it if it was edited or is not signed. |
 | `--force` | `false` | With `--signed`, overwrite the output file anyway. |
+| `--manifest` | | Record the output, and hashes of its inputs, in this manifest. With `--ci`, an output that still matches it passes without fetching URLs. |
 | `--fetch` | `true` | Load URLs the schema references. `--no-fetch` loads only files. |
 | `--fetch-host` | | Load only URLs of this host, e.g. `example.com`, `localhost:8080`, or `*.example.com` for its subdomains. Repeat for more hosts. |
 | `--cwd` | `.` | Directory relative paths resolve from. |

@@ -21,6 +21,7 @@ genever <input> [options]
 | `--dry-run` | `false` | Do not write the output file. |
 | `--signed` | `false` | Sign the output file, so edits to it are detected, and refuse to overwrite it if it was edited or is not signed. |
 | `--force` | `false` | With `--signed`, overwrite the output file anyway. |
+| `--manifest` | | Record the output, and hashes of its inputs, in this manifest. With `--ci`, an output that still matches it passes without fetching URLs. |
 | `--fetch` | `true` | Load URLs the schema references. `--no-fetch` loads only files. |
 | `--fetch-host` | | Load only URLs of this host, e.g. `example.com`, `localhost:8080`, or `*.example.com` for its subdomains. Repeat for more hosts. |
 | `--cwd` | `.` | Directory relative paths resolve from. |
@@ -66,6 +67,7 @@ Read a JSON Schema file, or OpenAPI document, in JSON or YAML, and write its typ
 | `options.dryRun` | `boolean` | `false` | Do not write the output file. |
 | `options.signed` | `boolean` | `false` | Sign the output file with [`generated-signature`](https://www.npmjs.com/package/generated-signature), so edits to it are detected. An output file that was edited, or is not signed yet, is not overwritten (a `PopulateFilesOwnershipError` from [`populate-files`](https://www.npmjs.com/package/populate-files#errors)). |
 | `options.force` | `boolean` | `false` | With `signed`, overwrite the output file anyway. Use it once to start signing an existing file. |
+| `options.manifest` | `string` | — | Path of a manifest (relative to `cwd`) to record the output and hashes of its inputs in. With `check`, an output matching its entry is up to date without loading anything. See [References](/genever/guides/references#checking-without-fetching). |
 | `options.fetch` | `boolean \| string[]` | `true` | Load `http:` and `https:` URLs the schema references, or only those of the hosts listed. Otherwise only files are loaded. See [References to other files](/genever/guides/references). |
 | `options.name`, `options.strict`, `options.openApi30`, `options.typedMinItems` | | | Same as [`genever`](#genever-schema-options). |
 

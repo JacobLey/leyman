@@ -8,6 +8,7 @@ import { parseCwd } from 'parse-cwd';
 import { populateFile } from 'populate-files';
 import { genever } from './genever.js';
 import { loadReferences } from './lib/load.js';
+import { generatorIdentity, isUpToDate, recordInputs } from './lib/manifest-inputs.js';
 import { openApiDialect } from './lib/openapi.js';
 import { isYaml, parseText } from './lib/parse.js';
 
@@ -57,6 +58,13 @@ export interface GeneverFileOptions extends GeneverOptions {
      */
     signed?: boolean;
     /**
+     * Path of a manifest (relative to `cwd`) to record the output in, with hashes of its inputs:
+     * the files and URLs read, genever's version and the options. With `check`, an output whose
+     * manifest entry still matches is up to date without loading anything, so remote URLs are
+     * not fetched: they are only re-fetched when generating. See populate-files' `manifest`.
+     */
+    manifest?: string;
+    /**
      * Path of the TypeScript file to write.
      *
      * @default the input path, with a `.ts` extension instead of `.json`, `.yaml` or `.yml`
@@ -88,24 +96,37 @@ export const geneverFile = async (
         options.output ?? `${inputPath.replace(/\.(?:json|ya?ml)$/iu, '')}.ts`
     );
 
+    const manifestPath = options.manifest ? Path.resolve(cwd, options.manifest) : null;
+    const identity = await generatorIdentity(options);
+    if (manifestPath && options.check && (await isUpToDate({ manifestPath, output, identity }))) {
+        return { output, updated: false };
+    }
+
     const baseUri = pathToFileURL(inputPath).href;
-    const schema = parseText(await readFile(inputPath, 'utf8'), isYaml(baseUri));
+    const inputText = await readFile(inputPath, 'utf8');
+    const sources = new Map([[baseUri, inputText]]);
+    const schema = parseText(inputText, isYaml(baseUri));
     const documentDialect = openApiDialect(schema);
     const bundled = await loadReferences(schema, {
         baseUri,
         fetch: options.fetch ?? true,
         isDocument: documentDialect !== null,
+        onRead: (uri, text) => sources.set(uri, text),
     });
     const content = await formatText(genever(bundled, { ...options, baseUri }), { ext: '.ts' });
 
+    const manifestInputs = manifestPath
+        ? { manifestInputs: recordInputs({ manifestPath, identity, sources }) }
+        : {};
     const { updated } = await populateFile(
         options.signed
-            ? { content, filePath: output, signed: true }
-            : { content, filePath: output },
+            ? { content, filePath: output, signed: true, ...manifestInputs }
+            : { content, filePath: output, ...manifestInputs },
         {
             check: options.check ?? false,
             dryRun: options.dryRun ?? false,
             force: options.force ?? false,
+            manifest: manifestPath,
         }
     );
     return { output, updated };

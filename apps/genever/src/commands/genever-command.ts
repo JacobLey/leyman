@@ -12,6 +12,7 @@ interface GeneverCommandExtendedInput extends GeneverCommandInput {
     fetchHost: string[] | undefined;
     force: boolean;
     input: string;
+    manifest: string | undefined;
     name: string;
     openApi30: boolean;
     output: string | undefined;
@@ -102,6 +103,11 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
                     type: 'boolean',
                     default: false,
                 },
+                manifest: {
+                    describe:
+                        'Record the output, and hashes of its inputs, in this manifest. With --ci, an output still matching it is up to date without fetching URLs',
+                    type: 'string',
+                },
             })
             .check(({ fetch, fetchHost }) => {
                 if (!fetch && fetchHost !== undefined) {
@@ -117,6 +123,7 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
             dryRun: options.dryRun,
             force: options.force,
             signed: options.signed,
+            ...(options.manifest !== undefined && { manifest: options.manifest }),
             fetch: options.fetch ? (options.fetchHost ?? true) : false,
             name: options.name,
             openApi30: options.openApi30,

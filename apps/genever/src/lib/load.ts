@@ -29,6 +29,10 @@ export interface LoadOptions {
      * Whether the input is an OpenAPI document.
      */
     readonly isDocument: boolean;
+    /**
+     * Called with the text of each file or URL read, e.g. to record hashes of the inputs.
+     */
+    readonly onRead?: (uri: string, text: string) => void;
 }
 
 /**
@@ -150,17 +154,20 @@ const readText = async (
  * @param uri - absolute URI, without a fragment
  * @param isAllowed - hosts that may be fetched, or null to load only files
  * @param isInputDraft04 - whether the input is draft-04, which a file without a `$schema` is too
+ * @param onRead - called with the text, once read
  * @returns the resource, or why it can't be loaded
  */
 const loadResource = async (
     uri: string,
     isAllowed: HostFilter | null,
-    isInputDraft04: boolean
+    isInputDraft04: boolean,
+    onRead: LoadOptions['onRead']
 ): Promise<LoadedResource | Unloadable> => {
     const read = await readText(uri, isAllowed);
     if ('reason' in read) {
         return read;
     }
+    onRead?.(uri, read.text);
     let parsed: unknown;
     try {
         parsed = parseText(read.text, read.yaml);
@@ -281,7 +288,7 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
     };
 
     const load = async (uri: string, index: DocumentIndex): Promise<void> => {
-        const loaded = await loadResource(uri, isAllowed, isInputDraft04);
+        const loaded = await loadResource(uri, isAllowed, isInputDraft04, options.onRead);
         if ('reason' in loaded) {
             failures.push({ ...loaded, pointer: index.references.get(uri)!, uri });
             return;
