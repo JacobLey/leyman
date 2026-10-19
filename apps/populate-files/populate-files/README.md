@@ -8,6 +8,8 @@ Populate static files with dynamic content, and make sure they stay in sync.
 
 </div>
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/populate-files/).
+
 ## Contents
 
 - [Install](#install)
@@ -71,7 +73,7 @@ Writes the provided content to the file at `params.filePath`.
 | `params` | `object` | — | Required. See [params](#params) below. |
 | `options` | `object` | `{}` | Optional. See [options](#options) below. |
 
-**Returns** `Promise<void>`
+**Returns** `Promise<PopulationResponse>`: `{ filePath, updated: false }` if the file already had this content, else `{ filePath, updated: true, reason }` with `reason` `'file-not-exist'` or `'content-changed'`. With `dryRun`, what would have been written.
 
 #### `params`
 
@@ -107,7 +109,7 @@ Writes multiple files in parallel.
 | `params` | `PopulateFileParams[]` | — | Required. A list of [populateFile params](#params), with unique `filePath`s. |
 | `options` | `object` | `{}` | Optional. Same as [populateFile options](#options). |
 
-**Returns** `Promise<void>`
+**Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean` (`reason: 'stale-file'`).
 
 ---
 

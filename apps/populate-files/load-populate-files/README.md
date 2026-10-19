@@ -8,13 +8,15 @@ Load and dynamically populate file content based on a single file's config.
 
 </div>
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/populate-files/guides/config-modules).
+
 ## Contents
 
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [loadAndPopulateFiles](#loadandpopulatefilesfilepath-options)
+  - [loadAndPopulateFiles](#loadandpopulatefilesparams-options)
 - [Types](#types)
   - [PopulateFileParams](#populatefileparams)
 - [Also See](#also-see)
@@ -45,7 +47,7 @@ export default [
 // index.ts
 import { loadAndPopulateFiles } from 'load-populate-files';
 
-await loadAndPopulateFiles('./config.js');
+await loadAndPopulateFiles({ filePath: './config.js' });
 ```
 
 ## Usage
@@ -63,18 +65,18 @@ pnpx load-populate-files --file-path ./config.js
 
 ## API
 
-### `loadAndPopulateFiles(filePath, options?)`
+### `loadAndPopulateFiles(params, options?)`
 
-Loads the config exported at `filePath` and passes it to [`populateFiles()`](https://www.npmjs.com/package/populate-files#populatefilesparams-options).
+Loads the config exported at `params.filePath` and passes it to [`populateFiles()`](https://www.npmjs.com/package/populate-files#populatefilesparams-options).
 
 **Parameters**
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `filePath` | `string` | — | Required. Path to the config module. When using the CLI, pass as `--file-path`. |
+| `params.filePath` | `string` | — | Required. Path to the config module, resolved from `options.cwd`. When using the CLI, pass as `--file-path`. |
 | `options` | `object` | `{}` | Optional. See [options](#options) below. |
 
-**Returns** `Promise<void>`
+**Returns** `Promise<PopulationResponse[]>`, from `populateFiles()`.
 
 #### `options`
 
@@ -86,8 +88,8 @@ Options are passed through to the underlying `populateFiles()` call. They are al
 | `dryRun` | `--dry-run` | `boolean` | `false` | If `true`, does not write any files regardless of changes. Can still fail if `check` is `true`. |
 | `cwd` | `--cwd` | `string \| URL` | `process.env.PWD` | Used as the current working directory for `filePath` and re-used for relative `filePath`s in the loaded config. |
 | `targetDir` | `--target-dir`, `-t` | `string` | `'.'` | Target directory for resolving output file paths. Resolved relative to `cwd`. |
-| `clean` | `--clean` | `boolean` | `false` | If `true`, removes files in `targetDir` that were not generated. In `--ci` mode, fails instead of removing. |
-| `force` | `--force` | `boolean` | `false` | Only applies to `signed` files. If `true`, overwrites files that were edited outside manual sections, are not signed, or are malformed. See [`populate-files`](https://www.npmjs.com/package/populate-files#signed-files). |
+| `clean` | `--clean` | `boolean` | `false` | If `true`, removes files in `targetDir` that were not generated (with `manifest`, only files it lists). In `--ci` mode, fails instead of removing. |
+| `force` | `--force` | `boolean` | `false` | Applies to `signed` files and the `manifest`. If `true`, overwrites files that were edited, are not signed or not listed, or are malformed. See [`populate-files`](https://www.npmjs.com/package/populate-files#signed-files). |
 | `manifest` | `--manifest` | `string` | — | Path of a manifest (relative to `cwd`) recording the generated files, to detect edits to any file type and `clean` only files it lists. See [`populate-files`](https://www.npmjs.com/package/populate-files#manifest). |
 
 ## Types
