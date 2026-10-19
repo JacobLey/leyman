@@ -8,6 +8,7 @@ import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import { getInternalRegex } from './lib/internal-regex.js';
 import { assertIsPackageJson } from './lib/package-json-schema.js';
+import { packagePluginConfig } from './lib/package-plugins.js';
 import {
     eslintConfig,
     importPlugin,
@@ -165,11 +166,13 @@ export const reactComponentNamingConvention = [
  * @param params - parameters
  * @param params.configUrl - import.meta.url` of project-level `eslint.config.js` file.
  * @param params.packageJson - Loaded `package.json` file
+ * @param params.plugins - ESLint plugins shipped by packages (e.g. `generated-signature/eslint`), turned on with their recommended rules
  * @returns Generated flat config for most rules and plugins. Can be extended as necessary via normal Flat Config extension.
  */
 export default function makeEslintConfigForPackage({
     configUrl,
     packageJson,
+    plugins = [],
 }: {
     /**
      * `import.meta.url` of project-level `eslint.config.js` file.
@@ -179,10 +182,17 @@ export default function makeEslintConfigForPackage({
      * Loaded `package.json` file
      */
     packageJson: unknown;
+    /**
+     * ESLint plugins shipped by packages, e.g. `generated-signature/eslint`.
+     * Each needs `meta.namespace` and a flat `configs.recommended`, whose rules are turned on.
+     * The project must depend on the package providing the plugin.
+     */
+    plugins?: readonly ESLint.Plugin[];
 }): Linter.Config[] {
     assertIsPackageJson(packageJson);
 
     const projectUrl = Path.dirname(fileURLToPath(configUrl));
+    const sourceFiles = ['**/*.{c,m,}ts{x,}', '**/*.{c,m,}js'] as const;
 
     return [
         {
@@ -191,7 +201,7 @@ export default function makeEslintConfigForPackage({
             ),
         },
         {
-            files: ['**/*.{c,m,}ts{x,}', '**/*.{c,m,}js'],
+            files: [...sourceFiles],
             languageOptions: {
                 ecmaVersion: 'latest',
                 parser: typescriptParser,
@@ -933,6 +943,27 @@ export default function makeEslintConfigForPackage({
             })(),
         },
         {
+            // ESLint plugin code (by convention under an `eslint/` directory) names visitors after AST nodes, e.g. `Program`
+            files: ['**/eslint/**/*.{c,m,}ts'],
+            rules: {
+                '@typescript-eslint/naming-convention': [
+                    'error',
+                    ...baseNamingConvention,
+                    {
+                        selector: 'objectLiteralMethod',
+                        format: ['camelCase', 'PascalCase'],
+                    },
+                    {
+                        // Selectors, e.g. `'CallExpression > Identifier'`
+                        selector: 'objectLiteralMethod',
+                        modifiers: ['requiresQuotes'],
+                        format: null,
+                    },
+                ],
+                'sonarjs/function-name': 'off',
+            },
+        },
+        {
             // Disable "best practice" rules for tests
             files: ['test/**/*.{c,m,}ts{x,}'],
             rules: {
@@ -957,6 +988,7 @@ export default function makeEslintConfigForPackage({
                 'unicorn/max-nested-calls': 'off',
             },
         },
+        ...plugins.map(plugin => packagePluginConfig(plugin, sourceFiles)),
         // Disable all formatting rules
         prettierConfig as unknown as Linter.Config,
     ] satisfies Linter.Config[];
