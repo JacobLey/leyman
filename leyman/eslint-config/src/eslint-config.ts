@@ -193,6 +193,7 @@ export default function makeEslintConfigForPackage({
 
     const projectUrl = Path.dirname(fileURLToPath(configUrl));
     const sourceFiles = ['**/*.{c,m,}ts{x,}', '**/*.{c,m,}js'] as const;
+    const extraneousDependencies = { includeInternal: true, whitelist: [packageJson.name] };
 
     return [
         {
@@ -546,7 +547,9 @@ export default function makeEslintConfigForPackage({
                 'import-x/no-anonymous-default-export': 'off',
                 'import-x/no-commonjs': 'off',
                 'import-x/no-default-export': 'off',
-                'import-x/no-extraneous-dependencies': 'off',
+                // Every imported package must be declared, including workspace packages (which `internal-regex`
+                // marks internal), except the package itself. `src/` may not use `devDependencies`, see below
+                'import-x/no-extraneous-dependencies': ['error', extraneousDependencies],
                 'import-x/no-internal-modules': 'off',
                 'import-x/no-mutable-exports': 'off',
                 'import-x/no-named-as-default-member': 'off',
@@ -961,6 +964,16 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 'sonarjs/function-name': 'off',
+            },
+        },
+        {
+            // Published code (and its declarations) is used without `devDependencies` installed
+            files: sourceFiles.map(glob => `src/${glob}`),
+            rules: {
+                'import-x/no-extraneous-dependencies': [
+                    'error',
+                    { ...extraneousDependencies, devDependencies: false, includeTypes: true },
+                ],
             },
         },
         {
