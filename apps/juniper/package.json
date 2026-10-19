@@ -29,7 +29,9 @@
     "openapi-3",
     "swagger",
     "validation",
-    "builder"
+    "builder",
+    "eslint",
+    "eslintplugin"
   ],
   "sideEffects": false,
   "types": "./dist/index.js",
@@ -40,11 +42,20 @@
     "WHY-JUNIPER.md"
   ],
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/index.js",
+    "./eslint": "./dist/eslint/plugin.js"
   },
   "dependencies": {
     "@standard-schema/spec": "catalog:",
     "escape-string-regexp": "catalog:"
+  },
+  "peerDependencies": {
+    "eslint": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "eslint": {
+      "optional": true
+    }
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",

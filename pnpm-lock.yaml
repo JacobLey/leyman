@@ -428,7 +428,7 @@ importers:
         version: 1.4.0
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper
+        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
       mocha:
         specifier: 'catalog:'
         version: 12.0.2
@@ -547,7 +547,7 @@ importers:
         version: 1.4.0
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper
+        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
       mocha:
         specifier: 'catalog:'
         version: 12.0.2
@@ -583,10 +583,10 @@ importers:
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper
+        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper)
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
       nx:
         specifier: 'catalog:'
         version: 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
@@ -674,10 +674,10 @@ importers:
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper
+        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper)
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -847,16 +847,16 @@ importers:
         version: 8.2.3(reflect-metadata@0.2.2)
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper
+        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper)
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
       load-populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       nx-lifecycle:
         specifier: workspace:^
-        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(prettier@3.9.9)
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
@@ -913,7 +913,7 @@ importers:
         version: 1.4.0
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper
+        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
       mocha:
         specifier: 'catalog:'
         version: 12.0.2
@@ -1015,10 +1015,10 @@ importers:
         version: 1.4.0
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper
+        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper)
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
       mocha:
         specifier: 'catalog:'
         version: 12.0.2
@@ -1180,10 +1180,10 @@ importers:
         version: file:tools/iso-crypto
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper
+        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper)
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
       load-populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
@@ -1198,7 +1198,7 @@ importers:
         version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))
       nx-lifecycle:
         specifier: workspace:^
-        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(prettier@3.9.9)
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -1503,7 +1503,7 @@ importers:
         version: 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
       nx-lifecycle:
         specifier: workspace:^
-        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(prettier@3.9.9)
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       publint:
         specifier: 'catalog:'
         version: 0.3.25
@@ -6294,6 +6294,11 @@ packages:
   juniper@file:apps/juniper:
     resolution: {directory: apps/juniper, type: directory}
     engines: {node: '>=24'}
+    peerDependencies:
+      eslint: ^10.12.0
+    peerDependenciesMeta:
+      eslint:
+        optional: true
 
   keyv@5.6.0:
     resolution: {integrity: sha512-CYDD3SOtsHtyXeEORYRx2qBtpDJFjRTGXUtmNEMGyzYOKj1TE3tycdlho7kA1Ufx9OYWZzg52QFBGALTirzDSw==}
@@ -12043,18 +12048,20 @@ snapshots:
       object.assign: 4.1.7
       object.values: 1.2.1
 
-  juniper-validator@file:apps/juniper-validator(juniper@file:apps/juniper):
+  juniper-validator@file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))):
     dependencies:
       '@standard-schema/spec': 1.1.0
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       default-import: file:tools/default-import
-      juniper: file:apps/juniper
+      juniper: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
 
-  juniper@file:apps/juniper:
+  juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)):
     dependencies:
       '@standard-schema/spec': 1.1.0
       escape-string-regexp: 5.0.0
+    optionalDependencies:
+      eslint: 10.12.0(supports-color@8.1.1)
 
   keyv@5.6.0:
     dependencies:
@@ -12148,8 +12155,8 @@ snapshots:
       entry-script: file:tools/entry-script
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
-      juniper: file:apps/juniper
-      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper)
+      juniper: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       unknown-error: file:tools/unknown-error
@@ -12596,7 +12603,7 @@ snapshots:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
 
-  nx-lifecycle@file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(prettier@3.9.9):
+  nx-lifecycle@file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
     dependencies:
       '@nx/devkit': 23.3.0(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))
       ci-info: 4.4.0
@@ -12605,8 +12612,8 @@ snapshots:
       format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
-      juniper: file:apps/juniper
-      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper)
+      juniper: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
       nx: 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
       parse-cwd: file:tools/parse-cwd
       unknown-error: file:tools/unknown-error
@@ -12615,6 +12622,7 @@ snapshots:
       - '@biomejs/biome'
       - '@swc-node/register'
       - '@swc/core'
+      - eslint
       - prettier
 
   nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)):

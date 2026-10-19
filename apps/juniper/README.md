@@ -30,6 +30,7 @@ For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https:
 - [Reusing schemas with define](#reusing-schemas-with-define)
 - [API](#api)
 - [Recipes](#recipes)
+- [ESLint rules](#eslint-rules)
 - [Compared to alternatives](#compared-to-alternatives)
 - [Also See](#also-see)
 
@@ -843,6 +844,38 @@ enumSchema({
 }).toJSON();
 // { enum: ['BAR', 123] }
 ```
+
+## ESLint rules
+
+The plugin is a separate entry point, so importing `juniper` never loads it, and `eslint` is only needed when you use it:
+
+```js
+// eslint.config.js
+import juniper from 'juniper/eslint';
+
+export default [juniper.configs.recommended];
+```
+
+`configs.recommended` registers the plugin (namespace `juniper`) and turns on every rule below as an error.
+
+### `juniper/top-level-schema`
+
+Reports a schema built inside a function, or in a class instance field, rather than once at module scope. Every builder call clones the schema, so a schema built per call is wasted work at best. At worst, `toJSON()` throws because two different instances are defined under the same `.define()` name.
+
+```ts
+import { objectSchema, stringSchema } from 'juniper';
+
+// ❌ built on every request
+const handler = (body: unknown) => objectSchema({ properties: { name: stringSchema() } });
+
+// ✅ built once
+const bodySchema = objectSchema({ properties: { name: stringSchema() } });
+const handler = (body: unknown) => bodySchema;
+```
+
+It checks calls to the schema factories (`objectSchema()`, `ObjectSchema.create()`, `defineRecursive()`, ...) imported from `juniper`. Schemas built in a `defineRecursive` callback are fine, since it runs once. Methods called on an existing schema (`.toJSON()`, `.pick()`, ...) aren't checked.
+
+A helper that builds a schema from its arguments, called only at module scope, is reported too. Disable the rule for that helper with a comment saying so.
 
 ## Compared to alternatives
 

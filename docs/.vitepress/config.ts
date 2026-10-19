@@ -67,6 +67,7 @@ export default defineConfig({
                             },
                             { text: 'OpenAPI', link: '/juniper/guides/openapi' },
                             { text: 'Recipes', link: '/juniper/guides/recipes' },
+                            { text: 'ESLint', link: '/juniper/guides/eslint' },
                         ],
                     },
                     {
