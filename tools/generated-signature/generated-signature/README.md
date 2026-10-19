@@ -14,7 +14,7 @@ Sign generated files so hand edits are detected, while keeping manual sections e
 - **ESLint rule**: `generated-signature/eslint` reports hand-edited files in the editor.
 - **Zero dependencies**: only `node:crypto`. `eslint` is an optional peer, for the ESLint entry point only.
 
-Not for files that can't hold comments (like JSON), and not a freshness check: a valid signature means nobody edited the file, not that regenerating it would produce the same output.
+Files that can't hold comments (like JSON) are recorded in a [manifest](#manifest) instead. Not a freshness check: a valid signature means nobody edited the file, not that regenerating it would produce the same output.
 
 ## Contents
 
@@ -30,6 +30,7 @@ Not for files that can't hold comments (like JSON), and not a freshness check: a
   - [mergeSections](#mergesectionsparams)
   - [parseSections](#parsesectionstext)
   - [commentStyle](#commentstylefilepath)
+  - [Manifest](#manifest)
   - [Errors](#errors)
 - [ESLint rules](#eslint-rules)
   - [generated-signature/valid](#generated-signaturevalid)
@@ -187,6 +188,33 @@ Carries manual sections from an existing file into freshly generated text, match
 
 ---
 
+### Manifest
+
+A JSON file recording generated files that don't carry their own token, e.g. JSON. [`populate-files`](https://www.npmjs.com/package/populate-files) writes it; these helpers read and check it.
+
+```json
+{
+  "version": 1,
+  "files": {
+    "schema.json": { "hash": "v1:…" },
+    "types.ts": { "signature": "inline", "inputs": { "generator": "genever@1.4.0" } }
+  }
+}
+```
+
+- Paths are relative to the manifest's directory, with `/` separators.
+- `hash` is the [`contentHash`](#contenthashcontent) of the file. `signature: "inline"` means the file carries its own token, which is checked instead.
+- `inputs` is optional: hashes of what produced the file, written and checked by the generator. This package doesn't interpret it.
+
+| Function | Description |
+|----------|-------------|
+| <a id="contenthashcontent"></a>`contentHash(content: string \| Uint8Array): string` | `v1:` and 32 hex characters of SHA-256. `\r\n` counts as `\n`, also in bytes. Manual sections are **not** excluded, so a file with manual sections should be signed inline. |
+| `verifyManifestEntry(content, entry): VerifyResult` | `valid` or `invalid` for a `hash` entry; [`verify()`](#verifytext)'s result for an `inline` entry. |
+| `parseManifest(text): Manifest` | Parses and validates. Throws `GeneratedSignatureManifestError` if the text is not a valid manifest. |
+| `serializeManifest(files): string` | Manifest text, with paths and inputs sorted so the output doesn't depend on write order. |
+
+---
+
 ### Errors
 
 All errors extend the abstract `GeneratedSignatureError`.
@@ -196,6 +224,7 @@ All errors extend the abstract `GeneratedSignatureError`.
 | `GeneratedSignatureMalformedError` | `reason: MalformedReason`, `line: number` | A token or manual section can't be interpreted. `reason` is one of `'duplicate-section'`, `'duplicate-signature'`, `'invalid-section-id'`, `'nested-section'`, `'unclosed-section'`, `'unopened-section'`, `'unsupported-version'`. |
 | `GeneratedSignatureCommentStyleError` | `filePath: string` | No comment syntax is known for a file. |
 | `GeneratedSignatureSectionIdError` | `id: string` | `manualSection()` gets an invalid id. |
+| `GeneratedSignatureManifestError` | | `parseManifest()` gets text that is not a valid manifest. |
 
 ## ESLint rules
 

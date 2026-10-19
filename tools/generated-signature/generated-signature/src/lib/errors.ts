@@ -66,3 +66,13 @@ export class GeneratedSignatureSectionIdError extends GeneratedSignatureError {
         this.id = id;
     }
 }
+
+/**
+ * A manifest file can't be read.
+ */
+export class GeneratedSignatureManifestError extends GeneratedSignatureError {
+    public constructor(detail: string, options?: ErrorOptions) {
+        super(`Invalid generated-signature manifest: ${detail}`, options);
+        this.name = 'GeneratedSignatureManifestError';
+    }
+}
