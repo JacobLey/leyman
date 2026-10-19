@@ -42,7 +42,7 @@ Private workspace packages (shared configs and tooling) are listed in the [proje
 
 Packages that have been removed from the repo but are still on npm are listed in [`DEPRECATED_PACKAGES.md`](./DEPRECATED_PACKAGES.md).
 
-A documentation site, with every code example type-checked, is in [`docs/`](./docs) (`barrelify`, `genever`, `haywire`, `juniper`, `juniper-validator`, `nx-lifecycle` and `unknown-error` so far).
+A documentation site, with every code example type-checked, is in [`docs/`](./docs) (`barrelify`, `generated-signature`, `genever`, `haywire`, `juniper`, `juniper-validator`, `nx-lifecycle`, `populate-files` and `unknown-error` so far).
 
 ## Getting Started
 
