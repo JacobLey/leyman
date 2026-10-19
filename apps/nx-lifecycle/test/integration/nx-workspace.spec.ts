@@ -233,14 +233,14 @@ suite('Nx workspace', () => {
             async function (this: Context, { root, nx }) {
                 this.timeout(60_000);
 
-                const thrown: unknown = await expect(
-                    nx(['run', 'workspace:lifecycle'], { ci: true })
-                ).to.be.rejectedWith(Error);
+                const thrown = (await expect(
+                    // Other output styles may only print a path to the task's log
+                    nx(['run', 'workspace:lifecycle', '--output-style=static'], { ci: true })
+                ).to.be.rejectedWith(Error)) as { stdout: string; stderr: string };
 
-                // Nx reports executor failures on stderr
-                expect(thrown)
-                    .to.have.property('stderr')
-                    .that.includes(`File ${Path.join(root, 'nx.json')} is not up to date`);
+                expect(thrown.stdout + thrown.stderr).to.include(
+                    `File ${Path.join(root, 'nx.json')} is not up to date`
+                );
                 expect(await readFile(Path.join(root, 'nx.json'), 'utf8')).to.equal('{}');
             }
         );
