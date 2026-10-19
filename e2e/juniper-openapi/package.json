@@ -27,6 +27,7 @@
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
+    "genever": "workspace:^",
     "juniper": "workspace:^",
     "juniper-validator": "workspace:^",
     "mocha": "catalog:",
