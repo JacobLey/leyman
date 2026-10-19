@@ -143,7 +143,7 @@ Deletes `./dist-test`, compiles `test/` into it with SWC, then type-checks the t
 
 ### `populate-files`
 
-Generates static output files by running `load-populate-files` against `./dist/file-content.js`. Expects the package to export a default array of `PopulateFileParams` from `src/file-content.ts`. Output goes to `./out`.
+Generates static output files by running `load-populate-files` against `./dist/file-content.js`. Expects the package to export a default array of `PopulateFileParams` from `src/file-content.ts`. Output goes to `./out`. The files are recorded in `./out/.generated.json` (a populate-files manifest), so a hand edit to them fails CI, and `--clean` only removes files a previous run wrote. Commit the manifest, and exclude it from `files` in `package.json` (`"!out/.generated.json"`).
 
 **Add when:** The package defines a `src/file-content.ts` file.
 
