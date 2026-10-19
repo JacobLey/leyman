@@ -44,6 +44,19 @@ export interface GeneverFileOptions extends GeneverOptions {
      */
     dryRun?: boolean;
     /**
+     * With `signed`, overwrite the output file even if it was edited, or is not signed yet.
+     *
+     * @default false
+     */
+    force?: boolean;
+    /**
+     * Sign the output file with `generated-signature`, so edits to it are detected,
+     * and refuse to overwrite a file that was edited or is not signed (unless `force`).
+     *
+     * @default false
+     */
+    signed?: boolean;
+    /**
      * Path of the TypeScript file to write.
      *
      * @default the input path, with a `.ts` extension instead of `.json`, `.yaml` or `.yml`
@@ -61,6 +74,7 @@ export interface GeneverFileOptions extends GeneverOptions {
  * @throws {GeneverError} if the schema is invalid, breaks a strict mode rule, or is not supported
  * @throws {GeneverLoadError} if a referenced file or URL can't be loaded
  * @throws {TypeError} if `fetch` lists something that is not a host
+ * @throws {PopulateFilesOwnershipError} with `signed`, if the output file was edited or is not signed
  * @throws {SyntaxError | YAMLError} if the input can't be parsed
  */
 export const geneverFile = async (
@@ -85,8 +99,14 @@ export const geneverFile = async (
     const content = await formatText(genever(bundled, { ...options, baseUri }), { ext: '.ts' });
 
     const { updated } = await populateFile(
-        { filePath: output, content },
-        { check: options.check ?? false, dryRun: options.dryRun ?? false }
+        options.signed
+            ? { content, filePath: output, signed: true }
+            : { content, filePath: output },
+        {
+            check: options.check ?? false,
+            dryRun: options.dryRun ?? false,
+            force: options.force ?? false,
+        }
     );
     return { output, updated };
 };

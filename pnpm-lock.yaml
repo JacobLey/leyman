@@ -297,7 +297,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       tinyglobby:
         specifier: 'catalog:'
         version: 0.2.17
@@ -379,7 +379,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
@@ -423,6 +423,9 @@ importers:
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
+      generated-signature:
+        specifier: workspace:^
+        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
       juniper:
         specifier: workspace:^
         version: file:apps/juniper
@@ -638,7 +641,7 @@ importers:
         version: 1.4.0
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       mocha:
         specifier: 'catalog:'
         version: 12.0.2
@@ -680,7 +683,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       unknown-error:
         specifier: workspace:^
         version: file:tools/unknown-error
@@ -723,7 +726,7 @@ importers:
         version: 10.12.0(supports-color@8.1.1)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature
+        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
       mocha:
         specifier: 'catalog:'
         version: 12.0.2
@@ -747,7 +750,7 @@ importers:
         version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature
+        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -820,7 +823,7 @@ importers:
         version: 8.20.0
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       enum-to-array:
         specifier: workspace:^
         version: file:tools/enum-to-array
@@ -829,7 +832,7 @@ importers:
         version: 5.12.5
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -1123,7 +1126,7 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -1153,10 +1156,10 @@ importers:
         version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature
+        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -1174,7 +1177,7 @@ importers:
         version: file:apps/juniper-validator(juniper@file:apps/juniper)
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       mocha:
         specifier: 'catalog:'
         version: 12.0.2
@@ -1192,7 +1195,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       punycode-esm:
         specifier: workspace:^
         version: file:tools/punycode-esm
@@ -1534,7 +1537,7 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -2088,7 +2091,7 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -5786,6 +5789,11 @@ packages:
   generated-signature@file:tools/generated-signature/generated-signature:
     resolution: {directory: tools/generated-signature/generated-signature, type: directory}
     engines: {node: '>=24'}
+    peerDependencies:
+      eslint: ^10.12.0
+    peerDependenciesMeta:
+      eslint:
+        optional: true
 
   genever@file:apps/genever:
     resolution: {directory: apps/genever, type: directory}
@@ -10503,7 +10511,7 @@ snapshots:
       - '@biomejs/biome'
       - prettier
 
-  barrelify@file:apps/barrelify(@biomejs/biome@2.5.14)(prettier@3.9.9):
+  barrelify@file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
     dependencies:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
@@ -10511,12 +10519,13 @@ snapshots:
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       ignore: 7.0.5
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       tinyglobby: 0.2.17
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'
+      - eslint
       - prettier
 
   base64-js@1.5.1: {}
@@ -11545,9 +11554,11 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  generated-signature@file:tools/generated-signature/generated-signature: {}
+  generated-signature@file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1)):
+    optionalDependencies:
+      eslint: 10.12.0(supports-color@8.1.1)
 
-  genever@file:apps/genever(@biomejs/biome@2.5.14)(prettier@3.9.9):
+  genever@file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
     dependencies:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
@@ -11555,11 +11566,12 @@ snapshots:
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       yaml: 2.9.1
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'
+      - eslint
       - prettier
 
   gensync@1.0.0-beta.2: {}
@@ -12117,7 +12129,7 @@ snapshots:
     dependencies:
       uc.micro: 3.0.0
 
-  load-populate-files@file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9):
+  load-populate-files@file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
     dependencies:
       ci-info: 4.4.0
       default-import: file:tools/default-import
@@ -12127,11 +12139,12 @@ snapshots:
       juniper: file:apps/juniper
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper)
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'
+      - eslint
       - prettier
 
   locate-path@6.0.0:
@@ -12937,16 +12950,17 @@ snapshots:
       - '@biomejs/biome'
       - prettier
 
-  populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(prettier@3.9.9):
+  populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
     dependencies:
       ci-info: 4.4.0
       format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
-      generated-signature: file:tools/generated-signature/generated-signature
+      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
       parse-cwd: file:tools/parse-cwd
       uint8array-extras: 1.6.0
       unknown-error: file:tools/unknown-error
     transitivePeerDependencies:
       - '@biomejs/biome'
+      - eslint
       - prettier
 
   possible-typed-array-names@1.1.0: {}

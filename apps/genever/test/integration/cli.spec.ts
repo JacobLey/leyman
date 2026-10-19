@@ -1,8 +1,9 @@
 import type { TmpDirContext } from './lib/fixtures.js';
 import { exec } from 'node:child_process';
-import { access } from 'node:fs/promises';
+import { access, writeFile } from 'node:fs/promises';
 import { promisify } from 'node:util';
 import { expect } from '@leyman/expect';
+import { verify } from 'generated-signature';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { createTmpDir, userSchema } from './lib/fixtures.js';
 import { startSchemaServer } from './lib/server.js';
@@ -57,6 +58,17 @@ suite('cli', () => {
             );
 
             expect(await ctx.read('types/user-types.ts')).to.contain('export type User');
+        });
+
+        withTmpDir.test('--signed and --force', async ctx => {
+            await ctx.writeJson('user.json', userSchema);
+            await writeFile(ctx.resolve('user.ts'), 'handwritten\n');
+
+            await execAsync(
+                `./bin.mjs user.json --signed --force --ci=false --cwd ${ctx.tmpDir.path}`
+            );
+
+            expect(verify(await ctx.read('user.ts'))).to.deep.equal({ status: 'valid' });
         });
 
         withTmpDir.test('does not log files that are up to date', async ctx => {

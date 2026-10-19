@@ -35,6 +35,9 @@
       "path": "../juniper"
     },
     {
+      "path": "../../tools/generated-signature/generated-signature"
+    },
+    {
       "path": "../../leyman/expect"
     },
     {

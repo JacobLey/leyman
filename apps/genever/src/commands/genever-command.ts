@@ -10,10 +10,12 @@ interface GeneverCommandExtendedInput extends GeneverCommandInput {
     dryRun: boolean;
     fetch: boolean;
     fetchHost: string[] | undefined;
+    force: boolean;
     input: string;
     name: string;
     openApi30: boolean;
     output: string | undefined;
+    signed: boolean;
     strict: boolean;
     typedMinItems: number;
 }
@@ -89,6 +91,17 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
                     type: 'boolean',
                     default: false,
                 },
+                signed: {
+                    describe:
+                        'Sign the output file, and refuse to overwrite it if it was edited or is not signed',
+                    type: 'boolean',
+                    default: false,
+                },
+                force: {
+                    describe: 'With --signed, overwrite the output file even if it was edited',
+                    type: 'boolean',
+                    default: false,
+                },
             })
             .check(({ fetch, fetchHost }) => {
                 if (!fetch && fetchHost !== undefined) {
@@ -102,6 +115,8 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
             check: options.ci,
             cwd: options.cwd,
             dryRun: options.dryRun,
+            force: options.force,
+            signed: options.signed,
             fetch: options.fetch ? (options.fetchHost ?? true) : false,
             name: options.name,
             openApi30: options.openApi30,

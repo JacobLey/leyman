@@ -1,7 +1,10 @@
+import { writeFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { expect } from '@leyman/expect';
+import { verify } from 'generated-signature';
 import { geneverFile } from 'genever';
 import { beforeEach, suite } from 'mocha-chain';
+import { PopulateFilesOwnershipError } from 'populate-files';
 import { normalizeModule } from '../lib/expect-generated.js';
 import { typeCheck } from '../lib/type-check.js';
 import { createTmpDir, userSchema } from './lib/fixtures.js';
@@ -55,5 +58,35 @@ suite('geneverFile', () => {
         await expect(geneverFile(ctx.resolve('user.json'), { check: true })).to.be.rejectedWith(
             Error
         );
+    });
+
+    suite('signed', () => {
+        withTmpDir.test('writes a signed file', async ctx => {
+            await ctx.writeJson('user.json', userSchema);
+
+            await geneverFile(ctx.resolve('user.json'), { signed: true });
+
+            expect(verify(await ctx.read('user.ts'))).to.deep.equal({ status: 'valid' });
+        });
+
+        withTmpDir.test('refuses to overwrite an edited file', async ctx => {
+            await ctx.writeJson('user.json', userSchema);
+            await geneverFile(ctx.resolve('user.json'), { signed: true });
+            await writeFile(ctx.resolve('user.ts'), `${await ctx.read('user.ts')}// edit\n`);
+
+            await expect(
+                geneverFile(ctx.resolve('user.json'), { signed: true })
+            ).to.be.rejectedWith(PopulateFilesOwnershipError);
+        });
+
+        withTmpDir.test('overwrites an edited file with force', async ctx => {
+            await ctx.writeJson('user.json', userSchema);
+            await geneverFile(ctx.resolve('user.json'), { signed: true });
+            await writeFile(ctx.resolve('user.ts'), `${await ctx.read('user.ts')}// edit\n`);
+
+            await geneverFile(ctx.resolve('user.json'), { signed: true, force: true });
+
+            expect(verify(await ctx.read('user.ts'))).to.deep.equal({ status: 'valid' });
+        });
     });
 });

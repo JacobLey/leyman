@@ -69,6 +69,7 @@
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
+    "generated-signature": "workspace:^",
     "juniper": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
