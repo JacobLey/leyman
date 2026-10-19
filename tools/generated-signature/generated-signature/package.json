@@ -21,17 +21,28 @@
     "codegen",
     "generated",
     "signature",
-    "checksum"
+    "checksum",
+    "eslint",
+    "eslintplugin"
   ],
   "sideEffects": false,
   "exports": {
-    ".": "./dist/generated-signature.js"
+    ".": "./dist/generated-signature.js",
+    "./eslint": "./dist/eslint/plugin.js"
   },
   "files": [
     "dist",
     "!dist/**/*.map",
     "!dist/tsconfig.tsbuildinfo"
   ],
+  "peerDependencies": {
+    "eslint": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "eslint": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@leyman/eslint-config": "workspace:^",

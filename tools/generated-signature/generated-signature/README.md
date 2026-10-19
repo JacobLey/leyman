@@ -11,7 +11,8 @@ Sign generated files so hand edits are detected, while keeping manual sections e
 - **Offline check**: `verify()` needs only the file, not the generator, so it is cheap enough for a lint rule or a pre-commit hook.
 - **Manual sections**: mark regions a person may edit. Their content is left out of the signature and carried over when the file is regenerated.
 - **Any text format**: markers own whole lines, so verification doesn't need to know the comment syntax. Helpers render markers for common file types.
-- **Zero dependencies**: only `node:crypto`.
+- **ESLint rule**: `generated-signature/eslint` reports hand-edited files in the editor.
+- **Zero dependencies**: only `node:crypto`. `eslint` is an optional peer, for the ESLint entry point only.
 
 Not for files that can't hold comments (like JSON), and not a freshness check: a valid signature means nobody edited the file, not that regenerating it would produce the same output.
 
@@ -30,6 +31,8 @@ Not for files that can't hold comments (like JSON), and not a freshness check: a
   - [parseSections](#parsesectionstext)
   - [commentStyle](#commentstylefilepath)
   - [Errors](#errors)
+- [ESLint rules](#eslint-rules)
+  - [generated-signature/valid](#generated-signaturevalid)
 - [Compared to alternatives](#compared-to-alternatives)
 - [Also See](#also-see)
 
@@ -193,6 +196,33 @@ All errors extend the abstract `GeneratedSignatureError`.
 | `GeneratedSignatureMalformedError` | `reason: MalformedReason`, `line: number` | A token or manual section can't be interpreted. `reason` is one of `'duplicate-section'`, `'duplicate-signature'`, `'invalid-section-id'`, `'nested-section'`, `'unclosed-section'`, `'unopened-section'`, `'unsupported-version'`. |
 | `GeneratedSignatureCommentStyleError` | `filePath: string` | No comment syntax is known for a file. |
 | `GeneratedSignatureSectionIdError` | `id: string` | `manualSection()` gets an invalid id. |
+
+## ESLint rules
+
+The plugin is a separate entry point, so importing `generated-signature` never loads it, and `eslint` is only needed when you use it:
+
+```js
+// eslint.config.js
+import generatedSignature from 'generated-signature/eslint';
+
+export default [generatedSignature.configs.recommended];
+```
+
+`configs.recommended` registers the plugin (namespace `generated-signature`) and turns on every rule below as an error.
+
+### `generated-signature/valid`
+
+Reports a file whose signature doesn't match (it was edited outside its manual sections), or whose token or manual sections are malformed. Unsigned files are ignored. There is no autofix: re-signing would just approve the edit. Regenerate the file instead, or move the change into a manual section.
+
+```ts
+// @generated-signature v1:… Generated file. Do not edit outside of manual sections.
+export const generated = 2; // ❌ edited by hand
+// @manual-start custom
+export const custom = 2; // ✅ manual sections may be edited
+// @manual-end custom
+```
+
+ESLint only lints the files it is configured for. To check every signed file whatever its type, call [`verify()`](#verifytext) on it.
 
 ## Compared to alternatives
 
