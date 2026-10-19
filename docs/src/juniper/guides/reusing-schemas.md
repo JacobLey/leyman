@@ -64,7 +64,7 @@ Two different schemas defined with the same name throw when serialized. The same
 used any number of times.
 :::
 
-For schemas Juniper doesn't own, use [`.ref(path)`](/juniper/reference/api#refpath), where the path is up to you.
+For schemas Juniper doesn't own, use [`.ref(path)`](/juniper/reference/api#ref-path), where the path is up to you.
 
 ## Recursive schemas
 
