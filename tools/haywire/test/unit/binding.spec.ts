@@ -195,15 +195,13 @@ suite('bind', () => {
             expect(extendsFoo).to.have.length(1);
             expect(extendsFoo[0]).to.be.an.instanceOf(ExtendsFoo);
 
-            bind(identifier(Foo).list())
-                // @ts-expect-error
-                .withConstructorFactory();
-            bind(identifier(Bar).list())
-                // @ts-expect-error
-                .withConstructorFactory();
-            bind(promisishId.list())
-                // @ts-expect-error
-                .withConstructorFactory();
+            // @ts-expect-error
+
+            bind(identifier(Foo).list()).withConstructorFactory();
+            // @ts-expect-error
+            bind(identifier(Bar).list()).withConstructorFactory();
+            // @ts-expect-error
+            bind(promisishId.list()).withConstructorFactory();
         });
 
         test('list(multi)', () => {
@@ -217,15 +215,13 @@ suite('bind', () => {
             expect(extendsFoo).to.have.length(1);
             expect(extendsFoo[0]).to.be.an.instanceOf(ExtendsFoo);
 
-            bind(identifier(Foo).list('multi'))
-                // @ts-expect-error
-                .withConstructorFactory();
-            bind(identifier(Bar).list('multi'))
-                // @ts-expect-error
-                .withConstructorFactory();
-            bind(promisishId.list('multi'))
-                // @ts-expect-error
-                .withConstructorFactory();
+            // @ts-expect-error
+
+            bind(identifier(Foo).list('multi')).withConstructorFactory();
+            // @ts-expect-error
+            bind(identifier(Bar).list('multi')).withConstructorFactory();
+            // @ts-expect-error
+            bind(promisishId.list('multi')).withConstructorFactory();
         });
     });
 

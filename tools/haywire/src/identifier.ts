@@ -5,7 +5,7 @@ import type {
     HaywireId,
     StripAnnotations,
 } from '#identifier';
-import type { IsClass, UnknownType } from '#types';
+import type { Invalid, IsClass, UnknownType } from '#types';
 import { unsafeIdentifier } from '#identifier';
 
 export {
@@ -20,11 +20,11 @@ export {
 interface IdentifierGenerator {
     // Idempotent
     <T extends GenericHaywireId>(id: T): T;
-    <T extends IsClass>(clazz: T, ...invalidInput: UnknownType<T>): ClassToConstructable<T>;
+    <T extends IsClass>(clazz: Invalid<UnknownType<T>> & T): ClassToConstructable<T>;
     <T>(
-        name: string,
-        ...invalidInput: [...ExtraAnnotations<T>, ...UnknownType<T>]
+        name: string & Invalid<[...ExtraAnnotations<T>, ...UnknownType<T>]>
     ): HaywireId<StripAnnotations<T>, null, null, false, false, false, false, false>;
+    // No argument to carry a readable error, so an invalid `T` fails with "Expected 1 arguments"
     <T>(
         ...invalidInput: [...ExtraAnnotations<T>, ...UnknownType<T>]
     ): HaywireId<StripAnnotations<T>, null, null, false, false, false, false, false>;

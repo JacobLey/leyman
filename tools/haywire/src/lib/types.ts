@@ -34,8 +34,14 @@ export type UnknownType<T> = [unknown] extends [T]
       ? UnknownInput
       : [];
 
-type ExtendsInput = [InvalidInput<'InvalidExtendsInput'>];
-export type ExtendsType<T, E> = T extends E ? [] : ExtendsInput;
+/**
+ * Empty when `T` extends `E`, otherwise fails with `Reason`.
+ *
+ * @template T - type to check
+ * @template E - type it must extend
+ * @template Reason - `InvalidInput` reason, a key of `ValidationMessages`
+ */
+export type ExtendsType<T, E, Reason extends string> = T extends E ? [] : [InvalidInput<Reason>];
 
 // https://stackoverflow.com/questions/52931116/decompose-a-typescript-union-type-into-specific-types
 type UnionToParm<U> = U extends any ? (k: U) => void : never;
@@ -140,12 +146,20 @@ export type { ExpandOutputNullable as ExpandOutput };
  * Error messages for each failed validation (keyed by `InvalidInput` reason), shown by TypeScript when a call is invalid.
  */
 interface ValidationMessages {
+    asyncPromiseResponse: 'Error: the output is a Promise, which an async provider would await. Use a sync provider, or wrap the Promise in an object.';
     bindingExists: 'Error: an output is already bound. Use replaceBinding() on a module to swap it.';
+    constructorDependenciesMismatch: "Error: the class constructor's parameters don't match the dependencies, in type or order.";
+    constructorTakesArguments: 'Error: withConstructorFactory() needs a class identifier whose constructor takes no arguments. Use withConstructorProvider() with withDependencies() instead.';
+    dependenciesMismatch: "Error: the dependencies don't match the provider's parameters, in type or order.";
+    extraAnnotations: 'Error: pass identifier<T>() the plain type, and add annotations with methods, e.g. identifier<Foo>().nullable().';
+    literalStringInput: 'Error: the name must be a string literal or a unique symbol, not `string` or `symbol`.';
+    missingConstructorInput: 'Error: the identifier has no class to construct. Create it with identifier(SomeClass).';
     dependenciesNotSatisfiedByOutput: 'Error: a dependency is stricter than the output provided for it, e.g. it needs a non-null value but the output is nullable.';
     missingOutput: 'Error: some dependencies have no binding. Add bindings for them before creating a container.';
     noBindingDeclared: 'Error: the container has no binding for this id.';
     noBindingToReplace: 'Error: the module has no binding for this output to replace. Use addBinding() instead.';
     outputDoesNotSatisfyDependency: 'Error: the output is laxer than what depends on it, e.g. it is nullable but a non-null value is needed.';
+    unknownInput: 'Error: the identifier needs a specific type, not unknown, any or never.';
 }
 
 /**

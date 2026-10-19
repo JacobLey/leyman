@@ -110,7 +110,7 @@ Property 'error' is missing in type 'Binding<...>' but required in type
 '{ error: "Error: an output is already bound. Use replaceBinding() on a module to swap it."; }'.
 ```
 
-Others add a parameter that only exists in types, which is an empty tuple when the call is valid, and an impossible value when it isn't. A set that only accepts values it doesn't already have shows the idea:
+A few checks have no argument to attach a message to, like `identifier<unknown>()`. They add a parameter that only exists in types, which is an empty tuple when the call is valid, and an impossible value when it isn't, so the error is "Expected 1 arguments". A set that only accepts values it doesn't already have shows the idea:
 
 ```ts
 // @errors: 2554

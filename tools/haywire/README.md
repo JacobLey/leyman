@@ -982,9 +982,9 @@ Property 'error' is missing in type 'Binding<...>' but required in type
 '{ error: "Error: an output is already bound. Use replaceBinding() on a module to swap it."; }'.
 ```
 
-The same applies to bindings that are laxer or stricter than what they connect to, `replaceBinding()` without an existing binding, `toContainer()`/`createContainer()` on a module with unbound dependencies, and `get()`/`getAsync()` for an id the container doesn't bind.
+The same applies to bindings that are laxer or stricter than what they connect to, `replaceBinding()` without an existing binding, `toContainer()`/`createContainer()` on a module with unbound dependencies, `get()`/`getAsync()` for an id the container doesn't bind, a `named()` name that isn't a literal, dependencies that don't match a provider, async providers of a `Promise`, and `withConstructorFactory()`/`withConstructorProvider()` on an identifier whose class doesn't fit.
 
-Some validations instead attach a type-only parameter (does not exist at runtime) called `invalidInput` that when satisfied is spread as an empty array, but when not satisfied results in `never` which will cause typescript errors.
+A few validations have no argument to attach a message to, like `identifier<unknown>()`. They instead attach a type-only parameter (does not exist at runtime) called `invalidInput` that when satisfied is spread as an empty array, but when not satisfied requires an impossible value, which fails with "Expected 1 arguments".
 
 The best way to see this in action is the source code of this package, but a small example below can show an example of a "Set" that _only_ allows adding values that do not already exist.
 

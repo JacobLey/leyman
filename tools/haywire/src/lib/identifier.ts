@@ -3,6 +3,7 @@ import type {
     Deferred,
     GenericClass,
     InstanceOfClass,
+    Invalid,
     InvalidInput,
     IsClass,
     LiteralStringType,
@@ -296,8 +297,7 @@ export class HaywireId<
         name?: null
     ): HaywireId<T, Constructor, null, List, Nullable, Undefinable, Supply, Defer>;
     public named<NewName extends string | symbol>(
-        named: NewName,
-        ...invalidInput: LiteralStringType<NewName>
+        named: Invalid<LiteralStringType<NewName>> & NewName
     ): HaywireId<T, Constructor, NewName, List, Nullable, Undefinable, Supply, Defer>;
     public named(named: string | symbol | null = null): GenericHaywireId {
         if (this.annotations.named === named) {

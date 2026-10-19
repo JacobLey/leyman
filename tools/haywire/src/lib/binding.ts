@@ -18,6 +18,7 @@ import type {
     ExpandOutput,
     ExtendsType,
     GenericClass,
+    Invalid,
     InvalidInput,
     IsClass,
     LiteralStringType,
@@ -301,8 +302,7 @@ export class Binding<
         Async
     >;
     public named<NewName extends string | symbol>(
-        named: NewName,
-        ...invalidInput: LiteralStringType<NewName>
+        named: Invalid<LiteralStringType<NewName>> & NewName
     ): Binding<
         HaywireId<
             RawType<this['outputId']>,
@@ -592,10 +592,14 @@ export class DepsBindingBuilder<
     }
 
     public withConstructorProvider(
-        ...invalidInput: ExtendsType<
-            HaywireIdConstructor<OutputId>,
-            DepsClass<RawType<OutputId>, DependencyIdTypes<DependencyIds>>
-        >
+        this: DepsBindingBuilder<OutputId, DependencyIds> &
+            Invalid<
+                ExtendsType<
+                    HaywireIdConstructor<OutputId>,
+                    DepsClass<RawType<OutputId>, DependencyIdTypes<DependencyIds>>,
+                    'ConstructorDependenciesMismatch'
+                >
+            >
     ): Binding<OutputHaywireId<OutputId>, DependencyIds, false>;
     public withConstructorProvider(): Binding<OutputHaywireId<OutputId>, DependencyIds, false> {
         const normalized = normalizeOutputId(this.#outputId);
@@ -628,10 +632,10 @@ export class DepsBindingBuilder<
     }
 
     public withAsyncProvider(
-        provider: (
-            ...deps: DependencyIdTypes<DependencyIds>
-        ) => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>,
-        ...invalidInput: AsyncPromiseOutput<OutputId> & []
+        provider: Invalid<AsyncPromiseOutput<OutputId>> &
+            ((
+                ...deps: DependencyIdTypes<DependencyIds>
+            ) => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>)
     ): Binding<OutputHaywireId<OutputId>, DependencyIds, true>;
     public withAsyncProvider(
         provider: (
@@ -703,8 +707,7 @@ export class ProviderBindingBuilder<
     }
 
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
-        depIds: [...DependencyIds],
-        ...invalidInput: DependenciesMisMatch<DependencyIds, Dependencies> & []
+        depIds: Invalid<DependenciesMisMatch<DependencyIds, Dependencies>> & [...DependencyIds]
     ): Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, false>;
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
         depIds: [...DependencyIds]
@@ -753,8 +756,7 @@ export class AsyncProviderBindingBuilder<
     }
 
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
-        depIds: [...DependencyIds],
-        ...invalidInput: DependenciesMisMatch<DependencyIds, Dependencies> & []
+        depIds: Invalid<DependenciesMisMatch<DependencyIds, Dependencies>> & [...DependencyIds]
     ): Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, true>;
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
         depIds: [...DependencyIds]
@@ -809,10 +811,14 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
     }
 
     public withConstructorFactory(
-        ...invalidInput: ExtendsType<
-            HaywireIdConstructor<OutputId>,
-            DepsClass<HaywireIdProviderType<OutputHaywireId<OutputId>>, []>
-        >
+        this: BindingBuilder<OutputId> &
+            Invalid<
+                ExtendsType<
+                    HaywireIdConstructor<OutputId>,
+                    DepsClass<HaywireIdProviderType<OutputHaywireId<OutputId>>, []>,
+                    'ConstructorTakesArguments'
+                >
+            >
     ): Binding<OutputHaywireId<OutputId>, [], false>;
     public withConstructorFactory(): Binding<OutputHaywireId<OutputId>, [], false> {
         const normalized = normalizeOutputId(this.#outputId);
@@ -844,8 +850,8 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
     }
 
     public withAsyncFactory(
-        provider: () => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>,
-        ...invalidInput: AsyncPromiseOutput<OutputId> & []
+        provider: Invalid<AsyncPromiseOutput<OutputId>> &
+            (() => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>)
     ): Binding<OutputHaywireId<OutputId>, [], true>;
     public withAsyncFactory(
         provider: () => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>
@@ -865,7 +871,7 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
     }
 
     public withConstructorProvider(
-        ...invalidInput: MissingConstructorType<OutputId>
+        this: BindingBuilder<OutputId> & Invalid<MissingConstructorType<OutputId>>
     ): ProviderBindingBuilder<
         OutputId,
         ConstructorParameters<NonNullable<HaywireIdConstructor<OutputId>>>
@@ -893,10 +899,10 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
     }
 
     public withAsyncProvider<Dependencies extends readonly unknown[]>(
-        provider: (
-            ...deps: [...Dependencies]
-        ) => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>,
-        ...invalidInput: AsyncPromiseOutput<OutputId> & []
+        provider: Invalid<AsyncPromiseOutput<OutputId>> &
+            ((
+                ...deps: [...Dependencies]
+            ) => HaywireIdProviderType<OutputId> | Promise<HaywireIdProviderType<OutputId>>)
     ): AsyncProviderBindingBuilder<OutputId, Dependencies>;
     public withAsyncProvider<Dependencies extends readonly unknown[]>(
         provider: (
