@@ -29,6 +29,7 @@
     "@eslint/js": "catalog:",
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
+    "@typescript-eslint/utils": "catalog:",
     "ajv": "catalog:",
     "eslint-config-prettier": "catalog:",
     "eslint-plugin-import-x": "catalog:",
@@ -40,6 +41,9 @@
     "eslint-plugin-sonarjs": "catalog:",
     "eslint-plugin-unicorn": "catalog:"
   },
+  "peerDependencies": {
+    "eslint": "catalog:"
+  },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@swc/cli": "catalog:",
@@ -48,7 +52,6 @@
     "@types/eslint": "catalog:",
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
-    "@typescript-eslint/utils": "catalog:",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "chai": "catalog:",
