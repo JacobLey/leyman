@@ -2,6 +2,7 @@ import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
 import type {
     JsonSchema,
     JsonSchemaType,
+    OpenApi30JsonSchema,
     ReservedWords,
     Schema,
     SchemaType,
@@ -332,9 +333,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     /**
      * Generate the JSON Schema document.
      *
-     * The output will be an object, but not much else should be inferred about the
-     * response. It should instead be passed to a validator library like [ajv](https://www.npmjs.com/package/ajv)
-     * or serialized for export.
+     * The output should be passed to a validator library like [ajv](https://www.npmjs.com/package/ajv)
+     * or serialized for export. With `openApi30: true` it is typed as an {@link OpenApi30JsonSchema},
+     * which OpenAPI libraries' 3.0 schema types accept.
      *
      * The structure being described by the schema can be extracted via `SchemaType`.
      *
@@ -353,6 +354,14 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * Defaults to `#/$defs/`, which embeds the definitions in `$defs`,
      * or `#/components/schemas/` for OpenAPI 3.0. Other paths are not embedded, see `components()`.
      * @returns serializable JSON Schema
+     */
+    public toJSON(options: ToJsonParams & { openApi30: true }): OpenApi30JsonSchema<T['type']>;
+    /**
+     * @inheritdoc
+     */
+    public toJSON(options?: ToJsonParams): JsonSchema<T['type']>;
+    /**
+     * @inheritdoc
      */
     public toJSON({
         definitionsPath,
@@ -1296,7 +1305,15 @@ export const isSchema = <T>(schema: unknown): schema is Schema<T> =>
  * @returns definitions by name
  * @throws when different schemas are defined with the same name
  */
-export const components = (
-    schemas: readonly Schema<unknown>[],
-    options: ComponentsParams = {}
-): Record<string, JsonSchema<unknown>> => collectDefinitions(schemas, options);
+export const components: {
+    (
+        schemas: readonly Schema<unknown>[],
+        options: ComponentsParams & { openApi30: true }
+    ): Record<string, OpenApi30JsonSchema<unknown>>;
+    (
+        schemas: readonly Schema<unknown>[],
+        options?: ComponentsParams
+    ): Record<string, JsonSchema<unknown>>;
+} = (schemas: readonly Schema<unknown>[], options: ComponentsParams = {}) =>
+    // With `openApi30`, the definitions are serialized as OpenAPI 3.0
+    collectDefinitions(schemas, options) as Record<string, OpenApi30JsonSchema<unknown>>;

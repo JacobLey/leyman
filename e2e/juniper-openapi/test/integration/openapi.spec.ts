@@ -1,8 +1,10 @@
+import type { oas30 } from 'openapi3-ts';
 import type { SchemaType } from 'juniper';
 import type { Comment, NewPost, NewUser, Post, PostPage, User, UserUpdate } from '../data/api.js';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
+import { components } from 'juniper';
 import { makeValidator } from 'juniper-validator';
 import { suite, test } from 'mocha-chain';
 import {
@@ -98,6 +100,17 @@ suite('OpenAPI spec built with juniper', () => {
             items: Post[];
             nextCursor: string | null;
         }>();
+    });
+
+    test('OpenAPI 3.0 output needs no cast', () => {
+        const schema: oas30.SchemaObject = postPageSchema.toJSON({ openApi30: true });
+        const schemas: Record<string, oas30.SchemaObject> = components(
+            [postPageSchema, commentSchema],
+            { openApi30: true }
+        );
+
+        expect(schema).to.deep.equal({ $ref: '#/components/schemas/PostPage' });
+        expect(schemas).to.have.keys('Comment', 'Post', 'PostPage');
     });
 
     test('Request and response bodies validate', () => {

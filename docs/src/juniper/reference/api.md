@@ -27,6 +27,7 @@ Some keywords can only be set with a method, because TypeScript can't infer them
 | `SchemaType` | `SchemaType<typeof schema>` | The TypeScript type of a Juniper schema, or of a JSON Schema object. |
 | `Schema` | `Schema<number>` | A Juniper schema describing a TypeScript type. Accept it as a parameter to take any schema of that type. |
 | `JsonSchema` | `JsonSchema<number>` | A rendered JSON Schema object describing a TypeScript type. |
+| `OpenApi30JsonSchema` | `OpenApi30JsonSchema<number>` | What `toJSON({ openApi30: true })` returns. See [OpenAPI](/juniper/guides/openapi#typed-output). |
 | `EmptyObject` | `EmptyObject` | An object with no properties. Mostly internal. |
 | `PatternProperties` | ``PatternProperties<`abc${string}`>`` | A string pattern type, for [`patternProperties`](/juniper/reference/schemas#objectschema). |
 | `KnownFormat` | `KnownFormat` | String formats defined by JSON Schema and OpenAPI 3.0, for [`format`](/juniper/reference/schemas#stringschema). |
@@ -56,7 +57,7 @@ The output is deterministic: the same schema always renders the same JSON, and `
 | `schema` | `boolean` | `false` | Include the draft as the `$schema` property. |
 | `definitionsPath` | `string` | `'#/$defs/'` (`'#/components/schemas/'` with `openApi30`) | `$ref` prefix for [defined](/juniper/guides/reusing-schemas) schemas. Only `#/$defs/` is embedded in the output; use `components()` for other paths. |
 
-**Returns** `object` — the rendered JSON Schema document.
+**Returns** `JsonSchema<T>`, or `OpenApi30JsonSchema<T>` when `openApi30` is `true` — the rendered JSON Schema document.
 
 ## `['~standard']`
 

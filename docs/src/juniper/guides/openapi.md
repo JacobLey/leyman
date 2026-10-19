@@ -20,6 +20,21 @@ schema.toJSON({ openApi30: true });
 
 Keywords that 3.0 lacks are converted where possible. For example, `if`/`then`/`else` and `dependentRequired` become `anyOf` branches. Keywords with no 3.0 equivalent, like `contains`, are dropped, so the 3.0 schema may accept more than the 2020-12 one. The [schema reference](/juniper/reference/schemas) lists which keywords each version supports.
 
+## Typed output
+
+`toJSON({ openApi30: true })` and `components(schemas, { openApi30: true })` return `OpenApi30JsonSchema`, typed the way OpenAPI 3.0 requires: sub-schemas are never `true` or `false`, and `type` is a single type, with `nullable` for `null`. It assigns to OpenAPI libraries' 3.0 schema types without a cast:
+
+```ts
+import type { oas30 } from 'openapi3-ts';
+import { numberSchema, objectSchema } from 'juniper';
+
+const point = objectSchema({ properties: { x: numberSchema(), y: numberSchema() } });
+
+const schema: oas30.SchemaObject = point.toJSON({ openApi30: true });
+```
+
+The 2020-12 output, also used by OpenAPI 3.1, is a `JsonSchema`, which may have `true` and `false` sub-schemas, as JSON Schema allows. Some OpenAPI libraries' 3.1 types reject those, so assigning to them may still need a cast. `openApi30` must be the literal `true` for the narrower type: a `boolean` variable gives a `JsonSchema`.
+
 ## Components
 
 OpenAPI keeps shared schemas in `components.schemas`. `components()` collects every [definition](/juniper/guides/reusing-schemas) reachable from the given schemas, ready to place there.

@@ -857,6 +857,9 @@ importers:
       nx-lifecycle:
         specifier: workspace:^
         version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+      openapi3-ts:
+        specifier: 'catalog:'
+        version: 4.6.1
       populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)

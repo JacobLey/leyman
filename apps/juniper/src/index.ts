@@ -20,6 +20,7 @@ export type {
     EmptyObject,
     JsonSchema,
     JsonSchemaType,
+    OpenApi30JsonSchema,
     Schema,
     SchemaType,
 } from './lib/types.js';

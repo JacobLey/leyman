@@ -102,7 +102,8 @@ export const buildSpec = (version: '3.0.3' | '3.1.0'): oas31.OpenAPIObject => {
     const options: ComponentsParams =
         version === '3.0.3' ? { openApi30: true } : { definitionsPath: '#/components/schemas/' };
 
-    // Juniper's JSON output is loosely typed, so it is cast once to openapi3-ts's narrower schema type
+    // OpenAPI 3.0 output needs no cast (see the spec). 3.1 output may have `true`/`false` sub-schemas, which
+    // JSON Schema 2020-12 allows but openapi3-ts's 3.1 types reject, so it is cast once here
     const schema = (s: Schema<unknown>): oas31.SchemaObject =>
         s.toJSON(options) as unknown as oas31.SchemaObject;
     const json = (s: Schema<unknown>): oas31.ContentObject => ({

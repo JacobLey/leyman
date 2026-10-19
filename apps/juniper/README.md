@@ -303,7 +303,8 @@ A complete users and posts API, built with [openapi3-ts](https://www.npmjs.com/p
 |------|-----------|-------------|
 | `SchemaType` | `SchemaType<Schema>` \| `SchemaType<JSON>` | Extracts the TypeScript type from a Juniper class or JSON Schema object. |
 | `Schema` | `Schema<number>` | A Juniper Schema instance describing a TypeScript interface. Usable for rendering to JSON or passing as a parameter to other Juniper instances. |
-| `JSONSchema` | `JSONSchema<number>` | A JSON Schema object describing the specified TypeScript type. |
+| `JsonSchema` | `JsonSchema<number>` | A JSON Schema object describing the specified TypeScript type. |
+| `OpenApi30JsonSchema` | `OpenApi30JsonSchema<number>` | What `toJSON({ openApi30: true })` returns: no `true`/`false` sub-schemas, and a single `type`, so it can be assigned to OpenAPI libraries' 3.0 schema types (e.g. openapi3-ts's `oas30.SchemaObject`) without a cast. |
 | `EmptyObject` | `EmptyObject` | Describes an actually-empty object. Mostly internal but exposed for convenience. |
 | `PatternProperties` | ``PatternProperties<`abc${string}`>`` | Describes a string pattern type. See [`ObjectSchema.patternProperties`](#objectschema). |
 | `KnownFormat` | `KnownFormat` | String formats defined by JSON Schema and OpenAPI 3.0. See [`StringSchema.format`](#stringschema). |
@@ -347,7 +348,7 @@ The output is deterministic: the same schema always renders the same JSON, and `
 | `schema` | `boolean` | `false` | Include the draft as the `$schema` property. |
 | `definitionsPath` | `string` | `'#/$defs/'` (`'#/components/schemas/'` with `openApi30`) | `$ref` prefix for [defined](#reusing-schemas-with-define) schemas. Only `#/$defs/` is embedded in the output; use `components()` for other paths. |
 
-**Returns** `object` — the rendered JSON Schema document.
+**Returns** `JsonSchema<T>`, or `OpenApi30JsonSchema<T>` when `openApi30` is `true` — the rendered JSON Schema document.
 
 ---
 

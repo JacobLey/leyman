@@ -1,9 +1,11 @@
 import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
-import type { JsonSchema, Schema, SchemaType } from 'juniper';
+import type { JsonSchema, OpenApi30JsonSchema, Schema, SchemaType } from 'juniper';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import {
     arraySchema,
+    components,
+    customSchema,
     isSchema,
     mergeSchema,
     nullSchema,
@@ -140,6 +142,29 @@ suite('schema', () => {
     });
 
     suite('toJSON', () => {
+        test('OpenAPI 3.0 output has its own type', () => {
+            const schema = stringSchema().define('Name');
+
+            expectTypeOf(schema.toJSON()).toEqualTypeOf<JsonSchema<string>>();
+            expectTypeOf(schema.toJSON({ openApi30: false })).toEqualTypeOf<JsonSchema<string>>();
+            expectTypeOf(schema.toJSON({ openApi30: true })).toEqualTypeOf<
+                OpenApi30JsonSchema<string>
+            >();
+            expectTypeOf(components([schema])).toEqualTypeOf<Record<string, JsonSchema<unknown>>>();
+            expectTypeOf(components([schema], { openApi30: true })).toEqualTypeOf<
+                Record<string, OpenApi30JsonSchema<unknown>>
+            >();
+            expectTypeOf(customSchema<number>().toJSON({ openApi30: true })).toEqualTypeOf<
+                OpenApi30JsonSchema<number>
+            >();
+
+            const options: { openApi30: boolean } = { openApi30: true };
+            expectTypeOf(schema.toJSON(options)).toEqualTypeOf<JsonSchema<string>>();
+            expect(schema.toJSON({ openApi30: true })).to.deep.equal({
+                $ref: '#/components/schemas/Name',
+            });
+        });
+
         test('With schema', () => {
             const schema = numberSchema().toJSON({
                 schema: true,

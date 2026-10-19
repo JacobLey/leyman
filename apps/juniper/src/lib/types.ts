@@ -29,6 +29,30 @@ export interface JsonSchema<T> {
     type?: JsonSchemaType | JsonSchemaType[];
 }
 
+/**
+ * A schema serialized with `toJSON({ openApi30: true })`. Unlike {@link JsonSchema}, sub-schemas are
+ * never `true` or `false`, and `type` is a single type (with `nullable` for `null`), as OpenAPI 3.0
+ * requires. So it can be assigned to OpenAPI libraries' 3.0 schema types.
+ *
+ * @template T - type the schema describes
+ */
+export interface OpenApi30JsonSchema<T> {
+    [key: string]: unknown;
+    [typeCache]?: { type: T };
+    $ref?: string;
+    additionalProperties?: boolean | OpenApi30JsonSchema<unknown>;
+    allOf?: OpenApi30JsonSchema<unknown>[];
+    anyOf?: OpenApi30JsonSchema<unknown>[];
+    // Not `readonly`, which OpenAPI libraries' `enum?: any[]` rejects
+    enum?: unknown[];
+    items?: OpenApi30JsonSchema<unknown>;
+    not?: OpenApi30JsonSchema<unknown>;
+    nullable?: boolean;
+    oneOf?: OpenApi30JsonSchema<unknown>[];
+    properties?: Record<string, OpenApi30JsonSchema<unknown>>;
+    type?: Exclude<JsonSchemaType, 'null'>;
+}
+
 export interface ToJsonParams {
     /**
      * `$ref` prefix for defined schemas (see `define`).
@@ -53,7 +77,10 @@ export interface Schema<T> extends StandardJSONSchemaV1<T> {
     [typeCache]?: {
         type: T;
     };
-    toJSON: (params?: ToJsonParams) => JsonSchema<T>;
+    toJSON: {
+        (params: ToJsonParams & { openApi30: true }): OpenApi30JsonSchema<T>;
+        (params?: ToJsonParams): JsonSchema<T>;
+    };
 }
 
 export type SchemaType<T> = T extends {

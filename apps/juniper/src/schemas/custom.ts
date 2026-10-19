@@ -1,5 +1,5 @@
 import type { SchemaGenerics } from '../lib/schema.js';
-import type { JsonSchema, SchemaType } from '../lib/types.js';
+import type { JsonSchema, OpenApi30JsonSchema, SchemaType, ToJsonParams } from '../lib/types.js';
 import { AbstractSchema } from '../lib/schema.js';
 
 /**
@@ -124,10 +124,23 @@ export class CustomSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
     }
 
     /**
-     * Takes no options, as schema is defined internally.
+     * Ignores options, as schema is defined internally. With `openApi30: true`, it is typed as
+     * OpenAPI 3.0 output, so the given schema must be valid OpenAPI 3.0.
      *
      * @param this - this instance
+     * @param options - ignored
      * @returns serializable JSON Schema
+     */
+    public override toJSON(
+        this: this,
+        options: ToJsonParams & { openApi30: true }
+    ): OpenApi30JsonSchema<SchemaType<this>>;
+    /**
+     * @inheritdoc
+     */
+    public override toJSON(this: this, options?: ToJsonParams): JsonSchema<SchemaType<this>>;
+    /**
+     * @inheritdoc
      */
     public override toJSON(this: this): JsonSchema<SchemaType<this>> {
         return this.toSchema();
