@@ -368,6 +368,9 @@ importers:
       format-file:
         specifier: workspace:^
         version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      generated-signature:
+        specifier: workspace:^
+        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -423,9 +426,6 @@ importers:
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
-      generated-signature:
-        specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
       juniper:
         specifier: workspace:^
         version: file:apps/juniper
@@ -11572,6 +11572,7 @@ snapshots:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
       format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       parse-cwd: file:tools/parse-cwd
