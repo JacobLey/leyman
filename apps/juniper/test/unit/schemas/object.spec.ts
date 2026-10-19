@@ -4,7 +4,7 @@ import type { EmptyObject, PatternProperties, SchemaType } from 'juniper';
 import type { Flatten } from '../../types.js';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
-import { numberSchema, objectSchema, stringSchema } from 'juniper';
+import { enumSchema, numberSchema, objectSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
 import { compile } from '../../ajv.js';
 
@@ -1310,6 +1310,157 @@ suite('ObjectSchema', () => {
         test('Rejects duplicate properties', () => {
             // @ts-expect-error
             user.extend(objectSchema({ properties: { id: stringSchema() } }));
+        });
+    });
+
+    suite('discriminated oneOf', () => {
+        const cat = objectSchema({
+            properties: {
+                kind: enumSchema({ enum: ['cat'] as const }),
+                meows: numberSchema(),
+            },
+            required: ['kind'],
+        });
+        const dog = objectSchema({
+            properties: {
+                kind: enumSchema({ enum: ['dog'] as const }),
+                barks: numberSchema(),
+            },
+            required: ['kind', 'barks'],
+        });
+        const discriminated = { discriminator: true, strict: true } as const;
+
+        test('types and output', () => {
+            const schema = objectSchema().oneOf([cat, dog], { discriminator: 'kind' });
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                { kind: 'cat'; meows?: number } | { kind: 'dog'; barks: number }
+            >();
+
+            const json = {
+                type: 'object',
+                oneOf: [
+                    {
+                        properties: { kind: { const: 'cat' }, meows: { type: 'number' } },
+                        required: ['kind'],
+                    },
+                    {
+                        properties: { kind: { const: 'dog' }, barks: { type: 'number' } },
+                        required: ['kind', 'barks'],
+                    },
+                ],
+                discriminator: { propertyName: 'kind' },
+            };
+            expect(schema.toJSON()).to.deep.equal(json);
+            // OpenAPI 3.0 has no `const`
+            expect(schema.toJSON({ openApi30: true })).to.deep.equal({
+                ...json,
+                oneOf: [
+                    {
+                        properties: { kind: { enum: ['cat'] }, meows: { type: 'number' } },
+                        required: ['kind'],
+                    },
+                    {
+                        properties: { kind: { enum: ['dog'] }, barks: { type: 'number' } },
+                        required: ['kind', 'barks'],
+                    },
+                ],
+            });
+
+            const validator = compile(schema.toJSON(), discriminated);
+            expect(validator({ kind: 'cat', meows: 1 })).to.equal(true);
+            expect(validator({ kind: 'dog', barks: 2 })).to.equal(true);
+            expect(validator({ kind: 'dog' })).to.equal(false);
+            expect(validator({ kind: 'fish' })).to.equal(false);
+            expect(validator({})).to.equal(false);
+        });
+
+        test('Strict Ajv rejects the keyword without its discriminator option', () => {
+            const schema = objectSchema().oneOf([cat, dog], { discriminator: 'kind' });
+
+            expect(() => compile(schema.toJSON())).to.throw('discriminator');
+        });
+
+        test('Referenced branches', () => {
+            const schema = objectSchema().oneOf([cat.define('Cat'), dog.define('Dog')], {
+                discriminator: 'kind',
+            });
+
+            expect(schema.toJSON()).to.deep.include({
+                oneOf: [{ $ref: '#/$defs/Cat' }, { $ref: '#/$defs/Dog' }],
+                discriminator: { propertyName: 'kind' },
+            });
+
+            const validator = compile(schema.toJSON(), discriminated);
+            expect(validator({ kind: 'cat' })).to.equal(true);
+            expect(validator({ kind: 'dog' })).to.equal(false);
+        });
+
+        test('A second oneOf goes in allOf', () => {
+            const schema = objectSchema()
+                .oneOf([objectSchema({ properties: { a: numberSchema() }, required: ['a'] })])
+                .oneOf([cat, dog], { discriminator: 'kind' });
+
+            expect(schema.toJSON()).to.deep.include({
+                allOf: [
+                    {
+                        oneOf: [
+                            {
+                                properties: { kind: { const: 'cat' }, meows: { type: 'number' } },
+                                required: ['kind'],
+                            },
+                            {
+                                properties: { kind: { const: 'dog' }, barks: { type: 'number' } },
+                                required: ['kind', 'barks'],
+                            },
+                        ],
+                        discriminator: { propertyName: 'kind' },
+                    },
+                ],
+            });
+            expect(compile(schema.toJSON(), discriminated)({ a: 1, kind: 'cat' })).to.equal(true);
+        });
+
+        test('Branches that can not be told apart', () => {
+            objectSchema().oneOf(
+                // @ts-expect-error -- not required
+                [
+                    cat,
+                    objectSchema({ properties: { kind: enumSchema({ enum: ['dog'] as const }) } }),
+                ],
+                { discriminator: 'kind' }
+            );
+            objectSchema().oneOf(
+                // @ts-expect-error -- any string
+                [cat, objectSchema({ properties: { kind: stringSchema() }, required: ['kind'] })],
+                { discriminator: 'kind' }
+            );
+            objectSchema().oneOf(
+                // @ts-expect-error -- union
+                [
+                    cat,
+                    objectSchema({
+                        properties: { kind: enumSchema({ enum: ['dog', 'wolf'] as const }) },
+                        required: ['kind'],
+                    }),
+                ],
+                { discriminator: 'kind' }
+            );
+            // @ts-expect-error -- duplicate value
+            objectSchema().oneOf([cat, cat], { discriminator: 'kind' });
+            objectSchema().oneOf(
+                // @ts-expect-error -- not a string
+                [
+                    cat,
+                    objectSchema({
+                        properties: { kind: enumSchema({ enum: [1] as const }) },
+                        required: ['kind'],
+                    }),
+                ],
+                { discriminator: 'kind' }
+            );
+            // @ts-expect-error -- nullable branch
+            objectSchema().oneOf([cat, dog.nullable()], { discriminator: 'kind' });
         });
     });
 

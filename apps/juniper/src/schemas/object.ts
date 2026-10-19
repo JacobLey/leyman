@@ -150,6 +150,50 @@ interface ObjectGenerics<
     params: ObjectParams<P, R, A, X, M, N>;
 }
 
+type IsUnion<T, U = T> = T extends unknown ? ([U] extends [T] ? false : true) : never;
+
+/**
+ * Why a branch of a discriminated `oneOf` can't be told apart by property `K`, or `null` if it can.
+ *
+ * @template T - type of the branch
+ * @template K - discriminator property
+ * @template Seen - discriminator values of earlier branches
+ */
+type DiscriminatorError<T, K extends string, Seen extends string> = null extends T
+    ? 'Error: branches must not be nullable.'
+    : T extends Record<K, infer V>
+      ? [V] extends [string]
+          ? string extends V
+              ? `Error: property "${K}" must be a single string value (e.g. an enum of one value), not any string.`
+              : true extends IsUnion<V>
+                ? `Error: property "${K}" must be a single value, not a union.`
+                : [V] extends [Seen]
+                  ? `Error: value "${V}" of property "${K}" is used by more than one branch.`
+                  : null
+          : `Error: property "${K}" must be a string.`
+      : `Error: every branch must require property "${K}".`;
+
+/**
+ * First reason the branches of a discriminated `oneOf` can't be told apart, or `null` if they can.
+ *
+ * @template S - branch schemas
+ * @template K - discriminator property
+ * @template Seen - discriminator values of earlier branches
+ */
+type DiscriminatedBranchesError<
+    S extends readonly unknown[],
+    K extends string,
+    Seen extends string = never,
+> = S extends readonly [infer Head, ...infer Rest]
+    ? DiscriminatorError<SchemaType<Head>, K, Seen> extends infer E extends string
+        ? E
+        : DiscriminatedBranchesError<
+              Rest,
+              K,
+              Extract<SchemaType<Head>[K & keyof SchemaType<Head>], string> | Seen
+          >
+    : null;
+
 // @ts-expect-error
 type AnyObjectSchema = ObjectSchema<any, any, any, any, unknown, boolean>;
 
@@ -271,17 +315,35 @@ export class ObjectSchema<
         this: AnyObjectSchema
     ) => ObjectSchema<P, R, A, X, M, boolean extends N ? boolean : true>;
 
-    declare public oneOf: <S extends Schema<Record<string, unknown> | null>>(
+    /**
+     * With `discriminator`, every schema must require that property, as a string enum of one value
+     * that no other schema uses. The output gets an OpenAPI `discriminator` keyword, so Ajv needs
+     * its `discriminator: true` option.
+     */
+    declare public oneOf: (<
+        // A variadic tuple (rather than a tuple constraint) keeps contextual typing from making
+        // the properties of inline branches required. Nullable branches fail the error check
+        S extends readonly Schema<Record<string, unknown> | null>[],
+        K extends string,
+    >(
         this: AnyObjectSchema,
-        schemas: S[]
-    ) => ObjectSchema<
-        P,
-        R,
-        A,
-        X,
-        M & NonNullable<SchemaType<S>>,
-        null extends SchemaType<S> ? N : boolean
-    >;
+        schemas: NoInfer<
+            DiscriminatedBranchesError<S, K> extends infer E extends string ? { error: E } : unknown
+        > &
+            [...S],
+        options: { discriminator: K }
+    ) => ObjectSchema<P, R, A, X, M & SchemaType<S[number]>, boolean>) &
+        (<S extends Schema<Record<string, unknown> | null>>(
+            this: AnyObjectSchema,
+            schemas: S[]
+        ) => ObjectSchema<
+            P,
+            R,
+            A,
+            X,
+            M & NonNullable<SchemaType<S>>,
+            null extends SchemaType<S> ? N : boolean
+        >);
 
     /**
      * @override

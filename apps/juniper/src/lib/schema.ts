@@ -42,7 +42,7 @@ export interface SchemaParams<T> {
     [metadataSym]?: Record<string, unknown>;
     [notSym]?: AbstractSchema<SchemaGenerics<T>>[];
     [nullableSym]?: boolean;
-    [oneOfSym]?: AbstractSchema<SchemaGenerics<T>>[][];
+    [oneOfSym]?: OneOf<AbstractSchema<SchemaGenerics<T>>>[];
     [refSym]?: SchemaRef<AbstractSchema<SchemaGenerics<T>>> | null;
 }
 
@@ -74,6 +74,16 @@ export type SchemaRef<S> =
           schema: S;
           recursive?: undefined;
       };
+
+/**
+ * A `oneOf` group, with the property that tells its branches apart (OpenAPI `discriminator`), if any.
+ *
+ * @template S - branch schema
+ */
+export interface OneOf<S> {
+    schemas: S[];
+    discriminator: string | null;
+}
 
 export interface SchemaGenerics<T> {
     type: T;
@@ -221,7 +231,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     readonly #metadata: Record<string, unknown>;
     readonly #nots: AbstractSchema<T>[];
     readonly #nullable: boolean;
-    readonly #oneOf: AbstractSchema<T>[][];
+    readonly #oneOf: OneOf<AbstractSchema<T>>[];
     readonly #readOnly: boolean;
     readonly #ref: SchemaRef<AbstractSchema<T>> | null;
     readonly #title: string | null;
@@ -291,7 +301,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         this.#metadata = options[metadataSym] ?? {};
         this.#nots = (options[notSym] ?? []) as AbstractSchema<T>[];
         this.#nullable = options[nullableSym] ?? false;
-        this.#oneOf = (options[oneOfSym] ?? []) as AbstractSchema<T>[][];
+        this.#oneOf = (options[oneOfSym] ?? []) as OneOf<AbstractSchema<T>>[];
         this.#ref = (options[refSym] ?? null) as SchemaRef<AbstractSchema<T>> | null;
     }
 
@@ -708,11 +718,16 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @see {@link https://json-schema.org/understanding-json-schema/reference/combining.html#oneof}
      *
      * @param schemas - one of schema must be valid
+     * @param [options] - optional
+     * @param [options.discriminator] - property whose value tells the schemas apart
      * @returns cloned schema
      */
-    protected oneOf(schemas: never[]): unknown {
+    protected oneOf(
+        schemas: never[],
+        { discriminator = null }: { discriminator?: string | null } = {}
+    ): unknown {
         return this.clone({
-            [oneOfSym]: [...this.#oneOf, schemas],
+            [oneOfSym]: [...this.#oneOf, { schemas, discriminator }],
         });
     }
 
@@ -947,17 +962,18 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             );
         }
 
-        const [oneOf, ...oneOfs] = this.#oneOf.map(schemas =>
-            schemas.map(schema => schema.getChildSchema(compositionParams))
-        );
-        if (oneOf) {
-            base.oneOf = oneOf;
-            if (oneOfs.length > 0) {
-                mergeAllOf(
-                    base,
-                    oneOfs.map(o => ({ oneOf: o }))
-                );
+        const [oneOf, ...oneOfs] = this.#oneOf.map(({ schemas, discriminator }) => {
+            const json: JsonSchema<T['type']> = {
+                oneOf: schemas.map(schema => schema.getChildSchema(compositionParams)),
+            };
+            if (discriminator !== null) {
+                json.discriminator = { propertyName: discriminator };
             }
+            return json;
+        });
+        if (oneOf) {
+            Object.assign(base, oneOf);
+            mergeAllOf(base, oneOfs);
         }
 
         return base;
@@ -1169,7 +1185,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             this.#nots.every(not => !not.#getNullable(params) && not.schemaType !== 'null') &&
             this.#allOf.every(allOf => allOf.#getNullable(params)) &&
             this.#anyOf.every(anyOf => anyOf.some(any => any.#getNullable(params))) &&
-            this.#oneOf.every(oneOf => oneOf.filter(one => one.#getNullable(params)).length === 1)
+            this.#oneOf.every(
+                ({ schemas }) => schemas.filter(one => one.#getNullable(params)).length === 1
+            )
         );
     }
 
@@ -1200,8 +1218,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                     anyOf.length > 0 && anyOf.every(any => any.#getSchemaType(params) === 'integer')
             ) ||
             this.#oneOf.some(
-                oneOf =>
-                    oneOf.length > 0 && oneOf.every(one => one.#getSchemaType(params) === 'integer')
+                ({ schemas }) =>
+                    schemas.length > 0 &&
+                    schemas.every(one => one.#getSchemaType(params) === 'integer')
             )
         );
     }

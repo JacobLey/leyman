@@ -1,5 +1,5 @@
 ---
-description: Emit OpenAPI 3.0 and 3.1 schemas, and fill components.schemas from your definitions.
+description: Emit OpenAPI 3.0 and 3.1 schemas, fill components.schemas from your definitions, and declare discriminated unions.
 ---
 
 # OpenAPI
@@ -105,6 +105,48 @@ const spec = {
 Pass the same options to `components()` and to every `toJSON()` in the spec, so every reference points at the same place.
 
 Output is deterministic: definitions are sorted by name, not by where they are used, so a committed spec only changes when a schema does.
+
+## Discriminated unions
+
+Pass `discriminator` to an object schema's `oneOf`, to name the property that tells the branches apart:
+
+```ts
+import { booleanSchema, enumSchema, numberSchema, objectSchema, type SchemaType } from 'juniper';
+
+const cat = objectSchema({
+    properties: { kind: enumSchema({ enum: ['cat'] as const }), lives: numberSchema() },
+    required: ['kind'],
+});
+const dog = objectSchema({
+    properties: { kind: enumSchema({ enum: ['dog'] as const }), goodBoy: booleanSchema() },
+    required: ['kind'],
+});
+
+const pet = objectSchema().oneOf([cat, dog], { discriminator: 'kind' });
+type Pet = SchemaType<typeof pet>;
+//   ^?
+
+pet.toJSON();
+// { type: 'object', oneOf: [...], discriminator: { propertyName: 'kind' } }
+```
+
+Every branch must require the property, as a string enum of one value that no other branch uses. Anything else is a compile error that says which rule is broken:
+
+```ts
+import { enumSchema, objectSchema } from 'juniper';
+
+const cat = objectSchema({
+    properties: { kind: enumSchema({ enum: ['cat'] as const }) },
+    required: ['kind'],
+});
+// ---cut---
+// @errors: 2345
+objectSchema().oneOf([cat, cat], { discriminator: 'kind' });
+```
+
+Branches can be [definitions](/juniper/guides/reusing-schemas), which most OpenAPI code generators expect, so each branch becomes its own named type.
+
+The `discriminator` keyword is emitted in every output, for OpenAPI 3.0 and 3.1 alike. Strict Ajv rejects it as unknown unless you pass Ajv's `discriminator: true` option, which also makes Ajv check only the branch the property selects. [Juniper Validator](/juniper-validator/) turns it on for you.
 
 To type the spec's schemas in another project, without depending on the code that built it, generate them with [genever](/genever/guides/openapi), which gives the same types Juniper inferred.
 

@@ -153,6 +153,8 @@ type Output = SchemaType<typeof startsOrEndsWith>;
 //   ^?
 ```
 
+**Discriminated unions:** `oneOf(schemas, { discriminator: 'kind' })` checks that every branch requires `kind` as a single, unique string value, and emits OpenAPI's `discriminator` keyword. See [Discriminated unions](/juniper/guides/openapi#discriminated-unions).
+
 To derive variants of an object schema with `pick`, `omit`, `partial`, `required` and `extend`, see [Deriving object schemas](/juniper/guides/deriving-object-schemas).
 
 ## `StringSchema`

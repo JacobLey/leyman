@@ -720,6 +720,27 @@ const storedUser = user.extend(timestamps);
 
 Unlike `allOf`, `additionalProperties` applies to the combined properties, so `storedUser` is still closed over all five. When the added schema sets `additionalProperties`, `unevaluatedProperties`, `minProperties` or `maxProperties`, its value replaces the original's, in both the JSON Schema and its type. `patternProperties`, `dependentRequired`, `dependentSchemas` and combined schemas (`allOf`, `if`, ...) of both apply. Annotations (`title`, ...), `nullable()` and `define()` come from the schema `extend` is called on.
 
+**Discriminated unions:** Pass `discriminator` to `oneOf` to name the property that tells the branches apart. Every branch must require it, as a string enum of one value that no other branch uses, or it's a compile error. The output gets OpenAPI's `discriminator` keyword:
+
+```ts
+const cat = objectSchema({
+    properties: { kind: enumSchema({ enum: ['cat'] as const }), lives: numberSchema() },
+    required: ['kind'],
+});
+const dog = objectSchema({
+    properties: { kind: enumSchema({ enum: ['dog'] as const }), goodBoy: booleanSchema() },
+    required: ['kind'],
+});
+
+// { kind: 'cat'; lives?: number } | { kind: 'dog'; goodBoy?: boolean }
+const pet = objectSchema().oneOf([cat, dog], { discriminator: 'kind' });
+
+pet.toJSON();
+// { type: 'object', oneOf: [...], discriminator: { propertyName: 'kind' } }
+```
+
+`discriminator` is emitted in every output, so Ajv needs its `discriminator: true` option, which also makes it check only the branch the property selects. [`juniper-validator`](https://www.npmjs.com/package/juniper-validator) turns it on.
+
 ---
 
 ### `StringSchema`
