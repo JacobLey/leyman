@@ -8,6 +8,8 @@ Sign generated files so hand edits are detected, while keeping manual sections e
 
 </div>
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/generated-signature/).
+
 - **Offline check**: `verify()` needs only the file, not the generator, so it is cheap enough for a lint rule or a pre-commit hook.
 - **Manual sections**: mark regions a person may edit. Their content is left out of the signature and carried over when the file is regenerated.
 - **Any text format**: markers own whole lines, so verification doesn't need to know the comment syntax. Helpers render markers for common file types.

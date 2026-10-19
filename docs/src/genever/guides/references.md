@@ -51,7 +51,7 @@ Run genever again whenever a referenced file changes: `--ci` checks the generate
 
 ## Checking without fetching
 
-`--ci` regenerates the file, so it fetches every URL again, and fails when a remote schema changed even though nothing in the repository did. With `--manifest generated.json` (or `manifest`), genever also records the output in a [populate-files manifest](https://www.npmjs.com/package/populate-files#manifest), with hashes of everything it read, its own version, and the options. `--ci` with the same manifest then passes without loading anything if all of these hold: the version and options match, the output is unedited, and every *file* it read is unchanged. URLs are trusted as recorded. Otherwise it regenerates as usual, and fails with what is out of date. Run genever without `--ci` to pick up remote changes, which then show up as a diff in review.
+`--ci` regenerates the file, so it fetches every URL again, and fails when a remote schema changed even though nothing in the repository did. With `--manifest generated.json` (or `manifest`), genever also records the output in a [populate-files manifest](/populate-files/guides/manifest), with hashes of everything it read, its own version, and the options. `--ci` with the same manifest then passes without loading anything if all of these hold: the version and options match, the output is unedited, and every *file* it read is unchanged. URLs are trusted as recorded. Otherwise it regenerates as usual, and fails with what is out of date. Run genever without `--ci` to pick up remote changes, which then show up as a diff in review.
 
 ```sh
 npx genever schema.json --manifest generated.json         # writes schema.ts and generated.json

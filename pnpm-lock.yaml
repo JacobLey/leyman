@@ -830,6 +830,9 @@ importers:
       fastify:
         specifier: 'catalog:'
         version: 5.12.5
+      generated-signature:
+        specifier: workspace:^
+        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
         version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
@@ -848,9 +851,15 @@ importers:
       juniper-validator:
         specifier: workspace:^
         version: file:apps/juniper-validator(juniper@file:apps/juniper)
+      load-populate-files:
+        specifier: workspace:^
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       nx-lifecycle:
         specifier: workspace:^
         version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(prettier@3.9.9)
+      populate-files:
+        specifier: workspace:^
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       reflect-metadata:
         specifier: 'catalog:'
         version: 0.2.2

@@ -27,7 +27,7 @@ Take a TypeScript build (`tsc`) followed by a test runner (`mocha`):
 
 `mocha` waits for `tsc`, and `tsc` waits for its upstream projects to build first.
 
-Now add a post-build step, say [`populate-files`](https://www.npmjs.com/package/load-populate-files) generating a JSON config from the compiled JavaScript. It must run after `tsc` but before `mocha`. So:
+Now add a post-build step, say [`populate-files`](/populate-files/) generating a JSON config from the compiled JavaScript. It must run after `tsc` but before `mocha`. So:
 
 - `mocha` must now depend on `populate-files`, not `tsc`.
 - `tsc` must now depend on the upstream `populate-files` of _its_ dependencies, but only in projects that have that step.

@@ -210,6 +210,49 @@ export default defineConfig({
                 ],
             },
             {
+                text: 'populate-files',
+                items: [
+                    { text: 'Overview', link: '/populate-files/' },
+                    { text: 'Getting started', link: '/populate-files/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [
+                            {
+                                text: 'Config modules and the CLI',
+                                link: '/populate-files/guides/config-modules',
+                            },
+                            { text: 'Signed files', link: '/populate-files/guides/signed-files' },
+                            { text: 'Manifest', link: '/populate-files/guides/manifest' },
+                        ],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [
+                            { text: 'API', link: '/populate-files/reference/api' },
+                            { text: 'CLI', link: '/populate-files/reference/cli' },
+                        ],
+                    },
+                ],
+            },
+            {
+                text: 'generated-signature',
+                items: [
+                    { text: 'Overview', link: '/generated-signature/' },
+                    { text: 'Getting started', link: '/generated-signature/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [{ text: 'ESLint', link: '/generated-signature/guides/eslint' }],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [
+                            { text: 'File format', link: '/generated-signature/reference/format' },
+                            { text: 'API', link: '/generated-signature/reference/api' },
+                        ],
+                    },
+                ],
+            },
+            {
                 text: 'unknown-error',
                 items: [
                     { text: 'Overview', link: '/unknown-error/' },

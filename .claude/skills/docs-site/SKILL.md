@@ -14,11 +14,14 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 | Package | Pages |
 |---------|-------|
 | [`barrelify`](../../../apps/barrelify/) | [`docs/src/barrelify/`](../../../docs/src/barrelify/) |
+| [`generated-signature`](../../../tools/generated-signature/generated-signature/) | [`docs/src/generated-signature/`](../../../docs/src/generated-signature/) |
 | [`genever`](../../../apps/genever/) | [`docs/src/genever/`](../../../docs/src/genever/) |
 | [`haywire`](../../../tools/haywire/) | [`docs/src/haywire/`](../../../docs/src/haywire/) |
 | [`juniper`](../../../apps/juniper/) | [`docs/src/juniper/`](../../../docs/src/juniper/) |
 | [`juniper-validator`](../../../apps/juniper-validator/) | [`docs/src/juniper-validator/`](../../../docs/src/juniper-validator/) |
+| [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | [`docs/src/populate-files/`](../../../docs/src/populate-files/) |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | [`docs/src/nx-lifecycle/`](../../../docs/src/nx-lifecycle/) |
+| [`populate-files`](../../../apps/populate-files/populate-files/) | [`docs/src/populate-files/`](../../../docs/src/populate-files/) |
 | [`unknown-error`](../../../tools/unknown-error/) | [`docs/src/unknown-error/`](../../../docs/src/unknown-error/) |
 
 **When you document a new package, add a row here and to the `paths` of [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**

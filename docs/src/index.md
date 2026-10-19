@@ -22,6 +22,12 @@ features:
   - title: Barrelify
     details: Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.
     link: /barrelify/
+  - title: populate-files
+    details: Write generated files from code, and fail CI when they are out of date or were edited by hand, with editable manual sections.
+    link: /populate-files/
+  - title: generated-signature
+    details: Sign generated files so hand edits are detected by an ESLint rule or a single function call, while manual sections stay editable.
+    link: /generated-signature/
   - title: unknown-error
     details: Turn any caught unknown into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains.
     link: /unknown-error/
