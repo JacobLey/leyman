@@ -1,0 +1,117 @@
+---
+description: Install haywire-launcher, bind a CLI class in a Haywire container, and launch it from a bin file.
+---
+
+# Getting started
+
+## Install
+
+::: code-group
+
+```sh [npm]
+npm i haywire haywire-launcher entry-script
+```
+
+```sh [pnpm]
+pnpm add haywire haywire-launcher entry-script
+```
+
+```sh [yarn]
+yarn add haywire haywire-launcher entry-script
+```
+
+:::
+
+::: tip
+[haywire](/haywire/) and [entry-script](/entry-script/) are peer dependencies. All three are ESM only.
+:::
+
+## Launch a class from a container
+
+Write the CLI as a class with a `main(argv)` method, taking its dependencies through its constructor. Bind it in a [Haywire](/haywire/) container like any other class, and pass the container and its id to `launch()`:
+
+```ts
+import type { Main } from 'entry-script';
+import { bind, createContainer, createModule, identifier } from 'haywire';
+import { launch } from 'haywire-launcher';
+
+class Greeter {
+    greet(name: string): string {
+        return `Hello, ${name}!`;
+    }
+}
+
+class Cli implements Main {
+    readonly #greeter: Greeter;
+
+    public constructor(greeter: Greeter) {
+        this.#greeter = greeter;
+    }
+
+    public async main([name = 'world']: string[]): Promise<void> {
+        console.log(this.#greeter.greet(name));
+    }
+}
+
+const container = createContainer(
+    createModule(bind(Greeter).withConstructorFactory()).addBinding(
+        bind(Cli).withDependencies([Greeter]).withConstructorProvider()
+    )
+);
+
+export default launch(container, identifier(Cli));
+```
+
+`launch()` returns an [entry script](/entry-script/) class right away, without touching the container. When Node runs the file, it gets `Cli` from the container with `getAsync()`, and calls `main()` with the command-line arguments.
+
+Usually the container lives in its own module, and the bin file only launches it:
+
+```ts
+// @noErrors
+// src/bin.ts
+import { identifier } from 'haywire';
+import { launch } from 'haywire-launcher';
+import { Cli } from './cli.js';
+import { container } from './container.js';
+
+export default launch(container, identifier(Cli));
+```
+
+A `bin.mjs` shim, for `package.json`'s `bin`, can then re-export the compiled file: entry-script runs the default export of whatever file Node started with.
+
+```js
+#!/usr/bin/env node
+export { default } from './dist/bin.js';
+```
+
+## Without an id
+
+`launch(container)` gets `EntryScript` itself from the container, for a container that binds `EntryScript` to a subclass.
+
+## Type errors
+
+`launch()` checks the container and id at compile time:
+
+- The container must be able to provide the id: a container without a binding for `Cli` is a type error.
+- The id's type must have a `main(argv: string[]): Promise<void>` method.
+
+## Testing
+
+Tests don't need `launch()`. Build the class with test doubles, or from a test container, and call `main()`:
+
+```ts
+import type { Main } from 'entry-script';
+declare class Greeter {
+    greet(name: string): string;
+}
+declare class Cli implements Main {
+    constructor(greeter: Greeter);
+    main(argv: string[]): Promise<void>;
+}
+// ---cut---
+const greeter: Greeter = { greet: name => `Hi ${name}` };
+
+await new Cli(greeter).main(['Ada']);
+```
+
+To test the wiring, `getOriginal()` on the launched class returns the instance the container builds.

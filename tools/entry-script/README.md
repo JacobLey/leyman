@@ -8,6 +8,8 @@ Modular control for entry script execution.
 
 </div>
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/entry-script/).
+
 ## Contents
 - [The Problem](#the-problem)
 - [Install](#install)

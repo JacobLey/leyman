@@ -163,6 +163,28 @@ export default defineConfig({
                 ],
             },
             {
+                text: 'entry-script',
+                items: [
+                    { text: 'Overview', link: '/entry-script/' },
+                    { text: 'Getting started', link: '/entry-script/getting-started' },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/entry-script/reference/api' }],
+                    },
+                ],
+            },
+            {
+                text: 'haywire-launcher',
+                items: [
+                    { text: 'Overview', link: '/haywire-launcher/' },
+                    { text: 'Getting started', link: '/haywire-launcher/getting-started' },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/haywire-launcher/reference/api' }],
+                    },
+                ],
+            },
+            {
                 text: 'nx-lifecycle',
                 items: [
                     { text: 'Overview', link: '/nx-lifecycle/' },

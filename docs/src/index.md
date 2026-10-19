@@ -16,6 +16,12 @@ features:
   - title: Haywire
     details: Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state.
     link: /haywire/
+  - title: haywire-launcher
+    details: Run a Haywire-built entry script in one line, building the container only when the script runs.
+    link: /haywire-launcher/
+  - title: entry-script
+    details: Node.js scripts whose main() only runs when they are the entry point, so tests can import them without side effects.
+    link: /entry-script/
   - title: nx-lifecycle
     details: Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, …) and the targets bound to them.
     link: /nx-lifecycle/

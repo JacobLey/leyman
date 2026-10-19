@@ -14,9 +14,11 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 | Package | Pages |
 |---------|-------|
 | [`barrelify`](../../../apps/barrelify/) | [`docs/src/barrelify/`](../../../docs/src/barrelify/) |
+| [`entry-script`](../../../tools/entry-script/) | [`docs/src/entry-script/`](../../../docs/src/entry-script/) |
 | [`generated-signature`](../../../tools/generated-signature/generated-signature/) | [`docs/src/generated-signature/`](../../../docs/src/generated-signature/) |
 | [`genever`](../../../apps/genever/) | [`docs/src/genever/`](../../../docs/src/genever/) |
 | [`haywire`](../../../tools/haywire/) | [`docs/src/haywire/`](../../../docs/src/haywire/) |
+| [`haywire-launcher`](../../../tools/haywire-launcher/) | [`docs/src/haywire-launcher/`](../../../docs/src/haywire-launcher/) |
 | [`juniper`](../../../apps/juniper/) | [`docs/src/juniper/`](../../../docs/src/juniper/) |
 | [`juniper-validator`](../../../apps/juniper-validator/) | [`docs/src/juniper-validator/`](../../../docs/src/juniper-validator/) |
 | [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | [`docs/src/populate-files/`](../../../docs/src/populate-files/) |
