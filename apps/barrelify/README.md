@@ -78,7 +78,7 @@ The `// AUTO-BARREL` comment is preserved so subsequent runs stay in sync.
 
 It is also available as a CLI via `npx barrel` or `npx barrelify`.
 
-Mark any `index.ts` (or `index.tsx`, `index.cts`, `index.mts`) file you want managed with `// AUTO-BARREL` as the very first characters in the file. Barrelify will not create new index files — it only rewrites files that are already opted in. Each barrel re-exports its sibling `.ts`, `.cts`, `.mts` and `.tsx` files only, not subdirectories. Declaration files (`.d.ts`) are skipped. `.tsx` files follow the same ESM/CJS rules as `.ts`, and are exported as `.js`, matching TypeScript's `react-jsx` output.
+Mark any `index.ts` (or `index.tsx`, `index.cts`, `index.mts`) file you want managed with `// AUTO-BARREL` as the very first characters in the file. Barrelify will not create new index files — it only rewrites files that are already opted in. Each barrel re-exports its sibling `.ts`, `.cts`, `.mts` and `.tsx` files. Subdirectories are only re-exported when the marker is `// AUTO-BARREL subdirectories`: then each subdirectory with its own index file is exported as `export * from './sub/index.js';`. Declaration files (`.d.ts`) are skipped. `.tsx` files follow the same ESM/CJS rules as `.ts`, and are exported as `.js`, matching TypeScript's `react-jsx` output.
 
 To re-export a file's types only, change its line to `export type * from './foo.js';`. Barrelify keeps it type-only when it rewrites the file.
 

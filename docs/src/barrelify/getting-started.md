@@ -64,7 +64,7 @@ export * from './button.styles.js';
 ```
 
 - Only `.ts`, `.tsx`, `.cts` and `.mts` files are exported. Declaration files (`.d.ts`) are skipped.
-- Subdirectories are not exported. Give `icons/` its own barrel, and export it by hand from a non-barrel file if you need it.
+- Subdirectories are not exported, unless you [opt in](#subdirectories).
 - Files ignored by `.gitignore`, and everything in `node_modules`, are skipped.
 - Which extensions are exported depends on the package's module system. See [Module systems](/barrelify/guides/module-systems).
 
@@ -85,6 +85,23 @@ export type * from './button.styles.js';
 ```
 
 Barrelify keeps the line type-only when it rewrites the file.
+
+## Subdirectories
+
+To also re-export subdirectories, start the barrel with `// AUTO-BARREL subdirectories`. Each subdirectory that has its own index file is exported through it, sorted with the other files:
+
+```ts
+// @noErrors
+// AUTO-BARREL subdirectories
+
+export * from './Button.js';
+export * from './button.styles.js';
+export * from './icons/index.js';
+```
+
+- Only direct subdirectories are exported, and only through their own index file. To export deeper ones, give `icons/` a `// AUTO-BARREL subdirectories` barrel too.
+- The subdirectory's index file doesn't have to be a barrel, and its extension follows the same [module system](/barrelify/guides/module-systems) rules as sibling files.
+- Gitignored subdirectories and `node_modules` are skipped, and a line changed to `export type *` stays type-only.
 
 ## Check barrels in CI
 

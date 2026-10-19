@@ -37,4 +37,4 @@ Commit the result, and run `barrelify --ci` in CI to fail when a barrel is out o
 
 ## Compared to
 
-[barrelsby](https://www.npmjs.com/package/barrelsby) and [ctix](https://www.npmjs.com/package/ctix) generate barrels across a directory tree from configuration. Barrelify has no configuration: one marker per file opts it in, and each barrel only covers its own directory.
+[barrelsby](https://www.npmjs.com/package/barrelsby) and [ctix](https://www.npmjs.com/package/ctix) generate barrels across a directory tree from configuration. Barrelify has no configuration: one marker per file opts it in, and each barrel only covers its own directory, plus its subdirectories' index files [when asked](/barrelify/getting-started#subdirectories).

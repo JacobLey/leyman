@@ -54,22 +54,29 @@ const getExtensions = async (filePath: string): Promise<string> => {
 };
 
 /**
- * Load all sibling files that should be re-exported by the index file.
+ * Load all files that should be re-exported by the index file: its siblings, and with
+ * `subdirectories`, the index file of each subdirectory that has one.
  *
  * @param filePath - path to index file
  * @param isGitignored - gitignore rules covering the index file
- * @returns list of sibling filenames
+ * @param [options] - optional
+ * @param [options.subdirectories] - also re-export subdirectories' index files
+ * @returns list of filenames, relative to the index file's directory
  */
 export const findFilesForIndex = async (
     filePath: string,
-    isGitignored: IsGitignored
+    isGitignored: IsGitignored,
+    { subdirectories = false }: { subdirectories?: boolean } = {}
 ): Promise<string[]> => {
     const dir = Path.dirname(filePath);
     const extensions = await getExtensions(filePath);
-    const files = await glob(`*.${extensions}`, {
-        cwd: dir,
-        expandDirectories: false,
-        ignore: [INDEX, '*.d.@(ts|cts|mts)'],
-    });
+    const files = await glob(
+        [`*.${extensions}`, ...(subdirectories ? [`*/index.${extensions}`] : [])],
+        {
+            cwd: dir,
+            expandDirectories: false,
+            ignore: [INDEX, '*.d.@(ts|cts|mts)', 'node_modules/**'],
+        }
+    );
     return files.filter(file => !isGitignored(Path.resolve(dir, file)));
 };

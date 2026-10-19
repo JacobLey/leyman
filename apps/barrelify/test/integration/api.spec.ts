@@ -245,6 +245,60 @@ suite('barrelify', () => {
         });
     });
 
+    suite('Subdirectories', () => {
+        const withTmpDir = beforeEach(createTmpDir);
+        withTmpDir.afterEach(async ctx => {
+            await ctx.tmpDir.cleanup();
+        });
+
+        const marker = '// AUTO-BARREL subdirectories';
+
+        withTmpDir.test('Re-exports subdirectories with an index file', async ctx => {
+            await ctx.writeFiles({
+                '.gitignore': 'ignored/\n',
+                'a.ts': '',
+                'index.ts': `${marker}\nexport type * from './types/index.js';\n`,
+                'sub/index.ts': '',
+                'sub/b.ts': '',
+                'types/index.ts': '',
+                'no-index/c.ts': '',
+                'ignored/index.ts': '',
+                'node_modules/dep/index.ts': '',
+                'deep/er/index.ts': '',
+            });
+
+            expect(await barrelify({ cwd: ctx.tmpDir.path })).to.deep.equal([
+                ctx.resolve('index.ts'),
+            ]);
+            expect(await ctx.read('index.ts')).to.equal(
+                [
+                    marker,
+                    '',
+                    "export * from './a.js';",
+                    "export * from './sub/index.js';",
+                    "export type * from './types/index.js';",
+                    '',
+                ].join('\n')
+            );
+            expect(await barrelify({ cwd: ctx.tmpDir.path, dryRun: true })).to.deep.equal([]);
+        });
+
+        withTmpDir.test('Follows the module system', async ctx => {
+            await ctx.writeFiles({
+                'package.json': JSON.stringify({ type: 'commonjs' }),
+                'index.cts': marker,
+                'cjs/index.cts': '',
+                'esm/index.mts': '',
+            });
+
+            await barrelify({ cwd: ctx.tmpDir.path });
+
+            expect(await ctx.read('index.cts')).to.equal(
+                [marker, '', "export * from './cjs/index.cjs';", ''].join('\n')
+            );
+        });
+    });
+
     suite('Options', () => {
         const withTmpDir = beforeEach(createTmpDir);
         withTmpDir.afterEach(async ctx => {

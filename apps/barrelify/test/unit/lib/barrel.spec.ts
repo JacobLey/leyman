@@ -57,6 +57,25 @@ suite('barrel', () => {
             );
         });
 
+        test('subdirectories', () => {
+            expect(
+                generateBarrelFile({
+                    files: ['foo.ts', 'sub/index.ts', 'cjs/index.cts'],
+                    types: new Set(['sub/index.js']),
+                    subdirectories: true,
+                })
+            ).to.equal(
+                dedent`
+                    // AUTO-BARREL subdirectories
+
+                    export * from './cjs/index.cjs';
+                    export * from './foo.js';
+                    export type * from './sub/index.js';
+
+                `
+            );
+        });
+
         test('tsx files', () => {
             expect(
                 generateBarrelFile({

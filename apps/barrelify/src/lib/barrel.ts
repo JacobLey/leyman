@@ -5,30 +5,36 @@ import { populateFile } from 'populate-files';
 import { loadGitignore } from './gitignore.js';
 import { findFilesForIndex, findIndexFiles } from './glob.js';
 
+const MARKER = '// AUTO-BARREL';
+const SUBDIRECTORIES_MARKER = `${MARKER} subdirectories`;
+
 /**
  * Generate the content of a barrel file.
  *
  * @param param - params
- * @param param.files - sibling files to re-export
+ * @param param.files - files to re-export, relative to the barrel: siblings, and `<dir>/index.*`
  * @param param.types - files (by output name) that should only re-export types
+ * @param [param.subdirectories] - the barrel also re-exports subdirectories, kept in its marker
  * @returns barrel file content
  */
 export const generateBarrelFile = ({
     files,
     types,
+    subdirectories = false,
 }: {
     files: string[];
     types: Set<string>;
+    subdirectories?: boolean;
 }): string =>
     [
         // Idempotent
-        '// AUTO-BARREL',
+        subdirectories ? SUBDIRECTORIES_MARKER : MARKER,
         '',
         ...[
             ...new Set(
                 files.map(file => {
                     const ext = Path.extname(file);
-                    const base = Path.basename(file, ext);
+                    const base = file.slice(0, -ext.length);
 
                     // `.tsx` compiles to `.js`, like `.ts`
                     return `${base}${ext === '.tsx' ? '.js' : ext.replace('t', 'j')}`;
@@ -87,16 +93,24 @@ const didUpdateBarrelFile = async ({
 }): Promise<boolean> => {
     const data = await readFile(filePath, 'utf8');
 
-    if (!data.startsWith('// AUTO-BARREL')) {
+    if (!data.startsWith(MARKER)) {
         return false;
     }
+    const [marker] = data.split(/\r?\n/u, 1);
+    const isSubdirectories = marker === SUBDIRECTORIES_MARKER;
 
-    const files = await findFilesForIndex(filePath, isGitignored);
+    const files = await findFilesForIndex(filePath, isGitignored, {
+        subdirectories: isSubdirectories,
+    });
 
     const { updated } = await populateFile(
         {
             filePath,
-            content: generateBarrelFile({ files, types: parseTypes(data) }),
+            content: generateBarrelFile({
+                files,
+                types: parseTypes(data),
+                subdirectories: isSubdirectories,
+            }),
         },
         {
             dryRun,
