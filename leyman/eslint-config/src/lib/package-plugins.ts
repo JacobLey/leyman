@@ -8,12 +8,14 @@ import type { ESLint, Linter } from 'eslint';
  *
  * @param plugin - plugin with `meta.namespace` and a flat `configs.recommended`
  * @param files - file patterns to apply the rules to
+ * @param [ignores] - file patterns to leave out, e.g. tests
  * @returns flat config entry
  * @throws {TypeError} if the plugin lacks a namespace or a flat recommended config
  */
 export const packagePluginConfig = (
     plugin: ESLint.Plugin,
-    files: readonly string[]
+    files: readonly string[],
+    ignores: readonly string[] = []
 ): Linter.Config => {
     const namespace = plugin.meta?.namespace;
     if (!namespace) {
@@ -28,6 +30,7 @@ export const packagePluginConfig = (
     }
     return {
         files: [...files],
+        ignores: [...ignores],
         plugins: { [namespace]: plugin },
         rules: recommended.rules as Linter.RulesRecord,
     };

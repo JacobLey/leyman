@@ -18,6 +18,10 @@ suite('packagePluginConfig', () => {
         expect(lint(packagePluginConfig(fakePlugin, ['**/*.ts']))).to.deep.equal([]);
     });
 
+    test('Leaves out ignored files', () => {
+        expect(lint(packagePluginConfig(fakePlugin, ['**/*.js'], ['a.js']))).to.deep.equal([]);
+    });
+
     test('Requires a namespace', () => {
         expect(() =>
             packagePluginConfig({ ...fakePlugin, meta: { name: 'fake-plugin' } }, ['**/*.js'])

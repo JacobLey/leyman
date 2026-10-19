@@ -184,7 +184,8 @@ export default function makeEslintConfigForPackage({
     packageJson: unknown;
     /**
      * ESLint plugins shipped by packages, e.g. `generated-signature/eslint`.
-     * Each needs `meta.namespace` and a flat `configs.recommended`, whose rules are turned on.
+     * Each needs `meta.namespace` and a flat `configs.recommended`, whose rules are turned on
+     * outside `test/`.
      * The project must depend on the package providing the plugin.
      */
     plugins?: readonly ESLint.Plugin[];
@@ -946,7 +947,8 @@ export default function makeEslintConfigForPackage({
             })(),
         },
         {
-            // ESLint plugin code (by convention under an `eslint/` directory) names visitors after AST nodes, e.g. `Program`
+            // ESLint plugin code (by convention under an `eslint/` directory) names visitors after AST nodes, e.g. `Program`,
+            // and rules in kebab-case
             files: ['**/eslint/**/*.{c,m,}ts'],
             rules: {
                 '@typescript-eslint/naming-convention': [
@@ -957,8 +959,8 @@ export default function makeEslintConfigForPackage({
                         format: ['camelCase', 'PascalCase'],
                     },
                     {
-                        // Selectors, e.g. `'CallExpression > Identifier'`
-                        selector: 'objectLiteralMethod',
+                        // Selectors, e.g. `'CallExpression > Identifier'`, and kebab-case rule names
+                        selector: ['objectLiteralMethod', 'objectLiteralProperty', 'typeProperty'],
                         modifiers: ['requiresQuotes'],
                         format: null,
                     },
@@ -1001,7 +1003,8 @@ export default function makeEslintConfigForPackage({
                 'unicorn/max-nested-calls': 'off',
             },
         },
-        ...plugins.map(plugin => packagePluginConfig(plugin, sourceFiles)),
+        // Not in tests, which build fixtures freely (e.g. a schema per test)
+        ...plugins.map(plugin => packagePluginConfig(plugin, sourceFiles, ['test/**'])),
         // Disable all formatting rules
         prettierConfig as unknown as Linter.Config,
     ] satisfies Linter.Config[];

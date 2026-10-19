@@ -49,14 +49,14 @@ Rules ship with the package whose code they are about, as an ESLint plugin on a 
 
 - Put the plugin under `src/eslint/` (entry `src/eslint/plugin.ts`, rules in `src/eslint/rules/`), exported as `"./eslint": "./dist/eslint/plugin.js"`. Files under any `eslint/` directory may name object methods in PascalCase, for AST visitors like `Program`.
 - The main entry point must never import from `src/eslint/`. Import `eslint` for types only (`import type`), and declare it as an optional peer (`peerDependencies` + `peerDependenciesMeta.optional`) plus a devDependency. [`e2e/published-entrypoints`](../../../e2e/published-entrypoints/test/integration/eslint-entrypoints.spec.ts) checks all of this for every package with an `./eslint` export.
-- The plugin has `meta.namespace` and a flat `configs.recommended` that turns on its rules and registers the plugin itself (`recommended.plugins = { [namespace]: plugin }`), so consumers can use it on its own. See [`generated-signature`'s plugin](../../../tools/generated-signature/generated-signature/src/eslint/plugin.ts).
+- The plugin has `meta.namespace` and a flat `configs.recommended` that turns on its rules and registers the plugin itself (`recommended.plugins = { [namespace]: plugin }`), so consumers can use it on its own. See [`generated-signature`'s plugin](../../../tools/generated-signature/generated-signature/src/eslint/plugin.ts) and [`juniper`'s](../../../apps/juniper/src/eslint/plugin.ts).
 - Each rule has `meta.docs.url` pointing at a `### \`<namespace>/<rule>\`` section of the package README, with a wrong and a right example.
 - Prefer AST and import tracking over type information. Autofix only when the fix is always safe; no fix at all where it would just approve the problem.
 - Test with ESLint's `RuleTester`, driven by `mocha-chain` (`RuleTester.describe = suite; RuleTester.it = test; RuleTester.itOnly = test.only;`), asserting `messageId`s rather than message text. Also test that `configs.recommended` works on its own with `new Linter().verify(...)`.
 
 ### Turning a plugin on in a project
 
-Pass the plugin to `configGenerator`, which turns on its `configs.recommended` rules for the package's source files. The project must depend on the package providing it:
+Pass the plugin to `configGenerator`, which turns on its `configs.recommended` rules for the package's source files, except under `test/` (tests build fixtures freely, e.g. a schema per test). The project must depend on the package providing it:
 
 ```js
 import configGenerator from '@leyman/eslint-config';
