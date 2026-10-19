@@ -118,6 +118,18 @@ const valueClass = (
     if (type.kind === 'array' || type.kind === 'tuple') {
         return 'array';
     }
+    if (type.kind === 'union') {
+        // E.g. the branches of a `oneOf` of objects, so a sibling `type: "object"` is redundant.
+        // Only objects with a required property: TypeScript lets primitives into `{}` or `{ a?: T }`
+        const [first, ...rest] = type.members.map(member =>
+            member.kind === 'object' && member.properties.every(property => property.optional)
+                ? null
+                : valueClass(member)
+        );
+        return first !== undefined && rest.every(memberClass => memberClass === first)
+            ? first
+            : null;
+    }
     return type.kind === 'object' ? 'object' : null;
 };
 

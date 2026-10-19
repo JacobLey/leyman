@@ -102,6 +102,19 @@ export const oneOf = mergeSchema().oneOf([
         required: ['kind', 'goodBoy'],
     }),
 ]);
+export const discriminatedOneOf = objectSchema().oneOf(
+    [
+        objectSchema({
+            properties: { kind: enumSchema().enum('cat' as const), lives: numberSchema() },
+            required: ['kind', 'lives'],
+        }),
+        objectSchema({
+            properties: { kind: enumSchema().enum('dog' as const), goodBoy: booleanSchema() },
+            required: ['kind'],
+        }),
+    ],
+    { discriminator: 'kind' }
+);
 export const allOf = mergeSchema()
     .allOf(objectSchema({ properties: { a: stringSchema() }, required: ['a'] }))
     .allOf(objectSchema({ properties: { b: numberSchema() } }));

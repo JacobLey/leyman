@@ -681,6 +681,8 @@ export class Converter {
             // Draft-04 names a schema's resource with `id`
             (keyword === 'id' && isDraft04Schema(this.#index!, pointer)) ||
             genericKeywords.has(keyword) ||
+            // Also in plain JSON Schema: Juniper emits it for discriminated `oneOf`s, and Ajv supports it
+            keyword === 'discriminator' ||
             (dialect !== 'draft-2020-12' && openApiKeywords.has(keyword)) ||
             (dialect === 'openapi-3.0' && openApi30Keywords.has(keyword))
         );
@@ -711,7 +713,7 @@ export class Converter {
         const object = readObject(schema, pointer);
         const types = this.#types(object, pointer, scope);
         this.#checkValues(object, pointer, types);
-        if (this.#options.dialect !== 'draft-2020-12' && object.discriminator !== undefined) {
+        if (object.discriminator !== undefined) {
             checkDiscriminator(object.discriminator, childPointer(pointer, 'discriminator'));
         }
         const subScope: Scope = {

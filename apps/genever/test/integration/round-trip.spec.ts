@@ -74,6 +74,7 @@ const openApi30Schemas = new Set<keyof typeof fixtures>([
     'recordObject',
     'anyOf',
     'oneOf',
+    'discriminatedOneOf',
     'allOf',
 ]);
 

@@ -40,7 +40,7 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 
 - `$dynamicRef` and `$recursiveRef` throw `GeneverUnsupportedError`. `genever()` only reads one document, so with it, a `$ref` to another file does too. The CLI and `geneverFile` load referenced files and URLs: see [References to other files](/genever/guides/references). References may use `$id` and `$anchor`.
 - `unevaluatedProperties`, `unevaluatedItems` and `contains` are accepted, but don't change the type.
-- OpenAPI's `discriminator` is accepted, but not checked against the `oneOf` branches. The branches still narrow on the property as a union does.
+- `discriminator` is accepted in plain JSON Schema too, since [Juniper](/juniper/guides/openapi#discriminated-unions) and Ajv use it there, but it isn't checked against the `oneOf` branches. The branches still narrow on the property as a union does.
 - Swagger 2.0 documents.
 
 

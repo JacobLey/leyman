@@ -134,6 +134,40 @@ suite('composition', () => {
             );
         });
 
+        test('a discriminator is allowed, and does not change the union', () => {
+            expectGenerated(
+                {
+                    oneOf: [
+                        {
+                            type: 'object',
+                            properties: { kind: { const: 'a' } },
+                            required: ['kind'],
+                        },
+                        {
+                            type: 'object',
+                            properties: { kind: { const: 'b' } },
+                            required: ['kind'],
+                        },
+                    ],
+                    discriminator: { propertyName: 'kind' },
+                },
+                { Schema: '{ kind: "a" } | { kind: "b" }' }
+            );
+        });
+
+        test('type object is redundant next to a oneOf of objects', () => {
+            expectGenerated(
+                {
+                    type: 'object',
+                    oneOf: [
+                        { properties: { kind: { const: 'a' } }, required: ['kind'] },
+                        { properties: { kind: { const: 'b' } }, required: ['kind'] },
+                    ],
+                },
+                { Schema: '{ kind: "a" } | { kind: "b" }' }
+            );
+        });
+
         test('literals are absorbed by their type', () => {
             expectGenerated(
                 { anyOf: [{ type: 'string' }, { const: 'a' }, { pattern: '^a', type: 'string' }] },
