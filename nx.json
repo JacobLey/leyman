@@ -335,7 +335,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "load-populate-files --filePath ./dist/file-content.js --target-dir ./out --clean"
+          "load-populate-files --filePath ./dist/file-content.js --target-dir ./out --manifest ./out/.generated.json --clean"
         ],
         "color": true,
         "cwd": "{projectRoot}"

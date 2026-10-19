@@ -45,6 +45,7 @@
     "bin.mjs",
     "executors.json",
     "out",
+    "!out/.generated.json",
     "WHY-NX-LIFECYCLE.md"
   ],
   "imports": {
