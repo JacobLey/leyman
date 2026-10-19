@@ -9,7 +9,7 @@ export const valid: Rule.RuleModule = {
         type: 'problem',
         docs: {
             description: 'Disallow editing generated files outside of their manual sections',
-            url: 'https://github.com/JacobLey/leyman/tree/main/tools/generated-signature/generated-signature#generated-signaturevalid',
+            url: 'https://jacobley.github.io/leyman/generated-signature/guides/eslint#generated-signature-valid',
         },
         messages: {
             invalid:
