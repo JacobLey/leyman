@@ -31,6 +31,12 @@ features:
   - title: normalized-react-query
     details: Type-safe TanStack Query definitions that pair each key with its fetcher, and link related queries so they load together, including for server rendering.
     link: /normalized-react-query/
+  - title: mocha-chain
+    details: Chain Mocha hooks so each passes typed context to the next, instead of sharing nullable variables between hooks and tests.
+    link: /mocha-chain/
+  - title: vitest-chain
+    details: The same hook chaining for Vitest, with typed context alongside Vitest's own test context.
+    link: /vitest-chain/
   - title: unknown-error
     details: Turn any caught unknown into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains.
     link: /unknown-error/

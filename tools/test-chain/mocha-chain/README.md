@@ -22,7 +22,7 @@ Chain mocha BDD methods together for deterministic and type safe tests.
     - [afterEach](#aftereachtitle-fn)
     - [after](#aftertitle-fn)
 
-For the problem this solves and design rationale, see [WHY-MOCHA-CHAIN.md](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/mocha-chain/). For the problem this solves and design rationale, see [WHY-MOCHA-CHAIN.md](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md).
 
 ## Install
 
@@ -48,7 +48,7 @@ suite('Example Database Test', () => {
         return { db };
     });
 
-    withDb.beforeEach(({ db }) => {
+    withDb.beforeEach(async ({ db }) => {
         // Both sync and async hooks supported!
         await db.populateData();
     });
@@ -64,7 +64,7 @@ suite('Example Database Test', () => {
         expect(success).to.equal(true);
     });
 
-    withDbUser.test('Cannot update user', ({ db, user }) => {
+    withDbUser.test('Cannot update user', async ({ db, user }) => {
         // This test uses the same `db` as the previous test,
         // but a new `user`!
         const success = await db.update({
@@ -81,12 +81,12 @@ suite('Example Database Test', () => {
             await db.insert(user);
         });
 
-        withDbUser.test('Cannot re-add user', ({ db, user }) => {
+        withDbUser.test('Cannot re-add user', async ({ db, user }) => {
             const success = await db.insert(user);
             expect(success).to.equal(false);
         });
 
-        withDbUser.test('Can update user', ({ db, user }) => {
+        withDbUser.test('Can update user', async ({ db, user }) => {
             const success = await db.update({
                 ...user,
                 name: 'Johnny B. Goode',
@@ -95,16 +95,17 @@ suite('Example Database Test', () => {
         });
     });
 
-    withDb.test.skip('Have not implemented yet', ({ db, user }) => {
+    withDb.test.skip('Have not implemented yet', async ({ db }) => {
+        const user = createFakeUserData();
         await db.delete(user);
     });
 
-    withDb.afterEach(({ db }) => {
+    withDb.afterEach(async ({ db }) => {
         // Successfully tear down data in a type safe way.
         await db.clearData();
     });
 
-    withDb.after(function ({ db }) {
+    withDb.after(async function ({ db }) {
         // Access the hook instance, just like mocha!
         this.timeout(1000);
         await db.disconnect();
@@ -143,7 +144,7 @@ Each hook can chain to a subset of other hooks. The table below shows which targ
 
 | Source \ Target | `before` | `beforeEach` | `test` | `afterEach` | `after` |
 |-----------------|:--------:|:------------:|:------:|:-----------:|:-------:|
-| `before`        | ✅ | ❌ | ✅ | ✅ | ✅ |
+| `before`        | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `beforeEach`    | ❌ | ✅ | ✅ | ✅ | ❌ |
 | `afterEach`     | ❌ | ❌ | ❌ | ✅ | ❌ |
 | `after`         | ❌ | ❌ | ❌ | ❌ | ✅ |

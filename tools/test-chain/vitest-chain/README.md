@@ -8,6 +8,8 @@ Chain vitest hooks together for deterministic and type safe tests.
 
 </div>
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/vitest-chain/).
+
 ## Contents
 
 - [Install](#install)

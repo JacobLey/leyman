@@ -19,9 +19,12 @@
     "@shikijs/vitepress-twoslash": "catalog:",
     "@standard-schema/spec": "catalog:",
     "@tanstack/react-query": "catalog:",
+    "@types/chai": "catalog:",
+    "@types/mocha": "catalog:",
     "@types/react": "catalog:",
     "ajv": "catalog:",
     "barrelify": "workspace:^",
+    "chai": "catalog:",
     "entry-script": "workspace:^",
     "enum-to-array": "workspace:^",
     "fastify": "catalog:",
@@ -34,6 +37,7 @@
     "juniper": "workspace:^",
     "juniper-validator": "workspace:^",
     "load-populate-files": "workspace:^",
+    "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "normalized-react-query": "workspace:^",
     "nx-lifecycle": "workspace:^",
@@ -44,6 +48,7 @@
     "typescript": "catalog:",
     "unknown-error": "workspace:^",
     "vitepress": "catalog:",
+    "vitest": "catalog:",
     "vitest-chain": "workspace:^"
   }
 }

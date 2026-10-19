@@ -284,6 +284,33 @@ export default defineConfig({
                 ],
             },
             {
+                text: 'mocha-chain',
+                items: [
+                    { text: 'Overview', link: '/mocha-chain/' },
+                    { text: 'Getting started', link: '/mocha-chain/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [{ text: 'Chaining hooks', link: '/mocha-chain/guides/chaining' }],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/mocha-chain/reference/api' }],
+                    },
+                    { text: 'Why mocha-chain', link: '/mocha-chain/why' },
+                ],
+            },
+            {
+                text: 'vitest-chain',
+                items: [
+                    { text: 'Overview', link: '/vitest-chain/' },
+                    { text: 'Getting started', link: '/vitest-chain/getting-started' },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/vitest-chain/reference/api' }],
+                    },
+                ],
+            },
+            {
                 text: 'unknown-error',
                 items: [
                     { text: 'Overview', link: '/unknown-error/' },

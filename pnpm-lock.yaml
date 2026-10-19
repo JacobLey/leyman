@@ -821,6 +821,12 @@ importers:
       '@tanstack/react-query':
         specifier: 'catalog:'
         version: 5.104.0(react@19.3.0)
+      '@types/chai':
+        specifier: 'catalog:'
+        version: 5.2.3
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0
@@ -830,6 +836,9 @@ importers:
       barrelify:
         specifier: workspace:^
         version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+      chai:
+        specifier: 'catalog:'
+        version: 6.2.2
       entry-script:
         specifier: workspace:^
         version: file:tools/entry-script
@@ -866,6 +875,9 @@ importers:
       load-populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.2
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
@@ -896,6 +908,9 @@ importers:
       vitepress:
         specifier: 'catalog:'
         version: 2.0.0-alpha.20(@types/node@24.19.0)(@typescript/typescript6@6.0.2)(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))(change-case@5.4.4)(esbuild@0.28.2)(postcss@8.5.28)(yaml@2.9.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.2(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(yaml@2.9.0))
       vitest-chain:
         specifier: workspace:^
         version: file:tools/test-chain/vitest-chain(vitest@5.0.2(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(yaml@2.9.0)))
