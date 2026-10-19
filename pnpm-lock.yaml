@@ -1142,6 +1142,9 @@ importers:
       format-file:
         specifier: workspace:^
         version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      generated-signature:
+        specifier: workspace:^
+        version: file:tools/generated-signature/generated-signature
       genever:
         specifier: workspace:^
         version: file:apps/genever(@biomejs/biome@2.5.14)(prettier@3.9.9)
@@ -1896,6 +1899,51 @@ importers:
       ts-dedent:
         specifier: 'catalog:'
         version: 2.3.0
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
+  tools/generated-signature/generated-signature:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.5.14
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.2(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.12.0(supports-color@8.1.1)
+      expect-type:
+        specifier: 'catalog:'
+        version: 1.4.0
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.2
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -5725,6 +5773,10 @@ packages:
 
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
+
+  generated-signature@file:tools/generated-signature/generated-signature:
+    resolution: {directory: tools/generated-signature/generated-signature, type: directory}
+    engines: {node: '>=24'}
 
   genever@file:apps/genever:
     resolution: {directory: apps/genever, type: directory}
@@ -11483,6 +11535,8 @@ snapshots:
   functional-red-black-tree@1.0.1: {}
 
   functions-have-names@1.2.3: {}
+
+  generated-signature@file:tools/generated-signature/generated-signature: {}
 
   genever@file:apps/genever(@biomejs/biome@2.5.14)(prettier@3.9.9):
     dependencies:

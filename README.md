@@ -18,6 +18,7 @@ Published to npm:
 | [`enum-to-array`](https://www.npmjs.com/package/enum-to-array) | Convert Typescript Enums to a strongly typed array. | [`tools/enum-to-array`](./tools/enum-to-array) |
 | [`find-import`](https://www.npmjs.com/package/find-import) | Find and load first instance of js/json in parent directories. | [`tools/find-import`](./tools/find-import) |
 | [`format-file`](https://www.npmjs.com/package/format-file) | Utility API to format files via biome | [`tools/format-file`](./tools/format-file) |
+| [`generated-signature`](https://www.npmjs.com/package/generated-signature) | Sign generated files so hand edits are detected, while keeping manual sections editable | [`tools/generated-signature/generated-signature`](./tools/generated-signature/generated-signature) |
 | [`genever`](https://www.npmjs.com/package/genever) | Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers. | [`apps/genever`](./apps/genever) |
 | [`haywire`](https://www.npmjs.com/package/haywire) | Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state. | [`tools/haywire`](./tools/haywire) |
 | [`haywire-launcher`](https://www.npmjs.com/package/haywire-launcher) | Instantiate and execute your script in one line. | [`tools/haywire-launcher`](./tools/haywire-launcher) |

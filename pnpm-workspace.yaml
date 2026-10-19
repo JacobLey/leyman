@@ -3,6 +3,7 @@ packages:
   - leyman/*
   - tools/*
   - tools/constant-consistent-hash/*
+  - tools/generated-signature/*
   - tools/test-chain/*
   - e2e/*
   - docs

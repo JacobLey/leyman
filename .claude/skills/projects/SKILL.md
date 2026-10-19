@@ -46,6 +46,7 @@ See each package's README.md for full usage documentation.
 | [`enum-to-array`](../../../tools/enum-to-array/) | Convert TypeScript enums to typed arrays of keys/values |
 | [`find-import`](../../../tools/find-import/) | Find and load the first matching JS/JSON file in parent directories |
 | [`format-file`](../../../tools/format-file/) | Format file content via Biome or Prettier |
+| [`generated-signature`](../../../tools/generated-signature/generated-signature/) | Sign generated files so hand edits are detected, while keeping manual sections editable |
 | [`haywire`](../../../tools/haywire/) | Type-safe dependency injection — invalid containers are compile errors |
 | [`haywire-launcher`](../../../tools/haywire-launcher/) | Connect Haywire DI containers to `entry-script` CLI entry points |
 | [`iso-crypto`](../../../tools/iso-crypto/) | Isomorphic cryptography for Node.js and Browser |

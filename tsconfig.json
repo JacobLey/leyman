@@ -87,6 +87,9 @@
     },
     {
       "path": "./apps/genever"
+    },
+    {
+      "path": "./tools/generated-signature/generated-signature"
     }
   ]
 }

@@ -1,0 +1,54 @@
+{
+  "name": "generated-signature",
+  "version": "0.0.1",
+  "description": "Sign generated files so hand edits are detected, while keeping manual sections editable",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "tools/generated-signature/generated-signature"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/generated-signature/generated-signature#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "codegen",
+    "generated",
+    "signature",
+    "checksum"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/generated-signature.js"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  }
+}
