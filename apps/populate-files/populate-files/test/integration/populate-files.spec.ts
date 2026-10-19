@@ -160,6 +160,13 @@ suite('Integration test', () => {
                 .to.have.property('message')
                 .that.includes('ENOENT: no such file or director');
         });
+
+        withTmpFiles.test('Propagates errors reading the existing file', async ctx => {
+            // A directory can't be read as a file, so it is not reported as missing
+            await expect(
+                populateFile({ filePath: ctx.tmpDir.path, content: 'text' }, { check: true })
+            ).to.be.rejectedWith(Error, 'EISDIR');
+        });
     });
 
     suite('populateFiles', () => {

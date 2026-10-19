@@ -124,7 +124,7 @@ Writes multiple files in parallel.
 | `'malformed'` | The file's signature or manual section markers can't be read. |
 | `'orphaned-section'` | The file has a manual section with content that the new content no longer has. |
 
-These are thrown with or without `check`, so CI also fails on hand-edited files. An invalid manifest throws `GeneratedSignatureManifestError` from [`generated-signature`](https://www.npmjs.com/package/generated-signature).
+These are thrown with or without `check`, so CI also fails on hand-edited files. An existing file that can't be read for any reason other than not existing (e.g. `EACCES`) fails with the error from `node:fs`. An invalid manifest throws `GeneratedSignatureManifestError` from [`generated-signature`](https://www.npmjs.com/package/generated-signature).
 
 ## Signed files
 

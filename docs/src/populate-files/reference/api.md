@@ -131,4 +131,6 @@ try {
 }
 ```
 
+An existing file that can't be read for any reason other than not existing, such as `EACCES`, fails with the error from `node:fs`, rather than being treated as a new file.
+
 Errors from [`generated-signature`](/generated-signature/reference/api#errors) are passed through: `GeneratedSignatureManifestError` for an invalid manifest, and `GeneratedSignatureCommentStyleError` for a `signed` file with no known comment syntax.
