@@ -110,8 +110,9 @@ export const makeValidator = <T>(
     // Dropped (even for untyped callers) so `instancePath`, which issue paths are parsed from, stays a JSON Pointer
     // eslint-disable-next-line @typescript-eslint/no-deprecated, sonarjs/deprecation
     const { jsPropertySyntax, ...ajvOptions }: AjvOptions = { ...options };
-    // Standard formats (`email`, `uuid`, `date-time`, ...), which strict mode otherwise rejects as unknown
-    const ajv = addFormats(new Ajv2020({ ...ajvOptions, strict: true }));
+    // Standard formats (`email`, `uuid`, `date-time`, ...), which strict mode otherwise rejects as unknown.
+    // `discriminator` is emitted by Juniper's discriminated `oneOf`
+    const ajv = addFormats(new Ajv2020({ discriminator: true, ...ajvOptions, strict: true }));
     if (isSchema(schema)) {
         addMetadataKeywords(ajv, json);
     }

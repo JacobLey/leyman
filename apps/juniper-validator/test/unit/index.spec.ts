@@ -3,7 +3,14 @@ import type { SchemaType } from 'juniper';
 import type { AssertionType, JuniperValidator, ValidatorType } from 'juniper-validator';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
-import { arraySchema, mergeSchema, numberSchema, objectSchema, stringSchema } from 'juniper';
+import {
+    arraySchema,
+    enumSchema,
+    mergeSchema,
+    numberSchema,
+    objectSchema,
+    stringSchema,
+} from 'juniper';
 import { makeValidator } from 'juniper-validator';
 import { suite, test } from 'mocha-chain';
 
@@ -276,5 +283,31 @@ suite('juniper-validator', () => {
         const uuid = makeValidator(stringSchema({ format: 'uuid' }));
         expect(uuid.is('3f2c0a3e-6e8a-4a59-9c2b-1d2f3a4b5c6d')).to.equal(true);
         expect(uuid.is('123')).to.equal(false);
+    });
+
+    test('Validates discriminated oneOf', () => {
+        const pet = makeValidator(
+            objectSchema().oneOf(
+                [
+                    objectSchema({
+                        properties: { kind: enumSchema({ enum: ['a'] as const }) },
+                        required: ['kind'],
+                    }),
+                    objectSchema({
+                        properties: {
+                            kind: enumSchema({ enum: ['b'] as const }),
+                            b: numberSchema(),
+                        },
+                        required: ['kind', 'b'],
+                    }),
+                ],
+                { discriminator: 'kind' }
+            )
+        );
+
+        expect(pet.is({ kind: 'a' })).to.equal(true);
+        expect(pet.is({ kind: 'b', b: 1 })).to.equal(true);
+        expect(pet.is({ kind: 'b' })).to.equal(false);
+        expect(pet.is({ kind: 'c' })).to.equal(false);
     });
 });
