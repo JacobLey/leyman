@@ -80,6 +80,10 @@ export const errorSchema = objectSchema({
     additionalProperties: false,
 }).define('Error');
 
+const cursorSchema = stringSchema();
+const limitSchema = numberSchema({ type: 'integer', minimum: 1, maximum: 100, default: 20 });
+const commentsSchema = arraySchema(commentSchema);
+
 export type User = SchemaType<typeof userSchema>;
 export type NewUser = SchemaType<typeof newUserSchema>;
 export type UserUpdate = SchemaType<typeof userUpdateSchema>;
@@ -171,14 +175,8 @@ export const buildSpec = (version: '3.0.3' | '3.1.0'): oas31.OpenAPIObject => {
             get: {
                 operationId: 'listUserPosts',
                 parameters: [
-                    { name: 'cursor', in: 'query', schema: schema(stringSchema()) },
-                    {
-                        name: 'limit',
-                        in: 'query',
-                        schema: schema(
-                            numberSchema({ type: 'integer', minimum: 1, maximum: 100, default: 20 })
-                        ),
-                    },
+                    { name: 'cursor', in: 'query', schema: schema(cursorSchema) },
+                    { name: 'limit', in: 'query', schema: schema(limitSchema) },
                 ],
                 responses: {
                     200: { description: 'A page of posts', content: json(postPageSchema) },
@@ -203,7 +201,7 @@ export const buildSpec = (version: '3.0.3' | '3.1.0'): oas31.OpenAPIObject => {
                 responses: {
                     200: {
                         description: 'Comment threads',
-                        content: json(arraySchema(commentSchema)),
+                        content: json(commentsSchema),
                     },
                     404: errors[404],
                 },
