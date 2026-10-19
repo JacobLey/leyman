@@ -1,5 +1,24 @@
 # genever
 
+## 0.2.0
+
+### Minor Changes
+
+- 48176cc: Load URLs from only some hosts: `fetch: ['example.com', '*.example.com']` in `geneverFile`, or `--fetch-host` (repeatable) in the CLI. A host matches on any port unless it names one, and `*.example.com` matches its subdomains. Redirects are only followed to allowed hosts.
+- 1353b7a: Add `--manifest` (`manifest`): records the output in a populate-files manifest, with hashes of every file and URL read, genever's version and the options. With `--ci`, an output whose entry still matches is up to date without loading anything, so CI no longer fetches remote schemas, or fails when one changes upstream.
+- 0e6854a: Add `--signed` (`signed`) to sign the output file with `generated-signature`, so edits to it are detected, and `--force` (`force`) to overwrite an edited or unsigned output file.
+
+### Patch Changes
+
+- Updated dependencies [c6893ec]
+- Updated dependencies [d8aecec]
+- Updated dependencies [5018ce7]
+- Updated dependencies [d4d116d]
+- Updated dependencies [50bf351]
+- Updated dependencies [10f37ef]
+  - generated-signature@0.1.0
+  - populate-files@1.1.0
+
 ## 0.1.0
 
 ### Minor Changes

@@ -1,5 +1,20 @@
 # populate-files
 
+## 1.1.0
+
+### Minor Changes
+
+- 50bf351: Add a `manifest` option (`--manifest`): a run records every generated file in a `generated-signature` manifest, so edits to any file type (including JSON) are detected and not overwritten without `force`, and `clean` only removes files the manifest lists. Files can record `manifestInputs`. With `check` and `clean`, out-of-date and stale files are now reported in one error.
+- 10f37ef: Add opt-in `signed: true` per file: content is signed with `generated-signature`, manual sections are kept when regenerating, and files that were edited outside manual sections (or never signed) are not overwritten unless `force` (`--force`) is set. `options` is now optional in the `PopulateFile`/`PopulateFiles` types, matching the docs.
+
+### Patch Changes
+
+- Updated dependencies [c6893ec]
+- Updated dependencies [d8aecec]
+- Updated dependencies [5018ce7]
+- Updated dependencies [d4d116d]
+  - generated-signature@0.1.0
+
 ## 1.0.2
 
 ### Patch Changes
