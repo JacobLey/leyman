@@ -605,6 +605,108 @@ export class Converter {
         };
     }
 
+    /**
+     * Check, in strict mode, that a schema's `discriminator` can tell its branches apart: the
+     * property is required, by the schema or by every `oneOf`/`anyOf` branch, and every `mapping`
+     * target exists. Its value isn't checked, as OpenAPI may infer it from a component's name.
+     *
+     * @param schema - schema with a `discriminator`
+     * @param pointer - JSON Pointer to the schema
+     * @throws {GeneverStrictModeError} if the discriminator can't apply, in strict mode
+     */
+    #checkDiscriminatorUse(schema: SchemaObject, pointer: string): void {
+        const discriminatorPointer = childPointer(pointer, 'discriminator');
+        const { propertyName, mapping } = schema.discriminator as {
+            propertyName: string;
+            mapping?: unknown;
+        };
+        const branchesKeyword = ['oneOf', 'anyOf'].find(keyword => Array.isArray(schema[keyword]));
+        const branches = branchesKeyword ? (schema[branchesKeyword] as unknown[]) : [];
+        const isRequired =
+            this.#requires(schema, pointer, propertyName) ||
+            (branches.length > 0 &&
+                branches.every((branch, i) =>
+                    this.#requires(
+                        branch,
+                        childPointer(childPointer(pointer, branchesKeyword!), i),
+                        propertyName
+                    )
+                ));
+        if (!isRequired) {
+            this.#strictError(
+                `discriminator property "${propertyName}" must be required, by the schema or by every oneOf or anyOf branch`,
+                discriminatorPointer
+            );
+        }
+
+        const mappingPointer = childPointer(discriminatorPointer, 'mapping');
+        const targets = mapping === undefined ? {} : readObject(mapping, mappingPointer);
+        for (const [value, target] of Object.entries(targets)) {
+            const targetPointer = childPointer(mappingPointer, value);
+            // A mapping value is a reference, or the name of a schema in the document's components
+            const ref =
+                typeof target === 'string' && !target.includes('/')
+                    ? `#/components/schemas/${target}`
+                    : target;
+            try {
+                this.#resolve(ref, childPointer(targetPointer, '$ref'));
+            } catch {
+                this.#strictError(
+                    `discriminator mapping "${value}" refers to a schema that does not exist`,
+                    targetPointer
+                );
+            }
+        }
+    }
+
+    /**
+     * Whether a schema requires a property, itself or through a `$ref` or `allOf`.
+     *
+     * @param schema - schema to check
+     * @param pointer - JSON Pointer to the schema
+     * @param property - property name
+     * @param [seen] - schemas already checked, to stop at cycles
+     * @returns true if every valid value has the property
+     */
+    #requires(
+        schema: unknown,
+        pointer: string,
+        property: string,
+        seen: ReadonlySet<string> = new Set()
+    ): boolean {
+        if (!isSchemaObject(schema) || seen.has(pointer)) {
+            return false;
+        }
+        if (Array.isArray(schema.required) && schema.required.includes(property)) {
+            return true;
+        }
+        const next = new Set([...seen, pointer]);
+        if (schema.$ref !== undefined) {
+            const refPointer = childPointer(pointer, '$ref');
+            let target: Target;
+            try {
+                target = this.#resolve(schema.$ref, refPointer);
+            } catch {
+                // Converting the reference reports it, rather than a misleading discriminator error
+                return true;
+            }
+            if (this.#requires(target.schema, target.pointer, property, next)) {
+                return true;
+            }
+        }
+        return (
+            Array.isArray(schema.allOf) &&
+            schema.allOf.some((member, i) =>
+                this.#requires(
+                    member,
+                    childPointer(childPointer(pointer, 'allOf'), i),
+                    property,
+                    next
+                )
+            )
+        );
+    }
+
     #strictError(message: string, pointer: string): void {
         if (this.#options.strict) {
             throw new GeneverStrictModeError(message, { pointer });
@@ -715,6 +817,7 @@ export class Converter {
         this.#checkValues(object, pointer, types);
         if (object.discriminator !== undefined) {
             checkDiscriminator(object.discriminator, childPointer(pointer, 'discriminator'));
+            this.#checkDiscriminatorUse(object, pointer);
         }
         const subScope: Scope = {
             properties: new Map([...scope.properties, ...this.#propertyTypes(object, pointer)]),

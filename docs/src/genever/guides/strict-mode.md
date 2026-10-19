@@ -12,6 +12,7 @@ A schema can be valid JSON Schema and still be a mistake. Validators ignore thes
 - A type specific keyword in a schema without a `type`, or whose `type` it doesn't apply to, such as `maxLength` on a number. Subschemas of `allOf`, `anyOf`, `oneOf`, `if`/`then`/`else` and `not` inherit their parent's type.
 - A `required` property that isn't in `properties`, of the schema or a parent.
 - `then` or `else` without `if`.
+- A `discriminator` whose property isn't required, by the schema or by every `oneOf`/`anyOf` branch, or whose `mapping` names a schema that doesn't exist. Its values aren't checked, as OpenAPI may take them from component names.
 
 ## Schemas that accept nothing, or less than they declare
 
