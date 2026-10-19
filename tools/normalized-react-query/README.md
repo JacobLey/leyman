@@ -14,7 +14,7 @@ Type-safe query definitions for TanStack Query — define each key and fetcher o
 - **SSR in one call** — `.query(client, params, { awaitLinks: true })` loads a query and everything it links to, ready to dehydrate.
 - **Every hook flavour** — plain, suspense, nullable (`skipToken`), infinite and prefetched variants of TanStack's hooks.
 
-For the full motivation, see [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/normalized-react-query/). For the full motivation, see [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md).
 
 ## Contents
 
@@ -88,7 +88,7 @@ const useExample = (queryClient: QueryClient) => {
 
 `normalized-react-query` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { resource } = await import('normalized-react-query');`.
 
-Both `react` and `@tanstack/react-query` are peer dependencies. This package enforces typing and structure; all caching, revalidation, and subscription logic is handled by React Query.
+`@tanstack/react-query` is a peer dependency (and brings React). This package enforces typing and structure; all caching, revalidation, and subscription logic is handled by React Query.
 
 Instances created by `resource()` and `infinite()` are designed to be singletons — create once, import everywhere. The functional constructors (`resource`, `infinite`) are the primary API. The underlying `Resource` and `Infinite` classes are also exported as types for use in type annotations.
 

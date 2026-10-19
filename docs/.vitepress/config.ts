@@ -43,7 +43,8 @@ export default defineConfig({
                 },
             }),
         ],
-        languages: ['js', 'ts', 'json', 'sh'],
+        // `tsx` too, for code in libraries' JSDoc that twoslash shows in hovers (e.g. TanStack Query's)
+        languages: ['js', 'ts', 'tsx', 'json', 'sh'],
     },
     themeConfig: {
         search: { provider: 'local' },
@@ -251,6 +252,35 @@ export default defineConfig({
                             { text: 'API', link: '/generated-signature/reference/api' },
                         ],
                     },
+                ],
+            },
+            {
+                text: 'normalized-react-query',
+                items: [
+                    { text: 'Overview', link: '/normalized-react-query/' },
+                    { text: 'Getting started', link: '/normalized-react-query/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [
+                            {
+                                text: 'Linked queries',
+                                link: '/normalized-react-query/guides/linked-queries',
+                            },
+                            {
+                                text: 'Infinite queries',
+                                link: '/normalized-react-query/guides/infinite-queries',
+                            },
+                            {
+                                text: 'Server rendering',
+                                link: '/normalized-react-query/guides/server-rendering',
+                            },
+                        ],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/normalized-react-query/reference/api' }],
+                    },
+                    { text: 'Why normalized-react-query', link: '/normalized-react-query/why' },
                 ],
             },
             {

@@ -20,6 +20,7 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 | [`juniper`](../../../apps/juniper/) | [`docs/src/juniper/`](../../../docs/src/juniper/) |
 | [`juniper-validator`](../../../apps/juniper-validator/) | [`docs/src/juniper-validator/`](../../../docs/src/juniper-validator/) |
 | [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | [`docs/src/populate-files/`](../../../docs/src/populate-files/) |
+| [`normalized-react-query`](../../../tools/normalized-react-query/) | [`docs/src/normalized-react-query/`](../../../docs/src/normalized-react-query/) |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | [`docs/src/nx-lifecycle/`](../../../docs/src/nx-lifecycle/) |
 | [`populate-files`](../../../apps/populate-files/populate-files/) | [`docs/src/populate-files/`](../../../docs/src/populate-files/) |
 | [`unknown-error`](../../../tools/unknown-error/) | [`docs/src/unknown-error/`](../../../docs/src/unknown-error/) |

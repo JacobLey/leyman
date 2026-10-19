@@ -28,6 +28,9 @@ features:
   - title: generated-signature
     details: Sign generated files so hand edits are detected by an ESLint rule or a single function call, while manual sections stay editable.
     link: /generated-signature/
+  - title: normalized-react-query
+    details: Type-safe TanStack Query definitions that pair each key with its fetcher, and link related queries so they load together, including for server rendering.
+    link: /normalized-react-query/
   - title: unknown-error
     details: Turn any caught unknown into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains.
     link: /unknown-error/

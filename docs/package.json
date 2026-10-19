@@ -18,18 +18,24 @@
     "@biomejs/biome": "catalog:",
     "@shikijs/vitepress-twoslash": "catalog:",
     "@standard-schema/spec": "catalog:",
+    "@tanstack/react-query": "catalog:",
+    "@types/react": "catalog:",
     "ajv": "catalog:",
     "barrelify": "workspace:^",
+    "entry-script": "workspace:^",
     "enum-to-array": "workspace:^",
     "fastify": "catalog:",
     "generated-signature": "workspace:^",
     "genever": "workspace:^",
     "haywire": "workspace:^",
+    "haywire-launcher": "workspace:^",
     "hono": "catalog:",
     "inversify": "catalog:",
     "juniper": "workspace:^",
     "juniper-validator": "workspace:^",
     "load-populate-files": "workspace:^",
+    "mocha-chain": "workspace:^",
+    "normalized-react-query": "workspace:^",
     "nx-lifecycle": "workspace:^",
     "openapi3-ts": "catalog:",
     "populate-files": "workspace:^",
@@ -37,6 +43,7 @@
     "tsyringe": "catalog:",
     "typescript": "catalog:",
     "unknown-error": "workspace:^",
-    "vitepress": "catalog:"
+    "vitepress": "catalog:",
+    "vitest-chain": "workspace:^"
   }
 }
