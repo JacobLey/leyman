@@ -119,6 +119,44 @@ const spec = {
 
 Pass the same options to `components()` and to every `toJSON()` in the spec, so every reference points at the same place.
 
+## Serializing a whole spec
+
+Listing schemas for `components()` is easy to get wrong: a schema left out leaves a `$ref` pointing nowhere, which only a spec validator notices. Instead, write the spec with schemas in place, and pass it to `serializeSpec()`:
+
+```ts
+import { numberSchema, objectSchema, stringSchema } from 'juniper';
+
+const user = objectSchema({
+    properties: { id: numberSchema(), name: stringSchema() },
+    required: ['id', 'name'],
+}).define('User');
+// ---cut---
+import { serializeSpec } from 'juniper';
+
+const spec = serializeSpec({
+    openapi: '3.1.0',
+    info: { title: 'Blog', version: '1.0.0' },
+    paths: {
+        '/users/{userId}': {
+            get: {
+                responses: {
+                    200: { description: 'User', content: { 'application/json': { schema: user } } },
+                },
+            },
+        },
+    },
+});
+
+spec.components.schemas;
+//              ^?
+```
+
+It replaces every schema with its JSON Schema, and fills `components.schemas` with every definition they use, sorted by name:
+
+- The dialect follows `openapi`: OpenAPI 3.0 for `3.0.x`, otherwise 2020-12, with references at `#/components/schemas/`. Pass `{ openApi30 }` or `{ definitionsPath }` to choose yourself.
+- Other components, and anything already in `components.schemas`, are kept. A defined schema can be placed there under its own name, and becomes its definition. A different schema under a definition's name throws.
+- The spec passed in isn't modified, and the result is typed: each schema becomes a `JsonSchema<T>`, or an [`OpenApi30JsonSchema<T>`](#typed-output) for 3.0.
+
 Output is deterministic: definitions are sorted by name, not by where they are used, so a committed spec only changes when a schema does.
 
 ## Discriminated unions

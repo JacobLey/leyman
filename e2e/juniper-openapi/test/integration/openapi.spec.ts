@@ -13,6 +13,7 @@ import {
     newPostSchema,
     newUserSchema,
     postPageSchema,
+    serializedSpec,
     userUpdateSchema,
 } from '../data/api.js';
 
@@ -59,6 +60,12 @@ suite('OpenAPI spec built with juniper', () => {
             });
         });
     }
+
+    test('serializeSpec builds the same spec without listing components', () => {
+        for (const version of ['3.0.3', '3.1.0'] as const) {
+            expect(serializedSpec(version)).to.deep.equal(buildSpec(version));
+        }
+    });
 
     test('OpenAPI 3.0 and 3.1 differ only in their schema dialect', () => {
         const publishedAt = 'components.schemas.Post.properties.publishedAt';

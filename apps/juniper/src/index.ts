@@ -12,6 +12,7 @@ import { TupleSchema } from './schemas/tuple.js';
 
 export { components, type ComponentsParams, isSchema } from './lib/schema.js';
 export { defineRecursive, RecursiveSchema } from './schemas/recursive.js';
+export { type SerializedSpec, type SerializedSpecValue, serializeSpec } from './lib/spec.js';
 
 export type { PatternProperties } from './schemas/object.js';
 export type { KnownFormat } from './schemas/string.js';

@@ -8,6 +8,7 @@ import {
     defineRecursive,
     numberSchema,
     objectSchema,
+    serializeSpec,
     stringSchema,
 } from 'juniper';
 
@@ -219,4 +220,104 @@ export const buildSpec = (version: '3.0.3' | '3.1.0'): oas31.OpenAPIObject => {
             },
         })
         .getSpec();
+};
+
+/**
+ * The same spec as {@link buildSpec}, written as plain data with Juniper schemas in place, and
+ * serialized with `serializeSpec`. No components are listed: every definition the schemas use is
+ * collected.
+ *
+ * @param version - OpenAPI version
+ * @returns OpenAPI document
+ */
+export const serializedSpec = (version: '3.0.3' | '3.1.0'): unknown => {
+    const json = (s: Schema<unknown>) => ({ 'application/json': { schema: s } });
+    const errors = {
+        400: { description: 'Invalid request', content: json(errorSchema) },
+        404: { description: 'Not found', content: json(errorSchema) },
+    };
+    const pathId = (name: string) => ({ name, in: 'path', required: true, schema: idSchema });
+
+    return serializeSpec({
+        openapi: version,
+        info: { title: 'Posts API', version: '1.0.0' },
+        security: [{ bearer: [] }],
+        components: {
+            securitySchemes: { bearer: { type: 'http', scheme: 'bearer', bearerFormat: 'JWT' } },
+        },
+        paths: {
+            '/users': {
+                post: {
+                    operationId: 'createUser',
+                    requestBody: { required: true, content: json(newUserSchema) },
+                    responses: {
+                        201: { description: 'Created', content: json(userSchema) },
+                        400: errors[400],
+                    },
+                },
+            },
+            '/users/{userId}': {
+                parameters: [pathId('userId')],
+                get: {
+                    operationId: 'getUser',
+                    responses: {
+                        200: { description: 'User', content: json(userSchema) },
+                        404: errors[404],
+                    },
+                },
+                patch: {
+                    operationId: 'updateUser',
+                    requestBody: { required: true, content: json(userUpdateSchema) },
+                    responses: {
+                        200: { description: 'Updated', content: json(userSchema) },
+                        ...errors,
+                    },
+                },
+            },
+            '/users/{userId}/posts': {
+                parameters: [pathId('userId')],
+                get: {
+                    operationId: 'listUserPosts',
+                    parameters: [
+                        { name: 'cursor', in: 'query', schema: cursorSchema },
+                        { name: 'limit', in: 'query', schema: limitSchema },
+                    ],
+                    responses: {
+                        200: { description: 'A page of posts', content: json(postPageSchema) },
+                        404: errors[404],
+                    },
+                },
+            },
+            '/posts': {
+                post: {
+                    operationId: 'createPost',
+                    requestBody: { required: true, content: json(newPostSchema) },
+                    responses: {
+                        201: { description: 'Created', content: json(postSchema) },
+                        400: errors[400],
+                    },
+                },
+            },
+            '/posts/{postId}/comments': {
+                parameters: [pathId('postId')],
+                get: {
+                    operationId: 'listPostComments',
+                    responses: {
+                        200: { description: 'Comment threads', content: json(commentsSchema) },
+                        404: errors[404],
+                    },
+                },
+            },
+            '/posts/{postId}': {
+                parameters: [pathId('postId')],
+                get: {
+                    operationId: 'getPost',
+                    responses: {
+                        200: { description: 'Post', content: json(postSchema) },
+                        404: errors[404],
+                    },
+                },
+            },
+        },
+    });
 };

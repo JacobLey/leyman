@@ -293,7 +293,28 @@ const spec = {
 };
 ```
 
-A complete users and posts API, built with [openapi3-ts](https://www.npmjs.com/package/openapi3-ts) and checked to be valid OpenAPI 3.0 and 3.1, is in [e2e/juniper-openapi](https://github.com/JacobLey/leyman/blob/main/e2e/juniper-openapi/test/data/api.ts).
+Or write the spec with schemas in place, and let `serializeSpec()` serialize them and fill `components.schemas`. The dialect follows `openapi`, and no schema has to be listed, so no `$ref` can dangle:
+
+```ts
+import { serializeSpec } from 'juniper';
+
+const spec = serializeSpec({
+    openapi: '3.1.0',
+    info: { title: 'Blog', version: '1.0.0' },
+    paths: {
+        '/users/{userId}': {
+            get: {
+                responses: {
+                    200: { description: 'User', content: { 'application/json': { schema: user } } },
+                },
+            },
+        },
+    },
+});
+// spec.components.schemas: { User: { ... } }
+```
+
+A complete users and posts API, built both ways, with [openapi3-ts](https://www.npmjs.com/package/openapi3-ts) and with `serializeSpec()`, and checked to be valid OpenAPI 3.0 and 3.1, is in [e2e/juniper-openapi](https://github.com/JacobLey/leyman/blob/main/e2e/juniper-openapi/test/data/api.ts).
 
 ## API
 
@@ -487,6 +508,22 @@ Collects every definition used by `schemas` (including defined schemas themselve
 | `options.definitionsPath` | `string` | `'#/components/schemas/'` | `$ref` prefix. Pass the same options to `toJSON` for schemas that use them. |
 
 **Throws** when different schemas are defined with the same name.
+
+---
+
+#### `serializeSpec(spec, options?)`
+
+Serializes every schema in an OpenAPI document, and fills `components.schemas` with the definitions they use, so nothing has to be listed (see [OpenAPI](#openapi)).
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `spec` | `object` | — | Required. An OpenAPI document (or any object) with Juniper schemas anywhere in it. |
+| `options.openApi30` | `boolean` | from `spec.openapi` | Serialize for OpenAPI 3.0. Defaults to `true` when `openapi` is `3.0.x`. |
+| `options.definitionsPath` | `string` | `'#/components/schemas/'` | `$ref` prefix. |
+
+**Returns** a copy of `spec` with every schema replaced by its JSON Schema (typed as `JsonSchema<T>`, or `OpenApi30JsonSchema<T>`), and `components.schemas` holding every definition they use, sorted by name. Other components, and other entries in `components.schemas`, are kept. A defined schema placed in `components.schemas` under its own name becomes its definition, not a reference to itself.
+
+**Throws** when different schemas are defined with the same name, or `components.schemas` already has a different schema under a definition's name.
 
 ---
 

@@ -194,6 +194,20 @@ Collects every definition used by `schemas` (including defined schemas themselve
 
 **Throws** when different schemas are defined with the same name.
 
+## `serializeSpec(spec, options?)`
+
+Serializes every schema in an OpenAPI document, and fills `components.schemas` with the definitions they use, so nothing has to be listed. See [OpenAPI](/juniper/guides/openapi#serializing-a-whole-spec).
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `spec` | `object` | — | Required. An OpenAPI document (or any object) with Juniper schemas anywhere in it. |
+| `options.openApi30` | `boolean` | from `spec.openapi` | Serialize for OpenAPI 3.0. Defaults to `true` when `openapi` is `3.0.x`. |
+| `options.definitionsPath` | `string` | `'#/components/schemas/'` | `$ref` prefix. |
+
+**Returns** a copy of `spec` with every schema replaced by its JSON Schema (typed as `JsonSchema<T>`, or `OpenApi30JsonSchema<T>`), and `components.schemas` holding every definition they use, sorted by name. Other components, and other entries in `components.schemas`, are kept. A defined schema placed in `components.schemas` under its own name becomes its definition, not a reference to itself.
+
+**Throws** when different schemas are defined with the same name, or `components.schemas` already has a different schema under a definition's name.
+
 ## `.cast<T>()`
 
 Casts the instance as a schema for a specific TypeScript type. Can only be chained with a `toJSON` call after casting. Useful when declaring a schema for JavaScript-generated objects that are not explicitly enforced in JSON Schema.
