@@ -15,13 +15,29 @@ export interface WrapperMain extends Main {
     getOriginal: () => Promise<Main>;
 }
 
-declare const invalidInput: unique symbol;
-interface InvalidInput<T extends string> {
-    invalid: T;
-    [invalidInput]: typeof invalidInput;
+/**
+ * Error messages for each failed check, shown by TypeScript when `launch()` is called with
+ * arguments that can't work.
+ */
+interface LaunchMessages {
+    containerDoesNotOutputEntryScript: 'Error: the container has no binding for EntryScript. Pass the id of your entry class instead, e.g. launch(container, identifier(MyCli)).';
+    containerDoesNotOutputId: 'Error: the container has no binding for this id.';
+    idIsNotMain: "Error: the id's type has no main(argv: string[]): Promise<void> method.";
+    notAContainer: 'Error: launch() needs a haywire container, from createContainer().';
 }
 
-type ValidateEntryContainer<C extends GenericContainer> =
+/**
+ * `unknown` when there are no failures, otherwise an object requiring their messages.
+ * Intersected with a parameter, so an invalid argument fails with a readable message, while the
+ * parameter's generic stays inferable.
+ *
+ * @template Failures - keys of failed checks, `never` when valid
+ */
+type Invalid<Failures extends keyof LaunchMessages> = [Failures] extends [never]
+    ? unknown
+    : { error: LaunchMessages[Failures] };
+
+type EntryContainerFailures<C extends GenericContainer> =
     C extends Container<infer U>
         ? [
               NonExtendable<
@@ -33,37 +49,32 @@ type ValidateEntryContainer<C extends GenericContainer> =
                   false
               >,
           ] extends U
-            ? []
-            : [InvalidInput<'ContainerDoesNotOutputEntryScript'>]
-        : [InvalidInput<'InputIsNotContainer'>];
+            ? never
+            : 'containerDoesNotOutputEntryScript'
+        : 'notAContainer';
 type EntryLauncher = <C extends GenericContainer>(
-    container: C,
-    ...invalidInput: ValidateEntryContainer<C>
+    container: C & Invalid<EntryContainerFailures<C>>
 ) => WrapperMain;
 
-type ValidateIdContainer<C extends GenericContainer, Id extends GenericHaywireId> = [
-    ...(C extends Container<infer O>
-        ? [
-              NonExtendable<
-                  NonNullable<HaywireIdType<OutputHaywireId<Id>>>,
-                  Id['construct'],
-                  Id['annotations']['named'],
-                  false,
-                  false,
-                  false
-              >,
-          ] extends O
-            ? []
-            : [InvalidInput<'ContainerDoesNotOutputId'>]
-        : [InvalidInput<'NotAContainer'>]),
-    ...(NonNullable<HaywireIdType<OutputHaywireId<Id>>> extends Main
-        ? []
-        : [InvalidInput<'IdIsNotMain'>]),
-];
+type IdContainerFailures<C extends GenericContainer, Id extends GenericHaywireId> =
+    | (C extends Container<infer O>
+          ? [
+                NonExtendable<
+                    NonNullable<HaywireIdType<OutputHaywireId<Id>>>,
+                    Id['construct'],
+                    Id['annotations']['named'],
+                    false,
+                    false,
+                    false
+                >,
+            ] extends O
+              ? never
+              : 'containerDoesNotOutputId'
+          : 'notAContainer')
+    | (NonNullable<HaywireIdType<OutputHaywireId<Id>>> extends Main ? never : 'idIsNotMain');
 type IdLauncher = <C extends GenericContainer, Id extends GenericHaywireId>(
     container: C,
-    id: Id,
-    ...invalidInput: ValidateIdContainer<C, Id>
+    id: Id & Invalid<IdContainerFailures<C, Id>>
 ) => WrapperMain;
 
 export const launch = ((

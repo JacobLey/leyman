@@ -90,10 +90,11 @@ export { default } from './dist/bin.js';
 
 ## Type errors
 
-`launch()` checks the container and id at compile time:
+`launch()` checks the container and id at compile time, and the error says what's wrong:
 
-- The container must be able to provide the id: a container without a binding for `Cli` is a type error.
-- The id's type must have a `main(argv: string[]): Promise<void>` method.
+- The container must be able to provide the id: `Error: the container has no binding for this id.`
+- The id's type must have a main method: `Error: the id's type has no main(argv: string[]): Promise<void> method.`
+- Without an id, the container must bind `EntryScript`, or the error suggests passing your class's id.
 
 ## Testing
 

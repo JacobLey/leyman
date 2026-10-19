@@ -70,7 +70,7 @@ Returns an `EntryScript` subclass that, when invoked as the entry point, resolve
 
 **Returns** `WrapperMain` (an `EntryScript` subclass) — a class that can be exported as `default` and will be picked up by the `entry-script` lifecycle.
 
-**Type errors** — Passing a container that cannot provide a binding for the given id, or an id whose type does not implement `Main`, is a compile-time error.
+**Type errors** — Passing a container that cannot provide a binding for the given id, or an id whose type does not implement `Main`, is a compile-time error that says which, e.g. `Property 'error' is missing ... '{ error: "Error: the container has no binding for this id."; }'`.
 
 ```ts
 import { launch } from 'haywire-launcher';
