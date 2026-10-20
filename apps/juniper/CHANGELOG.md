@@ -1,5 +1,14 @@
 # juniper
 
+## 2.4.0
+
+### Minor Changes
+
+- f4e6b21: `ObjectSchema.oneOf(schemas, { discriminator })` declares a discriminated union. Every branch must require the property as a single, unique string value (checked at compile time), and the output gets OpenAPI's `discriminator` keyword.
+- 3b797de: New `juniper/eslint` entry point with a `juniper/top-level-schema` rule, reporting schemas built inside functions or class instance fields instead of once at module scope. `eslint` is an optional peer dependency, and importing `juniper` never loads the plugin.
+- 4598bf8: `toJSON({ openApi30: true })` and `components(schemas, { openApi30: true })` return the new `OpenApi30JsonSchema` type, with no boolean sub-schemas and a single `type`, so the output assigns to OpenAPI libraries' 3.0 schema types (e.g. openapi3-ts's `oas30.SchemaObject`) without a cast. Other output is still a `JsonSchema`.
+- b56e9c4: New `serializeSpec(spec, options?)` serializes every Juniper schema in an OpenAPI document and fills `components.schemas` with every definition they use, so no schema has to be listed for `components()`. The dialect follows the document's `openapi` version.
+
 ## 2.3.0
 
 ### Minor Changes

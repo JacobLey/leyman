@@ -1,5 +1,22 @@
 # genever
 
+## 0.3.0
+
+### Minor Changes
+
+- ff23724: Strict mode checks `discriminator`: its property must be required, by the schema or by every `oneOf`/`anyOf` branch, and every `mapping` target must exist.
+- 90da64c: `discriminator` is accepted in plain JSON Schema too (Juniper emits it for discriminated unions), and `type: "object"` next to a `oneOf` of objects no longer adds a redundant `Record<string, unknown> &` to the type.
+- fae82b7: An OpenAPI document with `paths` also generates `Paths` (by path, then method) and `Operations` (by `operationId`) types, in the shape openapi-typescript generates: each operation's `parameters` by location, `requestBody`, and `responses` by status code with `headers` and `content` by media type. `$ref`s to parameters, request bodies, responses, headers and path items are followed.
+
+### Patch Changes
+
+- Updated dependencies [5ab7f8a]
+- Updated dependencies [b40f828]
+- Updated dependencies [73bfe20]
+  - haywire-launcher@1.0.3
+  - haywire@2.0.1
+  - populate-files@1.1.1
+
 ## 0.2.0
 
 ### Minor Changes

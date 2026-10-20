@@ -1,5 +1,13 @@
 # haywire-launcher
 
+## 1.0.3
+
+### Patch Changes
+
+- 5ab7f8a: `launch()` with a container that can't provide the id, or an id without a `main` method, fails with a message saying which (`Property 'error' is missing ... '{ error: "Error: ..." }'`) instead of `Expected N arguments`.
+- Updated dependencies [b40f828]
+  - haywire@2.0.1
+
 ## 1.0.2
 
 ### Patch Changes

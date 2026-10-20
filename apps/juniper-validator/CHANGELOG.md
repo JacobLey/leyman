@@ -1,5 +1,19 @@
 # juniper-validator
 
+## 0.4.0
+
+### Minor Changes
+
+- c95506c: Ajv's `discriminator` option is on by default, so Juniper's discriminated unions validate. Pass `discriminator: false` to turn it off.
+
+### Patch Changes
+
+- Updated dependencies [f4e6b21]
+- Updated dependencies [3b797de]
+- Updated dependencies [4598bf8]
+- Updated dependencies [b56e9c4]
+  - juniper@2.4.0
+
 ## 0.3.0
 
 ### Minor Changes

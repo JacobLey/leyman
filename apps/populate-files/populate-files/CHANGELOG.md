@@ -1,5 +1,11 @@
 # populate-files
 
+## 1.1.1
+
+### Patch Changes
+
+- 73bfe20: An existing file that can't be read (e.g. `EACCES`, or a directory at the path) now fails with the read error, instead of being reported as `file-not-exist` and overwritten.
+
 ## 1.1.0
 
 ### Minor Changes

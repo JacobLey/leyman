@@ -1,6 +1,6 @@
 {
   "name": "haywire-launcher",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Instantiate and execute your script in one line.",
   "engines": {
     "node": ">=24"

@@ -1,5 +1,20 @@
 # barrelify
 
+## 2.2.0
+
+### Minor Changes
+
+- bd48342: A barrel marked `// AUTO-BARREL subdirectories` also re-exports each subdirectory that has its own index file, as `export * from './sub/index.js';`.
+
+### Patch Changes
+
+- Updated dependencies [5ab7f8a]
+- Updated dependencies [b40f828]
+- Updated dependencies [73bfe20]
+  - haywire-launcher@1.0.3
+  - haywire@2.0.1
+  - populate-files@1.1.1
+
 ## 2.1.2
 
 ### Patch Changes

@@ -1,5 +1,21 @@
 # nx-lifecycle
 
+## 1.1.3
+
+### Patch Changes
+
+- Updated dependencies [5ab7f8a]
+- Updated dependencies [b40f828]
+- Updated dependencies [f4e6b21]
+- Updated dependencies [3b797de]
+- Updated dependencies [4598bf8]
+- Updated dependencies [b56e9c4]
+- Updated dependencies [c95506c]
+  - haywire-launcher@1.0.3
+  - haywire@2.0.1
+  - juniper@2.4.0
+  - juniper-validator@0.4.0
+
 ## 1.1.2
 
 ### Patch Changes
