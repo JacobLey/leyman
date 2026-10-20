@@ -1,0 +1,48 @@
+{
+  "name": "@leyman/demo-openapi-spec",
+  "version": "0.0.1",
+  "description": "The OpenAPI document of the OpenAPI demo's notes API, built from Juniper schemas and published as openapi.json.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/openapi/spec#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "out",
+    "!out/.generated.json"
+  ],
+  "exports": {
+    "./openapi.json": "./out/openapi.json"
+  },
+  "dependencies": {
+    "juniper": "workspace:^"
+  },
+  "devDependencies": {
+    "@apidevtools/swagger-parser": "catalog:",
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "load-populate-files": "workspace:^",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "openapi-types": "catalog:",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  }
+}

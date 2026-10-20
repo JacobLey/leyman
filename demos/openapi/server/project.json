@@ -1,0 +1,68 @@
+{
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/demo-openapi-server",
+  "targets": {
+    "biome": {},
+    "eslint": {},
+    "drizzle-kit-check": {},
+    "genever": {
+      "options": {
+        "args": "--output src/generated/api.ts node_modules/@leyman/demo-openapi-spec/out/openapi.json"
+      }
+    },
+    "schema-snapshot": {
+      "options": {
+        "env": {
+          "PG_DOLLY_SCHEMA_MIGRATE": "drizzle-kit migrate"
+        }
+      },
+      "inputs": [
+        "shared-globals",
+        "{projectRoot}/package.json",
+        "{projectRoot}/src/**/*",
+        "{projectRoot}/migrations/**/*",
+        "{projectRoot}/drizzle.config.js",
+        "{projectRoot}/schema.sql",
+        "dependency-builds",
+        "^package-files",
+        {
+          "runtime": "pg_dump --version"
+        },
+        {
+          "env": "CI"
+        },
+        {
+          "externalDependencies": []
+        }
+      ]
+    },
+    "update-ts-references": {},
+    "tsc": {},
+    "tsc-test": {},
+    "mocha-unit-test": {},
+    "mocha-integration-test": {},
+    "coverage-report": {},
+    "sync-injected": {},
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}

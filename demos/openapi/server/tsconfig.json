@@ -1,0 +1,44 @@
+{
+  "extends": "../../../configs/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "include": [
+    "src",
+    "*.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../../../tools/haywire"
+    },
+    {
+      "path": "../../../tools/default-import"
+    },
+    {
+      "path": "../spec"
+    },
+    {
+      "path": "../../../apps/pg-dolly-schema"
+    },
+    {
+      "path": "../../../tools/pg-dolly"
+    },
+    {
+      "path": "../../../tools/test-chain/mocha-chain"
+    },
+    {
+      "path": "../../../apps/genever"
+    },
+    {
+      "path": "../../../leyman/expect"
+    },
+    {
+      "path": "../../../leyman/eslint-config"
+    },
+    {
+      "path": "../client"
+    }
+  ]
+}

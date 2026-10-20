@@ -7,6 +7,7 @@ packages:
   - tools/test-chain/*
   - e2e/*
   - demos/*
+  - demos/openapi/*
   - docs
   - '!**/test/**'
 
@@ -73,6 +74,17 @@ peerDependencyRules:
     eslint-plugin-jsx-a11y>eslint: '10'
     eslint-plugin-react>eslint: '10'
 
+packageExtensions:
+  # drizzle-kit imports drizzle-orm (to check their versions match, and to read schemas) and a driver (to migrate)
+  # without declaring them, so pnpm's strict layout can't resolve them. As peers, they resolve to the project's own.
+  drizzle-kit:
+    peerDependencies:
+      drizzle-orm: '*'
+      pg: '*'
+    peerDependenciesMeta:
+      pg:
+        optional: true
+
 overrides:
   # nx pins undici exactly at 7.29.0 (advisories fixed in 7.29.1). Remove once an nx release depends on >=7.29.1.
   nx>undici: ~7.29.1
@@ -87,6 +99,7 @@ catalog:
   '@changesets/cli': ^3.0.3
   '@eslint/js': ^10.0.1
   '@happy-dom/global-registrator': ^20.14.5
+  '@hono/node-server': ^2.1.5
   '@naxodev/gonx': ^4.1.2
   '@nx/devkit': ^23.3.0
   '@nx/js': ^23.3.0
@@ -121,6 +134,8 @@ catalog:
   chai: ^6.2.2
   chai-as-promised: ^8.0.2
   ci-info: ^4.4.0
+  drizzle-kit: ^0.31.11
+  drizzle-orm: ^0.45.4
   ensure-error: ^5.0.0
   escape-string-regexp: ^5.0.0
   eslint: ^10.12.0

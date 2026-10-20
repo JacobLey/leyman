@@ -102,6 +102,15 @@
     },
     {
       "path": "./apps/pg-dolly-schema"
+    },
+    {
+      "path": "./demos/openapi/spec"
+    },
+    {
+      "path": "./demos/openapi/client"
+    },
+    {
+      "path": "./demos/openapi/server"
     }
   ]
 }

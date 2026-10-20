@@ -53,6 +53,7 @@ Worked examples of putting open-source projects and services together well, in [
 
 | Demo | What it shows | Source |
 |---|---|---|
+| [OpenAPI, spec to server](./demos/openapi) | A spec built with [Juniper](./apps/juniper), a client and a server typed by [genever](./apps/genever), the server validating every request and response against `openapi.json` with bearer auth, on Postgres with Drizzle, tested with [`pg-dolly`](./tools/pg-dolly). | [`demos/openapi`](./demos/openapi) |
 | [Read-through cache](https://jacobley.github.io/leyman/demos/read-through-cache) | BentoCache on Valkey: a memory tier kept in sync, stale-while-revalidate, one load per key across instances with [`lease-cache`](./tools/lease-cache), and sharding with [`weighted-rendezvous-hash`](./tools/constant-consistent-hash/weighted-rendezvous-hash). | [`demos/read-through-cache`](./demos/read-through-cache) |
 
 ## Getting Started

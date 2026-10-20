@@ -1,0 +1,62 @@
+{
+  "name": "@leyman/demo-openapi-server",
+  "version": "0.0.1",
+  "description": "The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/openapi/server#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/server.js",
+  "exports": {
+    ".": "./dist/server.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "dependencies": {
+    "@hono/node-server": "catalog:",
+    "@leyman/demo-openapi-spec": "workspace:^",
+    "ajv": "catalog:",
+    "ajv-formats": "catalog:",
+    "default-import": "workspace:^",
+    "drizzle-orm": "catalog:",
+    "haywire": "workspace:^",
+    "hono": "catalog:",
+    "pg": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/demo-openapi-client": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "drizzle-kit": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "genever": "workspace:^",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "pg-dolly": "workspace:^",
+    "pg-dolly-schema": "workspace:^",
+    "typescript": "catalog:"
+  }
+}

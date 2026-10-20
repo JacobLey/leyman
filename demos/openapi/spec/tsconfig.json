@@ -1,0 +1,29 @@
+{
+  "extends": "../../../configs/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "include": [
+    "src",
+    "*.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../../../apps/juniper"
+    },
+    {
+      "path": "../../../tools/test-chain/mocha-chain"
+    },
+    {
+      "path": "../../../apps/populate-files/load-populate-files"
+    },
+    {
+      "path": "../../../leyman/expect"
+    },
+    {
+      "path": "../../../leyman/eslint-config"
+    }
+  ]
+}
