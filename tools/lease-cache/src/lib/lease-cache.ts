@@ -30,7 +30,7 @@ export interface LeaseCacheOptions {
      */
     readonly prefix: string;
     /**
-     * How long a loaded value is cached, in milliseconds.
+     * How long a loaded value is cached, in milliseconds, unless `get` is given its own.
      */
     readonly ttlMs: number;
     /**
@@ -59,6 +59,14 @@ export interface LeaseCacheOptions {
      * the leases saved.
      */
     readonly onWait?: (key: string) => void;
+}
+
+export interface GetOptions<T extends Json> {
+    /**
+     * How long the loaded value is cached, in milliseconds, in place of the cache's `ttlMs`. A function gets the
+     * value, e.g. to cache a missing row for less time than a found one. Must be above 0.
+     */
+    readonly ttlMs?: number | ((value: T) => number);
 }
 
 type GetOrLeaseResult =
@@ -92,10 +100,16 @@ export class LeaseCache {
      *
      * @param key - Identifies the value, without the prefix
      * @param load - Loads the value from the source of truth
+     * @param options - How long to cache this value
      * @returns Cached or loaded value
      */
-    public async get<T extends Json>(key: string, load: () => Promise<T>): Promise<T> {
-        const { leaseMs, pollMs, ttlMs, waitMs } = this.#options;
+    public async get<T extends Json>(
+        key: string,
+        load: () => Promise<T>,
+        options: GetOptions<T> = {}
+    ): Promise<T> {
+        const { leaseMs, pollMs, waitMs } = this.#options;
+        const { ttlMs = this.#options.ttlMs } = options;
         const keys = this.#keys(key);
         const token = randomUUID();
         const deadline = Date.now() + waitMs;
@@ -122,7 +136,13 @@ export class LeaseCache {
                 }
                 // When the lease was lost, this caches nothing. What was loaded is still returned: it is as fresh
                 // as when this read started.
-                await this.#eval(fillScript, keys, token, JSON.stringify(loaded), ttlMs);
+                await this.#eval(
+                    fillScript,
+                    keys,
+                    token,
+                    JSON.stringify(loaded),
+                    typeof ttlMs === 'function' ? ttlMs(loaded) : ttlMs
+                );
                 return loaded;
             }
 

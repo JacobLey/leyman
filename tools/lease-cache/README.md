@@ -134,16 +134,24 @@ Values are stored as JSON. `null` is cached like any other value, so a missing r
 |--------|------|-------------|
 | `connection` | `LeaseCacheConnection` | Required. Anything with `eval(script, numKeys, ...args)`: see [Clients](#clients). Never closed by the cache. |
 | `prefix` | `string` | Required. Prefix of every key, so several caches can share a server. |
-| `ttlMs` | `number` | Required. How long a loaded value is cached. |
+| `ttlMs` | `number` | Required. How long a loaded value is cached, unless `get` is given its own. |
 | `leaseMs` | `number` | Required. How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing. |
 | `pollMs` | `number` | Required. How often a waiting reader checks again. |
 | `waitMs` | `number` | Required. How long a reader waits on another's load before loading itself (without caching). |
 | `staleMs` | `number` | Optional, `0` (off) by default. After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. Only for reads that accept data from before the last change: a stale value is returned, never cached. |
 | `onWait` | `(key: string) => void` | Optional. Called each time a reader waits on another's load, e.g. to count saved loads. |
 
-#### `cache.get(key, load)`
+#### `cache.get(key, load, options?)`
 
 Returns the cached value, or calls `load` and caches what it returns. Rejects with what `load` threw. `T` must be JSON (`Json`).
+
+`options.ttlMs` caches this value for its own time, in place of the cache's `ttlMs`. A function gets the loaded value, e.g. to cache a missing row for less time than a found one:
+
+```ts
+const user = await cache.get(`user:${id}`, async () => db.users.find(id), {
+    ttlMs: found => (found ? 60_000 : 5000),
+});
+```
 
 #### `cache.invalidate(key)`
 

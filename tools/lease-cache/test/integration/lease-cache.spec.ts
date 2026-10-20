@@ -92,6 +92,36 @@ suite('LeaseCache', () => {
                     }
                 );
 
+                withConnection.test(
+                    'Caches a value for the ttlMs given to get',
+                    async ({ instance, prefix, valkey }) => {
+                        await instance({ ttlMs: 60_000 }).get('key', async () => 'value', {
+                            ttlMs: 5000,
+                        });
+
+                        const valueKey = [prefix, '{key}', 'value'].join(':');
+                        expect(await valkey.pttl(valueKey)).to.be.within(1, 5000);
+                    }
+                );
+
+                withConnection.test(
+                    'Caches a value for the ttlMs computed from it',
+                    async ({ instance, prefix, valkey }) => {
+                        const cache = instance({ ttlMs: 60_000 });
+                        const ttlMs = (value: string | null): number =>
+                            value === null ? 5000 : 30_000;
+                        await cache.get('missing', async () => null, { ttlMs });
+                        await cache.get('found', async () => 'value', { ttlMs });
+
+                        expect(
+                            await valkey.pttl([prefix, '{missing}', 'value'].join(':'))
+                        ).to.be.within(1, 5000);
+                        expect(
+                            await valkey.pttl([prefix, '{found}', 'value'].join(':'))
+                        ).to.be.within(5001, 30_000);
+                    }
+                );
+
                 withConnection.test('Rejects with what the loader threw', async ({ instance }) => {
                     const failure = new Error('Database is down');
 

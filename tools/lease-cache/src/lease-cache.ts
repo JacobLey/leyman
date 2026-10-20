@@ -1,4 +1,5 @@
 export {
+    type GetOptions,
     type Json,
     LeaseCache,
     type LeaseCacheConnection,

@@ -10,14 +10,14 @@ description: LeaseCache, its options, get and invalidate, and the Json and Lease
 |--------|------|---------|-------------|
 | `connection` | [`LeaseCacheConnection`](#leasecacheconnection) | — | Runs the cache's scripts. See [Clients](/lease-cache/guides/clients). Never closed by the cache. |
 | `prefix` | `string` | — | Prefix of every key, so several caches can share a server. |
-| `ttlMs` | `number` | — | How long a loaded value is cached, in milliseconds. |
+| `ttlMs` | `number` | — | How long a loaded value is cached, in milliseconds, unless [`get`](#cache-get-key-load-options) is given its own. |
 | `leaseMs` | `number` | — | How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing. |
 | `pollMs` | `number` | — | How often a reader waiting on another's load checks again. |
 | `waitMs` | `number` | — | How long a reader waits on another's load before loading itself. It then caches nothing, as it holds no lease. Bounds how long a stuck load can stall everyone else. |
 | `staleMs` | `number` | `0` (off) | After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. See [Serving stale values](/lease-cache/guides/invalidation#serving-stale-values-while-the-next-load-runs). |
 | `onWait` | `(key: string) => void` | — | Called each time a reader finds another reader loading the key, and waits. For example, to count the loads that leases saved. |
 
-## `cache.get(key, load)`
+## `cache.get(key, load, options?)`
 
 Returns the cached value, or calls `load` and caches what it returns.
 
@@ -25,6 +25,21 @@ Returns the cached value, or calls `load` and caches what it returns.
 |-----------|------|-------------|
 | `key` | `string` | Identifies the value, without the prefix. |
 | `load` | `() => Promise<T>` | Loads the value from the source of truth. `T` must extend [`Json`](#json). |
+| `options.ttlMs` | `number \| ((value: T) => number)` | How long this value is cached, in place of the cache's `ttlMs`. A function gets the loaded value. Above 0. |
+
+```ts
+import type { LeaseCache } from 'lease-cache';
+
+type User = { readonly id: number; readonly name: string };
+declare const db: { users: { find: (id: number) => Promise<User | null> } };
+declare const cache: LeaseCache;
+declare const id: number;
+// ---cut---
+// Cache a missing row for less time than a found one
+const user = await cache.get(`user:${id}`, async () => db.users.find(id), {
+    ttlMs: found => (found ? 60_000 : 5000),
+});
+```
 
 **Returns** `Promise<T>`:
 
