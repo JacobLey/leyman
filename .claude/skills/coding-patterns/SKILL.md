@@ -54,10 +54,39 @@ Immutability makes code easier to reason about — especially in a codebase with
 
 ## Dependency injection: when to use it, when not to
 
-Default to importing dependencies directly and testing against the real thing. Only inject a dependency when a test **cannot** put the real one into the state it needs:
+DI earns its place for one of two reasons. Without either, import dependencies directly. Injecting everything "just in case" leads to tests that check how code is wired (which stub was called, with what) instead of what it does.
+
+### 1. A test can't control the real dependency
+
+Inject a dependency when a test **cannot** put the real one into the state it needs:
 
 | Needs DI | Does not need DI |
 |---|---|
+| Network calls and remote services | File system (temp dirs via `tmp-promise`, fixtures in `test/data/`) |
+| Time, timers, randomness | Console output, exit codes, argv (run the CLI as a subprocess) |
+| Host state a test can't safely change (installed tools, OS, global config) | `process.cwd()` and paths (pass `cwd`, or `chdir` and restore) |
+| Failures that can't be triggered for real (disk full, permission denied) | Other workspace packages and pure functions |
+
+If a branch is only reachable by substituting a dependency, that dependency needs DI. Otherwise, testing against real inputs is preferred: it exercises the real dependency's behavior, which a stub can only assume. Inject only the dependencies that meet this bar; everything else stays a direct import, even within the same class.
+
+### 2. Composition is part of the design
+
+Inject when callers really choose between implementations, or supply resources they own:
+
+- **Interchangeable implementations of one part**, each a real, complete choice (e.g. a cache's memory tier: none, local, or synced across instances). Each choice is one binding, and an application (or test) composes the ones it wants.
+- **Resources the application owns and shares**, such as a database or Valkey connection also used for something else. Taking them as bound instances, rather than opening its own, lets the code share them and makes ownership explicit: the container never closes what the application bound.
+
+Tests still test behavior: compose the real implementations, run them against real services, and assert on what the composed whole does. Swapping one choice per test (`replaceBinding()`) is the point; stubs stay limited to reason 1.
+
+### Either way
+
+Use `haywire` rather than hand-rolling it (e.g. constructor parameters with production defaults).
+
+For reason 1, external consumers of a package should never be aware of its DI setup: the container wiring is an internal implementation detail, behind a clean, non-DI API. For reason 2, the bindings _are_ the API, so export them (and the ids the application binds), and document each choice.
+
+See the haywire README for the constructor provider pattern used in this repo.
+
+---|---|
 | Network calls and remote services | File system (temp dirs via `tmp-promise`, fixtures in `test/data/`) |
 | Time, timers, randomness | Console output, exit codes, argv (run the CLI as a subprocess) |
 | Host state a test can't safely change (installed tools, OS, global config) | `process.cwd()` and paths (pass `cwd`, or `chdir` and restore) |
