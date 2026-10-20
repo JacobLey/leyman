@@ -70,6 +70,13 @@ peerDependencyRules:
     eslint-plugin-jsx-a11y>eslint: '10'
     eslint-plugin-react>eslint: '10'
 
+overrides:
+  # nx pins undici exactly at 7.29.0 (advisories fixed in 7.29.1). Remove once an nx release depends on >=7.29.1.
+  nx>undici: ~7.29.1
+  # Optional peer of @vueuse/integrations (via vitepress) for its `useAxios` composable, which the docs site never uses.
+  # pnpm still resolves it, so remove it outright.
+  '@vueuse/integrations>axios': '-'
+
 catalog:
   '@apidevtools/swagger-parser': ^13.1.0
   '@arethetypeswrong/core': ^0.18.5

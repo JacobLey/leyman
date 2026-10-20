@@ -258,6 +258,10 @@ catalogs:
       specifier: npm:barrelify@^2.1.2
       version: 2.1.2
 
+overrides:
+  nx>undici: ~7.29.1
+  '@vueuse/integrations>axios': '-'
+
 importers:
 
   .:
@@ -907,7 +911,7 @@ importers:
         version: file:tools/unknown-error
       vitepress:
         specifier: 'catalog:'
-        version: 2.0.0-alpha.20(@types/node@24.19.0)(@typescript/typescript6@6.0.2)(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))(change-case@5.4.4)(esbuild@0.28.2)(postcss@8.5.28)(yaml@2.9.0)
+        version: 2.0.0-alpha.20(@types/node@24.19.0)(@typescript/typescript6@6.0.2)(change-case@5.4.4)(esbuild@0.28.2)(postcss@8.5.28)(yaml@2.9.0)
       vitest:
         specifier: 'catalog:'
         version: 5.0.2(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.1(@types/node@24.19.0)(esbuild@0.28.2)(yaml@2.9.0))
@@ -4700,7 +4704,6 @@ packages:
     resolution: {integrity: sha512-oJz9qTgczvA7L1nXQFRU7h8tQbOCoiceqvMMhT9XYMyOGTqLJ2rEa09PON+nD2t48sZUfeOmg4eaWJXV4sZb/w==}
     peerDependencies:
       async-validator: ^4
-      axios: ^1
       change-case: ^5
       drauu: ^0.4
       focus-trap: ^7 || ^8
@@ -4714,8 +4717,6 @@ packages:
       vue: ^3.5.0
     peerDependenciesMeta:
       async-validator:
-        optional: true
-      axios:
         optional: true
       change-case:
         optional: true
@@ -4809,10 +4810,6 @@ packages:
   address@2.0.3:
     resolution: {integrity: sha512-XNAb/a6TCqou+TufU8/u11HCu9x1gYvOoxLwtlXgIqmkrYQADVv6ljyW2zwiPhHz9R1gItAWpuDrdJMmrOBFEA==}
     engines: {node: '>= 16.0.0'}
-
-  agent-base@6.0.2:
-    resolution: {integrity: sha512-RZNwNclF7+MS/8bDg70amg32dyeZGZxiDuQmZxKLAlQjr3jGyLx+4Kkk58UO7D2QdgFIQCovuSuZESne6RG6XQ==}
-    engines: {node: '>= 6.0.0'}
 
   ajv-draft-04@1.0.0:
     resolution: {integrity: sha512-mv00Te6nmYbRp5DCwclxtt7yV/joXJPGS7nM+97GdxvuttCOfgI3K4U25zboyeX0O+myI8ERluxQe5wljMmVIw==}
@@ -4915,9 +4912,6 @@ packages:
     resolution: {integrity: sha512-hsU18Ae8CDTR6Kgu9DYf0EbCr/a5iGL0rytQDobUcdpYOKokk8LEjVphnXkDkgpi0wYVsqrXuP0bZxJaTqdgoA==}
     engines: {node: '>= 0.4'}
 
-  asynckit@0.4.0:
-    resolution: {integrity: sha512-Oei9OH4tRh0YqU3GxhX79dM/mwVgvbZJaSNaRk+bshkj0S5cfHcgYakreBjrHwatXKbz+IoIdYLxrKim2MjW0Q==}
-
   atomic-sleep@1.0.0:
     resolution: {integrity: sha512-kNOjDqAh7px0XWNI+4QbzoiR/nTkHAWNud2uvnJquD1/x5a7EQZMJT0AczqK0Qn67oY/TTQ1LbUKajZpp3I9tQ==}
     engines: {node: '>=8.0.0'}
@@ -4932,9 +4926,6 @@ packages:
   axe-core@4.10.2:
     resolution: {integrity: sha512-RE3mdQ7P3FRSe7eqCWoeQ/Z9QXrtniSjp1wUjt5nRC3WIpz5rSCve6o3fsZ2aCpJtrZjSZgjwXAoTO5k4tEI0w==}
     engines: {node: '>=4'}
-
-  axios@1.18.1:
-    resolution: {integrity: sha512-3nTvFlvpn9Zu/RkHUqtc7/+al4UpRW5az71ap5zccp6e8RAYEzhMTecX8Dz1wWDYrPpUoB1HAQEGEAEvUr7S9g==}
 
   axobject-query@4.1.0:
     resolution: {integrity: sha512-qIj0G9wZbMGNLjLmg1PT6v2mE9AH2zlnADJD/2tC6E00hgmhUOfEB6greHPAfLRSufHqROIUTkw6E+M3lH0PTQ==}
@@ -5187,10 +5178,6 @@ packages:
     resolution: {integrity: sha512-lomjuFZKfM6MSAnV9aCZC9sc0qGbmZdfygNv+nCpqVkSKdCxCklLtd16O0EILGkImHw9ZpHkAnHaB+8Zxq5W6Q==}
     engines: {node: '>=8.0.0'}
 
-  combined-stream@1.0.8:
-    resolution: {integrity: sha512-FQN4MRfuJeHf7cBbBMJFXhKSDq+2kAArBlmRBvcvFE5BB1HZKXtSFASDhdlz9zOYwxh8lDdnvmMOe/+5cdoEdg==}
-    engines: {node: '>= 0.8'}
-
   comma-separated-tokens@2.0.3:
     resolution: {integrity: sha512-Fu4hJdvzeylCfQPp9SGWidpzrMs7tTrlu6Vb8XGaRGck8QSNZJJp538Wrb60Lax4fPwR64ViY468OIUTbRlGZg==}
 
@@ -5319,10 +5306,6 @@ packages:
   define-properties@1.2.1:
     resolution: {integrity: sha512-8QmQKqEASLd5nx0U1B1okLElbUuuttJ/AnYmRXbbbGDWh6uS208EjD4Xqq/I9wK7u0v6O08XhTWnt5XtEbR6Dg==}
     engines: {node: '>= 0.4'}
-
-  delayed-stream@1.0.0:
-    resolution: {integrity: sha512-ZySD7Nf91aLB0RxL4KGrKHBXl7Eds1DAmEdcoVawXnLD7SDhpNgtuII2aAkg7a7QS41jxPSZ17p4VdGnMHk3MQ==}
-    engines: {node: '>=0.4.0'}
 
   dequal@2.0.3:
     resolution: {integrity: sha512-0je+qPKHEMohvfRTCEo3CrPG6cAzAYgmzKyxRiYSSDkS6eGJdyVJm7WaYA5ECaAD9wLB2T4EEeymA5aFVcYXCA==}
@@ -5760,15 +5743,6 @@ packages:
   focus-trap@8.2.3:
     resolution: {integrity: sha512-LTNHZwcFM7bSdU1cG1ExoaTEzoGmdjw+EzDotolZmLTCbm0ll2k6J3NL+WfqP14nGLxAp+XDJgwlT2DtNhcukA==}
 
-  follow-redirects@1.16.0:
-    resolution: {integrity: sha512-y5rN/uOsadFT/JfYwhxRS5R7Qce+g3zG97+JrtFZlC9klX/W5hD7iiLzScI4nZqUS7DNUdhPgw4xI8W2LuXlUw==}
-    engines: {node: '>=4.0'}
-    peerDependencies:
-      debug: '*'
-    peerDependenciesMeta:
-      debug:
-        optional: true
-
   for-each@0.3.5:
     resolution: {integrity: sha512-dKx12eRCVIzqCxFGplyFKJMPvLEWgmNtUrpTiJIR5u97zEhRG8ySrtboPHZXx7daLxQVrl643cTzbab2tkQjxg==}
     engines: {node: '>= 0.4'}
@@ -5780,10 +5754,6 @@ packages:
   form-data-encoder@4.1.0:
     resolution: {integrity: sha512-G6NsmEW15s0Uw9XnCg+33H3ViYRyiM0hMrMhhqQOR8NFc5GhYrI+6I3u7OTw7b91J2g8rtvMBZJDbcGb2YUniw==}
     engines: {node: '>= 18'}
-
-  form-data@4.0.6:
-    resolution: {integrity: sha512-vKatAh4SlVfgbv+YtmhiRjhEMJsYpsG1Y2rMQtR+SVSbytsSD1YGzDIcrAJmdFec88u/+VoGmxnl+80gL1tRCQ==}
-    engines: {node: '>= 6'}
 
   format-file@1.0.2:
     resolution: {integrity: sha512-ttKhxIXHU2akFT0UDSD36bLcfZ0jKm5xGXiz1cpD+fqcSQsn0+m+r5PnHCp2k4MbuGbMGql8vSd74tS8Nr6xUA==}
@@ -6022,10 +5992,6 @@ packages:
   http2-wrapper@2.2.1:
     resolution: {integrity: sha512-V5nVw1PAOgfI3Lmeaj2Exmeg7fenjhRUgz1lPSezy1CuhPYbgQtbQj4jZfEAEMlaL+vupsvhjqCyjzob0yxsmQ==}
     engines: {node: '>=10.19.0'}
-
-  https-proxy-agent@5.0.1:
-    resolution: {integrity: sha512-dFcAjpTQFgoLMzC2VwU+C/CbS7uRL0lWmxDITmqm7C+7F0Odmj6s9l6alZc6AELXhrnggM2CeWSXHGOdX2YtwA==}
-    engines: {node: '>= 6'}
 
   human-id@4.2.1:
     resolution: {integrity: sha512-zPGsiS+dWoTZtZ4AtpA9Y+BdSFSNWvnouNlWNoUFyAM6xHOHmdCvqO3k8AIbdamCOv4gUFUVNPf6rJFfc4UiJw==}
@@ -6637,16 +6603,8 @@ packages:
   micromark@4.0.3:
     resolution: {integrity: sha512-oGYfQzHSG5dOMovQcJ3fyTmZlWAWpi0XA0sJwJs+i6OT88o1+Jtw/8z0CmdowSLxGhhFK89rQ/oXph/wN02PNw==}
 
-  mime-db@1.52.0:
-    resolution: {integrity: sha512-sPU4uV7dYlvtWJxwwxHD0PuihVNiE7TyAbQ5SWxDCB9mUYvOgroQOwYQQOKPJ8CIbE+1ETVlOoK1UC2nU3gYvg==}
-    engines: {node: '>= 0.6'}
-
   mime-db@1.53.0:
     resolution: {integrity: sha512-oHlN/w+3MQ3rba9rqFr6V/ypF10LSkdwUysQL7GkXoTgIWeV+tcXGA852TBxH+gsh8UWoyhR1hKcoMJTuWflpg==}
-    engines: {node: '>= 0.6'}
-
-  mime-types@2.1.35:
-    resolution: {integrity: sha512-ZDY+bPm5zTTF+YpCrAU9nK0UgICYPT0QtT1NZWFv4s++TNkcgVaT0g6+4R2uI4MjQjzysHB1zxuWL50hzaeXiw==}
     engines: {node: '>= 0.6'}
 
   mimic-fn@2.1.0:
@@ -7047,10 +7005,6 @@ packages:
 
   property-information@7.2.0:
     resolution: {integrity: sha512-IAtzIB6sUiWaJYrX9smp3V46pBGbBeLFRGdh25kg1334VcBlD8HzhPeNIWQH9zhGmo2itIe25EHt9dQP7G5hmg==}
-
-  proxy-from-env@2.1.0:
-    resolution: {integrity: sha512-cJ+oHTW1VAEa8cJslgmUZrc+sjRKgAKl3Zyse6+PV38hZe/V6Z14TbCuXcan9F9ghlz4QrFr2c92TNF82UkYHA==}
-    engines: {node: '>=10'}
 
   publint@0.3.25:
     resolution: {integrity: sha512-WMMbn/d7JqRlfXQL/JUI4n5skC8cJ5WVr8/wT5mmiYWkUdENkZr1I5rgs2+dQPVRgoJd+JRYtB46MTsuDylw9g==}
@@ -7699,8 +7653,8 @@ packages:
   undici-types@8.9.0:
     resolution: {integrity: sha512-KTDyRTYX8sWmKXAikPHHSyc63CRPETMctyjKFupcC6OBLXT3xsN0e9aF7m+mIXutFWpUXuedtowG7iLOzp0kQg==}
 
-  undici@7.29.0:
-    resolution: {integrity: sha512-IDxfleLmmbSskfWSUATiN1nfn2rDuvnMOqb5CWR92iIfojA0Ud+ulOAAEQ57LPr9rWmsreUyf5lwyao+7GNNVw==}
+  undici@7.29.1:
+    resolution: {integrity: sha512-RYONW2MeafgYlkVOKYKkA/Ag7BmXqgIWCa8t1m0JcxrQg9pI9lEqRhAOruOBCbAohOa/gkCF+iPi9hrgvTzu6Q==}
     engines: {node: '>=20.18.1'}
 
   undici@8.11.2:
@@ -10238,13 +10192,12 @@ snapshots:
       '@vueuse/shared': 14.4.0(vue@3.5.43(@typescript/typescript6@6.0.2))
       vue: 3.5.43(@typescript/typescript6@6.0.2)
 
-  '@vueuse/integrations@14.4.0(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))(change-case@5.4.4)(focus-trap@8.2.3)(vue@3.5.43(@typescript/typescript6@6.0.2))':
+  '@vueuse/integrations@14.4.0(change-case@5.4.4)(focus-trap@8.2.3)(vue@3.5.43(@typescript/typescript6@6.0.2))':
     dependencies:
       '@vueuse/core': 14.4.0(vue@3.5.43(@typescript/typescript6@6.0.2))
       '@vueuse/shared': 14.4.0(vue@3.5.43(@typescript/typescript6@6.0.2))
       vue: 3.5.43(@typescript/typescript6@6.0.2)
     optionalDependencies:
-      axios: 1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1)
       change-case: 5.4.4
       focus-trap: 8.2.3
 
@@ -10350,13 +10303,6 @@ snapshots:
   acorn@8.16.0: {}
 
   address@2.0.3: {}
-
-  agent-base@6.0.2(supports-color@8.1.1):
-    dependencies:
-      debug: 4.4.3(supports-color@8.1.1)
-    transitivePeerDependencies:
-      - supports-color
-    optional: true
 
   ajv-draft-04@1.0.0(ajv@8.20.0):
     optionalDependencies:
@@ -10469,9 +10415,6 @@ snapshots:
 
   async-function@1.0.0: {}
 
-  asynckit@0.4.0:
-    optional: true
-
   atomic-sleep@1.0.0: {}
 
   available-typed-arrays@1.0.7:
@@ -10484,17 +10427,6 @@ snapshots:
       fastq: 1.19.0
 
   axe-core@4.10.2: {}
-
-  axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1):
-    dependencies:
-      follow-redirects: 1.16.0(debug@4.4.3(supports-color@8.1.1))
-      form-data: 4.0.6
-      https-proxy-agent: 5.0.1(supports-color@8.1.1)
-      proxy-from-env: 2.1.0
-    transitivePeerDependencies:
-      - debug
-      - supports-color
-    optional: true
 
   axobject-query@4.1.0: {}
 
@@ -10777,11 +10709,6 @@ snapshots:
       strip-ansi: 6.0.1
       wcwidth: 1.0.1
 
-  combined-stream@1.0.8:
-    dependencies:
-      delayed-stream: 1.0.0
-    optional: true
-
   comma-separated-tokens@2.0.3: {}
 
   commander@6.2.1: {}
@@ -10898,9 +10825,6 @@ snapshots:
       define-data-property: 1.1.4
       has-property-descriptors: 1.0.2
       object-keys: 1.1.1
-
-  delayed-stream@1.0.0:
-    optional: true
 
   dequal@2.0.3: {}
 
@@ -11544,11 +11468,6 @@ snapshots:
     dependencies:
       tabbable: 6.5.0
 
-  follow-redirects@1.16.0(debug@4.4.3(supports-color@8.1.1)):
-    optionalDependencies:
-      debug: 4.4.3(supports-color@8.1.1)
-    optional: true
-
   for-each@0.3.5:
     dependencies:
       is-callable: 1.2.7
@@ -11559,15 +11478,6 @@ snapshots:
       signal-exit: 4.1.0
 
   form-data-encoder@4.1.0: {}
-
-  form-data@4.0.6:
-    dependencies:
-      asynckit: 0.4.0
-      combined-stream: 1.0.8
-      es-set-tostringtag: 2.1.0
-      hasown: 2.0.4
-      mime-types: 2.1.35
-    optional: true
 
   format-file@1.0.2(@biomejs/biome@2.5.14)(prettier@3.9.9):
     dependencies:
@@ -11819,14 +11729,6 @@ snapshots:
     dependencies:
       quick-lru: 5.1.1
       resolve-alpn: 1.2.1
-
-  https-proxy-agent@5.0.1(supports-color@8.1.1):
-    dependencies:
-      agent-base: 6.0.2(supports-color@8.1.1)
-      debug: 4.4.3(supports-color@8.1.1)
-    transitivePeerDependencies:
-      - supports-color
-    optional: true
 
   human-id@4.2.1: {}
 
@@ -12537,15 +12439,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  mime-db@1.52.0:
-    optional: true
-
   mime-db@1.53.0: {}
-
-  mime-types@2.1.35:
-    dependencies:
-      mime-db: 1.52.0
-    optional: true
 
   mimic-fn@2.1.0: {}
 
@@ -12756,7 +12650,7 @@ snapshots:
       tmp: 0.2.7
       tsconfig-paths: 4.2.0
       tslib: 2.8.1
-      undici: 7.29.0
+      undici: 7.29.1
       util-deprecate: 1.0.2
       wcwidth: 1.0.1
       which: 3.0.1
@@ -13058,9 +12952,6 @@ snapshots:
       react-is: 16.13.1
 
   property-information@7.2.0: {}
-
-  proxy-from-env@2.1.0:
-    optional: true
 
   publint@0.3.25:
     dependencies:
@@ -13773,7 +13664,7 @@ snapshots:
 
   undici-types@8.9.0: {}
 
-  undici@7.29.0: {}
+  undici@7.29.1: {}
 
   undici@8.11.2: {}
 
@@ -13887,7 +13778,7 @@ snapshots:
       fsevents: 2.3.3
       yaml: 2.9.0
 
-  vitepress@2.0.0-alpha.20(@types/node@24.19.0)(@typescript/typescript6@6.0.2)(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))(change-case@5.4.4)(esbuild@0.28.2)(postcss@8.5.28)(yaml@2.9.0):
+  vitepress@2.0.0-alpha.20(@types/node@24.19.0)(@typescript/typescript6@6.0.2)(change-case@5.4.4)(esbuild@0.28.2)(postcss@8.5.28)(yaml@2.9.0):
     dependencies:
       '@docsearch/css': 4.7.0
       '@docsearch/js': 4.7.0
@@ -13899,7 +13790,7 @@ snapshots:
       '@vue/devtools-api': 8.2.1
       '@vue/shared': 3.5.43
       '@vueuse/core': 14.4.0(vue@3.5.43(@typescript/typescript6@6.0.2))
-      '@vueuse/integrations': 14.4.0(axios@1.18.1(debug@4.4.3(supports-color@8.1.1))(supports-color@8.1.1))(change-case@5.4.4)(focus-trap@8.2.3)(vue@3.5.43(@typescript/typescript6@6.0.2))
+      '@vueuse/integrations': 14.4.0(change-case@5.4.4)(focus-trap@8.2.3)(vue@3.5.43(@typescript/typescript6@6.0.2))
       focus-trap: 8.2.3
       mark.js: 8.11.1
       minisearch: 7.2.0
@@ -13912,7 +13803,6 @@ snapshots:
       - '@types/node'
       - '@vitejs/devtools'
       - async-validator
-      - axios
       - change-case
       - drauu
       - esbuild
