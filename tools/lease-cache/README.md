@@ -3,6 +3,9 @@
 # lease-cache
 Read-through caching on Valkey or Redis with leases: one load per key across every instance, and a load that finishes after an invalidation never caches its outdated value.
 
+[![npm package](https://badge.fury.io/js/lease-cache.svg)](https://www.npmjs.com/package/lease-cache)
+[![License](https://img.shields.io/npm/l/lease-cache.svg)](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/LICENSE)
+
 </div>
 
 - **One load per key, across every instance**: the first reader to miss takes a lease and loads. Readers on any other process wait for its value instead of loading too.
@@ -10,15 +13,25 @@ Read-through caching on Valkey or Redis with leases: one load per key across eve
 - **A failed or stuck load holds no one up for long**: a failed load frees its lease right away, and readers stop waiting after `waitMs`.
 - **No client dependency**: anything with an `eval` command works, such as an ioredis `Redis` or `Cluster`. Keys use hash tags, so it works on a cluster.
 
-Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf), section 3.2.1), done here with three small Lua scripts.
+Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf), section 3.2.1), done here with three small Lua scripts. It is the narrow part of a cache, not a whole one: no memory tier or stale-while-revalidate, so pair it with a fuller cache when you need those.
 
-Not published yet.
+For the problem in detail, why the guarantees hold (and what they rely on), and the comparison to other caches, see [WHY-LEASE-CACHE.md](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md).
 
 ## Contents
+- [Install](#install)
 - [Example](#example)
 - [How it works](#how-it-works)
 - [API](#api)
   - [LeaseCache](#new-leasecacheoptions)
+- [Compared to alternatives](#compared-to-alternatives)
+
+## Install
+
+```sh
+npm i lease-cache
+```
+
+ESM only, for Node.js. It has no dependencies: bring your own Valkey or Redis client.
 
 ## Example
 
@@ -75,3 +88,15 @@ Returns the cached value, or calls `load` and caches what it returns. Rejects wi
 #### `cache.invalidate(key)`
 
 Deletes the value, so the next read loads it. A load already in progress returns to its caller, but caches nothing. Call it after the source of truth changes.
+
+The guarantee relies on loads reading current data: a load from a lagging replica can still read the old data after the invalidation. See [why it is correct](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md#why-it-is-correct).
+
+## Compared to alternatives
+
+| | lease-cache | BentoCache, cache-manager, cachified |
+|---|---|---|
+| Concurrent misses across instances | one load | one per instance |
+| Load finishing after an invalidation | not cached | cached until it expires |
+| Memory tier, stale-while-revalidate, many stores | ❌ | ✅ |
+
+See [WHY-LEASE-CACHE.md](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md#compared-to-alternatives) for the full comparison.
