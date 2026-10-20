@@ -31,6 +31,7 @@ Published to npm:
 | [`normalized-react-query`](https://www.npmjs.com/package/normalized-react-query) | Type-safe query definitions for TanStack Query — define each key and fetcher once, and link related queries so they prefetch together. | [`tools/normalized-react-query`](./tools/normalized-react-query) |
 | [`nx-lifecycle`](https://www.npmjs.com/package/nx-lifecycle) | Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, …) and the targets bound to them. | [`apps/nx-lifecycle`](./apps/nx-lifecycle) |
 | [`parse-cwd`](https://www.npmjs.com/package/parse-cwd) | Convert relative path or URL to full path | [`tools/parse-cwd`](./tools/parse-cwd) |
+| [`pg-dolly`](https://www.npmjs.com/package/pg-dolly) | A fresh Postgres database for every test, cloned from a template built once from your schema's SQL. | [`tools/pg-dolly`](./tools/pg-dolly) |
 | [`populate-files`](https://www.npmjs.com/package/populate-files) | Dynamically populate file content | [`apps/populate-files/populate-files`](./apps/populate-files/populate-files) |
 | [`punycode-esm`](https://www.npmjs.com/package/punycode-esm) | Typescript + ESM version of punycode.js | [`tools/punycode-esm`](./tools/punycode-esm) |
 | [`static-emitter`](https://www.npmjs.com/package/static-emitter) | Statically typed event emitter. | [`tools/static-emitter`](./tools/static-emitter) |

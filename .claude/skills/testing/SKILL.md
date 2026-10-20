@@ -35,6 +35,15 @@ The services, at the same hostnames in the devcontainer and in Dagger's `Test`:
 
 Without the service a test needs, it fails rather than skipping. Neither service keeps data across restarts, so a test sets up everything it relies on.
 
+### Postgres tests
+
+Get each test's database from [`pg-dolly`](../../../tools/pg-dolly/) (dev dependency, `workspace:^`): a clone of a template built once per test process from the package's committed `schema.sql`. `pg-dolly` itself works with any runner; in this repo, follow its README's [mocha-chain pattern](../../../tools/pg-dolly/README.md#mocha-chain):
+
+- `test/helpers/database.ts` connects and builds the template in a root `before` (top level of the module), and closes in its `after`. Only `before`/`after` at the top level: a top-level `beforeEach` would clone a database for every test in the package.
+- It exports a `withDatabase()` fixture, called inside each suite that needs one: it clones in `beforeEach`, and keeps a failed test's database (`database.keep()`) in `afterEach`, so it can be inspected (`psql` with the printed name).
+- The test connects with the package's own client code, from `database.url`, with a small pool, and closes it in `afterEach`.
+- Data a test starts from is inserted by the test (or a fixture builder next to it). Don't assert values the database makes up (`now()`, generated ids) unless the test passes them in.
+
 100% is the floor, not the goal: two `if`s are fully covered by two tests but have four paths. If code is hard to cover, first try controlling its real inputs: write fixtures to a temp dir, or run the CLI as a subprocess (coverage of child processes counts). Reach for `haywire` DI only when the real dependency can't be put into the needed state — see "Dependency injection" in the [coding-patterns skill](../coding-patterns/SKILL.md#dependency-injection-when-to-use-it-when-not-to). Never reach into internals instead.
 
 ## Layout

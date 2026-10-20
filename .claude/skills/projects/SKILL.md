@@ -57,6 +57,7 @@ See each package's README.md for full usage documentation.
 | [`test-chain-core`](../../../tools/test-chain/test-chain-core/) | Framework-agnostic internals shared by `mocha-chain` and `vitest-chain` |
 | [`normalized-react-query`](../../../tools/normalized-react-query/) | Type-safe React Query wrappers that enforce consistent key/query pairing |
 | [`parse-cwd`](../../../tools/parse-cwd/) | Resolve and validate a working directory from string, URL, or undefined |
+| [`pg-dolly`](../../../tools/pg-dolly/) | A fresh Postgres database for every test, cloned from a template built once from your schema's SQL: integration tests on Postgres |
 | [`punycode-esm`](../../../tools/punycode-esm/) | ESM port of the Punycode encoding library |
 | [`static-emitter`](../../../tools/static-emitter/) | Typed EventEmitter/EventTarget for Node.js and Browser |
 | [`unknown-error`](../../../tools/unknown-error/) | Convert caught `unknown` values to real Errors, and walk or format cause chains, without throwing |

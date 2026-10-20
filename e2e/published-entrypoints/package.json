@@ -48,6 +48,7 @@
     "normalized-react-query": "workspace:^",
     "nx-lifecycle": "workspace:^",
     "parse-cwd": "workspace:^",
+    "pg-dolly": "workspace:^",
     "populate-files": "workspace:^",
     "punycode-esm": "workspace:^",
     "react": "catalog:",

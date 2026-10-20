@@ -96,6 +96,9 @@
     },
     {
       "path": "./demos/read-through-cache"
+    },
+    {
+      "path": "./tools/pg-dolly"
     }
   ]
 }
