@@ -137,7 +137,8 @@ BentoCache's own Valkey tier leaves two gaps, which [lease-cache](../../tools/le
 
 BentoCache then keeps only what lease-cache doesn't do: the memory tier, its sync, and grace periods. So:
 
-- **Stale values only live in memory.** lease-cache keeps no stale values, so stale-while-revalidate needs a memory tier. A refresh then still loads once across instances: the others' background refreshes wait on the lease, and pick up its value.
+- **Stale values on expiry only live in memory.** lease-cache keeps no stale copy of a value that runs out, so stale-while-revalidate needs a memory tier. A refresh then still loads once across instances: the others' background refreshes wait on the lease, and pick up its value.
+- **After `expire()` or `invalidate()`, lease-cache can keep the old value**: `leaseCacheTierBinding({ ..., staleMs })`. Instances that would wait on the next load return it instead, with or without a memory tier.
 - **BentoCache gets no Valkey layer at all**, so it can't cache an outdated value behind lease-cache's back.
 
 Learned along the way:

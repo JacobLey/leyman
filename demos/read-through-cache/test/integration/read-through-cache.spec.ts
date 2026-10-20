@@ -390,6 +390,27 @@ suite('ReadThroughCache', () => {
         );
 
         withInstances.test(
+            'Serves the old value to instances waiting on a load after an expiry, with staleMs',
+            async ({ baseline, instance }) => {
+                // No memory tier: the stale value comes from lease-cache
+                const kept = baseline.replaceBinding(
+                    leaseCacheTierBinding({ ...lease, staleMs: 60_000 })
+                );
+                const [first, second] = [instance(kept), instance(kept)];
+                await first.get('key', async () => 'stale');
+                await first.expire('key');
+                const loader = controlledLoader<string>();
+
+                const fromFirst = first.get('key', loader.load);
+                await loader.called(1);
+
+                expect(await second.get('key', loader.load)).to.equal('stale');
+                await loader.resolve(1, 'fresh');
+                expect(await fromFirst).to.equal('fresh');
+            }
+        );
+
+        withInstances.test(
             "Caches a load that finishes after an invalidation, with BentoCache's own tier",
             async ({ instance }) => {
                 const cache = instance();

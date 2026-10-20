@@ -50,7 +50,7 @@ export const bentoValkeyTierBinding = bind(sharedTierId)
 
 export type LeaseCacheTierOptions = Pick<
     LeaseCacheOptions,
-    'leaseMs' | 'onWait' | 'pollMs' | 'waitMs'
+    'leaseMs' | 'onWait' | 'pollMs' | 'staleMs' | 'waitMs'
 >;
 
 /**
@@ -58,9 +58,10 @@ export type LeaseCacheTierOptions = Pick<
  * load that finishes after an invalidation caches nothing.
  *
  * BentoCache keeps only what lease-cache doesn't do: the memory tier, its sync, and grace periods. Stale values
- * are then only kept in memory, so stale-while-revalidate needs a memory tier.
+ * are then only kept in memory, so stale-while-revalidate needs a memory tier. The exception is `staleMs`: after
+ * an `expire()` or `invalidate()`, lease-cache keeps the old value for instances that would wait on the next load.
  *
- * @param options - Lease timing
+ * @param options - Lease timing, and how long to keep stale values
  * @returns Binding for `sharedTierId`
  */
 export const leaseCacheTierBinding = (
