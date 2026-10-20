@@ -43,7 +43,7 @@ await cache.invalidate(`user:${id}`);
 - **No outdated values after an invalidation**: a load that started before `invalidate()` returns to its caller, but can't cache what it read. See [Invalidation](/lease-cache/guides/invalidation).
 - **Optionally, no waiting after an invalidation**: with `staleMs`, the old value is kept as stale, and readers that would wait on the next load return it instead.
 - **A failed or stuck load holds no one up for long**: a failed load frees its lease right away, and readers stop waiting after `waitMs`.
-- **No client dependency**: anything with an `eval` command works, such as an ioredis `Redis` or `Cluster`. Keys use hash tags, so it works on a cluster.
+- **No client dependency**: anything with an `eval` command works. ioredis and iovalkey fit as they are, and node-redis and Valkey GLIDE need a few lines. See [Clients](/lease-cache/guides/clients). Keys use hash tags, so it works on a cluster.
 
 Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf), section 3.2.1), done here with a few small Lua scripts. It is the narrow part of a cache, not a whole one: pair it with a fuller cache for a memory tier or stale-while-revalidate on expiry, as the [read-through cache demo](/demos/read-through-cache) does with BentoCache.
 

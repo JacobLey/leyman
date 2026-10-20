@@ -48,7 +48,7 @@ const cache = new LeaseCache({
 });
 ```
 
-The connection only needs an `eval` method, so an ioredis `Redis` or `Cluster` fits as it is. The cache never closes it, so it can be shared with anything else using the server.
+The connection only needs an `eval` method, so an ioredis (or iovalkey) `Redis` or `Cluster` fits as it is. For node-redis or Valkey GLIDE, see [Clients](/lease-cache/guides/clients). The cache never closes it, so it can be shared with anything else using the server.
 
 ## Read through it
 
@@ -98,6 +98,7 @@ The next read loads the new value. A load that was already running when you inva
 
 ## Next steps
 
+- [Clients](/lease-cache/guides/clients): ioredis, iovalkey, node-redis and Valkey GLIDE.
 - [Invalidation](/lease-cache/guides/invalidation): the race leases close, stale values, and what the guarantee relies on.
 - [API reference](/lease-cache/reference/api): every option.
 - [Read-through cache demo](/demos/read-through-cache): lease-cache under BentoCache's memory tier and stale-while-revalidate.

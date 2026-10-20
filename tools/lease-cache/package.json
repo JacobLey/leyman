@@ -46,13 +46,16 @@
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@typescript/native": "catalog:",
+    "@valkey/valkey-glide": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
     "ioredis": "catalog:",
+    "iovalkey": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "p-defer": "catalog:",
+    "redis": "catalog:",
     "typescript": "catalog:"
   }
 }

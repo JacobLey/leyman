@@ -340,7 +340,10 @@ export default defineConfig({
                     { text: 'Getting started', link: '/lease-cache/getting-started' },
                     {
                         text: 'Guides',
-                        items: [{ text: 'Invalidation', link: '/lease-cache/guides/invalidation' }],
+                        items: [
+                            { text: 'Clients', link: '/lease-cache/guides/clients' },
+                            { text: 'Invalidation', link: '/lease-cache/guides/invalidation' },
+                        ],
                     },
                     {
                         text: 'Reference',

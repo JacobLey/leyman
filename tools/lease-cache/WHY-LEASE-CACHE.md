@@ -74,7 +74,7 @@ The fill that loses its lease still returns what it loaded to its own caller. Th
 
 ## Design decisions
 
-- **Lua scripts, not a client library.** Each step needs a check and a write with nothing in between, which a script gives in one round trip. The only command needed is `EVAL`, so any Valkey or Redis client works (`LeaseCacheConnection` is that one method).
+- **Lua scripts, not a client library.** Each step needs a check and a write with nothing in between, which a script gives in one round trip. The only command needed is `EVAL`, so any Valkey or Redis client works (`LeaseCacheConnection` is that one method). It has ioredis's signature, so ioredis and iovalkey fit as they are, and other clients need a few lines, each tested. A client that runs scripts by hash, like Valkey GLIDE, keeps doing so behind its adapter, which is why the interface has no `EVALSHA` of its own.
 - **Hash tags.** The value and lease keys share a `{key}` tag, so a cluster places them on the same node, which a script touching both requires.
 - **Polling, not pub/sub.** A waiting reader checks again every `pollMs`. Pub/sub would answer faster, but needs a subscriber connection per process and handling for messages missed while subscribing. Waits are short (one load), so a few cheap `GET`s each are simpler.
 - **`invalidate` frees the lease too.** The next reader takes a new lease and loads right away, rather than waiting on a load already known to be outdated.

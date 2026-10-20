@@ -12,7 +12,7 @@ Read-through caching on Valkey or Redis with leases: one load per key across eve
 - **No outdated values after an invalidation**: a load that started before `invalidate()` (and may have read the data from before the change) returns to its caller, but can't cache what it read. Most read-through caches would keep that value until it expires.
 - **A failed or stuck load holds no one up for long**: a failed load frees its lease right away, and readers stop waiting after `waitMs`.
 - **Optionally, no waiting after an invalidation**: with `staleMs`, the invalidated value is kept as stale, and readers that would wait on the next load return it instead.
-- **No client dependency**: anything with an `eval` command works, such as an ioredis `Redis` or `Cluster`. Keys use hash tags, so it works on a cluster.
+- **No client dependency**: anything with an `eval` command works. ioredis and iovalkey fit as they are, and node-redis and Valkey GLIDE need a few lines (see [Clients](#clients)). Keys use hash tags, so it works on a cluster.
 
 Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf), section 3.2.1), done here with three small Lua scripts. It is the narrow part of a cache, not a whole one: no memory tier or stale-while-revalidate on expiry, so pair it with a fuller cache when you need those.
 
@@ -21,6 +21,7 @@ For the problem in detail, why the guarantees hold (and what they rely on), and 
 ## Contents
 - [Install](#install)
 - [Example](#example)
+- [Clients](#clients)
 - [How it works](#how-it-works)
 - [API](#api)
   - [LeaseCache](#new-leasecacheoptions)
@@ -56,6 +57,63 @@ await db.users.update(id, changes);
 await cache.invalidate(`user:${id}`);
 ```
 
+## Clients
+
+The cache only needs `eval`, so it works with any Valkey or Redis client. Each of these is tested against Valkey.
+
+**ioredis** and **iovalkey** (the Valkey community's fork of ioredis) fit as they are, `Redis` and `Cluster` alike:
+
+```ts
+import { Redis } from 'iovalkey'; // or 'ioredis'
+
+const connection = new Redis('redis://valkey:6379');
+```
+
+**node-redis** (`redis`) takes keys and arguments in an options object:
+
+```ts
+import type { LeaseCacheConnection } from 'lease-cache';
+import { createClient } from 'redis';
+
+const client = await createClient({ url: 'redis://valkey:6379' }).connect();
+const connection: LeaseCacheConnection = {
+    eval: async (script, numKeys, ...args) => {
+        const strings = args.map(String);
+        return client.eval(script, {
+            keys: strings.slice(0, numKeys),
+            arguments: strings.slice(numKeys),
+        });
+    },
+};
+```
+
+**Valkey GLIDE** (`@valkey/valkey-glide`) runs scripts through `Script` objects, which it loads once and then runs by hash (`EVALSHA`). Keep one per script, since each must be released:
+
+```ts
+import { GlideClient, Script } from '@valkey/valkey-glide';
+import type { LeaseCacheConnection } from 'lease-cache';
+
+const client = await GlideClient.createClient({ addresses: [{ host: 'valkey', port: 6379 }] });
+// lease-cache uses a handful of fixed scripts, so these live as long as the client
+const scripts = new Map<string, Script>();
+const connection: LeaseCacheConnection = {
+    eval: async (code, numKeys, ...args) => {
+        let script = scripts.get(code);
+        if (!script) {
+            script = new Script(code);
+            scripts.set(code, script);
+        }
+        const strings = args.map(String);
+        return client.invokeScript(script, {
+            keys: strings.slice(0, numKeys),
+            args: strings.slice(numKeys),
+        });
+    },
+};
+```
+
+On a cluster, use the client's cluster mode (ioredis's `Cluster`, node-redis's `createCluster`, `GlideClusterClient`): each key's value and lease share a hash tag, so they live on the same node. The tests only cover a single server.
+
 ## How it works
 
 Each key has a value and a lease, both in Valkey. Every step is one Lua script, so each runs atomically:
@@ -74,7 +132,7 @@ Values are stored as JSON. `null` is cached like any other value, so a missing r
 
 | Option | Type | Description |
 |--------|------|-------------|
-| `connection` | `LeaseCacheConnection` | Required. Anything with `eval(script, numKeys, ...args)`, such as an ioredis `Redis` or `Cluster`. Never closed by the cache. |
+| `connection` | `LeaseCacheConnection` | Required. Anything with `eval(script, numKeys, ...args)`: see [Clients](#clients). Never closed by the cache. |
 | `prefix` | `string` | Required. Prefix of every key, so several caches can share a server. |
 | `ttlMs` | `number` | Required. How long a loaded value is cached. |
 | `leaseMs` | `number` | Required. How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing. |

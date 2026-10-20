@@ -60,6 +60,8 @@ allowBuilds:
   '@swc/core': false
   esbuild: false
   nx: false
+  # Via @valkey/valkey-glide. Its postinstall only warns when a dependent's version range for it looks unusual
+  protobufjs: false
   # Native bindings, but gonx only loads the `tree-sitter-go.wasm` the package ships
   tree-sitter-go: false
   unrs-resolver: false
@@ -110,6 +112,7 @@ catalog:
   '@typescript-eslint/parser': ^8.70.1
   '@typescript-eslint/utils': ^8.70.1
   '@typescript/native': npm:typescript@^7.0.2
+  '@valkey/valkey-glide': ^2.5.3
   ajv: ^8.20.0
   ajv-formats: ^3.0.1
   bentocache: ^1.6.1
@@ -138,6 +141,7 @@ catalog:
   inversify: ^8.2.3
   # bentocache's peer dependency allows ^5 only
   ioredis: ^5.11.1
+  iovalkey: ^0.4.0
   mocha: ^12.0.2
   normalize-exception: ^4.0.1
   nx: ^23.3.0
@@ -152,6 +156,7 @@ catalog:
   publint: ^0.3.25
   react: ^19.3.0
   react-dom: ^19.3.0
+  redis: ^6.3.0
   reflect-metadata: ^0.2.2
   serialize-error: ^13.0.2
   sinon: ^22.1.0

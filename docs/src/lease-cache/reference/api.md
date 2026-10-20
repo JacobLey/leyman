@@ -8,7 +8,7 @@ description: LeaseCache, its options, get and invalidate, and the Json and Lease
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `connection` | [`LeaseCacheConnection`](#leasecacheconnection) | — | Runs the cache's scripts. Never closed by the cache. |
+| `connection` | [`LeaseCacheConnection`](#leasecacheconnection) | — | Runs the cache's scripts. See [Clients](/lease-cache/guides/clients). Never closed by the cache. |
 | `prefix` | `string` | — | Prefix of every key, so several caches can share a server. |
 | `ttlMs` | `number` | — | How long a loaded value is cached, in milliseconds. |
 | `leaseMs` | `number` | — | How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing. |
@@ -50,7 +50,7 @@ Use type aliases, rather than interfaces, for loaded values: TypeScript doesn't 
 
 ## `LeaseCacheConnection`
 
-The one command the cache needs: `eval(script: string, numKeys: number, ...args: (number | string)[]): Promise<unknown>`. An ioredis `Redis` or `Cluster` fits as it is:
+The one command the cache needs: `eval(script: string, numKeys: number, ...args: (number | string)[]): Promise<unknown>`. An ioredis or iovalkey `Redis` or `Cluster` fits as it is, and [Clients](/lease-cache/guides/clients) has adapters for node-redis and Valkey GLIDE:
 
 ```ts
 import { Cluster, Redis } from 'ioredis';
