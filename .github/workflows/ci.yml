@@ -45,17 +45,11 @@ jobs:
           key: nx-${{ env.NX_CACHE_VERSION }}-${{ github.sha }}
           restore-keys: nx-${{ env.NX_CACHE_VERSION }}-
 
-      # Each file is one task result, timestamped when Nx stored it (reads don't touch it, and
-      # actions/cache preserves it), so this expires each result a fixed time after it was created.
-      # Runs before the server starts, so an expired result is never served.
-      - name: Expire old Nx results
-        run: |
-          mkdir -p "$NX_CACHE_DIR"
-          find "$NX_CACHE_DIR" -type f -mmin +$((NX_CACHE_MAX_AGE_DAYS * 24 * 60)) -print -delete | wc -l | xargs echo "Expired results:"
-
+      # Deletes expired results before it starts listening, and never serves one
       - name: Start Nx cache server
         env:
           NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
+          NX_CACHE_SERVER_MAX_AGE_DAYS: ${{ env.NX_CACHE_MAX_AGE_DAYS }}
         run: |
           node .devcontainer/nx-cache-server.mjs &
           curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null

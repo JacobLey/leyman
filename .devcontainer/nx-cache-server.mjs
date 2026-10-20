@@ -8,27 +8,55 @@
  * Every worktree's devcontainer runs its own instance, but all of them point at the same
  * directory, so a task cached in one worktree is a cache hit in every other worktree.
  *
+ * Each file is one task result, timestamped when it was stored (reads don't touch it, and
+ * actions/cache preserves it in CI). A result older than `NX_CACHE_SERVER_MAX_AGE_DAYS` is never
+ * served, and is deleted at startup and every hour after, so the directory doesn't grow forever.
+ *
  * Uses only Node built-ins so it runs before (and independently of) `pnpm install`.
  */
 import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, rename, rm, stat } from 'node:fs/promises';
+import { mkdir, readdir, rename, rm, stat } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
 import { pipeline } from 'node:stream/promises';
 
 const cacheDir = process.env.NX_CACHE_SERVER_DIR ?? '/cache';
 const port = Number(process.env.NX_CACHE_SERVER_PORT ?? 3000);
+const maxAgeMs = Number(process.env.NX_CACHE_SERVER_MAX_AGE_DAYS ?? 7) * 24 * 60 * 60 * 1000;
+const sweepIntervalMs = 60 * 60 * 1000;
 const hashPattern = /^\/v1\/cache\/(?<hash>[\w-]+)$/u;
 
 await mkdir(cacheDir, { recursive: true });
 
-const exists = async path => {
+const isExpired = ({ mtimeMs }) => Date.now() - mtimeMs > maxAgeMs;
+
+// An expired result counts as missing, so it is replaced rather than served
+const isFresh = async path => {
     try {
-        await stat(path);
-        return true;
+        return !isExpired(await stat(path));
     } catch {
         return false;
     }
+};
+
+// Also removes temp files left by an interrupted write. Other worktrees' servers sweep the same
+// directory, so a file may already be gone.
+const sweep = async () => {
+    let expired = 0;
+    for (const name of await readdir(cacheDir)) {
+        const path = join(cacheDir, name);
+        try {
+            if (isExpired(await stat(path))) {
+                await rm(path, { force: true });
+                expired++;
+            }
+        } catch (err) {
+            if (err.code !== 'ENOENT') {
+                console.error(`Expiring ${name} failed`, err);
+            }
+        }
+    }
+    console.log(`Expired results: ${expired}`);
 };
 
 const server = createServer(async (req, res) => {
@@ -44,14 +72,14 @@ const server = createServer(async (req, res) => {
 
     try {
         if (req.method === 'GET') {
-            if (!(await exists(file))) {
+            if (!(await isFresh(file))) {
                 res.writeHead(404).end();
                 return;
             }
             res.writeHead(200, { 'content-type': 'application/octet-stream' });
             await pipeline(createReadStream(file), res);
         } else if (req.method === 'PUT') {
-            if (await exists(file)) {
+            if (await isFresh(file)) {
                 req.resume();
                 res.writeHead(409).end();
                 return;
@@ -78,6 +106,11 @@ const server = createServer(async (req, res) => {
         }
     }
 });
+
+await sweep();
+setInterval(() => {
+    sweep().catch(err => console.error('Expiring results failed', err));
+}, sweepIntervalMs);
 
 server.listen(port, () => {
     console.log(`Nx cache server listening on :${port}, storing in ${cacheDir}`);
