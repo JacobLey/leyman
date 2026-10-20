@@ -90,6 +90,9 @@
     },
     {
       "path": "./tools/generated-signature/generated-signature"
+    },
+    {
+      "path": "./tools/lease-cache"
     }
   ]
 }

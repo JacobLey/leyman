@@ -25,6 +25,7 @@ services:
 
     depends_on:
       - nx-cache
+      - valkey
 
     # Overrides default command so things don't shut down after the process ends.
     command:
@@ -40,4 +41,18 @@ services:
     volumes:
       - ./nx-cache-server.mjs:/server/nx-cache-server.mjs:ro
       - ${WORKTREES_DIR}/.shared/nx-cache:/cache
+    restart: unless-stopped
+
+  # For tests that run against Valkey, at `valkey:6379`: Dagger binds its service under the same hostname.
+  # One per worktree (unlike the shared caches), so concurrent test runs never see each other's keys.
+  # Keep the image in sync with `valkeyImage` in `dagger/main.go`.
+  valkey:
+    image: valkey/valkey:9.1.2-trixie@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd
+    # Data only lives as long as the container: tests never rely on it surviving
+    command:
+      - valkey-server
+      - --save
+      - ''
+      - --appendonly
+      - 'no'
     restart: unless-stopped

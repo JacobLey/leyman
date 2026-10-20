@@ -30,6 +30,8 @@ const (
 	playwrightVersion = "1.62.1"
 	// golang:1.26.8-trixie. Only its Go toolchain is copied into the Node image, for projects written in Go.
 	goImage = "golang:1.26.8-trixie@sha256:aae9c439b447d24c93ee483408992857cf39a3fb6ab7fe53affc65d834891fa8"
+	// valkey/valkey:9.1.2-trixie. Keep in sync with the `valkey` service in `.devcontainer/docker-compose.yml`.
+	valkeyImage = "valkey/valkey:9.1.2-trixie@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd"
 )
 
 const (
@@ -93,7 +95,11 @@ func (m *Ci) Test(
 
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
-		_, err := built.WithExec([]string{"test-ci"}).Sync(ctx)
+		_, err := built.
+			// Some tests run against real services, at the same hostnames as the devcontainer's sidecars
+			WithServiceBinding("valkey", valkeyService()).
+			WithExec([]string{"test-ci"}).
+			Sync(ctx)
 		return err
 	})
 	eg.Go(func() error {
@@ -353,6 +359,16 @@ func versionExists(ctx context.Context, pkg workspacePackage) (bool, error) {
 	default:
 		return false, fmt.Errorf("checking %s@%s on npm: %s", pkg.Name, pkg.Version, res.Status)
 	}
+}
+
+// Valkey for tests, with nothing persisted, matching the devcontainer's `valkey` sidecar
+func valkeyService() *dagger.Service {
+	return dag.Container().
+		From(valkeyImage).
+		WithExposedPort(6379).
+		AsService(dagger.ContainerAsServiceOpts{
+			Args: []string{"valkey-server", "--save", "", "--appendonly", "no"},
+		})
 }
 
 // Node + pnpm + Go, matching the devcontainer

@@ -50,6 +50,7 @@ See each package's README.md for full usage documentation.
 | [`haywire`](../../../tools/haywire/) | Type-safe dependency injection — invalid containers are compile errors |
 | [`haywire-launcher`](../../../tools/haywire-launcher/) | Connect Haywire DI containers to `entry-script` CLI entry points |
 | [`iso-crypto`](../../../tools/iso-crypto/) | Isomorphic cryptography for Node.js and Browser |
+| [`lease-cache`](../../../tools/lease-cache/) | Read-through caching on Valkey or Redis with leases: one load per key across every instance, and a load that finishes after an invalidation never caches its outdated value (private until published) |
 | [`mocha-chain`](../../../tools/test-chain/mocha-chain/) | Type-safe Mocha hook chaining with typed context propagation |
 | [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | Type-safe Vitest hook chaining with typed context propagation |
 | [`test-chain-core`](../../../tools/test-chain/test-chain-core/) | Framework-agnostic internals shared by `mocha-chain` and `vitest-chain` |

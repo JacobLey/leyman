@@ -26,6 +26,7 @@ Files live on the host, so they survive container rebuilds. Claude Code config i
 | Dagger CLI | Mirror CI execution locally | Version pinned via `ARG DAGGER_VERSION` |
 | Playwright browser libraries | System libraries for Chromium, Firefox and WebKit | Version pinned via `ARG PLAYWRIGHT_VERSION`. The browsers themselves are downloaded by the `playwright-install` target to `PLAYWRIGHT_BROWSERS_PATH`, shared between worktrees |
 | Docker | `docker-outside-of-docker` devcontainer feature | Shares the host Docker socket — required to run Dagger |
+| Valkey | Real service for tests that need one (e.g. `tools/lease-cache`) | `valkey` sidecar in `docker-compose.yml`, reachable at `valkey:6379`. One per worktree, with nothing persisted. Pinned by digest |
 | Nx, Biome, ESLint | Workspace tooling | From `leyman/main/node_modules/.bin`, on `PATH` via `remoteEnv` after `postCreateCommand` runs `pnpm install` |
 | Local Scripts | Complicated combos of tasks in a single command | `<worktree>/scripts/commands` is on `PATH` (via `remoteEnv`), exposing these shortcuts |
 
@@ -43,5 +44,6 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 | dagger | `ARG DAGGER_VERSION` in `.devcontainer/Dockerfile` | `engineVersion` in `dagger/dagger.json`, and `DAGGER_VERSION` in `.github/workflows/ci.yml` |
 | Debian | base image tag in `.devcontainer/Dockerfile` (`debian13`) | `nodeImage` variant in `dagger/main.go` (`trixie` = Debian 13) |
 | Playwright | `ARG PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` | `playwrightVersion` in `dagger/main.go`. Both must also match `playwright` in `pnpm-workspace.yaml` |
+| Valkey | `valkey` service image in `.devcontainer/docker-compose.yml` | `valkeyImage` in `dagger/main.go`. Both pinned by digest, and the service is bound under the same hostname (`valkey`) |
 
 **When upgrading a runtime version, update all locations in the table above.** `nodeImage` and `goImage` are pinned by digest; get the new one with `docker buildx imagetools inspect node:<tag>` (or `golang:<tag>`). A mismatch means `dagger-test` runs under a different Node/pnpm version than local development — bugs that only reproduce in CI are a common symptom.

@@ -89,6 +89,7 @@ To support another editor, add a case to `open_worktree` in `scripts/worktree` t
 | Nx task outputs | shared | `nx-cache` sidecar ([`nx-cache-server.mjs`](../../../.devcontainer/nx-cache-server.mjs)) via `NX_SELF_HOSTED_REMOTE_CACHE_SERVER` |
 | `nx`, `biome`, `eslint`, `scripts/commands` on `PATH` | per worktree | `remoteEnv` in `devcontainer.json` uses `${containerWorkspaceFolder}` |
 | Claude config | shared | `CLAUDE_CONFIG_DIR=<worktrees>/.shared/claude-config` |
+| Services for tests (Valkey) | per worktree | Sidecars in `docker-compose.yml`, so test runs in different worktrees never share state |
 
 Why Nx needs a server: Nx 22 only restores artifacts recorded in its per-worktree database (`.nx/workspace-data`). Pointing `NX_CACHE_DIRECTORY` at a shared folder therefore produces cache misses. The sidecar implements Nx's self-hosted remote cache API, and hits show as `[remote cache]` in Nx output. Each container runs its own sidecar, but they all read and write `.shared/nx-cache`. Results expire 7 days after they were stored (`NX_CACHE_SERVER_MAX_AGE_DAYS`): the server never serves an expired one, and deletes them at startup and hourly.
 
