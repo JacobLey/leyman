@@ -32,6 +32,11 @@ const (
 	goImage = "golang:1.26.8-trixie@sha256:aae9c439b447d24c93ee483408992857cf39a3fb6ab7fe53affc65d834891fa8"
 	// valkey/valkey:9.1.2-trixie. Keep in sync with the `valkey` service in `.devcontainer/docker-compose.yml`.
 	valkeyImage = "valkey/valkey:9.1.2-trixie@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd"
+	// postgres:18.6-trixie. Keep in sync with the `postgres` service in `.devcontainer/docker-compose.yml`.
+	postgresImage = "postgres:18.6-trixie@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336"
+	// Client tools (`psql`, `pg_dump`) from the PostgreSQL apt repository: `pg_dump` must be at least the server's
+	// major version. Keep in sync with `POSTGRES_MAJOR` in `.devcontainer/Dockerfile`.
+	postgresMajor = "18"
 )
 
 const (
@@ -42,6 +47,8 @@ const (
 	browsersDir = "/playwright-browsers"
 	goRoot      = "/usr/local/go"
 	npmRegistry = "https://registry.npmjs.org"
+	// Same as the devcontainer's. A fixed password: the service only lives as long as the test run.
+	databaseURL = "postgres://postgres:postgres@postgres:5432/postgres"
 )
 
 type Ci struct {
@@ -98,6 +105,8 @@ func (m *Ci) Test(
 		_, err := built.
 			// Some tests run against real services, at the same hostnames as the devcontainer's sidecars
 			WithServiceBinding("valkey", valkeyService()).
+			WithServiceBinding("postgres", postgresService()).
+			WithEnvVariable("DATABASE_URL", databaseURL).
 			WithExec([]string{"test-ci"}).
 			Sync(ctx)
 		return err
@@ -371,7 +380,27 @@ func valkeyService() *dagger.Service {
 		})
 }
 
-// Node + pnpm + Go, matching the devcontainer
+// Postgres for tests, with nothing persisted and durability off, matching the devcontainer's `postgres` sidecar
+func postgresService() *dagger.Service {
+	return dag.Container().
+		From(postgresImage).
+		WithEnvVariable("POSTGRES_PASSWORD", "postgres").
+		WithMountedTemp("/var/lib/postgresql").
+		WithExposedPort(5432).
+		AsService(dagger.ContainerAsServiceOpts{
+			// The image's entrypoint creates the cluster before starting the server
+			UseEntrypoint: true,
+			Args: []string{
+				"postgres",
+				"-c", "fsync=off",
+				"-c", "synchronous_commit=off",
+				"-c", "full_page_writes=off",
+				"-c", "max_connections=500",
+			},
+		})
+}
+
+// Node + pnpm + Go + Postgres client tools, matching the devcontainer
 func (m *Ci) base() *dagger.Container {
 	return dag.Container().
 		From(nodeImage).
@@ -380,6 +409,10 @@ func (m *Ci) base() *dagger.Container {
 		// Use the pinned toolchain, never one downloaded for a newer `go` directive in a go.mod
 		WithEnvVariable("GOTOOLCHAIN", "local").
 		WithEnvVariable("CI", "1").
+		WithExec([]string{"sh", "-c", "apt-get update" +
+			" && apt-get install --yes --no-install-recommends ca-certificates postgresql-common" +
+			" && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y" +
+			" && apt-get install --yes --no-install-recommends postgresql-client-" + postgresMajor}).
 		WithExec([]string{"npm", "install", "--global", "pnpm@" + pnpmVersion}).
 		// Match the devcontainer, which removes npm so nothing silently depends on it
 		WithExec([]string{"npm", "uninstall", "--global", "npm"}).

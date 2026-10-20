@@ -27,6 +27,8 @@ Files live on the host, so they survive container rebuilds. Claude Code config i
 | Playwright browser libraries | System libraries for Chromium, Firefox and WebKit | Version pinned via `ARG PLAYWRIGHT_VERSION`. The browsers themselves are downloaded by the `playwright-install` target to `PLAYWRIGHT_BROWSERS_PATH`, shared between worktrees |
 | Docker | `docker-outside-of-docker` devcontainer feature | Shares the host Docker socket — required to run Dagger |
 | Valkey | Real service for tests that need one (e.g. `tools/lease-cache`) | `valkey` sidecar in `docker-compose.yml`, reachable at `valkey:6379`. One per worktree, with nothing persisted. Pinned by digest |
+| Postgres | Real database for tests that need one | `postgres` sidecar in `docker-compose.yml`, reachable at `DATABASE_URL` (`postgres://postgres:postgres@postgres:5432/postgres`, a fixed local-only password). One per worktree, held in memory (`tmpfs`) so a restart starts from empty; dev data comes from scripts, never from what a database happens to hold. `fsync`, `synchronous_commit` and `full_page_writes` are off for speed (only a machine or VM crash can corrupt it, and nothing is kept anyway), and `max_connections` is 500 for parallel test runs. Pinned by digest |
+| Postgres client tools | `psql`, and `pg_dump` for schema snapshots | `postgresql-client-<major>` from the PostgreSQL apt repository, at `ARG POSTGRES_MAJOR`. `pg_dump` must be at least the server's major version |
 | Nx, Biome, ESLint | Workspace tooling | From `leyman/main/node_modules/.bin`, on `PATH` via `remoteEnv` after `postCreateCommand` runs `pnpm install` |
 | Local Scripts | Complicated combos of tasks in a single command | `<worktree>/scripts/commands` is on `PATH` (via `remoteEnv`), exposing these shortcuts |
 
@@ -45,5 +47,7 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 | Debian | base image tag in `.devcontainer/Dockerfile` (`debian13`) | `nodeImage` variant in `dagger/main.go` (`trixie` = Debian 13) |
 | Playwright | `ARG PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` | `playwrightVersion` in `dagger/main.go`. Both must also match `playwright` in `pnpm-workspace.yaml` |
 | Valkey | `valkey` service image in `.devcontainer/docker-compose.yml` | `valkeyImage` in `dagger/main.go`. Both pinned by digest, and the service is bound under the same hostname (`valkey`) |
+| Postgres | `postgres` service image and `command` settings in `.devcontainer/docker-compose.yml` | `postgresImage` and `postgresService` in `dagger/main.go`. Both pinned by digest, bound under the same hostname (`postgres`), with the same `DATABASE_URL` |
+| Postgres client tools | `ARG POSTGRES_MAJOR` in `.devcontainer/Dockerfile` | `postgresMajor` in `dagger/main.go`. Must match the Postgres image's major version |
 
 **When upgrading a runtime version, update all locations in the table above.** `nodeImage` and `goImage` are pinned by digest; get the new one with `docker buildx imagetools inspect node:<tag>` (or `golang:<tag>`). A mismatch means `dagger-test` runs under a different Node/pnpm version than local development — bugs that only reproduce in CI are a common symptom.

@@ -26,6 +26,15 @@ Checks that span packages, which no single package can test, go in a test-only p
 
 Packages whose job is talking to a service (e.g. `tools/lease-cache` on Valkey, and demos in `demos/`, see [create-package](../create-package/SKILL.md#demo-packages)) test against the real service, running as a devcontainer sidecar and a Dagger service, rather than a mock. A mock could only assume how the service behaves, and that behavior (atomicity, expiry) is what these packages rely on. Each test isolates its keys (e.g. by a unique prefix) rather than clearing the shared service.
 
+The services, at the same hostnames in the devcontainer and in Dagger's `Test`:
+
+| Service | Reached at | Isolation |
+|---|---|---|
+| Valkey | `valkey:6379` | A unique key prefix per test |
+| Postgres | `DATABASE_URL` (`postgres://postgres:postgres@postgres:5432/postgres`) | A database of its own per test, never the shared `postgres` database. Keep each test's pool small (a few connections): tests across parallel Nx tasks share the server's `max_connections` |
+
+Without the service a test needs, it fails rather than skipping. Neither service keeps data across restarts, so a test sets up everything it relies on.
+
 100% is the floor, not the goal: two `if`s are fully covered by two tests but have four paths. If code is hard to cover, first try controlling its real inputs: write fixtures to a temp dir, or run the CLI as a subprocess (coverage of child processes counts). Reach for `haywire` DI only when the real dependency can't be put into the needed state — see "Dependency injection" in the [coding-patterns skill](../coding-patterns/SKILL.md#dependency-injection-when-to-use-it-when-not-to). Never reach into internals instead.
 
 ## Layout

@@ -12,10 +12,17 @@ ARG PYTHON_VERSION=3.14.8
 ARG PYTHON_BUILD=20261009
 # Only for the browsers' system libraries; browsers themselves are installed by the `playwright-install` target
 ARG PLAYWRIGHT_VERSION=1.62.1
+# Client tools (`psql`, `pg_dump`) from the PostgreSQL apt repository, matching the `postgres` sidecar's major version:
+# `pg_dump` must be at least the server's. See `postgresMajor` in `dagger/main.go`
+ARG POSTGRES_MAJOR=18
 
 RUN apt-get update \
     && apt-get upgrade -y \
     && apt-get install vim -y
+
+RUN apt-get install --yes --no-install-recommends postgresql-common \
+    && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y \
+    && apt-get install --yes --no-install-recommends postgresql-client-${POSTGRES_MAJOR}
 
 ARG USER=leyman
 RUN adduser $USER && \

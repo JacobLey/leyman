@@ -22,10 +22,13 @@ services:
       # Browsers for Playwright tests, downloaded once and kept across rebuilds
       PLAYWRIGHT_BROWSERS_PATH: ${WORKTREES_DIR}/.shared/playwright-browsers
       NX_SELF_HOSTED_REMOTE_CACHE_SERVER: http://nx-cache:3000
+      # The `postgres` sidecar. A fixed dev password: local-only, not a secret
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
 
     depends_on:
       - nx-cache
       - valkey
+      - postgres
 
     # Overrides default command so things don't shut down after the process ends.
     command:
@@ -55,4 +58,29 @@ services:
       - ''
       - --appendonly
       - 'no'
+    restart: unless-stopped
+
+  # For tests that run against Postgres, at `postgres:5432` (`DATABASE_URL` above): Dagger binds its service under
+  # the same hostname. One per worktree, like `valkey`.
+  # Keep the image and settings in sync with `postgresImage` and `postgresService` in `dagger/main.go`.
+  postgres:
+    image: postgres:18.6-trixie@sha256:74935e72241653ca55e0414067e6d8763aceb8a810eb51b452253ec3dcfc4336
+    environment:
+      POSTGRES_PASSWORD: postgres
+    # Nothing is persisted (in memory, not even an anonymous volume), so a restart starts from empty.
+    # Dev data comes from scripts, never from what a database happens to hold.
+    tmpfs:
+      - /var/lib/postgresql
+    # Durability off for speed: only a crash of the machine or VM can corrupt the data, and none of it is kept anyway.
+    # More connections, since tests across parallel Nx tasks share the one server.
+    command:
+      - postgres
+      - -c
+      - fsync=off
+      - -c
+      - synchronous_commit=off
+      - -c
+      - full_page_writes=off
+      - -c
+      - max_connections=500
     restart: unless-stopped
