@@ -14,6 +14,11 @@
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
   "types": "./dist/read-through-cache.js",
   "exports": {
     ".": "./dist/read-through-cache.js"
