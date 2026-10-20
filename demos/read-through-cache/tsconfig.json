@@ -1,0 +1,32 @@
+{
+  "extends": "../../configs/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "include": [
+    "src",
+    "*.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../../tools/constant-consistent-hash/weighted-rendezvous-hash"
+    },
+    {
+      "path": "../../tools/lease-cache"
+    },
+    {
+      "path": "../../tools/haywire"
+    },
+    {
+      "path": "../../tools/test-chain/mocha-chain"
+    },
+    {
+      "path": "../../leyman/expect"
+    },
+    {
+      "path": "../../leyman/eslint-config"
+    }
+  ]
+}

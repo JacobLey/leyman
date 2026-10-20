@@ -45,6 +45,16 @@ A test-only package under `e2e/` checks other workspace packages together, e.g. 
 - `project.json` targets: `biome`, `eslint`, `tsc-test`, `mocha-integration-test`. No `tsc` or `sync-injected` (nothing to build), and no `coverage-report` (no source of its own to cover).
 - Import the packages under test by their public exports only. Add an export to a package if needed, rather than reaching into its `dist/`.
 
+## Demo packages
+
+A worked example under `demos/` shows how to use open-source projects and services well, e.g. a read-through cache on Valkey. Unlike `e2e/`, a demo has source of its own: the example is the code, and its README explains the implementation (why it is built this way, what was learned, what it doesn't cover) rather than an API. Copy `demos/read-through-cache`. Compared to a regular package:
+
+- `package.json`: named `@leyman/demo-<name>`, `"private": true`, with `exports` for its own tests to import. No `files`, `repository` object or changeset: it is never published.
+- `project.json` targets: as a regular package, minus `check-package` and `sync-injected` (nothing is published, and nothing depends on it).
+- Build each feature as a [haywire](../../../tools/haywire/) binding, one binding per choice (e.g. memory tier: none, local, synced), so a demo is a module the reader composes, and tests swap one feature at a time with `replaceBinding()`. Take the application's resources (connections, clients) as bound instances, which the container never closes, so a demo can share them. This is DI for composition (see [coding-patterns](../coding-patterns/SKILL.md#2-composition-is-part-of-the-design)).
+- Full tests and 100% coverage, like any package. Test against the real services, never mocks: they run as devcontainer sidecars (`.devcontainer/docker-compose.yml`), and Dagger binds the same images under the same hostnames for `test-ci` (`dagger/main.go`). A new service needs both, pinned to the same digest (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)).
+- Tests share each service with other test files, other worktrees' runs never (each worktree has its own sidecars). Isolate by key prefix or similar, rather than clearing the service.
+
 ## Go projects
 
 Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go-impl`. Go is in the devcontainer and the Dagger pipeline (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)), and the gonx plugin makes a project of every `go.mod` (see [Go projects](../nx-tasks-reference/SKILL.md#go-projects)). Compared to a regular package:

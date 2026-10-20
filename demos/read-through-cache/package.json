@@ -1,0 +1,45 @@
+{
+  "name": "@leyman/demo-read-through-cache",
+  "version": "0.0.1",
+  "description": "Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, cluster-wide stampede protection, and sharding with weighted rendezvous hashing.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/read-through-cache#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "types": "./dist/read-through-cache.js",
+  "exports": {
+    ".": "./dist/read-through-cache.js"
+  },
+  "dependencies": {
+    "bentocache": "catalog:",
+    "haywire": "workspace:^",
+    "ioredis": "catalog:",
+    "lease-cache": "workspace:^",
+    "weighted-rendezvous-hash": "workspace:^"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "p-defer": "catalog:",
+    "typescript": "catalog:"
+  }
+}

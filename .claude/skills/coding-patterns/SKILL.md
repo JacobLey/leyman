@@ -76,7 +76,7 @@ Inject when callers really choose between implementations, or supply resources t
 - **Interchangeable implementations of one part**, each a real, complete choice (e.g. a cache's memory tier: none, local, or synced across instances). Each choice is one binding, and an application (or test) composes the ones it wants.
 - **Resources the application owns and shares**, such as a database or Valkey connection also used for something else. Taking them as bound instances, rather than opening its own, lets the code share them and makes ownership explicit: the container never closes what the application bound.
 
-Tests still test behavior: compose the real implementations, run them against real services, and assert on what the composed whole does. Swapping one choice per test (`replaceBinding()`) is the point; stubs stay limited to reason 1.
+Tests still test behavior: compose the real implementations, run them against real services, and assert on what the composed whole does. Swapping one choice per test (`replaceBinding()`) is the point; stubs stay limited to reason 1. See `demos/read-through-cache` for an example.
 
 ### Either way
 

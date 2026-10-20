@@ -93,6 +93,9 @@
     },
     {
       "path": "./tools/lease-cache"
+    },
+    {
+      "path": "./demos/read-through-cache"
     }
   ]
 }

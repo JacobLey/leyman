@@ -91,7 +91,7 @@ As of October 2026:
 
 BentoCache's maintainer considered distributed locks and decided against them for now ([Julien-R44/bentocache#2](https://github.com/Julien-R44/bentocache/issues/2)). A distributed lock (e.g. Redlock) around the loader stops the stampede, but not the race: the lock decides who loads, not whether the result may still be cached.
 
-lease-cache is the narrow part: it composes with a fuller cache rather than replacing one.
+lease-cache is the narrow part: it composes with a fuller cache rather than replacing one. The [read-through cache demo](https://github.com/JacobLey/leyman/tree/main/demos/read-through-cache) makes it the shared tier under BentoCache's memory tier and stale-while-revalidate.
 
 ## Non-goals
 

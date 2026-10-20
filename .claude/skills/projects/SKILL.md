@@ -12,10 +12,11 @@ A project is any directory with a `project.json`. Every project has a README.md.
 - `leyman/`: private, repo-internal packages that are never published.
 - `docs/`: the documentation site (private, never published). See its [README](../../../docs/README.md).
 - `e2e/`: private, test-only packages that check several packages together, in ways no single package can (e.g. because depending on each other would be circular). See [create-package](../create-package/SKILL.md#e2e-packages).
+- `demos/`: private, never-published worked examples of using open-source projects and services well (e.g. a cache on Valkey), tested against the real services. See [create-package](../create-package/SKILL.md#demo-packages).
 
 ## Packages
 
-**When you add or remove a package, update the table in this file.** Add the new row in alphabetical order within the correct section (Apps, Tools, Leyman, or E2E). The description should match the one-line subtitle in the package's README.md.
+**When you add or remove a package, update the table in this file.** Add the new row in alphabetical order within the correct section (Apps, Tools, Leyman, E2E, or Demos). The description should match the one-line subtitle in the package's README.md.
 
 **When you remove a published package, add it to the top of [`DEPRECATED_PACKAGES.md`](../../../DEPRECATED_PACKAGES.md)**, linking its source at the last commit before the removal.
 
@@ -86,3 +87,9 @@ See each package's README.md for full usage documentation.
 | [`published-entrypoints`](../../../e2e/published-entrypoints) | Imports every entry point of every published package from the files it publishes, with only its runtime dependencies |
 | [`unknown-error-comparison`](../../../e2e/unknown-error-comparison) | Runs unknown-error and the libraries it is compared to through the same edge cases, to keep its comparison table accurate |
 | [`unknown-error-browser`](../../../e2e/unknown-error-browser) | Checks that unknown-error runs in real browsers, with and without `Error.isError` |
+
+### Demos
+
+| Package | Description |
+|---------|-------------|
+| [`read-through-cache`](../../../demos/read-through-cache) | Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, cluster-wide stampede protection, and sharding with weighted rendezvous hashing |
