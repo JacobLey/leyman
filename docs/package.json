@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@leyman/demo-read-through-cache": "workspace:^",
     "@shikijs/vitepress-twoslash": "catalog:",
     "@standard-schema/spec": "catalog:",
     "@tanstack/react-query": "catalog:",
@@ -35,7 +36,9 @@
     "hono": "catalog:",
     "inversify": "catalog:",
     "juniper": "workspace:^",
+    "ioredis": "catalog:",
     "juniper-validator": "workspace:^",
+    "lease-cache": "workspace:^",
     "load-populate-files": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",

@@ -169,9 +169,8 @@ const nodes = [
 ];
 await using topology = new ResizableValkeyTopology(nodes);
 const container = createContainer(
-    readThroughCacheModule
-        // ...settings and other features
-        .addBinding(bind(valkeyTopologyId).withInstance(topology))
+    // `readThroughCacheModule`, with the settings and other features bound
+    cacheModule.addBinding(bind(valkeyTopologyId).withInstance(topology))
 );
 
 // Later: only keys whose node changed are loaded again

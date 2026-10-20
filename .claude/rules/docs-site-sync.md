@@ -15,6 +15,8 @@ paths:
   - "apps/nx-lifecycle/WHY-NX-LIFECYCLE.md"
   - "apps/populate-files/*/src/**"
   - "apps/populate-files/*/README.md"
+  - "demos/*/src/**"
+  - "demos/*/README.md"
   - "tools/entry-script/src/**"
   - "tools/entry-script/README.md"
   - "tools/generated-signature/generated-signature/src/**"
@@ -33,6 +35,9 @@ paths:
   - "tools/test-chain/test-chain-core/src/**"
   - "tools/test-chain/vitest-chain/src/**"
   - "tools/test-chain/vitest-chain/README.md"
+  - "tools/lease-cache/src/**"
+  - "tools/lease-cache/README.md"
+  - "tools/lease-cache/WHY-LEASE-CACHE.md"
   - "tools/unknown-error/src/**"
   - "tools/unknown-error/README.md"
   - "tools/unknown-error/WHY-UNKNOWN-ERROR.md"
@@ -40,4 +45,4 @@ paths:
 
 # Documented package
 
-This package has pages on the docs site, in `docs/src/<package>/`. A change to its API, behaviour, defaults, CLI flags or errors must update those pages in the same commit, then pass `nx run @leyman/docs:build`. The build only catches type errors in examples, not changed behaviour, so grep the pages for what changed. See the [docs-site skill](../skills/docs-site/SKILL.md#keeping-pages-in-sync).
+This package has pages on the docs site, in `docs/src/<package>/` (a demo: `docs/src/demos/<demo>.md`). A change to its API, behaviour, defaults, CLI flags or errors must update those pages in the same commit, then pass `nx run @leyman/docs:build`. The build only catches type errors in examples, not changed behaviour, so grep the pages for what changed. See the [docs-site skill](../skills/docs-site/SKILL.md#keeping-pages-in-sync).

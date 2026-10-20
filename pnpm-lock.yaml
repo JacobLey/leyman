@@ -886,6 +886,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.5.14
+      '@leyman/demo-read-through-cache':
+        specifier: workspace:^
+        version: file:demos/read-through-cache(supports-color@8.1.1)
       '@shikijs/vitepress-twoslash':
         specifier: 'catalog:'
         version: 4.5.0(@typescript/typescript6@6.0.2)(supports-color@8.1.1)
@@ -940,12 +943,18 @@ importers:
       inversify:
         specifier: 'catalog:'
         version: 8.2.3(reflect-metadata@0.2.2)
+      ioredis:
+        specifier: 'catalog:'
+        version: 5.11.1(supports-color@8.1.1)
       juniper:
         specifier: workspace:^
         version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
         version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
+      lease-cache:
+        specifier: workspace:^
+        version: file:tools/lease-cache
       load-populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
@@ -3761,6 +3770,10 @@ packages:
 
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors':
     resolution: {directory: tools/constant-consistent-hash/test-vectors, type: directory}
+
+  '@leyman/demo-read-through-cache@file:demos/read-through-cache':
+    resolution: {directory: demos/read-through-cache, type: directory}
+    engines: {node: '>=24'}
 
   '@leyman/eslint-config@file:leyman/eslint-config':
     resolution: {directory: leyman/eslint-config, type: directory}
@@ -9468,6 +9481,20 @@ snapshots:
   '@keyv/serialize@1.1.1': {}
 
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors': {}
+
+  '@leyman/demo-read-through-cache@file:demos/read-through-cache(supports-color@8.1.1)':
+    dependencies:
+      bentocache: 1.6.1(ioredis@5.11.1(supports-color@8.1.1))
+      haywire: file:tools/haywire
+      ioredis: 5.11.1(supports-color@8.1.1)
+      lease-cache: file:tools/lease-cache
+      weighted-rendezvous-hash: file:tools/constant-consistent-hash/weighted-rendezvous-hash
+    transitivePeerDependencies:
+      - '@aws-sdk/client-dynamodb'
+      - knex
+      - kysely
+      - orchid-orm
+      - supports-color
 
   '@leyman/eslint-config@file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:

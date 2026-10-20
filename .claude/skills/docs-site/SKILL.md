@@ -21,6 +21,7 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 | [`haywire-launcher`](../../../tools/haywire-launcher/) | [`docs/src/haywire-launcher/`](../../../docs/src/haywire-launcher/) |
 | [`juniper`](../../../apps/juniper/) | [`docs/src/juniper/`](../../../docs/src/juniper/) |
 | [`juniper-validator`](../../../apps/juniper-validator/) | [`docs/src/juniper-validator/`](../../../docs/src/juniper-validator/) |
+| [`lease-cache`](../../../tools/lease-cache/) | [`docs/src/lease-cache/`](../../../docs/src/lease-cache/) |
 | [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | [`docs/src/populate-files/`](../../../docs/src/populate-files/) |
 | [`mocha-chain`](../../../tools/test-chain/mocha-chain/) | [`docs/src/mocha-chain/`](../../../docs/src/mocha-chain/) |
 | [`normalized-react-query`](../../../tools/normalized-react-query/) | [`docs/src/normalized-react-query/`](../../../docs/src/normalized-react-query/) |
@@ -29,7 +30,13 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 | [`unknown-error`](../../../tools/unknown-error/) | [`docs/src/unknown-error/`](../../../docs/src/unknown-error/) |
 | [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | [`docs/src/vitest-chain/`](../../../docs/src/vitest-chain/) |
 
-**When you document a new package, add a row here and to the `paths` of [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**
+Demos ([`demos/`](../../../demos/)) each have one page in [`docs/src/demos/`](../../../docs/src/demos/), ported from the demo's README, and a row in its `index.md`:
+
+| Demo | Page |
+|------|------|
+| [`read-through-cache`](../../../demos/read-through-cache/) | [`docs/src/demos/read-through-cache.md`](../../../docs/src/demos/read-through-cache.md) |
+
+**When you document a new package or demo, add a row here and to the `paths` of [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**
 
 ## Keeping pages in sync
 

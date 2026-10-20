@@ -54,6 +54,7 @@ A worked example under `demos/` shows how to use open-source projects and servic
 - Build each feature as a [haywire](../../../tools/haywire/) binding, one binding per choice (e.g. memory tier: none, local, synced), so a demo is a module the reader composes, and tests swap one feature at a time with `replaceBinding()`. Take the application's resources (connections, clients) as bound instances, which the container never closes, so a demo can share them. This is DI for composition (see [coding-patterns](../coding-patterns/SKILL.md#2-composition-is-part-of-the-design)).
 - Full tests and 100% coverage, like any package. Test against the real services, never mocks: they run as devcontainer sidecars (`.devcontainer/docker-compose.yml`), and Dagger binds the same images under the same hostnames for `test-ci` (`dagger/main.go`). A new service needs both, pinned to the same digest (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)).
 - Tests share each service with other test files, other worktrees' runs never (each worktree has its own sidecars). Isolate by key prefix or similar, rather than clearing the service.
+- Advertise it: a row in the root README's Demos table, and a docs site page (see the [docs-site skill](../docs-site/SKILL.md#documented-packages)).
 
 ## Go projects
 

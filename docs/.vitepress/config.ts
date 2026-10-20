@@ -48,6 +48,7 @@ export default defineConfig({
     },
     themeConfig: {
         search: { provider: 'local' },
+        nav: [{ text: 'Demos', link: '/demos/' }],
         socialLinks: [{ icon: 'github', link: 'https://github.com/JacobLey/leyman' }],
         editLink: {
             pattern: 'https://github.com/JacobLey/leyman/edit/main/docs/src/:path',
@@ -333,6 +334,22 @@ export default defineConfig({
                 ],
             },
             {
+                text: 'lease-cache',
+                items: [
+                    { text: 'Overview', link: '/lease-cache/' },
+                    { text: 'Getting started', link: '/lease-cache/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [{ text: 'Invalidation', link: '/lease-cache/guides/invalidation' }],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/lease-cache/reference/api' }],
+                    },
+                    { text: 'Why lease-cache', link: '/lease-cache/why' },
+                ],
+            },
+            {
                 text: 'unknown-error',
                 items: [
                     { text: 'Overview', link: '/unknown-error/' },
@@ -352,6 +369,13 @@ export default defineConfig({
                         items: [{ text: 'API', link: '/unknown-error/reference/api' }],
                     },
                     { text: 'Why unknown-error', link: '/unknown-error/why' },
+                ],
+            },
+            {
+                text: 'Demos',
+                items: [
+                    { text: 'Overview', link: '/demos/' },
+                    { text: 'Read-through cache', link: '/demos/read-through-cache' },
                 ],
             },
         ],

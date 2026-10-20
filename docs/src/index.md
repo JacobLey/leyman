@@ -3,6 +3,10 @@ layout: home
 hero:
   name: Leyman
   tagline: TypeScript libraries and tools for Node.js ESM environments.
+  actions:
+    - theme: alt
+      text: Demos
+      link: /demos/
 features:
   - title: Juniper
     details: Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output.
@@ -43,6 +47,12 @@ features:
   - title: vitest-chain
     details: The same hook chaining for Vitest, with typed context alongside Vitest's own test context.
     link: /vitest-chain/
+  - title: lease-cache
+    details: Read-through caching on Valkey or Redis with leases, so each miss is loaded once across every instance, and a load that finishes after an invalidation never caches its outdated value.
+    link: /lease-cache/
+  - title: Demos
+    details: Worked examples of open-source projects and services put together well, each fully tested against real services. Starting with a read-through cache on Valkey.
+    link: /demos/
   - title: unknown-error
     details: Turn any caught unknown into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains.
     link: /unknown-error/
