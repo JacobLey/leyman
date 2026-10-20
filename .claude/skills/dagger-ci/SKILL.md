@@ -16,8 +16,8 @@ Nx decides what to build and test; Dagger only provides the environment. Keep pi
 
 1. `node` image (pinned by digest) + pnpm, plus the Go toolchain copied from the `golang` image (pinned by digest), for Go projects, and the Postgres client tools (`psql`, `pg_dump`) from the PostgreSQL apt repository. Versions must match the devcontainer, see the [devcontainer skill](../devcontainer/SKILL.md)
 2. `pnpm fetch` from the lockfile alone, then copy the source (filtered by `.gitignore`) and `pnpm install --offline`, carrying over the store and the metadata cache (the install checks the lockfile against the supply-chain policies). Source-only changes reuse the cached fetch.
-3. `nx run-many -t build`
-4. In parallel: `test-ci`, and `nx run @leyman/main:lifecycle` (fails if generated lifecycle config is out of date). `test-ci` gets the services some tests run against (Valkey, and Postgres with `DATABASE_URL` set), bound under the same hostnames and with the same settings as the devcontainer's sidecars
+3. `nx run-many -t build`, with Postgres bound already (`DATABASE_URL`): `prepare`, which the build runs, snapshots schemas from migrations (`schema-snapshot`)
+4. In parallel: `test-ci`, and `nx run @leyman/main:lifecycle` (fails if generated lifecycle config is out of date). `test-ci` gets the services some tests run against (Valkey, and Postgres), bound under the same hostnames and with the same settings as the devcontainer's sidecars
 
 **If Dagger passes, CI passes.**
 

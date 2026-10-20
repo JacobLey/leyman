@@ -37,7 +37,7 @@ Without the service a test needs, it fails rather than skipping. Neither service
 
 ### Postgres tests
 
-Get each test's database from [`pg-dolly`](../../../tools/pg-dolly/) (dev dependency, `workspace:^`): a clone of a template built once per test process from the package's committed `schema.sql`. `pg-dolly` itself works with any runner; in this repo, follow its README's [mocha-chain pattern](../../../tools/pg-dolly/README.md#mocha-chain):
+Get each test's database from [`pg-dolly`](../../../tools/pg-dolly/) (dev dependency, `workspace:^`): a clone of a template built once per test process from the package's committed `schema.sql`, which the [`schema-snapshot`](../nx-tasks-reference/SKILL.md#schema-snapshot) target keeps up to date with its migrations. `pg-dolly` itself works with any runner; in this repo, follow its README's [mocha-chain pattern](../../../tools/pg-dolly/README.md#mocha-chain):
 
 - `test/helpers/database.ts` connects and builds the template in a root `before` (top level of the module), and closes in its `after`. Only `before`/`after` at the top level: a top-level `beforeEach` would clone a database for every test in the package.
 - It exports a `withDatabase()` fixture, called inside each suite that needs one: it clones in `beforeEach`, and keeps a failed test's database (`database.keep()`) in `afterEach`, so it can be inspected (`psql` with the printed name).

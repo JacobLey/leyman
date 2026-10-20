@@ -680,6 +680,79 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
+  apps/pg-dolly-schema:
+    dependencies:
+      entry-script:
+        specifier: workspace:^
+        version: file:tools/entry-script
+      haywire:
+        specifier: workspace:^
+        version: file:tools/haywire
+      haywire-launcher:
+        specifier: workspace:^
+        version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      pg-dolly:
+        specifier: workspace:^
+        version: file:tools/pg-dolly
+      populate-files:
+        specifier: workspace:^
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+      yargs:
+        specifier: 'catalog:'
+        version: 18.2.0
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.5.14
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.2(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      '@types/pg':
+        specifier: 'catalog:'
+        version: 8.23.1
+      '@types/yargs':
+        specifier: 'catalog:'
+        version: 17.0.35
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.12.0(supports-color@8.1.1)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.2
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+      pg:
+        specifier: 'catalog:'
+        version: 8.23.1
+      tmp-promise:
+        specifier: 'catalog:'
+        version: 3.0.3
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
   apps/populate-files/load-populate-files:
     dependencies:
       ci-info:
@@ -1357,6 +1430,9 @@ importers:
       pg-dolly:
         specifier: workspace:^
         version: file:tools/pg-dolly
+      pg-dolly-schema:
+        specifier: workspace:^
+        version: file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
@@ -7376,6 +7452,11 @@ packages:
 
   pg-connection-string@2.14.1:
     resolution: {integrity: sha512-qR3kGNPBLpCNtz0evbKA0Y/MRFXwSSdT+pTJvYp/bXTcReZbvX1kzF0IyTc1QnxqF7AZbOeBhNL8R5mYQZV/MA==}
+
+  pg-dolly-schema@file:apps/pg-dolly-schema:
+    resolution: {directory: apps/pg-dolly-schema, type: directory}
+    engines: {node: '>=24'}
+    hasBin: true
 
   pg-dolly@file:tools/pg-dolly:
     resolution: {directory: tools/pg-dolly, type: directory}
@@ -13593,6 +13674,20 @@ snapshots:
     optional: true
 
   pg-connection-string@2.14.1: {}
+
+  pg-dolly-schema@file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
+    dependencies:
+      entry-script: file:tools/entry-script
+      haywire: file:tools/haywire
+      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      pg-dolly: file:tools/pg-dolly
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+      yargs: 18.2.0
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - eslint
+      - pg-native
+      - prettier
 
   pg-dolly@file:tools/pg-dolly:
     dependencies:

@@ -99,6 +99,9 @@
     },
     {
       "path": "./tools/pg-dolly"
+    },
+    {
+      "path": "./apps/pg-dolly-schema"
     }
   ]
 }

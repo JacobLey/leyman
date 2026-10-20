@@ -19,7 +19,7 @@ install → prepare ┬→ check ─────────┬→ verify
 | Stage | Hooks | Purpose |
 |-------|-------|---------|
 | `install` | — | Dependencies installed and linked |
-| `prepare` | `generate` → `format` | Everything that rewrites source: codegen (`barrelify`, `update-ts-references`), then formatting (`biome`, `gofmt`). Writes locally, only checks in CI, so `build` always sees final source |
+| `prepare` | `generate` → `format` | Everything that rewrites source: codegen (`barrelify`, `update-ts-references`, `schema-snapshot`), then formatting (`biome`, `gofmt`). Writes locally, only checks in CI, so `build` always sees final source |
 | `check` | `lint` | Opinionated rules (`eslint`, `go-vet`). Runs after the project's own build (tests import its `dist/` types). Nothing depends on it, so a hacky change still builds and tests |
 | `build` | `run` → `post` → `sync` | `run`: produce `dist/` (clearing it first). `post`: codegen that needs `dist/` (`populate-files` → `out/`). `sync`: copy the published files into dependents' injected copies (`sync-injected`), uncached so it also follows cache restores |
 | `test` | `compile` → `run` → `report` | `compile`: compile and type-check `test/` into `dist-test/` (`tsc-test`). `run`: test suites, each clearing its own coverage data (unit and integration can both run), and `go-test`. `report`: enforce coverage thresholds (`coverage-report`, `go-coverage-report`). Does not test dependencies; use `nx run-many`/`nx affected` for that |

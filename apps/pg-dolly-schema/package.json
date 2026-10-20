@@ -1,0 +1,73 @@
+{
+  "name": "pg-dolly-schema",
+  "version": "0.0.1",
+  "description": "Keep a schema.sql of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale.",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "apps/pg-dolly-schema"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/pg-dolly-schema#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "postgres",
+    "postgresql",
+    "schema",
+    "structure.sql",
+    "pg_dump",
+    "migrations",
+    "cli"
+  ],
+  "sideEffects": false,
+  "types": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "bin.mjs"
+  ],
+  "bin": {
+    "pg-dolly-schema": "./bin.mjs"
+  },
+  "dependencies": {
+    "entry-script": "workspace:^",
+    "haywire": "workspace:^",
+    "haywire-launcher": "workspace:^",
+    "pg-dolly": "workspace:^",
+    "populate-files": "workspace:^",
+    "yargs": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@types/yargs": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "pg": "catalog:",
+    "tmp-promise": "catalog:",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  }
+}

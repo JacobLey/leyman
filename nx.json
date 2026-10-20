@@ -60,6 +60,7 @@
     "test-source": [
       "ts-source",
       "{projectRoot}/test/**/*",
+      "{projectRoot}/schema.sql",
       "{workspaceRoot}/configs/tsconfig.test.json",
       "package-files",
       "dependency-builds",
@@ -228,6 +229,41 @@
       ],
       "outputs": [
         "{projectRoot}/**/index.(c|m)?ts"
+      ]
+    },
+    "schema-snapshot": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "pg-dolly-schema"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "prepare:_"
+      ],
+      "cache": true,
+      "inputs": [
+        "shared-globals",
+        "{projectRoot}/package.json",
+        "{projectRoot}/src/**/*",
+        "{projectRoot}/migrations/**/*",
+        "{projectRoot}/schema.sql",
+        "dependency-builds",
+        "^package-files",
+        {
+          "runtime": "pg_dump --version"
+        },
+        {
+          "env": "CI"
+        },
+        {
+          "externalDependencies": []
+        }
+      ],
+      "outputs": [
+        "{projectRoot}/schema.sql"
       ]
     },
     "update-ts-references": {
@@ -554,7 +590,8 @@
       "dependsOn": [
         "prepare:_",
         "barrelify",
-        "update-ts-references"
+        "update-ts-references",
+        "schema-snapshot"
       ],
       "configurations": {
         "__lifecycle": {}

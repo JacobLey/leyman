@@ -1,0 +1,38 @@
+{
+  "extends": "../../configs/tsconfig.build.json",
+  "compilerOptions": {
+    "outDir": "dist",
+    "rootDir": "src",
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+  },
+  "include": [
+    "src",
+    "*.d.ts"
+  ],
+  "references": [
+    {
+      "path": "../populate-files/populate-files"
+    },
+    {
+      "path": "../../tools/pg-dolly"
+    },
+    {
+      "path": "../../tools/haywire-launcher"
+    },
+    {
+      "path": "../../tools/haywire"
+    },
+    {
+      "path": "../../tools/entry-script"
+    },
+    {
+      "path": "../../tools/test-chain/mocha-chain"
+    },
+    {
+      "path": "../../leyman/expect"
+    },
+    {
+      "path": "../../leyman/eslint-config"
+    }
+  ]
+}

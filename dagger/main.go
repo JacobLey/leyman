@@ -98,15 +98,17 @@ func (m *Ci) Test(
 			WithServiceBinding("nx-cache", nxCache).
 			WithEnvVariable("NX_SELF_HOSTED_REMOTE_CACHE_SERVER", "http://nx-cache:3000")
 	}
+	// Some targets run against real services, at the same hostnames as the devcontainer's sidecars. Postgres is
+	// bound before the build, as `prepare` (which the build runs) snapshots schemas from migrations.
+	ctr = ctr.
+		WithServiceBinding("postgres", postgresService()).
+		WithEnvVariable("DATABASE_URL", databaseURL)
 	built := ctr.WithExec([]string{"nx", "run-many", "-t", "build"})
 
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
 		_, err := built.
-			// Some tests run against real services, at the same hostnames as the devcontainer's sidecars
 			WithServiceBinding("valkey", valkeyService()).
-			WithServiceBinding("postgres", postgresService()).
-			WithEnvVariable("DATABASE_URL", databaseURL).
 			WithExec([]string{"test-ci"}).
 			Sync(ctx)
 		return err

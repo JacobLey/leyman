@@ -56,6 +56,7 @@
   "bindings": {
     "barrelify": "prepare:generate",
     "update-ts-references": "prepare:generate",
+    "schema-snapshot": "prepare:generate",
     "biome": "prepare:format",
     "gofmt": "prepare:format",
     "eslint": "check:lint",

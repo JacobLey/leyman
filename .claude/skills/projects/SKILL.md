@@ -31,6 +31,7 @@ See each package's README.md for full usage documentation.
 | [`juniper`](../../../apps/juniper/) | JSON Schema builder with static TypeScript inference |
 | [`juniper-validator`](../../../apps/juniper-validator/) | StandardSchema-compliant validator wrapping Juniper schemas |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | Nx plugin for managing ordered task dependency lifecycles |
+| [`pg-dolly-schema`](../../../apps/pg-dolly-schema/) | Keep a schema.sql of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale |
 | [`populate-files`](../../../apps/populate-files/populate-files/) | Write dynamic content to static files with CI sync checking |
 | [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | Load a config file and run `populate-files` from CLI |
 
