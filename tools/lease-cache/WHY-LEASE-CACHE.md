@@ -41,6 +41,8 @@ Each key has a value and a lease, stored next to each other. A lease is a random
 3. **Wait.** A reader that finds the lease taken checks again every `pollMs`, and returns the value once the holder caches it.
 4. **Invalidate** deletes the value and the lease together.
 
+With `staleMs`, step 4 first copies the value to a stale key that lives for `staleMs`, and a reader in step 3 returns it instead of waiting. The lease holder still loads, and its fill deletes the stale value. This is memcache's "stale values" (section 3.2.1 again): for reads that can live with data from just before the change, an invalidation then costs no waiting.
+
 Each step is one Lua script, which Valkey runs atomically: no other command runs between its check and its write.
 
 The stampede is gone because only the lease holder loads: every other instance waits for its value. The race is gone because of step 2's check, below.
@@ -67,6 +69,7 @@ The fill that loses its lease still returns what it loaded to its own caller. Th
 - **A load that outlives its lease.** Another reader may take the lease and load too: a duplicate load, never a wrong value, since the first reader's fill then fails its check. Set `leaseMs` above the usual load time to keep it rare.
 - **Clocks.** Lease and value expiry are measured by Valkey. No client clock decides correctness.
 - **A reader that stops waiting** (`waitMs`) loads without a lease, and so never caches. Its value is current when its read began.
+- **Stale values** (`staleMs`) are only returned to readers that would otherwise wait, never cached as the value, so the claim above still holds. Each fill deletes the stale value, so a reader is never handed one older than a value cached since.
 - **A crashed holder** leaves a lease that runs out after `leaseMs`, then a waiting reader takes over.
 
 ## Design decisions
@@ -75,6 +78,7 @@ The fill that loses its lease still returns what it loaded to its own caller. Th
 - **Hash tags.** The value and lease keys share a `{key}` tag, so a cluster places them on the same node, which a script touching both requires.
 - **Polling, not pub/sub.** A waiting reader checks again every `pollMs`. Pub/sub would answer faster, but needs a subscriber connection per process and handling for messages missed while subscribing. Waits are short (one load), so a few cheap `GET`s each are simpler.
 - **`invalidate` frees the lease too.** The next reader takes a new lease and loads right away, rather than waiting on a load already known to be outdated.
+- **Stale values only after an invalidation, and opt-in.** A value that expires on its own has no stale copy: `ttlMs` is the longest a value may be served, and stale-while-revalidate on expiry belongs to the cache in front (e.g. BentoCache's grace periods). An invalidation is different: the data is known to have changed, and only the caller knows whether the old value is still useful for a moment.
 - **JSON values.** One format every client can read, and `null` caches like any value, so a missing row isn't looked up again on every read.
 
 ## Compared to alternatives
@@ -86,7 +90,8 @@ As of October 2026:
 | Concurrent misses in one instance | one load | one load | one load | one load |
 | Concurrent misses across instances | one load | one per instance | one per instance | one per instance |
 | Load finishing after an invalidation | not cached | cached until it expires | cached until it expires | cached until it expires |
-| Memory tier, stale-while-revalidate, tags | ❌ | ✅ | some | some |
+| Stale values while the next load runs | after an invalidation (`staleMs`) | grace periods | some | `staleWhileRevalidate` |
+| Memory tier, stale-while-revalidate on expiry, tags | ❌ | ✅ | some | some |
 | Stores | Valkey, Redis | many | many (Keyv) | many (adapters) |
 
 BentoCache's maintainer considered distributed locks and decided against them for now ([Julien-R44/bentocache#2](https://github.com/Julien-R44/bentocache/issues/2)). A distributed lock (e.g. Redlock) around the loader stops the stampede, but not the race: the lock decides who loads, not whether the result may still be cached.

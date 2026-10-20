@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import { fillScript, readOrLeaseScript, releaseScript } from './scripts.js';
+import { fillScript, invalidateScript, readOrLeaseScript, releaseScript } from './scripts.js';
 
 /**
  * Values are stored as JSON, so only JSON survives the round trip: a `Date` would come back as a string.
@@ -48,13 +48,23 @@ export interface LeaseCacheOptions {
      */
     readonly waitMs: number;
     /**
+     * After `invalidate()`, how long the old value is kept as stale, in milliseconds. A reader that would wait on
+     * another reader's load returns the stale value instead, right away. Off (`0`) by default.
+     *
+     * Only for reads that accept data from before the last change. A stale value is only returned, never cached.
+     */
+    readonly staleMs?: number;
+    /**
      * Called each time a reader finds another reader loading the key, and waits, e.g. to count how many loads
      * the leases saved.
      */
     readonly onWait?: (key: string) => void;
 }
 
-type GetOrLeaseResult = readonly ['hit', string] | readonly ['lease'] | readonly ['wait'];
+type GetOrLeaseResult =
+    | readonly ['hit', string]
+    | readonly ['lease']
+    | readonly ['wait', string | null];
 
 /**
  * A read-through cache on Valkey (or Redis) with leases, after memcache's leases at Facebook.
@@ -116,6 +126,10 @@ export class LeaseCache {
                 return loaded;
             }
 
+            if (value !== null) {
+                // Stale, kept by an invalidation for readers that would otherwise wait
+                return JSON.parse(value) as T;
+            }
             if (Date.now() >= deadline) {
                 return load();
             }
@@ -128,27 +142,29 @@ export class LeaseCache {
      * Deletes a value, so the next read loads it. A load already in progress returns to its caller, but caches
      * nothing. Call after the source of truth changes.
      *
+     * With `staleMs`, the old value is kept as stale for that long, for readers that would wait on the next load.
+     *
      * @param key - Value to delete
      */
     public async invalidate(key: string): Promise<void> {
-        await this.#eval(`return redis.call('DEL', KEYS[1], KEYS[2])`, this.#keys(key));
+        await this.#eval(invalidateScript, this.#keys(key), this.#options.staleMs ?? 0);
     }
 
     /**
-     * The value's key and its lease's key. The hash tag (`{...}`) puts both on the same node of a cluster, which
-     * the scripts need, since they touch both.
+     * The value's key, its lease's key and its stale value's key. The hash tag (`{...}`) puts all three on the
+     * same node of a cluster, which the scripts need, since they touch several.
      *
      * @param key - Identifies the value, without the prefix
-     * @returns Value key, then lease key
+     * @returns Value key, lease key, then stale value key
      */
-    #keys(key: string): readonly [string, string] {
+    #keys(key: string): readonly [string, string, string] {
         const tagged = `${this.#options.prefix}:{${key}}`;
-        return [`${tagged}:value`, `${tagged}:lease`];
+        return [`${tagged}:value`, `${tagged}:lease`, `${tagged}:stale`];
     }
 
     async #eval(
         script: string,
-        keys: readonly [string, string],
+        keys: readonly [string, string, string],
         ...args: (number | string)[]
     ): Promise<unknown> {
         return this.#options.connection.eval(script, keys.length, ...keys, ...args);

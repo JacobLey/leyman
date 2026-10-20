@@ -216,4 +216,86 @@ suite('LeaseCache', () => {
             }
         );
     });
+    suite('stale while waiting', () => {
+        withConnection.test(
+            'Serves the invalidated value to readers that would wait on the next load',
+            async ({ instance }) => {
+                const [first, second] = [
+                    instance({ staleMs: 60_000 }),
+                    instance({ staleMs: 60_000 }),
+                ];
+                await first.get('key', async () => 'old');
+                await first.invalidate('key');
+                const loader = controlledLoader<string>();
+
+                const fromFirst = first.get('key', loader.load);
+                await loader.called(1);
+
+                expect(await second.get('key', loader.load)).to.equal('old');
+                await loader.resolve(1, 'new');
+                expect(await fromFirst).to.equal('new');
+                expect(loader.calls()).to.equal(1);
+            }
+        );
+
+        withConnection.test(
+            'Drops the stale value once the new one is cached',
+            async ({ connection, instance, prefix }) => {
+                const waiting = pDefer();
+                const [first, second] = [
+                    instance({ staleMs: 60_000 }),
+                    instance({
+                        staleMs: 60_000,
+                        onWait: () => {
+                            waiting.resolve();
+                        },
+                    }),
+                ];
+                await first.get('key', async () => 'old');
+                await first.invalidate('key');
+                await first.get('key', async () => 'new');
+                // The new value expires, without an invalidation to keep it as stale
+                await connection.del([prefix, '{key}', 'value'].join(':'));
+                const loader = controlledLoader<string>();
+
+                const fromFirst = first.get('key', loader.load);
+                await loader.called(1);
+                const fromSecond = second.get('key', loader.load);
+
+                // Waits rather than serve 'old', older than what was cached since
+                await waiting.promise;
+                await loader.resolve(1, 'newer');
+                expect(await Promise.all([fromFirst, fromSecond])).to.deep.equal([
+                    'newer',
+                    'newer',
+                ]);
+            }
+        );
+
+        withConnection.test(
+            'Keeps the stale value for staleMs',
+            async ({ connection, instance, prefix }) => {
+                const cache = instance({ staleMs: 30_000 });
+                await cache.get('key', async () => 'old');
+
+                await cache.invalidate('key');
+
+                const staleKey = [prefix, '{key}', 'stale'].join(':');
+                expect(await connection.pttl(staleKey)).to.be.within(1, 30_000);
+            }
+        );
+
+        withConnection.test(
+            'Keeps no stale value by default',
+            async ({ connection, instance, prefix }) => {
+                const cache = instance();
+                await cache.get('key', async () => 'old');
+
+                await cache.invalidate('key');
+
+                const staleKey = [prefix, '{key}', 'stale'].join(':');
+                expect(await connection.exists(staleKey)).to.equal(0);
+            }
+        );
+    });
 });
