@@ -50,8 +50,14 @@ features:
   - title: lease-cache
     details: Read-through caching on Valkey or Redis with leases, so each miss is loaded once across every instance, and a load that finishes after an invalidation never caches its outdated value.
     link: /lease-cache/
+  - title: pg-dolly
+    details: A fresh Postgres database for every test, cloned from a template built once from your schema's SQL, safe next to dev data and across parallel runs.
+    link: /pg-dolly/
+  - title: pg-dolly-schema
+    details: Keep a schema.sql of what your Postgres migrations build, for any migration tool, and fail CI when it's stale.
+    link: /pg-dolly-schema/
   - title: Demos
-    details: Worked examples of open-source projects and services put together well, each fully tested against real services. Starting with a read-through cache on Valkey.
+    details: Worked examples of open-source projects and services put together well, each fully tested against real services. A read-through cache on Valkey, and an OpenAPI service on Postgres.
     link: /demos/
   - title: unknown-error
     details: Turn any caught unknown into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains.

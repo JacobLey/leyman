@@ -18,6 +18,8 @@ Named for Dolly the sheep: every test gets a clone. The design follows Go's [pgt
 
 For why each test gets a database of its own, and how runs stay safe from each other, see [WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md).
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/pg-dolly/).
+
 ## Contents
 - [Install](#install)
 - [Example](#example)

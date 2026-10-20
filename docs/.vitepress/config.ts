@@ -353,6 +353,41 @@ export default defineConfig({
                 ],
             },
             {
+                text: 'pg-dolly',
+                items: [
+                    { text: 'Overview', link: '/pg-dolly/' },
+                    { text: 'Getting started', link: '/pg-dolly/getting-started' },
+                    {
+                        text: 'Guides',
+                        items: [
+                            { text: 'Test runners', link: '/pg-dolly/guides/test-runners' },
+                            { text: 'The schema', link: '/pg-dolly/guides/schema' },
+                            {
+                                text: 'Deterministic tests',
+                                link: '/pg-dolly/guides/deterministic-tests',
+                            },
+                            { text: 'How it works', link: '/pg-dolly/guides/how-it-works' },
+                        ],
+                    },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API', link: '/pg-dolly/reference/api' }],
+                    },
+                    { text: 'Why pg-dolly', link: '/pg-dolly/why' },
+                ],
+            },
+            {
+                text: 'pg-dolly-schema',
+                items: [
+                    { text: 'Overview', link: '/pg-dolly-schema/' },
+                    { text: 'Getting started', link: '/pg-dolly-schema/getting-started' },
+                    {
+                        text: 'Reference',
+                        items: [{ text: 'API and CLI', link: '/pg-dolly-schema/reference/api' }],
+                    },
+                ],
+            },
+            {
                 text: 'unknown-error',
                 items: [
                     { text: 'Overview', link: '/unknown-error/' },
@@ -379,6 +414,7 @@ export default defineConfig({
                 items: [
                     { text: 'Overview', link: '/demos/' },
                     { text: 'Read-through cache', link: '/demos/read-through-cache' },
+                    { text: 'OpenAPI', link: '/demos/openapi' },
                 ],
             },
         ],

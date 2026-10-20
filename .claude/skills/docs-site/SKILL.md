@@ -26,6 +26,8 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 | [`mocha-chain`](../../../tools/test-chain/mocha-chain/) | [`docs/src/mocha-chain/`](../../../docs/src/mocha-chain/) |
 | [`normalized-react-query`](../../../tools/normalized-react-query/) | [`docs/src/normalized-react-query/`](../../../docs/src/normalized-react-query/) |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | [`docs/src/nx-lifecycle/`](../../../docs/src/nx-lifecycle/) |
+| [`pg-dolly`](../../../tools/pg-dolly/) | [`docs/src/pg-dolly/`](../../../docs/src/pg-dolly/) |
+| [`pg-dolly-schema`](../../../apps/pg-dolly-schema/) | [`docs/src/pg-dolly-schema/`](../../../docs/src/pg-dolly-schema/) |
 | [`populate-files`](../../../apps/populate-files/populate-files/) | [`docs/src/populate-files/`](../../../docs/src/populate-files/) |
 | [`unknown-error`](../../../tools/unknown-error/) | [`docs/src/unknown-error/`](../../../docs/src/unknown-error/) |
 | [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | [`docs/src/vitest-chain/`](../../../docs/src/vitest-chain/) |
@@ -35,6 +37,7 @@ Demos ([`demos/`](../../../demos/)) each have one page in [`docs/src/demos/`](..
 | Demo | Page |
 |------|------|
 | [`read-through-cache`](../../../demos/read-through-cache/) | [`docs/src/demos/read-through-cache.md`](../../../docs/src/demos/read-through-cache.md) |
+| [`openapi`](../../../demos/openapi/) | [`docs/src/demos/openapi.md`](../../../docs/src/demos/openapi.md) |
 
 **When you document a new package or demo, add a row here and to the `paths` of [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**
 

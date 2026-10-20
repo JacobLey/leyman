@@ -1183,6 +1183,15 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.5.14
+      '@hono/node-server':
+        specifier: 'catalog:'
+        version: 2.1.5(hono@4.13.13)
+      '@leyman/demo-openapi-client':
+        specifier: workspace:^
+        version: file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
+      '@leyman/demo-openapi-server':
+        specifier: workspace:^
+        version: file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.12.0(supports-color@8.1.1))
       '@leyman/demo-read-through-cache':
         specifier: workspace:^
         version: file:demos/read-through-cache(supports-color@8.1.1)
@@ -1201,6 +1210,9 @@ importers:
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
+      '@types/pg':
+        specifier: 'catalog:'
+        version: 8.23.1
       '@types/react':
         specifier: 'catalog:'
         version: 19.3.0
@@ -1216,6 +1228,9 @@ importers:
       chai:
         specifier: 'catalog:'
         version: 6.2.2
+      drizzle-orm:
+        specifier: 'catalog:'
+        version: 0.45.4(@types/pg@8.23.1)(pg@8.23.1)
       entry-script:
         specifier: workspace:^
         version: file:tools/entry-script
@@ -1276,6 +1291,15 @@ importers:
       openapi3-ts:
         specifier: 'catalog:'
         version: 4.6.1
+      pg:
+        specifier: 'catalog:'
+        version: 8.23.1
+      pg-dolly:
+        specifier: workspace:^
+        version: file:tools/pg-dolly
+      pg-dolly-schema:
+        specifier: workspace:^
+        version: file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
@@ -4454,6 +4478,10 @@ packages:
 
   '@leyman/demo-openapi-client@file:demos/openapi/client':
     resolution: {directory: demos/openapi/client, type: directory}
+    engines: {node: '>=24'}
+
+  '@leyman/demo-openapi-server@file:demos/openapi/server':
+    resolution: {directory: demos/openapi/server, type: directory}
     engines: {node: '>=24'}
 
   '@leyman/demo-openapi-spec@file:demos/openapi/spec':
@@ -10649,6 +10677,50 @@ snapshots:
       '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
     transitivePeerDependencies:
       - eslint
+
+  '@leyman/demo-openapi-server@file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.12.0(supports-color@8.1.1))':
+    dependencies:
+      '@hono/node-server': 2.1.5(hono@4.13.13)
+      '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
+      ajv: 8.20.0
+      ajv-formats: 3.0.1(ajv@8.20.0)
+      default-import: file:tools/default-import
+      drizzle-orm: 0.45.4(@types/pg@8.23.1)(pg@8.23.1)
+      haywire: file:tools/haywire
+      hono: 4.13.13
+      pg: 8.23.1
+    transitivePeerDependencies:
+      - '@aws-sdk/client-rds-data'
+      - '@cloudflare/workers-types'
+      - '@electric-sql/pglite'
+      - '@libsql/client'
+      - '@libsql/client-wasm'
+      - '@neondatabase/serverless'
+      - '@netlify/db'
+      - '@op-engineering/op-sqlite'
+      - '@opentelemetry/api'
+      - '@planetscale/database'
+      - '@prisma/client'
+      - '@tidbcloud/serverless'
+      - '@types/better-sqlite3'
+      - '@types/pg'
+      - '@types/sql.js'
+      - '@upstash/redis'
+      - '@vercel/postgres'
+      - '@xata.io/client'
+      - better-sqlite3
+      - bun-types
+      - eslint
+      - expo-sqlite
+      - gel
+      - knex
+      - kysely
+      - mysql2
+      - pg-native
+      - postgres
+      - prisma
+      - sql.js
+      - sqlite3
 
   '@leyman/demo-openapi-spec@file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))':
     dependencies:

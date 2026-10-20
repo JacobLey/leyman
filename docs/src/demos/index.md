@@ -16,3 +16,4 @@ Each one is held to the same bar as the published packages, so the code can be c
 | Demo | What it shows |
 |------|---------------|
 | [Read-through cache](/demos/read-through-cache) | BentoCache on Valkey: a memory tier kept in sync, stale-while-revalidate, one load per key across instances with [lease-cache](/lease-cache/), and sharding over several nodes with weighted rendezvous hashing. |
+| [OpenAPI](/demos/openapi) | A notes API from spec to database: an OpenAPI 3.1 document built from [Juniper](/juniper/) schemas, [genever](/genever/) types for a typed client and a Hono server that validates every request and response, and Drizzle on Postgres with a [pg-dolly](/pg-dolly/) database per test. |
