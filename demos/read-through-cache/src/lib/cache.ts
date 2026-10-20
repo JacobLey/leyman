@@ -1,9 +1,11 @@
-import type { Json } from 'lease-cache';
+import type { GetOptions, Json } from 'lease-cache';
 import type { ReadThroughBentoCache } from './ids.js';
+import type { ResourceOptions } from './resource.js';
 import type { SharedTier } from './shared-tier.js';
 import { BentoCache, bentostore } from 'bentocache';
 import { bind, createModule, singletonScope } from 'haywire';
 import { bentoCacheId, cacheConfigId, expiryPolicyId, memoryTierId, sharedTierId } from './ids.js';
+import { Resource } from './resource.js';
 
 /**
  * A read-through cache: reads that miss load the value, and cache it for later reads.
@@ -22,16 +24,40 @@ export class ReadThroughCache {
     }
 
     /**
-     * Returns the cached value, or calls `load` and caches what it returns.
+     * Defines a kind of value, read by input: its key and loader are given once, rather than at every read.
+     *
+     * @param options - Key, loader and TTL
+     * @returns Resource, to read and invalidate values by input
+     */
+    public resource<Input, T extends Json>(options: ResourceOptions<Input, T>): Resource<Input, T> {
+        return new Resource(this, options);
+    }
+
+    /**
+     * Returns the cached value, or calls `load` and caches what it returns. Prefer `resource()`, which derives the
+     * key from the input, so a key can't be read with the loader of something else.
      *
      * @param key - Identifies the value, without the prefix
      * @param load - Loads the value from the source of truth
+     * @param options - How long to cache this value, in place of the cache's `ttlMs`
      * @returns Cached or loaded value
      */
-    public async get<T extends Json>(key: string, load: () => Promise<T>): Promise<T> {
+    public async get<T extends Json>(
+        key: string,
+        load: () => Promise<T>,
+        options: GetOptions<T> = {}
+    ): Promise<T> {
+        const { ttlMs } = options;
         return this.#bento.getOrSet<T>({
             key,
-            factory: this.#sharedTier.factory(key, load),
+            factory: async ctx => {
+                const value = await this.#sharedTier.load(key, load, options);
+                if (ttlMs !== undefined) {
+                    // Every tier BentoCache writes keeps the value this long
+                    ctx.setOptions({ ttl: typeof ttlMs === 'function' ? ttlMs(value) : ttlMs });
+                }
+                return value;
+            },
         });
     }
 

@@ -55,7 +55,7 @@ export interface ValkeyNode {
  * @returns Topology over the shards
  * @throws {RangeError} When names repeat, or no shard has a positive size
  */
-const rendezvousTopology = (shards: readonly ValkeyShard[]): ValkeyTopology => {
+export const rendezvousTopology = (shards: readonly ValkeyShard[]): ValkeyTopology => {
     const hash: RendezvousHash<ValkeyShard> = createRendezvousHash(shards);
     return {
         connectionFor: key => hash.get(key).connection,

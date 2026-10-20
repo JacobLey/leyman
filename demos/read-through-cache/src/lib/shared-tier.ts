@@ -1,8 +1,7 @@
 import type { BentoStore } from 'bentocache';
-import type { GetSetFactory } from 'bentocache/types';
 import type { Redis } from 'ioredis';
 import type { Binding } from 'haywire';
-import type { Json, LeaseCacheOptions } from 'lease-cache';
+import type { GetOptions, Json, LeaseCacheOptions } from 'lease-cache';
 import { bind, singletonScope } from 'haywire';
 import { LeaseCache } from 'lease-cache';
 import { cacheConfigId, sharedTierId, valkeyTopologyId } from './ids.js';
@@ -17,9 +16,13 @@ export interface SharedTier {
      */
     readonly layer: (store: BentoStore) => BentoStore;
     /**
-     * Turns a loader into the BentoCache factory that runs it on a miss.
+     * Loads a value BentoCache missed, through the tier when it caches values itself.
      */
-    readonly factory: <T extends Json>(key: string, load: () => Promise<T>) => GetSetFactory<T>;
+    readonly load: <T extends Json>(
+        key: string,
+        load: () => Promise<T>,
+        options: GetOptions<T>
+    ) => Promise<T>;
     /**
      * Deletes the key from the tier, when BentoCache doesn't manage it.
      */
@@ -41,7 +44,8 @@ export const bentoValkeyTierBinding = bind(sharedTierId)
                     factory: ({ prefix }: { prefix: string }) =>
                         new ShardedValkeyDriver(topology, prefix),
                 }),
-            factory: (_key, load) => async () => load(),
+            // BentoCache writes what was loaded to this tier itself
+            load: async (_key, load) => load(),
             // BentoCache deletes the key from its own tier
             invalidate: async () => {},
         })
@@ -83,7 +87,7 @@ export const leaseCacheTierBinding = (
             };
             return {
                 layer: store => store,
-                factory: (key, load) => async () => cacheFor(key).get(key, load),
+                load: async (key, load, readOptions) => cacheFor(key).get(key, load, readOptions),
                 invalidate: async key => cacheFor(key).invalidate(key),
             };
         })

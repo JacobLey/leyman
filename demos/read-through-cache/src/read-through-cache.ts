@@ -1,6 +1,11 @@
 export type { Json } from 'lease-cache';
 export { ReadThroughCache, readThroughCacheModule } from './lib/cache.js';
 export {
+    type CreatedReadThroughCache,
+    createReadThroughCache,
+    type ReadThroughCacheOptions,
+} from './lib/create.js';
+export {
     type StaleWhileRevalidateOptions,
     staleWhileRevalidateBinding,
     waitForFreshBinding,
@@ -23,6 +28,7 @@ export {
     noMemoryTierBinding,
     syncedMemoryTierBinding,
 } from './lib/memory-tier.js';
+export { Resource, type ResourceOptions } from './lib/resource.js';
 export { ShardedValkeyDriver } from './lib/sharded-valkey-driver.js';
 export {
     bentoValkeyTierBinding,

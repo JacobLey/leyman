@@ -1,5 +1,5 @@
 import type { EventEmitter } from 'node:events';
-import type { CacheConfig, LeaseCacheTierOptions } from '@leyman/demo-read-through-cache';
+import type { CacheConfig, LeaseCacheTierOptions, Resource } from '@leyman/demo-read-through-cache';
 import { on, once } from 'node:events';
 import { errors } from 'bentocache';
 import { expectTypeOf } from 'expect-type';
@@ -8,6 +8,7 @@ import pDefer from 'p-defer';
 import {
     bentoValkeyTierBinding,
     cacheConfigId,
+    createReadThroughCache,
     leaseCacheTierBinding,
     memoryTierBinding,
     noMemoryTierBinding,
@@ -158,6 +159,30 @@ suite('ReadThroughCache', () => {
                 await Promise.all([loader.resolve(1, 'value'), loader.resolve(2, 'value')]);
 
                 expect(await values).to.deep.equal(['value', 'value']);
+            }
+        );
+
+        withInstances.test(
+            'Caches a value for the ttlMs given to get',
+            async ({ connection, instance, prefix }) => {
+                await instance().get('key', async () => 'value', { ttlMs: 5000 });
+
+                expect(await connection.pttl(`${prefix}:key`)).to.be.within(1, 5000);
+            }
+        );
+
+        withInstances.test(
+            'Caches a value for the ttlMs computed from it',
+            async ({ connection, instance, prefix }) => {
+                const cache = instance();
+                // A missing row may be created soon, so it is cached for less time
+                const ttlMs = (value: string | null): number => (value === null ? 5000 : 30_000);
+
+                await cache.get('missing', async () => null, { ttlMs });
+                await cache.get('found', async () => 'value', { ttlMs });
+
+                expect(await connection.pttl(`${prefix}:missing`)).to.be.within(1, 5000);
+                expect(await connection.pttl(`${prefix}:found`)).to.be.within(5001, 30_000);
             }
         );
 
@@ -371,6 +396,19 @@ suite('ReadThroughCache', () => {
         );
 
         withLease.test(
+            'Caches a value in lease-cache for the ttlMs computed from it',
+            async ({ connection, instance, leased, prefix }) => {
+                await instance(leased).get('key', async (): Promise<string | null> => null, {
+                    ttlMs: value => (value === null ? 5000 : 30_000),
+                });
+
+                // The key lease-cache stores `key` under, inside its hash tag
+                const valueKey = [prefix, '{key}', 'value'].join(':');
+                expect(await connection.pttl(valueKey)).to.be.within(1, 5000);
+            }
+        );
+
+        withLease.test(
             'Never caches a load that finishes after an invalidation',
             async ({ instance, leased }) => {
                 const cache = instance(leased);
@@ -470,6 +508,180 @@ suite('ReadThroughCache', () => {
                 expect(await second.get('key', async () => 'unused')).to.equal('fresh');
             }
         );
+    });
+
+    suite('resource', () => {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- Only type aliases extend `Json`
+        type User = { readonly id: number; readonly name: string };
+
+        const withUsers = withInstances.beforeEach(({ instance }) => {
+            const loads: number[] = [];
+            const users: Resource<{ id: number }, User | null> = instance().resource({
+                key: ({ id }) => `user:${id}`,
+                load: async ({ id }) => {
+                    loads.push(id);
+                    return id > 0 ? { id, name: `User ${id}` } : null;
+                },
+                // Missing users are cached for less time
+                ttlMs: (user, { id }) => (user === null ? id * -1000 : 30_000),
+            });
+            return { users, loads };
+        });
+
+        withUsers.test(
+            'Reads by input, under the key derived from it',
+            async ({ connection, prefix, users }) => {
+                const user = users.get({ id: 1 });
+
+                expectTypeOf(user).toEqualTypeOf<Promise<User | null>>();
+                expect(await user).to.deep.equal({ id: 1, name: 'User 1' });
+                expect(await connection.exists(`${prefix}:user:1`)).to.equal(1);
+            }
+        );
+
+        withUsers.test(
+            'Serves a cached input without loading it again',
+            async ({ loads, users }) => {
+                await users.get({ id: 1 });
+                await users.get({ id: 2 });
+
+                expect(await users.get({ id: 1 })).to.deep.equal({ id: 1, name: 'User 1' });
+                expect(loads).to.deep.equal([1, 2]);
+            }
+        );
+
+        withUsers.test(
+            'Caches a value for the ttlMs computed from it and its input',
+            async ({ connection, prefix, users }) => {
+                await users.get({ id: -5 });
+                await users.get({ id: 1 });
+
+                expect(await connection.pttl(`${prefix}:user:-5`)).to.be.within(1, 5000);
+                expect(await connection.pttl(`${prefix}:user:1`)).to.be.within(5001, 30_000);
+            }
+        );
+
+        withInstances.test(
+            'Caches a value for a fixed ttlMs',
+            async ({ connection, instance, prefix }) => {
+                const constant = instance().resource({
+                    key: (name: string) => name,
+                    load: async () => 'value',
+                    ttlMs: 5000,
+                });
+
+                await constant.get('key');
+
+                expect(await connection.pttl(`${prefix}:key`)).to.be.within(1, 5000);
+            }
+        );
+
+        withInstances.test(
+            "Caches a value for the cache's ttlMs by default",
+            async ({ connection, instance, prefix }) => {
+                const constant = instance().resource({
+                    key: (name: string) => name,
+                    load: async () => 'value',
+                });
+
+                await constant.get('key');
+
+                expect(await connection.pttl(`${prefix}:key`)).to.be.within(30_001, 60_000);
+            }
+        );
+
+        withUsers.test('Loads an invalidated input again', async ({ loads, users }) => {
+            await users.get({ id: 1 });
+
+            await users.invalidate({ id: 1 });
+            await users.get({ id: 1 });
+
+            expect(loads).to.deep.equal([1, 1]);
+        });
+
+        withUsers.test('Loads an expired input again', async ({ loads, users }) => {
+            await users.get({ id: 1 });
+
+            await users.expire({ id: 1 });
+            await users.get({ id: 1 });
+
+            expect(loads).to.deep.equal([1, 1]);
+        });
+    });
+
+    suite('createReadThroughCache', () => {
+        withInstances.test(
+            "Stores keys on the application's connection, and leaves it open",
+            async ({ connection, prefix }) => {
+                const { cache, close } = createReadThroughCache({
+                    connection,
+                    prefix,
+                    ttlMs: 60_000,
+                });
+                await cache.get('key', async () => 'value');
+
+                await close();
+
+                expect(await connection.exists(`${prefix}:key`)).to.equal(1);
+            }
+        );
+
+        withInstances.test('Keeps copies in memory', async ({ connection, prefix }) => {
+            const { cache, close } = createReadThroughCache({
+                connection,
+                prefix,
+                ttlMs: 60_000,
+                memory: { maxItems: 100 },
+            });
+            await cache.get('key', async () => 'value');
+            await connection.del(`${prefix}:key`);
+
+            // Still in this instance's memory
+            expect(await cache.get('key', async () => 'other')).to.equal('value');
+            await close();
+        });
+
+        withInstances.test('Combines every feature', async ({ connection, prefix }) => {
+            const waiting = pDefer();
+            const shards = [
+                { name: 'first', size: 1, connection: new Redis(valkeyUrl(2)) },
+                { name: 'second', size: 1, connection: new Redis(valkeyUrl(3)) },
+            ];
+            const create = (onWait?: () => void): ReturnType<typeof createReadThroughCache> =>
+                createReadThroughCache({
+                    connection,
+                    shards,
+                    prefix,
+                    ttlMs: 60_000,
+                    memory: { maxItems: 100, sync: true },
+                    staleWhileRevalidate: { graceMs: 120_000 },
+                    leases: { ...lease, ...(onWait && { onWait }) },
+                });
+            const [first, second] = [
+                create(),
+                create(() => {
+                    waiting.resolve();
+                }),
+            ];
+            const loader = controlledLoader<string>();
+
+            // Leases: a key missed by both instances is loaded once
+            const fromFirst = first.cache.get('key', loader.load);
+            await loader.called(1);
+            const fromSecond = second.cache.get('key', loader.load);
+            await waiting.promise;
+            await loader.resolve(1, 'value');
+            expect(await Promise.all([fromFirst, fromSecond])).to.deep.equal(['value', 'value']);
+
+            await Promise.all([first.close(), second.close()]);
+            // Sharding: stored on one of the shards, never on the app's connection
+            const stored = await Promise.all(
+                shards.map(async shard => shard.connection.keys(`${prefix}:*`))
+            );
+            expect(stored.flat()).to.have.length(1);
+            expect(await connection.keys(`${prefix}:*`)).to.deep.equal([]);
+            await Promise.all(shards.map(async shard => shard.connection.quit()));
+        });
     });
 
     suite('topology', () => {
