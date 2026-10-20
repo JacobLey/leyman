@@ -198,9 +198,16 @@ export default function makeEslintConfigForPackage({
 
     return [
         {
-            ignores: ['coverage', 'dist', 'dist-test', 'node_modules', 'out', '.eslintcache'].map(
-                directory => `${directory}/**`
-            ),
+            // `src/generated` holds code generated into source, e.g. by the `genever` target
+            ignores: [
+                'coverage',
+                'dist',
+                'dist-test',
+                'node_modules',
+                'out',
+                'src/generated',
+                '.eslintcache',
+            ].map(directory => `${directory}/**`),
         },
         {
             files: [...sourceFiles],

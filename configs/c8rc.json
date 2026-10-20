@@ -5,7 +5,7 @@
   ],
   "exclude": [
     "coverage/**",
-    "eslint.config.js",
+    "*.config.{,c,m}js",
     "test/**",
     "dist-test/**",
     "**/*.d.{,c,m}ts"

@@ -155,6 +155,31 @@
         "check:_"
       ]
     },
+    "drizzle-kit-check": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "${NX_WORKSPACE_ROOT}/scripts/nx/drizzle-kit-check.sh"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "shared-globals",
+        "{projectRoot}/package.json",
+        "{projectRoot}/drizzle.config.*",
+        "{projectRoot}/src/**/*",
+        "{projectRoot}/migrations/**/*",
+        {
+          "externalDependencies": []
+        }
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "check:_"
+      ]
+    },
     "check-package": {
       "executor": "nx:run-commands",
       "options": {
@@ -264,6 +289,36 @@
       ],
       "outputs": [
         "{projectRoot}/schema.sql"
+      ]
+    },
+    "genever": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "genever"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "dependsOn": [
+        "prepare:_"
+      ],
+      "cache": true,
+      "inputs": [
+        "shared-globals",
+        "{projectRoot}/package.json",
+        "{projectRoot}/src/generated/**/*",
+        "dependency-builds",
+        "^package-files",
+        {
+          "env": "CI"
+        },
+        {
+          "externalDependencies": []
+        }
+      ],
+      "outputs": [
+        "{projectRoot}/src/generated"
       ]
     },
     "update-ts-references": {
@@ -591,7 +646,8 @@
         "prepare:_",
         "barrelify",
         "update-ts-references",
-        "schema-snapshot"
+        "schema-snapshot",
+        "genever"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -634,6 +690,7 @@
         "check:_",
         "eslint",
         "check-package",
+        "drizzle-kit-check",
         "go-vet"
       ],
       "configurations": {
