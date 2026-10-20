@@ -9,26 +9,26 @@ export interface PgDollyOptions {
      *
      * @default process.env.DATABASE_URL
      */
-    readonly url?: string;
+    readonly url?: string | undefined;
     /**
      * Start of every database name `pg-dolly` creates. 1-20 lowercase letters, digits and underscores, starting with
      * a letter.
      *
      * @default 'pg_dolly'
      */
-    readonly prefix?: string;
+    readonly prefix?: string | undefined;
     /**
      * `TimeZone` setting of every clone, as a clone doesn't inherit the template's `ALTER DATABASE` settings.
      *
      * @default 'UTC'
      */
-    readonly timeZone?: string;
+    readonly timeZone?: string | undefined;
     /**
      * How long, in milliseconds, a template no run has used is kept, and so is a database kept from a failed test.
      *
      * @default 86_400_000 (a day)
      */
-    readonly retainMs?: number;
+    readonly retainMs?: number | undefined;
 }
 
 /**
@@ -186,7 +186,7 @@ export class PgDolly {
     private constructor(
         client: pg.Client,
         url: string,
-        options: Required<Omit<PgDollyOptions, 'url'>>
+        options: { readonly prefix: string; readonly timeZone: string; readonly retainMs: number }
     ) {
         this.#client = client;
         this.#url = url;

@@ -1,3 +1,4 @@
+export { dumpSchema } from './lib/dump-schema.js';
 export {
     PgDollyClosedError,
     PgDollyError,

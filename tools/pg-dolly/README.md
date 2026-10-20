@@ -10,7 +10,7 @@ A fresh Postgres database for every test, cloned from a template built once from
 
 - **A real database per test**: a test commits, `LISTEN`s, takes advisory locks and races two connections, which rolling back a transaction per test can't allow. Tests share nothing, so their order doesn't matter.
 - **Fast, as the schema is built once**: each clone is a `CREATE DATABASE … TEMPLATE` copy of a template built from the SQL. The template is kept between runs, named by the hash of the SQL, so only a changed schema is built again.
-- **The schema is SQL**: a dump of what your migrations build (`schema.sql`), so triggers, functions and hand-written views are in every test database. No ORM or test runner: bring your own migrations, client and runner (Mocha, mocha-chain and Vitest shown below).
+- **The schema is SQL**: a dump of what your migrations build (`schema.sql`, kept by [`pg-dolly-schema`](https://www.npmjs.com/package/pg-dolly-schema)), so triggers, functions and hand-written views are in every test database. No ORM or test runner: bring your own migrations, client and runner (Mocha, mocha-chain and Vitest shown below).
 - **Safe next to dev data, and in parallel**: it only ever drops databases it made, recognized by their prefix _and_ a marker. Parallel runs (other processes, other packages) share templates but never each other's clones.
 - **Cleans up after itself, and after crashes**: clones are dropped when the run ends, except a failed test's, which is kept to inspect. What a crashed run left behind is dropped by the next one.
 
@@ -32,6 +32,7 @@ For why each test gets a database of its own, and how runs stay safe from each o
   - [dolly.template](#dollytemplatesql)
   - [template.clone](#templateclone)
   - [dolly.close](#dollyclose)
+  - [dumpSchema](#dumpschemaurl)
   - [Errors](#errors)
 - [Compared to alternatives](#compared-to-alternatives)
 
@@ -274,6 +275,16 @@ Creates a fresh database from the template, for one test.
 Drops this run's clones, except those kept, and closes the connection. Calling it again does nothing. After it, `template()` and `clone()` reject with `PgDollyClosedError`.
 
 Close every connection to the clones first: dropping a database ends any left open.
+
+### `dumpSchema(url)`
+
+Dumps a database's schema with `pg_dump --schema-only`, normalized so the same schema always gives the same text: no version comments, and no `\restrict` lines (psql meta-commands with a random key, which no other client could run). Owners, privileges and tablespaces are left out, as they name one server's roles. The result can be passed to `template()` as is.
+
+Needs `pg_dump` on the `PATH`, at least the server's major version.
+
+**Returns** `Promise<string>`
+
+To keep a committed `schema.sql` of what a project's migrations build, and check it in CI, use [`pg-dolly-schema`](https://www.npmjs.com/package/pg-dolly-schema).
 
 ### Errors
 
