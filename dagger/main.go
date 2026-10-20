@@ -10,6 +10,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
+	"path"
+	"sort"
 	"strings"
 
 	"golang.org/x/sync/errgroup"
@@ -133,6 +135,98 @@ func (m *Ci) Version(
 			Exclude:   []string{".git", "**/node_modules"},
 		})
 	return versioned.Changes(source)
+}
+
+// GitHub rejects PR bodies over 65536 characters
+const maxNotesLength = 65000
+
+// Describe what `version` would release, as the body of a version PR: each public package's version bump,
+// then the changelog section added for it.
+func (m *Ci) VersionNotes(
+	ctx context.Context,
+	// Repository with full history, as for `version`
+	// +defaultPath="/"
+	repo *dagger.GitRepository,
+) (string, error) {
+	changes := m.Version(repo)
+	paths, err := changes.ModifiedPaths(ctx)
+	if err != nil {
+		return "", err
+	}
+
+	type release struct {
+		name, from, to, changelog string
+	}
+	releases := []release{}
+	for _, file := range paths {
+		if path.Base(file) != "package.json" {
+			continue
+		}
+		var before, after workspacePackage
+		if err := readJSON(ctx, changes.Before().File(file), &before); err != nil {
+			return "", err
+		}
+		if err := readJSON(ctx, changes.After().File(file), &after); err != nil {
+			return "", err
+		}
+		// Private packages are only bumped for their internal dependencies, and never published
+		if after.Private || before.Version == after.Version {
+			continue
+		}
+		changelog, err := changelogSection(ctx, changes.After(), path.Dir(file), after.Version)
+		if err != nil {
+			return "", err
+		}
+		releases = append(releases, release{after.Name, before.Version, after.Version, changelog})
+	}
+	sort.Slice(releases, func(i, j int) bool { return releases[i].name < releases[j].name })
+
+	summary := []string{
+		"Merging this PR publishes the packages below to npm.",
+		"",
+		"| Package | Version |",
+		"| --- | --- |",
+	}
+	notes := []string{}
+	for _, r := range releases {
+		summary = append(summary, fmt.Sprintf("| `%s` | %s → **%s** |", r.name, r.from, r.to))
+		notes = append(notes, strings.TrimSpace(fmt.Sprintf("## %s@%s\n\n%s", r.name, r.to, r.changelog)))
+	}
+
+	body := strings.Join(append([]string{strings.Join(summary, "\n")}, notes...), "\n\n")
+	if len(body) > maxNotesLength {
+		body = strings.Join(summary, "\n") +
+			"\n\nThe changelogs are too long to include here; see each package's CHANGELOG.md in this PR."
+	}
+	return body, nil
+}
+
+func readJSON(ctx context.Context, file *dagger.File, v any) error {
+	contents, err := file.Contents(ctx)
+	if err != nil {
+		return err
+	}
+	return json.Unmarshal([]byte(contents), v)
+}
+
+// The body of the `## <version>` section of a package's CHANGELOG.md, if it has one
+func changelogSection(ctx context.Context, dir *dagger.Directory, pkg string, version string) (string, error) {
+	file := path.Join(pkg, "CHANGELOG.md")
+	if exists, err := dir.Exists(ctx, file); err != nil || !exists {
+		return "", err
+	}
+	changelog, err := dir.File(file).Contents(ctx)
+	if err != nil {
+		return "", err
+	}
+	_, section, found := strings.Cut(changelog, "\n## "+version+"\n")
+	if !found {
+		return "", nil
+	}
+	if next := strings.Index(section, "\n## "); next != -1 {
+		section = section[:next]
+	}
+	return strings.TrimSpace(section), nil
 }
 
 // Publish every public package whose current version is not yet on npm, from a fresh (uncached) build.
