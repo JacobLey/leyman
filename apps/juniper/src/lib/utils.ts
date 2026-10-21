@@ -125,3 +125,30 @@ export const mergeRef = <T>({
         $ref: refPath,
     };
 };
+
+/**
+ * Deep copy of the plain objects and arrays in serialized JSON. Other values (e.g. a `Date` in metadata) are kept as is.
+ *
+ * Serializing may place a schema's own arrays and objects (e.g. `examples`) in the output, or the same object in several
+ * places. Copying once, as the JSON leaves Juniper, keeps the schema immutable however the output is modified.
+ *
+ * @param value - serialized JSON
+ * @returns copy that shares no objects with the schema, or within itself
+ */
+export const copyJson = <T>(value: T): T => {
+    if (Array.isArray(value)) {
+        return value.map(item => copyJson<unknown>(item)) as T;
+    }
+    if (value !== null && typeof value === 'object') {
+        const prototype: unknown = Object.getPrototypeOf(value);
+        if (prototype === null || prototype === Object.prototype) {
+            // Spread keeps symbol keys, which `customSchema` passes through
+            const copy = { ...value } as Record<string, unknown>;
+            for (const key of Object.keys(copy)) {
+                copy[key] = copyJson(copy[key]);
+            }
+            return copy as T;
+        }
+    }
+    return value;
+};

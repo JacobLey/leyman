@@ -21,6 +21,16 @@ suite('CustomSchema', () => {
         expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<'abc' | number>();
     });
 
+    test('Changes to the input or output do not change the schema', () => {
+        const externalSchema = { type: 'object', required: ['a'] };
+        const schema = customSchema(externalSchema);
+
+        externalSchema.required.push('b');
+        (schema.toJSON() as { required: string[] }).required.push('c');
+
+        expect(schema.toJSON()).to.deep.equal({ type: 'object', required: ['a'] });
+    });
+
     test('Default empty object', () => {
         const schema = customSchema().toJSON();
 

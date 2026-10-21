@@ -1,6 +1,7 @@
 import type { SchemaGenerics } from '../lib/schema.js';
 import type { JsonSchema, OpenApi30JsonSchema, SchemaType, ToJsonParams } from '../lib/types.js';
 import { AbstractSchema } from '../lib/schema.js';
+import { copyJson } from '../lib/utils.js';
 
 /**
  * "Schema" for importing your own custom JSON Schema document.
@@ -10,7 +11,7 @@ import { AbstractSchema } from '../lib/schema.js';
  * Useful for times when a schema document is controlled elsewhere, or gradual
  * adoption of Juniper.
  *
- * Provided schema is returned as a shallow clone.
+ * The provided schema is copied, both when created and in `toJSON()`, so changes to either don't reach the other.
  *
  * @template T
  */
@@ -107,7 +108,7 @@ export class CustomSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
      */
     public constructor(options: Record<string, unknown> = {}) {
         super();
-        this.#schema = options;
+        this.#schema = copyJson(options);
     }
 
     /**
@@ -143,7 +144,7 @@ export class CustomSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
      * @inheritdoc
      */
     public override toJSON(this: this): JsonSchema<SchemaType<this>> {
-        return this.toSchema();
+        return copyJson(this.toSchema());
     }
 
     /**
