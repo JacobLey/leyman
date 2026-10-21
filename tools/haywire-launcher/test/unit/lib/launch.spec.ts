@@ -125,7 +125,7 @@ suite('launch', () => {
                     .addBinding(bind(staticId).withInstance(MyEntry))
             );
 
-            return { container, id };
+            return { container, id, myEntry: MyEntry };
         });
 
         withContainerId.test('No id provided, use EntryScript', async ({ container, fakeMain }) => {
@@ -154,6 +154,24 @@ suite('launch', () => {
             expect(fakeMain.calledWith(args)).to.equal(true);
         });
 
+        withContainerId.test(
+            'Class provided, use its binding',
+            async ({ container, fakeMain, myEntry }) => {
+                const entry = launch(container, myEntry);
+
+                expect(await entry.getOriginal())
+                    .to.be.an.instanceOf(myEntry)
+                    .that.contains({
+                        hasId: false,
+                    });
+
+                const args = ['--foo', 'bar'];
+                await entry.main(args);
+
+                expect(fakeMain.calledWith(args)).to.equal(true);
+            }
+        );
+
         withContainerId.test('Returns not implemented class', async ({ container, id }) => {
             const entry = launch(container, id.named('static'));
 
@@ -173,5 +191,9 @@ suite('launch', () => {
         launch<typeof container, typeof id>(container, id);
         // @ts-expect-error
         launch(container, id.nullable());
+
+        class Unbound extends EntryScript {}
+        // @ts-expect-error
+        launch(container, Unbound);
     });
 });

@@ -35,7 +35,17 @@ import { myHaywireContainer } from './container.js';
 export default launch(myHaywireContainer);
 ```
 
-With a custom id for any class implementing the `Main` interface:
+With your own class (any class implementing the `Main` interface), or its id:
+
+```ts
+import { launch } from 'haywire-launcher';
+import { MyCli } from './cli.js';
+import { myHaywireContainer } from './container.js';
+
+export default launch(myHaywireContainer, MyCli);
+```
+
+With an id, for a type that isn't a class:
 
 ```ts
 import type { Main } from 'entry-script';
@@ -66,7 +76,7 @@ Returns an `EntryScript` subclass that, when invoked as the entry point, resolve
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `container` | `Container` | — | Required. A haywire async container capable of providing the target instance. |
-| `id` | `HaywireId` | `EntryScript` | Optional. The haywire id to request from the container. Must resolve to a type implementing `Main`. |
+| `id` | `HaywireId` or class | `EntryScript` | Optional. The haywire id, or class, to request from the container. Must resolve to a type implementing `Main`. |
 
 **Returns** `WrapperMain` (an `EntryScript` subclass) — a class that can be exported as `default` and will be picked up by the `entry-script` lifecycle.
 

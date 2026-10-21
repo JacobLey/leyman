@@ -11,7 +11,7 @@ haywire-launcher is ESM only, with `haywire` and `entry-script` as peer dependen
 | Param | Type | Default | Description |
 |-------|------|---------|-------------|
 | `container` | `Container` | — | Required. A [Haywire container](/haywire/reference/api) that can provide `id`. |
-| `id` | `HaywireId` | `EntryScript` | The id to get from the container. Its type must implement entry-script's [`Main`](/entry-script/reference/api#main). |
+| `id` | `HaywireId` or class | `EntryScript` | The id, or class, to get from the container. Its type must implement entry-script's [`Main`](/entry-script/reference/api#main). |
 
 **Returns** a `WrapperMain`: an [`EntryScript`](/entry-script/reference/api#entryscript) subclass, to export as the module's `default`. The container isn't used until it runs.
 

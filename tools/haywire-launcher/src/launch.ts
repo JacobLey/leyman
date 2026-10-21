@@ -5,6 +5,7 @@ import type {
     GenericContainer,
     GenericHaywireId,
     HaywireIdType,
+    IsClass,
     NonExtendable,
     OutputHaywireId,
 } from 'haywire';
@@ -20,7 +21,7 @@ export interface WrapperMain extends Main {
  * arguments that can't work.
  */
 interface LaunchMessages {
-    containerDoesNotOutputEntryScript: 'Error: the container has no binding for EntryScript. Pass the id of your entry class instead, e.g. launch(container, identifier(MyCli)).';
+    containerDoesNotOutputEntryScript: 'Error: the container has no binding for EntryScript. Pass your entry class or its id instead, e.g. launch(container, MyCli).';
     containerDoesNotOutputId: 'Error: the container has no binding for this id.';
     idIsNotMain: "Error: the id's type has no main(argv: string[]): Promise<void> method.";
     notAContainer: 'Error: launch() needs a haywire container, from createContainer().';
@@ -56,6 +57,17 @@ type EntryLauncher = <C extends GenericContainer>(
     container: C & Invalid<EntryContainerFailures<C>>
 ) => WrapperMain;
 
+/**
+ * Id for what is passed to `launch()`: an id as is, or a class's id.
+ *
+ * @template IdOrClass - id or class passed to `launch()`
+ */
+type IdOf<IdOrClass> = IdOrClass extends GenericHaywireId
+    ? IdOrClass
+    : IdOrClass extends IsClass
+      ? ClassToConstructable<IdOrClass>
+      : never;
+
 type IdContainerFailures<C extends GenericContainer, Id extends GenericHaywireId> =
     | (C extends Container<infer O>
           ? [
@@ -72,9 +84,9 @@ type IdContainerFailures<C extends GenericContainer, Id extends GenericHaywireId
               : 'containerDoesNotOutputId'
           : 'notAContainer')
     | (NonNullable<HaywireIdType<OutputHaywireId<Id>>> extends Main ? never : 'idIsNotMain');
-type IdLauncher = <C extends GenericContainer, Id extends GenericHaywireId>(
+type IdLauncher = <C extends GenericContainer, IdOrClass extends GenericHaywireId | IsClass>(
     container: C,
-    id: Id & Invalid<IdContainerFailures<C, Id>>
+    id: IdOrClass & Invalid<IdContainerFailures<C, IdOf<IdOrClass>>>
 ) => WrapperMain;
 
 export const launch = ((

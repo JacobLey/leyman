@@ -28,11 +28,11 @@ yarn add haywire haywire-launcher entry-script
 
 ## Launch a class from a container
 
-Write the CLI as a class with a `main(argv)` method, taking its dependencies through its constructor. Bind it in a [Haywire](/haywire/) container like any other class, and pass the container and its id to `launch()`:
+Write the CLI as a class with a `main(argv)` method, taking its dependencies through its constructor. Bind it in a [Haywire](/haywire/) container like any other class, and pass the container and the class (or its id) to `launch()`:
 
 ```ts
 import type { Main } from 'entry-script';
-import { bind, createContainer, createModule, identifier } from 'haywire';
+import { bind, createContainer, createModule } from 'haywire';
 import { launch } from 'haywire-launcher';
 
 class Greeter {
@@ -59,7 +59,7 @@ const container = createContainer(
     )
 );
 
-export default launch(container, identifier(Cli));
+export default launch(container, Cli);
 ```
 
 `launch()` returns an [entry script](/entry-script/) class right away, without touching the container. When Node runs the file, it gets `Cli` from the container with `getAsync()`, and calls `main()` with the command-line arguments.
@@ -69,12 +69,11 @@ Usually the container lives in its own module, and the bin file only launches it
 ```ts
 // @noErrors
 // src/bin.ts
-import { identifier } from 'haywire';
 import { launch } from 'haywire-launcher';
 import { Cli } from './cli.js';
 import { container } from './container.js';
 
-export default launch(container, identifier(Cli));
+export default launch(container, Cli);
 ```
 
 A `bin.mjs` shim, for `package.json`'s `bin`, can then re-export the compiled file: entry-script runs the default export of whatever file Node started with.
@@ -94,7 +93,7 @@ export { default } from './dist/bin.js';
 
 - The container must be able to provide the id: `Error: the container has no binding for this id.`
 - The id's type must have a main method: `Error: the id's type has no main(argv: string[]): Promise<void> method.`
-- Without an id, the container must bind `EntryScript`, or the error suggests passing your class's id.
+- Without an id, the container must bind `EntryScript`, or the error suggests passing your class.
 
 ## Testing
 

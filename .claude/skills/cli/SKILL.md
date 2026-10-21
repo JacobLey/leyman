@@ -14,7 +14,7 @@ The CLI never lists its commands. Each command adds itself to a [haywire list](.
 | File | Contents |
 |------|----------|
 | `bin.mjs` | `#!/usr/bin/env node`, re-exporting `default` from `./dist/bin.js`. Listed in `package.json` `bin` and `files` |
-| `src/bin.ts` | `export default launch(cliContainer, identifier(MyCli))`, from `haywire-launcher`. The container is only resolved once the script runs as the entry point |
+| `src/bin.ts` | `export default launch(cliContainer, MyCli)`, from `haywire-launcher`. The container is only resolved once the script runs as the entry point |
 | `src/cli.ts` | The `MyCli` class (`implements Main`) and its binding |
 | `src/container.ts` | `cliModule`, adding the CLI and every command binding, and `cliContainer` |
 | `src/commands/lib/types.ts` | The input shared by every command, the `Command` type, `RegisterCommand` and `commandId` |

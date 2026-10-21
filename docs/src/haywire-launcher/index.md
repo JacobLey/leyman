@@ -9,12 +9,11 @@ Run a [Haywire](/haywire/)-built [entry script](/entry-script/) in one line. The
 ```ts
 // @noErrors
 // bin.ts
-import { identifier } from 'haywire';
 import { launch } from 'haywire-launcher';
 import { Cli } from './cli.js';
 import { container } from './container.js';
 
-export default launch(container, identifier(Cli));
+export default launch(container, Cli);
 ```
 
 `node bin.js` gets `Cli` from the container, with all its dependencies, and calls its `main()`. Importing `bin.js` does nothing, so tests can build their own container instead.
