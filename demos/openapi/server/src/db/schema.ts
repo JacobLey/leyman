@@ -1,3 +1,4 @@
+import { sql } from 'drizzle-orm';
 import { index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 
 /**
@@ -7,7 +8,8 @@ import { index, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
 export const notes = pgTable(
     'notes',
     {
-        id: uuid().primaryKey().defaultRandom(),
+        // Ordered by time (Postgres 18), so notes created at the same moment still list in the order they were made
+        id: uuid().primaryKey().default(sql`uuidv7()`),
         title: text().notNull(),
         body: text().notNull(),
         createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),

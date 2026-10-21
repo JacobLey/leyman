@@ -55,7 +55,7 @@ ALTER SEQUENCE drizzle.__drizzle_migrations_id_seq OWNED BY drizzle.__drizzle_mi
 --
 
 CREATE TABLE public.notes (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
+    id uuid DEFAULT uuidv7() NOT NULL,
     title text NOT NULL,
     body text NOT NULL,
     created_at timestamp with time zone DEFAULT now() NOT NULL
@@ -112,12 +112,13 @@ SET row_security = off;
 --
 
 INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (1, '3bb9d0ed48944c41ccbf18827df6036b388d557b142ad1a257657f6d56d4aef0', 1792534466473);
+INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (2, 'f7aa51d15a7f5c0cb731f0ea583a764636c5a924ac9290fc78c1b4b1502ba581', 1792558435695);
 
 --
 -- Name: __drizzle_migrations_id_seq; Type: SEQUENCE SET; Schema: drizzle; Owner: -
 --
 
-SELECT pg_catalog.setval('drizzle.__drizzle_migrations_id_seq', 1, true);
+SELECT pg_catalog.setval('drizzle.__drizzle_migrations_id_seq', 2, true);
 
 --
 -- PostgreSQL database dump complete

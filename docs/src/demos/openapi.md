@@ -194,7 +194,7 @@ The validators are compiled once, with [Ajv](https://ajv.js.org) (JSON Schema 20
 
 ### The database
 
-- **The Drizzle schema puts the defaults in the database**: the id (`gen_random_uuid()`) and the time (`now()`), so every test database has them too.
+- **The Drizzle schema puts the defaults in the database**: the id (`uuidv7()`, ordered by time, so notes made in the same transaction still list in order) and the time (`now()`), so every test database has them too. `uuidv7()` needs Postgres 18, which the devcontainer and CI run.
 - **Migrations are SQL, generated and reviewed**: `drizzle-kit generate --name <name>` writes them to `migrations/`. A `drizzle-kit-check` target fails CI if the schema has changes no migration covers.
 - **`schema.sql` is what the migrations build**, kept by [pg-dolly-schema](/pg-dolly-schema/) running `drizzle-kit migrate` on an empty database. It includes Drizzle's own `drizzle.__drizzle_migrations` table, rows and all (`--data`), so every test database knows its migrations ran, and migrating one does nothing.
 - **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in.

@@ -282,6 +282,30 @@ suite('Notes API', () => {
             ]);
         });
 
+        withServer.test(
+            'Lists notes made at the same moment newest first too',
+            async ({ anonymous, db }) => {
+                // One statement, so one transaction: every row gets the same `now()`
+                await db.insert(notes).values([
+                    { title: 'First', body: '' },
+                    { title: 'Second', body: '' },
+                    { title: 'Third', body: '' },
+                ]);
+
+                // Newer than the suite's notes, which are from January
+                const { body } = expectStatus(
+                    await anonymous.call('listNotes', { query: { limit: 3 } }),
+                    200
+                );
+
+                expect(body.items.map(({ title }) => title)).to.deep.equal([
+                    'Third',
+                    'Second',
+                    'First',
+                ]);
+            }
+        );
+
         withNotes.test('Lists 20 by default, as the spec says', async ({ anonymous }) => {
             const { body } = expectStatus(await anonymous.call('listNotes', {}), 200);
 
