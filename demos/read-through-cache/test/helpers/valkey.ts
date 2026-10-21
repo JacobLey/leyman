@@ -62,3 +62,21 @@ export const waitForSubscribers = async (channel: string, count: number): Promis
         await connection.quit();
     }
 };
+
+/**
+ * A connection to a server that isn't there, failing every command at once, as when Valkey is down.
+ *
+ * @returns Connection, never connected
+ */
+export const unreachableValkey = (): Redis => {
+    const connection = new Redis({
+        host: '127.0.0.1',
+        port: 1,
+        lazyConnect: true,
+        enableOfflineQueue: false,
+        maxRetriesPerRequest: 0,
+    });
+    // Each failed attempt to connect is also reported as an error event, which would crash the process unhandled
+    connection.on('error', () => {});
+    return connection;
+};

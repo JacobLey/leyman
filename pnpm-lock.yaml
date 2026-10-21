@@ -199,6 +199,9 @@ catalogs:
     iovalkey:
       specifier: ^0.4.0
       version: 0.4.0
+    lru-cache:
+      specifier: ^11.2.7
+      version: 11.2.7
     mocha:
       specifier: ^12.0.2
       version: 12.0.2
@@ -1128,6 +1131,9 @@ importers:
       lease-cache:
         specifier: workspace:^
         version: file:tools/lease-cache
+      lru-cache:
+        specifier: 'catalog:'
+        version: 11.2.7
       weighted-rendezvous-hash:
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/weighted-rendezvous-hash
@@ -10734,6 +10740,7 @@ snapshots:
       haywire: file:tools/haywire
       ioredis: 5.11.1(supports-color@8.1.1)
       lease-cache: file:tools/lease-cache
+      lru-cache: 11.2.7
       weighted-rendezvous-hash: file:tools/constant-consistent-hash/weighted-rendezvous-hash
     transitivePeerDependencies:
       - '@aws-sdk/client-dynamodb'

@@ -30,7 +30,13 @@ import { beforeEach, suite } from 'mocha-chain';
 import { createRendezvousHash } from 'weighted-rendezvous-hash';
 import { cacheEvents } from '../helpers/events.js';
 import { controlledLoader } from '../helpers/loader.js';
-import { uniquePrefix, valkeyNodes, valkeyUrl, waitForSubscribers } from '../helpers/valkey.js';
+import {
+    uniquePrefix,
+    unreachableValkey,
+    valkeyNodes,
+    valkeyUrl,
+    waitForSubscribers,
+} from '../helpers/valkey.js';
 
 /**
  * Long enough to never run out during a test, so tests never depend on timing.
@@ -545,6 +551,150 @@ suite('ReadThroughCache', () => {
                 expect(await second.get('key', async () => 'unused')).to.equal('fresh');
             }
         );
+    });
+
+    suite('Valkey unavailable', () => {
+        const withDown = withInstances.beforeEach(({ baseline }) => {
+            const down = unreachableValkey();
+            return {
+                down,
+                offline: baseline.replaceBinding(bind(valkeyConnectionId).withInstance(down)),
+            };
+        });
+        withDown.afterEach(({ down }) => {
+            down.disconnect();
+        });
+
+        withDown.test(
+            'Fails every read without a fallback, with lease-cache',
+            async ({ instance, offline }) => {
+                const cache = instance(offline.replaceBinding(leaseCacheTierBinding(lease)));
+
+                await expect(cache.get('key', async () => 'value')).to.be.rejectedWith(
+                    errors.E_FACTORY_ERROR
+                );
+            }
+        );
+
+        withDown.test(
+            "Fails every read without a memory tier, with BentoCache's own tier",
+            async ({ instance, offline }) => {
+                await expect(instance(offline).get('key', async () => 'value')).to.be.rejectedWith(
+                    errors.E_L2_CACHE_ERROR
+                );
+            }
+        );
+
+        withDown.test(
+            "Reads past Valkey with a memory tier, with BentoCache's own tier",
+            async ({ instance, offline }) => {
+                const cache = instance(
+                    offline.replaceBinding(memoryTierBinding({ maxItems: 100 }))
+                );
+                const loader = controlledLoader<string>();
+
+                const first = cache.get('key', loader.load);
+                await loader.resolve(1, 'value');
+                await first;
+
+                expect(await cache.get('key', loader.load)).to.equal('value');
+                expect(loader.calls()).to.equal(1);
+            }
+        );
+
+        suite('With a fallback', () => {
+            const withFallback = withDown.beforeEach(({ offline }) => {
+                const reported: unknown[] = [];
+                return {
+                    reported,
+                    fallen: offline.replaceBinding(
+                        leaseCacheTierBinding({
+                            ...lease,
+                            fallback: {
+                                maxItems: 100,
+                                ttlMs: 60_000,
+                                onUnavailable: error => {
+                                    reported.push(error);
+                                },
+                            },
+                        })
+                    ),
+                };
+            });
+
+            withFallback.test('Keeps loaded values in memory', async ({ fallen, instance }) => {
+                const cache = instance(fallen);
+                await cache.get('key', async () => 'value');
+
+                expect(await cache.get('key', async () => 'other')).to.equal('value');
+            });
+
+            withInstances.test(
+                'Keeps a value loaded before Valkey went down, rather than load it again',
+                async ({ baseline, instance }) => {
+                    // Fails at once once disconnected, rather than queue commands until it reconnects
+                    const failing = new Redis(valkeyUrl(1), { enableOfflineQueue: false });
+                    await once(failing, 'ready');
+                    const cache = instance(
+                        baseline
+                            .replaceBinding(bind(valkeyConnectionId).withInstance(failing))
+                            .replaceBinding(
+                                leaseCacheTierBinding({
+                                    ...lease,
+                                    fallback: { maxItems: 100, ttlMs: 60_000 },
+                                })
+                            )
+                    );
+                    const loader = controlledLoader<string>();
+
+                    const read = cache.get('key', loader.load);
+                    await loader.called(1);
+                    const ended = once(failing, 'end');
+                    failing.disconnect();
+                    await ended;
+                    await loader.resolve(1, 'value');
+
+                    expect(await read).to.equal('value');
+                    expect(loader.calls()).to.equal(1);
+                }
+            );
+
+            withFallback.test(
+                'Reports each Valkey error',
+                async ({ fallen, instance, reported }) => {
+                    await instance(fallen).get('key', async () => 'value');
+
+                    expect(reported).to.have.length(1);
+                }
+            );
+
+            withFallback.test(
+                'Rejects with what the loader threw',
+                async ({ fallen, instance }) => {
+                    const failure = new Error('Database is down');
+
+                    const error: unknown = await expect(
+                        instance(fallen).get('key', async () => {
+                            throw failure;
+                        })
+                    ).to.be.rejectedWith(errors.E_FACTORY_ERROR);
+
+                    expect(error).to.have.property('cause', failure);
+                }
+            );
+
+            withFallback.test(
+                'Drops an invalidated value from memory, and rejects the invalidation',
+                async ({ fallen, instance }) => {
+                    const cache = instance(fallen);
+                    await cache.get('key', async () => 'old');
+
+                    await expect(cache.invalidate('key')).to.be.rejected;
+
+                    expect(await cache.get('key', async () => 'new')).to.equal('new');
+                }
+            );
+        });
     });
 
     suite('resource', () => {

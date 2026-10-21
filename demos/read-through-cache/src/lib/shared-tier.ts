@@ -2,8 +2,9 @@ import type { BentoStore } from 'bentocache';
 import type { Redis } from 'ioredis';
 import type { Binding } from 'haywire';
 import type { GetOptions, Json, LeaseCacheOptions } from 'lease-cache';
+import { LRUCache } from 'lru-cache';
 import { bind, singletonScope } from 'haywire';
-import { LeaseCache } from 'lease-cache';
+import { LeaseCache, LeaseCacheError } from 'lease-cache';
 import { cacheConfigId, sharedTierId, valkeyTopologyId } from './ids.js';
 import { ShardedValkeyDriver } from './sharded-valkey-driver.js';
 
@@ -69,10 +70,31 @@ export const bentoValkeyTierBinding = bind(sharedTierId)
     )
     .scoped(singletonScope);
 
+export interface LeaseCacheFallbackOptions {
+    /**
+     * Most values each instance keeps in memory while Valkey is down, least recently used dropped first.
+     */
+    readonly maxItems: number;
+    /**
+     * How long each is kept, in milliseconds. Keep it short: while Valkey is down, invalidations from other
+     * instances can't reach this one, so this is how long a changed value may still be served.
+     */
+    readonly ttlMs: number;
+    /**
+     * Called with each Valkey error a read falls back past.
+     */
+    readonly onUnavailable?: (error: unknown) => void;
+}
+
 export type LeaseCacheTierOptions = Pick<
     LeaseCacheOptions,
     'leaseMs' | 'onWait' | 'pollMs' | 'staleMs' | 'waitMs'
->;
+> & {
+    /**
+     * While Valkey is down, keep loaded values in each instance's memory, rather than fail every read.
+     */
+    readonly fallback?: LeaseCacheFallbackOptions;
+};
 
 /**
  * Lease-cache as the shared tier, in place of BentoCache's: a key missed by every instance is loaded once, and a
@@ -91,23 +113,72 @@ export const leaseCacheTierBinding = (
     bind(sharedTierId)
         .withDependencies([valkeyTopologyId, cacheConfigId])
         .withProvider((topology, { prefix, ttlMs }): SharedTier => {
+            const { fallback, ...leaseOptions } = options;
             // One lease cache per node: lease-cache works on one connection, and the topology picks it per key
             const caches = new WeakMap<Redis, LeaseCache>();
             const cacheFor = (key: string): LeaseCache => {
                 const connection = topology.connectionFor(key);
                 let cache = caches.get(connection);
                 if (!cache) {
-                    cache = new LeaseCache({ ...options, connection, prefix, ttlMs });
+                    cache = new LeaseCache({ ...leaseOptions, connection, prefix, ttlMs });
                     caches.set(connection, cache);
                 }
                 return cache;
             };
+            // Wrapped, as an LRU can't hold `null`
+            const memory =
+                fallback &&
+                new LRUCache<string, { readonly value: Json }>({
+                    max: fallback.maxItems,
+                    ttl: fallback.ttlMs,
+                });
             return {
                 layer: store => store,
-                // How long lease-cache keeps the value, so memory keeps it no longer, and never keeps one
-                // lease-cache didn't cache (a load that lost its lease, a stale value)
-                load: async (key, load, readOptions) => cacheFor(key).read(key, load, readOptions),
-                invalidate: async key => cacheFor(key).invalidate(key),
+                load: async <T extends Json>(
+                    key: string,
+                    load: () => Promise<T>,
+                    readOptions: GetOptions<T>
+                ): Promise<SharedLoad<T>> => {
+                    // Tells Valkey's errors from the loader's, and keeps what was loaded before Valkey failed
+                    const attempt: { loaded?: { readonly value: T }; hasFailed: boolean } = {
+                        hasFailed: false,
+                    };
+                    const tracked = async (): Promise<T> => {
+                        try {
+                            const value = await load();
+                            attempt.loaded = { value };
+                            return value;
+                        } catch (error) {
+                            attempt.hasFailed = true;
+                            throw error;
+                        }
+                    };
+                    try {
+                        // How long lease-cache keeps the value, so memory keeps it no longer, and never keeps one
+                        // lease-cache didn't cache (a load that lost its lease, a stale value)
+                        return await cacheFor(key).read(key, tracked, readOptions);
+                    } catch (error) {
+                        if (!memory || attempt.hasFailed || error instanceof LeaseCacheError) {
+                            throw error;
+                        }
+                        fallback.onUnavailable?.(error);
+                        // A key holds the same kind of value on every read (see `resource()`). Not set again on a
+                        // hit, which would restart its TTL: a value read often would never expire.
+                        const kept = memory.get(key) as { readonly value: T } | undefined;
+                        if (kept && !attempt.loaded) {
+                            return { value: kept.value, ttlMs: 0 };
+                        }
+                        const value = attempt.loaded ? attempt.loaded.value : await load();
+                        memory.set(key, { value });
+                        // Kept by the fallback alone: BentoCache's tiers would keep it past an invalidation
+                        return { value, ttlMs: 0 };
+                    }
+                },
+                invalidate: async key => {
+                    // Dropped from memory even when Valkey is down, which the invalidation then rejects for
+                    memory?.delete(key);
+                    await cacheFor(key).invalidate(key);
+                },
             };
         })
         .scoped(singletonScope);

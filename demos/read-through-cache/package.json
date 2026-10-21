@@ -28,6 +28,7 @@
     "haywire": "workspace:^",
     "ioredis": "catalog:",
     "lease-cache": "workspace:^",
+    "lru-cache": "catalog:",
     "weighted-rendezvous-hash": "workspace:^"
   },
   "devDependencies": {

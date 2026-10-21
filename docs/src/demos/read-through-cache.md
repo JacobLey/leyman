@@ -63,7 +63,7 @@ Values are stored as JSON, so loaders must return JSON-compatible types (`Json`)
 | `ttlMs` | Required. How long a loaded value is fresh, unless a read gives its own. |
 | `memory` | `{ maxItems, sync? }`: keep copies in each instance's memory, and with `sync`, drop them when any instance changes the key. See [Memory tier](#memory-tier-and-keeping-it-in-sync). |
 | `staleWhileRevalidate` | `{ graceMs }`: once a value expires, serve it while a fresh one loads. See [Stale-while-revalidate](#stale-while-revalidate). |
-| `leases` | `{ leaseMs, pollMs, waitMs, staleMs? }`: load each miss once across every instance, and never cache a load that finishes after an invalidation, with lease-cache. See [lease-cache](#lease-cache-one-load-across-instances-and-no-outdated-values). |
+| `leases` | `{ leaseMs, pollMs, waitMs, staleMs?, fallback? }`: load each miss once across every instance, and never cache a load that finishes after an invalidation, with lease-cache. `fallback` keeps reads working while Valkey is down (see [When Valkey is down](#when-valkey-is-down)). See [lease-cache](#lease-cache-one-load-across-instances-and-no-outdated-values). |
 | `shards` | `{ name, size, connection }[]`: spread keys over these nodes instead of `connection`. See [Sharding](#sharding-over-several-valkey-nodes). |
 | `onLoadError` | Called when a load fails, including background refreshes, whose errors no caller sees. |
 | `emitter` | Receives BentoCache's events (`cache:hit`, `cache:miss`, `cache:written`...), e.g. for metrics. |
@@ -156,6 +156,25 @@ Learned along the way:
 
 - **Don't wrap the loader with a lock and let BentoCache write.** The first version of this demo did, with its own lease around the loader. BentoCache writes the value *after* the factory returns, so the lease could never be released on success (a waiting instance would take it, find nothing, and load again), and the write can't be made conditional on still holding the lease, so the invalidation race stayed open. Making lease-cache the tier puts the check and the write in one step.
 - **BentoCache gives background refreshes no `gracedEntry`**, so a factory can't tell a refresh (whose caller already has a stale value) from a reader with nothing to return. Reported upstream as [Julien-R44/bentocache#124](https://github.com/Julien-R44/bentocache/pull/124).
+
+### When Valkey is down
+
+What happens depends on the shared tier, and on whether there is a memory tier:
+
+| | Valkey down |
+|---|---|
+| BentoCache's own tier, no memory tier | Every read fails (`E_L2_CACHE_ERROR`). |
+| BentoCache's own tier, with a memory tier | Reads go past Valkey: BentoCache skips its errors when it has a memory tier, and keeps what it loads there. |
+| lease-cache | Every read fails (`E_FACTORY_ERROR`, with Valkey's error as its cause). |
+| lease-cache, with `fallback` | Reads keep working, from an LRU in each instance's memory ([`lru-cache`](https://www.npmjs.com/package/lru-cache)). |
+
+`leases: { ..., fallback: { maxItems, ttlMs, onUnavailable? } }` keeps a loaded value in an LRU for `ttlMs` when Valkey fails, and reads from it until Valkey is back. It's separate from the memory tier, which only keeps what lease-cache cached, and it costs what an outage costs:
+
+- **Each instance loads on its own.** There are no leases without Valkey, so a miss is loaded once per instance, not once overall.
+- **Invalidations don't reach other instances.** `invalidate()` drops the key from this instance's LRU, then rejects, as lease-cache can't delete it. Every other instance serves its copy until `ttlMs` passes, which is why it should be short.
+- **A value loaded just before Valkey failed is kept**, rather than loaded again.
+
+Without `fallback`, the cache is exactly as available as Valkey, which is the right choice when serving data a few seconds old is worse than failing. lease-cache's own [`onUnavailable`](/lease-cache/) is the middle ground: reads keep working, without caching anything.
 
 ### Sharding over several Valkey nodes
 
@@ -265,7 +284,7 @@ await container[Symbol.asyncDispose]();
 | `valkeyConnectionId` | the application | Its own connection. Needed by `singleNodeTopologyBinding` and `syncedMemoryTierBinding` |
 | `valkeyShardId` (a list) | the application | `{ name, size, connection }`, one binding per node. Needed by `shardedTopologyBinding` |
 | `valkeyTopologyId` | a feature | `singleNodeTopologyBinding` · `shardedTopologyBinding` · a `ResizableValkeyTopology` instance (see [Sharding](#sharding-over-several-valkey-nodes)) |
-| `sharedTierId` | a feature | `bentoValkeyTierBinding` (BentoCache's own Valkey tier) · `leaseCacheTierBinding({ leaseMs, pollMs, waitMs, staleMs? })` |
+| `sharedTierId` | a feature | `bentoValkeyTierBinding` (BentoCache's own Valkey tier) · `leaseCacheTierBinding({ leaseMs, pollMs, waitMs, staleMs?, fallback? })` |
 | `memoryTierId` | a feature | `noMemoryTierBinding` · `memoryTierBinding({ maxItems })` · `syncedMemoryTierBinding({ maxItems })` |
 | `expiryPolicyId` | a feature | `waitForFreshBinding` · `staleWhileRevalidateBinding({ graceMs })` |
 
@@ -278,7 +297,6 @@ A missing or doubled choice is a type error, and every combination works. Each f
 ## Not covered
 
 - **Loads from a lagging replica.** lease-cache's guarantee assumes a load that starts after an invalidation reads the change. One that reads a replica behind the primary can still cache the old row.
-- **A Valkey node that is down.** Reads of its keys fail, rather than fall back to the loader: BentoCache only skips a Valkey error when it has a memory tier, and an error from lease-cache fails the read. The cache is then as available as Valkey.
 - **Batch loads.** Reading many keys with one query for the missing ones (DataLoader-style) isn't supported by BentoCache's `getOrSet`.
 - **Caching failures.** A load that throws is never cached. Return a failure as a value, with a short [TTL](#ttl-per-value), to cache it.
 - **Values from an older deploy.** The cache trusts that what it reads has the current shape. Put a version in `prefix` when the shape of a value changes.

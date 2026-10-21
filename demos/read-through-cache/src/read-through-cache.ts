@@ -32,6 +32,7 @@ export { Resource, type ResourceOptions } from './lib/resource.js';
 export { ShardedValkeyDriver } from './lib/sharded-valkey-driver.js';
 export {
     bentoValkeyTierBinding,
+    type LeaseCacheFallbackOptions,
     type LeaseCacheTierOptions,
     leaseCacheTierBinding,
     type SharedLoad,
