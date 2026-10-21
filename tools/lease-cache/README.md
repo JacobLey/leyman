@@ -25,6 +25,7 @@ For the problem in detail, why the guarantees hold (and what they rely on), and 
 - [How it works](#how-it-works)
 - [API](#api)
   - [LeaseCache](#new-leasecacheoptions)
+  - [Errors](#errors)
 - [Compared to alternatives](#compared-to-alternatives)
 
 ## Install
@@ -139,11 +140,13 @@ Values are stored as JSON. `null` is cached like any other value, so a missing r
 | `pollMs` | `number` | Required. How often a waiting reader checks again. |
 | `waitMs` | `number` | Required. How long a reader waits on another's load before loading itself (without caching). |
 | `staleMs` | `number` | Optional, `0` (off) by default. After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. Only for reads that accept data from before the last change: a stale value is returned, never cached. |
-| `onWait` | `(key: string) => void` | Optional. Called each time a reader waits on another's load, e.g. to count saved loads. |
+| `onWait` | `(key: string) => void` | Optional. Called once for each read that waits on another's load, e.g. to count saved loads. |
+
+Durations are rounded up to whole milliseconds. Each must be a finite number above 0 (`waitMs` and `staleMs` may be 0), or the constructor throws `LeaseCacheDurationError`.
 
 #### `cache.get(key, load, options?)`
 
-Returns the cached value, or calls `load` and caches what it returns. Rejects with what `load` threw. `T` must be JSON (`Json`).
+Returns the cached value, or calls `load` and caches what it returns. Rejects with what `load` threw. `T` must be JSON (`Json`): a loader that returns `undefined` anyway rejects with `LeaseCacheValueError`, caching nothing.
 
 `options.ttlMs` caches this value for its own time, in place of the cache's `ttlMs`. A function gets the loaded value, e.g. to cache a missing row for less time than a found one:
 
@@ -153,11 +156,24 @@ const user = await cache.get(`user:${id}`, async () => db.users.find(id), {
 });
 ```
 
+#### `cache.read(key, load, options?)`
+
+As `get`, but returns `{ value, source, ttlMs }`: where the value came from (`'hit'`, `'filled'`, `'lost'`, `'stale'` or `'timeout'`), and how much longer Valkey caches it (`0` when it doesn't). For a cache in front of this one, such as a memory tier: it should keep a value no longer than `ttlMs`, and not at all at `0`, since a value Valkey didn't cache may already be outdated.
+
 #### `cache.invalidate(key)`
 
 Deletes the value, so the next read loads it. A load already in progress returns to its caller, but caches nothing. Call it after the source of truth changes.
 
 The guarantee relies on loads reading current data: a load from a lagging replica can still read the old data after the invalidation. See [why it is correct](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md#why-it-is-correct).
+
+### Errors
+
+Every error extends `LeaseCacheError`. What `load` throws is passed on as it is.
+
+| Error | When |
+|-------|------|
+| `LeaseCacheDurationError` | A duration isn't a finite number above 0 (`waitMs` and `staleMs` may be 0), including one computed by `ttlMs`. Has `option` and `value`. |
+| `LeaseCacheValueError` | `load` returned something JSON can't store, e.g. `undefined`. Has `key`. |
 
 ## Compared to alternatives
 

@@ -1,5 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
+import { LeaseCacheDurationError, LeaseCacheValueError } from './errors.js';
 import { fillScript, invalidateScript, readOrLeaseScript, releaseScript } from './scripts.js';
 
 /**
@@ -30,7 +31,8 @@ export interface LeaseCacheOptions {
      */
     readonly prefix: string;
     /**
-     * How long a loaded value is cached, in milliseconds, unless `get` is given its own.
+     * How long a loaded value is cached, in milliseconds, unless `get` is given its own. Every duration is rounded
+     * up to a whole millisecond.
      */
     readonly ttlMs: number;
     /**
@@ -55,8 +57,8 @@ export interface LeaseCacheOptions {
      */
     readonly staleMs?: number;
     /**
-     * Called each time a reader finds another reader loading the key, and waits, e.g. to count how many loads
-     * the leases saved.
+     * Called once for each read that finds another reader loading the key, and waits on it, e.g. to count how
+     * many loads the leases saved.
      */
     readonly onWait?: (key: string) => void;
 }
@@ -69,10 +71,69 @@ export interface GetOptions<T extends Json> {
     readonly ttlMs?: number | ((value: T) => number);
 }
 
+/**
+ * Where a value came from, and so whether it is cached:
+ *
+ * - `hit`: cached already
+ * - `filled`: loaded with the lease, and cached
+ * - `lost`: loaded, but the lease was lost (invalidated, or run out) before the value could be cached
+ * - `stale`: kept by an invalidation, returned rather than waiting on another reader's load
+ * - `timeout`: loaded without a lease, after waiting `waitMs` on another reader's load
+ */
+export type ReadSource = 'filled' | 'hit' | 'lost' | 'stale' | 'timeout';
+
+/**
+ * A value, and whether it is cached. A cache in front (e.g. a memory tier) should only keep a value for its
+ * `ttlMs`: one that isn't cached may already be outdated, or soon be.
+ *
+ * @template T - The value
+ */
+export interface ReadResult<T extends Json> {
+    readonly value: T;
+    readonly source: ReadSource;
+    /**
+     * How much longer Valkey caches the value, in milliseconds. `0` when it isn't cached.
+     */
+    readonly ttlMs: number;
+}
+
 type GetOrLeaseResult =
-    | readonly ['hit', string]
+    | readonly ['hit', string, number]
     | readonly ['lease']
     | readonly ['wait', string | null];
+
+/**
+ * Valkey takes whole milliseconds, so durations are rounded up.
+ *
+ * @param option - Name of the duration, for the error
+ * @param value - Duration in milliseconds
+ * @param minimum - Lowest valid value: `1`, or `0` where it means "off"
+ * @returns Rounded duration
+ * @throws {LeaseCacheDurationError} When not a finite number of at least `minimum`
+ */
+const duration = (option: string, value: number, minimum: 0 | 1): number => {
+    const rounded = Math.ceil(value);
+    if (!Number.isFinite(rounded) || rounded < minimum) {
+        throw new LeaseCacheDurationError(option, value);
+    }
+    return rounded;
+};
+
+/**
+ * Stores a loaded value as JSON.
+ *
+ * @param key - Identifies the value, for the error
+ * @param value - Loaded value
+ * @returns It, as JSON
+ * @throws {LeaseCacheValueError} When it isn't JSON, e.g. `undefined`
+ */
+const serialize = (key: string, value: Json): string => {
+    const serialized = JSON.stringify(value) as string | undefined;
+    if (serialized === undefined) {
+        throw new LeaseCacheValueError(key);
+    }
+    return serialized;
+};
 
 /**
  * A read-through cache on Valkey (or Redis) with leases, after memcache's leases at Facebook.
@@ -86,13 +147,22 @@ type GetOrLeaseResult =
  *   that started before it (and may have read the old data) can't cache what it read.
  */
 export class LeaseCache {
-    readonly #options: LeaseCacheOptions;
+    readonly #options: LeaseCacheOptions & { readonly staleMs: number };
 
     /**
      * @param options - Connection, and timing of values and leases
+     * @throws {LeaseCacheDurationError} When a duration isn't a finite number above 0 (`waitMs` and `staleMs` may
+     * be 0)
      */
     public constructor(options: LeaseCacheOptions) {
-        this.#options = options;
+        this.#options = {
+            ...options,
+            ttlMs: duration('ttlMs', options.ttlMs, 1),
+            leaseMs: duration('leaseMs', options.leaseMs, 1),
+            pollMs: duration('pollMs', options.pollMs, 1),
+            waitMs: duration('waitMs', options.waitMs, 0),
+            staleMs: duration('staleMs', options.staleMs ?? 0, 0),
+        };
     }
 
     /**
@@ -102,19 +172,42 @@ export class LeaseCache {
      * @param load - Loads the value from the source of truth
      * @param options - How long to cache this value
      * @returns Cached or loaded value
+     * @throws {LeaseCacheDurationError} When `ttlMs` isn't a finite number above 0
+     * @throws {LeaseCacheValueError} When `load` returns something JSON can't store
      */
     public async get<T extends Json>(
         key: string,
         load: () => Promise<T>,
         options: GetOptions<T> = {}
     ): Promise<T> {
+        const { value } = await this.read(key, load, options);
+        return value;
+    }
+
+    /**
+     * As `get`, and also says where the value came from, and how much longer it is cached. For a cache in front
+     * of this one, which must not keep a value longer than this one does.
+     *
+     * @param key - Identifies the value, without the prefix
+     * @param load - Loads the value from the source of truth
+     * @param options - How long to cache this value
+     * @returns Cached or loaded value, where it came from, and how long it is cached
+     * @throws {LeaseCacheDurationError} When `ttlMs` isn't a finite number above 0
+     * @throws {LeaseCacheValueError} When `load` returns something JSON can't store
+     */
+    public async read<T extends Json>(
+        key: string,
+        load: () => Promise<T>,
+        options: GetOptions<T> = {}
+    ): Promise<ReadResult<T>> {
         const { leaseMs, pollMs, waitMs } = this.#options;
         const { ttlMs = this.#options.ttlMs } = options;
         const keys = this.#keys(key);
         const token = randomUUID();
         const deadline = Date.now() + waitMs;
+        let isWaiting = false;
         for (;;) {
-            const [state, value] = (await this.#eval(
+            const [state, value, remainingMs] = (await this.#eval(
                 readOrLeaseScript,
                 keys,
                 token,
@@ -122,13 +215,21 @@ export class LeaseCache {
             )) as GetOrLeaseResult;
 
             if (state === 'hit') {
-                return JSON.parse(value) as T;
+                return { value: JSON.parse(value) as T, source: 'hit', ttlMs: remainingMs };
             }
 
             if (state === 'lease') {
                 let loaded: T;
+                let serialized: string;
+                let loadedTtlMs: number;
                 try {
                     loaded = await load();
+                    serialized = serialize(key, loaded);
+                    loadedTtlMs = duration(
+                        'ttlMs',
+                        typeof ttlMs === 'function' ? ttlMs(loaded) : ttlMs,
+                        1
+                    );
                 } catch (error) {
                     // Nothing will be cached, so free the lease for a waiting reader to take right away
                     await this.#eval(releaseScript, keys, token);
@@ -136,24 +237,23 @@ export class LeaseCache {
                 }
                 // When the lease was lost, this caches nothing. What was loaded is still returned: it is as fresh
                 // as when this read started.
-                await this.#eval(
-                    fillScript,
-                    keys,
-                    token,
-                    JSON.stringify(loaded),
-                    typeof ttlMs === 'function' ? ttlMs(loaded) : ttlMs
-                );
-                return loaded;
+                const filled = await this.#eval(fillScript, keys, token, serialized, loadedTtlMs);
+                return filled === 1
+                    ? { value: loaded, source: 'filled', ttlMs: loadedTtlMs }
+                    : { value: loaded, source: 'lost', ttlMs: 0 };
             }
 
             if (value !== null) {
                 // Stale, kept by an invalidation for readers that would otherwise wait
-                return JSON.parse(value) as T;
+                return { value: JSON.parse(value) as T, source: 'stale', ttlMs: 0 };
             }
             if (Date.now() >= deadline) {
-                return load();
+                return { value: await load(), source: 'timeout', ttlMs: 0 };
             }
-            this.#options.onWait?.(key);
+            if (!isWaiting) {
+                isWaiting = true;
+                this.#options.onWait?.(key);
+            }
             await setTimeout(pollMs);
         }
     }
@@ -167,7 +267,7 @@ export class LeaseCache {
      * @param key - Value to delete
      */
     public async invalidate(key: string): Promise<void> {
-        await this.#eval(invalidateScript, this.#keys(key), this.#options.staleMs ?? 0);
+        await this.#eval(invalidateScript, this.#keys(key), this.#options.staleMs);
     }
 
     /**

@@ -62,6 +62,7 @@ The fill that loses its lease still returns what it loaded to its own caller. Th
 
 - **Invalidate after the change is committed.** Invalidating first leaves a window where a new load reads the old data and caches it, as with any cache.
 - **Loads read committed, current data.** A load that reads from a lagging replica can still read the old row after the invalidation. memcache handles this with "remote markers" between regions. This package doesn't, so load from the primary (or accept staleness up to the replica's lag).
+- **A cache in front keeps only what this one cached.** A memory tier that keeps every value `get` returns would keep the very load an invalidation stopped from caching. `read()` says whether, and for how long, Valkey caches each value, so the tier in front can keep it no longer (and not at all when it isn't cached).
 - **Every change invalidates.** A change that never calls `invalidate` stays cached until `ttlMs`, as with any cache.
 
 **What is safe without extra care:**

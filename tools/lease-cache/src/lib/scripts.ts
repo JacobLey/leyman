@@ -4,14 +4,14 @@
  */
 
 /**
- * Returns `{'hit', value}` when the value is cached. Otherwise takes the lease with `ARGV[1]` (the token) for
+ * Returns `{'hit', value, ttl}` when the value is cached, with how many milliseconds it has left. Otherwise takes the lease with `ARGV[1]` (the token) for
  * `ARGV[2]` milliseconds, returning `{'lease'}`, unless another reader holds it: `{'wait', stale}`, with the stale
  * value if one is kept (`false` otherwise).
  */
 export const readOrLeaseScript = `
 local value = redis.call('GET', KEYS[1])
 if value then
-    return {'hit', value}
+    return {'hit', value, redis.call('PTTL', KEYS[1])}
 end
 if redis.call('SET', KEYS[2], ARGV[1], 'PX', ARGV[2], 'NX') then
     return {'lease'}
@@ -21,7 +21,8 @@ return {'wait', redis.call('GET', KEYS[3])}
 
 /**
  * Caches `ARGV[2]` for `ARGV[3]` milliseconds and frees the lease, only if the lease still holds `ARGV[1]` (our
- * token), and drops any stale value, now replaced. Returns 1 when cached, 0 when the lease was lost: invalidated, or run out and taken by another reader.
+ * token), and drops any stale value, now replaced. Returns 1 when cached, 0 when the lease was lost: invalidated,
+ * or run out and taken by another reader.
  *
  * Checking and writing in one step is the point: a load that started before an invalidation can't cache what it
  * read, because the invalidation deleted its lease.

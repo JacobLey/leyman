@@ -1,5 +1,5 @@
 ---
-description: LeaseCache, its options, get and invalidate, and the Json and LeaseCacheConnection types.
+description: LeaseCache, its options, get, read and invalidate, its errors, and the Json and LeaseCacheConnection types.
 ---
 
 # API
@@ -15,7 +15,9 @@ description: LeaseCache, its options, get and invalidate, and the Json and Lease
 | `pollMs` | `number` | — | How often a reader waiting on another's load checks again. |
 | `waitMs` | `number` | — | How long a reader waits on another's load before loading itself. It then caches nothing, as it holds no lease. Bounds how long a stuck load can stall everyone else. |
 | `staleMs` | `number` | `0` (off) | After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. See [Serving stale values](/lease-cache/guides/invalidation#serving-stale-values-while-the-next-load-runs). |
-| `onWait` | `(key: string) => void` | — | Called each time a reader finds another reader loading the key, and waits. For example, to count the loads that leases saved. |
+| `onWait` | `(key: string) => void` | — | Called once for each read that finds another reader loading the key, and waits on it. For example, to count the loads that leases saved. |
+
+Durations are rounded up to whole milliseconds, as Valkey takes. Each must be a finite number above 0, except `waitMs` and `staleMs`, which may be 0: otherwise the constructor throws [`LeaseCacheDurationError`](#errors).
 
 ## `cache.get(key, load, options?)`
 
@@ -49,13 +51,49 @@ const user = await cache.get(`user:${id}`, async () => db.users.find(id), {
 - The stale value, when another reader holds the lease and `staleMs` kept one.
 - What `load` returned, uncached, once `waitMs` passes without a value.
 
-**Rejects** with what `load` threw. The lease is freed first, so a waiting reader takes it right away.
+**Rejects** with what `load` threw. The lease is freed first, so a waiting reader takes it right away. Also rejects, freeing the lease and caching nothing, with [`LeaseCacheDurationError`](#errors) when a computed `ttlMs` isn't above 0, and [`LeaseCacheValueError`](#errors) when `load` returns something JSON can't store, such as `undefined`.
+
+## `cache.read(key, load, options?)`
+
+As [`get`](#cache-get-key-load-options), but also says where the value came from, and how much longer Valkey caches it. For a cache in front of this one (a memory tier), which must not keep a value longer than this one does, or keep one this one didn't cache: a value that isn't cached may already be outdated.
+
+**Returns** `Promise<ReadResult<T>>`: `{ value, source, ttlMs }`.
+
+| `source` | The value | `ttlMs` |
+|---|---|---|
+| `'hit'` | Was cached already. | The time it has left. |
+| `'filled'` | Was loaded with the lease, and cached. | The value's `ttlMs`. |
+| `'lost'` | Was loaded, but the lease was lost first (invalidated, or run out), so it wasn't cached. | `0` |
+| `'stale'` | Was kept by an invalidation (`staleMs`), and returned rather than waiting. | `0` |
+| `'timeout'` | Was loaded without a lease, after waiting `waitMs`. | `0` |
+
+```ts
+import type { LeaseCache } from 'lease-cache';
+
+declare const cache: LeaseCache;
+declare const memory: Map<string, { readonly value: string; readonly expiresAt: number }>;
+// ---cut---
+const { value, ttlMs } = await cache.read('greeting', async () => 'hello');
+// Kept in memory no longer than in Valkey, and not at all when it isn't cached there
+if (ttlMs > 0) {
+    memory.set('greeting', { value, expiresAt: Date.now() + ttlMs });
+}
+```
 
 ## `cache.invalidate(key)`
 
 Deletes the value and its lease, so the next read loads it. A load already in progress returns to its caller, but caches nothing. Call it after the source of truth changes. With `staleMs`, the old value is first kept as stale.
 
 **Returns** `Promise<void>`.
+
+## Errors
+
+Every error `lease-cache` throws extends `LeaseCacheError`. What `load` throws is passed on as it is.
+
+| Error | When |
+|-------|------|
+| `LeaseCacheDurationError` | A duration isn't a finite number above 0 (`waitMs` and `staleMs` may be 0). Has `option` and `value`. |
+| `LeaseCacheValueError` | `load` returned something JSON can't store, e.g. `undefined`. Has `key`. |
 
 ## `Json`
 
