@@ -10,6 +10,7 @@ import { getInternalRegex } from './lib/internal-regex.js';
 import { assertIsPackageJson } from './lib/package-json-schema.js';
 import { packagePluginConfig } from './lib/package-plugins.js';
 import {
+    commentsPlugin,
     eslintConfig,
     importPlugin,
     jsDocPlugin,
@@ -231,6 +232,7 @@ export default function makeEslintConfigForPackage({
                 reportUnusedDisableDirectives: true,
             },
             plugins: {
+                '@eslint-community/eslint-comments': commentsPlugin,
                 '@typescript-eslint': typescriptPlugin as unknown as ESLint.Plugin,
                 'import-x': importPlugin,
                 jsdoc: jsDocPlugin,
@@ -846,6 +848,11 @@ export default function makeEslintConfigForPackage({
                 'sonarjs/unused-named-groups': 'off',
 
                 // Unicorn
+                // Every disable says why, after `--`. An `eslint-enable` only ends one.
+                '@eslint-community/eslint-comments/require-description': [
+                    'error',
+                    { ignore: ['eslint-enable'] },
+                ],
                 ...nonDeprecatedRules('unicorn', unicornPlugin),
                 'unicorn/catch-error-name': ['error', { ignore: [/^error$/u], name: 'err' }],
                 // Contradicts `arrow-body-style`
