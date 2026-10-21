@@ -64,7 +64,8 @@ const gcd = (x: number, y: number): number => {
  * @param y - second value
  * @returns Least Common Multiple of x and y
  */
-const lcm = (x: number, y: number): number => (x * y) / gcd(x, y);
+// Divide first, so the intermediate value is no larger than the result
+const lcm = (x: number, y: number): number => (x / gcd(x, y)) * y;
 
 const numToExclusive = (value: number | LimitWithExclusive): LimitWithExclusive =>
     typeof value === 'number' ? { value, exclusive: false } : value;
@@ -352,25 +353,27 @@ export class NumberSchema<
             }
         }
 
-        // Least common multiple is only exact for safe integers
-        const integerMultiples = this.#multipleOfs.filter(x => Number.isSafeInteger(x));
-        const floatMultiples = this.#multipleOfs.filter(x => !Number.isSafeInteger(x));
-
-        if (integerMultiples.length > 0) {
-            let leastCommonMultiple = 1;
-            for (const multiple of integerMultiples) {
-                leastCommonMultiple = lcm(leastCommonMultiple, multiple);
+        // Least common multiple is only exact for safe integers,
+        // so other multiples (and those that would overflow it) stay separate
+        let leastCommonMultiple: number | null = null;
+        const separateMultiples: number[] = [];
+        for (const multiple of this.#multipleOfs) {
+            const combined = lcm(leastCommonMultiple ?? multiple, multiple);
+            if (Number.isSafeInteger(multiple) && Number.isSafeInteger(combined)) {
+                leastCommonMultiple = combined;
+            } else {
+                separateMultiples.push(multiple);
             }
-            base.multipleOf = leastCommonMultiple;
+        }
+        const [multipleOf, ...multipleOfs] =
+            leastCommonMultiple === null
+                ? separateMultiples
+                : [leastCommonMultiple, ...separateMultiples];
+        if (multipleOf !== undefined) {
+            base.multipleOf = multipleOf;
             mergeAllOf(
                 base,
-                floatMultiples.map(multipleOf => ({ multipleOf }))
-            );
-        } else if (floatMultiples.length > 0) {
-            base.multipleOf = floatMultiples[0];
-            mergeAllOf(
-                base,
-                floatMultiples.slice(1).map(multipleOf => ({ multipleOf }))
+                multipleOfs.map(value => ({ multipleOf: value }))
             );
         }
 

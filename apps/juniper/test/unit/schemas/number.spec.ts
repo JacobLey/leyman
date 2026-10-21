@@ -78,6 +78,21 @@ suite('NumberSchema', () => {
             });
         });
 
+        test('Integers whose least common multiple is unsafe are not merged', () => {
+            const schema = numberSchema().multipleOf(94_906_267).multipleOf(94_906_265).toJSON();
+
+            // The product is 9007199326062755, which is above Number.MAX_SAFE_INTEGER
+            expect(schema).to.deep.equal({
+                type: 'number',
+                multipleOf: 94_906_267,
+                allOf: [
+                    {
+                        multipleOf: 94_906_265,
+                    },
+                ],
+            });
+        });
+
         test('Unsafe integers are not merged', () => {
             const unsafe = 2 ** 53 + 2;
             const schema = numberSchema({
