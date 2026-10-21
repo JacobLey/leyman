@@ -86,8 +86,7 @@ export class StaticEmitter<
         return new Promise((resolve, reject) => {
             signal?.throwIfAborted();
             const onAbort = (): void => {
-                // Mirror native abort behavior, which rejects with the signal's (any) reason.
-                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
+                // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors -- Mirror native abort behavior, which rejects with the signal's (any) reason.
                 reject(signal?.reason);
             };
             signal?.addEventListener('abort', onAbort, { once: true });

@@ -8,7 +8,7 @@ export type { Constructable };
  * @see {@link https://github.com/microsoft/TypeScript/issues/57412} why this is necessary
  *
  */
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unused-vars
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class, @typescript-eslint/no-unused-vars -- Only a type, never constructed
 declare abstract class ProtectedConstructable {
     protected constructor(...args: unknown[]);
 }
@@ -16,8 +16,7 @@ export type IsClass = typeof Constructable | typeof ProtectedConstructable;
 export type GenericClass<T = unknown> = new (...args: any) => T;
 export type DepsClass<T, Deps extends readonly [...unknown[]]> = new (...args: Deps) => T;
 export type InstanceOfClass<T extends IsClass> = InstanceType<
-    // Order Matters!
-    // eslint-disable-next-line @typescript-eslint/sort-type-constituents
+    // eslint-disable-next-line @typescript-eslint/sort-type-constituents -- The order of the intersection changes the instance type
     (new () => never) & T
 >;
 

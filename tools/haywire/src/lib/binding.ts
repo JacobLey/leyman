@@ -170,8 +170,7 @@ const providerToMaybeList = <
 
     if (isAsync) {
         return (async (...deps) =>
-            // Marks the async provider's result as a promise for `await-thenable`
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- Marks the async provider's result as a promise for `await-thenable`
             toList(await (provider(...deps) as Promise<unknown>))) as WrappedProvider;
     }
     return ((...deps) => toList(provider(...deps))) as WrappedProvider;

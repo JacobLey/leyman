@@ -38,11 +38,10 @@ import {
 const catchThrown = async (fn: () => unknown): Promise<unknown> => {
     try {
         await fn();
-        // eslint-disable-next-line @typescript-eslint/return-await, unicorn/no-useless-promise-resolve-reject
-        return Promise.reject(new Error('Did not throw'));
     } catch (err) {
         return err;
     }
+    throw new Error('Did not throw');
 };
 
 suite('container', () => {
@@ -2944,7 +2943,7 @@ suite('container', () => {
                     bind(promiseIdentifier)
                         .withDependencies([identifier(A).deferred(), identifier(B).deferred()])
                         .withProvider(
-                            // eslint-disable-next-line @typescript-eslint/promise-function-async
+                            // eslint-disable-next-line @typescript-eslint/promise-function-async -- A provider that returns a promise without being async, the case under test
                             (lateA, lateB) => {
                                 const prom = Promise.resolve(123 as const);
                                 return Object.assign(prom, {

@@ -123,7 +123,7 @@ suite('bind', () => {
             promisishBind.withInstance(789);
 
             // @ts-expect-error
-            extendsFooBind.withInstance(new Foo()); // eslint-disable-line @typescript-eslint/no-unsafe-argument
+            extendsFooBind.withInstance(new Foo()); // eslint-disable-line @typescript-eslint/no-unsafe-argument -- The `@ts-expect-error` leaves it untyped
             // @ts-expect-error
             barBind.withInstance();
             // @ts-expect-error

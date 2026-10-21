@@ -369,8 +369,7 @@ export class HaywireId<
      * @returns a new identifier with annotation
      */
     public supplier(
-        // One of the overloads of `supplier(supplier)`, which also takes `'async'` or an object
-        // eslint-disable-next-line unicorn/consistent-boolean-name
+        // eslint-disable-next-line unicorn/consistent-boolean-name -- One of the overloads of `supplier(supplier)`, which also takes `'async'` or an object
         supplier: false
     ): HaywireId<T, Constructor, Named, List, Nullable, Undefinable, false, Defer>;
     public supplier(
@@ -466,13 +465,11 @@ export class HaywireId<
      * @returns new identifier with annotation
      */
     public list(
-        // One of the overloads of `list(list)`, which also takes `'multi'`
-        // eslint-disable-next-line unicorn/consistent-boolean-name
+        // eslint-disable-next-line unicorn/consistent-boolean-name -- One of the overloads of `list(list)`, which also takes `'multi'`
         list: false
     ): HaywireId<T, Constructor, Named, false, Nullable, Undefinable, Supply, Defer>;
     public list(
-        // One of the overloads of `list(list)`, which also takes `'multi'`
-        // eslint-disable-next-line unicorn/consistent-boolean-name
+        // eslint-disable-next-line unicorn/consistent-boolean-name -- One of the overloads of `list(list)`, which also takes `'multi'`
         list?: true
     ): HaywireId<T, Constructor, Named, true, Nullable, Undefinable, Supply, Defer>;
     public list(
@@ -611,7 +608,7 @@ export class HaywireId<
         annotations: Annotations<Named2, List2, Nullable2, Undefinable2, Supply2, Defer2>
     ): HaywireId<T, Constructor, Named2, List2, Nullable2, Undefinable2, Supply2, Defer2> {
         const existing = this.#childIds.get(HaywireId.#annotationKey(annotations));
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-return
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-return -- Children are stored untyped, under a key from their annotations, so it is this type
         return existing ?? new HaywireId(this.id, this.construct, annotations, this.#childIds);
     }
 }

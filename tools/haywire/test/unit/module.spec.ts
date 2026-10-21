@@ -17,7 +17,7 @@ suite('module', () => {
     const aOrBId = identifier<'a' | 'b'>('<custom-name>').named('AorB').nullable().undefinable();
     const numberId = identifier<number>().named('num');
     abstract class Foo {
-        // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+        // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Only gives the class its shape
         public doFoo() {
             return true;
         }
@@ -26,7 +26,7 @@ suite('module', () => {
         protected constructor() {
             super();
         }
-        // eslint-disable-next-line @typescript-eslint/class-methods-use-this
+        // eslint-disable-next-line @typescript-eslint/class-methods-use-this -- Only gives the class its shape
         public doBar() {
             return 'bar';
         }

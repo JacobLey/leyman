@@ -1,6 +1,6 @@
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention -- `__esModule` is the flag bundlers set on a transpiled module
 type ExtractDefault<T> = T extends { __esModule?: boolean; default: infer U }
-    ? // eslint-disable-next-line @typescript-eslint/naming-convention
+    ? // eslint-disable-next-line @typescript-eslint/naming-convention -- `__esModule` is the flag bundlers set on a transpiled module
       U extends { __esModule?: boolean; default: infer V }
         ? V
         : U
@@ -43,7 +43,7 @@ export const defaultImport = <T>(mod: T): ExtractDefault<T> => {
     if (
         typeof defaultVal === 'object' &&
         '__esModule' in defaultVal &&
-        // eslint-disable-next-line @typescript-eslint/naming-convention
+        // eslint-disable-next-line @typescript-eslint/naming-convention -- `__esModule` is the flag bundlers set on a transpiled module
         (defaultVal as unknown as { __esModule?: boolean }).__esModule &&
         (defaultVal as unknown as { default?: ExtractDefault<T> | undefined }).default !== undefined
     ) {

@@ -147,8 +147,7 @@ const stringifyObject = (value: object): string => {
         }
     } catch {}
     try {
-        // Reached when JSON had nothing to show, where a custom `toString` may still help
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- Reached when JSON had nothing to show, where a custom `toString` may still help
         return String(value);
     } catch {}
     try {

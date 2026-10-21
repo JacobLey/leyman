@@ -30,6 +30,5 @@ interface IdentifierGenerator {
     ): HaywireId<StripAnnotations<T>, null, null, false, false, false, false, false>;
 }
 
-// Not the same type: the `invalidInput` parameters reject invalid identifiers at compile time
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- Not the same type: the `invalidInput` parameters reject invalid identifiers at compile time
 export const identifier = unsafeIdentifier as IdentifierGenerator;

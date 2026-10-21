@@ -159,9 +159,9 @@ suite('defaultImport', () => {
     });
 
     test('Handles literals', () => {
-        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -- `undefined` in, `undefined` out, which is the case under test
         expect(DefaultImport.defaultImport(undefined)).to.equal(undefined);
-        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+        // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -- `undefined` in, `undefined` out, which is the case under test
         expectTypeOf(DefaultImport.defaultImport(undefined)).toEqualTypeOf(undefined);
 
         expect(DefaultImport.defaultImport(null)).to.equal(null);

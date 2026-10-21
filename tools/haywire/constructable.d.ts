@@ -6,7 +6,7 @@
  * parameters of private constructors when emitting declarations. The emitted
  * `private constructor();` would reject classes whose private constructor takes arguments.
  */
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class -- Only a type, never constructed
 export declare abstract class Constructable {
     private constructor(...args: unknown[]);
 }

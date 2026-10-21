@@ -37,7 +37,7 @@ export const findImport = async (
 
     let [directory, startAt] = await Promise.all([
         parseCwd(options),
-        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+        // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- A missing or empty `startAt` searches up to the root
         options.startAt ? parseCwd(options.startAt) : '/',
     ]);
     let parentDirectory = Path.dirname(directory);
@@ -64,7 +64,7 @@ export const findImport = async (
                 if (file.endsWith('.json')) {
                     return {
                         filePath,
-                        // eslint-disable-next-line import-x/no-dynamic-require
+                        // eslint-disable-next-line import-x/no-dynamic-require -- Importing JSON warns that it is experimental, so it is required
                         content: require(filePath),
                     };
                 }

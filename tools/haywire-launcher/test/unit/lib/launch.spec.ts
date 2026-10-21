@@ -161,8 +161,7 @@ suite('launch', () => {
         });
     });
 
-    // Type-only test, asserted by `@ts-expect-error`
-    // eslint-disable-next-line sonarjs/assertions-in-tests
+    // eslint-disable-next-line sonarjs/assertions-in-tests -- Type-only test, asserted by `@ts-expect-error`
     test('Container does not output Main', () => {
         const id = identifier<Main>();
 

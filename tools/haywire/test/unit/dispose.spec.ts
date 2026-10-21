@@ -24,11 +24,10 @@ import {
 const catchThrown = async (fn: () => unknown): Promise<unknown> => {
     try {
         await fn();
-        // eslint-disable-next-line @typescript-eslint/return-await, unicorn/no-useless-promise-resolve-reject
-        return Promise.reject(new Error('Did not throw'));
     } catch (err) {
         return err;
     }
+    throw new Error('Did not throw');
 };
 
 interface Resource extends Disposable {

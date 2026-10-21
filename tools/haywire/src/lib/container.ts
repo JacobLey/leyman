@@ -226,8 +226,7 @@ const isListId = (id: GenericHaywireId): boolean => id.annotations.list !== fals
  */
 const deferDependency = (): DeferredPromise<unknown> => {
     const deferred = pDefer();
-    // Attaches a handler without waiting for the promise
-    // eslint-disable-next-line unicorn/prefer-await
+    // eslint-disable-next-line unicorn/prefer-await -- Attaches a handler without waiting for the promise
     deferred.promise.catch(() => {});
     return deferred;
 };
@@ -960,10 +959,9 @@ export class Container<Outputs extends [Extendable]> {
         }
         this.wire();
 
-        // Starts after `#preloaded` is assigned, so a failure can reset it
-        // eslint-disable-next-line unicorn/prefer-promise-try
+        // eslint-disable-next-line unicorn/prefer-promise-try -- Starts after `#preloaded` is assigned, so a failure can reset it
         this.#preloaded = Promise.resolve()
-            // eslint-disable-next-line unicorn/prefer-await
+            // eslint-disable-next-line unicorn/prefer-await -- Part of the chain, which starts after `#preloaded` is assigned
             .then(async () => {
                 const reqScope: ScopeCache = new Map();
                 const requestSingleton = async (binding: GenericBinding): Promise<void> => {
@@ -982,7 +980,7 @@ export class Container<Outputs extends [Extendable]> {
                     this.#singletonMap.keys().map(async binding => requestSingleton(binding))
                 );
             })
-            // eslint-disable-next-line unicorn/prefer-await
+            // eslint-disable-next-line unicorn/prefer-await -- Part of the chain, which starts after `#preloaded` is assigned
             .catch(async (err: unknown) => {
                 this.#preloaded = null;
                 throw err;

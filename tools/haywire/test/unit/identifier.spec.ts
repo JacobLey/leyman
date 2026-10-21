@@ -41,7 +41,7 @@ suite('Generate identifier', () => {
         // @ts-expect-error
         identifier<AsyncSupplier<Foo>>();
         // @ts-expect-error
-        identifier<Deferred<Foo>>(); // eslint-disable-line @typescript-eslint/no-floating-promises
+        identifier<Deferred<Foo>>(); // eslint-disable-line @typescript-eslint/no-floating-promises -- Only the type error is under test
         // @ts-expect-error
         identifier<unknown>();
         // @ts-expect-error
