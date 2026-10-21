@@ -74,7 +74,10 @@ export class ReadThroughCache {
      * @param key - Value to mark stale
      */
     public async expire(key: string): Promise<void> {
-        await Promise.all([this.#bento.expire({ key }), this.#sharedTier.invalidate(key)]);
+        // The shared tier first: BentoCache tells the other instances to drop their copy, and one that read the
+        // key again before the shared tier forgot it would copy the old value back into memory
+        await this.#sharedTier.invalidate(key);
+        await this.#bento.expire({ key });
     }
 
     /**
@@ -83,7 +86,9 @@ export class ReadThroughCache {
      * @param key - Value to delete
      */
     public async invalidate(key: string): Promise<void> {
-        await Promise.all([this.#bento.delete({ key }), this.#sharedTier.invalidate(key)]);
+        // The shared tier first, as in `expire`
+        await this.#sharedTier.invalidate(key);
+        await this.#bento.delete({ key });
     }
 }
 

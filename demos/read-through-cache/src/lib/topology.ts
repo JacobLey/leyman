@@ -69,8 +69,8 @@ interface ResizableShard extends ValkeyShard {
 
 const connect = (node: ValkeyNode): ResizableShard => ({
     ...node,
-    // Fail fast rather than queueing commands for a node that is down: the cache is an optimization,
-    // and BentoCache falls back to the loader (or a stale value) when Valkey errors.
+    // Fail fast rather than queueing commands for a node that is down. Reads of its keys then fail too: BentoCache
+    // only falls back past a Valkey error when it has a memory tier, and never past lease-cache's.
     connection: new Redis(node.url, { maxRetriesPerRequest: 1 }),
 });
 

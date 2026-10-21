@@ -244,6 +244,7 @@ A missing or doubled choice is a type error, and every combination works. Each f
 ## Not covered
 
 - **Loads from a lagging replica.** lease-cache's guarantee assumes a load that starts after an invalidation reads the change. One that reads a replica behind the primary can still cache the old row.
+- **A Valkey node that is down.** Reads of its keys fail, rather than fall back to the loader: BentoCache only skips a Valkey error when it has a memory tier, and an error from lease-cache fails the read. The cache is then as available as Valkey.
 - **Batch loads.** Reading many keys with one query for the missing ones (DataLoader-style) isn't supported by BentoCache's `getOrSet`.
 - **Caching failures.** A load that throws is never cached. Return a failure as a value, with a short [TTL](#ttl-per-value), to cache it.
 - **Values from an older deploy.** The cache trusts that what it reads has the current shape. Put a version in `prefix` when the shape of a value changes.
