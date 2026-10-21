@@ -167,9 +167,9 @@ export class HaywireCircularDependencyError extends HaywireContainerValidationEr
                         chain: permutation.map(({ id }) => id),
                         message: permutation.map(({ idStr }) => idStr).join('->'),
                     }))
-                    .toSorted((a, b) => a.message.localeCompare(b.message))[0]!;
+                    .toSorted((a, b) => a.message.localeCompare(b.message, 'en'))[0]!;
             })
-            .toSorted((a, b) => a.message.localeCompare(b.message));
+            .toSorted((a, b) => a.message.localeCompare(b.message, 'en'));
     }
 }
 
@@ -209,16 +209,16 @@ export class HaywireSyncSupplierError extends HaywireContainerValidationError {
                 `[output id: ${unsafeBinding.bindingOutputId.toString()}, dependency supplier id: ${unsafeBinding.supplierId.toString()}, needed by: ${unsafeBinding.dependentOutputId.toString()}, async: ${unsafeBinding.asyncChain.map(id => id.toString()).join('->')}]`,
             ])
         );
-        unsafeSupplierBindings.sort((a, b) =>
-            bindingToMessage.get(a)!.localeCompare(bindingToMessage.get(b)!)
+        const sorted = unsafeSupplierBindings.toSorted((a, b) =>
+            bindingToMessage.get(a)!.localeCompare(bindingToMessage.get(b)!, 'en')
         );
         super(
-            `Binding has dependency on syncronous supplier that must be async: ${unsafeSupplierBindings
+            `Binding has dependency on syncronous supplier that must be async: ${sorted
                 .map(unsafeBinding => bindingToMessage.get(unsafeBinding)!)
                 .join(', ')}`
         );
         this.name = 'HaywireSyncSupplierError';
-        this.unsafeSupplierBindings = unsafeSupplierBindings;
+        this.unsafeSupplierBindings = sorted;
     }
 }
 
