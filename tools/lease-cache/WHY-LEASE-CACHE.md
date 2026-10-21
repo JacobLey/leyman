@@ -72,6 +72,7 @@ The fill that loses its lease still returns what it loaded to its own caller. Th
 - **A reader that stops waiting** (`waitMs`) loads without a lease, and so never caches. Its value is current when its read began.
 - **Stale values** (`staleMs`) are only returned to readers that would otherwise wait, never cached as the value, so the claim above still holds. Each fill deletes the stale value, so a reader is never handed one older than a value cached since.
 - **A crashed holder** leaves a lease that runs out after `leaseMs`, then a waiting reader takes over.
+- **Valkey going down.** Reads reject, or with `onUnavailable` load without caching, which caches nothing it could later serve wrong. `invalidate()` always rejects, so a writer knows when an invalidation didn't happen.
 
 ## Design decisions
 

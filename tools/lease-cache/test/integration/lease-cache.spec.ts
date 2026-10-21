@@ -60,6 +60,118 @@ suite('LeaseCache', () => {
         });
     });
 
+    suite('Valkey unavailable', () => {
+        const down = new Error('Connection is closed');
+        /**
+         * A connection that answers with `answers` in turn, then fails every command, as Valkey going down would.
+         *
+         * @param answers - What each command before the failure returns
+         * @returns Connection
+         */
+        const failing = (...answers: unknown[]): LeaseCacheConnection => {
+            let calls = 0;
+            return {
+                eval: async () => {
+                    if (calls === answers.length) {
+                        throw down;
+                    }
+                    const answer = answers[calls];
+                    calls++;
+                    return answer;
+                },
+            };
+        };
+        const options = {
+            prefix: 'unused',
+            ttlMs: 1000,
+            leaseMs: 1000,
+            pollMs: 10,
+            waitMs: 1000,
+        };
+
+        test("Rejects with Valkey's error by default", async () => {
+            const cache = new LeaseCache({ ...options, connection: failing() });
+
+            await expect(cache.get('key', async () => 'value')).to.be.rejectedWith(down);
+        });
+
+        test('Loads without caching, with onUnavailable', async () => {
+            const reported: [unknown, string][] = [];
+            const cache = new LeaseCache({
+                ...options,
+                connection: failing(),
+                onUnavailable: (error, key) => {
+                    reported.push([error, key]);
+                },
+            });
+
+            expect(await cache.read('key', async () => 'value')).to.deep.equal({
+                value: 'value',
+                source: 'unavailable',
+                ttlMs: 0,
+            });
+            expect(reported).to.deep.equal([[down, 'key']]);
+        });
+
+        test('Keeps what was loaded when Valkey fails after the load', async () => {
+            let loads = 0;
+            const cache = new LeaseCache({
+                ...options,
+                // Takes the lease, then fails to fill
+                connection: failing(['lease']),
+                onUnavailable: () => {},
+            });
+
+            const read = await cache.read('key', async () => {
+                loads++;
+                return 'value';
+            });
+
+            expect(read).to.include({ value: 'value', source: 'unavailable' });
+            expect(loads).to.equal(1);
+        });
+
+        test('Rejects with what the loader threw, not the failed release', async () => {
+            const failure = new Error('Database is down');
+            // Takes the lease, then fails to free it
+            const cache = new LeaseCache({ ...options, connection: failing(['lease']) });
+
+            await expect(
+                cache.get('key', async () => {
+                    throw failure;
+                })
+            ).to.be.rejectedWith(failure);
+        });
+
+        test('Reports a failed release, with onUnavailable', async () => {
+            const reported: unknown[] = [];
+            const cache = new LeaseCache({
+                ...options,
+                connection: failing(['lease']),
+                onUnavailable: error => {
+                    reported.push(error);
+                },
+            });
+
+            await expect(
+                cache.get('key', async () => {
+                    throw new Error('Database is down');
+                })
+            ).to.be.rejected;
+            expect(reported).to.deep.equal([down]);
+        });
+
+        test('Rejects an invalidation, even with onUnavailable', async () => {
+            const cache = new LeaseCache({
+                ...options,
+                connection: failing(),
+                onUnavailable: () => {},
+            });
+
+            await expect(cache.invalidate('key')).to.be.rejectedWith(down);
+        });
+    });
+
     // Inspects what the cache stored, whichever client the cache uses
     const withValkey = before(() => ({ valkey: new Redis('redis://valkey:6379/5') }));
     withValkey.after(async ({ valkey }) => {

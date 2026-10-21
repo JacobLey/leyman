@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import { LeaseCacheDurationError, LeaseCacheValueError } from './errors.js';
+import { LeaseCacheDurationError, LeaseCacheError, LeaseCacheValueError } from './errors.js';
 import { fillScript, invalidateScript, readOrLeaseScript, releaseScript } from './scripts.js';
 
 /**
@@ -61,6 +61,14 @@ export interface LeaseCacheOptions {
      * many loads the leases saved.
      */
     readonly onWait?: (key: string) => void;
+    /**
+     * Called when Valkey fails (it is down, or a command times out). Given, a read then loads the value without
+     * caching it (`source: 'unavailable'`), so reads keep working while Valkey is down. Without it, the read
+     * rejects with Valkey's error.
+     *
+     * `invalidate()` always rejects when Valkey fails: the old value would still be there once Valkey is back.
+     */
+    readonly onUnavailable?: (error: unknown, key: string) => void;
 }
 
 export interface GetOptions<T extends Json> {
@@ -79,8 +87,9 @@ export interface GetOptions<T extends Json> {
  * - `lost`: loaded, but the lease was lost (invalidated, or run out) before the value could be cached
  * - `stale`: kept by an invalidation, returned rather than waiting on another reader's load
  * - `timeout`: loaded without a lease, after waiting `waitMs` on another reader's load
+ * - `unavailable`: loaded without the cache, as Valkey failed (only with `onUnavailable`)
  */
-export type ReadSource = 'filled' | 'hit' | 'lost' | 'stale' | 'timeout';
+export type ReadSource = 'filled' | 'hit' | 'lost' | 'stale' | 'timeout' | 'unavailable';
 
 /**
  * A value, and whether it is cached. A cache in front (e.g. a memory tier) should only keep a value for its
@@ -200,6 +209,55 @@ export class LeaseCache {
         load: () => Promise<T>,
         options: GetOptions<T> = {}
     ): Promise<ReadResult<T>> {
+        const { onUnavailable } = this.#options;
+        if (!onUnavailable) {
+            return this.#read(key, load, options);
+        }
+        // Tells Valkey's errors from the loader's, and keeps what was loaded before Valkey failed
+        const attempt: { loaded?: { readonly value: T }; hasFailed: boolean } = {
+            hasFailed: false,
+        };
+        const tracked = async (): Promise<T> => {
+            try {
+                const value = await load();
+                attempt.loaded = { value };
+                return value;
+            } catch (error) {
+                attempt.hasFailed = true;
+                throw error;
+            }
+        };
+        try {
+            return await this.#read(key, tracked, options);
+        } catch (error) {
+            if (attempt.hasFailed || error instanceof LeaseCacheError) {
+                throw error;
+            }
+            onUnavailable(error, key);
+            const value = attempt.loaded ? attempt.loaded.value : await load();
+            return { value, source: 'unavailable', ttlMs: 0 };
+        }
+    }
+
+    /**
+     * Deletes a value, so the next read loads it. A load already in progress returns to its caller, but caches
+     * nothing. Call after the source of truth changes.
+     *
+     * With `staleMs`, the old value is kept as stale for that long, for readers that would wait on the next load.
+     *
+     * Rejects when Valkey fails, even with `onUnavailable`: the value would still be cached once Valkey is back.
+     *
+     * @param key - Value to delete
+     */
+    public async invalidate(key: string): Promise<void> {
+        await this.#eval(invalidateScript, this.#keys(key), this.#options.staleMs);
+    }
+
+    async #read<T extends Json>(
+        key: string,
+        load: () => Promise<T>,
+        options: GetOptions<T>
+    ): Promise<ReadResult<T>> {
         const { leaseMs, pollMs, waitMs } = this.#options;
         const { ttlMs = this.#options.ttlMs } = options;
         const keys = this.#keys(key);
@@ -232,7 +290,7 @@ export class LeaseCache {
                     );
                 } catch (error) {
                     // Nothing will be cached, so free the lease for a waiting reader to take right away
-                    await this.#eval(releaseScript, keys, token);
+                    await this.#release(key, keys, token);
                     throw error;
                 }
                 // When the lease was lost, this caches nothing. What was loaded is still returned: it is as fresh
@@ -259,18 +317,6 @@ export class LeaseCache {
     }
 
     /**
-     * Deletes a value, so the next read loads it. A load already in progress returns to its caller, but caches
-     * nothing. Call after the source of truth changes.
-     *
-     * With `staleMs`, the old value is kept as stale for that long, for readers that would wait on the next load.
-     *
-     * @param key - Value to delete
-     */
-    public async invalidate(key: string): Promise<void> {
-        await this.#eval(invalidateScript, this.#keys(key), this.#options.staleMs);
-    }
-
-    /**
      * The value's key, its lease's key and its stale value's key. The hash tag (`{...}`) puts all three on the
      * same node of a cluster, which the scripts need, since they touch several.
      *
@@ -280,6 +326,26 @@ export class LeaseCache {
     #keys(key: string): readonly [string, string, string] {
         const tagged = `${this.#options.prefix}:{${key}}`;
         return [`${tagged}:value`, `${tagged}:lease`, `${tagged}:stale`];
+    }
+
+    /**
+     * Frees the lease. If Valkey fails, the lease runs out after `leaseMs` instead, and the error that made the
+     * read give up its lease is the one worth rejecting with.
+     *
+     * @param key - Identifies the value, for `onUnavailable`
+     * @param keys - Value, lease and stale value keys
+     * @param token - This reader's token
+     */
+    async #release(
+        key: string,
+        keys: readonly [string, string, string],
+        token: string
+    ): Promise<void> {
+        try {
+            await this.#eval(releaseScript, keys, token);
+        } catch (error) {
+            this.#options.onUnavailable?.(error, key);
+        }
     }
 
     async #eval(

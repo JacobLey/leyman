@@ -23,6 +23,7 @@ For the problem in detail, why the guarantees hold (and what they rely on), and 
 - [Example](#example)
 - [Clients](#clients)
 - [How it works](#how-it-works)
+- [When Valkey is down](#when-valkey-is-down)
 - [API](#api)
   - [LeaseCache](#new-leasecacheoptions)
   - [Errors](#errors)
@@ -127,6 +128,14 @@ A reader that finds the lease taken checks again every `pollMs`, unless a stale 
 
 Values are stored as JSON. `null` is cached like any other value, so a missing row isn't looked up again on every read.
 
+## When Valkey is down
+
+By default, a read rejects with Valkey's error, so the cache is exactly as available as Valkey. With `onUnavailable`, a read that hits a Valkey error reports it and loads the value without caching it (`source: 'unavailable'`): reads keep working, but every one of them reaches the source of truth, on every instance, until Valkey is back. A value loaded just before Valkey failed is returned, rather than loaded again.
+
+`invalidate()` rejects either way. An invalidation that didn't happen leaves the old value cached once Valkey is back, so the caller has to know.
+
+To keep caching through an outage, put a cache in front that keeps values in memory for a short time when `get` rejects, as the [read-through cache demo](https://github.com/JacobLey/leyman/tree/main/demos/read-through-cache) does.
+
 ## API
 
 ### `new LeaseCache(options)`
@@ -141,6 +150,7 @@ Values are stored as JSON. `null` is cached like any other value, so a missing r
 | `waitMs` | `number` | Required. How long a reader waits on another's load before loading itself (without caching). |
 | `staleMs` | `number` | Optional, `0` (off) by default. After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. Only for reads that accept data from before the last change: a stale value is returned, never cached. |
 | `onWait` | `(key: string) => void` | Optional. Called once for each read that waits on another's load, e.g. to count saved loads. |
+| `onUnavailable` | `(error: unknown, key: string) => void` | Optional. Called when Valkey fails. Given, reads load without caching rather than reject, so they keep working while Valkey is down. |
 
 Durations are rounded up to whole milliseconds. Each must be a finite number above 0 (`waitMs` and `staleMs` may be 0), or the constructor throws `LeaseCacheDurationError`.
 
@@ -158,11 +168,11 @@ const user = await cache.get(`user:${id}`, async () => db.users.find(id), {
 
 #### `cache.read(key, load, options?)`
 
-As `get`, but returns `{ value, source, ttlMs }`: where the value came from (`'hit'`, `'filled'`, `'lost'`, `'stale'` or `'timeout'`), and how much longer Valkey caches it (`0` when it doesn't). For a cache in front of this one, such as a memory tier: it should keep a value no longer than `ttlMs`, and not at all at `0`, since a value Valkey didn't cache may already be outdated.
+As `get`, but returns `{ value, source, ttlMs }`: where the value came from (`'hit'`, `'filled'`, `'lost'`, `'stale'`, `'timeout'` or `'unavailable'`), and how much longer Valkey caches it (`0` when it doesn't). For a cache in front of this one, such as a memory tier: it should keep a value no longer than `ttlMs`, and not at all at `0`, since a value Valkey didn't cache may already be outdated.
 
 #### `cache.invalidate(key)`
 
-Deletes the value, so the next read loads it. A load already in progress returns to its caller, but caches nothing. Call it after the source of truth changes.
+Deletes the value, so the next read loads it. A load already in progress returns to its caller, but caches nothing. Call it after the source of truth changes. Rejects when Valkey fails, even with `onUnavailable`: the value would still be cached once Valkey is back.
 
 The guarantee relies on loads reading current data: a load from a lagging replica can still read the old data after the invalidation. See [why it is correct](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md#why-it-is-correct).
 

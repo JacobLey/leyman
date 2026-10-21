@@ -16,6 +16,7 @@ description: LeaseCache, its options, get, read and invalidate, its errors, and 
 | `waitMs` | `number` | — | How long a reader waits on another's load before loading itself. It then caches nothing, as it holds no lease. Bounds how long a stuck load can stall everyone else. |
 | `staleMs` | `number` | `0` (off) | After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. See [Serving stale values](/lease-cache/guides/invalidation#serving-stale-values-while-the-next-load-runs). |
 | `onWait` | `(key: string) => void` | — | Called once for each read that finds another reader loading the key, and waits on it. For example, to count the loads that leases saved. |
+| `onUnavailable` | `(error: unknown, key: string) => void` | — | Called when Valkey fails. Given, a read loads the value without caching it rather than reject, so reads keep working while Valkey is down. See [`read`](#cache-read-key-load-options). |
 
 Durations are rounded up to whole milliseconds, as Valkey takes. Each must be a finite number above 0, except `waitMs` and `staleMs`, which may be 0: otherwise the constructor throws [`LeaseCacheDurationError`](#errors).
 
@@ -66,6 +67,7 @@ As [`get`](#cache-get-key-load-options), but also says where the value came from
 | `'lost'` | Was loaded, but the lease was lost first (invalidated, or run out), so it wasn't cached. | `0` |
 | `'stale'` | Was kept by an invalidation (`staleMs`), and returned rather than waiting. | `0` |
 | `'timeout'` | Was loaded without a lease, after waiting `waitMs`. | `0` |
+| `'unavailable'` | Was loaded without the cache, as Valkey failed. Only with `onUnavailable`: without it, the read rejects with Valkey's error. | `0` |
 
 ```ts
 import type { LeaseCache } from 'lease-cache';
@@ -83,6 +85,8 @@ if (ttlMs > 0) {
 ## `cache.invalidate(key)`
 
 Deletes the value and its lease, so the next read loads it. A load already in progress returns to its caller, but caches nothing. Call it after the source of truth changes. With `staleMs`, the old value is first kept as stale.
+
+Rejects when Valkey fails, even with `onUnavailable`: an invalidation that didn't happen leaves the old value cached once Valkey is back.
 
 **Returns** `Promise<void>`.
 
