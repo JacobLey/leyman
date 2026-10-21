@@ -1,12 +1,10 @@
 import type { Directory } from 'parse-cwd';
-import { createRequire } from 'node:module';
 import Path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { parseCwd } from 'parse-cwd';
 
 // Re-export for convenience
 export type { Directory } from 'parse-cwd';
-
-const require = createRequire(import.meta.url);
 
 const isInside = (parent: string, target: string): boolean =>
     !Path.relative(parent, target).startsWith('..');
@@ -59,19 +57,19 @@ export const findImport = async (
         for (const file of fileNames) {
             try {
                 const filePath = Path.join(basePath, file);
+                // As a URL, since a path may contain characters that mean something else in one (e.g. `#`)
+                const url = pathToFileURL(filePath).href;
 
-                // In future could parallel `import` JSON (once experimental warnings disabled)
                 if (file.endsWith('.json')) {
-                    return {
-                        filePath,
-                        // eslint-disable-next-line import-x/no-dynamic-require -- Importing JSON warns that it is experimental, so it is required
-                        content: require(filePath),
+                    const json = (await import(url, { with: { type: 'json' } })) as {
+                        default: unknown;
                     };
+                    return { filePath, content: json.default };
                 }
 
                 return {
                     filePath,
-                    content: await import(filePath),
+                    content: await import(url),
                 };
             } catch {}
         }

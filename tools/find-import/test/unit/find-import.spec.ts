@@ -1,3 +1,4 @@
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
@@ -93,6 +94,27 @@ suite('findImport', () => {
                 kind: 'root-json',
             },
         });
+    });
+
+    test('Path with characters that are special in a URL', async () => {
+        const dir = Path.join(dataDir, 'has#hash%20');
+        await mkdir(dir, { recursive: true });
+        try {
+            await Promise.all([
+                writeFile(Path.join(dir, 'special.json'), '{ "kind": "special" }'),
+                writeFile(Path.join(dir, 'special.js'), "export const kind = 'special';\n"),
+            ]);
+
+            expect(await FindImport.findImport('special.json', { cwd: dir })).to.deep.equal({
+                filePath: Path.join(dir, 'special.json'),
+                content: { kind: 'special' },
+            });
+            expect(await FindImport.findImport('special.js', { cwd: dir }))
+                .to.have.nested.property('content.kind')
+                .that.equals('special');
+        } finally {
+            await rm(dir, { recursive: true, force: true });
+        }
     });
 
     test('Not found', async () => {
