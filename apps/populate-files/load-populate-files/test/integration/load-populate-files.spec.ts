@@ -112,7 +112,7 @@ suite('loadAndPopulateFiles', () => {
             expect(thrown)
                 .to.have.property('message')
                 .that.includes(
-                    `File content does not fulfill populate-file input at: ${Path.resolve('./dist-test/data/invalid-export.js')}`
+                    `File content does not fulfill populate-file input at: ${Path.resolve('./dist-test/data/invalid-export.js')}\n- filePath: must have required property 'filePath'\n- must be array`
                 );
         });
     });

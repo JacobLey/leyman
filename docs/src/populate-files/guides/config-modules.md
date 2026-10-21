@@ -43,7 +43,7 @@ export default [
 
 The module is loaded with `import()`, so it must be JavaScript that Node can run: point the CLI at the compiled file. Anything the module imports runs as usual, so it can build content from your own code. For example, [nx-lifecycle](/nx-lifecycle/) writes its JSON Schemas from the [Juniper](/juniper/) schemas it validates with, so the published schema can't drift from the code.
 
-A default export that isn't a valid config fails with `File content does not fulfill populate-file input at: <path>`.
+A default export that isn't a valid config fails with `File content does not fulfill populate-file input at: <path>`, followed by a line for each problem, such as `- filePath: must have required property 'filePath'`.
 
 ## Run the CLI
 

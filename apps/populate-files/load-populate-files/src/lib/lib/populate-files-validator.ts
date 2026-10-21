@@ -7,6 +7,7 @@ const populateFileParam = objectSchema({
         filePath: stringSchema(),
         content: mergeSchema().cast<PopulateFileParams['content']>(),
         signed: booleanSchema(),
+        manifestInputs: objectSchema({ additionalProperties: stringSchema() }),
     },
     required: ['filePath', 'content'],
     // The schema can't express "signed requires string content", populate-files checks that.
@@ -17,4 +18,4 @@ const populateFileParams = mergeSchema().oneOf([
     arraySchema({ items: populateFileParam }),
 ]);
 
-export const isPopulateFileParams = makeValidator(populateFileParams).is;
+export const populateFileParamsValidator = makeValidator(populateFileParams);
