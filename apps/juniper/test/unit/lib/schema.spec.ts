@@ -142,6 +142,50 @@ suite('schema', () => {
     });
 
     suite('toJSON', () => {
+        test('Modifying the output does not modify the schema', () => {
+            const tags = ['a'];
+            const created = new URL('https://example.com');
+            const schema = objectSchema({ properties: { a: true, b: true } })
+                .dependentRequired('a', ['b'])
+                .examples([{ a: 1, b: 2 }])
+                .metadata({ tags, created })
+                .default(
+                    Object.assign(Object.create(null) as { a: number; b: number }, { a: 1, b: 2 })
+                )
+                .define('Tagged');
+            const wrapper = objectSchema({ properties: { first: schema, second: schema } });
+            const expected = JSON.stringify(wrapper.toJSON());
+
+            const json = wrapper.toJSON() as {
+                $defs: Record<
+                    string,
+                    {
+                        dependentRequired: Record<string, string[]>;
+                        examples: unknown[];
+                        tags: string[];
+                        created: URL;
+                        default: { a: number };
+                    }
+                >;
+                properties: Record<string, { $ref: string }>;
+            };
+            const tagged = json.$defs.Tagged!;
+            tagged.dependentRequired.a!.push('c');
+            tagged.examples.push({ b: 2 });
+            tagged.tags.push('b');
+            tagged.default.a = 2;
+            // Only plain objects and arrays are copied
+            expect(tagged.created).to.equal(created);
+            json.properties.first!.$ref = '#/elsewhere';
+            const definitions = components([wrapper]) as Record<string, { title?: string }>;
+            definitions.Tagged!.title = 'Changed';
+
+            expect(JSON.stringify(wrapper.toJSON())).to.equal(expected);
+            expect(JSON.stringify(components([wrapper]))).to.not.include('Changed');
+            expect(tags).to.deep.equal(['a']);
+            expect(json.properties.second).to.deep.equal({ $ref: '#/$defs/Tagged' });
+        });
+
         test('OpenAPI 3.0 output has its own type', () => {
             const schema = stringSchema().define('Name');
 

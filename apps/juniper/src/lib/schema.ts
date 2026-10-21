@@ -179,6 +179,30 @@ const createDefinitions = ({
 });
 
 /**
+ * Deep copy of the plain objects and arrays in serialized JSON. Other values (e.g. a `Date` in metadata) are kept as is.
+ *
+ * Serializing may place a schema's own arrays and objects (e.g. `examples`) in the output, or the same object in several
+ * places. Copying once, as the JSON leaves Juniper, keeps the schema immutable however the output is modified.
+ *
+ * @param value - serialized JSON
+ * @returns copy that shares no objects with the schema, or within itself
+ */
+const copyJson = <T>(value: T): T => {
+    if (Array.isArray(value)) {
+        return value.map(item => copyJson<unknown>(item)) as T;
+    }
+    if (value !== null && typeof value === 'object') {
+        const prototype: unknown = Object.getPrototypeOf(value);
+        if (prototype === null || prototype === Object.prototype) {
+            return Object.fromEntries(
+                Object.entries(value).map(([key, item]) => [key, copyJson<unknown>(item)])
+            ) as T;
+        }
+    }
+    return value;
+};
+
+/**
  * Serialized definitions, sorted by name so the output does not depend on the order they are used in.
  *
  * @param definitions - definitions collector
@@ -190,7 +214,7 @@ const sortedDefinitions = (definitions: Definitions): Record<string, JsonSchema<
             .keys()
             .toArray()
             .toSorted((a, b) => (a < b ? -1 : Number(a > b)))
-            .map(name => [name, definitions.schemas.get(name)!.json!])
+            .map(name => [name, copyJson(definitions.schemas.get(name)!.json!)])
     );
 
 /**
@@ -365,7 +389,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         schema = false,
     }: ToJsonParams = {}): JsonSchema<T['type']> {
         const definitions = createDefinitions({ openApi30, definitionsPath });
-        const base = this.getChildSchema<T['type']>({ openApi30, definitions });
+        const base = copyJson(this.getChildSchema<T['type']>({ openApi30, definitions }));
         // `$defs` only resolve from the root of this document, which OpenAPI 3.0 does not support.
         // Other paths (e.g. `#/components/schemas/`) are placed by the caller, see `components()`.
         if (!openApi30 && definitions.schemas.size > 0 && definitions.path === DEFS_PATH) {
