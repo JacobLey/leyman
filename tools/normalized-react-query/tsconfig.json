@@ -14,6 +14,9 @@
       "path": "../test-chain/mocha-chain"
     },
     {
+      "path": "../../apps/barrelify"
+    },
+    {
       "path": "../../leyman/expect"
     },
     {

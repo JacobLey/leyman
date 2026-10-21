@@ -672,6 +672,9 @@ importers:
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
+      barrelify:
+        specifier: workspace:^
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -2758,6 +2761,9 @@ importers:
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
+      barrelify:
+        specifier: workspace:^
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -2942,6 +2948,9 @@ importers:
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
+      barrelify:
+        specifier: workspace:^
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -12276,7 +12285,7 @@ snapshots:
       entry-script: file:tools/entry-script
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
-      ignore: 7.0.5
+      ignore: 7.0.6
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
       tinyglobby: 0.2.17

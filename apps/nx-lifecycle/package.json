@@ -84,6 +84,7 @@
     "@types/sinon": "catalog:",
     "@types/yargs": "catalog:",
     "@typescript/native": "catalog:",
+    "barrelify": "workspace:^",
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",

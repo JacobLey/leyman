@@ -2,6 +2,7 @@
   "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "static-emitter",
   "targets": {
+    "barrelify": {},
     "biome": {},
     "eslint": {},
     "check-package": {},

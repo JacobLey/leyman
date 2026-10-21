@@ -41,6 +41,9 @@
       "path": "../populate-files/load-populate-files"
     },
     {
+      "path": "../barrelify"
+    },
+    {
       "path": "../../leyman/expect"
     },
     {
