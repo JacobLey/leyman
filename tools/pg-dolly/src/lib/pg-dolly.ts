@@ -18,11 +18,16 @@ export interface PgDollyOptions {
      */
     readonly prefix?: string | undefined;
     /**
-     * `TimeZone` setting of every clone, as a clone doesn't inherit the template's `ALTER DATABASE` settings.
+     * Settings of every database, as `ALTER DATABASE ... SET` would: e.g. `{ search_path: ['app', 'public'] }`. A
+     * list is a setting that takes several values. Merged over the defaults, which pin what `initdb` takes from the
+     * machine's locale and time zone, so the server's configuration doesn't change what queries return.
      *
-     * @default 'UTC'
+     * Templates are built with them (so a seed's timestamps don't depend on the server), and they are part of the
+     * template's hash.
+     *
+     * @default defaultSettings
      */
-    readonly timeZone?: string | undefined;
+    readonly settings?: Readonly<Record<string, DatabaseSetting>> | undefined;
     /**
      * How long, in milliseconds, a template no run has used is kept, and so is a database kept from a failed test.
      *
@@ -30,6 +35,24 @@ export interface PgDollyOptions {
      */
     readonly retainMs?: number | undefined;
 }
+
+/**
+ * A setting's value, or a list for a setting that takes several (e.g. `search_path`).
+ */
+export type DatabaseSetting = string | readonly string[];
+
+/**
+ * Settings every database gets, unless overridden: the ones `initdb` writes to `postgresql.conf` from the machine's
+ * locale and time zone (other than `lc_messages`, which only a superuser can set).
+ */
+export const defaultSettings: Readonly<Record<string, DatabaseSetting>> = {
+    TimeZone: 'UTC',
+    DateStyle: 'ISO, MDY',
+    lc_monetary: 'C',
+    lc_numeric: 'C',
+    lc_time: 'C',
+    default_text_search_config: 'pg_catalog.simple',
+};
 
 export interface TemplateOptions {
     /**
@@ -121,6 +144,8 @@ interface DatabaseState {
  */
 type Lock = readonly [purpose: string, name: string];
 
+type SettingEntry = readonly [name: string, value: DatabaseSetting];
+
 interface CloneState {
     readonly name: string;
     kept: boolean;
@@ -147,18 +172,20 @@ const hashVersion = 'pg-dolly:1';
 const invalidConnLimit = -2;
 
 /**
- * Hash of a schema's SQL and its seed, which names their template.
+ * Hash of a schema's SQL, its seed and the settings it is built with, which names their template.
  *
  * @param sql - Schema
  * @param seed - Seed, or `''` for none
+ * @param settings - Database settings, sorted by name
  * @returns Hex hash
  */
-const hashSql = (sql: string, seed: string): string => {
+const hashSql = (sql: string, seed: string, settings: readonly SettingEntry[]): string => {
     const hash = createHash('sha256').update(hashVersion).update('\0').update(sql);
-    // SQL can't contain a NUL, so the separator can't be part of either. Without a seed, the hash is the schema's.
+    // SQL can't contain a NUL, so the separator can't be part of either
     if (seed) {
         hash.update('\0seed\0').update(seed);
     }
+    hash.update('\0settings\0').update(JSON.stringify(settings));
     return hash.digest('hex').slice(0, hashLength);
 };
 
@@ -222,13 +249,20 @@ export class PgDolly {
     readonly #client: pg.Client;
     readonly #url: string;
     readonly #prefix: string;
-    readonly #timeZone: string;
+    /**
+     * Sorted by name, so the same settings always hash the same.
+     */
+    readonly #settings: readonly SettingEntry[];
     readonly #retainMs: number;
     /**
      * Identifies this run in the markers. The admin connection holds an advisory lock on it until the run ends, so
      * another run can tell whether its databases are still in use, or left behind by a crash.
      */
     readonly #run = randomUUID().replaceAll('-', '').slice(0, runLength);
+    /**
+     * Names `#nextName` gives, for the sweep.
+     */
+    readonly #unmarkedPattern: RegExp;
     readonly #templates = new Map<string, Promise<DollyTemplate>>();
     readonly #clones: CloneState[] = [];
     /**
@@ -246,12 +280,21 @@ export class PgDolly {
     private constructor(
         client: pg.Client,
         url: string,
-        options: { readonly prefix: string; readonly timeZone: string; readonly retainMs: number }
+        options: {
+            readonly prefix: string;
+            readonly settings: readonly SettingEntry[];
+            readonly retainMs: number;
+        }
     ) {
         this.#client = client;
         this.#url = url;
         this.#prefix = options.prefix;
-        this.#timeZone = options.timeZone;
+        // The prefix is only letters, digits and underscores
+        this.#unmarkedPattern = new RegExp(
+            String.raw`^${options.prefix}_(?<run>[\da-f]{${runLength}})_\d+$`,
+            'u'
+        );
+        this.#settings = options.settings;
         this.#retainMs = options.retainMs;
     }
 
@@ -281,7 +324,9 @@ export class PgDolly {
         await client.connect();
         const dolly = new PgDolly(client, url, {
             prefix,
-            timeZone: options.timeZone ?? 'UTC',
+            settings: Object.entries({ ...defaultSettings, ...options.settings }).toSorted(
+                ([a], [b]) => (a < b ? -1 : 1)
+            ),
             retainMs: options.retainMs ?? defaultRetainMs,
         });
         try {
@@ -306,7 +351,7 @@ export class PgDolly {
     public async template(sql: string, options: TemplateOptions = {}): Promise<DollyTemplate> {
         this.#assertOpen();
         const { seed = '' } = options;
-        const hash = hashSql(sql, seed);
+        const hash = hashSql(sql, seed, this.#settings);
         let template = this.#templates.get(hash);
         if (!template) {
             template = this.#buildInTurn(sql, seed, hash);
@@ -406,7 +451,7 @@ export class PgDolly {
         await this.#query(`CREATE DATABASE ${this.#identifier(building)} TEMPLATE template0`);
         let isTemplate = false;
         try {
-            await this.#comment(building, {
+            await this.#setUp(building, {
                 pgDolly: 1,
                 prefix: this.#prefix,
                 kind: 'build',
@@ -441,19 +486,15 @@ export class PgDolly {
         await this.#query(
             `CREATE DATABASE ${this.#identifier(name)} TEMPLATE ${this.#identifier(template)}`
         );
-        // A crash before the marker is written leaves a database no run will drop: there is no way to mark it as
-        // part of creating it
         const clone: CloneState = { name, kept: false };
         this.#clones.push(clone);
-        await this.#comment(name, {
+        // A clone doesn't inherit the template's settings
+        await this.#setUp(name, {
             pgDolly: 1,
             prefix: this.#prefix,
             kind: 'clone',
             run: this.#run,
         });
-        await this.#query(
-            `ALTER DATABASE ${this.#identifier(name)} SET "TimeZone" TO ${this.#client.escapeLiteral(this.#timeZone)}`
-        );
         return {
             name,
             url: this.#urlOf(name),
@@ -468,7 +509,8 @@ export class PgDolly {
     }
 
     /**
-     * Drops what earlier runs left behind. Only ever databases with this prefix and a marker.
+     * Drops what earlier runs left behind. Only ever databases with this prefix and a marker, or with no comment and
+     * a name only `pg-dolly` gives.
      *
      * Runs connecting at once sweep the same databases, so each drop happens under the lock that shows the
      * database is unused, and only if it is still as listed.
@@ -482,7 +524,9 @@ export class PgDolly {
         const expired = Date.now() - this.#retainMs;
         for (const { datname, comment } of rows) {
             const marker = parseMarker(comment, this.#prefix);
-            const lock = marker && leftoverLock(datname, marker, expired);
+            const lock = marker
+                ? leftoverLock(datname, marker, expired)
+                : this.#unmarkedLock(datname, comment);
             if (!lock || !(await this.#tryLock(...lock))) {
                 continue;
             }
@@ -496,6 +540,19 @@ export class PgDolly {
                 await this.#unlock(...lock);
             }
         }
+    }
+
+    /**
+     * A database is created before it can be marked, so a run that crashed in between leaves one without a marker.
+     * Its name still says which run made it.
+     *
+     * @param name - Database name
+     * @param comment - Its comment, which must be empty
+     * @returns The lock of the run that made it, or `null` if `pg-dolly` didn't name it
+     */
+    #unmarkedLock(name: string, comment: string | null): Lock | null {
+        const run = comment === null ? this.#unmarkedPattern.exec(name)?.groups?.run : undefined;
+        return run ? ['run', run] : null;
     }
 
     async #database(name: string): Promise<DatabaseState | null> {
@@ -520,10 +577,36 @@ export class PgDolly {
         await this.#query(`DROP DATABASE IF EXISTS ${this.#identifier(name)} WITH (FORCE)`);
     }
 
-    async #comment(name: string, marker: Marker): Promise<void> {
-        await this.#query(
-            `COMMENT ON DATABASE ${this.#identifier(name)} IS ${this.#client.escapeLiteral(JSON.stringify(marker))}`
+    /**
+     * Marks a new database, and applies the settings, in one round trip.
+     *
+     * @param name - Database name
+     * @param marker - Its marker
+     */
+    async #setUp(name: string, marker: Marker): Promise<void> {
+        const database = this.#identifier(name);
+        const settings = this.#settings.map(
+            ([setting, value]) =>
+                `ALTER DATABASE ${database} SET ${this.#identifier(setting)} TO ${this.#settingValue(value)}`
         );
+        await this.#query([this.#commentSql(name, marker), ...settings].join(';\n'));
+    }
+
+    #settingValue(value: DatabaseSetting): string {
+        if (typeof value === 'string') {
+            return this.#client.escapeLiteral(value);
+        }
+        return value.length === 0
+            ? "''"
+            : value.map(item => this.#client.escapeLiteral(item)).join(', ');
+    }
+
+    async #comment(name: string, marker: Marker): Promise<void> {
+        await this.#query(this.#commentSql(name, marker));
+    }
+
+    #commentSql(name: string, marker: Marker): string {
+        return `COMMENT ON DATABASE ${this.#identifier(name)} IS ${this.#client.escapeLiteral(JSON.stringify(marker))}`;
     }
 
     async #lock(purpose: string, name: string): Promise<void> {

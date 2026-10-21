@@ -6,6 +6,8 @@ export {
     PgDollyPrefixError,
 } from './lib/errors.js';
 export {
+    type DatabaseSetting,
+    defaultSettings,
     type DollyDatabase,
     type DollyTemplate,
     PgDolly,

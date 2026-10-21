@@ -24,7 +24,7 @@ const dolly = await PgDolly.connect({ prefix: 'app_test', retainMs: 60 * 60_000 
 |--------|------|---------|-------------|
 | `url` | `string` | `process.env.DATABASE_URL` | Server to connect to, as a `postgres://` URL, as a user that can create databases. The URLs of clones differ from it only in the database name. |
 | `prefix` | `string` | `'pg_dolly'` | Start of every database name it creates: 1-20 lowercase letters, digits and underscores, starting with a letter. |
-| `timeZone` | `string` | `'UTC'` | `TimeZone` setting of every clone. |
+| `settings` | `Record<string, string \| string[]>` | `defaultSettings` | Settings of every database, as `ALTER DATABASE … SET`. A list is a setting that takes several values (`search_path: ['app', 'public']`). Merged over the exported `defaultSettings`, which pin what `initdb` takes from the machine: `TimeZone: 'UTC'`, `DateStyle: 'ISO, MDY'`, `lc_monetary`, `lc_numeric` and `lc_time: 'C'`, and `default_text_search_config: 'pg_catalog.simple'`. Templates are built with them, and they are part of the template's hash. |
 | `retainMs` | `number` | `86_400_000` (a day) | How long a template no run has used is kept, and a clone kept from a failed test. |
 
 ## `dolly.template(sql, options?)`

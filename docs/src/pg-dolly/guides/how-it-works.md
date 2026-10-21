@@ -20,11 +20,13 @@ If the SQL fails, `template()` rejects with the error from Postgres. Nothing is 
 
 `clone()` is `CREATE DATABASE … TEMPLATE`, which copies the template's data rather than running the SQL again. Its cost depends on the size of the template (small, for a schema with few rows), not on what it took to build it.
 
-Clones are named by run (`<prefix>_<run>_<n>`), so parallel runs never pick the same name. Each gets `TimeZone` set, since a clone doesn't inherit the template's database settings.
+Clones are named by run (`<prefix>_<run>_<n>`), so parallel runs never pick the same name. Each gets the [`settings`](/pg-dolly/reference/api#options) again, since a clone doesn't inherit database settings. The template was built with them too, and they are part of its hash.
 
 ## Markers
 
 Every database pg-dolly creates has the prefix _and_ a marker: a JSON comment on the database, with the prefix and the run it belongs to. It only ever drops databases that have both. A database that happens to start with the prefix is left alone.
+
+`CREATE DATABASE` can't set a comment in the same step, so a run that crashes right between creating a database and marking it leaves one without a marker. Its name (`<prefix>_<run>_<n>`) still says which run made it, so a database with no comment and exactly that name is dropped like the rest of that run's, once its run lock is free. A kept clone always has a marker, so this never drops one.
 
 ## Runs
 
@@ -40,10 +42,6 @@ Tests usually share a server with a developer's own databases, and many runs sha
 - Each drop is `DROP DATABASE … WITH (FORCE)`, which also ends connections a test (or a crashed process) left open.
 
 Kept clones wait for `retainMs`, rather than the very next run, so another package's tests started right after don't drop a database someone is looking at.
-
-::: info One gap
-`CREATE DATABASE` can't set a comment in the same step, so a crash right between creating a clone and marking it leaves a database no run will drop. It has the prefix, so it's easy to find, and resetting a server used only for tests clears it.
-:::
 
 ## Speed
 

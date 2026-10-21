@@ -1,8 +1,9 @@
-import type { DollyDatabase, DollyTemplate } from 'pg-dolly';
+import type { DollyDatabase, DollyTemplate, PgDollyOptions } from 'pg-dolly';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { before, suite, test } from 'mocha-chain';
 import {
+    defaultSettings,
     PgDolly,
     PgDollyClosedError,
     PgDollyError,
@@ -59,6 +60,27 @@ const tables = async (url: string): Promise<string[]> => {
 };
 
 /**
+ * @param url - Database
+ * @param names - Settings to read
+ * @returns Each setting's value, as a new connection to the database sees it
+ */
+const settingsOf = async (
+    url: string,
+    names: readonly string[]
+): Promise<Record<string, string>> => {
+    const client = await connect(url);
+    try {
+        const { rows } = await client.query<{ name: string; value: string }>(
+            'SELECT name, current_setting(name) AS value FROM unnest($1::text[]) AS name',
+            [names]
+        );
+        return Object.fromEntries(rows.map(({ name, value }) => [name, value]));
+    } finally {
+        await client.end();
+    }
+};
+
+/**
  * @param dolly - Run
  * @returns A clone of the test schema's template
  */
@@ -80,9 +102,7 @@ suite('PgDolly', () => {
     const withPrefix = withServer.beforeEach(() => {
         const prefix = uniquePrefix();
         const opened: PgDolly[] = [];
-        const open = async (
-            options: { readonly url?: string; readonly retainMs?: number } = {}
-        ): Promise<PgDolly> => {
+        const open = async (options: Omit<PgDollyOptions, 'prefix'> = {}): Promise<PgDolly> => {
             const dolly = await PgDolly.connect({ prefix, ...options });
             opened.push(dolly);
             return dolly;
@@ -258,6 +278,41 @@ suite('PgDolly', () => {
             expect(empty).to.equal(unseeded);
         });
 
+        withPrefix.test('Builds the template with the settings', async ({ open }) => {
+            const dolly = await open({ settings: { TimeZone: 'Asia/Tokyo' } });
+            const template = await dolly.template(schema, {
+                seed: "INSERT INTO item (id, name) VALUES (1, current_setting('TimeZone'))",
+            });
+            const database = await template.clone();
+
+            expect(await query(database.url, 'SELECT name FROM item')).to.deep.equal([
+                { name: 'ASIA/TOKYO' },
+            ]);
+        });
+
+        withPrefix.test('Gives other settings a different template', async ({ open }) => {
+            const [utc, tokyo] = await Promise.all([
+                open(),
+                open({ settings: { TimeZone: 'Asia/Tokyo' } }),
+            ]);
+
+            const [a, b] = await Promise.all([utc.template(schema), tokyo.template(schema)]);
+
+            expect(a.name).to.not.equal(b.name);
+        });
+
+        withPrefix.test(
+            'Rejects an invalid setting, leaving nothing behind',
+            async ({ server, prefix, open }) => {
+                const dolly = await open({ settings: { TimeZone: 'Nowhere/Land' } });
+
+                await expect(dolly.template(schema)).to.be.rejectedWith(
+                    'invalid value for parameter "TimeZone"'
+                );
+                expect(await server.databases(prefix)).to.deep.equal([]);
+            }
+        );
+
         withPrefix.test(
             'Rejects a seed that fails, leaving nothing behind',
             async ({ server, prefix, open }) => {
@@ -351,20 +406,49 @@ suite('PgDolly', () => {
             }
         );
 
-        withTemplate.test('Sets the time zone to UTC', async ({ template }) => {
-            const database = await template.clone();
+        withTemplate.test(
+            'Pins the settings initdb takes from the machine',
+            async ({ template }) => {
+                const database = await template.clone();
 
-            expect(await query(database.url, 'SHOW TimeZone')).to.deep.equal([{ TimeZone: 'UTC' }]);
-        });
+                expect(await settingsOf(database.url, Object.keys(defaultSettings))).to.deep.equal({
+                    TimeZone: 'UTC',
+                    DateStyle: 'ISO, MDY',
+                    lc_monetary: 'C',
+                    lc_numeric: 'C',
+                    lc_time: 'C',
+                    default_text_search_config: 'pg_catalog.simple',
+                });
+            }
+        );
 
-        withPrefix.test('Sets the time zone given', async ({ prefix, opened }) => {
-            const dolly = await PgDolly.connect({ prefix, timeZone: 'America/New_York' });
-            opened.push(dolly);
+        withPrefix.test('Applies the settings given, over the defaults', async ({ open }) => {
+            const dolly = await open({
+                settings: {
+                    TimeZone: 'America/New_York',
+                    search_path: ['app', 'public'],
+                    'app.tenant': "it's",
+                },
+            });
             const database = await cloneSchema(dolly);
 
-            expect(await query(database.url, 'SHOW TimeZone')).to.deep.equal([
-                { TimeZone: 'America/New_York' },
-            ]);
+            expect(
+                await settingsOf(database.url, ['TimeZone', 'search_path', 'app.tenant', 'lc_time'])
+            ).to.deep.equal({
+                TimeZone: 'America/New_York',
+                search_path: 'app, public',
+                'app.tenant': "it's",
+                lc_time: 'C',
+            });
+        });
+
+        withPrefix.test('Applies an empty list', async ({ open }) => {
+            const dolly = await open({ settings: { search_path: [] } });
+            const database = await cloneSchema(dolly);
+
+            expect(await settingsOf(database.url, ['search_path'])).to.deep.equal({
+                search_path: '""',
+            });
         });
     });
 
@@ -462,6 +546,33 @@ suite('PgDolly', () => {
                 await open();
 
                 expect(await server.database(database.name)).to.equal(undefined);
+            }
+        );
+
+        withPrefix.test(
+            'Drops a database a crashed run created but never marked',
+            async ({ server, prefix, open }) => {
+                // The name a run gives, with no marker: the run crashed between creating and marking it
+                const name = `${prefix}_${'0'.repeat(12)}_1`;
+                await server.query(`CREATE DATABASE ${name}`);
+
+                await open();
+
+                expect(await server.database(name)).to.equal(undefined);
+            }
+        );
+
+        withPrefix.test(
+            'Leaves an unmarked database of a run still going',
+            async ({ server, open }) => {
+                const running = await open();
+                const database = await cloneSchema(running);
+                const name = database.name.replace(/_\d+$/u, '_99');
+                await server.query(`CREATE DATABASE ${name}`);
+
+                await open({ retainMs: 0 });
+
+                expect(await server.database(name)).to.not.equal(undefined);
             }
         );
 

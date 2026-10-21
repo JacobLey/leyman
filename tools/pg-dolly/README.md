@@ -218,8 +218,8 @@ docker run -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:18 \
 ## How it works
 
 - **Templates.** `template(sql)` hashes the SQL and looks for a template with that name. If there isn't one, it creates a database (from `template0`), runs the SQL in it, marks it as a template nothing can connect to (`IS_TEMPLATE true ALLOW_CONNECTIONS false`), then renames it to the real name. A rename is atomic, so a half-built template never has the real name. Runs building the same template wait for each other on an advisory lock. A template that allows connections again may have been changed, so it's dropped and built again.
-- **Clones.** `clone()` is `CREATE DATABASE … TEMPLATE`, which copies the template's files rather than running the SQL again.
-- **Markers.** Every database it creates has the prefix and a JSON comment marking it, with the run it belongs to. It only drops databases that have both.
+- **Clones.** `clone()` is `CREATE DATABASE … TEMPLATE`, which copies the template's files rather than running the SQL again. A clone doesn't inherit database settings, so each gets `settings` again.
+- **Markers.** Every database it creates has the prefix and a JSON comment marking it, with the run it belongs to. It only drops databases that have both, or no comment at all and a name only it gives (`<prefix>_<run>_<n>`), which a run that crashed before marking one leaves.
 - **Runs.** Each `PgDolly` holds an advisory lock on its own run id until it closes. A run that can take another run's lock knows that run is gone, and drops what it left. Each run also holds a shared lock on the templates it uses, so no other run drops them as unused.
 - **Cleanup.** `close()` drops the run's clones, except those kept. `connect()` drops the clones of runs that ended without closing, templates no run has used for `retainMs`, and kept clones that old.
 
@@ -239,7 +239,7 @@ Connects to the server, and drops what earlier runs left behind (see [How it wor
 |--------|------|---------|-------------|
 | `url` | `string` | `process.env.DATABASE_URL` | Server to connect to, as a `postgres://` URL. The URLs of clones differ from it only in the database name. |
 | `prefix` | `string` | `'pg_dolly'` | Start of every database name it creates: 1-20 lowercase letters, digits and underscores, starting with a letter. |
-| `timeZone` | `string` | `'UTC'` | `TimeZone` setting of every clone, as a clone doesn't inherit the template's `ALTER DATABASE` settings. |
+| `settings` | `Record<string, string \| string[]>` | `defaultSettings` | Settings of every database, as `ALTER DATABASE … SET`. A list is a setting that takes several values (`search_path: ['app', 'public']`). Merged over the exported `defaultSettings`, which pin what `initdb` takes from the machine: `TimeZone: 'UTC'`, `DateStyle: 'ISO, MDY'`, `lc_monetary`, `lc_numeric` and `lc_time: 'C'`, and `default_text_search_config: 'pg_catalog.simple'`. Templates are built with them, and they are part of the template's hash. |
 | `retainMs` | `number` | `86_400_000` (a day) | How long a template no run has used is kept, and a clone kept from a failed test. |
 
 ### `dolly.template(sql, options?)`

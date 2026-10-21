@@ -36,7 +36,7 @@ This also keeps `pg-dolly` free of any ORM. Running migrations is the one ORM-sp
 
 Tests usually run against the same server as a developer's own databases, and many runs share it at once: parallel processes, other packages' tests, other branches. So:
 
-- **It never touches what it didn't make.** Every database `pg-dolly` creates gets its prefix and a marker (a JSON comment on the database, with the prefix and the run it belongs to). It only ever drops databases that have both: a database that happens to start with the prefix is left alone.
+- **It never touches what it didn't make.** Every database `pg-dolly` creates gets its prefix and a marker (a JSON comment on the database, with the prefix and the run it belongs to). It only ever drops databases that have both: a database that happens to start with the prefix is left alone. The one exception is a database with no comment and a name only `pg-dolly` gives (`<prefix>_<run>_<n>`), which a run that crashed between creating and marking it leaves; the name says which run, so its run lock shows whether it's gone.
 - **Runs can tell whether another run is still going.** Each run's admin connection holds an advisory lock on its run id until it closes. Postgres releases it when the connection ends, crash or not. So a run that can take another run's lock knows that run is gone.
 - **Templates in use are never dropped as unused.** A run holds a shared lock on every template it uses. Dropping an unused template needs that lock exclusively.
 - **Clones are named by run**, so parallel runs never pick the same name.
@@ -48,7 +48,6 @@ Tests usually run against the same server as a developer's own databases, and ma
 - **What a crashed run left behind** is dropped by the next run to connect: its run lock is free. `DROP DATABASE … WITH (FORCE)` also ends connections the crashed process left open.
 - **Templates no run has used for `retainMs`** are dropped, so changing the schema over and over doesn't fill the server with old templates.
 
-One gap remains: `CREATE DATABASE` can't set a comment in the same step, so a crash right between creating a clone and marking it leaves a database no run will drop. It has the prefix, so it is easy to find.
 
 ## Non-goals
 
