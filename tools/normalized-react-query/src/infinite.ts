@@ -542,8 +542,7 @@ class Infinite<
             revalidateIfStale
         );
         if (isolateErrors) {
-            // Stored for the links to await later, so a failure must not reject them
-            // eslint-disable-next-line unicorn/prefer-await
+            // eslint-disable-next-line unicorn/prefer-await -- Stored for the links to await later, so a failure must not reject them
             promise = promise.catch(() => {});
         }
         linksActive.prefetches.push(promise);
@@ -642,8 +641,7 @@ class Infinite<
         shouldRevalidate: boolean
     ): Promise<InfiniteData<TPropagatedData, TPageParam>> {
         if (shouldRevalidate && this.getQueryData(queryClient, params) !== undefined) {
-            // Refetches in the background if stale by the requested `staleTime`, without waiting for it
-            // eslint-disable-next-line unicorn/prefer-await
+            // eslint-disable-next-line unicorn/prefer-await -- Refetches in the background if stale by the requested `staleTime`, without waiting for it
             queryClient.infiniteQuery(this.#getQueryOptions(params, options)).catch(() => {});
         }
         // Cached data is never stale, so it is returned as-is

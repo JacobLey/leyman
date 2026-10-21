@@ -134,7 +134,7 @@ suite('infinite', () => {
             expect(infiniteBooksWithAuthor.getQueryState(client, { authorId })).to.equal(undefined);
 
             expect(
-                // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression
+                // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -- `populate` returns nothing, which is asserted
                 infiniteAuthorsWithBooks.populate(client, undefined, {
                     pages: [[{ authorId }]],
                     pageParams: [

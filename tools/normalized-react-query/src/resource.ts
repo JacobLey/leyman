@@ -382,8 +382,7 @@ class Resource<
             revalidateIfStale
         );
         if (isolateErrors) {
-            // Stored for the links to await later, so a failure must not reject them
-            // eslint-disable-next-line unicorn/prefer-await
+            // eslint-disable-next-line unicorn/prefer-await -- Stored for the links to await later, so a failure must not reject them
             promise = promise.catch(() => {});
         }
         linksActive.prefetches.push(promise);
@@ -483,7 +482,7 @@ class Resource<
                     queryKey: this.getKey(params),
                     queryFn: this.getQueryFn(params),
                 })
-                // eslint-disable-next-line unicorn/prefer-await
+                // eslint-disable-next-line unicorn/prefer-await -- Refetches in the background, without waiting for it
                 .catch(() => {});
         }
         // Cached data is never stale, so it is returned as-is

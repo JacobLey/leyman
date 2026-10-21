@@ -72,8 +72,7 @@ suite('before', () => {
     });
 
     suite('Test from before', () => {
-        // eslint-disable-next-line prefer-arrow-callback
-        mergedContextualBefore.it('runs test', async function (ctx) {
+        mergedContextualBefore.it('runs test', async ctx => {
             expect(order).to.deep.equal([1, 2, 3, 4, 5]);
             order.push(6);
 

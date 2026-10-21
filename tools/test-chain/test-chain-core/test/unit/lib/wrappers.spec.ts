@@ -16,7 +16,7 @@ suite('wrappers', () => {
 
         test('Reports one more parameter than original', () => {
             expect(withoutContext(() => {}).length).to.equal(1);
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Only its parameter count is under test
             expect(withoutContext((_done: unknown) => {}).length).to.equal(2);
         });
     });

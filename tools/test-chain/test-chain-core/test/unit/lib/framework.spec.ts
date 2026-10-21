@@ -143,8 +143,7 @@ suite('framework', () => {
             const fake = createFakeFramework();
             const chain = createChain(fake.framework);
 
-            // Declares (but never calls) done, so test is handled as done-style
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Declares (but never calls) done, so test is handled as done-style
             chain.test('test', (_done: () => void) => '<value>');
 
             expect(await fake.runWithDone('test')).to.equal(
@@ -157,7 +156,7 @@ suite('framework', () => {
             const chain = createChain(fake.framework);
 
             chain.test('test', (done: () => void) => {
-                // eslint-disable-next-line n/callback-return
+                // eslint-disable-next-line n/callback-return -- Calling `done` twice is the case under test
                 done();
                 done();
             });

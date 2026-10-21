@@ -1,8 +1,7 @@
 /**
  * Context before any hook has added to it.
  */
-// `{}` is intended: every hook merges its additional context into this.
-// eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type
+// eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type -- `{}` is intended: every hook merges its additional context into this.
 export type EmptyContext = NonNullable<unknown>;
 
 export type AllowableAdditionalContext = object | null | undefined | void;

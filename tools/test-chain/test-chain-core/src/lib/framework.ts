@@ -139,7 +139,7 @@ const toNativeCallback = <Key extends object>(
     }
 
     return async function (this: unknown): Promise<void> {
-        // eslint-disable-next-line prefer-rest-params, sonarjs/arguments-usage
+        // eslint-disable-next-line prefer-rest-params, sonarjs/arguments-usage -- Vitest parses a hook's source for its fixtures, and rejects any parameter that isn't a destructured object
         const args: unknown[] = [...arguments];
         ++executing.count;
         try {

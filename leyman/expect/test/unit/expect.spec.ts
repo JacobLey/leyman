@@ -3,8 +3,7 @@ import { assert, expect } from '@leyman/expect';
 
 suite('expect', () => {
     test('Supports sync assertions', () => {
-        // Only checks that `expect` is wired up
-        // eslint-disable-next-line sonarjs/no-trivial-assertions
+        // eslint-disable-next-line sonarjs/no-trivial-assertions -- Only checks that `expect` is wired up
         expect(1).to.equal(1);
         assert.strictEqual(1, 1);
     });
