@@ -41,6 +41,18 @@ suite('StringSchema', () => {
                     allOf: [{ pattern: 'b' }],
                 });
             });
+
+            test('An empty pattern keeps the patterns after it', () => {
+                const schema = stringSchema({
+                    pattern: ['', 'b'],
+                }).toJSON();
+
+                expect(schema).to.deep.equal({
+                    type: 'string',
+                    pattern: '',
+                    allOf: [{ pattern: 'b' }],
+                });
+            });
         });
 
         test('methods', () => {

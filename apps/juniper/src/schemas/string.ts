@@ -396,7 +396,7 @@ export class StringSchema<
             base.contentMediaType = this.#contentMediaType;
         }
         const [pattern, ...patterns] = this.#patterns;
-        if (pattern) {
+        if (pattern !== undefined) {
             base.pattern = pattern;
             mergeAllOf(
                 base,
