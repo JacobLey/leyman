@@ -98,12 +98,8 @@ func (m *Ci) Test(
 			WithServiceBinding("nx-cache", nxCache).
 			WithEnvVariable("NX_SELF_HOSTED_REMOTE_CACHE_SERVER", "http://nx-cache:3000")
 	}
-	// Some targets run against real services, at the same hostnames as the devcontainer's sidecars. Postgres is
-	// bound before the build, as `prepare` (which the build runs) snapshots schemas from migrations.
-	ctr = ctr.
-		WithServiceBinding("postgres", postgresService()).
-		WithEnvVariable("DATABASE_URL", databaseURL)
-	built := ctr.WithExec([]string{"nx", "run-many", "-t", "build"})
+	// Some targets run against real services, at the same hostnames as the devcontainer's sidecars
+	built := withPostgres(ctr).WithExec([]string{"nx", "run-many", "-t", "build"})
 
 	eg, ctx := errgroup.WithContext(ctx)
 	eg.Go(func() error {
@@ -124,7 +120,7 @@ func (m *Ci) Test(
 //
 // Export it (`docs export --path ./site`) to upload to GitHub Pages.
 func (m *Ci) Docs() *dagger.Directory {
-	return m.installed(m.Source.WithoutDirectory(".changeset")).
+	return withPostgres(m.installed(m.Source.WithoutDirectory(".changeset"))).
 		WithExec([]string{"nx", "run", "@leyman/docs:build"}).
 		Directory(workdir + "/docs/dist")
 }
@@ -276,7 +272,7 @@ func (m *Ci) Publish(
 		return "", nil
 	}
 
-	built := installed.WithExec([]string{"nx", "run-many", "-t", "build", "--skip-nx-cache"})
+	built := withPostgres(installed).WithExec([]string{"nx", "run-many", "-t", "build", "--skip-nx-cache"})
 
 	// pnpm resolves `workspace:` and `catalog:` specifiers while packing
 	packer := built
@@ -370,6 +366,14 @@ func versionExists(ctx context.Context, pkg workspacePackage) (bool, error) {
 	default:
 		return false, fmt.Errorf("checking %s@%s on npm: %s", pkg.Name, pkg.Version, res.Status)
 	}
+}
+
+// Binds Postgres at the devcontainer's hostname, with `DATABASE_URL` pointing at it. Every build needs it, not only
+// tests: `prepare` (which the build runs) snapshots schemas from migrations.
+func withPostgres(ctr *dagger.Container) *dagger.Container {
+	return ctr.
+		WithServiceBinding("postgres", postgresService()).
+		WithEnvVariable("DATABASE_URL", databaseURL)
 }
 
 // Valkey for tests, with nothing persisted, matching the devcontainer's `valkey` sidecar
