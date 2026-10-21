@@ -251,6 +251,8 @@ Instances don't change their node lists at the same moment. While a change rolls
 
 The tests show both: an invalidation from an instance with the old list misses the copy on the new node by default, and reaches it with `invalidateEveryNode`.
 
+With `invalidateEveryNode`, `ResizableValkeyTopology.resize()` refuses a step that skips size `0`: a node that joins with a size (or moves to another URL), or one removed before it is drained. How long to wait between steps is left to you. No instance can tell when every other instance has the change, or which of two node lists is the newer, so a check across instances (comparing fingerprints of each one's node list) could report a rollout in progress, but not make it safe.
+
 For nodes that only grow and shrink at the end of a list, [`constant-consistent-hash`](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/constant-consistent-hash) places keys in constant time instead.
 
 ## Composing with haywire

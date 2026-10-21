@@ -32,6 +32,9 @@ export interface TopologyOptions {
      * place a key on different nodes, and an invalidation from one misses the copy the other reads. Invalidating
      * on every node reaches both copies, as long as each node joins and leaves at size `0`: added at `0` until
      * every instance has it, then sized, and drained to `0` for the longest TTL before it is removed.
+     *
+     * `ResizableValkeyTopology.resize()` then refuses a step that skips size `0`. How long a node stays at `0` is
+     * left to you: no instance can see when every other one has the change.
      */
     readonly invalidateEveryNode?: boolean;
 }
@@ -93,6 +96,38 @@ interface ResizableShard extends ValkeyShard {
     readonly url: string;
 }
 
+/**
+ * Throws unless a resize keeps to `invalidateEveryNode`'s rule: a node joins at size `0`, and leaves from it. A node
+ * whose URL changed is a different node, so it does both.
+ *
+ * @param before - Current nodes
+ * @param after - New nodes
+ * @throws {RangeError} When a node joins with a size, or leaves without being drained
+ */
+const assertJoinsAndLeavesAtZero = (
+    before: readonly ResizableShard[],
+    after: readonly ValkeyNode[]
+): void => {
+    const isSameNode = (a: ValkeyNode, b: ValkeyNode): boolean =>
+        a.name === b.name && a.url === b.url;
+    const joining = after.find(
+        node => node.size > 0 && before.every(shard => !isSameNode(shard, node))
+    );
+    if (joining) {
+        throw new RangeError(
+            `Node "${joining.name}" must join at size 0, until every instance has it (see invalidateEveryNode)`
+        );
+    }
+    const leaving = before.find(
+        shard => shard.size > 0 && after.every(node => !isSameNode(shard, node))
+    );
+    if (leaving) {
+        throw new RangeError(
+            `Node "${leaving.name}" must be drained to size 0 before it leaves (see invalidateEveryNode)`
+        );
+    }
+};
+
 const connect = (node: ValkeyNode): ResizableShard => ({
     ...node,
     // Fail fast rather than queueing commands for a node that is down. Reads of its keys then fail too, unless
@@ -150,10 +185,14 @@ export class ResizableValkeyTopology implements ValkeyTopology, AsyncDisposable 
      * Keys that move are misses on their new node (loaded again), and are left to expire on their old one.
      *
      * @param nodes - New nodes, as for the constructor
-     * @throws {RangeError} When names repeat, or no node has a positive size. The topology is left unchanged.
+     * @throws {RangeError} When names repeat, or no node has a positive size, or (with `invalidateEveryNode`) a
+     * node joins or leaves at a size other than `0`. The topology is left unchanged.
      */
     public async resize(nodes: readonly ValkeyNode[]): Promise<void> {
         createRendezvousHash(nodes);
+        if (this.#options.invalidateEveryNode) {
+            assertJoinsAndLeavesAtZero(this.#shards, nodes);
+        }
         const existing = new Map(this.#shards.map(shard => [shard.name, shard]));
         const shards = nodes.map(node => {
             const shard = existing.get(node.name);

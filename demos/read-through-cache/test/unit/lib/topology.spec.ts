@@ -1,7 +1,16 @@
+import type { ValkeyNode } from '@leyman/demo-read-through-cache';
 import { ResizableValkeyTopology } from '@leyman/demo-read-through-cache';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
 import { valkeyNodes, valkeyUrl } from '../../helpers/valkey.js';
+
+/**
+ * @param nodes - Nodes to change
+ * @param name - Node to drain, or to add at size 0
+ * @returns The nodes, with that one at size 0
+ */
+const atZero = (nodes: readonly ValkeyNode[], name: string): ValkeyNode[] =>
+    nodes.map(node => (node.name === name ? { ...node, size: 0 } : node));
 
 const keys = Array.from({ length: 100 }, (_, i) => `key-${i}`);
 
@@ -67,10 +76,55 @@ suite('ResizableValkeyTopology', () => {
         });
 
         withEvery.test('Keeps invalidating on every node once resized', async ({ everywhere }) => {
-            await everywhere.resize(valkeyNodes(4));
+            await everywhere.resize(atZero(valkeyNodes(4), 'node-4'));
 
             expect(everywhere.invalidationConnections('key')).to.have.length(4);
         });
+
+        withEvery.test('Adds a node at size 0, then sizes it', async ({ everywhere }) => {
+            await everywhere.resize(atZero(valkeyNodes(4), 'node-4'));
+            await everywhere.resize(valkeyNodes(4));
+
+            expect(everywhere.shards.map(({ size }) => size)).to.deep.equal([1, 1, 1, 1]);
+        });
+
+        withEvery.test(
+            'Refuses to add a node with a size, leaving the nodes unchanged',
+            async ({ everywhere }) => {
+                const before = everywhere.shards;
+
+                await expect(everywhere.resize(valkeyNodes(4))).to.be.rejectedWith(
+                    RangeError,
+                    'Node "node-4" must join at size 0'
+                );
+                expect(everywhere.shards).to.equal(before);
+            }
+        );
+
+        withEvery.test('Drains a node to size 0, then removes it', async ({ everywhere }) => {
+            await everywhere.resize(atZero(valkeyNodes(3), 'node-3'));
+            await everywhere.resize(valkeyNodes(2));
+
+            expect(everywhere.shards.map(({ name }) => name)).to.deep.equal(['node-1', 'node-2']);
+        });
+
+        withEvery.test('Refuses to remove a node before it is drained', async ({ everywhere }) => {
+            await expect(everywhere.resize(valkeyNodes(2))).to.be.rejectedWith(
+                RangeError,
+                'Node "node-3" must be drained to size 0 before it leaves'
+            );
+        });
+
+        withEvery.test(
+            'Refuses to move a node of some size to another URL',
+            async ({ everywhere }) => {
+                const [, ...rest] = valkeyNodes(3);
+
+                await expect(
+                    everywhere.resize([{ name: 'node-1', size: 1, url: valkeyUrl(9) }, ...rest])
+                ).to.be.rejectedWith(RangeError, 'Node "node-1" must join at size 0');
+            }
+        );
     });
 
     suite('resize', () => {
