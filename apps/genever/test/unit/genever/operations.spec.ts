@@ -249,6 +249,75 @@ suite('OpenAPI operations', () => {
         expect(source).to.contain('Get A').and.to.contain('@deprecated');
     });
 
+    suite('generic types keyed by operationId', () => {
+        const helpers = document({
+            '/users/{id}': {
+                parameters: [
+                    { name: 'id', in: 'path', required: true, schema: { type: 'string' } },
+                ],
+                get: {
+                    operationId: 'getUser',
+                    parameters: [{ name: 'fields', in: 'query', schema: { type: 'string' } }],
+                    responses: { 200: jsonUser, 404: { description: 'Missing' } },
+                },
+                put: {
+                    operationId: 'putUser',
+                    requestBody: { required: true, ...jsonUser },
+                    responses: { default: { description: 'Error', content: { 'text/plain': {} } } },
+                },
+                patch: { operationId: 'patchUser', requestBody: jsonUser, responses: {} },
+            },
+            '/health': { get: { operationId: 'health', responses: {} } },
+        });
+
+        test('what a call sends: parameters by location, and the JSON body, each if it has them', () => {
+            expectOperations(helpers, {
+                'G.OperationInput<"getUser">':
+                    '{ readonly path: { id: string } } & { readonly query?: { fields?: string } }',
+                'G.OperationInput<"putUser">':
+                    '{ readonly body: User } & { readonly path: { id: string } }',
+                'G.OperationInput<"patchUser">':
+                    '{ readonly body?: User } & { readonly path: { id: string } }',
+                'G.OperationInput<"health">': 'unknown',
+            });
+        });
+
+        test('every response, as status and JSON body', () => {
+            expectOperations(helpers, {
+                'G.OperationResult<"getUser">':
+                    '{ readonly status: 200; readonly body: User } | { readonly status: 404; readonly body: undefined }',
+                'G.OperationResult<"putUser">':
+                    '{ readonly status: number; readonly body: undefined }',
+            });
+        });
+
+        test('a misspelled operationId is a type error', () => {
+            const source = genever(helpers);
+
+            expect(
+                typeCheck({
+                    'generated.ts': source,
+                    'use.ts':
+                        "import type { OperationInput } from './generated.js';\nexport type Input = OperationInput<'getUsers'>;",
+                })
+            ).to.have.length(1);
+        });
+
+        test('a component named OperationInput keeps its name', () => {
+            const source = genever(
+                document(
+                    { '/health': { get: { operationId: 'health', responses: {} } } },
+                    { schemas: { OperationInput: { type: 'string' } } }
+                )
+            );
+
+            expect(typeCheck({ 'generated.ts': source })).to.deep.equal([]);
+            expect(source)
+                .to.contain('export type OperationInput = string')
+                .and.to.contain('OperationInput2');
+        });
+    });
+
     test('no paths, no operation types', () => {
         expect(genever(document({}))).to.contain('export type Paths');
         expect(

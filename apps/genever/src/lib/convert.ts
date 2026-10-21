@@ -15,6 +15,7 @@ import {
     unsupportedKeywords,
 } from './keywords.js';
 import { TypeNames } from './names.js';
+import { operationHelpers } from './operation-helpers.js';
 import { operationTypes } from './operations.js';
 import { patternType } from './pattern.js';
 import { childPointer } from './pointer.js';
@@ -74,7 +75,18 @@ export interface ConvertOptions {
 export interface NamedType {
     readonly doc: TsDoc | null;
     readonly name: string;
-    readonly type: TsType;
+    /**
+     * Type parameters, e.g. `<Id extends keyof Operations>`, for the generic helpers of a document's operations.
+     */
+    readonly parameters?: string;
+    /**
+     * `false` for a helper the exported types use, but nothing else needs.
+     */
+    readonly exported?: boolean;
+    /**
+     * The type, or its TypeScript source for a helper that is the same in every document.
+     */
+    readonly type: string | TsType;
 }
 
 /**
@@ -435,6 +447,13 @@ export class Converter {
         // Reserved after the components, so they keep their names
         const pathsName = this.#names.reserve('Paths');
         const operationsName = this.#names.reserve('Operations');
+        const helperNames = {
+            operations: operationsName,
+            field: this.#names.reserve('OperationField'),
+            json: this.#names.reserve('OperationJson'),
+            input: this.#names.reserve('OperationInput'),
+            result: this.#names.reserve('OperationResult'),
+        };
         const operations = operationTypes(
             this.#root,
             {
@@ -449,6 +468,7 @@ export class Converter {
                 ? [
                       { doc: null, name: pathsName, type: operations.paths },
                       { doc: null, name: operationsName, type: operations.operations },
+                      ...operationHelpers(helperNames),
                   ]
                 : []),
         ];

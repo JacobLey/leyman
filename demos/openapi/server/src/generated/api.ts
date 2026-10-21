@@ -242,3 +242,41 @@ export type Operations = {
         };
     };
 };
+
+/**
+ * `{ [Key]: Value }`, optional when `Value` may be `undefined`, and left out when there is no `Value`.
+ */
+type OperationField<Key extends string, Value> = [Exclude<Value, undefined>] extends [never]
+    ? unknown
+    : undefined extends Value
+      ? { readonly [K in Key]?: Exclude<Value, undefined> }
+      : { readonly [K in Key]: Value };
+
+/**
+ * The JSON content of a request body or response: `undefined` when it has none, or may be left out.
+ */
+type OperationJson<Body> = Body extends { content: { 'application/json': infer Json } }
+    ? Json
+    : undefined;
+
+/**
+ * What a call to an operation sends: its parameters by location, and its JSON `body`, each only if it has them.
+ */
+export type OperationInput<Id extends keyof Operations> = OperationField<
+    'body',
+    OperationJson<Operations[Id]['requestBody']>
+> &
+    OperationField<'path', Operations[Id]['parameters']['path']> &
+    OperationField<'query', Operations[Id]['parameters']['query']> &
+    OperationField<'header', Operations[Id]['parameters']['header']> &
+    OperationField<'cookie', Operations[Id]['parameters']['cookie']>;
+
+/**
+ * Every response an operation documents, as `{ status, body }`, so checking `status` narrows `body`. A status that is not a number (`default`, `2XX`) is `number`.
+ */
+export type OperationResult<Id extends keyof Operations> = {
+    [Status in keyof Operations[Id]['responses']]: {
+        readonly status: Status extends `${infer Code extends number}` ? Code : number;
+        readonly body: OperationJson<Operations[Id]['responses'][Status]>;
+    };
+}[keyof Operations[Id]['responses']];

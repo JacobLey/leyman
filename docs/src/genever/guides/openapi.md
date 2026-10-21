@@ -81,7 +81,28 @@ type UserQuery = Operations['getUser']['parameters']['query'];
 - Every media type is included, not only JSON. A media type without a schema is `unknown`.
 - `summary`, `description` and `deprecated` become JSDoc on each operation, parameter, request body, response and header.
 
-Component schemas keep their names, so a component called `Paths` or `Operations` makes these `Paths2` or `Operations2`. Two operations with the same `operationId` fail with a `GeneverInvalidSchemaError`.
+### Keyed by `operationId`
+
+Two generic types put an operation's types in the shape a typed client or server passes around, keyed by `operationId`, so a misspelled one is a type error:
+
+- `OperationInput<Id>`: what a call sends. Its parameters by location (`path`, `query`, `header`, `cookie`) and its JSON `body`, each only if the operation has them, and optional when they are.
+- `OperationResult<Id>`: every response the operation documents, as `{ status, body }`, with the JSON content as `body` (`undefined` without one). Checking `status` narrows `body`. A status that isn't a number (`default`, `2XX`) is `number`.
+
+```ts
+// @noErrors
+import type { OperationInput, OperationResult } from './api-types.js';
+
+declare const call: <Id extends 'createUser'>(id: Id, input: OperationInput<Id>) => Promise<OperationResult<Id>>;
+// ---cut---
+const created = await call('createUser', { body: { name: 'Dolly' } });
+if (created.status === 201) {
+    created.body.id;
+}
+```
+
+The [OpenAPI demo](/demos/openapi) builds its client and server on the same idea.
+
+Component schemas keep their names, so a component called `Paths` or `Operations` makes these `Paths2` or `Operations2`, and likewise for `OperationInput` and `OperationResult`. Two operations with the same `operationId` fail with a `GeneverInvalidSchemaError`.
 
 ## With Juniper
 

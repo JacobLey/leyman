@@ -129,6 +129,15 @@ type User = Paths['/users/{id}']['get']['responses'][200]['content']['applicatio
 type NewUser = Operations['createUser']['requestBody']['content']['application/json'];
 ```
 
+Two generic types, keyed by `operationId`, put an operation's types in the shape a typed client or server passes around. A misspelled `operationId` is a type error:
+
+```ts
+// { readonly body: NewUser } & { readonly path: { orgId: string } }: each part only if the operation has it
+type Create = OperationInput<'createUser'>;
+// { readonly status: 201; readonly body: User } | { readonly status: 400; readonly body: ApiError }
+type Created = OperationResult<'createUser'>;
+```
+
 ### YAML
 
 A `.yaml` or `.yml` file is read as YAML 1.2, whether it is the input or a file it references, and so is a URL served with a YAML media type. Anchors and aliases are expanded, and merge keys (`<<: *base`) merged. An alias inside the schema it names, a recursive schema, becomes a `$ref` to that schema, so it is a recursive type. Anything else JSON can't hold is an error: an alias inside a value that isn't a schema (such as a `const`), tags beyond YAML's core schema (such as `!!binary`), keys that aren't strings, duplicate keys, and `.inf` or `.nan`.

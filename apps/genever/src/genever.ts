@@ -78,7 +78,8 @@ export const genever = (schema: unknown, options: GeneverOptions = {}): string =
     return `${[
         header,
         ...types.map(
-            ({ doc, name, type }) => `${printDoc(doc, '')}export type ${name} = ${printType(type)};`
+            ({ doc, exported = true, name, parameters = '', type }) =>
+                `${printDoc(doc, '')}${exported ? 'export ' : ''}type ${name}${parameters} = ${typeof type === 'string' ? type : printType(type)};`
         ),
     ].join('\n\n')}\n`;
 };
