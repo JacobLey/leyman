@@ -19,4 +19,36 @@ suite('errors', () => {
         expect(error.requestPath).to.equal(path);
         expect(Object.keys(error)).to.not.include('requestPath');
     });
+
+    test('Values that cannot be stringified still produce a message', () => {
+        class Foo {
+            public readonly foo = true;
+        }
+        const id = identifier(Foo);
+        const circular: Record<string, unknown> = {};
+        circular.self = circular;
+
+        for (const [value, described] of [
+            [circular, 'object'],
+            [1n, 'bigint'],
+            [() => {}, 'function'],
+            [Object.create(null), '{}'],
+            [{ a: 1 }, '{"a":1}'],
+            [new Map(), 'Map'],
+        ] as const) {
+            expect(new errors.HaywireInstanceOfResponseError(id, value)).to.include({
+                message: `Value ${described} returned by provider is not instance of class: Foo`,
+            });
+        }
+
+        const unprintable: unknown = Object.create(null);
+        expect(new errors.HaywireProviderError(id, unprintable)).to.include({
+            message: 'Provider for Foo failed: object',
+        });
+        expect(new errors.HaywireMultiError([unprintable, new Error('<message>'), 123])).to.include(
+            {
+                message: 'Multiple errors: [object, <message>, 123]',
+            }
+        );
+    });
 });

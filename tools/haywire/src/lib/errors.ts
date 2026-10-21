@@ -30,6 +30,24 @@ const hideRequestPath = (error: Error, requestPath: readonly GenericHaywireId[])
     Object.defineProperty(error, 'requestPath', { value: requestPath });
 };
 
+/**
+ * Describe a thrown value for a message. Never throws, so a strange value can't hide the error it is part of.
+ *
+ * @param cause - thrown value
+ * @returns the error's message, otherwise the value as a string
+ */
+const describeCause = (cause: unknown): string => {
+    if (Error.isError(cause)) {
+        return cause.message;
+    }
+    try {
+        return String(cause);
+    } catch {
+        // For example `Object.create(null)`, which has no `toString()`
+        return typeof cause;
+    }
+};
+
 const stringifyIds = (ids: readonly GenericHaywireId[]): string =>
     ids
         .map(id => id.toString())
@@ -341,15 +359,28 @@ export class HaywireInstanceOfResponseError extends HaywireInstanceValidationErr
         hideRequestPath(this, requestPath);
     }
 
+    /**
+     * Describe the wrong value: its class, or its JSON. Never throws, like {@link describeCause}.
+     *
+     * @param value - value the provider returned
+     * @returns class name, JSON, or the type when neither applies (e.g. a function, a BigInt or a circular object)
+     */
     static #stringify(value: unknown): string {
-        const getConstructor = (): { name?: string } | null => {
-            if (value && typeof value === 'object') {
-                const construct = value.constructor;
-                return construct === Object ? null : construct;
+        if (value && typeof value === 'object') {
+            const construct = (value as { constructor?: { name?: string } }).constructor;
+            if (construct !== Object && construct?.name) {
+                return construct.name;
             }
-            return null;
-        };
-        return getConstructor()?.name ?? JSON.stringify(value);
+        }
+        try {
+            const json = JSON.stringify(value) as string | undefined;
+            if (json !== undefined) {
+                return json;
+            }
+        } catch {
+            // Circular, or contains a BigInt
+        }
+        return typeof value;
     }
 }
 
@@ -399,24 +430,12 @@ export class HaywireProviderError extends HaywireInstanceValidationError {
         requestPath: HaywireProviderError['requestPath'] = []
     ) {
         super(
-            `Provider for ${outputId.toString()} failed${requestedVia(requestPath)}: ${HaywireProviderError.#describe(cause)}`,
+            `Provider for ${outputId.toString()} failed${requestedVia(requestPath)}: ${describeCause(cause)}`,
             { cause }
         );
         this.name = 'HaywireProviderError';
         this.outputId = outputId;
         hideRequestPath(this, requestPath);
-    }
-
-    static #describe(cause: unknown): string {
-        if (Error.isError(cause)) {
-            return cause.message;
-        }
-        try {
-            return String(cause);
-        } catch {
-            // For example `Object.create(null)`, which has no `toString()`
-            return typeof cause;
-        }
     }
 }
 
@@ -434,12 +453,9 @@ export class HaywireMultiError extends HaywireInstanceValidationError {
         const causes = errors.flatMap(err =>
             err instanceof HaywireMultiError ? err.causes : [err]
         );
-        super(
-            `Multiple errors: [${causes
-                .map(err => (Error.isError(err) ? err.message : err))
-                .join(', ')}]`,
-            { cause: causes[0] }
-        );
+        super(`Multiple errors: [${causes.map(cause => describeCause(cause)).join(', ')}]`, {
+            cause: causes[0],
+        });
         this.name = 'HaywireMultiError';
         this.causes = causes;
     }
