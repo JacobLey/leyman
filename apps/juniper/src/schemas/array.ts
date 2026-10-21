@@ -560,6 +560,9 @@ export class ArraySchema<
                     const allItems = [items, ...prefixItems];
                     base.items = allItems.length === 1 ? allItems[0] : { anyOf: allItems };
                 }
+            } else if (base.type === 'array') {
+                // OpenAPI 3.0 requires `items` whenever `type` is `array`
+                base.items = {};
             }
             const minItems = this.#contains
                 ? Math.max(this.#minItems, this.#minContains)
@@ -570,9 +573,6 @@ export class ArraySchema<
         } else {
             if (items !== null) {
                 base.items = items;
-            }
-            if (this.#minItems > 0) {
-                base.minItems = this.#minItems;
             }
             if (prefixItems.length > 0) {
                 base.prefixItems = prefixItems;

@@ -394,6 +394,7 @@ suite('ArraySchema', () => {
         });
         expect(schema.toJSON({ openApi30: true })).to.deep.equal({
             type: 'array',
+            items: {},
         });
     });
 
@@ -420,6 +421,7 @@ suite('ArraySchema', () => {
             });
             expect(schema.toJSON({ openApi30: true })).to.deep.equal({
                 type: 'array',
+                items: {},
             });
 
             const containsSchema = schema.contains(stringSchema().nullable());
@@ -435,9 +437,11 @@ suite('ArraySchema', () => {
             });
             expect(containsSchema.toJSON({ openApi30: true })).to.deep.equal({
                 type: 'array',
+                items: {},
             });
             expect(containsSchema.minContains(4).toJSON({ openApi30: true })).to.deep.equal({
                 type: 'array',
+                items: {},
                 minItems: 4,
             });
         });
