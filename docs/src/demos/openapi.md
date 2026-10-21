@@ -247,7 +247,8 @@ const app = createContainer(
 - **Nx expands `$` in a target's options.** Options are forwarded to the command in double quotes, so a migrate command containing `$DATABASE_URL` would run against the server's default database. The migrate command is set in `env` instead (see [pg-dolly-schema as an Nx target](/pg-dolly-schema/getting-started#as-an-nx-target)).
 - **drizzle-kit doesn't declare what it imports.** It loads `drizzle-orm` and the `pg` driver from its own install location, which pnpm's strict layout doesn't allow. A `packageExtensions` entry in `pnpm-workspace.yaml` makes them peers.
 - **`drizzle-kit migrate` adds its own bookkeeping** (`drizzle.__drizzle_migrations`), so `schema.sql` has it too. That's accurate: every real database has it.
-- **drizzle-kit has no check-only mode** for "the schema has changes no migration covers". The `drizzle-kit-check` target generates into the real directory, compares, and puts it back.
+- **drizzle-kit has no check-only mode** for "the schema has changes no migration covers". The `drizzle-kit-check` target generates into a copy of the migrations, through a temporary config that only changes `out`, and compares.
+- **drizzle-kit exits 0 when it fails.** Without a terminal, it can't ask whether a column was renamed, so it prints an error, writes nothing, and exits 0. A check that only compared files would pass. The check fails on any error output instead.
 - **Fastify was the other option.** It validates requests natively from per-route schemas, but its response schemas only drive serialization (dropping unknown fields), not validation. With Hono, both directions are explicit middleware against the document.
 
 ## Not covered
