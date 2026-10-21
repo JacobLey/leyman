@@ -33,7 +33,7 @@ export const singletonScope = Symbol('singleton');
 /**
  * Same bevahior as singleton scope.
  *
- * Can be "eagerly" instantiated during container setup via `container.preload() / container.preloadSync`.
+ * Can be "eagerly" instantiated during container setup via `container.preloadAsync()` (or `container.preload()` on a `SyncContainer`).
  * Helpful to catch any errors and peform potentially expensive calculations/loads
  * before any interfaces are in use.
  *

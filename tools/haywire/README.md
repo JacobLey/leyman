@@ -780,7 +780,7 @@ const resId = identifier<express.Response>();
 
 const factory = createContainerFactory(
     createModule(
-        bind(A).withDependencies([reqId, resId])
+        bind(A).withDependencies([reqId, resId]).withConstructorProvider()
     )
 );
 
