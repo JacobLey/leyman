@@ -27,6 +27,14 @@ suite('EnumSchema', () => {
             expect(validator('b')).to.equal(false);
         });
 
+        test('No values', () => {
+            const schema = enumSchema();
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<never>();
+            expect(schema.toJSON()).to.deep.equal({ enum: [] });
+            expect(schema.toJSON({ openApi30: true })).to.deep.equal({ not: {} });
+        });
+
         suite('Single value', () => {
             const withSchema = before(() => ({
                 schema: enumSchema({ enum: [123] })

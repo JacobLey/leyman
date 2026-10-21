@@ -125,6 +125,9 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
 
         if (enums.length === 1 && !params.openApi30) {
             base.const = enums[0];
+        } else if (enums.length === 0 && params.openApi30) {
+            // OpenAPI 3.0 requires at least one `enum` value, so match nothing like `neverSchema()`
+            base.not = {};
         } else {
             base.enum = enums;
         }
