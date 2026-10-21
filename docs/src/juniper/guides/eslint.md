@@ -51,6 +51,7 @@ What it checks:
 - Calls to the schema factories imported from `juniper`: `objectSchema()`, `stringSchema()` and the rest, `ObjectSchema.create()` and the other classes' `create()`, and `defineRecursive()`. Named, renamed and namespace imports are all followed.
 - Inside any function, and in non-static class fields, which run once per instance. Static fields run once, so they're fine.
 - Schemas built in a `defineRecursive` callback are fine too, since it runs once, when the definition is built.
+- So are schemas built in a function that's called immediately at module scope, like `const a = (() => objectSchema())();`, since it also runs once.
 
 What it doesn't check:
 

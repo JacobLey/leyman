@@ -139,8 +139,8 @@ export const topLevelSchema: Rule.RuleModule = {
         };
 
         /**
-         * Whether code at `node` runs more than once: inside a function, other than a
-         * `defineRecursive` build callback (which runs once), or in a class instance field.
+         * Whether code at `node` runs more than once: inside a function, other than one called
+         * immediately or a `defineRecursive` build callback (which run once), or in a class instance field.
          *
          * @param node - node to check
          * @returns true if not at module scope
@@ -157,11 +157,13 @@ export const topLevelSchema: Rule.RuleModule = {
                 }
                 if (functionTypes.has(parent.type)) {
                     const call = parent.parent;
-                    const isBuildCallback =
+                    const isRunOnce =
                         call?.type === 'CallExpression' &&
-                        (call.arguments as readonly unknown[]).includes(parent) &&
-                        factoryOf(call) === 'defineRecursive';
-                    if (!isBuildCallback) {
+                        // Called immediately, e.g. `const a = (() => objectSchema())();`
+                        (call.callee === parent ||
+                            ((call.arguments as readonly unknown[]).includes(parent) &&
+                                factoryOf(call) === 'defineRecursive'));
+                    if (!isRunOnce) {
                         return true;
                     }
                 }

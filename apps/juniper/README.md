@@ -913,7 +913,7 @@ const bodySchema = objectSchema({ properties: { name: stringSchema() } });
 const handler = (body: unknown) => bodySchema;
 ```
 
-It checks calls to the schema factories (`objectSchema()`, `ObjectSchema.create()`, `defineRecursive()`, ...) imported from `juniper`. Schemas built in a `defineRecursive` callback are fine, since it runs once. Methods called on an existing schema (`.toJSON()`, `.pick()`, ...) aren't checked.
+It checks calls to the schema factories (`objectSchema()`, `ObjectSchema.create()`, `defineRecursive()`, ...) imported from `juniper`. Schemas built in a `defineRecursive` callback, or in a function called immediately at module scope, are fine, since those run once. Methods called on an existing schema (`.toJSON()`, `.pick()`, ...) aren't checked.
 
 A helper that builds a schema from its arguments, called only at module scope, is reported too. Disable the rule for that helper with a comment saying so.
 

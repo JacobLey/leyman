@@ -66,6 +66,10 @@ ruleTester.run('juniper/top-level-schema', plugin.rules['top-level-schema'], {
             name: 'Other objects',
             code: "import { objectSchema } from 'juniper';\nexport const f = a => [a()(), a.b.create(), a().create(), a.b.c.create()];",
         },
+        {
+            name: 'Function called immediately',
+            code: "import { objectSchema } from 'juniper';\nexport const a = (() => objectSchema())();\nexport const b = (function () { return objectSchema(); })();",
+        },
     ],
     invalid: [
         {
@@ -106,6 +110,11 @@ ruleTester.run('juniper/top-level-schema', plugin.rules['top-level-schema'], {
         {
             name: 'Inside a function in a defineRecursive callback',
             code: "import { defineRecursive, objectSchema } from 'juniper';\nexport const a = defineRecursive('A', () => { const f = () => objectSchema(); return f(); });",
+            errors: [{ messageId: 'topLevel' }],
+        },
+        {
+            name: 'Function called immediately, inside a function',
+            code: "import { objectSchema } from 'juniper';\nexport const f = () => (() => objectSchema())();",
             errors: [{ messageId: 'topLevel' }],
         },
         {
