@@ -21,7 +21,7 @@ export const lifecycleCommand: Command<LifecycleCommandExtendedInput> = {
         yargs
             .options({
                 configFile: {
-                    describe: 'File that exports data content to populate',
+                    describe: 'Config file with `stages` and `bindings`',
                     type: 'string',
                     default: 'lifecycle.json',
                 },
