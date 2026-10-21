@@ -84,16 +84,31 @@ type IdContainerFailures<C extends GenericContainer, Id extends GenericHaywireId
               : 'containerDoesNotOutputId'
           : 'notAContainer')
     | (NonNullable<HaywireIdType<OutputHaywireId<Id>>> extends Main ? never : 'idIsNotMain');
+/**
+ * Options for `launch()`.
+ */
+export interface LaunchOptions {
+    /**
+     * Dispose the container (`container.disposeAsync()`) once `main()` resolves or rejects, or when getting the
+     * instance fails. Defaults to `false`, for a `main()` that returns while what it started (like a server) keeps running.
+     *
+     * If disposing fails after `main()` rejected, the script rejects with a `SuppressedError` of both, as `await using` does.
+     */
+    dispose?: boolean;
+}
+
 type IdLauncher = <C extends GenericContainer, IdOrClass extends GenericHaywireId | IsClass>(
     container: C,
-    id: IdOrClass & Invalid<IdContainerFailures<C, IdOf<IdOrClass>>>
+    id: IdOrClass & Invalid<IdContainerFailures<C, IdOf<IdOrClass>>>,
+    options?: LaunchOptions
 ) => WrapperMain;
 
 export const launch = ((
-    container: {
+    container: AsyncDisposable & {
         getAsync: (val: unknown) => Promise<Main>;
     },
-    id = EntryScript
+    id = EntryScript,
+    { dispose = false }: LaunchOptions = {}
 ): WrapperMain =>
     /**
      * Anonymous class to be picked up as a subclass of EntryScript.
@@ -108,7 +123,27 @@ export const launch = ((
             return container.getAsync(identifier(id).baseId());
         }
         public static override async main(argv: string[]): Promise<void> {
-            const main = await this.getOriginal();
-            return main.main(argv);
+            if (!dispose) {
+                const main = await this.getOriginal();
+                await main.main(argv);
+                return;
+            }
+            // What `await using` does, written out: swc would compile it to imports from `@swc/helpers`
+            try {
+                const main = await this.getOriginal();
+                await main.main(argv);
+            } catch (err) {
+                try {
+                    await container[Symbol.asyncDispose]();
+                } catch (disposeErr) {
+                    throw new SuppressedError(
+                        disposeErr,
+                        err,
+                        'Disposing the container failed, after main() failed'
+                    );
+                }
+                throw err;
+            }
+            await container[Symbol.asyncDispose]();
         }
     }) as EntryLauncher & IdLauncher;

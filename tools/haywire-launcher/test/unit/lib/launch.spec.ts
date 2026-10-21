@@ -7,7 +7,9 @@ import {
     createContainer,
     createModule,
     HaywireContainerValidationError,
+    HaywireProviderError,
     identifier,
+    singletonScope,
 } from 'haywire';
 import { launch } from 'haywire-launcher';
 import { afterEach, beforeEach, suite, test } from 'mocha-chain';
@@ -176,6 +178,113 @@ suite('launch', () => {
             const entry = launch(container, id.named('static'));
 
             await expect(entry.main(['--foo', 'bar'])).to.be.rejectedWith(MainNotImplementedError);
+        });
+    });
+
+    suite('dispose', () => {
+        class Resource {
+            public readonly resource = true;
+        }
+
+        const withContainer = beforeEach(() => {
+            const failures: { main?: Error; dispose?: Error } = {};
+            const fakeMain = fake<[string[]], Promise<void>>(async () => {
+                if (failures.main) {
+                    throw failures.main;
+                }
+            });
+            const disposer = fake<[Resource], Promise<void>>(async () => {
+                if (failures.dispose) {
+                    throw failures.dispose;
+                }
+            });
+            class Cli implements Main {
+                public readonly resource: Resource;
+                public main = fakeMain;
+                public constructor(resource: Resource) {
+                    this.resource = resource;
+                }
+            }
+            const container = createContainer(
+                createModule(
+                    bind(Resource)
+                        .withConstructorFactory()
+                        .scoped(singletonScope)
+                        .withDisposer(disposer)
+                ).addBinding(bind(Cli).withDependencies([Resource]).withConstructorProvider())
+            );
+            return { cli: Cli, container, disposer, failures, fakeMain };
+        });
+
+        withContainer.test('Not disposed by default', async ({ cli, container, disposer }) => {
+            await launch(container, cli).main([]);
+
+            expect(disposer.called).to.equal(false);
+            // Still usable
+            expect(await container.getAsync(Resource)).to.be.an.instanceOf(Resource);
+        });
+
+        withContainer.test(
+            'Disposed once main resolves',
+            async ({ cli, container, disposer, fakeMain }) => {
+                await launch(container, cli, { dispose: true }).main(['--foo']);
+
+                expect(fakeMain.calledWith(['--foo'])).to.equal(true);
+                expect(disposer.calledOnce).to.equal(true);
+                expect(disposer.calledAfter(fakeMain)).to.equal(true);
+            }
+        );
+
+        withContainer.test(
+            'Disposed when main rejects',
+            async ({ cli, container, disposer, failures }) => {
+                const error = new Error('<main>');
+                failures.main = error;
+
+                await expect(launch(container, cli, { dispose: true }).main([])).to.be.rejectedWith(
+                    error
+                );
+                expect(disposer.calledOnce).to.equal(true);
+            }
+        );
+
+        withContainer.test(
+            'Main and disposer both failing reject with both',
+            async ({ cli, container, failures }) => {
+                const mainError = new Error('<main>');
+                const disposeError = new Error('<dispose>');
+                failures.main = mainError;
+                failures.dispose = disposeError;
+
+                const thrown: unknown = await expect(
+                    launch(container, cli, { dispose: true }).main([])
+                ).to.be.rejectedWith(SuppressedError);
+                expect(thrown).to.include({ error: disposeError, suppressed: mainError });
+            }
+        );
+
+        test('Disposed when getting the instance fails', async () => {
+            const disposer = fake.resolves<[Resource], Promise<void>>(undefined);
+            const id = identifier<Main>();
+            const container = createContainer(
+                createModule(
+                    bind(Resource)
+                        .withConstructorFactory()
+                        .scoped(singletonScope)
+                        .withDisposer(disposer)
+                ).addBinding(
+                    bind(id)
+                        .withDependencies([Resource])
+                        .withProvider(() => {
+                            throw new Error('<provider>');
+                        })
+                )
+            );
+
+            await expect(launch(container, id, { dispose: true }).main([])).to.be.rejectedWith(
+                HaywireProviderError
+            );
+            expect(disposer.calledOnce).to.equal(true);
         });
     });
 

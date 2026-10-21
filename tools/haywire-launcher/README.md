@@ -15,7 +15,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 - [Example](#example)
 - [Usage](#usage)
 - [API](#api)
-  - [launch](#launchcontainer-id)
+  - [launch](#launchcontainer-id-options)
 - [Also See](#also-see)
 
 ## Install
@@ -67,7 +67,7 @@ The problem `haywire-launcher` solves: naively calling `container.getAsync(Entry
 
 ## API
 
-### `launch(container, id?)`
+### `launch(container, id?, options?)`
 
 Returns an `EntryScript` subclass that, when invoked as the entry point, resolves the given id from the container and delegates execution to it.
 
@@ -77,6 +77,7 @@ Returns an `EntryScript` subclass that, when invoked as the entry point, resolve
 |-----------|------|---------|-------------|
 | `container` | `Container` | — | Required. A haywire async container capable of providing the target instance. |
 | `id` | `HaywireId` or class | `EntryScript` | Optional. The haywire id, or class, to request from the container. Must resolve to a type implementing `Main`. |
+| `options.dispose` | `boolean` | `false` | Optional. Dispose the container (`container.disposeAsync()`) once `main()` resolves or rejects, or when getting the id fails. Off by default, for a `main()` that returns while what it started (like a server) keeps running. If disposing fails after `main()` rejected, rejects with a `SuppressedError` of both, as `await using` does. |
 
 **Returns** `WrapperMain` (an `EntryScript` subclass) — a class that can be exported as `default` and will be picked up by the `entry-script` lifecycle.
 

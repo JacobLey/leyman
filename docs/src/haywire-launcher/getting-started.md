@@ -87,6 +87,19 @@ export { default } from './dist/bin.js';
 
 `launch(container)` gets `EntryScript` itself from the container, for a container that binds `EntryScript` to a subclass.
 
+## Disposing the container
+
+By default the container is never disposed: a `main()` often starts a server and returns while it keeps running, so `launch()` can't know when the program is done. For a script that is done once `main()` returns, pass `dispose: true`. The container's singletons are then released (pools closed, connections ended) when `main()` resolves or rejects:
+
+```ts
+// @noErrors
+import { launch } from 'haywire-launcher';
+import { Migrate } from './migrate.js';
+import { container } from './container.js';
+
+export default launch(container, Migrate, { dispose: true });
+```
+
 ## Type errors
 
 `launch()` checks the container and id at compile time, and the error says what's wrong:
