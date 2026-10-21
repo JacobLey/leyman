@@ -7,7 +7,7 @@
 #   ~/code/leyman/                    <- main checkout (owns .git)
 #   ~/code/leyman-worktrees/
 #     <branch>/                       <- git worktrees
-#     .shared/                        <- pnpm store, Nx cache, Claude config, plans
+#     .shared/                        <- pnpm store, Nx cache, Claude and gh config, plans
 #
 # Both folders are bind-mounted into the container at the SAME absolute paths as on the
 # host, so git's absolute worktree links resolve on both sides. This writes those paths
@@ -39,7 +39,7 @@ if [ ! -e "$shared/claude-config" ] && [ -d "$main_checkout/.claude-config" ]; t
     echo "Copying $main_checkout/.claude-config -> $shared/claude-config"
     cp -R "$main_checkout/.claude-config" "$shared/claude-config"
 fi
-mkdir -p "$shared/pnpm-store" "$shared/claude-config"
+mkdir -p "$shared/pnpm-store" "$shared/claude-config" "$shared/gh-config"
 
 # Plans shared by every worktree, kept out of git: `plans` is a gitignored symlink
 mkdir -p "$shared/plans"

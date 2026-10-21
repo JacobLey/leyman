@@ -15,6 +15,8 @@ ARG PLAYWRIGHT_VERSION=1.62.1
 # Client tools (`psql`, `pg_dump`) from the PostgreSQL apt repository, matching the `postgres` sidecar's major version:
 # `pg_dump` must be at least the server's. See `postgresMajor` in `dagger/main.go`
 ARG POSTGRES_MAJOR=18
+# GitHub CLI, for local use only (not mirrored in Dagger). Only bump to a release at least 7 days old
+ARG GH_VERSION=2.102.0
 
 RUN apt-get update \
     && apt-get upgrade -y \
@@ -23,6 +25,11 @@ RUN apt-get update \
 RUN apt-get install --yes --no-install-recommends postgresql-common \
     && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y \
     && apt-get install --yes --no-install-recommends postgresql-client-${POSTGRES_MAJOR}
+
+# Install the GitHub CLI. GH_CONFIG_DIR is set in docker-compose.yml so its login is shared across worktrees
+RUN wget "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VERSION}_linux_$(dpkg --print-architecture).deb" -O /tmp/gh.deb \
+    && apt-get install --yes /tmp/gh.deb \
+    && rm /tmp/gh.deb
 
 ARG USER=leyman
 RUN adduser $USER && \
