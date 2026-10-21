@@ -1,3 +1,4 @@
+import { pathToFileURL } from 'node:url';
 import { defaultImport } from 'default-import';
 import { MainNotImplementedError } from '#not-implemented-error';
 import { args, bin } from '#process-argv';
@@ -62,16 +63,17 @@ const isEntryScript = (x: object): x is typeof EntryScript =>
  * Should not be called elsewhere.
  *
  * @private
- * @param url - Node.js process entry point.
+ * @param path - Node.js process entry point.
  */
-export const runAsMain = async (url?: string): Promise<void> => {
-    if (!url) {
+export const runAsMain = async (path?: string): Promise<void> => {
+    if (!path) {
         return;
     }
 
     let rawEntryScript: unknown = null;
     try {
-        rawEntryScript = await import(url);
+        // As a URL, since a path may contain characters that mean something else in one (e.g. `#`)
+        rawEntryScript = await import(pathToFileURL(path).href);
     } catch {
         // Not importable, so not an entry script
     }

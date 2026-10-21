@@ -1,3 +1,4 @@
+import { mkdir, rm, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
@@ -26,6 +27,24 @@ suite('EntryScript', () => {
             );
 
             expect(tracker.value).to.equal(entryScriptInstance);
+        });
+
+        test('Path with characters that are special in a URL', async () => {
+            const dir = Path.resolve(import.meta.dirname, '../../data/has#hash%20');
+            await mkdir(dir, { recursive: true });
+            try {
+                const file = Path.join(dir, 'entry.js');
+                await writeFile(
+                    file,
+                    "export { EntryScriptStatic as default } from '../tracker.js';\n"
+                );
+
+                await runAsMain(file);
+
+                expect(tracker.value).to.equal(EntryScriptStatic);
+            } finally {
+                await rm(dir, { recursive: true, force: true });
+            }
         });
 
         suite('failure', () => {
