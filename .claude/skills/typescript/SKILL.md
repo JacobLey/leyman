@@ -24,7 +24,7 @@ The `tsc` target transpiles `src/` → `dist/` with SWC and runs `tsc` in parall
 
 The target output is usually the latest ESNext. That is generally compatible with what is supported by server JS runtimes like Node. Frontend JS code will have its own packaging and backwards compatibilty support that is implemented separately.
 
-Even at ESNext, SWC rewrites a few constructs into calls to `@swc/helpers`: `using`/`await using` declarations, and `export *` in CommonJS output. Source code that uses them needs `@swc/helpers` as a runtime dependency (see `tools/common-proxy`). Tests are compiled with `-C jsc.externalHelpers=false`, which inlines the helpers, so tests can use them freely.
+Even at ESNext, SWC rewrites a few constructs into calls to `@swc/helpers`: `using`/`await using` declarations, and `export *` in CommonJS output. Source code that uses them needs `@swc/helpers` as a runtime dependency. Tests are compiled with `-C jsc.externalHelpers=false`, which inlines the helpers, so tests can use them freely.
 
 ## TypeScript 6 and 7
 

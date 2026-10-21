@@ -39,7 +39,6 @@ See each package's README.md for full usage documentation.
 
 | Package | Description |
 |---------|-------------|
-| [`common-proxy`](../../../tools/common-proxy/) | Synchronously expose ESM-backed functions from CommonJS |
 | [`constant-consistent-hash`](../../../tools/constant-consistent-hash/constant-consistent-hash/) | Stateless consistent hashing in constant time, with minimal key movement |
 | [`constant-consistent-hash-go`](../../../tools/constant-consistent-hash/go-impl/) | Go implementation of constant-consistent-hash, tested against the shared test vectors (private, Go) |
 | [`constant-consistent-hash-test-vectors`](../../../tools/constant-consistent-hash/test-vectors/) | Test vectors shared by every constant-consistent-hash implementation (private) |

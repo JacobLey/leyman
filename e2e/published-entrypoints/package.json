@@ -26,7 +26,6 @@
     "@typescript/native": "catalog:",
     "barrelify": "workspace:^",
     "c8": "catalog:",
-    "common-proxy": "workspace:^",
     "constant-consistent-hash": "workspace:^",
     "generated-signature": "workspace:^",
     "genever": "workspace:^",

@@ -29,9 +29,6 @@
       "path": "./tools/enum-to-array"
     },
     {
-      "path": "./tools/common-proxy"
-    },
-    {
       "path": "./tools/entry-script"
     },
     {

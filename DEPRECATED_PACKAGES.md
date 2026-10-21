@@ -6,6 +6,7 @@ To restore one, check out its source from the "Last source" commit.
 
 | Package | Last published | Removed | Last source | Reason |
 |---|---|---|---|---|
+| [`common-proxy`](https://www.npmjs.com/package/common-proxy) | 1.0.1 | 2026-10-21 | [`tools/common-proxy`](https://github.com/JacobLey/leyman/tree/2d19550adb17a31959f694cb34a137b6c44bf065/tools/common-proxy) | Node 22.12 and later can `require()` ESM directly, and every package in the repo requires Node 24, so wrapping an ESM import for CommonJS is no longer needed. |
 | [`named-patch`](https://www.npmjs.com/package/named-patch) | 2.0.1 | 2026-10-12 | [`tools/named-patch`](https://github.com/JacobLey/leyman/tree/e895407fd4c111c8b456e393101195027a0d3e2d/tools/named-patch) | Unused. Wrapping production functions so tests can stub them adds test-only machinery to runtime code; dependency injection is used instead. |
 | [`sinon-typed-stub`](https://www.npmjs.com/package/sinon-typed-stub) | 1.0.1 | 2026-10-12 | [`tools/sinon-typed-stub`](https://github.com/JacobLey/leyman/tree/cdb6e1892d373836a70792a540e03ccf3eb4ef26/tools/sinon-typed-stub) | Unused. Sinon already types stubs on existing objects, and tests no longer inject standalone stubs. |
 | [`nx-plugin-handler`](https://www.npmjs.com/package/nx-plugin-handler) | 0.2.1 | 2026-10-04 | [`tools/nx-plugin-handler`](https://github.com/JacobLey/leyman/tree/c63b928a3451c11def31fd3a381669700585894d/tools/nx-plugin-handler) | Unused, and forwarding to a project-local plugin works against how Nx resolves plugins. |

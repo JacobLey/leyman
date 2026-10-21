@@ -12,7 +12,6 @@ body:
       description: Which package is this for?
       options:
         - barrelify
-        - common-proxy
         - default-import
         - entry-script
         - enum-to-array
