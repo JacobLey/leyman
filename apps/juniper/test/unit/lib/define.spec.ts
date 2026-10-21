@@ -134,6 +134,49 @@ suite('define', () => {
         });
     });
 
+    suite('Each definition is serialized once', () => {
+        test('Deeply shared definitions serialize quickly', () => {
+            // Serializing every path separately takes 4^11 steps, seconds rather than milliseconds
+            // Typed as the leaf: each level's type nests the one below, which the loop can't express
+            let schema = stringSchema().define('Level0');
+            for (let i = 1; i <= 11; ++i) {
+                schema = objectSchema({ properties: { a: schema, b: schema } }).define(
+                    `Level${i}`
+                ) as unknown as typeof schema;
+            }
+
+            const $defs = schema.toJSON().$defs as Record<string, unknown>;
+            expect(Object.keys($defs)).to.have.length(12);
+            expect($defs.Level11).to.deep.equal({
+                type: 'object',
+                properties: { a: { $ref: '#/$defs/Level10' }, b: { $ref: '#/$defs/Level10' } },
+            });
+        });
+
+        test('A definition reused from a comparison is still collected', () => {
+            const team = objectSchema({
+                properties: { name: stringSchema(), lead: user },
+                required: ['name'],
+            }).define('Team');
+
+            // `team` is inlined, so `user` is first serialized only to compare with `Team`'s definition
+            expect(
+                objectSchema({ properties: { team: team.omit(['lead']), user } }).toJSON()
+            ).to.deep.equal({
+                type: 'object',
+                properties: {
+                    team: {
+                        type: 'object',
+                        properties: { name: { type: 'string' } },
+                        required: ['name'],
+                    },
+                    user: { $ref: '#/$defs/User' },
+                },
+                $defs: { Address: addressJson, User: userJson },
+            });
+        });
+    });
+
     test('Different schemas with the same name fail', () => {
         const other = objectSchema().define('User');
         expect(() => objectSchema({ properties: { a: user, b: other } }).toJSON()).to.throw(

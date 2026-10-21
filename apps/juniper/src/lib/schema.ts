@@ -106,6 +106,14 @@ export type ConditionalResult<T, E = T> =
       };
 
 /**
+ * A serialized reference to a definition, with the definitions it registered.
+ */
+interface CachedReference {
+    json: JsonSchema<unknown>;
+    uses: ReadonlyMap<string, AbstractSchema<SchemaGenerics<unknown>>>;
+}
+
+/**
  * Definitions referenced while serializing, collected so they can be emitted once.
  */
 export interface Definitions {
@@ -120,6 +128,16 @@ export interface Definitions {
         string,
         { schema: AbstractSchema<SchemaGenerics<unknown>>; json: JsonSchema<unknown> | null }
     >;
+    /**
+     * Serialized references to definitions, by schema and composition. A definition used in many places is then only
+     * serialized once, rather than once per path to it (twice per level of nested definitions).
+     * Each keeps the definitions it registered, to register them again when it is reused.
+     */
+    cache: WeakMap<AbstractSchema<SchemaGenerics<unknown>>, Map<string, CachedReference>>;
+    /**
+     * Definitions registered while serializing each cached reference, innermost last.
+     */
+    uses: Map<string, AbstractSchema<SchemaGenerics<unknown>>>[];
 }
 
 export interface SerializationParams {
@@ -176,6 +194,8 @@ const createDefinitions = ({
 }): Definitions => ({
     path: definitionsPath ?? (openApi30 ? COMPONENTS_PATH : DEFS_PATH),
     schemas: new Map(),
+    cache: new WeakMap(),
+    uses: [],
 });
 
 /**
@@ -1039,16 +1059,19 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         schema: AbstractSchema<SchemaGenerics<T2>>,
         params: SerializationParams
     ): JsonSchema<T2> {
+        if (schema.#ref?.name && !schema.#ref.recursive && params.definitions) {
+            return AbstractSchema.#getCachedReference(schema, params, params.definitions);
+        }
         const baseSchema = schema.toSchema(params);
         if (!schema.#ref) {
             return baseSchema;
         }
-        const refParams: SerializationParams = {
-            openApi30: params.openApi30,
-            definitions: params.definitions,
-        };
 
         if (schema.#ref.recursive) {
+            const refParams: SerializationParams = {
+                openApi30: params.openApi30,
+                definitions: params.definitions,
+            };
             const definitions = params.definitions!;
             AbstractSchema.#registerDefinition(
                 definitions,
@@ -1068,28 +1091,100 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                 : { ...annotations, $ref };
         }
 
+        return AbstractSchema.#getReference(schema, baseSchema, params);
+    }
+
+    /**
+     * Serialize a reference to a definition (see {@link #getReference}), cached for the rest of the serialization.
+     *
+     * @param schema - juniper schema, a reference to a definition
+     * @param params - serialization params
+     * @param definitions - definitions collector
+     * @returns JSON Schema
+     */
+    static #getCachedReference<T2>(
+        schema: AbstractSchema<SchemaGenerics<T2>>,
+        params: SerializationParams,
+        definitions: Definitions
+    ): JsonSchema<T2> {
+        const key = params.composition
+            ? JSON.stringify([params.composition.type, params.composition.nullable])
+            : '';
+        const cached = definitions.cache.get(schema)?.get(key);
+        if (cached) {
+            for (const [name, definitionSchema] of cached.uses) {
+                AbstractSchema.#registerDefinition(definitions, name, definitionSchema, {
+                    openApi30: params.openApi30,
+                    definitions,
+                });
+            }
+            return cached.json as JsonSchema<T2>;
+        }
+
+        const uses = new Map<string, AbstractSchema<SchemaGenerics<unknown>>>();
+        definitions.uses.push(uses);
+        let json: JsonSchema<T2>;
+        try {
+            json = AbstractSchema.#getReference(schema, schema.toSchema(params), params);
+        } finally {
+            definitions.uses.pop();
+        }
+        for (const [name, definitionSchema] of uses) {
+            definitions.uses.at(-1)?.set(name, definitionSchema);
+        }
+        const cache = definitions.cache.get(schema) ?? new Map<string, CachedReference>();
+        cache.set(key, { json, uses });
+        definitions.cache.set(schema, cache);
+        return json;
+    }
+
+    /**
+     * Serialize a reference to another schema: a `.ref()` path, or a definition (`.define()`), as a `$ref`.
+     * A definition is inlined instead when the schema changed what it accepts.
+     *
+     * @param schema - juniper schema, with a non-recursive reference
+     * @param baseSchema - the schema serialized itself
+     * @param params - serialization params
+     * @returns JSON Schema
+     */
+    static #getReference<T2>(
+        schema: AbstractSchema<SchemaGenerics<T2>>,
+        baseSchema: JsonSchema<T2>,
+        params: SerializationParams
+    ): JsonSchema<T2> {
+        const ref = schema.#ref as Exclude<
+            SchemaRef<AbstractSchema<SchemaGenerics<T2>>>,
+            { schema: null }
+        >;
+        const refParams: SerializationParams = {
+            openApi30: params.openApi30,
+            definitions: params.definitions,
+        };
+
         // Only compared against, never emitted, so definitions it uses are collected separately
-        const refSchema = schema.#ref.schema.toSchema({
+        params.definitions?.uses.push(new Map());
+        const refSchema = ref.schema.toSchema({
             openApi30: params.openApi30,
             definitions: params.definitions && {
-                path: params.definitions.path,
+                ...params.definitions,
                 schemas: new Map(params.definitions.schemas),
             },
         });
+        params.definitions?.uses.pop();
         // From the schema's own class: `this` is not always a schema class (e.g. when called via `getSchema`)
         const defaultValues = (): Record<string, unknown> =>
             (schema.constructor as typeof AbstractSchema).getDefaultValues(params);
-        if (schema.#ref.name === null) {
+        if (ref.name === null) {
             return mergeRef<T2>({
                 baseSchema,
                 refSchema,
                 defaultValues: defaultValues(),
-                refPath: schema.#ref.path,
+                refPath: ref.path,
             });
         }
 
         const definitions = params.definitions!;
-        const { name } = schema.#ref;
+        const { name } = ref;
         const refPath = definitions.path + name;
         const { $ref, ...differences } = mergeRef<T2>({
             baseSchema,
@@ -1108,7 +1203,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         }
 
         const constraintKeys = Object.keys(constraints);
-        const definitionSchema = schema.#ref.schema;
+        const definitionSchema = ref.schema;
         const register = (): void => {
             AbstractSchema.#registerDefinition(definitions, name, definitionSchema, refParams);
         };
@@ -1151,6 +1246,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         schema: AbstractSchema<SchemaGenerics<any>>,
         params: SerializationParams
     ): void {
+        definitions.uses.at(-1)?.set(name, schema);
         const existing = definitions.schemas.get(name);
         if (!existing) {
             const definition: {
