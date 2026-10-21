@@ -22,6 +22,7 @@ export interface GeneratorIdentity {
 export const generatorIdentity = async (options: {
     readonly name?: string | undefined;
     readonly openApi30?: boolean | undefined;
+    readonly parameterDefaults?: boolean | undefined;
     readonly signed?: boolean | undefined;
     readonly strict?: boolean | undefined;
     readonly typedMinItems?: number | undefined;
@@ -34,6 +35,7 @@ export const generatorIdentity = async (options: {
     const resolved = {
         name: options.name ?? 'Schema',
         openApi30: options.openApi30 ?? false,
+        parameterDefaults: options.parameterDefaults ?? false,
         signed: options.signed ?? false,
         strict: options.strict ?? true,
         typedMinItems: options.typedMinItems ?? defaultTypedMinItems,

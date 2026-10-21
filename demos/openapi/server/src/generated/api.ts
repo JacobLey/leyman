@@ -280,3 +280,43 @@ export type OperationResult<Id extends keyof Operations> = {
         readonly body: OperationJson<Operations[Id]['responses'][Status]>;
     };
 }[keyof Operations[Id]['responses']];
+
+/**
+ * Each operation's `parameters`, as a validator that fills in defaults leaves them.
+ */
+type OperationRequestParameters = {
+    listNotes: {
+        query: {
+            limit: number;
+        };
+        header?: never;
+        path?: never;
+        cookie?: never;
+    };
+    createNote: {
+        query?: never;
+        header?: never;
+        path?: never;
+        cookie?: never;
+    };
+    getNote: {
+        query?: never;
+        header?: never;
+        path: {
+            noteId: string;
+        };
+        cookie?: never;
+    };
+};
+
+/**
+ * What a server's handler gets for an operation, once a validator that fills in defaults (such as Ajv's `useDefaults`) has run: as `OperationInput`, but a parameter whose schema has a `default` is always there.
+ */
+export type OperationRequest<Id extends keyof Operations> = OperationField<
+    'body',
+    OperationJson<Operations[Id]['requestBody']>
+> &
+    OperationField<'path', OperationRequestParameters[Id]['path']> &
+    OperationField<'query', OperationRequestParameters[Id]['query']> &
+    OperationField<'header', OperationRequestParameters[Id]['header']> &
+    OperationField<'cookie', OperationRequestParameters[Id]['cookie']>;

@@ -15,6 +15,7 @@ genever <input> [options]
 | `-o`, `--output` | input path with `.ts` | Path of the TypeScript file to write. `.json`, `.yaml` and `.yml` are replaced. |
 | `--name` | `Schema` | Name of the root schema's type. Not used for an OpenAPI document. |
 | `--strict` | `true` | Fail on likely mistakes. Disable with `--no-strict`. |
+| `--parameter-defaults` | `false` | With an OpenAPI document, also write `OperationRequest`, with parameters' defaults filled in. |
 | `--typed-min-items` | `3` | Largest `minItems` typed as required items. `0` turns it off. |
 | `--open-api-30` | `false` | Read the schema as an OpenAPI 3.0 schema. An OpenAPI document's own version is used instead. |
 | `--ci` | `true` in CI | Fail if the output file is not up to date. Implies `--dry-run`. |
@@ -38,6 +39,7 @@ Generate TypeScript types from a JSON Schema.
 | `options.name` | `string` | `'Schema'` | Name of the root schema's type. Not used for an OpenAPI document. |
 | `options.strict` | `boolean` | `true` | Fail on likely mistakes. See [Strict mode](/genever/guides/strict-mode). |
 | `options.baseUri` | `string` | a placeholder | URI the schema was read from, which relative `$id`s and `$ref`s resolve against. |
+| `options.parameterDefaults` | `boolean` | `false` | With an OpenAPI document, also generate `OperationRequest<Id>`: what a handler gets once a validator that fills in defaults has run. |
 | `options.typedMinItems` | `number` | `3` | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper. |
 | `options.openApi30` | `boolean` | `false` | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead. |
 
@@ -69,7 +71,7 @@ Read a JSON Schema file, or OpenAPI document, in JSON or YAML, and write its typ
 | `options.force` | `boolean` | `false` | With `signed`, overwrite the output file anyway. Use it once to start signing an existing file. |
 | `options.manifest` | `string` | — | Path of a manifest (relative to `cwd`) to record the output and hashes of its inputs in. With `check`, an output matching its entry is up to date without loading anything. See [References](/genever/guides/references#checking-without-fetching). |
 | `options.fetch` | `boolean \| string[]` | `true` | Load `http:` and `https:` URLs the schema references, or only those of the hosts listed. Otherwise only files are loaded. See [References to other files](/genever/guides/references). |
-| `options.name`, `options.strict`, `options.openApi30`, `options.typedMinItems` | | | Same as [`genever`](#genever-schema-options). |
+| `options.name`, `options.strict`, `options.openApi30`, `options.parameterDefaults`, `options.typedMinItems` | | | Same as [`genever`](#genever-schema-options). |
 
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
 

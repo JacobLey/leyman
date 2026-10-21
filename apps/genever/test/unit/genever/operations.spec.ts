@@ -1,3 +1,4 @@
+import type { GeneverOptions } from 'genever';
 import { expect } from '@leyman/expect';
 import { genever, GeneverInvalidSchemaError } from 'genever';
 import { suite, test } from 'mocha-chain';
@@ -27,9 +28,14 @@ const document = (
  *
  * @param input - OpenAPI document
  * @param expected - TypeScript source of each expected type, keyed by an expression of `G`, the generated module
+ * @param options - genever's options
  */
-const expectOperations = (input: unknown, expected: Readonly<Record<string, string>>): void => {
-    const source = genever(input);
+const expectOperations = (
+    input: unknown,
+    expected: Readonly<Record<string, string>>,
+    options: GeneverOptions = {}
+): void => {
+    const source = genever(input, options);
     const assertion = [
         ...assertionImports,
         "import type * as G from './generated.js';",
@@ -301,6 +307,63 @@ suite('OpenAPI operations', () => {
                         "import type { OperationInput } from './generated.js';\nexport type Input = OperationInput<'getUsers'>;",
                 })
             ).to.have.length(1);
+        });
+
+        suite('with parameterDefaults', () => {
+            const defaults = document(
+                {
+                    '/users/{id}': {
+                        get: {
+                            operationId: 'listUsers',
+                            parameters: [
+                                {
+                                    name: 'id',
+                                    in: 'path',
+                                    required: true,
+                                    schema: { type: 'string' },
+                                },
+                                {
+                                    name: 'limit',
+                                    in: 'query',
+                                    schema: { type: 'integer', default: 20 },
+                                },
+                                { name: 'q', in: 'query', schema: { type: 'string' } },
+                                {
+                                    name: 'X-Page',
+                                    in: 'header',
+                                    schema: { $ref: '#/components/schemas/Page' },
+                                },
+                            ],
+                            responses: {},
+                        },
+                    },
+                },
+                {
+                    schemas: {
+                        User: { type: 'object', properties: { id: { type: 'string' } } },
+                        Page: { type: 'integer', default: 1 },
+                    },
+                }
+            );
+
+            test('a parameter with a default is always there for the handler', () => {
+                expectOperations(
+                    defaults,
+                    {
+                        'G.OperationRequest<"listUsers">': `{ readonly path: { id: string } } &
+                            { readonly query: { limit: number; q?: string } } &
+                            { readonly header: { "X-Page": number } }`,
+                        'G.OperationInput<"listUsers">': `{ readonly path: { id: string } } &
+                            { readonly query?: { limit?: number; q?: string } } &
+                            { readonly header?: { "X-Page"?: number } }`,
+                    },
+                    { parameterDefaults: true }
+                );
+            });
+
+            test('is off by default', () => {
+                expect(genever(defaults)).not.to.contain('OperationRequest');
+            });
         });
 
         test('a component named OperationInput keeps its name', () => {

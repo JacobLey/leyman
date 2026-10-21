@@ -100,7 +100,9 @@ if (created.status === 201) {
 }
 ```
 
-The [OpenAPI demo](/demos/openapi) builds its client and server on the same idea.
+On a server, a validator that fills in defaults (such as Ajv's `useDefaults`) leaves a parameter whose schema has a `default` always there, though `OperationInput` has it optional, for callers. With `--parameter-defaults` (`parameterDefaults: true`), genever also writes `OperationRequest<Id>`, the handler's view: as `OperationInput`, but with those parameters required, following a `$ref` to a schema's `default` too. Request bodies are left as sent: filling in their defaults is up to the validator, and isn't typed.
+
+The [OpenAPI demo](/demos/openapi) builds its client and server on the same idea, and its server's handlers take `OperationRequest`.
 
 Component schemas keep their names, so a component called `Paths` or `Operations` makes these `Paths2` or `Operations2`, and likewise for `OperationInput` and `OperationResult`. Two operations with the same `operationId` fail with a `GeneverInvalidSchemaError`.
 

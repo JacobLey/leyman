@@ -34,7 +34,7 @@ export const drizzleHandlers = (db: NotesDatabase): NotesHandlers => ({
             .from(notes)
             .orderBy(desc(notes.createdAt), desc(notes.id))
             // The spec's default, filled in by validation
-            .limit(query!.limit!);
+            .limit(query.limit);
         return { status: 200, body: { items: rows.map(row => toNote(row)) } };
     },
     createNote: async ({ body }) => {

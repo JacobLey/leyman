@@ -32,6 +32,11 @@ export interface OperationTypes {
      * Operations with an `operationId`, keyed by it.
      */
     readonly operations: TsType;
+    /**
+     * The `parameters` of each operation in `operations`, as a validator that fills in defaults leaves them: a
+     * parameter whose schema has a `default` is always there.
+     */
+    readonly requestParameters: TsType;
 }
 
 const methods = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'] as const;
@@ -41,6 +46,10 @@ interface Parameter {
     readonly name: string;
     readonly location: (typeof parameterLocations)[number];
     readonly required: boolean;
+    /**
+     * Its schema has a `default`, which a validator that fills in defaults always sets.
+     */
+    readonly hasDefault: boolean;
     readonly doc: TsDoc | null;
     readonly type: TsType;
 }
@@ -116,6 +125,7 @@ class OperationBuilder {
     readonly #context: OperationContext;
     readonly #operationsName: string;
     readonly #operations: TsProperty[] = [];
+    readonly #requestParameters: TsProperty[] = [];
     readonly #operationIds = new Set<string>();
 
     /**
@@ -140,7 +150,11 @@ class OperationBuilder {
             const item = this.#deref(raw, childPointer(pathsPointer, path));
             return property(path, this.#pathItem(item));
         });
-        return { paths: objectType(pathTypes), operations: objectType(this.#operations) };
+        return {
+            paths: objectType(pathTypes),
+            operations: objectType(this.#operations),
+            requestParameters: objectType(this.#requestParameters),
+        };
     }
 
     /**
@@ -189,6 +203,32 @@ class OperationBuilder {
                 property(mediaType, this.#media(entry, childPointer(contentPointer, mediaType)))
         );
         return property('content', objectType(media));
+    }
+
+    /**
+     * Whether a parameter's schema has a `default`, following `$ref`s to it.
+     *
+     * @param located - parameter
+     * @returns whether it does
+     */
+    #hasDefault({ value, pointer }: Located): boolean {
+        let { schema } = value;
+        let schemaPointer = childPointer(pointer, 'schema');
+        const seen = new Set<string>();
+        while (typeof schema === 'object' && schema !== null && !seen.has(schemaPointer)) {
+            seen.add(schemaPointer);
+            if ('default' in schema) {
+                return true;
+            }
+            const { $ref } = schema as SchemaObject;
+            if ($ref === undefined) {
+                return false;
+            }
+            const target = this.#context.resolve($ref, childPointer(schemaPointer, '$ref'));
+            ({ schema } = target);
+            schemaPointer = target.pointer;
+        }
+        return false;
     }
 
     /**
@@ -244,6 +284,7 @@ class OperationBuilder {
                 location: location as Parameter['location'],
                 // Path parameters are always required
                 required: location === 'path' || located.value.required === true,
+                hasDefault: this.#hasDefault(located),
                 doc: readOperationDoc(located.value),
                 type: this.#valueType(located),
             };
@@ -287,7 +328,7 @@ class OperationBuilder {
         );
     }
 
-    #operation(operation: Located, pathParameters: readonly Parameter[]): TsType {
+    #operation(operation: Located, parameters: readonly Parameter[]): TsType {
         const { value, pointer } = operation;
         const responsesPointer = childPointer(pointer, 'responses');
         const responses =
@@ -296,9 +337,8 @@ class OperationBuilder {
                 : Object.entries(readObject(value.responses, responsesPointer)).map(
                       ([status, response]) => this.#response(status, response, responsesPointer)
                   );
-        const parameters = parametersType([...pathParameters, ...this.#parameters(operation)]);
         return objectType([
-            property('parameters', parameters),
+            property('parameters', parametersType(parameters)),
             this.#requestBody(operation),
             property('responses', objectType(responses)),
         ]);
@@ -323,7 +363,8 @@ class OperationBuilder {
         }
         const pointer = childPointer(item.pointer, method);
         const operation = { value: readObject(item.value[method], pointer), pointer };
-        const type = this.#operation(operation, pathParameters);
+        const parameters = [...pathParameters, ...this.#parameters(operation)];
+        const type = this.#operation(operation, parameters);
         const doc = readOperationDoc(operation.value);
         const { operationId } = operation.value;
         if (typeof operationId !== 'string') {
@@ -337,6 +378,10 @@ class OperationBuilder {
         }
         this.#operationIds.add(operationId);
         this.#operations.push(property(operationId, type, { doc }));
+        const defaulted = parameters.map(parameter =>
+            parameter.hasDefault ? { ...parameter, required: true } : parameter
+        );
+        this.#requestParameters.push(property(operationId, parametersType(defaulted)));
         const reference = `${this.#operationsName}[${JSON.stringify(operationId)}]`;
         return property(method, { kind: 'reference', name: reference }, { doc });
     }

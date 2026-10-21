@@ -16,6 +16,7 @@ interface GeneverCommandExtendedInput extends GeneverCommandInput {
     name: string;
     openApi30: boolean;
     output: string | undefined;
+    parameterDefaults: boolean;
     signed: boolean;
     strict: boolean;
     typedMinItems: number;
@@ -58,6 +59,13 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
                     alias: 'open-api-30',
                     describe:
                         "Read the schema as an OpenAPI 3.0 schema, which allows nullable and example. An OpenAPI document's own version is used instead",
+                    type: 'boolean',
+                    default: false,
+                },
+                parameterDefaults: {
+                    alias: 'parameter-defaults',
+                    describe:
+                        "With an OpenAPI document, also write OperationRequest: what a handler gets once a validator fills in parameters' defaults",
                     type: 'boolean',
                     default: false,
                 },
@@ -128,6 +136,7 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
             name: options.name,
             openApi30: options.openApi30,
             ...(options.output !== undefined && { output: options.output }),
+            parameterDefaults: options.parameterDefaults,
             strict: options.strict,
             typedMinItems: options.typedMinItems,
         });

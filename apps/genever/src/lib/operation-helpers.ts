@@ -1,5 +1,5 @@
 import type { NamedType } from './convert.js';
-import type { TsDoc } from './ts-type.js';
+import type { TsDoc, TsType } from './ts-type.js';
 
 /**
  * Names of the helper types, and of the `Operations` type they read, each reserved so no schema's name clashes.
@@ -10,6 +10,11 @@ export interface OperationHelperNames {
     readonly json: string;
     readonly input: string;
     readonly result: string;
+    /**
+     * Only with `parameterDefaults`.
+     */
+    readonly request?: string;
+    readonly requestParameters?: string;
 }
 
 const doc = (description: string): TsDoc => ({
@@ -28,12 +33,59 @@ const locations = ['path', 'query', 'header', 'cookie'] as const;
  *
  * Written as source: they are the same for every document, other than their names.
  *
+ * With `parameterDefaults`, also `OperationRequest<'createUser'>`: what a server's handler gets, once a validator
+ * filled in parameters' defaults.
+ *
  * @param names - Reserved names
+ * @param requestParameters - Each operation's parameters, with defaults filled in
  * @returns The helper types, in the order they are declared
  */
-export const operationHelpers = (names: OperationHelperNames): NamedType[] => {
-    const { operations, field, json, input, result } = names;
+export const operationHelpers = (
+    names: OperationHelperNames,
+    requestParameters: TsType
+): NamedType[] => {
+    const {
+        operations,
+        field,
+        json,
+        input,
+        result,
+        request,
+        requestParameters: parametersName,
+    } = names;
     const operation = `${operations}[Id]`;
+    /**
+     * Source of `{ body } & { path } & { query } ...`, each only if the operation has it.
+     *
+     * @param parametersOf - type of an operation's `parameters`
+     * @returns intersection of the fields
+     */
+    const fields = (parametersOf: string): string =>
+        [
+            `${field}<'body', ${json}<${operation}['requestBody']>>`,
+            ...locations.map(location => `${field}<'${location}', ${parametersOf}['${location}']>`),
+        ].join(' &\n    ');
+    const requestTypes: NamedType[] =
+        request && parametersName
+            ? [
+                  {
+                      doc: doc(
+                          "Each operation's `parameters`, as a validator that fills in defaults leaves them."
+                      ),
+                      exported: false,
+                      name: parametersName,
+                      type: requestParameters,
+                  },
+                  {
+                      doc: doc(
+                          "What a server's handler gets for an operation, once a validator that fills in defaults (such as Ajv's `useDefaults`) has run: as `OperationInput`, but a parameter whose schema has a `default` is always there."
+                      ),
+                      name: request,
+                      parameters: `<Id extends keyof ${operations}>`,
+                      type: fields(`${parametersName}[Id]`),
+                  },
+              ]
+            : [];
     return [
         {
             doc: doc(
@@ -65,12 +117,7 @@ export const operationHelpers = (names: OperationHelperNames): NamedType[] => {
             ),
             name: input,
             parameters: `<Id extends keyof ${operations}>`,
-            type: [
-                `${field}<'body', ${json}<${operation}['requestBody']>>`,
-                ...locations.map(
-                    location => `${field}<'${location}', ${operation}['parameters']['${location}']>`
-                ),
-            ].join(' &\n    '),
+            type: fields(`${operation}['parameters']`),
         },
         {
             doc: doc(
@@ -88,5 +135,6 @@ export const operationHelpers = (names: OperationHelperNames): NamedType[] => {
                 `}[keyof ${operation}['responses']]`,
             ].join('\n'),
         },
+        ...requestTypes,
     ];
 };

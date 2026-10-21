@@ -60,6 +60,10 @@ export interface ConvertOptions {
      */
     readonly dialect: Dialect;
     /**
+     * Also generate `OperationRequest`, with parameters' defaults filled in, for an OpenAPI document.
+     */
+    readonly parameterDefaults: boolean;
+    /**
      * Fail on schemas that are valid, but likely mistakes. See the README for the rules.
      */
     readonly strict: boolean;
@@ -453,6 +457,10 @@ export class Converter {
             json: this.#names.reserve('OperationJson'),
             input: this.#names.reserve('OperationInput'),
             result: this.#names.reserve('OperationResult'),
+            ...(this.#options.parameterDefaults && {
+                request: this.#names.reserve('OperationRequest'),
+                requestParameters: this.#names.reserve('OperationRequestParameters'),
+            }),
         };
         const operations = operationTypes(
             this.#root,
@@ -468,7 +476,7 @@ export class Converter {
                 ? [
                       { doc: null, name: pathsName, type: operations.paths },
                       { doc: null, name: operationsName, type: operations.operations },
-                      ...operationHelpers(helperNames),
+                      ...operationHelpers(helperNames, operations.requestParameters),
                   ]
                 : []),
         ];
