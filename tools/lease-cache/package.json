@@ -1,6 +1,6 @@
 {
   "name": "lease-cache",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Read-through caching on Valkey or Redis with leases: one load per key across every instance, and a load that finishes after an invalidation never caches its outdated value.",
   "engines": {
     "node": ">=24"
