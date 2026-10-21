@@ -389,11 +389,14 @@ export class StringSchema<
         if (this.#maxLength < Number.POSITIVE_INFINITY) {
             base.maxLength = this.#maxLength;
         }
-        if (this.#contentEncoding) {
-            base.contentEncoding = this.#contentEncoding;
-        }
-        if (this.#contentMediaType) {
-            base.contentMediaType = this.#contentMediaType;
+        // OpenAPI 3.0 has no content keywords (`format: 'byte'` or `'binary'` is its equivalent)
+        if (!params.openApi30) {
+            if (this.#contentEncoding) {
+                base.contentEncoding = this.#contentEncoding;
+            }
+            if (this.#contentMediaType) {
+                base.contentMediaType = this.#contentMediaType;
+            }
         }
         const [pattern, ...patterns] = this.#patterns;
         if (pattern !== undefined) {

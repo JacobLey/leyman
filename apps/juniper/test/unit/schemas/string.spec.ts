@@ -106,6 +106,18 @@ suite('StringSchema', () => {
             expect(validator('ab$cd^ef')).to.equal(true);
         });
 
+        test('OpenAPI 3.0 omits content keywords', () => {
+            const schema = stringSchema()
+                .format('byte')
+                .contentEncoding('base64')
+                .contentMediaType('image/png');
+
+            expect(schema.toJSON({ openApi30: true })).to.deep.equal({
+                type: 'string',
+                format: 'byte',
+            });
+        });
+
         test('format accepts known and custom formats', () => {
             // Known formats stay in the type (for autocomplete) instead of widening to `string`
             expectTypeOf<Parameters<StringSchema<string>['format']>[0]>().toEqualTypeOf<

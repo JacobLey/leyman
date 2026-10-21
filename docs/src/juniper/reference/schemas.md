@@ -170,8 +170,10 @@ Represents `type: 'string'`. TypeScript type: `string`.
 | `startsWith` | ❌ | ❌ | ✅ | ✅ |
 | `endsWith` | ❌ | ❌ | ✅ | ✅ |
 | `contains` | ❌ | ❌ | ✅ | ✅ |
-| [`contentEncoding`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentencoding) | ✅ | ✅ | ❌ | ✅ |
-| [`contentMediaType`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype) | ✅ | ✅ | ❌ | ✅ |
+| [`contentEncoding`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentencoding) | ✅ | ✅ | ❌ | ❌ |
+| [`contentMediaType`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype) | ✅ | ✅ | ❌ | ❌ |
+
+OpenAPI 3.0 has no `contentEncoding` or `contentMediaType`, so they are left out of its output. Use `format('byte')` (base64) or `format('binary')` instead.
 
 `startsWith`, `endsWith`, and `contains` are wrappers around the `pattern` property with special TypeScript handling to narrow the inferred string type (e.g. `startsWith('abc')` produces `` `abc${string}` ``).
 
