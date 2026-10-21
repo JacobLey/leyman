@@ -59,8 +59,9 @@ export interface RendezvousHash<Node extends WeightedNode> {
     /**
      * Expected fraction of keys that `next` assigns to a different node.
      *
-     * @param next - hash to compare with
+     * @param next - hash to compare with, built by this package
      * @returns fraction between 0 and 1
+     * @throws {TypeError} when `next` was not built by `createRendezvousHash`, e.g. by another copy of this package
      */
     moved: (next: RendezvousHash<WeightedNode>) => number;
     /**
@@ -261,7 +262,12 @@ export const createRendezvousHash = <Node extends WeightedNode>(
         nodes: sorted,
         share: name => (sizes.get(name) ?? 0) / total,
         moved: next => {
-            const other = details.get(next)!;
+            const other = details.get(next);
+            if (!other) {
+                throw new TypeError(
+                    'moved() compares hashes built by createRendezvousHash, from the same copy of weighted-rendezvous-hash'
+                );
+            }
             if (other.seed === seed) {
                 return expectedMoved(sizes, other.sizes);
             }

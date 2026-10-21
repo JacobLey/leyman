@@ -67,7 +67,7 @@ Builds an assignment of keys to nodes.
 | `get(key)` | The node for a key (hashed as UTF-8). The same object given in `nodes`. |
 | `nodes` | Nodes with a positive size, sorted by name. |
 | `share(name)` | Fraction of keys assigned to a node: its size / total size. |
-| `moved(next)` | Expected fraction of keys `next` assigns to a different node. |
+| `moved(next)` | Expected fraction of keys `next` assigns to a different node. `next` must come from `createRendezvousHash` (or `update`) of the same installed copy of this package, or it throws `TypeError`. |
 | `update(nodes)` | Builds the assignment for new nodes, with the same options. |
 
 **Throws** `RangeError` — when names repeat, sizes or the seed are out of bounds, or no node has a positive size.

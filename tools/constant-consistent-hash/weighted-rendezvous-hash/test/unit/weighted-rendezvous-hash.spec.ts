@@ -176,6 +176,17 @@ suite('createRendezvousHash', () => {
                 hash.moved(createRendezvousHash([{ name: 'x', size: 1 }], { seed: 1 }))
             ).to.equal(1);
         });
+
+        test('Only compares hashes this package built', () => {
+            const hash = createRendezvousHash(nodes);
+            // As from another installed copy of the package
+            const foreign = { ...hash };
+
+            expect(() => hash.moved(foreign)).to.throw(
+                TypeError,
+                'moved() compares hashes built by createRendezvousHash'
+            );
+        });
     });
 
     test('Seed selects an independent hash', () => {
