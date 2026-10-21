@@ -122,11 +122,12 @@ export const wrapOneTimeHook = (
     };
 
     registrar(title, cb, async ({ call }) => {
-        // Set synchronously, before any await, so that hooks executed concurrently can observe it.
-        result.started = true;
         if (!existing.started) {
+            // Not marked as started, so hooks chained from this one fail too, rather than wait for its context
             throw new HookOrderError();
         }
+        // Set synchronously, before any await, so that hooks executed concurrently can observe it.
+        result.started = true;
         try {
             deferred.resolve(await call({ ...(await existing.context) }));
         } catch (err) {
@@ -170,13 +171,14 @@ export const wrapPerTestHook = <Key>(
         // once this hook has started. This matters for:
         // - `done`-style callbacks, where the framework may move on before the callback has returned
         // - Frameworks that start hooks concurrently
+        const existingContext = existingMap.get(key as object & Key);
+        if (!existingContext) {
+            // No entry, so hooks chained from this one fail too, rather than wait for its context
+            throw new HookOrderError();
+        }
         const deferred = pDefer<object>();
         testToContext.set(key as object & Key, deferred.promise);
 
-        const existingContext = existingMap.get(key as object & Key);
-        if (!existingContext) {
-            throw new HookOrderError();
-        }
         const existing = await existingContext;
         try {
             const additional = await call({ ...existing });

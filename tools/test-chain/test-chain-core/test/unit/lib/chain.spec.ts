@@ -308,9 +308,12 @@ suite('createChain', () => {
             const chain = createChain(fake.framework);
 
             const root = chain.before('root', () => ({ a: 1 }));
-            hookOf(root, 'before')('second', () => {});
+            const second = hookOf(root, 'before')('second', () => {});
+            hookOf(second, 'before')('third', () => {});
 
             await expect(fake.run('second')).to.be.rejectedWith(HookOrderError);
+            // Fails too, rather than waiting for the context of `second`
+            await expect(fake.run('third')).to.be.rejectedWith(HookOrderError);
         });
 
         test('Per-test hook executed out of order', async () => {
@@ -318,10 +321,15 @@ suite('createChain', () => {
             const chain = createChain(fake.framework);
 
             const root = chain.beforeEach('root', () => ({ a: 1 }));
+            const second = hookOf(root, 'beforeEach')('second', () => {});
             hookOf(root, 'afterEach')('afterEach', () => {});
+            hookOf(second, 'afterEach')('afterSecond', () => {});
 
             await fake.run('root', { name: 'other' });
             await expect(fake.run('afterEach')).to.be.rejectedWith(HookOrderError);
+            await expect(fake.run('second')).to.be.rejectedWith(HookOrderError);
+            // Fails too, rather than waiting for the context of `second`
+            await expect(fake.run('afterSecond')).to.be.rejectedWith(HookOrderError);
         });
     });
 });
