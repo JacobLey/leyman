@@ -179,6 +179,46 @@ suite('lifecycle executor', () => {
                 lifecycle({ stages, bindings, check: false }, ctx.context)
             ).to.be.rejectedWith(Error, `Failed to parse ${ctx.projectJsonPath}`);
         });
+
+        withWorkspace.test('Fails on project.json that is not JSON', async ctx => {
+            await writeFile(ctx.projectJsonPath, '{');
+
+            await expect(
+                lifecycle({ stages, bindings, check: false }, ctx.context)
+            ).to.be.rejectedWith(Error, `Failed to parse ${ctx.projectJsonPath}`);
+        });
+
+        withWorkspace.test('Skips projects without a project.json', async ctx => {
+            const context = {
+                ...ctx.context,
+                projectsConfigurations: {
+                    version: 2,
+                    projects: {
+                        ...ctx.context.projectsConfigurations.projects,
+                        b: { name: 'b', root: 'packages/b' },
+                    },
+                },
+            };
+
+            // Dry run, so the formatter doesn't run
+            expect(
+                await lifecycle({ stages, bindings, check: false, dryRun: true }, context)
+            ).to.deep.equal({ success: true });
+            expect(ctx.info.calledWith(`Updating ${ctx.projectJsonPath}`)).to.equal(true);
+            await expect(stat(Path.join(ctx.root, 'packages/b/project.json'))).to.be.rejectedWith(
+                Error,
+                'ENOENT'
+            );
+        });
+
+        withWorkspace.test('Fails when a project.json cannot be read', async ctx => {
+            await rm(ctx.projectJsonPath);
+            await mkdir(ctx.projectJsonPath);
+
+            await expect(
+                lifecycle({ stages, bindings, check: false }, ctx.context)
+            ).to.be.rejectedWith(Error, 'EISDIR');
+        });
     });
 
     suite('Options loaded from config file', () => {

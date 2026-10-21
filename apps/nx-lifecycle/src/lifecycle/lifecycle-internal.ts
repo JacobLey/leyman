@@ -5,6 +5,7 @@ import type { NxContext } from './types.js';
 import { readFile, writeFile } from 'node:fs/promises';
 import { deepEqual } from 'fast-equals';
 import { formatFiles } from 'format-file';
+import { hasCode } from 'unknown-error';
 import { assertNxJson, assertProjectJson } from '#schemas';
 import { normalizeOptions } from './normalizer.js';
 import { processNxAndProjectJsons } from './processor.js';
@@ -27,15 +28,22 @@ const loadJsonConfigs = async ({
 }> => {
     const [rawNxJson, ...rawProjectJsons] = await Promise.all([
         readFile(nxJsonPath, 'utf8'),
-        ...packageJsonPaths.map(async ({ name, path }) => ({
-            name,
-            path,
-            rawData: await readFile(path, 'utf8'),
-        })),
+        ...packageJsonPaths.map(async ({ name, path }) => {
+            try {
+                return { name, path, rawData: await readFile(path, 'utf8') };
+            } catch (err) {
+                // Projects inferred from other files (e.g. only a package.json) get no lifecycle targets
+                if (hasCode(err, 'ENOENT')) {
+                    return null;
+                }
+                throw err;
+            }
+        }),
     ]);
 
-    const parsedNxJson: unknown = JSON.parse(rawNxJson);
+    let parsedNxJson: unknown;
     try {
+        parsedNxJson = JSON.parse(rawNxJson);
         assertNxJson(parsedNxJson);
     } catch (err) {
         throw new Error('Failed to parse nx.json', { cause: err });
@@ -47,20 +55,23 @@ const loadJsonConfigs = async ({
             path: nxJsonPath,
             data: parsedNxJson,
         },
-        projectJsons: rawProjectJsons.map(({ name, path, rawData }) => {
-            const data: unknown = JSON.parse(rawData);
-            try {
-                assertProjectJson(data);
-            } catch (err) {
-                throw new Error(`Failed to parse ${path}`, { cause: err });
-            }
+        projectJsons: rawProjectJsons
+            .filter(rawProjectJson => rawProjectJson !== null)
+            .map(({ name, path, rawData }) => {
+                let data: unknown;
+                try {
+                    data = JSON.parse(rawData);
+                    assertProjectJson(data);
+                } catch (err) {
+                    throw new Error(`Failed to parse ${path}`, { cause: err });
+                }
 
-            return {
-                name,
-                path,
-                data,
-            };
-        }),
+                return {
+                    name,
+                    path,
+                    data,
+                };
+            }),
     };
 };
 
