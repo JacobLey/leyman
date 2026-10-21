@@ -68,6 +68,31 @@ suite('sign', () => {
         expect(result).to.match(new RegExp(`^#!/bin/sh\n# ${TOKEN_NAME}`, 'u'));
     });
 
+    test('Keeps Markdown front matter at the start', () => {
+        const result = sign('---\ntitle: A\n---\n# A\n', { filePath: 'a.md' });
+        expect(result).to.match(
+            new RegExp(`^---\ntitle: A\n---\n<!-- ${TOKEN_NAME}[^\n]+-->\n# A\n$`, 'u')
+        );
+        expect(verify(result)).to.deep.equal({ status: 'valid' });
+
+        const crlf = sign('---\r\ntitle: A\r\n---\r\n# A\r\n', { filePath: 'a.md' });
+        expect(crlf).to.match(/^---\r\ntitle: A\r\n---\r\n<!-- [^\n]+-->\r\n# A\r\n$/u);
+
+        const onlyFrontMatter = sign('---\ntitle: A\n---', { filePath: 'a.mdx' });
+        expect(onlyFrontMatter).to.match(
+            new RegExp(`^---\ntitle: A\n---\n<!-- ${TOKEN_NAME}`, 'u')
+        );
+    });
+
+    test('Only Markdown comments skip front matter, and only when it is closed', () => {
+        expect(sign('---\na: 1\n---\n', { filePath: 'a.yml' })).to.match(
+            new RegExp(`^# ${TOKEN_NAME}`, 'u')
+        );
+        expect(sign('---\nnot closed\n', { filePath: 'a.md' })).to.match(
+            new RegExp(`^<!-- ${TOKEN_NAME}`, 'u')
+        );
+    });
+
     test('Uses CRLF line breaks when the text does', () => {
         const result = sign('a\r\nb\r\n', { filePath: 'a.ts' });
         expect(result).to.match(/^\/\/ [^\n]+\r\na\r\nb\r\n$/u);

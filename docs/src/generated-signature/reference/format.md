@@ -21,7 +21,7 @@ Anything that follows these rules can be verified, whichever tool wrote it.
 `@generated-signature v1:` followed by 32 lowercase hex characters.
 
 - It must appear exactly once, anywhere in the file. A second one is `malformed` (`duplicate-signature`), and a version other than `v1` is `malformed` (`unsupported-version`).
-- `sign()` inserts it as the first line, in the file's comment syntax, unless the text already has one. After a `#!` shebang or `<?xml` declaration, it goes on the second line, since those must stay first.
+- `sign()` inserts it as the first line, in the file's comment syntax, unless the text already has one. After a `#!` shebang or `<?xml` declaration, it goes on the second line, since those must stay first. In Markdown (or any file with `<!-- -->` comments) that starts with `---` front matter, it goes after the closing `---`.
 - A generator with its own header can put the token there with [`signatureToken()`](/generated-signature/reference/api#signaturetoken), which has a placeholder hash for `sign()` to fill in.
 
 ## Manual sections

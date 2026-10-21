@@ -85,7 +85,7 @@ export type SignOptions = CommentOptions & {
 export const signatureToken = (): string => `${TOKEN_NAME} v${VERSION}:${PLACEHOLDER}`;
 
 /**
- * Insert the signature line at the top of the file, after any line that must stay first.
+ * Insert the signature line at the top of the file, after any line (or Markdown front matter) that must stay first.
  *
  * @param text - file content without a token
  * @param options - comment syntax and message to render the line with
@@ -104,6 +104,16 @@ const insertHeader = (text: string, options: SignOptions): string => {
         return firstLineEnd === -1
             ? text + lineBreak + header
             : text.slice(0, firstLineEnd + 1) + header + text.slice(firstLineEnd + 1);
+    }
+
+    // Markdown front matter must start the file too, so the line goes after its closing fence.
+    const frontMatter =
+        style.start === '<!--' ? /^---\r?\n(?:[^\n]*\n)*?---\r?(?:\n|$)/u.exec(text) : null;
+    if (frontMatter) {
+        const [fenced] = frontMatter;
+        return fenced.endsWith('\n')
+            ? fenced + header + text.slice(fenced.length)
+            : fenced + lineBreak + header;
     }
     return header + text;
 };
