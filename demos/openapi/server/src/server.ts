@@ -1,4 +1,4 @@
-export { notes } from './db/schema.js';
+export { notes } from '@leyman/demo-openapi-database';
 export type { ApiError, NewNote, Note, NoteList, Operations, Paths } from './generated/api.js';
 export { createApp, type NotesAppConfig } from './lib/app.js';
 export { staticTokens } from './lib/auth.js';

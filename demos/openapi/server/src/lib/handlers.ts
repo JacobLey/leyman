@@ -3,7 +3,7 @@ import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Note } from '../generated/api.js';
 import type { NotesHandlers } from './types.js';
 import { desc, eq } from 'drizzle-orm';
-import { notes } from '../db/schema.js';
+import { notes } from '@leyman/demo-openapi-database';
 
 export type NotesDatabase = NodePgDatabase;
 

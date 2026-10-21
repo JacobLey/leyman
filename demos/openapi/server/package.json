@@ -28,6 +28,7 @@
   },
   "dependencies": {
     "@hono/node-server": "catalog:",
+    "@leyman/demo-openapi-database": "workspace:^",
     "@leyman/demo-openapi-spec": "workspace:^",
     "ajv": "catalog:",
     "ajv-formats": "catalog:",
@@ -49,14 +50,12 @@
     "@types/pg": "catalog:",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
-    "drizzle-kit": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
     "genever": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "pg-dolly": "workspace:^",
-    "pg-dolly-schema": "workspace:^",
     "typescript": "catalog:"
   }
 }

@@ -20,7 +20,7 @@
       "path": "../spec"
     },
     {
-      "path": "../../../apps/pg-dolly-schema"
+      "path": "../database"
     },
     {
       "path": "../../../tools/pg-dolly"

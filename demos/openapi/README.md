@@ -5,7 +5,8 @@ A deliberately small API (notes: add one, read one, list the newest), with the w
 ```
 spec (juniper) ──► openapi.json ──┬──► client: genever types + a typed fetch client
                                   └──► server: genever types + Hono, validating against openapi.json
-                                                └──► Postgres: Drizzle migrations ──► schema.sql ──► pg-dolly per test
+                                         ▲ Drizzle tables, and schema.sql for pg-dolly per test
+database: Drizzle migrations ──► schema.sql (what the migrations build, against Postgres)
 ```
 
 Worked examples, not packages: none is published. Each is a full package (lint, types, 100% coverage), and the server's tests run against the real `postgres` sidecar.
@@ -14,6 +15,7 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 |---|---|---|
 | [`spec`](./spec) | `openapi.json`, built from Juniper schemas | [What the spec says, and how it is checked](./spec/README.md) |
 | [`client`](./client) | A typed client, from `openapi.json` | [How the types and routes come from the spec](./client/README.md) |
+| [`database`](./database) | The Drizzle schema, its migrations, and `schema.sql` | [The schema, and what the migrations build](./database/README.md) |
 | [`server`](./server) | The service: Hono on Postgres | [Validation, authentication, the database and its tests](./server/README.md) |
 
 ## Why each piece

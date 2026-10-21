@@ -4,41 +4,10 @@
   "targets": {
     "biome": {},
     "eslint": {},
-    "drizzle-kit-check": {},
     "genever": {
       "options": {
         "args": "--parameter-defaults --output src/generated/api.ts node_modules/@leyman/demo-openapi-spec/out/openapi.json"
       }
-    },
-    "schema-snapshot": {
-      "options": {
-        "env": {
-          "PG_DOLLY_SCHEMA_MIGRATE": "drizzle-kit migrate"
-        },
-        "args": "--data drizzle.__drizzle_migrations"
-      },
-      "inputs": [
-        "shared-globals",
-        "{projectRoot}/package.json",
-        "{projectRoot}/src/**/*",
-        "{projectRoot}/migrations/**/*",
-        "{projectRoot}/drizzle.config.js",
-        "{projectRoot}/schema.sql",
-        "dependency-builds",
-        "^package-files",
-        {
-          "runtime": "pg_dump --version"
-        },
-        {
-          "runtime": "psql \"$DATABASE_URL\" -XtAc 'SHOW server_version'"
-        },
-        {
-          "env": "CI"
-        },
-        {
-          "externalDependencies": []
-        }
-      ]
     },
     "update-ts-references": {},
     "tsc": {},

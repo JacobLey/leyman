@@ -11,7 +11,8 @@ A deliberately small API (notes: add one, read one, list the newest), with the w
 ```
 spec (juniper) ──► openapi.json ──┬──► client: genever types + a typed fetch client
                                   └──► server: genever types + Hono, validating against openapi.json
-                                                └──► Postgres: Drizzle migrations ──► schema.sql ──► pg-dolly per test
+                                         ▲ Drizzle tables, and schema.sql for pg-dolly per test
+database: Drizzle migrations ──► schema.sql (what the migrations build, against Postgres)
 ```
 
 Worked examples, not packages: none is published. Each is a full package (lint, types, 100% coverage), and the server's tests run against a real Postgres.
@@ -20,6 +21,7 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 |---|---|
 | [`spec`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/spec) | `openapi.json`, built from [Juniper](/juniper/) schemas. See [The spec](#the-spec). |
 | [`client`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/client) | A typed client, from `openapi.json`. See [The client](#the-client). |
+| [`database`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/database) | The Drizzle schema, its migrations, and `schema.sql`. See [The database](#the-database). |
 | [`server`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/server) | The service: Hono on Postgres. See [The server](#the-server). |
 
 ## Why each piece
@@ -194,6 +196,7 @@ The validators are compiled once, with [Ajv](https://ajv.js.org) (JSON Schema 20
 
 ### The database
 
+- **The schema is a package of its own**, so `schema.sql` (generated against a real database) is an output the server consumes, like `openapi.json`, and only rebuilds when the migrations or the Postgres versions change, not on every handler edit.
 - **The Drizzle schema puts the defaults in the database**: the id (`uuidv7()`, ordered by time, so notes made in the same transaction still list in order) and the time (`now()`), so every test database has them too. `uuidv7()` needs Postgres 18, which the devcontainer and CI run.
 - **Migrations are SQL, generated and reviewed**: `drizzle-kit generate --name <name>` writes them to `migrations/`. A `drizzle-kit-check` target fails CI if the schema has changes no migration covers.
 - **`schema.sql` is what the migrations build**, kept by [pg-dolly-schema](/pg-dolly-schema/) running `drizzle-kit migrate` on an empty database. It includes Drizzle's own `drizzle.__drizzle_migrations` table, rows and all (`--data`), so every test database knows its migrations ran, and migrating one does nothing.

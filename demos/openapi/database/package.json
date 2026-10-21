@@ -1,0 +1,55 @@
+{
+  "name": "@leyman/demo-openapi-database",
+  "version": "0.0.1",
+  "description": "The OpenAPI demo's Postgres schema: Drizzle tables, the migrations that build them, and schema.sql, what the migrations build, for tests to clone.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/openapi/database#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "migrations",
+    "schema.sql"
+  ],
+  "types": "./dist/database.js",
+  "exports": {
+    ".": "./dist/database.js",
+    "./schema.sql": "./schema.sql"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "dependencies": {
+    "drizzle-orm": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "drizzle-kit": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "pg": "catalog:",
+    "pg-dolly": "workspace:^",
+    "pg-dolly-schema": "workspace:^",
+    "typescript": "catalog:"
+  }
+}

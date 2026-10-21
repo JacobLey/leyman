@@ -3,7 +3,10 @@ import { readFile } from 'node:fs/promises';
 import { before } from 'mocha-chain';
 import { PgDolly } from 'pg-dolly';
 
-const schema = await readFile(new URL('../../schema.sql', import.meta.url), 'utf8');
+const schema = await readFile(
+    new URL(import.meta.resolve('@leyman/demo-openapi-database/schema.sql')),
+    'utf8'
+);
 
 // At the top level of a module, a hook applies to every test: a root hook, run once per process
 const withDolly = before(async () => {

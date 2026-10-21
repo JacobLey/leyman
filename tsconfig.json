@@ -111,6 +111,9 @@
     },
     {
       "path": "./demos/openapi/server"
+    },
+    {
+      "path": "./demos/openapi/database"
     }
   ]
 }
