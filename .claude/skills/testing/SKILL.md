@@ -80,6 +80,7 @@ Tests are compiled into `dist-test/` (`tsc-test`) and run against the package's 
 ## Libraries
 
 - **[`mocha-chain`](../../../tools/test-chain/mocha-chain/)** — import `suite`, `test`, `beforeEach`, etc. from here instead of using Mocha globals (TDD interface). Hooks can return values that become typed context for later hooks and tests. `mocha` itself is still a dev dependency as the runner. Use `vitest-chain` + the `vitest-unit-test` target only for Vitest-specific packages.
+  - **Chains pass context; suites decide which hooks run.** `withA.beforeEach(cb)` registers a plain Mocha `beforeEach` in the suite it's called in, so it runs before _every_ test in that suite, including `withA.test(...)` and other chains' tests, which just don't receive its context. When a hook has side effects only some tests want (inserting rows, starting a server), put it and those tests in a nested `suite`, rather than declaring a test from an earlier handle next to it.
 - **[`@leyman/expect`](../../../leyman/expect/)** — `import { expect } from '@leyman/expect'`. Chai with `chai-as-promised` registered. Depend on it (dev) instead of `chai`.
 - **`expect-type`** — `expectTypeOf(...)` for compile-time type assertions alongside runtime ones.
 - **Sinon** — stubs to inject via DI, only for dependencies that actually need DI (not file system or console access). Restore after every test:

@@ -160,6 +160,8 @@ before(() => {
 });
 ```
 
+The chain only decides which context a test receives. Which hooks _run_ is up to Mocha, as usual: every `beforeEach` in a suite runs before each of its tests, including tests chained from an earlier handle that never see its context. A hook whose side effects only some tests want (inserting rows, starting a server) belongs in a nested `suite` with those tests. See [Branching](https://jacobley.github.io/leyman/mocha-chain/guides/chaining#branching).
+
 ## API
 
 ### `suite(title, fn)`

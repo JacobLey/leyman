@@ -243,43 +243,12 @@ suite('Notes API', () => {
         });
     });
 
-    // Outside `listNotes`, whose hook adds notes before each of its tests
-    withServer.test('Lists nothing on an empty database', async ({ anonymous }) => {
-        expect(await anonymous.call('listNotes', {})).to.deep.equal({
-            status: 200,
-            body: { items: [] },
-        });
-    });
-
     suite('listNotes', () => {
-        /**
-         * Notes added straight to the database, a minute apart, so their order is known.
-         */
-        const withNotes = withServer.beforeEach(async ({ db }) => {
-            const rows = await db
-                .insert(notes)
-                .values(
-                    Array.from({ length: 25 }, (_, index) => ({
-                        title: `Note ${index}`,
-                        body: '',
-                        createdAt: sql`timestamptz '2026-01-01T00:00:00Z' + ${index} * interval '1 minute'`,
-                    }))
-                )
-                .returning();
-            return { rows };
-        });
-
-        withNotes.test('Lists the newest first', async ({ anonymous }) => {
-            const { body } = expectStatus(
-                await anonymous.call('listNotes', { query: { limit: 3 } }),
-                200
-            );
-
-            expect(body.items.map(({ title }) => title)).to.deep.equal([
-                'Note 24',
-                'Note 23',
-                'Note 22',
-            ]);
+        withServer.test('Lists nothing on an empty database', async ({ anonymous }) => {
+            expect(await anonymous.call('listNotes', {})).to.deep.equal({
+                status: 200,
+                body: { items: [] },
+            });
         });
 
         withServer.test(
@@ -292,11 +261,7 @@ suite('Notes API', () => {
                     { title: 'Third', body: '' },
                 ]);
 
-                // Newer than the suite's notes, which are from January
-                const { body } = expectStatus(
-                    await anonymous.call('listNotes', { query: { limit: 3 } }),
-                    200
-                );
+                const { body } = expectStatus(await anonymous.call('listNotes', {}), 200);
 
                 expect(body.items.map(({ title }) => title)).to.deep.equal([
                     'Third',
@@ -305,12 +270,6 @@ suite('Notes API', () => {
                 ]);
             }
         );
-
-        withNotes.test('Lists 20 by default, as the spec says', async ({ anonymous }) => {
-            const { body } = expectStatus(await anonymous.call('listNotes', {}), 200);
-
-            expect(body.items).to.have.length(20);
-        });
 
         withServer.test('Rejects a limit out of range', async ({ anonymous }) => {
             const listed = await anonymous.call('listNotes', { query: { limit: 0 } });
@@ -328,6 +287,45 @@ suite('Notes API', () => {
             const response = await fetch(`${served.url}/notes?offset=10`);
 
             expect(response.status).to.equal(400);
+        });
+
+        // A suite of their own, as the hook runs before every test of the suite it's in
+        suite('With notes', () => {
+            /**
+             * Notes added straight to the database, a minute apart, so their order is known.
+             */
+            const withNotes = withServer.beforeEach(async ({ db }) => {
+                const rows = await db
+                    .insert(notes)
+                    .values(
+                        Array.from({ length: 25 }, (_, index) => ({
+                            title: `Note ${index}`,
+                            body: '',
+                            createdAt: sql`timestamptz '2026-01-01T00:00:00Z' + ${index} * interval '1 minute'`,
+                        }))
+                    )
+                    .returning();
+                return { rows };
+            });
+
+            withNotes.test('Lists the newest first', async ({ anonymous }) => {
+                const { body } = expectStatus(
+                    await anonymous.call('listNotes', { query: { limit: 3 } }),
+                    200
+                );
+
+                expect(body.items.map(({ title }) => title)).to.deep.equal([
+                    'Note 24',
+                    'Note 23',
+                    'Note 22',
+                ]);
+            });
+
+            withNotes.test('Lists 20 by default, as the spec says', async ({ anonymous }) => {
+                const { body } = expectStatus(await anonymous.call('listNotes', {}), 200);
+
+                expect(body.items).to.have.length(20);
+            });
         });
     });
 
