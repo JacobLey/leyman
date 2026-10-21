@@ -14,7 +14,8 @@
       "options": {
         "env": {
           "PG_DOLLY_SCHEMA_MIGRATE": "drizzle-kit migrate"
-        }
+        },
+        "args": "--data drizzle.__drizzle_migrations"
       },
       "inputs": [
         "shared-globals",

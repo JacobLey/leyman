@@ -54,7 +54,13 @@ The command runs in a shell, in `--cwd`, with `DATABASE_URL` pointing at the emp
 
 Every dump leaves out owners, privileges and tablespaces, which name one server's roles. Changing data in migrations works, but the snapshot only keeps the schema.
 
-Migration tools often add a table of their own to record what ran (Drizzle's `drizzle.__drizzle_migrations`). It's in `schema.sql` too, which is accurate: every real database has it.
+Migration tools add a table of their own to record what ran (Drizzle's `drizzle.__drizzle_migrations`, Prisma's `_prisma_migrations`). A schema-only dump keeps that table but not its rows, so a database built from `schema.sql` looks like nothing was migrated, and migrating it (say, an app that migrates on startup, in a test) would run every migration again. `--data` keeps a table's rows too:
+
+```sh
+pg-dolly-schema --migrate 'drizzle-kit migrate' --data drizzle.__drizzle_migrations
+```
+
+Migrating a database built from that file then does nothing. The rows come from the migration files, so the file only changes when a migration does.
 
 ## Check it in CI
 

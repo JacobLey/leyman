@@ -8,6 +8,7 @@ interface SnapshotCommandExtendedInput extends PgDollySchemaCommandInput {
     migrate: string;
     file: string;
     check: boolean | undefined;
+    data: string[] | undefined;
     prefix: string | undefined;
 }
 
@@ -40,6 +41,12 @@ export const snapshotCommand: Command<SnapshotCommandExtendedInput> = {
                     type: 'boolean',
                     alias: 'ci',
                 },
+                data: {
+                    describe:
+                        "Table to keep the rows of too, e.g. the migration tool's own. Repeat for several",
+                    type: 'string',
+                    array: true,
+                },
                 prefix: {
                     describe: 'Prefix of the databases created (default pg_dolly)',
                     type: 'string',
@@ -52,6 +59,7 @@ export const snapshotCommand: Command<SnapshotCommandExtendedInput> = {
             file: options.file,
             cwd: options.cwd,
             check: options.check,
+            data: options.data,
             prefix: options.prefix,
         });
     },

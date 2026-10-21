@@ -196,7 +196,7 @@ The validators are compiled once, with [Ajv](https://ajv.js.org) (JSON Schema 20
 
 - **The Drizzle schema puts the defaults in the database**: the id (`gen_random_uuid()`) and the time (`now()`), so every test database has them too.
 - **Migrations are SQL, generated and reviewed**: `drizzle-kit generate --name <name>` writes them to `migrations/`. A `drizzle-kit-check` target fails CI if the schema has changes no migration covers.
-- **`schema.sql` is what the migrations build**, kept by [pg-dolly-schema](/pg-dolly-schema/) running `drizzle-kit migrate` on an empty database. It includes Drizzle's own `drizzle.__drizzle_migrations` table, as every real database does.
+- **`schema.sql` is what the migrations build**, kept by [pg-dolly-schema](/pg-dolly-schema/) running `drizzle-kit migrate` on an empty database. It includes Drizzle's own `drizzle.__drizzle_migrations` table, rows and all (`--data`), so every test database knows its migrations ran, and migrating one does nothing.
 - **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in.
 
 ### Composing with haywire
@@ -246,7 +246,7 @@ const app = createContainer(
 
 - **Nx expands `$` in a target's options.** Options are forwarded to the command in double quotes, so a migrate command containing `$DATABASE_URL` would run against the server's default database. The migrate command is set in `env` instead (see [pg-dolly-schema as an Nx target](/pg-dolly-schema/getting-started#as-an-nx-target)).
 - **drizzle-kit doesn't declare what it imports.** It loads `drizzle-orm` and the `pg` driver from its own install location, which pnpm's strict layout doesn't allow. A `packageExtensions` entry in `pnpm-workspace.yaml` makes them peers.
-- **`drizzle-kit migrate` adds its own bookkeeping** (`drizzle.__drizzle_migrations`), so `schema.sql` has it too. That's accurate: every real database has it.
+- **`drizzle-kit migrate` adds its own bookkeeping** (`drizzle.__drizzle_migrations`). A schema-only dump kept the table but not its rows, so a test database looked unmigrated, and migrating it would have run every migration again. `pg-dolly-schema --data` keeps its rows too.
 - **drizzle-kit has no check-only mode** for "the schema has changes no migration covers". The `drizzle-kit-check` target generates into a copy of the migrations, through a temporary config that only changes `out`, and compares.
 - **drizzle-kit exits 0 when it fails.** Without a terminal, it can't ask whether a column was renamed, so it prints an error, writes nothing, and exits 0. A check that only compared files would pass. The check fails on any error output instead.
 - **Fastify was the other option.** It validates requests natively from per-route schemas, but its response schemas only drive serialization (dropping unknown fields), not validation. With Hono, both directions are explicit middleware against the document.

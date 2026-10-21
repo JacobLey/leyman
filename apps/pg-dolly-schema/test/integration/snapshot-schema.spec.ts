@@ -8,7 +8,14 @@ import {
     PgDollySchemaMigrateError,
     snapshotSchema,
 } from 'pg-dolly-schema';
-import { clones, copyProject, dropAll, migrate, uniquePrefix } from '../helpers/project.js';
+import {
+    clones,
+    copyProject,
+    dropAll,
+    migrate,
+    migrateTracked,
+    uniquePrefix,
+} from '../helpers/project.js';
 
 suite('snapshotSchema', () => {
     const withProject = beforeEach(async () => ({
@@ -20,8 +27,13 @@ suite('snapshotSchema', () => {
     });
 
     const withSnapshot = withProject.beforeEach(({ project, prefix }) => ({
-        snapshot: async (options: { readonly check?: boolean; readonly migrate?: string } = {}) =>
-            snapshotSchema({ migrate, cwd: project.path, prefix, ...options }),
+        snapshot: async (
+            options: {
+                readonly check?: boolean;
+                readonly migrate?: string;
+                readonly data?: readonly string[];
+            } = {}
+        ) => snapshotSchema({ migrate, cwd: project.path, prefix, ...options }),
         schema: Path.join(project.path, 'schema.sql'),
     }));
 
@@ -35,6 +47,25 @@ suite('snapshotSchema', () => {
             expect(written).to.include('CREATE TRIGGER upper_name');
         }
     );
+
+    withSnapshot.test(
+        "Keeps the rows of the tables given, such as the migration tool's",
+        async ({ snapshot, schema }) => {
+            await snapshot({ check: false, migrate: migrateTracked, data: ['public.applied'] });
+
+            const written = await readFile(schema, 'utf8');
+            expect(written).to.include("INSERT INTO public.applied (name) VALUES ('001-item');");
+            expect(written).to.include(
+                "INSERT INTO public.applied (name) VALUES ('002-upper-name');"
+            );
+        }
+    );
+
+    withSnapshot.test('Keeps no rows by default', async ({ snapshot, schema }) => {
+        await snapshot({ check: false, migrate: migrateTracked });
+
+        expect(await readFile(schema, 'utf8')).to.not.include('INSERT INTO');
+    });
 
     withSnapshot.test('Writes to the file given', async ({ project, prefix }) => {
         await snapshotSchema({

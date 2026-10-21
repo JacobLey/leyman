@@ -11,6 +11,11 @@ export const migrate =
     'for file in migrations/*.sql; do psql --quiet -v ON_ERROR_STOP=1 -f "$file" "$DATABASE_URL" || exit 1; done';
 
 /**
+ * As `migrate`, then records the migrations it ran in a table of its own, as migration tools do.
+ */
+export const migrateTracked = `${migrate} && psql --quiet -v ON_ERROR_STOP=1 -c "CREATE TABLE public.applied (name text PRIMARY KEY); INSERT INTO public.applied VALUES ('001-item'), ('002-upper-name')" "$DATABASE_URL"`;
+
+/**
  * Each test uses its own prefix, so it only ever sees its own databases on the shared server.
  *
  * @returns A prefix no other test uses

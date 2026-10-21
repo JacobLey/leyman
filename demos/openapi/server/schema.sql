@@ -90,3 +90,35 @@ CREATE INDEX notes_created_at_id ON public.notes USING btree (created_at DESC NU
 --
 -- PostgreSQL database dump complete
 --
+
+--
+-- PostgreSQL database dump
+--
+
+SET statement_timeout = 0;
+SET lock_timeout = 0;
+SET idle_in_transaction_session_timeout = 0;
+SET transaction_timeout = 0;
+SET client_encoding = 'UTF8';
+SET standard_conforming_strings = on;
+SELECT pg_catalog.set_config('search_path', '', false);
+SET check_function_bodies = false;
+SET xmloption = content;
+SET client_min_messages = warning;
+SET row_security = off;
+
+--
+-- Data for Name: __drizzle_migrations; Type: TABLE DATA; Schema: drizzle; Owner: -
+--
+
+INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (1, '3bb9d0ed48944c41ccbf18827df6036b388d557b142ad1a257657f6d56d4aef0', 1792534466473);
+
+--
+-- Name: __drizzle_migrations_id_seq; Type: SEQUENCE SET; Schema: drizzle; Owner: -
+--
+
+SELECT pg_catalog.setval('drizzle.__drizzle_migrations_id_seq', 1, true);
+
+--
+-- PostgreSQL database dump complete
+--

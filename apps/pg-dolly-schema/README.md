@@ -53,7 +53,15 @@ The command runs in a shell, in `--cwd`, with `DATABASE_URL` pointing at the emp
 | Kysely | `node migrate.ts` | A script that runs `Migrator.migrateToLatest()` on a `PostgresDialect` connected to `process.env.DATABASE_URL`. |
 | Plain SQL files | `for f in migrations/*.sql; do psql -v ON_ERROR_STOP=1 -f "$f" "$DATABASE_URL" \|\| exit 1; done` | |
 
-Every dump leaves out owners, privileges and tablespaces, which name one server's roles. Changing data in migrations works, but the snapshot only keeps the schema.
+Every dump leaves out owners, privileges and tablespaces, which name one server's roles. Changing data in migrations works, but the snapshot only keeps the schema, and the rows of the `--data` tables.
+
+Migration tools add a table of their own to record what ran (Drizzle's `drizzle.__drizzle_migrations`, Prisma's `_prisma_migrations`). A schema-only dump keeps that table but not its rows, so a database built from `schema.sql` looks like nothing was migrated, and migrating it (say, an app that migrates on startup, in a test) would run every migration again. `--data` keeps a table's rows too:
+
+```sh
+pg-dolly-schema --migrate 'drizzle-kit migrate' --data drizzle.__drizzle_migrations
+```
+
+Migrating a database built from that file then does nothing. The rows come from the migration files, so the file only changes when a migration does.
 
 ## In CI
 
@@ -87,7 +95,7 @@ As an Nx target, set the command in `env`, not as an option: Nx passes options t
 ## CLI
 
 ```sh
-pg-dolly-schema --migrate <command> [--file schema.sql] [--cwd .] [--check] [--prefix pg_dolly]
+pg-dolly-schema --migrate <command> [--file schema.sql] [--cwd .] [--check] [--data <table>...] [--prefix pg_dolly]
 ```
 
 | Option | Default | Description |
@@ -96,6 +104,7 @@ pg-dolly-schema --migrate <command> [--file schema.sql] [--cwd .] [--check] [--p
 | `--file` | `schema.sql` | File to write the schema to, relative to `--cwd`. |
 | `--cwd` | `.` | Directory the command runs in, and `--file` is relative to. |
 | `--check`, `--ci` | `true` in CI | Fail if the file is not up to date, rather than writing it. `--no-check` writes even in CI. |
+| `--data` | — | Table to keep the rows of too, e.g. the migration tool's own. Repeat for several. See [Migrate commands](#migrate-commands). |
 | `--prefix` | `pg_dolly` | Prefix of the databases created, as in [`PgDolly.connect()`](https://www.npmjs.com/package/pg-dolly#options). |
 
 Every option can also be set as an environment variable: `PG_DOLLY_SCHEMA_` and the option in capitals (`PG_DOLLY_SCHEMA_MIGRATE`).
@@ -104,7 +113,7 @@ Every option can also be set as an environment variable: `PG_DOLLY_SCHEMA_` and 
 
 ### `snapshotSchema(options)`
 
-What the CLI runs. Options as above: `migrate` (required), `file`, `cwd`, `check`, `prefix`, and `url` (default `process.env.DATABASE_URL`).
+What the CLI runs. Options as above: `migrate` (required), `file`, `cwd`, `check`, `data`, `prefix`, and `url` (default `process.env.DATABASE_URL`).
 
 **Returns** `Promise<void>`
 

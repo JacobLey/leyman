@@ -4,7 +4,7 @@ import Path from 'node:path';
 import { promisify } from 'node:util';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
-import { copyProject, dropAll, migrate, uniquePrefix } from '../helpers/project.js';
+import { copyProject, dropAll, migrate, migrateTracked, uniquePrefix } from '../helpers/project.js';
 
 const execAsync = promisify(exec);
 const bin = Path.join(import.meta.dirname, '../../bin.mjs');
@@ -48,6 +48,18 @@ suite('cli', () => {
 
             expect(await readFile(Path.join(project.path, 'schema.sql'), 'utf8')).to.include(
                 'CREATE TABLE'
+            );
+        });
+
+        withProject.test('Keeps the rows of each --data table', async ({ project, prefix }) => {
+            await execAsync(`${bin} --no-check --prefix ${prefix} --data public.applied`, {
+                cwd: project.path,
+                // eslint-disable-next-line n/no-process-env -- The command sees the server, as any run would
+                env: { ...process.env, PG_DOLLY_SCHEMA_MIGRATE: migrateTracked },
+            });
+
+            expect(await readFile(Path.join(project.path, 'schema.sql'), 'utf8')).to.include(
+                'INSERT INTO public.applied'
             );
         });
 

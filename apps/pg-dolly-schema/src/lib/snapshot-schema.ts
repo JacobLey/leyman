@@ -33,6 +33,12 @@ export interface SnapshotSchemaOptions {
      */
     readonly url?: string | undefined;
     /**
+     * Tables to keep the rows of too, e.g. the migration tool's own (`drizzle.__drizzle_migrations`), so a database
+     * built from the file knows its migrations ran, and migrating it does nothing. Each is a `pg_dump --table`
+     * pattern.
+     */
+    readonly data?: readonly string[] | undefined;
+    /**
      * Prefix of the databases created, as in `PgDolly.connect()`.
      *
      * @default 'pg_dolly'
@@ -83,7 +89,7 @@ export const snapshotSchema = async (options: SnapshotSchemaOptions): Promise<vo
             throw new PgDollySchemaMigrateError(options.migrate, exitCode, database.name);
         }
         const [schema, emptySchema] = await Promise.all([
-            dumpSchema(database.url),
+            dumpSchema(database.url, { data: options.data }),
             dumpSchema(blank.url),
         ]);
         if (schema === emptySchema) {
