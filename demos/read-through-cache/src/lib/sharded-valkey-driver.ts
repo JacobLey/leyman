@@ -53,22 +53,58 @@ export class ShardedValkeyDriver implements L2CacheDriver {
         return this.#driverForKey(key).set(key, value, ttl);
     }
 
+    /**
+     * Deletes the key from each node the topology sends its invalidations to.
+     *
+     * @param key - Key to delete
+     * @returns Whether any node had it
+     */
     public async delete(key: string): Promise<boolean> {
-        return this.#driverForKey(key).delete(key);
+        const deleted = await Promise.all(
+            this.#topology
+                .invalidationConnections(key)
+                .map(async connection => this.#driverFor(connection).delete(key))
+        );
+        return deleted.includes(true);
     }
 
     /**
      * One round trip per node, rather than per key.
      *
-     * @param keys - Keys to delete
+     * @param keys - Keys to delete, from each node the topology sends their invalidations to
      * @returns Always `true`, like BentoCache's Redis driver
      */
     public async deleteMany(keys: string[]): Promise<boolean> {
-        const byDriver = Map.groupBy(keys, key => this.#driverForKey(key));
+        const byConnection = Map.groupBy(
+            keys.flatMap(key =>
+                this.#topology.invalidationConnections(key).map(connection => ({ connection, key }))
+            ),
+            ({ connection }) => connection
+        );
         await Promise.all(
-            byDriver.entries().map(async ([driver, driverKeys]) => driver.deleteMany(driverKeys))
+            byConnection
+                .entries()
+                .map(async ([connection, entries]) =>
+                    this.#driverFor(connection).deleteMany(entries.map(({ key }) => key))
+                )
         );
         return true;
+    }
+
+    /**
+     * Deletes the key from the nodes the topology sends its invalidations to, other than the key's own: with
+     * `invalidateEveryNode`, copies another instance's node list put elsewhere.
+     *
+     * @param key - Key to delete
+     */
+    public async deleteElsewhere(key: string): Promise<void> {
+        const own = this.#topology.connectionFor(key);
+        await Promise.all(
+            this.#topology
+                .invalidationConnections(key)
+                .filter(connection => connection !== own)
+                .map(async connection => this.#driverFor(connection).delete(key))
+        );
     }
 
     /**

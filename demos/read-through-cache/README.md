@@ -72,6 +72,7 @@ Values are stored as JSON, so loaders must return JSON-compatible types (`Json`)
 | `staleWhileRevalidate` | `{ graceMs }`: once a value expires, serve it while a fresh one loads. See [Stale-while-revalidate](#stale-while-revalidate). |
 | `leases` | `{ leaseMs, pollMs, waitMs, staleMs?, fallback? }`: load each miss once across every instance, and never cache a load that finishes after an invalidation, with lease-cache. `fallback` keeps reads working while Valkey is down (see [When Valkey is down](#when-valkey-is-down)). See [lease-cache](#lease-cache-one-load-across-instances-and-no-outdated-values). |
 | `shards` | `{ name, size, connection }[]`: spread keys over these nodes instead of `connection`. See [Sharding](#sharding-over-several-valkey-nodes). |
+| `invalidateEveryNode` | With `shards`, invalidate each key on every node, so changing the nodes is safe. See [Changing the nodes safely](#changing-the-nodes-safely). |
 | `onLoadError` | Called when a load fails, including background refreshes, whose errors no caller sees. |
 | `emitter` | Receives BentoCache's events (`cache:hit`, `cache:miss`, `cache:written`...), e.g. for metrics. |
 
@@ -222,7 +223,16 @@ await topology.resize([...nodes, { name: 'cache-c', size: 1, url: 'redis://cache
 - **Size by memory**: a node of size 2 gets twice the keys of a node of size 1. Size 0 drains a node, keeping it connected.
 - **Every client computes the same placement** from the node list alone. There is no ring to build or share, but every instance must be given the same list.
 - With lease-cache, each node gets its own lease cache, and a key's lease lives next to its value.
-- **Moved keys are left behind.** They aren't deleted from their old node, just never read there. If a node is removed and then added back before those keys expire, its old (possibly outdated) values are served again. Keep TTLs bounded, or clear a node before adding it back.
+- **Moved keys are left behind.** They aren't deleted from their old node, just never read there.
+
+#### Changing the nodes safely
+
+Instances don't change their node lists at the same moment. While a change rolls out, two instances can place a key on different nodes, and an invalidation from one only reaches the node it knows: the other keeps serving its copy until it expires. A node removed and added back can also serve values from before it left. Two habits close both:
+
+1. **Nodes join and leave at size `0`.** Add a node at size `0` (connected, holding no keys) and roll that out to every instance before giving it a size. To remove one, drain it to `0`, wait the longest TTL, then remove it. Each instance then knows every node that might hold a key, and nothing outlives its drain.
+2. **Invalidate on every node**, with `invalidateEveryNode` (an option of `createReadThroughCache` with `shards`, and of `rendezvousTopology` and `ResizableValkeyTopology`). Each invalidation and `expire()` then goes to every node, at one round trip per node, and reaches every copy.
+
+The tests show both: an invalidation from an instance with the old list misses the copy on the new node by default, and reaches it with `invalidateEveryNode`.
 
 For nodes that only grow and shrink at the end of a list, [`constant-consistent-hash`](../../tools/constant-consistent-hash/constant-consistent-hash) places keys in constant time instead.
 

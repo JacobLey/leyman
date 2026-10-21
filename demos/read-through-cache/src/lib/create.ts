@@ -21,6 +21,11 @@ export interface ReadThroughCacheOptions extends CacheConfig {
      */
     readonly shards?: readonly ValkeyShard[];
     /**
+     * With `shards`, invalidate each key on every node rather than only on its own, so a change to the nodes can
+     * roll out without serving invalidated values (see `TopologyOptions`).
+     */
+    readonly invalidateEveryNode?: boolean;
+    /**
      * Keeps copies in each instance's memory. With `sync`, an instance drops its copy when any instance writes,
      * expires or invalidates the key.
      */
@@ -54,7 +59,15 @@ export interface CreatedReadThroughCache {
 export const createReadThroughCache = (
     options: ReadThroughCacheOptions
 ): CreatedReadThroughCache => {
-    const { connection, shards, memory, staleWhileRevalidate, leases, ...config } = options;
+    const {
+        connection,
+        shards,
+        invalidateEveryNode,
+        memory,
+        staleWhileRevalidate,
+        leases,
+        ...config
+    } = options;
 
     // Every feature off, then each option swaps in its binding. Each replacement keeps the module's type, so
     // haywire still checks that every combination is complete.
@@ -67,7 +80,9 @@ export const createReadThroughCache = (
         .addBinding(bentoValkeyTierBinding);
     if (shards) {
         module = module.replaceBinding(
-            bind(valkeyTopologyId).withInstance(rendezvousTopology(shards))
+            bind(valkeyTopologyId).withInstance(
+                rendezvousTopology(shards, invalidateEveryNode ? { invalidateEveryNode } : {})
+            )
         );
     }
     if (memory) {

@@ -17,6 +17,23 @@ export interface ValkeyTopology {
      * Every node's connection, e.g. to clear a prefix everywhere.
      */
     readonly connections: readonly Redis[];
+    /**
+     * @param key - Cache key, without prefix
+     * @returns Connections to the nodes an invalidation of the key goes to: the key's node, or every node
+     */
+    readonly invalidationConnections: (key: string) => readonly Redis[];
+}
+
+export interface TopologyOptions {
+    /**
+     * Invalidate a key on every node, rather than only on the node holding it, at one round trip per node.
+     *
+     * Instances don't change their node lists at the same moment, so while a change rolls out, two instances can
+     * place a key on different nodes, and an invalidation from one misses the copy the other reads. Invalidating
+     * on every node reaches both copies, as long as each node joins and leaves at size `0`: added at `0` until
+     * every instance has it, then sized, and drained to `0` for the longest TTL before it is removed.
+     */
+    readonly invalidateEveryNode?: boolean;
 }
 
 /**
@@ -52,14 +69,23 @@ export interface ValkeyNode {
  * ring to build or share.
  *
  * @param shards - Nodes with their connections, with unique names
+ * @param options - Where invalidations go
  * @returns Topology over the shards
  * @throws {RangeError} When names repeat, or no shard has a positive size
  */
-export const rendezvousTopology = (shards: readonly ValkeyShard[]): ValkeyTopology => {
+export const rendezvousTopology = (
+    shards: readonly ValkeyShard[],
+    options: TopologyOptions = {}
+): ValkeyTopology => {
     const hash: RendezvousHash<ValkeyShard> = createRendezvousHash(shards);
+    const connections = shards.map(shard => shard.connection);
+    const connectionFor = (key: string): Redis => hash.get(key).connection;
     return {
-        connectionFor: key => hash.get(key).connection,
-        connections: shards.map(shard => shard.connection),
+        connectionFor,
+        connections,
+        invalidationConnections: options.invalidateEveryNode
+            ? () => connections
+            : key => [connectionFor(key)],
     };
 };
 
@@ -82,18 +108,21 @@ const connect = (node: ValkeyNode): ResizableShard => ({
  * `bind(valkeyTopologyId).withInstance(topology)`, and calls `resize()` when the nodes change.
  */
 export class ResizableValkeyTopology implements ValkeyTopology, AsyncDisposable {
+    readonly #options: TopologyOptions;
     #shards: readonly ResizableShard[];
     #topology: ValkeyTopology;
 
     /**
      * @param nodes - Nodes to spread keys over, with unique names
+     * @param options - Where invalidations go. Add and remove nodes at size `0` (see `invalidateEveryNode`).
      * @throws {RangeError} When names repeat, or no node has a positive size
      */
-    public constructor(nodes: readonly ValkeyNode[]) {
+    public constructor(nodes: readonly ValkeyNode[], options: TopologyOptions = {}) {
         // Validate before connecting, so invalid nodes don't leave connections open
         createRendezvousHash(nodes);
+        this.#options = options;
         this.#shards = nodes.map(node => connect(node));
-        this.#topology = rendezvousTopology(this.#shards);
+        this.#topology = rendezvousTopology(this.#shards, options);
     }
 
     /**
@@ -110,6 +139,9 @@ export class ResizableValkeyTopology implements ValkeyTopology, AsyncDisposable 
     }
 
     public readonly connectionFor = (key: string): Redis => this.#topology.connectionFor(key);
+
+    public readonly invalidationConnections = (key: string): readonly Redis[] =>
+        this.#topology.invalidationConnections(key);
 
     /**
      * Change the nodes. Connections to nodes that keep their name and URL are reused, and connections to removed
@@ -131,7 +163,7 @@ export class ResizableValkeyTopology implements ValkeyTopology, AsyncDisposable 
             }
             return connect(node);
         });
-        this.#topology = rendezvousTopology(shards);
+        this.#topology = rendezvousTopology(shards, this.#options);
         this.#shards = shards;
         await Promise.all(existing.values().map(async shard => shard.connection.quit()));
     }
@@ -157,6 +189,7 @@ export const singleNodeTopologyBinding = bind(valkeyTopologyId)
         (connection): ValkeyTopology => ({
             connectionFor: () => connection,
             connections: [connection],
+            invalidationConnections: () => [connection],
         })
     )
     .scoped(singletonScope);

@@ -44,5 +44,6 @@ export {
     singleNodeTopologyBinding,
     type ValkeyNode,
     type ValkeyShard,
+    type TopologyOptions,
     type ValkeyTopology,
 } from './lib/topology.js';

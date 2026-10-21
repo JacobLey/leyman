@@ -48,6 +48,31 @@ suite('ResizableValkeyTopology', () => {
         expect(pongs).to.deep.equal(['PONG', 'PONG', 'PONG']);
     });
 
+    withTopology.test("Invalidates on the key's node by default", ({ topology }) => {
+        expect(topology.invalidationConnections('key')).to.deep.equal([
+            topology.connectionFor('key'),
+        ]);
+    });
+
+    suite('With invalidateEveryNode', () => {
+        const withEvery = beforeEach(() => ({
+            everywhere: new ResizableValkeyTopology(valkeyNodes(3), { invalidateEveryNode: true }),
+        }));
+        withEvery.afterEach(async ({ everywhere }) => {
+            await everywhere.close();
+        });
+
+        withEvery.test('Invalidates on every node', ({ everywhere }) => {
+            expect(everywhere.invalidationConnections('key')).to.deep.equal(everywhere.connections);
+        });
+
+        withEvery.test('Keeps invalidating on every node once resized', async ({ everywhere }) => {
+            await everywhere.resize(valkeyNodes(4));
+
+            expect(everywhere.invalidationConnections('key')).to.have.length(4);
+        });
+    });
+
     suite('resize', () => {
         withTopology.test('Keeps the connections of unchanged nodes', async ({ topology }) => {
             const [first] = topology.shards;

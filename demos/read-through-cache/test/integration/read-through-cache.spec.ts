@@ -1,5 +1,11 @@
 import type { EventEmitter } from 'node:events';
-import type { CacheConfig, LeaseCacheTierOptions, Resource } from '@leyman/demo-read-through-cache';
+import type {
+    CacheConfig,
+    LeaseCacheTierOptions,
+    Resource,
+    TopologyOptions,
+    ValkeyNode,
+} from '@leyman/demo-read-through-cache';
 import { on, once } from 'node:events';
 import { errors } from 'bentocache';
 import { expectTypeOf } from 'expect-type';
@@ -798,6 +804,38 @@ suite('ReadThroughCache', () => {
 
     suite('createReadThroughCache', () => {
         withInstances.test(
+            'Invalidates on every shard, with invalidateEveryNode',
+            async ({ connection, prefix }) => {
+                const [first, second] = [new Redis(valkeyUrl(2)), new Redis(valkeyUrl(3))];
+                const { cache, close } = createReadThroughCache({
+                    connection,
+                    prefix,
+                    ttlMs: 60_000,
+                    shards: [
+                        { name: 'first', size: 1, connection: first },
+                        { name: 'second', size: 1, connection: second },
+                    ],
+                    invalidateEveryNode: true,
+                });
+                // A copy on each node, as two node lists would leave
+                await Promise.all([
+                    first.set(`${prefix}:key`, 'old'),
+                    second.set(`${prefix}:key`, 'old'),
+                ]);
+
+                await cache.invalidate('key');
+
+                const left = await Promise.all([
+                    first.exists(`${prefix}:key`),
+                    second.exists(`${prefix}:key`),
+                ]);
+                await close();
+                await Promise.all([first.quit(), second.quit()]);
+                expect(left).to.deep.equal([0, 0]);
+            }
+        );
+
+        withInstances.test(
             "Stores keys on the application's connection, and leaves it open",
             async ({ connection, prefix }) => {
                 const { cache, close } = createReadThroughCache({
@@ -933,6 +971,96 @@ suite('ReadThroughCache', () => {
 
         withTopology.afterEach(async ({ topology }) => {
             await topology.close();
+        });
+
+        suite('A change to the nodes, rolling out', () => {
+            /**
+             * Halfway through adding a third node: one instance still has the old list, with the node added at size
+             * `0` as the rule says, while another already gives it its size.
+             */
+            const withRollout = withInstances.beforeEach(({ baseline }) => {
+                const opened: ResizableValkeyTopology[] = [];
+                const open = (nodes: ValkeyNode[], options: TopologyOptions) => {
+                    const topology = new ResizableValkeyTopology(nodes, options);
+                    opened.push(topology);
+                    return baseline.replaceBinding(bind(valkeyTopologyId).withInstance(topology));
+                };
+                const [first, second, third] = valkeyNodes(3) as [
+                    ValkeyNode,
+                    ValkeyNode,
+                    ValkeyNode,
+                ];
+                const rollout = (options: TopologyOptions) => ({
+                    old: open([first, second, { ...third, size: 0 }], options),
+                    updated: open([first, second, third], options),
+                });
+                // A key the third node holds, once the change is done
+                const after = createRendezvousHash(valkeyNodes(3));
+                const key = Array.from({ length: 100 }, (_, i) => `key-${i}`).find(
+                    candidate => after.get(candidate).name === third.name
+                )!;
+                return { opened, rollout, key };
+            });
+            withRollout.afterEach(async ({ opened }) => {
+                await Promise.all(opened.map(async topology => topology.close()));
+            });
+
+            withRollout.test(
+                'Serves an invalidated value from the node the invalidation missed, by default',
+                async ({ instance, key, rollout }) => {
+                    const { old, updated } = rollout({});
+                    const [writer, reader] = [instance(old), instance(updated)];
+                    await reader.get(key, async () => 'old');
+
+                    await writer.invalidate(key);
+
+                    // The writer only knew the key's old node, so the reader's copy outlived the invalidation
+                    expect(await reader.get(key, async () => 'new')).to.equal('old');
+                }
+            );
+
+            withRollout.test(
+                'Invalidates on every node, with invalidateEveryNode',
+                async ({ instance, key, rollout }) => {
+                    const { old, updated } = rollout({ invalidateEveryNode: true });
+                    const [writer, reader] = [instance(old), instance(updated)];
+                    await reader.get(key, async () => 'old');
+
+                    await writer.invalidate(key);
+
+                    expect(await reader.get(key, async () => 'new')).to.equal('new');
+                }
+            );
+
+            withRollout.test(
+                'Expires on every node, with invalidateEveryNode',
+                async ({ instance, key, rollout }) => {
+                    const { old, updated } = rollout({ invalidateEveryNode: true });
+                    const [writer, reader] = [instance(old), instance(updated)];
+                    await reader.get(key, async () => 'old');
+
+                    await writer.expire(key);
+
+                    expect(await reader.get(key, async () => 'new')).to.equal('new');
+                }
+            );
+
+            withRollout.test(
+                'Invalidates on every node with lease-cache, with invalidateEveryNode',
+                async ({ instance, key, rollout }) => {
+                    const { old, updated } = rollout({ invalidateEveryNode: true });
+                    const leased = leaseCacheTierBinding(lease);
+                    const [writer, reader] = [
+                        instance(old.replaceBinding(leased)),
+                        instance(updated.replaceBinding(leased)),
+                    ];
+                    await reader.get(key, async () => 'old');
+
+                    await writer.invalidate(key);
+
+                    expect(await reader.get(key, async () => 'new')).to.equal('new');
+                }
+            );
         });
 
         withTopology.test(
