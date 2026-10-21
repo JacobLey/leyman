@@ -108,7 +108,7 @@ validator.assert(value);
 
 #### `.validate(value): StandardSchemaV1.Result<T>`
 
-Convenience shorthand for the StandardSchema `~standard.validate` method. Returns `{ value: T }` on success, or `{ issues: StandardSchemaV1.Issue[] }` on failure. Each issue is an [Ajv error object](https://ajv.js.org/api.html#error-objects) with a `message` string and a `path` to the invalid value (array indices as numbers, and missing properties at that property).
+Convenience shorthand for the StandardSchema `~standard.validate` method. Returns `{ value: T }` on success, or `{ issues: StandardSchemaV1.Issue[] }` on failure. Each issue is an [Ajv error object](https://ajv.js.org/api.html#error-objects) with a `message` string and a `path` to the invalid value (array indices as numbers, and missing or extra properties at that property).
 
 ```ts
 const result = validator.validate(value);

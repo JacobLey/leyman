@@ -119,6 +119,25 @@ suite('juniper-validator', () => {
                 );
             });
 
+            test('Extra properties', () => {
+                const closed = makeValidator(
+                    objectSchema({ properties: { a: numberSchema() } }).additionalProperties(false),
+                    { allErrors: true }
+                );
+                expect(
+                    closed.validate({ a: 1, b: 2, c: 3 }).issues!.map(issue => issue.path)
+                ).to.deep.equal([['b'], ['c']]);
+
+                const unevaluated = makeValidator(
+                    objectSchema({ properties: { a: numberSchema() } })
+                        .allOf(objectSchema({ properties: { b: numberSchema() } }))
+                        .unevaluatedProperties(false)
+                );
+                expect(
+                    unevaluated.validate({ a: 1, b: 2, c: 3 }).issues!.map(issue => issue.path)
+                ).to.deep.equal([['c']]);
+            });
+
             test('Ignores jsPropertySyntax', () => {
                 const jsSyntax = makeValidator(
                     numberSchema(),

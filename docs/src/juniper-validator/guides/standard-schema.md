@@ -44,7 +44,7 @@ Libraries call `validator['~standard'].validate(value)`. It is the same function
 
 Each issue is one of Ajv's [error objects](https://ajv.js.org/api.html#error-objects), so it has Ajv's fields, like `instancePath` and `keyword`, as well as Standard Schema's `message` and `path`.
 
-`path` lists the keys from the value down to the invalid part, so libraries that show errors next to a field can place them. Array indices are numbers. An issue for a missing property (`required` or `dependentRequired`) is placed at that property, not the object missing it:
+`path` lists the keys from the value down to the invalid part, so libraries that show errors next to a field can place them. Array indices are numbers. An issue for a missing property (`required` or `dependentRequired`), or an extra one (`additionalProperties` or `unevaluatedProperties`), is placed at that property, not the object:
 
 ```ts
 import { arraySchema, numberSchema, objectSchema, stringSchema } from 'juniper';

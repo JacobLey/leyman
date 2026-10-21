@@ -72,8 +72,8 @@ const addMetadataKeywords = (ajv: Ajv2020, schema: unknown): void => {
 
 /**
  * Convert Ajv's `instancePath` (a JSON Pointer) to a Standard Schema path.
- * Array indices become numbers, and a missing property is placed at that property
- * rather than the object that lacks it.
+ * Array indices become numbers, and a missing or extra property is placed at that property
+ * rather than the object that lacks (or has) it.
  *
  * @param error - Ajv error
  * @param value - validated value, used to tell array indices from object keys
@@ -95,8 +95,12 @@ const toPath = (error: ErrorObject, value: unknown): PropertyKey[] => {
             }
         }
     }
-    if (error.keyword === 'required' || error.keyword === 'dependentRequired') {
-        path.push((error.params as { missingProperty: string }).missingProperty);
+    // Missing and extra properties are placed at that property
+    const { params } = error as ErrorObject<string, Record<string, unknown>>;
+    const property =
+        params.missingProperty ?? params.additionalProperty ?? params.unevaluatedProperty;
+    if (typeof property === 'string') {
+        path.push(property);
     }
     return path;
 };
