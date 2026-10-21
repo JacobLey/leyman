@@ -285,6 +285,18 @@ suite('juniper-validator', () => {
         expect(uuid.is('123')).to.equal(false);
     });
 
+    test('Validates open tuples', () => {
+        const tuple = makeValidator(arraySchema().prefixItem(stringSchema()));
+        expect(tuple.is(['a'])).to.equal(true);
+        expect(tuple.is(['a', 1])).to.equal(true);
+        expect(tuple.is([1])).to.equal(false);
+
+        // Still opt in to Ajv's check
+        expect(() =>
+            makeValidator(arraySchema().prefixItem(stringSchema()), { strictTuples: true })
+        ).to.throw('strict mode: "prefixItems" is 1-tuple');
+    });
+
     test('Validates discriminated oneOf', () => {
         const pet = makeValidator(
             objectSchema().oneOf(

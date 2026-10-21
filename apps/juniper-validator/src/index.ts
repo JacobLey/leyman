@@ -109,8 +109,11 @@ export const makeValidator = <T>(
     // eslint-disable-next-line @typescript-eslint/no-deprecated, sonarjs/deprecation -- Dropped (even for untyped callers) so `instancePath`, which issue paths are parsed from, stays a JSON Pointer
     const { jsPropertySyntax, ...ajvOptions }: AjvOptions = { ...options };
     // Standard formats (`email`, `uuid`, `date-time`, ...), which strict mode otherwise rejects as unknown.
-    // `discriminator` is emitted by Juniper's discriminated `oneOf`
-    const ajv = addFormats(new Ajv2020({ discriminator: true, ...ajvOptions, strict: true }));
+    // `discriminator` is emitted by Juniper's discriminated `oneOf`.
+    // `strictTuples` rejects open tuples (`prefixItem()` on an array with no `maxItems`), which Juniper supports
+    const ajv = addFormats(
+        new Ajv2020({ discriminator: true, strictTuples: false, ...ajvOptions, strict: true })
+    );
     if (isSchema(schema)) {
         addMetadataKeywords(ajv, json);
     }

@@ -17,7 +17,7 @@ Compiles a schema into a validator. Compiling is the slow part, so make each val
 
 Validation uses Ajv's JSON Schema 2020-12 validator ([`Ajv2020`](https://ajv.js.org/json-schema.html#draft-2020-12)), which matches Juniper's output.
 
-- **Always strict.** [Strict mode](https://ajv.js.org/strict-mode.html) is always on, and `strict` can't be passed. Juniper's output always passes it: keywords added with [`.metadata()`](/juniper/reference/api#metadata-key-value-metadata-record) are registered as annotations. A rendered JSON Schema with an unknown keyword is rejected; register it with Ajv's `keywords` option.
+- **Always strict.** [Strict mode](https://ajv.js.org/strict-mode.html) is always on, and `strict` can't be passed. Juniper's output always passes it: keywords added with [`.metadata()`](/juniper/reference/api#metadata-key-value-metadata-record) are registered as annotations. A rendered JSON Schema with an unknown keyword is rejected; register it with Ajv's `keywords` option. The exception is Ajv's `strictTuples` check, off by default because it rejects open tuples (`arraySchema().prefixItem(...)`); pass `strictTuples: true` to turn it on.
 - **`discriminator` is on.** Ajv's `discriminator` option defaults to `true`, for Juniper's [discriminated unions](/juniper/guides/openapi#discriminated-unions). Pass `discriminator: false` to turn it off.
 - **JSON Pointer paths.** `jsPropertySyntax` can't be passed, so each issue's `instancePath` is a [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901), which its [`path`](/juniper-validator/guides/standard-schema#issues) is read from.
 - **Options that change the value.** `coerceTypes`, `useDefaults` and `removeAdditional` change the value passed in, and `validate()` returns that same value.

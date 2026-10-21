@@ -62,7 +62,7 @@ if (result.issues) {
 
 Pass a Juniper `Schema` instance (or a plain `JsonSchema` object) to `makeValidator`. The returned validator implements the [StandardSchema v1](https://standardschema.dev/) interface, making it compatible with any library that accepts standard validators (e.g. form libraries, OpenAPI tooling).
 
-Ajv is used internally to compile and run validation. The `strict` option is always `true`; keywords added with Juniper's `.metadata()` are registered as annotations, so they pass it. Ajv's `discriminator` option is on by default, for Juniper's discriminated `oneOf`.
+Ajv is used internally to compile and run validation. The `strict` option is always `true`; keywords added with Juniper's `.metadata()` are registered as annotations, so they pass it. Ajv's `strictTuples` check is off by default, since it rejects Juniper's open tuples (`arraySchema().prefixItem(...)`); pass `strictTuples: true` to turn it on. Ajv's `discriminator` option is on by default, for Juniper's discriminated `oneOf`.
 
 The validator also implements [Standard JSON Schema](https://standardschema.dev/), the same as the Juniper schema it was made from.
 
