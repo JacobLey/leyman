@@ -28,7 +28,7 @@ export class LifecycleCli implements Main {
      * @param argv - process arguments
      */
     public async main(argv: string[]): Promise<void> {
-        // eslint-disable-next-line import-x/no-relative-parent-imports
+        // eslint-disable-next-line import-x/no-relative-parent-imports -- The build is one level below package.json
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
         let cli: Argv<LifecycleCommandInput> = yargs()
@@ -56,11 +56,9 @@ export class LifecycleCli implements Main {
         if (e) {
             process.exitCode = 1;
             if (log) {
-                // eslint-disable-next-line no-console
                 console.error(log);
             }
         } else if (log) {
-            // eslint-disable-next-line no-console
             console.log(log);
         }
     }

@@ -40,7 +40,6 @@ export const barrelCommand: Command<BarrelCommandExtendedInput> = {
         });
 
         for (const change of changed) {
-            // eslint-disable-next-line no-console
             console.log(change);
         }
 

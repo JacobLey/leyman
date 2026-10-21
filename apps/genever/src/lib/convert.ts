@@ -185,8 +185,7 @@ const typeOfValue = (value: unknown): JsonType => {
         return 'array';
     }
     if (typeof value === 'number') {
-        // JSON Schema integers include those too large to be safe, e.g. `1e20`
-        // eslint-disable-next-line unicorn/prefer-number-is-safe-integer
+        // eslint-disable-next-line unicorn/prefer-number-is-safe-integer -- JSON Schema integers include those too large to be safe, e.g. `1e20`
         return Number.isInteger(value) ? 'integer' : 'number';
     }
     return typeof value as 'boolean' | 'object' | 'string';
@@ -243,7 +242,7 @@ const numberBound = (
     );
 
 const compareNames = (a: NamedType, b: NamedType): number =>
-    // eslint-disable-next-line sonarjs/strings-comparison
+    // eslint-disable-next-line sonarjs/strings-comparison -- By code unit, so the order doesn't depend on the locale
     a.name < b.name ? -1 : Number(a.name > b.name);
 
 /**

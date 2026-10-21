@@ -42,8 +42,7 @@ const bundleForBrowser = async (): Promise<string> => {
             write: false,
             minify: false,
             lib: {
-                // Compiled from `entry.ts` alongside this file
-                // eslint-disable-next-line unicorn/no-missing-local-resource
+                // eslint-disable-next-line unicorn/no-missing-local-resource -- Compiled from `entry.ts` alongside this file
                 entry: fileURLToPath(new URL('../data/entry.js', import.meta.url)),
                 formats: ['iife'],
                 name: 'unknownError',

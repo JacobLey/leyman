@@ -10,5 +10,9 @@ export default [
                 process: 'readonly',
             },
         },
+        rules: {
+            // `then` is a JSON Schema keyword (`if`/`then`/`else`), so schemas have it by design
+            'unicorn/no-thenable': 'off',
+        },
     },
 ];

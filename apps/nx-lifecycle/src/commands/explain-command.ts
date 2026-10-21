@@ -94,13 +94,11 @@ export const explainCommand: Command<ExplainCommandExtendedInput> = {
             });
         } catch (err) {
             // Only a mistyped project or stage, which a stack trace would bury
-            // eslint-disable-next-line no-console
             console.error(getErrorMessage(err));
             process.exitCode = 1;
             return;
         }
 
-        // eslint-disable-next-line no-console
         console.log(formatExplanation(explanation));
     },
 };

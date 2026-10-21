@@ -34,8 +34,7 @@ const expectRoundTrip = (
     serialize: (schema: Schema<unknown>) => unknown
 ): void => {
     const schema = fixtures[name as keyof typeof fixtures] as Schema<unknown>;
-    // Only the serialized text survives, as if read from a file
-    // eslint-disable-next-line unicorn/prefer-structured-clone
+    // eslint-disable-next-line unicorn/prefer-structured-clone -- Only the serialized text survives, as if read from a file
     const json: unknown = JSON.parse(JSON.stringify(serialize(schema)));
     const source = genever(json, options);
     const assertion = [
@@ -112,7 +111,7 @@ suite('round trip', () => {
                         schemas: components([openApiFixtures.user, openApiFixtures.tree], options),
                     },
                 };
-                // eslint-disable-next-line unicorn/prefer-structured-clone
+                // eslint-disable-next-line unicorn/prefer-structured-clone -- Only the serialized text survives, as if read from a file
                 const source = genever(JSON.parse(JSON.stringify(document)));
                 const assertion = [
                     ...assertionImports,
@@ -149,7 +148,6 @@ suite('round trip', () => {
                     required: ['kind'],
                 }),
                 {
-                    // eslint-disable-next-line unicorn/no-thenable
                     then: objectSchema({
                         properties: { value: numberSchema() },
                         required: ['value'],

@@ -9,8 +9,7 @@ import { isSchema } from 'juniper';
 const addFormats = defaultImport(ajvFormats);
 
 export interface JuniperValidator<T> extends StandardSchemaV1<T>, StandardJSONSchemaV1<T> {
-    // Both interfaces declare `~standard`, so it must be declared as their combination
-    // eslint-disable-next-line @typescript-eslint/naming-convention
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Both interfaces declare `~standard`, so it must be declared as their combination
     readonly '~standard': StandardJSONSchemaV1.Props<T> & StandardSchemaV1.Props<T>;
     is: (x: unknown) => x is T;
     assert: (x: unknown) => asserts x is T;
@@ -107,8 +106,7 @@ export const makeValidator = <T>(
     options?: Omit<AjvOptions, 'jsPropertySyntax' | 'strict'>
 ): JuniperValidator<T> => {
     const json = isSchema(schema) ? schema.toJSON({ schema: true }) : schema;
-    // Dropped (even for untyped callers) so `instancePath`, which issue paths are parsed from, stays a JSON Pointer
-    // eslint-disable-next-line @typescript-eslint/no-deprecated, sonarjs/deprecation
+    // eslint-disable-next-line @typescript-eslint/no-deprecated, sonarjs/deprecation -- Dropped (even for untyped callers) so `instancePath`, which issue paths are parsed from, stays a JSON Pointer
     const { jsPropertySyntax, ...ajvOptions }: AjvOptions = { ...options };
     // Standard formats (`email`, `uuid`, `date-time`, ...), which strict mode otherwise rejects as unknown.
     // `discriminator` is emitted by Juniper's discriminated `oneOf`

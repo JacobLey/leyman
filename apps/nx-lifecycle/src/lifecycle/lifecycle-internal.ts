@@ -80,7 +80,7 @@ const warnUndeclaredBindings = (
     );
     for (const targetName of Object.keys(bindings)) {
         if (!declaredTargets.has(targetName)) {
-            // eslint-disable-next-line no-console
+            // eslint-disable-next-line no-console -- Reported to the terminal the lifecycle command runs in
             console.warn(
                 `Bound target ${targetName} is not declared in any project.json. Is it a typo?`
             );
@@ -114,7 +114,7 @@ const saveJsonConfigs = async ({
     }
 
     for (const { path } of filesToUpdate) {
-        // eslint-disable-next-line no-console
+        // eslint-disable-next-line no-console -- Reported to the terminal the lifecycle command runs in
         console.info(`Updating ${path}`);
     }
     if (options.dryRun) {

@@ -101,7 +101,6 @@ suite('errors', () => {
                 properties: { a: true },
                 required: ['b'],
             },
-            // eslint-disable-next-line unicorn/no-thenable
             'then without if': { type: 'string', then: { maxLength: 1 } },
             'else without if': { type: 'string', else: { maxLength: 1 } },
             'enum value of another type': { type: 'string', enum: ['a', 1] },

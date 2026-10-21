@@ -63,8 +63,7 @@ export const recordObject = objectSchema({
     additionalProperties: numberSchema(),
 });
 export const patternObject = objectSchema({ additionalProperties: false }).patternProperties(
-    // Juniper reads the keys a pattern matches from this type, not from the pattern
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- Juniper reads the keys a pattern matches from this type, not from the pattern
     '^x-' as PatternProperties<`x-${string}`>,
     stringSchema()
 );

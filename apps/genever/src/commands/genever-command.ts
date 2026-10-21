@@ -142,7 +142,6 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
         });
 
         if (updated) {
-            // eslint-disable-next-line no-console
             console.log(output);
         }
     },

@@ -21,7 +21,7 @@ const nxBin = Path.join(nxRoot, nxPackageJson.bin.nx);
 // Keeps PATH for shell commands, but isolates from the Nx run executing these tests
 const env = {
     ...Object.fromEntries(
-        // eslint-disable-next-line n/no-process-env
+        // eslint-disable-next-line n/no-process-env -- A copy of the environment, without the outer run's NX_ variables
         Object.entries(process.env).filter(([key]) => !key.startsWith('NX_'))
     ),
     NX_DAEMON: 'false',

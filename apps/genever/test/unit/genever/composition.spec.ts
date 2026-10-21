@@ -201,7 +201,6 @@ suite('composition', () => {
                     type: 'object',
                     properties: { kind: { type: 'string' }, a: { type: 'number' } },
                     if: { properties: { kind: { const: 'a' } }, required: ['kind'] },
-                    // eslint-disable-next-line unicorn/no-thenable
                     then: { required: ['a'] },
                     else: { properties: { a: false } },
                 },
@@ -213,7 +212,6 @@ suite('composition', () => {
 
         test('without else allows anything else', () => {
             expectGenerated(
-                // eslint-disable-next-line unicorn/no-thenable
                 { type: 'string', if: { pattern: '^a' }, then: { pattern: 'b$' } },
                 { Schema: 'string' }
             );

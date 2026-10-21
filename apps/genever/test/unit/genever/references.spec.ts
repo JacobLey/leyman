@@ -158,7 +158,6 @@ suite('references', () => {
                 allOf: ref => ({ allOf: [{ $ref: ref }] }),
                 oneOf: ref => ({ oneOf: [{ $ref: ref }] }),
                 if: ref => ({ if: { $ref: ref } }),
-                // eslint-disable-next-line unicorn/no-thenable
                 then: ref => ({ if: true, then: { $ref: ref } }),
                 else: ref => ({ if: false, else: { $ref: ref } }),
                 not: ref => ({ not: { $ref: ref } }),

@@ -47,8 +47,7 @@ const bundleForBrowser = async (): Promise<string> => {
             write: false,
             minify: false,
             lib: {
-                // Compiled from `entry.ts` alongside this file
-                // eslint-disable-next-line unicorn/no-missing-local-resource
+                // eslint-disable-next-line unicorn/no-missing-local-resource -- Compiled from `entry.ts` alongside this file
                 entry: fileURLToPath(new URL('../data/entry.js', import.meta.url)),
                 formats: ['iife'],
                 name: 'isoCrypto',
@@ -63,8 +62,7 @@ const bundleForBrowser = async (): Promise<string> => {
  * Runs in the page before any of its scripts. Records each Web Crypto method called.
  */
 const trackWebCrypto = (): void => {
-    // Read back from the page by `webCryptoCalls`
-    // eslint-disable-next-line unicorn/no-global-object-property-assignment
+    // eslint-disable-next-line unicorn/no-global-object-property-assignment -- Read back from the page by `webCryptoCalls`
     globalThis.webCryptoCalls = new Set();
 
     const track = (proto: object, prefix: string): void => {

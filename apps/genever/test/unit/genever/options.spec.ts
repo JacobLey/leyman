@@ -163,7 +163,6 @@ suite('options', () => {
 
         test('ignores then without if', () => {
             expectGenerated(
-                // eslint-disable-next-line unicorn/no-thenable
                 { type: 'string', then: { type: 'number' } },
                 { Schema: 'string' },
                 { strict: false }

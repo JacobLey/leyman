@@ -144,7 +144,7 @@ export const readPattern = (value: unknown, pointer: string): string => {
         throw new GeneverInvalidSchemaError('pattern must be a string', { pointer });
     }
     try {
-        // eslint-disable-next-line no-new
+        // eslint-disable-next-line no-new -- Only checks that the pattern compiles
         new RegExp(value, 'u');
     } catch {
         throw new GeneverInvalidSchemaError(`Invalid regular expression "${value}"`, { pointer });

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-magic-numbers -- Rule options, such as limits, are numbers */
 
 import type { RuleModule } from '@typescript-eslint/utils/ts-eslint';
 import type { ESLint, Linter, Rule } from 'eslint';
@@ -983,6 +983,13 @@ export default function makeEslintConfigForPackage({
                     'error',
                     { ...extraneousDependencies, devDependencies: false, includeTypes: true },
                 ],
+            },
+        },
+        {
+            // A CLI's entry point and its commands print their results to the terminal
+            files: ['src/cli.{c,m,}ts', 'src/commands/**/*.{c,m,}ts'],
+            rules: {
+                'no-console': 'off',
             },
         },
         {

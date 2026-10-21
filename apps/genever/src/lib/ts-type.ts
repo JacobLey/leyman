@@ -199,7 +199,7 @@ const mergeObjects = (objects: readonly (TsType & { kind: 'object' })[]): TsType
                           doc: existing.doc ?? property.doc,
                           name: property.name,
                           optional: existing.optional && property.optional,
-                          // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                          // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `intersection` and this function call each other
                           type: intersection([existing.type, property.type]),
                       }
                     : property
@@ -228,17 +228,17 @@ const mergeArrays = (members: TsType[]): TsType[] => {
     if (arrays.length === 0 || tuples.length > 1 || (!tuple && arrays.length === 1)) {
         return members;
     }
-    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `intersection` and this function call each other
     const element = intersection(arrays.map(array => array.element));
     const merged: TsType = tuple
         ? {
               kind: 'tuple',
               elements: tuple.elements.map(item => ({
                   optional: item.optional,
-                  // eslint-disable-next-line @typescript-eslint/no-use-before-define
+                  // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `intersection` and this function call each other
                   type: intersection([item.type, element]),
               })),
-              // eslint-disable-next-line @typescript-eslint/no-use-before-define
+              // eslint-disable-next-line @typescript-eslint/no-use-before-define -- `intersection` and this function call each other
               rest: tuple.rest && intersection([tuple.rest, element]),
           }
         : { kind: 'array', element };

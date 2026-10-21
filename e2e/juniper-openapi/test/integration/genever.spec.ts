@@ -37,8 +37,7 @@ const operations = {
 suite('genever reads the spec back', () => {
     for (const version of ['3.0.3', '3.1.0'] as const) {
         test(`OpenAPI ${version} gives the types juniper inferred`, () => {
-            // Only the serialized text survives, as if read from a file
-            // eslint-disable-next-line unicorn/prefer-structured-clone
+            // eslint-disable-next-line unicorn/prefer-structured-clone -- Only the serialized text survives, as if read from a file
             const source = genever(JSON.parse(JSON.stringify(buildSpec(version))));
             const names = Object.keys(expected);
             const assertion = [

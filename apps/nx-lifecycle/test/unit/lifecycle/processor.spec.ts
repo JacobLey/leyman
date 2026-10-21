@@ -9,9 +9,9 @@ import * as Processor from '#internal/lifecycle/processor.js';
  */
 const deepFreeze = <T>(obj: T): T => {
     if (obj && typeof obj === 'object' && !Object.isFrozen(obj)) {
-        // eslint-disable-next-line guard-for-in, sonarjs/for-in
-        for (const key in obj) {
-            deepFreeze(obj[key]);
+        Object.freeze(obj);
+        for (const value of Object.values(obj)) {
+            deepFreeze(value);
         }
     }
     return obj;

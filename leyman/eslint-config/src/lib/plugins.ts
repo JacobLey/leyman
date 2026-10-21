@@ -13,7 +13,7 @@ import { withLegacyRuleContext } from './legacy-rule-context.js';
 
 export { default as eslintConfig } from '@eslint/js';
 
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment -- The plugins ship without types */
 export const prettierConfig: ESLint.Plugin = rawPrettierConfig;
 export const importPlugin: ESLint.Plugin = rawImportPlugin;
 export const jsDocPlugin: ESLint.Plugin = rawJsDocPlugin;

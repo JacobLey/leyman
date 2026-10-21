@@ -19,7 +19,7 @@ interface PackageJson {
 
 // Found the same way `Publish` in `dagger/main.go` finds what to publish.
 // pnpm comes from PATH, as it does for every Nx target.
-// eslint-disable-next-line sonarjs/no-os-command-from-path
+// eslint-disable-next-line sonarjs/no-os-command-from-path -- pnpm comes from PATH, as it does for every Nx target
 const workspace = execFileSync('pnpm', ['ls', '--recursive', '--depth', '-1', '--json'], {
     encoding: 'utf8',
 });
