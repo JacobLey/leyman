@@ -68,9 +68,14 @@ Close every connection to the clones first: dropping a database ends any left op
 
 **Returns** `Promise<void>`.
 
-## `dumpSchema(url)`
+## `dumpSchema(url, options?)`
 
 Dumps a database's schema with `pg_dump --schema-only`, normalized so the same schema always gives the same text: no version comments, no `\restrict` lines, and no owners, privileges or tablespaces. See [`dumpSchema`](/pg-dolly/guides/schema#dumpschema).
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `url` | `string` | Database to dump, as a `postgres://` URL. |
+| `options.data` | `string[]` | Tables to dump the rows of too, after the schema, as `pg_dump --table` patterns. As `INSERT`s, with the sequences they own set to match. For a migration tool's own table, so a database built from the dump knows its migrations ran. |
 
 Needs `pg_dump` on the `PATH`, at least the server's major version.
 

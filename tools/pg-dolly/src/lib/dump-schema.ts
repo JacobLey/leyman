@@ -31,6 +31,31 @@ export const normalizeDump = (dump: string): string =>
         .replaceAll(/\n{3,}/gu, '\n\n')
         .trim()}\n`;
 
+export interface DumpSchemaOptions {
+    /**
+     * Tables to dump the rows of too, after the schema, e.g. a migration tool's own table, so a database built
+     * from the dump knows its migrations ran. Each is a `pg_dump --table` pattern, e.g. `drizzle.__drizzle_migrations`.
+     * Sequences the tables own are set to match.
+     */
+    readonly data?: readonly string[] | undefined;
+}
+
+/**
+ * Runs `pg_dump`, leaving out what names one server: owners, privileges and tablespaces.
+ *
+ * @param url - As a `postgres://` URL
+ * @param args - What to dump
+ * @returns What pg_dump wrote
+ */
+const pgDump = async (url: string, args: readonly string[]): Promise<string> => {
+    const { stdout } = await execFileAsync(
+        'pg_dump',
+        [...args, '--no-owner', '--no-privileges', '--no-tablespaces', `--dbname=${url}`],
+        { encoding: 'utf8', maxBuffer: maxDumpBytes }
+    );
+    return stdout;
+};
+
 /**
  * Dumps a database's schema with `pg_dump`, normalized so the same schema always gives the same text, and so any
  * client (including `template()`) can run it. Needs `pg_dump` on the `PATH`, at least the server's major version.
@@ -39,13 +64,21 @@ export const normalizeDump = (dump: string): string =>
  * not have.
  *
  * @param url - Database to dump, as a `postgres://` URL
+ * @param options - Tables whose rows to dump too
  * @returns The schema as SQL
  */
-export const dumpSchema = async (url: string): Promise<string> => {
-    const { stdout } = await execFileAsync(
-        'pg_dump',
-        ['--schema-only', '--no-owner', '--no-privileges', '--no-tablespaces', `--dbname=${url}`],
-        { encoding: 'utf8', maxBuffer: maxDumpBytes }
-    );
-    return normalizeDump(stdout);
+export const dumpSchema = async (url: string, options: DumpSchemaOptions = {}): Promise<string> => {
+    const { data = [] } = options;
+    const [schema, rows] = await Promise.all([
+        pgDump(url, ['--schema-only']),
+        data.length > 0
+            ? // As `INSERT`s, which any client can run, rather than `COPY … FROM stdin`, which only psql can
+              pgDump(url, [
+                  '--data-only',
+                  '--column-inserts',
+                  ...data.map(table => `--table=${table}`),
+              ])
+            : '',
+    ]);
+    return normalizeDump(`${schema}\n${rows}`);
 };

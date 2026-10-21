@@ -1,4 +1,4 @@
-export { dumpSchema } from './lib/dump-schema.js';
+export { type DumpSchemaOptions, dumpSchema } from './lib/dump-schema.js';
 export {
     PgDollyClosedError,
     PgDollyError,

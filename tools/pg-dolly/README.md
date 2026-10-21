@@ -31,7 +31,7 @@ Named after Dolly the sheep. The design follows Go's [pgtestdb](https://github.c
   - [dolly.template](#dollytemplatesql-options)
   - [template.clone](#templateclone)
   - [dolly.close](#dollyclose)
-  - [dumpSchema](#dumpschemaurl)
+  - [dumpSchema](#dumpschemaurl-options)
   - [Errors](#errors)
 - [Compared to alternatives](#compared-to-alternatives)
 
@@ -273,9 +273,11 @@ Drops this run's clones, except those kept, and closes the connection. Calling i
 
 Close the tests' connections to their clones first: dropping a database ends any left open.
 
-### `dumpSchema(url)`
+### `dumpSchema(url, options?)`
 
 Dumps a database's schema with `pg_dump --schema-only`, normalized so the same schema always gives the same text: no version comments, and no `\restrict` lines (psql meta-commands with a random key, which no other client could run). Owners, privileges and tablespaces are left out, as they name one server's roles. The result can be passed to `template()` as is.
+
+`options.data` lists tables to dump the rows of too, after the schema, as `INSERT`s (any client can run them, unlike `COPY`), with the sequences they own set to match. It's for a migration tool's own table (`drizzle.__drizzle_migrations`), so a database built from the dump knows its migrations ran.
 
 Needs `pg_dump` on the `PATH`, at least the server's major version.
 

@@ -17,7 +17,25 @@ END;
 $$;
 CREATE TRIGGER upper_name BEFORE INSERT ON item FOR EACH ROW EXECUTE FUNCTION upper_name();
 CREATE VIEW item_names AS SELECT name FROM item;
+CREATE SCHEMA tool;
+CREATE TABLE tool.migrations (id serial PRIMARY KEY, name text NOT NULL);
+INSERT INTO tool.migrations (name) VALUES ('001-item'), ('002-names');
 `;
+
+/**
+ * @param url - Database
+ * @param sql - Query
+ * @returns Its rows
+ */
+const rows = async (url: string, sql: string): Promise<unknown[]> => {
+    const client = await connect(url);
+    try {
+        const result = await client.query<Record<string, unknown>>(sql);
+        return result.rows;
+    } finally {
+        await client.end();
+    }
+};
 
 /**
  * Runs the migration, as a project's migrations would.
@@ -100,5 +118,52 @@ suite('dumpSchema', () => {
         const clone = await template.clone();
 
         expect(await dumpSchema(clone.url)).to.equal(dump);
+    });
+
+    suite('With data', () => {
+        withMigrated.test(
+            "Dumps the rows of the tables given, such as a migration tool's",
+            async ({ dolly, database }) => {
+                const dump = await dumpSchema(database.url, { data: ['tool.migrations'] });
+                const template = await dolly.template(dump);
+                const clone = await template.clone();
+
+                expect(
+                    await rows(clone.url, 'SELECT id, name FROM tool.migrations ORDER BY id')
+                ).to.deep.equal([
+                    { id: 1, name: '001-item' },
+                    { id: 2, name: '002-names' },
+                ]);
+            }
+        );
+
+        withMigrated.test('Sets the sequences the tables own', async ({ dolly, database }) => {
+            const dump = await dumpSchema(database.url, { data: ['tool.migrations'] });
+            const template = await dolly.template(dump);
+            const clone = await template.clone();
+
+            expect(
+                await rows(
+                    clone.url,
+                    "INSERT INTO tool.migrations (name) VALUES ('003') RETURNING id"
+                )
+            ).to.deep.equal([{ id: 3 }]);
+        });
+
+        withMigrated.test('Leaves rows out by default', async ({ dolly, database }) => {
+            const template = await dolly.template(await dumpSchema(database.url));
+            const clone = await template.clone();
+
+            expect(await rows(clone.url, 'SELECT * FROM tool.migrations')).to.deep.equal([]);
+        });
+
+        withMigrated.test('Dumps the same rows to the same text', async ({ empty, database }) => {
+            const other = await empty.clone();
+            await migrate(other.url);
+
+            expect(await dumpSchema(other.url, { data: ['tool.migrations'] })).to.equal(
+                await dumpSchema(database.url, { data: ['tool.migrations'] })
+            );
+        });
     });
 });
