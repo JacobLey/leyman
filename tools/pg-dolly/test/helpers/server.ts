@@ -1,4 +1,5 @@
 import { randomUUID } from 'node:crypto';
+import { setTimeout } from 'node:timers/promises';
 import pg from 'pg';
 
 /**
@@ -98,13 +99,67 @@ export class Server {
     }
 
     /**
+     * Marks a database invalid, as a `DROP DATABASE` interrupted in the middle leaves it.
+     *
+     * @param name - Database name
+     */
+    public async invalidate(name: string): Promise<void> {
+        await this.#client.query('UPDATE pg_database SET datconnlimit = -2 WHERE datname = $1', [
+            name,
+        ]);
+    }
+
+    /**
+     * Waits for every connection with this `application_name` to end. A closed connection's backend leaves
+     * `pg_stat_activity` just after the client sees it close.
+     *
+     * @param applicationName - Name the connections gave
+     * @returns Whether they all ended within a second
+     */
+    public async disconnected(applicationName: string): Promise<boolean> {
+        for (let attempt = 0; attempt < 100; attempt++) {
+            const { rows } = await this.#client.query<{ count: number }>(
+                'SELECT count(*)::int AS count FROM pg_stat_activity WHERE application_name = $1',
+                [applicationName]
+            );
+            if (rows[0]?.count === 0) {
+                return true;
+            }
+            await setTimeout(10);
+        }
+        return false;
+    }
+
+    /**
+     * Creates a role that can create databases, but not drop those of others, as a shared server's users would be.
+     *
+     * @param name - Also the role's password
+     * @returns The server's URL, as the role
+     */
+    public async createRole(name: string): Promise<string> {
+        await this.#client.query(`CREATE ROLE ${name} LOGIN CREATEDB PASSWORD '${name}'`);
+        const url = new URL(serverUrl);
+        url.username = name;
+        url.password = name;
+        return url.href;
+    }
+
+    public async dropRole(name: string): Promise<void> {
+        await this.#client.query(`DROP ROLE IF EXISTS ${name}`);
+    }
+
+    /**
      * Drops a database, whatever made it.
      *
      * @param name - Database name
      */
     public async drop(name: string): Promise<void> {
         const identifier = this.#client.escapeIdentifier(name);
-        await this.#client.query(`ALTER DATABASE ${identifier} WITH IS_TEMPLATE false`);
+        // An invalid database can't be altered, and only a template needs to be
+        const database = await this.database(name);
+        if (database?.datistemplate) {
+            await this.#client.query(`ALTER DATABASE ${identifier} WITH IS_TEMPLATE false`);
+        }
         await this.#client.query(`DROP DATABASE ${identifier} WITH (FORCE)`);
     }
 

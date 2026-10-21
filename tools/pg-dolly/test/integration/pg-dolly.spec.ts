@@ -390,6 +390,34 @@ suite('PgDolly', () => {
             }
         );
 
+        withCrash.test(
+            'Drops what a crashed run left once, with runs connecting at once',
+            async ({ server, prefix, crashable, open }) => {
+                const crashed = await crashable();
+                const template = await crashed.template(schema);
+                await Promise.all([template.clone(), template.clone(), template.clone()]);
+                await server.terminate(prefix);
+
+                await Promise.all([open(), open(), open(), open()]);
+
+                expect(await server.names(prefix)).to.deep.equal([template.name]);
+            }
+        );
+
+        withCrash.test(
+            'Drops a database a crashed run left invalid',
+            async ({ server, prefix, crashable, open }) => {
+                const crashed = await crashable();
+                const database = await cloneSchema(crashed);
+                await server.terminate(prefix);
+                await server.invalidate(database.name);
+
+                await open();
+
+                expect(await server.database(database.name)).to.equal(undefined);
+            }
+        );
+
         withPrefix.test('Leaves the clones of a run still going', async ({ server, open }) => {
             const running = await open();
             const database = await cloneSchema(running);
@@ -476,5 +504,59 @@ suite('PgDolly', () => {
                 ]);
             }
         );
+    });
+
+    suite('Failures', () => {
+        /**
+         * Runs as a role that can create databases, but not drop the server user's, so a drop can fail.
+         */
+        const withRole = withPrefix.beforeEach(async ({ server, prefix }) => {
+            const role = `${prefix}_role`;
+            const url = new URL(await server.createRole(role));
+            url.searchParams.set('application_name', role);
+            return { role, roleUrl: url.href };
+        });
+        withRole.afterEach(async ({ server, prefix, opened, role }) => {
+            // Before the outer hook drops them, so the role owns nothing once dropped
+            await Promise.allSettled(opened.map(async dolly => dolly.close()));
+            await server.dropAll(prefix);
+            await server.dropRole(role);
+        });
+
+        withRole.test(
+            'Closes its connection when connect fails',
+            async ({ server, prefix, role, roleUrl }) => {
+                // Left by a run that is gone, and owned by a user the role can't drop databases of
+                const marker = JSON.stringify({ prefix, pgDolly: 1, kind: 'clone', run: 'gone' });
+                await server.query(`CREATE DATABASE ${prefix}_gone_1`);
+                await server.query(`COMMENT ON DATABASE ${prefix}_gone_1 IS '${marker}'`);
+
+                await expect(PgDolly.connect({ prefix, url: roleUrl })).to.be.rejectedWith(Error);
+
+                expect(await server.disconnected(role)).to.equal(true);
+            }
+        );
+
+        withRole.test(
+            'Closes its connection when a drop fails',
+            async ({ server, prefix, opened, role, roleUrl }) => {
+                const dolly = await PgDolly.connect({ prefix, url: roleUrl });
+                opened.push(dolly);
+                const database = await cloneSchema(dolly);
+                await server.query(`ALTER DATABASE ${database.name} OWNER TO CURRENT_USER`);
+
+                await expect(dolly.close()).to.be.rejectedWith(Error);
+
+                expect(await server.disconnected(role)).to.equal(true);
+            }
+        );
+
+        withPrefix.test('Closes after a test dropped its clone', async ({ server, open }) => {
+            const dolly = await open();
+            const database = await cloneSchema(dolly);
+            await server.drop(database.name);
+
+            await dolly.close();
+        });
     });
 });

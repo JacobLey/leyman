@@ -98,9 +98,19 @@ type Marker =
 
 interface DatabaseRow {
     readonly datname: string;
-    readonly datistemplate: boolean;
     readonly comment: string | null;
 }
+
+interface DatabaseState {
+    readonly datistemplate: boolean;
+    readonly datconnlimit: number;
+    readonly comment: string | null;
+}
+
+/**
+ * An advisory lock, as its purpose and what it locks.
+ */
+type Lock = readonly [purpose: string, name: string];
 
 interface CloneState {
     readonly name: string;
@@ -122,6 +132,10 @@ const runLength = 12;
  * Changing how templates are built changes every hash, so no template built the old way is reused.
  */
 const hashVersion = 'pg-dolly:1';
+/**
+ * `datconnlimit` of a database a `DROP DATABASE` was interrupted in the middle of.
+ */
+const invalidConnLimit = -2;
 
 /**
  * Hash of a schema's SQL, which names its template.
@@ -157,6 +171,27 @@ const parseMarker = (comment: string | null, prefix: string): Marker | null => {
 };
 
 /**
+ * Whether a database is left over, and the lock that shows nothing uses it.
+ *
+ * @param name - Database name
+ * @param marker - Its marker
+ * @param expired - Kept from before this time is too long
+ * @returns The lock to drop it under, or `null` to keep it
+ */
+const leftoverLock = (name: string, marker: Marker, expired: number): Lock | null => {
+    if (marker.kind === 'template') {
+        // Every run using the template holds its use lock, shared
+        return marker.usedAt <= expired ? ['use', name] : null;
+    }
+    if (marker.keptAt !== undefined && marker.keptAt > expired) {
+        return null;
+    }
+    // The run's connection holds the lock until it ends, so getting it means the run is gone. Never this run's own
+    // lock, which it would get again: sweeping happens before it makes anything.
+    return ['run', marker.run];
+};
+
+/**
  * A fresh Postgres database per test, cloned from a template built once from the schema's SQL.
  *
  * Holds one admin connection to create and drop databases. Tests connect to their own databases themselves, with the
@@ -180,6 +215,10 @@ export class PgDolly {
      * one build lock while waiting on the other's, which another run might hold.
      */
     #building: Promise<unknown> = Promise.resolve();
+    /**
+     * The admin connection runs one query at a time. `pg` queues concurrent queries itself, but deprecates it.
+     */
+    #queue: Promise<void> = Promise.resolve();
     #count = 0;
     #closed: Promise<void> | null = null;
 
@@ -224,8 +263,14 @@ export class PgDolly {
             timeZone: options.timeZone ?? 'UTC',
             retainMs: options.retainMs ?? defaultRetainMs,
         });
-        await dolly.#lock('run', dolly.#run);
-        await dolly.#sweep();
+        try {
+            await dolly.#lock('run', dolly.#run);
+            await dolly.#sweep();
+        } catch (error) {
+            // Left open, the connection would keep the process running
+            await client.end();
+            throw error;
+        }
         return dolly;
     }
 
@@ -275,20 +320,23 @@ export class PgDolly {
 
     async #close(): Promise<void> {
         const keptAt = Date.now();
-        // Dropped all at once at the end rather than after each test, as each drop forces a checkpoint
-        for (const clone of this.#clones) {
-            await (clone.kept
-                ? this.#comment(clone.name, {
-                      pgDolly: 1,
-                      prefix: this.#prefix,
-                      kind: 'clone',
-                      run: this.#run,
-                      keptAt,
-                  })
-                : this.#drop(clone.name));
+        try {
+            // Dropped all at once at the end rather than after each test, as each drop forces a checkpoint
+            for (const clone of this.#clones) {
+                await (clone.kept
+                    ? this.#comment(clone.name, {
+                          pgDolly: 1,
+                          prefix: this.#prefix,
+                          kind: 'clone',
+                          run: this.#run,
+                          keptAt,
+                      })
+                    : this.#drop(clone.name));
+            }
+        } finally {
+            // Releases the advisory locks too. A clone left behind is dropped by a later run.
+            await this.#client.end();
         }
-        // Releases the advisory locks too
-        await this.#client.end();
     }
 
     async #template(sql: string, hash: string): Promise<DollyTemplate> {
@@ -298,7 +346,7 @@ export class PgDolly {
         // So two runs never build the same template at once: the second waits, then finds it built
         await this.#lock('build', name);
         try {
-            const { rows } = await this.#client.query<{
+            const { rows } = await this.#query<{
                 datistemplate: boolean;
                 datallowconn: boolean;
             }>('SELECT datistemplate, datallowconn FROM pg_database WHERE datname = $1', [name]);
@@ -334,9 +382,7 @@ export class PgDolly {
     async #build(name: string, sql: string): Promise<void> {
         const building = this.#nextName();
         // From `template0`, so nothing added to `template1` on this server ends up in the template
-        await this.#client.query(
-            `CREATE DATABASE ${this.#identifier(building)} TEMPLATE template0`
-        );
+        await this.#query(`CREATE DATABASE ${this.#identifier(building)} TEMPLATE template0`);
         try {
             await this.#comment(building, {
                 pgDolly: 1,
@@ -351,10 +397,10 @@ export class PgDolly {
             } finally {
                 await client.end();
             }
-            await this.#client.query(
+            await this.#query(
                 `ALTER DATABASE ${this.#identifier(building)} WITH IS_TEMPLATE true ALLOW_CONNECTIONS false`
             );
-            await this.#client.query(
+            await this.#query(
                 `ALTER DATABASE ${this.#identifier(building)} RENAME TO ${this.#identifier(name)}`
             );
         } catch (error) {
@@ -366,7 +412,7 @@ export class PgDolly {
     async #clone(template: string): Promise<DollyDatabase> {
         this.#assertOpen();
         const name = this.#nextName();
-        await this.#client.query(
+        await this.#query(
             `CREATE DATABASE ${this.#identifier(name)} TEMPLATE ${this.#identifier(template)}`
         );
         // A crash before the marker is written leaves a database no run will drop: there is no way to mark it as
@@ -379,7 +425,7 @@ export class PgDolly {
             kind: 'clone',
             run: this.#run,
         });
-        await this.#client.query(
+        await this.#query(
             `ALTER DATABASE ${this.#identifier(name)} SET "TimeZone" TO ${this.#client.escapeLiteral(this.#timeZone)}`
         );
         return {
@@ -397,89 +443,121 @@ export class PgDolly {
 
     /**
      * Drops what earlier runs left behind. Only ever databases with this prefix and a marker.
+     *
+     * Runs connecting at once sweep the same databases, so each drop happens under the lock that shows the
+     * database is unused, and only if it is still as listed.
      */
     async #sweep(): Promise<void> {
-        const { rows } = await this.#client.query<DatabaseRow>(
-            `SELECT datname, datistemplate, shobj_description(oid, 'pg_database') AS comment
+        const { rows } = await this.#query<DatabaseRow>(
+            `SELECT datname, shobj_description(oid, 'pg_database') AS comment
             FROM pg_database WHERE starts_with(datname, $1)`,
             [`${this.#prefix}_`]
         );
         const expired = Date.now() - this.#retainMs;
-        for (const { datname, datistemplate, comment } of rows) {
+        for (const { datname, comment } of rows) {
             const marker = parseMarker(comment, this.#prefix);
-            if (!marker || !(await this.#isLeftover(marker, expired))) {
+            const lock = marker && leftoverLock(datname, marker, expired);
+            if (!lock || !(await this.#tryLock(...lock))) {
                 continue;
             }
-            // Another run may be about to clone a template, while it holds the template's use lock
-            if (datistemplate) {
-                if (await this.#tryLock('use', datname)) {
+            try {
+                // Another run may have dropped (or rebuilt) it between the listing and the lock
+                const current = await this.#database(datname);
+                if (current?.comment === comment) {
                     await this.#drop(datname);
-                    await this.#unlock('use', datname);
                 }
-            } else {
-                await this.#drop(datname);
+            } finally {
+                await this.#unlock(...lock);
             }
         }
     }
 
-    async #isLeftover(marker: Marker, expired: number): Promise<boolean> {
-        if (marker.kind === 'template') {
-            return marker.usedAt <= expired;
-        }
-        if (marker.keptAt !== undefined) {
-            return marker.keptAt <= expired;
-        }
-        // The run's connection holds the lock until it ends, so getting it means the run is gone. Never this run's
-        // own lock, which it would get again: sweeping happens before it makes anything.
-        const isGone = await this.#tryLock('run', marker.run);
-        if (isGone) {
-            await this.#unlock('run', marker.run);
-        }
-        return isGone;
+    async #database(name: string): Promise<DatabaseState | null> {
+        const { rows } = await this.#query<DatabaseState>(
+            `SELECT datistemplate, datconnlimit, shobj_description(oid, 'pg_database') AS comment
+            FROM pg_database WHERE datname = $1`,
+            [name]
+        );
+        return rows[0] ?? null;
     }
 
+    /**
+     * Drops a database, if it still exists. `FORCE` ends any connections left open, e.g. by a crashed test.
+     *
+     * @param name - Database name
+     */
     async #drop(name: string): Promise<void> {
-        // A template can't be dropped. `FORCE` ends any connections left open, e.g. by a crashed test.
-        await this.#client.query(`ALTER DATABASE ${this.#identifier(name)} WITH IS_TEMPLATE false`);
-        await this.#client.query(`DROP DATABASE IF EXISTS ${this.#identifier(name)} WITH (FORCE)`);
+        const database = await this.#database(name);
+        if (!database) {
+            return;
+        }
+        // A template can't be dropped. A database left invalid by an interrupted drop can't be altered, only
+        // dropped.
+        if (database.datistemplate && database.datconnlimit !== invalidConnLimit) {
+            await this.#query(`ALTER DATABASE ${this.#identifier(name)} WITH IS_TEMPLATE false`);
+        }
+        await this.#query(`DROP DATABASE IF EXISTS ${this.#identifier(name)} WITH (FORCE)`);
     }
 
     async #comment(name: string, marker: Marker): Promise<void> {
-        await this.#client.query(
+        await this.#query(
             `COMMENT ON DATABASE ${this.#identifier(name)} IS ${this.#client.escapeLiteral(JSON.stringify(marker))}`
         );
+    }
+
+    async #lock(purpose: string, name: string): Promise<void> {
+        await this.#advisory('pg_advisory_lock', purpose, name);
+    }
+
+    async #lockShared(purpose: string, name: string): Promise<void> {
+        await this.#advisory('pg_advisory_lock_shared', purpose, name);
+    }
+
+    async #tryLock(purpose: string, name: string): Promise<boolean> {
+        return (await this.#advisory('pg_try_advisory_lock', purpose, name)) === true;
+    }
+
+    async #unlock(purpose: string, name: string): Promise<void> {
+        await this.#advisory('pg_advisory_unlock', purpose, name);
     }
 
     /**
      * Advisory locks are keyed by a hash of their purpose and name.
      *
+     * @param fn - Advisory lock function
      * @param purpose - What the lock is for
      * @param name - What it locks
+     * @returns What the function returned
      */
-    async #lock(purpose: string, name: string): Promise<void> {
-        await this.#client.query('SELECT pg_advisory_lock(hashtextextended($1, 0))', [
-            `pg-dolly:${purpose}:${name}`,
-        ]);
-    }
-
-    async #lockShared(purpose: string, name: string): Promise<void> {
-        await this.#client.query('SELECT pg_advisory_lock_shared(hashtextextended($1, 0))', [
-            `pg-dolly:${purpose}:${name}`,
-        ]);
-    }
-
-    async #tryLock(purpose: string, name: string): Promise<boolean> {
-        const { rows } = await this.#client.query<{ locked: boolean }>(
-            'SELECT pg_try_advisory_lock(hashtextextended($1, 0)) AS locked',
+    async #advisory(fn: string, purpose: string, name: string): Promise<unknown> {
+        const { rows } = await this.#query<{ result: unknown }>(
+            `SELECT ${fn}(hashtextextended($1, 0)) AS result`,
             [`pg-dolly:${purpose}:${name}`]
         );
-        return rows[0]?.locked === true;
+        return rows[0]?.result;
     }
 
-    async #unlock(purpose: string, name: string): Promise<void> {
-        await this.#client.query('SELECT pg_advisory_unlock(hashtextextended($1, 0))', [
-            `pg-dolly:${purpose}:${name}`,
-        ]);
+    /**
+     * Runs a query on the admin connection once every query before it has finished.
+     *
+     * @param text - SQL
+     * @param values - Its parameters
+     * @returns The result
+     */
+    async #query<Row extends pg.QueryResultRow = pg.QueryResultRow>(
+        text: string,
+        values?: readonly unknown[]
+    ): Promise<pg.QueryResult<Row>> {
+        const previous = this.#queue;
+        const { promise, resolve } = Promise.withResolvers<void>();
+        this.#queue = promise;
+        try {
+            await previous;
+            return await this.#client.query<Row>(text, values as unknown[]);
+        } finally {
+            // Whether it succeeded or failed, the next query runs
+            resolve();
+        }
     }
 
     #nextName(): string {
