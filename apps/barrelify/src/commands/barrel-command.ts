@@ -44,7 +44,7 @@ export const barrelCommand: Command<BarrelCommandExtendedInput> = {
         }
 
         if (options.ci && changed.length > 0) {
-            throw new Error('Files are not built');
+            throw new Error('Barrel files are out of date. Run barrel without --ci to update them');
         }
     },
 };

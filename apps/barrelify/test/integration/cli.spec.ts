@@ -53,7 +53,9 @@ suite('cli', () => {
                 const thrown: unknown = await expect(
                     execAsync('./bin.mjs barrel --ci')
                 ).to.be.rejectedWith(Error);
-                expect(thrown).to.have.property('message').that.includes('Files are not built');
+                expect(thrown)
+                    .to.have.property('message')
+                    .that.includes('Barrel files are out of date');
             });
 
             suite('Writes files', () => {
@@ -79,7 +81,9 @@ suite('cli', () => {
                         execAsync(`./bin.mjs --ci --cwd ${ctx.tmpDir.path}`)
                     ).to.be.rejectedWith(Error);
                     expect(thrown).to.have.property('stdout', `${ctx.resolve('index.ts')}\n`);
-                    expect(thrown).to.have.property('message').that.includes('Files are not built');
+                    expect(thrown)
+                        .to.have.property('message')
+                        .that.includes('Barrel files are out of date');
                     expect(await ctx.read('index.ts')).to.equal(HEADER);
                 });
             });
