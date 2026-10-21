@@ -100,6 +100,15 @@ export const normalizeFilesParams = async (
         resolveManifestPath(options),
     ]);
 
+    // Written in parallel, so the same path twice would race
+    const filePaths = new Set<string>();
+    for (const { filePath } of files) {
+        if (filePaths.has(filePath)) {
+            throw new TypeError(`File is populated more than once: ${filePath}`);
+        }
+        filePaths.add(filePath);
+    }
+
     return {
         files,
         targetDir,

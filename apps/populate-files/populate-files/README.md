@@ -100,7 +100,7 @@ Writes the provided content to the file at `params.filePath`.
 
 ### `populateFiles(params, options?)`
 
-Writes multiple files in parallel.
+Writes multiple files in parallel. Each `filePath` must be unique: two that resolve to the same path reject with a `TypeError`.
 
 **Parameters**
 

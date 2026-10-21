@@ -64,7 +64,7 @@ const file = {
 
 ## `populateFiles(params, options?)`
 
-Writes several files in parallel, from `populate-files`. `params` is an array of [`populateFile` params](#params), with unique `filePath`s, and `options` are the [same](#options).
+Writes several files in parallel, from `populate-files`. `params` is an array of [`populateFile` params](#params), with unique `filePath`s (it rejects with a `TypeError` if two resolve to the same path), and `options` are the [same](#options).
 
 ```ts
 import { populateFiles } from 'populate-files';

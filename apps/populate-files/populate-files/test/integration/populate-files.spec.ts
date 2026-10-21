@@ -354,6 +354,21 @@ suite('Integration test', () => {
                 .that.includes('ENOENT: no such file or director');
         });
 
+        withTmpFiles.test('Rejects the same file twice', async ctx => {
+            await expect(
+                populateFiles(
+                    [
+                        { filePath: 'a.txt', content: 'a' },
+                        { filePath: './a.txt', content: 'b' },
+                    ],
+                    { cwd: ctx.tmpDir.path, check: false }
+                )
+            ).to.be.rejectedWith(
+                TypeError,
+                `File is populated more than once: ${Path.join(ctx.tmpDir.path, 'a.txt')}`
+            );
+        });
+
         withTmpFiles.test('--clean deletes stale files', async ctx => {
             const generatedPath = Path.join(ctx.tmpDir.path, 'generated.txt');
             const stalePath = Path.join(ctx.tmpDir.path, 'stale.txt');
