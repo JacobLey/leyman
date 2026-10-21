@@ -1354,7 +1354,7 @@ importers:
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
       normalized-react-query:
         specifier: workspace:^
-        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))
+        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))(react@19.3.0)
       nx-lifecycle:
         specifier: workspace:^
         version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
@@ -1618,7 +1618,7 @@ importers:
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
       normalized-react-query:
         specifier: workspace:^
-        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))
+        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))(react@19.3.0)
       react:
         specifier: 'catalog:'
         version: 19.3.0
@@ -1723,7 +1723,7 @@ importers:
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
       normalized-react-query:
         specifier: workspace:^
-        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))
+        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))(react@19.3.0)
       nx-lifecycle:
         specifier: workspace:^
         version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
@@ -7985,6 +7985,7 @@ packages:
     engines: {node: '>=24'}
     peerDependencies:
       '@tanstack/react-query': ^5.104.0
+      react: ^18 || ^19
 
   npm-run-path@4.0.1:
     resolution: {integrity: sha512-S48WzZW777zhNIrn7gxOlISNAqi9ZC/uQFnRdbeIHhZhCA6UqpkOT8T1G7BvfdgP4Er8gF4sUbaS0i7QvIfCWw==}
@@ -14424,9 +14425,10 @@ snapshots:
 
   normalize-url@8.1.1: {}
 
-  normalized-react-query@file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0)):
+  normalized-react-query@file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))(react@19.3.0):
     dependencies:
       '@tanstack/react-query': 5.104.0(react@19.3.0)
+      react: 19.3.0
 
   npm-run-path@4.0.1:
     dependencies:

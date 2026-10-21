@@ -300,7 +300,7 @@ Attaches a per-page transformation. The `map` callback receives `{ page, pagePar
 
 All hooks wrap their TanStack counterparts with type-safe resource/infinite instances. The `key` and `queryFn` are derived from the resource — do not pass them manually.
 
-Like TanStack's hooks, each hook stays on the query client it first renders with. The `useNormalizedPrefetched*` hooks read the link's client, and the context client while they have no link (`null` or `skipToken`). A hook that renders without a link first therefore only picks up links on the context client, and needs a `QueryClientProvider` to pick up any link at all.
+Like TanStack's hooks, each hook stays on the query client it first renders with. The `useNormalizedPrefetched*` hooks read the link's client, and the context client while they have no link (`null` or `skipToken`). A hook that renders without a link first therefore only accepts links on the context client, and needs a `QueryClientProvider` to accept any link at all. Given a link on any other client, it throws, rather than reading a different cache.
 
 #### `useNormalizedQuery(res, params | skipToken, options?, queryClient?)`
 

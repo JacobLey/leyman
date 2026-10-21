@@ -11,6 +11,7 @@ import type {
 } from '@tanstack/react-query';
 import type { OverriddenQueryFilterFields, typeCache } from './types.js';
 import { QueryClient, useQueryClient } from '@tanstack/react-query';
+import { useState } from 'react';
 
 export const noopSelector = <T>(x: T): T => x;
 export const undefinedSelector = (): undefined => {};
@@ -47,24 +48,30 @@ export const withParams = <TContext extends object, TParams>(
     };
 
 /**
- * Client for a hook to use while it has no link, so it is already on the right client once one arrives.
+ * Client for a hook that is given a link, or nothing (disabled).
  *
- * Tanstack hooks stay on the client they first render with, so a hook that starts disabled
- * would never read the link's client.
- * Links from `useNormalizedPrefetch*` hooks use the context client, so prefer that.
+ * Tanstack hooks stay on the client they first render with, so the hook keeps that client.
+ * It starts on the link's client, or while disabled on the context client, which links from
+ * `useNormalizedPrefetch*` hooks use. Without a `QueryClientProvider`, a disabled hook starts on
+ * a new "dummy" client (to prevent any accidental "caching").
  *
- * Without a `QueryClientProvider`, falls back to a new "dummy" client (to prevent any accidental "caching"),
- * so a hook that renders disabled first will not load a later link.
- *
- * @returns query client to render a disabled hook with
+ * @param linkedClient - client of the link, or `null` while disabled
+ * @returns query client to render the hook with
+ * @throws {Error} if a link's client is not the one the hook started with, since Tanstack would keep reading the other client
  */
-export const useDisabledQueryClient = (): QueryClient => {
+export const useLinkedQueryClient = (linkedClient: QueryClient | null): QueryClient => {
+    let contextClient: QueryClient | null = null;
     try {
         // Called unconditionally, so hook order is stable. It only throws when there is no provider.
-        return useQueryClient();
-    } catch {
-        return new QueryClient();
+        contextClient = useQueryClient();
+    } catch {}
+    const [client] = useState(() => linkedClient ?? contextClient ?? new QueryClient());
+    if (linkedClient && linkedClient !== client) {
+        throw new Error(
+            'A link was created with a different QueryClient than this hook first rendered with. Tanstack Query keeps the client a hook first renders with, so it would read a different cache. Render the hook inside a QueryClientProvider with the client the link was created with.'
+        );
     }
+    return client;
 };
 
 /**

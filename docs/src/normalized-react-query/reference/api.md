@@ -97,7 +97,7 @@ Each hook wraps the TanStack hook of the same name, without `normalized`. It tak
 | `useNormalizedPrefetchedSuspenseQuery` | `useNormalizedPrefetchedSuspenseInfiniteQuery` | a `Linked` | TanStack's result |
 | `useNormalizedNullablePrefetchedSuspenseQuery` | `useNormalizedNullablePrefetchedSuspenseInfiniteQuery` | a `Linked`, `skipToken` or `null` | TanStack's result, or `null` |
 
-Like TanStack's hooks, each hook stays on the query client it first renders with. The `Prefetched` hooks use the link's client, and the context's client while they have no link. One that first renders without a link therefore only follows links on the context's client.
+Like TanStack's hooks, each hook stays on the query client it first renders with. The `Prefetched` hooks use the link's client, and the context's client while they have no link. One that first renders without a link therefore only accepts links on the context's client (so it needs a `QueryClientProvider`), and throws for a link on any other client, rather than reading a different cache.
 
 ## `Linked`
 

@@ -39,7 +39,7 @@ import {
     noopSuspenseKey,
     Queryable,
     undefinedSelector,
-    useDisabledQueryClient,
+    useLinkedQueryClient,
     withParams,
 } from './lib/queryable.js';
 
@@ -879,8 +879,8 @@ export const useNormalizedPrefetchedInfiniteQuery = <
         select?: (data: InfiniteData<TPropagatedData, TPageParam>) => TSelectedData;
     } = {}
 ): UseInfiniteQueryResult<TSelectedData, unknown> => {
-    const disabledClient = useDisabledQueryClient();
     const isDisabled = !linked || linked === skipToken;
+    const client = useLinkedQueryClient(isDisabled ? null : linked.getQueryClient());
 
     return useInfiniteQuery(
         isDisabled
@@ -900,7 +900,7 @@ export const useNormalizedPrefetchedInfiniteQuery = <
                           select,
                       }),
               },
-        isDisabled ? disabledClient : linked.getQueryClient()
+        client
     );
 };
 
@@ -1092,8 +1092,8 @@ export const useNormalizedNullablePrefetchedSuspenseInfiniteQuery = <
         select?: (data: InfiniteData<TPropagatedData, TPageParam>) => TSelectedData;
     } = {}
 ): UseSuspenseInfiniteQueryResult<TSelectedData, unknown> | null => {
-    const disabledClient = useDisabledQueryClient();
     const isDisabled = !linked || linked === skipToken;
+    const client = useLinkedQueryClient(isDisabled ? null : linked.getQueryClient());
     const result = useSuspenseInfiniteQuery(
         isDisabled
             ? {
@@ -1118,7 +1118,7 @@ export const useNormalizedNullablePrefetchedSuspenseInfiniteQuery = <
                           }
                       ),
               },
-        isDisabled ? disabledClient : linked.getQueryClient()
+        client
     );
     return isDisabled ? null : result;
 };

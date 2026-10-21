@@ -793,6 +793,57 @@ suite('resource', () => {
                 expect(result.current.data).to.equal(undefined);
             });
 
+            context.test(
+                'Throws for a link from another client than the hook started with',
+                async ({ client }) => {
+                    const recursiveAuthor = authors.propagate(author =>
+                        authors.link({ authorId: author.id })
+                    );
+                    const linked = await recursiveAuthor.query(client, { authorId: tolkienId });
+
+                    // Without a provider, it starts on a client of its own
+                    const { rerender } = renderHook(
+                        ({ link }: { link: SkipToken | typeof linked }) =>
+                            useNormalizedPrefetchedQuery(link),
+                        { initialProps: { link: skipToken } }
+                    );
+                    expect(() => {
+                        rerender({ link: linked });
+                    }).to.throw(
+                        'A link was created with a different QueryClient than this hook first rendered with'
+                    );
+                }
+            );
+
+            contextWithWrapper.test(
+                'Uses the context client while disabled, so a link from it works',
+                async ({ client, wrapper }) => {
+                    const recursiveAuthor = authors.propagate(author =>
+                        authors.link({ authorId: author.id })
+                    );
+                    const linked = await recursiveAuthor.query(client, { authorId: tolkienId });
+
+                    const { result, rerender } = renderHook(
+                        ({ link }: { link: SkipToken | typeof linked }) =>
+                            useNormalizedPrefetchedQuery(link),
+                        { initialProps: { link: skipToken }, wrapper }
+                    );
+                    rerender({ link: linked });
+                    await waitFor(() => {
+                        expect(result.current.data?.id).to.equal(tolkienId);
+                    });
+
+                    // Only seen if the hook reads the linked client
+                    authors.setQueryData(client, { authorId: tolkienId }, author => ({
+                        ...author!,
+                        name: '<renamed>',
+                    }));
+                    await waitFor(() => {
+                        expect(result.current.data?.name).to.equal('<renamed>');
+                    });
+                }
+            );
+
             context.test('Prefetches once in strict mode', async ({ client }) => {
                 let calls = 0;
                 const counted = resource<void, number>({

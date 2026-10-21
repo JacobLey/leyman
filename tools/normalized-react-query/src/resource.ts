@@ -29,7 +29,7 @@ import {
     noopSuspenseKey,
     Queryable,
     undefinedSelector,
-    useDisabledQueryClient,
+    useLinkedQueryClient,
     withParams,
 } from './lib/queryable.js';
 
@@ -667,8 +667,8 @@ export const useNormalizedPrefetchedQuery = <
         select?: (data: TPropagatedData) => TSelectedData;
     } = {}
 ): UseQueryResult<TSelectedData, unknown> => {
-    const disabledClient = useDisabledQueryClient();
     const isDisabled = !linked || linked === skipToken;
+    const client = useLinkedQueryClient(isDisabled ? null : linked.getQueryClient());
     return useQuery(
         isDisabled
             ? {
@@ -684,7 +684,7 @@ export const useNormalizedPrefetchedQuery = <
                           select,
                       }),
               },
-        isDisabled ? disabledClient : linked.getQueryClient()
+        client
     );
 };
 
@@ -861,8 +861,8 @@ export const useNormalizedNullablePrefetchedSuspenseQuery = <
         select?: (data: TPropagatedData) => TSelectedData;
     } = {}
 ): UseSuspenseQueryResult<TSelectedData, unknown> | null => {
-    const disabledClient = useDisabledQueryClient();
     const isDisabled = !linked || linked === skipToken;
+    const client = useLinkedQueryClient(isDisabled ? null : linked.getQueryClient());
 
     const result = useSuspenseQuery(
         isDisabled
@@ -881,7 +881,7 @@ export const useNormalizedNullablePrefetchedSuspenseQuery = <
                           select,
                       }),
               },
-        isDisabled ? disabledClient : linked.getQueryClient()
+        client
     );
 
     return isDisabled ? null : result;

@@ -42,7 +42,8 @@
     ".": "./dist/index.js"
   },
   "peerDependencies": {
-    "@tanstack/react-query": "catalog:"
+    "@tanstack/react-query": "catalog:",
+    "react": "^18 || ^19"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
