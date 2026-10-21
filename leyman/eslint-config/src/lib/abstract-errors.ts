@@ -22,6 +22,9 @@ const classOf = (node: ReportedNode): ReportedNode =>
  * Let `unicorn/custom-error-definition` skip abstract classes. An abstract base error is never thrown itself, so
  * its subclasses set the `name` and message, which the rule still checks on each of them.
  *
+ * Temporary: unicorn merged the same behavior upstream (https://github.com/sindresorhus/eslint-plugin-unicorn/commit/ee3501fb1e0e724343c31b33ec463a330da829e6).
+ * Delete this once a release with it is at least 7 days old, see `plans/eslint-rules.md`.
+ *
  * @param plugin - `eslint-plugin-unicorn`
  * @returns copy of the plugin, whose `custom-error-definition` ignores abstract classes
  */
