@@ -55,6 +55,9 @@ export const withParams = <TContext extends object, TParams>(
  * `useNormalizedPrefetch*` hooks use. Without a `QueryClientProvider`, a disabled hook starts on
  * a new "dummy" client (to prevent any accidental "caching").
  *
+ * TanStack/query#12257 makes Tanstack hooks follow a client change. Once released, the hook can
+ * follow the link's client instead of throwing.
+ *
  * @param linkedClient - client of the link, or `null` while disabled
  * @returns query client to render the hook with
  * @throws {Error} if a link's client is not the one the hook started with, since Tanstack would keep reading the other client
