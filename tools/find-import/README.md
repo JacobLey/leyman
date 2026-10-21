@@ -67,6 +67,8 @@ Supports `.json`, `.cjs`, `.mjs`, and `.js` files.
 
 Searches directories for the first matching file from `fileNames` and loads it. By default searches upward from `cwd` to `/`, returning the closest (deepest) match. Returns `null` if no file is found.
 
+Only missing files are skipped. If a matching file exists but fails to load, such as invalid JSON or a module that throws, `findImport` rejects with `Failed to load <path>` (the original error as its `cause`), rather than moving on to another directory.
+
 The `content` field is the result of a dynamic `import()` call. When importing CJS modules, extracting the default export may require [`default-import`](https://www.npmjs.com/package/default-import).
 
 **Parameters**

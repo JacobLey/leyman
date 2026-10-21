@@ -84,7 +84,7 @@ suite('findImport', () => {
     });
 
     test('Load json', async () => {
-        const found = await FindImport.findImport(['root.json', 'sub.json'], {
+        const found = await FindImport.findImport(['root.json', 'second.json'], {
             cwd: Path.join(originalDataDir, 'sub'),
         });
 
@@ -94,6 +94,19 @@ suite('findImport', () => {
                 kind: 'root-json',
             },
         });
+    });
+
+    test('A file that fails to load throws, rather than being skipped', async () => {
+        const thrown: unknown = await expect(
+            FindImport.findImport(['root.json', 'sub.json'], {
+                cwd: Path.join(originalDataDir, 'sub'),
+            })
+        ).to.be.rejectedWith(Error, `Failed to load ${Path.join(originalDataDir, 'sub/sub.json')}`);
+        expect(thrown).to.have.property('cause').that.is.an.instanceOf(SyntaxError);
+    });
+
+    test('Directories are not files', async () => {
+        expect(await FindImport.findImport('sub', { cwd: originalDataDir })).to.equal(null);
     });
 
     test('Path with characters that are special in a URL', async () => {
