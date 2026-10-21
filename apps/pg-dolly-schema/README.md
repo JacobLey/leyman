@@ -84,6 +84,7 @@ As an Nx target, set the command in `env`, not as an option: Nx passes options t
         "{projectRoot}/migrations/**/*",
         "{projectRoot}/schema.sql",
         { "runtime": "pg_dump --version" },
+        { "runtime": "psql \"$DATABASE_URL\" -XtAc 'SHOW server_version'" },
         { "env": "CI" }
       ],
       "outputs": ["{projectRoot}/schema.sql"]
@@ -91,6 +92,8 @@ As an Nx target, set the command in `env`, not as an option: Nx passes options t
   }
 }
 ```
+
+`schema.sql` depends on the versions of both `pg_dump` and the server (`pg_dump` writes for its own version, and dumps what the server reports), so both are inputs. A different version on another machine then shows up as a stale snapshot, rather than hiding behind the cache.
 
 ## CLI
 

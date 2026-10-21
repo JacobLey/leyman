@@ -126,7 +126,7 @@ The package devDepends on `pg-dolly-schema` and sets its own migrate command, in
 "schema-snapshot": { "options": { "env": { "PG_DOLLY_SCHEMA_MIGRATE": "drizzle-kit migrate" } } }
 ```
 
-Hashes `src/`, `migrations/`, `schema.sql`, dependencies' builds, `pg_dump --version` and `CI`. Migrations elsewhere, or a migrate tool's config file outside `src/` (e.g. `drizzle.config.js`), go in the project's own `inputs` (this repo's Drizzle packages add `drizzle.config.js`). The command runs before the package is built, so a TypeScript migrate script runs with Node's type stripping (`node migrate.ts`), not from `dist/`.
+Hashes `src/`, `migrations/`, `schema.sql`, dependencies' builds, `pg_dump --version`, the server's version (`psql "$DATABASE_URL" -XtAc 'SHOW server_version'`) and `CI`. Migrations elsewhere, or a migrate tool's config file outside `src/` (e.g. `drizzle.config.js`), go in the project's own `inputs` (this repo's Drizzle packages add `drizzle.config.js`). The command runs before the package is built, so a TypeScript migrate script runs with Node's type stripping (`node migrate.ts`), not from `dist/`.
 
 **Add when:** The package has Postgres migrations.
 

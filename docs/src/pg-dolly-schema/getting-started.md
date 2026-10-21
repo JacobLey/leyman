@@ -89,6 +89,7 @@ Set the command in `env`, not as an option. Nx passes options to the command in 
         "{projectRoot}/migrations/**/*",
         "{projectRoot}/schema.sql",
         { "runtime": "pg_dump --version" },
+        { "runtime": "psql \"$DATABASE_URL\" -XtAc 'SHOW server_version'" },
         { "env": "CI" }
       ],
       "outputs": ["{projectRoot}/schema.sql"]
@@ -96,6 +97,8 @@ Set the command in `env`, not as an option. Nx passes options to the command in 
   }
 }
 ```
+
+`schema.sql` depends on the versions of both `pg_dump` and the server (`pg_dump` writes for its own version, and dumps what the server reports), so both are inputs. A different version on another machine then shows up as a stale snapshot, rather than hiding behind the cache.
 
 With [nx-lifecycle](/nx-lifecycle/), bind it to a stage before the tests, so the tests always build from a current `schema.sql`.
 

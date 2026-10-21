@@ -281,6 +281,9 @@
           "runtime": "pg_dump --version"
         },
         {
+          "runtime": "psql \"$DATABASE_URL\" -XtAc 'SHOW server_version'"
+        },
+        {
           "env": "CI"
         },
         {
