@@ -4,12 +4,12 @@ import * as EnumToArray from 'enum-to-array';
 import { suite, test } from 'mocha-chain';
 
 // This test suite implements multiple enum anti-patterns
-// to ensure it works as intended, hence eslint-disable abuse.
+// to ensure it works as intended, hence the disabled lint rules.
 
 suite('enumToArray', () => {
     test('Default values', () => {
         enum Default {
-            /* eslint-disable @typescript-eslint/prefer-enum-initializers */
+            /* eslint-disable @typescript-eslint/prefer-enum-initializers -- The anti-patterns are the cases under test */
             A,
             B,
             C,
@@ -191,15 +191,15 @@ suite('enumToArray', () => {
 
     test('Duplicate values', () => {
         enum Duplicates {
-            /* eslint-disable @typescript-eslint/no-duplicate-enum-values */
+            /* eslint-disable @typescript-eslint/no-duplicate-enum-values -- The anti-patterns are the cases under test */
             ONE = 1,
             WON = 1,
-            // eslint-disable-next-line @typescript-eslint/no-mixed-enums
+            // eslint-disable-next-line @typescript-eslint/no-mixed-enums -- The anti-patterns are the cases under test
             TOO = 'TOO',
             TWO = 'TOO',
             FOUR = 'FOR',
             FOR = 'FORD',
-            // eslint-disable-next-line @typescript-eslint/prefer-literal-enum-member
+            // eslint-disable-next-line @typescript-eslint/prefer-literal-enum-member -- The anti-patterns are the cases under test
             FORE = FOUR,
             /* eslint-enable @typescript-eslint/no-duplicate-enum-values */
         }
@@ -267,7 +267,7 @@ suite('enumToArray', () => {
     test('String value names a numeric member', () => {
         enum Mixed {
             B = 1,
-            // eslint-disable-next-line @typescript-eslint/no-mixed-enums
+            // eslint-disable-next-line @typescript-eslint/no-mixed-enums -- The anti-patterns are the cases under test
             A = 'B',
         }
 
@@ -281,12 +281,12 @@ suite('enumToArray', () => {
 
     test('Computed values', () => {
         enum Computed {
-            /* eslint-disable @typescript-eslint/prefer-literal-enum-member */
+            /* eslint-disable @typescript-eslint/prefer-literal-enum-member -- The anti-patterns are the cases under test */
             FIVE = 5,
             DOUBLE = FIVE * 2,
             HALF = DOUBLE / 2,
             NAN = Number.NaN,
-            // eslint-disable-next-line @typescript-eslint/naming-convention
+            // eslint-disable-next-line @typescript-eslint/naming-convention -- The anti-patterns are the cases under test
             Infinity = Number.POSITIVE_INFINITY,
             /* eslint-enable @typescript-eslint/prefer-literal-enum-member */
         }
@@ -340,7 +340,7 @@ suite('enumToArray', () => {
         const set = new Set([1, 2, 3]);
         const reg = /abc/u;
         enum Literals {
-            /* eslint-disable @typescript-eslint/prefer-literal-enum-member */
+            /* eslint-disable @typescript-eslint/prefer-literal-enum-member -- The anti-patterns are the cases under test */
             // @ts-expect-error
             SET = set,
             // @ts-expect-error

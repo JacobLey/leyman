@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-magic-numbers -- The curves' constants, and small integers of the math */
 
 // This module provides the basic ECC functionality of transforming a private key into a public key.
 
@@ -192,7 +192,7 @@ const addPoints = (p: Point, q: Point, curve: Curve): Point => {
  * @returns public key point
  */
 export const derivePublicKey = (privateKey: bigint, curve: Curve): Point => {
-    // eslint-disable-next-line @typescript-eslint/no-misused-spread
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- Binary digits, all ASCII
     const bits = [...privateKey.toString(2)].toReversed();
 
     let doublePoint: Point | null = null;
@@ -223,7 +223,7 @@ export const derivePublicKey = (privateKey: bigint, curve: Curve): Point => {
 const power = (x: bigint, y: bigint, p: bigint): bigint => {
     let res = 1n;
     let x2 = x;
-    // eslint-disable-next-line @typescript-eslint/no-misused-spread
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- Binary digits, all ASCII
     const bits = [...y.toString(2)].toReversed();
 
     for (const bit of bits) {
@@ -291,7 +291,6 @@ const modSqrt = (n: bigint, p: bigint): bigint => {
 
 export const deriveYCoordinate = (x: bigint, isOdd: boolean, curve: Curve): bigint => {
     const y = modSqrt(x ** 3n + curve.a * x + curve.b, curve.p);
-    // eslint-disable-next-line no-bitwise
     const isRootOdd = !!(y & 1n);
 
     return isRootOdd === isOdd ? y : curve.p - y;

@@ -54,11 +54,7 @@ export const generateEccPublicKey: (typeof Ecc)['generateEccPublicKey'] = (
     const { bytes } = eccMeta(curve);
     const decodedX = decode({ text: x.toString(HEX_SIZE), encoding: 'hex' });
 
-    return new Uint8Array([
-        // eslint-disable-next-line no-bitwise
-        2 + Number(y & 1n),
-        ...padBytes(decodedX, bytes),
-    ]);
+    return new Uint8Array([2 + Number(y & 1n), ...padBytes(decodedX, bytes)]);
 };
 
 const eccSecret = async ({
@@ -133,9 +129,7 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
         crypto.subtle.exportKey('jwk', secretKey.privateEc),
     ]);
 
-    const odd =
-        // eslint-disable-next-line no-bitwise
-        decode({ text: jwk.y!, encoding: 'base64url' }).toReversed()[0]! & 1;
+    const odd = decode({ text: jwk.y!, encoding: 'base64url' }).toReversed()[0]! & 1;
 
     const publicX = decode({ text: jwk.x!, encoding: 'base64url' });
     const { bytes } = eccMeta(curve);

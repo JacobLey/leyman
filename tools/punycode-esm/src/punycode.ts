@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-magic-numbers */
+/* eslint-disable @typescript-eslint/no-magic-numbers -- RFC 3492's constants */
 
 import { checkOverflow, rangeError } from '#errors';
 
@@ -68,21 +68,17 @@ export const ucs2Decode = (string: string): number[] => {
     const output: number[] = [];
     let counter = 0;
     while (counter < string.length) {
-        // eslint-disable-next-line unicorn/prefer-code-point
+        // eslint-disable-next-line unicorn/prefer-code-point -- Reads UTF-16 code units, to pair surrogates as RFC 3492 does
         const value = string.charCodeAt(counter);
         ++counter;
         if (value >= 0xd800 && value <= 0xdbff && counter < string.length) {
             // It's a high surrogate, and there is a next character.
-            // eslint-disable-next-line unicorn/prefer-code-point
+            // eslint-disable-next-line unicorn/prefer-code-point -- Reads UTF-16 code units, to pair surrogates as RFC 3492 does
             const extra = string.charCodeAt(counter);
             ++counter;
-            // eslint-disable-next-line no-bitwise
             if ((extra & 0xfc00) === 0xdc00) {
                 // Low surrogate.
-                output.push(
-                    // eslint-disable-next-line no-bitwise
-                    ((value & 0x3ff) << 10) + (extra & 0x3ff) + 0x10000
-                );
+                output.push(((value & 0x3ff) << 10) + (extra & 0x3ff) + 0x10000);
             } else {
                 // It's an unmatched surrogate; only append this code unit, in case the
                 // next code unit is the high surrogate of a surrogate pair.
@@ -152,10 +148,8 @@ const digitToBasic = (digit: number): number => {
  */
 const adapt = (delta: number, numPoints: number, isFirstTime: boolean): number => {
     let k = 0;
-    // eslint-disable-next-line no-bitwise
     let newDelta = isFirstTime ? Math.floor(delta / damp) : delta >> 1;
     newDelta += Math.floor(newDelta / numPoints);
-    // eslint-disable-next-line no-bitwise
     const minCheck = (baseMinusTMin * tMax) >> 1;
     while (newDelta > minCheck) {
         newDelta = Math.floor(newDelta / baseMinusTMin);
