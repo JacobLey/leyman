@@ -599,6 +599,37 @@ suite('Processor', () => {
                 }).to.throw('Overlap in lifecycle hook and target: overlap');
             });
 
+            test('Overlap between stage and project.json target', () => {
+                expect(() => {
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    overlap: {},
+                                },
+                                bindings: {},
+                            },
+                            nxJson: {},
+                            projectJsons: [{ targets: { overlap: { executor: '<executor>' } } }],
+                        })
+                    );
+                }).to.throw('Overlap in lifecycle hook and project.json target: overlap');
+                expect(() => {
+                    Processor.processNxAndProjectJsons(
+                        deepFreeze({
+                            options: {
+                                stages: {
+                                    overlap: {},
+                                },
+                                bindings: {},
+                            },
+                            nxJson: {},
+                            projectJsons: [{ targets: { overlap: { command: 'echo' } } }],
+                        })
+                    );
+                }).to.throw('Overlap in lifecycle hook and project.json target: overlap');
+            });
+
             test('Registered stage does not exist', () => {
                 expect(() => {
                     Processor.processNxAndProjectJsons(

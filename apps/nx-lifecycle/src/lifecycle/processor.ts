@@ -314,6 +314,10 @@ const processProjectJson = ({
 
     for (const [targetName, target] of Object.entries(targets)) {
         if (targetsToRemove.has(targetName) || lifecycleTargets.has(targetName)) {
+            // Lifecycle targets are never written with an executor, so one with an executor is the project's own target
+            if ('executor' in target || 'command' in target) {
+                throw new Error(`Overlap in lifecycle hook and project.json target: ${targetName}`);
+            }
             delete targets[targetName];
         } else if (target.dependsOn) {
             const processedTarget = { ...target };

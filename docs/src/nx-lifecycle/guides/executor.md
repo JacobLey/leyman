@@ -60,7 +60,7 @@ Rerun it whenever stages or bindings change, or a project adds or removes a boun
 - **`nx.json`**: Each lifecycle target in `targetDefaults`, using the `nx:noop` executor and an empty `__lifecycle` configuration that marks it as generated. Each bound target's `targetDefaults` entry gets its lifecycle dependency appended to its `dependsOn`.
 - **`project.json`**: An empty entry for each lifecycle target (`"build:run": {}`), and the lifecycle dependency appended to the `dependsOn` of each bound target that has one.
 
-Don't edit generated targets by hand: the next run replaces them. Lifecycle targets that are no longer configured are removed, along with any `dependsOn` entries on them. Your own entries in a bound target's `dependsOn` are kept, before the lifecycle dependency:
+Don't edit generated targets by hand: the next run replaces them. A target of your own with the same name as a lifecycle target fails the run instead of being replaced: one in `targetDefaults` without the `__lifecycle` configuration, or one in `project.json` with an `executor` or `command`. Lifecycle targets that are no longer configured are removed, along with any `dependsOn` entries on them. Your own entries in a bound target's `dependsOn` are kept, before the lifecycle dependency:
 
 ```json
 // project.json

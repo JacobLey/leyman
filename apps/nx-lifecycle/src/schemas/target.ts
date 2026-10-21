@@ -6,6 +6,7 @@ import { dependsOnSchema } from './depend-on.js';
 const targetSchema = objectSchema({
     properties: {
         executor: stringSchema(),
+        command: stringSchema(),
         dependsOn: dependsOnSchema,
         configurations: configurationsSchema,
     },
