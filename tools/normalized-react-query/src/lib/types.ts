@@ -130,6 +130,7 @@ export interface InfiniteSet<TData, TPageParam> {
 
 export interface LinksActive {
     client: QueryClient;
-    prefetches: Promise<unknown>[];
+    // `null` for hooks, which never wait for links, so their promises aren't kept
+    prefetches: Promise<unknown>[] | null;
     revalidateIfStale: boolean;
 }

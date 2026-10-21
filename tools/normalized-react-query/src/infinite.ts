@@ -329,7 +329,7 @@ class Infinite<
             getPreviousPageParam: this.getGetPreviousPageParam(params),
             getNextPageParam: this.getGetNextPageParam(params),
             select: this.#getSelector(
-                { client: queryClient, prefetches: [], revalidateIfStale: false },
+                { client: queryClient, prefetches: null, revalidateIfStale: false },
                 options.select
             ),
         } satisfies Required<
@@ -541,11 +541,11 @@ class Infinite<
             rest,
             revalidateIfStale
         );
-        if (isolateErrors) {
-            // eslint-disable-next-line unicorn/prefer-await -- Stored for the links to await later, so a failure must not reject them
+        if (isolateErrors || !linksActive.prefetches) {
+            // eslint-disable-next-line unicorn/prefer-await -- Stored for the links to await later, so a failure must not reject them. Hooks never await it, and see the error in the linked query instead
             promise = promise.catch(() => {});
         }
-        linksActive.prefetches.push(promise);
+        linksActive.prefetches?.push(promise);
         return new Linked(this, params, linksActive.client);
     }
 
@@ -614,12 +614,13 @@ class Infinite<
             TQueryKey,
             TPageParam
         >(this.#getQueryOptions(params, options));
-        const prefetches: Promise<unknown>[] = [];
+        // Only collected when awaited, so links that aren't can't reject unhandled
+        const prefetches: Promise<unknown>[] | null = awaitLinks ? [] : null;
         const response = this.#createSelector<T>(
             { client: queryClient, prefetches, revalidateIfStale },
             select
         )(data);
-        if (awaitLinks) {
+        if (prefetches) {
             await Promise.all(prefetches);
         }
         return response;

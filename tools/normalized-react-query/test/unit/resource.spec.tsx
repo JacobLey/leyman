@@ -42,6 +42,41 @@ suite('resource', () => {
     });
 
     suite('link', () => {
+        context.test(
+            'A failing link that is not awaited does not reject unhandled',
+            async ({ client }) => {
+                const failing = resource<void, never>({
+                    key: ['failing'],
+                    queryFn: async () => {
+                        throw new Error('<failed>');
+                    },
+                });
+                const withFailingLink = authors.propagate(author => ({
+                    ...author,
+                    failing: failing.link(undefined, { retry: false }),
+                }));
+                const unhandled: unknown[] = [];
+                const onUnhandled = (reason: unknown): void => {
+                    unhandled.push(reason);
+                };
+                globalThis.process.on('unhandledRejection', onUnhandled);
+                try {
+                    const author = await withFailingLink.query(client, { authorId: tolkienId });
+                    expect(author.id).to.equal(tolkienId);
+                    await waitFor(() => {
+                        expect(failing.getQueryState(client)?.status).to.equal('error');
+                    });
+                    // Unhandled rejections are reported after the microtask queue drains
+                    await new Promise(resolve => {
+                        setImmediate(resolve);
+                    });
+                } finally {
+                    globalThis.process.off('unhandledRejection', onUnhandled);
+                }
+                expect(unhandled).to.deep.equal([]);
+            }
+        );
+
         context.test('From propagation', async ({ client }) => {
             const recursiveAuthor = authors.propagate(author =>
                 authorsWithFavoriteAuthor.link({ authorId: author.id })
@@ -598,6 +633,46 @@ suite('resource', () => {
                         expect(result.current.author.data?.name).to.equal('<new-name>');
                     });
                     expect(result.current.favoriteAuthor.data).to.equal(undefined);
+                }
+            );
+
+            contextWithWrapper.test(
+                'A failing linked query does not reject unhandled',
+                async ({ client, wrapper }) => {
+                    const failing = resource<void, never>({
+                        key: ['failing'],
+                        queryFn: async () => {
+                            throw new Error('<failed>');
+                        },
+                    });
+                    const withFailingLink = authors.propagate(author => ({
+                        ...author,
+                        failing: failing.link(undefined, { retry: false }),
+                    }));
+                    const unhandled: unknown[] = [];
+                    const onUnhandled = (reason: unknown): void => {
+                        unhandled.push(reason);
+                    };
+                    globalThis.process.on('unhandledRejection', onUnhandled);
+                    try {
+                        const { result } = renderHook(
+                            () => useNormalizedQuery(withFailingLink, { authorId: tolkienId }),
+                            { wrapper }
+                        );
+                        await waitFor(() => {
+                            expect(result.current.data?.id).to.equal(tolkienId);
+                        });
+                        await waitFor(() => {
+                            expect(failing.getQueryState(client)?.status).to.equal('error');
+                        });
+                        // Unhandled rejections are reported after the microtask queue drains
+                        await new Promise(resolve => {
+                            setImmediate(resolve);
+                        });
+                    } finally {
+                        globalThis.process.off('unhandledRejection', onUnhandled);
+                    }
+                    expect(unhandled).to.deep.equal([]);
                 }
             );
         });
