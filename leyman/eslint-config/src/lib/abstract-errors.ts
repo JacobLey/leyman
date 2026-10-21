@@ -1,27 +1,22 @@
 import type { ESLint, Rule } from 'eslint';
 
 /**
- * A node, as reported, with the parent ESLint sets and the `abstract` flag the TypeScript parser sets on a class.
+ * A node, as reported, with the parent ESLint sets, and the `abstract` flag the TypeScript parser sets on a class.
  */
 interface ReportedNode {
     readonly type: string;
     readonly abstract?: boolean;
-    readonly parent?: ReportedNode | null;
+    readonly parent: ReportedNode;
 }
 
 /**
- * @param node - Node a report is about
- * @returns Whether it is, or is in, an abstract class
+ * The class a report is about. The rule only reports on a class, or a node in one.
+ *
+ * @param node - Node the report is about
+ * @returns The class declaration it is, or is in
  */
-const isInAbstractClass = (node: ReportedNode | undefined): boolean => {
-    for (let current = node; current; current = current.parent ?? undefined) {
-        // A class expression can't be abstract, and the rule doesn't check them
-        if (current.type === 'ClassDeclaration') {
-            return current.abstract === true;
-        }
-    }
-    return false;
-};
+const classOf = (node: ReportedNode): ReportedNode =>
+    node.type === 'ClassDeclaration' ? node : classOf(node.parent);
 
 /**
  * Let `unicorn/custom-error-definition` skip abstract classes. An abstract base error is never thrown itself, so
@@ -45,11 +40,10 @@ export const withAbstractErrors = (plugin: ESLint.Plugin): ESLint.Plugin => {
                             Object.create(context, {
                                 report: {
                                     value: (descriptor: Rule.ReportDescriptor) => {
-                                        const node =
-                                            'node' in descriptor
-                                                ? (descriptor.node as ReportedNode)
-                                                : undefined;
-                                        if (!isInAbstractClass(node)) {
+                                        const { node } = descriptor as unknown as {
+                                            readonly node: ReportedNode;
+                                        };
+                                        if (classOf(node).abstract !== true) {
                                             context.report(descriptor);
                                         }
                                     },

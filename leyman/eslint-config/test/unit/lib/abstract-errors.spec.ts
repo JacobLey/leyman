@@ -8,7 +8,7 @@ import { withAbstractErrors } from '#internal/lib/abstract-errors.js';
 
 const unicorn = rawUnicornPlugin as ESLint.Plugin;
 const linter = new Linter();
-const lint = (plugin: ESLint.Plugin, code: string): string[] =>
+const lint = (plugin: ESLint.Plugin, code: string): (string | null)[] =>
     linter
         .verify(
             code,
@@ -20,7 +20,7 @@ const lint = (plugin: ESLint.Plugin, code: string): string[] =>
             },
             'file.ts'
         )
-        .map(({ ruleId }) => ruleId ?? 'fatal');
+        .map(({ ruleId }) => ruleId);
 
 const abstractError = 'export abstract class BaseError extends Error {}';
 const concreteError = 'export class BadError extends Error {}';
