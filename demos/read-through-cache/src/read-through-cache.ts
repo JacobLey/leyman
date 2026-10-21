@@ -34,6 +34,7 @@ export {
     bentoValkeyTierBinding,
     type LeaseCacheTierOptions,
     leaseCacheTierBinding,
+    type SharedLoad,
     type SharedTier,
 } from './lib/shared-tier.js';
 export {

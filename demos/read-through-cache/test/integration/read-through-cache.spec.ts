@@ -427,6 +427,43 @@ suite('ReadThroughCache', () => {
             }
         );
 
+        withLease.test(
+            'Never keeps a load that finishes after an invalidation in memory',
+            async ({ instance, leased }) => {
+                const cache = instance(leased.replaceBinding(memoryTierBinding({ maxItems: 100 })));
+                const loader = controlledLoader<string>();
+
+                const outdated = cache.get('key', loader.load);
+                await loader.called(1);
+                await cache.invalidate('key');
+                await loader.resolve(1, 'old');
+                await outdated;
+
+                expect(await cache.get('key', async () => 'new')).to.equal('new');
+            }
+        );
+
+        withInstances.test(
+            'Never keeps a stale value in memory, with staleMs',
+            async ({ baseline, instance }) => {
+                const kept = baseline
+                    .replaceBinding(leaseCacheTierBinding({ ...lease, staleMs: 60_000 }))
+                    .replaceBinding(memoryTierBinding({ maxItems: 100 }));
+                const [first, second] = [instance(kept), instance(kept)];
+                await first.get('key', async () => 'stale');
+                await first.invalidate('key');
+                const loader = controlledLoader<string>();
+                const fromFirst = first.get('key', loader.load);
+                await loader.called(1);
+                expect(await second.get('key', loader.load)).to.equal('stale');
+
+                await loader.resolve(1, 'fresh');
+                await fromFirst;
+
+                expect(await second.get('key', async () => 'unused')).to.equal('fresh');
+            }
+        );
+
         withInstances.test(
             'Serves the old value to instances waiting on a load after an expiry, with staleMs',
             async ({ baseline, instance }) => {

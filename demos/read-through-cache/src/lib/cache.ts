@@ -47,18 +47,24 @@ export class ReadThroughCache {
         load: () => Promise<T>,
         options: GetOptions<T> = {}
     ): Promise<T> {
-        const { ttlMs } = options;
-        return this.#bento.getOrSet<T>({
+        let uncached: { readonly value: T } | undefined;
+        const cached = await this.#bento.getOrSet<T | undefined>({
             key,
             factory: async ctx => {
-                const value = await this.#sharedTier.load(key, load, options);
-                if (ttlMs !== undefined) {
-                    // Every tier BentoCache writes keeps the value this long
-                    ctx.setOptions({ ttl: typeof ttlMs === 'function' ? ttlMs(value) : ttlMs });
+                const { value, ttlMs } = await this.#sharedTier.load(key, load, options);
+                if (ttlMs === 0) {
+                    // The shared tier didn't cache it, so it may already be outdated: kept by no tier
+                    uncached = { value };
+                    // eslint-disable-next-line @typescript-eslint/no-confusing-void-expression -- Typed `undefined`, but returns the symbol BentoCache checks for
+                    return ctx.skip();
                 }
+                // Every tier BentoCache writes keeps the value as long as the shared tier does
+                ctx.setOptions({ ttl: ttlMs });
                 return value;
             },
         });
+        // Skipping leaves BentoCache with no value to return
+        return uncached ? uncached.value : (cached as T);
     }
 
     /**

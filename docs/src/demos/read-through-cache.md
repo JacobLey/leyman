@@ -84,7 +84,7 @@ Every input that loads a different value must give a different key, and two reso
 
 `ttlMs` on a resource (or in `get`'s options) replaces the cache's `ttlMs`. It is a number, or a function of the loaded value (and, for a resource, the input), e.g. to cache a missing row for less time than a found one, or to cache by how often a kind of row changes.
 
-It is applied after the load, through BentoCache's `ctx.setOptions({ ttl })`, so every tier BentoCache writes keeps the value that long. With leases, lease-cache computes the same TTL for the value it stores. A load that fails is never cached; to cache a failure for a short while, return it as a value (`{ error: 'not-found' }`) and give it a short TTL.
+It is applied after the load, through BentoCache's `ctx.setOptions({ ttl })`, so every tier BentoCache writes keeps the value that long. With leases, lease-cache computes the TTL for the value it stores, and the memory tier keeps each value only as long as lease-cache has left on it (a value read from lease-cache an hour into its TTL doesn't get a fresh one in memory). A load that fails is never cached; to cache a failure for a short while, return it as a value (`{ error: 'not-found' }`) and give it a short TTL.
 
 ## How a read flows
 
@@ -100,7 +100,7 @@ get(key, load)
        ├─ BentoCache's own tier:  hit ─▶ copy into memory, return
        │                          miss ─▶ load ─▶ BentoCache writes Valkey + memory, publishes
        │
-       └─ lease-cache:            hit ─▶ return (BentoCache copies into memory)
+       └─ lease-cache:            hit ─▶ return (BentoCache copies into memory, for the TTL left)
                                   miss, lease free ─▶ take it, load, cache if the lease is still ours
                                   miss, lease taken ─▶ poll until the value appears
 ```
@@ -150,6 +150,7 @@ BentoCache then keeps only what lease-cache doesn't do: the memory tier, its syn
 - **Stale values on expiry only live in memory.** lease-cache keeps no stale copy of a value that runs out, so stale-while-revalidate needs a memory tier. A refresh then still loads once across instances: the others' background refreshes wait on the lease, and pick up its value.
 - **After `expire()` or `invalidate()`, lease-cache can keep the old value**: `leases: { ..., staleMs }`. Instances that would wait on the next load return it instead, with or without a memory tier.
 - **BentoCache gets no Valkey layer at all**, so it can't cache an outdated value behind lease-cache's back.
+- **The memory tier only keeps what lease-cache cached.** lease-cache's `read()` says whether, and for how long, it cached each value. A load that lost its lease to an invalidation, a stale value, and a load after `waitMs` aren't cached by lease-cache, so the factory skips BentoCache's cache for them too (`ctx.skip()`): the value is returned, and kept by no tier. Without that, the memory tier would keep exactly the outdated load lease-cache refused, for the whole TTL. Tests show both, with a memory tier.
 
 Learned along the way:
 

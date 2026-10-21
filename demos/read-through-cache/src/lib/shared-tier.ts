@@ -8,6 +8,20 @@ import { cacheConfigId, sharedTierId, valkeyTopologyId } from './ids.js';
 import { ShardedValkeyDriver } from './sharded-valkey-driver.js';
 
 /**
+ * A value the shared tier loaded (or found), and how long the tiers in front may keep it.
+ *
+ * @template T - The value
+ */
+export interface SharedLoad<T extends Json> {
+    readonly value: T;
+    /**
+     * How long the value is cached, in milliseconds. `0` when the shared tier didn't cache it, so it may already
+     * be outdated: no tier keeps it.
+     */
+    readonly ttlMs: number;
+}
+
+/**
  * The tier every instance shares, in Valkey: where values live between instances, and how a miss is loaded.
  */
 export interface SharedTier {
@@ -22,7 +36,7 @@ export interface SharedTier {
         key: string,
         load: () => Promise<T>,
         options: GetOptions<T>
-    ) => Promise<T>;
+    ) => Promise<SharedLoad<T>>;
     /**
      * Deletes the key from the tier, when BentoCache doesn't manage it.
      */
@@ -34,9 +48,9 @@ export interface SharedTier {
  * and a load that finishes after an invalidation caches what it read until it expires.
  */
 export const bentoValkeyTierBinding = bind(sharedTierId)
-    .withDependencies([valkeyTopologyId])
+    .withDependencies([valkeyTopologyId, cacheConfigId])
     .withProvider(
-        (topology): SharedTier => ({
+        (topology, config): SharedTier => ({
             layer: store =>
                 store.useL2Layer({
                     options: {},
@@ -44,8 +58,11 @@ export const bentoValkeyTierBinding = bind(sharedTierId)
                     factory: ({ prefix }: { prefix: string }) =>
                         new ShardedValkeyDriver(topology, prefix),
                 }),
-            // BentoCache writes what was loaded to this tier itself
-            load: async (_key, load) => load(),
+            // BentoCache writes what was loaded to this tier itself, for as long as it keeps it in memory
+            load: async (_key, load, { ttlMs = config.ttlMs }) => {
+                const value = await load();
+                return { value, ttlMs: typeof ttlMs === 'function' ? ttlMs(value) : ttlMs };
+            },
             // BentoCache deletes the key from its own tier
             invalidate: async () => {},
         })
@@ -87,7 +104,9 @@ export const leaseCacheTierBinding = (
             };
             return {
                 layer: store => store,
-                load: async (key, load, readOptions) => cacheFor(key).get(key, load, readOptions),
+                // How long lease-cache keeps the value, so memory keeps it no longer, and never keeps one
+                // lease-cache didn't cache (a load that lost its lease, a stale value)
+                load: async (key, load, readOptions) => cacheFor(key).read(key, load, readOptions),
                 invalidate: async key => cacheFor(key).invalidate(key),
             };
         })
