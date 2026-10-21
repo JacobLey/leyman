@@ -161,6 +161,47 @@ suite('LeaseCache', () => {
             expect(reported).to.deep.equal([down]);
         });
 
+        test("Rejects with what ttlMs threw, as Valkey didn't fail", async () => {
+            const failure = new TypeError('Not a number');
+            const reported: unknown[] = [];
+            // Takes the lease, then frees it
+            const cache = new LeaseCache({
+                ...options,
+                connection: failing(['lease'], 0),
+                onUnavailable: error => {
+                    reported.push(error);
+                },
+            });
+
+            await expect(
+                cache.get('key', async () => 'value', {
+                    ttlMs: () => {
+                        throw failure;
+                    },
+                })
+            ).to.be.rejectedWith(failure);
+            expect(reported).to.deep.equal([]);
+        });
+
+        test("Rejects with what onWait threw, as Valkey didn't fail", async () => {
+            const failure = new Error('Metrics are down');
+            const reported: unknown[] = [];
+            // Finds another reader loading
+            const cache = new LeaseCache({
+                ...options,
+                connection: failing(['wait', null]),
+                onWait: () => {
+                    throw failure;
+                },
+                onUnavailable: error => {
+                    reported.push(error);
+                },
+            });
+
+            await expect(cache.get('key', async () => 'value')).to.be.rejectedWith(failure);
+            expect(reported).to.deep.equal([]);
+        });
+
         test('Rejects an invalidation, even with onUnavailable', async () => {
             const cache = new LeaseCache({
                 ...options,
