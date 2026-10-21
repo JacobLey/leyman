@@ -9,7 +9,7 @@ description: LeaseCache, its options, get, read and invalidate, its errors, and 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `connection` | [`LeaseCacheConnection`](#leasecacheconnection) | — | Runs the cache's scripts. See [Clients](/lease-cache/guides/clients). Never closed by the cache. |
-| `prefix` | `string` | — | Prefix of every key, so several caches can share a server. |
+| `prefix` | `string` | — | Prefix of every key, so several caches can share a server. Must not contain `{`, or the constructor throws `LeaseCachePrefixError`. |
 | `ttlMs` | `number` | — | How long a loaded value is cached, in milliseconds, unless [`get`](#cache-get-key-load-options) is given its own. |
 | `leaseMs` | `number` | — | How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing. |
 | `pollMs` | `number` | — | How often a reader waiting on another's load checks again. |
@@ -26,7 +26,7 @@ Returns the cached value, or calls `load` and caches what it returns.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `key` | `string` | Identifies the value, without the prefix. |
+| `key` | `string` | Identifies the value, without the prefix. Not empty, and not starting with `}`, or the read rejects with `LeaseCacheKeyError`. |
 | `load` | `() => Promise<T>` | Loads the value from the source of truth. `T` must extend [`Json`](#json). |
 | `options.ttlMs` | `number \| ((value: T) => number)` | How long this value is cached, in place of the cache's `ttlMs`. A function gets the loaded value. Above 0. |
 
@@ -86,7 +86,7 @@ if (ttlMs > 0) {
 
 Deletes the value and its lease, so the next read loads it. A load already in progress returns to its caller, but caches nothing. Call it after the source of truth changes. With `staleMs`, the old value is first kept as stale.
 
-Rejects when Valkey fails, even with `onUnavailable`: an invalidation that didn't happen leaves the old value cached once Valkey is back.
+Rejects when Valkey fails, even with `onUnavailable`: an invalidation that didn't happen leaves the old value cached once Valkey is back. Rejects with `LeaseCacheKeyError` for a key `get` would reject.
 
 **Returns** `Promise<void>`.
 
@@ -97,6 +97,8 @@ Every error `lease-cache` throws extends `LeaseCacheError`. What `load` throws i
 | Error | When |
 |-------|------|
 | `LeaseCacheDurationError` | A duration isn't a finite number above 0 (`waitMs` and `staleMs` may be 0). Has `option` and `value`. |
+| `LeaseCacheKeyError` | A key is empty or starts with `}`, so its hash tag would be empty. Has `key`. |
+| `LeaseCachePrefixError` | The prefix contains `{`, which would change the keys' hash tag. Has `prefix`. |
 | `LeaseCacheValueError` | `load` returned something JSON can't store, e.g. `undefined`. Has `key`. |
 
 ## `Json`
@@ -117,4 +119,4 @@ const single: LeaseCacheConnection = new Redis('redis://valkey:6379');
 const cluster: LeaseCacheConnection = new Cluster([{ host: 'valkey', port: 6379 }]);
 ```
 
-The keys of each value share a hash tag (`<prefix>:{<key>}:...`), so on a cluster they live on the same node, which the scripts need.
+The keys of each value share a hash tag (`<prefix>:{<key>}:...`), so on a cluster they live on the same node, which the scripts need. That's why a key can't be empty or start with `}` (its tag would be empty), and the prefix can't contain `{` (it would change the tag).

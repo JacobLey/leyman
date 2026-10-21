@@ -1,6 +1,8 @@
 export {
     LeaseCacheDurationError,
     LeaseCacheError,
+    LeaseCacheKeyError,
+    LeaseCachePrefixError,
     LeaseCacheValueError,
 } from './lib/errors.js';
 export {

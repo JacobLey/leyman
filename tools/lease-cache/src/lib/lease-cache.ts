@@ -1,6 +1,11 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import { LeaseCacheDurationError, LeaseCacheValueError } from './errors.js';
+import {
+    LeaseCacheDurationError,
+    LeaseCacheKeyError,
+    LeaseCachePrefixError,
+    LeaseCacheValueError,
+} from './errors.js';
 import { fillScript, invalidateScript, readOrLeaseScript, releaseScript } from './scripts.js';
 
 /**
@@ -27,7 +32,8 @@ export interface LeaseCacheOptions {
      */
     readonly connection: LeaseCacheConnection;
     /**
-     * Prefix of every key, so several caches can share a server.
+     * Prefix of every key, so several caches can share a server. Must not contain `{`, which would change the
+     * keys' hash tag.
      */
     readonly prefix: string;
     /**
@@ -162,8 +168,12 @@ export class LeaseCache {
      * @param options - Connection, and timing of values and leases
      * @throws {LeaseCacheDurationError} When a duration isn't a finite number above 0 (`waitMs` and `staleMs` may
      * be 0)
+     * @throws {LeaseCachePrefixError} When the prefix contains `{`
      */
     public constructor(options: LeaseCacheOptions) {
+        if (options.prefix.includes('{')) {
+            throw new LeaseCachePrefixError(options.prefix);
+        }
         this.#options = {
             ...options,
             ttlMs: duration('ttlMs', options.ttlMs, 1),
@@ -183,6 +193,7 @@ export class LeaseCache {
      * @returns Cached or loaded value
      * @throws {LeaseCacheDurationError} When `ttlMs` isn't a finite number above 0
      * @throws {LeaseCacheValueError} When `load` returns something JSON can't store
+     * @throws {LeaseCacheKeyError} When the key is empty, or starts with `}`
      */
     public async get<T extends Json>(
         key: string,
@@ -203,6 +214,7 @@ export class LeaseCache {
      * @returns Cached or loaded value, where it came from, and how long it is cached
      * @throws {LeaseCacheDurationError} When `ttlMs` isn't a finite number above 0
      * @throws {LeaseCacheValueError} When `load` returns something JSON can't store
+     * @throws {LeaseCacheKeyError} When the key is empty, or starts with `}`
      */
     public async read<T extends Json>(
         key: string,
@@ -285,6 +297,7 @@ export class LeaseCache {
      * Rejects when Valkey fails, even with `onUnavailable`: the value would still be cached once Valkey is back.
      *
      * @param key - Value to delete
+     * @throws {LeaseCacheKeyError} When the key is empty, or starts with `}`
      */
     public async invalidate(key: string): Promise<void> {
         await this.#eval(invalidateScript, this.#keys(key), this.#options.staleMs);
@@ -294,10 +307,18 @@ export class LeaseCache {
      * The value's key, its lease's key and its stale value's key. The hash tag (`{...}`) puts all three on the
      * same node of a cluster, which the scripts need, since they touch several.
      *
+     * The tag runs from the first `{` to the first `}` after it, so it is the key up to its first `}`, and the same
+     * for all three. A cluster hashes the whole key when the tag is empty, so the key can't be empty or start with
+     * `}`. The prefix has no `{` (checked by the constructor), so the first `{` is this one.
+     *
      * @param key - Identifies the value, without the prefix
      * @returns Value key, lease key, then stale value key
+     * @throws {LeaseCacheKeyError} When the key is empty, or starts with `}`
      */
     #keys(key: string): readonly [string, string, string] {
+        if (key === '' || key.startsWith('}')) {
+            throw new LeaseCacheKeyError(key);
+        }
         const tagged = `${this.#options.prefix}:{${key}}`;
         return [`${tagged}:value`, `${tagged}:lease`, `${tagged}:stale`];
     }

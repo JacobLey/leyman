@@ -10,6 +10,8 @@ import {
     LeaseCache,
     LeaseCacheDurationError,
     LeaseCacheError,
+    LeaseCacheKeyError,
+    LeaseCachePrefixError,
     LeaseCacheValueError,
 } from 'lease-cache';
 import { before, suite, test } from 'mocha-chain';
@@ -57,6 +59,57 @@ suite('LeaseCache', () => {
 
         test('Throws errors that share a base class', () => {
             expect(() => new LeaseCache({ ...options, ttlMs: 0 })).to.throw(LeaseCacheError);
+        });
+    });
+
+    suite('keys', () => {
+        const scripts: unknown[][] = [];
+        const options: LeaseCacheOptions = {
+            // Every key is cached
+            connection: {
+                eval: async (...args) => {
+                    scripts.push(args);
+                    return ['hit', '"value"', 1000];
+                },
+            },
+            prefix: 'unused',
+            ttlMs: 1000,
+            leaseMs: 1000,
+            pollMs: 10,
+            waitMs: 1000,
+        };
+
+        test('Rejects a prefix with "{", which would change the hash tag', () => {
+            expect(() => new LeaseCache({ ...options, prefix: 'users{v2}' }))
+                .to.throw(LeaseCachePrefixError, 'Invalid prefix "users{v2}"')
+                .with.property('prefix', 'users{v2}');
+        });
+
+        for (const key of ['', '}id']) {
+            test(`Rejects ${JSON.stringify(key)}, whose hash tag would be empty`, async () => {
+                scripts.length = 0;
+                const cache = new LeaseCache(options);
+
+                await expect(cache.get(key, async () => 'value')).to.be.rejectedWith(
+                    LeaseCacheKeyError,
+                    `Invalid key ${JSON.stringify(key)}`
+                );
+                await expect(cache.invalidate(key)).to.be.rejectedWith(LeaseCacheKeyError);
+                expect(scripts).to.deep.equal([]);
+            });
+        }
+
+        test('Accepts braces anywhere else, tagging every key up to its first "}"', async () => {
+            scripts.length = 0;
+            const cache = new LeaseCache({ ...options, prefix: 'users}' });
+
+            expect(await cache.get('{a}b}', async () => 'value')).to.equal('value');
+            expect(scripts[0]!.slice(1, 5)).to.deep.equal([
+                3,
+                'users}:{{a}b}}:value',
+                'users}:{{a}b}}:lease',
+                'users}:{{a}b}}:stale',
+            ]);
         });
     });
 

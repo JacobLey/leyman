@@ -114,7 +114,7 @@ const connection: LeaseCacheConnection = {
 };
 ```
 
-On a cluster, use the client's cluster mode (ioredis's `Cluster`, node-redis's `createCluster`, `GlideClusterClient`): each key's value and lease share a hash tag, so they live on the same node. The tests only cover a single server.
+On a cluster, use the client's cluster mode (ioredis's `Cluster`, node-redis's `createCluster`, `GlideClusterClient`): each key's value, lease and stale value share a hash tag, so they live on the same node. For the tag to work, a key can't be empty or start with `}` (`LeaseCacheKeyError`), and the prefix can't contain `{` (`LeaseCachePrefixError`). The tests only cover a single server.
 
 ## How it works
 
@@ -143,7 +143,7 @@ To keep caching through an outage, put a cache in front that keeps values in mem
 | Option | Type | Description |
 |--------|------|-------------|
 | `connection` | `LeaseCacheConnection` | Required. Anything with `eval(script, numKeys, ...args)`: see [Clients](#clients). Never closed by the cache. |
-| `prefix` | `string` | Required. Prefix of every key, so several caches can share a server. |
+| `prefix` | `string` | Required. Prefix of every key, so several caches can share a server. Must not contain `{`. |
 | `ttlMs` | `number` | Required. How long a loaded value is cached, unless `get` is given its own. |
 | `leaseMs` | `number` | Required. How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing. |
 | `pollMs` | `number` | Required. How often a waiting reader checks again. |
@@ -183,6 +183,8 @@ Every error extends `LeaseCacheError`. What `load` throws is passed on as it is.
 | Error | When |
 |-------|------|
 | `LeaseCacheDurationError` | A duration isn't a finite number above 0 (`waitMs` and `staleMs` may be 0), including one computed by `ttlMs`. Has `option` and `value`. |
+| `LeaseCacheKeyError` | A key is empty or starts with `}`, so its hash tag would be empty (see [Clients](#clients)). Has `key`. |
+| `LeaseCachePrefixError` | The prefix contains `{`, which would change the keys' hash tag. Has `prefix`. |
 | `LeaseCacheValueError` | `load` returned something JSON can't store, e.g. `undefined`. Has `key`. |
 
 ## Compared to alternatives
