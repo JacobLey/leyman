@@ -1,10 +1,7 @@
 import type { Supplier } from 'haywire';
 import type { CanUseFormatter } from '#types';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
 import { findUp } from 'find-up';
-
-const execFileAsync = promisify(execFile);
+import { execFileAsync, execWithInput } from './exec.js';
 
 /**
  * Biome formatter.
@@ -16,12 +13,14 @@ export class Biome {
 
     public readonly canUseBiome: () => Promise<CanUseFormatter>;
     public readonly formatBiomeFiles: (files: string[]) => Promise<void>;
+    public readonly formatBiomeText: (text: string, filePath: string) => Promise<string>;
 
     public constructor(getBiomePath: Supplier<string>) {
         this.#getBiomePath = getBiomePath;
 
         this.canUseBiome = this.#canUseBiome.bind(this);
         this.formatBiomeFiles = this.#formatBiomeFiles.bind(this);
+        this.formatBiomeText = this.#formatBiomeText.bind(this);
     }
 
     async #canUseBiome(): Promise<CanUseFormatter> {
@@ -37,5 +36,13 @@ export class Biome {
 
     async #formatBiomeFiles(files: string[]): Promise<void> {
         await execFileAsync(this.#getBiomePath(), ['format', '--write', ...files]);
+    }
+
+    async #formatBiomeText(text: string, filePath: string): Promise<string> {
+        return execWithInput(
+            this.#getBiomePath(),
+            ['format', `--stdin-file-path=${filePath}`],
+            text
+        );
     }
 }

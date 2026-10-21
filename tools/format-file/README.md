@@ -105,7 +105,7 @@ await formatFiles(['./src/generated.ts', './src/other.ts']);
 
 ### `formatText(content, options?)`
 
-Formats a raw text string as if it were a file, returning the formatted result.
+Formats a raw text string as if it were a file in the current working directory, so the project's formatter configuration applies, and returns the formatted result. If no formatter succeeds, the text is returned unchanged.
 
 **Parameters**
 

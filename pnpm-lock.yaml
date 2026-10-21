@@ -2402,9 +2402,6 @@ importers:
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
-      tmp-promise:
-        specifier: 'catalog:'
-        version: 3.0.3
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -2451,6 +2448,9 @@ importers:
       prettier:
         specifier: 'catalog:'
         version: 3.9.9
+      tmp-promise:
+        specifier: 'catalog:'
+        version: 3.0.3
       ts-dedent:
         specifier: 'catalog:'
         version: 2.3.0
@@ -13352,7 +13352,6 @@ snapshots:
     dependencies:
       find-up: 8.0.0
       haywire: file:tools/haywire
-      tmp-promise: 3.0.3
     optionalDependencies:
       '@biomejs/biome': 2.5.14
       prettier: 3.9.9

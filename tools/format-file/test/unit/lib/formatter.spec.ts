@@ -111,4 +111,53 @@ suite('Formatter', () => {
             expect(await ctx.read('second.js')).to.equal(formatted.biome);
         });
     });
+
+    suite('formatText', () => {
+        withTmpCwd.test('Uses the project configuration', async ctx => {
+            await ctx.write('.prettierrc', '{ "tabWidth": 8, "singleQuote": true }');
+
+            expect(
+                await createFormatters().formatter.formatText('function f(){return "x"}', {
+                    formatter: 'prettier',
+                })
+            ).to.equal("function f() {\n        return 'x';\n}\n");
+
+            await ctx.write(
+                'biome.json',
+                '{ "formatter": { "indentStyle": "space", "indentWidth": 3 } }'
+            );
+            expect(
+                await createFormatters().formatter.formatText(unformatted.js, {
+                    formatter: 'biome',
+                })
+            ).to.equal('function f() {\n   return 1;\n}\n');
+        });
+
+        withTmpCwd.test('Formats by extension', async () => {
+            expect(
+                await createFormatters().formatter.formatText('{"a":1}', { ext: '.json' })
+            ).to.equal('{ "a": 1 }\n');
+        });
+
+        withTmpCwd.test('Falls back when a formatter fails', async ctx => {
+            // Preferred, but fails on its invalid config
+            await ctx.write('.prettierrc', '{ invalid');
+
+            expect(await createFormatters().formatter.formatText(unformatted.js)).to.equal(
+                formatted.biome
+            );
+        });
+
+        withTmpCwd.test('A null formatter uses every formatter', async () => {
+            expect(
+                await createFormatters().formatter.formatText(unformatted.js, { formatter: null })
+            ).to.equal(formatted.biome);
+        });
+
+        withTmpCwd.test('Returns the text when every formatter fails', async () => {
+            expect(await createFormatters().formatter.formatText(unformatted.invalid)).to.equal(
+                unformatted.invalid
+            );
+        });
+    });
 });

@@ -8,8 +8,7 @@ import type {
 } from '#types';
 import type { Biome } from './biome.js';
 import type { Prettier } from './prettier.js';
-import { readFile, writeFile } from 'node:fs/promises';
-import { file } from 'tmp-promise';
+import Path from 'node:path';
 
 /**
  * Core formatting logic, choosing between available formatters.
@@ -41,33 +40,10 @@ export class Formatter {
         if (files.length === 0) {
             return;
         }
-        const formatter = options.formatter ?? 'inherit';
-
-        this.#usability ??= Promise.all([
-            this.#biome.canUseBiome(),
-            this.#prettier.canUsePrettier(),
-        ]);
-        const [biomeUsability, prettierUsability] = await this.#usability;
-
-        const formatters = [
-            {
-                name: 'biome',
-                usable: biomeUsability,
-                format: this.#biome.formatBiomeFiles,
-            },
-            {
-                name: 'prettier',
-                usable: prettierUsability,
-                format: this.#prettier.formatPrettierFiles,
-            },
-        ]
-            .filter(({ name }) => formatter === 'inherit' || formatter === name)
-            .filter(({ usable }) => usable > 0)
-            .toSorted((a, b) => b.usable - a.usable);
-
-        for (const { format } of formatters) {
+        const formatters = await this.#getFormatters(options);
+        for (const { formatFiles } of formatters) {
             try {
-                await format(files);
+                await formatFiles(files);
                 return;
             } catch {}
         }
@@ -78,17 +54,53 @@ export class Formatter {
     }
 
     async #formatText(text: string, options: TextFormatterOptions = {}): Promise<string> {
-        const tmpFile = await file({
-            prefix: 'format-file',
-            postfix: options.ext ?? '.js',
-        });
+        // Formatted as if it were a file in the working directory, so that the project's configuration applies
+        const filePath = Path.resolve(`format-file${options.ext ?? '.js'}`);
+        const formatters = await this.#getFormatters(options);
+        for (const { formatText } of formatters) {
+            try {
+                return await formatText(text, filePath);
+            } catch {}
+        }
+        return text;
+    }
 
-        await writeFile(tmpFile.path, text, 'utf8');
-        await this.#formatFiles([tmpFile.path], { formatter: options.formatter });
-        const formatted = await readFile(tmpFile.path, 'utf8');
+    /**
+     * Formatters to try in order: the requested one, or every usable one, configured first.
+     *
+     * @param options - which formatter to use, if not every usable one
+     * @returns formatters, most preferred first
+     */
+    async #getFormatters({ formatter = 'inherit' }: FileFormatterOptions): Promise<
+        {
+            formatFiles: (files: string[]) => Promise<void>;
+            formatText: (text: string, filePath: string) => Promise<string>;
+        }[]
+    > {
+        this.#usability ??= Promise.all([
+            this.#biome.canUseBiome(),
+            this.#prettier.canUsePrettier(),
+        ]);
+        const [biomeUsability, prettierUsability] = await this.#usability;
+        // `null` also inherits
+        const requested = formatter ?? 'inherit';
 
-        await tmpFile.cleanup();
-
-        return formatted;
+        return [
+            {
+                name: 'biome',
+                usable: biomeUsability,
+                formatFiles: this.#biome.formatBiomeFiles,
+                formatText: this.#biome.formatBiomeText,
+            },
+            {
+                name: 'prettier',
+                usable: prettierUsability,
+                formatFiles: this.#prettier.formatPrettierFiles,
+                formatText: this.#prettier.formatPrettierText,
+            },
+        ]
+            .filter(({ name }) => requested === 'inherit' || requested === name)
+            .filter(({ usable }) => usable > 0)
+            .toSorted((a, b) => b.usable - a.usable);
     }
 }

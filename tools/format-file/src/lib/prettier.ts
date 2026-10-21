@@ -1,9 +1,6 @@
 import type { Supplier } from 'haywire';
 import type { CanUseFormatter } from '#types';
-import { execFile } from 'node:child_process';
-import { promisify } from 'node:util';
-
-const execFileAsync = promisify(execFile);
+import { execFileAsync, execWithInput } from './exec.js';
 
 /**
  * Prettier formatter.
@@ -15,12 +12,14 @@ export class Prettier {
 
     public readonly canUsePrettier: () => Promise<CanUseFormatter>;
     public readonly formatPrettierFiles: (files: string[]) => Promise<void>;
+    public readonly formatPrettierText: (text: string, filePath: string) => Promise<string>;
 
     public constructor(getPrettierPath: Supplier<string>) {
         this.#getPrettierPath = getPrettierPath;
 
         this.canUsePrettier = this.#canUsePrettier.bind(this);
         this.formatPrettierFiles = this.#formatPrettierFiles.bind(this);
+        this.formatPrettierText = this.#formatPrettierText.bind(this);
     }
 
     async #canUsePrettier(): Promise<CanUseFormatter> {
@@ -37,5 +36,9 @@ export class Prettier {
 
     async #formatPrettierFiles(files: string[]): Promise<void> {
         await execFileAsync(this.#getPrettierPath(), [...files, '--write']);
+    }
+
+    async #formatPrettierText(text: string, filePath: string): Promise<string> {
+        return execWithInput(this.#getPrettierPath(), ['--stdin-filepath', filePath], text);
     }
 }

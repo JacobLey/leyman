@@ -38,8 +38,7 @@
   },
   "dependencies": {
     "find-up": "catalog:",
-    "haywire": "workspace:^",
-    "tmp-promise": "catalog:"
+    "haywire": "workspace:^"
   },
   "peerDependencies": {
     "@biomejs/biome": "catalog:",
@@ -69,6 +68,7 @@
     "mocha-chain": "workspace:^",
     "npm-barrelify": "catalog:leyman",
     "prettier": "catalog:",
+    "tmp-promise": "catalog:",
     "ts-dedent": "catalog:",
     "typescript": "catalog:"
   }
