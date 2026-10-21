@@ -1,5 +1,12 @@
 # genever
 
+## 0.4.0
+
+### Minor Changes
+
+- 9e9a851: A document with operations also gets `OperationInput<Id>` and `OperationResult<Id>`, keyed by `operationId`: what a call to the operation sends (parameters by location, and the JSON body, each only if it has them), and every response it documents as `{ status, body }`, so checking `status` narrows `body`.
+- 9ee49db: `--parameter-defaults` (`parameterDefaults: true`) also writes `OperationRequest<Id>`, a server handler's view of an operation: as `OperationInput`, but a parameter whose schema has a `default` is required, as a validator that fills in defaults always sets it.
+
 ## 0.3.0
 
 ### Minor Changes
