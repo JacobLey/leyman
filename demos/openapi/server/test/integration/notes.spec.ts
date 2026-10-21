@@ -20,6 +20,7 @@ import { bind, createContainer } from 'haywire';
 import { suite } from 'mocha-chain';
 import { withDatabase } from '../helpers/database.js';
 import { listen } from '../helpers/serve.js';
+import { expectStatus } from '../helpers/status.js';
 
 const token = 'secret-token';
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/u;
@@ -146,6 +147,63 @@ suite('Notes API', () => {
             expect(await response.json()).to.include({ message: 'body is not valid JSON' });
         });
 
+        withServer.test('Accepts the media type in any case', async ({ served }) => {
+            const response = await fetch(`${served.url}/notes`, {
+                method: 'POST',
+                headers: { authorization: `Bearer ${token}`, 'content-type': 'Application/JSON' },
+                body: JSON.stringify({ title: 'Dolly', body: 'A sheep' }),
+            });
+
+            expect(response.status).to.equal(201);
+        });
+
+        withServer.test('Rejects text Postgres cannot store', async ({ client, errors }) => {
+            const created = await client.call('createNote', {
+                body: { title: 'Dolly', body: 'A\0sheep' },
+            });
+
+            expect(created.status).to.equal(400);
+            expect(errors).to.deep.equal([]);
+        });
+
+        withServer.test('Refuses a body larger than any note', async ({ client }) => {
+            const created = await client.call('createNote', {
+                body: { title: 'Dolly', body: 'A sheep'.repeat(20_000) },
+            });
+
+            expect(created.status).to.equal(413);
+        });
+
+        withServer.test('Refuses a large body sent in chunks', async ({ served }) => {
+            const chunk = Buffer.from(' '.repeat(64 * 1024));
+            // Node needs `duplex` to send a stream, which the DOM's `RequestInit` doesn't have
+            const init: RequestInit & { readonly duplex: 'half' } = {
+                method: 'POST',
+                headers: { authorization: `Bearer ${token}`, 'content-type': 'application/json' },
+                // A stream has no length, so the server counts what it reads
+                body: new ReadableStream({
+                    start: controller => {
+                        controller.enqueue(chunk);
+                        controller.enqueue(chunk);
+                        controller.enqueue(chunk);
+                        controller.close();
+                    },
+                }),
+                duplex: 'half',
+            };
+            const response = await fetch(`${served.url}/notes`, init);
+
+            expect(response.status).to.equal(413);
+        });
+
+        withServer.test('Checks the token before the size', async ({ anonymous }) => {
+            const created = await anonymous.call('createNote', {
+                body: { title: 'Dolly', body: 'A sheep'.repeat(20_000) },
+            });
+
+            expect(created.status).to.equal(401);
+        });
+
         withServer.test('Rejects a body of another type', async ({ served }) => {
             const response = await fetch(`${served.url}/notes`, {
                 method: 'POST',
@@ -160,13 +218,12 @@ suite('Notes API', () => {
 
     suite('getNote', () => {
         withServer.test('Reads a note', async ({ client }) => {
-            const { body: note } = await client.call('createNote', {
-                body: { title: 'Dolly', body: 'A sheep' },
-            });
+            const { body: note } = expectStatus(
+                await client.call('createNote', { body: { title: 'Dolly', body: 'A sheep' } }),
+                201
+            );
 
-            const read = await client.call('getNote', {
-                path: { noteId: (note as { id: string }).id },
-            });
+            const read = await client.call('getNote', { path: { noteId: note.id } });
 
             expect(read).to.deep.equal({ status: 200, body: note });
         });
@@ -186,6 +243,7 @@ suite('Notes API', () => {
         });
     });
 
+    // Outside `listNotes`, whose hook adds notes before each of its tests
     withServer.test('Lists nothing on an empty database', async ({ anonymous }) => {
         expect(await anonymous.call('listNotes', {})).to.deep.equal({
             status: 200,
@@ -212,17 +270,22 @@ suite('Notes API', () => {
         });
 
         withNotes.test('Lists the newest first', async ({ anonymous }) => {
-            const { body } = await anonymous.call('listNotes', { query: { limit: 3 } });
+            const { body } = expectStatus(
+                await anonymous.call('listNotes', { query: { limit: 3 } }),
+                200
+            );
 
-            expect(
-                (body as { items: { title: string }[] }).items.map(({ title }) => title)
-            ).to.deep.equal(['Note 24', 'Note 23', 'Note 22']);
+            expect(body.items.map(({ title }) => title)).to.deep.equal([
+                'Note 24',
+                'Note 23',
+                'Note 22',
+            ]);
         });
 
         withNotes.test('Lists 20 by default, as the spec says', async ({ anonymous }) => {
-            const { body } = await anonymous.call('listNotes', {});
+            const { body } = expectStatus(await anonymous.call('listNotes', {}), 200);
 
-            expect((body as { items: unknown[] }).items).to.have.length(20);
+            expect(body.items).to.have.length(20);
         });
 
         withServer.test('Rejects a limit out of range', async ({ anonymous }) => {
@@ -249,6 +312,13 @@ suite('Notes API', () => {
 
         expect(response.status).to.equal(404);
         expect(await response.json()).to.include({ code: 'not_found' });
+    });
+
+    withServer.test('Answers 405 for a method the path does not have', async ({ served }) => {
+        const response = await fetch(`${served.url}/notes`, { method: 'DELETE' });
+
+        expect(response.status).to.equal(405);
+        expect(response.headers.get('allow')).to.equal('GET, HEAD, POST');
     });
 
     suite('Responses', () => {

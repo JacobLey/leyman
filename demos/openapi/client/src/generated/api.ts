@@ -9,10 +9,12 @@ export type NewNote = {
     /**
      * @minLength 1
      * @maxLength 200
+     * @pattern "^[^\\u0000]*$"
      */
     title: string;
     /**
      * @maxLength 10000
+     * @pattern "^[^\\u0000]*$"
      */
     body: string;
 };
@@ -25,10 +27,12 @@ export type Note = {
     /**
      * @minLength 1
      * @maxLength 200
+     * @pattern "^[^\\u0000]*$"
      */
     title: string;
     /**
      * @maxLength 10000
+     * @pattern "^[^\\u0000]*$"
      */
     body: string;
     /**
@@ -168,6 +172,17 @@ export type Operations = {
              * Missing or invalid bearer token
              */
             '401': {
+                headers: {
+                    [key: string]: unknown;
+                };
+                content: {
+                    'application/json': ApiError;
+                };
+            };
+            /**
+             * The body is larger than any valid request
+             */
+            '413': {
                 headers: {
                     [key: string]: unknown;
                 };

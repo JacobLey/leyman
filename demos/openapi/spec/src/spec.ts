@@ -3,11 +3,17 @@ import { arraySchema, numberSchema, objectSchema, serializeSpec, stringSchema } 
 
 const idSchema = stringSchema({ format: 'uuid' });
 
+/**
+ * Text is stored in Postgres, which can't store a NUL character: a request with one must be a 400, not a failed
+ * insert.
+ */
+const withoutNul = String.raw`^[^\u0000]*$`;
+
 export const noteSchema = objectSchema({
     properties: {
         id: idSchema,
-        title: stringSchema({ minLength: 1, maxLength: 200 }),
-        body: stringSchema({ maxLength: 10_000 }),
+        title: stringSchema({ minLength: 1, maxLength: 200, pattern: withoutNul }),
+        body: stringSchema({ maxLength: 10_000, pattern: withoutNul }),
         createdAt: stringSchema({ format: 'date-time' }),
     },
     required: ['id', 'title', 'body', 'createdAt'],
@@ -37,6 +43,7 @@ const errors = {
     400: { description: 'The request does not match the spec', content: json(errorSchema) },
     401: { description: 'Missing or invalid bearer token', content: json(errorSchema) },
     404: { description: 'No such note', content: json(errorSchema) },
+    413: { description: 'The body is larger than any valid request', content: json(errorSchema) },
 } as const;
 
 /**
@@ -85,6 +92,7 @@ export const spec = serializeSpec({
                     201: { description: 'The note added', content: json(noteSchema) },
                     400: errors[400],
                     401: errors[401],
+                    413: errors[413],
                 },
             },
         },

@@ -9,10 +9,10 @@ Part of the [OpenAPI demo](../README.md). A worked example, never published.
 | Operation | Method and path | Auth | Responses |
 |---|---|---|---|
 | `listNotes` | `GET /notes?limit=` | — | `200 NoteList`, `400` |
-| `createNote` | `POST /notes` | Bearer | `201 Note`, `400`, `401` |
+| `createNote` | `POST /notes` | Bearer | `201 Note`, `400`, `401`, `413` |
 | `getNote` | `GET /notes/{noteId}` | — | `200 Note`, `400`, `404` |
 
-Every error is an `ApiError` (`{ code, message }`). `limit` is 1-100, default 20.
+Every error is an `ApiError` (`{ code, message }`). `limit` is 1-100, default 20. Text can't contain a NUL character (`\u0000`), which Postgres can't store, so a note with one is a `400` rather than a failed insert.
 
 ## How it's built
 

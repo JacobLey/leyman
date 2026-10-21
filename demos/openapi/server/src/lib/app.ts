@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers -- HTTP status codes, as the spec documents them */
-import type { Context } from 'hono';
+import type { Context, MiddlewareHandler } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { Operation } from './operations.js';
 import type { Authenticator, NotesHandlers, OperationId } from './types.js';
 import { Hono } from 'hono';
+import { bodyLimit } from 'hono/body-limit';
 import { NotesResponseError } from './errors.js';
 import { describeErrors, operations } from './operations.js';
 
@@ -21,6 +22,12 @@ interface HandlerResult {
 }
 
 const bearer = /^Bearer (?<token>\S+)$/u;
+
+/**
+ * Larger than any body the spec allows: a note is at most 10,200 characters, each at most 12 bytes as JSON (an
+ * escaped surrogate pair). A larger body is refused before it is read, rather than read whole and then rejected.
+ */
+const maxBodyBytes = 128 * 1024;
 
 /**
  * An error response, in the spec's `ApiError` shape.
@@ -48,7 +55,8 @@ const readJson = async (
     context: Context
 ): Promise<{ readonly error: string } | { readonly json: unknown }> => {
     const [type] = (context.req.header('content-type') ?? '').split(';', 1);
-    if (type?.trim() !== 'application/json') {
+    // Media types are case-insensitive
+    if (type?.trim().toLowerCase() !== 'application/json') {
         return { error: 'body must be application/json' };
     }
     try {
@@ -59,26 +67,32 @@ const readJson = async (
 };
 
 /**
- * Serves one operation: authenticates, validates the request, calls its handler, and validates the response.
+ * Answers 401 unless the request has a bearer token the authenticator accepts.
  *
- * Authentication comes first, so a caller without a token learns nothing about what the operation accepts.
+ * @param authenticate - Checks bearer tokens
+ * @returns Middleware
+ */
+const requireToken =
+    (authenticate: Authenticator): MiddlewareHandler =>
+    async (context, next) => {
+        const token = bearer.exec(context.req.header('authorization') ?? '')?.groups?.token;
+        if (token === undefined || !(await authenticate(token))) {
+            context.header('www-authenticate', 'Bearer');
+            return problem(context, 401, 'unauthorized', 'A valid bearer token is required');
+        }
+        return next();
+    };
+
+/**
+ * Serves one operation: validates the request, calls its handler, and validates the response.
  *
  * @param operation - From the spec
  * @param handlers - Every operation's handler
- * @param authenticate - Checks bearer tokens
  * @returns Hono handler
  */
 const serve =
-    (operation: Operation, handlers: NotesHandlers, authenticate: Authenticator) =>
+    (operation: Operation, handlers: NotesHandlers) =>
     async (context: Context): Promise<Response> => {
-        if (operation.secured) {
-            const token = bearer.exec(context.req.header('authorization') ?? '')?.groups?.token;
-            if (token === undefined || !(await authenticate(token))) {
-                context.header('www-authenticate', 'Bearer');
-                return problem(context, 401, 'unauthorized', 'A valid bearer token is required');
-            }
-        }
-
         const path: Record<string, unknown> = { ...context.req.param() };
         const query: Record<string, unknown> = { ...context.req.query() };
         if (!operation.path(path)) {
@@ -146,12 +160,34 @@ export const createApp = (
     config: NotesAppConfig
 ): Hono => {
     const app = new Hono();
+    const authenticated = requireToken(authenticate);
+    const limited = bodyLimit({
+        maxSize: maxBodyBytes,
+        onError: context => problem(context, 413, 'too_large', 'The body is too large'),
+    });
     for (const operation of operations) {
-        app.on(
-            operation.method.toUpperCase(),
-            operation.route,
-            serve(operation, handlers, authenticate)
-        );
+        const method = operation.method.toUpperCase();
+        // Handlers of a route run in the order they are added. Authentication comes first, so a caller without a
+        // token learns nothing about what the operation accepts, not even how large a body may be.
+        if (operation.secured) {
+            app.on(method, operation.route, authenticated);
+        }
+        if (operation.body) {
+            app.on(method, operation.route, limited);
+        }
+        app.on(method, operation.route, serve(operation, handlers));
+    }
+    // A path the spec has, with a method it doesn't. Registered after every operation, so only reached when none
+    // matched. Hono answers HEAD with the GET handler.
+    const byRoute = Map.groupBy(operations, operation => operation.route);
+    for (const [route, methods] of byRoute) {
+        const allow = methods
+            .flatMap(({ method }) => (method === 'get' ? ['GET', 'HEAD'] : method.toUpperCase()))
+            .join(', ');
+        app.all(route, context => {
+            context.header('allow', allow);
+            return problem(context, 405, 'method_not_allowed', `Allowed: ${allow}`);
+        });
     }
     app.notFound(context => problem(context, 404, 'not_found', 'No such path'));
     app.onError((error, context) => {

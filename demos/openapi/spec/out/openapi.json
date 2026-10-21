@@ -93,6 +93,16 @@
                 }
               }
             }
+          },
+          "413": {
+            "description": "The body is larger than any valid request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
           }
         }
       }
@@ -178,11 +188,13 @@
           "title": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 200
+            "maxLength": 200,
+            "pattern": "^[^\\u0000]*$"
           },
           "body": {
             "type": "string",
-            "maxLength": 10000
+            "maxLength": 10000,
+            "pattern": "^[^\\u0000]*$"
           }
         },
         "required": [
@@ -201,11 +213,13 @@
           "title": {
             "type": "string",
             "minLength": 1,
-            "maxLength": 200
+            "maxLength": 200,
+            "pattern": "^[^\\u0000]*$"
           },
           "body": {
             "type": "string",
-            "maxLength": 10000
+            "maxLength": 10000,
+            "pattern": "^[^\\u0000]*$"
           },
           "createdAt": {
             "type": "string",

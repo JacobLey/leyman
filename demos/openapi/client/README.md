@@ -18,6 +18,7 @@ switch (created.status) {
         break;
     case 400:
     case 401:
+    case 413:
         console.error(created.body.message); // `body` is an `ApiError`
         break;
 }
