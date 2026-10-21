@@ -23,6 +23,31 @@ suite('Ecc', () => {
         await import('#internal/iso/ecc/types.js');
     });
 
+    test('Decompressing an invalid public key throws', () => {
+        // No point on P-256 has x = 1
+        const offCurve = new Uint8Array(33);
+        offCurve[0] = 2;
+        offCurve[32] = 1;
+        // The curve's prime, out of range for x
+        const outOfRange = IsoCrypto.decode({
+            text: '02ffffffff00000001000000000000000000000000ffffffffffffffffffffffff',
+            encoding: 'hex',
+        });
+        const wrongPrefix = offCurve.with(0, 5);
+        const wrongLength = offCurve.subarray(0, 20);
+
+        for (const publicKey of [offCurve, outOfRange]) {
+            expect(() => IsoCrypto.decompressEccPublicKey(publicKey)).to.throw(
+                'Public key is not a point on the curve'
+            );
+        }
+        for (const publicKey of [wrongPrefix, wrongLength]) {
+            expect(() => IsoCrypto.decompressEccPublicKey(publicKey)).to.throw(
+                'Public key is not a compressed or uncompressed key for the curve'
+            );
+        }
+    });
+
     test('types', () => {
         expectTypeOf<typeof Ecc>().toEqualTypeOf(BrowserEcc);
         expectTypeOf<typeof Ecc>().toEqualTypeOf(NodeEcc);

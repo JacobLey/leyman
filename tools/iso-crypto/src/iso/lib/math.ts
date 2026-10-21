@@ -236,61 +236,37 @@ const power = (x: bigint, y: bigint, p: bigint): bigint => {
 };
 
 /**
- * Tonelli–Shanks algorithm.
+ * Square root modulo `p`: solves y^2 = n % p for y.
  *
- * y^2 = n % p
- * Solves for y.
+ * Every supported curve's prime is 3 mod 4, where the root is n^((p + 1) / 4).
  *
- * Implementation translated from [python](https://github.com/fabiomainardi/Tonelli-Shanks/blob/master/tonelli_shanks.py).
- *
- * @see {@link https://en.wikipedia.org/wiki/Tonelli%E2%80%93Shanks_algorithm}
- *
- * @param n - "quadratic residue" mod p
- * @param p - prime modulus
+ * @param n - value to take the root of, in `[0, p)`
+ * @param p - prime modulus, 3 mod 4
  * @returns y
+ * @throws {Error} if `n` has no square root, so no point has this x coordinate
  */
 const modSqrt = (n: bigint, p: bigint): bigint => {
-    let s = 1n;
-
-    while ((p - 1n) % 2n ** s === 0n) {
-        ++s;
+    const root = power(n, (p + 1n) / 4n, p);
+    if ((root * root) % p !== n) {
+        throw new Error('Public key is not a point on the curve');
     }
-    --s;
-
-    const q = (p - 1n) / 2n ** s;
-
-    let z = 1n;
-    let res = power(z, (p - 1n) / 2n, p);
-
-    while (res !== p - 1n) {
-        ++z;
-        res = power(z, (p - 1n) / 2n, p);
-    }
-
-    let c = power(z, q, p);
-    let r = power(n, (q + 1n) / 2n, p);
-    let t = power(n, q, p);
-    let m = s;
-
-    while (t !== 1n) {
-        let i = 1n;
-        let t2 = (t * t) % p;
-        while (t2 !== 1n) {
-            t2 = (t2 * t2) % p;
-            ++i;
-        }
-        const b = power(c, power(2n, m - i - 1n, p), p);
-        r = (r * b) % p;
-        c = (b * b) % p;
-        t = (t * c) % p;
-        m = i;
-    }
-
-    return r;
+    return root;
 };
 
+/**
+ * Y coordinate of the point with this x coordinate, and the given parity.
+ *
+ * @param x - x coordinate
+ * @param isOdd - whether y is odd
+ * @param curve - curve the point is on
+ * @returns y
+ * @throws {Error} if no point on the curve has this x coordinate
+ */
 export const deriveYCoordinate = (x: bigint, isOdd: boolean, curve: Curve): bigint => {
-    const y = modSqrt(x ** 3n + curve.a * x + curve.b, curve.p);
+    if (x >= curve.p) {
+        throw new Error('Public key is not a point on the curve');
+    }
+    const y = modSqrt(positiveMod(x ** 3n + curve.a * x + curve.b, curve.p), curve.p);
     const isRootOdd = !!(y & 1n);
 
     return isRootOdd === isOdd ? y : curve.p - y;

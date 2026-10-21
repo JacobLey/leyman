@@ -449,6 +449,8 @@ Calculate the corresponding uncompressed public key for the provided public key.
 
 NOOP if public key is already uncompressed (idempotent).
 
+Throws if a compressed key isn't a point on the curve (or isn't a compressed key at all). In the browser, `eccEncrypt` and `eccDecrypt` decompress the `publicKey` they're given, so they reject such keys the same way.
+
 ### eccEncrypt(params: { data: InputText; privateKey: InputText; publicKey: InputText }, options?: { curve?: Curve; encryption?: Encryption })
 
 Asynchronously determines the shared secret between public + private key, and encrypts the data using the specified encryption algorithm (defaults to `aes-256-gcm`).
