@@ -36,8 +36,7 @@ type MinItemsTuple<T, I extends number> = number extends I
       ? [T]
       : I extends 2
         ? [T, T]
-        : // The cap on `minItems` in the type
-          // eslint-disable-next-line @typescript-eslint/no-magic-numbers
+        : // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- The cap on `minItems` in the type
           I extends 3
           ? [T, T, T]
           : [];
@@ -652,5 +651,5 @@ export declare class IArraySchemaOverride<
     declare public prependPrefixItem: any;
 }
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+// eslint-disable-next-line @typescript-eslint/naming-convention -- Holds a class, so it is named like one
 export const ArraySchemaOverride: typeof IArraySchemaOverride = ArraySchema;

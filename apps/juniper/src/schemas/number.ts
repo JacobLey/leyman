@@ -357,8 +357,11 @@ export class NumberSchema<
         const floatMultiples = this.#multipleOfs.filter(x => !Number.isSafeInteger(x));
 
         if (integerMultiples.length > 0) {
-            // eslint-disable-next-line unicorn/no-array-reduce
-            base.multipleOf = integerMultiples.reduce((acc, val) => lcm(acc, val), 1);
+            let leastCommonMultiple = 1;
+            for (const multiple of integerMultiples) {
+                leastCommonMultiple = lcm(leastCommonMultiple, multiple);
+            }
+            base.multipleOf = leastCommonMultiple;
             mergeAllOf(
                 base,
                 floatMultiples.map(multipleOf => ({ multipleOf }))

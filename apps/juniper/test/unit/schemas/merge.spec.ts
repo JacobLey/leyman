@@ -112,7 +112,7 @@ suite('MergeSchema', () => {
             expect(numValidator(123.456)).to.equal(false);
             expect(numValidator(123)).to.equal(true);
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Only its type is asserted
             const neverSchema = numSchema.anyOf([]);
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
         });
@@ -122,7 +122,6 @@ suite('MergeSchema', () => {
         test('success', () => {
             const schema = mergeSchema({ title: '<title>' })
                 .if(stringSchema().startsWith('a').nullable(), {
-                    // eslint-disable-next-line unicorn/no-thenable
                     then: stringSchema().endsWith('c'),
                 })
                 .not(enumSchema().enum('abc' as const))
@@ -136,7 +135,6 @@ suite('MergeSchema', () => {
                             pattern: '^a',
                             type: ['string', 'null'],
                         },
-                        // eslint-disable-next-line unicorn/no-thenable
                         then: {
                             pattern: 'c$',
                             type: 'string',
@@ -247,7 +245,7 @@ suite('MergeSchema', () => {
             expect(numValidator(123.456)).to.equal(false);
             expect(numValidator(123)).to.equal(true);
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Only its type is asserted
             const neverSchema = numSchema.oneOf([]);
             expectTypeOf<SchemaType<typeof neverSchema>>().toEqualTypeOf<never>();
         });
@@ -265,7 +263,6 @@ suite('MergeSchema', () => {
                 ])
                 .ref('/path/to/base')
                 .if(numberSchema(), {
-                    // eslint-disable-next-line unicorn/no-thenable
                     then: numberSchema({ type: 'integer' }),
                 })
                 .allOf(mergeSchema().not(enumSchema({ enum: [null] })));
@@ -277,7 +274,6 @@ suite('MergeSchema', () => {
                         if: {
                             type: 'number',
                         },
-                        // eslint-disable-next-line unicorn/no-thenable
                         then: {
                             type: 'integer',
                         },
@@ -322,7 +318,7 @@ suite('MergeSchema', () => {
 
     suite('Invalid types', () => {
         test('Blocked methods', () => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Only its type is asserted
             const schema = mergeSchema();
 
             expectTypeOf<(typeof schema)['nullable']>().toBeNever();

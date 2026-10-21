@@ -255,16 +255,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                 options?: Omit<Parameters<this['toJSON']>[0], 'openApi30'>
             ): JsonSchema<T['type']> => {
                 const target = standard?.target;
-                // eslint-disable-next-line @typescript-eslint/switch-exhaustiveness-check
-                switch (target) {
-                    case undefined:
-                    case 'draft-2020-12': {
-                        return this.toJSON({ ...options });
-                    }
-                    case 'openapi-3.0': {
-                        return this.toJSON({ ...options, openApi30: true });
-                    }
-                    default:
+                if (target === undefined || target === 'draft-2020-12') {
+                    return this.toJSON({ ...options });
+                }
+                if (target === 'openapi-3.0') {
+                    return this.toJSON({ ...options, openApi30: true });
                 }
                 throw new Error(`JSON Schema target: "${target}" not supported`);
             },
@@ -287,7 +282,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @returns new schema instance
      */
     public constructor(options: T['params'] = {}) {
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Typed by the subclass's generics, which are `any` here
         this.#default = options.default;
         this.#deprecated = options.deprecated ?? false;
         this.#description = options.description ?? null;
@@ -297,7 +292,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         this.#allOf = (options[allOfSym] ?? []) as AbstractSchema<T>[];
         this.#anyOf = (options[anyOfSym] ?? []) as AbstractSchema<T>[][];
         this.#conditionals = options[conditionalsSym] ?? [];
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- Typed by the subclass's generics, which are `any` here
         this.#examples = options[examplesSym] ?? [];
         this.#metadata = options[metadataSym] ?? {};
         this.#nots = (options[notSym] ?? []) as AbstractSchema<T>[];
@@ -628,7 +623,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      *
      * @returns typed schema
      */
-    // eslint-disable-next-line @typescript-eslint/prefer-return-this-type
+    // eslint-disable-next-line @typescript-eslint/prefer-return-this-type -- Returns this instance, typed as another schema
     public cast<NewT extends T['type']>(): AbstractSchema<SchemaGenerics<NewT>> {
         return this satisfies AbstractSchema<SchemaGenerics<NewT>>;
     }
@@ -676,9 +671,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                 ...this.#conditionals,
                 {
                     if: schema,
-                    // eslint-disable-next-line unicorn/no-thenable, @typescript-eslint/no-unnecessary-condition
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Typed `never` so subclasses can narrow it, but either may be missing
                     then: conditionals.then ?? null,
-                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- Typed `never` so subclasses can narrow it, but either may be missing
                     else: conditionals.else ?? null,
                 },
             ],
@@ -935,7 +930,6 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                   if (condition.then) {
                       // This `then` keyword can make an object appear like a "Promise".
                       // So always wrap in `allOf` rather than top level to prevent accidental `await`.
-                      // eslint-disable-next-line unicorn/no-thenable
                       mergeSchema.then = condition.then.getChildSchema(compositionParams);
                   }
                   if (condition.else) {

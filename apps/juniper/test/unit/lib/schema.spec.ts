@@ -218,7 +218,7 @@ suite('schema', () => {
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                 CustomNumber | (`abc${string}` & CustomString)
             >();
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Only its type is asserted
             const json = schema.toJSON();
             expectTypeOf<SchemaType<typeof json>>().toEqualTypeOf<
                 CustomNumber | (`abc${string}` & CustomString)
@@ -284,7 +284,6 @@ suite('schema', () => {
                     const schema = numberSchema<-1 | 4 | 7 | 12>().if(
                         numberSchema<-1 | 4>().nullable().maximum(5),
                         {
-                            // eslint-disable-next-line unicorn/no-thenable
                             then: numberSchema({ type: 'integer' }).nullable(),
                             else: numberSchema<12>().minimum(10).nullable(),
                         }
@@ -299,7 +298,6 @@ suite('schema', () => {
                                 if: {
                                     maximum: 5,
                                 },
-                                // eslint-disable-next-line unicorn/no-thenable
                                 then: {
                                     type: 'integer',
                                 },
@@ -359,7 +357,6 @@ suite('schema', () => {
                                 if: {
                                     maximum: 5,
                                 },
-                                // eslint-disable-next-line unicorn/no-thenable
                                 then: {
                                     type: ['integer', 'null'],
                                 },
@@ -480,7 +477,6 @@ suite('schema', () => {
                         const schema = numberSchema<-1 | 4 | 7 | 12>()
                             .nullable()
                             .if(numberSchema<-1 | 4>().maximum(5), {
-                                // eslint-disable-next-line unicorn/no-thenable
                                 then: numberSchema<4>({
                                     type: 'integer',
                                 }).nullable(),
@@ -498,7 +494,6 @@ suite('schema', () => {
                                         type: 'number',
                                         maximum: 5,
                                     },
-                                    // eslint-disable-next-line unicorn/no-thenable
                                     then: {
                                         type: ['integer', 'null'],
                                     },
@@ -538,7 +533,6 @@ suite('schema', () => {
                         const schema = numberSchema<-1 | 4 | 7 | 12>()
                             .nullable()
                             .if(numberSchema<-1 | 4>().maximum(5), {
-                                // eslint-disable-next-line unicorn/no-thenable
                                 then: numberSchema({ type: 'integer' }),
                                 else: numberSchema<12>().nullable().minimum(10),
                             });
@@ -555,7 +549,6 @@ suite('schema', () => {
                                         type: 'number',
                                         maximum: 5,
                                     },
-                                    // eslint-disable-next-line unicorn/no-thenable
                                     then: {
                                         type: 'integer',
                                     },
@@ -762,7 +755,6 @@ suite('schema', () => {
                                         type: 'integer',
                                     }).nullable(),
                                     {
-                                        // eslint-disable-next-line unicorn/no-thenable
                                         then: numberSchema({ multipleOf: 2 }),
                                     }
                                 ),
@@ -784,7 +776,6 @@ suite('schema', () => {
                                     if: {
                                         type: 'integer',
                                     },
-                                    // eslint-disable-next-line unicorn/no-thenable
                                     then: {
                                         multipleOf: 2,
                                     },
@@ -990,7 +981,6 @@ suite('schema', () => {
 
                 test('Then + Else are integer', () => {
                     const schema = numberSchema().if(numberSchema().maximum(5), {
-                        // eslint-disable-next-line unicorn/no-thenable
                         then: numberSchema({ type: 'integer' }),
                         else: numberSchema({ type: 'integer' }),
                     });
@@ -1000,7 +990,6 @@ suite('schema', () => {
                         allOf: [
                             {
                                 if: { maximum: 5 },
-                                // eslint-disable-next-line unicorn/no-thenable
                                 then: {},
                                 else: {},
                             },
@@ -1012,7 +1001,6 @@ suite('schema', () => {
                     const schema = numberSchema()
                         .type('integer')
                         .if(numberSchema().maximum(5), {
-                            // eslint-disable-next-line unicorn/no-thenable
                             then: numberSchema().minimum(0),
                             else: numberSchema().minimum(10),
                         });
@@ -1022,7 +1010,6 @@ suite('schema', () => {
                         allOf: [
                             {
                                 if: { maximum: 5 },
-                                // eslint-disable-next-line unicorn/no-thenable
                                 then: { minimum: 0 },
                                 else: { minimum: 10 },
                             },
@@ -1061,7 +1048,6 @@ suite('schema', () => {
         test('Multiple conditions', () => {
             const schema = numberSchema()
                 .if(numberSchema().maximum(5), {
-                    // eslint-disable-next-line unicorn/no-thenable
                     then: numberSchema().minimum(0),
                     else: numberSchema().minimum(10),
                 })
@@ -1074,7 +1060,6 @@ suite('schema', () => {
                 allOf: [
                     {
                         if: { maximum: 5 },
-                        // eslint-disable-next-line unicorn/no-thenable
                         then: { minimum: 0 },
                         else: { minimum: 10 },
                     },

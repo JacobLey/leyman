@@ -21,7 +21,7 @@ suite('NeverSchema', () => {
 
     suite('Invalid types', () => {
         test('Blocked methods', () => {
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Only its type is asserted
             const schema = neverSchema();
 
             expectTypeOf<(typeof schema)['allOf']>().toBeNever();

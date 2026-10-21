@@ -6,6 +6,8 @@ export default [
     {
         rules: {
             'jsdoc/require-template-description': 'off',
+            // `then` is a JSON Schema keyword (`if`/`then`/`else`), so schemas have it by design
+            'unicorn/no-thenable': 'off',
         },
     },
 ];

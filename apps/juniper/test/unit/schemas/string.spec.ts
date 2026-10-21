@@ -137,7 +137,6 @@ suite('StringSchema', () => {
                     .pattern('1')
                     .pattern('2')
                     .if(stringSchema().startsWith('a').nullable(), {
-                        // eslint-disable-next-line unicorn/no-thenable
                         then: stringSchema().endsWith('c'),
                         else: stringSchema().contains('b').nullable(),
                     });
@@ -153,7 +152,6 @@ suite('StringSchema', () => {
                             if: {
                                 pattern: '^a',
                             },
-                            // eslint-disable-next-line unicorn/no-thenable
                             then: {
                                 pattern: 'c$',
                             },
@@ -180,7 +178,6 @@ suite('StringSchema', () => {
                     .pattern('1')
                     .pattern('2')
                     .if(stringSchema().startsWith('a').nullable(), {
-                        // eslint-disable-next-line unicorn/no-thenable
                         then: stringSchema().endsWith('c'),
                         else: stringSchema().contains('b').nullable(),
                     });
@@ -229,7 +226,6 @@ suite('StringSchema', () => {
                 const schema = stringSchema()
                     .contains('b')
                     .if(stringSchema().startsWith('a'), {
-                        // eslint-disable-next-line unicorn/no-thenable
                         then: stringSchema().nullable().endsWith('c'),
                     });
 
@@ -251,7 +247,6 @@ suite('StringSchema', () => {
                             if: {
                                 pattern: '^a',
                             },
-                            // eslint-disable-next-line unicorn/no-thenable
                             then: {
                                 pattern: 'c$',
                             },
@@ -480,7 +475,7 @@ suite('StringSchema', () => {
                 ],
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Only its type is asserted
             const neverSchema2 = stringSchema().nullable().anyOf([]);
             expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
         });
@@ -540,7 +535,7 @@ suite('StringSchema', () => {
                 ],
             });
 
-            // eslint-disable-next-line @typescript-eslint/no-unused-vars
+            // eslint-disable-next-line @typescript-eslint/no-unused-vars -- Only its type is asserted
             const neverSchema2 = stringSchema().nullable().oneOf([]);
             expectTypeOf<SchemaType<typeof neverSchema2>>().toEqualTypeOf<never>();
 

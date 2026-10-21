@@ -100,8 +100,7 @@ export interface EmptyIndex {
 /**
  * An object with no known keys. Unlike `{}`, rejects primitives.
  */
-// Not an interface, which would lack the implicit index signature to extend `Record<string, unknown>`
-// eslint-disable-next-line @typescript-eslint/consistent-type-definitions
+// eslint-disable-next-line @typescript-eslint/consistent-type-definitions -- Not an interface, which would lack the implicit index signature to extend `Record<string, unknown>`
 export type EmptyObject = { [emptyObject]?: never };
 
 /**
