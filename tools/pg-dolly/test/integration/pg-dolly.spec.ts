@@ -223,6 +223,53 @@ suite('PgDolly', () => {
             }
         );
 
+        withPrefix.test('Seeds the template with data', async ({ open }) => {
+            const dolly = await open();
+            const template = await dolly.template(schema, {
+                seed: "INSERT INTO item (id, name) VALUES (1, 'dolly')",
+            });
+            const database = await template.clone();
+
+            expect(await query(database.url, 'SELECT id, name FROM item')).to.deep.equal([
+                { id: 1, name: 'DOLLY' },
+            ]);
+        });
+
+        withPrefix.test('Gives a different seed a different template', async ({ open }) => {
+            const dolly = await open();
+            const [unseeded, a, b] = await Promise.all([
+                dolly.template(schema),
+                dolly.template(schema, { seed: "INSERT INTO item (id, name) VALUES (1, 'a')" }),
+                dolly.template(schema, { seed: "INSERT INTO item (id, name) VALUES (1, 'b')" }),
+            ]);
+
+            const names = new Set([unseeded.name, a.name, b.name]);
+
+            expect(names.size).to.equal(3);
+        });
+
+        withPrefix.test('Gives an empty seed the template without one', async ({ open }) => {
+            const dolly = await open();
+            const [unseeded, empty] = await Promise.all([
+                dolly.template(schema),
+                dolly.template(schema, { seed: '' }),
+            ]);
+
+            expect(empty).to.equal(unseeded);
+        });
+
+        withPrefix.test(
+            'Rejects a seed that fails, leaving nothing behind',
+            async ({ server, prefix, open }) => {
+                const dolly = await open();
+
+                await expect(
+                    dolly.template(schema, { seed: 'INSERT INTO missing VALUES (1)' })
+                ).to.be.rejectedWith(Error);
+                expect(await server.databases(prefix)).to.deep.equal([]);
+            }
+        );
+
         withPrefix.test('Builds an empty template from no SQL', async ({ open }) => {
             const dolly = await open();
             const template = await dolly.template('');

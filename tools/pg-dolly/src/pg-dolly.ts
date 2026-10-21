@@ -10,4 +10,5 @@ export {
     type DollyTemplate,
     PgDolly,
     type PgDollyOptions,
+    type TemplateOptions,
 } from './lib/pg-dolly.js';

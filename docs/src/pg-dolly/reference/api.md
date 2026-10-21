@@ -27,20 +27,21 @@ const dolly = await PgDolly.connect({ prefix: 'app_test', retainMs: 60 * 60_000 
 | `timeZone` | `string` | `'UTC'` | `TimeZone` setting of every clone. |
 | `retainMs` | `number` | `86_400_000` (a day) | How long a template no run has used is kept, and a clone kept from a failed test. |
 
-## `dolly.template(sql)`
+## `dolly.template(sql, options?)`
 
 Gets the template for a schema, building it unless an earlier run already did. Calls with the same SQL share one template, and templates are built one at a time.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `sql` | `string` | The schema, e.g. a committed `schema.sql`. An empty string gives an empty database, e.g. to run migrations in. |
+| `options.seed` | `string` | SQL run after the schema, for data every test starts from. Part of the hash. See [Data every test needs](/pg-dolly/guides/schema#data-every-test-needs). |
 
 **Returns** `Promise<DollyTemplate>`:
 
 | Property | Type | Description |
 |----------|------|-------------|
 | `name` | `string` | `<prefix>_t_<hash>`. |
-| `hash` | `string` | Hash of the SQL. |
+| `hash` | `string` | Hash of the SQL: the schema, and the seed if any. |
 | `clone()` | `() => Promise<DollyDatabase>` | See [below](#template-clone). |
 
 **Rejects** with the error from Postgres if the SQL fails. Nothing is left behind, and the next call tries again. After `close()`, with [`PgDollyClosedError`](#errors).

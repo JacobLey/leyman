@@ -37,13 +37,15 @@ await dolly.close();
 
 ## Features
 
-- **A real database per test**: a test commits, `LISTEN`s, takes advisory locks and races two connections, which rolling back a transaction per test can't allow. Tests share nothing, so their order doesn't matter.
-- **Fast, as the schema is built once**: each clone is a `CREATE DATABASE … TEMPLATE` copy of a template built from the SQL. The template is kept between runs, named by the hash of the SQL, so only a changed schema is built again.
-- **The schema is SQL**: a dump of what your migrations build (`schema.sql`, kept by [pg-dolly-schema](/pg-dolly-schema/)), so triggers, functions and hand-written views are in every test database. No ORM or test runner: bring your own migrations, client and runner. See [Test runners](/pg-dolly/guides/test-runners).
-- **Safe next to dev data, and in parallel**: it only ever drops databases it made, recognized by their prefix _and_ a marker. Parallel runs (other processes, other packages) share templates but never each other's clones. See [How it works](/pg-dolly/guides/how-it-works).
-- **Cleans up after itself, and after crashes**: clones are dropped when the run ends, except a failed test's, which is kept to inspect. What a crashed run left behind is dropped by the next one.
+pg-dolly gives each test its own Postgres database. It builds a template from your schema once, and every test gets a copy of it (`CREATE DATABASE … TEMPLATE`), which takes a few milliseconds.
 
-Named for Dolly the sheep: every test gets a clone. The design follows Go's [pgtestdb](https://github.com/peterldowns/pgtestdb). The [OpenAPI demo](/demos/openapi) uses it for every test of its server.
+- Tests run against a real database of their own, so they can commit, `LISTEN`, take locks and open several connections. Rolling back a transaction after each test rules all of that out.
+- The template is kept between runs, under a hash of the SQL, so it's only built again when the schema changes. See [Speed](/pg-dolly/guides/how-it-works#speed).
+- It can share a server with your dev databases and with other test runs. It only ever drops databases it created, and parallel runs never see each other's. See [How it works](/pg-dolly/guides/how-it-works).
+- Bring your own migrations, client and [test runner](/pg-dolly/guides/test-runners). It takes SQL ([`schema.sql`](/pg-dolly/guides/schema), kept by [pg-dolly-schema](/pg-dolly-schema/)), and gives back a connection URL.
+- A failed test's database is kept so you can look at it. Everything else is dropped, including what a crashed run left behind.
+
+Named after Dolly the sheep. The design follows Go's [pgtestdb](https://github.com/peterldowns/pgtestdb). The [OpenAPI demo](/demos/openapi) uses it for every test of its server.
 
 ## Compared to
 

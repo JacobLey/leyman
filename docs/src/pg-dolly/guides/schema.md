@@ -22,6 +22,29 @@ pg-dolly-schema --migrate 'drizzle-kit migrate'
 
 The [OpenAPI demo](/demos/openapi) does this with Drizzle.
 
+## Data every test needs
+
+Data most tests need (reference rows, a default account) doesn't belong in `schema.sql`, which holds what the migrations build. Pass it as a seed: SQL run once, after the schema, into the template, so every clone starts with it.
+
+```ts
+// @filename: node.d.ts
+declare module 'node:fs/promises' {
+    export function readFile(path: string, encoding: 'utf8'): Promise<string>;
+}
+// @filename: index.ts
+import type { PgDolly } from 'pg-dolly';
+
+declare const dolly: PgDolly;
+// ---cut---
+import { readFile } from 'node:fs/promises';
+
+const template = await dolly.template(await readFile('schema.sql', 'utf8'), {
+    seed: await readFile('test/seed.sql', 'utf8'),
+});
+```
+
+The seed is part of the template's hash, like the schema, so changing it builds a new template, and the same schema with and without a seed are two templates. It's SQL rather than a function because pg-dolly has to tell when it changed: a function's output can change without its code changing.
+
 ## `dumpSchema`
 
 To dump a database's schema yourself, use `dumpSchema(url)`. It runs `pg_dump --schema-only`, normalized so the same schema always gives the same text:

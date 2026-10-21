@@ -44,3 +44,22 @@ Kept clones wait for `retainMs`, rather than the very next run, so another packa
 ::: info One gap
 `CREATE DATABASE` can't set a comment in the same step, so a crash right between creating a clone and marking it leaves a database no run will drop. It has the prefix, so it's easy to find, and resetting a server used only for tests clears it.
 :::
+
+## Speed
+
+Measured on a laptop (Postgres 18.6 in Docker), for schemas where each table has a primary key, an index and a foreign key:
+
+| Tables | Build the template (once) | Clone (per test) | Drop at `close()` (per test) |
+|---|---|---|---|
+| 10 | 20-45 ms | 7-14 ms | 2 ms |
+| 100 | 70 ms | 13-24 ms | 2 ms |
+| 500 | 300 ms | 50-60 ms | 3 ms |
+
+Connecting to a clone and running a first query takes another 4 ms or so.
+
+These are for a server with durability off (`fsync`, `synchronous_commit` and `full_page_writes`), which is how a test server should run. With Postgres's defaults, clones take about twice as long, and each drop waits for a checkpoint that writes the clone to disk: 0.2 s per test for 10 tables, and over a second for 500, all of it spent in `close()`. Dropping in parallel doesn't help much: the time goes to writing the clones out, which the first checkpoint does either way.
+
+```sh
+docker run -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:18 \
+    -c fsync=off -c synchronous_commit=off -c full_page_writes=off
+```

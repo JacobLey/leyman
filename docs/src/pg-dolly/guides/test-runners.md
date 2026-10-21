@@ -52,7 +52,7 @@ export const withDatabase = () => {
 };
 ```
 
-Each suite then builds on the database, here with a store under test:
+Each suite then builds on the database. With a schema whose trigger announces every new item (`pg_notify('item_added', NEW.name)`):
 
 ```ts
 // @filename: database.ts
@@ -65,35 +65,51 @@ const withDolly = before(async () => {
 });
 export const withDatabase = () =>
     withDolly.beforeEach(async ({ template }) => ({ database: await template.clone() }));
-// @filename: items.spec.ts
-type Item = { readonly id: number; readonly name: string };
-declare class ItemStore {
-    constructor(options: { connectionString: string; max: number });
-    add(item: Item): Promise<void>;
-    get(id: number): Promise<Item | null>;
-    close(): Promise<void>;
+// @filename: node.d.ts
+declare module 'node:events' {
+    export function once(emitter: unknown, event: string): Promise<unknown[]>;
 }
+// @filename: items.spec.ts
 // ---cut---
 // test/integration/items.spec.ts
+import { once } from 'node:events';
 import { expect } from 'chai';
 import { suite } from 'mocha-chain';
+import pg from 'pg';
 import { withDatabase } from './database.js';
 
 suite('Items', () => {
-    const withStore = withDatabase().beforeEach(({ database }) => ({
+    const withPool = withDatabase().beforeEach(({ database }) => ({
         // A small pool: every test shares the server's `max_connections`
-        store: new ItemStore({ connectionString: database.url, max: 2 }),
+        pool: new pg.Pool({ connectionString: database.url, max: 2 }),
     }));
-    withStore.afterEach(async ({ store }) => {
-        await store.close();
+    withPool.afterEach(async ({ pool }) => {
+        await pool.end();
     });
 
-    withStore.test('Adds an item', async ({ store }) => {
-        await store.add({ id: 1, name: 'dolly' });
-        expect(await store.get(1)).to.include({ name: 'dolly' });
+    withPool.test('Adds an item', async ({ pool }) => {
+        await pool.query("INSERT INTO item (id, name) VALUES (1, 'dolly')");
+
+        const { rows } = await pool.query('SELECT name FROM item');
+        expect(rows).to.deep.equal([{ name: 'dolly' }]);
+    });
+
+    withPool.test('Announces each item added', async ({ database, pool }) => {
+        const listener = new pg.Client({ connectionString: database.url });
+        await listener.connect();
+        await listener.query('LISTEN item_added');
+        const announced = once(listener, 'notification');
+
+        await pool.query("INSERT INTO item (id, name) VALUES (1, 'dolly')");
+
+        const [notification] = (await announced) as [pg.Notification];
+        expect(notification.payload).to.equal('dolly');
+        await listener.end();
     });
 });
 ```
+
+The second test only works because the insert commits: in a transaction rolled back after the test, the notification would never be sent.
 
 ::: warning
 Only `before` and `after` belong at the top level of the helper. A `beforeEach` there would also be a root hook, cloning a database for every test, whether it needs one or not.

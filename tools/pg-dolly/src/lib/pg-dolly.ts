@@ -31,6 +31,14 @@ export interface PgDollyOptions {
     readonly retainMs?: number | undefined;
 }
 
+export interface TemplateOptions {
+    /**
+     * SQL run after the schema, for data every test starts from (e.g. reference rows), so the schema can stay what
+     * the migrations build. Part of the template's hash, like the schema: a changed seed builds a new template.
+     */
+    readonly seed?: string | undefined;
+}
+
 /**
  * A database to clone from, built from a schema's SQL.
  */
@@ -40,7 +48,7 @@ export interface DollyTemplate {
      */
     readonly name: string;
     /**
-     * Hash of the SQL the template was built from.
+     * Hash of the SQL the template was built from: the schema, and the seed if any.
      */
     readonly hash: string;
     /**
@@ -103,6 +111,7 @@ interface DatabaseRow {
 
 interface DatabaseState {
     readonly datistemplate: boolean;
+    readonly datallowconn: boolean;
     readonly datconnlimit: number;
     readonly comment: string | null;
 }
@@ -138,18 +147,20 @@ const hashVersion = 'pg-dolly:1';
 const invalidConnLimit = -2;
 
 /**
- * Hash of a schema's SQL, which names its template.
+ * Hash of a schema's SQL and its seed, which names their template.
  *
  * @param sql - Schema
+ * @param seed - Seed, or `''` for none
  * @returns Hex hash
  */
-const hashSql = (sql: string): string =>
-    createHash('sha256')
-        .update(hashVersion)
-        .update('\0')
-        .update(sql)
-        .digest('hex')
-        .slice(0, hashLength);
+const hashSql = (sql: string, seed: string): string => {
+    const hash = createHash('sha256').update(hashVersion).update('\0').update(sql);
+    // SQL can't contain a NUL, so the separator can't be part of either. Without a seed, the hash is the schema's.
+    if (seed) {
+        hash.update('\0seed\0').update(seed);
+    }
+    return hash.digest('hex').slice(0, hashLength);
+};
 
 /**
  * Reads the marker in a database's comment.
@@ -169,6 +180,16 @@ const parseMarker = (comment: string | null, prefix: string): Marker | null => {
         return null;
     }
 };
+
+/**
+ * Whether a database must stop being a template before it can be dropped. One left invalid by an interrupted drop
+ * can't be altered, only dropped.
+ *
+ * @param database - Its state
+ * @returns Whether it is a template that can still be altered
+ */
+const isAlterableTemplate = (database: DatabaseState): boolean =>
+    database.datistemplate && database.datconnlimit !== invalidConnLimit;
 
 /**
  * Whether a database is left over, and the lock that shows nothing uses it.
@@ -279,14 +300,16 @@ export class PgDolly {
      * runs, named by the hash of the SQL, so only a changed schema is built again.
      *
      * @param sql - The schema, e.g. a committed `schema.sql`. An empty string gives an empty database.
+     * @param options - Data to seed the template with
      * @returns The template, ready to clone
      */
-    public async template(sql: string): Promise<DollyTemplate> {
+    public async template(sql: string, options: TemplateOptions = {}): Promise<DollyTemplate> {
         this.#assertOpen();
-        const hash = hashSql(sql);
+        const { seed = '' } = options;
+        const hash = hashSql(sql, seed);
         let template = this.#templates.get(hash);
         if (!template) {
-            template = this.#buildInTurn(sql, hash);
+            template = this.#buildInTurn(sql, seed, hash);
             this.#building = template;
             this.#templates.set(hash, template);
         }
@@ -303,14 +326,14 @@ export class PgDolly {
         return this.#closed;
     }
 
-    async #buildInTurn(sql: string, hash: string): Promise<DollyTemplate> {
+    async #buildInTurn(sql: string, seed: string, hash: string): Promise<DollyTemplate> {
         try {
             await this.#building;
         } catch {
             // Another template's failure is reported to whoever asked for it
         }
         try {
-            return await this.#template(sql, hash);
+            return await this.#template(sql, seed, hash);
         } catch (error) {
             // Built again on the next call
             this.#templates.delete(hash);
@@ -331,7 +354,8 @@ export class PgDolly {
                           run: this.#run,
                           keptAt,
                       })
-                    : this.#drop(clone.name));
+                    : // A clone is never a template. `IF EXISTS`, as a test may have dropped it.
+                      this.#drop(clone.name, false));
             }
         } finally {
             // Releases the advisory locks too. A clone left behind is dropped by a later run.
@@ -339,26 +363,22 @@ export class PgDolly {
         }
     }
 
-    async #template(sql: string, hash: string): Promise<DollyTemplate> {
+    async #template(sql: string, seed: string, hash: string): Promise<DollyTemplate> {
         const name = `${this.#prefix}_t_${hash}`;
         // Held until the run ends, so no other run drops the template as unused while this one clones it
         await this.#lockShared('use', name);
         // So two runs never build the same template at once: the second waits, then finds it built
         await this.#lock('build', name);
         try {
-            const { rows } = await this.#query<{
-                datistemplate: boolean;
-                datallowconn: boolean;
-            }>('SELECT datistemplate, datallowconn FROM pg_database WHERE datname = $1', [name]);
-            const [existing] = rows;
+            const existing = await this.#database(name);
             // Nothing can connect to a template and change it without first allowing connections again. One that
             // allows them may have been changed, so it is never reused.
             const isReusable = existing?.datistemplate === true && !existing.datallowconn;
             if (!isReusable) {
                 if (existing) {
-                    await this.#drop(name);
+                    await this.#drop(name, isAlterableTemplate(existing));
                 }
-                await this.#build(name, sql);
+                await this.#build(name, sql, seed);
             }
             await this.#comment(name, {
                 pgDolly: 1,
@@ -378,11 +398,13 @@ export class PgDolly {
      *
      * @param name - Template name
      * @param sql - Schema
+     * @param seed - Data, run after the schema
      */
-    async #build(name: string, sql: string): Promise<void> {
+    async #build(name: string, sql: string, seed: string): Promise<void> {
         const building = this.#nextName();
         // From `template0`, so nothing added to `template1` on this server ends up in the template
         await this.#query(`CREATE DATABASE ${this.#identifier(building)} TEMPLATE template0`);
+        let isTemplate = false;
         try {
             await this.#comment(building, {
                 pgDolly: 1,
@@ -394,17 +416,21 @@ export class PgDolly {
             await client.connect();
             try {
                 await client.query(sql);
+                if (seed) {
+                    await client.query(seed);
+                }
             } finally {
                 await client.end();
             }
             await this.#query(
                 `ALTER DATABASE ${this.#identifier(building)} WITH IS_TEMPLATE true ALLOW_CONNECTIONS false`
             );
+            isTemplate = true;
             await this.#query(
                 `ALTER DATABASE ${this.#identifier(building)} RENAME TO ${this.#identifier(name)}`
             );
         } catch (error) {
-            await this.#drop(building);
+            await this.#drop(building, isTemplate);
             throw error;
         }
     }
@@ -464,7 +490,7 @@ export class PgDolly {
                 // Another run may have dropped (or rebuilt) it between the listing and the lock
                 const current = await this.#database(datname);
                 if (current?.comment === comment) {
-                    await this.#drop(datname);
+                    await this.#drop(datname, isAlterableTemplate(current));
                 }
             } finally {
                 await this.#unlock(...lock);
@@ -474,7 +500,7 @@ export class PgDolly {
 
     async #database(name: string): Promise<DatabaseState | null> {
         const { rows } = await this.#query<DatabaseState>(
-            `SELECT datistemplate, datconnlimit, shobj_description(oid, 'pg_database') AS comment
+            `SELECT datistemplate, datallowconn, datconnlimit, shobj_description(oid, 'pg_database') AS comment
             FROM pg_database WHERE datname = $1`,
             [name]
         );
@@ -482,18 +508,13 @@ export class PgDolly {
     }
 
     /**
-     * Drops a database, if it still exists. `FORCE` ends any connections left open, e.g. by a crashed test.
+     * Drops a database. `FORCE` ends any connections left open, e.g. by a crashed test.
      *
      * @param name - Database name
+     * @param isTemplate - Whether it is a template, which can't be dropped until it stops being one
      */
-    async #drop(name: string): Promise<void> {
-        const database = await this.#database(name);
-        if (!database) {
-            return;
-        }
-        // A template can't be dropped. A database left invalid by an interrupted drop can't be altered, only
-        // dropped.
-        if (database.datistemplate && database.datconnlimit !== invalidConnLimit) {
+    async #drop(name: string, isTemplate: boolean): Promise<void> {
+        if (isTemplate) {
             await this.#query(`ALTER DATABASE ${this.#identifier(name)} WITH IS_TEMPLATE false`);
         }
         await this.#query(`DROP DATABASE IF EXISTS ${this.#identifier(name)} WITH (FORCE)`);

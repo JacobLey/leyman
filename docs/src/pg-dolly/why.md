@@ -54,7 +54,7 @@ One gap remains: `CREATE DATABASE` can't set a comment in the same step, so a cr
 
 - **Running migrations.** Each ORM has its own way (Drizzle's `migrate`, Prisma's `migrate deploy`, Kysely's `Migrator`). `template('')` gives an empty database to run them in, and [pg-dolly-schema](/pg-dolly-schema/) runs a project's own migrate command in one to keep its `schema.sql`.
 - **Providing the server.** It takes `DATABASE_URL`, and fails without it: leaving out integration tests should be a choice of which tests to run, not something that happens quietly.
-- **Seed data.** The data a test starts from is declared by the test, inserted after cloning, so it is visible where it matters.
+- **Fixtures.** Data only some tests need is inserted by those tests, after cloning, so it's visible where it matters. Data every test needs can be a seed, run into the template once, but only as SQL: pg-dolly has to hash it to know when to build again.
 
 ## Compared to alternatives
 

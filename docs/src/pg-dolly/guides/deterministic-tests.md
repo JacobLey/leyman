@@ -9,7 +9,7 @@ Each test starts from the schema and nothing else, so it can be run alone, in an
 - **Defaults live in the schema** (`DEFAULT now()`, `gen_random_uuid()`, sequences, constraints), so every clone has them. A default set by application code is one the tests have to remember to set.
 - **Don't assert values the database makes up** (`now()`, generated ids) unless the test passes them in. Assert that an id is a UUID, or that a time is after the test started.
 - **The clone's `TimeZone` is UTC** (see [`timeZone`](/pg-dolly/reference/api#options)): a clone doesn't inherit the template's `ALTER DATABASE` settings, and a test shouldn't depend on the server's.
-- **Data a test needs is inserted by the test**, or by a fixture builder next to it, after cloning. There's no seed data: what a test starts from is visible where it matters.
+- **Data a test needs is inserted by the test**, or by a fixture builder next to it, after cloning, so what it starts from is visible where it matters. Only data nearly every test needs belongs in a [seed](/pg-dolly/guides/schema#data-every-test-needs).
 - **Keep pools small** (a few connections): every test of every parallel run shares the server's `max_connections`.
 - **Close connections before `close()`**. Dropping a database ends any connection left open, so a leak can't hang the run, but the client then sees an error.
 

@@ -8,30 +8,27 @@ A fresh Postgres database for every test, cloned from a template built once from
 
 </div>
 
-- **A real database per test**: a test commits, `LISTEN`s, takes advisory locks and races two connections, which rolling back a transaction per test can't allow. Tests share nothing, so their order doesn't matter.
-- **Fast, as the schema is built once**: each clone is a `CREATE DATABASE … TEMPLATE` copy of a template built from the SQL. The template is kept between runs, named by the hash of the SQL, so only a changed schema is built again.
-- **The schema is SQL**: a dump of what your migrations build (`schema.sql`, kept by [`pg-dolly-schema`](https://www.npmjs.com/package/pg-dolly-schema)), so triggers, functions and hand-written views are in every test database. No ORM or test runner: bring your own migrations, client and runner (Mocha, mocha-chain and Vitest shown below).
-- **Safe next to dev data, and in parallel**: it only ever drops databases it made, recognized by their prefix _and_ a marker. Parallel runs (other processes, other packages) share templates but never each other's clones.
-- **Cleans up after itself, and after crashes**: clones are dropped when the run ends, except a failed test's, which is kept to inspect. What a crashed run left behind is dropped by the next one.
+pg-dolly gives each test its own Postgres database. It builds a template from your schema once, and every test gets a copy of it (`CREATE DATABASE … TEMPLATE`), which takes a few milliseconds.
 
-Named for Dolly the sheep: every test gets a clone. The design follows Go's [pgtestdb](https://github.com/peterldowns/pgtestdb).
+- Tests run against a real database of their own, so they can commit, `LISTEN`, take locks and open several connections. Rolling back a transaction after each test rules all of that out.
+- The template is kept between runs, under a hash of the SQL, so it's only built again when the schema changes.
+- It can share a server with your dev databases and with other test runs. It only ever drops databases it created, and parallel runs never see each other's.
+- Bring your own migrations, client and test runner. It takes SQL, and gives back a connection URL.
+- A failed test's database is kept so you can look at it. Everything else is dropped, including what a crashed run left behind.
 
-For why each test gets a database of its own, and how runs stay safe from each other, see [WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md).
-
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/pg-dolly/).
+Named after Dolly the sheep. The design follows Go's [pgtestdb](https://github.com/peterldowns/pgtestdb). For why each test gets a database, and how runs stay out of each other's way, see [WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md). Guides for each test runner, and the full reference, are on the [docs site](https://jacobley.github.io/leyman/pg-dolly/).
 
 ## Contents
 - [Install](#install)
 - [Example](#example)
+- [The schema](#the-schema)
 - [In tests](#in-tests)
-  - [mocha-chain](#mocha-chain)
-  - [Mocha](#mocha)
-  - [Vitest](#vitest)
+- [Data every test needs](#data-every-test-needs)
+- [Speed](#speed)
 - [How it works](#how-it-works)
-- [Writing deterministic tests](#writing-deterministic-tests)
 - [API](#api)
   - [PgDolly.connect](#pgdollyconnectoptions)
-  - [dolly.template](#dollytemplatesql)
+  - [dolly.template](#dollytemplatesql-options)
   - [template.clone](#templateclone)
   - [dolly.close](#dollyclose)
   - [dumpSchema](#dumpschemaurl)
@@ -46,7 +43,7 @@ npm i --save-dev pg-dolly
 
 ESM only, for Node.js. Its one dependency is [`pg`](https://www.npmjs.com/package/pg), for its own admin connection. Tests connect with whatever client the project uses.
 
-It needs a Postgres server to connect to, in `DATABASE_URL` (e.g. `postgres://postgres:postgres@localhost:5432/postgres`), as a user that can create databases. Without one, it fails rather than skipping the tests.
+It needs a Postgres server in `DATABASE_URL` (e.g. `postgres://postgres:postgres@localhost:5432/postgres`), as a user that can create databases. Without one, it fails rather than skipping the tests.
 
 ## Example
 
@@ -66,33 +63,57 @@ await client.connect();
 await client.query("INSERT INTO item (id, name) VALUES (1, 'dolly')");
 await client.end();
 
-// A test failed: keep its database to look at
+// If the test failed, keep its database to look at
 database.keep();
 
 // At the end of the run: drops every clone not kept
 await dolly.close();
 ```
 
+## The schema
+
+The template is built from plain SQL, usually a `schema.sql` committed next to your migrations, holding what they build:
+
+```sql
+CREATE TABLE public.item (
+    id integer PRIMARY KEY,
+    name text NOT NULL
+);
+
+CREATE FUNCTION public.announce_item() RETURNS trigger LANGUAGE plpgsql AS $$
+BEGIN
+    PERFORM pg_notify('item_added', NEW.name);
+    RETURN NEW;
+END;
+$$;
+
+CREATE TRIGGER announce_item AFTER INSERT ON public.item
+    FOR EACH ROW EXECUTE FUNCTION public.announce_item();
+```
+
+Because it's SQL, everything a migration can create (triggers, functions, views, extensions) is in every test database, not only what an ORM models.
+
+Don't write it by hand. [`pg-dolly-schema`](https://www.npmjs.com/package/pg-dolly-schema) runs your migrate command (`drizzle-kit migrate`, `prisma migrate deploy`, ...) on an empty database and dumps the result to `schema.sql`, and in CI it fails when the file is out of date. The [OpenAPI demo's server](https://github.com/JacobLey/leyman/tree/main/demos/openapi/server) does this with Drizzle. To run migrations in each test instead, start from `template('')`, an empty database.
+
 ## In tests
 
-`pg-dolly` works with any test runner. The pattern is the same in each:
+pg-dolly doesn't depend on a test runner. Whatever you use, the pattern is the same:
 
-- **Once per run** (a root hook, or once per file): `connect()` and `template()`, and `close()` at the end. Calls in other processes or files reuse the template, so only the first builds it.
-- **For each test that needs one:** `clone()` before it, and `keep()` after it if it failed.
+- **Once per run:** `connect()` and `template()` before the tests, and `close()` after them.
+- **For each test that needs a database:** `clone()` before it, and `keep()` after it if it failed.
 
-### mocha-chain
+With [mocha-chain](https://www.npmjs.com/package/mocha-chain), all of that lives in one helper file, and the clone reaches each test as a typed fixture.
 
-With [mocha-chain](https://www.npmjs.com/package/mocha-chain), the clone is a typed fixture.
+`test/helpers/database.ts`:
 
 ```ts
-// test/helpers/database.ts
 import { readFile } from 'node:fs/promises';
 import { before } from 'mocha-chain';
 import { PgDolly } from 'pg-dolly';
 
 const schema = await readFile(new URL('../../schema.sql', import.meta.url), 'utf8');
 
-// At the top level of a module, a hook applies to every test: a root hook, run once per process
+// At the top level of a module, a hook applies to every test in the run: a root hook, run once per process
 const withDolly = before(async () => {
     const dolly = await PgDolly.connect();
     return { dolly, template: await dolly.template(schema) };
@@ -102,7 +123,7 @@ withDolly.after(async ({ dolly }) => {
 });
 
 /**
- * Called inside a suite, so only its tests get a database each.
+ * A database of its own for each test of the suite it's called in. A failed test's is kept.
  */
 export const withDatabase = () => {
     const withClone = withDolly.beforeEach(async ({ template }) => ({ database: await template.clone() }));
@@ -115,119 +136,92 @@ export const withDatabase = () => {
 };
 ```
 
+The per-test hooks are inside `withDatabase()` rather than at the top level, where they would be root hooks too, and would clone a database for every test in the run, whether it needs one or not.
+
+`test/items.spec.ts`:
+
 ```ts
-// test/integration/items.spec.ts
+import { once } from 'node:events';
 import { expect } from 'chai';
 import { suite } from 'mocha-chain';
-import { withDatabase } from '../helpers/database.js';
+import pg from 'pg';
+import { withDatabase } from './helpers/database.js';
 
 suite('Items', () => {
-    const withStore = withDatabase().beforeEach(({ database }) => ({
-        // A small pool: every test shares the server's `max_connections`
-        store: new ItemStore({ connectionString: database.url, max: 2 }),
+    const withPool = withDatabase().beforeEach(({ database }) => ({
+        // Keep pools small: every test shares the server's `max_connections`
+        pool: new pg.Pool({ connectionString: database.url, max: 2 }),
     }));
-    withStore.afterEach(async ({ store }) => {
-        await store.close();
+    withPool.afterEach(async ({ pool }) => {
+        await pool.end();
     });
 
-    withStore.test('Adds an item', async ({ store }) => {
-        await store.add({ id: 1, name: 'dolly' });
-        expect(await store.get(1)).to.include({ name: 'dolly' });
-    });
-});
-```
+    withPool.test('Adds an item', async ({ pool }) => {
+        await pool.query("INSERT INTO item (id, name) VALUES (1, 'dolly')");
 
-Only `before` and `after` belong at the top level of the helper. A `beforeEach` there would also be a root hook, cloning a database for every test, whether it needs one or not.
-
-### Mocha
-
-```ts
-import { readFile } from 'node:fs/promises';
-import { type DollyDatabase, type DollyTemplate, PgDolly } from 'pg-dolly';
-
-let dolly: PgDolly;
-let template: DollyTemplate;
-
-// At the top level of a spec file (or in a root hook plugin), so it runs once for every file
-before(async () => {
-    dolly = await PgDolly.connect();
-    template = await dolly.template(await readFile('schema.sql', 'utf8'));
-});
-after(async () => {
-    await dolly.close();
-});
-
-describe('Items', () => {
-    let database: DollyDatabase;
-    beforeEach(async () => {
-        database = await template.clone();
-    });
-    afterEach(function () {
-        if (this.currentTest?.state === 'failed') {
-            database.keep();
-        }
+        const { rows } = await pool.query('SELECT name FROM item');
+        expect(rows).to.deep.equal([{ name: 'dolly' }]);
     });
 
-    it('Adds an item', async () => {
-        // Connect to `database.url`
+    withPool.test('Announces each item added', async ({ database, pool }) => {
+        const listener = new pg.Client({ connectionString: database.url });
+        await listener.connect();
+        await listener.query('LISTEN item_added');
+        const announced = once(listener, 'notification');
+
+        await pool.query("INSERT INTO item (id, name) VALUES (1, 'dolly')");
+
+        const [notification] = await announced;
+        expect(notification.payload).to.equal('dolly');
+        await listener.end();
     });
 });
 ```
 
-### Vitest
+The second test only works because the insert commits: in a transaction rolled back after the test, the notification would never be sent.
 
-Vitest runs each file in its own worker, so `beforeAll` at the top of a file (or in a `setupFiles` file) connects once per file. Every file after the first reuses the template.
+The docs site shows the same with [Mocha and Vitest](https://jacobley.github.io/leyman/pg-dolly/guides/test-runners).
+
+## Data every test needs
+
+Data most tests need (reference rows, a default account) shouldn't go in `schema.sql`, which holds what the migrations build. Pass it as a seed instead. It runs once, after the schema, and every clone starts with it:
 
 ```ts
-import { readFile } from 'node:fs/promises';
-import { type DollyDatabase, type DollyTemplate, PgDolly } from 'pg-dolly';
-import { afterAll, beforeAll, beforeEach, describe, test } from 'vitest';
-
-let dolly: PgDolly;
-let template: DollyTemplate;
-
-beforeAll(async () => {
-    dolly = await PgDolly.connect();
-    template = await dolly.template(await readFile('schema.sql', 'utf8'));
+const template = await dolly.template(await readFile('schema.sql', 'utf8'), {
+    seed: await readFile('test/seed.sql', 'utf8'),
 });
-afterAll(async () => {
-    await dolly.close();
-});
+```
 
-describe('Items', () => {
-    let database: DollyDatabase;
-    beforeEach(async ({ onTestFailed }) => {
-        database = await template.clone();
-        onTestFailed(() => {
-            database.keep();
-        });
-    });
+The seed is part of the template's hash, like the schema, so changing it builds a new template. That's why it's SQL rather than a function: pg-dolly can't tell when a function's output would change.
 
-    test('Adds an item', async () => {
-        // Connect to `database.url`
-    });
-});
+Data only a few tests need is better inserted by those tests, after cloning, where it's visible next to what it's for.
+
+## Speed
+
+Measured on a laptop (Postgres 18.6 in Docker), for schemas where each table has a primary key, an index and a foreign key:
+
+| Tables | Build the template (once) | Clone (per test) | Drop at `close()` (per test) |
+|---|---|---|---|
+| 10 | 20-45 ms | 7-14 ms | 2 ms |
+| 100 | 70 ms | 13-24 ms | 2 ms |
+| 500 | 300 ms | 50-60 ms | 3 ms |
+
+Connecting to a clone and running a first query takes another 4 ms or so.
+
+These are for a server with durability off (`fsync`, `synchronous_commit` and `full_page_writes`), which is how a test server should run. With Postgres's defaults, clones take about twice as long, and each drop waits for a checkpoint that writes the clone to disk: 0.2 s per test for 10 tables, and over a second for 500, all of it spent in `close()`. For a server only tests use:
+
+```sh
+docker run -e POSTGRES_PASSWORD=postgres -p 5432:5432 postgres:18 \
+    -c fsync=off -c synchronous_commit=off -c full_page_writes=off
 ```
 
 ## How it works
 
-- **Templates.** `template(sql)` hashes the SQL and looks for a template with that name. If none exists, it creates a database (from `template0`), runs the SQL in it, marks it as a template that nothing can connect to (`IS_TEMPLATE true ALLOW_CONNECTIONS false`), then renames it to the real name. A rename is atomic, so a half-built template never has the real name.
-  - Runs building the same template wait for each other on an advisory lock, then find it built.
-  - A template that allows connections may have been changed since it was built, so it is dropped and built again.
-- **Clones.** `clone()` is `CREATE DATABASE … TEMPLATE`, which copies the template's data rather than running the SQL again, so its cost depends on the size of the template rather than on what it took to build it.
+- **Templates.** `template(sql)` hashes the SQL and looks for a template with that name. If there isn't one, it creates a database (from `template0`), runs the SQL in it, marks it as a template nothing can connect to (`IS_TEMPLATE true ALLOW_CONNECTIONS false`), then renames it to the real name. A rename is atomic, so a half-built template never has the real name. Runs building the same template wait for each other on an advisory lock. A template that allows connections again may have been changed, so it's dropped and built again.
+- **Clones.** `clone()` is `CREATE DATABASE … TEMPLATE`, which copies the template's files rather than running the SQL again.
 - **Markers.** Every database it creates has the prefix and a JSON comment marking it, with the run it belongs to. It only drops databases that have both.
-- **Runs.** Each `PgDolly` holds an advisory lock on its own run id until it closes. Another run that can take that lock knows the run is gone, and drops what it left behind. Each run also holds a shared lock on every template it uses, so no other run drops it as unused in the meantime.
-- **Cleanup.** `close()` drops this run's clones, except those kept. `connect()` drops the clones of runs that ended without closing, and templates no run has used for `retainMs`, and clones kept that long. Each drop is `DROP DATABASE … WITH (FORCE)`, which also ends connections a test left open.
-
-## Writing deterministic tests
-
-Each test starts from the schema and nothing else, so it can be run alone, in any order, and in parallel.
-
-- **Defaults live in the schema** (`DEFAULT now()`, sequences, constraints), so every clone has them.
-- **Don't assert values the database makes up** (`now()`, generated ids) unless the test passes them in.
-- **The clone's `TimeZone` is UTC** (see [`timeZone`](#options)): a clone doesn't inherit the template's `ALTER DATABASE` settings, and a test shouldn't depend on the server's.
-- **Data a test needs is inserted by the test**, or by a fixture builder next to it, after cloning.
-- **Keep pools small** (a few connections): every test of every parallel run shares the server's `max_connections`.
+- **Runs.** Each `PgDolly` holds an advisory lock on its own run id until it closes. A run that can take another run's lock knows that run is gone, and drops what it left. Each run also holds a shared lock on the templates it uses, so no other run drops them as unused.
+- **Cleanup.** `close()` drops the run's clones, except those kept. `connect()` drops the clones of runs that ended without closing, templates no run has used for `retainMs`, and kept clones that old.
 
 ## API
 
@@ -245,18 +239,19 @@ Connects to the server, and drops what earlier runs left behind (see [How it wor
 |--------|------|---------|-------------|
 | `url` | `string` | `process.env.DATABASE_URL` | Server to connect to, as a `postgres://` URL. The URLs of clones differ from it only in the database name. |
 | `prefix` | `string` | `'pg_dolly'` | Start of every database name it creates: 1-20 lowercase letters, digits and underscores, starting with a letter. |
-| `timeZone` | `string` | `'UTC'` | `TimeZone` setting of every clone. |
+| `timeZone` | `string` | `'UTC'` | `TimeZone` setting of every clone, as a clone doesn't inherit the template's `ALTER DATABASE` settings. |
 | `retainMs` | `number` | `86_400_000` (a day) | How long a template no run has used is kept, and a clone kept from a failed test. |
 
-### `dolly.template(sql)`
+### `dolly.template(sql, options?)`
 
 Gets the template for a schema, building it unless an earlier run already did. Calls with the same SQL share one template, and templates are built one at a time.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `sql` | `string` | The schema, e.g. a committed `schema.sql`. An empty string gives an empty database, e.g. to run migrations from. |
+| `sql` | `string` | The schema, e.g. a committed `schema.sql`. An empty string gives an empty database, e.g. to run migrations in. |
+| `options.seed` | `string` | SQL run after the schema, for data every test starts from. See [Data every test needs](#data-every-test-needs). |
 
-**Returns** `Promise<DollyTemplate>`: `{ name, hash, clone }`, where `hash` is the hash of the SQL and `name` is `<prefix>_t_<hash>`.
+**Returns** `Promise<DollyTemplate>`: `{ name, hash, clone }`, where `hash` is the hash of the SQL (schema and seed), and `name` is `<prefix>_t_<hash>`.
 
 **Rejects** with the error from Postgres if the SQL fails. Nothing is left behind, and the next call tries again.
 
@@ -276,7 +271,7 @@ Creates a fresh database from the template, for one test.
 
 Drops this run's clones, except those kept, and closes the connection. Calling it again does nothing. After it, `template()` and `clone()` reject with `PgDollyClosedError`.
 
-Close every connection to the clones first: dropping a database ends any left open.
+Close the tests' connections to their clones first: dropping a database ends any left open.
 
 ### `dumpSchema(url)`
 
@@ -286,7 +281,7 @@ Needs `pg_dump` on the `PATH`, at least the server's major version.
 
 **Returns** `Promise<string>`
 
-To keep a committed `schema.sql` of what a project's migrations build, and check it in CI, use [`pg-dolly-schema`](https://www.npmjs.com/package/pg-dolly-schema).
+To keep a committed `schema.sql` up to date, and check it in CI, use [`pg-dolly-schema`](https://www.npmjs.com/package/pg-dolly-schema).
 
 ### Errors
 
