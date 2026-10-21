@@ -2686,6 +2686,32 @@ suite('container', () => {
             await container.getAsync(A);
         });
 
+        suite('A supplier of an instance already in the chain is still a supplier', () => {
+            for (const [name, aSupplierId] of [
+                ['Sync supplier', identifier(A).supplier()],
+                ['Async supplier', identifier(A).supplier('async')],
+            ] as const) {
+                test(name, async () => {
+                    const container = createContainer(
+                        createModule(
+                            bind(A)
+                                .withDependencies([identifier(B).deferred()])
+                                .withConstructorProvider()
+                                .scoped(singletonScope)
+                        ).addBinding(
+                            bind(B).withDependencies([aSupplierId]).withConstructorProvider()
+                        )
+                    );
+
+                    const a = await container.getAsync(A);
+                    const b = (await a.params[0]) as B;
+                    const aSupplier = b.params[0] as () => A | Promise<A>;
+                    expect(aSupplier).to.be.a('function');
+                    expect(await aSupplier()).to.equal(a);
+                });
+            }
+        });
+
         suite('Dependency failures propagate to top request', () => {
             test('Sync container', async () => {
                 const supplierIdentifier = identifier<{

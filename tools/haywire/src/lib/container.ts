@@ -1857,15 +1857,6 @@ export class Container<Outputs extends [Extendable]> {
         deferredRequests: DeferredRequest[];
     }> {
         const dependencyBaseId = dependencyId.baseId();
-        // If already created instance in same dependency chain, just re-use that one!
-        const deferredValue = deferredCache.get(dependencyBaseId);
-        if (deferredValue) {
-            return {
-                value: deferredValue.value,
-                deferredRequests: [],
-            };
-        }
-
         const path: RequestPath = { id: dependencyId, parent: ownerPath };
         const { supplier } = dependencyId.annotations;
 
@@ -1899,6 +1890,16 @@ export class Container<Outputs extends [Extendable]> {
                         path
                     );
                 },
+                deferredRequests: [],
+            };
+        }
+
+        // If already created instance in same dependency chain, just re-use that one!
+        // Checked after suppliers, which supply a new instance rather than this one.
+        const deferredValue = deferredCache.get(dependencyBaseId);
+        if (deferredValue) {
+            return {
+                value: deferredValue.value,
                 deferredRequests: [],
             };
         }
@@ -2104,14 +2105,6 @@ export class Container<Outputs extends [Extendable]> {
         deferredRequests: DeferredRequest[];
     } {
         const dependencyBaseId = dependencyId.baseId();
-        const deferredValue = deferredCache.get(dependencyBaseId);
-        if (deferredValue) {
-            return {
-                value: deferredValue.value,
-                deferredRequests: [],
-            };
-        }
-
         const path: RequestPath = { id: dependencyId, parent: ownerPath };
         const { supplier } = dependencyId.annotations;
 
@@ -2145,6 +2138,16 @@ export class Container<Outputs extends [Extendable]> {
                         path
                     );
                 },
+                deferredRequests: [],
+            };
+        }
+
+        // If already created instance in same dependency chain, just re-use that one!
+        // Checked after suppliers, which supply a new instance rather than this one.
+        const deferredValue = deferredCache.get(dependencyBaseId);
+        if (deferredValue) {
+            return {
+                value: deferredValue.value,
                 deferredRequests: [],
             };
         }
