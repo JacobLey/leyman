@@ -1,7 +1,6 @@
 /**
  * Base of every error `pg-dolly` throws.
  */
-// eslint-disable-next-line unicorn/custom-error-definition
 export abstract class PgDollyError extends Error {}
 
 /**

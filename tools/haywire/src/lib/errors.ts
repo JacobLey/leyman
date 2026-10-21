@@ -6,7 +6,6 @@ import type { GenericHaywireId } from '#identifier';
  *
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
-// eslint-disable-next-line unicorn/custom-error-definition
 export abstract class HaywireError extends Error {}
 
 /**
@@ -43,7 +42,6 @@ const stringifyIds = (ids: readonly GenericHaywireId[]): string =>
  *
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
-// eslint-disable-next-line unicorn/custom-error-definition
 export abstract class HaywireModuleValidationError extends HaywireError {}
 
 /**
@@ -79,7 +77,6 @@ export class HaywireBindingNotFoundError extends HaywireModuleValidationError {
  *
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
-// eslint-disable-next-line unicorn/custom-error-definition
 export abstract class HaywireContainerValidationError extends HaywireError {}
 
 /**
@@ -269,7 +266,6 @@ export class HaywireContainerDisposedError extends HaywireError {
  *
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
-// eslint-disable-next-line unicorn/custom-error-definition
 export abstract class HaywireInstanceValidationError extends HaywireError {}
 
 /**

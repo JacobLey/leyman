@@ -20,7 +20,6 @@ const ownershipMessages = {
  *
  * All instances of this error will be of a subclass with a more specific failure reason.
  */
-// eslint-disable-next-line unicorn/custom-error-definition
 export abstract class PopulateFilesError extends Error {}
 
 /**

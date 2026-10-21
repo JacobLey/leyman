@@ -1,7 +1,6 @@
 /**
  * Base of every error `lease-cache` throws.
  */
-// eslint-disable-next-line unicorn/custom-error-definition -- Abstract: each subclass sets its own name and message
 export abstract class LeaseCacheError extends Error {}
 
 /**

@@ -1,7 +1,6 @@
 /**
  * Base of every error the client throws.
  */
-// eslint-disable-next-line unicorn/custom-error-definition
 export abstract class NotesClientError extends Error {}
 
 /**
