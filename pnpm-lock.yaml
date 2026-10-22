@@ -166,6 +166,9 @@ catalogs:
     eslint-plugin-react-hooks:
       specifier: ^7.1.1
       version: 7.1.1
+    eslint-plugin-regexp:
+      specifier: ^3.3.1
+      version: 3.3.1
     eslint-plugin-sonarjs:
       specifier: ^4.2.1
       version: 4.2.1
@@ -1913,6 +1916,9 @@ importers:
       eslint-plugin-react-hooks:
         specifier: 'catalog:'
         version: 7.1.1(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      eslint-plugin-regexp:
+        specifier: 'catalog:'
+        version: 3.3.1(eslint@10.12.0(supports-color@8.1.1))
       eslint-plugin-sonarjs:
         specifier: 'catalog:'
         version: 4.2.1(eslint@10.12.0(supports-color@8.1.1))
@@ -6728,6 +6734,12 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9.7
 
+  eslint-plugin-regexp@3.3.1:
+    resolution: {integrity: sha512-58bGUci/AaWAo1ETj6Lsnmy6QXwnSyVONRA805828nnqp7vrTwdaQMc02vtowmYB3A5OB3SLr3r5HgmfxX4dLg==}
+    engines: {node: ^20.19.0 || ^22.13.0 || >=24}
+    peerDependencies:
+      eslint: '>=9.38.0'
+
   eslint-plugin-sonarjs@4.2.1:
     resolution: {integrity: sha512-WGsnVkUxmHyBOytShcIeE+vhQaS8e+gYgbHNNi4y2e5Zj+DpE2DLTvarqDUhNwjceTZHGLgevSgfBSEVkt4EaA==}
     peerDependencies:
@@ -10829,6 +10841,7 @@ snapshots:
       eslint-plugin-n: 18.4.0(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))
       eslint-plugin-react: 7.37.5(eslint@10.12.0(supports-color@8.1.1))
       eslint-plugin-react-hooks: 7.1.1(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      eslint-plugin-regexp: 3.3.1(eslint@10.12.0(supports-color@8.1.1))
       eslint-plugin-sonarjs: 4.2.1(eslint@10.12.0(supports-color@8.1.1))
       eslint-plugin-unicorn: 77.0.0(eslint@10.12.0(supports-color@8.1.1))
     transitivePeerDependencies:
@@ -12981,6 +12994,17 @@ snapshots:
       semver: 6.3.1
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
+
+  eslint-plugin-regexp@3.3.1(eslint@10.12.0(supports-color@8.1.1)):
+    dependencies:
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.12.0(supports-color@8.1.1))
+      '@eslint-community/regexpp': 4.12.2
+      comment-parser: 1.4.9
+      eslint: 10.12.0(supports-color@8.1.1)
+      jsdoc-type-pratt-parser: 9.2.2
+      refa: 0.12.1
+      regexp-ast-analysis: 0.7.1
+      scslre: 0.3.0
 
   eslint-plugin-sonarjs@4.2.1(eslint@10.12.0(supports-color@8.1.1)):
     dependencies:

@@ -19,6 +19,7 @@ import {
     prettierConfig,
     reactHooksPlugin,
     reactPlugin,
+    regexpPlugin,
     sonarPlugin,
     unicornPlugin,
 } from './lib/plugins.js';
@@ -244,6 +245,7 @@ export default function makeEslintConfigForPackage({
                 n: nodePlugin,
                 react: reactPlugin,
                 'react-hooks': reactHooksPlugin,
+                regexp: regexpPlugin,
                 sonarjs: sonarPlugin,
                 unicorn: unicornPlugin,
             },
@@ -815,6 +817,21 @@ export default function makeEslintConfigForPackage({
                 // React Hooks
                 ...nonDeprecatedRules('react-hooks', reactHooksPlugin),
 
+                // Regexp
+                ...nonDeprecatedRules('regexp', regexpPlugin),
+                // `unicorn/prefer-unicode-code-point-escapes` writes `\u{7F}`, not `\x7f`
+                'regexp/hexadecimal-escape': ['error', 'never'],
+                // `unicorn/escape-case` writes escapes' hex digits in uppercase
+                'regexp/letter-case': [
+                    'error',
+                    {
+                        caseInsensitive: 'lowercase',
+                        controlEscape: 'uppercase',
+                        hexadecimalEscape: 'uppercase',
+                        unicodeEscape: 'uppercase',
+                    },
+                ],
+
                 // SonarJS
                 ...nonDeprecatedRules('sonarjs', sonarPlugin),
                 'sonarjs/cognitive-complexity': 'off',
@@ -852,7 +869,7 @@ export default function makeEslintConfigForPackage({
                     { ignore: ['eslint-enable'] },
                 ],
                 ...nonDeprecatedRules('unicorn', unicornPlugin),
-                'unicorn/catch-error-name': ['error', { ignore: [/^error$/u], name: 'err' }],
+                'unicorn/catch-error-name': ['error', { ignore: [/^error$/v], name: 'err' }],
                 // Contradicts `arrow-body-style`
                 'unicorn/consistent-arrow-return-style': 'off',
                 // Contradicts `@typescript-eslint/member-ordering`

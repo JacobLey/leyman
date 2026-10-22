@@ -39,6 +39,7 @@
     "eslint-plugin-n": "catalog:",
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-regexp": "catalog:",
     "eslint-plugin-sonarjs": "catalog:",
     "eslint-plugin-unicorn": "catalog:"
   },
