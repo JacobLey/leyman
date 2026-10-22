@@ -265,11 +265,11 @@ Creates a fresh database from the template, for one test.
 |----------|------|-------------|
 | `name` | `string` | Database name, starting with the prefix. |
 | `url` | `string` | Connection URL: the server's, with this database's name. |
-| `keep()` | `() => void` | Keeps the database when `close()` drops the rest, and prints its name. A later run drops it once `retainMs` has passed. |
+| `keep()` | `() => void` | Keeps the database when `close()` drops the rest, and prints its name. A later run drops it once `retainMs` has passed. Throws `PgDollyClosedError` once `close()` is called. |
 
 ### `dolly.close()`
 
-Drops this run's clones, except those kept, and closes the connection. Calling it again does nothing. After it, `template()` and `clone()` reject with `PgDollyClosedError`.
+Drops this run's clones, except those kept, and closes the connection. Calling it again does nothing. After it, `template()` and `clone()` reject with `PgDollyClosedError`, and `keep()` throws it.
 
 Close the tests' connections to their clones first: dropping a database ends any left open.
 

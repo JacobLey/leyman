@@ -519,6 +519,15 @@ suite('PgDolly', () => {
 
             await expect(template.clone()).to.be.rejectedWith(PgDollyClosedError);
         });
+
+        withTemplate.test('Refuses to keep a clone once closed', async ({ dolly, template }) => {
+            const database = await template.clone();
+            await dolly.close();
+
+            expect(() => {
+                database.keep();
+            }).to.throw(PgDollyClosedError);
+        });
     });
 
     suite('Leftovers', () => {

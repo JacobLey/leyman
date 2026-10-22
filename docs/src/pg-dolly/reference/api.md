@@ -56,7 +56,7 @@ Creates a fresh database from the template, for one test.
 |----------|------|-------------|
 | `name` | `string` | Database name, starting with the prefix. |
 | `url` | `string` | Connection URL: the server's, with this database's name. |
-| `keep()` | `() => void` | Keeps the database when `close()` drops the rest, and prints its name. A later run drops it once `retainMs` has passed. |
+| `keep()` | `() => void` | Keeps the database when `close()` drops the rest, and prints its name. A later run drops it once `retainMs` has passed. Throws [`PgDollyClosedError`](#errors) once `close()` is called. |
 
 **Rejects** after `close()`, with [`PgDollyClosedError`](#errors).
 

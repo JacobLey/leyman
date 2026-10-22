@@ -96,6 +96,8 @@ export interface DollyDatabase {
     /**
      * Keeps the database when `close()` drops the rest, to inspect after a failed test, and prints its name.
      * A later run drops it once `retainMs` has passed.
+     *
+     * @throws {PgDollyClosedError} Once `close()` is called, which drops the clone
      */
     readonly keep: () => void;
 }
@@ -515,6 +517,8 @@ export class PgDolly {
             name,
             url: this.#urlOf(name),
             keep: () => {
+                // Closing drops the clone, so it can no longer be kept
+                this.#assertOpen();
                 if (clone.kept) {
                     return;
                 }
