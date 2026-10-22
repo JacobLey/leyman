@@ -5,6 +5,10 @@ import { GeneratedSignatureSectionIdError } from './errors.js';
 import { isValidSectionId, replaceBodies, scanSections } from './sections.js';
 
 /**
+ * @import { GeneratedSignatureMalformedError } from './errors.js'
+ */
+
+/**
  * Find the manual sections in a file.
  *
  * @param text - file content

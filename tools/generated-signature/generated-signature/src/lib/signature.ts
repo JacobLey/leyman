@@ -4,6 +4,10 @@ import { renderComment, resolveCommentStyle } from './comment-style.js';
 import { GeneratedSignatureMalformedError } from './errors.js';
 import { replaceBodies, scanSections } from './sections.js';
 
+/**
+ * @import { GeneratedSignatureCommentStyleError } from './errors.js'
+ */
+
 const VERSION = '1';
 const HASH_LENGTH = 32;
 const PLACEHOLDER = '0'.repeat(HASH_LENGTH);
