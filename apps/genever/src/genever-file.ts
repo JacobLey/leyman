@@ -13,6 +13,12 @@ import { openApiDialect } from './lib/openapi.js';
 import { isYaml, parseText } from './lib/parse.js';
 
 /**
+ * @import { GeneverError, GeneverLoadError } from './lib/errors.js'
+ * @import { PopulateFilesOwnershipError } from 'populate-files'
+ * @import { YAMLError } from 'yaml'
+ */
+
+/**
  * Options for {@link geneverFile}.
  */
 export interface GeneverFileOptions extends GeneverOptions {
@@ -111,7 +117,9 @@ export const geneverFile = async (
         baseUri,
         fetch: options.fetch ?? true,
         isDocument: documentDialect !== null,
-        onRead: (uri, text) => sources.set(uri, text),
+        onRead: (uri, text) => {
+            sources.set(uri, text);
+        },
     });
     const content = await formatText(genever(bundled, { ...options, baseUri }), { ext: '.ts' });
 

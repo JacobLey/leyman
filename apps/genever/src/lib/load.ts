@@ -272,8 +272,8 @@ const embed = (
  * @param input - JSON Schema, or OpenAPI document
  * @param options - how to read the input, and what to load
  * @returns the input with every referenced schema embedded, or the input itself if it references none
- * @throws {GeneverLoadError} if a referenced file or URL can't be loaded
- * @throws {TypeError} if an allowed host is not a host
+ * @rejects {GeneverLoadError} if a referenced file or URL can't be loaded
+ * @rejects {TypeError} if an allowed host is not a host
  */
 export const loadReferences = async (input: unknown, options: LoadOptions): Promise<unknown> => {
     const isAllowed = hostFilter(options.fetch);

@@ -9,6 +9,10 @@ import {
     schemaMapKeywords,
 } from './resources.js';
 
+/**
+ * @import { YAMLError } from 'yaml'
+ */
+
 const yamlExtension = /\.ya?ml$/iv;
 
 /**

@@ -46,6 +46,10 @@ import {
 } from './ts-type.js';
 
 /**
+ * @import { GeneverError } from './errors.js'
+ */
+
+/**
  * Default for `typedMinItems`, the same as Juniper's.
  */
 export const defaultTypedMinItems = 3;

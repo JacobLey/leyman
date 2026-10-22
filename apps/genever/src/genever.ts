@@ -1,7 +1,12 @@
+import type { geneverFile } from './genever-file.js';
 import { Converter, defaultTypedMinItems } from './lib/convert.js';
 import { openApiDialect } from './lib/openapi.js';
 import { printDoc, printType } from './lib/print.js';
 import { defaultBaseUri } from './lib/resources.js';
+
+/**
+ * @import { GeneverError } from './lib/errors.js'
+ */
 
 /**
  * Options for {@link genever}.
