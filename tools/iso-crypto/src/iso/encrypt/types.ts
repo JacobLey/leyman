@@ -62,7 +62,7 @@ export declare const encrypt: (
  * @param [options.hash] - hash algorithm to use to fit secret to the required key size.
  * Defaults to SHA256. Set to `'raw'` to avoid hashing.
  * @returns decrypted content
- * @throws for `GCM`, when the encrypted content, IV or secret do not match what was encrypted
+ * @throws {Error} for `GCM`, when the encrypted content, IV or secret do not match what was encrypted
  */
 export declare const decrypt: (
     params: {
