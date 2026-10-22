@@ -11,7 +11,7 @@ const LEAD_BYTES = [0, 0, 0xc0, 0xe0, 0xf0] as const;
  * @param code - code point >= 0x80
  * @returns 2, 3 or 4
  */
-const utf8Length = (code: number): number => {
+const utf8Length = (code: number): 2 | 3 | 4 => {
     if (code < 0x800) {
         return 2;
     }
@@ -70,7 +70,7 @@ export const hashKey = (key: string, seed: number): KeyHash => {
         // Leading byte, then continuation bytes of 6 bits each
         const byteLength = utf8Length(code);
         const leadShift = 6 * (byteLength - 1);
-        let byte = LEAD_BYTES[byteLength]! | (code >>> leadShift);
+        let byte = LEAD_BYTES[byteLength] | (code >>> leadShift);
         for (let shift = leadShift; shift >= 0; shift -= 6) {
             h1 = Math.imul(h1 ^ byte, 2_654_435_761);
             h2 = Math.imul(h2 ^ byte, 1_597_334_677);
