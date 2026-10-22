@@ -178,7 +178,7 @@ suite('PgDolly', () => {
                 const dolly = await open();
                 const template = await dolly.template(schema);
 
-                expect(template.hash).to.match(/^[\da-f]{32}$/u);
+                expect(template.hash).to.match(/^[\da-f]{32}$/v);
                 expect(template.name).to.equal(`${prefix}_t_${template.hash}`);
             }
         );
@@ -599,7 +599,7 @@ suite('PgDolly', () => {
             async ({ server, open }) => {
                 const running = await open();
                 const database = await cloneSchema(running);
-                const name = database.name.replace(/_\d+$/u, '_99');
+                const name = database.name.replace(/_\d+$/v, '_99');
                 await server.query(`CREATE DATABASE ${name}`);
 
                 await open({ retainMs: 0 });

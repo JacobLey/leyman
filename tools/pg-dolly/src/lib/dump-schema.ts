@@ -15,7 +15,7 @@ const maxDumpBytes = 268_435_456;
  *   no other client could run the dump, and they only protect `psql` from a malicious dump.
  */
 const unstableLine =
-    /^(?:-- Dumped (?:from database|by pg_dump) version .*|\\(?:un)?restrict .*)$/u;
+    /^(?:-- Dumped (?:by pg_dump|from database) version .*|\\(?:un)?restrict .*)$/v;
 
 /**
  * Makes the same schema always give the same text: drops the lines that vary, and the blank lines around them.
@@ -28,7 +28,7 @@ export const normalizeDump = (dump: string): string =>
         .split('\n')
         .filter(line => !unstableLine.test(line))
         .join('\n')
-        .replaceAll(/\n{3,}/gu, '\n\n')
+        .replaceAll(/\n{3,}/gv, '\n\n')
         .trim()}\n`;
 
 export interface DumpSchemaOptions {

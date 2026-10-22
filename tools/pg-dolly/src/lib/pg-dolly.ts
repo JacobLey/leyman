@@ -154,7 +154,7 @@ interface CloneState {
     kept: boolean;
 }
 
-const prefixPattern = /^[a-z][\d_a-z]{0,19}$/u;
+const prefixPattern = /^[a-z][\d_a-z]{0,19}$/v;
 // A day
 const defaultRetainMs = 86_400_000;
 /**

@@ -95,20 +95,20 @@ suite('dumpSchema', () => {
         async ({ database }) => {
             const dump = await dumpSchema(database.url);
 
-            expect(dump).to.not.match(/Dumped (?:from|by)|\\(?:un)?restrict/u);
+            expect(dump).to.not.match(/Dumped (?:by|from)|\\(?:un)?restrict/v);
         }
     );
 
     withMigrated.test('Leaves out owners and privileges', async ({ database }) => {
         const dump = await dumpSchema(database.url);
 
-        expect(dump).to.not.match(/OWNER TO|GRANT|REVOKE/u);
+        expect(dump).to.not.match(/GRANT|OWNER TO|REVOKE/v);
     });
 
     withMigrated.test('Ends with one newline, and no runs of blank lines', async ({ database }) => {
         const dump = await dumpSchema(database.url);
 
-        expect(dump).to.match(/[^\n]\n$/u);
+        expect(dump).to.match(/[^\n]\n$/v);
         expect(dump).to.not.include('\n'.repeat(3));
     });
 
