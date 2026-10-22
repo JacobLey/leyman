@@ -14,6 +14,7 @@ export type ParseCwd = (cwd?: Directory | { cwd?: Directory }) => Promise<string
  *
  * @param cwd - path to resolve to cwd, optionally as an object { cwd: '/path...' }
  * @returns full path to cwd
+ * @rejects {Error} if the directory doesn't exist
  */
 export const parseCwd: ParseCwd = async (
     cwd?: Directory | { cwd?: Directory }
