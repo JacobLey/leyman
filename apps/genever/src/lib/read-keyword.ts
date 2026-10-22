@@ -58,10 +58,10 @@ export const readPropertyNames = (value: unknown, pointer: string): readonly str
     if (value === undefined) {
         return [];
     }
-    if (!Array.isArray(value) || value.some(name => typeof name !== 'string')) {
-        throw new GeneverInvalidSchemaError('Must be an array of strings', { pointer });
+    if (Array.isArray(value) && value.every(name => typeof name === 'string')) {
+        return value;
     }
-    return value as string[];
+    throw new GeneverInvalidSchemaError('Must be an array of strings', { pointer });
 };
 
 /**
@@ -100,14 +100,19 @@ export const readBound = (
     if (value === undefined) {
         return null;
     }
-    if ((isBooleanAllowed && typeof value === 'boolean') || Number.isFinite(value)) {
-        return value as boolean | number;
+    if (
+        (isBooleanAllowed && typeof value === 'boolean') ||
+        (typeof value === 'number' && Number.isFinite(value))
+    ) {
+        return value;
     }
     throw new GeneverInvalidSchemaError(
         isBooleanAllowed ? 'Must be a number or boolean' : 'Must be a number',
         { pointer }
     );
 };
+
+const isJsonType = (value: unknown): value is JsonType => jsonTypes.has(value);
 
 /**
  * Read the `type` keyword.
@@ -122,13 +127,13 @@ export const readTypes = (value: unknown, pointer: string): JsonType[] | null =>
         return null;
     }
     const types: unknown[] = Array.isArray(value) ? value : [value];
-    if (types.length === 0 || types.some(type => !jsonTypes.has(type as string))) {
-        const allowed = [...jsonTypes].join(', ');
-        throw new GeneverInvalidSchemaError(`type must be one of, or an array of, ${allowed}`, {
-            pointer: childPointer(pointer, 'type'),
-        });
+    if (types.length > 0 && types.every(type => isJsonType(type))) {
+        return types;
     }
-    return types as JsonType[];
+    const allowed = [...jsonTypes].join(', ');
+    throw new GeneverInvalidSchemaError(`type must be one of, or an array of, ${allowed}`, {
+        pointer: childPointer(pointer, 'type'),
+    });
 };
 
 /**

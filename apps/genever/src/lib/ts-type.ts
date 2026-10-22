@@ -155,7 +155,7 @@ export const union = (members: readonly TsType[]): TsType => {
     if (flat.some(member => isKeyword(member, unknownType))) {
         return unknownType;
     }
-    const primitives = new Set(
+    const primitives: ReadonlySet<string | null> = new Set(
         flat.flatMap(member => (member.kind === 'keyword' ? member.keyword : []))
     );
     const seen = new Set<string>();
@@ -166,7 +166,7 @@ export const union = (members: readonly TsType[]): TsType => {
             isKeyword(member, neverType) ||
             seen.has(key) ||
             ((member.kind === 'literal' || member.kind === 'template') &&
-                primitives.has(valueClass(member) as 'string'))
+                primitives.has(valueClass(member)))
         ) {
             continue;
         }

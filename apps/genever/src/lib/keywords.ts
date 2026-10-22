@@ -3,7 +3,7 @@
  */
 export type JsonType = 'array' | 'boolean' | 'integer' | 'null' | 'number' | 'object' | 'string';
 
-export const jsonTypes: ReadonlySet<string> = new Set<JsonType>([
+export const jsonTypes: ReadonlySet<unknown> = new Set<JsonType>([
     'array',
     'boolean',
     'integer',

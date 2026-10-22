@@ -41,6 +41,8 @@ export interface OperationTypes {
 }
 
 const parameterLocations = ['query', 'header', 'path', 'cookie'] as const;
+const isParameterLocation = (value: unknown): value is (typeof parameterLocations)[number] =>
+    (parameterLocations as readonly unknown[]).includes(value);
 
 interface Parameter {
     readonly name: string;
@@ -270,10 +272,7 @@ class OperationBuilder {
         return parameters.map((raw, i) => {
             const located = this.#deref(raw, childPointer(parametersPointer, i));
             const { name, in: location } = located.value;
-            if (
-                typeof name !== 'string' ||
-                !parameterLocations.includes(location as Parameter['location'])
-            ) {
+            if (typeof name !== 'string' || !isParameterLocation(location)) {
                 throw new GeneverInvalidSchemaError(
                     `A parameter needs a name, and "in" one of ${parameterLocations.join(', ')}`,
                     { pointer: located.pointer }
@@ -281,7 +280,7 @@ class OperationBuilder {
             }
             return {
                 name,
-                location: location as Parameter['location'],
+                location,
                 // Path parameters are always required
                 required: location === 'path' || located.value.required === true,
                 hasDefault: this.#hasDefault(located),
