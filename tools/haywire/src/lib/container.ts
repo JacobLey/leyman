@@ -405,15 +405,15 @@ export class Container<Outputs extends [Extendable]> {
     /**
      * All bindings found in the original modules, merging both non-list and all list.
      */
-    readonly #bindings: ReadonlySet<GenericBinding>;
+    readonly #bindings: Set<GenericBinding>;
     /**
      * Binding mapped by the base id of the output
      */
-    readonly #baseIdToBinding: ReadonlyMap<GenericBaseHaywireId, GenericBinding>;
+    readonly #baseIdToBinding: Map<GenericBaseHaywireId, GenericBinding>;
     /**
      * List bindings mapped by shared based if of output
      */
-    readonly #baseIdToListBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>;
+    readonly #baseIdToListBindings: Map<GenericBaseHaywireId, readonly GenericBinding[]>;
     #checked: boolean;
     #wired: boolean;
     /**
@@ -464,12 +464,12 @@ export class Container<Outputs extends [Extendable]> {
     /**
      * Binding mapped by every possible valid id (same non-null binding will be present under both null and non-null ids).
      */
-    readonly #idToBinding: ReadonlyMap<GenericOutputHaywireId, GenericBinding>;
+    readonly #idToBinding: Map<GenericOutputHaywireId, GenericBinding>;
     /**
      * List bindings mapped by every possible valid id.
      * The ids will be the intersection of all valid ids.
      */
-    readonly #idToListBindings: ReadonlyMap<GenericOutputHaywireId, readonly GenericBinding[]>;
+    readonly #idToListBindings: Map<GenericOutputHaywireId, readonly GenericBinding[]>;
 
     /**
      * Create a container based on a map of bindings (coming from a module)
@@ -610,7 +610,7 @@ export class Container<Outputs extends [Extendable]> {
                 )?.[0];
                 if (existingListBinding) {
                     if (existingListBinding instanceof TempBinding) {
-                        (cloned.#bindings as Set<GenericBinding>).delete(existingListBinding);
+                        cloned.#bindings.delete(existingListBinding);
 
                         if (cloned.#wired) {
                             cloned.#singletonMap.delete(existingListBinding);
@@ -653,12 +653,7 @@ export class Container<Outputs extends [Extendable]> {
                     // A temp binding is a placeholder for a missing provider; it has already been
                     // pruned from `#bindings`/`#requestMap` above, so it must not linger in the
                     // resolved list (otherwise resolution dereferences a binding with no request map).
-                    (
-                        cloned.#baseIdToListBindings as Map<
-                            GenericBaseHaywireId,
-                            readonly GenericBinding[]
-                        >
-                    ).set(binding.outputId.baseId(), [
+                    cloned.#baseIdToListBindings.set(binding.outputId.baseId(), [
                         ...existingListBindings.filter(
                             existing => !(existing instanceof TempBinding)
                         ),
@@ -668,18 +663,13 @@ export class Container<Outputs extends [Extendable]> {
                     if (cloned.#wired) {
                         cloned.#upstreamDependents.set(binding, new Set());
                     }
-                    (
-                        cloned.#baseIdToListBindings as Map<
-                            GenericBaseHaywireId,
-                            readonly GenericBinding[]
-                        >
-                    ).set(binding.outputId.baseId(), [binding]);
+                    cloned.#baseIdToListBindings.set(binding.outputId.baseId(), [binding]);
                 }
             } else {
                 const existingBinding = cloned.#baseIdToBinding.get(binding.outputId.baseId());
                 if (existingBinding) {
                     if (existingBinding instanceof TempBinding) {
-                        (cloned.#bindings as Set<GenericBinding>).delete(existingBinding);
+                        cloned.#bindings.delete(existingBinding);
 
                         if (cloned.#wired) {
                             cloned.#singletonMap.delete(existingBinding);
@@ -708,10 +698,7 @@ export class Container<Outputs extends [Extendable]> {
                     cloned.#upstreamDependents.set(binding, new Set());
                 }
 
-                (cloned.#baseIdToBinding as Map<GenericOutputHaywireId, GenericBinding>).set(
-                    binding.outputId.baseId(),
-                    binding
-                );
+                cloned.#baseIdToBinding.set(binding.outputId.baseId(), binding);
             }
 
             if (isListId(binding.outputId)) {
@@ -727,31 +714,18 @@ export class Container<Outputs extends [Extendable]> {
                     listBindings.map(listBinding => listBinding.outputId)
                 );
                 for (const staleListId of expandOutputId(baseId).difference(outputListIds)) {
-                    (
-                        cloned.#idToListBindings as Map<
-                            GenericOutputHaywireId,
-                            readonly GenericBinding[]
-                        >
-                    ).delete(staleListId);
+                    cloned.#idToListBindings.delete(staleListId);
                 }
                 for (const outputListId of outputListIds) {
-                    (
-                        cloned.#idToListBindings as Map<
-                            GenericOutputHaywireId,
-                            readonly GenericBinding[]
-                        >
-                    ).set(outputListId, listBindings);
+                    cloned.#idToListBindings.set(outputListId, listBindings);
                 }
             } else {
                 for (const outputId of expandOutputId(binding.outputId)) {
-                    (cloned.#idToBinding as Map<GenericOutputHaywireId, GenericBinding>).set(
-                        outputId,
-                        binding
-                    );
+                    cloned.#idToBinding.set(outputId, binding);
                 }
             }
 
-            (cloned.#bindings as Set<GenericBinding>).add(binding);
+            cloned.#bindings.add(binding);
 
             if (!container.#wired) {
                 continue;
