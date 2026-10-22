@@ -103,7 +103,7 @@ suite('manifest', () => {
             const manifest = await ctx.read('manifest.json');
             await writeFile(
                 ctx.resolve('manifest.json'),
-                manifest.replace(/genever@[^"]+/u, 'genever@0.0.0')
+                manifest.replace(/genever@[^"]+/v, 'genever@0.0.0')
             );
 
             await expect(

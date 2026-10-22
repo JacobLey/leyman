@@ -180,7 +180,7 @@ suite('YAML', () => {
 
             await expect(
                 geneverFile(ctx.resolve('input.yaml'), { output: ctx.resolve('input.ts') })
-            ).to.be.rejectedWith(GeneverStrictModeError, /refers back/u);
+            ).to.be.rejectedWith(GeneverStrictModeError, /refers back/v);
         });
 
         withTmpDir.test('but not across an $id', async ctx => {
@@ -196,7 +196,7 @@ suite('YAML', () => {
 
             await expect(
                 geneverFile(ctx.resolve('input.yaml'), { output: ctx.resolve('input.ts') })
-            ).to.be.rejectedWith(GeneverUnsupportedError, /\$id in between/u);
+            ).to.be.rejectedWith(GeneverUnsupportedError, /\$id in between/v);
         });
     });
 
@@ -247,7 +247,7 @@ suite('YAML', () => {
 
             const thrown: unknown = await expect(
                 geneverFile(ctx.resolve('input.yaml'), { output: ctx.resolve('input.ts') })
-            ).to.be.rejectedWith(GeneverLoadError, /not valid YAML: YAML number Infinity/u);
+            ).to.be.rejectedWith(GeneverLoadError, /not valid YAML: YAML number Infinity/v);
             expect((thrown as Error).cause).to.be.instanceOf(GeneverInvalidSchemaError);
         });
     });

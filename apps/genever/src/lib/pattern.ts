@@ -10,7 +10,7 @@ const specialCharacters = new Set(String.raw`\^$.*+?()[]{}|/`);
  * Hex escapes that `escape-string-regexp` (used by Juniper) writes for characters that are special
  * in some contexts, such as `-` within a character class.
  */
-const hexEscape = /^x(?<code>[0-9a-f]{2})/iu;
+const hexEscape = /^x(?<code>[0-9a-f]{2})/iv;
 
 /**
  * Read a regular expression made only of literal characters, e.g. `abc\.def`.

@@ -93,7 +93,7 @@ export const geneverFile = async (
     const inputPath = Path.resolve(cwd, input);
     const output = Path.resolve(
         cwd,
-        options.output ?? `${inputPath.replace(/\.(?:json|ya?ml)$/iu, '')}.ts`
+        options.output ?? `${inputPath.replace(/\.(?:json|ya?ml)$/iv, '')}.ts`
     );
 
     const manifestPath = options.manifest ? Path.resolve(cwd, options.manifest) : null;

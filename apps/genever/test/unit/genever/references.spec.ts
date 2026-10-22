@@ -136,7 +136,7 @@ suite('references', () => {
 
         test('is a strict mode error', () => {
             expect(() => genever({ anyOf: [{ $ref: '#' }, { type: 'string' }] }))
-                .to.throw(GeneverStrictModeError, /refers back/u)
+                .to.throw(GeneverStrictModeError, /refers back/v)
                 .with.property('pointer', '#/anyOf/0/$ref');
         });
 
@@ -174,7 +174,7 @@ suite('references', () => {
                 test(keyword, () => {
                     expect(() =>
                         genever({ $defs: { A: shape('#/$defs/B'), B: shape('#/$defs/A') } })
-                    ).to.throw(GeneverStrictModeError, /refers back/u);
+                    ).to.throw(GeneverStrictModeError, /refers back/v);
                 });
             }
         });
@@ -201,7 +201,7 @@ suite('references', () => {
                     },
                     loose
                 )
-            ).to.throw(/Missing/u);
+            ).to.throw(/Missing/v);
         });
     });
 

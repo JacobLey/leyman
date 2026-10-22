@@ -330,7 +330,7 @@ suite('external references', () => {
                 try {
                     await expect(generateFor(ctx, url, hosts)).to.be.rejectedWith(
                         GeneverLoadError,
-                        /not an allowed host/u
+                        /not an allowed host/v
                     );
                     expect(fake.requested).to.deep.equal([]);
                 } finally {
@@ -383,7 +383,7 @@ suite('external references', () => {
             try {
                 await expect(
                     generateFor(ctx, 'https://example.test/a.json', ['example.test'])
-                ).to.be.rejectedWith(GeneverLoadError, /elsewhere\.test is not an allowed host/u);
+                ).to.be.rejectedWith(GeneverLoadError, /elsewhere\.test is not an allowed host/v);
                 expect(fake.requested).to.deep.equal(['https://example.test/a.json']);
             } finally {
                 fake.restore();
@@ -398,7 +398,7 @@ suite('external references', () => {
             try {
                 await expect(
                     generateFor(ctx, 'https://example.test/a.json', ['example.test'])
-                ).to.be.rejectedWith(GeneverLoadError, /redirected to a file: URI/u);
+                ).to.be.rejectedWith(GeneverLoadError, /redirected to a file: URI/v);
             } finally {
                 fake.restore();
             }
@@ -412,7 +412,7 @@ suite('external references', () => {
             try {
                 await expect(
                     generateFor(ctx, 'https://example.test/a.json', ['example.test'])
-                ).to.be.rejectedWith(GeneverLoadError, /too many redirects/u);
+                ).to.be.rejectedWith(GeneverLoadError, /too many redirects/v);
             } finally {
                 fake.restore();
             }
@@ -475,7 +475,7 @@ suite('external references', () => {
                         output: ctx.resolve('input.ts'),
                         fetch: false,
                     })
-                ).to.be.rejectedWith(GeneverLoadError, /disabled/u);
+                ).to.be.rejectedWith(GeneverLoadError, /disabled/v);
             } finally {
                 await server.close();
             }
@@ -494,7 +494,7 @@ suite('external references', () => {
                         output: ctx.resolve('input.ts'),
                         strict: false,
                     })
-                ).to.be.rejectedWith(GeneverLoadError, /404/u);
+                ).to.be.rejectedWith(GeneverLoadError, /404/v);
                 expect(thrown).to.have.property('pointer', '#/properties/a/$ref');
                 expect(thrown).to.have.property(
                     'referencedFrom',
@@ -515,7 +515,7 @@ suite('external references', () => {
                     output: ctx.resolve('input.ts'),
                     strict: false,
                 })
-            ).to.be.rejectedWith(GeneverLoadError, /referenced from ".*\/a\.json"/u);
+            ).to.be.rejectedWith(GeneverLoadError, /referenced from ".*\/a\.json"/v);
             expect(thrown).to.have.property('pointer', '#/properties/b/$ref');
             expect(thrown).to.have.property(
                 'referencedFrom',

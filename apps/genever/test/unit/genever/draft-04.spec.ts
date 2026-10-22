@@ -64,7 +64,7 @@ suite('draft-04', () => {
 
     test('an invalid id', () => {
         expect(() => genever({ $schema: draft04, definitions: { A: { id: 'a#b' } } }))
-            .to.throw(GeneverInvalidSchemaError, /id must be a URI/u)
+            .to.throw(GeneverInvalidSchemaError, /id must be a URI/v)
             .with.property('pointer', '#/definitions/A/id');
     });
 
@@ -85,7 +85,7 @@ suite('draft-04', () => {
     suite('outside draft-04', () => {
         test('id is an unknown keyword', () => {
             expect(() => genever({ type: 'string', id: 'https://example.test/a' }))
-                .to.throw(GeneverStrictModeError, /Unknown keyword "id"/u)
+                .to.throw(GeneverStrictModeError, /Unknown keyword "id"/v)
                 .with.property('pointer', '#/id');
         });
 
@@ -100,12 +100,12 @@ suite('draft-04', () => {
                     },
                     { strict: false }
                 )
-            ).to.throw(/Only references within the same document/u);
+            ).to.throw(/Only references within the same document/v);
         });
 
         test('exclusive bounds are numbers', () => {
             expect(() => genever({ type: 'number', minimum: 1, exclusiveMinimum: true }))
-                .to.throw(GeneverInvalidSchemaError, /Must be a number/u)
+                .to.throw(GeneverInvalidSchemaError, /Must be a number/v)
                 .with.property('pointer', '#/exclusiveMinimum');
         });
     });

@@ -21,7 +21,7 @@ suite('cli', () => {
     test('--version', async () => {
         const result = await execAsync('./bin.mjs --version');
 
-        expect(result.stdout).to.match(/\d+.\d+.\d+/u);
+        expect(result.stdout).to.match(/^\d+\.\d+\.\d+\n$/v);
         expect(result.stderr).to.equal('');
     });
 

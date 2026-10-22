@@ -9,7 +9,7 @@ import {
     schemaMapKeywords,
 } from './resources.js';
 
-const yamlExtension = /\.ya?ml$/iu;
+const yamlExtension = /\.ya?ml$/iv;
 
 /**
  * Whether a file or URL is YAML, rather than JSON.
@@ -20,7 +20,7 @@ const yamlExtension = /\.ya?ml$/iu;
  */
 export const isYaml = (uri: string, contentType: string | null = null): boolean => {
     const { pathname } = new URL(uri);
-    return yamlExtension.test(pathname) || (contentType !== null && /yaml/iu.test(contentType));
+    return yamlExtension.test(pathname) || (contentType !== null && /yaml/iv.test(contentType));
 };
 
 /**

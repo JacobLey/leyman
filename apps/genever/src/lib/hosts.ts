@@ -3,7 +3,7 @@ const defaultPorts: Readonly<Record<string, string>> = { 'http:': '80', 'https:'
 /**
  * A host, optionally with a port: `example.com`, `*.example.com`, `127.0.0.1:8080`, `[::1]:8080`.
  */
-const hostPattern = /^(?<hostname>\[[\da-f:.]+\]|[^\s/:?#@[\]]+)(?::(?<port>\d+))?$/iu;
+const hostPattern = /^(?<hostname>\[[\d.:a-f]+\]|[^\s#\/:?@\[\]]+)(?::(?<port>\d+))?$/iv;
 
 /**
  * Whether a URL may be fetched.

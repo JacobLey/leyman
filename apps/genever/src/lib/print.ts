@@ -3,7 +3,7 @@ import type { TsDoc, TsIndex, TsType } from './ts-type.js';
 const indentWidth = 4;
 const indentUnit = ' '.repeat(indentWidth);
 
-const identifier = /^[$A-Z_a-z][\w$]*$/u;
+const identifier = /^[$A-Z_a-z][\w$]*$/v;
 
 /**
  * Binding strength of a printed type, so members are wrapped in parentheses when needed.

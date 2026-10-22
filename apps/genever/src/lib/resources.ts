@@ -48,7 +48,7 @@ export const schemaMapKeywords = [
 /**
  * `$schema` of draft-04, which names a schema's resource with `id` rather than `$id`.
  */
-const draft04Schema = /^https?:\/\/json-schema\.org\/draft-04\/(?:hyper-)?schema#?$/u;
+const draft04Schema = /^https?:\/\/json-schema\.org\/draft-04\/(?:hyper-)?schema#?$/v;
 
 /**
  * Whether a schema declares itself draft-04 by its `$schema`, or `null` if it declares no dialect.
@@ -76,7 +76,7 @@ export const idKeywordOf = (
 /**
  * Syntax of an `$anchor`, from JSON Schema 2020-12.
  */
-const anchorName = /^[A-Z_a-z][\w.-]*$/u;
+const anchorName = /^[A-Z_a-z][\w\-.]*$/v;
 
 /**
  * A schema found by a reference.

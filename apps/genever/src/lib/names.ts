@@ -5,12 +5,12 @@
  * @returns valid TypeScript type name
  */
 export const toTypeName = (name: string): string => {
-    const words = name.split(/[^\p{L}\p{N}_$]+/u).filter(word => word.length > 0);
+    const words = name.split(/[^\p{L}\p{N}$_]+/v).filter(word => word.length > 0);
     const joined = words.map(word => word[0]!.toUpperCase() + word.slice(1)).join('');
     if (joined === '') {
         return 'Type';
     }
-    return /^\p{N}/u.test(joined) ? `T${joined}` : joined;
+    return /^\p{N}/v.test(joined) ? `T${joined}` : joined;
 };
 
 /**
