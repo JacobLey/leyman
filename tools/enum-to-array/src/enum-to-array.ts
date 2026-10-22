@@ -73,7 +73,7 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
  *
  * @param enumDict - enum variable
  * @param [options] - optional
- * @param [options.unique=false] - Dedupe values in enums
+ * @param [options.unique] - Dedupe values in enums, defaults to false
  * @returns list of enum values
  */
 export const enumToValues = <Enum extends Record<string, unknown>>(
