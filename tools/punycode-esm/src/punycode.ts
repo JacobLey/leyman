@@ -24,8 +24,8 @@ const baseMinusTMin = base - tMin;
 //
 // Regular expressions
 //
-const regexNonASCII = /[^\0-\u{7F}]/u; // Non-ASCII chars. Note: U+007F DEL is excluded too.
-const regexSeparators = /[\u{2E}\u{3002}\u{FF0E}\u{FF61}]/gu; // RFC 3490 separators
+const regexNonASCII = /[^\0-\u{7F}]/v; // Non-ASCII chars. Note: U+007F DEL is excluded too.
+const regexSeparators = /[\u{2E}\u{3002}\u{FF0E}\u{FF61}]/v; // RFC 3490 separators
 
 /**
  * A simple `Array#map`-like wrapper to work with domain name strings or email addresses.
