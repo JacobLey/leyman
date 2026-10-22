@@ -308,6 +308,24 @@ suite('external references', () => {
             }
         });
 
+        withTmpDir.test('resolves references against where a URL redirects to', async ctx => {
+            const fake = fakeFetch({
+                redirects: { 'https://example.test/v1/a.json': 'https://example.test/v2/a.json' },
+                schemas: {
+                    'https://example.test/v2/a.json': '{ "$ref": "./b.json" }',
+                    'https://example.test/v2/b.json': '{ "type": "string" }',
+                },
+            });
+            try {
+                expectTypes(
+                    await generateFor(ctx, 'https://example.test/v1/a.json', ['example.test']),
+                    { Schema: '{ a?: B }', B: 'string' }
+                );
+            } finally {
+                fake.restore();
+            }
+        });
+
         withTmpDir.test('does not follow redirects to other hosts', async ctx => {
             const fake = fakeFetch({
                 redirects: { 'https://example.test/a.json': 'https://elsewhere.test/a.json' },

@@ -82,9 +82,12 @@ const maxRedirects = 20;
  *
  * @param uri - absolute `http:` or `https:` URL
  * @param isAllowed - hosts that may be fetched
- * @returns the response, or why it can't be fetched
+ * @returns the response, and the URL it is from after redirects, or why it can't be fetched
  */
-const fetchAllowed = async (uri: string, isAllowed: HostFilter): Promise<Response | Unloadable> => {
+const fetchAllowed = async (
+    uri: string,
+    isAllowed: HostFilter
+): Promise<Unloadable | { response: Response; url: URL }> => {
     let url = new URL(uri);
     for (let redirects = 0; redirects <= maxRedirects; redirects++) {
         if (!isAllowed(url)) {
@@ -98,7 +101,7 @@ const fetchAllowed = async (uri: string, isAllowed: HostFilter): Promise<Respons
         });
         const location = response.headers.get('location');
         if (location === null || !redirectStatuses.has(response.status)) {
-            return response;
+            return { response, url };
         }
         url = new URL(location, url);
         if (url.protocol !== 'http:' && url.protocol !== 'https:') {
@@ -113,16 +116,16 @@ const fetchAllowed = async (uri: string, isAllowed: HostFilter): Promise<Respons
  *
  * @param uri - absolute URI, without a fragment
  * @param isAllowed - hosts that may be fetched, or null to load only files
- * @returns the text, and whether it is YAML, or why it can't be read
+ * @returns the text, the URI it is from after redirects, and whether it is YAML, or why it can't be read
  */
 const readText = async (
     uri: string,
     isAllowed: HostFilter | null
-): Promise<Unloadable | { text: string; yaml: boolean }> => {
+): Promise<Unloadable | { text: string; uri: string; yaml: boolean }> => {
     const { protocol } = new URL(uri);
     try {
         if (protocol === 'file:') {
-            return { text: await readFile(fileURLToPath(uri), 'utf8'), yaml: isYaml(uri) };
+            return { uri, text: await readFile(fileURLToPath(uri), 'utf8'), yaml: isYaml(uri) };
         }
         if (protocol !== 'http:' && protocol !== 'https:') {
             return { reason: `${protocol} URIs can't be loaded` };
@@ -130,14 +133,16 @@ const readText = async (
         if (!isAllowed) {
             return { reason: 'loading URLs is disabled' };
         }
-        const response = await fetchAllowed(uri, isAllowed);
-        if ('reason' in response) {
-            return response;
+        const fetched = await fetchAllowed(uri, isAllowed);
+        if ('reason' in fetched) {
+            return fetched;
         }
+        const { response, url } = fetched;
         return response.ok
             ? {
                   text: await response.text(),
-                  yaml: isYaml(uri, response.headers.get('content-type')),
+                  uri: url.href,
+                  yaml: isYaml(url.href, response.headers.get('content-type')),
               }
             : { reason: `HTTP ${response.status}` };
     } catch (error) {
@@ -148,7 +153,8 @@ const readText = async (
 /**
  * Load a schema from a file or URL, and index it.
  *
- * Its `$id`, if any, is its base URI. Otherwise its URI is, which it is given as its `$id`,
+ * Its `$id`, if any, is its base URI. Otherwise the URI it was read from, after redirects, is
+ * ([RFC 3986](https://www.rfc-editor.org/rfc/rfc3986#section-5.1.3)), which it is given as its `$id`,
  * so it can be embedded in another document, and still resolve its own references.
  *
  * @param uri - absolute URI, without a fragment
@@ -189,9 +195,9 @@ const loadResource = async (
     const schema: SchemaObject =
         // Draft 7 names a plain anchor with `$id`, which can't name the schema's resource
         typeof $id === 'string' && $id.startsWith('#')
-            ? { ...parsed, $id: uri, $anchor: $id.slice(1) }
-            : { ...parsed, $id: $id ?? uri };
-    const index = indexDocument(schema, inputSchemas(schema, false), uri, isDraft04);
+            ? { ...parsed, $id: read.uri, $anchor: $id.slice(1) }
+            : { ...parsed, $id: $id ?? read.uri };
+    const index = indexDocument(schema, inputSchemas(schema, false), read.uri, isDraft04);
     // The `$id` of a schema may be relative to where it was loaded from
     const id = index.baseUris.get('#')!;
     return {
