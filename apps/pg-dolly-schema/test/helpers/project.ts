@@ -1,7 +1,7 @@
 import { randomUUID } from 'node:crypto';
 import { cp } from 'node:fs/promises';
 import Path from 'node:path';
-import pg from 'pg';
+import { Client } from 'pg';
 import { dir } from 'tmp-promise';
 
 /**
@@ -45,7 +45,7 @@ export const copyProject = async (): Promise<Project> => {
  */
 export const dropAll = async (prefix: string): Promise<void> => {
     // eslint-disable-next-line n/no-process-env -- Set by the devcontainer and Dagger
-    const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+    const client = new Client({ connectionString: process.env.DATABASE_URL });
     await client.connect();
     try {
         const { rows } = await client.query<{ datname: string }>(
@@ -63,12 +63,14 @@ export const dropAll = async (prefix: string): Promise<void> => {
 };
 
 /**
+ * List the databases with a prefix that aren't templates.
+ *
  * @param prefix - Start of the database names
  * @returns Names of the databases with the prefix that aren't templates
  */
 export const clones = async (prefix: string): Promise<string[]> => {
     // eslint-disable-next-line n/no-process-env -- Set by the devcontainer and Dagger
-    const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
+    const client = new Client({ connectionString: process.env.DATABASE_URL });
     await client.connect();
     try {
         const { rows } = await client.query<{ datname: string }>(
