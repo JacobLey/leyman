@@ -322,30 +322,6 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     }
 
     /**
-     * A dictionary of "default" values for a schema. Only need to include
-     * those that are omitted from a schema when at a certain value.
-     *
-     * e.g. StringSchema omits `minProperties` when set to `0`.
-     *
-     * Used by `$ref` to ensure defaulted properties are not mistakenly overwritten
-     * by the referenced schema.
-     *
-     * Child classes SHOULD extend this response when implementing default-able properties.
-     *
-     * @returns map of property name -> default value.
-     */
-    protected static getDefaultValues(params: SerializationParams): Record<string, unknown>;
-    protected static getDefaultValues(): Record<string, unknown> {
-        return {
-            deprecated: false,
-            description: null,
-            readOnly: false,
-            title: null,
-            writeOnly: false,
-        };
-    }
-
-    /**
      * Generate the JSON Schema document.
      *
      * The output should be passed to a validator library like [ajv](https://www.npmjs.com/package/ajv)
@@ -646,6 +622,30 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     // eslint-disable-next-line @typescript-eslint/prefer-return-this-type -- Returns this instance, typed as another schema
     public cast<NewT extends T['type']>(): AbstractSchema<SchemaGenerics<NewT>> {
         return this satisfies AbstractSchema<SchemaGenerics<NewT>>;
+    }
+
+    /**
+     * A dictionary of "default" values for a schema. Only need to include
+     * those that are omitted from a schema when at a certain value.
+     *
+     * e.g. StringSchema omits `minProperties` when set to `0`.
+     *
+     * Used by `$ref` to ensure defaulted properties are not mistakenly overwritten
+     * by the referenced schema.
+     *
+     * Child classes SHOULD extend this response when implementing default-able properties.
+     *
+     * @returns map of property name -> default value.
+     */
+    protected static getDefaultValues(params: SerializationParams): Record<string, unknown>;
+    protected static getDefaultValues(): Record<string, unknown> {
+        return {
+            deprecated: false,
+            description: null,
+            readOnly: false,
+            title: null,
+            writeOnly: false,
+        };
     }
 
     /**
