@@ -203,22 +203,19 @@ export class HaywireSyncSupplierError extends HaywireContainerValidationError {
         asyncChain: GenericHaywireId[];
     }[];
     public constructor(unsafeSupplierBindings: HaywireSyncSupplierError['unsafeSupplierBindings']) {
-        const bindingToMessage = new Map(
-            unsafeSupplierBindings.map(unsafeBinding => [
+        const sorted = unsafeSupplierBindings
+            .map(unsafeBinding => ({
                 unsafeBinding,
-                `[output id: ${unsafeBinding.bindingOutputId.toString()}, dependency supplier id: ${unsafeBinding.supplierId.toString()}, needed by: ${unsafeBinding.dependentOutputId.toString()}, async: ${unsafeBinding.asyncChain.map(id => id.toString()).join('->')}]`,
-            ])
-        );
-        const sorted = unsafeSupplierBindings.toSorted((a, b) =>
-            bindingToMessage.get(a)!.localeCompare(bindingToMessage.get(b)!, 'en')
-        );
+                message: `[output id: ${unsafeBinding.bindingOutputId.toString()}, dependency supplier id: ${unsafeBinding.supplierId.toString()}, needed by: ${unsafeBinding.dependentOutputId.toString()}, async: ${unsafeBinding.asyncChain.map(id => id.toString()).join('->')}]`,
+            }))
+            .toSorted((a, b) => a.message.localeCompare(b.message, 'en'));
         super(
             `Binding has dependency on syncronous supplier that must be async: ${sorted
-                .map(unsafeBinding => bindingToMessage.get(unsafeBinding)!)
+                .map(({ message }) => message)
                 .join(', ')}`
         );
         this.name = 'HaywireSyncSupplierError';
-        this.unsafeSupplierBindings = sorted;
+        this.unsafeSupplierBindings = sorted.map(({ unsafeBinding }) => unsafeBinding);
     }
 }
 
