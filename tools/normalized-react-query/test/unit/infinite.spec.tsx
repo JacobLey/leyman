@@ -1,5 +1,5 @@
 import { QueryClient, skipToken, useQueries, useQueryClient } from '@tanstack/react-query';
-import { expect } from '@leyman/expect';
+import { assert, expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import {
     infinite,
@@ -60,17 +60,18 @@ suite('infinite', () => {
 
             expect(authorWithBook.pages.flat()).to.have.length(2);
             const [firstLink] = authorWithBook.pages.flat();
-            expect(firstLink!.getQueryClient()).to.equal(client);
-            expect(firstLink!.getQueryable()).to.equal(infiniteBooksByAuthor);
-            expect(firstLink!.getParams()).to.deep.equal({ authorId: tolkienId });
+            assert.exists(firstLink);
+            expect(firstLink.getQueryClient()).to.equal(client);
+            expect(firstLink.getQueryable()).to.equal(infiniteBooksByAuthor);
+            expect(firstLink.getParams()).to.deep.equal({ authorId: tolkienId });
 
-            await firstLink!
+            await firstLink
                 .getQueryable()
-                .getCachedQuery(firstLink!.getQueryClient(), firstLink!.getParams())!.promise;
+                .getCachedQuery(firstLink.getQueryClient(), firstLink.getParams())!.promise;
 
-            const tolkiensBooks = firstLink!
+            const tolkiensBooks = firstLink
                 .getQueryable()
-                .getInfiniteQueryData(firstLink!.getQueryClient(), firstLink!.getParams())
+                .getInfiniteQueryData(firstLink.getQueryClient(), firstLink.getParams())
                 ?.pages.flat()
                 .map(book => book.bookId);
             expect(tolkiensBooks).to.have.length(2);

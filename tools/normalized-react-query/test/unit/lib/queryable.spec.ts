@@ -1,5 +1,5 @@
 import { CancelledError, QueryClient } from '@tanstack/react-query';
-import { expect } from '@leyman/expect';
+import { assert, expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { resource } from 'normalized-react-query';
 
@@ -78,8 +78,8 @@ suite('queryable', () => {
             await expect(fetching).to.be.rejectedWith(CancelledError);
 
             const queryState = abortableResource.getQueryState(client, true);
-            expect(queryState).to.not.equal(undefined);
-            expect(queryState!.data).to.equal(undefined);
+            assert.exists(queryState);
+            expect(queryState.data).to.equal(undefined);
 
             const isRefetched = await abortableResource.query(client, {});
             expect(isRefetched).to.equal(false);

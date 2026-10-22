@@ -6,7 +6,7 @@ import {
     useQueryClient,
     useSuspenseQueries,
 } from '@tanstack/react-query';
-import { expect } from '@leyman/expect';
+import { assert, expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import {
     resource,
@@ -122,8 +122,8 @@ suite('resource', () => {
             });
 
             const data = authors.getQueryData(client, params);
-            expect(data).to.not.equal(undefined);
-            expect(data!.name).to.equal(name);
+            assert.exists(data);
+            expect(data.name).to.equal(name);
 
             const fetchedData = await authors.query(client, params);
             expect(fetchedData.name).to.equal(name);
@@ -153,12 +153,12 @@ suite('resource', () => {
             ).to.equal(bookParams);
 
             const book = books.getQueryData(client, bookParams);
-            expect(book).to.not.equal(undefined);
-            expect(book!.author).to.equal(authorParams);
+            assert.exists(book);
+            expect(book.author).to.equal(authorParams);
 
             const author = authors.getQueryData(client, authorParams);
-            expect(author).to.not.equal(undefined);
-            expect(author!.name).to.equal('<name>');
+            assert.exists(author);
+            expect(author.name).to.equal('<name>');
         });
     });
 
@@ -291,20 +291,20 @@ suite('resource', () => {
             const linkedAuthor = await authors.prefetchQuery(client, { authorId: tolkienId });
 
             const author = authors.getQueryData(client, linkedAuthor.getParams());
-            expect(author).to.not.equal(undefined);
-            expect(author!.name).to.equal('J.R.R. Tolkien');
+            assert.exists(author);
+            expect(author.name).to.equal('J.R.R. Tolkien');
         });
 
         context.test('Get populated data', async ({ client }) => {
             const linkedBook = await books.prefetchQuery(client, { bookId: fellowshipOfTheRingId });
 
             const book = books.getQueryData(client, linkedBook.getParams());
-            expect(book).to.not.equal(undefined);
-            expect(book!.title).to.equal('Fellowship of the Ring');
+            assert.exists(book);
+            expect(book.title).to.equal('Fellowship of the Ring');
 
-            const author = authors.getQueryData(client, book!.author);
-            expect(author).to.not.equal(undefined);
-            expect(author!.name).to.equal('J.R.R. Tolkien');
+            const author = authors.getQueryData(client, book.author);
+            assert.exists(author);
+            expect(author.name).to.equal('J.R.R. Tolkien');
         });
 
         context.test('Does not propagate failure', async ({ client }) => {
@@ -348,12 +348,12 @@ suite('resource', () => {
             const book = books.getQueryData(client, {
                 bookId: fellowshipOfTheRingId,
             });
-            expect(book).to.not.equal(undefined);
-            expect(book!.title).to.equal('Fellowship of the Ring');
+            assert.exists(book);
+            expect(book.title).to.equal('Fellowship of the Ring');
 
-            const author = authors.getQueryData(client, book!.author);
-            expect(author).to.not.equal(undefined);
-            expect(author!.name).to.equal('J.R.R. Tolkien');
+            const author = authors.getQueryData(client, book.author);
+            assert.exists(author);
+            expect(author.name).to.equal('J.R.R. Tolkien');
         });
 
         context.test('Get propagated data', async ({ client }) => {
@@ -362,8 +362,8 @@ suite('resource', () => {
             });
 
             const author = authorsWithFavoriteAuthor.getQueryData(client, { authorId: austenId });
-            expect(author).to.not.equal(undefined);
-            expect(author!.name).to.equal('Jane Austen');
+            assert.exists(author);
+            expect(author.name).to.equal('Jane Austen');
         });
 
         context.test('Waits for propagated data every time', async ({ client }) => {
