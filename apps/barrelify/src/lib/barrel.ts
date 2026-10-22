@@ -56,7 +56,7 @@ export const generateBarrelFile = ({
  */
 export const parseTypes = (file: string): Set<string> => {
     const matches = file.matchAll(
-        /^export type \* from '\.\/(?<filename>.+)\.(?<extension>[cm]?[tj]s)';$/gmu
+        /^export type \* from '\.\/(?<filename>.+)\.(?<extension>[cm]?[jt]s)';$/gmv
     );
 
     const result = new Set<string>();
@@ -96,7 +96,7 @@ const didUpdateBarrelFile = async ({
     if (!data.startsWith(MARKER)) {
         return false;
     }
-    const [marker] = data.split(/\r?\n/u, 1);
+    const [marker] = data.split(/\r?\n/v, 1);
     const isSubdirectories = marker === SUBDIRECTORIES_MARKER;
 
     const files = await findFilesForIndex(filePath, isGitignored, {
