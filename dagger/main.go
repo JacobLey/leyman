@@ -347,7 +347,65 @@ func (m *Ci) unpublishedPackages(ctx context.Context, ctr *dagger.Container) ([]
 			unpublished = append(unpublished, pkg)
 		}
 	}
-	return unpublished, nil
+	return inDependencyOrder(ctx, ctr, unpublished)
+}
+
+// The dependencies a package needs once installed from npm: all but `devDependencies`
+type publishedDependencies struct {
+	Dependencies         map[string]string `json:"dependencies"`
+	PeerDependencies     map[string]string `json:"peerDependencies"`
+	OptionalDependencies map[string]string `json:"optionalDependencies"`
+}
+
+// Sorts packages so each comes after the packages it depends on, and otherwise by name. `Publish` stops at the
+// first failure, so a package is never published while a dependency it needs isn't.
+func inDependencyOrder(ctx context.Context, ctr *dagger.Container, pkgs []workspacePackage) ([]workspacePackage, error) {
+	byName := map[string]workspacePackage{}
+	for _, pkg := range pkgs {
+		byName[pkg.Name] = pkg
+	}
+	// Only dependencies being published with it can be out of order
+	needs := map[string][]string{}
+	for _, pkg := range pkgs {
+		var deps publishedDependencies
+		if err := readJSON(ctx, ctr.File(pkg.Path+"/package.json"), &deps); err != nil {
+			return nil, err
+		}
+		for _, group := range []map[string]string{deps.Dependencies, deps.PeerDependencies, deps.OptionalDependencies} {
+			for name := range group {
+				if _, ok := byName[name]; ok && name != pkg.Name {
+					needs[pkg.Name] = append(needs[pkg.Name], name)
+				}
+			}
+		}
+	}
+
+	sorted := []workspacePackage{}
+	done := map[string]bool{}
+	for len(sorted) < len(pkgs) {
+		ready := []string{}
+		for name := range byName {
+			if done[name] {
+				continue
+			}
+			isReady := true
+			for _, dep := range needs[name] {
+				isReady = isReady && done[dep]
+			}
+			if isReady {
+				ready = append(ready, name)
+			}
+		}
+		if len(ready) == 0 {
+			return nil, fmt.Errorf("workspace packages depend on each other in a cycle: %v", needs)
+		}
+		sort.Strings(ready)
+		for _, name := range ready {
+			done[name] = true
+			sorted = append(sorted, byName[name])
+		}
+	}
+	return sorted, nil
 }
 
 func versionExists(ctx context.Context, pkg workspacePackage) (bool, error) {
