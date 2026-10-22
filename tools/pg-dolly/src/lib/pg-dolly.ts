@@ -20,7 +20,8 @@ export interface PgDollyOptions {
     /**
      * Settings of every database, as `ALTER DATABASE ... SET` would: e.g. `{ search_path: ['app', 'public'] }`. A
      * list is a setting that takes several values. Merged over the defaults, which pin what `initdb` takes from the
-     * machine's locale and time zone, so the server's configuration doesn't change what queries return.
+     * machine's locale and time zone, so the server's configuration doesn't change what queries return. Names are
+     * case-insensitive, as in Postgres: `timezone` overrides the default `TimeZone`.
      *
      * Templates are built with them (so a seed's timestamps don't depend on the server), and they are part of the
      * template's hash.
@@ -190,6 +191,23 @@ const hashSql = (sql: string, seed: string, settings: readonly SettingEntry[]): 
 };
 
 /**
+ * Merges the settings over the defaults. Postgres ignores the case of a setting's name, so names are lowercased:
+ * `TIMEZONE` overrides the default `TimeZone`, rather than both being set in an order that decides which applies.
+ *
+ * @param settings - Settings given
+ * @returns Every setting, sorted by name, so the same settings always hash the same
+ */
+const mergeSettings = (
+    settings: Readonly<Record<string, DatabaseSetting>> = {}
+): SettingEntry[] => {
+    const merged = new Map<string, DatabaseSetting>();
+    for (const [name, value] of [...Object.entries(defaultSettings), ...Object.entries(settings)]) {
+        merged.set(name.toLowerCase(), value);
+    }
+    return [...merged].toSorted(([a], [b]) => (a < b ? -1 : 1));
+};
+
+/**
  * Reads the marker in a database's comment.
  *
  * @param comment - Database comment
@@ -324,9 +342,7 @@ export class PgDolly {
         await client.connect();
         const dolly = new PgDolly(client, url, {
             prefix,
-            settings: Object.entries({ ...defaultSettings, ...options.settings }).toSorted(
-                ([a], [b]) => (a < b ? -1 : 1)
-            ),
+            settings: mergeSettings(options.settings),
             retainMs: options.retainMs ?? defaultRetainMs,
         });
         try {

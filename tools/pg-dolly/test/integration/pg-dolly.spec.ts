@@ -442,6 +442,29 @@ suite('PgDolly', () => {
             });
         });
 
+        withPrefix.test('Overrides a default named in another case', async ({ open }) => {
+            const dolly = await open({
+                settings: { TIMEZONE: 'America/New_York', LC_TIME: 'POSIX' },
+            });
+            const database = await cloneSchema(dolly);
+
+            expect(await settingsOf(database.url, ['TimeZone', 'lc_time'])).to.deep.equal({
+                TimeZone: 'America/New_York',
+                lc_time: 'POSIX',
+            });
+        });
+
+        withPrefix.test('Shares a template between cases of a name', async ({ open }) => {
+            const [lower, mixed] = await Promise.all([
+                open({ settings: { timezone: 'Asia/Tokyo' } }),
+                open({ settings: { TimeZone: 'Asia/Tokyo' } }),
+            ]);
+
+            const [a, b] = await Promise.all([lower.template(schema), mixed.template(schema)]);
+
+            expect(a.name).to.equal(b.name);
+        });
+
         withPrefix.test('Applies an empty list', async ({ open }) => {
             const dolly = await open({ settings: { search_path: [] } });
             const database = await cloneSchema(dolly);
