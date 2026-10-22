@@ -366,6 +366,29 @@ suite('OpenAPI operations', () => {
             });
         });
 
+        test('a component named Exclude does not shadow the global they use', () => {
+            expectOperations(
+                document(
+                    {
+                        '/users': {
+                            get: {
+                                operationId: 'listUsers',
+                                parameters: [
+                                    { name: 'q', in: 'query', schema: { type: 'string' } },
+                                ],
+                                responses: {},
+                            },
+                        },
+                    },
+                    { schemas: { User: { type: 'string' }, Exclude: { type: 'number' } } }
+                ),
+                {
+                    'G.OperationInput<"listUsers">': '{ readonly query?: { q?: string } }',
+                    'G.Exclude2': 'number',
+                }
+            );
+        });
+
         test('a component named OperationInput keeps its name', () => {
             const source = genever(
                 document(

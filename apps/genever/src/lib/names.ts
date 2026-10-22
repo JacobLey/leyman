@@ -18,9 +18,10 @@ export const toTypeName = (name: string): string => {
  */
 export class TypeNames {
     /**
-     * Starts with the global types generated code refers to, which a generated type must not shadow.
+     * Starts with the global types generated code refers to (`Record` for objects, `Exclude` in the OpenAPI helpers), which a
+     * generated type must not shadow.
      */
-    readonly #used = new Set<string>(['Record']);
+    readonly #used = new Set<string>(['Exclude', 'Record']);
 
     /**
      * Reserve a unique type name, appending a number if the name is already used.
