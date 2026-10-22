@@ -43,7 +43,7 @@ export type UnknownType<T> = [unknown] extends [T]
 export type ExtendsType<T, E, Reason extends string> = T extends E ? [] : [InvalidInput<Reason>];
 
 // https://stackoverflow.com/questions/52931116/decompose-a-typescript-union-type-into-specific-types
-type UnionToParm<U> = U extends any ? (k: U) => void : never;
+type UnionToParm<U> = U extends unknown ? (k: U) => void : never;
 type UnionToSect<U> = UnionToParm<U> extends (k: infer I) => void ? I : never;
 type ExtractParm<F> = F extends (a: infer A) => void ? A : never;
 
@@ -51,7 +51,7 @@ type SpliceOne<Union> = Exclude<Union, ExtractOne<Union>>;
 type ExtractOne<Union> = ExtractParm<UnionToSect<UnionToParm<Union>>>;
 
 type ToTuple<Union> = ToTupleRec<Union, []>;
-type ToTupleRec<Union, Rslt extends any[]> =
+type ToTupleRec<Union, Rslt extends unknown[]> =
     SpliceOne<Union> extends never
         ? [ExtractOne<Union>, ...Rslt]
         : ToTupleRec<SpliceOne<Union>, [ExtractOne<Union>, ...Rslt]>;
@@ -100,7 +100,7 @@ export interface Extendable {
 }
 export interface NonExtendable<
     T,
-    Construct extends GenericClass<any> | IsClass | null,
+    Construct extends GenericClass | IsClass | null,
     Named extends Names,
     List extends boolean,
     Nullable extends boolean,
@@ -116,7 +116,7 @@ export interface NonExtendable<
 
 type ExpandOutputUndefinable<
     T,
-    Construct extends GenericClass<any> | IsClass | null,
+    Construct extends GenericClass | IsClass | null,
     Named extends Names,
     List extends boolean,
     Nullable extends boolean,
@@ -128,7 +128,7 @@ type ExpandOutputUndefinable<
           | [NonExtendable<T, Construct, Named, List, Nullable, true>];
 type ExpandOutputNullable<
     T,
-    Construct extends GenericClass<any> | IsClass | null,
+    Construct extends GenericClass | IsClass | null,
     Named extends Names,
     List extends boolean,
     Nullable extends boolean,
