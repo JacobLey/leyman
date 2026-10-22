@@ -138,29 +138,27 @@ const createProjectNode = (
     assertProjectJson(projectJson);
     const declaredTargets = projectJson.targets ?? {};
 
-    const targets: Record<
-        string,
-        Required<Pick<TargetConfiguration, 'dependsOn'>> & TargetConfiguration
-    > = {};
+    const targets: Record<string, TargetConfiguration> = {};
+    const boundTargets = [...registeredTargets].filter(([targetName]) =>
+        Object.hasOwn(declaredTargets, targetName)
+    );
     for (const [targetName, lifecycleTarget] of lifecycleTargets) {
         targets[targetName] = {
             executor: NOOP_EXECUTOR,
-            // The schema validates `params`, but types it as a plain string
-            dependsOn: [...lifecycleTarget.dependsOn] as NonNullable<
-                TargetConfiguration['dependsOn']
-            >,
+            dependsOn: [
+                // The schema validates `params`, but types it as a plain string
+                ...(lifecycleTarget.dependsOn as NonNullable<TargetConfiguration['dependsOn']>),
+                ...boundTargets
+                    .filter(([, { name }]) => name === targetName)
+                    .map(([boundTarget]) => boundTarget),
+            ],
             metadata: {
                 description: describeTarget(lifecycleTarget),
             },
         };
     }
 
-    for (const [targetName, lifecycleTarget] of registeredTargets) {
-        if (!Object.hasOwn(declaredTargets, targetName)) {
-            continue;
-        }
-
-        targets[lifecycleTarget.name]!.dependsOn.push(targetName);
+    for (const [targetName, lifecycleTarget] of boundTargets) {
         targets[targetName] = {
             dependsOn: [lifecycleTarget.previousHook],
         };

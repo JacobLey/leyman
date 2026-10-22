@@ -21,10 +21,9 @@ export const lifecycle = async (
 ): Promise<{ success: boolean }> => {
     await lifecycleInternal(options, {
         root: context.root,
-        projects: Object.values(context.projectsConfigurations.projects).map(projectConfig => ({
-            name: projectConfig.name!,
-            root: projectConfig.root,
-        })),
+        projects: Object.entries(context.projectsConfigurations.projects).map(
+            ([name, { root }]) => ({ name, root })
+        ),
     });
 
     return { success: true };

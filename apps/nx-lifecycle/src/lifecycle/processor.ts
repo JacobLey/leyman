@@ -241,7 +241,13 @@ const processNxJson = ({
     for (const [targetName, target] of lifecycleTargets) {
         lifecycles[targetName] = {
             executor: NOOP_EXECUTOR,
-            dependsOn: [...target.dependsOn],
+            dependsOn: [
+                ...target.dependsOn,
+                ...registeredTargets
+                    .entries()
+                    .filter(([, { name }]) => name === targetName)
+                    .map(([boundTarget]) => boundTarget),
+            ],
             configurations: {
                 __lifecycle: {},
             },
@@ -271,7 +277,6 @@ const processNxJson = ({
         const registeredTarget = targetDefaults[targetName] ?? {};
         registeredTarget.dependsOn ??= [];
         registeredTarget.dependsOn.push(lifecycleTarget.previousHook);
-        lifecycles[lifecycleTarget.name]!.dependsOn?.push(targetName);
 
         targetDefaults[targetName] = registeredTarget;
     }
