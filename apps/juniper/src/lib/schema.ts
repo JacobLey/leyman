@@ -207,10 +207,10 @@ const createDefinitions = ({
 const sortedDefinitions = (definitions: Definitions): Record<string, JsonSchema<unknown>> =>
     Object.fromEntries(
         definitions.schemas
-            .keys()
+            .entries()
             .toArray()
-            .toSorted((a, b) => (a < b ? -1 : Number(a > b)))
-            .map(name => [name, copyJson(definitions.schemas.get(name)!.json!)])
+            .toSorted(([a], [b]) => (a < b ? -1 : Number(a > b)))
+            .map(([name, { json }]) => [name, copyJson(json!)])
     );
 
 /**
