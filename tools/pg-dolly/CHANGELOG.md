@@ -1,5 +1,17 @@
 # pg-dolly
 
+## 0.2.0
+
+### Minor Changes
+
+- 9da6083: `settings` replaces `timeZone`: every database pg-dolly creates, the template while it is built included, gets the same database settings. The defaults (`defaultSettings`) pin what `initdb` takes from the machine (`TimeZone`, `DateStyle`, `lc_monetary`, `lc_numeric`, `lc_time` and `default_text_search_config`), so the server's configuration doesn't change what queries return. Settings are part of the template's hash, and an invalid one fails `template()` rather than every clone.
+
+### Patch Changes
+
+- ebb730f: `keep()` throws `PgDollyClosedError` once `close()` is called, rather than printing that it kept a database `close()` dropped.
+- 5d573ca: Treat setting names as case-insensitive, as Postgres does. `settings: { TIMEZONE: 'America/New_York' }` used to be overridden by the default `TimeZone: 'UTC'`, as both were set and the default sorted last. Templates are built once again, as the names in their hash are now lowercase.
+- 9da6083: A database a run crashed between creating and marking is dropped like the rest of what the run left: its name, with no comment, still says which run made it.
+
 ## 0.1.0
 
 ### Minor Changes

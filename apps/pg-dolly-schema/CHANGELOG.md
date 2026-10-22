@@ -1,5 +1,26 @@
 # pg-dolly-schema
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [c610446]
+- Updated dependencies [bec61e6]
+- Updated dependencies [957ab53]
+- Updated dependencies [107dea6]
+- Updated dependencies [995c22e]
+- Updated dependencies [4cbf98a]
+- Updated dependencies [ebb730f]
+- Updated dependencies [5d573ca]
+- Updated dependencies [9da6083]
+- Updated dependencies [9da6083]
+- Updated dependencies [975c05d]
+  - entry-script@4.1.1
+  - haywire@2.0.2
+  - haywire-launcher@1.1.0
+  - pg-dolly@0.2.0
+  - populate-files@1.1.2
+
 ## 0.1.0
 
 ### Minor Changes

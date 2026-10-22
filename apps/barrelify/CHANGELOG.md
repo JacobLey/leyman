@@ -1,5 +1,22 @@
 # barrelify
 
+## 2.2.1
+
+### Patch Changes
+
+- 768f900: `--ci` now fails with "Barrel files are out of date. Run barrel without --ci to update them", instead of "Files are not built".
+- Updated dependencies [c610446]
+- Updated dependencies [bec61e6]
+- Updated dependencies [957ab53]
+- Updated dependencies [107dea6]
+- Updated dependencies [995c22e]
+- Updated dependencies [4cbf98a]
+- Updated dependencies [975c05d]
+  - entry-script@4.1.1
+  - haywire@2.0.2
+  - haywire-launcher@1.1.0
+  - populate-files@1.1.2
+
 ## 2.2.0
 
 ### Minor Changes

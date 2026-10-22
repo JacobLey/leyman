@@ -1,5 +1,15 @@
 # lease-cache
 
+## 0.3.0
+
+### Minor Changes
+
+- c89d8c9: Keys and prefixes that break on a cluster are rejected. A key that is empty or starts with `}` has an empty hash tag, so a cluster would put its value, lease and stale value on different nodes, and every script on it would fail with `CROSSSLOT`. `get`, `read` and `invalidate` now reject it with `LeaseCacheKeyError`. A prefix containing `{` would change the tag of every key, so the constructor throws `LeaseCachePrefixError`.
+
+### Patch Changes
+
+- 496d862: With `onUnavailable`, only Valkey's own errors count as Valkey failing. An error thrown by a `ttlMs` function or by `onWait` used to be reported to `onUnavailable` as if Valkey were down, and the read returned the value without caching it (`source: 'unavailable'`). The read now rejects with that error, as it does without `onUnavailable`.
+
 ## 0.2.0
 
 ### Minor Changes

@@ -1,5 +1,21 @@
 # haywire-launcher
 
+## 1.1.0
+
+### Minor Changes
+
+- 957ab53: `launch()` takes a class as well as an id, like the rest of Haywire: `launch(container, MyCli)` instead of `launch(container, identifier(MyCli))`.
+- 107dea6: `launch(container, id, { dispose: true })` disposes the container once `main()` resolves or rejects, or when getting the id from the container fails. If disposing fails after `main()` rejected, the script rejects with a `SuppressedError` of both, as `await using` does. Off by default, because a `main()` that starts a server returns while the server keeps running.
+
+### Patch Changes
+
+- Updated dependencies [c610446]
+- Updated dependencies [bec61e6]
+- Updated dependencies [995c22e]
+- Updated dependencies [4cbf98a]
+  - entry-script@4.1.1
+  - haywire@2.0.2
+
 ## 1.0.3
 
 ### Patch Changes

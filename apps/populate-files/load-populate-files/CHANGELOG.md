@@ -1,5 +1,35 @@
 # load-populate-files
 
+## 1.1.2
+
+### Patch Changes
+
+- 2fb6378: An invalid config module's error lists each problem (e.g. `- filePath: must have required property 'filePath'`), and `manifestInputs` is validated as an object of strings.
+- Updated dependencies [c610446]
+- Updated dependencies [bec61e6]
+- Updated dependencies [957ab53]
+- Updated dependencies [107dea6]
+- Updated dependencies [995c22e]
+- Updated dependencies [4cbf98a]
+- Updated dependencies [d0f37c4]
+- Updated dependencies [9b900a2]
+- Updated dependencies [acb9ae5]
+- Updated dependencies [23a254b]
+- Updated dependencies [a0d3c5e]
+- Updated dependencies [c7c3599]
+- Updated dependencies [b373765]
+- Updated dependencies [27e43a1]
+- Updated dependencies [052a681]
+- Updated dependencies [837ee0a]
+- Updated dependencies [99aae1e]
+- Updated dependencies [975c05d]
+  - entry-script@4.1.1
+  - haywire@2.0.2
+  - haywire-launcher@1.1.0
+  - juniper@2.4.1
+  - juniper-validator@0.5.0
+  - populate-files@1.1.2
+
 ## 1.1.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # test-chain-core
 
+## 0.1.2
+
+### Patch Changes
+
+- c7757b7: When a hook runs before the hook it is chained from, hooks chained after it now also fail with `HookOrderError`, instead of waiting for its context until the framework times out.
+
 ## 0.1.1
 
 ### Patch Changes

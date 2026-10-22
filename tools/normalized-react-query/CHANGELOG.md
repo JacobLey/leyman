@@ -1,5 +1,15 @@
 # normalized-react-query
 
+## 2.1.0
+
+### Minor Changes
+
+- f93f56c: A `useNormalizedPrefetched*` hook throws when it is given a link on a different query client than the one it first rendered with (e.g. one that started without a link and has no `QueryClientProvider`). TanStack keeps a hook on its first client, so it used to read a separate cache: refetching the link's data and missing updates to it. `react` (`^18 || ^19`, as TanStack requires) is now a declared peer dependency.
+
+### Patch Changes
+
+- f286bea: A linked query that fails no longer causes an unhandled promise rejection when nothing waits for it: in hooks, or in `query()` without `awaitLinks`. Its error is still in the linked query's state. Hooks also no longer keep every link they create for the life of the query client.
+
 ## 2.0.1
 
 ### Patch Changes

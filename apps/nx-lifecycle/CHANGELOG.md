@@ -1,5 +1,37 @@
 # nx-lifecycle
 
+## 1.1.4
+
+### Patch Changes
+
+- 9bc406f: Fix the `--config-file` help text of the CLI, which described populate-files' option.
+- cba44d1: The executor skips projects without a `project.json` (e.g. inferred from a `package.json` alone), like the plugin, instead of failing to read it. A `project.json` or `nx.json` that isn't valid JSON now fails with `Failed to parse <path>`, like one that doesn't match the schema.
+- dc71bca: The executor now fails when a `project.json` target with an `executor` or `command` has the name of a lifecycle target, instead of replacing it with an empty lifecycle target. `nx.json` `targetDefaults` already failed the same way, and the plugin already reported it.
+- Updated dependencies [c610446]
+- Updated dependencies [ba43b54]
+- Updated dependencies [bec61e6]
+- Updated dependencies [957ab53]
+- Updated dependencies [107dea6]
+- Updated dependencies [995c22e]
+- Updated dependencies [4cbf98a]
+- Updated dependencies [d0f37c4]
+- Updated dependencies [9b900a2]
+- Updated dependencies [acb9ae5]
+- Updated dependencies [23a254b]
+- Updated dependencies [a0d3c5e]
+- Updated dependencies [c7c3599]
+- Updated dependencies [b373765]
+- Updated dependencies [27e43a1]
+- Updated dependencies [052a681]
+- Updated dependencies [837ee0a]
+- Updated dependencies [99aae1e]
+  - entry-script@4.1.1
+  - format-file@1.0.3
+  - haywire@2.0.2
+  - haywire-launcher@1.1.0
+  - juniper@2.4.1
+  - juniper-validator@0.5.0
+
 ## 1.1.3
 
 ### Patch Changes
