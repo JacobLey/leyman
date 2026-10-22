@@ -452,6 +452,7 @@ export class ContainerFactory<
 }
 
 export const wireContainerFactory = ContainerFactory[wireContainerFactorySym]!;
+// eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Its key is a module-private symbol: this hides the static from every other module
 delete ContainerFactory[wireContainerFactorySym];
 
 export const { createContainer } = ContainerFactory;

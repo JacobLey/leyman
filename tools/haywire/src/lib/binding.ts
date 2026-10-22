@@ -219,7 +219,7 @@ export class Binding<
      * @param depIds - list of dependency types, in order that will be passed to provider
      * @param isAsync - flag to indicate provider returns a promise of the output id
      * @param provider - method to calculate output id based on dependencies. If `isAsync=true`, can return a promise
-     * @param [scope=transientScope] - scope to use for provider. Allows caching of value between invocations.
+     * @param [scope] - scope to use for provider, defaults to `transientScope`. Allows caching of value between invocations.
      * @param [disposer] - how instances are released when the container is disposed. See {@link withDisposer}.
      */
     public constructor(

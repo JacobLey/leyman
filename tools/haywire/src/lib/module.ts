@@ -428,7 +428,7 @@ export class Module<
      *
      * @param binding - binding instance to attach to module, must be have a unique output id
      * @returns module with new binding attached
-     * @throws when binding's output id is not unique. Enforced by type safety as well.
+     * @throws {HaywireDuplicateOutputError} when binding's output id is not unique. Enforced by type safety as well.
      */
     public addBinding<T extends GenericBinding>(
         binding: Invalid<
@@ -493,7 +493,7 @@ export class Module<
      *
      * @param binding - binding to use instead of the existing binding for its output id
      * @returns module with the binding replaced
-     * @throws when no binding exists for the output id. Enforced by type safety as well.
+     * @throws {HaywireBindingNotFoundError} when no binding exists for the output id. Enforced by type safety as well.
      */
     public replaceBinding<T extends GenericBinding>(
         binding: Invalid<

@@ -466,7 +466,7 @@ export class HaywireMultiError extends HaywireInstanceValidationError {
  * Not exported from the package: it is not part of the error's API.
  *
  * @param settled - results of `Promise.allSettled()`
- * @throws the rejection, or a `HaywireMultiError` of every rejection
+ * @throws {unknown} the rejection, or a `HaywireMultiError` of every rejection
  */
 export const validateAllSettled: <T>(
     settled: PromiseSettledResult<T>[]

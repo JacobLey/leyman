@@ -170,6 +170,7 @@ export class HaywireId<
     Defer extends boolean,
 > {
     static readonly #symToRand = new WeakMap<symbol, string>();
+    // eslint-disable-next-line sonarjs/public-static-readonly -- Private (`#`), and incremented for each new symbol
     static #pseudoRandTracker = 0;
 
     declare public readonly [idType]: T;
@@ -614,6 +615,7 @@ export class HaywireId<
 }
 
 export const unsafeIdentifier = HaywireId[unsafeIdSym]!;
+// eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Its key is a module-private symbol: this hides the static from every other module
 delete (HaywireId as Record<typeof unsafeIdSym, unknown>)[unsafeIdSym];
 
 export type RawType<T extends GenericHaywireId> = T[typeof idType];
