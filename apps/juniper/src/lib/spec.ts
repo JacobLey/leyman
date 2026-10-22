@@ -78,7 +78,7 @@ const isRecord = (value: unknown): value is Record<string, unknown> =>
  * @param spec - OpenAPI document containing Juniper schemas
  * @param [options] - override the dialect and reference path chosen from `openapi`
  * @returns serialized document
- * @throws when `components.schemas` already has a different schema under a definition's name
+ * @throws {Error} when `components.schemas` already has a different schema under a definition's name
  */
 export const serializeSpec = <
     const Spec extends object,

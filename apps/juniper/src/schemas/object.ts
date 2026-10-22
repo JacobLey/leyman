@@ -919,6 +919,7 @@ export class ObjectSchema<
 
         const schemaToProperty = (
             schema: AbstractSchema<SchemaGenerics<unknown>>
+            // eslint-disable-next-line sonarjs/function-return-type -- A JSON Schema is an object or a boolean
         ): boolean | JsonSchema<unknown> => {
             // OpenAPI 3.0 schemas must be objects, so use the object equivalent of `true`/`false`
             if (schema === trueSchema) {

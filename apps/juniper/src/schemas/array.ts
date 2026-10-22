@@ -608,7 +608,7 @@ export declare class IArraySchemaOverride<
     M,
     N extends boolean,
 > extends ArraySchema<T, P, C, M, N> {
-    declare public static create: any;
+    declare public static readonly create: any;
 
     declare public allOf: (
         this: any,

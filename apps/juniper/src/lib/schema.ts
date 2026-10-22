@@ -544,7 +544,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @param this - this instance
      * @param meta - custom metadata
      * @returns cloned schema
-     * @throws when reserved word is used as keyword
+     * @throws {Error} when reserved word is used as keyword
      */
     public metadata<K extends string, V>(
         this: this,
@@ -1214,7 +1214,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @param name - definition name
      * @param schema - definition schema
      * @param params - serialization params
-     * @throws when a different schema is already defined with `name`
+     * @throws {Error} when a different schema is already defined with `name`
      */
     static #registerDefinition(
         definitions: Definitions,
@@ -1393,7 +1393,7 @@ export const isSchema = <T>(schema: unknown): schema is Schema<T> =>
  * @param [options.definitionsPath] - `$ref` prefix, defaults to `#/components/schemas/`.
  * Pass the same value to `toJSON` for the schemas that use them (OpenAPI 3.0 does so by default).
  * @returns definitions by name
- * @throws when different schemas are defined with the same name
+ * @throws {Error} when different schemas are defined with the same name
  */
 export const components: {
     (
