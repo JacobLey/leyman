@@ -11,7 +11,7 @@ export type QueryParams<T extends Queryable<unknown, readonly unknown[], any>> =
 export type QueryKey<T extends Queryable<unknown, readonly unknown[], any>> = TypeCache<T>['key'];
 export type QueryData<T extends Queryable<unknown, readonly unknown[], any>> = TypeCache<T>['data'];
 
-export type LinkOf<T extends Queryable<any, readonly any[], any>> = Linked<
+export type LinkOf<T extends Queryable<unknown, readonly unknown[], any>> = Linked<
     QueryParams<T>,
     QueryKey<T>,
     QueryData<T>,
