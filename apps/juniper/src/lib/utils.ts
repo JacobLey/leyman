@@ -56,7 +56,7 @@ const isDeepStrictEqual = (a: unknown, b: unknown): boolean => {
  * @param allOf - schema objects to append/merge to `allOf`.
  * @returns base object, with `allOf` merged
  */
-export const mergeAllOf = <S extends JsonSchema<any>>(
+export const mergeAllOf = <S extends JsonSchema<unknown>>(
     base: S,
     allOf: NonNullable<S['allOf']>
 ): S => {

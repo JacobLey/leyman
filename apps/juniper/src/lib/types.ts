@@ -20,12 +20,12 @@ export interface JsonSchema<T> {
     allOf?: Omit<JsonSchema<T>, typeof typeCache>[];
     anyOf?: Omit<JsonSchema<T>, typeof typeCache>[];
     dependentSchemas?: Record<string, Omit<JsonSchema<T>, typeof typeCache>>;
-    if?: JsonSchema<any>;
-    else?: JsonSchema<any>;
+    if?: JsonSchema<unknown>;
+    else?: JsonSchema<unknown>;
     enum?: readonly unknown[];
     patternProperties?: Record<string, boolean | JsonSchema<unknown>>;
     properties?: Record<string, boolean | JsonSchema<unknown>>;
-    then?: JsonSchema<any>;
+    then?: JsonSchema<unknown>;
     type?: JsonSchemaType | JsonSchemaType[];
 }
 
