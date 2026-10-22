@@ -338,7 +338,7 @@ suite('enumToArray', () => {
 
     test('Values are computed literals', () => {
         const set = new Set([1, 2, 3]);
-        const reg = /abc/u;
+        const reg = /abc/v;
         enum Literals {
             /* eslint-disable @typescript-eslint/prefer-literal-enum-member -- The anti-patterns are the cases under test */
             // @ts-expect-error
