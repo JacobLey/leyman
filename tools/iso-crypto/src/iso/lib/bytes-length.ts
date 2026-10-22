@@ -14,11 +14,7 @@ export const padBytes = (arr: Uint8ArrayBuffer, bytes: number): Uint8ArrayBuffer
     }
 
     const output = new Uint8Array(bytes);
-    const offset = bytes - arr.length;
-
-    for (let i = offset, j = 0; i < bytes; ++i, ++j) {
-        output[i] = arr[j]!;
-    }
+    output.set(arr, bytes - arr.length);
     return output;
 };
 
