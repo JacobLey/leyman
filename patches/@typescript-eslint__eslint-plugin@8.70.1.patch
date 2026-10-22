@@ -1,0 +1,30 @@
+diff --git a/dist/rules/prefer-string-starts-ends-with.js b/dist/rules/prefer-string-starts-ends-with.js
+index 2515a61e57a0dcb8d44a356667c5ea99946ff14b..ce57c1dedf2e7bd643b91ad32f3d6566db6ee640 100644
+--- a/dist/rules/prefer-string-starts-ends-with.js
++++ b/dist/rules/prefer-string-starts-ends-with.js
+@@ -169,12 +169,13 @@ exports.default = (0, util_1.createRule)({
+         /**
+          * Parse a given `RegExp` pattern to that string if it's a static string.
+          * @param pattern The RegExp pattern text to parse.
+-         * @param unicode Whether the RegExp is unicode.
++         * @param flags The RegExp's flags.
+          */
+-        function parseRegExpText(pattern, unicode) {
++        function parseRegExpText(pattern, flags) {
+             // Parse it.
+             const ast = regexpp.parsePattern(pattern, undefined, undefined, {
+-                unicode,
++                unicode: flags.includes('u'),
++                unicodeSets: flags.includes('v'),
+             });
+             if (ast.alternatives.length !== 1) {
+                 return null;
+@@ -213,7 +214,7 @@ exports.default = (0, util_1.createRule)({
+                 flags.includes('m')) {
+                 return null;
+             }
+-            const text = parseRegExpText(source, flags.includes('u'));
++            const text = parseRegExpText(source, flags);
+             if (text == null) {
+                 return null;
+             }

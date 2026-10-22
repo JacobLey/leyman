@@ -445,7 +445,8 @@ func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
 // Dependencies are fetched from the lockfile alone, so source-only changes reuse the cached fetch layer.
 func (m *Ci) installedOn(base *dagger.Container, source *dagger.Directory) *dagger.Container {
 	lockfiles := source.Filter(dagger.DirectoryFilterOpts{
-		Include: []string{"pnpm-lock.yaml", "pnpm-workspace.yaml"},
+		// `pnpm fetch` applies `patchedDependencies` too
+		Include: []string{"pnpm-lock.yaml", "pnpm-workspace.yaml", "patches/**"},
 	})
 
 	// Only keep the store and metadata cache: the `node_modules` that `pnpm fetch` leaves behind makes
