@@ -106,4 +106,4 @@ Every error extends `GeneverError`, with a `pointer` property: the JSON Pointer 
 | `GeneverInvalidSchemaError` | The input is not a valid JSON Schema, e.g. `properties` is not an object, or a `$ref` does not resolve. |
 | `GeneverStrictModeError` | A [strict mode](/genever/guides/strict-mode) rule is broken. |
 | `GeneverUnsupportedError` | The schema uses a feature genever can't generate types for. See [Not supported](/genever/reference/types#not-supported). |
-| `GeneverLoadError` | A file or URL the schema references could not be loaded. Its `cause` is the underlying error, such as the file system's or the parser's, if there was one. |
+| `GeneverLoadError` | A file or URL the schema references could not be loaded. Its `pointer` is to the `$ref` that needed it, in the file or URL its `referencedFrom` names: the input, or a file the input loaded. Its `cause` is the underlying error, such as the file system's or the parser's, if there was one. |

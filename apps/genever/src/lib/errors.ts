@@ -79,12 +79,22 @@ export class GeneverUnsupportedError extends GeneverError {
  */
 export class GeneverLoadError extends GeneverError {
     /**
+     * URI of the file or URL with the `$ref` that needed it, which `pointer` is in: the input, or a file it loaded.
+     */
+    public readonly referencedFrom: string;
+
+    /**
      * @param message - description of the problem
      * @param options - error details
-     * @param options.pointer - JSON Pointer to the document whose references failed to load
+     * @param options.pointer - JSON Pointer to the `$ref` that needed it
+     * @param options.referencedFrom - URI of the file or URL the `$ref` is in
      */
-    public constructor(message: string, options: ErrorOptions & { pointer: string }) {
+    public constructor(
+        message: string,
+        options: ErrorOptions & { pointer: string; referencedFrom: string }
+    ) {
         super(withPointer(message, options.pointer), options);
         this.name = 'GeneverLoadError';
+        this.referencedFrom = options.referencedFrom;
     }
 }

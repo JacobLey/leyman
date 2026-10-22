@@ -2,6 +2,7 @@
 import type { TmpDirContext } from './lib/fixtures.js';
 import { readFile, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
+import { pathToFileURL } from 'node:url';
 import { expect } from '@leyman/expect';
 import { geneverFile, GeneverLoadError } from 'genever';
 import { beforeEach, suite } from 'mocha-chain';
@@ -447,10 +448,31 @@ suite('external references', () => {
                     })
                 ).to.be.rejectedWith(GeneverLoadError, /404/u);
                 expect(thrown).to.have.property('pointer', '#/properties/a/$ref');
+                expect(thrown).to.have.property(
+                    'referencedFrom',
+                    pathToFileURL(ctx.resolve('input.json')).href
+                );
                 expect(thrown).not.to.have.property('cause');
             } finally {
                 await server.close();
             }
+        });
+
+        withTmpDir.test('a file that a loaded file references', async ctx => {
+            await ctx.writeJson('input.json', { $ref: './a.json' });
+            await ctx.writeJson('a.json', { properties: { b: { $ref: './missing.json' } } });
+
+            const thrown: unknown = await expect(
+                geneverFile(ctx.resolve('input.json'), {
+                    output: ctx.resolve('input.ts'),
+                    strict: false,
+                })
+            ).to.be.rejectedWith(GeneverLoadError, /referenced from ".*\/a\.json"/u);
+            expect(thrown).to.have.property('pointer', '#/properties/b/$ref');
+            expect(thrown).to.have.property(
+                'referencedFrom',
+                pathToFileURL(ctx.resolve('a.json')).href
+            );
         });
     });
 

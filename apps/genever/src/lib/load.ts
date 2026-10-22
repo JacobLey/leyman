@@ -66,6 +66,10 @@ interface Unloadable {
  */
 interface Failure extends Unloadable {
     readonly pointer: string;
+    /**
+     * URI of the file or URL the `$ref` is in.
+     */
+    readonly referencedFrom: string;
     readonly uri: string;
 }
 
@@ -287,16 +291,20 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
      * References still to load, as a stack: the last is next. Each is pushed in reverse,
      * so references load in the order they appear, each followed by what it refers to.
      */
-    const pending: { index: DocumentIndex; uri: string }[] = [];
-    const queueReferences = (index: DocumentIndex): void => {
+    const pending: { index: DocumentIndex; referencedFrom: string; uri: string }[] = [];
+    const queueReferences = (index: DocumentIndex, referencedFrom: string): void => {
         const uris = externalResources(index).toReversed();
-        pending.push(...uris.map(uri => ({ index, uri })));
+        pending.push(...uris.map(uri => ({ index, referencedFrom, uri })));
     };
 
-    const load = async (uri: string, index: DocumentIndex): Promise<void> => {
+    const load = async (
+        uri: string,
+        index: DocumentIndex,
+        referencedFrom: string
+    ): Promise<void> => {
         const loaded = await loadResource(uri, isAllowed, isInputDraft04, options.onRead);
         if ('reason' in loaded) {
-            failures.push({ ...loaded, pointer: index.references.get(uri)!, uri });
+            failures.push({ ...loaded, pointer: index.references.get(uri)!, referencedFrom, uri });
             return;
         }
         resources.push(...loaded.schemas);
@@ -305,23 +313,28 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
         }
         // Referred to by its URL, even if its `$id` is another
         known.add(uri);
-        queueReferences(loaded.index);
+        queueReferences(loaded.index, uri);
     };
 
-    queueReferences(inputIndex);
+    queueReferences(inputIndex, options.baseUri);
     while (pending.length > 0) {
-        const { index, uri } = pending.pop()!;
+        const { index, referencedFrom, uri } = pending.pop()!;
         if (!known.has(uri)) {
-            await load(uri, index);
+            await load(uri, index, referencedFrom);
         }
     }
 
     // A resource may fail to load from its URI, but be declared by `$id` in another loaded schema
     const failure = failures.find(({ uri }) => !known.has(uri));
     if (failure) {
-        throw new GeneverLoadError(`Could not load "${failure.uri}": ${failure.reason}`, {
+        const { pointer, reason, referencedFrom, uri } = failure;
+        // Other errors' pointers are into the input, so name the file only when it's another
+        const from =
+            referencedFrom === options.baseUri ? '' : `, referenced from "${referencedFrom}"`;
+        throw new GeneverLoadError(`Could not load "${uri}"${from}: ${reason}`, {
             ...('cause' in failure && { cause: failure.cause }),
-            pointer: failure.pointer,
+            pointer,
+            referencedFrom,
         });
     }
     return resources.length === 0
