@@ -7,7 +7,7 @@ const errors = {
  * A generic error utility function.
  *
  * @param type - The error type key.
- * @throws Throws a `RangeError` with the applicable error message.
+ * @throws {RangeError} with the applicable error message.
  */
 export const rangeError = (type: keyof typeof errors): never => {
     throw new RangeError(errors[type]);
