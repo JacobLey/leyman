@@ -49,10 +49,10 @@ const subschemaMapKeywords = new Set([
  */
 const addMetadataKeywords = (ajv: Ajv2020, schema: unknown): void => {
     // Boolean schemas
-    if (typeof schema !== 'object') {
+    if (!schema || typeof schema !== 'object') {
         return;
     }
-    for (const [key, value] of Object.entries(schema!)) {
+    for (const [key, value] of Object.entries(schema)) {
         if (subschemaKeywords.has(key)) {
             addMetadataKeywords(ajv, value);
         } else if (subschemaListKeywords.has(key)) {
