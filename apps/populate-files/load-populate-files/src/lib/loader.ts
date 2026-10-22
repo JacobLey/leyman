@@ -22,6 +22,7 @@ const formatIssue = ({ path, message }: Issue): string => {
  *
  * @param filePath - absolute path to JS file
  * @returns list of populate-files params exported by the file
+ * @rejects {Error} if the file doesn't exist, fails to load, or doesn't export populate-files params
  */
 export const loadFile = async (filePath: string): Promise<PopulateFileParams[]> => {
     let mod: unknown;
