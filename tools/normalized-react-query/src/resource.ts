@@ -22,13 +22,10 @@ import type {
 import { skipToken, useQuery, useQueryClient, useSuspenseQuery } from '@tanstack/react-query';
 import { getLinksActive, Linked, setLinksActive } from './lib/linked.js';
 import {
-    noopData,
-    noopKey,
-    noopQueryFn,
     noopSelector,
-    noopSuspenseKey,
     Queryable,
-    undefinedSelector,
+    skippedQueryOptions,
+    skippedSuspenseQueryOptions,
     useLinkedQueryClient,
     withParams,
 } from './lib/queryable.js';
@@ -144,9 +141,7 @@ class Resource<
     } {
         if (params === skipToken) {
             return {
-                queryKey: noopKey as unknown as TQueryKey,
-                queryFn: skipToken,
-                select: undefinedSelector as unknown as () => TData2,
+                ...skippedQueryOptions,
             } satisfies Required<
                 Pick<
                     UndefinedInitialDataOptions<TData, unknown, TData2, TQueryKey>,
@@ -672,9 +667,7 @@ export const useNormalizedPrefetchedQuery = <
     return useQuery(
         isDisabled
             ? {
-                  queryKey: noopKey as unknown as TQueryKey,
-                  queryFn: skipToken,
-                  select: undefinedSelector as unknown as () => TSelectedData,
+                  ...skippedQueryOptions,
               }
             : {
                   ...options,
@@ -771,11 +764,7 @@ export const useNormalizedNullableSuspenseQuery = <
     const result = useSuspenseQuery(
         isDisabled
             ? {
-                  queryKey: noopSuspenseKey as unknown as TQueryKey,
-                  queryFn: noopQueryFn as unknown as () => TData,
-                  initialData: noopData as unknown as TData,
-                  staleTime: Infinity,
-                  select: undefinedSelector as unknown as () => TSelectedData,
+                  ...skippedSuspenseQueryOptions,
               }
             : {
                   ...options,
@@ -867,11 +856,7 @@ export const useNormalizedNullablePrefetchedSuspenseQuery = <
     const result = useSuspenseQuery(
         isDisabled
             ? {
-                  queryKey: noopSuspenseKey as unknown as TQueryKey,
-                  queryFn: noopQueryFn as unknown as () => TData,
-                  initialData: noopData as unknown as TData,
-                  staleTime: Infinity,
-                  select: undefinedSelector as unknown as () => TSelectedData,
+                  ...skippedSuspenseQueryOptions,
               }
             : {
                   ...options,

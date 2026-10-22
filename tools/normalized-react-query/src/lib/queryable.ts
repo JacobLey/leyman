@@ -10,7 +10,7 @@ import type {
     ResetOptions,
 } from '@tanstack/react-query';
 import type { OverriddenQueryFilterFields, typeCache } from './types.js';
-import { QueryClient, useQueryClient } from '@tanstack/react-query';
+import { QueryClient, skipToken, useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 
 export const noopSelector = <T>(x: T): T => x;
@@ -27,6 +27,37 @@ export const noopData = {
     pageParams: [],
 };
 export const noopQueryFn = (): typeof noopData => noopData;
+
+/**
+ * Options of a disabled query: it never fetches, and selects `undefined`.
+ * Its key and selector are typed `never`, so they fit any query's options.
+ */
+export const skippedQueryOptions = {
+    queryKey: noopKey as never,
+    queryFn: skipToken,
+    select: undefinedSelector as () => never,
+} as const;
+
+/**
+ * Options of a disabled suspense query, which reads the placeholder `noopData` without suspending, and selects
+ * `undefined`. Typed `never`, so they fit any query's options.
+ */
+export const skippedSuspenseQueryOptions = {
+    queryKey: noopSuspenseKey as never,
+    queryFn: noopQueryFn as () => never,
+    initialData: noopData as never,
+    staleTime: Infinity,
+    select: undefinedSelector as () => never,
+};
+
+/**
+ * Page params of a disabled infinite query, which has no pages.
+ */
+export const skippedPageParams = {
+    initialPageParam: null as never,
+    getNextPageParam: undefinedSelector,
+    getPreviousPageParam: undefinedSelector,
+};
 
 /**
  * Adds `params` to the context Tanstack passes to `queryFn`, without reading any of its properties.

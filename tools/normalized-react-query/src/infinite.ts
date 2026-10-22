@@ -32,12 +32,11 @@ import {
 } from '@tanstack/react-query';
 import { getLinksActive, Linked, setLinksActive } from './lib/linked.js';
 import {
-    noopData,
-    noopKey,
-    noopQueryFn,
     noopSelector,
-    noopSuspenseKey,
     Queryable,
+    skippedPageParams,
+    skippedQueryOptions,
+    skippedSuspenseQueryOptions,
     undefinedSelector,
     useLinkedQueryClient,
     withParams,
@@ -267,12 +266,8 @@ class Infinite<
     } {
         if (params === skipToken) {
             return {
-                queryKey: noopKey as unknown as TQueryKey,
-                queryFn: skipToken,
-                select: undefinedSelector as unknown as () => TData2,
-                initialPageParam: null as unknown as TPageParam,
-                getNextPageParam: undefinedSelector,
-                getPreviousPageParam: undefinedSelector,
+                ...skippedQueryOptions,
+                ...skippedPageParams,
             } satisfies Required<
                 Pick<
                     UndefinedInitialDataInfiniteOptions<
@@ -885,12 +880,8 @@ export const useNormalizedPrefetchedInfiniteQuery = <
     return useInfiniteQuery(
         isDisabled
             ? {
-                  queryKey: noopKey as unknown as TQueryKey,
-                  queryFn: skipToken,
-                  select: undefinedSelector as unknown as () => TSelectedData,
-                  initialPageParam: null as unknown as TPageParam,
-                  getNextPageParam: undefinedSelector,
-                  getPreviousPageParam: undefinedSelector,
+                  ...skippedQueryOptions,
+                  ...skippedPageParams,
               }
             : {
                   ...options,
@@ -989,14 +980,8 @@ export const useNormalizedNullableSuspenseInfiniteQuery = <
     const result = useSuspenseInfiniteQuery(
         isDisabled
             ? {
-                  queryKey: noopSuspenseKey as unknown as TQueryKey,
-                  queryFn: noopQueryFn as unknown as () => TData,
-                  initialData: noopData,
-                  staleTime: Infinity,
-                  select: undefinedSelector as unknown as () => TSelectedData,
-                  initialPageParam: null as unknown as TPageParam,
-                  getNextPageParam: undefinedSelector,
-                  getPreviousPageParam: undefinedSelector,
+                  ...skippedSuspenseQueryOptions,
+                  ...skippedPageParams,
               }
             : {
                   ...options,
@@ -1097,14 +1082,8 @@ export const useNormalizedNullablePrefetchedSuspenseInfiniteQuery = <
     const result = useSuspenseInfiniteQuery(
         isDisabled
             ? {
-                  queryKey: noopSuspenseKey as unknown as TQueryKey,
-                  queryFn: noopQueryFn as unknown as () => TData,
-                  initialData: noopData,
-                  staleTime: Infinity,
-                  select: undefinedSelector as unknown as () => TSelectedData,
-                  initialPageParam: null as unknown as TPageParam,
-                  getNextPageParam: undefinedSelector,
-                  getPreviousPageParam: undefinedSelector,
+                  ...skippedSuspenseQueryOptions,
+                  ...skippedPageParams,
               }
             : {
                   ...options,
