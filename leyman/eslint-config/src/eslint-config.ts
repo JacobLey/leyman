@@ -416,8 +416,9 @@ export default function makeEslintConfigForPackage({
                             'instance-field',
                             'field',
                             'constructor',
-                            // TODO public -> protected -> private
-                            ['public-method', 'protected-method'],
+                            'public-method',
+                            'protected-method',
+                            'private-method',
                             'method',
                         ],
                     },
