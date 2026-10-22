@@ -212,9 +212,9 @@ export class LeaseCache {
      * @param load - Loads the value from the source of truth
      * @param options - How long to cache this value
      * @returns Cached or loaded value, where it came from, and how long it is cached
-     * @throws {LeaseCacheDurationError} When `ttlMs` isn't a finite number above 0
-     * @throws {LeaseCacheValueError} When `load` returns something JSON can't store
-     * @throws {LeaseCacheKeyError} When the key is empty, or starts with `}`
+     * @rejects {LeaseCacheDurationError} When `ttlMs` isn't a finite number above 0
+     * @rejects {LeaseCacheValueError} When `load` returns something JSON can't store
+     * @rejects {LeaseCacheKeyError} When the key is empty, or starts with `}`
      */
     public async read<T extends Json>(
         key: string,
@@ -375,7 +375,7 @@ export class LeaseCache {
      * @param key - Identifies the value, for `onUnavailable`
      * @param load - Loads the value
      * @returns Loaded value, not cached
-     * @throws Valkey's error, without `onUnavailable`
+     * @rejects {unknown} Valkey's error, without `onUnavailable`
      */
     async #unavailable<T extends Json>(
         error: unknown,
