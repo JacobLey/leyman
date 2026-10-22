@@ -244,7 +244,9 @@ func changelogSection(ctx context.Context, dir *dagger.Directory, pkg string, ve
 
 // Publish every public package whose current version is not yet on npm, from a fresh (uncached) build.
 //
-// Returns the published packages as `name@version`, one per line.
+// Returns a line per package: `published <name>@<version>`, or `failed <name>@<version>: <error>` for the first one
+// npm rejects, after which nothing more is published. A failure is in the output, not an error, so the packages
+// published before it are still listed (to be tagged); the caller must fail on a `failed` line.
 //
 // Never cached: what needs publishing depends on the registry, not just the inputs.
 // +cache="never"
@@ -274,25 +276,21 @@ func (m *Ci) Publish(
 
 	built := withPostgres(installed).WithExec([]string{"nx", "run-many", "-t", "build", "--skip-nx-cache"})
 
-	// pnpm resolves `workspace:` and `catalog:` specifiers while packing
+	// pnpm resolves `workspace:` and `catalog:` specifiers while packing. Each package gets its own directory, so
+	// its tarball is known by package rather than by file name.
 	packer := built
-	for _, pkg := range unpublished {
+	for i, pkg := range unpublished {
 		packer = packer.
 			WithWorkdir(pkg.Path).
-			WithExec([]string{"pnpm", "pack", "--pack-destination", tarballDir})
+			WithExec([]string{"pnpm", "pack", "--pack-destination", tarballPath(i)})
 	}
 	tarballs := packer.Directory(tarballDir)
-	files, err := tarballs.Entries(ctx)
-	if err != nil {
-		return "", err
-	}
 
 	// Publish the tarballs with npm, which handles trusted publishing (OIDC) with provenance
 	publisher := dag.Container().
 		From(nodeImage).
-		WithDirectory(tarballDir, tarballs).
-		WithWorkdir(tarballDir)
-	publishCmd := "npm publish \"$1\" --access public"
+		WithDirectory(tarballDir, tarballs)
+	publishCmd := `npm publish "$1"/*.tgz --access public`
 	if dryRun {
 		publishCmd += " --dry-run"
 	}
@@ -300,18 +298,22 @@ func (m *Ci) Publish(
 		publisher = publisher.WithMountedSecret("/run/secrets/github-env", githubEnv)
 		publishCmd = "set -a && . /run/secrets/github-env && set +a && " + publishCmd + " --provenance"
 	}
-	for _, file := range files {
-		publisher = publisher.WithExec([]string{"bash", "-c", publishCmd, "bash", file})
-	}
-	if _, err := publisher.Sync(ctx); err != nil {
-		return "", err
-	}
-
-	published := make([]string, len(unpublished))
+	results := []string{}
 	for i, pkg := range unpublished {
-		published[i] = pkg.Name + "@" + pkg.Version
+		_, err := publisher.WithExec([]string{"bash", "-c", publishCmd, "bash", tarballPath(i)}).Sync(ctx)
+		if err != nil {
+			// On one line, so it can't be mistaken for another package's result
+			results = append(results, fmt.Sprintf("failed %s@%s: %s", pkg.Name, pkg.Version, strings.Join(strings.Fields(err.Error()), " ")))
+			break
+		}
+		results = append(results, fmt.Sprintf("published %s@%s", pkg.Name, pkg.Version))
 	}
-	return strings.Join(published, "\n"), nil
+	return strings.Join(results, "\n"), nil
+}
+
+// Where `Publish` packs the i-th package
+func tarballPath(i int) string {
+	return fmt.Sprintf("%s/%d", tarballDir, i)
 }
 
 type workspacePackage struct {

@@ -160,15 +160,21 @@ jobs:
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: publish --github-env=file://${{ runner.temp }}/github-env
 
+      # Tags what was published even when a later package failed, since a rerun skips what is already on npm
       - name: Tag releases
         env:
-          PUBLISHED: ${{ steps.publish.outputs.output }}
+          RESULTS: ${{ steps.publish.outputs.output }}
         run: |
-          [ -n "$PUBLISHED" ] || exit 0
-          for tag in $PUBLISHED; do
+          tags=$(printf '%s\n' "$RESULTS" | sed -n 's/^published //p')
+          for tag in $tags; do
             git tag "$tag"
           done
-          git push origin --tags
+          if [ -n "$tags" ]; then
+            git push origin --tags
+          fi
+          if printf '%s\n' "$RESULTS" | grep '^failed '; then
+            exit 1
+          fi
 
   # Builds the docs site from main and deploys it to GitHub Pages
   docs:
