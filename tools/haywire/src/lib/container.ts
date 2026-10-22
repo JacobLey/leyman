@@ -331,6 +331,7 @@ export interface ContainerDescription {
  * @returns text with special characters as Mermaid entity codes
  */
 const escapeMermaid = (text: string): string =>
+    // eslint-disable-next-line regexp/require-unicode-sets-regexp -- TypeScript rejects this `&` with the `v` flag (TS1508), though only `&&` is reserved
     text.replaceAll(/["#&<>]/gu, char => `#${char.codePointAt(0)!};`);
 
 /**
