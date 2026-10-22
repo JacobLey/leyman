@@ -771,8 +771,10 @@ export default function makeEslintConfigForPackage({
                 // Node
                 ...nonDeprecatedRules('n', nodePlugin),
                 'n/callback-return': ['error', ['callback', 'cb', 'next', 'done']],
-                'n/no-missing-import': 'off', // Fails to detect .ts extension
-                'n/no-missing-require': 'off', // Same
+                // TypeScript resolves imports, including `.ts` sources and subpath imports (`#internal/*`), which this can't
+                'n/no-missing-import': 'off',
+                // TypeScript resolves imports, including `.ts` sources and subpath imports (`#internal/*`), which this can't
+                'n/no-missing-require': 'off',
                 'n/no-sync': ['error', { allowAtRootLevel: true }],
                 'n/no-unsupported-features/node-builtins': [
                     'error',
