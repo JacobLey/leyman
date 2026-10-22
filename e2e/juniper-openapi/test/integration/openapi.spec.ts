@@ -3,7 +3,7 @@ import type { SchemaType } from 'juniper';
 import type { Comment, NewPost, NewUser, Post, PostPage, User, UserUpdate } from '../data/api.js';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { expectTypeOf } from 'expect-type';
-import { expect } from '@leyman/expect';
+import { assert, expect } from '@leyman/expect';
 import { components } from 'juniper';
 import { makeValidator } from 'juniper-validator';
 import { suite, test } from 'mocha-chain';
@@ -29,10 +29,10 @@ suite('OpenAPI spec built with juniper', () => {
 
             test('Shared schemas are emitted once, in components', () => {
                 const spec = buildSpec(version);
+                const schemas = spec.components?.schemas;
+                assert.exists(schemas);
                 expect(
-                    Object.keys(spec.components!.schemas!).toSorted((a, b) =>
-                        a.localeCompare(b, 'en')
-                    )
+                    Object.keys(schemas).toSorted((a, b) => a.localeCompare(b, 'en'))
                 ).to.deep.equal([
                     'Comment',
                     'Error',
@@ -48,12 +48,11 @@ suite('OpenAPI spec built with juniper', () => {
                     { $ref: '#/components/schemas/User' }
                 );
                 // Comment threads reference themselves
-                expect(spec.components!.schemas!.Comment).to.have.deep.nested.property(
-                    'properties.replies.items',
-                    { $ref: '#/components/schemas/Comment' }
-                );
+                expect(schemas.Comment).to.have.deep.nested.property('properties.replies.items', {
+                    $ref: '#/components/schemas/Comment',
+                });
                 // `PostPage` references `Post` rather than repeating it
-                expect(spec.components!.schemas!.PostPage).to.have.nested.property(
+                expect(schemas.PostPage).to.have.nested.property(
                     'properties.items.items.$ref',
                     '#/components/schemas/Post'
                 );
