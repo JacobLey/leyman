@@ -49,7 +49,7 @@ const isSameFile = (source, target) => {
 };
 
 const declarationMaps = [...packed]
-    .filter(file => /\.d\.[cm]?ts$/u.test(file))
+    .filter(file => /\.d\.[cm]?ts$/v.test(file))
     .map(file => `${file}.map`)
     .filter(file => {
         try {
