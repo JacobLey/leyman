@@ -19,7 +19,8 @@ By default only apply **minor/patch** updates. Only bump a **major** version whe
    - `patch` where it is a regular `dependency`
 
    Summary: `Update dependencies: <package@version, ...>`.
-5. **Install:** `pnpm i`, then `pnpm outdated -r`. Only skipped majors (or nothing, for a requested major) should remain.
-6. **Test:** `test-only`, then `test-and-fix` (adds lint + auto-fix). For a major bump, finish with `test-ci`.
+5. **Patches:** a package in `patchedDependencies` (in `pnpm-workspace.yaml`) is patched at one exact version, and `pnpm i` fails once that version is no longer installed. If the new release has the fix, delete the patch file and its entry. If not, recreate the patch for the new version (`pnpm patch <package>@<version>`, apply the same change, `pnpm patch-commit <dir>`), and delete the old one.
+6. **Install:** `pnpm i`, then `pnpm outdated -r`. Only skipped majors (or nothing, for a requested major) should remain.
+7. **Test:** `test-only`, then `test-and-fix` (adds lint + auto-fix). For a major bump, finish with `test-ci`.
 
 Report any test or lint failures to the user instead of working around them. Small fixes are fine to propose, but anything needing a refactor is the user's call.
