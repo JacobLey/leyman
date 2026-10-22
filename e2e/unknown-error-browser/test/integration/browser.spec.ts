@@ -208,7 +208,7 @@ suite('unknown-error in the browser', () => {
                                     // Drop stack frames: `at …` in Chromium, `name@url` in Firefox and WebKit
                                     .filter(
                                         line =>
-                                            !/^\s*at /u.test(line) &&
+                                            !/^\s*at /v.test(line) &&
                                             !line.includes('@') &&
                                             !line.includes('[native code]')
                                     )

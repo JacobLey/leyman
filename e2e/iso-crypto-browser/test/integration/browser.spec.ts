@@ -310,7 +310,7 @@ suite('iso-crypto in the browser', () => {
                                     { encryption: { cipher: 'AES', size: 192, mode: 'CBC' } }
                                 )
                             )
-                        ).to.be.rejectedWith(/192-bit AES keys are not supported/u);
+                        ).to.be.rejectedWith(/192-bit AES keys are not supported/v);
                     }
                 );
             }
