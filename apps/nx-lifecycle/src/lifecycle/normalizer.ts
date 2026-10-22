@@ -20,7 +20,7 @@ export interface NormalizedOptions {
  *
  * @param options - options, or where to load them from
  * @returns stages and bindings, with any options passed directly
- * @throws {Error} when the config file is invalid
+ * @rejects {Error} when the config file is invalid
  */
 export const loadOptions = async (options: LifecycleOptionsOrConfig): Promise<LifecycleOptions> => {
     if ('stages' in options) {

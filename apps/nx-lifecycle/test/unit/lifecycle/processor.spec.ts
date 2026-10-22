@@ -6,6 +6,7 @@ import * as Processor from '#internal/lifecycle/processor.js';
  * Ensure inputs are never modified.
  *
  * @param obj - value to freeze recursively
+ * @returns the same value, frozen
  */
 const deepFreeze = <T>(obj: T): T => {
     if (obj && typeof obj === 'object' && !Object.isFrozen(obj)) {

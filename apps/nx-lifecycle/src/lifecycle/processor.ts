@@ -212,7 +212,7 @@ const validateStaleDependencies = ({
  *
  * @param options - stages and bindings
  * @returns lifecycle targets and bound targets
- * @throws if stages or bindings are inconsistent
+ * @throws {Error} if stages or bindings are inconsistent
  */
 export const planLifecycle = (options: ProcessorOptions): LifecyclePlan => {
     const lifecycleTargets = calculateTargets(options);
@@ -251,6 +251,7 @@ const processNxJson = ({
     for (const [targetName, originalTarget] of Object.entries(targetDefaults)) {
         if (targetsToRemove.has(targetName) || lifecycleTargets.has(targetName)) {
             if ('__lifecycle' in (originalTarget.configurations ?? {})) {
+                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Targets are JSON, written back to the file, so not a `Map`
                 delete targetDefaults[targetName];
             } else {
                 throw new Error(`Overlap in lifecycle hook and target: ${targetName}`);
@@ -318,6 +319,7 @@ const processProjectJson = ({
             if ('executor' in target || 'command' in target) {
                 throw new Error(`Overlap in lifecycle hook and project.json target: ${targetName}`);
             }
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- Targets are JSON, written back to the file, so not a `Map`
             delete targets[targetName];
         } else if (target.dependsOn) {
             const processedTarget = { ...target };
