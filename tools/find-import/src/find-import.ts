@@ -30,7 +30,7 @@ const isFile = async (filePath: string): Promise<boolean> => {
  *
  * @param filePath - absolute path to an existing file
  * @returns module namespace, or the parsed JSON
- * @throws {Error} if the file fails to load
+ * @rejects {Error} if the file fails to load
  */
 const load = async (filePath: string): Promise<unknown> => {
     // As a URL, since a path may contain characters that mean something else in one (e.g. `#`)
@@ -52,7 +52,7 @@ const load = async (filePath: string): Promise<unknown> => {
  * @param fileName - name(s) of file to load
  * @param [options] - optional
  * @param [options.cwd] - bottom-most directory for search. See `parse-cwd`
- * @param [options.direction=up] - start searching for files from subdir->parent
+ * @param [options.direction] - start searching for files from subdir->parent, defaults to `up`
  * (up, default) or parent->subdir (down).
  * @param [options.startAt] - top-most directory for searches
  * @returns filePath + content pair if found, null if none found
