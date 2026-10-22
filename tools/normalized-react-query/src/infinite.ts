@@ -420,7 +420,7 @@ class Infinite<
     }
 
     /**
-     * Consistency alias for {@link getQueryData}.
+     * Consistency alias for {@link Queryable#getQueryData}.
      *
      * @override
      */
@@ -518,7 +518,7 @@ class Infinite<
      * @param params - user provided params to identify query
      * @param options - Everything that can be passed to regular `prefetch` call minus query + key
      * @returns "link" to pass to preload hooks
-     * @throws if called outside of `propagate`
+     * @throws {Error} if called outside of `propagate`
      */
     public link(
         params: TParams,

@@ -358,7 +358,7 @@ class Resource<
      * @param params - user provided params to identify query
      * @param options - Everything that can be passed to regular `prefetch` call minus query + key
      * @returns "link" to pass to preload hooks
-     * @throws if called outside of {@link propagate}
+     * @throws {Error} if called outside of {@link propagate}
      */
     public link(
         params: TParams,
