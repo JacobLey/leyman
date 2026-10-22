@@ -73,6 +73,7 @@ const parentGitignorePaths = (root: string, dir: string): string[] => {
  *
  * @param filePath - path to `.gitignore`
  * @returns parsed rules, or null if the file does not exist
+ * @rejects {unknown} if the file exists but can't be read
  */
 const readGitignore = async (filePath: string): Promise<Gitignore | null> => {
     try {

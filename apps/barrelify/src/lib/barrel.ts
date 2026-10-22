@@ -56,6 +56,7 @@ export const generateBarrelFile = ({
  */
 export const parseTypes = (file: string): Set<string> => {
     const matches = file.matchAll(
+        // eslint-disable-next-line sonarjs/unused-named-groups -- Read from each match's `groups` below, which the rule doesn't follow through `matchAll`
         /^export type \* from '\.\/(?<filename>.+)\.(?<extension>[cm]?[jt]s)';$/gmv
     );
 
