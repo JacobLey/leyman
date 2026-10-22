@@ -259,6 +259,7 @@ export default function makeEslintConfigForPackage({
             rules: {
                 ...eslintConfig.configs.all.rules,
                 'arrow-body-style': ['error', 'as-needed'],
+                // Names from outside JavaScript keep their own case (e.g. Postgres's `lc_time`); `@typescript-eslint/naming-convention` checks the repo's
                 camelcase: 'off',
                 'capitalized-comments': [
                     'error',
@@ -269,32 +270,50 @@ export default function makeEslintConfigForPackage({
                         ignorePattern: String.raw`\w+:|^ biome-ignore (?:format|lint):`,
                     },
                 ],
+                // Replaced by `@typescript-eslint/class-methods-use-this`
                 'class-methods-use-this': 'off',
+                // Complexity and size are left to review, not capped
                 complexity: 'off',
                 'consistent-this': ['error', 'self'],
                 'func-names': ['error', 'never'],
                 'func-style': ['error', 'expression', { allowArrowFunctions: true }],
+                // Deprecated, and needs a list of names
                 'id-blacklist': 'off',
+                // Short names are fine in short scopes, e.g. `a` and `b` in a sort
                 'id-length': 'off',
+                // Needs a pattern, and `@typescript-eslint/naming-convention` checks names
                 'id-match': 'off',
+                // A short comment may end a line
                 'line-comment-position': 'off',
+                // A package's error classes live together in one file
                 'max-classes-per-file': 'off',
+                // Complexity and size are left to review, not capped
                 'max-depth': 'off',
+                // Complexity and size are left to review, not capped
                 'max-lines': 'off',
+                // Complexity and size are left to review, not capped
                 'max-lines-per-function': 'off',
+                // Complexity and size are left to review, not capped
                 'max-statements': 'off',
                 'multiline-comment-style': ['error', 'separate-lines'],
                 'new-cap': ['error', { capIsNew: false }],
+                // Some work runs one at a time on purpose, e.g. against one database
                 'no-await-in-loop': 'off',
                 'no-constant-condition': ['error', { checkLoops: false }],
+                // `continue` keeps a loop flat, like an early return
                 'no-continue': 'off',
                 'no-empty': ['error', { allowEmptyCatch: true }],
                 'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
                 'no-implicit-coercion': ['error', { allow: ['!!'] }],
+                // A short comment may end a line
                 'no-inline-comments': 'off',
+                // Biome adds semicolons, so `++` has none of the pitfalls this guards against
                 'no-plusplus': 'off',
+                // Needs a list of what to restrict
                 'no-restricted-imports': 'off',
+                // Needs a list of what to restrict
                 'no-restricted-modules': 'off',
+                // Needs a list of what to restrict
                 'no-restricted-properties': 'off',
                 'no-restricted-syntax': [
                     'error',
@@ -312,9 +331,12 @@ export default function makeEslintConfigForPackage({
                             'confusing and hard to maintain and understand.',
                     },
                 ],
+                // Ternaries are allowed; `unicorn/prefer-ternary` keeps them to one line
                 'no-ternary': 'off',
+                // `undefined` is how the repo writes a missing value
                 'no-undefined': 'off',
                 'no-void': ['error', { allowAsStatement: true }],
+                // A TODO comment may record a known follow-up
                 'no-warning-comments': 'off',
                 'one-var': ['error', 'never'],
                 'prefer-const': [
@@ -324,6 +346,7 @@ export default function makeEslintConfigForPackage({
                         ignoreReadBeforeAssign: true,
                     },
                 ],
+                // Replaced by `@typescript-eslint/prefer-destructuring`
                 'prefer-destructuring': 'off',
                 'sort-imports': [
                     'error',
@@ -332,6 +355,7 @@ export default function makeEslintConfigForPackage({
                         ignoreDeclarationSort: true,
                     },
                 ],
+                // Keys are ordered by meaning, not alphabetically
                 'sort-keys': 'off',
                 'spaced-comment': [
                     'error',
@@ -341,6 +365,7 @@ export default function makeEslintConfigForPackage({
                         markers: ['!'],
                     },
                 ],
+                // `var` only appears in `declare global`, where its position doesn't matter
                 'vars-on-top': 'off',
 
                 // TypeScript
@@ -380,6 +405,7 @@ export default function makeEslintConfigForPackage({
                         allowTypedFunctionExpressions: true,
                     },
                 ],
+                // Complexity and size are left to review, not capped
                 '@typescript-eslint/max-params': 'off',
                 '@typescript-eslint/member-ordering': [
                     'error',
@@ -398,6 +424,7 @@ export default function makeEslintConfigForPackage({
                 ],
                 '@typescript-eslint/naming-convention': ['error', ...baseNamingConvention],
                 '@typescript-eslint/no-empty-interface': ['error', { allowSingleExtends: true }],
+                // `any` is sometimes needed, e.g. for variance in a generic constraint; the `no-unsafe-*` rules still check how it's used
                 '@typescript-eslint/no-explicit-any': 'off',
                 '@typescript-eslint/no-extraneous-class': [
                     'error',
@@ -411,6 +438,7 @@ export default function makeEslintConfigForPackage({
                         checkThenables: true,
                     },
                 ],
+                // `void` is used in generic types, e.g. `Promise<void> | void`
                 '@typescript-eslint/no-invalid-void-type': 'off',
                 '@typescript-eslint/no-misused-promises': [
                     'error',
@@ -426,7 +454,9 @@ export default function makeEslintConfigForPackage({
                         allowDefinitionFiles: false,
                     },
                 ],
+                // Deprecated, and type aliases are used throughout
                 '@typescript-eslint/no-type-alias': 'off',
+                // `!` is allowed where TypeScript can't narrow a value known to exist, though the fewer the better
                 '@typescript-eslint/no-non-null-assertion': 'off',
                 '@typescript-eslint/no-unnecessary-condition': [
                     'error',
@@ -454,6 +484,7 @@ export default function makeEslintConfigForPackage({
                         ignoreMixedLogicalExpressions: false,
                     },
                 ],
+                // Reports most parameters typed by a library, which can't be made readonly
                 '@typescript-eslint/prefer-readonly-parameter-types': 'off',
                 '@typescript-eslint/restrict-template-expressions': [
                     'error',
@@ -506,7 +537,9 @@ export default function makeEslintConfigForPackage({
                         lib: 'never',
                     },
                 ],
+                // TypeScript infers types; `explicit-module-boundary-types` requires them where they matter
                 '@typescript-eslint/typedef': 'off',
+                // An empty function is a no-op callback or default
                 '@typescript-eslint/no-empty-function': 'off',
                 '@typescript-eslint/no-magic-numbers': [
                     'error',
@@ -520,6 +553,7 @@ export default function makeEslintConfigForPackage({
                         ignoreEnums: true,
                     },
                 ],
+                // Assertions are left to review; `consistent-type-assertions` limits how they're written
                 '@typescript-eslint/no-unsafe-type-assertion': 'off',
                 '@typescript-eslint/no-unused-expressions': [
                     'error',
@@ -537,35 +571,51 @@ export default function makeEslintConfigForPackage({
                         typedefs: false,
                     },
                 ],
+                // An async function without `await` still returns a promise, which callers may rely on
                 '@typescript-eslint/require-await': 'off',
 
                 // Import
                 ...nonDeprecatedRules('import-x', importPlugin),
                 'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
+                // No bundler here reads webpack chunk names
                 'import-x/dynamic-import-chunkname': 'off',
+                // An export sits with what it exports
                 'import-x/exports-last': 'off',
+                // TypeScript checks import paths, which end in `.js` as Node.js ESM requires
                 'import-x/extensions': 'off',
+                // An export sits with what it exports
                 'import-x/group-exports': 'off',
+                // Complexity and size are left to review, not capped
                 'import-x/max-dependencies': 'off',
+                // TypeScript checks named imports, and this rule misses some packages' exports (e.g. `@tanstack/react-query`)
                 'import-x/named': 'off',
                 // TypeScript already checks namespace members, and this rule can't follow `export *` from CommonJS (e.g. mocha 12)
                 'import-x/namespace': 'off',
                 'import-x/newline-after-import': ['error', { count: 1 }],
+                // Config files (e.g. `eslint.config.js`) and fixtures export a value directly
                 'import-x/no-anonymous-default-export': 'off',
+                // Allowed where a tool expects one, e.g. `eslint.config.js`
                 'import-x/no-default-export': 'off',
                 // Every imported package must be declared, including workspace packages (which `internal-regex`
                 // marks internal), except the package itself. `src/` may not use `devDependencies`, see below
                 'import-x/no-extraneous-dependencies': ['error', extraneousDependencies],
+                // Subpath imports (`#internal/*`) and package subpaths are how packages share code
                 'import-x/no-internal-modules': 'off',
+                // Packages export by name
                 'import-x/no-named-export': 'off',
+                // Namespace imports (`import * as`) are allowed
                 'import-x/no-namespace': 'off',
+                // Packages run on Node.js
                 'import-x/no-nodejs-modules': 'off',
                 // Only check relative paths. Package and subpath (`#internal/*`) imports are the alternatives to `../`,
                 // even when they resolve to a parent directory
                 'import-x/no-relative-parent-imports': ['error', { ignore: ['^[^.]'] }],
+                // A default import may be named for how it's used
                 'import-x/no-rename-default': 'off',
                 'import-x/no-unassigned-import': ['error', { allow: ['**/*.css'] }],
+                // TypeScript resolves imports, including subpath imports this rule can't
                 'import-x/no-unresolved': 'off',
+                // Needs options, and TypeScript and the barrels decide what's exported
                 'import-x/no-unused-modules': 'off',
                 'import-x/no-useless-path-segments': ['error', { commonjs: true }],
                 'import-x/order': [
@@ -595,10 +645,12 @@ export default function makeEslintConfigForPackage({
                         warnOnUnassignedImports: true,
                     },
                 ],
+                // Packages export by name
                 'import-x/prefer-default-export': 'off',
 
                 // JS Doc
                 ...nonDeprecatedRules('jsdoc', jsDocPlugin),
+                // Doesn't work on ESLint 8+
                 'jsdoc/check-examples': 'off',
                 // `jsdoc/require-rejects` documents a promise's rejection with `@rejects`
                 'jsdoc/check-tag-names': ['error', { definedTags: ['rejects'] }],
@@ -614,9 +666,13 @@ export default function makeEslintConfigForPackage({
                 // Reads `package.json` from the working directory, which is the workspace root, not the file's package.
                 // `import-x/no-extraneous-dependencies` checks each package's imports.
                 'jsdoc/imports-as-dependencies': 'off',
+                // Biome owns blank lines
                 'jsdoc/lines-before-block': 'off',
+                // A line comment explains code; JSDoc is for what's exported
                 'jsdoc/convert-to-jsdoc-comments': 'off',
+                // Needs options, and reports that on every file without them
                 'jsdoc/match-name': 'off',
+                // Needs options, and reports that on every file without them
                 'jsdoc/no-missing-syntax': 'off',
                 'jsdoc/no-multi-asterisks': [
                     'error',
@@ -625,7 +681,9 @@ export default function makeEslintConfigForPackage({
                         preventAtMiddleLines: true,
                     },
                 ],
+                // Needs options, and reports that on every file without them
                 'jsdoc/no-restricted-syntax': 'off',
+                // A description may be a phrase
                 'jsdoc/require-description-complete-sentence': 'off',
                 'jsdoc/require-description': [
                     'error',
@@ -634,7 +692,9 @@ export default function makeEslintConfigForPackage({
                         descriptionStyle: 'body',
                     },
                 ],
+                // Examples live in READMEs and the docs site
                 'jsdoc/require-example': 'off',
+                // A file's exports describe it
                 'jsdoc/require-file-overview': 'off',
                 // https://github.com/gajus/eslint-plugin-jsdoc/issues/1189#issuecomment-1893647410
                 'jsdoc/require-jsdoc': [
@@ -671,9 +731,13 @@ export default function makeEslintConfigForPackage({
                         checkDestructured: false,
                     },
                 ],
+                // TypeScript declares the types
                 'jsdoc/require-param-type': 'off',
+                // TypeScript declares the types
                 'jsdoc/require-returns-type': 'off',
+                // Needs options, and reports that on every file without them
                 'jsdoc/require-tags': 'off',
+                // Its fixed order of over 100 tags doesn't match how the repo writes them, and tag order carries no meaning
                 'jsdoc/sort-tags': 'off',
                 'jsdoc/tag-lines': [
                     'error',
@@ -688,6 +752,7 @@ export default function makeEslintConfigForPackage({
                         },
                     },
                 ],
+                // Needs options, and reports that on every file without them
                 'jsdoc/text-escaping': 'off',
                 // Duplicates @typescript-eslint/ban-ts-comment
                 'jsdoc/ts-ban-ts-comment': 'off',
@@ -718,7 +783,9 @@ export default function makeEslintConfigForPackage({
                 // React
                 ...nonDeprecatedRules('react', reactPlugin),
                 'react/boolean-prop-naming': ['error', { validateNested: true }],
+                // Needs a list of what to forbid
                 'react/forbid-dom-props': 'off',
+                // Needs a list of what to forbid
                 'react/forbid-elements': 'off',
                 'react/function-component-definition': [
                     'error',
@@ -729,6 +796,7 @@ export default function makeEslintConfigForPackage({
                 ],
                 'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
                 'react/jsx-key': ['error', { checkFragmentShorthand: true }],
+                // Text may be written directly in JSX
                 'react/jsx-no-literals': 'off',
                 'react/jsx-no-target-blank': [
                     'error',
@@ -795,6 +863,7 @@ export default function makeEslintConfigForPackage({
                 ],
                 'react/no-unsafe': ['error', { checkAliases: true }],
                 'react/no-will-update-set-state': ['error', 'disallow-in-func'],
+                // The automatic JSX runtime doesn't need `React` in scope
                 'react/react-in-jsx-scope': 'off',
                 'react/static-property-placement': ['error', 'static public field'],
 
@@ -818,21 +887,35 @@ export default function makeEslintConfigForPackage({
 
                 // SonarJS
                 ...nonDeprecatedRules('sonarjs', sonarPlugin),
+                // Complexity and size are left to review, not capped
                 'sonarjs/cognitive-complexity': 'off',
+                // Complexity and size are left to review, not capped
                 'sonarjs/cyclomatic-complexity': 'off',
+                // False positives, e.g. a generic compared with `null`
                 'sonarjs/different-types-comparison': 'off',
+                // An `else if` chain may end without an `else`
                 'sonarjs/elseif-without-else': 'off',
+                // Complexity and size are left to review, not capped
                 'sonarjs/expression-complexity': 'off',
+                // Files have no header
                 'sonarjs/file-header': 'off',
+                // Complexity and size are left to review, not capped
                 'sonarjs/max-lines': 'off',
+                // Complexity and size are left to review, not capped
                 'sonarjs/max-lines-per-function': 'off',
+                // Complexity and size are left to review, not capped
                 'sonarjs/max-union-size': 'off',
+                // Complexity and size are left to review, not capped
                 'sonarjs/nested-control-flow': 'off',
+                // Repeating a string is often clearer than naming it
                 'sonarjs/no-duplicate-string': 'off',
+                // Doesn't see tests registered through a chain, e.g. mocha-chain's `beforeEach(...).test(...)`
                 'sonarjs/no-empty-test-file': 'off',
+                // Namespace imports (`import * as`) are allowed
                 'sonarjs/no-wildcard-import': 'off',
                 // Suggests chai property assertions (`.to.be.null`), which no-unused-expressions forbids
                 'sonarjs/prefer-specific-assertions': 'off',
+                // A TODO comment may record a known follow-up
                 'sonarjs/todo-tag': 'off',
 
                 // Unicorn
@@ -855,9 +938,11 @@ export default function makeEslintConfigForPackage({
                 'unicorn/no-barrel-files': 'off',
                 // Entry-script bins (`bin.mjs`) re-export their EntryScript as default
                 'unicorn/no-exports-in-scripts': 'off',
+                // Names such as `newDelta` and `classScore` are clear
                 'unicorn/no-keyword-prefix': 'off',
                 // Comments are wrapped to fit the line width
                 'unicorn/no-manually-wrapped-comments': 'off',
+                // `null` is JSON's empty value, and some APIs need it
                 'unicorn/no-null': 'off',
                 // `this` in functions is typed (`noImplicitThis`), and needed for Mocha contexts and wrappers that forward it
                 'unicorn/no-this-outside-of-class': 'off',
@@ -882,6 +967,7 @@ export default function makeEslintConfigForPackage({
                 'unicorn/prefer-type-literal-last': 'off',
                 // `Uint8Array.fromBase64` and `Uint8Array#toBase64` are not available in Node 24
                 'unicorn/prefer-uint8array-base64': 'off',
+                // Deprecated for `unicorn/name-replacements`, which is off too
                 'unicorn/prevent-abbreviations': 'off',
                 'unicorn/template-indent': ['error', { indent: 4 }],
                 // A complexity of 1 is too strict, and `try`/`finally` must wrap all the code it guards
