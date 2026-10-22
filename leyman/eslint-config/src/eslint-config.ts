@@ -165,7 +165,7 @@ export const reactComponentNamingConvention = [
  * or from a parent directory, where ESLint looks up the config from each file.
  *
  * @param params - parameters
- * @param params.configUrl - import.meta.url` of project-level `eslint.config.js` file.
+ * @param params.configUrl - `import.meta.url` of project-level `eslint.config.js` file.
  * @param params.packageJson - Loaded `package.json` file
  * @param params.plugins - ESLint plugins shipped by packages (e.g. `generated-signature/eslint`), turned on with their recommended rules
  * @returns Generated flat config for most rules and plugins. Can be extended as necessary via normal Flat Config extension.
