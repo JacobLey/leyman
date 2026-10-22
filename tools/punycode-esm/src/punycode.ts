@@ -35,21 +35,12 @@ const regexSeparators = /[\u{2E}\u{3002}\u{FF0E}\u{FF61}]/v; // RFC 3490 separat
  * @returns A new string of characters returned by the callback function.
  */
 const mapDomain = (domain: string, callback: (input: string) => string): string => {
-    const [first, ...rest] = domain.split('@');
-    let result: string;
-    let toEncode: string;
-    if (rest.length > 0) {
-        // In email addresses, only the domain name should be punycoded. Leave
-        // the local part (i.e. everything up to `@`) intact.
-        result = `${first!}@`;
-        toEncode = rest.join('@');
-    } else {
-        result = '';
-        toEncode = first!;
-    }
-    const labels = toEncode.split(regexSeparators);
+    // In email addresses, only the domain name should be punycoded. Leave
+    // the local part (i.e. everything up to `@`) intact.
+    const domainStart = domain.indexOf('@') + 1;
+    const labels = domain.slice(domainStart).split(regexSeparators);
     const encoded = labels.map(x => callback(x)).join('.');
-    return result + encoded;
+    return domain.slice(0, domainStart) + encoded;
 };
 
 /**
