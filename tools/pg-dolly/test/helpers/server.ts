@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 import { setTimeout } from 'node:timers/promises';
-import pg from 'pg';
+import { Client } from 'pg';
 
 /**
  * The devcontainer's `postgres` sidecar, or Dagger's service under the same hostname.
@@ -16,11 +16,13 @@ export const serverUrl = process.env.DATABASE_URL!;
 export const uniquePrefix = (): string => `t${randomUUID().replaceAll('-', '').slice(0, 12)}`;
 
 /**
+ * Connect a client to a database.
+ *
  * @param url - Database to connect to
  * @returns Connected client
  */
-export const connect = async (url: string): Promise<pg.Client> => {
-    const client = new pg.Client({ connectionString: url });
+export const connect = async (url: string): Promise<Client> => {
+    const client = new Client({ connectionString: url });
     await client.connect();
     return client;
 };
@@ -37,9 +39,9 @@ export interface DatabaseInfo {
  * Inspects and changes the server behind `pg-dolly`'s back, as a person or another tool might.
  */
 export class Server {
-    readonly #client: pg.Client;
+    readonly #client: Client;
 
-    private constructor(client: pg.Client) {
+    private constructor(client: Client) {
         this.#client = client;
     }
 
@@ -52,6 +54,8 @@ export class Server {
     }
 
     /**
+     * List the databases whose names start with a prefix.
+     *
      * @param prefix - Database name prefix
      * @returns Every database with the prefix, by name
      */
@@ -65,6 +69,8 @@ export class Server {
     }
 
     /**
+     * List the names of the databases that start with a prefix.
+     *
      * @param prefix - Database name prefix
      * @returns Names of every database with the prefix, sorted
      */

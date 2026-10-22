@@ -23,6 +23,8 @@ INSERT INTO tool.migrations (name) VALUES ('001-item'), ('002-names');
 `;
 
 /**
+ * Run a query and return its rows.
+ *
  * @param url - Database
  * @param sql - Query
  * @returns Its rows

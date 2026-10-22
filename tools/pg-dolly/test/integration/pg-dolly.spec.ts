@@ -48,6 +48,8 @@ const query = async <Row>(url: string, sql: string): Promise<Row[]> => {
 };
 
 /**
+ * List a database's tables.
+ *
  * @param url - Database
  * @returns Names of its tables in `public`
  */
@@ -60,6 +62,8 @@ const tables = async (url: string): Promise<string[]> => {
 };
 
 /**
+ * Read settings from a new connection to a database.
+ *
  * @param url - Database
  * @param names - Settings to read
  * @returns Each setting's value, as a new connection to the database sees it
@@ -81,6 +85,8 @@ const settingsOf = async (
 };
 
 /**
+ * Clone the test schema's template.
+ *
  * @param dolly - Run
  * @returns A clone of the test schema's template
  */

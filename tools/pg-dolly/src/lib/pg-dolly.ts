@@ -1,5 +1,6 @@
+import type { QueryResult, QueryResultRow } from 'pg';
 import { createHash, randomUUID } from 'node:crypto';
-import pg from 'pg';
+import { Client } from 'pg';
 import { PgDollyClosedError, PgDollyMissingUrlError, PgDollyPrefixError } from './errors.js';
 
 export interface PgDollyOptions {
@@ -266,7 +267,7 @@ const leftoverLock = (name: string, marker: Marker, expired: number): Lock | nul
  * URLs it returns.
  */
 export class PgDolly {
-    readonly #client: pg.Client;
+    readonly #client: Client;
     readonly #url: string;
     readonly #prefix: string;
     /**
@@ -298,7 +299,7 @@ export class PgDolly {
     #closed: Promise<void> | null = null;
 
     private constructor(
-        client: pg.Client,
+        client: Client,
         url: string,
         options: {
             readonly prefix: string;
@@ -324,8 +325,8 @@ export class PgDolly {
      *
      * @param options - Which server, and how to name and set up databases on it
      * @returns A connected `PgDolly`
-     * @throws {PgDollyMissingUrlError} Without `url` or `DATABASE_URL`
-     * @throws {PgDollyPrefixError} When the prefix can't start a database name
+     * @rejects {PgDollyMissingUrlError} Without `url` or `DATABASE_URL`
+     * @rejects {PgDollyPrefixError} When the prefix can't start a database name
      */
     public static async connect(options: PgDollyOptions = {}): Promise<PgDolly> {
         // eslint-disable-next-line n/no-process-env -- `DATABASE_URL` is the one input, by design
@@ -338,7 +339,7 @@ export class PgDolly {
             throw new PgDollyPrefixError(prefix);
         }
 
-        const client = new pg.Client({ connectionString: url });
+        const client = new Client({ connectionString: url });
         // Unhandled, a lost connection would crash the process. The next query rejects instead.
         client.on('error', () => {});
         await client.connect();
@@ -462,6 +463,7 @@ export class PgDolly {
      * @param name - Template name
      * @param sql - Schema
      * @param seed - Data, run after the schema
+     * @rejects {unknown} if building fails, after dropping the half-built database
      */
     async #build(name: string, sql: string, seed: string): Promise<void> {
         const building = this.#nextName();
@@ -475,7 +477,7 @@ export class PgDolly {
                 kind: 'build',
                 run: this.#run,
             });
-            const client = new pg.Client({ connectionString: this.#urlOf(building) });
+            const client = new Client({ connectionString: this.#urlOf(building) });
             await client.connect();
             try {
                 await client.query(sql);
@@ -668,10 +670,10 @@ export class PgDolly {
      * @param values - Its parameters
      * @returns The result
      */
-    async #query<Row extends pg.QueryResultRow = pg.QueryResultRow>(
+    async #query<Row extends QueryResultRow = QueryResultRow>(
         text: string,
         values?: readonly unknown[]
-    ): Promise<pg.QueryResult<Row>> {
+    ): Promise<QueryResult<Row>> {
         const previous = this.#queue;
         const { promise, resolve } = Promise.withResolvers<void>();
         this.#queue = promise;
