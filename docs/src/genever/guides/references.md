@@ -6,6 +6,7 @@ description: Generate one file of types from a schema that references other file
 
 A `$ref` may point at another file, or a URL, relative to the schema it is in: `{ "$ref": "./address.json" }`, `{ "$ref": "https://example.com/schemas/user.json#/$defs/Name" }`. The CLI and `geneverFile` load each one, and everything it references in turn, and the output is still one file:
 
+- In an OpenAPI document, any schema may: a component, or a schema in an operation's parameters, request body or responses.
 - Each referenced file becomes a type named after its `title`, or else its file name (`address.json` is `Address`). Two of the same name are numbered (`Address2`).
 - A file referenced twice is one type.
 - A file that only holds `$defs` (shared definitions) is not a type itself, but its definitions are, when referenced.

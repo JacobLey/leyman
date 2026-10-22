@@ -1,4 +1,5 @@
 import { GeneverInvalidSchemaError, GeneverUnsupportedError } from './errors.js';
+import { methods } from './openapi.js';
 import { childPointer } from './pointer.js';
 import { isSchemaObject } from './read-keyword.js';
 
@@ -451,23 +452,120 @@ export const externalResources = (index: DocumentIndex): string[] =>
         .toArray();
 
 /**
- * Schemas of an input: the schema itself, or each of an OpenAPI document's component schemas.
+ * Each member of an OpenAPI map or array, with its JSON Pointer.
+ *
+ * @param value - map, or array
+ * @param pointer - JSON Pointer to it
+ * @returns members, or none if it is neither
+ */
+const members = (value: unknown, pointer: string): Target[] =>
+    isSchemaObject(value) || Array.isArray(value)
+        ? Object.entries(value as Readonly<Record<string, unknown>>).map(([key, member]) => ({
+              pointer: childPointer(pointer, key),
+              schema: member,
+          }))
+        : [];
+
+/**
+ * An OpenAPI object, unless it is a reference object, which has no schemas of its own.
+ *
+ * @param value - OpenAPI object
+ * @returns the object, or `null` if it is a reference object, or not an object
+ */
+const ownObject = (value: unknown): Readonly<Record<string, unknown>> | null =>
+    isSchemaObject(value) && value.$ref === undefined ? value : null;
+
+/**
+ * The `schema` of a parameter, header or media type object, if it has one.
+ *
+ * @param target - the object, and its JSON Pointer
+ * @returns its schema, with its JSON Pointer, or none
+ */
+const schemaOf = ({ pointer, schema: value }: Target): Target[] =>
+    isSchemaObject(value) && value.schema !== undefined
+        ? [{ pointer: childPointer(pointer, 'schema'), schema: value.schema }]
+        : [];
+
+/**
+ * Schemas of a parameter, header, request body or response: its `schema`, the `schema` of each
+ * `content` media type, and those of its `headers`.
+ *
+ * @param target - the object, and its JSON Pointer
+ * @returns schemas, with their JSON Pointers
+ */
+const objectSchemas = ({ pointer, schema: value }: Target): Target[] => {
+    const object = ownObject(value);
+    if (!object) {
+        return [];
+    }
+    const media = members(object.content, childPointer(pointer, 'content'));
+    return [
+        ...[{ pointer, schema: object }, ...media].flatMap(entry => schemaOf(entry)),
+        ...members(object.headers, childPointer(pointer, 'headers')).flatMap(entry =>
+            objectSchemas(entry)
+        ),
+    ];
+};
+
+/**
+ * Schemas of a path item: those of its parameters, and of each operation's parameters, request body
+ * and responses.
+ *
+ * @param target - the path item, and its JSON Pointer
+ * @returns schemas, with their JSON Pointers
+ */
+const pathItemSchemas = ({ pointer, schema: value }: Target): Target[] => {
+    const item = ownObject(value);
+    if (!item) {
+        return [];
+    }
+    const operations = methods.flatMap(method => {
+        const operation = item[method];
+        if (!isSchemaObject(operation)) {
+            return [];
+        }
+        const operationPointer = childPointer(pointer, method);
+        return [
+            ...members(operation.parameters, childPointer(operationPointer, 'parameters')),
+            {
+                pointer: childPointer(operationPointer, 'requestBody'),
+                schema: operation.requestBody,
+            },
+            ...members(operation.responses, childPointer(operationPointer, 'responses')),
+        ];
+    });
+    return [
+        ...members(item.parameters, childPointer(pointer, 'parameters')),
+        ...operations,
+    ].flatMap(entry => objectSchemas(entry));
+};
+
+/**
+ * Schemas of an input: the schema itself, or each schema of an OpenAPI document, in its components
+ * and its operations.
  *
  * @param input - JSON Schema, or OpenAPI document
  * @param isDocument - whether the input is an OpenAPI document
- * @returns schemas, with their JSON Pointers
+ * @returns schemas, with their JSON Pointers: an OpenAPI document's component schemas first
  */
 export const inputSchemas = (input: unknown, isDocument: boolean): Target[] => {
     if (!isDocument) {
         return [{ pointer: '#', schema: input }];
     }
     // An OpenAPI document is always an object
-    const { components } = input as Readonly<Record<string, unknown>>;
-    const schemas = isSchemaObject(components) ? components.schemas : undefined;
-    return isSchemaObject(schemas)
-        ? Object.entries(schemas).map(([name, schema]) => ({
-              pointer: childPointer(childPointer(childPointer('#', 'components'), 'schemas'), name),
-              schema,
-          }))
-        : [];
+    const { components, paths } = input as Readonly<Record<string, unknown>>;
+    const component = (name: string): Target[] =>
+        members(
+            isSchemaObject(components) ? components[name] : undefined,
+            childPointer(childPointer('#', 'components'), name)
+        );
+    return [
+        ...component('schemas'),
+        ...['parameters', 'headers', 'requestBodies', 'responses'].flatMap(name =>
+            component(name).flatMap(entry => objectSchemas(entry))
+        ),
+        ...[...component('pathItems'), ...members(paths, childPointer('#', 'paths'))].flatMap(
+            entry => pathItemSchemas(entry)
+        ),
+    ];
 };

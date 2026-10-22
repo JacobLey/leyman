@@ -117,6 +117,54 @@ suite('external references', () => {
         });
     });
 
+    withTmpDir.test('files referenced by the schemas of operations', async ctx => {
+        const json = (name: string): Record<string, unknown> => ({
+            content: { 'application/json': { schema: { $ref: `./${name}.json` } } },
+        });
+        await ctx.writeJson('openapi.json', {
+            openapi: '3.1.0',
+            info: { title: 'API', version: '1.0.0' },
+            paths: {
+                '/a/{id}': {
+                    parameters: [{ name: 'id', in: 'path', schema: { $ref: './id.json' } }],
+                    post: {
+                        operationId: 'createA',
+                        parameters: [{ name: 'q', in: 'query', ...json('query') }],
+                        requestBody: { $ref: '#/components/requestBodies/Body' },
+                        responses: {
+                            200: {
+                                description: 'ok',
+                                headers: { 'x-a': { schema: { $ref: './header.json' } } },
+                                ...json('response'),
+                            },
+                        },
+                    },
+                },
+                '/b': { $ref: '#/components/pathItems/B' },
+            },
+            components: {
+                requestBodies: { Body: json('body') },
+                pathItems: {
+                    B: { get: { operationId: 'getB', responses: { 204: json('item') } } },
+                },
+            },
+        });
+        for (const name of ['id', 'query', 'header', 'response', 'body', 'item']) {
+            await ctx.writeJson(`${name}.json`, { type: 'string', const: name });
+        }
+
+        const source = await generateTo(ctx.resolve('openapi.json'), ctx.resolve('openapi.ts'));
+
+        expectTypes(source, {
+            Id: '"id"',
+            Query: '"query"',
+            Header: '"header"',
+            Response: '"response"',
+            Body: '"body"',
+            Item: '"item"',
+        });
+    });
+
     withTmpDir.test(
         'files referenced by an OpenAPI 3.0 document are OpenAPI 3.0 schemas',
         async ctx => {

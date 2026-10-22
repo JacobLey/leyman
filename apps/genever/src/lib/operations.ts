@@ -2,6 +2,7 @@ import type { SchemaObject } from './read-keyword.js';
 import type { Target } from './resources.js';
 import type { TsDoc, TsIndex, TsProperty, TsType } from './ts-type.js';
 import { GeneverInvalidSchemaError } from './errors.js';
+import { methods } from './openapi.js';
 import { childPointer } from './pointer.js';
 import { readObject } from './read-keyword.js';
 import { neverType, stringType, unknownType } from './ts-type.js';
@@ -39,7 +40,6 @@ export interface OperationTypes {
     readonly requestParameters: TsType;
 }
 
-const methods = ['get', 'put', 'post', 'delete', 'options', 'head', 'patch', 'trace'] as const;
 const parameterLocations = ['query', 'header', 'path', 'cookie'] as const;
 
 interface Parameter {

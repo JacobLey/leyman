@@ -3,6 +3,20 @@ import { GeneverUnsupportedError } from './errors.js';
 import { isSchemaObject } from './read-keyword.js';
 
 /**
+ * Methods of a path item, each of which may hold an operation.
+ */
+export const methods = [
+    'get',
+    'put',
+    'post',
+    'delete',
+    'options',
+    'head',
+    'patch',
+    'trace',
+] as const;
+
+/**
  * Whether the input is an OpenAPI document rather than a schema, and which dialect its schemas use.
  *
  * A JSON Schema has no `openapi` keyword, so its presence marks a document.
