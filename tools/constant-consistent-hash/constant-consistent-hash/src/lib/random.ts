@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-magic-numbers, no-bitwise -- Hashing is defined by its bit operations and constants */
 
-import type { KeyHash } from './hash-key.js';
+import type { hashKey, KeyHash } from './hash-key.js';
 
 /**
  * Distinguishes the random values drawn for the same block.

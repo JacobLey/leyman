@@ -52,7 +52,7 @@ const parseSeed = (options?: ConsistentHashOptions): number => {
  *
  * @param key - value to be hashed (as UTF-8)
  * @param [options] - optional
- * @param [options.seed=0] - selects an independent hash function
+ * @param [options.seed] - selects an independent hash function, defaults to 0
  * @returns two unsigned 32 bit integers
  * @throws {RangeError} when seed is out of bounds
  */
@@ -90,7 +90,7 @@ const blockHash = (hash: KeyHash, power: number): number => {
  * @param key - value to be hashed (as UTF-8)
  * @param range - number of buckets, integer between 1 and 2^48
  * @param [options] - optional
- * @param [options.seed=0] - selects an independent hash function
+ * @param [options.seed] - selects an independent hash function, defaults to 0
  * @returns bucket between 0 and range-1
  * @throws {RangeError} when range or seed is out of bounds
  */
