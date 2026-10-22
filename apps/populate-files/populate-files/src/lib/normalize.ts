@@ -31,6 +31,7 @@ const parseContent = async (content: FileContent): Promise<Uint8Array> => {
  * @param params - raw file params
  * @param targetDirPromise - directory relative file paths resolve from
  * @returns normalized file params
+ * @rejects {TypeError} if signed content isn't a string
  */
 const normalizeParams = async (
     params: PopulateFileParams,
@@ -88,6 +89,7 @@ export const normalizeFileParams = async (
  * @param params - list of file paths and (possibly async) contents
  * @param options - raw user options
  * @returns resolved file paths, content bytes, target dir, and flags
+ * @rejects {TypeError} if signed content isn't a string, or a file is populated more than once
  */
 export const normalizeFilesParams = async (
     params: PopulateFileParams[],

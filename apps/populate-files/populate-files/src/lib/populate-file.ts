@@ -12,6 +12,10 @@ import { safeLoadFile } from './loader.js';
 import { assertOwnedByManifest } from './manifest.js';
 import { signContent } from './sign-content.js';
 
+/**
+ * @import { PopulateFilesOwnershipError } from './lib/errors.js'
+ */
+
 const createPathAndWrite = async ({
     filePath,
     content,
@@ -38,6 +42,8 @@ const createPathAndWrite = async ({
  * @param params - normalized file params
  * @param manifest - with a manifest, the file's entry in it (if any), to check ownership against
  * @returns whether the file was (or would be) updated, and why
+ * @rejects {Error} in `check` mode, if the file would change
+ * @rejects {PopulateFilesOwnershipError} if the existing file may not be overwritten
  */
 export const internalPopulateFile = async (
     params: NormalizedFileParams,

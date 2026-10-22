@@ -9,6 +9,7 @@ import { hasCode } from 'unknown-error';
  *
  * @param filePath - absolute path to file
  * @returns file bytes, or null if the file does not exist
+ * @rejects {unknown} if the file exists but can't be read
  */
 export const safeLoadFile = async (filePath: string): Promise<Uint8Array | null> => {
     try {

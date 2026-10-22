@@ -18,6 +18,10 @@ import { assertOwnedByManifest, entryFor, loadManifest, renderManifest } from '.
 import { normalizeFileParams, normalizeFilesParams } from './lib/normalize.js';
 import { internalPopulateFile } from './lib/populate-file.js';
 
+/**
+ * @import { PopulateFilesOwnershipError } from './lib/lib/errors.js'
+ */
+
 export type PopulateFile = (
     params: PopulateFileParams,
     options?: RawOptions

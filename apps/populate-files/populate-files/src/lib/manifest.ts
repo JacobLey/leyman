@@ -13,6 +13,10 @@ import { PopulateFilesOwnershipError } from './lib/errors.js';
 import { safeLoadFile } from './loader.js';
 
 /**
+ * @import { GeneratedSignatureManifestError } from 'generated-signature'
+ */
+
+/**
  * Manifest entries by absolute file path.
  */
 export type ManifestEntries = ReadonlyMap<string, ManifestEntry>;
