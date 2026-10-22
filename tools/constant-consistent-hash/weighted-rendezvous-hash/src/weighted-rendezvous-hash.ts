@@ -207,7 +207,7 @@ const expectedMoved = (
  *
  * @param nodes - nodes to assign keys to, in any order
  * @param [options] - optional
- * @param [options.seed=0] - selects an independent hash function
+ * @param [options.seed] - selects an independent hash function, defaults to 0
  * @returns assignment of keys to the nodes
  * @throws {RangeError} when nodes or options are invalid
  */
