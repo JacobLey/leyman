@@ -37,7 +37,11 @@ interface PluginRules {
 export const nonDeprecatedRules = (name: string, plugin: PluginRules): Linter.RulesRecord => {
     const rules: Linter.RulesRecord = {};
     for (const [ruleName, rule] of Object.entries(plugin.rules!)) {
-        if (typeof rule === 'object' && rule.meta?.deprecated !== true && isForJavaScript(rule)) {
+        if (
+            typeof rule === 'object' &&
+            (rule.meta?.deprecated ?? false) === false &&
+            isForJavaScript(rule)
+        ) {
             rules[`${name}/${ruleName}`] = 'error';
         }
     }
@@ -376,7 +380,6 @@ export default function makeEslintConfigForPackage({
                         allowTypedFunctionExpressions: true,
                     },
                 ],
-                '@typescript-eslint/lines-between-class-members': 'off',
                 '@typescript-eslint/max-params': 'off',
                 '@typescript-eslint/member-ordering': [
                     'error',
@@ -409,7 +412,6 @@ export default function makeEslintConfigForPackage({
                         checkThenables: true,
                     },
                 ],
-                '@typescript-eslint/no-implicit-any-catch': 'off',
                 '@typescript-eslint/no-invalid-void-type': 'off',
                 '@typescript-eslint/no-misused-promises': [
                     'error',
@@ -840,10 +842,6 @@ export default function makeEslintConfigForPackage({
                 'sonarjs/prefer-specific-assertions': 'off',
                 'sonarjs/public-static-readonly': 'off',
                 'sonarjs/redundant-type-aliases': 'off',
-                'sonarjs/sonar-max-lines': 'off',
-                'sonarjs/sonar-max-lines-per-function': 'off',
-                'sonarjs/sonar-max-params': 'off',
-                'sonarjs/sonar-no-magic-numbers': 'off',
                 'sonarjs/todo-tag': 'off',
                 'sonarjs/unused-named-groups': 'off',
 
@@ -1012,10 +1010,7 @@ export default function makeEslintConfigForPackage({
                 'jsdoc/require-param-description': 'off',
                 'jsdoc/require-returns': 'off',
                 'sonarjs/file-name-differ-from-class': 'off',
-                'sonarjs/sonar-max-lines': 'off',
-                'sonarjs/no-empty-function': 'off',
                 'sonarjs/no-nested-functions': 'off',
-                'sonarjs/no-throw-literal': 'off',
                 'sonarjs/no-undefined-assignment': 'off',
                 'sonarjs/pseudo-random': 'off',
                 'sonarjs/use-type-alias': 'off',
