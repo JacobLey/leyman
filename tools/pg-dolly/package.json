@@ -1,6 +1,6 @@
 {
   "name": "pg-dolly",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "A fresh Postgres database for every test, cloned from a template built once from your schema's SQL.",
   "engines": {
     "node": ">=24"

@@ -1,5 +1,15 @@
 # populate-files
 
+## 1.1.2
+
+### Patch Changes
+
+- 975c05d: `populateFiles` rejects with a `TypeError` when two entries resolve to the same `filePath`, instead of writing both in parallel.
+- Updated dependencies [ba43b54]
+- Updated dependencies [16c11b8]
+  - format-file@1.0.3
+  - generated-signature@0.1.1
+
 ## 1.1.1
 
 ### Patch Changes

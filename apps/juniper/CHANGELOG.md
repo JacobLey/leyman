@@ -1,5 +1,19 @@
 # juniper
 
+## 2.4.1
+
+### Patch Changes
+
+- d0f37c4: `customSchema()` deep-copies its schema when created and in `toJSON()`, so changing the object you passed in, or its output, no longer changes the schema.
+- 9b900a2: Serializing a schema serializes each definition (`.define()`) once, rather than once per path to it. Definitions nested in definitions doubled the time for each level, and more when shared: ten levels of definitions that each use the one below twice took seconds to serialize, and now take under a millisecond. The output is unchanged.
+- acb9ae5: An empty `pattern` no longer drops the patterns added after it.
+- 23a254b: `juniper/top-level-schema` no longer reports schemas built in a function that's called immediately at module scope, like `const a = (() => objectSchema())();`, since it runs once.
+- a0d3c5e: Integer `multipleOf` values are no longer merged into an inexact least common multiple when it would be above `Number.MAX_SAFE_INTEGER`. They are kept separate in `allOf`, like non-integer values.
+- c7c3599: With `openApi30`, an array schema without `items` now outputs `items: {}`, since OpenAPI 3.0 requires `items` whenever `type` is `array`. It accepts the same values as before.
+- b373765: With `openApi30`, string schemas no longer output `contentEncoding` or `contentMediaType`, which OpenAPI 3.0 does not define. Use `format('byte')` or `format('binary')` for OpenAPI 3.0.
+- 27e43a1: With `openApi30`, an enum schema with no values outputs `not: {}` instead of `enum: []`, which OpenAPI 3.0 does not allow. Both match nothing.
+- 052a681: Modifying the JSON from `toJSON()` or `components()` no longer modifies the schema. `examples`, `dependentRequired`, metadata and `default` objects were the schema's own, so pushing to `toJSON().examples` added an example to every later `toJSON()`. The output's plain objects and arrays are now copies (other values, like a class instance in metadata, are kept as is).
+
 ## 2.4.0
 
 ### Minor Changes

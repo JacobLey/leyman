@@ -1,5 +1,25 @@
 # juniper-validator
 
+## 0.5.0
+
+### Minor Changes
+
+- 837ee0a: An issue for an extra property (`additionalProperties: false` or `unevaluatedProperties: false`) now has its `path` at that property, like missing properties, rather than at the object.
+
+### Patch Changes
+
+- 99aae1e: `makeValidator()` no longer throws on open tuples (`arraySchema().prefixItem(...)`). Ajv's `strictTuples` check is now off by default, since it rejects them; pass `strictTuples: true` to turn it back on. Every other strict mode check still applies.
+- Updated dependencies [d0f37c4]
+- Updated dependencies [9b900a2]
+- Updated dependencies [acb9ae5]
+- Updated dependencies [23a254b]
+- Updated dependencies [a0d3c5e]
+- Updated dependencies [c7c3599]
+- Updated dependencies [b373765]
+- Updated dependencies [27e43a1]
+- Updated dependencies [052a681]
+  - juniper@2.4.1
+
 ## 0.4.0
 
 ### Minor Changes

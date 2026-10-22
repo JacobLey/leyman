@@ -1,5 +1,15 @@
 # format-file
 
+## 1.0.3
+
+### Patch Changes
+
+- ba43b54: `formatText` formats through stdin, as if the text were a file in the current working directory, so the project's Prettier configuration applies. It used to format a temporary file in the OS temp directory, where Prettier found no configuration and used its defaults. `tmp-promise` is no longer a dependency.
+- Updated dependencies [bec61e6]
+- Updated dependencies [995c22e]
+- Updated dependencies [4cbf98a]
+  - haywire@2.0.2
+
 ## 1.0.2
 
 ### Patch Changes

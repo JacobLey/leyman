@@ -1,5 +1,26 @@
 # genever
 
+## 0.4.1
+
+### Patch Changes
+
+- 40ad200: Name a schema called `Exclude` `Exclude2`, as is done for `Record`, so it doesn't shadow the global type the OpenAPI operation helpers use. The generated file failed to compile with "Type 'Exclude' is not generic".
+- Updated dependencies [c610446]
+- Updated dependencies [ba43b54]
+- Updated dependencies [16c11b8]
+- Updated dependencies [bec61e6]
+- Updated dependencies [957ab53]
+- Updated dependencies [107dea6]
+- Updated dependencies [995c22e]
+- Updated dependencies [4cbf98a]
+- Updated dependencies [975c05d]
+  - entry-script@4.1.1
+  - format-file@1.0.3
+  - generated-signature@0.1.1
+  - haywire@2.0.2
+  - haywire-launcher@1.1.0
+  - populate-files@1.1.2
+
 ## 0.4.0
 
 ### Minor Changes

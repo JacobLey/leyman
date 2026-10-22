@@ -1,5 +1,13 @@
 # haywire
 
+## 2.0.2
+
+### Patch Changes
+
+- bec61e6: A `.supplier()` dependency on an instance already created earlier in the same chain of deferred dependencies receives a supplier, as typed, rather than the instance itself. For example a singleton `A` with a deferred dependency on `B`, where `B` depends on `identifier(A).supplier()`.
+- 995c22e: `HaywireCircularDependencyError` and `HaywireSyncSupplierError` sort what they list the same way on every machine, as the other errors already did, rather than by the machine's locale. `HaywireSyncSupplierError` no longer sorts the array it is given in place.
+- 4cbf98a: An error whose message names a value no longer throws while building that message. A plain object with a circular reference or a BigInt returned for a class id used to throw a `TypeError` from `JSON.stringify` instead of `HaywireInstanceOfResponseError`, and is now described by its type. A `HaywireMultiError` of raw provider errors (`unsafeRawProviderErrors`) that can't be converted to a string, like `Object.create(null)`, is described the same way.
+
 ## 2.0.1
 
 ### Patch Changes

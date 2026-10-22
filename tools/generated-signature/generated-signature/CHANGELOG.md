@@ -1,5 +1,11 @@
 # generated-signature
 
+## 0.1.1
+
+### Patch Changes
+
+- 16c11b8: `sign()` inserts the signature line after Markdown front matter (a leading `---` block, in files with `<!-- -->` comments), instead of above it, which stopped the front matter being read.
+
 ## 0.1.0
 
 ### Minor Changes
