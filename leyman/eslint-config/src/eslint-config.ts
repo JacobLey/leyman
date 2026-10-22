@@ -258,7 +258,6 @@ export default function makeEslintConfigForPackage({
             },
             rules: {
                 ...eslintConfig.configs.all.rules,
-                'accessor-pairs': 'off',
                 'arrow-body-style': ['error', 'as-needed'],
                 camelcase: 'off',
                 'capitalized-comments': [
@@ -315,7 +314,6 @@ export default function makeEslintConfigForPackage({
                 ],
                 'no-ternary': 'off',
                 'no-undefined': 'off',
-                'no-underscore-dangle': 'off',
                 'no-void': ['error', { allowAsStatement: true }],
                 'no-warning-comments': 'off',
                 'one-var': ['error', 'never'],
@@ -399,7 +397,6 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 '@typescript-eslint/naming-convention': ['error', ...baseNamingConvention],
-                '@typescript-eslint/no-dynamic-delete': 'off',
                 '@typescript-eslint/no-empty-interface': ['error', { allowSingleExtends: true }],
                 '@typescript-eslint/no-explicit-any': 'off',
                 '@typescript-eslint/no-extraneous-class': [
@@ -458,7 +455,6 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 '@typescript-eslint/prefer-readonly-parameter-types': 'off',
-                '@typescript-eslint/prefer-reduce-type-parameter': 'off',
                 '@typescript-eslint/restrict-template-expressions': [
                     'error',
                     {
@@ -499,6 +495,7 @@ export default function makeEslintConfigForPackage({
                         allowAny: true,
                     },
                 ],
+                // Reports `promisify(exec)`: Node's callback APIs return a value where `promisify` expects none
                 '@typescript-eslint/strict-void-return': 'off',
                 '@typescript-eslint/switch-exhaustiveness-check': 'error',
                 '@typescript-eslint/triple-slash-reference': [
@@ -510,7 +507,6 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 '@typescript-eslint/typedef': 'off',
-                '@typescript-eslint/init-declarations': 'off',
                 '@typescript-eslint/no-empty-function': 'off',
                 '@typescript-eslint/no-magic-numbers': [
                     'error',
@@ -524,8 +520,6 @@ export default function makeEslintConfigForPackage({
                         ignoreEnums: true,
                     },
                 ],
-                // Many false-positives
-                '@typescript-eslint/no-unnecessary-type-arguments': 'off',
                 '@typescript-eslint/no-unsafe-type-assertion': 'off',
                 '@typescript-eslint/no-unused-expressions': [
                     'error',
@@ -544,7 +538,6 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 '@typescript-eslint/require-await': 'off',
-                '@typescript-eslint/unified-signatures': 'off',
 
                 // Import
                 ...nonDeprecatedRules('import-x', importPlugin),
@@ -559,14 +552,11 @@ export default function makeEslintConfigForPackage({
                 'import-x/namespace': 'off',
                 'import-x/newline-after-import': ['error', { count: 1 }],
                 'import-x/no-anonymous-default-export': 'off',
-                'import-x/no-commonjs': 'off',
                 'import-x/no-default-export': 'off',
                 // Every imported package must be declared, including workspace packages (which `internal-regex`
                 // marks internal), except the package itself. `src/` may not use `devDependencies`, see below
                 'import-x/no-extraneous-dependencies': ['error', extraneousDependencies],
                 'import-x/no-internal-modules': 'off',
-                'import-x/no-mutable-exports': 'off',
-                'import-x/no-named-as-default-member': 'off',
                 'import-x/no-named-export': 'off',
                 'import-x/no-namespace': 'off',
                 'import-x/no-nodejs-modules': 'off',
@@ -610,7 +600,10 @@ export default function makeEslintConfigForPackage({
                 // JS Doc
                 ...nonDeprecatedRules('jsdoc', jsDocPlugin),
                 'jsdoc/check-examples': 'off',
-                'jsdoc/check-indentation': 'off',
+                // `jsdoc/require-rejects` documents a promise's rejection with `@rejects`
+                'jsdoc/check-tag-names': ['error', { definedTags: ['rejects'] }],
+                // Descriptions indent nested lists and their continuation lines
+                'jsdoc/check-indentation': ['error', { allowIndentedSections: true }],
                 'jsdoc/check-param-names': [
                     'error',
                     {
@@ -618,10 +611,12 @@ export default function makeEslintConfigForPackage({
                         disableMissingParamChecks: true,
                     },
                 ],
+                // Reads `package.json` from the working directory, which is the workspace root, not the file's package.
+                // `import-x/no-extraneous-dependencies` checks each package's imports.
+                'jsdoc/imports-as-dependencies': 'off',
                 'jsdoc/lines-before-block': 'off',
                 'jsdoc/convert-to-jsdoc-comments': 'off',
                 'jsdoc/match-name': 'off',
-                'jsdoc/no-defaults': 'off',
                 'jsdoc/no-missing-syntax': 'off',
                 'jsdoc/no-multi-asterisks': [
                     'error',
@@ -631,7 +626,6 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 'jsdoc/no-restricted-syntax': 'off',
-                'jsdoc/no-undefined-types': 'off',
                 'jsdoc/require-description-complete-sentence': 'off',
                 'jsdoc/require-description': [
                     'error',
@@ -678,10 +672,8 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 'jsdoc/require-param-type': 'off',
-                'jsdoc/require-rejects': 'off',
                 'jsdoc/require-returns-type': 'off',
                 'jsdoc/require-tags': 'off',
-                'jsdoc/require-throws-type': 'off',
                 'jsdoc/sort-tags': 'off',
                 'jsdoc/tag-lines': [
                     'error',
@@ -702,7 +694,6 @@ export default function makeEslintConfigForPackage({
 
                 // JSX a11y
                 ...nonDeprecatedRules('jsx-a11y', jsxA11yPlugin),
-                'jsx-a11y/click-events-have-key-events': 'off',
                 'jsx-a11y/anchor-is-valid': [
                     'error',
                     {
@@ -717,8 +708,6 @@ export default function makeEslintConfigForPackage({
                 'n/no-missing-import': 'off', // Fails to detect .ts extension
                 'n/no-missing-require': 'off', // Same
                 'n/no-sync': ['error', { allowAtRootLevel: true }],
-                'n/no-unpublished-import': 'off',
-                'n/no-unpublished-require': 'off',
                 'n/no-unsupported-features/node-builtins': [
                     'error',
                     {
@@ -729,8 +718,6 @@ export default function makeEslintConfigForPackage({
                 // React
                 ...nonDeprecatedRules('react', reactPlugin),
                 'react/boolean-prop-naming': ['error', { validateNested: true }],
-                'react/destructuring-assignment': 'off',
-                'react/display-name': 'off',
                 'react/forbid-dom-props': 'off',
                 'react/forbid-elements': 'off',
                 'react/function-component-definition': [
@@ -742,7 +729,6 @@ export default function makeEslintConfigForPackage({
                 ],
                 'react/jsx-filename-extension': ['error', { extensions: ['.tsx'] }],
                 'react/jsx-key': ['error', { checkFragmentShorthand: true }],
-                'react/jsx-max-depth': 'off',
                 'react/jsx-no-literals': 'off',
                 'react/jsx-no-target-blank': [
                     'error',
@@ -809,9 +795,7 @@ export default function makeEslintConfigForPackage({
                 ],
                 'react/no-unsafe': ['error', { checkAliases: true }],
                 'react/no-will-update-set-state': ['error', 'disallow-in-func'],
-                'react/prop-types': 'off',
                 'react/react-in-jsx-scope': 'off',
-                'react/require-default-props': 'off',
                 'react/static-property-placement': ['error', 'static public field'],
 
                 // React Hooks
@@ -836,31 +820,20 @@ export default function makeEslintConfigForPackage({
                 ...nonDeprecatedRules('sonarjs', sonarPlugin),
                 'sonarjs/cognitive-complexity': 'off',
                 'sonarjs/cyclomatic-complexity': 'off',
-                'sonarjs/declarations-in-global-scope': 'off',
                 'sonarjs/different-types-comparison': 'off',
                 'sonarjs/elseif-without-else': 'off',
                 'sonarjs/expression-complexity': 'off',
                 'sonarjs/file-header': 'off',
-                'sonarjs/function-return-type': 'off',
                 'sonarjs/max-lines': 'off',
                 'sonarjs/max-lines-per-function': 'off',
                 'sonarjs/max-union-size': 'off',
                 'sonarjs/nested-control-flow': 'off',
                 'sonarjs/no-duplicate-string': 'off',
                 'sonarjs/no-empty-test-file': 'off',
-                'sonarjs/no-identical-functions': 'off',
-                'sonarjs/no-implicit-dependencies': 'off',
-                'sonarjs/no-incomplete-assertions': 'off',
-                'sonarjs/no-inconsistent-returns': 'off',
-                'sonarjs/no-selector-parameter': 'off',
-                'sonarjs/no-small-switch': 'off',
                 'sonarjs/no-wildcard-import': 'off',
                 // Suggests chai property assertions (`.to.be.null`), which no-unused-expressions forbids
                 'sonarjs/prefer-specific-assertions': 'off',
-                'sonarjs/public-static-readonly': 'off',
-                'sonarjs/redundant-type-aliases': 'off',
                 'sonarjs/todo-tag': 'off',
-                'sonarjs/unused-named-groups': 'off',
 
                 // Unicorn
                 // Every disable says why, after `--`. An `eslint-enable` only ends one.
@@ -911,7 +884,6 @@ export default function makeEslintConfigForPackage({
                 'unicorn/prefer-uint8array-base64': 'off',
                 'unicorn/prevent-abbreviations': 'off',
                 'unicorn/template-indent': ['error', { indent: 4 }],
-                'unicorn/text-encoding-identifier-case': 'off',
                 // A complexity of 1 is too strict, and `try`/`finally` must wrap all the code it guards
                 'unicorn/try-complexity': 'off',
             },
@@ -1022,14 +994,9 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint/explicit-function-return-type': 'off',
                 '@typescript-eslint/no-magic-numbers': 'off',
                 '@typescript-eslint/only-throw-error': 'off',
-                'jsdoc/require-description': 'off',
-                'jsdoc/require-jsdoc': 'off',
-                'jsdoc/require-param-description': 'off',
-                'jsdoc/require-returns': 'off',
-                'sonarjs/file-name-differ-from-class': 'off',
-                'sonarjs/no-nested-functions': 'off',
-                'sonarjs/no-undefined-assignment': 'off',
                 'sonarjs/pseudo-random': 'off',
+                // Tests build and assert values that are `undefined`, e.g. a `cause` that is present but undefined
+                'sonarjs/no-undefined-assignment': 'off',
                 'sonarjs/use-type-alias': 'off',
                 'unicorn/consistent-function-scoping': 'off',
                 // Fluent test setup (e.g. haywire's `bind(identifier(A).nullable())`) nests calls by design

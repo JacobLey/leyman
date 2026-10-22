@@ -25,6 +25,8 @@ const lint = (plugin: ESLint.Plugin, code: string): (string | null)[] =>
 const abstractError = 'export abstract class BaseError extends Error {}';
 const concreteError = 'export class BadError extends Error {}';
 /**
+ * Write an error class that names itself wrong.
+ *
  * @param declaration - Start of the class declaration
  * @returns An error class whose constructor sets the wrong `name`
  */
