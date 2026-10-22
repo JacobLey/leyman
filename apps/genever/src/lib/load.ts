@@ -291,20 +291,16 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
      * References still to load, as a stack: the last is next. Each is pushed in reverse,
      * so references load in the order they appear, each followed by what it refers to.
      */
-    const pending: { index: DocumentIndex; referencedFrom: string; uri: string }[] = [];
+    const pending: { pointer: string; referencedFrom: string; uri: string }[] = [];
     const queueReferences = (index: DocumentIndex, referencedFrom: string): void => {
-        const uris = externalResources(index).toReversed();
-        pending.push(...uris.map(uri => ({ index, referencedFrom, uri })));
+        const references = externalResources(index).toReversed();
+        pending.push(...references.map(([uri, pointer]) => ({ pointer, referencedFrom, uri })));
     };
 
-    const load = async (
-        uri: string,
-        index: DocumentIndex,
-        referencedFrom: string
-    ): Promise<void> => {
+    const load = async (uri: string, pointer: string, referencedFrom: string): Promise<void> => {
         const loaded = await loadResource(uri, isAllowed, isInputDraft04, options.onRead);
         if ('reason' in loaded) {
-            failures.push({ ...loaded, pointer: index.references.get(uri)!, referencedFrom, uri });
+            failures.push({ ...loaded, pointer, referencedFrom, uri });
             return;
         }
         resources.push(...loaded.schemas);
@@ -318,9 +314,9 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
 
     queueReferences(inputIndex, options.baseUri);
     while (pending.length > 0) {
-        const { index, referencedFrom, uri } = pending.pop()!;
+        const { pointer, referencedFrom, uri } = pending.pop()!;
         if (!known.has(uri)) {
-            await load(uri, index, referencedFrom);
+            await load(uri, pointer, referencedFrom);
         }
     }
 

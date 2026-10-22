@@ -6,7 +6,7 @@
  */
 export const toTypeName = (name: string): string => {
     const words = name.split(/[^\p{L}\p{N}$_]+/v).filter(word => word.length > 0);
-    const joined = words.map(word => word[0]!.toUpperCase() + word.slice(1)).join('');
+    const joined = words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('');
     if (joined === '') {
         return 'Type';
     }

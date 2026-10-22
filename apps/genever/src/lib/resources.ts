@@ -443,12 +443,12 @@ export const resolveReference = (
  * Resources a document refers to, but does not contain, such as other files.
  *
  * @param index - index of the document
- * @returns URIs of the resources, without fragments
+ * @returns URIs of the resources, without fragments, each with a JSON Pointer to a `$ref` to it
  */
-export const externalResources = (index: DocumentIndex): string[] =>
+export const externalResources = (index: DocumentIndex): [uri: string, pointer: string][] =>
     index.references
-        .keys()
-        .filter(uri => !index.resources.has(uri))
+        .entries()
+        .filter(([uri]) => !index.resources.has(uri))
         .toArray();
 
 /**

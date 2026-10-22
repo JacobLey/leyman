@@ -397,7 +397,7 @@ export class Converter {
     /**
      * Named schemas, in the order they were found. Converting one may find more.
      */
-    readonly #pending: { pointer: string; schema: unknown }[] = [];
+    readonly #pending: { name: string; pointer: string; schema: unknown }[] = [];
     /**
      * Schema resources and anchors of the document, which references resolve to.
      */
@@ -488,10 +488,10 @@ export class Converter {
     #convertPending(): NamedType[] {
         const types: NamedType[] = [];
         // `#pending` grows while converting, as references are found. An array iterator includes them.
-        for (const { pointer, schema } of this.#pending) {
+        for (const { name, pointer, schema } of this.#pending) {
             types.push({
+                name,
                 doc: readDoc(schema),
-                name: this.#named.get(pointer)!,
                 type: this.#convert(schema, pointer, { ...emptyScope, unguarded: [pointer] }),
             });
         }
@@ -539,7 +539,7 @@ export class Converter {
         }
         const reserved = this.#names.reserve(name);
         this.#named.set(pointer, reserved);
-        this.#pending.push({ pointer, schema });
+        this.#pending.push({ name: reserved, pointer, schema });
         return reserved;
     }
 
@@ -942,12 +942,11 @@ export class Converter {
             }
             return unknownType;
         }
-        const [ifType, thenType, elseType] = (['if', 'then', 'else'] as const).map(keyword =>
+        const branch = (keyword: 'else' | 'if' | 'then'): TsType =>
             schema[keyword] === undefined
                 ? unknownType
-                : this.#convert(schema[keyword], childPointer(pointer, keyword), scope)
-        );
-        return union([intersection([ifType!, thenType!]), elseType!]);
+                : this.#convert(schema[keyword], childPointer(pointer, keyword), scope);
+        return union([intersection([branch('if'), branch('then')]), branch('else')]);
     }
 
     /**
@@ -1049,14 +1048,8 @@ export class Converter {
                     isDraft04Schema(this.#index!, pointer)) &&
                     keyword.startsWith('exclusive')
             );
-        const [minimum, exclusiveMinimum, maximum, exclusiveMaximum] = [
-            'minimum',
-            'exclusiveMinimum',
-            'maximum',
-            'exclusiveMaximum',
-        ].map(keyword => read(keyword));
-        const lower = numberBound(minimum!, exclusiveMinimum!, 1);
-        const upper = numberBound(maximum!, exclusiveMaximum!, -1);
+        const lower = numberBound(read('minimum'), read('exclusiveMinimum'), 1);
+        const upper = numberBound(read('maximum'), read('exclusiveMaximum'), -1);
         if (!lower || !upper) {
             return numberType;
         }

@@ -21,7 +21,7 @@ const hexEscape = /^x(?<code>[0-9a-f]{2})/iv;
 const parseLiteral = (source: string): string | null => {
     let text = '';
     for (let i = 0; i < source.length; i++) {
-        const char = source[i]!;
+        const char = source.charAt(i);
         if (char === '\\') {
             const next = source.charAt(i + 1);
             const hex = hexEscape.exec(source.slice(i + 1));
