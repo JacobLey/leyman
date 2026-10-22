@@ -42,6 +42,7 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 - `unevaluatedProperties`, `unevaluatedItems` and `contains` are accepted, but don't change the type.
 - `discriminator` is accepted in plain JSON Schema too, since [Juniper](/juniper/guides/openapi#discriminated-unions) and Ajv use it there, and doesn't change the type: the branches narrow on the property as a union does. [Strict mode](/genever/guides/strict-mode) checks it can tell the branches apart.
 - Swagger 2.0 documents.
+- An OpenAPI document's `webhooks` and operations' `callbacks` have no types, though their schemas in `components` do.
 
 
 ## Precise types
