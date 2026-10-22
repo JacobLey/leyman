@@ -16,6 +16,7 @@ export interface GenericContextualTest {
         name: string,
         fn: (this: MochaContext, ctx: object, done: Done) => ValidDoneReturnTypes
     ): MochaTest;
+    // eslint-disable-next-line @typescript-eslint/unified-signatures -- Separate overloads type each callback's parameters, which a union of callbacks leaves untyped
     (name: string, fn: (this: MochaContext, ctx: object) => Promise<void> | void): MochaTest;
 }
 
@@ -27,6 +28,7 @@ export interface ExclusiveContextualTest<ExistingContext extends object>
         name: string,
         fn: (this: MochaContext, ctx: ExistingContext, done: Done) => ValidDoneReturnTypes
     ): MochaTest;
+    // eslint-disable-next-line @typescript-eslint/unified-signatures -- Separate overloads type each callback's parameters, which a union of callbacks leaves untyped
     (name: string, fn: (this: MochaContext, ctx: ExistingContext) => Promise<void>): MochaTest;
 }
 export interface ContextualTest<ExistingContext extends object>
@@ -37,6 +39,7 @@ export interface ContextualTest<ExistingContext extends object>
 
 export interface ExclusiveEntrypointTest {
     (name: string, fn: (this: MochaContext, done: Done) => ValidDoneReturnTypes): MochaTest;
+    // eslint-disable-next-line @typescript-eslint/unified-signatures -- Separate overloads type each callback's parameters, which a union of callbacks leaves untyped
     (name: string, fn: (this: MochaContext) => Promise<void> | void): MochaTest;
 }
 export interface EntrypointTest extends ExclusiveEntrypointTest {
