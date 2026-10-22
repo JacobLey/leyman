@@ -309,7 +309,10 @@ suite('Ecc', () => {
         }
     };
 
-    const gcmKeyTest = async ({ source }: EccSourceContext) => {
+    const gcmKeyTest = async function (this: Context, { source }: EccSourceContext) {
+        // Generates and encrypts with keys on every curve, slow in the browser implementation
+        this.timeout(30_000);
+
         const data = 'Is the kettle on?';
         for (const curve of ['p256', 'p384', 'p521'] as const) {
             for (const size of [128, 256] as const) {
