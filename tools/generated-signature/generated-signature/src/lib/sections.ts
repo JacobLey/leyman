@@ -25,8 +25,8 @@ export interface ScannedSection extends ManualSection {
 }
 
 // Preceded by whitespace (or the line start) so e.g. `foo@manual-start` in a URL is not a marker.
-const markerPattern = /(?:^|\s)@manual-(?<kind>start|end)\b(?:\s+(?<id>\S+))?/u;
-const idPattern = /^[\w.-]+$/u;
+const markerPattern = /(?:^|\s)@manual-(?<kind>end|start)\b(?:\s+(?<id>\S+))?/v;
+const idPattern = /^[\w\-.]+$/v;
 
 export const isValidSectionId = (id: string): boolean => idPattern.test(id);
 

@@ -13,7 +13,7 @@ const encoder = new TextEncoder();
 
 suite('contentHash', () => {
     test('Is versioned', () => {
-        expect(contentHash('{}\n')).to.match(/^v1:[\da-f]{32}$/u);
+        expect(contentHash('{}\n')).to.match(/^v1:[\da-f]{32}$/v);
     });
 
     test('Ignores CRLF line breaks', () => {

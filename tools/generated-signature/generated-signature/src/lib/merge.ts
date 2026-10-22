@@ -97,7 +97,7 @@ export const manualSection = ({
         throw new GeneratedSignatureSectionIdError(id);
     }
     const style = resolveCommentStyle(options);
-    const lines = body === '' ? [] : body.replace(/\n$/u, '').split('\n');
+    const lines = body === '' ? [] : body.replace(/\n$/v, '').split('\n');
     return [
         renderComment(style, `@manual-start ${id}`),
         ...lines,

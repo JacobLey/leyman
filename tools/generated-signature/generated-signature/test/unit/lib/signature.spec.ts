@@ -28,7 +28,7 @@ const signed = sign(generated, { filePath: 'foo.ts' });
 suite('sign', () => {
     test('Inserts a signature line at the top', () => {
         expect(signed.split('\n', 1)[0]).to.match(
-            new RegExp(String.raw`^// ${TOKEN_NAME} v1:[\da-f]{32} Generated file\.`, 'u')
+            new RegExp(String.raw`^// ${TOKEN_NAME} v1:[\da-f]{32} Generated file\.`, 'v')
         );
     });
 
@@ -38,17 +38,19 @@ suite('sign', () => {
 
     test('Uses an explicit comment style', () => {
         const result = sign('<p>hi</p>\n', { comment: { start: '<!--', end: '-->' } });
-        expect(result).to.match(new RegExp(`^<!-- ${TOKEN_NAME} v1:[\\da-f]{32} .*-->\n<p>`, 'u'));
+        expect(result).to.match(
+            new RegExp(String.raw`^<!-- ${TOKEN_NAME} v1:[\da-f]{32} .*-->\n<p>`, 'v')
+        );
     });
 
     test('Uses a custom message', () => {
         const result = sign('a\n', { filePath: 'a.ts', message: 'By my-tool.' });
-        expect(result.split('\n', 1)[0]).to.match(/ By my-tool\.$/u);
+        expect(result.split('\n', 1)[0]).to.match(/ By my-tool\.$/v);
     });
 
     test('Fills in a token from signatureToken()', () => {
         const result = sign(`// AUTO-BARREL ${signatureToken()}\nexport * from './a.js';\n`);
-        expect(result.split('\n', 1)[0]).to.match(/^\/\/ AUTO-BARREL \S+ v1:[\da-f]{32}$/u);
+        expect(result.split('\n', 1)[0]).to.match(/^\/\/ AUTO-BARREL \S+ v1:[\da-f]{32}$/v);
         expect(verify(result)).to.deep.equal({ status: 'valid' });
     });
 
@@ -60,42 +62,42 @@ suite('sign', () => {
 
     test('Keeps an XML declaration on the first line', () => {
         const result = sign('<?xml version="1.0"?>\n<a/>\n', { filePath: 'a.xml' });
-        expect(result.split('\n', 2)[1]).to.match(/^<!-- /u);
+        expect(result.split('\n', 2)[1]).to.match(/^<!-- /v);
     });
 
     test('Appends after a shebang without a line break', () => {
         const result = sign('#!/bin/sh', { filePath: 'run.sh' });
-        expect(result).to.match(new RegExp(`^#!/bin/sh\n# ${TOKEN_NAME}`, 'u'));
+        expect(result).to.match(new RegExp(String.raw`^#!/bin/sh\n# ${TOKEN_NAME}`, 'v'));
     });
 
     test('Keeps Markdown front matter at the start', () => {
         const result = sign('---\ntitle: A\n---\n# A\n', { filePath: 'a.md' });
         expect(result).to.match(
-            new RegExp(`^---\ntitle: A\n---\n<!-- ${TOKEN_NAME}[^\n]+-->\n# A\n$`, 'u')
+            new RegExp(String.raw`^---\ntitle: A\n---\n<!-- ${TOKEN_NAME}[^\n]+-->\n# A\n$`, 'v')
         );
         expect(verify(result)).to.deep.equal({ status: 'valid' });
 
         const crlf = sign('---\r\ntitle: A\r\n---\r\n# A\r\n', { filePath: 'a.md' });
-        expect(crlf).to.match(/^---\r\ntitle: A\r\n---\r\n<!-- [^\n]+-->\r\n# A\r\n$/u);
+        expect(crlf).to.match(/^---\r\ntitle: A\r\n---\r\n<!-- [^\n]+-->\r\n# A\r\n$/v);
 
         const onlyFrontMatter = sign('---\ntitle: A\n---', { filePath: 'a.mdx' });
         expect(onlyFrontMatter).to.match(
-            new RegExp(`^---\ntitle: A\n---\n<!-- ${TOKEN_NAME}`, 'u')
+            new RegExp(String.raw`^---\ntitle: A\n---\n<!-- ${TOKEN_NAME}`, 'v')
         );
     });
 
     test('Only Markdown comments skip front matter, and only when it is closed', () => {
         expect(sign('---\na: 1\n---\n', { filePath: 'a.yml' })).to.match(
-            new RegExp(`^# ${TOKEN_NAME}`, 'u')
+            new RegExp(`^# ${TOKEN_NAME}`, 'v')
         );
         expect(sign('---\nnot closed\n', { filePath: 'a.md' })).to.match(
-            new RegExp(`^<!-- ${TOKEN_NAME}`, 'u')
+            new RegExp(`^<!-- ${TOKEN_NAME}`, 'v')
         );
     });
 
     test('Uses CRLF line breaks when the text does', () => {
         const result = sign('a\r\nb\r\n', { filePath: 'a.ts' });
-        expect(result).to.match(/^\/\/ [^\n]+\r\na\r\nb\r\n$/u);
+        expect(result).to.match(/^\/\/ [^\n]+\r\na\r\nb\r\n$/v);
     });
 
     test('Fills in a token the generator placed', () => {
@@ -173,7 +175,7 @@ suite('verify', () => {
     });
 
     test('Invalid after changing the hash', () => {
-        const changed = signed.replace(/(?<=v1:)[\da-f]/u, c => (c === 'a' ? 'b' : 'a'));
+        const changed = signed.replace(/(?<=v1:)[\da-f]/v, c => (c === 'a' ? 'b' : 'a'));
         expect(verify(changed)).to.deep.equal({ status: 'invalid' });
     });
 

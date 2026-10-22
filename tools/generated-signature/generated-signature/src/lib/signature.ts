@@ -11,7 +11,7 @@ const PLACEHOLDER = '0'.repeat(HASH_LENGTH);
 const TOKEN_NAME = '@generated-signature';
 const tokenPattern = new RegExp(
     String.raw`${TOKEN_NAME} v(?<version>\d+):(?<hash>[\da-f]{${HASH_LENGTH}})`,
-    'gu'
+    'gv'
 );
 const DEFAULT_MESSAGE = 'Generated file. Do not edit outside of manual sections.';
 
@@ -108,7 +108,7 @@ const insertHeader = (text: string, options: SignOptions): string => {
 
     // Markdown front matter must start the file too, so the line goes after its closing fence.
     const frontMatter =
-        style.start === '<!--' ? /^---\r?\n(?:[^\n]*\n)*?---\r?(?:\n|$)/u.exec(text) : null;
+        style.start === '<!--' ? /^---\r?\n(?:[^\n]*\n)*?---\r?(?:\n|$)/v.exec(text) : null;
     if (frontMatter) {
         const [fenced] = frontMatter;
         return fenced.endsWith('\n')
