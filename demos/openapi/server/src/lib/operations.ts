@@ -134,7 +134,7 @@ export const operations: readonly Operation[] = Object.entries(
             return {
                 method,
                 operationId: operation.operationId,
-                route: path.replaceAll(/\{(?<name>\w+)\}/gu, ':$<name>'),
+                route: path.replaceAll(/\{(?<name>\w+)\}/gv, ':$<name>'),
                 secured: (operation.security ?? []).length > 0,
                 path: compileParameters('path', list),
                 query: compileParameters('query', list),

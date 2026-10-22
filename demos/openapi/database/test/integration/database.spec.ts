@@ -41,7 +41,7 @@ suite('Database', () => {
 
         // A version 7 UUID
         expect(note?.id).to.match(
-            /^[\da-f]{8}-[\da-f]{4}-7[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/u
+            /^[\da-f]{8}-[\da-f]{4}-7[\da-f]{3}-[89ab][\da-f]{3}-[\da-f]{12}$/v
         );
         expect(note?.createdAt).to.be.an.instanceOf(Date);
     });

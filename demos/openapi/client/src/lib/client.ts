@@ -64,7 +64,7 @@ export class NotesClient {
 
     public constructor(options: NotesClientOptions) {
         // A trailing slash, so the spec's paths are appended to the base path rather than replacing it
-        this.#baseUrl = new URL(String(options.baseUrl).replace(/\/?$/u, '/'));
+        this.#baseUrl = new URL(String(options.baseUrl).replace(/\/?$/v, '/'));
         this.#token = options.token;
         this.#fetch = options.fetch ?? fetch;
     }
@@ -91,7 +91,7 @@ export class NotesClient {
         const url = new URL(
             route.path
                 .slice(1)
-                .replaceAll(/\{(?<name>\w+)\}/gu, (_match, name: string) =>
+                .replaceAll(/\{(?<name>\w+)\}/gv, (_match, name: string) =>
                     encodeURIComponent(path![name]!)
                 ),
             this.#baseUrl

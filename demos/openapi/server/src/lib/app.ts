@@ -21,7 +21,7 @@ interface HandlerResult {
     readonly body: unknown;
 }
 
-const bearer = /^Bearer (?<token>\S+)$/u;
+const bearer = /^Bearer (?<token>\S+)$/v;
 
 /**
  * Larger than any body the spec allows: a note is at most 10,200 characters, each at most 12 bytes as JSON (an

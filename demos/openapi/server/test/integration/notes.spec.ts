@@ -23,7 +23,7 @@ import { listen } from '../helpers/serve.js';
 import { expectStatus } from '../helpers/status.js';
 
 const token = 'secret-token';
-const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/u;
+const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/v;
 
 suite('Notes API', () => {
     /**
@@ -77,7 +77,7 @@ suite('Notes API', () => {
                 expect(body).to.have.property('id').that.matches(uuid);
                 expect(body)
                     .to.have.property('createdAt')
-                    .that.matches(/^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d\.\d{3}Z$/u);
+                    .that.matches(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/v);
             }
         );
 
