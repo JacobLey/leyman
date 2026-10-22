@@ -14,6 +14,8 @@ interface Operation {
 }
 
 /**
+ * List the spec's operations.
+ *
  * @returns Every operation in the spec, with its method
  */
 const operations = (): { readonly method: string; readonly operation: Operation }[] =>

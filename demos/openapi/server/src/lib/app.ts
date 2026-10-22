@@ -83,6 +83,7 @@ const requireToken =
         return next();
     };
 
+// eslint-disable-next-line jsdoc/require-rejects -- The handler it returns rejects, not this function
 /**
  * Serves one operation: validates the request, calls its handler, and validates the response.
  *

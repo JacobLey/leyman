@@ -1,7 +1,7 @@
 import type { NotesHandlers } from '@leyman/demo-openapi-server';
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
-import pg from 'pg';
+import { Pool } from 'pg';
 import { NotesClient } from '@leyman/demo-openapi-client';
 import {
     appConfigId,
@@ -31,7 +31,7 @@ suite('Notes API', () => {
      */
     const withServer = withDatabase().beforeEach(async ({ database }) => {
         // A small pool: every test shares the server's `max_connections`
-        const pool = new pg.Pool({ connectionString: database.url, max: 2 });
+        const pool = new Pool({ connectionString: database.url, max: 2 });
         const db = drizzle({ client: pool });
         const errors: Error[] = [];
         const served = await listen(
@@ -350,7 +350,7 @@ suite('Notes API', () => {
          * @returns The app, served, and the errors it reported
          */
         const withHandlers = withDatabase().beforeEach(async ({ database }) => {
-            const pool = new pg.Pool({ connectionString: database.url, max: 2 });
+            const pool = new Pool({ connectionString: database.url, max: 2 });
             const db = drizzle({ client: pool });
             const errors: Error[] = [];
             const serveWith = async (handlers: Partial<NotesHandlers>) => {

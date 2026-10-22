@@ -5,6 +5,8 @@ import { beforeEach, suite, test } from 'mocha-chain';
 import { valkeyNodes, valkeyUrl } from '../../helpers/valkey.js';
 
 /**
+ * Set one node's size to 0, as when draining it.
+ *
  * @param nodes - Nodes to change
  * @param name - Node to drain, or to add at size 0
  * @returns The nodes, with that one at size 0

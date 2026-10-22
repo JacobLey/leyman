@@ -75,7 +75,7 @@ export class NotesClient {
      * @param operationId - Operation, as named in the spec
      * @param input - Its `path` and `query` parameters, and `body`
      * @returns The response, as `{ status, body }`
-     * @throws {NotesClientUnexpectedStatusError} When the status isn't one the spec documents for the operation
+     * @rejects {NotesClientUnexpectedStatusError} When the status isn't one the spec documents for the operation
      */
     public async call<Id extends OperationId>(
         operationId: Id,

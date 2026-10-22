@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
-import pg from 'pg';
+import { Pool } from 'pg';
 import { notes } from '@leyman/demo-openapi-database';
 import { expect } from '@leyman/expect';
 import { before, suite } from 'mocha-chain';
@@ -26,7 +26,7 @@ suite('Database', () => {
 
     const withDb = withDolly.beforeEach(async ({ template }) => {
         const database = await template.clone();
-        const pool = new pg.Pool({ connectionString: database.url, max: 2 });
+        const pool = new Pool({ connectionString: database.url, max: 2 });
         return { database, pool, db: drizzle({ client: pool }) };
     });
     withDb.afterEach(async function (this: Context, { database, pool }) {
