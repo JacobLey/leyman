@@ -21,7 +21,7 @@ suite('cli', () => {
     test('--version', async () => {
         const result = await execAsync(`${bin} --version`);
 
-        expect(result.stdout).to.match(/^\d+\.\d+\.\d+\n$/u);
+        expect(result.stdout).to.match(/^\d+\.\d+\.\d+\n$/v);
     });
 
     test('Requires --migrate', async () => {
