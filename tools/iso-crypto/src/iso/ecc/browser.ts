@@ -129,7 +129,7 @@ export const eccEncrypt: (typeof Ecc)['eccEncrypt'] = async (
         crypto.subtle.exportKey('jwk', secretKey.privateEc),
     ]);
 
-    const odd = decode({ text: jwk.y!, encoding: 'base64url' }).toReversed()[0]! & 1;
+    const odd = decode({ text: jwk.y!, encoding: 'base64url' }).at(-1)! & 1;
 
     const publicX = decode({ text: jwk.x!, encoding: 'base64url' });
     const { bytes } = eccMeta(curve);

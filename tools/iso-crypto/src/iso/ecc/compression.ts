@@ -31,7 +31,7 @@ export const compressEccPublicKey = (
         return decoded;
     }
     const x = decoded.slice(1, bytes + 1);
-    const odd = decoded.slice(bytes + 1).toReversed()[0]! & 1;
+    const odd = decoded.at(-1)! & 1;
     return new Uint8Array([EVEN_KEY_PREFIX + odd, ...x]);
 };
 
