@@ -19,17 +19,18 @@ const tokenPattern = new RegExp(
 );
 const DEFAULT_MESSAGE = 'Generated file. Do not edit outside of manual sections.';
 
-interface Token {
-    /**
-     * Offset of the hash within the text.
-     */
-    readonly hashStart: number;
-    readonly hash: string;
-}
+const renderToken = (hash: string): string => `${TOKEN_NAME} v${VERSION}:${hash}`;
 
 const lineOf = (text: string, offset: number): number => text.slice(0, offset).split('\n').length;
 
-const findToken = (text: string): Token | null => {
+/**
+ * Find the text's only signature token.
+ *
+ * @param text - file content
+ * @returns hash of the token, or `null` if the text has none
+ * @throws {GeneratedSignatureMalformedError} if the text has more than one token, or one of another version
+ */
+const findHash = (text: string): string | null => {
     const [first, second] = text.matchAll(tokenPattern);
     if (!first) {
         return null;
@@ -49,14 +50,8 @@ const findToken = (text: string): Token | null => {
             detail: `v${version} is not supported, expected v${VERSION}`,
         });
     }
-    return {
-        hash,
-        hashStart: first.index + first[0].length - HASH_LENGTH,
-    };
+    return hash;
 };
-
-const replaceHash = (text: string, token: Token, hash: string): string =>
-    text.slice(0, token.hashStart) + hash + text.slice(token.hashStart + HASH_LENGTH);
 
 /**
  * Hash everything except the signature itself and the bodies of manual sections.
@@ -66,9 +61,9 @@ const replaceHash = (text: string, token: Token, hash: string): string =>
  * @returns hash to embed in the token
  */
 const computeHash = (text: string): string => {
-    const normalized = text.replaceAll('\r\n', '\n');
-    const token = findToken(normalized)!;
-    const withPlaceholder = replaceHash(normalized, token, PLACEHOLDER);
+    const withPlaceholder = text
+        .replaceAll('\r\n', '\n')
+        .replaceAll(tokenPattern, () => renderToken(PLACEHOLDER));
     const hashable = replaceBodies(withPlaceholder, scanSections(withPlaceholder), () => '');
     return createHash('sha256').update(hashable).digest('hex').slice(0, HASH_LENGTH);
 };
@@ -86,7 +81,7 @@ export type SignOptions = CommentOptions & {
  *
  * @returns token with a placeholder hash
  */
-export const signatureToken = (): string => `${TOKEN_NAME} v${VERSION}:${PLACEHOLDER}`;
+export const signatureToken = (): string => renderToken(PLACEHOLDER);
 
 /**
  * Insert the signature line at the top of the file, after any line (or Markdown front matter) that must stay first.
@@ -137,13 +132,14 @@ const insertHeader = (text: string, options: SignOptions): string => {
  */
 export const sign = (text: string, options?: SignOptions): string => {
     let withToken = text;
-    if (findToken(text) === null) {
+    if (findHash(text) === null) {
         if (!options) {
             throw new TypeError('Text has no signature token, provide `comment` or `filePath`');
         }
         withToken = insertHeader(text, options);
     }
-    return replaceHash(withToken, findToken(withToken)!, computeHash(withToken));
+    const hash = computeHash(withToken);
+    return withToken.replaceAll(tokenPattern, () => renderToken(hash));
 };
 
 export type VerifyResult =
@@ -177,11 +173,11 @@ export type VerifyResult =
  */
 export const verify = (text: string): VerifyResult => {
     try {
-        const token = findToken(text.replaceAll('\r\n', '\n'));
-        if (token === null) {
+        const hash = findHash(text.replaceAll('\r\n', '\n'));
+        if (hash === null) {
             return { status: 'unsigned' };
         }
-        return { status: computeHash(text) === token.hash ? 'valid' : 'invalid' };
+        return { status: computeHash(text) === hash ? 'valid' : 'invalid' };
     } catch (err) {
         // Reading the token and sections only throws malformed errors.
         return { status: 'malformed', error: err as GeneratedSignatureMalformedError };
