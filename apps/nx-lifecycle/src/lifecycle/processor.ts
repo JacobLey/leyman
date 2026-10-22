@@ -144,7 +144,7 @@ const getDependencyTarget = (dependency: DependsOn[number]): string =>
     typeof dependency === 'string' ? dependency : dependency.target;
 
 const normalizeDependencyTarget = (dependencyTarget: string): string =>
-    dependencyTarget.replace(/^\^/u, '');
+    dependencyTarget.replace(/^\^/v, '');
 
 const removeDependencyTargets = ({
     target,
