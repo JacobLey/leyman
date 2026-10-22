@@ -133,12 +133,14 @@ export const parseManifest = (text: string): Manifest => {
     if (typeof files !== 'object' || files === null || Array.isArray(files)) {
         throw new GeneratedSignatureManifestError('files is not an object');
     }
+    const entries: Record<string, ManifestEntry> = {};
     for (const [path, entry] of Object.entries(files)) {
         if (!isEntry(entry)) {
             throw new GeneratedSignatureManifestError(`invalid entry for ${path}`);
         }
+        entries[path] = entry;
     }
-    return { version, files: files as Record<string, ManifestEntry> };
+    return { version, files: entries };
 };
 
 const sortKeys = <T>(record: Readonly<Record<string, T>>): Record<string, T> =>
