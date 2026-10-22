@@ -1052,6 +1052,32 @@ export class Container<Outputs extends [Extendable]> {
     }
 
     /**
+     * Bindings that provide an id: each binding of a list, or its one binding.
+     *
+     * @param id - output or dependency id, which the container has been checked to provide
+     * @returns its bindings
+     */
+    #bindingsOf(id: GenericHaywireId): readonly GenericBinding[] {
+        const baseId = id.baseId();
+        return isListId(baseId)
+            ? this.#baseIdToListBindings.get(baseId)!
+            : [this.#baseIdToBinding.get(baseId)!];
+    }
+
+    /**
+     * What to request for an id: the bindings of a list, which resolve to an array, or its one binding.
+     *
+     * @param id - output or dependency id, which the container has been checked to provide
+     * @returns its binding, or a list's bindings
+     */
+    #requestOf(id: GenericHaywireId): GenericBinding | readonly GenericBinding[] {
+        const baseId = id.baseId();
+        return isListId(baseId)
+            ? this.#baseIdToListBindings.get(baseId)!
+            : this.#baseIdToBinding.get(baseId)!;
+    }
+
+    /**
      * Wrap an error thrown by a provider with the request path, unless Haywire threw it
      * (e.g. a supplier the provider called) or the container keeps raw provider errors.
      *
@@ -1288,9 +1314,7 @@ export class Container<Outputs extends [Extendable]> {
                 return true;
             }
 
-            const bindings = isListId(baseId)
-                ? this.#baseIdToListBindings.get(baseId)!
-                : [this.#baseIdToBinding.get(baseId)!];
+            const bindings = this.#bindingsOf(baseId);
 
             if (evaluatedOutputIds.has(baseId)) {
                 // Each link pairs a binding with the edge it declares outward, so the cycle
@@ -1408,9 +1432,7 @@ export class Container<Outputs extends [Extendable]> {
                     continue;
                 }
                 const dependencyBaseId = dependencyId.baseId();
-                const dependencyBindings = isListId(dependencyBaseId)
-                    ? this.#baseIdToListBindings.get(dependencyBaseId)!
-                    : [this.#baseIdToBinding.get(dependencyBaseId)!];
+                const dependencyBindings = this.#bindingsOf(dependencyBaseId);
                 // Continue checking dependencies
                 for (const dependencyBinding of dependencyBindings) {
                     const asyncChain = findAsyncChain(
@@ -1491,11 +1513,7 @@ export class Container<Outputs extends [Extendable]> {
                         ([binding]) =>
                             (binding.scope === isolatedRequestScope) === isIsolatedRequestScope
                     )
-                    .flatMap(([, id]) =>
-                        isListId(id)
-                            ? this.#baseIdToListBindings.get(id.baseId())!
-                            : this.#baseIdToBinding.get(id.baseId())!
-                    )
+                    .flatMap(([, id]) => this.#requestOf(id))
                     .filter(binding => !safeBindings.has(binding) && !unsafeBindings.has(binding))
             );
 
@@ -1533,9 +1551,7 @@ export class Container<Outputs extends [Extendable]> {
                 if (deferred || (typeof supplier === 'object' && !supplier.sync)) {
                     continue;
                 }
-                const dependencyBindings = isListId(dependencyId)
-                    ? this.#baseIdToListBindings.get(dependencyId.baseId())!
-                    : [this.#baseIdToBinding.get(dependencyId.baseId())!];
+                const dependencyBindings = this.#bindingsOf(dependencyId);
                 for (const dependencyBinding of dependencyBindings) {
                     if (dependencyBinding.scope === eagerSingletonScope) {
                         collected.push(dependencyBinding);
@@ -1588,10 +1604,7 @@ export class Container<Outputs extends [Extendable]> {
                     // Starts a new request, which creates its own eager request values
                     continue;
                 }
-                const dependencyBaseId = dependencyId.baseId();
-                const dependencyBindings = isListId(dependencyId)
-                    ? this.#baseIdToListBindings.get(dependencyBaseId)!
-                    : [this.#baseIdToBinding.get(dependencyBaseId)!];
+                const dependencyBindings = this.#bindingsOf(dependencyId);
                 for (const dependencyBinding of dependencyBindings) {
                     if (dependencyBinding.scope === eagerSingletonScope) {
                         continue;
@@ -1646,9 +1659,7 @@ export class Container<Outputs extends [Extendable]> {
                     // Suppliers are resolved "immediately" so that is sync
                     return false;
                 }
-                const dependencyBindings = isListId(dependencyId)
-                    ? this.#baseIdToListBindings.get(dependencyId.baseId())!
-                    : [this.#baseIdToBinding.get(dependencyId.baseId())!];
+                const dependencyBindings = this.#bindingsOf(dependencyId);
                 return dependencyBindings.some(dependencyBinding => {
                     if (eagerScopes.has(dependencyBinding.scope)) {
                         // Eager values are pre-computed, so the actual request can always rely on cache
@@ -2369,9 +2380,7 @@ export class Container<Outputs extends [Extendable]> {
                         deferredRequest.resolve(cachedValue.value);
                         return;
                     }
-                    const dependencyBindings = isListId(dependencyId)
-                        ? this.#baseIdToListBindings.get(dependencyBaseId)!
-                        : this.#baseIdToBinding.get(dependencyBaseId)!;
+                    const dependencyBindings = this.#requestOf(dependencyId);
                     if (typeof supplier === 'object') {
                         const relevantCache =
                             binding.scope === isolatedRequestScope ? supplierCache : requestCache;
@@ -2437,9 +2446,7 @@ export class Container<Outputs extends [Extendable]> {
         this.#assertNotDisposed();
         const baseId = id.baseId();
         const request = this.#getMaybeSync(
-            isListId(baseId)
-                ? this.#baseIdToListBindings.get(baseId)!
-                : this.#baseIdToBinding.get(baseId)!,
+            this.#requestOf(baseId),
             path ?? { id, parent: null },
             requestCache,
             supplierCache
@@ -2532,9 +2539,7 @@ export class Container<Outputs extends [Extendable]> {
                     deferredRequest.resolve(cachedValue.value);
                     continue;
                 }
-                const dependencyBindings = isListId(dependencyId)
-                    ? this.#baseIdToListBindings.get(dependencyBaseId)!
-                    : this.#baseIdToBinding.get(dependencyBaseId)!;
+                const dependencyBindings = this.#requestOf(dependencyId);
                 if (typeof supplier === 'object') {
                     const relevantCache =
                         binding.scope === isolatedRequestScope ? supplierCache : requestCache;
@@ -2589,9 +2594,7 @@ export class Container<Outputs extends [Extendable]> {
         this.#assertNotDisposed();
         const baseId = id.baseId();
         return this.#getSync({
-            bindings: isListId(baseId)
-                ? this.#baseIdToListBindings.get(baseId)!
-                : this.#baseIdToBinding.get(baseId)!,
+            bindings: this.#requestOf(baseId),
             path: path ?? { id, parent: null },
             requestCache,
             supplierCache,
