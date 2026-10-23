@@ -54,7 +54,7 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 | pnpm | `ARG PNPM_VERSION` in `.devcontainer/Dockerfile` | `pnpmVersion` in `dagger/main.go` |
 | Go | `ARG GO_VERSION` in `.devcontainer/Dockerfile` | `goImage` tag in `dagger/main.go` (pinned by digest, like `nodeImage`) |
 | dagger | `ARG DAGGER_VERSION` in `.devcontainer/Dockerfile` | `engineVersion` in `dagger/dagger.json`, and `DAGGER_VERSION` in `.github/workflows/ci.yml` |
-| Debian | base image tag in `.devcontainer/Dockerfile` (`debian13`) | `nodeImage` variant in `dagger/main.go` (`trixie` = Debian 13) |
+| Debian | base image tag in `.devcontainer/Dockerfile` (`debian13`) | `debianImage` in `dagger/main.go`, and the `nodeImage` and `goImage` variants (`trixie` = Debian 13) |
 | Playwright | `ARG PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` | `playwrightVersion` in `dagger/main.go`. Both must also match `playwright` in `pnpm-workspace.yaml` |
 | Valkey | `valkey` service image in `.devcontainer/docker-compose.yml` | `valkeyImage` in `dagger/main.go`. Both pinned by digest, and the service is bound under the same hostname (`valkey`) |
 | Postgres | `postgres` service image and `command` settings in `.devcontainer/docker-compose.yml` | `postgresImage` and `postgresService` in `dagger/main.go`. Both pinned by digest, bound under the same hostname (`postgres`), with the same `DATABASE_URL` |

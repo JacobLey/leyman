@@ -19,6 +19,9 @@ import (
 
 // Keep in sync with `.devcontainer/Dockerfile` (see the devcontainer skill).
 const (
+	// debian:trixie-slim, the Debian release the Node and Go images are built on. The CI image starts from it and copies
+	// in Node, pnpm and Go last, so bumping one doesn't rerun the apt installs.
+	debianImage = "debian:trixie-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad"
 	// node:24.22.1-trixie-slim. Under 7 days old: an emergency security bump. Drop this note after 2026-10-27.
 	nodeImage = "node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea"
 	// Outside the lockfile, so `minimumReleaseAge` can't check it: only bump to a release at least 7 days old.
@@ -47,6 +50,7 @@ const (
 	tarballDir  = "/tarballs"
 	browsersDir = "/playwright-browsers"
 	goRoot      = "/usr/local/go"
+	pnpmDir     = "/usr/local/pnpm"
 	npmRegistry = "https://registry.npmjs.org"
 	// Same as the devcontainer's. A fixed password: the service only lives as long as the test run.
 	databaseURL = "postgres://postgres:postgres@postgres:5432/postgres"
@@ -467,31 +471,56 @@ func postgresService() *dagger.Service {
 		})
 }
 
-// Node + pnpm + Go + Postgres client tools, matching the devcontainer
-func (m *Ci) base() *dagger.Container {
+// Postgres client tools on Debian, with nothing else installed yet
+func system() *dagger.Container {
 	return dag.Container().
-		From(nodeImage).
-		WithDirectory(goRoot, dag.Container().From(goImage).Directory(goRoot)).
-		WithEnvVariable("PATH", "${PATH}:"+goRoot+"/bin", dagger.ContainerWithEnvVariableOpts{Expand: true}).
-		// Use the pinned toolchain, never one downloaded for a newer `go` directive in a go.mod
-		WithEnvVariable("GOTOOLCHAIN", "local").
+		From(debianImage).
 		WithEnvVariable("CI", "1").
 		WithExec([]string{"sh", "-c", "apt-get update" +
 			" && apt-get install --yes --no-install-recommends ca-certificates postgresql-common" +
 			" && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y" +
-			" && apt-get install --yes --no-install-recommends postgresql-client-" + postgresMajor}).
+			" && apt-get install --yes --no-install-recommends postgresql-client-" + postgresMajor})
+}
+
+// Adds Go, pnpm and Node, matching the devcontainer: last, so bumping one reruns only these copies. No npm (as in the
+// devcontainer), so nothing silently depends on it.
+func withTools(ctr *dagger.Container) *dagger.Container {
+	// pnpm is a native binary, installed with npm and copied in with its package
+	pnpm := dag.Container().
+		From(nodeImage).
 		WithExec([]string{"npm", "install", "--global", "pnpm@" + pnpmVersion}).
-		// Match the devcontainer, which removes npm so nothing silently depends on it
-		WithExec([]string{"npm", "uninstall", "--global", "npm"}).
+		Directory("/usr/local/lib/node_modules/pnpm")
+	return ctr.
+		WithDirectory(goRoot, dag.Container().From(goImage).Directory(goRoot)).
+		// Use the pinned toolchain, never one downloaded for a newer `go` directive in a go.mod
+		WithEnvVariable("GOTOOLCHAIN", "local").
+		WithDirectory(pnpmDir, pnpm).
+		WithFile("/usr/local/bin/node", dag.Container().From(nodeImage).File("/usr/local/bin/node")).
+		WithEnvVariable("PATH", "${PATH}:"+goRoot+"/bin:"+pnpmDir, dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithEnvVariable("pnpm_config_store_dir", storeDir).
 		WithEnvVariable("pnpm_config_cache_dir", cacheDir).
 		WithWorkdir(workdir)
 }
 
+// Node + pnpm + Go + Postgres client tools, matching the devcontainer
+func (m *Ci) base() *dagger.Container {
+	return withTools(system())
+}
+
 // Base image plus the system libraries Playwright's browsers need, with the browsers kept in a cache volume.
+//
+// The libraries are installed from the list `install-deps` would install (one package per line), not by running it:
+// that needs Node, and the list doesn't change when Node does. So the install reruns only when the list changes.
 func (m *Ci) browserBase() *dagger.Container {
-	return m.base().
-		WithExec([]string{"pnpm", "dlx", "playwright@" + playwrightVersion, "install-deps", "chromium", "firefox", "webkit"}).
+	deps := m.base().
+		WithExec([]string{"sh", "-c", "pnpm dlx playwright@" + playwrightVersion +
+			" install-deps --dry-run chromium firefox webkit" +
+			` | sed -n 's/^  \([a-z0-9][a-z0-9.+-]*\)$/\1/p' > /tmp/playwright-deps.txt` +
+			" && test -s /tmp/playwright-deps.txt"}).
+		File("/tmp/playwright-deps.txt")
+	return withTools(system().
+		WithMountedFile("/tmp/playwright-deps.txt", deps).
+		WithExec([]string{"xargs", "--arg-file=/tmp/playwright-deps.txt", "apt-get", "install", "--yes", "--no-install-recommends"})).
 		WithMountedCache(browsersDir, dag.CacheVolume("playwright-browsers-"+playwrightVersion)).
 		WithEnvVariable("PLAYWRIGHT_BROWSERS_PATH", browsersDir)
 }
