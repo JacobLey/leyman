@@ -59,7 +59,7 @@ export class LoadPopulateFilesCli implements Main {
         await cli.parseAsync(argv, {}, LoadPopulateFilesCli.#yargsOutput);
     }
 
-    static #yargsOutput(this: void, e: unknown, _argv: unknown, log: string): void {
+    static #yargsOutput(this: void, e: Error | undefined, _argv: unknown, log: string): void {
         if (e) {
             process.exitCode = 1;
             if (log) {
