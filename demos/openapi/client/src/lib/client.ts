@@ -8,9 +8,10 @@ export interface NotesClientOptions {
      */
     readonly baseUrl: string | URL;
     /**
-     * Bearer token, sent with operations the spec secures.
+     * Bearer token, sent with every operation: the spec secures them all. A function is called before each request,
+     * so a token that expires can be refreshed.
      */
-    readonly token?: string | undefined;
+    readonly token?: string | (() => string | Promise<string | undefined> | undefined) | undefined;
     /**
      * Makes the requests.
      *
@@ -22,13 +23,11 @@ export interface NotesClientOptions {
 interface Route {
     readonly method: string;
     readonly path: string;
-    readonly secured: boolean;
     readonly statuses: ReadonlySet<number>;
 }
 
 interface DocumentOperation {
     readonly operationId: string;
-    readonly security?: readonly unknown[];
     readonly responses: Readonly<Record<string, unknown>>;
 }
 
@@ -47,7 +46,6 @@ const routes: ReadonlyMap<string, Route> = new Map(
                 {
                     path,
                     method: method.toUpperCase(),
-                    secured: (operation.security ?? []).length > 0,
                     statuses: new Set(Object.keys(operation.responses).map(Number)),
                 },
             ])
@@ -59,13 +57,14 @@ const routes: ReadonlyMap<string, Route> = new Map(
  */
 export class NotesClient {
     readonly #baseUrl: URL;
-    readonly #token: string | undefined;
+    readonly #token: () => string | Promise<string | undefined> | undefined;
     readonly #fetch: typeof fetch;
 
     public constructor(options: NotesClientOptions) {
         // A trailing slash, so the spec's paths are appended to the base path rather than replacing it
         this.#baseUrl = new URL(String(options.baseUrl).replace(/\/?$/v, '/'));
-        this.#token = options.token;
+        const { token } = options;
+        this.#token = typeof token === 'function' ? token : () => token;
         this.#fetch = options.fetch ?? fetch;
     }
 
@@ -109,8 +108,9 @@ export class NotesClient {
         if (body !== undefined) {
             headers.set('content-type', 'application/json');
         }
-        if (route.secured && this.#token !== undefined) {
-            headers.set('authorization', `Bearer ${this.#token}`);
+        const token = await this.#token();
+        if (token !== undefined) {
+            headers.set('authorization', `Bearer ${token}`);
         }
 
         const response = await this.#fetch(url, {

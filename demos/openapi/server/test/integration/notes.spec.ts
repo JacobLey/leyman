@@ -13,6 +13,7 @@ import {
     notesAppId,
     notesModule,
     NotesResponseError,
+    staticTokens,
     staticTokensBinding,
 } from '@leyman/demo-openapi-server';
 import { expect } from '@leyman/expect';
@@ -37,7 +38,7 @@ suite('Notes API', () => {
         const served = await listen(
             createNotesApp({
                 db,
-                tokens: [token],
+                authenticate: staticTokens([token]),
                 onError: error => {
                     errors.push(error);
                 },
@@ -97,6 +98,18 @@ suite('Notes API', () => {
             });
 
             expect(created.status).to.equal(401);
+        });
+
+        withServer.test('Says a wrong token is invalid', async ({ served }) => {
+            const response = await fetch(`${served.url}/notes`, {
+                method: 'POST',
+                headers: { authorization: 'Bearer wrong' },
+            });
+
+            expect(response.status).to.equal(401);
+            expect(response.headers.get('www-authenticate')).to.equal(
+                'Bearer error="invalid_token"'
+            );
         });
 
         withServer.test('Asks for a bearer token', async ({ served }) => {
@@ -228,24 +241,24 @@ suite('Notes API', () => {
             expect(read).to.deep.equal({ status: 200, body: note });
         });
 
-        withServer.test('Answers 404 for a note that does not exist', async ({ anonymous }) => {
-            const read = await anonymous.call('getNote', {
+        withServer.test('Answers 404 for a note that does not exist', async ({ client }) => {
+            const read = await client.call('getNote', {
                 path: { noteId: '00000000-0000-4000-8000-000000000000' },
             });
 
             expect(read.status).to.equal(404);
         });
 
-        withServer.test('Rejects an id that is not a UUID', async ({ anonymous }) => {
-            const read = await anonymous.call('getNote', { path: { noteId: 'dolly' } });
+        withServer.test('Rejects an id that is not a UUID', async ({ client }) => {
+            const read = await client.call('getNote', { path: { noteId: 'dolly' } });
 
             expect(read.status).to.equal(400);
         });
     });
 
     suite('listNotes', () => {
-        withServer.test('Lists nothing on an empty database', async ({ anonymous }) => {
-            expect(await anonymous.call('listNotes', {})).to.deep.equal({
+        withServer.test('Lists nothing on an empty database', async ({ client }) => {
+            expect(await client.call('listNotes', {})).to.deep.equal({
                 status: 200,
                 body: { items: [] },
             });
@@ -253,7 +266,7 @@ suite('Notes API', () => {
 
         withServer.test(
             'Lists notes made at the same moment newest first too',
-            async ({ anonymous, db }) => {
+            async ({ client, db }) => {
                 // One statement, so one transaction: every row gets the same `now()`
                 await db.insert(notes).values([
                     { title: 'First', body: '' },
@@ -261,7 +274,7 @@ suite('Notes API', () => {
                     { title: 'Third', body: '' },
                 ]);
 
-                const { body } = expectStatus(await anonymous.call('listNotes', {}), 200);
+                const { body } = expectStatus(await client.call('listNotes', {}), 200);
 
                 expect(body.items.map(({ title }) => title)).to.deep.equal([
                     'Third',
@@ -271,20 +284,55 @@ suite('Notes API', () => {
             }
         );
 
-        withServer.test('Rejects a limit out of range', async ({ anonymous }) => {
-            const listed = await anonymous.call('listNotes', { query: { limit: 0 } });
+        withServer.test('Requires a token', async ({ anonymous }) => {
+            const listed = await anonymous.call('listNotes', {});
+
+            expect(listed.status).to.equal(401);
+        });
+
+        withServer.test('Rejects a limit out of range', async ({ client }) => {
+            const listed = await client.call('listNotes', { query: { limit: 0 } });
+
+            expect(listed.status).to.equal(400);
+        });
+
+        withServer.test('Matches % and _ in q as themselves', async ({ client, db }) => {
+            await db.insert(notes).values([
+                { title: '100% wool', body: '' },
+                { title: 'snake_case', body: '' },
+                { title: 'Sheep', body: '' },
+            ]);
+
+            const titles = async (q: string): Promise<string[]> => {
+                const { body } = expectStatus(
+                    await client.call('listNotes', { query: { q } }),
+                    200
+                );
+                return body.items.map(({ title }) => title);
+            };
+
+            expect(await titles('%')).to.deep.equal(['100% wool']);
+            expect(await titles('_')).to.deep.equal(['snake_case']);
+        });
+
+        withServer.test('Rejects an empty q', async ({ client }) => {
+            const listed = await client.call('listNotes', { query: { q: '' } });
 
             expect(listed.status).to.equal(400);
         });
 
         withServer.test('Rejects a limit that is not a number', async ({ served }) => {
-            const response = await fetch(`${served.url}/notes?limit=many`);
+            const response = await fetch(`${served.url}/notes?limit=many`, {
+                headers: { authorization: `Bearer ${token}` },
+            });
 
             expect(response.status).to.equal(400);
         });
 
         withServer.test('Rejects query parameters the spec does not have', async ({ served }) => {
-            const response = await fetch(`${served.url}/notes?offset=10`);
+            const response = await fetch(`${served.url}/notes?offset=10`, {
+                headers: { authorization: `Bearer ${token}` },
+            });
 
             expect(response.status).to.equal(400);
         });
@@ -308,9 +356,9 @@ suite('Notes API', () => {
                 return { rows };
             });
 
-            withNotes.test('Lists the newest first', async ({ anonymous }) => {
+            withNotes.test('Lists the newest first', async ({ client }) => {
                 const { body } = expectStatus(
-                    await anonymous.call('listNotes', { query: { limit: 3 } }),
+                    await client.call('listNotes', { query: { limit: 3 } }),
                     200
                 );
 
@@ -321,8 +369,24 @@ suite('Notes API', () => {
                 ]);
             });
 
-            withNotes.test('Lists 20 by default, as the spec says', async ({ anonymous }) => {
-                const { body } = expectStatus(await anonymous.call('listNotes', {}), 200);
+            withNotes.test('Lists only titles containing q', async ({ client }) => {
+                const { body } = expectStatus(
+                    await client.call('listNotes', { query: { q: 'note 2' } }),
+                    200
+                );
+
+                expect(body.items.map(({ title }) => title)).to.deep.equal([
+                    'Note 24',
+                    'Note 23',
+                    'Note 22',
+                    'Note 21',
+                    'Note 20',
+                    'Note 2',
+                ]);
+            });
+
+            withNotes.test('Lists 20 by default, as the spec says', async ({ client }) => {
+                const { body } = expectStatus(await client.call('listNotes', {}), 200);
 
                 expect(body.items).to.have.length(20);
             });
@@ -390,7 +454,8 @@ suite('Notes API', () => {
                 closing.push(served.close);
 
                 const response = await fetch(
-                    `${served.url}/notes/00000000-0000-4000-8000-000000000000`
+                    `${served.url}/notes/00000000-0000-4000-8000-000000000000`,
+                    { headers: { authorization: `Bearer ${token}` } }
                 );
 
                 expect(response.status).to.equal(500);
@@ -408,7 +473,8 @@ suite('Notes API', () => {
                 closing.push(served.close);
 
                 const response = await fetch(
-                    `${served.url}/notes/00000000-0000-4000-8000-000000000000`
+                    `${served.url}/notes/00000000-0000-4000-8000-000000000000`,
+                    { headers: { authorization: `Bearer ${token}` } }
                 );
 
                 expect(response.status).to.equal(500);
@@ -428,7 +494,8 @@ suite('Notes API', () => {
                 closing.push(served.close);
 
                 const response = await fetch(
-                    `${served.url}/notes/00000000-0000-4000-8000-000000000000`
+                    `${served.url}/notes/00000000-0000-4000-8000-000000000000`,
+                    { headers: { authorization: `Bearer ${token}` } }
                 );
 
                 expect(response.status).to.equal(500);

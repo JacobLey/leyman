@@ -2,7 +2,7 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Note } from '../generated/api.js';
 import type { NotesHandlers } from './types.js';
-import { desc, eq } from 'drizzle-orm';
+import { desc, eq, ilike } from 'drizzle-orm';
 import { notes } from '@leyman/demo-openapi-database';
 
 export type NotesDatabase = NodePgDatabase;
@@ -21,6 +21,18 @@ const toNote = (row: typeof notes.$inferSelect): Note => ({
 });
 
 /**
+ * A `LIKE` pattern matching `text` anywhere. `%`, `_` and a backslash in it match themselves, escaped with Postgres's
+ * default escape character.
+ *
+ * @param text - What to find
+ * @returns The pattern
+ */
+const containing = (text: string): string => {
+    const escaped = text.replaceAll(/[%\\_]/gv, String.raw`\$&`);
+    return `%${escaped}%`;
+};
+
+/**
  * The operations, on Postgres with Drizzle. Each gets a request that already matched the spec, so none checks its
  * input again.
  *
@@ -32,6 +44,7 @@ export const drizzleHandlers = (db: NotesDatabase): NotesHandlers => ({
         const rows = await db
             .select()
             .from(notes)
+            .where(query.q === undefined ? undefined : ilike(notes.title, containing(query.q)))
             .orderBy(desc(notes.createdAt), desc(notes.id))
             // The spec's default, filled in by validation
             .limit(query.limit);

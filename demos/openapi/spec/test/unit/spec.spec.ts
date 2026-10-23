@@ -40,15 +40,12 @@ suite('spec', () => {
         expect(ids).to.deep.equal(['listNotes', 'createNote', 'getNote']);
     });
 
-    test('Requires a bearer token for every operation that writes', () => {
-        const writes = operations().filter(
-            ({ method }) => !['get', 'head', 'options'].includes(method)
-        );
-
-        expect(writes).to.not.deep.equal([]);
-        for (const { operation } of writes) {
-            expect(operation.security).to.deep.equal([{ bearer: [] }]);
+    test('Requires a bearer token for every operation, with a scope to read or write', () => {
+        for (const { method, operation } of operations()) {
+            const scope = method === 'get' ? 'notes:read' : 'notes:write';
+            expect(operation.security).to.deep.equal([{ bearer: [scope] }]);
             expect(operation.responses).to.have.property('401');
+            expect(operation.responses).to.have.property('403');
         }
     });
 

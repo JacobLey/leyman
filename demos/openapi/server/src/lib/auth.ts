@@ -10,8 +10,8 @@ import { createHash, timingSafeEqual } from 'node:crypto';
 const digest = (token: string): Buffer => createHash('sha256').update(token).digest();
 
 /**
- * Accepts a fixed list of tokens, e.g. API keys from a secret store. Compared in constant time, so how long a
- * comparison takes says nothing about how much of a guess was right.
+ * Accepts a fixed list of tokens, e.g. API keys from a secret store, each with every scope. Compared in constant
+ * time, so how long a comparison takes says nothing about how much of a guess was right.
  *
  * @param tokens - Every token allowed
  * @returns Authenticator
@@ -25,6 +25,6 @@ export const staticTokens = (tokens: readonly string[]): Authenticator => {
         for (const hash of allowed) {
             isMatch = timingSafeEqual(hash, candidate) || isMatch;
         }
-        return isMatch;
+        return isMatch ? 'accepted' : 'invalid';
     };
 };

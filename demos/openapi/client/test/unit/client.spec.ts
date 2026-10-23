@@ -31,7 +31,7 @@ suite('NotesClient', () => {
             readonly path: { noteId: string };
         }>();
         expectTypeOf<OperationInput<'listNotes'>>().toEqualTypeOf<{
-            readonly query?: { limit?: number };
+            readonly query?: { q?: string; limit?: number };
         }>();
         expectTypeOf<OperationInput<'createNote'>>().toEqualTypeOf<{ readonly body: NewNote }>();
     });
@@ -40,11 +40,15 @@ suite('NotesClient', () => {
         expectTypeOf<OperationResult<'getNote'>>().toEqualTypeOf<
             | { readonly status: 200; readonly body: Note }
             | { readonly status: 400; readonly body: ApiError }
+            | { readonly status: 401; readonly body: ApiError }
+            | { readonly status: 403; readonly body: ApiError }
             | { readonly status: 404; readonly body: ApiError }
         >();
         expectTypeOf<OperationResult<'listNotes'>>().toEqualTypeOf<
             | { readonly status: 200; readonly body: NoteList }
             | { readonly status: 400; readonly body: ApiError }
+            | { readonly status: 401; readonly body: ApiError }
+            | { readonly status: 403; readonly body: ApiError }
         >();
     });
 
@@ -134,29 +138,41 @@ suite('NotesClient', () => {
         expect(await requests[0]?.json()).to.deep.equal({ title: 'Dolly', body: 'A sheep' });
     });
 
+    withFetch.test('Sends the token', async ({ requests, fetch, respond }) => {
+        respond(note, 201);
+        const client = new NotesClient({
+            baseUrl: 'http://notes.test',
+            token: 'secret',
+            fetch,
+        });
+
+        await client.call('createNote', { body: { title: 'Dolly', body: 'A sheep' } });
+
+        expect(requests[0]?.headers.get('authorization')).to.equal('Bearer secret');
+    });
+
     withFetch.test(
-        'Sends the token to secured operations',
+        'Asks for the token before each request',
         async ({ requests, fetch, respond }) => {
             respond(note, 201);
+            const tokens = ['first', 'second'][Symbol.iterator]();
             const client = new NotesClient({
                 baseUrl: 'http://notes.test',
-                token: 'secret',
+                token: async () => tokens.next().value,
                 fetch,
             });
 
             await client.call('createNote', { body: { title: 'Dolly', body: 'A sheep' } });
+            await client.call('createNote', { body: { title: 'Dolly', body: 'A sheep' } });
+            await client.call('createNote', { body: { title: 'Dolly', body: 'A sheep' } });
 
-            expect(requests[0]?.headers.get('authorization')).to.equal('Bearer secret');
+            expect(requests.map(request => request.headers.get('authorization'))).to.deep.equal([
+                'Bearer first',
+                'Bearer second',
+                null,
+            ]);
         }
     );
-
-    withFetch.test('Never sends the token to public operations', async ({ requests, fetch }) => {
-        const client = new NotesClient({ baseUrl: 'http://notes.test', token: 'secret', fetch });
-
-        await client.call('getNote', { path: { noteId: note.id } });
-
-        expect(requests[0]?.headers.has('authorization')).to.equal(false);
-    });
 
     withFetch.test('Sends no token without one', async ({ requests, fetch, respond }) => {
         respond({ code: 'unauthorized', message: 'No token' }, 401);

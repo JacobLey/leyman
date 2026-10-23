@@ -35,11 +35,11 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 
 | Operation | Method and path | Auth | Responses |
 |---|---|---|---|
-| `listNotes` | `GET /notes?limit=` | — | `200 NoteList`, `400` |
-| `createNote` | `POST /notes` | Bearer | `201 Note`, `400`, `401`, `413` |
-| `getNote` | `GET /notes/{noteId}` | — | `200 Note`, `400`, `404` |
+| `listNotes` | `GET /notes?q=&limit=` | Bearer, `notes:read` | `200 NoteList`, `400`, `401`, `403` |
+| `createNote` | `POST /notes` | Bearer, `notes:write` | `201 Note`, `400`, `401`, `403`, `413` |
+| `getNote` | `GET /notes/{noteId}` | Bearer, `notes:read` | `200 Note`, `400`, `401`, `403`, `404` |
 
-Every error is an `ApiError` (`{ code, message }`). `limit` is 1-100, default 20. Text can't contain a NUL character (`\u0000`), which Postgres can't store, so a note with one is a `400` rather than a failed insert.
+Every error is an `ApiError` (`{ code, message }`). `q` keeps only notes whose title contains it, ignoring case. `limit` is 1-100, default 20. A `403` is a valid token without the operation's scope: OpenAPI 3.1 lets an `http` scheme list scopes too, not only OAuth's. Text can't contain a NUL character (`\u0000`), which Postgres can't store, so a note with one is a `400` rather than a failed insert.
 
 ### How it's built
 
@@ -90,7 +90,7 @@ const spec = serializeSpec({
 
 A `populate-files` target writes it to `out/openapi.json`, committed, and CI fails if it's stale. The package exports only that file (`@leyman/demo-openapi-spec/openapi.json`): the client and server read the JSON, never the TypeScript.
 
-The spec's tests check that the document is valid OpenAPI 3.1 with every `$ref` resolving ([`@apidevtools/swagger-parser`](https://www.npmjs.com/package/@apidevtools/swagger-parser)), that every operation that writes requires a bearer token and documents its `401`, that it uses only security schemes it defines, and that every operation documents a `400`, since the server rejects requests that don't match.
+The spec's tests check that the document is valid OpenAPI 3.1 with every `$ref` resolving ([`@apidevtools/swagger-parser`](https://www.npmjs.com/package/@apidevtools/swagger-parser)), that every operation requires a bearer token with its scope (`notes:read` or `notes:write`) and documents its `401` and `403`, that it uses only security schemes it defines, and that every operation documents a `400`, since the server rejects requests that don't match.
 
 ## The client
 
@@ -109,6 +109,7 @@ switch (created.status) {
         break;
     case 400:
     case 401:
+    case 403:
     case 413:
         console.error(created.body.message);
         break;
@@ -116,9 +117,9 @@ switch (created.status) {
 ```
 
 - **Types come from the spec.** A `genever` target writes `src/generated/api.ts` from `openapi.json` (see [genever's OpenAPI guide](/genever/guides/openapi)), and CI fails if it's stale. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`: an operation's `path`, `query` and `body` appear only if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
-- **Routes come from the spec too.** The method and path of each operation, whether it's secured, and the statuses it documents are read from `openapi.json` when the module loads. Only the types are generated, so there's no generated runtime code to keep in sync.
+- **Routes come from the spec too.** The method and path of each operation, and the statuses it documents are read from `openapi.json` when the module loads. Only the types are generated, so there's no generated runtime code to keep in sync.
 - **One generic `call`**, rather than a method per operation: a new operation in the spec works as soon as the types are regenerated.
-- **The token is only sent to secured operations**, so a public read never carries it.
+- **The token can be a function**, called before every request, so a token that expires is refreshed rather than baked in. Every operation needs one.
 - **A status the spec doesn't document** (say, a 500) throws `NotesClientUnexpectedStatusError`, rather than being returned as if it matched a type.
 
 An input the spec doesn't allow is a type error:
@@ -135,7 +136,7 @@ await client.call('getNote', { path: { noteId: 'abc' }, body: { title: 'Dolly' }
 | Option | Default | Description |
 |---|---|---|
 | `baseUrl` | — | Where the API is served. Paths in the spec are appended to its path. |
-| `token` | — | Bearer token for secured operations. |
+| `token` | — | Bearer token, or a function returning one (called before each request). Every operation needs one. |
 | `fetch` | `globalThis.fetch` | Makes the requests, e.g. one with retries or tracing. |
 
 ## The server
@@ -144,14 +145,16 @@ await client.call('getNote', { path: { noteId: 'abc' }, body: { title: 'Dolly' }
 declare const process: { env: Record<string, string> };
 // ---cut---
 import { serve } from '@hono/node-server';
-import { createNotesApp } from '@leyman/demo-openapi-server';
+import { createNotesApp, jwtAuthenticator } from '@leyman/demo-openapi-server';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const app = createNotesApp({
     db: drizzle({ client: pool }),
-    tokens: [process.env.NOTES_TOKEN],
+    // Or `staticTokens([process.env.NOTES_TOKEN])`, for a fixed list of API keys
+    authenticate: jwtAuthenticator({ issuer: 'https://auth.example', audience: 'https://notes.example' }),
+    protectedResource: { resource: 'https://notes.example', authorizationServers: ['https://auth.example'] },
     onError: error => console.error(error),
 });
 
@@ -162,7 +165,7 @@ serve({ fetch: app.fetch, port: 3000 });
 
 Each operation in `openapi.json` becomes a Hono route (`/notes/{noteId}` → `/notes/:noteId`), served in this order:
 
-1. **Authenticate**, if the operation has `security`: a missing or wrong bearer token is a `401` with `WWW-Authenticate: Bearer`. This comes first, so a caller without a token learns nothing about what the operation accepts.
+1. **Authenticate**, with the scope the operation's `security` names: no token or an invalid one is a `401`, a valid one without the scope a `403` (`WWW-Authenticate: Bearer error="insufficient_scope", scope="notes:write"`), as RFC 6750 says. This comes first, so a caller without a token learns nothing about what the operation accepts.
 2. **Limit the body**, if the operation has one: a body over 128 KiB (more than any valid note could take as JSON) is a `413`, refused from its `Content-Length`, or once that much of a chunked body has arrived, rather than read whole and then rejected.
 3. **Validate the request**: path and query parameters (strings, coerced to the schema's types, with its defaults filled in: `limit` is 20 unless given), then the JSON body (`application/json`, in any case). Anything that doesn't match, including unknown query parameters and properties, is a `400` saying why.
 4. **Call the handler**, typed by genever's `Operations`: it gets only input that matched, and must answer with a documented `{ status, body }`.
@@ -192,7 +195,12 @@ The validators are compiled once, with [Ajv](https://ajv.js.org) (JSON Schema 20
 
 ### Authentication
 
-`staticTokens(tokens)` accepts a fixed list (e.g. API keys from a secret store). Each token is hashed (SHA-256) and compared with `timingSafeEqual` against every allowed token, so neither the time a comparison takes nor where a match is found says anything about a guess. Any other scheme (JWT, a token service) is another `Authenticator`, bound in its place.
+An `Authenticator` gets the token and the operation's scopes, and answers `accepted`, `invalid` (a `401`) or `insufficient_scope` (a `403`). Two are built in:
+
+- **`jwtAuthenticator({ issuer, audience })`** accepts JWT access tokens (RFC 9068) from an authorization server: signed with one of its keys (found by OpenID Connect discovery, then cached by `jose`), issued by it, for this API (`aud`, so a token meant for another service from the same issuer is refused), not expired, and with every scope needed. A discovery that fails is a `500` reported to `onError`, retried on the next request. A [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/demos/oauth-server) issues such tokens in the tests.
+- **`staticTokens(tokens)`** accepts a fixed list (e.g. API keys from a secret store), each with every scope. Each token is hashed (SHA-256) and compared with `timingSafeEqual` against every allowed token, so neither the time a comparison takes nor where a match is found says anything about a guess.
+
+With `protectedResource`, the API also serves its Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`, naming its authorization server and scopes, and every challenge points to it (`resource_metadata="..."`). A client then needs only the API's URL to log in.
 
 ### The database
 
@@ -200,7 +208,7 @@ The validators are compiled once, with [Ajv](https://ajv.js.org) (JSON Schema 20
 - **The Drizzle schema puts the defaults in the database**: the id (`uuidv7()`, ordered by time, so notes made in the same transaction still list in order) and the time (`now()`), so every test database has them too. `uuidv7()` needs Postgres 18, which the devcontainer and CI run.
 - **Migrations are SQL, generated and reviewed**: `drizzle-kit generate --name <name>` writes them to `migrations/`. A `drizzle-kit-check` target fails CI if the schema has changes no migration covers.
 - **`schema.sql` is what the migrations build**, kept by [pg-dolly-schema](/pg-dolly-schema/) running `drizzle-kit migrate` on an empty database. It includes Drizzle's own `drizzle.__drizzle_migrations` table, rows and all (`--data`), so every test database knows its migrations ran, and migrating one does nothing.
-- **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in. The type says so too: handlers take genever's `OperationRequest` (`--parameter-defaults`), where `limit` is always there, rather than the caller's view, where it's optional.
+- **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in. `q` is matched with `ILIKE`, its `%`, `_` and `\` escaped so they match themselves. The type says so too: handlers take genever's `OperationRequest` (`--parameter-defaults`), where `limit` is always there, rather than the caller's view, where it's optional.
 
 ### Composing with haywire
 
@@ -209,16 +217,16 @@ The validators are compiled once, with [Ajv](https://ajv.js.org) (JSON Schema 20
 | Identifier | Bound by | Default |
 |---|---|---|
 | `databaseId` | the app: Drizzle on a pool it owns, never closed by the server | — |
-| `authenticatorId` | the app | `staticTokensBinding(tokens)` |
-| `appConfigId` | the app: `onError` | — |
+| `authenticatorId` | the app | `jwtAuthenticatorBinding(options)` or `staticTokensBinding(tokens)` |
+| `appConfigId` | the app: `onError`, and `protectedResource` | — |
 | `handlersId` | `notesModule` | `drizzleHandlersBinding` |
 | `notesAppId` | `notesModule` | the Hono app |
 
 ```ts
-import type { NotesDatabase } from '@leyman/demo-openapi-server';
+import type { Authenticator, NotesDatabase } from '@leyman/demo-openapi-server';
 
 declare const db: NotesDatabase;
-declare const verifyJwt: (token: string) => Promise<boolean>;
+declare const introspect: Authenticator;
 declare const report: (error: Error) => void;
 // ---cut---
 import {
@@ -233,7 +241,7 @@ import { bind, createContainer } from 'haywire';
 const app = createContainer(
     notesModule
         .addBinding(bind(databaseId).withInstance(db))
-        .addBinding(bind(authenticatorId).withInstance(verifyJwt))
+        .addBinding(bind(authenticatorId).withInstance(introspect))
         .addBinding(bind(appConfigId).withInstance({ onError: report }))
 ).get(notesAppId);
 ```
@@ -257,6 +265,6 @@ const app = createContainer(
 ## Not covered
 
 - Optional request bodies, other content types, header and cookie parameters, and response headers. The spec has none, so the server has no code for them.
-- Pagination beyond a `limit` (cursors), rate limiting, CORS, and real token issuance (JWT, OAuth). Authentication is a fixed list of bearer tokens behind an `Authenticator` binding, which is where those would plug in.
+- Pagination beyond a `limit` (cursors), rate limiting, and CORS. Tokens are issued by an authorization server; the API only verifies them.
 - Spec linting beyond the spec package's own tests (e.g. [Spectral](https://github.com/stoplightio/spectral)).
 - The cost of validating every response in production. It catches a handler breaking the contract before a client does, but a busy service might only sample.

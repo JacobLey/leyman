@@ -37,6 +37,15 @@ export type NotesHandlers = {
 };
 
 /**
- * Whether a bearer token may call the secured operations.
+ * A bearer token is `accepted` when it is valid and has every scope the operation needs, `invalid` when it isn't
+ * valid at all (a `401`), and `insufficient_scope` when it is valid without them (a `403`).
  */
-export type Authenticator = (token: string) => boolean | Promise<boolean>;
+export type Authentication = 'accepted' | 'insufficient_scope' | 'invalid';
+
+/**
+ * Checks a bearer token against the scopes an operation needs.
+ */
+export type Authenticator = (
+    token: string,
+    scopes: readonly string[]
+) => Authentication | Promise<Authentication>;

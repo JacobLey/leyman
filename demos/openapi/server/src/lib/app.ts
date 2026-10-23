@@ -8,13 +8,41 @@ import { bodyLimit } from 'hono/body-limit';
 import { NotesResponseError } from './errors.js';
 import { describeErrors, operations } from './operations.js';
 
+/**
+ * Says which authorization server issues tokens for the API (RFC 9728), so an OAuth client needs only the API's URL.
+ */
+export interface ProtectedResource {
+    /**
+     * The API's URL, which is also the audience its tokens are issued for.
+     */
+    readonly resource: string;
+    readonly authorizationServers: readonly string[];
+}
+
 export interface NotesAppConfig {
     /**
      * Called with every error a request ends in (a 500): a handler that threw, or answered with something the spec
      * doesn't allow.
      */
     readonly onError: (error: Error) => void;
+    /**
+     * Serves the API's Protected Resource Metadata, and points to it from every `WWW-Authenticate` challenge. Only
+     * for tokens from an authorization server (not static tokens).
+     */
+    readonly protectedResource?: ProtectedResource | undefined;
 }
+
+/**
+ * Where RFC 9728 puts a resource's metadata: `/.well-known/oauth-protected-resource`, before the resource's path.
+ *
+ * @param resource - Where the API is served
+ * @returns Where its metadata is
+ */
+const metadataUrl = (resource: string): URL => {
+    const url = new URL(resource);
+    url.pathname = `/.well-known/oauth-protected-resource${url.pathname.replace(/^\/$/v, '')}`;
+    return url;
+};
 
 interface HandlerResult {
     readonly status: number;
@@ -67,21 +95,51 @@ const readJson = async (
 };
 
 /**
- * Answers 401 unless the request has a bearer token the authenticator accepts.
+ * Answers unless the request has a bearer token the authenticator accepts for the operation's scopes, as RFC 6750
+ * says: a `401` without a token (`WWW-Authenticate: Bearer`) or with an invalid one (`error="invalid_token"`), and a
+ * `403` with a valid token that lacks a scope (`error="insufficient_scope"`, naming every scope needed). Each
+ * challenge points to the API's metadata, when it has some.
  *
  * @param authenticate - Checks bearer tokens
+ * @param scopes - What the operation needs
+ * @param metadata - The API's Protected Resource Metadata, if it serves it
  * @returns Middleware
  */
-const requireToken =
-    (authenticate: Authenticator): MiddlewareHandler =>
-    async (context, next) => {
+const requireToken = (
+    authenticate: Authenticator,
+    scopes: readonly string[],
+    metadata: URL | null
+): MiddlewareHandler => {
+    const challenge = (...parameters: readonly string[]): string => {
+        const all = metadata ? [`resource_metadata="${metadata.href}"`, ...parameters] : parameters;
+        return all.length > 0 ? `Bearer ${all.join(', ')}` : 'Bearer';
+    };
+    return async (context, next) => {
         const token = bearer.exec(context.req.header('authorization') ?? '')?.groups?.token;
-        if (token === undefined || !(await authenticate(token))) {
-            context.header('www-authenticate', 'Bearer');
-            return problem(context, 401, 'unauthorized', 'A valid bearer token is required');
+        if (token === undefined) {
+            context.header('www-authenticate', challenge());
+            return problem(context, 401, 'unauthorized', 'A bearer token is required');
+        }
+        const authentication = await authenticate(token, scopes);
+        if (authentication === 'invalid') {
+            context.header('www-authenticate', challenge('error="invalid_token"'));
+            return problem(context, 401, 'unauthorized', 'The bearer token is not valid');
+        }
+        if (authentication === 'insufficient_scope') {
+            context.header(
+                'www-authenticate',
+                challenge('error="insufficient_scope"', `scope="${scopes.join(' ')}"`)
+            );
+            return problem(
+                context,
+                403,
+                'insufficient_scope',
+                `The bearer token needs the scope ${scopes.join(' ')}`
+            );
         }
         return next();
     };
+};
 
 // eslint-disable-next-line jsdoc/require-rejects -- The handler it returns rejects, not this function
 /**
@@ -152,7 +210,7 @@ const serve =
  *
  * @param handlers - Every operation's handler
  * @param authenticate - Checks bearer tokens for the secured operations
- * @param config - Error reporting
+ * @param config - Error reporting, and the API's metadata
  * @returns Hono app, e.g. for `@hono/node-server`'s `serve`
  */
 export const createApp = (
@@ -161,7 +219,19 @@ export const createApp = (
     config: NotesAppConfig
 ): Hono => {
     const app = new Hono();
-    const authenticated = requireToken(authenticate);
+    const { protectedResource } = config;
+    let metadata: URL | null = null;
+    if (protectedResource) {
+        metadata = metadataUrl(protectedResource.resource);
+        app.get(metadata.pathname, context =>
+            context.json({
+                resource: protectedResource.resource,
+                authorization_servers: protectedResource.authorizationServers,
+                scopes_supported: [...new Set(operations.flatMap(({ scopes }) => scopes))],
+                bearer_methods_supported: ['header'],
+            })
+        );
+    }
     const limited = bodyLimit({
         maxSize: maxBodyBytes,
         onError: context => problem(context, 413, 'too_large', 'The body is too large'),
@@ -170,9 +240,7 @@ export const createApp = (
         const method = operation.method.toUpperCase();
         // Handlers of a route run in the order they are added. Authentication comes first, so a caller without a
         // token learns nothing about what the operation accepts, not even how large a body may be.
-        if (operation.secured) {
-            app.on(method, operation.route, authenticated);
-        }
+        app.on(method, operation.route, requireToken(authenticate, operation.scopes, metadata));
         if (operation.body) {
             app.on(method, operation.route, limited);
         }

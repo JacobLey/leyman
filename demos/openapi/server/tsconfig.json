@@ -39,6 +39,9 @@
     },
     {
       "path": "../client"
+    },
+    {
+      "path": "../../oauth-server"
     }
   ]
 }

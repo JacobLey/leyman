@@ -1131,6 +1131,9 @@ importers:
       hono:
         specifier: 'catalog:'
         version: 4.13.13
+      jose:
+        specifier: 'catalog:'
+        version: 6.2.12
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1138,6 +1141,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.5.14
+      '@leyman/demo-oauth-server':
+        specifier: workspace:^
+        version: file:demos/oauth-server(supports-color@8.1.1)
       '@leyman/demo-openapi-client':
         specifier: workspace:^
         version: file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
@@ -4569,6 +4575,10 @@ packages:
 
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors':
     resolution: {directory: tools/constant-consistent-hash/test-vectors, type: directory}
+
+  '@leyman/demo-oauth-server@file:demos/oauth-server':
+    resolution: {directory: demos/oauth-server, type: directory}
+    engines: {node: '>=24'}
 
   '@leyman/demo-openapi-client@file:demos/openapi/client':
     resolution: {directory: demos/openapi/client, type: directory}
@@ -10970,6 +10980,13 @@ snapshots:
 
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors': {}
 
+  '@leyman/demo-oauth-server@file:demos/oauth-server(supports-color@8.1.1)':
+    dependencies:
+      jose: 6.2.12
+      oidc-provider: 9.12.2(supports-color@8.1.1)
+    transitivePeerDependencies:
+      - supports-color
+
   '@leyman/demo-openapi-client@file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))':
     dependencies:
       '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
@@ -11022,6 +11039,7 @@ snapshots:
       drizzle-orm: 0.45.4(@types/pg@8.23.1)(pg@8.23.1)
       haywire: file:tools/haywire
       hono: 4.13.13
+      jose: 6.2.12
       pg: 8.23.1
     transitivePeerDependencies:
       - '@aws-sdk/client-rds-data'

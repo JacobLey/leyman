@@ -27,9 +27,9 @@ switch (created.status) {
 ## How it works
 
 - **Types come from the spec.** The `genever` target writes `src/generated/api.ts` from `openapi.json` (as installed from the spec package), and CI fails if it's stale. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`: an operation's `path`, `query` and `body` appear only if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
-- **Routes come from the spec too.** The method and path of each operation, whether it's secured, and the statuses it documents are read from `openapi.json` when the module loads. Only the types are generated, so there's no generated runtime code to keep in sync.
+- **Routes come from the spec too.** The method and path of each operation, and the statuses it documents are read from `openapi.json` when the module loads. Only the types are generated, so there's no generated runtime code to keep in sync.
 - **One generic `call`**, rather than a method per operation: a new operation in the spec works as soon as the types are regenerated.
-- **The token is only sent to secured operations**, so a public read never carries it.
+- **The token can be a function**, called before every request, so a token that expires is refreshed rather than baked in.
 - **A status the spec doesn't document** (say, a 500) throws `NotesClientUnexpectedStatusError` rather than being returned as if it matched a type.
 
 ## Options
@@ -37,7 +37,7 @@ switch (created.status) {
 | Option | Default | Description |
 |---|---|---|
 | `baseUrl` | — | Where the API is served. Paths in the spec are appended to its path. |
-| `token` | — | Bearer token for secured operations. |
+| `token` | — | Bearer token, or a function returning one (called before each request). Every operation needs one. |
 | `fetch` | `globalThis.fetch` | Makes the requests, e.g. one with retries or tracing. |
 
 ## Testing

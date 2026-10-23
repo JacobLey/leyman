@@ -15,7 +15,7 @@ interface DocumentParameter {
 
 interface DocumentOperation {
     readonly operationId: string;
-    readonly security?: readonly unknown[];
+    readonly security: readonly Readonly<Record<string, readonly string[]>>[];
     readonly parameters?: readonly DocumentParameter[];
     readonly requestBody?: {
         readonly content: Readonly<Record<string, { readonly schema: AnySchema }>>;
@@ -44,7 +44,10 @@ export interface Operation {
      * In Hono's syntax: `/notes/:noteId` for the spec's `/notes/{noteId}`.
      */
     readonly route: string;
-    readonly secured: boolean;
+    /**
+     * The scopes a bearer token needs. Every operation in this spec needs one (its tests check it).
+     */
+    readonly scopes: readonly string[];
     /**
      * Each coerces its strings to the schema's types, and fills in the spec's defaults.
      */
@@ -135,7 +138,8 @@ export const operations: readonly Operation[] = Object.entries(
                 method,
                 operationId: operation.operationId,
                 route: path.replaceAll(/\{(?<name>\w+)\}/gv, ':$<name>'),
-                secured: (operation.security ?? []).length > 0,
+                // Every operation in this spec has one security requirement, on the `bearer` scheme
+                scopes: operation.security[0]!.bearer!,
                 path: compileParameters('path', list),
                 query: compileParameters('query', list),
                 body: json ? bodies.compile(inDocument(json.schema)) : null,

@@ -17,3 +17,15 @@ export class NotesResponseError extends NotesServerError {
         this.status = status;
     }
 }
+
+/**
+ * The authorization server can't be trusted for tokens: its discovery document is missing, or wrong.
+ */
+export class NotesAuthorizationServerError extends NotesServerError {
+    public readonly issuer: string;
+    public constructor(issuer: string, reason: string) {
+        super(`Authorization server ${issuer}: ${reason}`);
+        this.name = 'NotesAuthorizationServerError';
+        this.issuer = issuer;
+    }
+}

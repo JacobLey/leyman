@@ -9,8 +9,26 @@
     "/notes": {
       "get": {
         "operationId": "listNotes",
-        "summary": "The newest notes",
+        "summary": "The newest notes, optionally only those whose title contains some text",
+        "security": [
+          {
+            "bearer": [
+              "notes:read"
+            ]
+          }
+        ],
         "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "description": "Only notes whose title contains this, ignoring case",
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200,
+              "pattern": "^[^\\u0000]*$"
+            }
+          },
           {
             "name": "limit",
             "in": "query",
@@ -42,6 +60,26 @@
                 }
               }
             }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the scope the operation needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
           }
         }
       },
@@ -50,7 +88,9 @@
         "summary": "Add a note",
         "security": [
           {
-            "bearer": []
+            "bearer": [
+              "notes:write"
+            ]
           }
         ],
         "requestBody": {
@@ -94,6 +134,16 @@
               }
             }
           },
+          "403": {
+            "description": "The token lacks the scope the operation needs",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
           "413": {
             "description": "The body is larger than any valid request",
             "content": {
@@ -122,6 +172,13 @@
       "get": {
         "operationId": "getNote",
         "summary": "One note",
+        "security": [
+          {
+            "bearer": [
+              "notes:read"
+            ]
+          }
+        ],
         "responses": {
           "200": {
             "description": "The note",
@@ -135,6 +192,26 @@
           },
           "400": {
             "description": "The request does not match the spec",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Missing or invalid bearer token",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApiError"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "The token lacks the scope the operation needs",
             "content": {
               "application/json": {
                 "schema": {

@@ -1,7 +1,7 @@
 {
   "name": "@leyman/demo-openapi-server",
   "version": "0.0.1",
-  "description": "The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication.",
+  "description": "The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication (static tokens or JWTs) and scopes.",
   "engines": {
     "node": ">=24"
   },
@@ -36,10 +36,12 @@
     "drizzle-orm": "catalog:",
     "haywire": "workspace:^",
     "hono": "catalog:",
+    "jose": "catalog:",
     "pg": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@leyman/demo-oauth-server": "workspace:^",
     "@leyman/demo-openapi-client": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",

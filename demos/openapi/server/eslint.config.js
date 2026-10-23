@@ -6,6 +6,7 @@ export default [
     {
         languageOptions: {
             globals: {
+                btoa: 'readonly',
                 Buffer: 'readonly',
                 fetch: 'readonly',
                 process: 'readonly',

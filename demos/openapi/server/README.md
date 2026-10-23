@@ -1,6 +1,6 @@
 # demo-openapi-server
 
-The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication.
+The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication (static tokens or JWTs) and scopes.
 
 Part of the [OpenAPI demo](../README.md). A worked example, never published.
 
@@ -17,14 +17,16 @@ Part of the [OpenAPI demo](../README.md). A worked example, never published.
 
 ```ts
 import { serve } from '@hono/node-server';
-import { createNotesApp } from '@leyman/demo-openapi-server';
+import { createNotesApp, jwtAuthenticator } from '@leyman/demo-openapi-server';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import pg from 'pg';
 
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const app = createNotesApp({
     db: drizzle({ client: pool }),
-    tokens: [process.env.NOTES_TOKEN!],
+    // Or `staticTokens([process.env.NOTES_TOKEN!])`, for a fixed list of API keys
+    authenticate: jwtAuthenticator({ issuer: 'https://auth.example', audience: 'https://notes.example' }),
+    protectedResource: { resource: 'https://notes.example', authorizationServers: ['https://auth.example'] },
     onError: error => console.error(error),
 });
 
@@ -35,7 +37,7 @@ serve({ fetch: app.fetch, port: 3000 });
 
 Each operation in `openapi.json` becomes a Hono route (`/notes/{noteId}` → `/notes/:noteId`), served in this order:
 
-1. **Authenticate**, if the operation has `security`: a missing or wrong bearer token is a `401` with `WWW-Authenticate: Bearer`. This comes first, so a caller without a token learns nothing about what the operation accepts.
+1. **Authenticate**, with the scope the operation's `security` names: no token or an invalid one is a `401`, a valid one without the scope a `403` (`WWW-Authenticate: Bearer error="insufficient_scope", scope="notes:write"`), as RFC 6750 says. This comes first, so a caller without a token learns nothing about what the operation accepts.
 2. **Limit the body**, if the operation has one: a body over 128 KiB (more than any valid note could take as JSON) is a `413`, refused from its `Content-Length`, or once that much of a chunked body has arrived, rather than read whole and then rejected.
 3. **Validate the request**: path and query parameters (strings, coerced to the schema's types, with its defaults filled in: `limit` is 20 unless given), then the JSON body (`application/json`, in any case). Anything that doesn't match, including unknown query parameters and properties, is a `400` saying why.
 4. **Call the handler**, typed by genever's `Operations`: it gets only input that matched, and must answer with a documented `{ status, body }`.
@@ -53,12 +55,17 @@ The validators are compiled once, with Ajv (JSON Schema 2020-12, as OpenAPI 3.1 
 
 ## Authentication
 
-`staticTokens(tokens)` accepts a fixed list (e.g. API keys from a secret store). Each token is hashed (SHA-256) and compared with `timingSafeEqual` against every allowed token, so neither the time a comparison takes nor where a match is found says anything about a guess. Any other scheme (JWT, a token service) is another `Authenticator`, bound in its place.
+An `Authenticator` gets the token and the operation's scopes, and answers `accepted`, `invalid` (a `401`) or `insufficient_scope` (a `403`). Two are built in:
+
+- **`jwtAuthenticator({ issuer, audience })`** accepts JWT access tokens (RFC 9068) from an authorization server: signed with one of its keys (found by OpenID Connect discovery, then cached by `jose`), issued by it, for this API (`aud`, so a token meant for another service from the same issuer is refused), not expired, and with every scope needed. A discovery that fails is a `500` reported to `onError`, retried on the next request. The [dev OAuth server](../../oauth-server) issues such tokens in the tests.
+- **`staticTokens(tokens)`** accepts a fixed list (e.g. API keys from a secret store), each with every scope. Each token is hashed (SHA-256) and compared with `timingSafeEqual` against every allowed token, so neither the time a comparison takes nor where a match is found says anything about a guess.
+
+With `protectedResource`, the API also serves its Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`, naming its authorization server and scopes, and every challenge points to it (`resource_metadata="..."`). A client then needs only the API's URL to log in: the [notes CLI](../../agents/cli) does just that.
 
 ## The database
 
 - **The schema is in [`database`](../database)**: the Drizzle tables, their migrations, and `schema.sql`, what the migrations build. The server queries the `notes` table it exports.
-- **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in. The type says so too: handlers take genever's `OperationRequest` (`--parameter-defaults`), where `limit` is always there, rather than the caller's view, where it's optional.
+- **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in. `q` is matched with `ILIKE`, its `%`, `_` and `\` escaped so they match themselves. The type says so too: handlers take genever's `OperationRequest` (`--parameter-defaults`), where `limit` is always there, rather than the caller's view, where it's optional.
 
 ## Composing with haywire
 
@@ -67,8 +74,8 @@ The validators are compiled once, with Ajv (JSON Schema 2020-12, as OpenAPI 3.1 
 | Identifier | Bound by | Default |
 |---|---|---|
 | `databaseId` | the app: Drizzle on a pool it owns, never closed by the server | — |
-| `authenticatorId` | the app | `staticTokensBinding(tokens)` |
-| `appConfigId` | the app: `onError` | — |
+| `authenticatorId` | the app | `jwtAuthenticatorBinding(options)` or `staticTokensBinding(tokens)` |
+| `appConfigId` | the app: `onError`, and `protectedResource` | — |
 | `handlersId` | `notesModule` | `drizzleHandlersBinding` |
 | `notesAppId` | `notesModule` | the Hono app |
 
@@ -76,7 +83,7 @@ The validators are compiled once, with Ajv (JSON Schema 2020-12, as OpenAPI 3.1 
 const app = createContainer(
     notesModule
         .addBinding(bind(databaseId).withInstance(db))
-        .addBinding(bind(authenticatorId).withInstance(verifyJwt))
+        .addBinding(bind(authenticatorId).withInstance(introspect))
         .addBinding(bind(appConfigId).withInstance({ onError: report }))
 ).get(notesAppId);
 ```

@@ -54,7 +54,7 @@ export type Paths = {
             cookie?: never;
         };
         /**
-         * The newest notes
+         * The newest notes, optionally only those whose title contains some text
          */
         get: Operations['listNotes'];
         put?: never;
@@ -93,11 +93,15 @@ export type Paths = {
 
 export type Operations = {
     /**
-     * The newest notes
+     * The newest notes, optionally only those whose title contains some text
      */
     listNotes: {
         parameters: {
             query?: {
+                /**
+                 * Only notes whose title contains this, ignoring case
+                 */
+                q?: string;
                 limit?: number;
             };
             header?: never;
@@ -121,6 +125,28 @@ export type Operations = {
              * The request does not match the spec
              */
             '400': {
+                headers: {
+                    [key: string]: unknown;
+                };
+                content: {
+                    'application/json': ApiError;
+                };
+            };
+            /**
+             * Missing or invalid bearer token
+             */
+            '401': {
+                headers: {
+                    [key: string]: unknown;
+                };
+                content: {
+                    'application/json': ApiError;
+                };
+            };
+            /**
+             * The token lacks the scope the operation needs
+             */
+            '403': {
                 headers: {
                     [key: string]: unknown;
                 };
@@ -180,6 +206,17 @@ export type Operations = {
                 };
             };
             /**
+             * The token lacks the scope the operation needs
+             */
+            '403': {
+                headers: {
+                    [key: string]: unknown;
+                };
+                content: {
+                    'application/json': ApiError;
+                };
+            };
+            /**
              * The body is larger than any valid request
              */
             '413': {
@@ -221,6 +258,28 @@ export type Operations = {
              * The request does not match the spec
              */
             '400': {
+                headers: {
+                    [key: string]: unknown;
+                };
+                content: {
+                    'application/json': ApiError;
+                };
+            };
+            /**
+             * Missing or invalid bearer token
+             */
+            '401': {
+                headers: {
+                    [key: string]: unknown;
+                };
+                content: {
+                    'application/json': ApiError;
+                };
+            };
+            /**
+             * The token lacks the scope the operation needs
+             */
+            '403': {
                 headers: {
                     [key: string]: unknown;
                 };

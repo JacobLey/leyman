@@ -37,6 +37,6 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 ## Not covered
 
 - Optional request bodies, other content types, header and cookie parameters, and response headers. The spec has none, so the server has no code for them.
-- Pagination beyond a `limit` (cursors), rate limiting, CORS, and real token issuance (JWT, OAuth). Authentication is a fixed list of bearer tokens behind an `Authenticator` binding, which is where those would plug in.
+- Pagination beyond a `limit` (cursors), rate limiting, and CORS. Tokens are issued by an authorization server (the [dev OAuth server](../oauth-server) in tests); the API only verifies them.
 - Spec linting beyond the spec package's own tests (e.g. [Spectral](https://github.com/stoplightio/spectral)).
 - The cost of validating every response in production. It catches a handler breaking the contract before a client does, but a busy service might only sample.
