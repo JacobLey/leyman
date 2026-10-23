@@ -23,7 +23,11 @@ export const listen = async (app: Hono): Promise<Served> => {
         close: async () =>
             new Promise((resolve, reject) => {
                 server.close(error => {
-                    error ? reject(error) : resolve();
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
                 });
             }),
     };
