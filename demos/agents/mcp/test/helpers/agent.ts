@@ -127,7 +127,7 @@ export const connectAgent = async (
     const provider = new AgentOAuthProvider(options.user);
     const client = new Client(
         { name: 'demo-agent', version: '1.0.0' },
-        options.legacy ? { versionNegotiation: { mode: 'legacy' } } : {}
+        options.legacy === true ? { versionNegotiation: { mode: 'legacy' } } : {}
     );
     let transport = new StreamableHTTPClientTransport(new URL(url), { authProvider: provider });
 

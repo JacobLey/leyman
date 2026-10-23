@@ -36,7 +36,10 @@ const noteOutput = (keys: readonly (keyof Note)[]): JsonSchemaType => ({
                 noteSchema.properties[key];
             return [
                 key,
-                { type: property.type, ...(property.format && { format: property.format }) },
+                {
+                    type: property.type,
+                    ...(property.format !== undefined && { format: property.format }),
+                },
             ];
         })
     ),

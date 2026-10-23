@@ -115,7 +115,7 @@ export const createMcpApp = (
     );
     app.all(resource.pathname, async context => {
         // Without a token, a challenge with no error code (RFC 6750): there's nothing wrong with a token not sent
-        if (!context.req.header('authorization')) {
+        if ((context.req.header('authorization') ?? '') === '') {
             return context.body(null, statusUnauthorized, {
                 'www-authenticate': `Bearer resource_metadata="${metadataUrl}", scope="${connectScopes.join(' ')}"`,
             });
