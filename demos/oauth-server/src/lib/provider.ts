@@ -193,8 +193,8 @@ const approve = async (
  * An OAuth 2.1 authorization server for development and tests, on [oidc-provider](https://github.com/panva/node-oidc-provider).
  * Everything a client sees is real: metadata discovery (RFC 8414 and OpenID Connect), the authorization code flow
  * with PKCE (S256, required), refresh tokens, the client credentials and token exchange (RFC 8693) grants, resource
- * indicators (RFC 8707), `iss` in
- * authorization responses (RFC 9207), and access tokens as JWTs (RFC 9068) signed with a key generated at startup.
+ * indicators (RFC 8707), `iss` in authorization responses (RFC 9207), revocation (RFC 7009), and access tokens as JWTs
+ * (RFC 9068) signed with a key generated at startup.
  * Only the login is fake: it approves as the account asked for, with no page and no password. It refuses to serve anywhere but
  * this machine, unless `dangerouslyAllowNonLocal` is set.
  *
@@ -264,6 +264,13 @@ export const createDevAuthorizationServer = async (
         features: {
             devInteractions: { enabled: false },
             clientCredentials: { enabled: true },
+            // RFC 7009: a client gives up a refresh token, and with it the grant (every token issued under it).
+            // Access tokens are JWTs, which resource servers verify without calling back, so they can't be revoked
+            revocation: {
+                enabled: true,
+                // A client revokes only its own tokens
+                allowedPolicy: (_ctx, client, token) => token.clientId === client.clientId,
+            },
             resourceIndicators: {
                 enabled: true,
                 // A client names the server it wants a token for, in the authorization and the token request: a token

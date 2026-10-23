@@ -422,6 +422,81 @@ suite('Dev authorization server', () => {
         });
     });
 
+    suite('Revocation', () => {
+        /**
+         * Revokes a token, as the public client that holds it.
+         *
+         * @param metadata - The authorization server's metadata
+         * @param token - To revoke
+         * @returns The revocation endpoint's status and body
+         */
+        const revoke = async (
+            metadata: Metadata,
+            token: string
+        ): Promise<{ readonly status: number; readonly body: string }> => {
+            const response = await fetch(metadata.revocation_endpoint as string, {
+                method: 'POST',
+                body: new URLSearchParams({ token, client_id: clientId }),
+            });
+            return { status: response.status, body: await response.text() };
+        };
+
+        /**
+         * Tokens for `resource`, by the whole authorization code flow.
+         *
+         * @param metadata - The authorization server's metadata
+         * @returns The token endpoint's body
+         */
+        const userTokens = async (
+            metadata: Metadata
+        ): Promise<Readonly<Record<string, unknown>>> => {
+            const { verifier, challenge } = pkce();
+            const callback = await followAuthorization(
+                authorizationUrl(metadata, {
+                    code_challenge: challenge,
+                    code_challenge_method: 'S256',
+                }),
+                redirectUri
+            );
+            const { body } = await exchange(metadata, {
+                code: callback.searchParams.get('code')!,
+                code_verifier: verifier,
+            });
+            return body;
+        };
+
+        withServer.test('Revokes a refresh token', async ({ metadata }) => {
+            const tokens = await userTokens(metadata);
+
+            const revoked = await revoke(metadata, tokens.refresh_token as string);
+            const { status, body } = await exchange(metadata, {
+                grant_type: 'refresh_token',
+                refresh_token: tokens.refresh_token as string,
+                redirect_uri: undefined,
+            });
+
+            expect(revoked.status).to.equal(200);
+            expect(status).to.equal(400);
+            expect(body).to.include({ error: 'invalid_grant' });
+        });
+
+        withServer.test('Answers 200 for a token it does not know', async ({ metadata }) => {
+            // RFC 7009 §2.2: an invalid token is no error, so a client can't probe for valid ones
+            const { status } = await revoke(metadata, 'not-a-token');
+
+            expect(status).to.equal(200);
+        });
+
+        withServer.test('Can not revoke a JWT access token', async ({ metadata }) => {
+            const tokens = await userTokens(metadata);
+
+            const { status, body } = await revoke(metadata, tokens.access_token as string);
+
+            expect(status).to.equal(400);
+            expect(JSON.parse(body)).to.include({ error: 'unsupported_token_type' });
+        });
+    });
+
     suite('Client credentials', () => {
         /**
          * Asks for a token as the service.

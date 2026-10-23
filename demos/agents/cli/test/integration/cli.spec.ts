@@ -74,6 +74,13 @@ suite('notes', () => {
         expect(stderr).to.equal('Not logged in. Run notes login --api <url> first.\n');
     });
 
+    withStackOnly.test('Says logged out, before logging in', async ({ configDir }) => {
+        const { code, stdout } = await notes(configDir, ['logout']);
+
+        expect(code).to.equal(0);
+        expect(stdout).to.equal('Logged out\n');
+    });
+
     suite('login', () => {
         withStackOnly.test('Logs in with the browser in $BROWSER', async ({ api, configDir }) => {
             const { code, stdout, stderr } = await notes(configDir, ['login', '--api', api], {
@@ -500,12 +507,94 @@ suite('notes', () => {
             expect(stderr).to.equal('Failed: fetch failed\n');
         });
 
-        withLogin.test('Logs out', async ({ configDir }) => {
-            const loggedOut = await notes(configDir, ['logout']);
-            const listed = await notes(configDir, ['list']);
+        suite('logout', () => {
+            withLogin.test('Logs out', async ({ configDir }) => {
+                const loggedOut = await notes(configDir, ['logout']);
+                const listed = await notes(configDir, ['list']);
 
-            expect(loggedOut.stdout).to.equal('Logged out\n');
-            expect(listed.stderr).to.equal('Not logged in. Run notes login --api <url> first.\n');
+                expect(loggedOut).to.deep.equal({ code: 0, stdout: 'Logged out\n', stderr: '' });
+                expect(listed.stderr).to.equal(
+                    'Not logged in. Run notes login --api <url> first.\n'
+                );
+            });
+
+            withLogin.test(
+                'Revokes the login, so a copy of it is no good',
+                async ({ configDir }) => {
+                    const copy = await readSession(configDir);
+
+                    await notes(configDir, ['logout']);
+                    // Put back, as someone who copied the file would
+                    await writeFile(
+                        Path.join(configDir, 'session.json'),
+                        JSON.stringify({ ...copy, expiresAt: 0 })
+                    );
+                    const { code, stderr } = await notes(configDir, ['list']);
+
+                    expect(code).to.equal(3);
+                    expect(stderr).to.include('refreshing it was refused (invalid_grant)');
+                }
+            );
+
+            withLogin.test(
+                'Forgets the login, and says so, when it can not be revoked',
+                async ({ configDir }) => {
+                    // Nothing listens on port 1
+                    await editSession(configDir, { issuer: 'http://127.0.0.1:1' });
+
+                    const loggedOut = await notes(configDir, ['logout']);
+                    const listed = await notes(configDir, ['list']);
+
+                    expect(loggedOut.code).to.equal(1);
+                    expect(loggedOut.stderr).to.match(
+                        /^Logged out here, but http:\/\/127\.0\.0\.1:1 did not revoke the login \(.+\): it stays good there until it expires\.\n$/v
+                    );
+                    expect(listed.code).to.equal(3);
+                }
+            );
+
+            withLogin.test('Logs out of a login with no refresh token', async ({ configDir }) => {
+                // Its access token can't be revoked, so there's nothing to tell the server
+                await editSession(configDir, { refreshToken: null });
+
+                const { code, stdout, stderr } = await notes(configDir, ['logout']);
+
+                expect(code).to.equal(0);
+                expect(stdout).to.equal('Logged out\n');
+                expect(stderr).to.equal('');
+            });
+
+            withLogin.test('Says why the revocation was refused', async ({ configDir }) => {
+                await editSession(configDir, { clientId: 'unknown' });
+
+                const { code, stderr } = await notes(configDir, ['logout']);
+
+                expect(code).to.equal(1);
+                expect(stderr).to.include('did not revoke the login (invalid_client)');
+            });
+
+            test('Says when the server can not revoke tokens', async () => {
+                const least = await listenLeast();
+                const configDir = await mkdtempConfig();
+                try {
+                    await notes(configDir, ['login', '--api', least.url], {
+                        env: { BROWSER: testBrowser },
+                    });
+                    // As if it had issued one
+                    await editSession(configDir, { refreshToken: 'refresh-token' });
+
+                    const { code, stdout, stderr } = await notes(configDir, ['logout']);
+
+                    expect(code).to.equal(0);
+                    expect(stdout).to.equal('Logged out\n');
+                    expect(stderr).to.equal(
+                        `${least.url} can't revoke tokens: the login stays good there until it expires.\n`
+                    );
+                } finally {
+                    await least.close();
+                    await rm(configDir, { recursive: true, force: true });
+                }
+            });
         });
     });
 });

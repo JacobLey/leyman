@@ -82,13 +82,15 @@ export class SessionStore {
      * takes as a stolen token, and revokes the login). A lock older than 30 seconds is taken to be left by a command
      * that died, and taken over.
      *
-     * The directory must exist: it does, once there's a session.
+     * Creates the directory (owner-only) if there's none, e.g. to log out before logging in. One that exists is left
+     * as it is: saving a session makes it owner-only.
      *
      * @param use - Holds the lock while it runs
      * @returns What `use` returns
      * @rejects When the lock can't be created, e.g. the directory isn't writable
      */
     public async locked<T>(use: () => Promise<T>): Promise<T> {
+        await mkdir(this.#directory, { recursive: true, mode: ownerOnlyDirectory });
         const lock = await this.#acquire();
         try {
             return await use();

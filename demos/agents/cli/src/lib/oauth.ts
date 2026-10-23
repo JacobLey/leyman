@@ -300,3 +300,47 @@ export const refresh = async (session: Session): Promise<Session> => {
         );
     }
 };
+
+/**
+ * Revokes the session's refresh token (RFC 7009) at the authorization server that issued it, and with it the login
+ * there: nothing can refresh it again. The access token stays good until it expires, as the API checks it without
+ * asking the authorization server.
+ *
+ * @param session - To revoke
+ * @returns `revoked`; `unrevocable` when there's no refresh token, so nothing the server can revoke; `unsupported`
+ * when the server can't revoke tokens (it names no revocation endpoint)
+ * @rejects {NotesCliError} When the authorization server can't be asked (down, say), or refuses
+ */
+export const revoke = async (
+    session: Session
+): Promise<'revoked' | 'unrevocable' | 'unsupported'> => {
+    if (session.refreshToken === null) {
+        return 'unrevocable';
+    }
+    const issuer = new URL(session.issuer);
+    const client: oauth.Client = { client_id: session.clientId };
+    try {
+        const authorizationServer = await discoverAuthorizationServer(issuer);
+        if (authorizationServer.revocation_endpoint === undefined) {
+            return 'unsupported';
+        }
+        const response = await oauth.revocationRequest(
+            authorizationServer,
+            client,
+            oauth.None(),
+            session.refreshToken,
+            {
+                additionalParameters: { token_type_hint: 'refresh_token' },
+                ...requestOptions(issuer),
+            }
+        );
+        await oauth.processRevocationResponse(response);
+        return 'revoked';
+    } catch (error) {
+        const reason =
+            error instanceof oauth.ResponseBodyError ? error.error : (error as Error).message;
+        throw new NotesCliError(
+            `Logged out here, but ${session.issuer} did not revoke the login (${reason}): it stays good there until it expires.`
+        );
+    }
+};

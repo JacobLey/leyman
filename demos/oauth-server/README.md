@@ -58,6 +58,7 @@ await server.close();
 - **`iss` in authorization responses** (RFC 9207), so a client can tell which server answered.
 - **Refresh tokens** for native apps, and the **client credentials grant** for services.
 - **Token exchange** (RFC 8693) for a service that is itself a resource (an MCP server): it trades a user's token issued for it for one for a resource it calls, as the same user (`sub`), with `act` naming the service (§4.1). The new token has at most the scopes the user granted, the resource understands and the service may have, never outlives the token it came from, and is signed like every other, so a resource server can't tell them apart. A token issued for anything but the service itself is refused (`invalid_grant`): a service exchanges only what was meant for it.
+- **Revocation** (RFC 7009) of refresh tokens: revoking one revokes the grant it came from, and every refresh token issued under it. A client revokes only its own. Access tokens can't be revoked (`unsupported_token_type`): they're JWTs, which resource servers check without calling back, so a revoked login's access tokens stay good until they expire (10 minutes, by default).
 - **Scopes per resource**: a token carries only scopes its resource understands, and a service only those it's registered for (asking for more is `invalid_scope`).
 
 ## What's fake
@@ -107,5 +108,5 @@ Where a provider differs, the verifier (an `Authenticator`, or the MCP server's 
 - A login page, consent screen, accounts, or any user store.
 - Persistence (a database adapter), key rotation, and several instances.
 - Dynamic Client Registration and Client ID Metadata Documents.
-- Token revocation and introspection (both supported by oidc-provider, not configured).
+- Token introspection (supported by oidc-provider, not configured), and so revoking access tokens.
 - DPoP (sender-constrained tokens).

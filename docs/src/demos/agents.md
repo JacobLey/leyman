@@ -185,7 +185,7 @@ $ git log -1 --format=%B | notes add --title "Last commit" --stdin --json
 | Command | Does |
 |---|---|
 | `notes login [--api <url>] [--client-id notes-cli] [--timeout 600]` | Logs in (opens a browser, and waits up to `--timeout` seconds), and keeps the login |
-| `notes logout` | Forgets the login |
+| `notes logout` | Revokes the login, and forgets it |
 | `notes list [--q <text>] [--limit 10]` | One line per note, newest first: id, time, title. Never bodies |
 | `notes get <id>` | The note's title, a blank line, its body |
 | `notes add --title <title> [--body <text> \| --stdin]` | Adds a note, and prints its id. `--body` and `--stdin` can't both be given |
@@ -217,6 +217,8 @@ Before each request, an expired access token (30 seconds early, or half its life
 
 One command refreshes at a time, holding `session.lock`; a command that waited reads the session again, and uses the token refreshed meanwhile. Commands run at once (an agent's, in parallel) would otherwise each spend the same refresh token, and an authorization server that rotates them takes a second use as a stolen token, and revokes the login. A lock older than 30 seconds was left by a command that died, and is taken over.
 
+`notes logout` revokes the refresh token (RFC 7009) at the issuer the login was made at, which revokes the login there: a copy of `session.json` can't be refreshed after. The access token can't be revoked (it's a JWT the API checks by itself), so it stays good until it expires, minutes later. The login is forgotten here even when revoking fails, and the failure said; a server that can't revoke tokens (it names no revocation endpoint) is said on stderr.
+
 Every request (discovery, tokens, the API) gives up after 10 seconds. The CLI is a public client (it can't keep a secret), so it has no client secret, and relies on PKCE. The OAuth is [oauth4webapi](https://github.com/panva/oauth4webapi), which checks each of these steps; plain HTTP is allowed only to this machine (`127.0.0.1`, `localhost`), for local development.
 
 ### Errors
@@ -232,12 +234,13 @@ Every request (discovery, tokens, the API) gives up after 10 seconds. The CLI is
 | No such note | `No note has the id …. notes list shows the ids there are.` | 1 |
 | The URL isn't an API that says how to log in | `… doesn't say how to log in (…). Is it the notes API?` | 1 |
 | The authorization server can't be reached to refresh | `Failed to refresh the login at … (…).` | 1 |
+| Logging out, the authorization server can't be reached or refuses | `Logged out here, but … did not revoke the login (…): it stays good there until it expires.` | 1 |
 | Anything else (the API down, say) | `Failed: …` | 1 |
 | A mistake in the command line | yargs's message, then `Run notes --help for usage.` | 2 |
 
 ### Testing
 
-Each test runs `./bin.mjs` as a separate process, as anyone would, against a [dev OAuth server](/demos/oauth-server) and the [notes API](/demos/openapi#the-server) on a database of its own. `$BROWSER` is a small script playing the user: it signs in, asks for `/favicon.ico` as a browser would, and comes back to the CLI. It can come back with something else instead (a denial, a forged `state`), and a test can open the printed URL instead, as a user without `$BROWSER` would. Expiry is tested by editing the saved session, never by waiting. Commands run at once are tested too, by running four: without the lock, three of them find the login revoked. Two users, each logged in from a config directory of their own (`$BROWSER` signs in as `BROWSER_USER`), see only their own notes. One test logs in at a server that says the least the standards allow (OpenID discovery only, no scopes, no `iss`, tokens with no expiry or refresh token), which the CLI must still work with.
+Each test runs `./bin.mjs` as a separate process, as anyone would, against a [dev OAuth server](/demos/oauth-server) and the [notes API](/demos/openapi#the-server) on a database of its own. `$BROWSER` is a small script playing the user: it signs in, asks for `/favicon.ico` as a browser would, and comes back to the CLI. It can come back with something else instead (a denial, a forged `state`), and a test can open the printed URL instead, as a user without `$BROWSER` would. Expiry is tested by editing the saved session, never by waiting, and logging out by putting the session file back after: it can't be refreshed. Commands run at once are tested too, by running four: without the lock, three of them find the login revoked. Two users, each logged in from a config directory of their own (`$BROWSER` signs in as `BROWSER_USER`), see only their own notes. One test logs in at a server that says the least the standards allow (OpenID discovery only, no scopes, no `iss`, tokens with no expiry or refresh token), which the CLI must still work with.
 
 ### What was learned
 
@@ -250,7 +253,6 @@ Each test runs `./bin.mjs` as a separate process, as anyone would, against a [de
 
 ### Not covered
 
-- Revoking tokens on logout (RFC 7009): `notes logout` only forgets them.
 - Keeping the refresh token in the OS keychain rather than a file.
 - The device authorization grant (RFC 8628), for machines with no browser.
 - OpenID Connect's metadata inserted after the host (`/.well-known/openid-configuration/<path>`), third in the MCP spec's order: only RFC 8414's and OpenID's usual URL are tried.

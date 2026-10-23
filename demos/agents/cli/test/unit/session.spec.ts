@@ -1,4 +1,4 @@
-import { chmod, mkdtemp, rm, utimes, writeFile } from 'node:fs/promises';
+import { chmod, mkdtemp, rm, stat, utimes, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import Path from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
@@ -53,5 +53,15 @@ suite('SessionStore', () => {
                 await expect(store.locked(async () => 'ran')).to.be.rejectedWith(/EACCES/v);
             }
         );
+
+        withDirectory.test('Makes the directory, owner-only', async ({ directory }) => {
+            const made = Path.join(directory, 'notes');
+            const store = new SessionStore(made);
+
+            await store.locked(async () => 'ran');
+
+            const { mode } = await stat(made);
+            expect(mode.toString(8).slice(-3)).to.equal('700');
+        });
     });
 });
