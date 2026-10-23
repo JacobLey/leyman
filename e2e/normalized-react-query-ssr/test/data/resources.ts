@@ -8,9 +8,10 @@ export const authors = resource({
 
 export const authorsWithFavorite = authors.propagate(author => ({
     ...author,
-    favoriteAuthor: author.favoriteAuthorId
-        ? authors.link({ authorId: author.favoriteAuthorId })
-        : null,
+    favoriteAuthor:
+        author.favoriteAuthorId === null
+            ? null
+            : authors.link({ authorId: author.favoriteAuthorId }),
 }));
 
 export const books = resource({
