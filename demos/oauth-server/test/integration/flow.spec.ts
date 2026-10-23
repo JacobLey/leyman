@@ -24,6 +24,16 @@ const service = {
     clientSecret: 'service-secret',
     scopes: ['notes:write'],
 };
+// A resource users have tokens for (`resource`), calling another as them
+const apiResource = 'http://127.0.0.1:4/api';
+const exchanger = {
+    clientId: 'demo-exchanger',
+    clientSecret: 'exchanger-secret',
+    scopes: ['notes:read', 'notes:write'],
+    tokenExchange: { subjectAudience: resource },
+};
+const tokenExchangeGrant = 'urn:ietf:params:oauth:grant-type:token-exchange';
+const accessTokenType = 'urn:ietf:params:oauth:token-type:access_token';
 
 /**
  * A PKCE verifier and its S256 challenge.
@@ -49,6 +59,7 @@ suite('Dev authorization server', () => {
             resources: [
                 { url: resource, scopes: ['notes:read', 'notes:write'] },
                 { url: otherResource, scopes: ['other'] },
+                { url: apiResource, scopes: ['notes:read', 'notes:write', 'admin'] },
             ],
             clients: [
                 { clientId, redirectUris: [registeredRedirectUri] },
@@ -58,7 +69,7 @@ suite('Dev authorization server', () => {
                     refreshTokens: false,
                 },
             ],
-            services: [service],
+            services: [service, exchanger],
             accountId: 'dev-user',
         });
         const response = await fetch(`${server.issuer}/.well-known/oauth-authorization-server`);
@@ -128,6 +139,33 @@ suite('Dev authorization server', () => {
             status: response.status,
             body: (await response.json()) as Record<string, unknown>,
         };
+    };
+
+    /**
+     * A user's access token for `resource`, by the whole authorization code flow.
+     *
+     * @param metadata - The authorization server's metadata
+     * @param params - Authorization parameters, over the defaults
+     * @returns The access token
+     */
+    const userToken = async (
+        metadata: Metadata,
+        params: Readonly<Record<string, string | undefined>> = {}
+    ): Promise<string> => {
+        const { verifier, challenge } = pkce();
+        const callback = await followAuthorization(
+            authorizationUrl(metadata, {
+                code_challenge: challenge,
+                code_challenge_method: 'S256',
+                ...params,
+            }),
+            redirectUri
+        );
+        const { body } = await exchange(metadata, {
+            code: callback.searchParams.get('code')!,
+            code_verifier: verifier,
+        });
+        return body.access_token as string;
     };
 
     suite('Metadata', () => {
@@ -455,6 +493,198 @@ suite('Dev authorization server', () => {
 
             expect(status).to.equal(401);
             expect(body.error).to.equal('invalid_client');
+        });
+    });
+
+    suite('login_hint', () => {
+        withServer.test('Signs in as the account it names', async ({ metadata }) => {
+            const token = await userToken(metadata, { login_hint: 'alice' });
+
+            const { payload } = await jwtVerify(
+                token,
+                createRemoteJWKSet(new URL(metadata.jwks_uri)),
+                { audience: resource }
+            );
+            expect(payload.sub).to.equal('alice');
+        });
+    });
+
+    suite('Token exchange', () => {
+        /**
+         * Asks to exchange a token, as a service.
+         *
+         * @param metadata - The authorization server's metadata
+         * @param params - Form parameters, over the defaults
+         * @param client - Who asks
+         * @returns The token endpoint's status and JSON body
+         */
+        const exchangeToken = async (
+            metadata: Metadata,
+            params: Readonly<Record<string, string | undefined>>,
+            client: { readonly clientId: string; readonly clientSecret: string } = exchanger
+        ): Promise<{
+            readonly status: number;
+            readonly body: Readonly<Record<string, unknown>>;
+        }> => {
+            const all: Readonly<Record<string, string | undefined>> = {
+                grant_type: tokenExchangeGrant,
+                subject_token_type: accessTokenType,
+                resource: apiResource,
+                ...params,
+            };
+            const response = await fetch(metadata.token_endpoint, {
+                method: 'POST',
+                headers: {
+                    authorization: `Basic ${btoa([client.clientId, client.clientSecret].join(':'))}`,
+                },
+                body: new URLSearchParams(
+                    Object.entries(all).filter(
+                        (entry): entry is [string, string] => entry[1] !== undefined
+                    )
+                ),
+            });
+            return {
+                status: response.status,
+                body: (await response.json()) as Record<string, unknown>,
+            };
+        };
+
+        withServer.test(
+            "Issues a token for the resource asked for, as the user, with the user's scopes",
+            async ({ server, metadata }) => {
+                const subjectToken = await userToken(metadata, {
+                    login_hint: 'alice',
+                    scope: 'notes:read notes:write',
+                });
+
+                const { status, body } = await exchangeToken(metadata, {
+                    subject_token: subjectToken,
+                });
+
+                expect(status).to.equal(200);
+                expect(body).to.include({
+                    issued_token_type: accessTokenType,
+                    token_type: 'Bearer',
+                    scope: 'notes:read notes:write',
+                });
+                const token = body.access_token as string;
+                expect(decodeProtectedHeader(token).typ).to.equal('at+jwt');
+                const { payload } = await jwtVerify(
+                    token,
+                    createRemoteJWKSet(new URL(metadata.jwks_uri)),
+                    { issuer: server.issuer, audience: apiResource }
+                );
+                expect(payload).to.deep.include({
+                    sub: 'alice',
+                    client_id: exchanger.clientId,
+                    // The service, acting for the user (RFC 8693)
+                    act: { sub: exchanger.clientId },
+                    scope: 'notes:read notes:write',
+                });
+                const { payload: subject } = await jwtVerify(
+                    subjectToken,
+                    createRemoteJWKSet(new URL(metadata.jwks_uri))
+                );
+                expect(payload.exp).to.be.at.most(subject.exp!);
+            }
+        );
+
+        withServer.test('Issues fewer scopes, when asked for fewer', async ({ metadata }) => {
+            const { body } = await exchangeToken(metadata, {
+                subject_token: await userToken(metadata, { scope: 'notes:read notes:write' }),
+                scope: 'notes:read',
+                requested_token_type: accessTokenType,
+            });
+
+            expect(body.scope).to.equal('notes:read');
+        });
+
+        withServer.test("Refuses more scopes than the user's", async ({ metadata }) => {
+            const { status, body } = await exchangeToken(metadata, {
+                subject_token: await userToken(metadata, { scope: 'notes:read' }),
+                scope: 'notes:read notes:write',
+            });
+
+            expect(status).to.equal(400);
+            expect(body.error).to.equal('invalid_scope');
+        });
+
+        withServer.test(
+            'Refuses a token issued for anything but the service',
+            async ({ metadata }) => {
+                const { body: issued } = await exchangeToken(metadata, {
+                    subject_token: await userToken(metadata),
+                });
+
+                // A token for the API, which the service was handed: not one to exchange
+                const { status, body } = await exchangeToken(metadata, {
+                    subject_token: issued.access_token as string,
+                });
+
+                expect(status).to.equal(400);
+                expect(body.error).to.equal('invalid_grant');
+            }
+        );
+
+        withServer.test('Refuses a token that is not one', async ({ metadata }) => {
+            const { status, body } = await exchangeToken(metadata, { subject_token: 'forged' });
+
+            expect(status).to.equal(400);
+            expect(body.error).to.equal('invalid_grant');
+        });
+
+        for (const [name, params] of [
+            [
+                'subject_token_type',
+                { subject_token_type: 'urn:ietf:params:oauth:token-type:id_token' },
+            ],
+            [
+                'requested_token_type',
+                { requested_token_type: 'urn:ietf:params:oauth:token-type:refresh_token' },
+            ],
+        ] as const) {
+            withServer.test(
+                `Refuses a ${name} other than an access token`,
+                async ({ metadata }) => {
+                    const { status, body } = await exchangeToken(metadata, {
+                        subject_token: await userToken(metadata),
+                        ...params,
+                    });
+
+                    expect(status).to.equal(400);
+                    expect(body.error).to.equal('invalid_request');
+                }
+            );
+        }
+
+        for (const [name, target] of [
+            ['no', undefined],
+            ['an unknown', 'http://127.0.0.1:5/unknown'],
+        ] as const) {
+            withServer.test(`Refuses ${name} resource`, async ({ metadata }) => {
+                const { status, body } = await exchangeToken(metadata, {
+                    subject_token: await userToken(metadata),
+                    resource: target,
+                });
+
+                expect(status).to.equal(400);
+                expect(body.error).to.equal('invalid_target');
+            });
+        }
+
+        withServer.test('Refuses a service not allowed to exchange', async ({ metadata }) => {
+            const { status, body } = await exchangeToken(
+                metadata,
+                { subject_token: await userToken(metadata) },
+                service
+            );
+
+            // Where RFC 6749 says `unauthorized_client`, oidc-provider says `invalid_request`
+            expect(status).to.equal(400);
+            expect(body).to.include({
+                error: 'invalid_request',
+                error_description: 'requested grant type is not allowed for this client',
+            });
         });
     });
 

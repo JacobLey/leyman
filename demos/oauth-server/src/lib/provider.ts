@@ -4,6 +4,7 @@ import { randomBytes, randomUUID } from 'node:crypto';
 import { exportJWK, generateKeyPair } from 'jose';
 import OidcProvider, { errors } from 'oidc-provider';
 import { DevAuthorizationServerNotLocalError } from './errors.js';
+import { tokenExchange, tokenExchangeGrantType, tokenExchangeParameters } from './exchange.js';
 
 /**
  * A server that accepts this server's access tokens, as an RFC 8707 resource indicator.
@@ -39,8 +40,9 @@ export interface PublicClient {
 }
 
 /**
- * A pre-registered confidential client acting for itself, never for a user: a service calling another service. It
- * authenticates with its secret, and gets tokens with the client credentials grant.
+ * A pre-registered confidential client: a service calling another service. It authenticates with its secret, and
+ * gets tokens as itself with the client credentials grant, or, when it's a resource users have tokens for, as one
+ * of them with the token exchange grant.
  */
 export interface ServiceClient {
     readonly clientId: string;
@@ -49,6 +51,12 @@ export interface ServiceClient {
      * The scopes it may be granted, at most. A token carries those of them the resource understands.
      */
     readonly scopes: readonly string[];
+    /**
+     * Allows it the token exchange grant (RFC 8693): it may trade a user's access token issued for
+     * `subjectAudience` (the service itself, as a resource: an MCP server, say) for one for another resource, as
+     * that user.
+     */
+    readonly tokenExchange?: { readonly subjectAudience: string } | undefined;
 }
 
 export interface DevAuthorizationServerOptions {
@@ -60,7 +68,8 @@ export interface DevAuthorizationServerOptions {
     readonly clients: readonly PublicClient[];
     readonly services: readonly ServiceClient[];
     /**
-     * The one account every login signs in as. A stand-in for a real login page, so there are no passwords.
+     * The account a login signs in as, unless the authorization request names another (`login_hint`). A stand-in
+     * for a real login page, so there are no passwords: whoever asks is signed in as whoever they say.
      */
     readonly accountId: string;
     /**
@@ -120,11 +129,12 @@ interface InteractionContext {
 }
 
 /**
- * Finishes a login or consent prompt without asking anyone: signs in as the dev account, and grants every scope the
- * client asked for that the resource understands (oidc-provider has already dropped any it doesn't).
+ * Finishes a login or consent prompt without asking anyone: signs in as the account the request hints at
+ * (`login_hint`), else the dev account, and grants every scope the client asked for that the resource understands
+ * (oidc-provider has already dropped any it doesn't).
  *
  * @param provider - The authorization server
- * @param accountId - Who signs in
+ * @param accountId - Who signs in, unless the request says
  * @param ctx - The browser's request to the interaction, redirected back to the authorization endpoint to resume
  */
 const approve = async (
@@ -133,15 +143,27 @@ const approve = async (
     ctx: InteractionContext
 ): Promise<void> => {
     const { req: request, res: response } = ctx;
-    const { prompt, params, grantId } = await provider.interactionDetails(request, response);
+    const { prompt, params, grantId, session } = await provider.interactionDetails(
+        request,
+        response
+    );
     if (prompt.name === 'login') {
-        ctx.redirect(await provider.interactionResult(request, response, { login: { accountId } }));
+        const { login_hint: hint } = params;
+        ctx.redirect(
+            await provider.interactionResult(request, response, {
+                login: { accountId: typeof hint === 'string' ? hint : accountId },
+            })
+        );
         return;
     }
     // A browser that already approved this client (and kept its session) extends that grant, e.g. to step up
     const grant =
         grantId === undefined
-            ? new provider.Grant({ accountId, clientId: params.client_id as string })
+            ? // Consent comes after a login, so there's a session
+              new provider.Grant({
+                  accountId: session!.accountId,
+                  clientId: params.client_id as string,
+              })
             : // The grant of the session being resumed
               (await provider.Grant.find(grantId))!;
     const { missingOIDCScope, missingResourceScopes } = prompt.details as {
@@ -170,9 +192,10 @@ const approve = async (
 /**
  * An OAuth 2.1 authorization server for development and tests, on [oidc-provider](https://github.com/panva/node-oidc-provider).
  * Everything a client sees is real: metadata discovery (RFC 8414 and OpenID Connect), the authorization code flow
- * with PKCE (S256, required), refresh tokens, the client credentials grant, resource indicators (RFC 8707), `iss` in
+ * with PKCE (S256, required), refresh tokens, the client credentials and token exchange (RFC 8693) grants, resource
+ * indicators (RFC 8707), `iss` in
  * authorization responses (RFC 9207), and access tokens as JWTs (RFC 9068) signed with a key generated at startup.
- * Only the login is fake: it approves as one account, with no page and no password. It refuses to serve anywhere but
+ * Only the login is fake: it approves as the account asked for, with no page and no password. It refuses to serve anywhere but
  * this machine, unless `dangerouslyAllowNonLocal` is set.
  *
  * @param options - Issuer, resources, clients and the dev account
@@ -184,10 +207,11 @@ export const createDevAuthorizationServer = async (
 ): Promise<DevAuthorizationServer> => {
     const issuer = new URL(options.issuer);
     assertLocal(issuer.hostname, options.dangerouslyAllowNonLocal);
-    const { privateKey } = await generateKeyPair('ES256', { extractable: true });
+    const { privateKey, publicKey } = await generateKeyPair('ES256', { extractable: true });
+    const kid = randomUUID();
     const signingKey = {
         ...(await exportJWK(privateKey)),
-        kid: randomUUID(),
+        kid,
         alg: 'ES256',
         use: 'sig',
     };
@@ -213,7 +237,9 @@ export const createDevAuthorizationServer = async (
                 client_id: service.clientId,
                 client_secret: service.clientSecret,
                 token_endpoint_auth_method: 'client_secret_basic',
-                grant_types: ['client_credentials'],
+                grant_types: service.tokenExchange
+                    ? ['client_credentials', tokenExchangeGrantType]
+                    : ['client_credentials'],
                 redirect_uris: [],
                 response_types: [],
                 scope: service.scopes.join(' '),
@@ -261,6 +287,18 @@ export const createDevAuthorizationServer = async (
         },
     };
     const provider = new OidcProvider(options.issuer, configuration);
+    const services = new Map(options.services.map(service => [service.clientId, service]));
+    provider.registerGrantType(
+        tokenExchangeGrantType,
+        tokenExchange({
+            issuer: options.issuer,
+            keys: { privateKey, publicKey, kid },
+            accessTokenTtl,
+            resources,
+            services,
+        }),
+        tokenExchangeParameters
+    );
     // The interaction route, in front of oidc-provider's own: an error thrown here is rendered as oidc-provider
     // renders its own, e.g. a 400 for an interaction whose cookie is missing or expired
     provider.use(async (ctx, next: () => Promise<void>) =>

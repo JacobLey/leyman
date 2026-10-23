@@ -23,9 +23,16 @@ const server = await listenDevAuthorizationServer({
     resources: [{ url: 'http://127.0.0.1:3000', scopes: ['notes:read', 'notes:write'] }],
     // A native app (CLI, agent): public, PKCE, refresh tokens, loopback redirect on any port
     clients: [{ clientId: 'notes-cli', redirectUris: ['http://127.0.0.1/callback'] }],
-    // A service acting as itself: client credentials
-    services: [{ clientId: 'notes-mcp', clientSecret: 'secret', scopes: ['notes:read'] }],
-    // Every login signs in as this account
+    // A service: client credentials as itself, and (being a resource itself) token exchange as a user
+    services: [
+        {
+            clientId: 'notes-mcp',
+            clientSecret: 'secret',
+            scopes: ['notes:read'],
+            tokenExchange: { subjectAudience: 'http://127.0.0.1:3001/mcp' },
+        },
+    ],
+    // A login signs in as this account, unless it names another (`login_hint`)
     accountId: 'dev-user',
 });
 
@@ -50,11 +57,12 @@ await server.close();
 - **JWT access tokens** (RFC 9068, `typ: at+jwt`), with `aud`, `scope` and `client_id`, signed with an ES256 key generated at startup. A resource server verifies them against the issuer's JWKS, without calling back.
 - **`iss` in authorization responses** (RFC 9207), so a client can tell which server answered.
 - **Refresh tokens** for native apps, and the **client credentials grant** for services.
+- **Token exchange** (RFC 8693) for a service that is itself a resource (an MCP server): it trades a user's token issued for it for one for a resource it calls, as the same user (`sub`), with `act` naming the service (§4.1). The new token has at most the scopes the user granted, the resource understands and the service may have, never outlives the token it came from, and is signed like every other, so a resource server can't tell them apart. A token issued for anything but the service itself is refused (`invalid_grant`): a service exchanges only what was meant for it.
 - **Scopes per resource**: a token carries only scopes its resource understands, and a service only those it's registered for (asking for more is `invalid_scope`).
 
 ## What's fake
 
-- **The login.** There's no login page: the interaction route signs in as `accountId` and grants what was asked for. A browser (or `followAuthorization`) goes straight through the redirects.
+- **The login.** There's no login page: the interaction route signs in as the account the authorization request names (`login_hint`), else `accountId`, and grants what was asked for. A browser (or `followAuthorization`) goes straight through the redirects. Whoever asks is whoever they say, which is what tests of per-user data need, and why it must never be reachable.
 - **The storage.** oidc-provider's in-memory adapter (it warns about it on start): restart it and every grant and refresh token is gone.
 - **The keys and cookie secret**, generated at startup.
 
@@ -65,10 +73,10 @@ It refuses to serve anywhere but this machine (`127.0.0.1`, `[::1]`, `localhost`
 | | Public client (`clients`) | Service (`services`) |
 |---|---|---|
 | For | A CLI, a desktop agent: runs on the user's machine, so it can't keep a secret | A server calling another server as itself |
-| Grant | Authorization code + PKCE, then refresh token | Client credentials |
+| Grant | Authorization code + PKCE, then refresh token | Client credentials; token exchange, with `tokenExchange` |
 | Authenticates with | Nothing (PKCE protects the code) | Its secret (HTTP Basic) |
 | Redirect | Loopback, any port (RFC 8252) | None |
-| Token's subject | The user (`accountId`) | The client itself |
+| Token's subject | The user who logged in | The client itself; the user, when exchanged |
 
 A public client may opt out of refresh tokens (`refreshTokens: false`): its login then lasts as long as one access token.
 
@@ -77,6 +85,7 @@ A public client may opt out of refresh tokens (`refreshTokens: false`): its logi
 The other demos depend on nothing here but URLs and standards: an issuer, its metadata, and the JWTs it signs. Replacing it with Keycloak (as a devcontainer sidecar) or a hosted provider means registering the same clients, resources and scopes there, and pointing the issuer at it, provided the provider issues what the verifiers expect. Not every one does by default:
 
 - **RFC 9068 access tokens** (`typ: at+jwt`), with `scope` as a space-separated string and `client_id`. Keycloak sends `typ: JWT` unless a client opts in, Entra and Okta put scopes in `scp`, and Keycloak puts the client in `azp` on users' tokens.
+- **Token exchange** (RFC 8693), if a service calls on as the user: Keycloak 26.2+ supports it, Okta does, and Entra has its own on-behalf-of flow instead.
 - **Resource indicators** (RFC 8707), so `aud` is the server the token is for. Experimental in Keycloak 26.x; elsewhere `aud` comes from configured audience mappers, and client credentials may ignore `resource`.
 - **Discovery** at `/.well-known/openid-configuration` appended to the issuer (the verifiers), and the authorization server's metadata (the CLI).
 - **Loopback redirects on any port** (RFC 8252) for native clients, which providers support unevenly.
@@ -89,6 +98,8 @@ Where a provider differs, the verifier (an `Authenticator`, or the MCP server's 
 - **Its interaction route is Koa middleware.** Answering there (`provider.use`) rather than in front of its listener means an error (an expired interaction, a missing cookie) is rendered as oidc-provider renders its own, e.g. a 400.
 - **Client credentials asking for a scope the client isn't registered for fails** (`invalid_scope`), where the authorization code flow drops the scopes a resource doesn't understand.
 - **A token from client credentials has a `sub`**: the client's id (RFC 9068).
+- **oidc-provider has no token exchange**, but registers custom grants (`registerGrantType`): it authenticates the client, checks it's allowed the grant, and resolves `resource` (refusing one it doesn't know) before the handler runs. A grant type the client isn't allowed is `invalid_request`, where RFC 6749 says `unauthorized_client`.
+- **Its JWT access tokens can't be minted outside a grant it runs**, so exchanged tokens are signed with `jose` and the same key, with the claims it would give (`typ: at+jwt`, `iss`, `sub`, `aud`, `client_id`, `scope`, `jti`).
 - **Client ID Metadata Documents** (the MCP spec's preferred registration) need an `https` client id, which a local test can't serve, so clients here are pre-registered.
 
 ## Not covered
