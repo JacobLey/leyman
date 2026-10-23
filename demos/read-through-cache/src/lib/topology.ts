@@ -86,9 +86,8 @@ export const rendezvousTopology = (
     return {
         connectionFor,
         connections,
-        invalidationConnections: options.invalidateEveryNode
-            ? () => connections
-            : key => [connectionFor(key)],
+        invalidationConnections:
+            options.invalidateEveryNode === true ? () => connections : key => [connectionFor(key)],
     };
 };
 
@@ -190,7 +189,7 @@ export class ResizableValkeyTopology implements ValkeyTopology, AsyncDisposable 
      */
     public async resize(nodes: readonly ValkeyNode[]): Promise<void> {
         createRendezvousHash(nodes);
-        if (this.#options.invalidateEveryNode) {
+        if (this.#options.invalidateEveryNode === true) {
             assertJoinsAndLeavesAtZero(this.#shards, nodes);
         }
         const existing = new Map(this.#shards.map(shard => [shard.name, shard]));

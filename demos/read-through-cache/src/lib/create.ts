@@ -81,13 +81,16 @@ export const createReadThroughCache = (
     if (shards) {
         module = module.replaceBinding(
             bind(valkeyTopologyId).withInstance(
-                rendezvousTopology(shards, invalidateEveryNode ? { invalidateEveryNode } : {})
+                rendezvousTopology(
+                    shards,
+                    invalidateEveryNode === true ? { invalidateEveryNode } : {}
+                )
             )
         );
     }
     if (memory) {
         module = module.replaceBinding(
-            (memory.sync ? syncedMemoryTierBinding : memoryTierBinding)({
+            (memory.sync === true ? syncedMemoryTierBinding : memoryTierBinding)({
                 maxItems: memory.maxItems,
             })
         );
