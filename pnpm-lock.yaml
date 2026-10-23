@@ -34,9 +34,6 @@ catalogs:
     '@modelcontextprotocol/client':
       specifier: ^2.3.1
       version: 2.3.1
-    '@modelcontextprotocol/hono':
-      specifier: ^2.0.2
-      version: 2.0.2
     '@modelcontextprotocol/server':
       specifier: ^2.3.1
       version: 2.3.1
@@ -1045,9 +1042,6 @@ importers:
       '@leyman/demo-openapi-spec':
         specifier: workspace:^
         version: file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
-      '@modelcontextprotocol/hono':
-        specifier: 'catalog:'
-        version: 2.0.2(@modelcontextprotocol/server@2.3.1)(hono@4.13.13)
       '@modelcontextprotocol/server':
         specifier: 'catalog:'
         version: 2.3.1
@@ -1100,6 +1094,9 @@ importers:
       '@types/pg':
         specifier: 'catalog:'
         version: 8.23.1
+      '@types/sinon':
+        specifier: 'catalog:'
+        version: 22.0.0
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -1127,6 +1124,9 @@ importers:
       pg-dolly:
         specifier: workspace:^
         version: file:tools/pg-dolly
+      sinon:
+        specifier: 'catalog:'
+        version: 22.1.0
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -4881,13 +4881,6 @@ packages:
   '@modelcontextprotocol/core@2.3.1':
     resolution: {integrity: sha512-laVmIhPGpWi7rG9q+0UigblRN0Hws/Yjlb6qLFtVqryXVLkc4h+yN8z731POD2LnAGQlFe7/tXhUm7Bi0YB91g==}
     engines: {node: '>=20'}
-
-  '@modelcontextprotocol/hono@2.0.2':
-    resolution: {integrity: sha512-hXtSVm0S6d0EJWMVoaeAWevATQLzHrHiPuPBLxW5vM5OQJG+SFlm7D9iJT5cG3p84DDahCD4bAuqcCPdgNFAEw==}
-    engines: {node: '>=20'}
-    peerDependencies:
-      '@modelcontextprotocol/server': ^2.3.0
-      hono: ^4.11.4
 
   '@modelcontextprotocol/server@2.3.1':
     resolution: {integrity: sha512-e59MfWuSssj6DoQ96JCTqdW1AXT5/XtnTl0WWd6MU1Ka434fFUGGosCLJbGNySDhHGvxQWoRWK137FXYFkYNWw==}
@@ -11222,7 +11215,6 @@ snapshots:
     dependencies:
       '@leyman/demo-openapi-client': file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
       '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
-      '@modelcontextprotocol/hono': 2.0.2(@modelcontextprotocol/server@2.3.1)(hono@4.13.13)
       '@modelcontextprotocol/server': 2.3.1
       haywire: file:tools/haywire
       hono: 4.13.13
@@ -11438,11 +11430,6 @@ snapshots:
   '@modelcontextprotocol/core@2.3.1':
     dependencies:
       zod: 4.3.6
-
-  '@modelcontextprotocol/hono@2.0.2(@modelcontextprotocol/server@2.3.1)(hono@4.13.13)':
-    dependencies:
-      '@modelcontextprotocol/server': 2.3.1
-      hono: 4.13.13
 
   '@modelcontextprotocol/server@2.3.1':
     dependencies:

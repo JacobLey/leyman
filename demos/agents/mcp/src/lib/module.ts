@@ -7,6 +7,7 @@ import { NotesClient } from '@leyman/demo-openapi-client';
 import { bind, createContainer, createModule } from 'haywire';
 import { createMcpApp } from './app.js';
 import { clientCredentials } from './credentials.js';
+import { requestTimeoutMs } from './discovery.js';
 import { mcpAppId, mcpConfigId, notesClientId, tokenVerifierId } from './ids.js';
 import { jwtVerifier } from './verifier.js';
 
@@ -38,7 +39,13 @@ export const notesApiBinding = (
     options: NotesApiOptions
 ): Binding<typeof notesClientId, [], false> =>
     bind(notesClientId).withInstance(
-        new NotesClient({ baseUrl: options.baseUrl, token: clientCredentials(options) })
+        new NotesClient({
+            baseUrl: options.baseUrl,
+            token: clientCredentials(options),
+            // An API that never answers fails the tool call, rather than holding it forever
+            fetch: async (input, init) =>
+                fetch(input, { ...init, signal: AbortSignal.timeout(requestTimeoutMs) }),
+        })
     );
 
 const mcpAppBinding = bind(mcpAppId)

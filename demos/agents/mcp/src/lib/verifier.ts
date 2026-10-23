@@ -17,6 +17,23 @@ export interface JwtVerifierOptions {
 }
 
 /**
+ * What `jose` throws for a token that's wrong: expired, for another audience or issuer, badly signed, malformed, or
+ * signed with a key the issuer doesn't have. Anything else (the keys can't be fetched, say) is about the issuer, not
+ * the token, and is a `500`, reported.
+ */
+const tokenErrors = [
+    errors.JWTExpired,
+    errors.JWTClaimValidationFailed,
+    errors.JWSSignatureVerificationFailed,
+    errors.JWSInvalid,
+    errors.JWTInvalid,
+    errors.JOSEAlgNotAllowed,
+    errors.JOSENotSupported,
+    errors.JWKSNoMatchingKey,
+    errors.JWKSMultipleMatchingKeys,
+] as const;
+
+/**
  * Verifies agents' JWT access tokens (RFC 9068): signed by one of the issuer's keys, issued by it, for this server,
  * and not expired. The keys are discovered on first use.
  *
@@ -47,8 +64,8 @@ export const jwtVerifier = (options: JwtVerifierOptions): OAuthTokenVerifier => 
                     extra: { subject: payload.sub },
                 };
             } catch (error) {
-                if (error instanceof errors.JOSEError) {
-                    throw new OAuthError(OAuthErrorCode.InvalidToken, error.message);
+                if (tokenErrors.some(type => error instanceof type)) {
+                    throw new OAuthError(OAuthErrorCode.InvalidToken, (error as Error).message);
                 }
                 throw error;
             }

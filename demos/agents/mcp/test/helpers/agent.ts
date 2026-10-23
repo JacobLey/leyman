@@ -101,11 +101,19 @@ export interface Agent {
  * An MCP client, as an agent's host runs one, connected to the server through the OAuth flow.
  *
  * @param url - The MCP server's URL
+ * @param options - Whether it speaks the 2025-era protocol (with the initialize handshake)
+ * @param options.legacy - Speaks only the 2025-era protocol
  * @returns The connected agent
  */
-export const connectAgent = async (url: string): Promise<Agent> => {
+export const connectAgent = async (
+    url: string,
+    options: { readonly legacy?: boolean } = {}
+): Promise<Agent> => {
     const provider = new AgentOAuthProvider();
-    const client = new Client({ name: 'demo-agent', version: '1.0.0' });
+    const client = new Client(
+        { name: 'demo-agent', version: '1.0.0' },
+        options.legacy ? { versionNegotiation: { mode: 'legacy' } } : {}
+    );
     let transport = new StreamableHTTPClientTransport(new URL(url), { authProvider: provider });
 
     const authorized = async <T>(request: () => Promise<T>): Promise<T> => {

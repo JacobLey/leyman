@@ -279,3 +279,31 @@ suite('Tools, when the API refuses the server', () => {
         );
     }
 });
+
+suite('Tools, for a 2025-era agent', () => {
+    const withAgent = withStack().beforeEach(async ({ url }) => ({
+        agent: await connectAgent(url, { legacy: true }),
+    }));
+    withAgent.afterEach(async ({ agent }) => {
+        await agent.close();
+    });
+
+    withAgent.test('Lists the same tools', async ({ agent }) => {
+        const { tools } = await agent.client.listTools();
+
+        expect(tools.map(({ name }) => name)).to.deep.equal([
+            'find_notes',
+            'read_note',
+            'add_note',
+        ]);
+    });
+
+    withAgent.test('Asks the user to approve writing too', async ({ agent, db }) => {
+        await agent.authorized(async () =>
+            agent.client.callTool({ name: 'add_note', arguments: { title: 'Dolly', body: '' } })
+        );
+
+        expect(await db.select().from(notes)).to.have.length(1);
+        expect(agent.provider.authorizations).to.have.length(2);
+    });
+});

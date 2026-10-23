@@ -29,7 +29,6 @@
   "dependencies": {
     "@leyman/demo-openapi-client": "workspace:^",
     "@leyman/demo-openapi-spec": "workspace:^",
-    "@modelcontextprotocol/hono": "catalog:",
     "@modelcontextprotocol/server": "catalog:",
     "haywire": "workspace:^",
     "hono": "catalog:",
@@ -49,6 +48,7 @@
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@types/pg": "catalog:",
+    "@types/sinon": "catalog:",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "drizzle-orm": "catalog:",
@@ -58,6 +58,7 @@
     "mocha-chain": "workspace:^",
     "pg": "catalog:",
     "pg-dolly": "workspace:^",
+    "sinon": "catalog:",
     "typescript": "catalog:"
   }
 }

@@ -1,6 +1,12 @@
 import { NotesMcpAuthorizationServerError } from './errors.js';
 
 /**
+ * How long a request to another server may take: one that never answers fails, rather than holding a tool call
+ * forever.
+ */
+export const requestTimeoutMs = 10_000;
+
+/**
  * The parts of an authorization server's metadata this server uses.
  */
 export interface AuthorizationServerMetadata {
@@ -19,7 +25,9 @@ export interface AuthorizationServerMetadata {
  * endpoint
  */
 export const discover = async (issuer: string): Promise<AuthorizationServerMetadata> => {
-    const response = await fetch(`${issuer.replace(/\/$/v, '')}/.well-known/openid-configuration`);
+    const response = await fetch(`${issuer.replace(/\/$/v, '')}/.well-known/openid-configuration`, {
+        signal: AbortSignal.timeout(requestTimeoutMs),
+    });
     if (!response.ok) {
         throw new NotesMcpAuthorizationServerError(issuer, `discovery answered ${response.status}`);
     }

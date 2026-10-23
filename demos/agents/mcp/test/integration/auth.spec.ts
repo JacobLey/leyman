@@ -72,6 +72,7 @@ suite('Authorization', () => {
                     bearer_methods_supported: ['header'],
                     resource_name: 'Notes',
                 });
+                expect(response.headers.get('access-control-allow-origin')).to.equal('*');
             }
         );
     });
@@ -81,13 +82,30 @@ suite('Authorization', () => {
             const response = await post(url);
 
             expect(response.status).to.equal(401);
-            const challenge = response.headers.get('www-authenticate')!;
-            expect(challenge).to.match(/^Bearer /v);
-            expect(challenge).to.include(
-                `resource_metadata="${origin}/.well-known/oauth-protected-resource/mcp"`
+            // No error code: a request without a token has nothing wrong with its token (RFC 6750)
+            expect(response.headers.get('www-authenticate')).to.equal(
+                `Bearer resource_metadata="${origin}/.well-known/oauth-protected-resource/mcp", scope="notes:read"`
             );
-            expect(challenge).to.include('scope="notes:read"');
         });
+
+        withServers.test(
+            'Refuses a body larger than any tool takes, once authorized',
+            async ({ url, authorization }) => {
+                const token = await serviceToken(authorization, url, 'notes:read');
+
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        authorization: `Bearer ${token}`,
+                        'content-type': 'application/json',
+                        accept: 'application/json, text/event-stream',
+                    },
+                    body: JSON.stringify({ padding: 'x'.repeat(200 * 1024) }),
+                });
+
+                expect(response.status).to.equal(413);
+            }
+        );
     });
 
     suite('With a token', () => {
@@ -221,6 +239,36 @@ suite('Authorization', () => {
 
                 expect(response.status).to.equal(500);
                 expect(errors[0]).to.be.instanceOf(NotesMcpAuthorizationServerError);
+            }
+        );
+
+        withBroken.test(
+            'Answers 500 when its keys answer an error, rather than refusing the token',
+            async ({ authorization, url, errors, served, serveWith }) => {
+                // Discovery works, but the keys answer 503: the issuer is down, the token may well be fine
+                const issuer = await listen();
+                issuer.use(({ url: requested }) =>
+                    URL.parse(requested)?.pathname === '/jwks'
+                        ? new Response(null, { status: 503 })
+                        : Response.json({
+                              issuer: issuer.url,
+                              jwks_uri: `${issuer.url}/jwks`,
+                              token_endpoint: `${issuer.url}/token`,
+                          })
+                );
+                try {
+                    serveWith(issuer.url);
+                    const token = await serviceToken(authorization, url, 'notes:read');
+
+                    const response = await post(`${served.url}/mcp`, {
+                        authorization: `Bearer ${token}`,
+                    });
+
+                    expect(response.status).to.equal(500);
+                    expect(errors).to.have.length(1);
+                } finally {
+                    await issuer.close();
+                }
             }
         );
 

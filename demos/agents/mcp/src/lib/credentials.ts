@@ -1,4 +1,4 @@
-import { discover, lazily } from './discovery.js';
+import { discover, lazily, requestTimeoutMs } from './discovery.js';
 import { NotesMcpAuthorizationServerError } from './errors.js';
 
 export interface ClientCredentialsOptions {
@@ -19,9 +19,19 @@ export interface ClientCredentialsOptions {
 }
 
 /**
- * A token is used until this many seconds before it expires, so it doesn't expire on its way to the API.
+ * A token is used until this many seconds before it expires (or half its life, if shorter), so it doesn't expire on
+ * its way to the API.
  */
 const expiryMarginSeconds = 30;
+
+/**
+ * A client id or secret, encoded for HTTP Basic authentication as OAuth says (RFC 6749 §2.3.1): form-urlencoded
+ * first, so a `:` (or anything else) in it can't be misread.
+ *
+ * @param value - The id or secret
+ * @returns It, form-urlencoded
+ */
+const formEncode = (value: string): string => encodeURIComponent(value).replaceAll('%20', '+');
 
 const millisecondsPerSecond = 1000;
 
@@ -43,12 +53,14 @@ export const clientCredentials = (options: ClientCredentialsOptions): (() => Pro
         const { token_endpoint: endpoint } = await discover(options.issuer);
         return endpoint;
     });
-    const authorization = `Basic ${btoa([options.clientId, options.clientSecret].join(':'))}`;
+    const credentials = [formEncode(options.clientId), formEncode(options.clientSecret)].join(':');
+    const authorization = `Basic ${btoa(credentials)}`;
 
     const request = async (): Promise<CachedToken> => {
         const response = await fetch(await tokenEndpoint(), {
             method: 'POST',
             headers: { authorization },
+            signal: AbortSignal.timeout(requestTimeoutMs),
             body: new URLSearchParams({
                 grant_type: 'client_credentials',
                 resource: options.resource,
@@ -67,7 +79,10 @@ export const clientCredentials = (options: ClientCredentialsOptions): (() => Pro
         };
         return {
             token: body.access_token,
-            expiresAt: Date.now() + (body.expires_in - expiryMarginSeconds) * millisecondsPerSecond,
+            expiresAt:
+                Date.now() +
+                (body.expires_in - Math.min(expiryMarginSeconds, body.expires_in / 2)) *
+                    millisecondsPerSecond,
         };
     };
 

@@ -6,6 +6,7 @@ export default [
     {
         languageOptions: {
             globals: {
+                AbortSignal: 'readonly',
                 btoa: 'readonly',
                 fetch: 'readonly',
                 Request: 'readonly',
