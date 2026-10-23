@@ -2,13 +2,14 @@ import type { Command, NotesCommandInput } from './lib/types.js';
 import { spawn } from 'node:child_process';
 import { bind } from 'haywire';
 import { browser, defaultApi } from '../lib/environment.js';
-import { login } from '../lib/oauth.js';
+import { login, loginWithDevice } from '../lib/oauth.js';
 import { SessionStore } from '../lib/session.js';
 import { commandId } from './lib/types.js';
 
 interface LoginCommandExtendedInput extends NotesCommandInput {
     api: string;
     clientId: string;
+    device: boolean;
     timeout: number;
 }
 
@@ -40,7 +41,7 @@ const openBrowser = async (url: URL): Promise<void> => {
  */
 export const loginCommand: Command<LoginCommandExtendedInput> = {
     command: 'login',
-    describe: 'Log in to the notes API (opens a browser)',
+    describe: 'Log in to the notes API (opens a browser, or with --device, on another device)',
     builder: yargs =>
         yargs.options({
             api: {
@@ -54,14 +55,29 @@ export const loginCommand: Command<LoginCommandExtendedInput> = {
                 describe: 'The OAuth client id the CLI is registered as',
                 default: 'notes-cli',
             },
+            device: {
+                type: 'boolean',
+                describe: 'Log in on another device, with a code: for a machine with no browser',
+                default: false,
+            },
             timeout: {
                 type: 'number',
-                describe: 'Seconds to wait for the login in the browser',
+                describe: 'Seconds to wait for the login',
                 default: defaultTimeoutSeconds,
             },
         }) as never,
-    handler: async ({ api, clientId, configDir, json, timeout }) => {
-        const session = await login({ api, clientId, openBrowser, timeoutSeconds: timeout });
+    handler: async ({ api, clientId, configDir, device, json, timeout }) => {
+        const session = device
+            ? await loginWithDevice({
+                  api,
+                  clientId,
+                  // Not opened here: the point is that this machine has no browser
+                  show: ({ uri, userCode }) => {
+                      console.error(`Log in at: ${uri}\nCode: ${userCode}`);
+                  },
+                  timeoutSeconds: timeout,
+              })
+            : await login({ api, clientId, openBrowser, timeoutSeconds: timeout });
         const store = new SessionStore(configDir);
         await store.save(session);
         console.log(json ? JSON.stringify({ api: session.api }) : `Logged in to ${session.api}`);

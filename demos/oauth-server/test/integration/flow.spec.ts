@@ -4,6 +4,7 @@ import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify } from 'jose';
 import {
+    approveDevice,
     createDevAuthorizationServer,
     DevAuthorizationFlowError,
     DevAuthorizationServerNotLocalError,
@@ -32,6 +33,8 @@ const exchanger = {
     scopes: ['notes:read', 'notes:write'],
     tokenExchange: { subjectAudience: resource },
 };
+const deviceClientId = 'demo-device';
+const deviceCodeGrant = 'urn:ietf:params:oauth:grant-type:device_code';
 const tokenExchangeGrant = 'urn:ietf:params:oauth:grant-type:token-exchange';
 const accessTokenType = 'urn:ietf:params:oauth:token-type:access_token';
 
@@ -67,6 +70,11 @@ suite('Dev authorization server', () => {
                     clientId: 'no-refresh',
                     redirectUris: [registeredRedirectUri],
                     refreshTokens: false,
+                },
+                {
+                    clientId: deviceClientId,
+                    redirectUris: [registeredRedirectUri],
+                    deviceAuthorization: true,
                 },
             ],
             services: [service, exchanger],
@@ -829,6 +837,138 @@ suite('Dev authorization server', () => {
         });
     });
 
+    suite('Device authorization', () => {
+        /**
+         * Starts a device authorization, as a device would.
+         *
+         * @param metadata - The authorization server's metadata
+         * @param client - Who asks
+         * @returns The endpoint's status and JSON body
+         */
+        const authorizeDevice = async (
+            metadata: Metadata,
+            client = deviceClientId
+        ): Promise<{
+            readonly status: number;
+            readonly body: Readonly<Record<string, unknown>>;
+        }> => {
+            const response = await fetch(metadata.device_authorization_endpoint as string, {
+                method: 'POST',
+                body: new URLSearchParams({ client_id: client, scope: 'notes:read', resource }),
+            });
+            return {
+                status: response.status,
+                body: (await response.json()) as Record<string, unknown>,
+            };
+        };
+
+        /**
+         * Polls for the device's tokens, once.
+         *
+         * @param metadata - The authorization server's metadata
+         * @param deviceCode - From the device authorization
+         * @returns The token endpoint's status and JSON body
+         */
+        const poll = async (metadata: Metadata, deviceCode: unknown) =>
+            exchange(metadata, {
+                grant_type: deviceCodeGrant,
+                client_id: deviceClientId,
+                device_code: deviceCode as string,
+                redirect_uri: undefined,
+            });
+
+        withServer.test(
+            'Issues tokens to a device, once the user approves',
+            async ({ server, metadata }) => {
+                const { status, body: device } = await authorizeDevice(metadata);
+                const pending = await poll(metadata, device.device_code);
+
+                await approveDevice(device.verification_uri_complete as string);
+                const { body: tokens } = await poll(metadata, device.device_code);
+
+                expect(status).to.equal(200);
+                expect(device).to.include({
+                    verification_uri: `${server.issuer}/device`,
+                    // RFC 8628's default, unless set
+                    interval: 5,
+                });
+                expect(device.user_code).to.match(/^[A-Z]{4}-[A-Z]{4}$/v);
+                expect(pending.body).to.include({ error: 'authorization_pending' });
+                expect(tokens).to.include({ scope: 'notes:read' });
+                expect(tokens.refresh_token).to.be.a('string');
+                const { payload } = await jwtVerify(
+                    tokens.access_token as string,
+                    createRemoteJWKSet(new URL(metadata.jwks_uri)),
+                    { issuer: server.issuer, audience: resource }
+                );
+                expect(payload).to.include({ sub: 'dev-user', client_id: deviceClientId });
+            }
+        );
+
+        withServer.test('Refuses a device the user denies', async ({ metadata }) => {
+            const { body: device } = await authorizeDevice(metadata);
+
+            await approveDevice(device.verification_uri_complete as string, { deny: true });
+            const { status, body } = await poll(metadata, device.device_code);
+
+            expect(status).to.equal(400);
+            expect(body).to.include({ error: 'access_denied' });
+        });
+
+        withServer.test('Refuses a client not allowed it', async ({ metadata }) => {
+            const { status, body } = await authorizeDevice(metadata, clientId);
+
+            expect(status).to.equal(400);
+            // RFC 6749 would say `unauthorized_client`; oidc-provider says this, as for every grant
+            expect(body).to.include({ error: 'invalid_request' });
+        });
+
+        withServer.test('Asks for the code, when not given one', async ({ server }) => {
+            const page = await fetch(`${server.issuer}/device`);
+
+            expect(await page.text()).to.include('Enter the code your device shows.');
+        });
+
+        withServer.test('Refuses a code it did not give', async ({ server }) => {
+            await expect(
+                approveDevice(`${server.issuer}/device?user_code=WRONG-CODE`)
+            ).to.be.rejectedWith(DevAuthorizationFlowError, '/device: refused the code');
+        });
+
+        test('Names the interval it is given', async () => {
+            const server = await listenDevAuthorizationServer({
+                resources: [{ url: resource, scopes: ['notes:read'] }],
+                clients: [
+                    {
+                        clientId: deviceClientId,
+                        redirectUris: [registeredRedirectUri],
+                        deviceAuthorization: true,
+                    },
+                ],
+                services: [],
+                accountId: 'dev-user',
+                deviceInterval: 1,
+            });
+            try {
+                const response = await fetch(
+                    `${server.issuer}/.well-known/oauth-authorization-server`
+                );
+                const { body } = await authorizeDevice((await response.json()) as Metadata);
+
+                expect(body).to.include({ interval: 1 });
+            } finally {
+                await server.close();
+            }
+        });
+
+        withServer.test('approveDevice rejects a page with no form', async ({ server }) => {
+            await expect(approveDevice(`${server.issuer}/nowhere`)).to.be.rejectedWith(
+                DevAuthorizationFlowError,
+                '/nowhere: answered 404, not a form'
+            );
+        });
+    });
+
     suite('followAuthorization', () => {
         withServer.test('Rejects an answer that is not a redirect', async ({ server }) => {
             await expect(
@@ -850,6 +990,10 @@ suite('Dev authorization server', () => {
                 await expect(
                     followAuthorization(`http://127.0.0.1:${port}/`, redirectUri)
                 ).to.be.rejectedWith(DevAuthorizationFlowError, '/again: more than 10 redirects');
+                await expect(approveDevice(`http://127.0.0.1:${port}/`)).to.be.rejectedWith(
+                    DevAuthorizationFlowError,
+                    '/again: more than 10 redirects'
+                );
             } finally {
                 loop.close();
                 loop.closeAllConnections();

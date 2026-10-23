@@ -3,7 +3,7 @@ import { once } from 'node:events';
 import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import Path from 'node:path';
-import { followAuthorization } from '@leyman/demo-oauth-server';
+import { approveDevice, followAuthorization } from '@leyman/demo-oauth-server';
 
 export interface CliResult {
     readonly code: number | null;
@@ -21,9 +21,14 @@ export interface CliOptions {
      */
     readonly input?: string;
     /**
-     * Plays the user who opens the printed URL themselves (no `BROWSER`): signs in and comes back to the CLI.
+     * Plays the user who opens the printed URL themselves (no `BROWSER`): signs in and comes back to the CLI, or, for
+     * a device login, approves it.
      */
     readonly openPrintedUrl?: boolean;
+    /**
+     * With `openPrintedUrl`, for a device login: says the code isn't the one shown.
+     */
+    readonly denyDevice?: boolean;
 }
 
 /**
@@ -77,6 +82,11 @@ export const notes = async (
             return;
         }
         const authorization = new URL(printed);
+        // A device login's URL has its code
+        if (authorization.searchParams.has('user_code')) {
+            await approveDevice(authorization, { deny: options.denyDevice });
+            return;
+        }
         const callback = await followAuthorization(
             authorization,
             authorization.searchParams.get('redirect_uri')!

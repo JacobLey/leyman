@@ -2,6 +2,7 @@ import type { AddressInfo } from 'node:net';
 import type { Session } from './session.js';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
+import { setTimeout as sleep } from 'node:timers/promises';
 import * as oauth from 'oauth4webapi';
 import { NotesCliError, NotesCliLoginError } from './errors.js';
 
@@ -342,5 +343,136 @@ export const revoke = async (
         throw new NotesCliError(
             `Logged out here, but ${session.issuer} did not revoke the login (${reason}): it stays good there until it expires.`
         );
+    }
+};
+
+/**
+ * RFC 8628's poll interval when the server names none, and how much longer each `slow_down` makes it (§3.5).
+ */
+const defaultDeviceIntervalSeconds = 5;
+const slowDownSeconds = 5;
+
+/**
+ * Where the user goes to approve a device login, and the code they check there.
+ */
+export interface DeviceVerification {
+    /**
+     * `verification_uri_complete` (with the code in it) when the server gives one, else `verification_uri`.
+     */
+    readonly uri: string;
+    readonly userCode: string;
+}
+
+export interface DeviceLoginOptions {
+    readonly api: string;
+    readonly clientId: string;
+    /**
+     * Tells the user where to go, and the code to check (or type) there.
+     */
+    readonly show: (verification: DeviceVerification) => void;
+    /**
+     * How long to wait for the user to approve, in seconds. Never longer than the code lasts.
+     */
+    readonly timeoutSeconds: number;
+}
+
+/**
+ * Why the authorization server refused, as a login error.
+ *
+ * @param error - From oauth4webapi
+ * @returns The error to exit with
+ * @throws {Error} When it isn't the server refusing (an answer that isn't OAuth, say): as it is
+ */
+const loginFailed = (error: unknown): NotesCliLoginError => {
+    if (error instanceof oauth.ResponseBodyError) {
+        return new NotesCliLoginError(`Login failed (${error.error}). Run notes login again.`);
+    }
+    throw error;
+};
+
+/**
+ * Logs in with the device authorization grant (RFC 8628), for a machine with no browser: the user approves on
+ * another device, at a URL, checking the code shown here. Meanwhile the CLI polls for its tokens, at the interval
+ * the server asks for. Asks for the same scopes and `resource` as `login`.
+ *
+ * @param options - The API, the client, and how to reach the user
+ * @returns The session
+ * @rejects {NotesCliError} When the API doesn't say how to log in, or its authorization server can't log in a device
+ * @rejects {NotesCliLoginError} When the login is refused (or denied), or isn't approved in time
+ */
+export const loginWithDevice = async (options: DeviceLoginOptions): Promise<Session> => {
+    const { resource, authorizationServer, scopes } = await discover(new URL(options.api));
+    if (authorizationServer.device_authorization_endpoint === undefined) {
+        throw new NotesCliError(
+            `${authorizationServer.issuer} can't log in a device. Run notes login without --device.`
+        );
+    }
+    const client: oauth.Client = { client_id: options.clientId };
+    const issuer = new URL(authorizationServer.issuer);
+    const parameters = new URLSearchParams({ resource });
+    if (scopes.length > 0) {
+        parameters.set('scope', scopes.join(' '));
+    }
+    let device: oauth.DeviceAuthorizationResponse;
+    try {
+        device = await oauth.processDeviceAuthorizationResponse(
+            authorizationServer,
+            client,
+            await oauth.deviceAuthorizationRequest(
+                authorizationServer,
+                client,
+                oauth.None(),
+                parameters,
+                requestOptions(issuer)
+            )
+        );
+    } catch (error) {
+        throw loginFailed(error);
+    }
+    options.show({
+        uri: device.verification_uri_complete ?? device.verification_uri,
+        userCode: device.user_code,
+    });
+
+    const timeoutSeconds = Math.min(options.timeoutSeconds, device.expires_in);
+    const deadline = Date.now() + timeoutSeconds * millisecondsPerSecond;
+    let intervalSeconds = device.interval ?? defaultDeviceIntervalSeconds;
+    for (;;) {
+        await sleep(intervalSeconds * millisecondsPerSecond);
+        const response = await oauth.deviceCodeGrantRequest(
+            authorizationServer,
+            client,
+            oauth.None(),
+            device.device_code,
+            { additionalParameters: { resource }, ...requestOptions(issuer) }
+        );
+        try {
+            const tokens = await oauth.processDeviceCodeResponse(
+                authorizationServer,
+                client,
+                response
+            );
+            return toSession(
+                {
+                    api: resource,
+                    issuer: authorizationServer.issuer,
+                    clientId: client.client_id,
+                    refreshToken: null,
+                },
+                tokens
+            );
+        } catch (error) {
+            const code = error instanceof oauth.ResponseBodyError ? error.error : undefined;
+            if (code === 'slow_down') {
+                intervalSeconds += slowDownSeconds;
+            } else if (code !== 'authorization_pending') {
+                throw loginFailed(error);
+            }
+        }
+        if (Date.now() >= deadline) {
+            throw new NotesCliLoginError(
+                `Login timed out after ${timeoutSeconds}s. Run notes login again.`
+            );
+        }
     }
 };

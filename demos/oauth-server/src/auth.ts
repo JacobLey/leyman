@@ -1,4 +1,9 @@
-export { type FollowAuthorizationOptions, followAuthorization } from './lib/browser.js';
+export {
+    type ApproveDeviceOptions,
+    approveDevice,
+    type FollowAuthorizationOptions,
+    followAuthorization,
+} from './lib/browser.js';
 export {
     DevAuthorizationError,
     DevAuthorizationFlowError,

@@ -1,3 +1,4 @@
+import type { Context } from 'mocha';
 import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import Path from 'node:path';
@@ -5,6 +6,7 @@ import { notes as notesTable } from '@leyman/demo-openapi-server';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { notes, testBrowser } from '../helpers/cli.js';
+import { deviceError, deviceTokens, listenDevice } from '../helpers/device.js';
 import { listenLeast } from '../helpers/least.js';
 import { withStack } from '../helpers/stack.js';
 
@@ -249,6 +251,143 @@ suite('notes', () => {
                 expect(stderr).to.include("doesn't say how to log in");
             }
         );
+    });
+
+    suite('login --device', () => {
+        withStackOnly.test(
+            'Logs in on another device, at the URL it prints',
+            async ({ api, configDir }) => {
+                const login = await notes(configDir, ['login', '--api', api, '--device'], {
+                    // Never opened: a device login is for a machine without a browser
+                    env: { BROWSER: testBrowser },
+                    openPrintedUrl: true,
+                });
+                const listed = await notes(configDir, ['list']);
+
+                expect(login.code).to.equal(0);
+                expect(login.stdout).to.equal(`Logged in to ${api}\n`);
+                expect(login.stderr).to.match(
+                    /^Log in at: http:\/\/127\.0\.0\.1:\d+\/device\?user_code=(?<code>[A-Z]{4}-[A-Z]{4})\nCode: \k<code>\n$/v
+                );
+                expect(listed.stdout).to.equal('No notes\n');
+                expect(await readSession(configDir))
+                    .to.have.property('refreshToken')
+                    .that.is.a('string');
+            }
+        );
+
+        withStackOnly.test(
+            'Says the login failed, when the user denies it',
+            async ({ api, configDir }) => {
+                const { code, stderr } = await notes(
+                    configDir,
+                    ['login', '--api', api, '--device'],
+                    {
+                        openPrintedUrl: true,
+                        denyDevice: true,
+                    }
+                );
+
+                expect(code).to.equal(3);
+                expect(stderr).to.include('Login failed (access_denied). Run notes login again.\n');
+            }
+        );
+
+        withStackOnly.test('Gives up when nobody approves in time', async ({ api, configDir }) => {
+            const { code, stderr } = await notes(configDir, [
+                'login',
+                '--api',
+                api,
+                '--device',
+                '--timeout',
+                '1',
+            ]);
+
+            expect(code).to.equal(3);
+            expect(stderr).to.include('Login timed out after 1s. Run notes login again.\n');
+        });
+
+        withStackOnly.test(
+            'Says the login failed, for a client not allowed it',
+            async ({ api, configDir }) => {
+                const { code, stderr } = await notes(configDir, [
+                    'login',
+                    '--api',
+                    api,
+                    '--device',
+                    '--client-id',
+                    'no-refresh',
+                ]);
+
+                expect(code).to.equal(3);
+                expect(stderr).to.equal('Login failed (invalid_request). Run notes login again.\n');
+            }
+        );
+
+        test('Says when the authorization server can not log in a device', async () => {
+            const least = await listenLeast();
+            const configDir = await mkdtempConfig();
+            try {
+                const { code, stderr } = await notes(configDir, [
+                    'login',
+                    '--api',
+                    least.url,
+                    '--device',
+                ]);
+
+                expect(code).to.equal(1);
+                expect(stderr).to.equal(
+                    `${least.url} can't log in a device. Run notes login without --device.\n`
+                );
+            } finally {
+                await least.close();
+                await rm(configDir, { recursive: true, force: true });
+            }
+        });
+
+        test('Polls slower when asked to', async function (this: Context) {
+            // A poll a second, then six seconds after `slow_down` (RFC 8628 §3.5)
+            this.timeout(20_000);
+            const device = await listenDevice(
+                [deviceError('authorization_pending'), deviceError('slow_down'), deviceTokens()],
+                1
+            );
+            const configDir = await mkdtempConfig();
+            try {
+                const started = Date.now();
+                const login = await notes(configDir, ['login', '--api', device.url, '--device']);
+                const listed = await notes(configDir, ['list']);
+
+                expect(login.code).to.equal(0);
+                // No complete URI, so the user types the code
+                expect(login.stderr).to.equal(`Log in at: ${device.url}/device\nCode: WDJB-MJHT\n`);
+                expect(Date.now() - started).to.be.at.least(8000);
+                expect(listed.stdout).to.equal('No notes\n');
+            } finally {
+                await device.close();
+                await rm(configDir, { recursive: true, force: true });
+            }
+        });
+
+        test('Says what failed, for an answer that is not OAuth', async () => {
+            // Naming no interval, so the one poll comes after RFC 8628's 5 seconds
+            const device = await listenDevice([new Response('Bad gateway', { status: 502 })]);
+            const configDir = await mkdtempConfig();
+            try {
+                const { code, stderr } = await notes(configDir, [
+                    'login',
+                    '--api',
+                    device.url,
+                    '--device',
+                ]);
+
+                expect(code).to.equal(1);
+                expect(stderr).to.match(/\nFailed: .+\n$/v);
+            } finally {
+                await device.close();
+                await rm(configDir, { recursive: true, force: true });
+            }
+        });
     });
 
     suite('Logged in', () => {

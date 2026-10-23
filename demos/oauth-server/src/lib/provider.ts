@@ -33,6 +33,14 @@ export interface PublicClient {
      */
     readonly refreshTokens?: boolean | undefined;
     /**
+     * Whether it may use the device authorization grant (RFC 8628): for a machine with no browser, the user approves
+     * on another device, at a URL with a code. Off unless asked for, as a code shown on one device and entered on
+     * another can be phished.
+     *
+     * @default false
+     */
+    readonly deviceAuthorization?: boolean | undefined;
+    /**
      * Where an authorization may send the user back. A loopback URI (`http://127.0.0.1/callback`) matches on any
      * port, as a native app listens wherever it can (RFC 8252).
      */
@@ -79,6 +87,13 @@ export interface DevAuthorizationServerOptions {
      */
     readonly accessTokenTtl?: number | undefined;
     /**
+     * How long a device waits between polls for its token, in seconds (the device authorization response's
+     * `interval`, RFC 8628 §3.2). Shorter makes tests quicker.
+     *
+     * @default 5
+     */
+    readonly deviceInterval?: number | undefined;
+    /**
      * Serves at an issuer that isn't this machine (`127.0.0.1`, `[::1]`, `localhost`). The server approves every
      * login, so anyone who can reach it gets tokens: never set this outside an isolated network.
      *
@@ -110,9 +125,33 @@ export interface DevAuthorizationServer {
     readonly listener: (request: IncomingMessage, response: ServerResponse) => void;
 }
 
+const statusOk = 200;
+
+/**
+ * Oidc-provider's device authorization endpoint (`routes.device_authorization`, left as its default).
+ */
+const deviceAuthorizationPath = '/device/auth';
+
 const interactionPath = /^\/interaction\/[^\/]+$/v;
 
 const defaultAccessTokenTtl = 600;
+
+/**
+ * RFC 8628 §3.2's default.
+ */
+const defaultDeviceInterval = 5;
+
+const deviceCodeGrantType = 'urn:ietf:params:oauth:grant-type:device_code';
+
+/**
+ * A page for the device flow, with nothing but what it says and its form: the dev login has no look to keep.
+ *
+ * @param text - What it says
+ * @param form - oidc-provider's form, and its submit button
+ * @returns The HTML
+ */
+const devicePage = (text: string, form = ''): string =>
+    `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Dev login</title></head><body><p>${text}</p>${form}</body></html>`;
 
 /**
  * Bytes of randomness in the key that signs cookies.
@@ -192,7 +231,8 @@ const approve = async (
 /**
  * An OAuth 2.1 authorization server for development and tests, on [oidc-provider](https://github.com/panva/node-oidc-provider).
  * Everything a client sees is real: metadata discovery (RFC 8414 and OpenID Connect), the authorization code flow
- * with PKCE (S256, required), refresh tokens, the client credentials and token exchange (RFC 8693) grants, resource
+ * with PKCE (S256, required), refresh tokens, the client credentials, device authorization (RFC 8628) and token
+ * exchange (RFC 8693) grants, resource
  * indicators (RFC 8707), `iss` in authorization responses (RFC 9207), revocation (RFC 7009), and access tokens as JWTs
  * (RFC 9068) signed with a key generated at startup.
  * Only the login is fake: it approves as the account asked for, with no page and no password. It refuses to serve anywhere but
@@ -217,6 +257,7 @@ export const createDevAuthorizationServer = async (
     };
     const resources = new Map(options.resources.map(resource => [resource.url, resource]));
     const accessTokenTtl = options.accessTokenTtl ?? defaultAccessTokenTtl;
+    const deviceInterval = options.deviceInterval ?? defaultDeviceInterval;
 
     const clients = [
         ...options.clients.map(
@@ -225,10 +266,11 @@ export const createDevAuthorizationServer = async (
                 application_type: 'native',
                 redirect_uris: [...client.redirectUris],
                 token_endpoint_auth_method: 'none',
-                grant_types:
-                    client.refreshTokens === false
-                        ? ['authorization_code']
-                        : ['authorization_code', 'refresh_token'],
+                grant_types: [
+                    'authorization_code',
+                    ...(client.refreshTokens === false ? [] : ['refresh_token']),
+                    ...(client.deviceAuthorization ? [deviceCodeGrantType] : []),
+                ],
                 response_types: ['code'],
             })
         ),
@@ -264,6 +306,27 @@ export const createDevAuthorizationServer = async (
         features: {
             devInteractions: { enabled: false },
             clientCredentials: { enabled: true },
+            deviceFlow: {
+                enabled: true,
+                userCodeInputSource: (ctx, form, _out, error) => {
+                    ctx.body = devicePage(
+                        error ? 'That code is not right.' : 'Enter the code your device shows.',
+                        `${form}<button type="submit" form="op.deviceInputForm">Continue</button>`
+                    );
+                },
+                // The page a user opening `verification_uri_complete` lands on: confirming the code is theirs is
+                // what stops a phished code being approved unseen, so it's kept, even in the dev login
+                userCodeConfirmSource: (ctx, form, _client, _deviceInfo, userCode) => {
+                    ctx.body = devicePage(
+                        `Is your device showing ${userCode}?`,
+                        `${form}<button type="submit" form="op.deviceConfirmForm">Yes</button>` +
+                            '<button type="submit" form="op.deviceConfirmForm" name="abort" value="yes">No</button>'
+                    );
+                },
+                successSource: ctx => {
+                    ctx.body = devicePage('Signed in. You can close this page.');
+                },
+            },
             // RFC 7009: a client gives up a refresh token, and with it the grant (every token issued under it).
             // Access tokens are JWTs, which resource servers verify without calling back, so they can't be revoked
             revocation: {
@@ -306,6 +369,13 @@ export const createDevAuthorizationServer = async (
         }),
         tokenExchangeParameters
     );
+    // Oidc-provider names no `interval`, which then means 5 seconds
+    provider.use(async (ctx, downstream: () => Promise<void>) => {
+        await downstream();
+        if (ctx.path === deviceAuthorizationPath && ctx.status === statusOk) {
+            (ctx.body as Record<string, unknown>).interval = deviceInterval;
+        }
+    });
     // The interaction route, in front of oidc-provider's own: an error thrown here is rendered as oidc-provider
     // renders its own, e.g. a 400 for an interaction whose cookie is missing or expired
     provider.use(async (ctx, next: () => Promise<void>) =>
