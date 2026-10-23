@@ -368,7 +368,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             base.$defs = sortedDefinitions(definitions);
         }
         if (!openApi30) {
-            if (id) {
+            if (id !== undefined) {
                 base.$id = id;
             }
             if (schema) {
@@ -879,7 +879,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             }
         }
 
-        if (this.#title) {
+        if (this.#title !== null) {
             base.title = this.#title;
         }
 
@@ -887,7 +887,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             base.default = this.#default;
         }
 
-        if (this.#description) {
+        if (this.#description !== null) {
             base.description = this.#description;
         }
 
@@ -1035,7 +1035,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         schema: AbstractSchema<SchemaGenerics<T2>>,
         params: SerializationParams
     ): JsonSchema<T2> {
-        if (schema.#ref?.name && !schema.#ref.recursive && params.definitions) {
+        if (typeof schema.#ref?.name === 'string' && !schema.#ref.recursive && params.definitions) {
             return AbstractSchema.#getCachedReference(schema, params, params.definitions);
         }
         const baseSchema = schema.toSchema(params);
@@ -1266,7 +1266,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @returns nullable
      */
     #getNullable(params: SerializationParams): boolean {
-        if (params.composition?.type && !params.composition.nullable) {
+        if (typeof params.composition?.type === 'string' && !params.composition.nullable) {
             return this.#ref?.schema
                 ? this.#ref.schema.#getNullable({
                       openApi30: params.openApi30,

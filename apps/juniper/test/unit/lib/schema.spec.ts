@@ -103,6 +103,16 @@ suite('schema', () => {
                     type: 'number',
                 });
             });
+
+            test('Empty options are kept', () => {
+                const json = numberSchema({ title: '', description: '' }).toJSON();
+
+                expect(json).to.deep.equal({
+                    type: 'number',
+                    title: '',
+                    description: '',
+                });
+            });
         });
 
         test('methods', () => {

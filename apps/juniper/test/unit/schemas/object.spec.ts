@@ -603,6 +603,7 @@ suite('ObjectSchema', () => {
             }
             expectTypeOf(example.c).toEqualTypeOf<number>();
 
+            // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- Tests narrowing by truthiness, where `0` leaves `a` possibly a number
             if (example.a) {
                 expectTypeOf(example.a).toEqualTypeOf<number>();
                 expectTypeOf(example.b).toEqualTypeOf<number>();
@@ -852,6 +853,7 @@ suite('ObjectSchema', () => {
                 expectTypeOf(example.c).toEqualTypeOf<number>();
             }
 
+            // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions -- Tests narrowing by truthiness, where `0` leaves `a` possibly a number
             if (example.a) {
                 expectTypeOf(example.a).toEqualTypeOf<number>();
                 expectTypeOf(example.b).toEqualTypeOf<number>();

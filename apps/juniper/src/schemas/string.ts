@@ -380,7 +380,7 @@ export class StringSchema<
     protected override toSchema(params: SerializationParams): JsonSchema<SchemaType<this>> {
         const base = super.toSchema(params);
 
-        if (this.#format) {
+        if (this.#format !== null) {
             base.format = this.#format;
         }
         if (this.#minLength > 0) {
@@ -391,10 +391,10 @@ export class StringSchema<
         }
         // OpenAPI 3.0 has no content keywords (`format: 'byte'` or `'binary'` is its equivalent)
         if (!params.openApi30) {
-            if (this.#contentEncoding) {
+            if (this.#contentEncoding !== null) {
                 base.contentEncoding = this.#contentEncoding;
             }
-            if (this.#contentMediaType) {
+            if (this.#contentMediaType !== null) {
                 base.contentMediaType = this.#contentMediaType;
             }
         }
