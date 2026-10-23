@@ -1,0 +1,65 @@
+{
+  "name": "@leyman/demo-agents-cli",
+  "version": "0.0.1",
+  "description": "A CLI for the notes API, made for agents and people: one short command per task, with login, tokens and errors handled inside.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/agents/cli#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "bin": {
+    "notes": "./bin.mjs"
+  },
+  "files": [
+    "bin.mjs",
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "dependencies": {
+    "@leyman/demo-openapi-client": "workspace:^",
+    "entry-script": "workspace:^",
+    "haywire": "workspace:^",
+    "haywire-launcher": "workspace:^",
+    "oauth4webapi": "catalog:",
+    "yargs": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/demo-oauth-server": "workspace:^",
+    "@leyman/demo-openapi-database": "workspace:^",
+    "@leyman/demo-openapi-server": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@hono/node-server": "catalog:",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@types/yargs": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "drizzle-orm": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "pg": "catalog:",
+    "pg-dolly": "workspace:^",
+    "typescript": "catalog:"
+  }
+}
