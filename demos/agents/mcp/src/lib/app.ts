@@ -1,5 +1,5 @@
 import type { OAuthTokenVerifier } from '@modelcontextprotocol/server';
-import type { NotesClient } from '@leyman/demo-openapi-client';
+import type { NotesApiForAgent } from './ids.js';
 import {
     createMcpHandler,
     getOAuthProtectedResourceMetadataUrl,
@@ -47,15 +47,16 @@ const statusUnauthorized = 401;
 
 /**
  * The notes MCP server, as a Hono app: an OAuth resource server (RFC 9728 metadata, `WWW-Authenticate` challenges,
- * audience-checked tokens), serving the 2026-07-28 protocol statelessly, with a fresh `McpServer` per request.
+ * audience-checked tokens), serving the 2026-07-28 protocol statelessly, with a fresh `McpServer` per request, whose
+ * tools call the API as the request's user.
  *
- * @param notes - The notes API, with the server's own credentials
+ * @param notesFor - The notes API, as an agent's user
  * @param verifier - Verifies agents' access tokens
  * @param config - Where it is served, who issues its tokens, and error reporting
  * @returns Hono app, e.g. for `@hono/node-server`'s `serve`
  */
 export const createMcpApp = (
-    notes: NotesClient,
+    notesFor: NotesApiForAgent,
     verifier: OAuthTokenVerifier,
     config: McpAppConfig
 ): Hono => {
@@ -104,9 +105,10 @@ export const createMcpApp = (
         expectedResource: resource,
     });
     const handler = createMcpHandler(
-        () => {
+        ({ authInfo }) => {
             const server = new McpServer({ name: 'notes', version: '1.0.0' });
-            registerNoteTools(server, notes, config.onError);
+            // Every request is authenticated before it gets here
+            registerNoteTools(server, notesFor(authInfo!.token), config.onError);
             return server;
         },
         { onerror: config.onError, maxRequestBodySize: maxBodyBytes }

@@ -1,14 +1,14 @@
 import type { Hono } from 'hono';
 import type { Binding } from 'haywire';
 import type { McpAppConfig } from './app.js';
-import type { ClientCredentialsOptions } from './credentials.js';
+import type { TokenExchangeOptions } from './exchange.js';
 import type { JwtVerifierOptions } from './verifier.js';
 import { NotesClient } from '@leyman/demo-openapi-client';
 import { bind, createContainer, createModule } from 'haywire';
 import { createMcpApp } from './app.js';
-import { clientCredentials } from './credentials.js';
 import { requestTimeoutMs } from './discovery.js';
-import { mcpAppId, mcpConfigId, notesClientId, tokenVerifierId } from './ids.js';
+import { tokenExchange } from './exchange.js';
+import { mcpAppId, mcpConfigId, notesApiId, tokenVerifierId } from './ids.js';
 import { jwtVerifier } from './verifier.js';
 
 /**
@@ -22,7 +22,7 @@ export const jwtVerifierBinding = (
 ): Binding<typeof tokenVerifierId, [], false> =>
     bind(tokenVerifierId).withInstance(jwtVerifier(options));
 
-export interface NotesApiOptions extends ClientCredentialsOptions {
+export interface NotesApiOptions extends TokenExchangeOptions {
     /**
      * Where the notes API is served.
      */
@@ -30,36 +30,40 @@ export interface NotesApiOptions extends ClientCredentialsOptions {
 }
 
 /**
- * The notes API, called with the server's own token from the client credentials grant.
+ * The notes API, as each agent's user: called with a token exchanged for the agent's (RFC 8693).
  *
- * @param options - Where the API is, and the server's credentials for it
- * @returns A binding for `notesClientId`
+ * @param options - Where the API is, and the server's credentials to exchange tokens with
+ * @returns A binding for `notesApiId`
  */
 export const notesApiBinding = (
     options: NotesApiOptions
-): Binding<typeof notesClientId, [], false> =>
-    bind(notesClientId).withInstance(
-        new NotesClient({
-            baseUrl: options.baseUrl,
-            token: clientCredentials(options),
-            // An API that never answers fails the tool call, rather than holding it forever
-            fetch: async (input, init) =>
-                fetch(input, { ...init, signal: AbortSignal.timeout(requestTimeoutMs) }),
-        })
+): Binding<typeof notesApiId, [], false> => {
+    const exchange = tokenExchange(options);
+    return bind(notesApiId).withInstance(
+        agentToken =>
+            new NotesClient({
+                baseUrl: options.baseUrl,
+                token: async () => exchange(agentToken),
+                // An API that never answers fails the tool call, rather than holding it forever
+                fetch: async (input, init) =>
+                    fetch(input, { ...init, signal: AbortSignal.timeout(requestTimeoutMs) }),
+            })
     );
+};
 
 const mcpAppBinding = bind(mcpAppId)
-    .withDependencies([notesClientId, tokenVerifierId, mcpConfigId])
+    .withDependencies([notesApiId, tokenVerifierId, mcpConfigId])
     .withProvider(createMcpApp);
 
 /**
- * The app. Bind `notesClientId`, `tokenVerifierId` and `mcpConfigId` to complete it.
+ * The app. Bind `notesApiId`, `tokenVerifierId` and `mcpConfigId` to complete it.
  */
 export const mcpModule = createModule(mcpAppBinding);
 
 export interface NotesMcpOptions extends McpAppConfig {
     /**
-     * The notes API, and the server's credentials for it. Its issuer may differ from agents'.
+     * The notes API, and the server's credentials to exchange agents' tokens for its. Its issuer is agents' too:
+     * only it can exchange the tokens it issued.
      */
     readonly api: NotesApiOptions;
 }

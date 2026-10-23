@@ -1,7 +1,7 @@
 import { discover, lazily, requestTimeoutMs } from './discovery.js';
 import { NotesMcpAuthorizationServerError } from './errors.js';
 
-export interface ClientCredentialsOptions {
+export interface TokenExchangeOptions {
     /**
      * The authorization server that issues tokens for the API.
      */
@@ -12,10 +12,6 @@ export interface ClientCredentialsOptions {
      * The API's resource identifier (RFC 8707), so the token is for it and nothing else.
      */
     readonly resource: string;
-    /**
-     * What the server may do with the API.
-     */
-    readonly scopes: readonly string[];
 }
 
 /**
@@ -35,20 +31,28 @@ const formEncode = (value: string): string => encodeURIComponent(value).replaceA
 
 const millisecondsPerSecond = 1000;
 
-interface CachedToken {
+const accessTokenType = 'urn:ietf:params:oauth:token-type:access_token';
+
+interface Exchanged {
     readonly token: string;
     readonly expiresAt: number;
 }
 
 /**
- * The server's own token for the API, by the client credentials grant: the server acts as itself, never as the agent,
- * so an agent's token is never passed on. One token is shared until it nears expiry, and requests in the meantime
- * wait for the same one.
+ * Tokens for the API, as the agent's user, by token exchange (RFC 8693): the agent's token (issued for this server,
+ * and never sent anywhere else) is traded at the authorization server for one for the API, with the same user, at
+ * most the same scopes, and this server named as the one acting for them. The server authenticates as itself to do
+ * so, so a token an agent sent can't be exchanged by anyone else.
+ *
+ * Each agent token's exchange is kept until it nears expiry, and requests in the meantime wait for the same one;
+ * expired ones are dropped as new ones come in.
  *
  * @param options - The issuer, the server's credentials, and the API it calls
- * @returns A token, when asked for: e.g. the API client's `token`
+ * @returns A token for the API, for an agent's token
  */
-export const clientCredentials = (options: ClientCredentialsOptions): (() => Promise<string>) => {
+export const tokenExchange = (
+    options: TokenExchangeOptions
+): ((agentToken: string) => Promise<string>) => {
     const tokenEndpoint = lazily(async () => {
         const { token_endpoint: endpoint } = await discover(options.issuer);
         return endpoint;
@@ -56,21 +60,23 @@ export const clientCredentials = (options: ClientCredentialsOptions): (() => Pro
     const credentials = [formEncode(options.clientId), formEncode(options.clientSecret)].join(':');
     const authorization = `Basic ${btoa(credentials)}`;
 
-    const request = async (): Promise<CachedToken> => {
+    const request = async (agentToken: string): Promise<Exchanged> => {
         const response = await fetch(await tokenEndpoint(), {
             method: 'POST',
             headers: { authorization },
             signal: AbortSignal.timeout(requestTimeoutMs),
             body: new URLSearchParams({
-                grant_type: 'client_credentials',
+                grant_type: 'urn:ietf:params:oauth:grant-type:token-exchange',
+                subject_token: agentToken,
+                subject_token_type: accessTokenType,
+                requested_token_type: accessTokenType,
                 resource: options.resource,
-                scope: options.scopes.join(' '),
             }),
         });
         if (!response.ok) {
             throw new NotesMcpAuthorizationServerError(
                 options.issuer,
-                `refused the server's credentials (${response.status})`
+                `refused to exchange the agent's token (${response.status})`
             );
         }
         const body = (await response.json()) as {
@@ -86,23 +92,34 @@ export const clientCredentials = (options: ClientCredentialsOptions): (() => Pro
         };
     };
 
-    let latest: CachedToken | null = null;
-    let refreshing: Promise<string> | null = null;
-    const refresh = async (): Promise<string> => {
+    const exchanged = new Map<string, Exchanged>();
+    const pending = new Map<string, Promise<string>>();
+    const exchange = async (agentToken: string): Promise<string> => {
         try {
-            const fresh = await request();
-            latest = fresh;
+            const fresh = await request(agentToken);
+            const now = Date.now();
+            for (const [key, { expiresAt }] of exchanged) {
+                if (expiresAt <= now) {
+                    exchanged.delete(key);
+                }
+            }
+            exchanged.set(agentToken, fresh);
             return fresh.token;
         } finally {
-            refreshing = null;
+            pending.delete(agentToken);
         }
     };
 
-    return async () => {
-        if (latest !== null && latest.expiresAt > Date.now()) {
-            return latest.token;
+    return async agentToken => {
+        const known = exchanged.get(agentToken);
+        if (known !== undefined && known.expiresAt > Date.now()) {
+            return known.token;
         }
-        refreshing ??= refresh();
-        return refreshing;
+        let inFlight = pending.get(agentToken);
+        if (inFlight === undefined) {
+            inFlight = exchange(agentToken);
+            pending.set(agentToken, inFlight);
+        }
+        return inFlight;
     };
 };

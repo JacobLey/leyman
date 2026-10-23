@@ -5,9 +5,14 @@ import type { McpAppConfig } from './app.js';
 import { identifier } from 'haywire';
 
 /**
- * The notes API, with the server's own credentials.
+ * The notes API, as the user an agent's token is for.
  */
-export const notesClientId = identifier<NotesClient>();
+export type NotesApiForAgent = (agentToken: string) => NotesClient;
+
+/**
+ * The notes API, for each agent's user.
+ */
+export const notesApiId = identifier<NotesApiForAgent>();
 
 /**
  * Verifies agents' access tokens.

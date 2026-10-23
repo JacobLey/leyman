@@ -64,7 +64,7 @@ const guarded =
  * doesn't already know.
  *
  * @param server - A server for one request
- * @param notes - The notes API, with the server's own token
+ * @param notes - The notes API, as the request's user
  * @param onError - Reports failures the agent is only told about in general
  */
 export const registerNoteTools = (

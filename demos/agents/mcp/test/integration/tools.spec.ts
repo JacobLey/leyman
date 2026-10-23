@@ -1,4 +1,6 @@
 import type { CallToolResult } from '@modelcontextprotocol/client';
+import type { NoteSummary } from '@leyman/demo-agents-mcp';
+import type { Agent } from '../helpers/agent.js';
 import { sql } from 'drizzle-orm';
 import { NotesMcpApiError } from '@leyman/demo-agents-mcp';
 import { notes } from '@leyman/demo-openapi-server';
@@ -6,7 +8,7 @@ import document from '@leyman/demo-openapi-spec/openapi.json' with { type: 'json
 import { expect } from '@leyman/expect';
 import { suite } from 'mocha-chain';
 import { connectAgent } from '../helpers/agent.js';
-import { withStack } from '../helpers/stack.js';
+import { defaultUser, withStack } from '../helpers/stack.js';
 
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/v;
 
@@ -20,9 +22,6 @@ const textOf = (result: CallToolResult): string => {
     const [block] = result.content;
     return block?.type === 'text' ? block.text : '';
 };
-
-// Whose notes the API shows the server: its own, as it calls with client credentials
-const owner = 'notes-mcp';
 
 suite('Tools', () => {
     const withAgent = withStack().beforeEach(async ({ url }) => ({
@@ -85,7 +84,7 @@ suite('Tools', () => {
         const withNotes = withAgent.beforeEach(async ({ db }) => {
             await db.insert(notes).values(
                 Array.from({ length: 15 }, (_, index) => ({
-                    owner,
+                    owner: defaultUser,
                     title: index % 2 === 0 ? `Sheep ${index}` : `Goat ${index}`,
                     body: 'A long body the list leaves out',
                     createdAt: sql`timestamptz '2026-01-01T00:00:00Z' + ${index} * interval '1 minute'`,
@@ -155,7 +154,7 @@ suite('Tools', () => {
         withAgent.test('Reads a note whole', async ({ agent, db }) => {
             const [row] = await db
                 .insert(notes)
-                .values({ owner, title: 'Dolly', body: 'A sheep' })
+                .values({ owner: defaultUser, title: 'Dolly', body: 'A sheep' })
                 .returning();
 
             const result = await agent.client.callTool({
@@ -249,6 +248,64 @@ suite('Tools', () => {
                 expect(errors).to.have.length(1);
             }
         );
+    });
+
+    suite('For each user', () => {
+        // Another user's agent, on the same server
+        const withOther = withAgent.beforeEach(async ({ url }) => ({
+            other: await connectAgent(url, { user: 'bob' }),
+        }));
+        withOther.afterEach(async ({ other }) => {
+            await other.close();
+        });
+
+        /**
+         * Adds a note as an agent's user, approving the step-up.
+         *
+         * @param agent - Whose
+         * @param title - Its title
+         * @returns Its id
+         */
+        const add = async (agent: Agent, title: string): Promise<string> => {
+            const result = await agent.authorized(async () =>
+                agent.client.callTool({ name: 'add_note', arguments: { title, body: '' } })
+            );
+            return (result.structuredContent as { readonly id: string }).id;
+        };
+
+        withOther.test(
+            "Adds notes as the agent's user, and finds only theirs",
+            async ({ agent, other, db }) => {
+                await add(agent, 'Dolly');
+                await add(other, 'Polly');
+
+                const mine = await agent.client.callTool({ name: 'find_notes', arguments: {} });
+                const theirs = await other.client.callTool({ name: 'find_notes', arguments: {} });
+
+                const titles = (result: CallToolResult): string[] =>
+                    (result.structuredContent as { readonly notes: NoteSummary[] }).notes.map(
+                        ({ title }) => title
+                    );
+                expect(titles(mine)).to.deep.equal(['Dolly']);
+                expect(titles(theirs)).to.deep.equal(['Polly']);
+                const owners = await db
+                    .select({ owner: notes.owner, title: notes.title })
+                    .from(notes);
+                expect(owners).to.have.deep.members([
+                    { owner: defaultUser, title: 'Dolly' },
+                    { owner: 'bob', title: 'Polly' },
+                ]);
+            }
+        );
+
+        withOther.test("Can't read another user's note", async ({ agent, other }) => {
+            const id = await add(agent, 'Dolly');
+
+            const result = await other.client.callTool({ name: 'read_note', arguments: { id } });
+
+            expect(result.isError).to.equal(true);
+            expect(textOf(result)).to.include('find_notes');
+        });
     });
 });
 

@@ -320,6 +320,28 @@ suite('notes', () => {
             expect(JSON.parse(json.stdout)).to.include({ title: 'Red\u{1B}[31m\nline' });
         });
 
+        withStackOnly.test('Shows each user only their own notes', async ({ api, configDir }) => {
+            const bobDir = await mkdtempConfig();
+            try {
+                await notes(bobDir, ['login', '--api', api], {
+                    env: { BROWSER: testBrowser, BROWSER_USER: 'bob' },
+                });
+                await notes(configDir, ['login', '--api', api], { env: { BROWSER: testBrowser } });
+                await notes(configDir, ['add', '--title', 'Dolly']);
+                await notes(bobDir, ['add', '--title', 'Polly']);
+
+                const mine = await notes(configDir, ['list', '--json']);
+                const bobs = await notes(bobDir, ['list', '--json']);
+
+                const titles = (stdout: string): string[] =>
+                    (JSON.parse(stdout) as { title: string }[]).map(({ title }) => title);
+                expect(titles(mine.stdout)).to.deep.equal(['Dolly']);
+                expect(titles(bobs.stdout)).to.deep.equal(['Polly']);
+            } finally {
+                await rm(bobDir, { recursive: true, force: true });
+            }
+        });
+
         withLogin.test('Says when there are no notes', async ({ configDir }) => {
             const { stdout } = await notes(configDir, ['list']);
 

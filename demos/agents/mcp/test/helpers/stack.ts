@@ -18,6 +18,11 @@ export const mcpService = {
     scopes: ['notes:read', 'notes:write'],
 };
 
+/**
+ * Who a login signs in as, unless it names another.
+ */
+export const defaultUser = 'dev-user';
+
 export interface StackOptions {
     /**
      * The audience the API accepts tokens for. Another than the MCP server asks for makes the API refuse it.
@@ -46,8 +51,9 @@ export const withStack = (options: StackOptions = {}) => {
                 { url: apiAudience, scopes: ['notes:read', 'notes:write'] },
             ],
             clients: [{ clientId: agentClientId, redirectUris: [agentRedirectUri] }],
-            services: [mcpService],
-            accountId: 'dev-user',
+            // The MCP server may exchange agents' tokens, issued for it, for the API's
+            services: [{ ...mcpService, tokenExchange: { subjectAudience: url } }],
+            accountId: defaultUser,
         });
         const pool = new Pool({ connectionString: database.url, max: 2 });
         const db = drizzle({ client: pool });
@@ -75,7 +81,8 @@ export const withStack = (options: StackOptions = {}) => {
                     baseUrl: api.url,
                     issuer: authorization.issuer,
                     resource: apiAudience,
-                    ...mcpService,
+                    clientId: mcpService.clientId,
+                    clientSecret: mcpService.clientSecret,
                 },
                 onError,
             }).fetch

@@ -21,7 +21,8 @@ export const agentRedirectUri = 'http://127.0.0.1/callback';
 
 /**
  * An agent's OAuth client, kept in memory, as a pre-registered public client. The user's part (opening the
- * authorization URL in a browser, signing in, approving) is played by `followAuthorization`.
+ * authorization URL in a browser, signing in, approving) is played by `followAuthorization`, signing in as `user`
+ * (else the dev server's default account).
  */
 export class AgentOAuthProvider implements OAuthClientProvider {
     public readonly redirectUrl = 'http://127.0.0.1:9/callback';
@@ -43,6 +44,14 @@ export class AgentOAuthProvider implements OAuthClientProvider {
     #tokens: StoredOAuthTokens | undefined;
     #codeVerifier = '';
     #discoveryState: OAuthDiscoveryState | undefined;
+    readonly #user: string | undefined;
+
+    /**
+     * @param user - Who signs in
+     */
+    public constructor(user?: string) {
+        this.#user = user;
+    }
 
     public clientInformation(): StoredOAuthClientInformation {
         return { client_id: agentClientId };
@@ -58,7 +67,12 @@ export class AgentOAuthProvider implements OAuthClientProvider {
 
     public async redirectToAuthorization(authorizationUrl: URL): Promise<void> {
         this.authorizations.push(authorizationUrl);
-        this.callback = await followAuthorization(authorizationUrl, this.redirectUrl);
+        const signIn = new URL(authorizationUrl);
+        if (this.#user !== undefined) {
+            // As a user typing their name in at the dev server's login, which takes whoever they say
+            signIn.searchParams.set('login_hint', this.#user);
+        }
+        this.callback = await followAuthorization(signIn, this.redirectUrl);
     }
 
     public saveCodeVerifier(codeVerifier: string): void {
@@ -101,15 +115,16 @@ export interface Agent {
  * An MCP client, as an agent's host runs one, connected to the server through the OAuth flow.
  *
  * @param url - The MCP server's URL
- * @param options - Whether it speaks the 2025-era protocol (with the initialize handshake)
+ * @param options - Whether it speaks the 2025-era protocol (with the initialize handshake), and who signs in
  * @param options.legacy - Speaks only the 2025-era protocol
+ * @param options.user - Who signs in, else the dev server's default account
  * @returns The connected agent
  */
 export const connectAgent = async (
     url: string,
-    options: { readonly legacy?: boolean } = {}
+    options: { readonly legacy?: boolean; readonly user?: string } = {}
 ): Promise<Agent> => {
-    const provider = new AgentOAuthProvider();
+    const provider = new AgentOAuthProvider(options.user);
     const client = new Client(
         { name: 'demo-agent', version: '1.0.0' },
         options.legacy ? { versionNegotiation: { mode: 'legacy' } } : {}

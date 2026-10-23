@@ -208,7 +208,7 @@ suite('Authorization', () => {
             const serveWith = (issuer: string): void => {
                 served.use(
                     createMcpApp(
-                        new NotesClient({ baseUrl: 'http://127.0.0.1:1' }),
+                        () => new NotesClient({ baseUrl: 'http://127.0.0.1:1' }),
                         jwtVerifier({ audience: url, issuer }),
                         {
                             issuer,

@@ -1,6 +1,6 @@
 # demo-agents-mcp
 
-An MCP server over the notes API: tools shaped for agents, an OAuth resource server, and its own credentials for the API it calls.
+An MCP server over the notes API: tools shaped for agents, an OAuth resource server, calling the API as the agent's user by token exchange.
 
 Part of the [agents demo](../README.md). A worked example, never published.
 
@@ -10,7 +10,7 @@ Part of the [agents demo](../README.md). A worked example, never published.
 - [Mapping onto the API](#mapping-onto-the-api)
 - [Keeping agents' context small](#keeping-agents-context-small)
 - [Authorization](#authorization)
-- [The server's own credentials](#the-servers-own-credentials)
+- [Calling the API as the user](#calling-the-api-as-the-user)
 - [Transport](#transport)
 - [Composing with haywire](#composing-with-haywire)
 - [Testing](#testing)
@@ -30,14 +30,13 @@ const app = createNotesMcpApp({
     issuer: 'https://auth.example',
     // Host and Origin it answers to, against DNS rebinding
     allowedHosts: ['notes.example'],
-    // The notes API, and the server's own credentials for it
+    // The notes API, and the server's credentials to exchange agents' tokens
     api: {
         baseUrl: 'https://api.notes.example',
         issuer: 'https://auth.example',
         resource: 'https://api.notes.example',
         clientId: 'notes-mcp',
         clientSecret: process.env.NOTES_MCP_SECRET!,
-        scopes: ['notes:read', 'notes:write'],
     },
     onError: error => console.error(error),
 });
@@ -82,13 +81,17 @@ The server is an OAuth 2.1 resource server, as the MCP spec (2026-07-28) require
 4. The token is verified as a JWT (RFC 9068): signed with one of the issuer's keys (by discovery), issued by it, for this server (`aud`), not expired, with `notes:read`.
 5. `add_note` needs `notes:write` too. Without it, the call is a `403` with `error="insufficient_scope", scope="notes:read notes:write"` (every scope the call needs, not only the missing one, as a client may ask for exactly what it's told), and the client steps up: it asks the user again, and retries.
 
-A token for another service, even from the same issuer (the server's own token for the API, say), is refused. A refused token is the caller's mistake, so it isn't reported. A verifier that can't check a token for another reason (its issuer's keys unreachable) is a `500`, reported to `onError`: the token may well be fine, and the operators need to know.
+A token for another service, even from the same issuer (the token the server exchanged for the API's, say), is refused. A refused token is the caller's mistake, so it isn't reported. A verifier that can't check a token for another reason (its issuer's keys unreachable) is a `500`, reported to `onError`: the token may well be fine, and the operators need to know.
 
-## The server's own credentials
+## Calling the API as the user
 
-The server calls the notes API as itself, never as the agent: it gets its own token with the client credentials grant, for the API's audience, and caches it until 30 seconds before it expires (or half its life, if that's shorter). The agent's token is never passed on: the spec forbids it, and it would be refused anyway, since it was issued for the MCP server.
+The server calls the notes API as the agent's user, whose notes are theirs alone, but never with the agent's token: the spec forbids passing it on, and the API would refuse it anyway, since it was issued for the MCP server. Instead, the server exchanges it (token exchange, RFC 8693) at the authorization server for one for the API:
 
-The API therefore sees one client, not the user. That's right for an API whose data is shared, like this one. An API with per-user data would need to know the user: the server would exchange the agent's token for one for the API (token exchange, RFC 8693), still never passing it on.
+1. The server authenticates as itself (its client id and secret), and sends the agent's token as `subject_token`, with `resource` set to the API.
+2. The authorization server checks the agent's token was issued for this server (a token issued for anything else isn't the server's to exchange), and answers with a token for the API: the same user (`sub`), at most the same scopes, and `act: { sub: "notes-mcp" }` saying who acts for them. It never outlives the agent's token.
+3. The API sees the user, as it would from the CLI, and could tell from `act` that the MCP server sent it.
+
+Each agent token's exchange is kept until 30 seconds before it expires (or half its life, if that's shorter), so an agent's calls share one; expired ones are dropped as others come in. Each request's `McpServer` gets an API client for its own agent's token, from the `authInfo` the SDK's handler passes its factory.
 
 ## Transport
 
@@ -102,7 +105,7 @@ The API therefore sees one client, not the user. That's right for an API whose d
 
 | Identifier | Bound by | Default in `createNotesMcpApp` |
 |---|---|---|
-| `notesClientId` | the app | `notesApiBinding(api)`: the API client, with client credentials |
+| `notesApiId` | the app | `notesApiBinding(api)`: an API client for an agent's token, exchanging it for the API's |
 | `tokenVerifierId` | the app | `jwtVerifierBinding({ issuer, audience: resourceUrl })` |
 | `mcpConfigId` | the app | `resourceUrl`, `issuer`, `allowedHosts`, `onError` |
 | `mcpAppId` | `mcpModule` | the Hono app |
@@ -111,7 +114,7 @@ Another authorization server (Keycloak, a hosted provider) is a different `issue
 
 ## Testing
 
-Everything is real, as deployed: a [dev OAuth server](../../oauth-server), the [notes API](../../openapi/server) on a database of its own (from [`pg-dolly`](../../../tools/pg-dolly)) accepting only that server's tokens, and the MCP server in front, each on a free port. The agent is the SDK's own `Client`, with an OAuth provider that plays the user with `followAuthorization`, so each test runs the whole flow: the `401`, discovery, PKCE, the token, and the step-up for `add_note`. Failures are made, not mocked: the API stopped, the API accepting another audience, an issuer with no discovery document, keys that can't be fetched. Token expiry is tested by moving the clock (Sinon's fake `Date`), never by waiting.
+Everything is real, as deployed: a [dev OAuth server](../../oauth-server), the [notes API](../../openapi/server) on a database of its own (from [`pg-dolly`](../../../tools/pg-dolly)) accepting only that server's tokens, and the MCP server in front, each on a free port. The agent is the SDK's own `Client`, with an OAuth provider that plays the user with `followAuthorization`, so each test runs the whole flow: the `401`, discovery, PKCE, the token, the step-up for `add_note`, and the exchange. Two agents, signed in as different users (`login_hint` at the dev server's login), each find only their own notes. Failures are made, not mocked: the API stopped, the API accepting another audience, an issuer with no discovery document, keys that can't be fetched. Token expiry is tested by moving the clock (Sinon's fake `Date`), never by waiting.
 
 ## What was learned
 
@@ -119,12 +122,13 @@ Everything is real, as deployed: a [dev OAuth server](../../oauth-server), the [
 - **The SDK's Hono helper (`createMcpHonoApp`) reads the body before any route runs**, so authentication can't come first. A plain Hono app, with the SDK's own `Host` and `Origin` checks (`hostHeaderValidationResponse`, `originValidationResponse`), keeps the order right.
 - **jose rejects a bad token and an unreachable issuer alike.** Only its token errors (expired, a bad signature, wrong claims, no matching key) mean the token is wrong; anything else is the server's problem, not the caller's.
 - **The SDK's client warns unless its OAuth provider keeps discovery state** (`saveDiscoveryState`), which it uses to check the authorization came back from the server it went to.
+- **The SDK's handler passes its factory each request's `authInfo`**, so a fresh `McpServer` per request can hold an API client for that request's user, rather than one shared by all.
 - **The SDK accepts JSON Schema through `fromJsonSchema`**, validated with Ajv: the API's schemas are used as they are, with no Zod.
 - **Most of `tools/list` is input schemas and structure**, not descriptions: dropping the API's limits from the outputs saved only about 7%. Fewer tools, and fewer properties, are what keep it small.
 
 ## Not covered
 
-- Per-user data, and token exchange (RFC 8693) to call the API as the user.
+- Revoking exchanged tokens when the agent's is revoked: they're JWTs, valid until they expire (at most as long as the agent's).
 - Client registration other than pre-registered clients: Client ID Metadata Documents (the spec's preferred way) need an `https` client id, and Dynamic Client Registration is deprecated.
 - Resources, prompts, subscriptions (`subscriptions/listen`), elicitation and tasks.
 - Dropping the cached service token when the API refuses it (its keys rotated, say): it's used until it nears expiry.
