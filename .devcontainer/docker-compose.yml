@@ -39,7 +39,7 @@ services:
 
   # Shares Nx task outputs across worktrees (Nx's local cache is per-worktree)
   nx-cache:
-    image: node:24-slim
+    image: node:24.22.1-trixie-slim
     command:
       - node
       - /server/nx-cache-server.mjs

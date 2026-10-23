@@ -19,8 +19,8 @@ import (
 
 // Keep in sync with `.devcontainer/Dockerfile` (see the devcontainer skill).
 const (
-	// node:24.21.0-trixie-slim
-	nodeImage = "node:24.21.0-trixie-slim@sha256:8ec5d7557396cfe32d21c3f9c13072355ceab22b584578ca4bb28af31120cffe"
+	// node:24.22.1-trixie-slim. Under 7 days old: an emergency security bump. Drop this note after 2026-10-27.
+	nodeImage = "node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea"
 	// Outside the lockfile, so `minimumReleaseAge` can't check it: only bump to a release at least 7 days old.
 	// 12.9.1 fixes `--frozen-lockfile` rejecting the lockfile of injected workspace packages with `catalog:`
 	// peer dependencies.
@@ -28,8 +28,9 @@ const (
 	// Keep in sync with `playwright` in `pnpm-workspace.yaml`. Only installs the browsers' system libraries here;
 	// the `playwright-install` target downloads the browsers themselves.
 	playwrightVersion = "1.62.1"
-	// golang:1.26.8-trixie. Only its Go toolchain is copied into the Node image, for projects written in Go.
-	goImage = "golang:1.26.8-trixie@sha256:aae9c439b447d24c93ee483408992857cf39a3fb6ab7fe53affc65d834891fa8"
+	// golang:1.26.10-trixie. Under 7 days old: an emergency security bump. Drop this note after 2026-10-27.
+	// Only its Go toolchain is copied into the Node image, for projects written in Go.
+	goImage = "golang:1.26.10-trixie@sha256:909771fef53e3dcb0950255f0c9a8b4728c3b841e61509c7b29b098de7ee02d4"
 	// valkey/valkey:9.1.2-trixie. Keep in sync with the `valkey` service in `.devcontainer/docker-compose.yml`.
 	valkeyImage = "valkey/valkey:9.1.2-trixie@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd"
 	// postgres:18.6-trixie. Keep in sync with the `postgres` service in `.devcontainer/docker-compose.yml`.

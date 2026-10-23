@@ -1,11 +1,13 @@
 # https://github.com/devcontainers/images/blob/main/src/base-debian/history
 FROM mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 
-ARG NODE_VERSION=24.21.0
+# Under 7 days old: an emergency security bump. Drop this note after 2026-10-27
+ARG NODE_VERSION=24.22.1
 # Only bump to a release at least 7 days old, see `pnpmVersion` in `dagger/main.go`
 ARG PNPM_VERSION=12.9.1
 ARG DAGGER_VERSION=0.21.10
-ARG GO_VERSION=1.26.8
+# Under 7 days old: an emergency security bump. Drop this note after 2026-10-27
+ARG GO_VERSION=1.26.10
 # For ad-hoc scripts only, so not mirrored in Dagger.
 # PYTHON_BUILD is the python-build-standalone release tag; only bump to a release at least 7 days old
 ARG PYTHON_VERSION=3.14.8
@@ -64,12 +66,15 @@ RUN ARCH="$(dpkg --print-architecture)" && \
     rm /tmp/go.tar.gz && \
     go install golang.org/x/tools/gopls@latest
 
-# Install Python (prebuilt CPython from https://github.com/astral-sh/python-build-standalone)
+# Install Python (prebuilt CPython from https://github.com/astral-sh/python-build-standalone).
+# pip is upgraded under 7 days old: an emergency security bump. Drop this note and the upgrade after 2026-10-27,
+# once a python-build-standalone release ships pip >=26.2.2
 ENV PATH=$PATH:$HOME/.python/bin
 RUN wget "https://github.com/astral-sh/python-build-standalone/releases/download/${PYTHON_BUILD}/cpython-${PYTHON_VERSION}+${PYTHON_BUILD}-$(uname -m)-unknown-linux-gnu-install_only.tar.gz" -O /tmp/python.tar.gz && \
     tar -C $HOME -xzf /tmp/python.tar.gz && \
     mv $HOME/python $HOME/.python && \
-    rm /tmp/python.tar.gz
+    rm /tmp/python.tar.gz && \
+    $HOME/.python/bin/python3 -m pip install --no-cache-dir --upgrade "pip>=26.2.2"
 
 # Install dagger
 RUN curl -fsSL https://dl.dagger.io/dagger/install.sh | \
