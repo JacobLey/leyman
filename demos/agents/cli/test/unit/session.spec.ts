@@ -45,14 +45,18 @@ suite('SessionStore', () => {
             }
         );
 
-        withDirectory.test(
-            "Rejects when the lock can't be created",
-            async ({ directory, store }) => {
-                await chmod(directory, 0o500);
-
-                await expect(store.locked(async () => 'ran')).to.be.rejectedWith(/EACCES/v);
+        withDirectory.test("Rejects when the lock can't be created", async ({ directory }) => {
+            // Short enough to make (Linux paths are at most 4095 bytes), too long for the lock in it.
+            // Unlike a read-only directory, this fails for root too, as in CI.
+            let deep = directory;
+            while (deep.length < 4000) {
+                deep = Path.join(deep, 'd'.repeat(200));
             }
-        );
+            deep = Path.join(deep, 'd'.repeat(4090 - deep.length));
+            const store = new SessionStore(deep);
+
+            await expect(store.locked(async () => 'ran')).to.be.rejectedWith(/ENAMETOOLONG/v);
+        });
 
         withDirectory.test('Makes the directory, owner-only', async ({ directory }) => {
             const made = Path.join(directory, 'notes');
