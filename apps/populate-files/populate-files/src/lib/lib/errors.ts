@@ -40,7 +40,7 @@ export class PopulateFilesOwnershipError extends PopulateFilesError {
         detail?: string;
         cause?: unknown;
     }) {
-        const suffix = detail ? ` (${detail})` : '';
+        const suffix = detail === undefined ? '' : ` (${detail})`;
         super(
             `File ${filePath} ${ownershipMessages[reason]}${suffix}. Pass \`force\` to overwrite it.`,
             {

@@ -53,8 +53,8 @@ const resolveTargetDir = async (options: RawOptions): Promise<string> =>
     Path.resolve(await parseCwd(options.cwd), options.targetDir ?? '.');
 
 // Relative to `cwd`, like `targetDir`, so it can sit outside the target directory.
-const resolveManifestPath = async (options: RawOptions): Promise<string | null> =>
-    options.manifest ? Path.resolve(await parseCwd(options.cwd), options.manifest) : null;
+const resolveManifestPath = async ({ cwd, manifest = null }: RawOptions): Promise<string | null> =>
+    manifest === null ? null : Path.resolve(await parseCwd(cwd), manifest);
 
 const shouldCheck = (check?: boolean | null): boolean => check ?? isCI;
 const isDryRun = (dryRun?: boolean | null): boolean => dryRun === true;
