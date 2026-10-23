@@ -415,8 +415,9 @@ export class ContainerFactory<
      * the call will fail (and be typed as invalid).
      */
     public toContainer(
-        // Factories are usually incomplete, so a `this` check would stop them matching `GenericContainerFactory`
-        ...invalidInput: ValidateToContainer<this> & []
+        // Not a `this` check: factories are usually incomplete, and would stop matching `GenericContainerFactory`.
+        // An intersection, unlike a tuple, makes a missing argument fail on its type, which shows the message.
+        ...invalidInput: Invalid<ValidateToContainer<this>> & []
     ): ExpandedContainer<Outputs, Bindings, Async>;
     public toContainer(): ExpandedContainer<Outputs, Bindings, Async> {
         if (this.#missingDependencyOutputsByBaseId.size > 0) {
