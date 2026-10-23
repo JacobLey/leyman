@@ -45,7 +45,9 @@ export class Formatter {
             try {
                 await formatFiles(files);
                 return;
-            } catch {}
+            } catch {
+                // This formatter isn't installed, or failed: try the next
+            }
         }
     }
 
@@ -60,7 +62,9 @@ export class Formatter {
         for (const { formatText } of formatters) {
             try {
                 return await formatText(text, filePath);
-            } catch {}
+            } catch {
+                // This formatter isn't installed, or failed: try the next
+            }
         }
         return text;
     }
