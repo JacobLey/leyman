@@ -117,7 +117,7 @@ const compileParameters = (
         properties: Object.fromEntries(
             inLocation.map(({ name, schema }) => [name, inDocument(schema)])
         ),
-        required: inLocation.filter(({ required }) => required).map(({ name }) => name),
+        required: inLocation.filter(({ required }) => required === true).map(({ name }) => name),
         additionalProperties: false,
     });
 };
