@@ -1,3 +1,4 @@
+import type { IncomingMessage, ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import { readFile } from 'node:fs/promises';
 import { createServer } from 'node:http';
@@ -11,6 +12,31 @@ export interface SchemaServer {
 }
 
 /**
+ * Answers a request for a schema in `test/data/external/remote`, or a 404 when there's none.
+ *
+ * @param request - Naming the schema by its path
+ * @param response - The schema, or a 404
+ */
+const serve = async (request: IncomingMessage, response: ServerResponse): Promise<void> => {
+    const url = request.url ?? '/';
+    const isYaml = url.startsWith('/as-yaml/');
+    const name = `${Path.basename(url)}${isYaml ? '.yaml' : ''}`;
+    try {
+        const body =
+            name === ''
+                ? '{ "type": "boolean" }'
+                : await readFile(Path.join(remoteDirectory, name));
+        response
+            .writeHead(200, {
+                'content-type': isYaml ? 'application/yaml' : 'application/json',
+            })
+            .end(body);
+    } catch {
+        response.writeHead(404).end();
+    }
+};
+
+/**
  * Serve the schemas in `test/data/external/remote` over HTTP, as `application/json`,
  * and a boolean schema at the root path. `/as-yaml/<name>` serves `<name>.yaml` as `application/yaml`,
  * without an extension in its URL.
@@ -18,23 +44,9 @@ export interface SchemaServer {
  * @returns URL of the server, and a function to stop it
  */
 export const startSchemaServer = async (): Promise<SchemaServer> => {
-    const server = createServer(async (request, response) => {
-        const url = request.url ?? '/';
-        const isYaml = url.startsWith('/as-yaml/');
-        const name = `${Path.basename(url)}${isYaml ? '.yaml' : ''}`;
-        try {
-            const body =
-                name === ''
-                    ? '{ "type": "boolean" }'
-                    : await readFile(Path.join(remoteDirectory, name));
-            response
-                .writeHead(200, {
-                    'content-type': isYaml ? 'application/yaml' : 'application/json',
-                })
-                .end(body);
-        } catch {
-            response.writeHead(404).end();
-        }
+    const server = createServer((request, response) => {
+        // Answers every request, a missing schema with a 404, so it never rejects
+        void serve(request, response);
     });
     await new Promise<void>(resolve => {
         server.listen(0, '127.0.0.1', resolve);
