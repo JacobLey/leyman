@@ -49,7 +49,7 @@ const subschemaMapKeywords = new Set([
  */
 const addMetadataKeywords = (ajv: Ajv2020, schema: unknown): void => {
     // Boolean schemas
-    if (!schema || typeof schema !== 'object') {
+    if (typeof schema !== 'object' || schema === null) {
         return;
     }
     for (const [key, value] of Object.entries(schema)) {
@@ -63,8 +63,7 @@ const addMetadataKeywords = (ajv: Ajv2020, schema: unknown): void => {
             for (const subschema of Object.values(value as object)) {
                 addMetadataKeywords(ajv, subschema);
             }
-            // eslint-disable-next-line unicorn/no-computed-property-existence-check -- The lookup strict mode uses for unknown keywords
-        } else if (!ajv.RULES.keywords[key]) {
+        } else if (ajv.RULES.keywords[key] !== true) {
             ajv.addVocabulary([key]);
         }
     }
