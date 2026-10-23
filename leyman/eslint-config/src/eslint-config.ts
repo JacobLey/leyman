@@ -55,7 +55,7 @@ const disableReplacedTypeRules = (): Linter.RulesRecord => {
         const { extendsBaseRule } = rule.meta.docs;
         if (typeof extendsBaseRule === 'string') {
             rules[extendsBaseRule] = 'off';
-        } else if (extendsBaseRule) {
+        } else if (extendsBaseRule === true) {
             rules[ruleName] = 'off';
         }
     }
@@ -478,15 +478,7 @@ export default function makeEslintConfigForPackage({
                         ],
                     },
                 ],
-                '@typescript-eslint/strict-boolean-expressions': [
-                    'error',
-                    {
-                        allowNullableBoolean: true,
-                        allowNullableString: true,
-                        allowNullableNumber: true,
-                        allowAny: true,
-                    },
-                ],
+                '@typescript-eslint/strict-boolean-expressions': 'error',
                 // Reports `promisify(exec)`: Node's callback APIs return a value where `promisify` expects none
                 '@typescript-eslint/strict-void-return': 'off',
                 '@typescript-eslint/switch-exhaustiveness-check': 'error',
@@ -925,14 +917,14 @@ export default function makeEslintConfigForPackage({
                 const rules: Linter.Config['rules'] = {};
 
                 for (const [ruleName, ruleSettings] of Object.entries(typescriptPlugin.rules)) {
-                    if (!ruleSettings.meta.docs.requiresTypeChecking) {
+                    if (ruleSettings.meta.docs.requiresTypeChecking !== true) {
                         continue;
                     }
                     rules[`@typescript-eslint/${ruleName}`] = 'off';
                     const { extendsBaseRule } = ruleSettings.meta.docs;
                     if (typeof extendsBaseRule === 'string') {
                         rules[extendsBaseRule] = 'error';
-                    } else if (extendsBaseRule) {
+                    } else if (extendsBaseRule === true) {
                         rules[ruleName] = 'error';
                     }
                 }

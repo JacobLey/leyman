@@ -17,8 +17,8 @@ export const packagePluginConfig = (
     files: readonly string[],
     ignores: readonly string[] = []
 ): Linter.Config => {
-    const namespace = plugin.meta?.namespace;
-    if (!namespace) {
+    const namespace = plugin.meta?.namespace ?? '';
+    if (namespace === '') {
         throw new TypeError(
             `ESLint plugin ${plugin.meta?.name ?? '<unnamed>'} has no meta.namespace`
         );
