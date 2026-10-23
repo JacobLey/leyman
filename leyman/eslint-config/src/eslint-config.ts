@@ -258,7 +258,7 @@ export default function makeEslintConfigForPackage({
             },
             rules: {
                 ...eslintConfig.configs.all.rules,
-                'arrow-body-style': ['error', 'as-needed'],
+                'arrow-body-style': 'error',
                 // Names from outside JavaScript keep their own case (e.g. Postgres's `lc_time`); `@typescript-eslint/naming-convention` checks the repo's
                 camelcase: 'off',
                 'capitalized-comments': [
@@ -296,13 +296,14 @@ export default function makeEslintConfigForPackage({
                 // Complexity and size are left to review, not capped
                 'max-statements': 'off',
                 'multiline-comment-style': ['error', 'separate-lines'],
+                // TypeScript rejects calling a class without `new`, and some libraries' functions are capitalized (`oauth.None()`)
                 'new-cap': ['error', { capIsNew: false }],
                 // Some work runs one at a time on purpose, e.g. against one database
                 'no-await-in-loop': 'off',
                 'no-constant-condition': ['error', { checkLoops: false }],
                 // `continue` keeps a loop flat, like an early return
                 'no-continue': 'off',
-                'no-empty': ['error', { allowEmptyCatch: true }],
+                'no-empty': 'error',
                 'no-duplicate-imports': ['error', { allowSeparateTypeImports: true }],
                 'no-implicit-coercion': ['error', { allow: ['!!'] }],
                 // A short comment may end a line
@@ -374,9 +375,8 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint/ban-ts-comment': [
                     'error',
                     {
+                        // Type tests expect an error on the line below, which says what's wrong with it
                         'ts-expect-error': false,
-                        'ts-ignore': true,
-                        'ts-nocheck': true,
                         'ts-check': true,
                     },
                 ],
@@ -393,18 +393,9 @@ export default function makeEslintConfigForPackage({
                     'error',
                     {
                         allowExpressions: true,
-                        allowTypedFunctionExpressions: true,
-                        allowHigherOrderFunctions: true,
                     },
                 ],
-                '@typescript-eslint/explicit-module-boundary-types': [
-                    'error',
-                    {
-                        allowDirectConstAssertionInArrowFunctions: true,
-                        allowHigherOrderFunctions: true,
-                        allowTypedFunctionExpressions: true,
-                    },
-                ],
+                '@typescript-eslint/explicit-module-boundary-types': 'error',
                 // Complexity and size are left to review, not capped
                 '@typescript-eslint/max-params': 'off',
                 '@typescript-eslint/member-ordering': [
@@ -424,15 +415,9 @@ export default function makeEslintConfigForPackage({
                     },
                 ],
                 '@typescript-eslint/naming-convention': ['error', ...baseNamingConvention],
-                '@typescript-eslint/no-empty-interface': ['error', { allowSingleExtends: true }],
                 // `any` is sometimes needed, e.g. for variance in a generic constraint; the `no-unsafe-*` rules still check how it's used
                 '@typescript-eslint/no-explicit-any': 'off',
-                '@typescript-eslint/no-extraneous-class': [
-                    'error',
-                    {
-                        allowStaticOnly: true,
-                    },
-                ],
+                '@typescript-eslint/no-extraneous-class': 'error',
                 '@typescript-eslint/no-floating-promises': [
                     'error',
                     {
@@ -441,20 +426,8 @@ export default function makeEslintConfigForPackage({
                 ],
                 // `void` is used in generic types, e.g. `Promise<void> | void`
                 '@typescript-eslint/no-invalid-void-type': 'off',
-                '@typescript-eslint/no-misused-promises': [
-                    'error',
-                    {
-                        checksVoidReturn: false,
-                        checksConditionals: true,
-                    },
-                ],
-                '@typescript-eslint/no-namespace': [
-                    'error',
-                    {
-                        allowDeclarations: false,
-                        allowDefinitionFiles: false,
-                    },
-                ],
+                '@typescript-eslint/no-misused-promises': 'error',
+                '@typescript-eslint/no-namespace': ['error', { allowDefinitionFiles: false }],
                 // Deprecated, and type aliases are used throughout
                 '@typescript-eslint/no-type-alias': 'off',
                 // `!` is allowed where TypeScript can't narrow a value known to exist, though the fewer the better
@@ -467,31 +440,21 @@ export default function makeEslintConfigForPackage({
                     'error',
                     {
                         allow: ['private readonly'],
-                        prefer: 'class-property',
                     },
                 ],
                 '@typescript-eslint/prefer-destructuring': [
                     'error',
                     {
-                        VariableDeclarator: { array: true, object: true },
                         // `unicorn/no-unreadable-array-destructuring` forbids destructuring into properties
                         AssignmentExpression: { array: false, object: true },
                     },
                 ],
-                '@typescript-eslint/prefer-nullish-coalescing': [
-                    'error',
-                    {
-                        ignoreConditionalTests: true,
-                        ignoreMixedLogicalExpressions: false,
-                    },
-                ],
+                '@typescript-eslint/prefer-nullish-coalescing': 'error',
                 // Reports most parameters typed by a library, which can't be made readonly
                 '@typescript-eslint/prefer-readonly-parameter-types': 'off',
                 '@typescript-eslint/restrict-template-expressions': [
                     'error',
                     {
-                        allowNumber: true,
-                        allowBoolean: true,
                         allowAny: false,
                         allowNullish: false,
                     },
@@ -518,9 +481,6 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint/strict-boolean-expressions': [
                     'error',
                     {
-                        allowString: true,
-                        allowNumber: true,
-                        allowNullableObject: true,
                         allowNullableBoolean: true,
                         allowNullableString: true,
                         allowNullableNumber: true,
@@ -533,7 +493,6 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint/triple-slash-reference': [
                     'error',
                     {
-                        path: 'never',
                         types: 'never',
                         lib: 'never',
                     },
@@ -556,22 +515,9 @@ export default function makeEslintConfigForPackage({
                 ],
                 // Assertions are left to review; `consistent-type-assertions` limits how they're written
                 '@typescript-eslint/no-unsafe-type-assertion': 'off',
-                '@typescript-eslint/no-unused-expressions': [
-                    'error',
-                    {
-                        allowShortCircuit: true,
-                        allowTernary: true,
-                    },
-                ],
+                '@typescript-eslint/no-unused-expressions': 'error',
                 '@typescript-eslint/no-unused-vars': ['error', { ignoreRestSiblings: true }],
-                '@typescript-eslint/no-use-before-define': [
-                    'error',
-                    {
-                        enums: false,
-                        functions: false,
-                        typedefs: false,
-                    },
-                ],
+                '@typescript-eslint/no-use-before-define': 'error',
                 // An async function without `await` still returns a promise, which callers may rely on
                 '@typescript-eslint/require-await': 'off',
 
@@ -657,6 +603,7 @@ export default function makeEslintConfigForPackage({
                 'jsdoc/check-tag-names': ['error', { definedTags: ['rejects'] }],
                 // Descriptions indent nested lists and their continuation lines
                 'jsdoc/check-indentation': ['error', { allowIndentedSections: true }],
+                // A destructured parameter is documented as a whole (`@param options - ...`), its properties on its type
                 'jsdoc/check-param-names': [
                     'error',
                     {
@@ -675,13 +622,7 @@ export default function makeEslintConfigForPackage({
                 'jsdoc/match-name': 'off',
                 // Needs options, and reports that on every file without them
                 'jsdoc/no-missing-syntax': 'off',
-                'jsdoc/no-multi-asterisks': [
-                    'error',
-                    {
-                        preventAtEnd: true,
-                        preventAtMiddleLines: true,
-                    },
-                ],
+                'jsdoc/no-multi-asterisks': 'error',
                 // Needs options, and reports that on every file without them
                 'jsdoc/no-restricted-syntax': 'off',
                 // A description may be a phrase
@@ -690,7 +631,6 @@ export default function makeEslintConfigForPackage({
                     'error',
                     {
                         checkConstructors: false,
-                        descriptionStyle: 'body',
                     },
                 ],
                 // Examples live in READMEs and the docs site
@@ -726,6 +666,7 @@ export default function makeEslintConfigForPackage({
                         ],
                     },
                 ],
+                // As in `jsdoc/check-param-names`
                 'jsdoc/require-param': [
                     'error',
                     {
@@ -745,7 +686,6 @@ export default function makeEslintConfigForPackage({
                     'never',
                     {
                         applyToEndTag: false,
-                        count: 1,
                         startLines: 1,
                         tags: {
                             example: { lines: 'always' },
@@ -775,6 +715,7 @@ export default function makeEslintConfigForPackage({
                 'n/no-missing-import': 'off',
                 // TypeScript resolves imports, including `.ts` sources and subpath imports (`#internal/*`), which this can't
                 'n/no-missing-require': 'off',
+                // Module setup (e.g. reading a package.json at load) runs once, before anything waits on it
                 'n/no-sync': ['error', { allowAtRootLevel: true }],
                 'n/no-unsupported-features/node-builtins': [
                     'error',
@@ -881,8 +822,6 @@ export default function makeEslintConfigForPackage({
                 'regexp/letter-case': [
                     'error',
                     {
-                        caseInsensitive: 'lowercase',
-                        controlEscape: 'uppercase',
                         hexadecimalEscape: 'uppercase',
                         unicodeEscape: 'uppercase',
                     },
@@ -951,7 +890,7 @@ export default function makeEslintConfigForPackage({
                 'unicorn/no-this-outside-of-class': 'off',
                 // `eslint.config.js` and other config modules export the result of a call
                 'unicorn/no-top-level-side-effects': 'off',
-                'unicorn/no-useless-undefined': ['error', { checkArguments: false }],
+                'unicorn/no-useless-undefined': 'error',
                 'unicorn/numeric-separators-style': [
                     'error',
                     {
@@ -960,6 +899,7 @@ export default function makeEslintConfigForPackage({
                         },
                     },
                 ],
+                // An index that also uses what it re-exports imports it once, rather than importing and re-exporting it
                 'unicorn/prefer-export-from': ['error', { checkUsedVariables: false }],
                 // Contradicts `unicorn/prefer-number-properties`
                 'unicorn/prefer-global-number-constants': 'off',
