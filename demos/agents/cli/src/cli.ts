@@ -5,7 +5,7 @@ import yargs from 'yargs';
 import { bind } from 'haywire';
 import { commandId } from './commands/lib/types.js';
 import { defaultConfigDir } from './lib/environment.js';
-import { NotesCliError } from './lib/errors.js';
+import { NotesCliError, NotesCliUsageError } from './lib/errors.js';
 
 /**
  * The notes CLI. Run `notes --help` for its commands.
@@ -45,7 +45,7 @@ export class NotesCli implements Main {
             .help()
             // A mistake in the command line says where help is
             .fail(message => {
-                throw new NotesCliError(`${message}. Run notes --help for usage.`);
+                throw new NotesCliUsageError(`${message}. Run notes --help for usage.`);
             });
         for (const register of this.#commands) {
             cli = register(cli);
@@ -57,14 +57,15 @@ export class NotesCli implements Main {
                 }
             });
         } catch (error) {
-            // One line on stderr, never a stack trace: a failure the CLI expected says what to do, any other what
-            // failed
-            process.exitCode = 1;
-            console.error(
-                error instanceof NotesCliError
-                    ? error.message
-                    : `Failed: ${(error as Error).message}`
-            );
+            // One line on stderr, never a stack trace: a failure the CLI expected says what to do (and its exit code
+            // what kind it is), any other what failed
+            if (error instanceof NotesCliError) {
+                process.exitCode = error.exitCode;
+                console.error(error.message);
+            } else {
+                process.exitCode = 1;
+                console.error(`Failed: ${(error as Error).message}`);
+            }
         }
     }
 }

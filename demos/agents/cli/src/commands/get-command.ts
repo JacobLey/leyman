@@ -4,6 +4,7 @@ import { bind } from 'haywire';
 import { NotesCliError } from '../lib/errors.js';
 import { connect, refused } from '../lib/notes.js';
 import { SessionStore } from '../lib/session.js';
+import { printable } from '../lib/text.js';
 import { commandId } from './lib/types.js';
 
 interface GetCommandExtendedInput extends NotesCommandInput {
@@ -33,7 +34,11 @@ export const noteGetCommand: Command<GetCommandExtendedInput> = {
         if (read.status !== 200) {
             throw refused(read);
         }
-        console.log(json ? JSON.stringify(read.body) : `${read.body.title}\n\n${read.body.body}`);
+        console.log(
+            json
+                ? JSON.stringify(read.body)
+                : `${printable(read.body.title)}\n\n${printable(read.body.body, ['\n', '\t'])}`
+        );
     },
 };
 

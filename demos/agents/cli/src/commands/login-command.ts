@@ -9,7 +9,13 @@ import { commandId } from './lib/types.js';
 interface LoginCommandExtendedInput extends NotesCommandInput {
     api: string;
     clientId: string;
+    timeout: number;
 }
+
+/**
+ * Ten minutes: long enough to log in at leisure, short enough that a login nobody finishes doesn't wait for days.
+ */
+const defaultTimeoutSeconds = 600;
 
 /**
  * Sends the user to log in: prints the URL, for whoever runs the CLI to open (an agent can pass it on), and opens it
@@ -48,9 +54,14 @@ export const loginCommand: Command<LoginCommandExtendedInput> = {
                 describe: 'The OAuth client id the CLI is registered as',
                 default: 'notes-cli',
             },
+            timeout: {
+                type: 'number',
+                describe: 'Seconds to wait for the login in the browser',
+                default: defaultTimeoutSeconds,
+            },
         }) as never,
-    handler: async ({ api, clientId, configDir, json }) => {
-        const session = await login({ api, clientId, openBrowser });
+    handler: async ({ api, clientId, configDir, json, timeout }) => {
+        const session = await login({ api, clientId, openBrowser, timeoutSeconds: timeout });
         const store = new SessionStore(configDir);
         await store.save(session);
         console.log(json ? JSON.stringify({ api: session.api }) : `Logged in to ${session.api}`);

@@ -1,12 +1,39 @@
-import { mkdir, readFile, stat, writeFile } from 'node:fs/promises';
+import { chmod, mkdir, mkdtemp, readdir, readFile, rm, stat, writeFile } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import Path from 'node:path';
 import { notes as notesTable } from '@leyman/demo-openapi-server';
 import { expect } from '@leyman/expect';
 import { suite, test } from 'mocha-chain';
 import { notes, testBrowser } from '../helpers/cli.js';
+import { listenLeast } from '../helpers/least.js';
 import { withStack } from '../helpers/stack.js';
 
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/v;
+
+/**
+ * Changes the saved session, as time (or an attacker) would.
+ *
+ * @param configDir - Where it is
+ * @param change - Fields to replace
+ * @returns The session before
+ */
+const editSession = async (
+    configDir: string,
+    change: Readonly<Record<string, unknown>>
+): Promise<Record<string, unknown>> => {
+    const file = Path.join(configDir, 'session.json');
+    const session = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
+    await writeFile(file, JSON.stringify({ ...session, ...change }));
+    return session;
+};
+
+const mkdtempConfig = async (): Promise<string> => mkdtemp(Path.join(tmpdir(), 'notes-cli-'));
+
+const readSession = async (configDir: string): Promise<Record<string, unknown>> =>
+    JSON.parse(await readFile(Path.join(configDir, 'session.json'), 'utf8')) as Record<
+        string,
+        unknown
+    >;
 
 suite('notes', () => {
     test('--help lists every command', async () => {
@@ -20,8 +47,22 @@ suite('notes', () => {
     test('Says where help is, without a command', async () => {
         const { code, stderr } = await notes('/nowhere', []);
 
-        expect(code).to.equal(1);
+        expect(code).to.equal(2);
         expect(stderr).to.include('Run notes --help for usage.');
+    });
+
+    test('Refuses a body both given and read from stdin', async () => {
+        const { code, stderr } = await notes('/nowhere', [
+            'add',
+            '--title',
+            'Dolly',
+            '--body',
+            'A sheep',
+            '--stdin',
+        ]);
+
+        expect(code).to.equal(2);
+        expect(stderr).to.match(/mutually exclusive/v);
     });
 
     const withStackOnly = withStack();
@@ -29,7 +70,7 @@ suite('notes', () => {
     withStackOnly.test('Says to log in, before logging in', async ({ configDir }) => {
         const { code, stderr } = await notes(configDir, ['list']);
 
-        expect(code).to.equal(1);
+        expect(code).to.equal(3);
         expect(stderr).to.equal('Not logged in. Run notes login --api <url> first.\n');
     });
 
@@ -129,7 +170,7 @@ suite('notes', () => {
                 },
             });
 
-            expect(code).to.equal(1);
+            expect(code).to.equal(3);
             expect(stderr).to.include('Login failed (access_denied). Run notes login again.');
         });
 
@@ -143,10 +184,50 @@ suite('notes', () => {
                     },
                 });
 
-                expect(code).to.equal(1);
+                expect(code).to.equal(3);
                 expect(stderr).to.match(/Login failed \(.*state.*\)/v);
             }
         );
+
+        withStackOnly.test(
+            'Gives up when the browser never comes back',
+            async ({ api, configDir }) => {
+                const { code, stderr } = await notes(
+                    configDir,
+                    ['login', '--api', api, '--timeout', '1'],
+                    // Opens nothing
+                    { env: { BROWSER: 'true' } }
+                );
+
+                expect(code).to.equal(3);
+                expect(stderr).to.include('Login timed out after 1s. Run notes login again.');
+            }
+        );
+
+        test('Logs in at a server that says the least it may', async () => {
+            const least = await listenLeast();
+            const configDir = await mkdtempConfig();
+            try {
+                const login = await notes(configDir, ['login', '--api', least.url], {
+                    env: { BROWSER: testBrowser },
+                });
+                const listed = await notes(configDir, ['list']);
+
+                expect(login.code).to.equal(0);
+                // Found at OpenID Connect's well-known URL, asking for no scope as none are named
+                expect(login.stderr).to.include(`Log in at: ${least.url}/authorize?`);
+                expect(login.stderr).to.not.include('scope=');
+                expect(listed.stdout).to.equal('No notes\n');
+                // Used until the API refuses it
+                expect(await readSession(configDir)).to.include({
+                    expiresAt: null,
+                    refreshToken: null,
+                });
+            } finally {
+                await least.close();
+                await rm(configDir, { recursive: true, force: true });
+            }
+        });
 
         withStackOnly.test(
             'Fails for a URL that is not the API',
@@ -219,6 +300,26 @@ suite('notes', () => {
             ).to.deep.equal(['Sheep 3', 'Sheep 2']);
         });
 
+        withLogin.test('Prints control characters escaped', async ({ configDir }) => {
+            const added = await notes(configDir, [
+                'add',
+                '--title',
+                'Red\u{1B}[31m\nline',
+                '--body',
+                'One\n\tTwo\rThree',
+            ]);
+            const id = added.stdout.trim();
+
+            const listed = await notes(configDir, ['list']);
+            const got = await notes(configDir, ['get', id]);
+            const json = await notes(configDir, ['get', id, '--json']);
+
+            expect(listed.stdout).to.equal(`${listed.stdout.slice(0, 64)}Red\\u001b[31m\\nline\n`);
+            // A body keeps its lines and tabs
+            expect(got.stdout).to.equal('Red\\u001b[31m\\nline\n\nOne\n\tTwo\\rThree\n');
+            expect(JSON.parse(json.stdout)).to.include({ title: 'Red\u{1B}[31m\nline' });
+        });
+
         withLogin.test('Says when there are no notes', async ({ configDir }) => {
             const { stdout } = await notes(configDir, ['list']);
 
@@ -249,17 +350,79 @@ suite('notes', () => {
         });
 
         withLogin.test('Refreshes an expired login', async ({ configDir }) => {
-            const file = Path.join(configDir, 'session.json');
-            const session = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
-            await writeFile(file, JSON.stringify({ ...session, expiresAt: 0 }));
+            const session = await editSession(configDir, { expiresAt: 0 });
 
             const { code } = await notes(configDir, ['list']);
 
             expect(code).to.equal(0);
-            const refreshed = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
+            const refreshed = await readSession(configDir);
             expect(refreshed.accessToken).to.not.equal(session.accessToken);
             expect(refreshed.expiresAt).to.be.above(Date.now());
         });
+
+        withLogin.test(
+            'Refreshes once for commands run at once, and keeps the login',
+            async ({ configDir }) => {
+                await editSession(configDir, { expiresAt: 0 });
+
+                // Each spending the same refresh token would revoke the login
+                const runs = await Promise.all(
+                    Array.from({ length: 4 }, async () => notes(configDir, ['list']))
+                );
+                await editSession(configDir, { expiresAt: 0 });
+                const after = await notes(configDir, ['list']);
+
+                expect(runs.map(({ code }) => code)).to.deep.equal([0, 0, 0, 0]);
+                expect(after.code).to.equal(0);
+                expect(await readdir(configDir)).to.deep.equal(['session.json']);
+            }
+        );
+
+        withLogin.test(
+            'Refreshes, and tries again, once the API refuses the token',
+            async ({ configDir }) => {
+                await editSession(configDir, { accessToken: 'forged' });
+
+                const { code } = await notes(configDir, ['list']);
+
+                expect(code).to.equal(0);
+                const { accessToken } = await readSession(configDir);
+                expect(accessToken).to.not.equal('forged');
+            }
+        );
+
+        withLogin.test(
+            'Refreshes at the issuer it logged in at, and says when that fails',
+            async ({ configDir }) => {
+                // Nothing listens there: the API would still name the dev server
+                await editSession(configDir, { expiresAt: 0, issuer: 'http://127.0.0.1:1' });
+
+                const { code, stderr } = await notes(configDir, ['list']);
+
+                expect(code).to.equal(1);
+                expect(stderr).to.match(
+                    /^Failed to refresh the login at http:\/\/127\.0\.0\.1:1 \(/v
+                );
+            }
+        );
+
+        withLogin.test(
+            'Makes a login others can read owner-only, when it is saved again',
+            async ({ configDir }) => {
+                await editSession(configDir, { expiresAt: 0 });
+                await chmod(Path.join(configDir, 'session.json'), 0o644);
+                await chmod(configDir, 0o755);
+
+                await notes(configDir, ['list']);
+
+                const [file, directory] = await Promise.all([
+                    stat(Path.join(configDir, 'session.json')),
+                    stat(configDir),
+                ]);
+                expect(file.mode.toString(8).slice(-3)).to.equal('600');
+                expect(directory.mode.toString(8).slice(-3)).to.equal('700');
+            }
+        );
 
         for (const [name, change] of [
             ['without a refresh token', { refreshToken: null }],
@@ -268,16 +431,11 @@ suite('notes', () => {
             withLogin.test(
                 `Says to log in again, for an expired login ${name}`,
                 async ({ configDir }) => {
-                    const file = Path.join(configDir, 'session.json');
-                    const session = JSON.parse(await readFile(file, 'utf8')) as Record<
-                        string,
-                        unknown
-                    >;
-                    await writeFile(file, JSON.stringify({ ...session, expiresAt: 0, ...change }));
+                    await editSession(configDir, { expiresAt: 0, ...change });
 
                     const { code, stderr } = await notes(configDir, ['list']);
 
-                    expect(code).to.equal(1);
+                    expect(code).to.equal(3);
                     expect(stderr).to.match(
                         /^The login has expired, .*Run notes login again\.\n$/v
                     );
@@ -292,23 +450,19 @@ suite('notes', () => {
                     env: { BROWSER: testBrowser },
                 });
 
-                const session = JSON.parse(
-                    await readFile(Path.join(configDir, 'session.json'), 'utf8')
-                ) as Record<string, unknown>;
-                expect(session.refreshToken).to.equal(null);
+                const { refreshToken } = await readSession(configDir);
+                expect(refreshToken).to.equal(null);
             }
         );
 
         withLogin.test(
-            'Says to log in again when the API refuses the token',
+            'Says to log in again when the API refuses a token that can not be refreshed',
             async ({ configDir }) => {
-                const file = Path.join(configDir, 'session.json');
-                const session = JSON.parse(await readFile(file, 'utf8')) as Record<string, unknown>;
-                await writeFile(file, JSON.stringify({ ...session, accessToken: 'forged' }));
+                await editSession(configDir, { accessToken: 'forged', refreshToken: null });
 
                 const { code, stderr } = await notes(configDir, ['list']);
 
-                expect(code).to.equal(1);
+                expect(code).to.equal(3);
                 expect(stderr).to.match(
                     /^The API refused the login \(.*\)\. Run notes login again\.\n$/v
                 );

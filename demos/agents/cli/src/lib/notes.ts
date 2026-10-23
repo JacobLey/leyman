@@ -1,32 +1,72 @@
-import type { SessionStore } from './session.js';
+import type { Session, SessionStore } from './session.js';
 import { NotesClient } from '@leyman/demo-openapi-client';
-import { NotesCliError } from './errors.js';
-import { refresh } from './oauth.js';
+import { NotesCliError, NotesCliLoginError } from './errors.js';
+import { refresh, requestTimeoutMs } from './oauth.js';
+
+const statusUnauthorized = 401;
 
 /**
- * The notes API, as the logged-in user. The access token is refreshed (and the session saved) whenever it has
- * expired, so a command never fails for a token a refresh would fix.
+ * The notes API, as the logged-in user: `NotesClient`'s `call`, with the login kept good. The access token is
+ * refreshed (and the session saved) when it has expired, and once when the API refuses it, so a command never fails
+ * for a token a refresh would fix. Every request times out.
+ */
+export interface Notes {
+    readonly call: NotesClient['call'];
+}
+
+/**
+ * Connects to the API the session is for.
  *
  * @param store - Where the session is
- * @returns The client
- * @rejects {NotesCliError} When nobody is logged in
+ * @returns The API
+ * @rejects {NotesCliLoginError} When nobody is logged in
  */
-export const connect = async (store: SessionStore): Promise<NotesClient> => {
+export const connect = async (store: SessionStore): Promise<Notes> => {
     const session = await store.load();
     if (session === null) {
-        throw new NotesCliError('Not logged in. Run notes login --api <url> first.');
+        throw new NotesCliLoginError('Not logged in. Run notes login --api <url> first.');
     }
-    let current = session;
-    const token = async (): Promise<string> => {
-        if (current.expiresAt <= Date.now()) {
+    let current: Session = session;
+    let hasRenewed = false;
+    const renew = async (): Promise<void> => {
+        hasRenewed = true;
+        // One command refreshes at a time: another may have done it while this one waited
+        current = await store.locked(async () => {
+            const latest = await store.load();
+            if (latest !== null && latest.accessToken !== current.accessToken) {
+                return latest;
+            }
             const fresh = await refresh(current);
             await store.save(fresh);
-            // eslint-disable-next-line require-atomic-updates -- A command makes one request at a time
-            current = fresh;
-        }
-        return current.accessToken;
+            return fresh;
+        });
     };
-    return new NotesClient({ baseUrl: session.api, token });
+    const client = new NotesClient({
+        baseUrl: session.api,
+        token: async () => {
+            if (current.expiresAt !== null && current.expiresAt <= Date.now()) {
+                await renew();
+            }
+            return current.accessToken;
+        },
+        fetch: async (input, init) =>
+            fetch(input, { ...init, signal: AbortSignal.timeout(requestTimeoutMs) }),
+    });
+    return {
+        call: async (operationId, input) => {
+            const result = await client.call(operationId, input);
+            // Refused before it expired (revoked, or the API's keys changed), or with no expiry to go by
+            if (
+                hasRenewed ||
+                result.status !== statusUnauthorized ||
+                current.refreshToken === null
+            ) {
+                return result;
+            }
+            await renew();
+            return client.call(operationId, input);
+        },
+    };
 };
 
 /**
@@ -42,14 +82,14 @@ const loginRefused: ReadonlySet<number> = new Set([401, 403]);
  * @param result - The API's answer
  * @param result.status - Its status
  * @param result.body - Its `ApiError`
- * @returns The error to exit with
+ * @returns The error to exit with: a login error for the login's statuses
  */
 export const refused = (result: {
     readonly status: number;
     readonly body: { readonly message: string };
 }): NotesCliError =>
-    new NotesCliError(
-        loginRefused.has(result.status)
-            ? `The API refused the login (${result.body.message}). Run notes login again.`
-            : `The API refused it: ${result.body.message}`
-    );
+    loginRefused.has(result.status)
+        ? new NotesCliLoginError(
+              `The API refused the login (${result.body.message}). Run notes login again.`
+          )
+        : new NotesCliError(`The API refused it: ${result.body.message}`);

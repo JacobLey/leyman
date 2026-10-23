@@ -8,8 +8,8 @@ import { commandId } from './lib/types.js';
 
 interface AddCommandExtendedInput extends NotesCommandInput {
     title: string;
-    body: string;
-    stdin: boolean;
+    body: string | undefined;
+    stdin: boolean | undefined;
 }
 
 /**
@@ -23,14 +23,15 @@ export const noteAddCommand: Command<AddCommandExtendedInput> = {
     builder: yargs =>
         yargs.options({
             title: { type: 'string', describe: 'Its title', demandOption: true },
-            body: { type: 'string', describe: 'Its body', default: '' },
+            body: { type: 'string', describe: 'Its body (none unless given)' },
             stdin: {
                 type: 'boolean',
                 describe: 'Read its body from stdin instead',
-                default: false,
+                // No default: yargs takes a default as given, and would refuse every `--body`
+                conflicts: 'body',
             },
         }),
-    handler: async ({ configDir, json, title, body, stdin }) => {
+    handler: async ({ configDir, json, title, body = '', stdin = false }) => {
         const notes = await connect(new SessionStore(configDir));
         const created = await notes.call('createNote', {
             body: { title, body: stdin ? await text(process.stdin) : body },

@@ -6,10 +6,12 @@ export default [
     {
         languageOptions: {
             globals: {
+                clearTimeout: 'readonly',
                 console: 'readonly',
                 fetch: 'readonly',
                 process: 'readonly',
                 Response: 'readonly',
+                setTimeout: 'readonly',
                 URL: 'readonly',
                 URLSearchParams: 'readonly',
             },

@@ -3,6 +3,7 @@ import type { Command, NotesCommandInput } from './lib/types.js';
 import { bind } from 'haywire';
 import { connect, refused } from '../lib/notes.js';
 import { SessionStore } from '../lib/session.js';
+import { printable } from '../lib/text.js';
 import { commandId } from './lib/types.js';
 
 interface ListCommandExtendedInput extends NotesCommandInput {
@@ -46,7 +47,8 @@ export const listCommand: Command<ListCommandExtendedInput> = {
         } else {
             console.log(
                 summaries
-                    .map(({ id, createdAt, title }) => `${id}  ${createdAt}  ${title}`)
+                    // One line each: a newline in a title is printed escaped
+                    .map(({ id, createdAt, title }) => `${id}  ${createdAt}  ${printable(title)}`)
                     .join('\n')
             );
         }
