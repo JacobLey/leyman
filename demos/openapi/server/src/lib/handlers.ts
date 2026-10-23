@@ -2,7 +2,7 @@
 import type { NodePgDatabase } from 'drizzle-orm/node-postgres';
 import type { Note } from '../generated/api.js';
 import type { NotesHandlers } from './types.js';
-import { desc, eq, ilike } from 'drizzle-orm';
+import { and, desc, eq, ilike } from 'drizzle-orm';
 import { notes } from '@leyman/demo-openapi-database';
 
 export type NotesDatabase = NodePgDatabase;
@@ -34,31 +34,37 @@ const containing = (text: string): string => {
 
 /**
  * The operations, on Postgres with Drizzle. Each gets a request that already matched the spec, so none checks its
- * input again.
+ * input again. Each sees only the caller's notes: another's is as missing as one that doesn't exist, so an id says
+ * nothing about whose it is.
  *
  * @param db - Drizzle, on the app's own connection pool
  * @returns A handler for every operation
  */
 export const drizzleHandlers = (db: NotesDatabase): NotesHandlers => ({
-    listNotes: async ({ query }) => {
+    listNotes: async ({ query }, { subject }) => {
+        const matching =
+            query.q === undefined ? undefined : ilike(notes.title, containing(query.q));
         const rows = await db
             .select()
             .from(notes)
-            .where(query.q === undefined ? undefined : ilike(notes.title, containing(query.q)))
+            .where(and(eq(notes.owner, subject), matching))
             .orderBy(desc(notes.createdAt), desc(notes.id))
             // The spec's default, filled in by validation
             .limit(query.limit);
         return { status: 200, body: { items: rows.map(row => toNote(row)) } };
     },
-    createNote: async ({ body }) => {
+    createNote: async ({ body }, { subject }) => {
         const [row] = await db
             .insert(notes)
-            .values({ title: body.title, body: body.body })
+            .values({ owner: subject, title: body.title, body: body.body })
             .returning();
         return { status: 201, body: toNote(row!) };
     },
-    getNote: async ({ path }) => {
-        const [row] = await db.select().from(notes).where(eq(notes.id, path.noteId));
+    getNote: async ({ path }, { subject }) => {
+        const [row] = await db
+            .select()
+            .from(notes)
+            .where(and(eq(notes.id, path.noteId), eq(notes.owner, subject)));
         return row
             ? { status: 200, body: toNote(row) }
             : { status: 404, body: { code: 'not_found', message: `No note ${path.noteId}` } };

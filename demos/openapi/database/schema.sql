@@ -58,7 +58,8 @@ CREATE TABLE public.notes (
     id uuid DEFAULT uuidv7() NOT NULL,
     title text NOT NULL,
     body text NOT NULL,
-    created_at timestamp with time zone DEFAULT now() NOT NULL
+    created_at timestamp with time zone DEFAULT now() NOT NULL,
+    owner text NOT NULL
 );
 
 --
@@ -82,10 +83,10 @@ ALTER TABLE ONLY public.notes
     ADD CONSTRAINT notes_pkey PRIMARY KEY (id);
 
 --
--- Name: notes_created_at_id; Type: INDEX; Schema: public; Owner: -
+-- Name: notes_owner_created_at_id; Type: INDEX; Schema: public; Owner: -
 --
 
-CREATE INDEX notes_created_at_id ON public.notes USING btree (created_at DESC NULLS LAST, id DESC NULLS LAST);
+CREATE INDEX notes_owner_created_at_id ON public.notes USING btree (owner, created_at DESC NULLS LAST, id DESC NULLS LAST);
 
 --
 -- PostgreSQL database dump complete
@@ -113,12 +114,13 @@ SET row_security = off;
 
 INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (1, '3bb9d0ed48944c41ccbf18827df6036b388d557b142ad1a257657f6d56d4aef0', 1792534466473);
 INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (2, 'f7aa51d15a7f5c0cb731f0ea583a764636c5a924ac9290fc78c1b4b1502ba581', 1792558435695);
+INSERT INTO drizzle.__drizzle_migrations (id, hash, created_at) VALUES (3, 'e13277da3aad7a38a23c0631ac2b1feb7dff93a4e4be23f3146a8098613eb53e', 1792768308134);
 
 --
 -- Name: __drizzle_migrations_id_seq; Type: SEQUENCE SET; Schema: drizzle; Owner: -
 --
 
-SELECT pg_catalog.setval('drizzle.__drizzle_migrations_id_seq', 2, true);
+SELECT pg_catalog.setval('drizzle.__drizzle_migrations_id_seq', 3, true);
 
 --
 -- PostgreSQL database dump complete

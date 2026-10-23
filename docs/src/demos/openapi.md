@@ -152,7 +152,7 @@ import pg from 'pg';
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL });
 const app = createNotesApp({
     db: drizzle({ client: pool }),
-    // Or `staticTokens([process.env.NOTES_TOKEN])`, for a fixed list of API keys
+    // Or `staticTokens([{ token: process.env.NOTES_TOKEN, subject: 'ci' }])`, for a fixed list of API keys
     authenticate: jwtAuthenticator({ issuer: 'https://auth.example', audience: 'https://notes.example' }),
     protectedResource: { resource: 'https://notes.example', authorizationServers: ['https://auth.example'] },
     onError: error => console.error(error),
@@ -195,18 +195,18 @@ The validators are compiled once, with [Ajv](https://ajv.js.org) (JSON Schema 20
 
 ### Authentication
 
-An `Authenticator` gets the token and the operation's scopes, and answers `accepted`, `invalid` (a `401`) or `insufficient_scope` (a `403`). Two are built in:
+An `Authenticator` gets the token and the operation's scopes, and answers with the `Caller` (`{ subject }`, who the token is for), `invalid` (a `401`) or `insufficient_scope` (a `403`). Each handler gets the caller, and sees only the caller's notes: another user's note is a `404`, as if it didn't exist, so an id says nothing about whose it is. Two are built in:
 
-- **`jwtAuthenticator({ issuer, audience })`** accepts JWT access tokens (RFC 9068) from an authorization server: signed with one of its keys (found by OpenID Connect discovery, then cached by `jose`), issued by it, for this API (`aud`, so a token meant for another service from the same issuer is refused), not expired, and with every scope needed. Only a token that's wrong is `invalid`: an issuer that can't be reached (its discovery document, or its keys answering an error) is a `500` reported to `onError`, since the token may well be fine. Discovery is retried on the next request. A [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/demos/oauth-server) issues such tokens in the tests.
-- **`staticTokens(tokens)`** accepts a fixed list (e.g. API keys from a secret store), each with every scope. Each token is hashed (SHA-256) and compared with `timingSafeEqual` against every allowed token, so neither the time a comparison takes nor where a match is found says anything about a guess.
+- **`jwtAuthenticator({ issuer, audience })`** accepts JWT access tokens (RFC 9068) from an authorization server: signed with one of its keys (found by OpenID Connect discovery, then cached by `jose`), issued by it, for this API (`aud`, so a token meant for another service from the same issuer is refused), not expired, and with every scope needed, as its subject (`sub`, which RFC 9068 requires). Only a token that's wrong is `invalid`: an issuer that can't be reached (its discovery document, or its keys answering an error) is a `500` reported to `onError`, since the token may well be fine. Discovery is retried on the next request. A [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/demos/oauth-server) issues such tokens in the tests.
+- **`staticTokens([{ token, subject }])`** accepts a fixed list (e.g. API keys from a secret store), each for its subject, with every scope. Each token is hashed (SHA-256) and compared with `timingSafeEqual` against every allowed token, so neither the time a comparison takes nor where a match is found says anything about a guess.
 
 With `protectedResource`, the API also serves its Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`, naming its authorization server and scopes, and every challenge points to it (`resource_metadata="..."`). `resource` is where the API is served: with a path (the API mounted under it by a proxy), the metadata is served under that path too, as RFC 9728 places it. A client then needs only the API's URL to log in.
 
 ### The database
 
 - **The schema is a package of its own**, so `schema.sql` (generated against a real database) is an output the server consumes, like `openapi.json`, and only rebuilds when the migrations or the Postgres versions change, not on every handler edit.
-- **The Drizzle schema puts the defaults in the database**: the id (`uuidv7()`, ordered by time, so notes made in the same transaction still list in order) and the time (`now()`), so every test database has them too. `uuidv7()` needs Postgres 18, which the devcontainer and CI run.
-- **Migrations are SQL, generated and reviewed**: `drizzle-kit generate --name <name>` writes them to `migrations/`. A `drizzle-kit-check` target fails CI if the schema has changes no migration covers.
+- **The Drizzle schema puts the defaults in the database**: the id (`uuidv7()`, ordered by time, so notes made in the same transaction still list in order) and the time (`now()`), so every test database has them too. `uuidv7()` needs Postgres 18, which the devcontainer and CI run. Each note has an `owner` (the `sub` of the token that made it), and the index `listNotes` reads leads with it: one owner's notes, newest first.
+- **Migrations are SQL, generated and reviewed**: `drizzle-kit generate --name <name>` writes them to `migrations/`. A `drizzle-kit-check` target fails CI if the schema has changes no migration covers. `0002_add-note-owner` adds `owner` as `NOT NULL` with no default, which only works on an empty table: right for a demo with no deployed data, while a table with rows would need it added in steps (nullable, backfilled, then `NOT NULL`).
 - **`schema.sql` is what the migrations build**, kept by [pg-dolly-schema](/pg-dolly-schema/) running `drizzle-kit migrate` on an empty database. It includes Drizzle's own `drizzle.__drizzle_migrations` table, rows and all (`--data`), so every test database knows its migrations ran, and migrating one does nothing.
 - **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in. `q` is matched with `ILIKE`, its `%`, `_` and `\` escaped so they match themselves. The type says so too: handlers take genever's `OperationRequest` (`--parameter-defaults`), where `limit` is always there, rather than the caller's view, where it's optional.
 

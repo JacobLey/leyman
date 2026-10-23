@@ -30,17 +30,31 @@ export type OperationResult<Id extends OperationId> = {
 }[keyof Operations[Id]['responses']];
 
 /**
- * A handler for every operation in the spec: a missing one is a type error.
+ * Who a request is from, once its token is accepted.
+ */
+export interface Caller {
+    /**
+     * Who the token is for: a user (`sub`), as the authorization server knows them. Each owns their own notes.
+     */
+    readonly subject: string;
+}
+
+/**
+ * A handler for every operation in the spec: a missing one is a type error. Each acts for the caller, and sees only
+ * the caller's notes.
  */
 export type NotesHandlers = {
-    readonly [Id in OperationId]: (input: OperationInput<Id>) => Promise<OperationResult<Id>>;
+    readonly [Id in OperationId]: (
+        input: OperationInput<Id>,
+        caller: Caller
+    ) => Promise<OperationResult<Id>>;
 };
 
 /**
- * A bearer token is `accepted` when it is valid and has every scope the operation needs, `invalid` when it isn't
- * valid at all (a `401`), and `insufficient_scope` when it is valid without them (a `403`).
+ * A bearer token is accepted (as its `Caller`) when it is valid and has every scope the operation needs, `invalid`
+ * when it isn't valid at all (a `401`), and `insufficient_scope` when it is valid without them (a `403`).
  */
-export type Authentication = 'accepted' | 'insufficient_scope' | 'invalid';
+export type Authentication = 'insufficient_scope' | 'invalid' | Caller;
 
 /**
  * Checks a bearer token against the scopes an operation needs.

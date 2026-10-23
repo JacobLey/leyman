@@ -31,8 +31,8 @@ const database = await (await dolly.template(schema)).clone();
 
 ## The schema
 
-- **The Drizzle schema** ([`src/schema.ts`](./src/schema.ts)) puts the defaults in the database: the id (`uuidv7()`, ordered by time, so notes made in the same transaction still list in order) and the time (`now()`), so every test database has them too. `uuidv7()` needs Postgres 18, which the devcontainer and CI run.
-- **Migrations are SQL, generated and reviewed**: `drizzle-kit generate --name <name>` writes them to `migrations/`. The `drizzle-kit-check` target fails CI if the schema has changes no migration covers.
+- **The Drizzle schema** ([`src/schema.ts`](./src/schema.ts)) puts the defaults in the database: the id (`uuidv7()`, ordered by time, so notes made in the same transaction still list in order) and the time (`now()`), so every test database has them too. `uuidv7()` needs Postgres 18, which the devcontainer and CI run. Each note has an `owner` (the `sub` of the token that made it), and the index `listNotes` reads leads with it: one owner's notes, newest first.
+- **Migrations are SQL, generated and reviewed**: `drizzle-kit generate --name <name>` writes them to `migrations/`. The `drizzle-kit-check` target fails CI if the schema has changes no migration covers. `0002_add-note-owner` adds `owner` as `NOT NULL` with no default, which only works on an empty table: right for a demo with no deployed data, while a table with rows would need it added in steps (nullable, backfilled, then `NOT NULL`).
 - **`schema.sql` is what the migrations build**, kept by the `schema-snapshot` target ([`pg-dolly-schema`](../../../apps/pg-dolly-schema) running `drizzle-kit migrate` on an empty database). It includes Drizzle's own `drizzle.__drizzle_migrations` table, rows and all (`--data`), so every test database knows its migrations ran, and migrating one does nothing.
 
 ## Why a package of its own
@@ -41,4 +41,4 @@ const database = await (await dolly.template(schema)).clone();
 
 ## Testing
 
-Against a clone of `schema.sql`, the tests check what the server relies on: the database makes the id and the time, ids made in one transaction are in order, and migrating a clone does nothing.
+Against a clone of `schema.sql`, the tests check what the server relies on: the database makes the id and the time, ids made in one transaction are in order, the indexes are the ones the Drizzle schema declares, and migrating a clone does nothing.

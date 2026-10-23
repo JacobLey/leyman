@@ -1,7 +1,7 @@
 export { notes } from '@leyman/demo-openapi-database';
 export type { ApiError, NewNote, Note, NoteList, Operations, Paths } from './generated/api.js';
 export { createApp, type NotesAppConfig, type ProtectedResource } from './lib/app.js';
-export { staticTokens } from './lib/auth.js';
+export { type StaticToken, staticTokens } from './lib/auth.js';
 export {
     NotesAuthorizationServerError,
     NotesResponseError,
@@ -21,6 +21,7 @@ export {
 export type {
     Authentication,
     Authenticator,
+    Caller,
     NotesHandlers,
     OperationId,
     OperationInput,

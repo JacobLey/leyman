@@ -70,7 +70,7 @@ const discoverKeys = async (issuer: string): Promise<JWTVerifyGetKey> => {
 // eslint-disable-next-line jsdoc/require-rejects -- The authenticator it returns rejects, not this function
 /**
  * Accepts JWT access tokens (RFC 9068) from an authorization server: signed by one of its keys, issued by it, for
- * this API, not expired, and with every scope the operation needs. The keys are discovered on the first request, and
+ * this API, not expired, and with every scope the operation needs, as its subject (`sub`). The keys are discovered on the first request, and
  * again after a discovery fails. Only a token that's wrong is `invalid`: an issuer that can't be reached (its
  * discovery, or its keys) rejects (a `500`, reported), since it says nothing about the token.
  *
@@ -90,14 +90,14 @@ export const jwtAuthenticator = (options: JwtAuthenticatorOptions): Authenticato
     };
     return async (token, scopes) => {
         const getKey = await keys();
-        let scope: unknown;
+        let payload: { readonly sub?: string; readonly scope?: unknown };
         try {
-            ({
-                payload: { scope },
-            } = await jwtVerify(token, getKey, {
+            ({ payload } = await jwtVerify(token, getKey, {
                 issuer: options.issuer,
                 audience: options.audience,
                 typ: 'at+jwt',
+                // Whose notes: RFC 9068 requires it
+                requiredClaims: ['sub'],
             }));
         } catch (error) {
             if (isTokenError(error)) {
@@ -105,7 +105,10 @@ export const jwtAuthenticator = (options: JwtAuthenticatorOptions): Authenticato
             }
             throw error;
         }
+        const { sub, scope } = payload;
         const granted = new Set(typeof scope === 'string' ? scope.split(' ') : []);
-        return scopes.every(needed => granted.has(needed)) ? 'accepted' : 'insufficient_scope';
+        return scopes.every(needed => granted.has(needed))
+            ? { subject: sub! }
+            : 'insufficient_scope';
     };
 };

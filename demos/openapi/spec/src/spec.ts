@@ -84,7 +84,8 @@ export const spec = serializeSpec({
         '/notes': {
             get: {
                 operationId: 'listNotes',
-                summary: 'The newest notes, optionally only those whose title contains some text',
+                summary:
+                    "The caller's newest notes, optionally only those whose title contains some text",
                 security: needs('notes:read'),
                 parameters: [
                     {
@@ -112,7 +113,7 @@ export const spec = serializeSpec({
             },
             post: {
                 operationId: 'createNote',
-                summary: 'Add a note',
+                summary: "Add a note, as the caller's",
                 security: needs('notes:write'),
                 requestBody: { required: true, content: json(newNoteSchema) },
                 responses: {
@@ -127,7 +128,7 @@ export const spec = serializeSpec({
             parameters: [{ name: 'noteId', in: 'path', required: true, schema: idSchema }],
             get: {
                 operationId: 'getNote',
-                summary: 'One note',
+                summary: "One of the caller's notes",
                 security: needs('notes:read'),
                 responses: {
                     200: { description: 'The note', content: json(noteSchema) },

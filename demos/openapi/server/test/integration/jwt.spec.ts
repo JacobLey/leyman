@@ -4,6 +4,7 @@ import type { ListeningAuthorizationServer } from '@leyman/demo-oauth-server';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { drizzle } from 'drizzle-orm/node-postgres';
+import { decodeJwt } from 'jose';
 import { Pool } from 'pg';
 import { listenDevAuthorizationServer } from '@leyman/demo-oauth-server';
 import { NotesClient } from '@leyman/demo-openapi-client';
@@ -13,6 +14,7 @@ import {
     databaseId,
     jwtAuthenticator,
     jwtAuthenticatorBinding,
+    notes,
     notesAppId,
     NotesAuthorizationServerError,
     notesModule,
@@ -76,11 +78,12 @@ suite('JWT authentication', () => {
             accountId: 'dev-user',
         });
         const pool = new Pool({ connectionString: database.url, max: 2 });
+        const db = drizzle({ client: pool });
         const errors: Error[] = [];
         const served = await listen(
             createContainer(
                 notesModule
-                    .addBinding(bind(databaseId).withInstance(drizzle({ client: pool })))
+                    .addBinding(bind(databaseId).withInstance(db))
                     .addBinding(jwtAuthenticatorBinding({ issuer: authorization.issuer, audience }))
                     .addBinding(
                         bind(appConfigId).withInstance({
@@ -99,7 +102,7 @@ suite('JWT authentication', () => {
          */
         const clientWith = (token: string): NotesClient =>
             new NotesClient({ baseUrl: served.url, token });
-        return { authorization, pool, served, errors, clientWith };
+        return { authorization, db, pool, served, errors, clientWith };
     });
     withServer.afterEach(async ({ authorization, pool, served }) => {
         await served.close();
@@ -122,6 +125,17 @@ suite('JWT authentication', () => {
         const created = await client.call('createNote', { body: { title: 'Dolly', body: '' } });
 
         expect(created.status).to.equal(201);
+    });
+
+    withServer.test("Acts as the token's subject", async ({ authorization, clientWith, db }) => {
+        const token = await serviceToken(authorization, writer);
+        const client = clientWith(token);
+
+        await client.call('createNote', { body: { title: 'Dolly', body: '' } });
+
+        const [row] = await db.select().from(notes);
+        // A service's token is for itself (RFC 9068)
+        expect(row).to.include({ owner: decodeJwt(token).sub });
     });
 
     withServer.test(
@@ -180,7 +194,7 @@ suite('JWT authentication', () => {
                 createNotesApp({
                     db: drizzle({ client: pool }),
                     // Any authenticator: the metadata and challenges don't depend on it
-                    authenticate: staticTokens(['token']),
+                    authenticate: staticTokens([{ token: 'token', subject: 'dev-user' }]),
                     protectedResource: {
                         resource: `${audience}/api`,
                         authorizationServers: ['https://issuer.test'],

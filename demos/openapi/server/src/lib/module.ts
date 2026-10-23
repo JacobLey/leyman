@@ -1,6 +1,7 @@
 import type { Hono } from 'hono';
 import type { Binding } from 'haywire';
 import type { NotesAppConfig } from './app.js';
+import type { StaticToken } from './auth.js';
 import type { NotesDatabase } from './handlers.js';
 import type { JwtAuthenticatorOptions } from './jwt.js';
 import type { Authenticator } from './types.js';
@@ -21,11 +22,11 @@ export const drizzleHandlersBinding = bind(handlersId)
 /**
  * Accepts these bearer tokens.
  *
- * @param tokens - Every token allowed
+ * @param tokens - Every token allowed, and whose each is
  * @returns A binding for `authenticatorId`
  */
 export const staticTokensBinding = (
-    tokens: readonly string[]
+    tokens: readonly StaticToken[]
 ): Binding<typeof authenticatorId, [], false> =>
     bind(authenticatorId).withInstance(staticTokens(tokens));
 

@@ -2,7 +2,7 @@
 import type { Context, MiddlewareHandler } from 'hono';
 import type { ContentfulStatusCode } from 'hono/utils/http-status';
 import type { Operation } from './operations.js';
-import type { Authenticator, NotesHandlers, OperationId } from './types.js';
+import type { Authenticator, Caller, NotesHandlers, OperationId } from './types.js';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { NotesResponseError } from './errors.js';
@@ -43,6 +43,14 @@ const metadataUrl = (resource: string): URL => {
     url.pathname = `/.well-known/oauth-protected-resource${url.pathname.replace(/^\/$/v, '')}`;
     return url;
 };
+
+/**
+ * What a request carries between its middleware: who it's from, once authenticated.
+ */
+interface NotesEnv {
+    // eslint-disable-next-line @typescript-eslint/naming-convention -- Hono's name for them
+    readonly Variables: { readonly caller: Caller };
+}
 
 interface HandlerResult {
     readonly status: number;
@@ -109,7 +117,7 @@ const requireToken = (
     authenticate: Authenticator,
     scopes: readonly string[],
     metadata: URL | null
-): MiddlewareHandler => {
+): MiddlewareHandler<NotesEnv> => {
     const challenge = (...parameters: readonly string[]): string => {
         const all = metadata ? [`resource_metadata="${metadata.href}"`, ...parameters] : parameters;
         return all.length > 0 ? `Bearer ${all.join(', ')}` : 'Bearer';
@@ -137,6 +145,7 @@ const requireToken = (
                 `The bearer token needs the scope ${scopes.join(' ')}`
             );
         }
+        context.set('caller', authentication);
         return next();
     };
 };
@@ -151,7 +160,7 @@ const requireToken = (
  */
 const serve =
     (operation: Operation, handlers: NotesHandlers) =>
-    async (context: Context): Promise<Response> => {
+    async (context: Context<NotesEnv>): Promise<Response> => {
         const path: Record<string, unknown> = { ...context.req.param() };
         const query: Record<string, unknown> = { ...context.req.query() };
         if (!operation.path(path)) {
@@ -183,9 +192,10 @@ const serve =
         }
 
         const handler = handlers[operation.operationId as OperationId] as (
-            input: unknown
+            input: unknown,
+            caller: Caller
         ) => Promise<HandlerResult>;
-        const result = await handler({ path, query, body });
+        const result = await handler({ path, query, body }, context.get('caller'));
 
         const validate = operation.responses.get(result.status);
         if (!validate) {
@@ -236,16 +246,19 @@ export const createApp = (
         maxSize: maxBodyBytes,
         onError: context => problem(context, 413, 'too_large', 'The body is too large'),
     });
+    // The operations, each knowing its caller once authenticated
+    const secured = new Hono<NotesEnv>();
     for (const operation of operations) {
         const method = operation.method.toUpperCase();
         // Handlers of a route run in the order they are added. Authentication comes first, so a caller without a
         // token learns nothing about what the operation accepts, not even how large a body may be.
-        app.on(method, operation.route, requireToken(authenticate, operation.scopes, metadata));
+        secured.on(method, operation.route, requireToken(authenticate, operation.scopes, metadata));
         if (operation.body) {
-            app.on(method, operation.route, limited);
+            secured.on(method, operation.route, limited);
         }
-        app.on(method, operation.route, serve(operation, handlers));
+        secured.on(method, operation.route, serve(operation, handlers));
     }
+    app.route('/', secured);
     // A path the spec has, with a method it doesn't. Registered after every operation, so only reached when none
     // matched. Hono answers HEAD with the GET handler.
     const byRoute = Map.groupBy(operations, operation => operation.route);

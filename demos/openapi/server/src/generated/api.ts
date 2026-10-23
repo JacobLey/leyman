@@ -54,12 +54,12 @@ export type Paths = {
             cookie?: never;
         };
         /**
-         * The newest notes, optionally only those whose title contains some text
+         * The caller's newest notes, optionally only those whose title contains some text
          */
         get: Operations['listNotes'];
         put?: never;
         /**
-         * Add a note
+         * Add a note, as the caller's
          */
         post: Operations['createNote'];
         delete?: never;
@@ -78,7 +78,7 @@ export type Paths = {
             cookie?: never;
         };
         /**
-         * One note
+         * One of the caller's notes
          */
         get: Operations['getNote'];
         put?: never;
@@ -93,7 +93,7 @@ export type Paths = {
 
 export type Operations = {
     /**
-     * The newest notes, optionally only those whose title contains some text
+     * The caller's newest notes, optionally only those whose title contains some text
      */
     listNotes: {
         parameters: {
@@ -157,7 +157,7 @@ export type Operations = {
         };
     };
     /**
-     * Add a note
+     * Add a note, as the caller's
      */
     createNote: {
         parameters: {
@@ -230,7 +230,7 @@ export type Operations = {
         };
     };
     /**
-     * One note
+     * One of the caller's notes
      */
     getNote: {
         parameters: {

@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { migrate } from 'drizzle-orm/node-postgres/migrator';
+import { getTableConfig } from 'drizzle-orm/pg-core';
 import { Pool } from 'pg';
 import { notes } from '@leyman/demo-openapi-database';
 import { expect } from '@leyman/expect';
@@ -37,7 +38,10 @@ suite('Database', () => {
     });
 
     withDb.test('Makes the id and the time', async ({ db }) => {
-        const [note] = await db.insert(notes).values({ title: 'a', body: 'b' }).returning();
+        const [note] = await db
+            .insert(notes)
+            .values({ owner: 'dev-user', title: 'a', body: 'b' })
+            .returning();
 
         // A version 7 UUID
         expect(note?.id).to.match(
@@ -49,11 +53,27 @@ suite('Database', () => {
     withDb.test('Orders ids made in one transaction', async ({ db }) => {
         const made = await db
             .insert(notes)
-            .values(Array.from({ length: 20 }, (_, i) => ({ title: String(i), body: '' })))
+            .values(
+                Array.from({ length: 20 }, (_, i) => ({
+                    owner: 'dev-user',
+                    title: String(i),
+                    body: '',
+                }))
+            )
             .returning();
 
         const ids = made.map(({ id }) => id);
         expect(ids).to.deep.equal(ids.toSorted((a, b) => a.localeCompare(b)));
+    });
+
+    withDb.test('Has the indexes the schema declares', async ({ pool }) => {
+        const { rows } = await pool.query<{ indexname: string }>(
+            "SELECT indexname FROM pg_indexes WHERE tablename = 'notes' AND indexname <> 'notes_pkey'"
+        );
+
+        expect(rows.map(({ indexname }) => indexname)).to.deep.equal(
+            getTableConfig(notes).indexes.map(({ config }) => config.name)
+        );
     });
 
     withDb.test('Has every migration recorded, so migrating does nothing', async ({ db, pool }) => {

@@ -24,6 +24,14 @@ import { listen } from '../helpers/serve.js';
 import { expectStatus } from '../helpers/status.js';
 
 const token = 'secret-token';
+// Another user's
+const otherToken = 'other-token';
+const tokens = [
+    { token, subject: 'alice' },
+    { token: otherToken, subject: 'bob' },
+];
+// Whose `token` is
+const owner = 'alice';
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/v;
 
 suite('Notes API', () => {
@@ -38,7 +46,7 @@ suite('Notes API', () => {
         const served = await listen(
             createNotesApp({
                 db,
-                authenticate: staticTokens([token]),
+                authenticate: staticTokens(tokens),
                 onError: error => {
                     errors.push(error);
                 },
@@ -50,6 +58,7 @@ suite('Notes API', () => {
             errors,
             served,
             client: new NotesClient({ baseUrl: served.url, token }),
+            other: new NotesClient({ baseUrl: served.url, token: otherToken }),
             anonymous: new NotesClient({ baseUrl: served.url }),
         };
     });
@@ -66,6 +75,13 @@ suite('Notes API', () => {
 
             expect(created.status).to.equal(201);
             expect(created.body).to.include({ title: 'Dolly', body: 'A sheep' });
+        });
+
+        withServer.test('Adds it as the caller', async ({ client, db }) => {
+            await client.call('createNote', { body: { title: 'Dolly', body: 'A sheep' } });
+
+            const [row] = await db.select().from(notes);
+            expect(row).to.include({ owner });
         });
 
         withServer.test(
@@ -241,6 +257,20 @@ suite('Notes API', () => {
             expect(read).to.deep.equal({ status: 200, body: note });
         });
 
+        withServer.test(
+            "Answers 404 for another user's note, as if it did not exist",
+            async ({ client, other }) => {
+                const { body: note } = expectStatus(
+                    await client.call('createNote', { body: { title: 'Dolly', body: 'A sheep' } }),
+                    201
+                );
+
+                const read = await other.call('getNote', { path: { noteId: note.id } });
+
+                expect(read.status).to.equal(404);
+            }
+        );
+
         withServer.test('Answers 404 for a note that does not exist', async ({ client }) => {
             const read = await client.call('getNote', {
                 path: { noteId: '00000000-0000-4000-8000-000000000000' },
@@ -269,9 +299,9 @@ suite('Notes API', () => {
             async ({ client, db }) => {
                 // One statement, so one transaction: every row gets the same `now()`
                 await db.insert(notes).values([
-                    { title: 'First', body: '' },
-                    { title: 'Second', body: '' },
-                    { title: 'Third', body: '' },
+                    { owner, title: 'First', body: '' },
+                    { owner, title: 'Second', body: '' },
+                    { owner, title: 'Third', body: '' },
                 ]);
 
                 const { body } = expectStatus(await client.call('listNotes', {}), 200);
@@ -283,6 +313,20 @@ suite('Notes API', () => {
                 ]);
             }
         );
+
+        withServer.test("Lists only the caller's notes", async ({ client, other }) => {
+            await client.call('createNote', { body: { title: 'Dolly', body: '' } });
+            await other.call('createNote', { body: { title: 'Polly', body: '' } });
+
+            const mine = expectStatus(await client.call('listNotes', {}), 200);
+            const theirs = expectStatus(
+                await other.call('listNotes', { query: { q: 'olly' } }),
+                200
+            );
+
+            expect(mine.body.items.map(({ title }) => title)).to.deep.equal(['Dolly']);
+            expect(theirs.body.items.map(({ title }) => title)).to.deep.equal(['Polly']);
+        });
 
         withServer.test('Requires a token', async ({ anonymous }) => {
             const listed = await anonymous.call('listNotes', {});
@@ -298,9 +342,9 @@ suite('Notes API', () => {
 
         withServer.test('Matches % and _ in q as themselves', async ({ client, db }) => {
             await db.insert(notes).values([
-                { title: '100% wool', body: '' },
-                { title: 'snake_case', body: '' },
-                { title: 'Sheep', body: '' },
+                { owner, title: '100% wool', body: '' },
+                { owner, title: 'snake_case', body: '' },
+                { owner, title: 'Sheep', body: '' },
             ]);
 
             const titles = async (q: string): Promise<string[]> => {
@@ -347,6 +391,7 @@ suite('Notes API', () => {
                     .insert(notes)
                     .values(
                         Array.from({ length: 25 }, (_, index) => ({
+                            owner,
                             title: `Note ${index}`,
                             body: '',
                             createdAt: sql`timestamptz '2026-01-01T00:00:00Z' + ${index} * interval '1 minute'`,
@@ -421,7 +466,7 @@ suite('Notes API', () => {
                 const app = createContainer(
                     notesModule
                         .addBinding(bind(databaseId).withInstance(db))
-                        .addBinding(staticTokensBinding([token]))
+                        .addBinding(staticTokensBinding(tokens))
                         .addBinding(
                             bind(appConfigId).withInstance({
                                 onError: error => {

@@ -21,6 +21,9 @@ const textOf = (result: CallToolResult): string => {
     return block?.type === 'text' ? block.text : '';
 };
 
+// Whose notes the API shows the server: its own, as it calls with client credentials
+const owner = 'notes-mcp';
+
 suite('Tools', () => {
     const withAgent = withStack().beforeEach(async ({ url }) => ({
         agent: await connectAgent(url),
@@ -82,6 +85,7 @@ suite('Tools', () => {
         const withNotes = withAgent.beforeEach(async ({ db }) => {
             await db.insert(notes).values(
                 Array.from({ length: 15 }, (_, index) => ({
+                    owner,
                     title: index % 2 === 0 ? `Sheep ${index}` : `Goat ${index}`,
                     body: 'A long body the list leaves out',
                     createdAt: sql`timestamptz '2026-01-01T00:00:00Z' + ${index} * interval '1 minute'`,
@@ -151,7 +155,7 @@ suite('Tools', () => {
         withAgent.test('Reads a note whole', async ({ agent, db }) => {
             const [row] = await db
                 .insert(notes)
-                .values({ title: 'Dolly', body: 'A sheep' })
+                .values({ owner, title: 'Dolly', body: 'A sheep' })
                 .returning();
 
             const result = await agent.client.callTool({
