@@ -1,5 +1,16 @@
 # genever
 
+## 0.5.0
+
+### Minor Changes
+
+- cc276b8: `GeneverLoadError` has a `referencedFrom`: the URI of the file or URL with the `$ref` that needed it, which its `pointer` is in. A failure to load something another loaded file references now names that file in its message.
+
+### Patch Changes
+
+- 226d20d: Load the files and URLs referenced by the schemas of an OpenAPI document's operations (parameters, request bodies, responses and headers, in `paths` or `components`), not only by its component schemas. Their `$id`s and `$anchor`s are found too.
+- 5ddca83: Resolve relative references in a loaded URL against the URL it redirected to, as RFC 3986 does, rather than the URL that was referenced.
+
 ## 0.4.1
 
 ### Patch Changes

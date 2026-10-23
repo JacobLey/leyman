@@ -1,5 +1,11 @@
 # juniper
 
+## 2.4.2
+
+### Patch Changes
+
+- a5157a4: Type the `if`, `then` and `else` keywords of `JsonSchema` as `JsonSchema<unknown>`, not `JsonSchema<any>`, so reading them no longer opts out of type checking.
+
 ## 2.4.1
 
 ### Patch Changes
