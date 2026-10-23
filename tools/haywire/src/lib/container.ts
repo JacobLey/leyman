@@ -901,7 +901,7 @@ export class Container<Outputs extends [Extendable]> {
                 if (providers.length === 0) {
                     const missingId = normalizeOutputId(dependencyId) as GenericOutputHaywireId;
                     let missingNodeId = missingNodeIds.get(missingId);
-                    if (!missingNodeId) {
+                    if (missingNodeId === undefined) {
                         missingNodeId = `m${missingNodeIds.size}`;
                         missingNodeIds.set(missingId, missingNodeId);
                         lines.push(
@@ -1160,7 +1160,7 @@ export class Container<Outputs extends [Extendable]> {
         const invalidIds = [...this.#bindings]
             .filter(
                 binding =>
-                    binding.disposer &&
+                    (binding.disposer ?? null) !== null &&
                     binding.scope !== singletonScope &&
                     binding.scope !== eagerSingletonScope
             )
@@ -2327,7 +2327,7 @@ export class Container<Outputs extends [Extendable]> {
         // If this instance could be implemented entire synchronously, do it.
         // Note this logic has to come _after_ the eager requests, because the async implementation map
         // relies on the logic that these values do already exist.
-        if (bindingsList.every(binding => !this.#isAsyncImplementationMap.get(binding))) {
+        if (bindingsList.every(binding => this.#isAsyncImplementationMap.get(binding) !== true)) {
             // Pass `bindings` (not `bindingsList`) to preserve single-vs-array semantics:
             // `#getSync` flattens to an array only when handed an array.
             return this.#getSync({

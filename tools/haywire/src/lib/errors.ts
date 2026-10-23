@@ -240,7 +240,7 @@ export class HaywireProviderMissingError extends HaywireContainerValidationError
             `Providers missing for container: ${dependencyIds
                 .map(id => {
                     const dependents = dependentIds.get(id);
-                    return dependents?.length
+                    return dependents !== undefined && dependents.length > 0
                         ? `${id.toString()} (needed by ${stringifyIds(dependents)})`
                         : id.toString();
                 })
@@ -363,10 +363,12 @@ export class HaywireInstanceOfResponseError extends HaywireInstanceValidationErr
      * @returns class name, JSON, or the type when neither applies (e.g. a function, a BigInt or a circular object)
      */
     static #stringify(value: unknown): string {
-        if (value && typeof value === 'object') {
+        if (typeof value === 'object' && value !== null) {
             const construct = (value as { constructor?: { name?: string } }).constructor;
-            if (construct !== Object && construct?.name) {
-                return construct.name;
+            // An anonymous class's name is empty: described as JSON instead
+            const name = construct === Object ? '' : (construct?.name ?? '');
+            if (name !== '') {
+                return name;
             }
         }
         try {

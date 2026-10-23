@@ -203,7 +203,7 @@ export class ContainerFactory<
                 const listDependencies = listDependencyOutputsByBaseId.get(baseId) ?? [];
                 listDependencies.push(dependencyId);
                 listDependencyOutputsByBaseId.set(baseId, listDependencies);
-                isMissing = !listOutputIdsByBaseId.get(baseId)?.has(dependencyId);
+                isMissing = listOutputIdsByBaseId.get(baseId)?.has(dependencyId) !== true;
             } else {
                 isMissing = !outputIds.has(dependencyId);
             }

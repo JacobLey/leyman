@@ -546,7 +546,7 @@ export class HaywireId<
             return `sym:${symFor}`;
         }
         const existing = this.#symToRand.get(named);
-        if (existing) {
+        if (existing !== undefined) {
             return existing;
         }
         // Increment a global val and transform to a string, and save for future uses
