@@ -534,7 +534,7 @@ export class Converter {
 
     #register(pointer: string, name: string, schema: unknown): string {
         const existing = this.#named.get(pointer);
-        if (existing) {
+        if (existing !== undefined) {
             return existing;
         }
         const reserved = this.#names.reserve(name);
@@ -673,7 +673,8 @@ export class Converter {
             mapping?: unknown;
         };
         const branchesKeyword = ['oneOf', 'anyOf'].find(keyword => Array.isArray(schema[keyword]));
-        const branches = branchesKeyword ? (schema[branchesKeyword] as unknown[]) : [];
+        const branches =
+            branchesKeyword === undefined ? [] : (schema[branchesKeyword] as unknown[]);
         const isRequired =
             this.#requires(schema, pointer, propertyName) ||
             (branches.length > 0 &&
@@ -1200,7 +1201,7 @@ export class Converter {
             properties.push({ name, doc: null, optional: false, type: type ?? unknownType });
         }
         const contradiction = objectContradiction(schema, pointer, required, scope);
-        if (contradiction) {
+        if (contradiction !== null) {
             return this.#contradiction(contradiction, pointer);
         }
 

@@ -3,7 +3,7 @@ import type { TsDoc, TsType } from './ts-type.js';
 import { GeneverInvalidSchemaError } from './errors.js';
 import { jsonTypes } from './keywords.js';
 import { childPointer } from './pointer.js';
-import { nullType } from './ts-type.js';
+import { docText, nullType } from './ts-type.js';
 
 export type SchemaObject = Readonly<Record<string, unknown>>;
 
@@ -214,10 +214,12 @@ export const readDoc = (schema: unknown): TsDoc | null => {
     const doc: TsDoc = {
         tags,
         deprecated: deprecated === true,
-        description: typeof description === 'string' ? description : null,
-        title: typeof title === 'string' ? title : null,
+        description: docText(description),
+        title: docText(title),
     };
-    return doc.deprecated || doc.description || doc.title || tags.length > 0 ? doc : null;
+    return doc.deprecated || doc.description !== null || doc.title !== null || tags.length > 0
+        ? doc
+        : null;
 };
 
 /**

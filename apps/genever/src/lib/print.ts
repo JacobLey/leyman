@@ -29,7 +29,7 @@ export const printDoc = (doc: TsDoc | null, indent: string): string => {
     if (!doc) {
         return '';
     }
-    const paragraphs = [doc.title, doc.description].filter(text => !!text) as string[];
+    const paragraphs = [doc.title, doc.description].filter(text => text !== null);
     const tags = [
         ...doc.tags.map(tag => `@${tag.name} ${tag.text}`),
         ...(doc.deprecated ? ['@deprecated'] : []),

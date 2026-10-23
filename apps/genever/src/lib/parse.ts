@@ -181,7 +181,7 @@ class JsonTree {
                 const keyLocation = childLocation(location, key, isCollection === false);
                 return [
                     key,
-                    isCollection
+                    isCollection === true
                         ? this.#copyCollection(child, keyLocation)
                         : this.copy(child, keyLocation),
                 ];

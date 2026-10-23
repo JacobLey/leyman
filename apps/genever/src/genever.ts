@@ -81,7 +81,7 @@ export const genever = (schema: unknown, options: GeneverOptions = {}): string =
     const documentDialect = openApiDialect(schema);
     const converter = new Converter(schema, {
         baseUri: options.baseUri ?? defaultBaseUri,
-        dialect: documentDialect ?? (options.openApi30 ? 'openapi-3.0' : 'draft-2020-12'),
+        dialect: documentDialect ?? (options.openApi30 === true ? 'openapi-3.0' : 'draft-2020-12'),
         parameterDefaults: options.parameterDefaults ?? false,
         strict: options.strict ?? true,
         typedMinItems: options.typedMinItems ?? defaultTypedMinItems,

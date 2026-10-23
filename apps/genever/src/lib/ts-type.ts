@@ -11,6 +11,15 @@ export interface TsDoc {
     readonly title: string | null;
 }
 
+/**
+ * A schema's text for documentation: `null` unless it's a non-empty string.
+ *
+ * @param value - e.g. a `description` keyword's value
+ * @returns the text, or `null`
+ */
+export const docText = (value: unknown): string | null =>
+    typeof value === 'string' && value !== '' ? value : null;
+
 export interface TsProperty {
     readonly doc: TsDoc | null;
     readonly name: string;

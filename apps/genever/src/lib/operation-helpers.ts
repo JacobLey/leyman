@@ -66,7 +66,7 @@ export const operationHelpers = (
             ...locations.map(location => `${field}<'${location}', ${parametersOf}['${location}']>`),
         ].join(' &\n    ');
     const requestTypes: NamedType[] =
-        request && parametersName
+        request !== undefined && parametersName !== undefined
             ? [
                   {
                       doc: doc(

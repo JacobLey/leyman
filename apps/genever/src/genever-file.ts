@@ -102,9 +102,14 @@ export const geneverFile = async (
         options.output ?? `${inputPath.replace(/\.(?:json|ya?ml)$/iv, '')}.ts`
     );
 
-    const manifestPath = options.manifest ? Path.resolve(cwd, options.manifest) : null;
+    const manifestPath =
+        options.manifest === undefined ? null : Path.resolve(cwd, options.manifest);
     const identity = await generatorIdentity(options);
-    if (manifestPath && options.check && (await isUpToDate({ manifestPath, output, identity }))) {
+    if (
+        manifestPath !== null &&
+        options.check === true &&
+        (await isUpToDate({ manifestPath, output, identity }))
+    ) {
         return { output, updated: false };
     }
 
@@ -123,11 +128,12 @@ export const geneverFile = async (
     });
     const content = await formatText(genever(bundled, { ...options, baseUri }), { ext: '.ts' });
 
-    const manifestInputs = manifestPath
-        ? { manifestInputs: recordInputs({ manifestPath, identity, sources }) }
-        : {};
+    const manifestInputs =
+        manifestPath === null
+            ? {}
+            : { manifestInputs: recordInputs({ manifestPath, identity, sources }) };
     const { updated } = await populateFile(
-        options.signed
+        options.signed === true
             ? { content, filePath: output, signed: true, ...manifestInputs }
             : { content, filePath: output, ...manifestInputs },
         {

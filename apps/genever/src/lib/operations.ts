@@ -5,7 +5,7 @@ import { GeneverInvalidSchemaError } from './errors.js';
 import { methods } from './openapi.js';
 import { childPointer } from './pointer.js';
 import { readObject } from './read-keyword.js';
-import { neverType, stringType, unknownType } from './ts-type.js';
+import { docText, neverType, stringType, unknownType } from './ts-type.js';
 
 /**
  * What building operation types needs from the converter.
@@ -87,11 +87,11 @@ const absent = (name: string): TsProperty => property(name, neverType, { optiona
 const readOperationDoc = (value: SchemaObject): TsDoc | null => {
     const doc: TsDoc = {
         deprecated: value.deprecated === true,
-        description: typeof value.description === 'string' ? value.description : null,
+        description: docText(value.description),
         tags: [],
-        title: typeof value.summary === 'string' ? value.summary : null,
+        title: docText(value.summary),
     };
-    return doc.deprecated || doc.description || doc.title ? doc : null;
+    return doc.deprecated || doc.description !== null || doc.title !== null ? doc : null;
 };
 
 /**
