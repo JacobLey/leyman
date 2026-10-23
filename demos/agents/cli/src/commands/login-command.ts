@@ -27,7 +27,7 @@ const defaultTimeoutSeconds = 600;
 const openBrowser = async (url: URL): Promise<void> => {
     console.error(`Log in at: ${url.href}`);
     const command = browser();
-    if (command) {
+    if (command !== null) {
         spawn(command, [url.href], { stdio: 'ignore', detached: true })
             .on('error', () => {
                 // The URL is printed, so the user can still open it themselves

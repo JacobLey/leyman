@@ -21,6 +21,9 @@ export const defaultConfigDir = (): string =>
 /**
  * The browser to open the login in, as the convention goes.
  *
- * @returns The command in `$BROWSER`, if any
+ * @returns The command in `$BROWSER`, or `null` when it's unset or empty (`BROWSER=` turns it off)
  */
-export const browser = (): string | undefined => process.env.BROWSER;
+export const browser = (): string | null => {
+    const command = process.env.BROWSER ?? '';
+    return command === '' ? null : command;
+};
