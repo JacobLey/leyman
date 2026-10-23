@@ -66,7 +66,7 @@ const isEntryScript = (x: object): x is typeof EntryScript =>
  * @param path - Node.js process entry point.
  */
 export const runAsMain = async (path?: string): Promise<void> => {
-    if (!path) {
+    if (path === undefined) {
         return;
     }
 
@@ -79,7 +79,7 @@ export const runAsMain = async (path?: string): Promise<void> => {
     }
     const script = defaultImport(rawEntryScript);
 
-    if (script && (script instanceof EntryScript || isEntryScript(script))) {
+    if (script instanceof EntryScript || (typeof script === 'function' && isEntryScript(script))) {
         await script.main(args);
     }
 };

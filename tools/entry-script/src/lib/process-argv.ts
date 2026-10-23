@@ -16,9 +16,9 @@ interface ElectronProcess extends NodeJsProcess {
     };
 }
 
-const isElectronApp = (p: NodeJsProcess): p is ElectronProcess => !!p.versions.electron;
+const isElectronApp = (p: NodeJsProcess): p is ElectronProcess => p.versions.electron !== undefined;
 export const getProcessArgvBinIndex = (p: ElectronProcess | NodeJsProcess): 0 | 1 =>
-    isElectronApp(p) && !p.defaultApp ? 0 : 1;
+    isElectronApp(p) && p.defaultApp !== true ? 0 : 1;
 
 const binIndex = getProcessArgvBinIndex(process);
 
