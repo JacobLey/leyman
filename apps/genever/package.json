@@ -3,7 +3,7 @@
   "version": "0.5.0",
   "description": "Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers.",
   "engines": {
-    "node": ">=24"
+    "node": ">=24.22.1"
   },
   "type": "module",
   "author": "JacobLey",

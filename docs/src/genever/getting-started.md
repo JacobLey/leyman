@@ -23,7 +23,7 @@ yarn add -D genever
 :::
 
 ::: tip
-genever requires Node.js 24 or later. Its output is plain TypeScript, so it is a dev dependency only.
+genever requires Node.js 24.22.1 or later: it fetches remote schemas, and earlier releases have security flaws in `fetch`. Its output is plain TypeScript, so it is a dev dependency only.
 :::
 
 ## Generate types
