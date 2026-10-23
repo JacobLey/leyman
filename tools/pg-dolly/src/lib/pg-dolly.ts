@@ -330,8 +330,8 @@ export class PgDolly {
      */
     public static async connect(options: PgDollyOptions = {}): Promise<PgDolly> {
         // eslint-disable-next-line n/no-process-env -- `DATABASE_URL` is the one input, by design
-        const url = options.url ?? process.env.DATABASE_URL;
-        if (!url) {
+        const url = options.url ?? process.env.DATABASE_URL ?? '';
+        if (url === '') {
             throw new PgDollyMissingUrlError();
         }
         const prefix = options.prefix ?? 'pg_dolly';
@@ -574,7 +574,7 @@ export class PgDolly {
      */
     #unmarkedLock(name: string, comment: string | null): Lock | null {
         const run = comment === null ? this.#unmarkedPattern.exec(name)?.groups?.run : undefined;
-        return run ? ['run', run] : null;
+        return run === undefined ? null : ['run', run];
     }
 
     async #database(name: string): Promise<DatabaseState | null> {

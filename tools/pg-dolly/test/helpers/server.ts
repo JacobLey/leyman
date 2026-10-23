@@ -163,7 +163,7 @@ export class Server {
         const identifier = this.#client.escapeIdentifier(name);
         // An invalid database can't be altered, and only a template needs to be
         const database = await this.database(name);
-        if (database?.datistemplate) {
+        if (database?.datistemplate === true) {
             await this.#client.query(`ALTER DATABASE ${identifier} WITH IS_TEMPLATE false`);
         }
         await this.#client.query(`DROP DATABASE ${identifier} WITH (FORCE)`);
