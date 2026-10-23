@@ -38,6 +38,8 @@ Demos ([`demos/`](../../../demos/)) each have one page in [`docs/src/demos/`](..
 |------|------|
 | [`read-through-cache`](../../../demos/read-through-cache/) | [`docs/src/demos/read-through-cache.md`](../../../docs/src/demos/read-through-cache.md) |
 | [`openapi`](../../../demos/openapi/) | [`docs/src/demos/openapi.md`](../../../docs/src/demos/openapi.md) |
+| [`agents`](../../../demos/agents/) | [`docs/src/demos/agents.md`](../../../docs/src/demos/agents.md) |
+| [`oauth-server`](../../../demos/oauth-server/) | [`docs/src/demos/oauth-server.md`](../../../docs/src/demos/oauth-server.md) |
 
 **When you document a new package or demo, add a row here and to the `paths` of [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**
 

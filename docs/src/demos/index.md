@@ -17,3 +17,5 @@ Each one is held to the same bar as the published packages, so the code can be c
 |------|---------------|
 | [Read-through cache](/demos/read-through-cache) | BentoCache on Valkey: a memory tier kept in sync, stale-while-revalidate, one load per key across instances with [lease-cache](/lease-cache/), and sharding over several nodes with weighted rendezvous hashing. |
 | [OpenAPI](/demos/openapi) | A notes API from spec to database: an OpenAPI 3.1 document built from [Juniper](/juniper/) schemas, [genever](/genever/) types for a typed client and a Hono server that validates every request and response, and Drizzle on Postgres with a [pg-dolly](/pg-dolly/) database per test. |
+| [Agents](/demos/agents) | Making the notes API easy for AI agents: an MCP server with tools shaped for tasks and step-up scopes, and a CLI that logs in once from the API's URL and runs one short command per task. |
+| [Dev OAuth server](/demos/oauth-server) | oidc-provider as a local authorization server: the real OAuth 2.1 flow with a fake login, so the other demos test their auth end to end. |

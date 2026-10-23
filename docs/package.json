@@ -17,6 +17,8 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@hono/node-server": "catalog:",
+    "@leyman/demo-agents-mcp": "workspace:^",
+    "@leyman/demo-oauth-server": "workspace:^",
     "@leyman/demo-openapi-client": "workspace:^",
     "@leyman/demo-openapi-server": "workspace:^",
     "@leyman/demo-read-through-cache": "workspace:^",

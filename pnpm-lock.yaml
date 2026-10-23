@@ -1520,6 +1520,12 @@ importers:
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.1.5(hono@4.13.13)
+      '@leyman/demo-agents-mcp':
+        specifier: workspace:^
+        version: file:demos/agents/mcp(eslint@10.12.0(supports-color@8.1.1))
+      '@leyman/demo-oauth-server':
+        specifier: workspace:^
+        version: file:demos/oauth-server(supports-color@8.1.1)
       '@leyman/demo-openapi-client':
         specifier: workspace:^
         version: file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
@@ -4769,6 +4775,10 @@ packages:
 
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors':
     resolution: {directory: tools/constant-consistent-hash/test-vectors, type: directory}
+
+  '@leyman/demo-agents-mcp@file:demos/agents/mcp':
+    resolution: {directory: demos/agents/mcp, type: directory}
+    engines: {node: '>=24'}
 
   '@leyman/demo-oauth-server@file:demos/oauth-server':
     resolution: {directory: demos/oauth-server, type: directory}
@@ -11207,6 +11217,18 @@ snapshots:
   '@keyv/serialize@1.1.1': {}
 
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors': {}
+
+  '@leyman/demo-agents-mcp@file:demos/agents/mcp(eslint@10.12.0(supports-color@8.1.1))':
+    dependencies:
+      '@leyman/demo-openapi-client': file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
+      '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
+      '@modelcontextprotocol/hono': 2.0.2(@modelcontextprotocol/server@2.3.1)(hono@4.13.13)
+      '@modelcontextprotocol/server': 2.3.1
+      haywire: file:tools/haywire
+      hono: 4.13.13
+      jose: 6.2.12
+    transitivePeerDependencies:
+      - eslint
 
   '@leyman/demo-oauth-server@file:demos/oauth-server(supports-color@8.1.1)':
     dependencies:

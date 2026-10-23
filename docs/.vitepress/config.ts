@@ -415,6 +415,8 @@ export default defineConfig({
                     { text: 'Overview', link: '/demos/' },
                     { text: 'Read-through cache', link: '/demos/read-through-cache' },
                     { text: 'OpenAPI', link: '/demos/openapi' },
+                    { text: 'Agents', link: '/demos/agents' },
+                    { text: 'Dev OAuth server', link: '/demos/oauth-server' },
                 ],
             },
         ],
