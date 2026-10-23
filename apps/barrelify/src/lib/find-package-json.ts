@@ -15,7 +15,7 @@ export const isExplicitlyModuleDirectory = async (file: string): Promise<boolean
     const packageJsonPath = findPackageJSON(pathToFileURL(file));
 
     // Since Node 24.14, a file without any package.json above it resolves to itself
-    if (!packageJsonPath || Path.basename(packageJsonPath) !== 'package.json') {
+    if (packageJsonPath === undefined || Path.basename(packageJsonPath) !== 'package.json') {
         return false;
     }
 
