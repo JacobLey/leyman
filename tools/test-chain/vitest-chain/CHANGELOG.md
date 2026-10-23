@@ -1,5 +1,11 @@
 # vitest-chain
 
+## 0.0.4
+
+### Patch Changes
+
+- ca8df5f: Require `vitest` ^5.0.3 as a peer dependency, which fixes a code injection advisory in `@vitest/mocker`.
+
 ## 0.0.3
 
 ### Patch Changes

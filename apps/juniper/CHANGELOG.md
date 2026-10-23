@@ -1,5 +1,11 @@
 # juniper
 
+## 2.4.3
+
+### Patch Changes
+
+- 7e0bca5: An empty `title`, `description`, `format`, `contentEncoding` or `contentMediaType` is kept in the generated schema, as is an empty `id` passed to `toJSON()`, rather than dropped. `null` is what removes one.
+
 ## 2.4.2
 
 ### Patch Changes

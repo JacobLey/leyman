@@ -1,5 +1,19 @@
 # genever
 
+## 0.6.0
+
+### Minor Changes
+
+- b9a82da: Require Node.js 24.22.1 or later. genever fetches remote schemas, and earlier Node.js releases have security flaws in `fetch`.
+
+### Patch Changes
+
+- 3857f4e: An empty `manifest` option is a path like any other, rather than meaning no manifest. Leave it out (or pass `null`, in populate-files) for none.
+- Updated dependencies [3857f4e]
+- Updated dependencies [2612c29]
+  - populate-files@1.1.3
+  - haywire@2.0.3
+
 ## 0.5.0
 
 ### Minor Changes

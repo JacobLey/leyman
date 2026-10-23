@@ -1,5 +1,11 @@
 # populate-files
 
+## 1.1.3
+
+### Patch Changes
+
+- 3857f4e: An empty `manifest` option is a path like any other, rather than meaning no manifest. Leave it out (or pass `null`, in populate-files) for none.
+
 ## 1.1.2
 
 ### Patch Changes

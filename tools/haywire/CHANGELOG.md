@@ -1,5 +1,11 @@
 # haywire
 
+## 2.0.3
+
+### Patch Changes
+
+- 2612c29: `factory.toContainer()` on a factory with unbound dependencies now fails with `Property 'error' is missing ... '{ error: "Error: some dependencies have no binding. ..." }'` instead of `'[]' is not assignable to 'never'`.
+
 ## 2.0.2
 
 ### Patch Changes
