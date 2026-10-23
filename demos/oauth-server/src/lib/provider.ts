@@ -269,7 +269,7 @@ export const createDevAuthorizationServer = async (
                 grant_types: [
                     'authorization_code',
                     ...(client.refreshTokens === false ? [] : ['refresh_token']),
-                    ...(client.deviceAuthorization ? [deviceCodeGrantType] : []),
+                    ...(client.deviceAuthorization === true ? [deviceCodeGrantType] : []),
                 ],
                 response_types: ['code'],
             })
