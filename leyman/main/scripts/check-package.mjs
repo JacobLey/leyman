@@ -31,7 +31,7 @@ const notPublished = new Set([
 ]);
 
 const workspaceRoot = process.env.NX_WORKSPACE_ROOT;
-if (!workspaceRoot) {
+if (workspaceRoot === undefined) {
     throw new Error('Run as an Nx target, which sets NX_WORKSPACE_ROOT');
 }
 // Build output and other untracked files. Read from .gitignore rather than Git, which CI's source has no history for.
@@ -53,7 +53,7 @@ try {
     const published = new Set(files.map(file => file.path.split('/', 1)[0]));
     const entries = readdirSync(process.cwd(), { withFileTypes: true });
     for (const entry of entries) {
-        const entryPath = `${projectPath}/${entry.name}${entry.isDirectory() ? '/' : ''}`;
+        const entryPath = `${projectPath}/${entry.name}${entry.isDirectory() === true ? '/' : ''}`;
         if (gitignored.ignores(entryPath)) {
             continue;
         }
@@ -87,7 +87,9 @@ try {
     }
 
     const analysis = await checkPackage(createPackageFromTarballData(new Uint8Array(tarball)));
-    if (analysis.types) {
+    if (analysis.types === false) {
+        errors.push('attw: the package has no types');
+    } else {
         for (const problem of analysis.problems) {
             const affected = esmResolutionKinds.filter(kind =>
                 problemAffectsResolutionKind(problem, kind, analysis)
@@ -101,8 +103,6 @@ try {
                 `attw${where} (${affected.join(', ')}): ${emoji} ${description} ${docsUrl}`
             );
         }
-    } else {
-        errors.push('attw: the package has no types');
     }
 
     if (errors.length > 0) {

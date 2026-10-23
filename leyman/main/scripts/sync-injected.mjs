@@ -53,7 +53,7 @@ const declarationMaps = [...packed]
     .map(file => `${file}.map`)
     .filter(file => {
         try {
-            return statSync(path.join(projectRoot, file)).isFile();
+            return statSync(path.join(projectRoot, file)).isFile() === true;
         } catch {
             return false;
         }
@@ -83,7 +83,7 @@ for (const copy of copies) {
     const entries = readdirSync(copy, { recursive: true, withFileTypes: true });
     for (const entry of entries) {
         const file = path.relative(copy, path.join(entry.parentPath, entry.name));
-        if (!entry.isDirectory() && !expected.has(file)) {
+        if (entry.isDirectory() !== true && !expected.has(file)) {
             rmSync(path.join(copy, file));
         }
     }
@@ -100,7 +100,7 @@ for (const copy of copies) {
     for (const file of packed) {
         const source = path.join(projectRoot, file);
         const target = path.join(copy, file);
-        if (isSameFile(source, target)) {
+        if (isSameFile(source, target) === true) {
             continue;
         }
         mkdirSync(path.dirname(target), { recursive: true });
