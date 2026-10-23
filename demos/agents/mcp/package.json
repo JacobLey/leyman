@@ -1,0 +1,63 @@
+{
+  "name": "@leyman/demo-agents-mcp",
+  "version": "0.0.1",
+  "description": "An MCP server over the notes API: tools shaped for agents, an OAuth resource server, and its own credentials for the API it calls.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/agents/mcp#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/mcp.js",
+  "exports": {
+    ".": "./dist/mcp.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "dependencies": {
+    "@leyman/demo-openapi-client": "workspace:^",
+    "@leyman/demo-openapi-spec": "workspace:^",
+    "@modelcontextprotocol/hono": "catalog:",
+    "@modelcontextprotocol/server": "catalog:",
+    "haywire": "workspace:^",
+    "hono": "catalog:",
+    "jose": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@hono/node-server": "catalog:",
+    "@leyman/demo-oauth-server": "workspace:^",
+    "@leyman/demo-openapi-database": "workspace:^",
+    "@leyman/demo-openapi-server": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@modelcontextprotocol/client": "catalog:",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/pg": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "drizzle-orm": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "pg": "catalog:",
+    "pg-dolly": "workspace:^",
+    "typescript": "catalog:"
+  }
+}
