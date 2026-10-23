@@ -71,7 +71,9 @@ const childrenOf = (error: Error, depth: number): Pending[] => {
                 children.push({ depth, value, relation: 'aggregate' });
             }
         }
-    } catch {}
+    } catch {
+        // A revoked Proxy has no errors to walk
+    }
     return children;
 };
 

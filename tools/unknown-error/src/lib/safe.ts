@@ -145,14 +145,20 @@ const stringifyObject = (value: object): string => {
         if (json !== undefined) {
             return json;
         }
-    } catch {}
+    } catch {
+        // A getter, `toJSON` or Proxy trap threw: try `toString`
+    }
     try {
         // eslint-disable-next-line @typescript-eslint/no-base-to-string -- Reached when JSON had nothing to show, where a custom `toString` may still help
         return String(value);
-    } catch {}
+    } catch {
+        // `toString` threw: fall back to the object tag
+    }
     try {
         return Object.prototype.toString.call(value);
-    } catch {}
+    } catch {
+        // Even the tag can throw (a revoked Proxy)
+    }
     return '[unprintable value]';
 };
 
