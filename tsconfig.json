@@ -111,6 +111,9 @@
     },
     {
       "path": "./demos/openapi/database"
+    },
+    {
+      "path": "./demos/oauth-server"
     }
   ]
 }

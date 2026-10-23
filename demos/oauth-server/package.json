@@ -1,0 +1,49 @@
+{
+  "name": "@leyman/demo-oauth-server",
+  "version": "0.0.1",
+  "description": "A development authorization server: oidc-provider with a dev login, issuing audience-bound JWT access tokens through a real OAuth 2.1 flow.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/oauth-server#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/auth.js",
+  "exports": {
+    ".": "./dist/auth.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "dependencies": {
+    "jose": "catalog:",
+    "oidc-provider": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/oidc-provider": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  }
+}
