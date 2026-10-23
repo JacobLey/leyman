@@ -9,7 +9,7 @@ import * as Processor from '#internal/lifecycle/processor.js';
  * @returns the same value, frozen
  */
 const deepFreeze = <T>(obj: T): T => {
-    if (obj && typeof obj === 'object' && !Object.isFrozen(obj)) {
+    if (typeof obj === 'object' && obj !== null && !Object.isFrozen(obj)) {
         Object.freeze(obj);
         for (const value of Object.values(obj)) {
             deepFreeze(value);

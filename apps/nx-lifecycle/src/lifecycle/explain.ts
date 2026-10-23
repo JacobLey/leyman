@@ -101,7 +101,7 @@ const explainDependency = (
     dependency: Dependency
 ): DependencyExplanation => {
     const { target, dependencies, projects } = normalizeDependency(dependency);
-    if (dependencies) {
+    if (dependencies === true) {
         return {
             label: `^${target}`,
             upstream: resolveUpstream(graph, projectName, target),
@@ -210,7 +210,9 @@ export const explainLifecycle = ({
                 .map(dependency => normalizeDependency(dependency))
                 .filter(
                     ({ target, dependencies, projects }) =>
-                        !dependencies && projects === undefined && stageNames.includes(target)
+                        dependencies !== true &&
+                        projects === undefined &&
+                        stageNames.includes(target)
                 )
                 .map(({ target }) => target)
         );
