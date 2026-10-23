@@ -538,7 +538,7 @@ class Infinite<
             rest,
             revalidateIfStale
         );
-        if (isolateErrors || !linksActive.prefetches) {
+        if (isolateErrors === true || !linksActive.prefetches) {
             // eslint-disable-next-line unicorn/prefer-await -- Stored for the links to await later, so a failure must not reject them. Hooks never await it, and see the error in the linked query instead
             promise = promise.catch(() => {});
         }
