@@ -3124,14 +3124,6 @@ suite('container', () => {
         const numId = identifier<number>().named('nums').list();
         const sumId = identifier<number>().named('sum');
 
-        // The list annotation is not tracked through the register/container output types (see the
-        // `checkIsList` TODO), so list registration is exercised through this structural view.
-        interface ListBindInstanceContainerFactory {
-            wire: () => void;
-            bindInstance: (id: unknown, instance: unknown) => ListBindInstanceContainerFactory;
-            toContainer: () => { getAsync: (id: unknown) => Promise<unknown> };
-        }
-
         for (const isWired of [false, true] as const) {
             suite(isWired ? 'wired' : 'unwired', () => {
                 test('Replaces a temp list binding and appends further instances', async () => {
@@ -3155,9 +3147,7 @@ suite('container', () => {
                             .scoped(eagerSingletonScope)
                     );
 
-                    const factory = createContainerFactory(
-                        module
-                    ) as unknown as ListBindInstanceContainerFactory;
+                    const factory = createContainerFactory(module);
                     if (isWired) {
                         factory.wire();
                     }
@@ -3167,6 +3157,9 @@ suite('container', () => {
                         .bindInstance(numId, 2)
                         .toContainer();
 
+                    expectTypeOf(container.getAsync(numId)).toEqualTypeOf<
+                        Promise<MultiList<number>>
+                    >();
                     expect(await container.getAsync(numId)).to.deep.equal([1, 2]);
                     expect(await container.getAsync(sumId)).to.equal(103);
                 });
@@ -3212,12 +3205,10 @@ suite('container', () => {
                         new InstanceBinding(freshListId, 8),
                     ]);
 
-                    // The list expansion of instance bindings is not reflected in the container's
-                    // output types (see the `checkIsList` TODO), so query via a structural cast.
-                    const genericCloned = cloned as unknown as {
-                        getAsync: (id: unknown) => Promise<number[]>;
-                    };
-                    expect(await genericCloned.getAsync(freshListId)).to.deep.equal([7, 8]);
+                    expectTypeOf(cloned.getAsync(freshListId)).toEqualTypeOf<
+                        Promise<MultiList<number>>
+                    >();
+                    expect(await cloned.getAsync(freshListId)).to.deep.equal([7, 8]);
                 });
             });
         }
