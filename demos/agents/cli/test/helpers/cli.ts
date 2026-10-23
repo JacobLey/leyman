@@ -67,7 +67,13 @@ const approve = async (authorization: URL, options: CliOptions): Promise<void> =
 };
 
 /**
- * Runs the CLI as a separate process, as anyone would.
+ * How long a login waits, unless a test says otherwise: less than Mocha's 10-second timeout, so a login left by a
+ * test that timed out ends on its own, rather than holding the run open for the CLI's default 10 minutes.
+ */
+const loginTimeoutSeconds = '9';
+
+/**
+ * Runs the CLI as a separate process, as anyone would. A login without `--timeout` gets a short one.
  *
  * @param configDir - Where it keeps its login
  * @param args - Its arguments
@@ -80,7 +86,11 @@ export const notes = async (
     args: readonly string[],
     options: CliOptions = {}
 ): Promise<CliResult> => {
-    const child = spawn('./bin.mjs', [...args], {
+    const timeout =
+        args[0] === 'login' && !args.includes('--timeout')
+            ? ['--timeout', loginTimeoutSeconds]
+            : [];
+    const child = spawn('./bin.mjs', [...args, ...timeout], {
         // Leaves out a variable set to `undefined`, rather than setting it to "undefined"
         env: Object.fromEntries(
             Object.entries({

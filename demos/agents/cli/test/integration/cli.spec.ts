@@ -355,7 +355,14 @@ suite('notes', () => {
             const configDir = await mkdtempConfig();
             try {
                 const started = Date.now();
-                const login = await notes(configDir, ['login', '--api', device.url, '--device']);
+                const login = await notes(configDir, [
+                    'login',
+                    '--api',
+                    device.url,
+                    '--device',
+                    '--timeout',
+                    '20',
+                ]);
                 const listed = await notes(configDir, ['list']);
 
                 expect(login.code).to.equal(0);
