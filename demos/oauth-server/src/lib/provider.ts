@@ -382,5 +382,12 @@ export const createDevAuthorizationServer = async (
         interactionPath.test(ctx.path) ? approve(provider, options.accountId, ctx) : next()
     );
 
-    return { issuer: options.issuer, listener: provider.callback() };
+    const handle = provider.callback();
+    return {
+        issuer: options.issuer,
+        // Koa handles a request's errors itself (rendering them as responses), so its promise never rejects
+        listener: (request, response) => {
+            void handle(request, response);
+        },
+    };
 };
