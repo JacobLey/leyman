@@ -33,6 +33,15 @@ Files live on the host, so they survive container rebuilds. Claude Code config i
 | Nx, Biome, ESLint | Workspace tooling | From `leyman/main/node_modules/.bin`, on `PATH` via `remoteEnv` after `postCreateCommand` runs `pnpm install` |
 | Local Scripts | Complicated combos of tasks in a single command | `<worktree>/scripts/commands` is on `PATH` (via `remoteEnv`), exposing these shortcuts |
 
+## Dockerfile layout
+
+The `Dockerfile` is multi-stage, so a version bump rebuilds only what it must (bumping Node rebuilds in seconds, not minutes):
+
+- Each tool (Node, Go and `gopls`, pnpm, Python, `gh`, Dagger) is fetched in its own stage, at the path it has in the final image. The final stage copies them in **last**, after the slow system installs (Postgres client, Playwright's libraries, Homebrew, oh-my-zsh, Claude).
+- Declare each `ARG` in the stage that uses it, right before its first use: a changed `ARG` reruns every `RUN` after its declaration in that stage. `ARG`s before the first `FROM` are only for `FROM` lines (the base image, Node and Go).
+- Playwright's system libraries: the `playwright-deps` stage lists the packages `install-deps` would install, and the final stage installs that list. The install reruns only when the list changes.
+- Node is only the `node` binary, at `/usr/local/bin/node` (no npm). Version-free paths like this one keep editor settings unchanged across bumps.
+
 ---
 
 ## Version parity: DevContainer ↔ Dagger
