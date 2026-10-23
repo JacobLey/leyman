@@ -41,7 +41,11 @@ export const listen = async (): Promise<Served> => {
                     return;
                 }
                 server.close(error => {
-                    error ? reject(error) : resolve();
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
                 });
                 // Keep-alive connections (e.g. from the MCP server to the API) would hold it open
                 (server as { closeAllConnections?: () => void }).closeAllConnections?.();
