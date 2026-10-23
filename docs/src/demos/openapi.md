@@ -197,10 +197,10 @@ The validators are compiled once, with [Ajv](https://ajv.js.org) (JSON Schema 20
 
 An `Authenticator` gets the token and the operation's scopes, and answers `accepted`, `invalid` (a `401`) or `insufficient_scope` (a `403`). Two are built in:
 
-- **`jwtAuthenticator({ issuer, audience })`** accepts JWT access tokens (RFC 9068) from an authorization server: signed with one of its keys (found by OpenID Connect discovery, then cached by `jose`), issued by it, for this API (`aud`, so a token meant for another service from the same issuer is refused), not expired, and with every scope needed. A discovery that fails is a `500` reported to `onError`, retried on the next request. A [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/demos/oauth-server) issues such tokens in the tests.
+- **`jwtAuthenticator({ issuer, audience })`** accepts JWT access tokens (RFC 9068) from an authorization server: signed with one of its keys (found by OpenID Connect discovery, then cached by `jose`), issued by it, for this API (`aud`, so a token meant for another service from the same issuer is refused), not expired, and with every scope needed. Only a token that's wrong is `invalid`: an issuer that can't be reached (its discovery document, or its keys answering an error) is a `500` reported to `onError`, since the token may well be fine. Discovery is retried on the next request. A [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/demos/oauth-server) issues such tokens in the tests.
 - **`staticTokens(tokens)`** accepts a fixed list (e.g. API keys from a secret store), each with every scope. Each token is hashed (SHA-256) and compared with `timingSafeEqual` against every allowed token, so neither the time a comparison takes nor where a match is found says anything about a guess.
 
-With `protectedResource`, the API also serves its Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`, naming its authorization server and scopes, and every challenge points to it (`resource_metadata="..."`). A client then needs only the API's URL to log in.
+With `protectedResource`, the API also serves its Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`, naming its authorization server and scopes, and every challenge points to it (`resource_metadata="..."`). `resource` is where the API is served: with a path (the API mounted under it by a proxy), the metadata is served under that path too, as RFC 9728 places it. A client then needs only the API's URL to log in.
 
 ### The database
 

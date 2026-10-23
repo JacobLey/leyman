@@ -17,6 +17,31 @@ export interface JwtAuthenticatorOptions {
 }
 
 /**
+ * What `jose` throws for a token that's wrong: expired, for another audience or issuer, badly signed, malformed, or
+ * signed with a key the issuer doesn't have. Anything else (the keys can't be fetched, say) is about the issuer, not
+ * the token.
+ */
+const tokenErrors = [
+    errors.JWTExpired,
+    errors.JWTClaimValidationFailed,
+    errors.JWSSignatureVerificationFailed,
+    errors.JWSInvalid,
+    errors.JWTInvalid,
+    errors.JOSEAlgNotAllowed,
+    errors.JOSENotSupported,
+    errors.JWKSNoMatchingKey,
+    errors.JWKSMultipleMatchingKeys,
+] as const;
+
+/**
+ * Whether an error is about the token itself.
+ *
+ * @param error - From `jwtVerify`
+ * @returns `true` for a token that's wrong, `false` for anything else
+ */
+const isTokenError = (error: unknown): boolean => tokenErrors.some(type => error instanceof type);
+
+/**
  * The issuer's signing keys, from its discovery document.
  *
  * @param issuer - The authorization server
@@ -46,7 +71,8 @@ const discoverKeys = async (issuer: string): Promise<JWTVerifyGetKey> => {
 /**
  * Accepts JWT access tokens (RFC 9068) from an authorization server: signed by one of its keys, issued by it, for
  * this API, not expired, and with every scope the operation needs. The keys are discovered on the first request, and
- * again after a discovery fails. A failed discovery rejects (a `500`), since it says nothing about the token.
+ * again after a discovery fails. Only a token that's wrong is `invalid`: an issuer that can't be reached (its
+ * discovery, or its keys) rejects (a `500`, reported), since it says nothing about the token.
  *
  * @param options - The issuer, and this API's audience
  * @returns Checks a token against an operation's scopes
@@ -74,7 +100,7 @@ export const jwtAuthenticator = (options: JwtAuthenticatorOptions): Authenticato
                 typ: 'at+jwt',
             }));
         } catch (error) {
-            if (error instanceof errors.JOSEError) {
+            if (isTokenError(error)) {
                 return 'invalid';
             }
             throw error;

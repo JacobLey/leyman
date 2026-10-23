@@ -328,5 +328,39 @@ suite('JWT authentication', () => {
                 }
             }
         );
+        withIssuer.test(
+            'Fails, rather than refusing the token, when its keys answer an error',
+            async ({ authorization, errors, serveWith }) => {
+                // Discovery works, but the keys answer 503: the issuer is down, the token may well be fine
+                const issuer = createServer();
+                issuer.listen(0, '127.0.0.1');
+                await once(issuer, 'listening');
+                const url = `http://127.0.0.1:${(issuer.address() as AddressInfo).port}`;
+                issuer.on('request', (request, response: ServerResponse) => {
+                    if (request.url === '/jwks') {
+                        response.writeHead(503).end();
+                        return;
+                    }
+                    response
+                        .writeHead(200, { 'content-type': 'application/json' })
+                        .end(JSON.stringify({ issuer: url, jwks_uri: `${url}/jwks` }));
+                });
+                const served = await serveWith(url);
+                try {
+                    const response = await fetch(`${served.url}/notes`, {
+                        headers: {
+                            authorization: `Bearer ${await serviceToken(authorization, reader)}`,
+                        },
+                    });
+
+                    expect(response.status).to.equal(500);
+                    expect(errors).to.have.length(1);
+                } finally {
+                    await served.close();
+                    issuer.close();
+                    issuer.closeAllConnections();
+                }
+            }
+        );
     });
 });
