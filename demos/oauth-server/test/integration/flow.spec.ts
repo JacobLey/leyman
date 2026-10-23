@@ -4,7 +4,9 @@ import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify } from 'jose';
 import {
+    createDevAuthorizationServer,
     DevAuthorizationFlowError,
+    DevAuthorizationServerNotLocalError,
     followAuthorization,
     listenDevAuthorizationServer,
 } from '@leyman/demo-oauth-server';
@@ -263,6 +265,35 @@ suite('Dev authorization server', () => {
             }
         );
 
+        withServer.test(
+            'Extends the grant when the same browser authorizes again, to step up',
+            async ({ metadata }) => {
+                const cookies = new Map<string, string>();
+                const authorize = async (scope: string): Promise<string | undefined> => {
+                    const { verifier, challenge } = pkce();
+                    const callback = await followAuthorization(
+                        authorizationUrl(metadata, {
+                            code_challenge: challenge,
+                            code_challenge_method: 'S256',
+                            scope,
+                        }),
+                        redirectUri,
+                        { cookies }
+                    );
+                    const { body } = await exchange(metadata, {
+                        code: callback.searchParams.get('code')!,
+                        code_verifier: verifier,
+                    });
+                    return body.scope as string | undefined;
+                };
+
+                expect(await authorize('notes:read')).to.equal('notes:read');
+                expect(await authorize('notes:read notes:write')).to.equal(
+                    'notes:read notes:write'
+                );
+            }
+        );
+
         withServer.test('Drops scopes the resource does not have', async ({ metadata }) => {
             const { verifier, challenge } = pkce();
             const callback = await followAuthorization(
@@ -434,6 +465,48 @@ suite('Dev authorization server', () => {
             });
 
             expect(response.status).to.equal(400);
+        });
+    });
+
+    suite('Only this machine', () => {
+        test('Refuses to listen where other machines could reach it', async () => {
+            await expect(
+                listenDevAuthorizationServer({
+                    hostname: '0.0.0.0',
+                    resources: [],
+                    clients: [],
+                    services: [],
+                    accountId: 'dev-user',
+                })
+            ).to.be.rejectedWith(
+                DevAuthorizationServerNotLocalError,
+                '0.0.0.0 is not this machine'
+            );
+        });
+
+        test('Refuses an issuer that is not this machine', async () => {
+            await expect(
+                createDevAuthorizationServer({
+                    issuer: 'https://auth.example',
+                    resources: [],
+                    clients: [],
+                    services: [],
+                    accountId: 'dev-user',
+                })
+            ).to.be.rejectedWith(DevAuthorizationServerNotLocalError);
+        });
+
+        test('Serves anywhere when asked to, dangerously', async () => {
+            const server = await createDevAuthorizationServer({
+                issuer: 'https://auth.example',
+                resources: [],
+                clients: [],
+                services: [],
+                accountId: 'dev-user',
+                dangerouslyAllowNonLocal: true,
+            });
+
+            expect(server.issuer).to.equal('https://auth.example');
         });
     });
 

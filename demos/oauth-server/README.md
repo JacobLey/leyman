@@ -40,6 +40,8 @@ await server.close();
 
 `createDevAuthorizationServer({ issuer, ... })` returns a `node:http` listener instead, for a server you already have.
 
+`followAuthorization` starts each authorization with an empty cookie jar, unless given one (`{ cookies }`) to keep like a browser profile: a second authorization then resumes the session (no login) and extends its grant, as when a client steps up to more scopes.
+
 ## What's real
 
 - **Discovery**: metadata at `/.well-known/oauth-authorization-server` (RFC 8414) and `/.well-known/openid-configuration`.
@@ -56,7 +58,7 @@ await server.close();
 - **The storage.** oidc-provider's in-memory adapter (it warns about it on start): restart it and every grant and refresh token is gone.
 - **The keys and cookie secret**, generated at startup.
 
-Never serve it anywhere but locally.
+It refuses to serve anywhere but this machine (`127.0.0.1`, `[::1]`, `localhost`): `listenDevAuthorizationServer({ hostname: '0.0.0.0' })` or a non-local issuer throws `DevAuthorizationServerNotLocalError`, unless `dangerouslyAllowNonLocal: true` says it's meant (an isolated network, say). Anyone who can reach it gets tokens.
 
 ## Clients
 
@@ -72,7 +74,14 @@ A public client may opt out of refresh tokens (`refreshTokens: false`): its logi
 
 ## Replacing it
 
-The other demos depend on nothing here but URLs: an issuer, its metadata, and the JWTs it signs. Replacing it with Keycloak (as a devcontainer sidecar) or a hosted provider means registering the same clients, resources and scopes there, and pointing the issuer at it. Keycloak's MCP-relevant features (resource indicators, Client ID Metadata Documents) are behind experimental flags as of 26.x.
+The other demos depend on nothing here but URLs and standards: an issuer, its metadata, and the JWTs it signs. Replacing it with Keycloak (as a devcontainer sidecar) or a hosted provider means registering the same clients, resources and scopes there, and pointing the issuer at it, provided the provider issues what the verifiers expect. Not every one does by default:
+
+- **RFC 9068 access tokens** (`typ: at+jwt`), with `scope` as a space-separated string and `client_id`. Keycloak sends `typ: JWT` unless a client opts in, Entra and Okta put scopes in `scp`, and Keycloak puts the client in `azp` on users' tokens.
+- **Resource indicators** (RFC 8707), so `aud` is the server the token is for. Experimental in Keycloak 26.x; elsewhere `aud` comes from configured audience mappers, and client credentials may ignore `resource`.
+- **Discovery** at `/.well-known/openid-configuration` appended to the issuer (the verifiers), and the authorization server's metadata (the CLI).
+- **Loopback redirects on any port** (RFC 8252) for native clients, which providers support unevenly.
+
+Where a provider differs, the verifier (an `Authenticator`, or the MCP server's `OAuthTokenVerifier`) is the one binding to change.
 
 ## What was learned
 

@@ -3,6 +3,7 @@ import type { ClientMetadata, Configuration, KoaContextWithOIDC } from 'oidc-pro
 import { randomBytes, randomUUID } from 'node:crypto';
 import { exportJWK, generateKeyPair } from 'jose';
 import OidcProvider, { errors } from 'oidc-provider';
+import { DevAuthorizationServerNotLocalError } from './errors.js';
 
 /**
  * A server that accepts this server's access tokens, as an RFC 8707 resource indicator.
@@ -68,7 +69,29 @@ export interface DevAuthorizationServerOptions {
      * @default 600
      */
     readonly accessTokenTtl?: number | undefined;
+    /**
+     * Serves at an issuer that isn't this machine (`127.0.0.1`, `[::1]`, `localhost`). The server approves every
+     * login, so anyone who can reach it gets tokens: never set this outside an isolated network.
+     *
+     * @default false
+     */
+    readonly dangerouslyAllowNonLocal?: boolean | undefined;
 }
+
+const localHostnames: ReadonlySet<string> = new Set(['127.0.0.1', '[::1]', 'localhost']);
+
+/**
+ * Refuses a hostname other machines could reach, unless asked for knowingly.
+ *
+ * @param hostname - Where the server would serve
+ * @param isNonLocalAllowed - Asked for knowingly (`dangerouslyAllowNonLocal`)
+ * @throws {DevAuthorizationServerNotLocalError} When the hostname isn't this machine's
+ */
+export const assertLocal = (hostname: string, isNonLocalAllowed = false): void => {
+    if (!isNonLocalAllowed && !localHostnames.has(hostname)) {
+        throw new DevAuthorizationServerNotLocalError(hostname);
+    }
+};
 
 export interface DevAuthorizationServer {
     readonly issuer: string;
@@ -110,13 +133,17 @@ const approve = async (
     ctx: InteractionContext
 ): Promise<void> => {
     const { req: request, res: response } = ctx;
-    const { prompt, params } = await provider.interactionDetails(request, response);
+    const { prompt, params, grantId } = await provider.interactionDetails(request, response);
     if (prompt.name === 'login') {
         ctx.redirect(await provider.interactionResult(request, response, { login: { accountId } }));
         return;
     }
-    // Each authorization starts without a session (see `followAuthorization`), so there's never a grant to extend
-    const grant = new provider.Grant({ accountId, clientId: params.client_id as string });
+    // A browser that already approved this client (and kept its session) extends that grant, e.g. to step up
+    const grant =
+        grantId === undefined
+            ? new provider.Grant({ accountId, clientId: params.client_id as string })
+            : // The grant of the session being resumed
+              (await provider.Grant.find(grantId))!;
     const { missingOIDCScope, missingResourceScopes } = prompt.details as {
         readonly missingOIDCScope?: readonly string[];
         readonly missingResourceScopes?: Readonly<Record<string, readonly string[]>>;
@@ -145,15 +172,18 @@ const approve = async (
  * Everything a client sees is real: metadata discovery (RFC 8414 and OpenID Connect), the authorization code flow
  * with PKCE (S256, required), refresh tokens, the client credentials grant, resource indicators (RFC 8707), `iss` in
  * authorization responses (RFC 9207), and access tokens as JWTs (RFC 9068) signed with a key generated at startup.
- * Only the login is fake: it approves as one account, with no page and no password. Never serve it anywhere but
- * locally.
+ * Only the login is fake: it approves as one account, with no page and no password. It refuses to serve anywhere but
+ * this machine, unless `dangerouslyAllowNonLocal` is set.
  *
  * @param options - Issuer, resources, clients and the dev account
  * @returns The server's listener
+ * @rejects {DevAuthorizationServerNotLocalError} When the issuer isn't this machine, and that wasn't asked for
  */
 export const createDevAuthorizationServer = async (
     options: DevAuthorizationServerOptions
 ): Promise<DevAuthorizationServer> => {
+    const issuer = new URL(options.issuer);
+    assertLocal(issuer.hostname, options.dangerouslyAllowNonLocal);
     const { privateKey } = await generateKeyPair('ES256', { extractable: true });
     const signingKey = {
         ...(await exportJWK(privateKey)),

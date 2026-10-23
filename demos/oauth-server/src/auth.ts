@@ -1,5 +1,9 @@
-export { followAuthorization } from './lib/browser.js';
-export { DevAuthorizationError, DevAuthorizationFlowError } from './lib/errors.js';
+export { type FollowAuthorizationOptions, followAuthorization } from './lib/browser.js';
+export {
+    DevAuthorizationError,
+    DevAuthorizationFlowError,
+    DevAuthorizationServerNotLocalError,
+} from './lib/errors.js';
 export {
     type ListeningAuthorizationServer,
     type ListenOptions,
@@ -11,4 +15,5 @@ export {
     type DevAuthorizationServerOptions,
     type PublicClient,
     type ResourceServer,
+    type ServiceClient,
 } from './lib/provider.js';

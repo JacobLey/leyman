@@ -2,7 +2,11 @@ import type { AddressInfo } from 'node:net';
 import type { DevAuthorizationServerOptions } from './provider.js';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
-import { createDevAuthorizationServer } from './provider.js';
+import { assertLocal, createDevAuthorizationServer } from './provider.js';
+
+/**
+ * @import { DevAuthorizationServerNotLocalError } from './errors.js'
+ */
 
 export interface ListenOptions extends Omit<DevAuthorizationServerOptions, 'issuer'> {
     /**
@@ -28,11 +32,14 @@ export interface ListeningAuthorizationServer {
  *
  * @param options - As `createDevAuthorizationServer`, plus where to listen
  * @returns Its issuer, and how to stop it
+ * @rejects {DevAuthorizationServerNotLocalError} When the hostname isn't this machine, and that wasn't asked for
  */
 export const listenDevAuthorizationServer = async (
     options: ListenOptions
 ): Promise<ListeningAuthorizationServer> => {
     const { port = 0, hostname = '127.0.0.1', ...rest } = options;
+    // Before listening, so a server that shouldn't listen never does
+    assertLocal(hostname, rest.dangerouslyAllowNonLocal);
     const server = createServer();
     server.listen(port, hostname);
     await once(server, 'listening');
