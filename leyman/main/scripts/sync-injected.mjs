@@ -73,7 +73,9 @@ const redirectDeclarationMap = (source, target) => {
         if (readFileSync(target, 'utf8') === content) {
             return;
         }
-    } catch {}
+    } catch {
+        // No map there yet: write it
+    }
     writeFileSync(target, content);
 };
 
