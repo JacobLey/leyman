@@ -129,7 +129,7 @@ const toNativeCallback = <Key extends object>(
                 key: getKey(this, [done]),
                 call: ctx => {
                     const result: unknown = cb.call(this, ctx, finish);
-                    if (isTest && result) {
+                    if (isTest && Boolean(result)) {
                         finish(`Test returned truthy value: ${JSON.stringify(result)}`);
                     }
                     return result;
