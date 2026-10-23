@@ -98,7 +98,9 @@ export const useLinkedQueryClient = (linkedClient: QueryClient | null): QueryCli
     try {
         // Called unconditionally, so hook order is stable. It only throws when there is no provider.
         contextClient = useQueryClient();
-    } catch {}
+    } catch {
+        // No provider: use the linked client, or a new one
+    }
     const [client] = useState(() => linkedClient ?? contextClient ?? new QueryClient());
     if (linkedClient && linkedClient !== client) {
         throw new Error(

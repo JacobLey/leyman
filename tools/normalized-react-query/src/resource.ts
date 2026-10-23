@@ -268,7 +268,9 @@ class Resource<
     ): Promise<Linked<TParams, TQueryKey, TData, this>> {
         try {
             await this.query(queryClient, params, options);
-        } catch {}
+        } catch {
+            // A prefetch never throws: the failure stays in the cache, for whoever reads the query
+        }
         return new Linked(this, params, queryClient);
     }
 

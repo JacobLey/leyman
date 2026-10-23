@@ -410,7 +410,9 @@ class Infinite<
     ): Promise<Linked<TParams, TQueryKey, InfiniteData<TData, TPageParam>, this>> {
         try {
             await this.infiniteQuery(queryClient, params, options);
-        } catch {}
+        } catch {
+            // A prefetch never throws: the failure stays in the cache, for whoever reads the query
+        }
         return new Linked(this, params, queryClient);
     }
 
