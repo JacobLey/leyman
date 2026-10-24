@@ -15,9 +15,9 @@ Each function calls the Vitest function of the same name. vitest-chain is ESM on
 | `afterEach(fn)` | | `afterEach` | `(testContext)` |
 | `afterAll(fn)` | | `afterAll` | `(context, suite)` |
 
-`describe` and `test` also have `.only` and `.skip`.
+`describe` and `test` also have `.only` and `.skip`. Hooks and tests take only a callback (and a name), not vitest's timeout or options arguments, and there is no `.each`, `.concurrent`, `.todo` or `.skipIf`: use vitest's own functions for those.
 
-Callbacks that aren't chained receive Vitest's arguments. Chained ones receive the chain's context first, then Vitest's arguments. A hook may return an object, or a `Promise` of one, to add its keys to the context. Returning a falsy value keeps the context unchanged.
+Callbacks that aren't chained receive Vitest's arguments. Chained ones receive the chain's context first, then Vitest's arguments. A hook may return an object, or a `Promise` of one, to add its keys to the context. Returning a falsy value keeps the context unchanged. Only the object's own enumerable properties are copied, so return `{ db }` rather than a class instance, whose methods would be typed on the context but missing at runtime. A hook that returns anything else (a number, a string) is a type error, and an arrow function without braces (`beforeEach(() => db.clear())`) returns, and merges, whatever the call returns.
 
 ## Requirements and errors
 

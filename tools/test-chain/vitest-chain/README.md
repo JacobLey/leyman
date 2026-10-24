@@ -21,8 +21,10 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 ## Install
 
 ```sh
-npm i vitest-chain
+npm i --save-dev vitest-chain vitest
 ```
+
+ESM only, for Node.js 24 or later. `vitest` is a required peer dependency.
 
 ## Example
 
@@ -78,6 +80,10 @@ Hooks that execute out of order reject with `HookOrderError`, rather than silent
 
 Each hook returns an object of chained hooks/tests, which receive the merged context returned by all previous hooks in the chain as their first parameter. Returning a falsy value leaves the context unchanged.
 
+A hook returns an object, a `Promise` of one, or nothing; returning anything else (a number, a string) is a type error. Only the object's own enumerable properties are copied into the context, so return `{ db }` rather than a class instance, whose methods would be typed on the context but missing at runtime. A hook written as an arrow function without braces (`beforeEach(() => db.clear())`) returns whatever that call returns, and merges it: use braces when the hook shouldn't add context. If two hooks return the same key, the later value replaces the earlier at runtime, but the type is the intersection of both (`never` for unrelated types).
+
+Each test gets a shallow copy of the context, so reassigning a key in one test does not affect others, while objects inside it, like `db`, are shared.
+
 Top-level ("entrypoint") hooks/tests receive vitest's native arguments. Chained hooks/tests receive the context, followed by vitest's native arguments.
 
 | Method | Chains into | Native arguments |
@@ -89,7 +95,7 @@ Top-level ("entrypoint") hooks/tests receive vitest's native arguments. Chained 
 | `afterAll(fn)` | `afterAll` | `(context, suite)` |
 | `describe(name, fn)` / `suite` | — | — |
 
-`test` and `describe` also expose `.only` and `.skip`.
+`test` and `describe` also expose `.only` and `.skip`. Hooks and tests take only a callback (and a name), not vitest's timeout or options arguments, and there is no `.each`, `.concurrent`, `.todo` or `.skipIf`: use vitest's own functions for those.
 
 Declaring a hook, test, or suite while a hook/test is executing throws an error.
 
