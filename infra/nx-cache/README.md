@@ -47,14 +47,14 @@ Done once, by the maintainer. You need a Cloudflare account with R2 enabled (R2 
    ```
 
 7. **Let CI deploy**: on GitHub, *Settings* → *Environments* → *New environment* `nx-cache`, with *Deployment branches* limited to `main`, and a secret `CLOUDFLARE_API_TOKEN`: the deploy token. Then *Settings* → *Secrets and variables* → *Actions* → *Variables*: `CLOUDFLARE_ACCOUNT_ID`, the account ID.
-8. **Deploy**: the next push to `main` runs the `nx-cache` job (or re-run the latest run). Its log ends with the Worker's URL, `https://leyman-nx-cache.<subdomain>.workers.dev`. Check it:
+8. **Deploy**: the next push to `main` runs the `nx-cache` job (or re-run the latest run). Its log ends with the Worker's URL, `https://leyman-nx-cache.leyman.workers.dev` (the Worker's name, then the account's `workers.dev` subdomain, `leyman`). Check it:
 
    ```sh
-   curl -i https://leyman-nx-cache.<subdomain>.workers.dev/v1/cache/0          # 404: nothing cached yet
-   curl -i -X PUT https://leyman-nx-cache.<subdomain>.workers.dev/v1/cache/0   # 401: no token, can't write
+   curl -i https://leyman-nx-cache.leyman.workers.dev/v1/cache/0          # 404: nothing cached yet
+   curl -i -X PUT https://leyman-nx-cache.leyman.workers.dev/v1/cache/0   # 401: no token, can't write
    ```
 
-9. **Use it**: add the repository variable `NX_CACHE_UPSTREAM`, the Worker's URL, so CI reads from it and `main` writes to it. For devcontainers, set it as the default of `NX_CACHE_SERVER_UPSTREAM` in `.devcontainer/docker-compose.yml`, and restart the sidecar (`docker compose up -d nx-cache`, or rebuild).
+9. **Use it**: add the repository variable `NX_CACHE_UPSTREAM`, `https://leyman-nx-cache.leyman.workers.dev`, so CI reads from it and `main` writes to it. Devcontainers already read from it (`NX_CACHE_SERVER_UPSTREAM` in `.devcontainer/docker-compose.yml`) once their `nx-cache` sidecar restarts (`docker compose up -d nx-cache`, or rebuild).
 10. **Later**, once it has worked for a while, remove the `actions/cache` steps from `.github/workflows/ci.yml`: the hosted cache replaces them.
 
 ## Changing it

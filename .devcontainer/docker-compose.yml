@@ -48,8 +48,8 @@ services:
       - ${WORKTREES_DIR}/.shared/nx-cache:/cache
     environment:
       # Reads results it doesn't have from the hosted cache that CI on main writes to (`infra/nx-cache`), never
-      # writes there. Empty until the cache is deployed: then set to the Worker's URL
-      NX_CACHE_SERVER_UPSTREAM: ${NX_CACHE_SERVER_UPSTREAM:-}
+      # writes there. Set NX_CACHE_SERVER_UPSTREAM empty (e.g. in `.devcontainer/.env`) to work offline
+      NX_CACHE_SERVER_UPSTREAM: ${NX_CACHE_SERVER_UPSTREAM-https://leyman-nx-cache.leyman.workers.dev}
     restart: unless-stopped
 
   # For tests that run against Valkey, at `valkey:6379`: Dagger binds its service under the same hostname.
