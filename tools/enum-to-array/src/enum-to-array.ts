@@ -1,6 +1,6 @@
 type Values<T> = T[Extract<keyof T, string>];
 
-type IfEmpty<Enum extends Record<string, unknown>, Else> =
+type IfEmpty<Enum extends object, Else> =
     // eslint-disable-next-line @typescript-eslint/no-generated-empty-object-type -- Only an empty enum is assignable from `{}`
     Record<never, string> extends Enum ? [] : Else;
 
@@ -18,7 +18,7 @@ type IfEmpty<Enum extends Record<string, unknown>, Else> =
  * @param enumDict - enum variable
  * @returns list of key+value
  */
-export const enumToArray = <Enum extends Record<string, unknown>>(
+export const enumToArray = <Enum extends object>(
     enumDict: Enum
 ): IfEmpty<
     Enum,
@@ -31,14 +31,15 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
         key: string;
     }[] = [];
 
-    for (const [key, value] of Object.entries(enumDict)) {
+    const entries = enumDict as Record<string, unknown>;
+    for (const [key, value] of Object.entries(entries)) {
         // Non-string members get a reverse mapping (`{ FOO: 0, 0: 'FOO' }`),
         // identified by pointing back at a member whose stringified value is that key.
         const isReverseMapping =
             typeof value === 'string' &&
-            Object.hasOwn(enumDict, value) &&
-            typeof enumDict[value] !== 'string' &&
-            String(enumDict[value]) === key;
+            Object.hasOwn(entries, value) &&
+            typeof entries[value] !== 'string' &&
+            String(entries[value]) === key;
         if (!isReverseMapping) {
             knownValues.push({ key, value });
         }
@@ -76,7 +77,7 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
  * @param [options.unique] - Dedupe values in enums, defaults to false
  * @returns list of enum values
  */
-export const enumToValues = <Enum extends Record<string, unknown>>(
+export const enumToValues = <Enum extends object>(
     enumDict: Enum,
     {
         unique = false,
@@ -117,7 +118,5 @@ export const enumToValues = <Enum extends Record<string, unknown>>(
  * @param enumDict - enum variable
  * @returns list of enum keys
  */
-export const enumToKeys = <Enum extends Record<string, unknown>>(
-    enumDict: Enum
-): IfEmpty<Enum, (keyof Enum)[]> =>
+export const enumToKeys = <Enum extends object>(enumDict: Enum): IfEmpty<Enum, (keyof Enum)[]> =>
     enumToArray(enumDict).map(v => v.key) as IfEmpty<Enum, (keyof Enum)[]>;

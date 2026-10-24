@@ -393,6 +393,24 @@ suite('enumToArray', () => {
         expectTypeOf(EnumToArray.enumToKeys(Literals)).toEqualTypeOf<(keyof typeof Literals)[]>();
     });
 
+    test('Object typed with an interface', () => {
+        interface Colors {
+            red: '#f00';
+            blue: '#00f';
+        }
+        const colors: Colors = { red: '#f00', blue: '#00f' };
+
+        expectTypeOf(EnumToArray.enumToArray(colors)).toEqualTypeOf<
+            ({ key: 'blue'; value: '#00f' } | { key: 'red'; value: '#f00' })[]
+        >();
+        expect(EnumToArray.enumToArray(colors)).to.deep.equal([
+            { key: 'red', value: '#f00' },
+            { key: 'blue', value: '#00f' },
+        ]);
+        expectTypeOf(EnumToArray.enumToValues(colors)).toEqualTypeOf<('#00f' | '#f00')[]>();
+        expectTypeOf(EnumToArray.enumToKeys(colors)).toEqualTypeOf<('blue' | 'red')[]>();
+    });
+
     test('Empty enum', () => {
         enum Empty {}
 

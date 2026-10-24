@@ -50,7 +50,7 @@ console.log(enumToArray(MyEnum));
 
 TypeScript's [reverse mappings](https://www.typescriptlang.org/docs/handbook/enums.html#reverse-mappings) for numeric enums add extra entries to the enum object (e.g. `{ FOO: 0, 0: 'FOO' }`). All three functions filter these out automatically, returning only the forward key→value pairs.
 
-Any object with string keys is accepted, so an `as const` object works the same way as an enum. Its type must be a type alias or inferred object type: a value typed as an `interface` is rejected, as interfaces have no index signature. Results are arrays of the union of members rather than tuples, and an enum with no members gives `[]`. Order follows `Object.keys`, so integer-like keys of a plain object come first, in ascending order.
+Any object with string keys is accepted, so an `as const` object works the same way as an enum. A value typed as an `interface` works too. Results are arrays of the union of members rather than tuples, and an enum with no members gives `[]`. Order follows `Object.keys`, so integer-like keys of a plain object come first, in ascending order.
 
 ## API
 
@@ -62,7 +62,7 @@ Returns key-value pairs for all enum members in declaration order.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `enumDict` | `Record<string, unknown>` | — | Required. The enum object to convert. |
+| `enumDict` | `object` | — | Required. The enum object to convert. |
 
 **Returns** `{ key: string; value: EnumValue }[]` — array of `{ key, value }` pairs, strongly typed to the enum's key and value union types. Numeric reverse-mapping entries are excluded.
 
@@ -81,7 +81,7 @@ Returns only the values of the enum in declaration order. TypeScript narrows the
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `enumDict` | `Record<string, unknown>` | — | Required. The enum object to convert. |
+| `enumDict` | `object` | — | Required. The enum object to convert. |
 | `options` | `object` | `{}` | Optional. |
 | `options.unique` | `boolean` | `false` | When `true`, duplicate values are removed; the first occurrence is kept. |
 
@@ -105,7 +105,7 @@ Returns only the keys of the enum in declaration order.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `enumDict` | `Record<string, unknown>` | — | Required. The enum object to convert. |
+| `enumDict` | `object` | — | Required. The enum object to convert. |
 
 **Returns** `(keyof Enum)[]` — array of enum key strings, typed to the enum's key union type.
 
