@@ -2,6 +2,8 @@ import type { Linked } from './lib/linked.js';
 import type { Queryable } from './lib/queryable.js';
 import type { typeCache } from './lib/types.js';
 
+export type { Linked };
+
 type TypeCache<T extends Queryable<unknown, readonly unknown[], any>> = NonNullable<
     T[typeof typeCache]
 >;

@@ -1,4 +1,5 @@
 import type { SkipToken } from '@tanstack/react-query';
+import type { Linked, LinkOf } from 'normalized-react-query';
 import {
     QueryClient,
     skipToken,
@@ -100,6 +101,13 @@ suite('resource', () => {
             expect(tolkiensFavorite?.favoriteAuthor).to.deep.equal({
                 authorId: austenId,
             });
+        });
+
+        context.test('Typed as Linked', () => {
+            const toLinked = (
+                link: ReturnType<typeof authors.link>
+            ): Linked<unknown, readonly unknown[], unknown, any> & LinkOf<typeof authors> => link;
+            expect(toLinked).to.be.a('function');
         });
 
         context.test('Cannot be invoked directly', async () => {

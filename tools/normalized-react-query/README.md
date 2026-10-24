@@ -92,7 +92,7 @@ const useExample = (queryClient: QueryClient) => {
 
 This package enforces typing and structure; all caching, revalidation, and subscription logic is handled by React Query.
 
-Instances created by `resource()` and `infinite()` are designed to be singletons — create once, import everywhere. The functional constructors (`resource`, `infinite`) are the primary API. The underlying `Resource` and `Infinite` classes are also exported as types for use in type annotations. The `Linked` class is not exported by name: type a link with [`LinkOf<typeof res>`](#linkoft), or `ReturnType` of `.link()`.
+Instances created by `resource()` and `infinite()` are designed to be singletons — create once, import everywhere. The functional constructors (`resource`, `infinite`) are the primary API. The underlying `Resource` and `Infinite` classes are also exported as types for use in type annotations. `Linked` is exported as a type too; [`LinkOf<typeof res>`](#linkoft) fills in its generics from a resource.
 
 A resource that takes no params uses `void` as its `TParams` and a fixed `key` (`resource<void, Settings>({ key: ['settings'], ... })`); hooks and cache methods then take `undefined` as the params.
 
