@@ -56,7 +56,8 @@
     "#internal/*": "./dist/*"
   },
   "bin": {
-    "lifecycle": "./bin.mjs"
+    "lifecycle": "./bin.mjs",
+    "nx-lifecycle": "./bin.mjs"
   },
   "dependencies": {
     "@nx/devkit": "catalog:",

@@ -32,7 +32,7 @@ export class LifecycleCli implements Main {
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
         let cli: Argv<LifecycleCommandInput> = yargs()
-            .scriptName('lifecycle')
+            .scriptName('nx-lifecycle')
             .option({
                 cwd: {
                     type: 'string',

@@ -4,11 +4,11 @@ description: The nx-lifecycle command line, to run the executor's sync and expla
 
 # CLI
 
-The package installs a `lifecycle` command. With `npx`, run it by the package name, `npx nx-lifecycle`.
+The package installs an `nx-lifecycle` command, also available as `lifecycle`.
 
 Every command takes `--cwd`, the directory other paths are resolved from (default `.`).
 
-## `lifecycle`
+## `nx-lifecycle`
 
 The default command. Writes lifecycle targets into `nx.json` and every `project.json`, like the [executor](/packages/nx-lifecycle/guides/executor). Configuration comes from a config file; it can't be passed inline.
 

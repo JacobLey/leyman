@@ -330,7 +330,7 @@ When `true`, performs all computation but skips writing any files. Can still fai
 
 ## CLI
 
-`nx-lifecycle` installs a `lifecycle` command (not `nx-lifecycle`: with `pnpx`/`npx` run it by the package name, from an installed copy use `pnpm exec lifecycle`). It does what the executor does. Configuration must be provided via a config file — inline options are not supported from the CLI.
+`nx-lifecycle` installs an `nx-lifecycle` command (also available as `lifecycle`). It does what the executor does. Configuration must be provided via a config file — inline options are not supported from the CLI.
 
 ```sh
 pnpx nx-lifecycle --help

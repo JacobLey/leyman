@@ -16,8 +16,8 @@ suite('cli', () => {
     test('--help lists every command', async () => {
         const result = await execAsync('./bin.mjs --help');
 
-        expect(result.stdout).to.contain('lifecycle lifecycle');
-        expect(result.stdout).to.contain('lifecycle explain <project> [stage]');
+        expect(result.stdout).to.contain('nx-lifecycle lifecycle');
+        expect(result.stdout).to.contain('nx-lifecycle explain <project> [stage]');
     });
 
     test('--version', async () => {
