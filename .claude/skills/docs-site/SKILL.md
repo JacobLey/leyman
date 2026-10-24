@@ -19,7 +19,7 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 
 [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) lists every package (category, pitch, npm package paths, `related` packages, pages) and demo (pitch, source, `files` worth reading, packages it `uses`, `related` demos) once. The nav, a sidebar per package and demo, previous/next links (kept within one package), the home page, the `/packages/` and `/demos/` lists, the generated blocks below, and redirects from the old root-level package URLs are all built from it.
 
-The build fails when the registry and the repo disagree: a pages directory with no entry, a slug naming nothing, a `sources`/`source`/`files` path that doesn't exist (so a rename can't silently break a GitHub link), or an overview page missing a generated block.
+The build fails when the registry and the repo disagree: a pages directory with no entry, a slug naming nothing, a `sources`/`source`/`files` path that doesn't exist (so a rename can't silently break a GitHub link), or an overview page missing a generated block. Dagger leaves `.claude`, `.devcontainer`, `.github`, `.vscode` and `dagger` out of CI's source, so paths in those directories are only checked in a full checkout (`ciExcluded` in `config.ts`, kept in step with `New` in `dagger/main.go`): build locally before pushing.
 
 Generated blocks, placed by hand on each overview page (`index.md`) so the markdown shows what renders:
 - `<ProjectHeader />` right under the title. On a package: npm, source and changelog links. On a demo: its source, `files`, the packages it uses and related demos.

@@ -75,4 +75,4 @@ dagger/
 └── go.mod
 ```
 
-If Dagger fails but `test-ci` passes locally, suspect an environment difference: a file that is gitignored or untracked, or a version mismatch between the devcontainer and Dagger.
+If Dagger fails but `test-ci` passes locally, suspect an environment difference: a file that is gitignored or untracked, a file in a directory `New` excludes from the source (`.claude`, `.devcontainer`, `.github`, `.vscode`, `dagger`), or a version mismatch between the devcontainer and Dagger. Changing that exclude list means updating `ciExcluded` in `docs/.vitepress/config.ts` too.

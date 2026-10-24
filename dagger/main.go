@@ -72,6 +72,8 @@ func New(
 		Source: source.Filter(dagger.DirectoryFilterOpts{
 			Gitignore: true,
 			// Version controlled, but irrelevant to CI. Excluding them keeps unrelated edits from invalidating the cache.
+			// The docs build skips its existence check for registry paths in these directories (`ciExcluded` in
+			// `docs/.vitepress/config.ts`), so keep the two lists in step.
 			Exclude: []string{
 				".git",
 				".claude",

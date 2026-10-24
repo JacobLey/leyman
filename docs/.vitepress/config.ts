@@ -19,6 +19,21 @@ const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
 const srcDir = fileURLToPath(new URL('../src/', import.meta.url));
 
 /**
+ * Version-controlled directories that CI's Dagger pipeline leaves out of its source (see `New` in
+ * `dagger/main.go`), so a change to them doesn't invalidate the cache.
+ */
+const ciExcluded = ['.claude', '.devcontainer', '.github', '.vscode', 'dagger'];
+
+/**
+ * Whether a repo path exists, or can't be checked here: it is inside a directory CI excludes, and
+ * that whole directory is absent. Any full checkout still checks it, so a moved file fails the
+ * build before it reaches CI.
+ */
+const existsOrExcluded = (path: string): boolean =>
+    existsSync(`${repoRoot}${path}`) ||
+    ciExcluded.some(dir => path.startsWith(`${dir}/`) && !existsSync(`${repoRoot}${dir}`));
+
+/**
  * Fails the build when the registry and the repo disagree: a source path that moved, a slug that
  * names nothing, or a pages directory with no entry.
  */
@@ -42,7 +57,7 @@ const checkRegistry = (): void => {
     }
     for (const { slug, source, files, uses, related = [] } of demos) {
         for (const path of [source, ...files.map(file => file.path)]) {
-            if (!existsSync(`${repoRoot}${path}`)) {
+            if (!existsOrExcluded(path)) {
                 problems.push(`Demo ${slug}: ${path} does not exist`);
             }
         }
@@ -94,8 +109,12 @@ const checkRegistry = (): void => {
 };
 checkRegistry();
 
+/**
+ * A path's page on GitHub. A path CI excludes is linked as a file (GitHub redirects a directory's
+ * `blob` URL to its `tree`).
+ */
 const github = (path: string): string =>
-    `https://github.com/JacobLey/leyman/${statSync(`${repoRoot}${path}`).isDirectory() ? 'tree' : 'blob'}/main/${path}`;
+    `https://github.com/JacobLey/leyman/${existsSync(`${repoRoot}${path}`) && statSync(`${repoRoot}${path}`).isDirectory() ? 'tree' : 'blob'}/main/${path}`;
 
 const links: Links = {
     packages: Object.fromEntries(
