@@ -44,7 +44,7 @@ npm i -D nx-lifecycle
 - **[Plugin](#plugin)** (recommended): infers the lifecycle targets whenever Nx builds the project graph. Nothing is written to files.
 - **[Executor](#executor)**: writes the lifecycle targets into `nx.json` and every `project.json`, to be committed. CI checks they are up to date.
 
-Both take the same [stages](#stages) and [bindings](#bindings).
+Both take the same [stages](#stages) and [bindings](#bindings). Requires Node.js 24 or later. `nx` and `@nx/devkit` (`^23.3.0`) are regular dependencies of `nx-lifecycle` (not peers), so use the same Nx major version in the workspace.
 
 ## Plugin
 
@@ -77,7 +77,9 @@ Add the plugin to `nx.json`, with stages and bindings as its options. Install `n
 }
 ```
 
-Every project with a `project.json` gets the [stage targets](#generated-targets). A bound target is wired in a project when its `project.json` declares it, e.g. `"tsc": {}`; the implementation can still come from `targetDefaults`. `nx show project <name>` lists the inferred targets.
+The options are typed as `LifecyclePluginOptions`: `import type { LifecyclePluginOptions } from 'nx-lifecycle/plugin'`, e.g. `const options = { stages, bindings } satisfies LifecyclePluginOptions;`.
+
+Every project with a `project.json` gets the [stage targets](#generated-targets), even if it declares nothing bound to them. A bound target is wired in a project when its `project.json` declares it, e.g. `"tsc": {}`; the implementation can still come from `targetDefaults`. `nx show project <name>` lists the inferred targets.
 
 ### Overriding inferred targets
 
@@ -213,9 +215,11 @@ Declares the abstract workflow stages that `nx-lifecycle` will own. Each key is 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
 | `hooks` | `string[]` | — | Ordered list of sub-steps within the stage. The resulting target names are `stage:hook` (e.g. `build:run`). If omitted, the stage has no sub-steps and is referenced directly by name. |
-| `dependsOn` | `dependsOn[]` | — | Upstream dependencies for this stage, using the same format as Nx's native [`dependsOn`](https://nx.dev/reference/project-configuration#dependson). Defines the relationship between this stage and others (or their upstream counterparts). |
+| `dependsOn` | `dependsOn[]` | — | Upstream dependencies for this stage, using the same format as Nx's native [`dependsOn`](https://nx.dev/reference/project-configuration#dependson): `"build"` (this project's stage), `"^build"` (the stage of every dependency project), `{ "target": "build", "projects": ["my-server"] }`. Can name a stage or any other target, but not another stage's anchor or hook (`^build:post` is rejected: depend on `build`). |
 
-**Note:** If a stage declares `hooks`, bindings must reference a specific hook (`build:run`), not the stage name alone (`build`).
+**Note:** If a stage declares `hooks`, bindings must reference a specific hook (`build:run`), not the stage name alone (`build`). A stage without hooks still generates an anchor: `lint:_ → eslint → lint`.
+
+The config is checked whenever Nx builds the project graph, and fails for a binding that names a hook that doesn't exist, a stage that has hooks, an anchor (`build:_`) or a lifecycle target, and for a stage `dependsOn` on another stage's anchor or hook.
 
 ```json
 {
@@ -312,7 +316,7 @@ Executor only.
 |------|---------|
 | `boolean` | `true` in CI, `false` otherwise |
 
-When `true`, the executor fails if `nx.json` or any `project.json` is out of sync with what `nx-lifecycle` would generate. Use this in CI to verify that generated configs are committed and up to date before deployment proceeds.
+When `true`, the executor writes nothing and fails if `nx.json` or any `project.json` is out of sync with what `nx-lifecycle` would generate. Use this in CI to verify that generated configs are committed and up to date before deployment proceeds.
 
 ### `dryRun`
 
@@ -326,7 +330,7 @@ When `true`, performs all computation but skips writing any files. Can still fai
 
 ## CLI
 
-`nx-lifecycle` can also be invoked directly as a CLI command. Configuration must be provided via a config file — inline options are not supported from the CLI.
+`nx-lifecycle` installs a `lifecycle` command (not `nx-lifecycle`: with `pnpx`/`npx` run it by the package name, from an installed copy use `pnpm exec lifecycle`). It does what the executor does. Configuration must be provided via a config file — inline options are not supported from the CLI.
 
 ```sh
 pnpx nx-lifecycle --help
@@ -337,7 +341,8 @@ pnpx nx-lifecycle --config-file ./my-lifecycle.json --dry-run
 |------|------|---------|-------------|
 | `--config-file` | `string` | `lifecycle.json` | Path to the lifecycle config file. |
 | `--dry-run` | `boolean` | `false` | Compute changes without writing files. |
-| `--check` | `boolean` | `true` in CI | Fail if any file is out of sync. |
+| `--check`, `--ci` | `boolean` | `true` in CI | Fail if any file is out of sync. |
+| `--cwd` | `string` | `.` | Directory other paths are resolved from. |
 
 ### `explain`
 
