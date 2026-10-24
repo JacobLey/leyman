@@ -30,6 +30,8 @@ Statically typed event emitter.
 npm i static-emitter
 ```
 
+No dependencies. Requires Node.js 24 or later (`engines`); the types need `EventTarget`, `CustomEvent` and `AbortSignal` from `@types/node` or the `dom` lib.
+
 ## Example
 
 ```ts
@@ -72,7 +74,21 @@ Events are declared as a map of `eventName → value`, passed as a generic:
 
 Event names must be strings, as required by `EventTarget`.
 
-Subclasses that should allow further events can forward a generic:
+Declare the map as a type alias or inline object type, not an `interface`. `EventMap` is `Record<string, unknown>`, which an interface does not satisfy (it has no implicit index signature):
+
+```ts
+interface Events { data: string }
+new StaticEmitter<Events>();
+// error TS2344: Type 'Events' does not satisfy the constraint 'EventMap'.
+//   Index signature for type 'string' is missing in type 'Events'.
+
+type EventsAlias = { data: string };
+new StaticEmitter<EventsAlias>(); // OK
+```
+
+A detail of `undefined` (or a type including it) can be left out of `emit()`, but a detail of `null` cannot: `emit('done', null)`. (`new TypedCustomEvent` is the opposite: it may omit a `null` detail, not an `undefined` one.) A `StaticEmitter` listener receives `undefined` when none was given.
+
+Subclasses that should allow further events can forward a generic (`EventMap` and `NoEvents` are exported types):
 
 ```ts
 class BaseEmitter<Events extends EventMap = NoEvents> extends StaticEmitter<
@@ -216,5 +232,6 @@ class ServerEvent<T extends string> extends TypedEvent<T> {
 | `EventOf<Events, K>` | Event object dispatched for event `K`. |
 | `AnyEventOf<Events>` | Union of every declared event object. |
 | `TypedEventListener<Events, K>` | Native listener (function or `handleEvent` object) for event `K`. |
+| `TypedEventListenerObject<Events, K>` | The `handleEvent` object form of `TypedEventListener`. |
 | `DetailListener<Events, K>` | `StaticEmitter` listener for event `K`. |
 | `SubscribeOptions` | `{ signal?: AbortSignal }`. |
