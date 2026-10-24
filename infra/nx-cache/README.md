@@ -21,7 +21,7 @@ CI (main):    Nx ──> runner's cache server ──read/write (GitHub OIDC)─
 - **Nx never talks to the Worker directly.** The existing cache server reads through to it and, on `main`, writes through. So Dagger's wiring didn't change, credentials never enter Dagger, and the hosted cache being down is only a slower run.
 - **Two tools, split by who runs them.** OpenTofu owns what is set up once and holds credentials, run by the maintainer. A public repository's pull requests must never get Cloudflare credentials, so CI only runs `tofu fmt` and `tofu validate`, never `plan`. wrangler owns the Worker's code, which changes with the repository: CI deploys it from an environment only `main` can use, with a token that may only deploy Workers. wrangler's Miniflare also runs the Worker locally for its tests.
 - **OpenTofu, not Terraform**: its state encryption keeps the deploy token unreadable in the state bucket, and its backend block can use variables (the account ID).
-- **Free tier**: R2 gives 10 GB, 1M writes and 10M reads a month; Workers 100k requests a day. A cold CI run makes about 1.4k reads and 1.4k writes, and results expire after 7 days.
+- **Free tier**: R2 gives 10 GB, 1M writes and 10M reads a month; Workers 100k requests a day. A cold CI run makes about 1.4k reads and 1.4k writes, and results expire after 7 days. Keep the account on the Workers free plan: its daily limit stops requests rather than billing them, and since the bucket is reachable only through the Worker, a flood of public reads can at worst make the cache unavailable until the limit resets, never cost anything. On Workers Paid, both would be billed per request, without a cap.
 
 ## Setting it up
 
