@@ -10,7 +10,8 @@ terraform {
   }
 
   # State lives in an R2 bucket of its own, created by hand (it can't hold the state of its own creation), through
-  # R2's S3 API. Credentials: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, an R2 API token for that bucket only.
+  # R2's S3 API. Credentials: AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY, which `env.sh` derives from
+  # CLOUDFLARE_API_TOKEN.
   backend "s3" {
     bucket = "leyman-tofu-state"
     key    = "nx-cache/terraform.tfstate"

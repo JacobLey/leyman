@@ -27,40 +27,35 @@ CI (main):    Nx ──> runner's cache server ──read/write (GitHub OIDC)─
 
 Done once, by the maintainer. You need a Cloudflare account with R2 enabled (R2 asks for a payment method even on the free tier) and a `workers.dev` subdomain (the dashboard's Workers page offers one on first visit). Then, in the devcontainer, which has `tofu` (rebuild it if `tofu version` isn't found):
 
-1. **Find your account ID**: dashboard → the account's home page → *Account ID*.
+1. **Find your account ID**: the 32 hex characters after `dash.cloudflare.com/` in any dashboard URL (also on the account's home page).
 2. **Make the state bucket by hand**: R2 → *Create bucket*, named `leyman-tofu-state`. It can't be managed by OpenTofu, as it holds the state of everything OpenTofu creates.
-3. **Make an R2 API token for it**: R2 → *Manage API tokens* → *Create API token*: *Object Read & Write*, applied to `leyman-tofu-state` only. Keep its *Access Key ID* and *Secret Access Key*.
-4. **Make a token for OpenTofu**: My Profile → *API Tokens* → *Create Token* → *Custom token*, for your account: *Workers R2 Storage: Edit* and *Account API Tokens: Edit*. It creates the cache bucket and the deploy token.
-5. **Choose a passphrase** for the state's encryption, at least 16 characters, kept in a password manager. Losing it loses the state (the resources stay, and could be imported again).
-6. **Apply**, from `infra/nx-cache/tofu`. `read -rs` keeps secrets out of your shell history:
+3. **Make a token for OpenTofu**: My Profile → *API Tokens* → *Create Token* → *Custom token*, for your account: *Workers R2 Storage: Edit* and *Account API Tokens: Edit*. It creates the cache bucket and the deploy token, and reaches the state bucket too: R2's S3 credentials are derived from it.
+4. **Choose a passphrase** for the state's encryption, at least 16 characters. Keep it, and the token, in a password manager. The passphrase is the one secret that can't be replaced: without it the state can't be read (the resources stay, and could be imported again). The token can be remade at any time, or created with an expiry for each apply.
+5. **Apply**, from `infra/nx-cache/tofu`. [`env.sh`](tofu/env.sh) asks for the account ID, the token and the passphrase (paste them: secrets aren't shown), derives the state bucket's S3 credentials from the token, and exports what `tofu` needs into your shell, never its history:
 
    ```sh
-   export TF_VAR_account_id=<account ID>
-   read -rs TF_VAR_state_passphrase && export TF_VAR_state_passphrase
-   read -rs AWS_ACCESS_KEY_ID && export AWS_ACCESS_KEY_ID           # step 3's Access Key ID
-   read -rs AWS_SECRET_ACCESS_KEY && export AWS_SECRET_ACCESS_KEY   # step 3's Secret Access Key
-   read -rs CLOUDFLARE_API_TOKEN && export CLOUDFLARE_API_TOKEN     # step 4's token
+   . ./env.sh
    tofu init
    tofu plan -out=nx-cache.tfplan   # check it creates a bucket, a lifecycle rule and a token
    tofu apply nx-cache.tfplan
-   tofu output -raw deploy_token    # for step 7
+   tofu output -raw deploy_token    # for step 6
    ```
 
-7. **Let CI deploy**: on GitHub, *Settings* → *Environments* → *New environment* `nx-cache`, with *Deployment branches* limited to `main`, and a secret `CLOUDFLARE_API_TOKEN`: the deploy token. Then *Settings* → *Secrets and variables* → *Actions* → *Variables*: `CLOUDFLARE_ACCOUNT_ID`, the account ID.
-8. **Deploy**: the next push to `main` runs the `nx-cache` job (or re-run the latest run). Its log ends with the Worker's URL, `https://leyman-nx-cache.leyman.workers.dev` (the Worker's name, then the account's `workers.dev` subdomain, `leyman`). Check it:
+6. **Let CI deploy**: on GitHub, *Settings* → *Environments* → *New environment* `nx-cache`, with *Deployment branches* limited to `main`, and a secret `CLOUDFLARE_API_TOKEN`: the deploy token. Then *Settings* → *Secrets and variables* → *Actions* → *Variables*: `CLOUDFLARE_ACCOUNT_ID`, the account ID.
+7. **Deploy**: the next push to `main` runs the `nx-cache` job (or re-run the latest run). Its log ends with the Worker's URL, `https://leyman-nx-cache.leyman.workers.dev` (the Worker's name, then the account's `workers.dev` subdomain, `leyman`). Check it:
 
    ```sh
    curl -i https://leyman-nx-cache.leyman.workers.dev/v1/cache/0          # 404: nothing cached yet
    curl -i -X PUT https://leyman-nx-cache.leyman.workers.dev/v1/cache/0   # 401: no token, can't write
    ```
 
-9. **Use it**: add the repository variable `NX_CACHE_UPSTREAM`, `https://leyman-nx-cache.leyman.workers.dev`, so CI reads from it and `main` writes to it. Devcontainers already read from it (`NX_CACHE_SERVER_UPSTREAM` in `.devcontainer/docker-compose.yml`) once their `nx-cache` sidecar restarts (`docker compose up -d nx-cache`, or rebuild).
-10. **Later**, once it has worked for a while, remove the `actions/cache` steps from `.github/workflows/ci.yml`: the hosted cache replaces them.
+8. **Use it**: add the repository variable `NX_CACHE_UPSTREAM`, `https://leyman-nx-cache.leyman.workers.dev`, so CI reads from it and `main` writes to it. Devcontainers already read from it (`NX_CACHE_SERVER_UPSTREAM` in `.devcontainer/docker-compose.yml`) once their `nx-cache` sidecar restarts (`docker compose up -d nx-cache`, or rebuild).
+9. **Later**, once it has worked for a while, remove the `actions/cache` steps from `.github/workflows/ci.yml`: the hosted cache replaces them.
 
 ## Changing it
 
 - **The Worker**: change `worker/`, merge to `main`, and CI deploys it.
-- **The bucket, its lifecycle or the token**: change `tofu/`, then `tofu plan` and `tofu apply` as in step 6. The deploy token has no expiry: to rotate it, `tofu apply -replace=cloudflare_account_token.deploy`, and update the environment's secret.
+- **The bucket, its lifecycle or the token**: change `tofu/`, then `tofu plan` and `tofu apply` as in step 5. The deploy token has no expiry: to rotate it, `tofu apply -replace=cloudflare_account_token.deploy`, and update the environment's secret.
 - **Discarding every cached result** (e.g. after finding an input Nx doesn't hash): empty the bucket from the dashboard, and bump `NX_CACHE_VERSION` in `ci.yml` for the runner's own cache.
 - **Removing it**: unset `NX_CACHE_UPSTREAM` and `CLOUDFLARE_ACCOUNT_ID`, delete the Worker (dashboard, or `wrangler delete`), then `tofu destroy`.
 
