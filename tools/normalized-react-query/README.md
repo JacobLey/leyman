@@ -37,8 +37,10 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 ## Install
 
 ```sh
-npm i normalized-react-query
+npm i normalized-react-query @tanstack/react-query react
 ```
+
+`@tanstack/react-query` (`^5.104.3`) and `react` (`^18 || ^19`) are required peer dependencies. Requires Node.js 24 or later (`engines`).
 
 ## Example
 
@@ -88,9 +90,13 @@ const useExample = (queryClient: QueryClient) => {
 
 `normalized-react-query` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { resource } = await import('normalized-react-query');`.
 
-`@tanstack/react-query` is a peer dependency (and brings React). This package enforces typing and structure; all caching, revalidation, and subscription logic is handled by React Query.
+This package enforces typing and structure; all caching, revalidation, and subscription logic is handled by React Query.
 
-Instances created by `resource()` and `infinite()` are designed to be singletons — create once, import everywhere. The functional constructors (`resource`, `infinite`) are the primary API. The underlying `Resource` and `Infinite` classes are also exported as types for use in type annotations.
+Instances created by `resource()` and `infinite()` are designed to be singletons — create once, import everywhere. The functional constructors (`resource`, `infinite`) are the primary API. The underlying `Resource` and `Infinite` classes are also exported as types for use in type annotations. The `Linked` class is not exported by name: type a link with [`LinkOf<typeof res>`](#linkoft), or `ReturnType` of `.link()`.
+
+A resource that takes no params uses `void` as its `TParams` and a fixed `key` (`resource<void, Settings>({ key: ['settings'], ... })`); hooks and cache methods then take `undefined` as the params.
+
+Links are not stored in the cache: it holds the plain `queryFn` data, and `propagate` runs again whenever data is read (like a `select`), which keeps the cache serializable for SSR. Cache methods such as `setQueryData` therefore take the original data, not the propagated data.
 
 ## API
 
@@ -103,7 +109,9 @@ Creates a type-safe, singleton reference to a non-paginated query. The key and q
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `params.key` | `TQueryKey \| ((params: TParams) => TQueryKey)` | — | Required. A static key or function computing the key from params. |
-| `params.queryFn` | `(options: QueryFunctionContextWithParams<TParams, ...>, queryClient?) => Promise<TData> \| TData` | — | Required. The cached query function. Receives params plus standard TanStack context. |
+| `params.queryFn` | `(options: QueryFunctionContextWithParams<TParams, ...>, queryClient?) => Promise<TData> \| TData` | — | Required. The cached query function. Receives the params as `options.params`, plus standard TanStack context (`signal`, `queryKey`, …). |
+
+Type parameters are inferred from `key` and `queryFn`, or given explicitly as `resource<TParams, TData>(...)`.
 
 **Returns** `Resource<TParams, TData>` — a resource instance.
 
@@ -146,7 +154,7 @@ To load everything a server-side render needs, pass `{ staleTime: 'static', awai
 
 ##### `.prefetchQuery(queryClient, params, options?): Promise<Linked>`
 
-Loads data for someone else to use, like `.query()` but without throwing. Returns a `Linked` reference usable with prefetched hooks.
+Loads data for someone else to use, like `.query()` but without throwing (the promise resolves even if the fetch fails). Accepts the options of `.query()` besides `select`. Returns a `Linked` reference usable with prefetched hooks.
 
 ##### `.ensureQueryData(queryClient, params, options?): Promise<TData>`
 
@@ -162,7 +170,9 @@ Calls `setQueryData` and returns the params. Useful for chaining — the returne
 
 ##### `.link(params, options?): Linked`
 
-Must be called inside a `propagate` callback. Triggers a prefetch of this resource and returns a `Linked` reference for downstream hooks. Throws if called outside of `propagate`.
+Must be called inside a `propagate` callback. Triggers a prefetch of this resource and returns a `Linked` reference for downstream hooks. Throws an `Error` (`Cannot call \`link()\` outside of \`propagate\``) if called outside of `propagate`. Linking the same query twice is safe.
+
+`options` are the options of `.prefetchQuery()`, plus `isolateErrors`: when `true`, a failure of this link does not fail a parent loaded with `awaitLinks`.
 
 ##### `.propagate(map): Resource`
 
@@ -298,7 +308,7 @@ Attaches a per-page transformation. The `map` callback receives `{ page, pagePar
 
 ### Hooks
 
-All hooks wrap their TanStack counterparts with type-safe resource/infinite instances. The `key` and `queryFn` are derived from the resource — do not pass them manually.
+All hooks wrap their TanStack counterparts with type-safe resource/infinite instances. The `key` and `queryFn` are derived from the resource — do not pass them manually. `options` are the TanStack hook's options minus `queryKey` and `queryFn`; `select` receives the propagated data (the result of `.propagate()`, with `Linked` references), not the cached data.
 
 Like TanStack's hooks, each hook stays on the query client it first renders with. The `useNormalizedPrefetched*` hooks read the link's client, and the context client while they have no link (`null` or `skipToken`). A hook that renders without a link first therefore only accepts links on the context client, and needs a `QueryClientProvider` to accept any link at all. Given a link on any other client, it throws, rather than reading a different cache. [TanStack/query#12257](https://github.com/TanStack/query/pull/12257) would let hooks follow a client change, and remove this restriction.
 
@@ -362,7 +372,7 @@ Wraps `useSuspenseInfiniteQuery` with `skipToken` support for prefetched infinit
 
 ### `Linked`
 
-A `Linked<TParams, TQueryKey, TData, TQueryable>` is a reference to a specific query that has been (or is being) prefetched. It is produced by `.prefetchQuery()`, `.prefetchInfiniteQuery()`, `.link()`, `useNormalizedPrefetchQuery()` and `useNormalizedPrefetchInfiniteQuery()`.
+A `Linked<TParams, TQueryKey, TData, TQueryable>` (not exported by name, see [Usage](#usage)) is a reference to a specific query that has been (or is being) prefetched. It is produced by `.prefetchQuery()`, `.prefetchInfiniteQuery()`, `.link()`, `useNormalizedPrefetchQuery()` and `useNormalizedPrefetchInfiniteQuery()`.
 
 Pass `Linked` instances to the `useNormalizedPrefetched*` hooks to subscribe to their data.
 
