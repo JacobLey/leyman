@@ -186,7 +186,15 @@ Carries manual sections from an existing file into freshly generated text, match
 
 ### `commentStyle(filePath)`
 
-**Returns** the line comment syntax for a file, as `CommentStyle` (`{ start: string, end?: string }`), looked up by extension or file name (`Dockerfile`, `.gitignore`, …). `null` if unknown, or for formats without comments like `.json`.
+**Returns** the line comment syntax for a file, as `CommentStyle` (`{ start: string, end?: string }`), looked up by extension or file name (`Dockerfile`, `.gitignore`, …). `null` if unknown, or for formats without comments like `.json`. For any other file, pass `comment` instead of `filePath`.
+
+| `CommentStyle` | Files |
+|----------------|-------|
+| `//` | `.c`, `.cc`, `.cjs`, `.cpp`, `.cs`, `.cts`, `.go`, `.h`, `.hpp`, `.java`, `.js`, `.json5`, `.jsonc`, `.jsx`, `.kt`, `.less`, `.mjs`, `.mts`, `.rs`, `.scss`, `.swift`, `.ts`, `.tsx` |
+| `#` | `.bash`, `.cfg`, `.conf`, `.env`, `.ini`, `.pl`, `.properties`, `.py`, `.r`, `.rb`, `.sh`, `.toml`, `.yaml`, `.yml`, `.zsh`, and `.gitattributes`, `.gitignore`, `.npmignore`, `Dockerfile`, `Makefile` |
+| `/* */` | `.css` |
+| `<!-- -->` | `.htm`, `.html`, `.md`, `.mdx`, `.svg`, `.vue`, `.xml` |
+| `--` | `.hs`, `.lua`, `.sql` |
 
 ---
 
@@ -211,7 +219,7 @@ A JSON file recording generated files that don't carry their own token, e.g. JSO
 | Function | Description |
 |----------|-------------|
 | <a id="contenthashcontent"></a>`contentHash(content: string \| Uint8Array): string` | `v1:` and 32 hex characters of SHA-256. `\r\n` counts as `\n`, also in bytes. Manual sections are **not** excluded, so a file with manual sections should be signed inline. |
-| `verifyManifestEntry(content, entry): VerifyResult` | `valid` or `invalid` for a `hash` entry; [`verify()`](#verifytext)'s result for an `inline` entry. |
+| `verifyManifestEntry(content: string \| Uint8Array, entry): VerifyResult` | `valid` or `invalid` for a `hash` entry; [`verify()`](#verifytext)'s result for an `inline` entry. |
 | `parseManifest(text): Manifest` | Parses and validates. Throws `GeneratedSignatureManifestError` if the text is not a valid manifest. |
 | `serializeManifest(files): string` | Manifest text, with paths and inputs sorted so the output doesn't depend on write order. |
 
@@ -239,11 +247,11 @@ import generatedSignature from 'generated-signature/eslint';
 export default [generatedSignature.configs.recommended];
 ```
 
-`configs.recommended` registers the plugin (namespace `generated-signature`) and turns on every rule below as an error.
+`configs.recommended` registers the plugin (namespace `generated-signature`) and turns on every rule below as an error. `eslint` is an optional peer dependency (`^10.13.0`), needed only for this entry point. To choose rules yourself, register the plugin: `{ plugins: { 'generated-signature': generatedSignature }, rules: { 'generated-signature/valid': 'warn' } }`.
 
 ### `generated-signature/valid`
 
-Reports a file whose signature doesn't match (it was edited outside its manual sections), or whose token or manual sections are malformed. Unsigned files are ignored. There is no autofix: re-signing would just approve the edit. Regenerate the file instead, or move the change into a manual section.
+Reports a file whose signature doesn't match (it was edited outside its manual sections; reported on the token), or whose token or manual sections are malformed (`Generated file is malformed: <reason>`, reported on the line at fault). Unsigned files are ignored. There is no autofix: re-signing would just approve the edit. Regenerate the file instead, or move the change into a manual section.
 
 ```ts
 // @generated-signature v1:… Generated file. Do not edit outside of manual sections.
