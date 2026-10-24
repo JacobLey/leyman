@@ -31,6 +31,11 @@ jobs:
     runs-on: ubuntu-latest
     # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
     timeout-minutes: 30
+    permissions:
+      contents: read
+      # The cache server's uploads to the hosted cache carry an OIDC token. The hosted cache only accepts one from a
+      # push to main, so a pull request's token (and a fork's gets none) can't write
+      id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -45,11 +50,15 @@ jobs:
           key: nx-${{ env.NX_CACHE_VERSION }}-${{ github.sha }}
           restore-keys: nx-${{ env.NX_CACHE_VERSION }}-
 
-      # Deletes expired results before it starts listening, and never serves one
+      # Deletes expired results before it starts listening, and never serves one. In front of the hosted cache
+      # (`infra/nx-cache`) once the `NX_CACHE_UPSTREAM` variable names it: every run reads from it, and pushes to
+      # main write to it
       - name: Start Nx cache server
         env:
           NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
           NX_CACHE_SERVER_MAX_AGE_DAYS: ${{ env.NX_CACHE_MAX_AGE_DAYS }}
+          NX_CACHE_SERVER_UPSTREAM: ${{ vars.NX_CACHE_UPSTREAM }}
+          NX_CACHE_SERVER_UPSTREAM_WRITE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.NX_CACHE_UPSTREAM != '' && 'github-oidc' || '' }}
         run: |
           node .devcontainer/nx-cache-server.mjs &
           curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null
@@ -217,3 +226,35 @@ jobs:
       - name: Deploy
         id: deploy
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
+
+  # Deploys the hosted Nx cache's Worker (`infra/nx-cache/worker`). Off until the `CLOUDFLARE_ACCOUNT_ID` variable is
+  # set (see `infra/nx-cache/README.md`)
+  nx-cache:
+    needs: test
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.CLOUDFLARE_ACCOUNT_ID != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    # Each deploy replaces the last, so only the latest matters
+    concurrency:
+      group: nx-cache
+      cancel-in-progress: true
+    # Restricted to main: holds the deploy token, which only ever reaches this job
+    environment: nx-cache
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Deploy
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+        with:
+          version: ${{ env.DAGGER_VERSION }}
+          verb: call
+          module: ./dagger
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          args: deploy-nx-cache --api-token=env://CLOUDFLARE_API_TOKEN --account-id=${{ vars.CLOUDFLARE_ACCOUNT_ID }}

@@ -136,6 +136,26 @@ func (m *Ci) Docs() *dagger.Directory {
 		Directory(workdir + "/docs/dist")
 }
 
+// Deploy the hosted Nx cache's Worker (`infra/nx-cache/worker`) to Cloudflare, with wrangler.
+//
+// The token may only deploy Workers (OpenTofu creates it, see `infra/nx-cache/tofu`).
+func (m *Ci) DeployNxCache(
+	ctx context.Context,
+	// Cloudflare API token that may deploy Workers
+	apiToken *dagger.Secret,
+	// Cloudflare account to deploy to
+	accountId string,
+) (string, error) {
+	return m.installed(m.Source.WithoutDirectory(".changeset")).
+		WithExec([]string{"nx", "run", "@leyman/nx-cache-worker:build"}).
+		WithWorkdir(workdir+"/infra/nx-cache/worker").
+		WithSecretVariable("CLOUDFLARE_API_TOKEN", apiToken).
+		WithEnvVariable("CLOUDFLARE_ACCOUNT_ID", accountId).
+		WithEnvVariable("WRANGLER_SEND_METRICS", "false").
+		WithExec([]string{"node_modules/.bin/wrangler", "deploy"}).
+		Stdout(ctx)
+}
+
 // Apply the committed changesets at HEAD: bump package versions and write changelogs.
 //
 // Export the result over a checkout of HEAD (`version export --path .`) to open a version PR.
