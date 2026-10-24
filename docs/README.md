@@ -32,6 +32,6 @@ nx run @leyman/docs:vitepress-dev   # dev server at http://localhost:5173/leyman
 nx run @leyman/docs:build           # build into dist/, failing on any type error or dead link
 ```
 
-A package's docs live in `src/<package>/`, with a sidebar entry in [`.vitepress/config.ts`](./.vitepress/config.ts). Pages are Markdown, with VitePress's [containers and code groups](https://vitepress.dev/guide/markdown). Document a package's types by adding it to `devDependencies` (`workspace:^`).
+A package's docs live in `src/packages/<package>/`, and a demo's in `src/demos/<demo>/`. Each has an entry in [`.vitepress/projects.ts`](./.vitepress/projects.ts), from which [`.vitepress/config.ts`](./.vitepress/config.ts) builds the nav, sidebars and redirects, and the theme's components the home page, lists and cross-links. Pages are Markdown, with VitePress's [containers and code groups](https://vitepress.dev/guide/markdown). Document a package's types by adding it to `devDependencies` (`workspace:^`).
 
 VitePress 2 is in alpha, so its version is pinned exactly in the catalog. Bump it deliberately and check the build.

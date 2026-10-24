@@ -52,4 +52,4 @@ paths:
 
 # Documented package
 
-This package has pages on the docs site, in `docs/src/<package>/` (a demo: `docs/src/demos/<demo>.md`). A change to its API, behaviour, defaults, CLI flags or errors must update those pages in the same commit, then pass `nx run @leyman/docs:build`. The build only catches type errors in examples, not changed behaviour, so grep the pages for what changed. See the [docs-site skill](../skills/docs-site/SKILL.md#keeping-pages-in-sync).
+This package has pages on the docs site, in `docs/src/packages/<package>/` (a demo: `docs/src/demos/<demo>/`), and an entry in `docs/.vitepress/projects.ts`. A change to its API, behaviour, defaults, CLI flags or errors must update those pages in the same commit, then pass `nx run @leyman/docs:build`. A demo that starts using a documented package adds it to its `uses` there; a moved file named in a demo's `files` fails the build. The build only catches type errors in examples, not changed behaviour, so grep the pages for what changed. See the [docs-site skill](../skills/docs-site/SKILL.md#keeping-pages-in-sync).

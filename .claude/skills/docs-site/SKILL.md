@@ -9,6 +9,22 @@ description: Writing docs site pages, and keeping them in sync when a documented
 
 The site is built with VitePress and deployed to GitHub Pages by CI on every push to `main`. Nothing to do per package beyond writing pages.
 
+## Site layout
+
+| Path | What |
+|------|------|
+| `/` | A router: the package categories and the demos, as cards. |
+| `/packages/` | Every package, by category. Pages in `docs/src/packages/<package>/`. |
+| `/demos/` | Every demo. Pages in `docs/src/demos/<demo>/`. |
+
+[`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) lists every package (category, pitch, npm package paths, `related` packages, pages) and demo (pitch, source, `files` worth reading, packages it `uses`, `related` demos) once. The nav, a sidebar per package and demo, previous/next links (kept within one package), the home page, the `/packages/` and `/demos/` lists, the generated blocks below, and redirects from the old root-level package URLs are all built from it.
+
+The build fails when the registry and the repo disagree: a pages directory with no entry, a slug naming nothing, a `sources`/`source`/`files` path that doesn't exist (so a rename can't silently break a GitHub link), or an overview page missing a generated block.
+
+Generated blocks, placed by hand on each overview page (`index.md`) so the markdown shows what renders:
+- `<ProjectHeader />` right under the title. On a package: npm, source and changelog links. On a demo: its source, `files`, the packages it uses and related demos.
+- `## Related` then `<ProjectRelated />` at the end of a package's overview: related packages (declared on either side) and the demos that use it. Required exactly when there is something to show.
+
 ## Documented packages
 
 | Package | Pages |
@@ -32,7 +48,7 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 | [`unknown-error`](../../../tools/unknown-error/) | [`docs/src/packages/unknown-error/`](../../../docs/src/packages/unknown-error/) |
 | [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | [`docs/src/packages/vitest-chain/`](../../../docs/src/packages/vitest-chain/) |
 
-Demos ([`demos/`](../../../demos/)) each have a directory in [`docs/src/demos/`](../../../docs/src/demos/), ported from the demo's README:
+Demos ([`demos/`](../../../demos/)) each have a directory in [`docs/src/demos/`](../../../docs/src/demos/), ported from the demo's README, with `<ProjectHeader />` under the title (it replaces a hand-written source link). A demo made of several runnable parts can be several demos that cross-reference through `related`, like the MCP server and the CLI:
 
 | Demo | Page |
 |------|------|
@@ -42,7 +58,7 @@ Demos ([`demos/`](../../../demos/)) each have a directory in [`docs/src/demos/`]
 | [`agents/cli`](../../../demos/agents/cli/) | [`docs/src/demos/agent-cli/index.md`](../../../docs/src/demos/agent-cli/index.md) |
 | [`oauth-server`](../../../demos/oauth-server/) | [`docs/src/demos/oauth-server/index.md`](../../../docs/src/demos/oauth-server/index.md) |
 
-**When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (the nav, sidebars, home page and package and demo lists are built from it, and the build fails if a pages directory has no entry), a row here, and its paths to [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**
+**When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (see [Site layout](#site-layout)), a row here, and its paths to [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md). When a demo starts using a documented package, add it to the demo's `uses`.**
 
 ## Keeping pages in sync
 
@@ -62,7 +78,7 @@ Each package has the same layout. Follow an existing package (haywire is the ful
 
 | Page | Contents |
 |------|----------|
-| `index.md` | One-line pitch, a short example, **Get started →**, Features bullets, Compared to. |
+| `index.md` | `<ProjectHeader />`, one-line pitch, a short example, **Get started →**, Features bullets, Compared to, `## Related` + `<ProjectRelated />` (when anything is related). |
 | `getting-started.md` | Install (npm/pnpm/yarn `code-group`), the smallest working setup, Next steps. |
 | `guides/*.md` | One topic each, for users who have the basics. |
 | `reference/*.md` | Every option, flag and export, in tables. |
