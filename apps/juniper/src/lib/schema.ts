@@ -92,6 +92,14 @@ export interface SchemaGenerics<T> {
     params: SchemaParams<this['type']>;
 }
 
+/**
+ * Any Juniper schema of type `T` that can be passed to other schemas, such as `properties` or `arraySchema(...)`.
+ * Unlike {@link Schema}, which only renders, it keeps what builders need. Use it to annotate a schema built elsewhere.
+ *
+ * @template T - type the schema describes
+ */
+export type NestableSchema<T> = AbstractSchema<SchemaGenerics<T>>;
+
 export type ConditionalResult<T, E = T> =
     | {
           then: T;
@@ -273,7 +281,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         jsonSchema: {
             input: (
                 standard?: Partial<StandardJSONSchemaV1.Options>,
-                options?: Omit<Parameters<this['toJSON']>[0], 'openApi30'>
+                options?: Omit<ToJsonParams, 'openApi30'>
             ): JsonSchema<T['type']> => {
                 const target = standard?.target;
                 if (target === undefined || target === 'draft-2020-12') {
@@ -289,7 +297,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             },
             output: (
                 standard?: Partial<StandardJSONSchemaV1.Options>,
-                options?: Omit<Parameters<this['toJSON']>[0], 'openApi30'>
+                options?: Omit<ToJsonParams, 'openApi30'>
             ): JsonSchema<T['type']> => this['~standard'].jsonSchema.input(standard, options),
         } as const,
     } as const;
@@ -470,7 +478,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @param examples - example literal array
      * @returns cloned schema
      */
-    public examples(this: this, examples: T['type'][]): this {
+    public examples(this: this, examples: readonly T['type'][]): this {
         return this.clone({
             [examplesSym]: [...this.#examples, ...examples],
         });
@@ -674,9 +682,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @param schemas - any of schema must be valid
      * @returns cloned schema
      */
-    protected anyOf(schemas: never[]): unknown {
+    protected anyOf(schemas: readonly never[]): unknown {
         return this.clone({
-            [anyOfSym]: [...this.#anyOf, schemas],
+            [anyOfSym]: [...this.#anyOf, [...schemas]],
         });
     }
 
@@ -751,11 +759,11 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      * @returns cloned schema
      */
     protected oneOf(
-        schemas: never[],
+        schemas: readonly never[],
         { discriminator = null }: { discriminator?: string | null } = {}
     ): unknown {
         return this.clone({
-            [oneOfSym]: [...this.#oneOf, { schemas, discriminator }],
+            [oneOfSym]: [...this.#oneOf, { schemas: [...schemas], discriminator }],
         });
     }
 

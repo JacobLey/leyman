@@ -10,6 +10,7 @@ import type {
     EmptyIndex,
     EmptyObject,
     FlattenObject,
+    IsAny,
     IsNever,
     JsonSchema,
     NotNullParameter,
@@ -51,6 +52,14 @@ type StripBooleanParameterSchemaObject<P extends BaseParameterSchemaObject> = {
 type StripString<T extends string> = AbstractStrip<T, string>;
 
 /**
+ * Keys that may be required. Any string for `any` properties, so `ObjectSchema<any, any, ...>` is valid.
+ *
+ * @template P - properties
+ */
+type RequirableKeys<P extends BaseParameterSchemaObject> =
+    IsAny<P> extends true ? string : StripString<Extract<keyof P, string>>;
+
+/**
  * Required keys `R` that are still properties of `NewP`.
  *
  * @template NewP - properties after picking/omitting
@@ -85,7 +94,7 @@ type ObjectType<
     // Properties
     P extends BaseSchemaObject,
     // Required
-    R extends StripString<Extract<keyof P, string>>,
+    R extends string,
     // Additional
     A extends boolean | AbstractSchema<SchemaGenerics<unknown>>,
     // Pattern Properties "regeXp"
@@ -110,7 +119,7 @@ type ObjectType<
                               {
                                   [K in keyof Stripped]: SchemaType<Stripped[K]>;
                               },
-                              R
+                              Extract<R, keyof Stripped>
                           >
                       >)
     >,
@@ -119,7 +128,7 @@ type ObjectType<
 
 interface ObjectParams<
     P extends BaseParameterSchemaObject,
-    R extends StripString<Extract<keyof P, string>>,
+    R extends RequirableKeys<P>,
     A extends boolean | AbstractSchema<SchemaGenerics<unknown>>,
     X extends Record<string, unknown>,
     M,
@@ -130,10 +139,10 @@ interface ObjectParams<
     maxProperties?: number;
     properties?: P;
     /**
-     * Keys that must be present. Write the array inline: a variable (`string[]`, or a `readonly`
-     * `as const` array) is a compile error.
+     * Keys that must be present. Write the array inline, or declare a variable `as const`: a `string[]` is a
+     * compile error.
      */
-    required?: R[];
+    required?: readonly R[];
     unevaluatedProperties?: boolean | typeof ignoreUnevaluatedProperties;
     [dependentRequiredSym]?: Record<string, string[]>;
     [dependentSchemasSym]?: Record<
@@ -145,7 +154,7 @@ interface ObjectParams<
 
 interface ObjectGenerics<
     P extends BaseParameterSchemaObject,
-    R extends StripString<Extract<keyof P, string>>,
+    R extends RequirableKeys<P>,
     A extends boolean | AbstractSchema<SchemaGenerics<unknown>>,
     X extends Record<string, unknown>,
     M,
@@ -198,7 +207,6 @@ type DiscriminatedBranchesError<
           >
     : null;
 
-// @ts-expect-error
 type AnyObjectSchema = ObjectSchema<any, any, any, any, unknown, boolean>;
 
 /**
@@ -216,7 +224,7 @@ export class ObjectSchema<
     // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- `{}`: no properties yet
     P extends BaseParameterSchemaObject = {},
     // Required
-    R extends StripString<Extract<keyof P, string>> = never,
+    R extends RequirableKeys<P> = never,
     // Additional
     A extends boolean | AbstractSchema<SchemaGenerics<unknown>> = boolean,
     // Pattern Properties "regeXp"
@@ -255,7 +263,7 @@ export class ObjectSchema<
 
     declare public anyOf: <S extends Schema<Record<string, unknown> | null>>(
         this: AnyObjectSchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => ObjectSchema<
         P,
         R,
@@ -339,7 +347,7 @@ export class ObjectSchema<
     ) => ObjectSchema<P, R, A, X, M & SchemaType<S[number]>, boolean>) &
         (<S extends Schema<Record<string, unknown> | null>>(
             this: AnyObjectSchema,
-            schemas: S[]
+            schemas: readonly S[]
         ) => ObjectSchema<
             P,
             R,
@@ -369,7 +377,7 @@ export class ObjectSchema<
                 }
             }
         }
-        this.#required = options.required ?? [];
+        this.#required = [...(options.required ?? [])];
         this.#unevaluatedProperties = options.unevaluatedProperties ?? ignoreUnevaluatedProperties;
         this.#dependentRequired = options[dependentRequiredSym] ?? {};
         this.#dependentSchemas = options[dependentSchemasSym] ?? {};
@@ -494,14 +502,14 @@ export class ObjectSchema<
      */
     public required<K extends StripString<Extract<keyof P, string>>>(
         this: this,
-        required: K | K[]
+        required: K | readonly K[]
     ): ObjectSchema<P, K | R, A, X, M, N>;
     /**
      * @inheritdoc
      */
     public required<K extends StripString<Extract<keyof P, string>>>(
         this: this,
-        required?: K | K[]
+        required?: K | readonly K[]
     ): ObjectSchema<P, K | R, A, X, M, N> {
         const added =
             required === undefined
@@ -577,7 +585,7 @@ export class ObjectSchema<
      * @param [keys] - properties to make optional, defaults to every property
      * @returns cloned object schema
      */
-    public partial<K extends StripString<Extract<keyof P, string>> = R>(
+    public partial<K extends RequirableKeys<P> = R>(
         this: this,
         keys?: readonly K[]
     ): ObjectSchema<P, RemainingRequired<P, Exclude<R, K>>, A, X, M, N> {
@@ -783,7 +791,7 @@ export class ObjectSchema<
     >(
         this: this,
         key: K,
-        dependents: D[]
+        dependents: readonly D[]
     ): ObjectSchema<
         P,
         R,

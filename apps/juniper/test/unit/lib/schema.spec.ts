@@ -1,5 +1,5 @@
 import type { StandardJSONSchemaV1 } from '@standard-schema/spec';
-import type { JsonSchema, OpenApi30JsonSchema, Schema, SchemaType } from 'juniper';
+import type { JsonSchema, NestableSchema, OpenApi30JsonSchema, Schema, SchemaType } from 'juniper';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import {
@@ -57,6 +57,30 @@ suite('schema', () => {
             if (isSchema<number>(value)) {
                 expectTypeOf(value).toEqualTypeOf<Schema<number>>();
             }
+        });
+    });
+
+    suite('NestableSchema', () => {
+        test('Annotated schemas nest in other schemas', () => {
+            interface Item {
+                id: number;
+                name?: string;
+            }
+            const item: NestableSchema<Item> = objectSchema({
+                properties: { id: numberSchema(), name: stringSchema() },
+                required: ['id'],
+            });
+            const list = arraySchema(item);
+            const wrapper = objectSchema({ properties: { item }, required: ['item'] });
+
+            expect(list.toJSON()).to.deep.equal({ type: 'array', items: item.toJSON() });
+            expect(wrapper.toJSON()).to.deep.equal({
+                type: 'object',
+                properties: { item: item.toJSON() },
+                required: ['item'],
+            });
+            expectTypeOf<SchemaType<typeof list>>().toEqualTypeOf<Item[]>();
+            expectTypeOf<SchemaType<typeof wrapper>>().toEqualTypeOf<{ item: Item }>();
         });
     });
 

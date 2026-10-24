@@ -104,7 +104,7 @@ export class StringSchema<
 
     declare public anyOf: <S extends StringSchema<string, boolean>>(
         this: AnyStringSchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => StringSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     declare public if: <
@@ -143,7 +143,7 @@ export class StringSchema<
 
     declare public oneOf: <S extends StringSchema<string, boolean>>(
         this: AnyStringSchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => StringSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     /**

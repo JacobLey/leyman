@@ -159,8 +159,8 @@ The above code fails TypeScript validation. It does not necessarily fail at runt
 TypeScript's errors for these don't say what to change:
 
 - **Enum values need `as const`.** `enumSchema({ enum: ['a', 'b'] })` is typed `string`, not `'a' | 'b'`. Write `enumSchema({ enum: ['a', 'b'] as const })`.
-- **`required` must be an inline array literal.** Passing a variable fails: `const keys = ['id']; objectSchema({ properties, required: keys })` is `Type 'string[]' is not assignable to type '"id"[]'`, and a `readonly` or `as const` array fails too (`TS4104`). Write `required: ['id']` in place.
-- **`Schema<T>` cannot be nested.** `Schema<T>` is for accepting a schema and rendering it (`toJSON`, `components`, `serializeSpec`, `anyOf`). It can't be used inside `properties`, `arraySchema(...)` or other builders: `const item: Schema<Item> = ...; arraySchema(item)` fails with `Type 'Schema<Item>' is missing the following properties from type 'AbstractSchema<...>'`. Keep the schema's own inferred type for anything you build on.
+- **`required` needs literal keys.** `const keys = ['id']; objectSchema({ properties, required: keys })` fails with `Type 'string[]' is not assignable to type '"id"[]'`. Write `required: ['id']` in place, or declare the variable `as const`.
+- **`Schema<T>` cannot be nested.** `Schema<T>` is for accepting a schema and rendering it (`toJSON`, `components`, `serializeSpec`, `anyOf`). Inside `properties`, `arraySchema(...)` or other builders, `const item: Schema<Item> = ...; arraySchema(item)` fails with `Type 'Schema<Item>' is missing the following properties from type 'AbstractSchema<...>'`. Annotate a schema you'll build on as `NestableSchema<Item>`, or keep its inferred type.
 - **`SchemaType` is the validated shape, not your class.** Dates are strings (`stringSchema({ format: 'date-time' })` is `string`), and with `exactOptionalPropertyTypes` an optional property cannot be `undefined`.
 - **`EnumSchema` has no `nullable()`** (it is typed `never`, so calling it reports `This expression is not callable`). Put `null` in the enum, or use `mergeSchema().anyOf([enumSchema(...), nullSchema()])`.
 

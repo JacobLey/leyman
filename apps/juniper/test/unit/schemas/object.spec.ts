@@ -50,6 +50,24 @@ suite('ObjectSchema', () => {
                 }>();
             });
 
+            test('readonly required', () => {
+                const required = ['foo'] as const;
+                const schema = objectSchema({
+                    properties: { foo: stringSchema(), bar: numberSchema() },
+                    required,
+                }).required(['bar'] as const);
+
+                expect(schema.toJSON()).to.deep.equal({
+                    type: 'object',
+                    properties: { foo: { type: 'string' }, bar: { type: 'number' } },
+                    required: ['foo', 'bar'],
+                });
+                expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<{
+                    foo: string;
+                    bar: number;
+                }>();
+            });
+
             test('Only properties', () => {
                 const schema = objectSchema({
                     properties: {

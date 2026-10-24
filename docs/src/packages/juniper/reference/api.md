@@ -25,7 +25,8 @@ Some keywords can only be set with a method, because TypeScript can't infer them
 | Type | Example | Description |
 |------|---------|-------------|
 | `SchemaType` | `SchemaType<typeof schema>` | The TypeScript type of a Juniper schema, or of a JSON Schema object. |
-| `Schema` | `Schema<number>` | A Juniper schema describing a TypeScript type. Accept it as a parameter to take any schema of that type. It can't be passed to `properties` or `arraySchema`, which need the schema's own class type. |
+| `Schema` | `Schema<number>` | A Juniper schema describing a TypeScript type. Accept it as a parameter to take any schema of that type. It can't be passed to `properties` or `arraySchema`: use `NestableSchema` for that. |
+| `NestableSchema` | `NestableSchema<number>` | A Juniper schema of a TypeScript type that can also be passed to `properties`, `arraySchema` and other builders. |
 | `JsonSchema` | `JsonSchema<number>` | A rendered JSON Schema object describing a TypeScript type. |
 | `OpenApi30JsonSchema` | `OpenApi30JsonSchema<number>` | What `toJSON({ openApi30: true })` returns. See [OpenAPI](/packages/juniper/guides/openapi#typed-output). |
 | `EmptyObject` | `EmptyObject` | An object with no properties. Mostly internal. |

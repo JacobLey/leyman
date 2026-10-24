@@ -29,7 +29,7 @@ export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
 
     declare public anyOf: <S extends Schema<unknown>>(
         this: AnyMergeSchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => MergeSchema<Intersect<T, SchemaType<S>>>;
 
     declare public if: <
@@ -59,7 +59,7 @@ export class MergeSchema<T> extends AbstractSchema<SchemaGenerics<T>> {
 
     declare public oneOf: <S extends Schema<unknown>>(
         this: AnyMergeSchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => MergeSchema<Intersect<T, SchemaType<S>>>;
 
     /**

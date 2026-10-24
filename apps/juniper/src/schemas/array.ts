@@ -179,7 +179,7 @@ export class ArraySchema<
 
     declare public anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyArraySchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => ArraySchema<
         T,
         P,
@@ -240,7 +240,7 @@ export class ArraySchema<
 
     declare public oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyArraySchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => ArraySchema<
         T,
         P,
@@ -617,7 +617,7 @@ export declare class IArraySchemaOverride<
 
     declare public anyOf: (
         this: any,
-        schemas: ArraySchema<any, any[], any, unknown, boolean, any>[]
+        schemas: readonly ArraySchema<any, any[], any, unknown, boolean, any>[]
     ) => any;
 
     declare public if: <
@@ -641,7 +641,7 @@ export declare class IArraySchemaOverride<
 
     declare public oneOf: (
         this: any,
-        schemas: ArraySchema<any, any[], any, unknown, boolean, any>[]
+        schemas: readonly ArraySchema<any, any[], any, unknown, boolean, any>[]
     ) => any;
 
     declare public contains: any;

@@ -71,7 +71,7 @@ export class TupleSchema<
 
     declare public anyOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyTupleSchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => TupleSchema<
         T,
         P,
@@ -132,7 +132,7 @@ export class TupleSchema<
 
     declare public oneOf: <S extends ArraySchema<any, any[], any, unknown, boolean, any>>(
         this: AnyTupleSchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => TupleSchema<
         T,
         P,

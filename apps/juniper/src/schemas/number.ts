@@ -103,7 +103,7 @@ export class NumberSchema<
 
     declare public anyOf: <S extends NumberSchema<number, boolean>>(
         this: AnyNumberSchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => NumberSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     declare public if: <
@@ -142,7 +142,7 @@ export class NumberSchema<
 
     declare public oneOf: <S extends NumberSchema<number, boolean>>(
         this: AnyNumberSchema,
-        schemas: S[]
+        schemas: readonly S[]
     ) => NumberSchema<NonNullable<SchemaType<S>> & T, null extends SchemaType<S> ? N : boolean>;
 
     /**

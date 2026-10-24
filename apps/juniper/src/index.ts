@@ -10,7 +10,7 @@ import { ObjectSchema } from './schemas/object.js';
 import { StringSchema } from './schemas/string.js';
 import { TupleSchema } from './schemas/tuple.js';
 
-export { components, type ComponentsParams, isSchema } from './lib/schema.js';
+export { components, type ComponentsParams, isSchema, type NestableSchema } from './lib/schema.js';
 export { defineRecursive, RecursiveSchema } from './schemas/recursive.js';
 export { type SerializedSpec, type SerializedSpecValue, serializeSpec } from './lib/spec.js';
 
