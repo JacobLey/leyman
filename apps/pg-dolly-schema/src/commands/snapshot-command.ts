@@ -1,6 +1,9 @@
 import type { Argv } from 'yargs';
 import type { Command, PgDollySchemaCommandInput } from './lib/types.js';
 import { bind } from 'haywire';
+import { PgDollyError } from 'pg-dolly';
+import { PopulateFilesError } from 'populate-files';
+import { PgDollySchemaError } from '../lib/errors.js';
 import { snapshotSchema } from '../lib/snapshot-schema.js';
 import { commandId } from './lib/types.js';
 
@@ -54,14 +57,29 @@ export const snapshotCommand: Command<SnapshotCommandExtendedInput> = {
             })
             .strict(),
     handler: async options => {
-        await snapshotSchema({
-            migrate: options.migrate,
-            file: options.file,
-            cwd: options.cwd,
-            check: options.check,
-            data: options.data,
-            prefix: options.prefix,
-        });
+        try {
+            await snapshotSchema({
+                migrate: options.migrate,
+                file: options.file,
+                cwd: options.cwd,
+                check: options.check,
+                data: options.data,
+                prefix: options.prefix,
+            });
+        } catch (error) {
+            // Expected failures (the migration, the setup, an outdated file) say what to fix, which a stack trace
+            // would bury. Anything else keeps its stack
+            if (
+                error instanceof PgDollySchemaError ||
+                error instanceof PgDollyError ||
+                error instanceof PopulateFilesError
+            ) {
+                console.error(error.message);
+                process.exitCode = 1;
+                return;
+            }
+            throw error;
+        }
     },
 };
 

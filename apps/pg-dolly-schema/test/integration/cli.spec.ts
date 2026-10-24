@@ -66,11 +66,48 @@ suite('cli', () => {
         withProject.test(
             'Fails --check when schema.sql is missing',
             async ({ project, prefix }) => {
-                await expect(
+                const thrown: unknown = await expect(
                     execAsync(`${bin} --check --prefix ${prefix} --migrate '${migrate}'`, {
                         cwd: project.path,
                     })
                 ).to.be.rejectedWith(Error);
+
+                expect(thrown).to.have.property('code', 1);
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.includes('not up to date. Reason: file-not-exist')
+                    .and.not.include('    at ');
+            }
+        );
+
+        withProject.test(
+            'Prints the stack trace of an unexpected error',
+            async ({ project, prefix }) => {
+                const thrown: unknown = await expect(
+                    execAsync(
+                        `${bin} --no-check --prefix ${prefix} --migrate '${migrate}' --data public.missing`,
+                        { cwd: project.path }
+                    )
+                ).to.be.rejectedWith(Error);
+
+                expect(thrown).to.have.property('stderr').that.includes('    at ');
+            }
+        );
+
+        withProject.test(
+            'Prints the error of a failed migration, without a stack trace',
+            async ({ project, prefix }) => {
+                const thrown: unknown = await expect(
+                    execAsync(`${bin} --no-check --prefix ${prefix} --migrate 'exit 3'`, {
+                        cwd: project.path,
+                    })
+                ).to.be.rejectedWith(Error);
+
+                expect(thrown).to.have.property('code', 1);
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.includes('exit code 3')
+                    .and.not.include('    at ');
             }
         );
 

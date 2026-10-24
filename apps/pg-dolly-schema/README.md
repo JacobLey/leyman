@@ -112,6 +112,8 @@ pg-dolly-schema --migrate <command> [--file schema.sql] [--cwd .] [--check] [--d
 
 Every option can also be set as an environment variable: `PG_DOLLY_SCHEMA_` and the option in capitals (`PG_DOLLY_SCHEMA_MIGRATE`). The server is always `DATABASE_URL`: the CLI has no `--url`.
 
+On a failed migration, a missing `DATABASE_URL` or an outdated file (with `--check`), the CLI prints the error's message and exits with code 1. Other errors print their stack trace.
+
 ## API
 
 ### `snapshotSchema(options)`
