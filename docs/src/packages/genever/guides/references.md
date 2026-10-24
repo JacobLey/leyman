@@ -7,6 +7,7 @@ description: Generate one file of types from a schema that references other file
 A `$ref` may point at another file, or a URL, relative to the schema it is in: `{ "$ref": "./address.json" }`, `{ "$ref": "https://example.com/schemas/user.json#/$defs/Name" }`. The CLI and `geneverFile` load each one, and everything it references in turn, and the output is still one file:
 
 - In an OpenAPI document, any schema may: a component, or a schema in an operation's parameters, request body or responses.
+- An OpenAPI document may be split across files. A reference object (a path item, parameter, request body, response or header that is only a `$ref`) may point at another file, such as `./paths/pets.yaml` or `./responses.yaml#/NotFound`, and a schema may point into another OpenAPI document, such as `./common.yaml#/components/schemas/Error`. Of another document, only the schemas used become types, named as in the input (`Error`). Its schemas keep its own OpenAPI version, and a file of OpenAPI objects without one has the version of the document that refers to it.
 - Each referenced file becomes a type named after its `title`, or else its file name (`address.json` is `Address`). Two of the same name are numbered (`Address2`).
 - A file referenced twice is one type.
 - A file that only holds `$defs` (shared definitions) is not a type itself, but its definitions are, when referenced.
@@ -49,6 +50,31 @@ export type Address = {
 ```
 
 Run genever again whenever a referenced file changes: `--ci` checks the generated file against every file it references, as of the run.
+
+## A split OpenAPI document
+
+```yaml
+# api.yaml
+openapi: 3.1.0
+info: { title: Pets, version: 1.0.0 }
+paths:
+  /pets: { $ref: './paths/pets.yaml' }
+```
+
+```yaml
+# paths/pets.yaml
+get:
+  operationId: listPets
+  responses:
+    '200':
+      description: The pets
+      content:
+        application/json:
+          schema: { type: array, items: { $ref: '../common.yaml#/components/schemas/Pet' } }
+    '404': { $ref: '../common.yaml#/components/responses/NotFound' }
+```
+
+`common.yaml` is an OpenAPI document of its own, with `components.schemas.Pet` and `components.responses.NotFound`. `npx genever api.yaml` writes the same types as for one file with all three in it: `Paths`, `Operations` and `Pet`, and any schema `NotFound` uses. Components of `common.yaml` that aren't used are left out, and so are its `paths`.
 
 ## Checking without fetching
 

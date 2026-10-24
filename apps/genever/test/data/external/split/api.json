@@ -1,0 +1,55 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pets",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/pets": {
+      "$ref": "./paths/pets.json"
+    },
+    "/pets/{id}": {
+      "parameters": [
+        {
+          "$ref": "./parameters.json#/Id"
+        }
+      ],
+      "get": {
+        "operationId": "getPet",
+        "responses": {
+          "200": {
+            "description": "The pet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "./common.json#/components/responses/NotFound"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pet": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "problem": {
+            "$ref": "./common.json#/components/schemas/Problem"
+          }
+        }
+      }
+    }
+  }
+}

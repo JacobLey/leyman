@@ -160,19 +160,31 @@ class OperationBuilder {
     }
 
     /**
-     * An OpenAPI object, or the object its `$ref` refers to.
+     * An OpenAPI object, or the object its `$ref` refers to, through any number of reference objects
+     * (e.g. `paths.yaml#/pets`, which refers to `pets.yaml`).
      *
      * @param value - object, or reference object
-     * @param pointer - JSON Pointer to it
+     * @param pointer - JSON Pointer to it, which may be in another file
      * @returns the object, and where it is
+     * @throws {GeneverInvalidSchemaError} if it is not an object, or its references only refer to each other
      */
     #deref(value: unknown, pointer: string): Located {
-        const object = readObject(value, pointer);
-        if (object.$ref === undefined) {
-            return { value: object, pointer };
+        let located: Located = { value: readObject(value, pointer), pointer };
+        const seen = new Set<string>();
+        while (located.value.$ref !== undefined) {
+            if (seen.has(located.pointer)) {
+                throw new GeneverInvalidSchemaError('$ref only refers to itself', {
+                    pointer: childPointer(pointer, '$ref'),
+                });
+            }
+            seen.add(located.pointer);
+            const target = this.#context.resolve(
+                located.value.$ref,
+                childPointer(located.pointer, '$ref')
+            );
+            located = { value: readObject(target.schema, target.pointer), pointer: target.pointer };
         }
-        const target = this.#context.resolve(object.$ref, childPointer(pointer, '$ref'));
-        return { value: readObject(target.schema, target.pointer), pointer: target.pointer };
+        return located;
     }
 
     /**

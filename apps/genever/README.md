@@ -98,6 +98,7 @@ The root schema becomes a type named `Schema` (or `--name`). Every definition in
 A `$ref` may point at another file, or a URL, relative to the schema it is in: `{ "$ref": "./address.json" }`, `{ "$ref": "https://example.com/schemas/user.json#/$defs/Name" }`. The CLI and `geneverFile` load each one, and everything it references in turn, and the output is still one file:
 
 - In an OpenAPI document, any schema may: a component, or a schema in an operation's parameters, request body or responses.
+- An OpenAPI document may be split across files. A reference object (a path item, parameter, request body, response or header that is only a `$ref`) may point at another file, such as `./paths/pets.yaml` or `./responses.yaml#/NotFound`, and a schema may point into another OpenAPI document, such as `./common.yaml#/components/schemas/Error`. Of another document, only the schemas used become types, named as in the input (`Error`). Its schemas keep its own OpenAPI version, and a file of OpenAPI objects without one has the version of the document that refers to it.
 - Each referenced file becomes a type named after its `title`, or else its file name (`address.json` is `Address`). Two of the same name are numbered (`Address2`).
 - A file referenced twice is one type.
 - A file that only holds `$defs` (shared definitions) is not a type itself, but its definitions are, when referenced.
@@ -306,7 +307,7 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 
 ### Errors
 
-Every error extends `GeneverError`, with a `pointer` property: the JSON Pointer to the schema or keyword at fault, e.g. `#/properties/a/type`. The pointer is also at the end of the message.
+Every error extends `GeneverError`, with a `pointer` property: the JSON Pointer to the schema or keyword at fault, e.g. `#/properties/a/type`. In another OpenAPI document, or file of OpenAPI objects, it starts with that file's URI, e.g. `file:///api/common.yaml#/components/schemas/Error/type`. The pointer is also at the end of the message.
 
 | Error | Thrown when |
 |-------|-------------|

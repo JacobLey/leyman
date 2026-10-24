@@ -1,0 +1,17 @@
+{
+  "Id": {
+    "name": "id",
+    "in": "path",
+    "required": true,
+    "schema": {
+      "type": "string"
+    }
+  },
+  "Limit": {
+    "name": "limit",
+    "in": "query",
+    "schema": {
+      "$ref": "./common.json#/components/schemas/Limit"
+    }
+  }
+}

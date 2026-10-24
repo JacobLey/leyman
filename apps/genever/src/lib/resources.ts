@@ -1,3 +1,4 @@
+import type { Dialect } from './keywords.js';
 import { GeneverInvalidSchemaError, GeneverUnsupportedError } from './errors.js';
 import { methods } from './openapi.js';
 import { childPointer } from './pointer.js';
@@ -83,10 +84,27 @@ const anchorName = /^[A-Z_a-z][\w\-.]*$/v;
  */
 export interface Target {
     /**
-     * Canonical JSON Pointer to the schema, from the root of the document.
+     * Canonical JSON Pointer to the schema, from the root of the document, e.g. `#/$defs/A`.
+     * In an {@link OpenApiFile}, it is preceded by the file's URI, e.g. `file:///api/common.yaml#/components/schemas/A`.
      */
     readonly pointer: string;
     readonly schema: unknown;
+}
+
+/**
+ * An OpenAPI document, or a file of OpenAPI objects (e.g. responses), that the input refers to.
+ * It is not a schema, so it is kept apart from the input, rather than embedded in it like a schema file.
+ */
+export interface OpenApiFile {
+    /**
+     * Flavour of its schemas: a document's own, or else that of the document that refers to it.
+     */
+    readonly dialect: Dialect;
+    readonly document: unknown;
+    /**
+     * Its schemas that are used, with JSON Pointers from its root.
+     */
+    readonly schemas: readonly Target[];
 }
 
 /**
@@ -110,8 +128,8 @@ export interface DocumentIndex {
      */
     readonly anchors: ReadonlyMap<string, Target>;
     /**
-     * URIs (without a fragment) of every `$ref`, resolved against the base URI of its schema,
-     * with the JSON Pointer to the first `$ref` to each.
+     * Every `$ref`, resolved against the base URI of its schema (e.g. `https://a.com/b.json#/$defs/C`),
+     * with the JSON Pointer to the first `$ref` to it.
      */
     readonly references: ReadonlyMap<string, string>;
     /**
@@ -127,7 +145,7 @@ export interface DocumentIndex {
  * @param baseUri - absolute URI to resolve it against
  * @returns absolute URI without a fragment, and the fragment (without `#`), or `null` if it isn't a URI reference
  */
-const resolveUri = (
+export const resolveUri = (
     reference: string,
     baseUri: string
 ): { fragment: string; uri: string } | null => {
@@ -179,6 +197,14 @@ const decodeFragment = (fragment: string): string | null => {
         return null;
     }
 };
+
+/**
+ * Whether a decoded URI fragment is a JSON Pointer, rather than an anchor.
+ *
+ * @param fragment - decoded fragment, without `#`
+ * @returns true if it is a JSON Pointer, including the empty one
+ */
+const isPointer = (fragment: string): boolean => fragment === '' || fragment.startsWith('/');
 
 /**
  * Follow a JSON Pointer from a schema.
@@ -252,8 +278,9 @@ class Indexer {
         const baseUri = this.#identify(schema, pointer, parentBaseUri, isDraft04);
         this.#baseUris.set(pointer, baseUri);
         const reference = typeof schema.$ref === 'string' ? resolveUri(schema.$ref, baseUri) : null;
-        if (reference && !this.#references.has(reference.uri)) {
-            this.#references.set(reference.uri, childPointer(pointer, '$ref'));
+        const referenced = reference ? `${reference.uri}#${reference.fragment}` : null;
+        if (referenced !== null && !this.#references.has(referenced)) {
+            this.#references.set(referenced, childPointer(pointer, '$ref'));
         }
 
         for (const keyword of schemaKeywords) {
@@ -278,6 +305,22 @@ class Indexer {
             for (const [key, member] of Object.entries(value)) {
                 this.visit(member, childPointer(keywordPointer, key), baseUri, isDraft04);
             }
+        }
+    }
+
+    /**
+     * Index the schemas of an OpenAPI file, which is a resource at its URI, as a schema file is.
+     *
+     * @param uri - URI of the file, which its schemas' references resolve against
+     * @param file - document, and the schemas in it to index
+     * @throws {GeneverInvalidSchemaError} if an identifier is invalid or declared twice
+     */
+    public visitFile(uri: string, file: OpenApiFile): void {
+        const pointer = `${uri}#`;
+        addTarget(this.#resources, uri, { pointer, schema: file.document }, pointer);
+        this.#baseUris.set(pointer, uri);
+        for (const { pointer: schemaPointer, schema } of file.schemas) {
+            this.visit(schema, `${uri}${schemaPointer}`, uri, false);
         }
     }
 
@@ -342,16 +385,25 @@ class Indexer {
  *
  * @param root - the whole document, a resource itself even without an `$id`
  * @param schemas - schemas to search, with their JSON Pointers: the root schema, or an OpenAPI document's components
- * @param baseUri - URI the document was read from, which relative `$id`s and `$ref`s resolve against
- * @param [isDraft04] - whether the document is draft-04, without a `$schema` of its own
+ * @param options - where the document is from, and what else to index
+ * @param options.baseUri - URI the document was read from, which relative `$id`s and `$ref`s resolve against
+ * @param [options.isDraft04] - whether the document is draft-04, without a `$schema` of its own
+ * @param [options.files] - OpenAPI files the document refers to, keyed by URI, whose schemas are indexed too
  * @returns resources, anchors and base URIs of the document's schemas
  * @throws {GeneverInvalidSchemaError} if an `$id` or anchor is invalid, or declared twice
  */
 export const indexDocument = (
     root: unknown,
-    schemas: readonly { pointer: string; schema: unknown }[],
-    baseUri: string,
-    isDraft04 = false
+    schemas: readonly Target[],
+    {
+        baseUri,
+        files = new Map(),
+        isDraft04 = false,
+    }: {
+        baseUri: string;
+        files?: ReadonlyMap<string, OpenApiFile>;
+        isDraft04?: boolean;
+    }
 ): DocumentIndex => {
     const rootId = isSchemaObject(root)
         ? root[idKeywordOf(root, declaresDraft04(root) ?? isDraft04)]
@@ -361,6 +413,9 @@ export const indexDocument = (
     const indexer = new Indexer(documentUri, root);
     for (const { pointer, schema } of schemas) {
         indexer.visit(schema, pointer, documentUri, isDraft04);
+    }
+    for (const [uri, file] of files) {
+        indexer.visitFile(uri, file);
     }
     return indexer.index;
 };
@@ -424,10 +479,9 @@ export const resolveReference = (
     if (fragment === null) {
         throw new GeneverInvalidSchemaError(`Invalid $ref "${ref}"`, { pointer: refPointer });
     }
-    const target =
-        fragment === '' || fragment.startsWith('/')
-            ? followPointer(resource, fragment)
-            : index.anchors.get(`${resolved.uri}#${fragment}`);
+    const target = isPointer(fragment)
+        ? followPointer(resource, fragment)
+        : index.anchors.get(`${resolved.uri}#${fragment}`);
     if (!target) {
         throw new GeneverInvalidSchemaError(
             `$ref "${ref}" does not resolve to a schema in the document`,
@@ -440,16 +494,16 @@ export const resolveReference = (
 };
 
 /**
- * Resources a document refers to, but does not contain, such as other files.
+ * What a URI fragment in a file points to.
  *
- * @param index - index of the document
- * @returns URIs of the resources, without fragments, each with a JSON Pointer to a `$ref` to it
+ * @param root - root of the file, and its JSON Pointer
+ * @param fragment - percent-encoded fragment, without `#`
+ * @returns the value, or `null` if the fragment is not a JSON Pointer, or there is nothing there
  */
-export const externalResources = (index: DocumentIndex): [uri: string, pointer: string][] =>
-    index.references
-        .entries()
-        .filter(([uri]) => !index.resources.has(uri))
-        .toArray();
+export const locate = (root: Target, fragment: string): Target | null => {
+    const decoded = decodeFragment(fragment);
+    return decoded !== null && isPointer(decoded) ? followPointer(root, decoded) : null;
+};
 
 /**
  * Each member of an OpenAPI map or array, with its JSON Pointer.
@@ -467,77 +521,160 @@ const members = (value: unknown, pointer: string): Target[] =>
         : [];
 
 /**
- * An OpenAPI object, unless it is a reference object, which has no schemas of its own.
- *
- * @param value - OpenAPI object
- * @returns the object, or `null` if it is a reference object, or not an object
+ * What a reference object refers to: a path item, or another OpenAPI object with schemas (a parameter,
+ * header, request body or response).
  */
-const ownObject = (value: unknown): Readonly<Record<string, unknown>> | null =>
-    isSchemaObject(value) && value.$ref === undefined ? value : null;
+export type ObjectKind = 'object' | 'pathItem';
 
 /**
- * The `schema` of a parameter, header or media type object, if it has one.
- *
- * @param target - the object, and its JSON Pointer
- * @returns its schema, with its JSON Pointer, or none
+ * A reference object: an OpenAPI object that is only a `$ref` to one elsewhere.
  */
-const schemaOf = ({ pointer, schema: value }: Target): Target[] =>
-    isSchemaObject(value) && value.schema !== undefined
-        ? [{ pointer: childPointer(pointer, 'schema'), schema: value.schema }]
-        : [];
+export interface ObjectReference {
+    readonly kind: ObjectKind;
+    /**
+     * JSON Pointer to the reference object.
+     */
+    readonly pointer: string;
+    readonly ref: unknown;
+}
 
 /**
- * Schemas of a parameter, header, request body or response: its `schema`, the `schema` of each
- * `content` media type, and those of its `headers`.
+ * The schemas of OpenAPI objects, and the reference objects among them, which have none of their own.
+ */
+export interface OpenApiParts {
+    readonly references: readonly ObjectReference[];
+    readonly schemas: readonly Target[];
+}
+
+/**
+ * Collect the schemas of an OpenAPI object, or the object itself if it is a schema.
+ *
+ * A parameter, header, request body or response has its `schema`, the `schema` of each `content` media
+ * type, and those of its `headers`. A path item has those of its parameters, and of each operation's
+ * parameters, request body and responses.
  *
  * @param target - the object, and its JSON Pointer
- * @returns schemas, with their JSON Pointers
+ * @param kind - what the object is
+ * @param parts - schemas and reference objects found so far, which are added to
  */
-const objectSchemas = ({ pointer, schema: value }: Target): Target[] => {
-    const object = ownObject(value);
-    if (!object) {
-        return [];
+const collectParts = (
+    target: Target,
+    kind: 'schema' | ObjectKind,
+    parts: { references: ObjectReference[]; schemas: Target[] }
+): void => {
+    const { pointer, schema: value } = target;
+    if (kind === 'schema') {
+        if (value !== undefined) {
+            parts.schemas.push(target);
+        }
+        return;
     }
-    const media = members(object.content, childPointer(pointer, 'content'));
-    return [
-        ...[{ pointer, schema: object }, ...media].flatMap(entry => schemaOf(entry)),
-        ...members(object.headers, childPointer(pointer, 'headers')).flatMap(entry =>
-            objectSchemas(entry)
-        ),
-    ];
+    if (!isSchemaObject(value)) {
+        return;
+    }
+    if (value.$ref !== undefined) {
+        parts.references.push({ kind, pointer, ref: value.$ref });
+        return;
+    }
+    const child = (key: string): Target => ({
+        pointer: childPointer(pointer, key),
+        schema: value[key],
+    });
+    if (kind === 'pathItem') {
+        const parameters = members(value.parameters, childPointer(pointer, 'parameters'));
+        for (const parameter of parameters) {
+            collectParts(parameter, 'object', parts);
+        }
+        for (const method of methods) {
+            const operation = child(method);
+            if (!isSchemaObject(operation.schema)) {
+                continue;
+            }
+            const { pointer: operationPointer, schema: operationObject } = operation;
+            const objects = [
+                ...members(
+                    operationObject.parameters,
+                    childPointer(operationPointer, 'parameters')
+                ),
+                {
+                    pointer: childPointer(operationPointer, 'requestBody'),
+                    schema: operationObject.requestBody,
+                },
+                ...members(operationObject.responses, childPointer(operationPointer, 'responses')),
+            ];
+            for (const object of objects) {
+                collectParts(object, 'object', parts);
+            }
+        }
+        return;
+    }
+    collectParts(child('schema'), 'schema', parts);
+    const contents = members(value.content, childPointer(pointer, 'content'));
+    for (const media of contents) {
+        if (isSchemaObject(media.schema)) {
+            collectParts(
+                { pointer: childPointer(media.pointer, 'schema'), schema: media.schema.schema },
+                'schema',
+                parts
+            );
+        }
+    }
+    const headers = members(value.headers, childPointer(pointer, 'headers'));
+    for (const header of headers) {
+        collectParts(header, 'object', parts);
+    }
 };
 
 /**
- * Schemas of a path item: those of its parameters, and of each operation's parameters, request body
- * and responses.
+ * The schemas of an OpenAPI object, and the reference objects in it.
  *
- * @param target - the path item, and its JSON Pointer
- * @returns schemas, with their JSON Pointers
+ * @param target - the object, and its JSON Pointer
+ * @param kind - what the object is: a schema is its own only schema
+ * @returns schemas and reference objects, with their JSON Pointers
  */
-const pathItemSchemas = ({ pointer, schema: value }: Target): Target[] => {
-    const item = ownObject(value);
-    if (!item) {
-        return [];
+export const objectParts = (target: Target, kind: 'schema' | ObjectKind): OpenApiParts => {
+    const parts: { references: ObjectReference[]; schemas: Target[] } = {
+        references: [],
+        schemas: [],
+    };
+    collectParts(target, kind, parts);
+    return parts;
+};
+
+/**
+ * The schemas of an OpenAPI document, in its components and its operations, and the reference objects in it.
+ *
+ * @param document - OpenAPI document
+ * @param shouldIncludePaths - whether to include its `paths`, which only the input's operations need
+ * @returns schemas and reference objects, with their JSON Pointers: component schemas first
+ */
+export const documentParts = (document: unknown, shouldIncludePaths: boolean): OpenApiParts => {
+    // An OpenAPI document is always an object
+    const { components, paths } = document as Readonly<Record<string, unknown>>;
+    const component = (name: string): Target[] =>
+        members(
+            isSchemaObject(components) ? components[name] : undefined,
+            childPointer(childPointer('#', 'components'), name)
+        );
+    const parts: { references: ObjectReference[]; schemas: Target[] } = {
+        references: [],
+        schemas: [],
+    };
+    for (const schema of component('schemas')) {
+        collectParts(schema, 'schema', parts);
     }
-    const operations = methods.flatMap(method => {
-        const operation = item[method];
-        if (!isSchemaObject(operation)) {
-            return [];
+    for (const name of ['parameters', 'headers', 'requestBodies', 'responses']) {
+        for (const object of component(name)) {
+            collectParts(object, 'object', parts);
         }
-        const operationPointer = childPointer(pointer, method);
-        return [
-            ...members(operation.parameters, childPointer(operationPointer, 'parameters')),
-            {
-                pointer: childPointer(operationPointer, 'requestBody'),
-                schema: operation.requestBody,
-            },
-            ...members(operation.responses, childPointer(operationPointer, 'responses')),
-        ];
-    });
-    return [
-        ...members(item.parameters, childPointer(pointer, 'parameters')),
-        ...operations,
-    ].flatMap(entry => objectSchemas(entry));
+    }
+    for (const item of [
+        ...component('pathItems'),
+        ...(shouldIncludePaths ? members(paths, childPointer('#', 'paths')) : []),
+    ]) {
+        collectParts(item, 'pathItem', parts);
+    }
+    return parts;
 };
 
 /**
@@ -548,24 +685,5 @@ const pathItemSchemas = ({ pointer, schema: value }: Target): Target[] => {
  * @param isDocument - whether the input is an OpenAPI document
  * @returns schemas, with their JSON Pointers: an OpenAPI document's component schemas first
  */
-export const inputSchemas = (input: unknown, isDocument: boolean): Target[] => {
-    if (!isDocument) {
-        return [{ pointer: '#', schema: input }];
-    }
-    // An OpenAPI document is always an object
-    const { components, paths } = input as Readonly<Record<string, unknown>>;
-    const component = (name: string): Target[] =>
-        members(
-            isSchemaObject(components) ? components[name] : undefined,
-            childPointer(childPointer('#', 'components'), name)
-        );
-    return [
-        ...component('schemas'),
-        ...['parameters', 'headers', 'requestBodies', 'responses'].flatMap(name =>
-            component(name).flatMap(entry => objectSchemas(entry))
-        ),
-        ...[...component('pathItems'), ...members(paths, childPointer('#', 'paths'))].flatMap(
-            entry => pathItemSchemas(entry)
-        ),
-    ];
-};
+export const inputSchemas = (input: unknown, isDocument: boolean): readonly Target[] =>
+    isDocument ? documentParts(input, true).schemas : [{ pointer: '#', schema: input }];

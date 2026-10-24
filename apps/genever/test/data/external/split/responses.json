@@ -1,0 +1,19 @@
+{
+  "ServerError": {
+    "$ref": "./common.json#/components/responses/NotFound"
+  },
+  "TooMany": {
+    "description": "Too many requests",
+    "headers": {
+      "Retry-After": {
+        "$ref": "#/RetryAfter"
+      }
+    }
+  },
+  "RetryAfter": {
+    "required": true,
+    "schema": {
+      "type": "integer"
+    }
+  }
+}

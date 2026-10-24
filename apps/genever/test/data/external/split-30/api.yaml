@@ -1,0 +1,19 @@
+openapi: 3.0.3
+info:
+  title: Owners
+  version: 1.0.0
+paths:
+  /owners:
+    get:
+      operationId: listOwners
+      responses:
+        '200':
+          description: The owners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: './common.yaml#/components/schemas/Owner'
+        '404':
+          $ref: './responses.yaml#/NotFound'

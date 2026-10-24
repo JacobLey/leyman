@@ -1,0 +1,56 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Common",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/unused": {
+      "$ref": "./missing.json"
+    }
+  },
+  "components": {
+    "schemas": {
+      "Problem": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Code"
+          },
+          "detail": {
+            "$ref": "./detail.json"
+          }
+        }
+      },
+      "Code": {
+        "enum": [
+          "not_found",
+          "server_error"
+        ]
+      },
+      "Limit": {
+        "type": "integer",
+        "minimum": 1,
+        "default": 20
+      },
+      "Unused": {
+        "type": "string"
+      }
+    },
+    "responses": {
+      "NotFound": {
+        "description": "Not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      }
+    }
+  }
+}

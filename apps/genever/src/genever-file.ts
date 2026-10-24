@@ -6,7 +6,7 @@ import { pathToFileURL } from 'node:url';
 import { formatText } from 'format-file';
 import { parseCwd } from 'parse-cwd';
 import { populateFile } from 'populate-files';
-import { genever } from './genever.js';
+import { generate } from './genever.js';
 import { loadReferences } from './lib/load.js';
 import { generatorIdentity, isUpToDate, recordInputs } from './lib/manifest-inputs.js';
 import { openApiDialect } from './lib/openapi.js';
@@ -120,13 +120,17 @@ export const geneverFile = async (
     const documentDialect = openApiDialect(schema);
     const bundled = await loadReferences(schema, {
         baseUri,
+        dialect: documentDialect ?? (options.openApi30 === true ? 'openapi-3.0' : 'draft-2020-12'),
         fetch: options.fetch ?? true,
         isDocument: documentDialect !== null,
         onRead: (uri, text) => {
             sources.set(uri, text);
         },
     });
-    const content = await formatText(genever(bundled, { ...options, baseUri }), { ext: '.ts' });
+    const content = await formatText(
+        generate(bundled.input, { ...options, baseUri }, bundled.files),
+        { ext: '.ts' }
+    );
 
     const manifestInputs =
         manifestPath === null

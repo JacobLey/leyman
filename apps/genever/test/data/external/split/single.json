@@ -1,0 +1,161 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Pets",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/pets": {
+      "get": {
+        "operationId": "listPets",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Limit"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The pets",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Pet"
+                  }
+                }
+              }
+            }
+          },
+          "429": {
+            "$ref": "#/components/responses/TooMany"
+          },
+          "500": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    },
+    "/pets/{id}": {
+      "parameters": [
+        {
+          "$ref": "#/components/parameters/Id"
+        }
+      ],
+      "get": {
+        "operationId": "getPet",
+        "responses": {
+          "200": {
+            "description": "The pet",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Pet"
+                }
+              }
+            }
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFound"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Pet": {
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "problem": {
+            "$ref": "#/components/schemas/Problem"
+          }
+        }
+      },
+      "Problem": {
+        "type": "object",
+        "required": [
+          "code"
+        ],
+        "properties": {
+          "code": {
+            "$ref": "#/components/schemas/Code"
+          },
+          "detail": {
+            "$ref": "#/components/schemas/Detail"
+          }
+        }
+      },
+      "Code": {
+        "enum": [
+          "not_found",
+          "server_error"
+        ]
+      },
+      "Limit": {
+        "type": "integer",
+        "minimum": 1,
+        "default": 20
+      },
+      "Detail": {
+        "type": "object",
+        "properties": {
+          "message": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "parameters": {
+      "Id": {
+        "name": "id",
+        "in": "path",
+        "required": true,
+        "schema": {
+          "type": "string"
+        }
+      },
+      "Limit": {
+        "name": "limit",
+        "in": "query",
+        "schema": {
+          "$ref": "#/components/schemas/Limit"
+        }
+      }
+    },
+    "headers": {
+      "RetryAfter": {
+        "required": true,
+        "schema": {
+          "type": "integer"
+        }
+      }
+    },
+    "responses": {
+      "NotFound": {
+        "description": "Not found",
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/Problem"
+            }
+          }
+        }
+      },
+      "TooMany": {
+        "description": "Too many requests",
+        "headers": {
+          "Retry-After": {
+            "$ref": "#/components/headers/RetryAfter"
+          }
+        }
+      }
+    }
+  }
+}

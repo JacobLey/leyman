@@ -13,6 +13,8 @@ const withPointer = (message: string, pointer: string): string => `${message} (a
 export abstract class GeneverError extends Error {
     /**
      * JSON Pointer to the schema (or keyword) that caused the error, e.g. `#/properties/foo`.
+     * In another OpenAPI document, or file of OpenAPI objects, it starts with that file's URI,
+     * e.g. `file:///api/common.yaml#/components/schemas/Error`.
      */
     public readonly pointer: string;
 

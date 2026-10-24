@@ -1,6 +1,6 @@
 import type { Dialect, JsonType } from './keywords.js';
 import type { SchemaObject } from './read-keyword.js';
-import type { DocumentIndex, Target } from './resources.js';
+import type { DocumentIndex, OpenApiFile, Target } from './resources.js';
 import type { TsDoc, TsIndex, TsProperty, TsType } from './ts-type.js';
 import {
     GeneverInvalidSchemaError,
@@ -63,6 +63,10 @@ export interface ConvertOptions {
      * Flavour of JSON Schema, which decides the keywords allowed (e.g. `nullable` in OpenAPI 3.0).
      */
     readonly dialect: Dialect;
+    /**
+     * OpenAPI files the document references, keyed by URI. Their schemas have their own dialect.
+     */
+    readonly files: ReadonlyMap<string, OpenApiFile>;
     /**
      * Also generate `OperationRequest`, with parameters' defaults filled in, for an OpenAPI document.
      */
@@ -135,9 +139,9 @@ const sameValueCollectionKeywords = [
 
 /**
  * Name of the type of a referenced schema: a definition (in any `$defs`, `definitions`, or OpenAPI's
- * `components.schemas`) is named after its key, and anything else after its whole path.
+ * `components.schemas`) is named after its key, and anything else after its whole path in its file.
  *
- * @param pointer - canonical JSON Pointer to the schema
+ * @param pointer - canonical JSON Pointer to the schema, which may be in an OpenAPI file
  * @returns name, before it is made a valid and unique type name
  */
 const referenceName = (pointer: string): string => {
@@ -145,9 +149,10 @@ const referenceName = (pointer: string): string => {
     const isDefinition =
         parent.endsWith('/$defs') ||
         parent.endsWith('/definitions') ||
-        parent === '#/components/schemas';
+        // In the input, or in another OpenAPI document
+        parent.endsWith('#/components/schemas');
     const segments = pointer
-        .slice(isDefinition ? parent.length + 1 : 2)
+        .slice(isDefinition ? parent.length + 1 : pointer.indexOf('#') + 2)
         .split('/')
         .map(segment => segment.replaceAll('~1', '/').replaceAll('~0', '~'));
     return segments.join(' ');
@@ -424,11 +429,10 @@ export class Converter {
      * @throws {GeneverError} if the schema is invalid, breaks a strict mode rule, or is not supported
      */
     public convert(rootName: string): NamedType[] {
-        this.#index = indexDocument(
-            this.#root,
-            inputSchemas(this.#root, false),
-            this.#options.baseUri
-        );
+        this.#index = indexDocument(this.#root, inputSchemas(this.#root, false), {
+            baseUri: this.#options.baseUri,
+            files: this.#options.files,
+        });
         this.#register('#', rootName, this.#root);
         this.#registerDefinitions();
 
@@ -446,11 +450,10 @@ export class Converter {
     public convertDocument(): NamedType[] {
         this.#registerContainer(['components', 'schemas']);
         // A document is not a schema, but each of its components is
-        this.#index = indexDocument(
-            this.#root,
-            inputSchemas(this.#root, true),
-            this.#options.baseUri
-        );
+        this.#index = indexDocument(this.#root, inputSchemas(this.#root, true), {
+            baseUri: this.#options.baseUri,
+            files: this.#options.files,
+        });
         // Reserved after the components, so they keep their names
         const pathsName = this.#names.reserve('Paths');
         const operationsName = this.#names.reserve('Operations');
@@ -829,8 +832,21 @@ export class Converter {
         }
     }
 
+    /**
+     * Dialect of a schema: its OpenAPI file's, or else the document's.
+     *
+     * @param pointer - JSON Pointer to the schema
+     * @returns dialect
+     */
+    #dialectOf(pointer: string): Dialect {
+        const file = pointer.startsWith('#')
+            ? null
+            : this.#options.files.get(pointer.slice(0, pointer.indexOf('#')));
+        return file?.dialect ?? this.#options.dialect;
+    }
+
     #isKnownKeyword(keyword: string, pointer: string): boolean {
-        const { dialect } = this.#options;
+        const dialect = this.#dialectOf(pointer);
         return (
             keyword.startsWith('x-') ||
             // Draft-04 names a schema's resource with `id`
@@ -982,7 +998,7 @@ export class Converter {
      * @throws {GeneverInvalidSchemaError} if `nullable` is not a boolean
      */
     #nullable(schema: SchemaObject, pointer: string, type: TsType): TsType {
-        if (this.#options.dialect !== 'openapi-3.0' || schema.nullable === undefined) {
+        if (this.#dialectOf(pointer) !== 'openapi-3.0' || schema.nullable === undefined) {
             return type;
         }
         if (typeof schema.nullable !== 'boolean') {
@@ -1045,7 +1061,7 @@ export class Converter {
                 schema[keyword],
                 childPointer(pointer, keyword),
                 // OpenAPI 3.0 and draft-04 mark `minimum` and `maximum` exclusive with booleans
-                (this.#options.dialect === 'openapi-3.0' ||
+                (this.#dialectOf(pointer) === 'openapi-3.0' ||
                     isDraft04Schema(this.#index!, pointer)) &&
                     keyword.startsWith('exclusive')
             );

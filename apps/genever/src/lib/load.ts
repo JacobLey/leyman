@@ -1,19 +1,32 @@
 import type { HostFilter } from './hosts.js';
+import type { Dialect } from './keywords.js';
 import type { SchemaObject } from './read-keyword.js';
-import type { DocumentIndex } from './resources.js';
+import type {
+    DocumentIndex,
+    ObjectKind,
+    ObjectReference,
+    OpenApiFile,
+    OpenApiParts,
+    Target,
+} from './resources.js';
 import { readFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { GeneverLoadError } from './errors.js';
 import { hostFilter } from './hosts.js';
+import { openApiDialect } from './openapi.js';
 import { isYaml, parseText } from './parse.js';
+import { childPointer } from './pointer.js';
 import { isSchemaObject } from './read-keyword.js';
 import {
     declaresDraft04,
-    externalResources,
+    documentParts,
     idKeywordOf,
     indexDocument,
     inputSchemas,
+    locate,
+    objectParts,
+    resolveUri,
 } from './resources.js';
 
 export interface LoadOptions {
@@ -21,6 +34,10 @@ export interface LoadOptions {
      * URI the input was read from, which relative references resolve against.
      */
     readonly baseUri: string;
+    /**
+     * Flavour of the input's schemas, which a file of OpenAPI objects it refers to has too.
+     */
+    readonly dialect: Dialect;
     /**
      * Load `http:` and `https:` URLs, or only those of these hosts. Otherwise only files are loaded.
      */
@@ -62,15 +79,56 @@ interface Unloadable {
 }
 
 /**
- * A resource that failed to load, and the `$ref` that needed it.
+ * A `$ref` to load, or to find more references from.
  */
-interface Failure extends Unloadable {
+interface Reference {
+    /**
+     * Fragment of the URI, without `#`.
+     */
+    readonly fragment: string;
+    /**
+     * What it refers to: a schema, or an OpenAPI object (in a reference object).
+     */
+    readonly kind: 'schema' | ObjectKind;
     readonly pointer: string;
     /**
      * URI of the file or URL the `$ref` is in.
      */
     readonly referencedFrom: string;
+    /**
+     * URI it refers to, without the fragment.
+     */
     readonly uri: string;
+}
+
+/**
+ * A resource that failed to load, and the `$ref` that needed it.
+ */
+interface Failure extends Unloadable, Omit<Reference, 'fragment' | 'kind'> {}
+
+/**
+ * An OpenAPI file being loaded.
+ */
+interface LoadingFile extends OpenApiFile {
+    readonly schemas: Target[];
+    /**
+     * Objects whose schemas have been found, by kind and JSON Pointer.
+     */
+    readonly walked: Set<string>;
+}
+
+/**
+ * The input, and every file and URL it references.
+ */
+export interface Bundle {
+    /**
+     * The input, with every schema it references embedded.
+     */
+    readonly input: unknown;
+    /**
+     * OpenAPI documents, and files of OpenAPI objects, the input references, keyed by URI.
+     */
+    readonly files: ReadonlyMap<string, OpenApiFile>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-magic-numbers -- the HTTP statuses that redirect
@@ -155,40 +213,54 @@ const readText = async (
 };
 
 /**
- * Load a schema from a file or URL, and index it.
- *
- * Its `$id`, if any, is its base URI. Otherwise the URI it was read from, after redirects, is
- * ([RFC 3986](https://www.rfc-editor.org/rfc/rfc3986#section-5.1.3)), which it is given as its `$id`,
- * so it can be embedded in another document, and still resolve its own references.
+ * Read and parse a file or URL.
  *
  * @param uri - absolute URI, without a fragment
  * @param isAllowed - hosts that may be fetched, or null to load only files
- * @param isInputDraft04 - whether the input is draft-04, which a file without a `$schema` is too
  * @param onRead - called with the text, once read
- * @returns the resource, or why it can't be loaded
+ * @returns the parsed value, and the URI it is from after redirects, or why it can't be loaded
  */
-const loadResource = async (
+const readResource = async (
     uri: string,
     isAllowed: HostFilter | null,
-    isInputDraft04: boolean,
     onRead: LoadOptions['onRead']
-): Promise<LoadedResource | Unloadable> => {
+): Promise<Unloadable | { parsed: unknown; uri: string }> => {
     const read = await readText(uri, isAllowed);
     if ('reason' in read) {
         return read;
     }
     onRead?.(uri, read.text);
-    let parsed: unknown;
     try {
-        parsed = parseText(read.text, read.yaml);
+        return { parsed: parseText(read.text, read.yaml), uri: read.uri };
     } catch (error) {
         return {
             cause: error,
             reason: read.yaml ? `not valid YAML: ${(error as Error).message}` : 'not valid JSON',
         };
     }
+};
+
+/**
+ * Make a loaded schema a resource, and index it.
+ *
+ * Its `$id`, if any, is its base URI. Otherwise the URI it was read from, after redirects, is
+ * ([RFC 3986](https://www.rfc-editor.org/rfc/rfc3986#section-5.1.3)), which it is given as its `$id`,
+ * so it can be embedded in another document, and still resolve its own references.
+ *
+ * @param parsed - parsed file
+ * @param uri - URI it was referenced by
+ * @param readUri - URI it was read from, after redirects
+ * @param isInputDraft04 - whether the input is draft-04, which a file without a `$schema` is too
+ * @returns the resource, or why it isn't one
+ */
+const schemaResource = (
+    parsed: unknown,
+    uri: string,
+    readUri: string,
+    isInputDraft04: boolean
+): LoadedResource | Unloadable => {
     if (typeof parsed === 'boolean') {
-        parsed = parsed ? {} : { not: {} };
+        return schemaResource(parsed ? {} : { not: {} }, uri, readUri, isInputDraft04);
     }
     if (!isSchemaObject(parsed)) {
         return { reason: 'not a schema' };
@@ -199,9 +271,12 @@ const loadResource = async (
     const schema: SchemaObject =
         // Draft 7 names a plain anchor with `$id`, which can't name the schema's resource
         typeof $id === 'string' && $id.startsWith('#')
-            ? { ...parsed, $id: read.uri, $anchor: $id.slice(1) }
-            : { ...parsed, $id: $id ?? read.uri };
-    const index = indexDocument(schema, inputSchemas(schema, false), read.uri, isDraft04);
+            ? { ...parsed, $id: readUri, $anchor: $id.slice(1) }
+            : { ...parsed, $id: $id ?? readUri };
+    const index = indexDocument(schema, inputSchemas(schema, false), {
+        baseUri: readUri,
+        isDraft04,
+    });
     // The `$id` of a schema may be relative to where it was loaded from
     const id = index.baseUris.get('#')!;
     return {
@@ -262,61 +337,178 @@ const embed = (
 };
 
 /**
- * Load every file and URL an input references, and everything they reference in turn,
- * and embed them in the input, so it is one self-contained document.
+ * Load every file and URL an input references, and everything they reference in turn.
  *
- * Loaded schemas are embedded with an absolute `$id`, in `$defs` (or an OpenAPI document's
+ * Loaded schemas are embedded in the input with an absolute `$id`, in `$defs` (or an OpenAPI document's
  * `components.schemas`), named after their `title`, or else their file name. References are left as
  * they are, and resolve to the embedded schemas by URI, as in the bundling process of JSON Schema 2020-12.
  *
+ * Other OpenAPI documents, and files of OpenAPI objects (e.g. `responses.yaml#/NotFound` from a response),
+ * are not schemas, so they aren't embedded: they're returned beside the input, with the schemas in them that
+ * are used. A loaded document's schemas are those of its components, and of anything else referenced in it.
+ *
  * @param input - JSON Schema, or OpenAPI document
  * @param options - how to read the input, and what to load
- * @returns the input with every referenced schema embedded, or the input itself if it references none
+ * @returns the input with every referenced schema embedded (or the input itself if it references none), and the OpenAPI files it references
  * @rejects {GeneverLoadError} if a referenced file or URL can't be loaded
  * @rejects {TypeError} if an allowed host is not a host
  */
-export const loadReferences = async (input: unknown, options: LoadOptions): Promise<unknown> => {
+export const loadReferences = async (input: unknown, options: LoadOptions): Promise<Bundle> => {
     const isAllowed = hostFilter(options.fetch);
     const isInputDraft04 =
         !options.isDocument && isSchemaObject(input) && declaresDraft04(input) === true;
-    const inputIndex = indexDocument(
-        input,
-        inputSchemas(input, options.isDocument),
-        options.baseUri
-    );
-    const known = new Set(inputIndex.resources.keys());
+    const known = new Set<string>();
+    const attempted = new Set<string>();
     const resources: SchemaObject[] = [];
+    const files = new Map<string, LoadingFile>();
     const failures: Failure[] = [];
     /**
      * References still to load, as a stack: the last is next. Each is pushed in reverse,
      * so references load in the order they appear, each followed by what it refers to.
      */
-    const pending: { pointer: string; referencedFrom: string; uri: string }[] = [];
-    const queueReferences = (index: DocumentIndex, referencedFrom: string): void => {
-        const references = externalResources(index).toReversed();
-        pending.push(...references.map(([uri, pointer]) => ({ pointer, referencedFrom, uri })));
+    const pending: Reference[] = [];
+
+    /**
+     * Queue the references of schemas, and of reference objects, found in a file.
+     *
+     * @param index - index of the schemas found
+     * @param objectReferences - reference objects found
+     * @param referencedFrom - URI of the file, which reference objects resolve against
+     */
+    const queueReferences = (
+        index: DocumentIndex,
+        objectReferences: readonly ObjectReference[],
+        referencedFrom: string
+    ): void => {
+        for (const resource of index.resources.keys()) {
+            known.add(resource);
+        }
+        const references: Reference[] = index.references
+            .entries()
+            .map(([reference, pointer]) => {
+                const hash = reference.indexOf('#');
+                return {
+                    fragment: reference.slice(hash + 1),
+                    kind: 'schema' as const,
+                    uri: reference.slice(0, hash),
+                    pointer,
+                    referencedFrom,
+                };
+            })
+            .toArray();
+        for (const { kind, pointer, ref } of objectReferences) {
+            // An invalid reference object is reported where it's used
+            const resolved = typeof ref === 'string' ? resolveUri(ref, referencedFrom) : null;
+            if (resolved) {
+                references.push({
+                    ...resolved,
+                    kind,
+                    pointer: childPointer(pointer, '$ref'),
+                    referencedFrom,
+                });
+            }
+        }
+        pending.push(...references.toReversed());
     };
 
-    const load = async (uri: string, pointer: string, referencedFrom: string): Promise<void> => {
-        const loaded = await loadResource(uri, isAllowed, isInputDraft04, options.onRead);
+    /**
+     * Find the schemas of objects in an OpenAPI file, and queue their references.
+     *
+     * @param uri - URI of the file, which its references resolve against
+     * @param file - file the parts are in, which the new schemas are added to
+     * @param parts - schemas and reference objects found in it
+     */
+    const addParts = (uri: string, file: LoadingFile, parts: OpenApiParts): void => {
+        // A schema in one already found is indexed with it, under the right base URI
+        const schemas = parts.schemas.filter(({ pointer }) =>
+            file.schemas.every(
+                found => pointer !== found.pointer && !pointer.startsWith(`${found.pointer}/`)
+            )
+        );
+        file.schemas.push(...schemas);
+        queueReferences(
+            indexDocument(file.document, schemas, { baseUri: uri }),
+            parts.references,
+            uri
+        );
+    };
+
+    /**
+     * Find the schemas of the object a reference refers to in an OpenAPI file.
+     *
+     * @param file - file the reference is into
+     * @param reference - reference to an object in it, and what kind of object
+     */
+    const walk = (file: LoadingFile, { fragment, kind, uri }: Reference): void => {
+        // A reference to nothing, or to an anchor, is reported where it's used, if it doesn't resolve
+        const target = locate({ pointer: '#', schema: file.document }, fragment);
+        if (!target || file.walked.has(`${kind} ${target.pointer}`)) {
+            return;
+        }
+        file.walked.add(`${kind} ${target.pointer}`);
+        addParts(uri, file, objectParts(target, kind));
+    };
+
+    const load = async (reference: Reference): Promise<void> => {
+        const { kind, pointer, referencedFrom, uri } = reference;
+        const fail = (unloadable: Unloadable): void => {
+            failures.push({ ...unloadable, pointer, referencedFrom, uri });
+        };
+        const read = await readResource(uri, isAllowed, options.onRead);
+        if ('reason' in read) {
+            fail(read);
+            return;
+        }
+        let dialect: Dialect | null;
+        try {
+            dialect = openApiDialect(read.parsed);
+        } catch (error) {
+            fail({ cause: error, reason: (error as Error).message });
+            return;
+        }
+        if (dialect !== null || kind !== 'schema') {
+            // Its references resolve against the URI it was referenced by, even if redirected, so it has one URI
+            const file: LoadingFile = {
+                dialect: dialect ?? files.get(referencedFrom)?.dialect ?? options.dialect,
+                document: read.parsed,
+                schemas: [],
+                walked: new Set(),
+            };
+            files.set(uri, file);
+            known.add(uri);
+            if (dialect !== null) {
+                addParts(uri, file, documentParts(read.parsed, false));
+            }
+            walk(file, reference);
+            return;
+        }
+        const loaded = schemaResource(read.parsed, uri, read.uri, isInputDraft04);
         if ('reason' in loaded) {
-            failures.push({ ...loaded, pointer, referencedFrom, uri });
+            fail(loaded);
             return;
         }
         resources.push(...loaded.schemas);
-        for (const resource of loaded.index.resources.keys()) {
-            known.add(resource);
-        }
         // Referred to by its URL, even if its `$id` is another
         known.add(uri);
-        queueReferences(loaded.index, uri);
+        queueReferences(loaded.index, [], uri);
     };
 
-    queueReferences(inputIndex, options.baseUri);
+    const inputParts = options.isDocument
+        ? documentParts(input, true)
+        : { references: [], schemas: inputSchemas(input, false) };
+    queueReferences(
+        indexDocument(input, inputParts.schemas, { baseUri: options.baseUri }),
+        inputParts.references,
+        options.baseUri
+    );
     while (pending.length > 0) {
-        const { pointer, referencedFrom, uri } = pending.pop()!;
-        if (!known.has(uri)) {
-            await load(uri, pointer, referencedFrom);
+        const reference = pending.pop()!;
+        const file = files.get(reference.uri);
+        if (file) {
+            walk(file, reference);
+        } else if (!known.has(reference.uri) && !attempted.has(reference.uri)) {
+            attempted.add(reference.uri);
+            await load(reference);
         }
     }
 
@@ -333,7 +525,18 @@ export const loadReferences = async (input: unknown, options: LoadOptions): Prom
             referencedFrom,
         });
     }
-    return resources.length === 0
-        ? input
-        : embed(input as SchemaObject, resources, options.isDocument);
+    return {
+        files: new Map(
+            files
+                .entries()
+                .map(([uri, { dialect, document, schemas }]) => [
+                    uri,
+                    { dialect, document, schemas },
+                ])
+        ),
+        input:
+            resources.length === 0
+                ? input
+                : embed(input as SchemaObject, resources, options.isDocument),
+    };
 };

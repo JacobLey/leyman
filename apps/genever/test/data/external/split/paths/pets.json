@@ -1,0 +1,31 @@
+{
+  "get": {
+    "operationId": "listPets",
+    "parameters": [
+      {
+        "$ref": "../parameters.json#/Limit"
+      }
+    ],
+    "responses": {
+      "200": {
+        "description": "The pets",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "../api.json#/components/schemas/Pet"
+              }
+            }
+          }
+        }
+      },
+      "429": {
+        "$ref": "../responses.json#/TooMany"
+      },
+      "500": {
+        "$ref": "../responses.json#/ServerError"
+      }
+    }
+  }
+}

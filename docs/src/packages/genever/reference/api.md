@@ -99,7 +99,7 @@ Anything else JSON can't hold is an error. Tags beyond YAML's core schema (such 
 
 ## Errors
 
-Every error extends `GeneverError`, with a `pointer` property: the JSON Pointer to the schema or keyword at fault, e.g. `#/properties/a/type`. The pointer is also at the end of the message.
+Every error extends `GeneverError`, with a `pointer` property: the JSON Pointer to the schema or keyword at fault, e.g. `#/properties/a/type`. In another OpenAPI document, or file of OpenAPI objects, it starts with that file's URI, e.g. `file:///api/common.yaml#/components/schemas/Error/type`. The pointer is also at the end of the message.
 
 | Error | Thrown when |
 |-------|-------------|

@@ -1,0 +1,41 @@
+openapi: 3.0.3
+info:
+  title: Owners
+  version: 1.0.0
+paths:
+  /owners:
+    get:
+      operationId: listOwners
+      responses:
+        '200':
+          description: The owners
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Owner'
+        '404':
+          $ref: '#/components/responses/NotFound'
+components:
+  schemas:
+    Owner:
+      type: object
+      required: [name]
+      properties:
+        name:
+          type: string
+        nickname:
+          type: string
+          nullable: true
+  responses:
+    NotFound:
+      description: Not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              reason:
+                type: string
+                nullable: true
