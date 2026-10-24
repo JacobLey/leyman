@@ -128,7 +128,7 @@ What the CLI runs. Options as above: `migrate` (required), `file`, `cwd`, `check
 |-------|------|
 | `PgDollySchemaMigrateError` | The migrate command failed. Has `command`, `exitCode` (`null` if killed) and `database`, which is kept. |
 | `PgDollySchemaEmptyError` | The migrate command succeeded but left the database empty. Has `command`. |
-| From [`populate-files`](https://www.npmjs.com/package/populate-files) | With `check`, the file is not up to date. |
+| `PopulateFilesCheckError`, from [`populate-files`](https://www.npmjs.com/package/populate-files#errors) | With `check`, the file is not up to date. |
 | From [`pg-dolly`](https://www.npmjs.com/package/pg-dolly#errors) | `PgDollyMissingUrlError` without `url` or `DATABASE_URL`, `PgDollyPrefixError` for an invalid prefix. |
 | An `Error` | `pg_dump` failed (e.g. a `--data` table that doesn't exist, or `pg_dump` is not on the `PATH`). |
 

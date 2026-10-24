@@ -49,7 +49,7 @@ await snapshotSchema({ migrate: 'drizzle-kit migrate', cwd: 'packages/app', chec
 |-------|------|
 | `PgDollySchemaMigrateError` | The migrate command failed. Has `command`, `exitCode` (`null` if killed) and `database`, which is kept. |
 | `PgDollySchemaEmptyError` | The migrate command succeeded but left the database empty. Has `command`. |
-| From [populate-files](/packages/populate-files/) | With `check`, the file is not up to date. |
+| `PopulateFilesCheckError`, from [populate-files](/packages/populate-files/reference/api#errors) | With `check`, the file is not up to date. |
 | From [pg-dolly](/packages/pg-dolly/reference/api#errors) | No `DATABASE_URL`, or an invalid prefix. |
 
 `PgDollySchemaMigrateError` and `PgDollySchemaEmptyError` extend `PgDollySchemaError`.

@@ -31,8 +31,17 @@ Run `npx genever user.json --name User`, and it writes `user.ts`:
 
 ```ts
 export type User = {
+    /**
+     * @pattern "^usr_"
+     */
     id: `usr_${string}`;
+    /**
+     * @minItems 2
+     */
     point?: [number, number];
+    /**
+     * @minItems 1
+     */
     tags?: [string, ...string[]];
 };
 ```

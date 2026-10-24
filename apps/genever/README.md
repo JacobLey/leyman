@@ -309,7 +309,7 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
 
-**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws a plain `Error` (from `populate-files`, `... not up to date. Reason: content-changed`) if the file is out of date. Rejects with the file system's error (`ENOENT`) if `input` doesn't exist, and a `SyntaxError` for invalid JSON. Throws a `TypeError` if `fetch` lists something that is not a host.
+**Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws a `PopulateFilesCheckError` (from [`populate-files`](https://www.npmjs.com/package/populate-files#errors), `... not up to date. Reason: content-changed`) if the file is out of date. Rejects with the file system's error (`ENOENT`) if `input` doesn't exist, and a `SyntaxError` for invalid JSON. Throws a `TypeError` if `fetch` lists something that is not a host.
 
 ---
 
