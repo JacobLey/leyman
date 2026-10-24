@@ -7,10 +7,11 @@ import { barrelFiles } from './lib/barrel.js';
  * Similar as using CLI options.
  *
  * @param [options] - Optional
- * @param [options.cwd] - Current working directory, defaults to process'
+ * @param [options.cwd] - Directory to search for index files, defaults to `process.cwd()`. A file path means its parent directory
  * @param [options.dryRun] - If true, does not actually write files
- * @param [options.ignore] - List of globs/directories to ignore for finding index files
- * @returns List of updated files
+ * @param [options.ignore] - List of globs/directories (relative to `cwd`) to ignore for finding index files. Must be a mutable array
+ * @returns Absolute paths of the barrel files that were updated (or would be, with `dryRun`)
+ * @rejects {Error} `Directory not found: <path>` if `cwd` doesn't exist, or if a barrel's nearest `package.json` is malformed
  */
 export type Barrelify = (
     this: void,
@@ -19,7 +20,7 @@ export type Barrelify = (
      */
     options?: {
         /**
-         * Current working directory, defaults to process'
+         * Directory to search for index files, defaults to `process.cwd()`. A file path means its parent directory
          */
         cwd?: Directory;
         /**
@@ -27,7 +28,7 @@ export type Barrelify = (
          */
         dryRun?: boolean;
         /**
-         * List of globs/directories to ignore for finding index files
+         * List of globs/directories (relative to `cwd`) to ignore for finding index files. Must be a mutable array
          */
         ignore?: string[];
     }

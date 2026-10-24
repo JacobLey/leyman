@@ -41,7 +41,7 @@ Barrelify is ESM only. From CommonJS, load it with a dynamic import: `const { ba
 |--------|------|---------|-------------|
 | `cwd` | `string \| URL` | `process.cwd()` | Directory to search for index files, recursively. |
 | `dryRun` | `boolean` | `false` | Compute every barrel, but don't write any. |
-| `ignore` | `string[]` | `[]` | Globs of index files to skip, relative to `cwd`. |
+| `ignore` | `string[]` | `[]` | Globs of index files to skip, relative to `cwd`. Must be a mutable array: a `readonly` array or `as const` tuple is a type error. |
 
 **Returns** `Promise<string[]>`: the absolute paths of the barrels that changed, or would change with `dryRun`.
 
