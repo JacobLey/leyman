@@ -156,9 +156,9 @@ Durations are rounded up to whole milliseconds. Each must be a finite number abo
 
 #### `cache.get(key, load, options?)`
 
-Returns the cached value, or calls `load` and caches what it returns. Rejects with what `load` threw. `T` must be JSON (`Json`): a loader that returns `undefined` anyway rejects with `LeaseCacheValueError`, caching nothing.
+Returns the cached value, or calls `load` and caches what it returns. Rejects with what `load` threw. `T` must be JSON (`JsonValue<T>`): a loader that returns `undefined` anyway rejects with `LeaseCacheValueError`, caching nothing.
 
-Use type aliases, rather than interfaces, for loaded values: TypeScript doesn't treat an interface as having an index signature, so it doesn't extend `Json`, even when every field is JSON.
+Loaded values must be JSON: a value with a `Date`, a function or `undefined` is a type error (`JsonValue<T>` maps each to `never`). Interfaces and type aliases both work.
 
 `options.ttlMs` caches this value for its own time, in place of the cache's `ttlMs`. A function gets the loaded value, e.g. to cache a missing row for less time than a found one:
 

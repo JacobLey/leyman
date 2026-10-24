@@ -405,6 +405,41 @@ suite('LeaseCache', () => {
                     }
                 );
 
+                withConnection.test('Caches values typed with interfaces', async ({ instance }) => {
+                    interface Address {
+                        city: string;
+                    }
+                    interface User {
+                        id: number;
+                        address: Address;
+                        tags: readonly string[];
+                        nickname?: string;
+                    }
+                    const user: User = { id: 1, address: { city: 'Shire' }, tags: ['hobbit'] };
+                    const cache = instance();
+
+                    const loaded = await cache.get('key', async () => user);
+                    expectTypeOf(loaded).toEqualTypeOf<User>();
+                    expect(loaded).to.deep.equal(user);
+                    expect(await cache.get('key', async () => user)).to.deep.equal(user);
+
+                    interface Event {
+                        at: Date;
+                    }
+                    // eslint-disable-next-line unicorn/prefer-temporal -- a `Date` is what this checks
+                    const event: Event = { at: new Date() };
+                    // @ts-expect-error -- a `Date` doesn't survive JSON
+                    expect(await cache.get('event', async () => event)).to.equal(event);
+                    // @ts-expect-error -- read from the cache, as a string
+                    expect(await cache.get('event', async () => event)).to.deep.equal({
+                        at: event.at.toISOString(),
+                    });
+                    // @ts-expect-error -- `undefined` isn't JSON
+                    await expect(cache.get('nothing', async () => {})).to.be.rejectedWith(
+                        LeaseCacheValueError
+                    );
+                });
+
                 withConnection.test('Rejects with what the loader threw', async ({ instance }) => {
                     const failure = new Error('Database is down');
 

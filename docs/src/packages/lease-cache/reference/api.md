@@ -1,5 +1,5 @@
 ---
-description: LeaseCache, its options, get, read and invalidate, its errors, and the Json and LeaseCacheConnection types.
+description: LeaseCache, its options, get, read and invalidate, its errors, and the Json, JsonValue and LeaseCacheConnection types.
 ---
 
 # API
@@ -27,7 +27,7 @@ Returns the cached value, or calls `load` and caches what it returns.
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `key` | `string` | Identifies the value, without the prefix. Not empty, and not starting with `}`, or the read rejects with `LeaseCacheKeyError`. |
-| `load` | `() => Promise<T>` | Loads the value from the source of truth. `T` must extend [`Json`](#json). |
+| `load` | `() => Promise<T>` | Loads the value from the source of truth. `T` must be [JSON](#json). |
 | `options.ttlMs` | `number \| ((value: T) => number)` | How long this value is cached, in place of the cache's `ttlMs`. A function gets the loaded value. Above 0. |
 
 ```ts
@@ -105,7 +105,7 @@ Every error `lease-cache` throws extends `LeaseCacheError`. What `load` throws i
 
 The values a loader may return: `boolean`, `number`, `string`, `null`, and arrays and plain objects of them. Values are stored as JSON, so only these survive the round trip.
 
-Use type aliases, rather than interfaces, for loaded values: TypeScript doesn't treat an interface as having an index signature, so it doesn't extend `Json`.
+`get` and `read` check a loaded value with `JsonValue<T>`, which maps anything that isn't JSON (a `Date`, a function, `undefined`) to `never`, so such a value is a type error. Interfaces and type aliases both work. An optional property may be left out, as JSON drops it.
 
 ## `LeaseCacheConnection`
 

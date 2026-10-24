@@ -8,6 +8,7 @@ export {
 export {
     type GetOptions,
     type Json,
+    type JsonValue,
     LeaseCache,
     type LeaseCacheConnection,
     type LeaseCacheOptions,

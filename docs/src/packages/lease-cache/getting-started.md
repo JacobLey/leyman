@@ -75,7 +75,7 @@ import type { LeaseCache } from 'lease-cache';
 
 declare const cache: LeaseCache;
 // ---cut---
-// @errors: 2322
+// @errors: 2769
 await cache.get('now', async () => new Date());
 ```
 

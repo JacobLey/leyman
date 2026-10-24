@@ -9,10 +9,8 @@ import {
 import { fillScript, invalidateScript, readOrLeaseScript, releaseScript } from './scripts.js';
 
 /**
- * Values are stored as JSON, so only JSON survives the round trip: a `Date` would come back as a string.
- *
- * Declare loaded values with `type` rather than `interface`: TypeScript doesn't treat an interface as having an index
- * signature, so it doesn't extend `Json`.
+ * A JSON value. Values are stored as JSON, so only JSON survives the round trip: a `Date` would come back as a string.
+ * Loaded values are checked with {@link JsonValue}, which also accepts interfaces.
  */
 export type Json =
     | boolean
@@ -21,6 +19,25 @@ export type Json =
     | readonly Json[]
     | { readonly [key: string]: Json }
     | null;
+
+/**
+ * `T` where it is JSON, and `never` where it isn't, such as a `Date`, a function or `undefined`. Unlike {@link Json},
+ * it accepts interfaces: `get` and `read` check a loaded value against it when the value isn't `Json`. An optional
+ * property may be left out, as JSON drops it.
+ *
+ * @template T - Loaded value to check
+ */
+export type JsonValue<T> = [T] extends [Json]
+    ? T
+    : T extends boolean | number | string | null
+      ? T
+      : T extends readonly unknown[]
+        ? { [K in keyof T]: JsonValue<T[K]> }
+        : T extends (...args: never) => unknown
+          ? never
+          : T extends object
+            ? { [K in keyof T]: K extends string ? JsonValue<T[K]> : never }
+            : never;
 
 /**
  * The one command needed from a Valkey (or Redis) client. An ioredis `Redis` or `Cluster` fits as is.
@@ -80,7 +97,7 @@ export interface LeaseCacheOptions {
     readonly onUnavailable?: (error: unknown, key: string) => void;
 }
 
-export interface GetOptions<T extends Json> {
+export interface GetOptions<T> {
     /**
      * How long the loaded value is cached, in milliseconds, in place of the cache's `ttlMs`. A function gets the
      * value, e.g. to cache a missing row for less time than a found one. Must be above 0.
@@ -106,7 +123,7 @@ export type ReadSource = 'filled' | 'hit' | 'lost' | 'stale' | 'timeout' | 'unav
  *
  * @template T - The value
  */
-export interface ReadResult<T extends Json> {
+export interface ReadResult<T> {
     readonly value: T;
     readonly source: ReadSource;
     /**
@@ -145,7 +162,7 @@ const duration = (option: string, value: number, minimum: 0 | 1): number => {
  * @returns It, as JSON
  * @throws {LeaseCacheValueError} When it isn't JSON, e.g. `undefined`
  */
-const serialize = (key: string, value: Json): string => {
+const serialize = (key: string, value: unknown): string => {
     const serialized = JSON.stringify(value) as string | undefined;
     if (serialized === undefined) {
         throw new LeaseCacheValueError(key);
@@ -192,18 +209,40 @@ export class LeaseCache {
      *
      * @param key - Identifies the value, without the prefix
      * @param load - Loads the value from the source of truth
-     * @param options - How long to cache this value
+     * @param [options] - How long to cache this value
      * @returns Cached or loaded value
      * @throws {LeaseCacheDurationError} When `ttlMs` isn't a finite number above 0
      * @throws {LeaseCacheValueError} When `load` returns something JSON can't store
      * @throws {LeaseCacheKeyError} When the key is empty, or starts with `}`
      */
-    public async get<T extends Json>(
+    public get<T extends Json>(
+        key: string,
+        load: () => Promise<T>,
+        options?: GetOptions<T>
+    ): Promise<T>;
+    /**
+     * As above, for a value typed with interfaces, which TypeScript doesn't treat as `Json`. Checked with
+     * {@link JsonValue} instead.
+     *
+     * @param key - Identifies the value, without the prefix
+     * @param load - Loads the value from the source of truth
+     * @param [options] - How long to cache this value
+     * @returns Cached or loaded value
+     */
+    public get<T>(
+        key: string,
+        load: () => Promise<JsonValue<T> & T>,
+        options?: GetOptions<T>
+    ): Promise<T>;
+    /**
+     * @inheritdoc
+     */
+    public async get<T>(
         key: string,
         load: () => Promise<T>,
         options: GetOptions<T> = {}
     ): Promise<T> {
-        const { value } = await this.read(key, load, options);
+        const { value } = await this.read<T>(key, load as () => Promise<JsonValue<T> & T>, options);
         return value;
     }
 
@@ -213,13 +252,35 @@ export class LeaseCache {
      *
      * @param key - Identifies the value, without the prefix
      * @param load - Loads the value from the source of truth
-     * @param options - How long to cache this value
+     * @param [options] - How long to cache this value
      * @returns Cached or loaded value, where it came from, and how long it is cached
      * @rejects {LeaseCacheDurationError} When `ttlMs` isn't a finite number above 0
      * @rejects {LeaseCacheValueError} When `load` returns something JSON can't store
      * @rejects {LeaseCacheKeyError} When the key is empty, or starts with `}`
      */
-    public async read<T extends Json>(
+    public read<T extends Json>(
+        key: string,
+        load: () => Promise<T>,
+        options?: GetOptions<T>
+    ): Promise<ReadResult<T>>;
+    /**
+     * As above, for a value typed with interfaces, which TypeScript doesn't treat as `Json`. Checked with
+     * {@link JsonValue} instead.
+     *
+     * @param key - Identifies the value, without the prefix
+     * @param load - Loads the value from the source of truth
+     * @param [options] - How long to cache this value
+     * @returns Cached or loaded value, where it came from, and how long it is cached
+     */
+    public read<T>(
+        key: string,
+        load: () => Promise<JsonValue<T> & T>,
+        options?: GetOptions<T>
+    ): Promise<ReadResult<T>>;
+    /**
+     * @inheritdoc
+     */
+    public async read<T>(
         key: string,
         load: () => Promise<T>,
         options: GetOptions<T> = {}
@@ -380,7 +441,7 @@ export class LeaseCache {
      * @returns Loaded value, not cached
      * @rejects {unknown} Valkey's error, without `onUnavailable`
      */
-    async #unavailable<T extends Json>(
+    async #unavailable<T>(
         error: unknown,
         key: string,
         load: () => Promise<T>
