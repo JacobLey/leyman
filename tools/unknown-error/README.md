@@ -86,7 +86,19 @@ toError('boom');                                     // NonError: boom
 toError({ count: 1n });                              // NonError: {"count":"1n"}
 ```
 
-An error-like object without a `stack` gets a stack pointing at the `toError` call, since the original location is unknown.
+An error-like object without a `stack` gets a stack pointing at the `toError` call, since the original location is unknown. Properties the new Error already has, own or inherited, are not copied, so a JSON-parsed `"__proto__"` key can't replace its prototype.
+
+A [`NonError`](#nonerror) message describes the value as follows:
+
+| Value | Message |
+|-------|---------|
+| String | The string itself |
+| `null`, `undefined`, number, boolean, symbol | `String(value)`, like `'null'` or `'Symbol(id)'` |
+| BigInt | `'10n'` |
+| Function | `'[Function name]'`, never its source |
+| Object or array | JSON, with circular references as `"[Circular]"` and BigInts as `"10n"` |
+
+When an object's JSON is empty (`toJSON` returns `undefined`) or throws, the message falls back to `String(value)`, then to the object's tag (`[object Object]`), and finally to `[unprintable value]`.
 
 ### `getErrorMessage(value)`
 
@@ -135,14 +147,14 @@ Only real Errors match. To match error-like objects too, convert them first: `ha
 
 Visits `value`, its `cause` chain and the `errors` of any `AggregateError`, depth first: an error, then its cause, then its `errors` in order.
 
-Every value is converted with `toError`, so a cause that isn't an Error still appears. A value already visited is skipped, so circular chains end.
+Every value is converted with `toError`, so a cause that isn't an Error still appears. A value already visited is skipped, so circular chains end. Primitives have no identity, so the same string can be visited more than once.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `value` | `unknown` | — | A caught value. |
 | `options.maxDepth` | `number` | `32` | Deepest level to visit. The root is level `0`. Pass `Infinity` for no limit. |
 
-**Returns** `Generator<ErrorNode>`.
+**Returns** `Generator<ErrorNode, void, undefined>`. The option and node types are exported as `WalkOptions`, `ErrorNode` and `ErrorRelation`.
 
 #### `ErrorNode`
 
