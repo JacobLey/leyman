@@ -6,6 +6,8 @@ import { execFileAsync, execWithInput } from './exec.js';
  * Prettier formatter.
  *
  * Prettier is an optional peer dependency, so its path is injected to allow simulating it being uninstalled.
+ *
+ * Every file passed is formatted, including ones that `.gitignore` lists: only `.prettierignore` is read.
  */
 export class Prettier {
     readonly #getPrettierPath: Supplier<string>;
@@ -35,10 +37,18 @@ export class Prettier {
     }
 
     async #formatPrettierFiles(files: string[]): Promise<void> {
-        await execFileAsync(this.#getPrettierPath(), [...files, '--write']);
+        await execFileAsync(this.#getPrettierPath(), [
+            ...files,
+            '--ignore-path=.prettierignore',
+            '--write',
+        ]);
     }
 
     async #formatPrettierText(text: string, filePath: string): Promise<string> {
-        return execWithInput(this.#getPrettierPath(), ['--stdin-filepath', filePath], text);
+        return execWithInput(
+            this.#getPrettierPath(),
+            ['--ignore-path=.prettierignore', '--stdin-filepath', filePath],
+            text
+        );
     }
 }

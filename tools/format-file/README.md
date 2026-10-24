@@ -54,6 +54,8 @@ const result = await formatText(
 
 Formatting is best-effort. If neither biome nor prettier is installed and configured, files are returned unchanged. It is recommended to produce reasonable output before formatting (e.g. `JSON.stringify(data, null, 2)`), treating formatting as a polish step rather than a correctness requirement.
 
+Every file passed is formatted, even when `.gitignore` lists it, since generated files are often ignored. Biome runs with its VCS integration off and Prettier reads only `.prettierignore`, so each formatter's own ignore settings (Biome's `files.includes`, `.prettierignore`) still apply.
+
 In this monorepo, `biome` is the default formatter and will be preferred when `formatter` is not specified.
 
 ## API

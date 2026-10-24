@@ -7,6 +7,9 @@ import { execFileAsync, execWithInput } from './exec.js';
  * Biome formatter.
  *
  * Biome is an optional peer dependency, so its path is injected to allow simulating it being uninstalled.
+ *
+ * Every file passed is formatted, including ones that version control ignores: Biome's VCS integration is disabled.
+ * The project's own `files.includes` still applies.
  */
 export class Biome {
     readonly #getBiomePath: Supplier<string>;
@@ -35,13 +38,18 @@ export class Biome {
     }
 
     async #formatBiomeFiles(files: string[]): Promise<void> {
-        await execFileAsync(this.#getBiomePath(), ['format', '--write', ...files]);
+        await execFileAsync(this.#getBiomePath(), [
+            'format',
+            '--vcs-enabled=false',
+            '--write',
+            ...files,
+        ]);
     }
 
     async #formatBiomeText(text: string, filePath: string): Promise<string> {
         return execWithInput(
             this.#getBiomePath(),
-            ['format', `--stdin-file-path=${filePath}`],
+            ['format', '--vcs-enabled=false', `--stdin-file-path=${filePath}`],
             text
         );
     }
