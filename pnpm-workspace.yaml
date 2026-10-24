@@ -9,6 +9,7 @@ packages:
   - demos/*
   - demos/openapi/*
   - demos/agents/*
+  - infra/nx-cache/*
   - docs
   - '!**/test/**'
 
@@ -67,6 +68,8 @@ allowBuilds:
   # Native bindings, but gonx only loads the `tree-sitter-go.wasm` the package ships
   tree-sitter-go: false
   unrs-resolver: false
+  # Via wrangler and miniflare. Its postinstall only checks that the platform binary (an optional dependency) is there
+  workerd: false
 
 peerDependencyRules:
   allowedVersions:
@@ -167,6 +170,8 @@ catalog:
   iovalkey: ^0.4.0
   jose: ^6.2.12
   lru-cache: ^11.2.7
+  # The stable line, for tests. wrangler 4 ships a 5.x prerelease of its own, whose options are still changing
+  miniflare: ^4.20260730.0
   mocha: ^12.0.2
   normalize-exception: ^4.0.1
   nx: ^23.3.0
@@ -202,6 +207,7 @@ catalog:
   # type-checks every example) catches breakage, so bump it deliberately and run `nx run @leyman/docs:build`.
   vitepress: 2.0.0-alpha.20
   vitest: ^5.0.3
+  wrangler: ^4.151.1
   yaml: ^2.9.1
   yargs: ^18.2.0
 

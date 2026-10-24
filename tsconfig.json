@@ -120,6 +120,9 @@
     },
     {
       "path": "./demos/agents/cli"
+    },
+    {
+      "path": "./infra/nx-cache/worker"
     }
   ]
 }

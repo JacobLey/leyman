@@ -1,0 +1,26 @@
+// Deployed by CI on pushes to main (`wrangler deploy`), with the token OpenTofu creates (`../tofu`).
+// The bucket is created by OpenTofu too: keep `bucket_name` in sync with `cache_bucket` there.
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "leyman-nx-cache",
+  // Built by the `tsc` target: wrangler only bundles its modules into one
+  "main": "dist/worker.js",
+  // The newest date the tests' Miniflare (and its workerd) supports, so tests run with the same runtime behaviour.
+  // Keep in sync with `compatibilityDate` in `test/helpers/miniflare.ts`
+  "compatibility_date": "2026-08-06",
+  "workers_dev": true,
+  "preview_urls": false,
+  "r2_buckets": [
+    {
+      "binding": "cache",
+      "bucket_name": "leyman-nx-cache"
+    }
+  ],
+  "vars": {
+    "maxAgeDays": "7",
+    "oidcAudience": "leyman-nx-cache",
+    "oidcIssuer": "https://token.actions.githubusercontent.com",
+    // JacobLey/leyman: `gh api repos/JacobLey/leyman --jq .id`
+    "repositoryId": "785932586"
+  }
+}

@@ -12,6 +12,8 @@
 **/cover.out
 **/dist
 **/dist-test
+# wrangler's local state and temporary bundles
+**/.wrangler
 **/.swcrc
 
 /.claude-config
