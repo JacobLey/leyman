@@ -4,12 +4,13 @@ import type { AllowableAdditionalContext, EmptyContext, MergeContext } from 'tes
 /**
  * Arguments vitest passes to each kind of hook/test.
  *
- * Derived from vitest's own signatures so they stay in sync across versions.
+ * `beforeAll`/`afterAll` are derived from vitest's own signatures. Per-test hooks are declared with a second `suite`
+ * argument there, but vitest calls them with the test context alone.
  */
 export type BeforeAllArgs = Parameters<Parameters<typeof vitest.beforeAll>[0]>;
 export type AfterAllArgs = Parameters<Parameters<typeof vitest.afterAll>[0]>;
-export type BeforeEachArgs = Parameters<Parameters<typeof vitest.beforeEach>[0]>;
-export type AfterEachArgs = Parameters<Parameters<typeof vitest.afterEach>[0]>;
+export type BeforeEachArgs = [context: vitest.TestContext];
+export type AfterEachArgs = [context: vitest.TestContext];
 export type TestArgs = [context: vitest.TestContext];
 
 // Test

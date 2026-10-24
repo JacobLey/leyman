@@ -51,3 +51,22 @@ describe('beforeEach', () => {
         expect(count).toBe(2);
     });
 });
+
+describe('beforeEach native arguments', () => {
+    const withArgs = beforeEach((...args) => {
+        expectTypeOf(args).toEqualTypeOf<[vitest.TestContext]>();
+        return { entrypoint: args.length };
+    }).beforeEach((_ctx, ...args) => {
+        expectTypeOf(args).toEqualTypeOf<[vitest.TestContext]>();
+        return { chained: args.length };
+    });
+
+    withArgs.afterEach((_ctx, ...args) => {
+        expectTypeOf(args).toEqualTypeOf<[vitest.TestContext]>();
+        expect(args).toHaveLength(1);
+    });
+
+    withArgs.test('Only the test context', ctx => {
+        expect(ctx).toEqual({ entrypoint: 1, chained: 1 });
+    });
+});
