@@ -56,11 +56,11 @@ catalogs:
       specifier: ^0.8.1
       version: 0.8.1
     '@swc/core':
-      specifier: ^1.16.2
-      version: 1.16.2
+      specifier: ^1.16.18
+      version: 1.16.18
     '@tanstack/react-query':
-      specifier: ^5.104.0
-      version: 5.104.0
+      specifier: ^5.104.3
+      version: 5.104.3
     '@testing-library/dom':
       specifier: ^10.4.2
       version: 10.4.2
@@ -152,8 +152,8 @@ catalogs:
       specifier: ^5.0.0
       version: 5.0.0
     eslint:
-      specifier: ^10.12.0
-      version: 10.12.0
+      specifier: ^10.13.0
+      version: 10.13.0
     eslint-config-prettier:
       specifier: ^10.1.8
       version: 10.1.8
@@ -161,14 +161,14 @@ catalogs:
       specifier: ^4.17.1
       version: 4.17.1
     eslint-plugin-jsdoc:
-      specifier: ^65.1.0
-      version: 65.1.0
+      specifier: ^65.3.11
+      version: 65.3.11
     eslint-plugin-jsx-a11y:
       specifier: ^6.10.2
       version: 6.10.2
     eslint-plugin-n:
-      specifier: ^18.4.0
-      version: 18.4.0
+      specifier: ^18.4.1
+      version: 18.4.1
     eslint-plugin-react:
       specifier: ^7.37.5
       version: 7.37.5
@@ -179,8 +179,8 @@ catalogs:
       specifier: ^3.3.1
       version: 3.3.1
     eslint-plugin-sonarjs:
-      specifier: ^4.2.1
-      version: 4.2.1
+      specifier: ^4.2.2
+      version: 4.2.2
     eslint-plugin-unicorn:
       specifier: ^77.0.0
       version: 77.0.0
@@ -188,8 +188,8 @@ catalogs:
       specifier: ^1.4.0
       version: 1.4.0
     fast-equals:
-      specifier: ^6.0.4
-      version: 6.0.4
+      specifier: ^6.2.1
+      version: 6.2.1
     fastify:
       specifier: ^5.12.6
       version: 5.12.7
@@ -200,8 +200,8 @@ catalogs:
       specifier: ^4.13.13
       version: 4.13.13
     ignore:
-      specifier: ^7.0.5
-      version: 7.0.6
+      specifier: ^7.0.12
+      version: 7.0.12
     inversify:
       specifier: ^8.2.3
       version: 8.2.3
@@ -215,14 +215,14 @@ catalogs:
       specifier: ^6.2.12
       version: 6.2.12
     lru-cache:
-      specifier: ^11.2.7
-      version: 11.2.7
+      specifier: ^11.5.3
+      version: 11.5.3
     miniflare:
       specifier: ^4.20260730.0
       version: 4.20260730.0
     mocha:
-      specifier: ^12.0.2
-      version: 12.0.2
+      specifier: ^12.0.3
+      version: 12.0.3
     normalize-exception:
       specifier: ^4.0.1
       version: 4.0.1
@@ -239,8 +239,8 @@ catalogs:
       specifier: ^12.1.3
       version: 12.1.3
     openapi3-ts:
-      specifier: ^4.6.1
-      version: 4.6.1
+      specifier: ^4.6.2
+      version: 4.6.2
     p-defer:
       specifier: ^4.0.1
       version: 4.0.1
@@ -254,17 +254,17 @@ catalogs:
       specifier: ^2.1.11
       version: 2.1.11
     prettier:
-      specifier: ^3.9.9
-      version: 3.9.9
+      specifier: ^3.9.10
+      version: 3.9.10
     publint:
       specifier: ^0.3.25
       version: 0.3.25
     react:
-      specifier: ^19.3.0
-      version: 19.3.0
+      specifier: ^19.3.1
+      version: 19.3.1
     react-dom:
-      specifier: ^19.3.0
-      version: 19.3.0
+      specifier: ^19.3.1
+      version: 19.3.1
     redis:
       specifier: ^6.3.0
       version: 6.3.0
@@ -315,8 +315,8 @@ catalogs:
       version: 18.2.0
   leyman:
     npm-barrelify:
-      specifier: npm:barrelify@^2.1.2
-      version: 2.1.2
+      specifier: npm:barrelify@^2.2.1
+      version: 2.2.1
 
 overrides:
   nx>undici: ~7.29.1
@@ -333,10 +333,10 @@ importers:
     devDependencies:
       '@naxodev/gonx':
         specifier: 'catalog:'
-        version: 4.1.2(@nx/devkit@23.3.0(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))))(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))
+        version: 4.1.2(@nx/devkit@23.3.0(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))))(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))
       '@nx/js':
         specifier: 'catalog:'
-        version: 23.3.0(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.2(@swc/helpers@0.5.23))(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))(supports-color@8.1.1)
+        version: 23.3.0(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.18(@swc/helpers@0.5.23))(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))(supports-color@8.1.1)
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -360,13 +360,13 @@ importers:
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       ignore:
         specifier: 'catalog:'
-        version: 7.0.6
+        version: 7.0.12
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       tinyglobby:
         specifier: 'catalog:'
         version: 0.2.17
@@ -382,16 +382,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -409,13 +409,13 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3
@@ -436,10 +436,10 @@ importers:
         version: file:tools/entry-script
       format-file:
         specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -451,7 +451,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
@@ -464,16 +464,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -491,19 +491,19 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3
@@ -525,16 +525,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -552,16 +552,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -586,16 +586,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -610,19 +610,19 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -631,7 +631,7 @@ importers:
     dependencies:
       '@nx/devkit':
         specifier: 'catalog:'
-        version: 23.3.0(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))
+        version: 23.3.0(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))
       ci-info:
         specifier: 'catalog:'
         version: 4.4.0
@@ -640,10 +640,10 @@ importers:
         version: file:tools/entry-script
       fast-equals:
         specifier: 'catalog:'
-        version: 6.0.4
+        version: 6.2.1
       format-file:
         specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.10)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -652,13 +652,13 @@ importers:
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       nx:
         specifier: 'catalog:'
-        version: 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -674,16 +674,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -701,25 +701,25 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       sinon:
         specifier: 'catalog:'
         version: 22.1.0
@@ -743,7 +743,7 @@ importers:
         version: file:tools/pg-dolly
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yargs:
         specifier: 'catalog:'
         version: 18.2.0
@@ -753,16 +753,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -783,13 +783,13 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -819,16 +819,16 @@ importers:
         version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       unknown-error:
         specifier: workspace:^
         version: file:tools/unknown-error
@@ -841,16 +841,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -868,16 +868,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3
@@ -892,10 +892,10 @@ importers:
         version: 4.4.0
       format-file:
         specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -911,16 +911,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -938,13 +938,13 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3
@@ -956,7 +956,7 @@ importers:
     dependencies:
       '@leyman/demo-openapi-client':
         specifier: workspace:^
-        version: file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))
       entry-script:
         specifier: workspace:^
         version: file:tools/entry-script
@@ -987,19 +987,19 @@ importers:
         version: file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
       '@leyman/demo-openapi-server':
         specifier: workspace:^
-        version: file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.13.0(supports-color@8.1.1))
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1023,13 +1023,13 @@ importers:
         version: 0.45.4(@types/pg@8.23.1)(pg@8.23.1)
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1044,10 +1044,10 @@ importers:
     dependencies:
       '@leyman/demo-openapi-client':
         specifier: workspace:^
-        version: file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))
       '@leyman/demo-openapi-spec':
         specifier: workspace:^
-        version: file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))
       '@modelcontextprotocol/server':
         specifier: 'catalog:'
         version: 2.3.1
@@ -1075,10 +1075,10 @@ importers:
         version: file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
       '@leyman/demo-openapi-server':
         specifier: workspace:^
-        version: file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.13.0(supports-color@8.1.1))
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
@@ -1087,10 +1087,10 @@ importers:
         version: 2.3.1
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1114,16 +1114,16 @@ importers:
         version: 0.45.4(@types/pg@8.23.1)(pg@8.23.1)
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1151,16 +1151,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1178,13 +1178,13 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1193,23 +1193,23 @@ importers:
     dependencies:
       '@leyman/demo-openapi-spec':
         specifier: workspace:^
-        version: file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1224,19 +1224,19 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1252,16 +1252,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1282,13 +1282,13 @@ importers:
         version: 0.31.11(drizzle-orm@0.45.4(@types/pg@8.23.1)(pg@8.23.1))(pg@8.23.1)
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1297,7 +1297,7 @@ importers:
         version: file:tools/pg-dolly
       pg-dolly-schema:
         specifier: workspace:^
-        version: file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1312,7 +1312,7 @@ importers:
         version: file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
       '@leyman/demo-openapi-spec':
         specifier: workspace:^
-        version: file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))
       ajv:
         specifier: 'catalog:'
         version: 8.20.0
@@ -1346,19 +1346,19 @@ importers:
         version: file:demos/oauth-server(supports-color@8.1.1)
       '@leyman/demo-openapi-client':
         specifier: workspace:^
-        version: file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1376,19 +1376,19 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       pg-dolly:
         specifier: workspace:^
         version: file:tools/pg-dolly
@@ -1400,7 +1400,7 @@ importers:
     dependencies:
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
     devDependencies:
       '@apidevtools/swagger-parser':
         specifier: 'catalog:'
@@ -1410,16 +1410,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1434,16 +1434,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       openapi-types:
         specifier: 'catalog:'
         version: 12.1.3
@@ -1467,7 +1467,7 @@ importers:
         version: file:tools/lease-cache
       lru-cache:
         specifier: 'catalog:'
-        version: 11.2.7
+        version: 11.5.3
       weighted-rendezvous-hash:
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/weighted-rendezvous-hash
@@ -1477,16 +1477,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1501,16 +1501,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       p-defer:
         specifier: 'catalog:'
         version: 4.0.1
@@ -1528,16 +1528,16 @@ importers:
         version: 2.1.5(hono@4.13.13)
       '@leyman/demo-agents-mcp':
         specifier: workspace:^
-        version: file:demos/agents/mcp(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/agents/mcp(eslint@10.13.0(supports-color@8.1.1))
       '@leyman/demo-oauth-server':
         specifier: workspace:^
         version: file:demos/oauth-server(supports-color@8.1.1)
       '@leyman/demo-openapi-client':
         specifier: workspace:^
-        version: file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))
       '@leyman/demo-openapi-server':
         specifier: workspace:^
-        version: file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.12.0(supports-color@8.1.1))
+        version: file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.13.0(supports-color@8.1.1))
       '@leyman/demo-read-through-cache':
         specifier: workspace:^
         version: file:demos/read-through-cache(supports-color@8.1.1)
@@ -1549,7 +1549,7 @@ importers:
         version: 1.1.0
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.104.0(react@19.3.0)
+        version: 5.104.3(react@19.3.1)
       '@types/chai':
         specifier: 'catalog:'
         version: 5.2.3
@@ -1570,7 +1570,7 @@ importers:
         version: 8.20.0
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       chai:
         specifier: 'catalog:'
         version: 6.3.0
@@ -1588,10 +1588,10 @@ importers:
         version: 5.12.7
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -1612,31 +1612,31 @@ importers:
         version: 0.4.0(supports-color@8.1.1)
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       lease-cache:
         specifier: workspace:^
         version: file:tools/lease-cache
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       normalized-react-query:
         specifier: workspace:^
-        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))(react@19.3.0)
+        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.3(react@19.3.1))(react@19.3.1)
       nx-lifecycle:
         specifier: workspace:^
-        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.18(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       openapi3-ts:
         specifier: 'catalog:'
-        version: 4.6.1
+        version: 4.6.2
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1645,10 +1645,10 @@ importers:
         version: file:tools/pg-dolly
       pg-dolly-schema:
         specifier: workspace:^
-        version: file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       redis:
         specifier: 'catalog:'
         version: 6.3.0
@@ -1681,16 +1681,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1705,19 +1705,19 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1729,16 +1729,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1753,16 +1753,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       iso-crypto:
         specifier: workspace:^
         version: file:tools/iso-crypto
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       playwright:
         specifier: 'catalog:'
         version: 1.62.1
@@ -1783,16 +1783,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1807,31 +1807,31 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       openapi-types:
         specifier: 'catalog:'
         version: 12.1.3
       openapi3-ts:
         specifier: 'catalog:'
-        version: 4.6.1
+        version: 4.6.2
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1846,25 +1846,25 @@ importers:
         version: 20.14.5
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.104.0(react@19.3.0)
+        version: 5.104.3(react@19.3.1)
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.2
       '@testing-library/react':
         specifier: 'catalog:'
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1885,22 +1885,22 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       normalized-react-query:
         specifier: workspace:^
-        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))(react@19.3.0)
+        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.3(react@19.3.1))(react@19.3.1)
       react:
         specifier: 'catalog:'
-        version: 19.3.0
+        version: 19.3.1
       react-dom:
         specifier: 'catalog:'
-        version: 19.3.0(react@19.3.0)
+        version: 19.3.1(react@19.3.1)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1912,19 +1912,19 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.104.0(react@19.3.0)
+        version: 5.104.3(react@19.3.1)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -1936,7 +1936,7 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -1954,19 +1954,19 @@ importers:
         version: file:tools/enum-to-array
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       find-import:
         specifier: workspace:^
         version: file:tools/find-import
       format-file:
         specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -1978,28 +1978,28 @@ importers:
         version: file:tools/iso-crypto
       juniper:
         specifier: workspace:^
-        version: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       juniper-validator:
         specifier: workspace:^
-        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       lease-cache:
         specifier: workspace:^
         version: file:tools/lease-cache
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       normalized-react-query:
         specifier: workspace:^
-        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))(react@19.3.0)
+        version: file:tools/normalized-react-query(@tanstack/react-query@5.104.3(react@19.3.1))(react@19.3.1)
       nx-lifecycle:
         specifier: workspace:^
-        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.18(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -2008,16 +2008,16 @@ importers:
         version: file:tools/pg-dolly
       pg-dolly-schema:
         specifier: workspace:^
-        version: file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       punycode-esm:
         specifier: workspace:^
         version: file:tools/punycode-esm
       react:
         specifier: 'catalog:'
-        version: 19.3.0
+        version: 19.3.1
       static-emitter:
         specifier: workspace:^
         version: file:tools/static-emitter
@@ -2047,16 +2047,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2071,13 +2071,13 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       playwright:
         specifier: 'catalog:'
         version: 1.62.1
@@ -2098,16 +2098,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2125,13 +2125,13 @@ importers:
         version: 5.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       normalize-exception:
         specifier: 'catalog:'
         version: 4.0.1
@@ -2155,16 +2155,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2179,16 +2179,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       miniflare:
         specifier: 'catalog:'
         version: 4.20260730.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2200,62 +2200,62 @@ importers:
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments':
         specifier: 'catalog:'
-        version: 4.8.1(eslint@10.12.0(supports-color@8.1.1))
+        version: 4.8.1(eslint@10.13.0(supports-color@8.1.1))
       '@eslint/js':
         specifier: 'catalog:'
-        version: 10.0.1(eslint@10.12.0(supports-color@8.1.1))
+        version: 10.0.1(eslint@10.13.0(supports-color@8.1.1))
       '@typescript-eslint/eslint-plugin':
         specifier: 'catalog:'
-        version: 8.70.1(patch_hash=14289edb1532bcdc0e05ca26e6c77a119c79ddb4a07e3f2053e87027b7e325d9)(@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 8.70.1(patch_hash=14289edb1532bcdc0e05ca26e6c77a119c79ddb4a07e3f2053e87027b7e325d9)(@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@typescript-eslint/parser':
         specifier: 'catalog:'
-        version: 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@typescript-eslint/utils':
         specifier: 'catalog:'
-        version: 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       ajv:
         specifier: 'catalog:'
         version: 8.20.0
       eslint-config-prettier:
         specifier: 'catalog:'
-        version: 10.1.8(eslint@10.12.0(supports-color@8.1.1))
+        version: 10.1.8(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-import-x:
         specifier: 'catalog:'
-        version: 4.17.1(@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 4.17.1(@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-jsdoc:
         specifier: 'catalog:'
-        version: 65.1.0(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 65.3.11(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-jsx-a11y:
         specifier: 'catalog:'
-        version: 6.10.2(eslint@10.12.0(supports-color@8.1.1))
+        version: 6.10.2(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-n:
         specifier: 'catalog:'
-        version: 18.4.0(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))
+        version: 18.4.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-react:
         specifier: 'catalog:'
-        version: 7.37.5(eslint@10.12.0(supports-color@8.1.1))
+        version: 7.37.5(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-react-hooks:
         specifier: 'catalog:'
-        version: 7.1.1(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: 7.1.1(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-regexp:
         specifier: 'catalog:'
-        version: 3.3.1(eslint@10.12.0(supports-color@8.1.1))
+        version: 3.3.1(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-sonarjs:
         specifier: 'catalog:'
-        version: 4.2.1(eslint@10.12.0(supports-color@8.1.1))
+        version: 4.2.2(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-unicorn:
         specifier: 'catalog:'
-        version: 77.0.0(eslint@10.12.0(supports-color@8.1.1))
+        version: 77.0.0(eslint@10.13.0(supports-color@8.1.1))
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.5.14
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/chai':
         specifier: 'catalog:'
         version: 5.2.3
@@ -2279,10 +2279,10 @@ importers:
         version: 6.3.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2307,13 +2307,13 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2328,10 +2328,10 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2349,22 +2349,22 @@ importers:
         version: 3.0.3
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       ignore:
         specifier: 'catalog:'
-        version: 7.0.6
+        version: 7.0.12
       nx:
         specifier: 'catalog:'
-        version: 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
+        version: 23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))
       nx-lifecycle:
         specifier: workspace:^
-        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.18(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       publint:
         specifier: 'catalog:'
         version: 0.3.25
@@ -2382,16 +2382,16 @@ importers:
         version: file:tools/constant-consistent-hash/test-vectors
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2406,16 +2406,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2437,16 +2437,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2461,16 +2461,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2482,16 +2482,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/chai':
         specifier: 'catalog:'
         version: 5.2.3
@@ -2512,16 +2512,16 @@ importers:
         version: 6.3.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2537,16 +2537,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2561,13 +2561,13 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2579,16 +2579,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2603,16 +2603,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2628,16 +2628,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2652,16 +2652,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2680,16 +2680,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2707,19 +2707,19 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       npm-barrelify:
         specifier: catalog:leyman
-        version: barrelify@2.1.2(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: barrelify@2.2.1(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       prettier:
         specifier: 'catalog:'
-        version: 3.9.9
+        version: 3.9.10
       tmp-promise:
         specifier: 'catalog:'
         version: 3.0.3
@@ -2737,16 +2737,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2761,16 +2761,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2786,16 +2786,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2810,16 +2810,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       npm-barrelify:
         specifier: catalog:leyman
-        version: barrelify@2.1.2(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: barrelify@2.2.1(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2831,16 +2831,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2861,16 +2861,16 @@ importers:
         version: file:tools/entry-script
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       sinon:
         specifier: 'catalog:'
         version: 22.1.0
@@ -2885,16 +2885,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2906,22 +2906,22 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -2933,16 +2933,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -2960,7 +2960,7 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
@@ -2972,10 +2972,10 @@ importers:
         version: 0.4.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       p-defer:
         specifier: 'catalog:'
         version: 4.0.1
@@ -2996,25 +2996,25 @@ importers:
         version: 20.14.5
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@tanstack/react-query':
         specifier: 'catalog:'
-        version: 5.104.0(react@19.3.0)
+        version: 5.104.3(react@19.3.1)
       '@testing-library/dom':
         specifier: 'catalog:'
         version: 10.4.2
       '@testing-library/react':
         specifier: 'catalog:'
-        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+        version: 16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -3032,25 +3032,25 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       react:
         specifier: 'catalog:'
-        version: 19.3.0
+        version: 19.3.1
       react-dom:
         specifier: 'catalog:'
-        version: 19.3.0(react@19.3.0)
+        version: 19.3.1(react@19.3.1)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -3062,16 +3062,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -3086,13 +3086,13 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -3108,16 +3108,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -3135,16 +3135,16 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -3156,16 +3156,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -3180,13 +3180,13 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -3198,16 +3198,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -3219,22 +3219,22 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+        version: file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -3250,16 +3250,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -3277,13 +3277,13 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       sinon:
         specifier: 'catalog:'
         version: 22.1.0
@@ -3302,16 +3302,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -3326,10 +3326,10 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -3345,13 +3345,13 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/node':
         specifier: 'catalog:'
         version: 24.19.0
@@ -3363,7 +3363,7 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -3381,16 +3381,16 @@ importers:
         version: 2.5.14
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
       '@swc/core':
         specifier: 'catalog:'
-        version: 1.16.2(@swc/helpers@0.5.23)
+        version: 1.16.18(@swc/helpers@0.5.23)
       '@types/mocha':
         specifier: 'catalog:'
         version: 10.0.10
@@ -3405,19 +3405,19 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.12.0(supports-color@8.1.1)
+        version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
       mocha:
         specifier: 'catalog:'
-        version: 12.0.2
+        version: 12.0.3
       mocha-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2)
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       npm-barrelify:
         specifier: catalog:leyman
-        version: barrelify@2.1.2(@biomejs/biome@2.5.14)(prettier@3.9.9)
+        version: barrelify@2.2.1(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -5242,7 +5242,7 @@ packages:
     resolution: {directory: leyman/eslint-config, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      eslint: ^10.12.0
+      eslint: ^10.13.0
 
   '@leyman/expect@file:leyman/expect':
     resolution: {directory: leyman/expect, type: directory}
@@ -5811,86 +5811,86 @@ packages:
       chokidar:
         optional: true
 
-  '@swc/core-darwin-arm64@1.16.2':
-    resolution: {integrity: sha512-i/j0HNbnn79qnTVPicvay92Nark8fW8NQqn1e2mGERjUXNpBV0+SwQxlRpk2zBhn6laJ8PDI6Kn1nHZhnz3LCA==}
+  '@swc/core-darwin-arm64@1.16.18':
+    resolution: {integrity: sha512-ozgiCHyFDCwfXzTnaLR+i8WxEyt06GTudn9rPh08vj+u3Z8vMvt5Pi8T+BikyNXm7y++h6UMdqsnJuWrV+tk2A==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [darwin]
 
-  '@swc/core-darwin-x64@1.16.2':
-    resolution: {integrity: sha512-HrwqHyEyHVXO3qTk8EkNK7/b6sOZSEoNh+pot6RdE5x0LbNqfo8LtJUvi3UTXr+5ja/o5HbJdW80eCXo+NjbiA==}
+  '@swc/core-darwin-x64@1.16.18':
+    resolution: {integrity: sha512-tuwxXi+sjxxTAi7GP3NeQXQxOf4SXSiFxKAMYLBdoy7JqGYby6uSDXojcFoLOhSp7oiNGstnaFXxfbP0Hpro9w==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [darwin]
 
-  '@swc/core-linux-arm-gnueabihf@1.16.2':
-    resolution: {integrity: sha512-MdXi83Z/gGp1LIrg+h7HKxiul/z/Bty/ZJSvYAFqDl9zteC1XLSAZdScquKtXPp50rdyXqritTDCqQBhwVfZKA==}
+  '@swc/core-linux-arm-gnueabihf@1.16.18':
+    resolution: {integrity: sha512-SMdhmY1P9Kveh0MRj6vqQF98bsjnDa0lBBvkd/lcpxmjj5QHJOQAU0N3g6h7GPWpBMs3h2g3lHu/QTDn+uMsXg==}
     engines: {node: '>=10'}
     cpu: [arm]
     os: [linux]
 
-  '@swc/core-linux-arm64-gnu@1.16.2':
-    resolution: {integrity: sha512-/jcTmK6Ktz3owM3YtiKvjofV6p3VpHnYzTIrOGwDIOsDigRAAVuZ8east33wYO/7UTdKYFlyHNnJNT0WJqOA3Q==}
+  '@swc/core-linux-arm64-gnu@1.16.18':
+    resolution: {integrity: sha512-ep/mQyhblQYZ6tkfq0IJspcVSFl5jdywks3kejanrbB31uuujRD/QWOoGNp2L3lLRdAdQvgl/M3pA7g3hSuQug==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@swc/core-linux-arm64-musl@1.16.2':
-    resolution: {integrity: sha512-4gFarKaFnlJTSlJYKmMhV4u+3YE4uYfiydpBoYjmgQhCf9lAieOq+WilZaK9vVSHeqLuQpTEiGULZqAdsRX5Dw==}
+  '@swc/core-linux-arm64-musl@1.16.18':
+    resolution: {integrity: sha512-pkzGVxrAQu5+febW1a/Aiph3YJk0UiJKXoWbxnDVEIOZWkk5aETHTuyVsOQ3kOgn2dzNMvJVeqcoEQdH+ntqWQ==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@swc/core-linux-ppc64-gnu@1.16.2':
-    resolution: {integrity: sha512-syqSLGd6KlZ1PciNzs6bIUlhOuFztZufebOHaERjc4N4SqNZxyqYd4I+jj/EfOYnpe0kNjccn9HJLN1p5dz3+w==}
+  '@swc/core-linux-ppc64-gnu@1.16.18':
+    resolution: {integrity: sha512-v9kiu4as1pJyQ8ESFTtMNydZ99m86QXLfAtm+XiKPKS93pXL80BCaXokAs9ebioGkIXgmwfbzUCdUC62H3JWkw==}
     engines: {node: '>=10'}
     cpu: [ppc64]
     os: [linux]
     libc: [glibc]
 
-  '@swc/core-linux-s390x-gnu@1.16.2':
-    resolution: {integrity: sha512-ZBBLK+ewGyXLzWeMS7wbKtWBdnif6etn7xvPY/iOfbdsjX/+bgkp1pQt2lWF2wlu2hXYZuhJ/tHZE/QR8/apzg==}
+  '@swc/core-linux-s390x-gnu@1.16.18':
+    resolution: {integrity: sha512-vU7TKRJ26i86YQr4QY/5bdcH72KzkBbSSUfPlErW6d6KOR47BcVGlYZFTcMMYlmd3CVSXFHW18tBSila66YfoA==}
     engines: {node: '>=10'}
     cpu: [s390x]
     os: [linux]
     libc: [glibc]
 
-  '@swc/core-linux-x64-gnu@1.16.2':
-    resolution: {integrity: sha512-LyHJgxCA4Tje0ysBMbEb0tt/ie8kgUKoFE3JAKFhpevmTmhYEoC0H9s47WuDsqiFckF1ITUguZIXJG6K5e0dvg==}
+  '@swc/core-linux-x64-gnu@1.16.18':
+    resolution: {integrity: sha512-Ml6kbe0BoVJkSgmYPAEUudGcu84jaQeqDN8xeMumbwNpT0vlmm7241Ddp9XKCjQABvjomnXF0OiNOAfjBhNDNw==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@swc/core-linux-x64-musl@1.16.2':
-    resolution: {integrity: sha512-PghXJlVM1cgtLfNUR1vxFo1z+PDRAe8cWAJlZZ7spmeiN7BospGXg/MHUg7oNSgwSX7Zo//YKv9P5yD9apsFJQ==}
+  '@swc/core-linux-x64-musl@1.16.18':
+    resolution: {integrity: sha512-TGU24+QmmS8y/hg0BLKgOU3W5TCcQC9bgGl8AB0R61gTNQdWdcmCehRLAJwlZfxtAml66xMJ6PWrX8NKrABOsA==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@swc/core-win32-arm64-msvc@1.16.2':
-    resolution: {integrity: sha512-StTOSefYBxemvNYYUI3UmO1a8y+hSPjjfHogC2TEHL+Z1PlEBim/XtLas5rS04jAzT9RrNmbtX911SZ42H9jSQ==}
+  '@swc/core-win32-arm64-msvc@1.16.18':
+    resolution: {integrity: sha512-S53hm7Amc3YV8t2BUT6R7J+zSnwiGarG+GnxMca4W0uMkxBZ3Gl6jBwEgb6YqrYjf2DzOuRfauztqptCO76a/w==}
     engines: {node: '>=10'}
     cpu: [arm64]
     os: [win32]
 
-  '@swc/core-win32-ia32-msvc@1.16.2':
-    resolution: {integrity: sha512-fycER209DYIzsibpTMC+chND05OfOjgztWL9U8OE6/uUlsOUZH3eh98isBLEnOymYUhlJLEt5++W1+KL/FOh5Q==}
+  '@swc/core-win32-ia32-msvc@1.16.18':
+    resolution: {integrity: sha512-+6/10+OJmU12zWkrPVG0QeQEr8VsWeF8gyXrOfHZMIfMOfz8/ULXVZPhV9GhGMKSWake1xEJj2IYCiFRS/xMpQ==}
     engines: {node: '>=10'}
     cpu: [ia32]
     os: [win32]
 
-  '@swc/core-win32-x64-msvc@1.16.2':
-    resolution: {integrity: sha512-cSd1z6ivSrJPVr+moVwOHWjeKy6TpO4/Shwcv5KCrKYXCccxwh4pRy1C3fDioNx2PF1jPZWHKZjtXt+Be9VbaQ==}
+  '@swc/core-win32-x64-msvc@1.16.18':
+    resolution: {integrity: sha512-7LsVrIICAZWSajXT6DwO7PYSTnW9maamOCyQylaOh13Viptrgi/7hl9fP75SiHe+kscaJahGXcorgt4MOOh/1w==}
     engines: {node: '>=10'}
     cpu: [x64]
     os: [win32]
 
-  '@swc/core@1.16.2':
-    resolution: {integrity: sha512-95I4kiSMeveI/Mhi+tE4fiWcWLUMfzfKrk0jtr8LRMqHgOgq+xHS+zExkDqoO4b5OeeuXHMWVdD5MeP3X6sULw==}
+  '@swc/core@1.16.18':
+    resolution: {integrity: sha512-0cYQLkpcwUngg55TDwpwrrVOU+B6zh1NFbp+oS7dVFhmYkzaARelwugo/bzPJh1FrcnppmF+KTqioCGwyqbcEw==}
     engines: {node: '>=10'}
     peerDependencies:
       '@swc/helpers': '>=0.5.17'
@@ -5907,11 +5907,11 @@ packages:
   '@swc/types@0.1.28':
     resolution: {integrity: sha512-V6Mnml8v09QALx6K0elJ7o9K/MkVDtW3t6L+7Ou/JcWtb3xwId2AH4FeOceySd2JaO87IMw4+6vSZxLm34LPbw==}
 
-  '@tanstack/query-core@5.104.0':
-    resolution: {integrity: sha512-JrC2r/JQlXt7khBSdUpsgxNvybzOg+aITa+ARRMlP2AFo93Y8vIqz077rp+e61mJetSZ0T6AJbwW1JHer1vrPQ==}
+  '@tanstack/query-core@5.104.3':
+    resolution: {integrity: sha512-DZY9TuJAOgU3UyHUhXb4CcTYEHNZszlwkPg4VViIwTxOKzLprPUU+rbaPZQd3srqkGOtpaDdKpW972UV/LKlcg==}
 
-  '@tanstack/react-query@5.104.0':
-    resolution: {integrity: sha512-e1TZmDCQnWIfiDVryIHeA6Idj+Lfx1hORLOhXS/l5wcgvtVD4yYqbTDl378sGQKIi2cSgb0TEMC9cKK8GGoJEw==}
+  '@tanstack/react-query@5.104.3':
+    resolution: {integrity: sha512-5Ts1ImwJKqoJgPkLxl9WrPQy1JEoEmti3MaaODCfBamHUGFk57IFrc+AIksPq+BAm10EsroX56qm398Z42LG7w==}
     peerDependencies:
       react: ^18 || ^19
 
@@ -6806,8 +6806,8 @@ packages:
   bare-events@2.5.4:
     resolution: {integrity: sha512-+gFfDkR8pj4/TrWCGUGWmJIkBwuxPS5F+a5yWjOHQt2hHvNZd5YLzadjmDUtFmMM4y429bnKLa8bYBMHcYdnQA==}
 
-  barrelify@2.1.2:
-    resolution: {integrity: sha512-skhL/mgwkLgAm4xL0e1eA3eeELz0eMniCvOkU2sK1wzqkltwGoatQ+kt4h5/BYGwCqAgZA/5jL+sgFN5eZjExA==}
+  barrelify@2.2.1:
+    resolution: {integrity: sha512-sH0+Hcw1Szwz/VexuK7jYRtdjtbcU0sHCJz/5EWP12el+AZfewiziipEsiTba5rlPOLR6+oJSM8zNJ15b5GCUw==}
     engines: {node: '>=24'}
     hasBin: true
 
@@ -7395,8 +7395,8 @@ packages:
     resolution: {integrity: sha512-kxL7msIffSuh9aaFAMD7rxAIuTRMAHMeBtgHW2yUdWw732ZNh4MehkF2gdjvtdmikkaIP9bFDDJOPlsvm7avrA==}
     engines: {node: '>=20.19.0'}
 
-  entry-script@4.1.0:
-    resolution: {integrity: sha512-gSEc40CrOVREBfo0w4pV9KANaEHziNfirL0WIx4ViTj2at4c0Dkx+0fhLXQ1rOc1cpIGW5AXrvFk+jUrJdigUQ==}
+  entry-script@4.1.1:
+    resolution: {integrity: sha512-UOH518P76cK8WxAk6DRMdA7dw+KfKIc/oZCErBYq0gO91PyS6NHj+xRP0KsJ4KNt9Wrk++FOJNruJlkJ/tdPsg==}
     engines: {node: '>=24'}
 
   entry-script@file:tools/entry-script:
@@ -7528,8 +7528,8 @@ packages:
       eslint-import-resolver-node:
         optional: true
 
-  eslint-plugin-jsdoc@65.1.0:
-    resolution: {integrity: sha512-P7levv6MorzYZ85Yy/UVOAY9FKxwU6NJ9+c02QPYhzoIVg007OCtMi+9na8Xkho64Bu89QguoLSxH78YSmy1Zg==}
+  eslint-plugin-jsdoc@65.3.11:
+    resolution: {integrity: sha512-gBHU5ansRN+aQTVuLbpXaLlSKChRfBtfDDEeVHDdjSfbUAhVxMNAI/gESSnOCuUlpYlfPUIdIFWDVCNka95mRw==}
     engines: {node: ^22.22.2 || >=24.15.0}
     peerDependencies:
       eslint: ^7.0.0 || ^8.0.0 || ^9.0.0 || ^10.0.0
@@ -7544,8 +7544,8 @@ packages:
     peerDependencies:
       eslint: ^3 || ^4 || ^5 || ^6 || ^7 || ^8 || ^9
 
-  eslint-plugin-n@18.4.0:
-    resolution: {integrity: sha512-TEm6Nqn9+l7EWfJXOL6pmrEdpiM2ZTgo4fNMRDvBTM70jeQ7x3X3Akcx+sRCIRfpcSVwMypH3ZAA33PLyNKmYw==}
+  eslint-plugin-n@18.4.1:
+    resolution: {integrity: sha512-2sBReWOvCbzgkPri9M5SFmD5EbIwZLa1xz6B5RZsrI19WSFKpyx1sOMr+pdk8puCiXuEgCbErEHy1PuaUrc/4w==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     peerDependencies:
       eslint: '>=8.57.1'
@@ -7575,8 +7575,8 @@ packages:
     peerDependencies:
       eslint: '>=9.38.0'
 
-  eslint-plugin-sonarjs@4.2.1:
-    resolution: {integrity: sha512-WGsnVkUxmHyBOytShcIeE+vhQaS8e+gYgbHNNi4y2e5Zj+DpE2DLTvarqDUhNwjceTZHGLgevSgfBSEVkt4EaA==}
+  eslint-plugin-sonarjs@4.2.2:
+    resolution: {integrity: sha512-usNF9GfP89ibwhfxpZaCMW40sC7UEOusDgDCk7lyqAhh4AYdbBaAgLVL5Y/QS0jSed8eJ2ACGH6zzE8ezd/yZQ==}
     peerDependencies:
       eslint: ^8.0.0 || ^9.0.0 || ^10.0.0
 
@@ -7598,8 +7598,8 @@ packages:
     resolution: {integrity: sha512-tD40eHxA35h0PEIZNeIjkHoDR4YjjJp34biM0mDvplBe//mB+IHCqHDGV7pxF+7MklTvighcCPPZC7ynWyjdTA==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
 
-  eslint@10.12.0:
-    resolution: {integrity: sha512-npHjrHb2o4ehH3mE+YuxABR+0gyb0aVWCIolgJDArwCiHEIsonBm3ZKjel5b0U5+a+MbEvIyRCGCzD3eKKK2NA==}
+  eslint@10.13.0:
+    resolution: {integrity: sha512-UohDjD4zSzEwhf58M3O7vc/ycc8O1I7dNlhtD0WxE8Px8EHNJKtUwzBqrzeGhisRuv2ag4sAYswszCJRgKXYUg==}
     engines: {node: ^20.19.0 || ^22.13.0 || >=24}
     hasBin: true
     peerDependencies:
@@ -7668,8 +7668,8 @@ packages:
   fast-deep-equal@3.1.3:
     resolution: {integrity: sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q==}
 
-  fast-equals@6.0.4:
-    resolution: {integrity: sha512-JiBeR0k76FIahi9zAtQR7X1jgZDKLE+fs5S9ryjOGYZWZCOcm8QiwgeahkFvaboS3i6PkGBopRznHKuKhm9zpg==}
+  fast-equals@6.2.1:
+    resolution: {integrity: sha512-s7KFkLPAAbIDGTh+nVYhjTiwKGvgMXAUG5vwzg8vQKj7NSRZ4eEGExBQ4rq9V90fTYVWd1cb/Wr4ffCNBmLQMQ==}
     engines: {node: '>=6.0.0'}
 
   fast-fifo@1.3.2:
@@ -7801,8 +7801,8 @@ packages:
     resolution: {integrity: sha512-G6NsmEW15s0Uw9XnCg+33H3ViYRyiM0hMrMhhqQOR8NFc5GhYrI+6I3u7OTw7b91J2g8rtvMBZJDbcGb2YUniw==}
     engines: {node: '>= 18'}
 
-  format-file@1.0.2:
-    resolution: {integrity: sha512-ttKhxIXHU2akFT0UDSD36bLcfZ0jKm5xGXiz1cpD+fqcSQsn0+m+r5PnHCp2k4MbuGbMGql8vSd74tS8Nr6xUA==}
+  format-file@1.0.3:
+    resolution: {integrity: sha512-9v29JVDmSOkoEy5RVjugXVO7UFX7BKr2XCmzYo2Yq3VqTwI12e8NAIo0Ytz/mlTItQa+QHsf0dlcfqKCx3Ocpg==}
     engines: {node: '>=24'}
     peerDependencies:
       '@biomejs/biome': ^2.5.14
@@ -7818,7 +7818,7 @@ packages:
     engines: {node: '>=24'}
     peerDependencies:
       '@biomejs/biome': ^2.5.14
-      prettier: ^3.9.9
+      prettier: ^3.9.10
     peerDependenciesMeta:
       '@biomejs/biome':
         optional: true
@@ -7859,11 +7859,20 @@ packages:
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
 
+  generated-signature@0.1.2:
+    resolution: {integrity: sha512-cuD/6QsOR+/7NhwGVBN+lf4nFHMHplCHV0Lac2hplgELAh4KHFwHfXA8w2eFleanPN0KrKtikkeTVG3I0NFkOw==}
+    engines: {node: '>=24'}
+    peerDependencies:
+      eslint: ^10.12.0
+    peerDependenciesMeta:
+      eslint:
+        optional: true
+
   generated-signature@file:tools/generated-signature/generated-signature:
     resolution: {directory: tools/generated-signature/generated-signature, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      eslint: ^10.12.0
+      eslint: ^10.13.0
     peerDependenciesMeta:
       eslint:
         optional: true
@@ -7983,12 +7992,12 @@ packages:
   hast-util-whitespace@3.0.0:
     resolution: {integrity: sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==}
 
-  haywire-launcher@1.0.2:
-    resolution: {integrity: sha512-YzPtBOPsxMyu/Vm6dJVhi/DzlOOblW9CmlMpugA/JUrUXoRxCDRvF3Wx8ahON7OxAFPgIearjp9bGp70+2p5WA==}
+  haywire-launcher@1.1.0:
+    resolution: {integrity: sha512-nhnFeVkMnxGPGtdvJZErc++wWUZ8dGDwRUFpxSnYM8MAu0rhy+q4G/C4B1ZP4MmI7ZOdGRLAC+kNQaKY1UIxNg==}
     engines: {node: '>=24'}
     peerDependencies:
-      entry-script: ^4.1.0
-      haywire: ^2.0.0
+      entry-script: ^4.1.1
+      haywire: ^2.0.2
 
   haywire-launcher@file:tools/haywire-launcher:
     resolution: {directory: tools/haywire-launcher, type: directory}
@@ -7997,8 +8006,8 @@ packages:
       entry-script: workspace:^
       haywire: workspace:^
 
-  haywire@2.0.0:
-    resolution: {integrity: sha512-tzifHDz/Rcas6Jlgr8CyUUGty9tCdEoYYxvkInqmLkNLzX06TeXBRj0yym1LQpOphYgj54j5+QmtG00qkXetLA==}
+  haywire@2.0.3:
+    resolution: {integrity: sha512-6Oh9PR51G7uc+vX3ftdAsabqEwD6YDaEoSBhDePEoNOBev+DkwSuUMnZwWvqXNNS3FugN2nrAEZwLVkiKf9WnA==}
     engines: {node: '>=24'}
 
   haywire@file:tools/haywire:
@@ -8073,6 +8082,10 @@ packages:
 
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
+    engines: {node: '>= 4'}
+
+  ignore@7.0.12:
+    resolution: {integrity: sha512-/8UvqAPU9DGTI9k4mxtf49U37Isfwr8Uts96+SBHIkFxPJnHS0Ew4f00sM4Scd8V8EjM0jUNtVDdv1kPdt35lg==}
     engines: {node: '>= 4'}
 
   ignore@7.0.6:
@@ -8369,7 +8382,7 @@ packages:
     resolution: {directory: apps/juniper, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      eslint: ^10.12.0
+      eslint: ^10.13.0
     peerDependenciesMeta:
       eslint:
         optional: true
@@ -8546,6 +8559,10 @@ packages:
 
   lru-cache@11.2.7:
     resolution: {integrity: sha512-aY/R+aEsRelme17KGQa/1ZSIpLpNYYrhcrepKTZgE+W3WM16YMCaPwOHLHsmopZHELU0Ojin1lPVxKR0MihncA==}
+    engines: {node: 20 || >=22}
+
+  lru-cache@11.5.3:
+    resolution: {integrity: sha512-U4N8FgzmWxc8k1VH8Kr6lQg18U7Fjvby6wXHVRX/ZZ7IwWbRMgrRbP0Wrb5q5NVinryp4SQampHKdvtecItxUg==}
     engines: {node: 20 || >=22}
 
   lru-cache@5.1.1:
@@ -8768,13 +8785,13 @@ packages:
     engines: {node: '>=24'}
     peerDependencies:
       '@types/mocha': ^10.0.10
-      mocha: ^12.0.2
+      mocha: ^12.0.3
     peerDependenciesMeta:
       '@types/mocha':
         optional: true
 
-  mocha@12.0.2:
-    resolution: {integrity: sha512-SjAulGHxlMJLCD1bhvJBAiYwYxglydRzA9PDQ5MALq1oLRMMtIhxSQJ0olCFgA7c9YbTdxC0KOV0wl8JEDYVhA==}
+  mocha@12.0.3:
+    resolution: {integrity: sha512-beammieDdiWdkjANWeWPpkxUROYGi5FN88fPOkLiticz7HTg3Y+Pho3EYE6SUdcuWnZ3h2WD8EXCA55JF4o6wg==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
@@ -8833,7 +8850,7 @@ packages:
     resolution: {directory: tools/normalized-react-query, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      '@tanstack/react-query': ^5.104.0
+      '@tanstack/react-query': ^5.104.3
       react: ^18 || ^19
 
   npm-run-path@4.0.1:
@@ -8945,8 +8962,8 @@ packages:
   openapi-types@12.1.3:
     resolution: {integrity: sha512-N4YtSYJqghVu4iek2ZUvcN/0aqH1kRDuNqzcycDxhOUpg7GdvLa2F3DgS6yBNhInhv2r/6I0Flkn7CqL8+nIcw==}
 
-  openapi3-ts@4.6.1:
-    resolution: {integrity: sha512-XW9MOldkhoICNeXVzzmXzmOW5G73ppOEGmh7fLCqHjgfdEYCGGN+00MlVCeUZgovjjfC56j9tvtDt1zGabNjjA==}
+  openapi3-ts@4.6.2:
+    resolution: {integrity: sha512-gyyil3DweqhXiEhTqtAs9wwRLfWHmetwhI4kmM5Rn0d6gtmK863Ki7qqbQnp9+Wwlqoe3B1LFWj7kMp5ctE4rQ==}
 
   optionator@0.9.4:
     resolution: {integrity: sha512-6IpQ7mKUxRcZNLIObR0hz7lxsapSSIYNZJwXPGeF0mTVqGKFIXj1DQcMoT22S3ROcLyY/rz0PWaWZ9ayWmad9g==}
@@ -9160,8 +9177,8 @@ packages:
     resolution: {integrity: sha512-M7LhCsdNbNgiLYiP4WjsfLUuFmCfnjdF6jKe2R9NKl4WFN+HZPGHJZ9lnLP7f9ZnKe3U9nuWD0szirmj+migUg==}
     engines: {node: '>=12.0.0'}
 
-  populate-files@1.0.2:
-    resolution: {integrity: sha512-92a3zWZ7INWuBslULUJXILUiw9jSxJhjo+B9SWM9TnsC/78fszTEqVLmVjUk+D0p7xQscgIjaDO14iAH2fLikg==}
+  populate-files@1.1.3:
+    resolution: {integrity: sha512-AqmiSb0GXCkYVVR/moirE/mAriL7ury9aODzDK4VBmMAbSPQRQuS37Wp+5Wft3eO6gos9r7z0irMec8UZYipew==}
     engines: {node: '>=24'}
 
   populate-files@file:apps/populate-files/populate-files:
@@ -9196,8 +9213,8 @@ packages:
     resolution: {integrity: sha512-vkcDPrRZo1QZLbn5RLGPpg/WmIQ65qoWWhcGKf/b5eplkkarX0m9z8ppCat4mlOqUsWpyNuYgO3VRyrYHSzX5g==}
     engines: {node: '>= 0.8.0'}
 
-  prettier@3.9.9:
-    resolution: {integrity: sha512-Z/CJHIkdujO/OtN7nXUii0Rf3VT5SRuhjBA82Xvu2XhBUgX3nhP67T0LHceBdQLex7OOFGTox+Q5Yg8Jk2Qivg==}
+  prettier@3.9.10:
+    resolution: {integrity: sha512-skGHTH1Yb9QvaTC4hWnRTzEYtCpApF0UMBPz+t/0ZPzP8ihefo/btKd+QA7pUE0fEwA1SbS/NmhyEcstdXOIdA==}
     engines: {node: '>=14'}
     hasBin: true
 
@@ -9257,10 +9274,10 @@ packages:
     resolution: {integrity: sha512-Y3NoRtprEEZQD8RfxMCfS0ZTqc4e+i18OrXEXAvpM6TfC/3y+0L5rNbZiSnbBBEkDfFzbpd8o+cE8q3/anjMGA==}
     engines: {node: '>=22'}
 
-  react-dom@19.3.0:
-    resolution: {integrity: sha512-JDk8dgif51OjFoDE70+OT9ICyYr+69HlmihNwp1+Nsfbna3t5sIiCa9ZJktDmQ4/1b/rn26hIAR2uYXDMr5r0Q==}
+  react-dom@19.3.1:
+    resolution: {integrity: sha512-Y0bARz53lhEC1NMCASs0/j+faB/zqt3R8hpvg1e8+61ZVJ4UL0UdC4cBbXfZMcIuhrfgeILTLe+ZeBCavQPtKQ==}
     peerDependencies:
-      react: ^19.3.0
+      react: ^19.3.1
 
   react-is@16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
@@ -9268,8 +9285,8 @@ packages:
   react-is@17.0.2:
     resolution: {integrity: sha512-w2GsyukL62IJnlaff/nRegPQR94C/XXamvMWmSHRJ4y7Ts/4ocGRmTHvOs8PSE6pB3dWOrD/nueuU5sduBsQ4w==}
 
-  react@19.3.0:
-    resolution: {integrity: sha512-E8LUcbtBWt20bbl2YoHfx4ZDBdxVTfOKtCZn9cDSJ4l6/nuoApcpIBcj47t2wZoVX8g2ZHuMHbiShgCR1T5Sog==}
+  react@19.3.1:
+    resolution: {integrity: sha512-QNhWdt7nrgVWWQG58QuGsAR3jv3Hbe4mb4vz7w2csnHavciZJgda1CPNaldF6eVxv90ud3jUXpKlHL69gO38yw==}
     engines: {node: '>=0.10.0'}
 
   readable-stream@3.6.2:
@@ -11576,15 +11593,15 @@ snapshots:
   '@esbuild/win32-x64@0.28.2':
     optional: true
 
-  '@eslint-community/eslint-plugin-eslint-comments@4.8.1(eslint@10.12.0(supports-color@8.1.1))':
+  '@eslint-community/eslint-plugin-eslint-comments@4.8.1(eslint@10.13.0(supports-color@8.1.1))':
     dependencies:
       escape-string-regexp: 4.0.0
-      eslint: 10.12.0(supports-color@8.1.1)
-      ignore: 7.0.6
+      eslint: 10.13.0(supports-color@8.1.1)
+      ignore: 7.0.12
 
-  '@eslint-community/eslint-utils@4.10.1(eslint@10.12.0(supports-color@8.1.1))':
+  '@eslint-community/eslint-utils@4.10.1(eslint@10.13.0(supports-color@8.1.1))':
     dependencies:
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       eslint-visitor-keys: 3.4.3
 
   '@eslint-community/regexpp@4.12.2': {}
@@ -11610,9 +11627,9 @@ snapshots:
       mdn-data: 2.35.0
       source-map-js: 1.2.2
 
-  '@eslint/js@10.0.1(eslint@10.12.0(supports-color@8.1.1))':
+  '@eslint/js@10.0.1(eslint@10.13.0(supports-color@8.1.1))':
     optionalDependencies:
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
 
   '@eslint/object-schema@3.0.5': {}
 
@@ -11974,10 +11991,10 @@ snapshots:
 
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors': {}
 
-  '@leyman/demo-agents-mcp@file:demos/agents/mcp(eslint@10.12.0(supports-color@8.1.1))':
+  '@leyman/demo-agents-mcp@file:demos/agents/mcp(eslint@10.13.0(supports-color@8.1.1))':
     dependencies:
-      '@leyman/demo-openapi-client': file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))
-      '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
+      '@leyman/demo-openapi-client': file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))
+      '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))
       '@modelcontextprotocol/server': 2.3.1
       haywire: file:tools/haywire
       hono: 4.13.13
@@ -11992,9 +12009,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@leyman/demo-openapi-client@file:demos/openapi/client(eslint@10.12.0(supports-color@8.1.1))':
+  '@leyman/demo-openapi-client@file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))':
     dependencies:
-      '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
+      '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))
     transitivePeerDependencies:
       - eslint
 
@@ -12033,11 +12050,11 @@ snapshots:
       - sql.js
       - sqlite3
 
-  '@leyman/demo-openapi-server@file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.12.0(supports-color@8.1.1))':
+  '@leyman/demo-openapi-server@file:demos/openapi/server(@types/pg@8.23.1)(eslint@10.13.0(supports-color@8.1.1))':
     dependencies:
       '@hono/node-server': 2.1.5(hono@4.13.13)
       '@leyman/demo-openapi-database': file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
-      '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))
+      '@leyman/demo-openapi-spec': file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       default-import: file:tools/default-import
@@ -12079,9 +12096,9 @@ snapshots:
       - sql.js
       - sqlite3
 
-  '@leyman/demo-openapi-spec@file:demos/openapi/spec(eslint@10.12.0(supports-color@8.1.1))':
+  '@leyman/demo-openapi-spec@file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))':
     dependencies:
-      juniper: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+      juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
     transitivePeerDependencies:
       - eslint
 
@@ -12091,7 +12108,7 @@ snapshots:
       haywire: file:tools/haywire
       ioredis: 5.11.1(supports-color@8.1.1)
       lease-cache: file:tools/lease-cache
-      lru-cache: 11.2.7
+      lru-cache: 11.5.3
       weighted-rendezvous-hash: file:tools/constant-consistent-hash/weighted-rendezvous-hash
     transitivePeerDependencies:
       - '@aws-sdk/client-dynamodb'
@@ -12100,25 +12117,25 @@ snapshots:
       - orchid-orm
       - supports-color
 
-  '@leyman/eslint-config@file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@leyman/eslint-config@file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
-      '@eslint-community/eslint-plugin-eslint-comments': 4.8.1(eslint@10.12.0(supports-color@8.1.1))
-      '@eslint/js': 10.0.1(eslint@10.12.0(supports-color@8.1.1))
-      '@typescript-eslint/eslint-plugin': 8.70.1(patch_hash=14289edb1532bcdc0e05ca26e6c77a119c79ddb4a07e3f2053e87027b7e325d9)(@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
-      '@typescript-eslint/parser': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
-      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@eslint-community/eslint-plugin-eslint-comments': 4.8.1(eslint@10.13.0(supports-color@8.1.1))
+      '@eslint/js': 10.0.1(eslint@10.13.0(supports-color@8.1.1))
+      '@typescript-eslint/eslint-plugin': 8.70.1(patch_hash=14289edb1532bcdc0e05ca26e6c77a119c79ddb4a07e3f2053e87027b7e325d9)(@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@typescript-eslint/parser': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       ajv: 8.20.0
-      eslint: 10.12.0(supports-color@8.1.1)
-      eslint-config-prettier: 10.1.8(eslint@10.12.0(supports-color@8.1.1))
-      eslint-plugin-import-x: 4.17.1(@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
-      eslint-plugin-jsdoc: 65.1.0(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
-      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.12.0(supports-color@8.1.1))
-      eslint-plugin-n: 18.4.0(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))
-      eslint-plugin-react: 7.37.5(eslint@10.12.0(supports-color@8.1.1))
-      eslint-plugin-react-hooks: 7.1.1(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
-      eslint-plugin-regexp: 3.3.1(eslint@10.12.0(supports-color@8.1.1))
-      eslint-plugin-sonarjs: 4.2.1(eslint@10.12.0(supports-color@8.1.1))
-      eslint-plugin-unicorn: 77.0.0(eslint@10.12.0(supports-color@8.1.1))
+      eslint: 10.13.0(supports-color@8.1.1)
+      eslint-config-prettier: 10.1.8(eslint@10.13.0(supports-color@8.1.1))
+      eslint-plugin-import-x: 4.17.1(@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      eslint-plugin-jsdoc: 65.3.11(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      eslint-plugin-jsx-a11y: 6.10.2(eslint@10.13.0(supports-color@8.1.1))
+      eslint-plugin-n: 18.4.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))
+      eslint-plugin-react: 7.37.5(eslint@10.13.0(supports-color@8.1.1))
+      eslint-plugin-react-hooks: 7.1.1(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      eslint-plugin-regexp: 3.3.1(eslint@10.13.0(supports-color@8.1.1))
+      eslint-plugin-sonarjs: 4.2.2(eslint@10.13.0(supports-color@8.1.1))
+      eslint-plugin-unicorn: 77.0.0(eslint@10.13.0(supports-color@8.1.1))
     transitivePeerDependencies:
       - eslint-import-resolver-node
       - supports-color
@@ -12280,13 +12297,13 @@ snapshots:
       '@tybys/wasm-util': 0.10.4
     optional: true
 
-  '@naxodev/gonx@4.1.2(@nx/devkit@23.3.0(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))))(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))':
+  '@naxodev/gonx@4.1.2(@nx/devkit@23.3.0(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))))(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))':
     dependencies:
       '@melkeydev/go-blueprint': 0.10.11
-      '@nx/devkit': 23.3.0(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))
+      '@nx/devkit': 23.3.0(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))
       chalk: 4.1.2
       npm-run-path: 4.0.1
-      nx: 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
+      nx: 23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))
       p-limit: 6.2.0
       tree-sitter-go: 0.25.0
       tslib: 2.8.1
@@ -12296,16 +12313,16 @@ snapshots:
 
   '@noble/hashes@2.4.0': {}
 
-  '@nx/devkit@23.3.0(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))':
+  '@nx/devkit@23.3.0(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))':
     dependencies:
       ejs: 5.0.1
       minimatch: 10.2.5
-      nx: 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
+      nx: 23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))
       semver: 7.8.5
       tslib: 2.8.1
       yargs-parser: 21.1.1
 
-  '@nx/js@23.3.0(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.2(@swc/helpers@0.5.23))(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))(supports-color@8.1.1)':
+  '@nx/js@23.3.0(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.18(@swc/helpers@0.5.23))(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))(supports-color@8.1.1)':
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
       '@babel/plugin-proposal-decorators': 7.28.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
@@ -12317,8 +12334,8 @@ snapshots:
       '@babel/preset-env': 7.28.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
       '@babel/preset-typescript': 7.28.5(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
       '@babel/runtime': 7.29.7
-      '@nx/devkit': 23.3.0(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))
-      '@nx/workspace': 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
+      '@nx/devkit': 23.3.0(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))
+      '@nx/workspace': 23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))
       '@zkochan/js-yaml': 0.0.7
       babel-plugin-const-enum: 1.2.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
       babel-plugin-macros: 3.1.0
@@ -12337,7 +12354,7 @@ snapshots:
       tinyglobby: 0.2.17
       tslib: 2.8.1
     optionalDependencies:
-      '@swc/cli': 0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+      '@swc/cli': 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
     transitivePeerDependencies:
       - '@babel/traverse'
       - '@swc-node/register'
@@ -12375,12 +12392,12 @@ snapshots:
   '@nx/nx-win32-x64-msvc@23.3.0':
     optional: true
 
-  '@nx/workspace@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))':
+  '@nx/workspace@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))':
     dependencies:
-      '@nx/devkit': 23.3.0(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))
+      '@nx/devkit': 23.3.0(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))
       '@zkochan/js-yaml': 0.0.7
       chalk: 4.1.2
-      nx: 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
+      nx: 23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))
       picomatch: 4.0.4
       semver: 7.8.5
       tslib: 2.8.1
@@ -12622,9 +12639,9 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@swc/cli@0.8.1(@swc/core@1.16.2(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)':
+  '@swc/cli@0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)':
     dependencies:
-      '@swc/core': 1.16.2(@swc/helpers@0.5.23)
+      '@swc/core': 1.16.18(@swc/helpers@0.5.23)
       '@swc/counter': 0.1.3
       '@xhmikosr/bin-wrapper': 14.5.1(supports-color@8.1.1)
       commander: 8.3.0
@@ -12639,59 +12656,59 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@swc/core-darwin-arm64@1.16.2':
+  '@swc/core-darwin-arm64@1.16.18':
     optional: true
 
-  '@swc/core-darwin-x64@1.16.2':
+  '@swc/core-darwin-x64@1.16.18':
     optional: true
 
-  '@swc/core-linux-arm-gnueabihf@1.16.2':
+  '@swc/core-linux-arm-gnueabihf@1.16.18':
     optional: true
 
-  '@swc/core-linux-arm64-gnu@1.16.2':
+  '@swc/core-linux-arm64-gnu@1.16.18':
     optional: true
 
-  '@swc/core-linux-arm64-musl@1.16.2':
+  '@swc/core-linux-arm64-musl@1.16.18':
     optional: true
 
-  '@swc/core-linux-ppc64-gnu@1.16.2':
+  '@swc/core-linux-ppc64-gnu@1.16.18':
     optional: true
 
-  '@swc/core-linux-s390x-gnu@1.16.2':
+  '@swc/core-linux-s390x-gnu@1.16.18':
     optional: true
 
-  '@swc/core-linux-x64-gnu@1.16.2':
+  '@swc/core-linux-x64-gnu@1.16.18':
     optional: true
 
-  '@swc/core-linux-x64-musl@1.16.2':
+  '@swc/core-linux-x64-musl@1.16.18':
     optional: true
 
-  '@swc/core-win32-arm64-msvc@1.16.2':
+  '@swc/core-win32-arm64-msvc@1.16.18':
     optional: true
 
-  '@swc/core-win32-ia32-msvc@1.16.2':
+  '@swc/core-win32-ia32-msvc@1.16.18':
     optional: true
 
-  '@swc/core-win32-x64-msvc@1.16.2':
+  '@swc/core-win32-x64-msvc@1.16.18':
     optional: true
 
-  '@swc/core@1.16.2(@swc/helpers@0.5.23)':
+  '@swc/core@1.16.18(@swc/helpers@0.5.23)':
     dependencies:
       '@swc/counter': 0.1.3
       '@swc/types': 0.1.28
     optionalDependencies:
-      '@swc/core-darwin-arm64': 1.16.2
-      '@swc/core-darwin-x64': 1.16.2
-      '@swc/core-linux-arm-gnueabihf': 1.16.2
-      '@swc/core-linux-arm64-gnu': 1.16.2
-      '@swc/core-linux-arm64-musl': 1.16.2
-      '@swc/core-linux-ppc64-gnu': 1.16.2
-      '@swc/core-linux-s390x-gnu': 1.16.2
-      '@swc/core-linux-x64-gnu': 1.16.2
-      '@swc/core-linux-x64-musl': 1.16.2
-      '@swc/core-win32-arm64-msvc': 1.16.2
-      '@swc/core-win32-ia32-msvc': 1.16.2
-      '@swc/core-win32-x64-msvc': 1.16.2
+      '@swc/core-darwin-arm64': 1.16.18
+      '@swc/core-darwin-x64': 1.16.18
+      '@swc/core-linux-arm-gnueabihf': 1.16.18
+      '@swc/core-linux-arm64-gnu': 1.16.18
+      '@swc/core-linux-arm64-musl': 1.16.18
+      '@swc/core-linux-ppc64-gnu': 1.16.18
+      '@swc/core-linux-s390x-gnu': 1.16.18
+      '@swc/core-linux-x64-gnu': 1.16.18
+      '@swc/core-linux-x64-musl': 1.16.18
+      '@swc/core-win32-arm64-msvc': 1.16.18
+      '@swc/core-win32-ia32-msvc': 1.16.18
+      '@swc/core-win32-x64-msvc': 1.16.18
       '@swc/helpers': 0.5.23
 
   '@swc/counter@0.1.3': {}
@@ -12705,12 +12722,12 @@ snapshots:
     dependencies:
       '@swc/counter': 0.1.3
 
-  '@tanstack/query-core@5.104.0': {}
+  '@tanstack/query-core@5.104.3': {}
 
-  '@tanstack/react-query@5.104.0(react@19.3.0)':
+  '@tanstack/react-query@5.104.3(react@19.3.1)':
     dependencies:
-      '@tanstack/query-core': 5.104.0
-      react: 19.3.0
+      '@tanstack/query-core': 5.104.3
+      react: 19.3.1
 
   '@testing-library/dom@10.4.2':
     dependencies:
@@ -12723,12 +12740,12 @@ snapshots:
       picocolors: 1.1.1
       pretty-format: 27.5.1
 
-  '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)':
+  '@testing-library/react@16.3.3(@testing-library/dom@10.4.2)(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.1(react@19.3.1))(react@19.3.1)':
     dependencies:
       '@babel/runtime': 7.29.7
       '@testing-library/dom': 10.4.2
-      react: 19.3.0
-      react-dom: 19.3.0(react@19.3.0)
+      react: 19.3.1
+      react-dom: 19.3.1(react@19.3.1)
     optionalDependencies:
       '@types/react': 19.3.0
       '@types/react-dom': 19.3.0(@types/react@19.3.0)
@@ -12929,30 +12946,30 @@ snapshots:
     dependencies:
       '@types/yargs-parser': 21.0.3
 
-  '@typescript-eslint/eslint-plugin@8.70.1(patch_hash=14289edb1532bcdc0e05ca26e6c77a119c79ddb4a07e3f2053e87027b7e325d9)(@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@typescript-eslint/eslint-plugin@8.70.1(patch_hash=14289edb1532bcdc0e05ca26e6c77a119c79ddb4a07e3f2053e87027b7e325d9)(@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
-      '@typescript-eslint/parser': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@typescript-eslint/parser': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@typescript-eslint/scope-manager': 8.70.1
-      '@typescript-eslint/type-utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
-      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@typescript-eslint/type-utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@typescript-eslint/visitor-keys': 8.70.1
-      eslint: 10.12.0(supports-color@8.1.1)
-      ignore: 7.0.6
+      eslint: 10.13.0(supports-color@8.1.1)
+      ignore: 7.0.12
       natural-compare: 1.4.0
       ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
       typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@typescript-eslint/parser@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
       '@typescript-eslint/scope-manager': 8.70.1
       '@typescript-eslint/types': 8.70.1
       '@typescript-eslint/typescript-estree': 8.70.1(@typescript/typescript6@6.0.2)(supports-color@8.1.1)
       '@typescript-eslint/visitor-keys': 8.70.1
       debug: 4.4.3(supports-color@8.1.1)
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
@@ -12975,13 +12992,13 @@ snapshots:
     dependencies:
       typescript: '@typescript/typescript6@6.0.2'
 
-  '@typescript-eslint/type-utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@typescript-eslint/type-utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
       '@typescript-eslint/types': 8.70.1
       '@typescript-eslint/typescript-estree': 8.70.1(@typescript/typescript6@6.0.2)(supports-color@8.1.1)
-      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       debug: 4.4.3(supports-color@8.1.1)
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
       typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
@@ -13004,13 +13021,13 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)':
+  '@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)':
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.12.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.13.0(supports-color@8.1.1))
       '@typescript-eslint/scope-manager': 8.70.1
       '@typescript-eslint/types': 8.70.1
       '@typescript-eslint/typescript-estree': 8.70.1(@typescript/typescript6@6.0.2)(supports-color@8.1.1)
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       typescript: '@typescript/typescript6@6.0.2'
     transitivePeerDependencies:
       - supports-color
@@ -13602,31 +13619,32 @@ snapshots:
   bare-events@2.5.4:
     optional: true
 
-  barrelify@2.1.2(@biomejs/biome@2.5.14)(prettier@3.9.9):
+  barrelify@2.2.1(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
-      entry-script: 4.1.0
-      haywire: 2.0.0
-      haywire-launcher: 1.0.2(entry-script@4.1.0)(haywire@2.0.0)
+      entry-script: 4.1.1
+      haywire: 2.0.3
+      haywire-launcher: 1.1.0(entry-script@4.1.1)(haywire@2.0.3)
       ignore: 7.0.6
       parse-cwd: 2.0.2
-      populate-files: 1.0.2(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      populate-files: 1.1.3(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       tinyglobby: 0.2.17
       unknown-error: 0.1.0
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'
+      - eslint
       - prettier
 
-  barrelify@file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
+  barrelify@file:apps/barrelify(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
-      ignore: 7.0.6
+      ignore: 7.0.12
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       tinyglobby: 0.2.17
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
@@ -13645,7 +13663,7 @@ snapshots:
       '@julr/utils': 1.9.0
       '@poppinss/exception': 1.2.3
       async-mutex: 0.5.0
-      lru-cache: 11.2.7
+      lru-cache: 11.5.3
       p-timeout: 7.0.2
     optionalDependencies:
       ioredis: 5.11.1(supports-color@8.1.1)
@@ -14058,7 +14076,7 @@ snapshots:
 
   entities@8.1.0: {}
 
-  entry-script@4.1.0:
+  entry-script@4.1.1:
     dependencies:
       default-import: 3.0.1
 
@@ -14272,14 +14290,14 @@ snapshots:
 
   escape-string-regexp@5.0.0: {}
 
-  eslint-compat-utils@0.5.1(eslint@10.12.0(supports-color@8.1.1)):
+  eslint-compat-utils@0.5.1(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       semver: 7.8.5
 
-  eslint-config-prettier@10.1.8(eslint@10.12.0(supports-color@8.1.1)):
+  eslint-config-prettier@10.1.8(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
 
   eslint-import-context@0.1.9(unrs-resolver@1.12.2):
     dependencies:
@@ -14297,19 +14315,19 @@ snapshots:
       - supports-color
     optional: true
 
-  eslint-plugin-es-x@7.8.0(eslint@10.12.0(supports-color@8.1.1)):
+  eslint-plugin-es-x@7.8.0(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.12.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.13.0(supports-color@8.1.1))
       '@eslint-community/regexpp': 4.12.2
-      eslint: 10.12.0(supports-color@8.1.1)
-      eslint-compat-utils: 0.5.1(eslint@10.12.0(supports-color@8.1.1))
+      eslint: 10.13.0(supports-color@8.1.1)
+      eslint-compat-utils: 0.5.1(eslint@10.13.0(supports-color@8.1.1))
 
-  eslint-plugin-import-x@4.17.1(@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1):
+  eslint-plugin-import-x@4.17.1(@typescript-eslint/utils@8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
       '@typescript-eslint/types': 8.70.1
       comment-parser: 1.4.9
       debug: 4.4.3(supports-color@8.1.1)
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       eslint-import-context: 0.1.9(unrs-resolver@1.12.2)
       is-glob: 4.0.3
       minimatch: 10.2.6
@@ -14317,21 +14335,21 @@ snapshots:
       stable-hash-x: 0.2.0
       unrs-resolver: 1.12.2
     optionalDependencies:
-      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-import-resolver-node: 0.3.9(supports-color@8.1.1)
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-jsdoc@65.1.0(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1):
+  eslint-plugin-jsdoc@65.3.11(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
       '@es-joy/jsdoccomment': 0.98.0
       '@es-joy/resolve.exports': 1.2.0
-      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@typescript-eslint/utils': 8.70.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       are-docs-informative: 0.1.1
       comment-parser: 1.4.9
       debug: 4.4.3(supports-color@8.1.1)
       escape-string-regexp: 5.0.0
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       espree: 11.2.0
       esquery: 1.7.0
       html-entities: 2.6.0
@@ -14345,7 +14363,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-jsx-a11y@6.10.2(eslint@10.12.0(supports-color@8.1.1)):
+  eslint-plugin-jsx-a11y@6.10.2(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
       aria-query: 5.3.2
       array-includes: 3.1.9
@@ -14355,7 +14373,7 @@ snapshots:
       axobject-query: 4.1.0
       damerau-levenshtein: 1.0.8
       emoji-regex: 9.2.2
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       hasown: 2.0.4
       jsx-ast-utils: 3.3.5
       language-tags: 1.0.9
@@ -14364,12 +14382,12 @@ snapshots:
       safe-regex-test: 1.1.0
       string.prototype.includes: 2.0.1
 
-  eslint-plugin-n@18.4.0(@typescript/typescript6@6.0.2)(eslint@10.12.0(supports-color@8.1.1)):
+  eslint-plugin-n@18.4.1(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.12.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.13.0(supports-color@8.1.1))
       enhanced-resolve: 5.18.1
-      eslint: 10.12.0(supports-color@8.1.1)
-      eslint-plugin-es-x: 7.8.0(eslint@10.12.0(supports-color@8.1.1))
+      eslint: 10.13.0(supports-color@8.1.1)
+      eslint-plugin-es-x: 7.8.0(eslint@10.13.0(supports-color@8.1.1))
       get-tsconfig: 4.14.3
       globals: 15.15.0
       globrex: 0.1.2
@@ -14379,18 +14397,18 @@ snapshots:
     optionalDependencies:
       typescript: '@typescript/typescript6@6.0.2'
 
-  eslint-plugin-react-hooks@7.1.1(eslint@10.12.0(supports-color@8.1.1))(supports-color@8.1.1):
+  eslint-plugin-react-hooks@7.1.1(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1):
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
       '@babel/parser': 7.29.9
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       hermes-parser: 0.25.1
       zod: 4.3.6
       zod-validation-error: 4.0.2(zod@4.3.6)
     transitivePeerDependencies:
       - supports-color
 
-  eslint-plugin-react@7.37.5(eslint@10.12.0(supports-color@8.1.1)):
+  eslint-plugin-react@7.37.5(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
       array-includes: 3.1.9
       array.prototype.findlast: 1.2.5
@@ -14398,7 +14416,7 @@ snapshots:
       array.prototype.tosorted: 1.1.4
       doctrine: 2.1.0
       es-iterator-helpers: 1.2.1
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       estraverse: 5.3.0
       hasown: 2.0.4
       jsx-ast-utils: 3.3.5
@@ -14412,24 +14430,24 @@ snapshots:
       string.prototype.matchall: 4.0.12
       string.prototype.repeat: 1.0.0
 
-  eslint-plugin-regexp@3.3.1(eslint@10.12.0(supports-color@8.1.1)):
+  eslint-plugin-regexp@3.3.1(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.12.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.13.0(supports-color@8.1.1))
       '@eslint-community/regexpp': 4.12.2
       comment-parser: 1.4.9
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       jsdoc-type-pratt-parser: 9.2.2
       refa: 0.12.1
       regexp-ast-analysis: 0.7.1
       scslre: 0.3.0
 
-  eslint-plugin-sonarjs@4.2.1(eslint@10.12.0(supports-color@8.1.1)):
+  eslint-plugin-sonarjs@4.2.2(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
       '@eslint-community/regexpp': 4.12.2
       '@sonarsource/analyzer-commons-configurations': 2.31.0-5284
       builtin-modules: 3.3.0
       bytes: 3.1.2
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       functional-red-black-tree: 1.0.1
       globals: 17.12.0
       jsx-ast-utils-x: 0.1.0
@@ -14441,9 +14459,9 @@ snapshots:
       typescript: 6.0.3
       yaml: 2.9.1
 
-  eslint-plugin-unicorn@77.0.0(eslint@10.12.0(supports-color@8.1.1)):
+  eslint-plugin-unicorn@77.0.0(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.12.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.13.0(supports-color@8.1.1))
       '@eslint/css-tree': 4.1.1
       browserslist: 4.29.1
       change-case: 5.4.4
@@ -14451,7 +14469,7 @@ snapshots:
       core-js-compat: 3.50.0
       detect-indent: 7.0.2
       entities: 8.1.0
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
       find-up-simple: 1.0.1
       globals: 17.12.0
       identifier-regex: 1.1.0
@@ -14476,9 +14494,9 @@ snapshots:
 
   eslint-visitor-keys@5.0.1: {}
 
-  eslint@10.12.0(supports-color@8.1.1):
+  eslint@10.13.0(supports-color@8.1.1):
     dependencies:
-      '@eslint-community/eslint-utils': 4.10.1(eslint@10.12.0(supports-color@8.1.1))
+      '@eslint-community/eslint-utils': 4.10.1(eslint@10.13.0(supports-color@8.1.1))
       '@eslint-community/regexpp': 4.12.2
       '@eslint/config-array': 0.23.5(supports-color@8.1.1)
       '@eslint/config-helpers': 0.7.0
@@ -14583,7 +14601,7 @@ snapshots:
 
   fast-deep-equal@3.1.3: {}
 
-  fast-equals@6.0.4: {}
+  fast-equals@6.2.1: {}
 
   fast-fifo@1.3.2: {}
 
@@ -14730,22 +14748,21 @@ snapshots:
 
   form-data-encoder@4.1.0: {}
 
-  format-file@1.0.2(@biomejs/biome@2.5.14)(prettier@3.9.9):
+  format-file@1.0.3(@biomejs/biome@2.5.14)(prettier@3.9.10):
     dependencies:
       find-up: 8.0.0
-      haywire: 2.0.0
-      tmp-promise: 3.0.3
+      haywire: 2.0.3
     optionalDependencies:
       '@biomejs/biome': 2.5.14
-      prettier: 3.9.9
+      prettier: 3.9.10
 
-  format-file@file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9):
+  format-file@file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.10):
     dependencies:
       find-up: 8.0.0
       haywire: file:tools/haywire
     optionalDependencies:
       '@biomejs/biome': 2.5.14
-      prettier: 3.9.9
+      prettier: 3.9.10
 
   fresh@0.5.2: {}
 
@@ -14774,20 +14791,24 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  generated-signature@file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1)):
+  generated-signature@0.1.2(eslint@10.13.0(supports-color@8.1.1)):
     optionalDependencies:
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
 
-  genever@file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
+  generated-signature@file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1)):
+    optionalDependencies:
+      eslint: 10.13.0(supports-color@8.1.1)
+
+  genever@file:apps/genever(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
-      format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
-      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
+      format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.10)
+      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml: 2.9.1
       yargs: 18.2.0
     transitivePeerDependencies:
@@ -14933,17 +14954,17 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.5
 
-  haywire-launcher@1.0.2(entry-script@4.1.0)(haywire@2.0.0):
+  haywire-launcher@1.1.0(entry-script@4.1.1)(haywire@2.0.3):
     dependencies:
-      entry-script: 4.1.0
-      haywire: 2.0.0
+      entry-script: 4.1.1
+      haywire: 2.0.3
 
   haywire-launcher@file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire):
     dependencies:
       entry-script: file:tools/entry-script
       haywire: file:tools/haywire
 
-  haywire@2.0.0:
+  haywire@2.0.3:
     dependencies:
       p-defer: 4.0.1
 
@@ -15012,6 +15033,8 @@ snapshots:
   ieee754@1.2.1: {}
 
   ignore@5.3.2: {}
+
+  ignore@7.0.12: {}
 
   ignore@7.0.6: {}
 
@@ -15287,20 +15310,20 @@ snapshots:
       object.assign: 4.1.7
       object.values: 1.2.1
 
-  juniper-validator@file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))):
+  juniper-validator@file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))):
     dependencies:
       '@standard-schema/spec': 1.1.0
       ajv: 8.20.0
       ajv-formats: 3.0.1(ajv@8.20.0)
       default-import: file:tools/default-import
-      juniper: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
+      juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
 
-  juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)):
+  juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
       '@standard-schema/spec': 1.1.0
       escape-string-regexp: 5.0.0
     optionalDependencies:
-      eslint: 10.12.0(supports-color@8.1.1)
+      eslint: 10.13.0(supports-color@8.1.1)
 
   keygrip@1.1.0:
     dependencies:
@@ -15418,17 +15441,17 @@ snapshots:
     dependencies:
       uc.micro: 3.0.0
 
-  load-populate-files@file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
+  load-populate-files@file:apps/populate-files/load-populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
       default-import: file:tools/default-import
       entry-script: file:tools/entry-script
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
-      juniper: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
-      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
+      juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
+      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
     transitivePeerDependencies:
@@ -15468,6 +15491,8 @@ snapshots:
   lowercase-keys@3.0.0: {}
 
   lru-cache@11.2.7: {}
+
+  lru-cache@11.5.3: {}
 
   lru-cache@5.1.1:
     dependencies:
@@ -15838,14 +15863,14 @@ snapshots:
 
   minisearch@7.2.0: {}
 
-  mocha-chain@file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.2):
+  mocha-chain@file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3):
     dependencies:
-      mocha: 12.0.2
+      mocha: 12.0.3
       test-chain-core: file:tools/test-chain/test-chain-core
     optionalDependencies:
       '@types/mocha': 10.0.10
 
-  mocha@12.0.2:
+  mocha@12.0.3:
     dependencies:
       browser-stdout: 1.3.1
       chokidar: 5.0.0
@@ -15893,10 +15918,10 @@ snapshots:
 
   normalize-url@8.1.1: {}
 
-  normalized-react-query@file:tools/normalized-react-query(@tanstack/react-query@5.104.0(react@19.3.0))(react@19.3.0):
+  normalized-react-query@file:tools/normalized-react-query(@tanstack/react-query@5.104.3(react@19.3.1))(react@19.3.1):
     dependencies:
-      '@tanstack/react-query': 5.104.0(react@19.3.0)
-      react: 19.3.0
+      '@tanstack/react-query': 5.104.3(react@19.3.1)
+      react: 19.3.1
 
   npm-run-path@4.0.1:
     dependencies:
@@ -15911,18 +15936,18 @@ snapshots:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
 
-  nx-lifecycle@file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.2(@swc/helpers@0.5.23))(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
+  nx-lifecycle@file:apps/nx-lifecycle(@biomejs/biome@2.5.14)(@swc/core@1.16.18(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
-      '@nx/devkit': 23.3.0(nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)))
+      '@nx/devkit': 23.3.0(nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)))
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
-      fast-equals: 6.0.4
-      format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      fast-equals: 6.2.1
+      format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.10)
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
-      juniper: file:apps/juniper(eslint@10.12.0(supports-color@8.1.1))
-      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.12.0(supports-color@8.1.1)))
-      nx: 23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23))
+      juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
+      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
+      nx: 23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23))
       parse-cwd: file:tools/parse-cwd
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
@@ -15933,7 +15958,7 @@ snapshots:
       - eslint
       - prettier
 
-  nx@23.3.0(@swc/core@1.16.2(@swc/helpers@0.5.23)):
+  nx@23.3.0(@swc/core@1.16.18(@swc/helpers@0.5.23)):
     dependencies:
       '@clack/core': 1.4.3
       '@clack/prompts': 1.7.0
@@ -16043,7 +16068,7 @@ snapshots:
       '@nx/nx-linux-x64-musl': 23.3.0
       '@nx/nx-win32-arm64-msvc': 23.3.0
       '@nx/nx-win32-x64-msvc': 23.3.0
-      '@swc/core': 1.16.2(@swc/helpers@0.5.23)
+      '@swc/core': 1.16.18(@swc/helpers@0.5.23)
 
   oauth4webapi@3.8.8: {}
 
@@ -16134,7 +16159,7 @@ snapshots:
 
   openapi-types@12.1.3: {}
 
-  openapi3-ts@4.6.1:
+  openapi3-ts@4.6.2:
     dependencies:
       yaml: 2.9.1
 
@@ -16254,13 +16279,13 @@ snapshots:
 
   pg-connection-string@2.14.1: {}
 
-  pg-dolly-schema@file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
+  pg-dolly-schema@file:apps/pg-dolly-schema(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       entry-script: file:tools/entry-script
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       pg-dolly: file:tools/pg-dolly
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -16348,22 +16373,24 @@ snapshots:
 
   pony-cause@2.1.11: {}
 
-  populate-files@1.0.2(@biomejs/biome@2.5.14)(prettier@3.9.9):
+  populate-files@1.1.3(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
-      format-file: 1.0.2(@biomejs/biome@2.5.14)(prettier@3.9.9)
+      format-file: 1.0.3(@biomejs/biome@2.5.14)(prettier@3.9.10)
+      generated-signature: 0.1.2(eslint@10.13.0(supports-color@8.1.1))
       parse-cwd: 2.0.2
       uint8array-extras: 1.6.0
       unknown-error: 0.1.0
     transitivePeerDependencies:
       - '@biomejs/biome'
+      - eslint
       - prettier
 
-  populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.12.0(supports-color@8.1.1))(prettier@3.9.9):
+  populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
-      format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.9)
-      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.12.0(supports-color@8.1.1))
+      format-file: file:tools/format-file(@biomejs/biome@2.5.14)(prettier@3.9.10)
+      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       parse-cwd: file:tools/parse-cwd
       uint8array-extras: 1.6.0
       unknown-error: file:tools/unknown-error
@@ -16392,7 +16419,7 @@ snapshots:
 
   prelude-ls@1.2.1: {}
 
-  prettier@3.9.9: {}
+  prettier@3.9.10: {}
 
   pretty-format@27.5.1:
     dependencies:
@@ -16453,16 +16480,16 @@ snapshots:
 
   quote-js-string@0.1.0: {}
 
-  react-dom@19.3.0(react@19.3.0):
+  react-dom@19.3.1(react@19.3.1):
     dependencies:
-      react: 19.3.0
+      react: 19.3.1
       scheduler: 0.28.0
 
   react-is@16.13.1: {}
 
   react-is@17.0.2: {}
 
-  react@19.3.0: {}
+  react@19.3.1: {}
 
   readable-stream@3.6.2:
     dependencies:
