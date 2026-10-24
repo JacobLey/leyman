@@ -28,7 +28,7 @@ import { stringSchema } from 'juniper';
 import { makeValidator } from 'juniper-validator';
 
 const skuValidator = makeValidator(stringSchema().format('sku'), {
-    formats: { sku: /^[A-Z]{3}-\d{4}$/u },
+    formats: { sku: /^[A-Z]{3}-\d{4}$/v },
 });
 ```
 

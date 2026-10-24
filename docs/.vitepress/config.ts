@@ -286,7 +286,7 @@ export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
     },
     transformPageData(pageData) {
         // `packages/haywire/index.md` is linked as `/packages/haywire/`, other pages without `.md`
-        const link = `/${pageData.relativePath.replace(/(?<=^|\/)index\.md$/u, '').replace(/\.md$/u, '')}`;
+        const link = `/${pageData.relativePath.replace(/(?<=^|\/)index\.md$/v, '').replace(/\.md$/v, '')}`;
         const order = pageOrder.get(link);
         if (order) {
             pageData.frontmatter.prev ??= order.prev;

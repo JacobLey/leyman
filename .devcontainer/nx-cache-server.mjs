@@ -24,7 +24,7 @@ const cacheDir = process.env.NX_CACHE_SERVER_DIR ?? '/cache';
 const port = Number(process.env.NX_CACHE_SERVER_PORT ?? 3000);
 const maxAgeMs = Number(process.env.NX_CACHE_SERVER_MAX_AGE_DAYS ?? 7) * 24 * 60 * 60 * 1000;
 const sweepIntervalMs = 60 * 60 * 1000;
-const hashPattern = /^\/v1\/cache\/(?<hash>[\w-]+)$/u;
+const hashPattern = /^\/v1\/cache\/(?<hash>[\w\-]+)$/v;
 
 await mkdir(cacheDir, { recursive: true });
 
