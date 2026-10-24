@@ -4,6 +4,8 @@ description: A fresh Postgres database for every test, cloned from a template bu
 
 # pg-dolly
 
+<ProjectHeader />
+
 A fresh Postgres database for every test, cloned from a template built once from your schema's SQL.
 
 ```ts
@@ -58,3 +60,7 @@ Named after Dolly the sheep. The design follows Go's [pgtestdb](https://github.c
 | Needs | A server | A server | A server | Docker | Nothing |
 
 See [Why pg-dolly](/packages/pg-dolly/why) for the full comparison.
+
+## Related
+
+<ProjectRelated />

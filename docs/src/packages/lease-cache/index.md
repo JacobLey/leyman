@@ -4,6 +4,8 @@ description: Read-through caching on Valkey or Redis with leases, so each miss i
 
 # lease-cache
 
+<ProjectHeader />
+
 Read-through caching on Valkey or Redis with leases: one load per key across every instance, and a load that finishes after an invalidation never caches its outdated value.
 
 ```ts
@@ -57,3 +59,7 @@ Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Faceboo
 | Memory tier, stale-while-revalidate on expiry, many stores | ❌ | ✅ |
 
 See [Why lease-cache](/packages/lease-cache/why) for the full comparison.
+
+## Related
+
+<ProjectRelated />

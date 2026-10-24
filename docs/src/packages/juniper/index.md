@@ -4,6 +4,8 @@ description: Build JSON Schemas in TypeScript with inferred static types — str
 
 # Juniper
 
+<ProjectHeader />
+
 Build JSON Schemas in TypeScript with inferred static types: strict, Ajv-ready, with JSON Schema 2020-12 and OpenAPI 3.0 output.
 
 ```ts
@@ -45,3 +47,7 @@ Hover over any identifier in the examples on this site to see its inferred type.
 - [ts-json-schema-generator](https://www.npmjs.com/package/ts-json-schema-generator) goes the other way, generating JSON Schema from TypeScript types as a build step, with constraints like `maxLength` written as unchecked JSDoc tags.
 
 Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](/packages/juniper-validator/). To get Juniper's types back from a schema serialized elsewhere, generate them with [genever](/packages/genever/).
+
+## Related
+
+<ProjectRelated />

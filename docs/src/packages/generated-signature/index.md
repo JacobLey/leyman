@@ -4,6 +4,8 @@ description: Sign generated files so hand edits are detected, while keeping manu
 
 # generated-signature
 
+<ProjectHeader />
+
 Sign generated files so hand edits are detected, while keeping manual sections editable.
 
 ```ts
@@ -52,3 +54,7 @@ A valid signature means nobody edited the file, not that it is up to date: regen
 | Meta's SignedSource / `@partially-generated` | Yes | Yes | Internal tooling, not a general library |
 | [cog](https://nedbatchelder.com/code/cog/) `--checksum` | Yes | Inverse: generated regions in a handwritten file | Python |
 | Go's `// Code generated ... DO NOT EDIT.` | No, a convention only | No | Go |
+
+## Related
+
+<ProjectRelated />

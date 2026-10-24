@@ -4,6 +4,8 @@ description: Compile-time checked dependency injection for TypeScript — no dec
 
 # Haywire
 
+<ProjectHeader />
+
 Compile-time checked dependency injection for TypeScript: no decorators, no `reflect-metadata`, no global state.
 
 If your container compiles, it is complete: missing bindings, mismatched types and duplicate registrations are all TypeScript errors, not runtime crashes.
@@ -52,3 +54,7 @@ Hover over any identifier in the examples on this site to see its inferred type.
 - [Awilix](https://www.npmjs.com/package/awilix) avoids decorators, but resolves dependencies by name at runtime.
 
 Haywire is the only one of these where a container that compiles is guaranteed to have every binding it needs.
+
+## Related
+
+<ProjectRelated />

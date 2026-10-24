@@ -4,6 +4,8 @@ description: Nx plugin that derives every dependsOn from declared lifecycle stag
 
 # nx-lifecycle
 
+<ProjectHeader />
+
 An [Nx](https://nx.dev/) plugin that derives every `dependsOn` from lifecycle stages you declare once, and the targets you bind to them.
 
 Declare your workflow (`build` runs hooks `pre` → `run` → `post`, and `test` runs after `build`), then bind tools to hooks (`tsc` to `build:run`, `mocha` to `test:run`):
@@ -43,3 +45,7 @@ Then `nx run <project>:build` runs the right steps, in the right order, in any p
 ## Compared to
 
 With hand-written `dependsOn` in `targetDefaults` and each `project.json`, adding a step between two existing ones means editing every target that depended on the first, in every project that has it. With nx-lifecycle, it is one binding.
+
+## Related
+
+<ProjectRelated />

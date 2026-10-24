@@ -4,6 +4,8 @@ description: Write generated files from code, commit them, and fail CI when they
 
 # populate-files
 
+<ProjectHeader />
+
 Write generated files from code, commit them, and fail CI when they are out of date or were edited by hand.
 
 Describe the files in a module:
@@ -43,3 +45,7 @@ Commit the output. In CI, the same command checks instead of writing, and fails 
 - A script with `fs.writeFile` and a `git diff --exit-code` step in CI checks freshness too, but needs git, overwrites hand edits without warning, and leaves deleted outputs behind.
 - [cog](https://nedbatchelder.com/code/cog/) generates regions inside handwritten files, and checks them with `--check`. populate-files is the inverse: the file is generated, and [manual sections](/packages/populate-files/guides/signed-files#manual-sections) are the handwritten regions.
 - [Nx generators](https://nx.dev/features/generate-code) and [Plop](https://www.npmjs.com/package/plop) scaffold files once, for people to edit afterwards. populate-files owns its files, and regenerates them on every run.
+
+## Related
+
+<ProjectRelated />

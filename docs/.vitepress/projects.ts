@@ -59,6 +59,11 @@ export interface Demo {
      */
     readonly source: string;
     /**
+     * Repo paths (files or directories) of the working code worth jumping to: tests, setup, entry
+     * points. The build fails if one doesn't exist.
+     */
+    readonly files: readonly { readonly label: string; readonly path: string }[];
+    /**
      * Slugs of the packages it uses.
      */
     readonly uses: readonly string[];
@@ -67,6 +72,33 @@ export interface Demo {
      */
     readonly related?: readonly string[];
     readonly pages: readonly Page[];
+}
+
+/**
+ * Links to GitHub and npm, worked out by `config.ts` from the registry and the files on disk, and
+ * passed to the theme as `themeConfig.links`.
+ */
+export interface Links {
+    readonly packages: Readonly<
+        Record<
+            string,
+            readonly {
+                readonly name: string;
+                readonly npm: string;
+                readonly source: string;
+                readonly changelog: string;
+            }[]
+        >
+    >;
+    readonly demos: Readonly<
+        Record<
+            string,
+            {
+                readonly source: string;
+                readonly files: readonly { readonly label: string; readonly url: string }[];
+            }
+        >
+    >;
 }
 
 export const packages: readonly Package[] = [
@@ -297,6 +329,7 @@ export const packages: readonly Package[] = [
         category: 'Generated files and monorepo tooling',
         pitch: 'Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.',
         sources: ['apps/barrelify'],
+        related: ['populate-files'],
         pages: [
             { text: 'Overview', link: '' },
             { text: 'Getting started', link: 'getting-started' },
@@ -419,6 +452,19 @@ export const demos: readonly Demo[] = [
         title: 'Read-through cache',
         pitch: 'BentoCache on Valkey: a memory tier kept in sync, stale-while-revalidate, one load per key across instances, and sharding over several nodes with weighted rendezvous hashing.',
         source: 'demos/read-through-cache',
+        files: [
+            {
+                label: 'Options and composition',
+                path: 'demos/read-through-cache/src/lib/create.ts',
+            },
+            { label: 'Shared tier', path: 'demos/read-through-cache/src/lib/shared-tier.ts' },
+            {
+                label: 'Integration tests',
+                path: 'demos/read-through-cache/test/integration/read-through-cache.spec.ts',
+            },
+            { label: 'Valkey sidecar', path: '.devcontainer/docker-compose.yml' },
+            { label: 'Valkey in CI', path: 'dagger/main.go' },
+        ],
         uses: ['lease-cache', 'haywire', 'mocha-chain'],
         pages: [{ text: 'Overview', link: '' }],
     },
@@ -427,6 +473,20 @@ export const demos: readonly Demo[] = [
         title: 'OpenAPI',
         pitch: 'A notes API from spec to database: an OpenAPI 3.1 document built from Juniper schemas, genever types for a typed client and a Hono server that validates every request and response, and Drizzle on Postgres with a database per test.',
         source: 'demos/openapi',
+        files: [
+            { label: 'The spec', path: 'demos/openapi/spec/src/spec.ts' },
+            { label: 'openapi.json', path: 'demos/openapi/spec/out/openapi.json' },
+            { label: 'Migrations', path: 'demos/openapi/database/migrations' },
+            { label: 'schema.sql', path: 'demos/openapi/database/schema.sql' },
+            { label: 'Server composition', path: 'demos/openapi/server/src/lib/module.ts' },
+            { label: 'Typed client', path: 'demos/openapi/client/src/lib/client.ts' },
+            {
+                label: 'Server integration tests',
+                path: 'demos/openapi/server/test/integration/notes.spec.ts',
+            },
+            { label: 'Postgres sidecar', path: '.devcontainer/docker-compose.yml' },
+            { label: 'Postgres in CI', path: 'dagger/main.go' },
+        ],
         uses: [
             'juniper',
             'genever',
@@ -439,10 +499,38 @@ export const demos: readonly Demo[] = [
         pages: [{ text: 'Overview', link: '' }],
     },
     {
-        slug: 'agents',
-        title: 'Agents',
-        pitch: 'Making the notes API easy for AI agents: an MCP server with tools shaped for tasks, and a CLI that logs in once from the API’s URL and runs one short command per task.',
-        source: 'demos/agents',
+        slug: 'mcp-server',
+        title: 'MCP server',
+        pitch: 'Making the notes API easy for AI agents that connect to services: tools shaped for tasks, an OAuth resource server with step-up scopes, and token exchange to call the API as the agent’s user.',
+        source: 'demos/agents/mcp',
+        files: [
+            { label: 'Tools', path: 'demos/agents/mcp/src/lib/tools.ts' },
+            { label: 'Token exchange', path: 'demos/agents/mcp/src/lib/exchange.ts' },
+            { label: 'Composition', path: 'demos/agents/mcp/src/lib/module.ts' },
+            { label: 'The test stack', path: 'demos/agents/mcp/test/helpers/stack.ts' },
+            { label: 'Tool tests', path: 'demos/agents/mcp/test/integration/tools.spec.ts' },
+            {
+                label: 'Authorization tests',
+                path: 'demos/agents/mcp/test/integration/auth.spec.ts',
+            },
+        ],
+        uses: ['haywire', 'pg-dolly', 'mocha-chain'],
+        related: ['agent-cli', 'openapi', 'oauth-server'],
+        pages: [{ text: 'Overview', link: '' }],
+    },
+    {
+        slug: 'agent-cli',
+        title: 'CLI for agents',
+        pitch: 'Making the notes API easy for AI agents with a shell: one short command per task, logging in once from the API’s URL, with tokens, refresh and errors handled inside.',
+        source: 'demos/agents/cli',
+        files: [
+            { label: 'Commands', path: 'demos/agents/cli/src/commands' },
+            { label: 'OAuth', path: 'demos/agents/cli/src/lib/oauth.ts' },
+            { label: 'Session file', path: 'demos/agents/cli/src/lib/session.ts' },
+            { label: 'Composition', path: 'demos/agents/cli/src/container.ts' },
+            { label: 'Integration tests', path: 'demos/agents/cli/test/integration/cli.spec.ts' },
+            { label: 'Browser stand-in', path: 'demos/agents/cli/test/helpers/browser.ts' },
+        ],
         uses: ['haywire', 'haywire-launcher', 'entry-script', 'pg-dolly', 'mocha-chain'],
         related: ['openapi', 'oauth-server'],
         pages: [{ text: 'Overview', link: '' }],
@@ -452,7 +540,24 @@ export const demos: readonly Demo[] = [
         title: 'Dev OAuth server',
         pitch: 'oidc-provider as a local authorization server: the real OAuth 2.1 flow with a fake login, so the other demos test their auth end to end.',
         source: 'demos/oauth-server',
+        files: [
+            { label: 'Provider configuration', path: 'demos/oauth-server/src/lib/provider.ts' },
+            { label: 'Token exchange grant', path: 'demos/oauth-server/src/lib/exchange.ts' },
+            { label: 'Flow tests', path: 'demos/oauth-server/test/integration/flow.spec.ts' },
+        ],
         uses: ['mocha-chain'],
+        related: ['openapi'],
         pages: [{ text: 'Overview', link: '' }],
     },
 ];
+
+/**
+ * Whether a package's overview has anything to show under "Related": related packages (declared on
+ * either side), or demos that use it.
+ */
+export const hasRelated = (slug: string): boolean =>
+    packages.some(
+        pkg =>
+            (pkg.slug === slug && (pkg.related?.length ?? 0) > 0) ||
+            (pkg.related?.includes(slug) ?? false)
+    ) || demos.some(demo => demo.uses.includes(slug));

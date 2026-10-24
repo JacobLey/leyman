@@ -4,6 +4,8 @@ description: Chain Mocha hooks so each one passes typed context to the next, ins
 
 # mocha-chain
 
+<ProjectHeader />
+
 Chain Mocha hooks so each one passes typed context to the next, instead of sharing nullable variables between them.
 
 ```ts
@@ -45,3 +47,7 @@ suite('Counter', () => {
 - Plain Mocha: a `let` variable assigned in `beforeEach` must be typed `T | undefined`, and asserted non-null in every test. See [Why mocha-chain](/packages/mocha-chain/why).
 - [mocha-typescript](https://www.npmjs.com/package/mocha-typescript) and similar class-based wrappers give tests typed fields through decorators and class instances. mocha-chain keeps Mocha's functional style, and needs no decorators.
 - Vitest's [test context](https://vitest.dev/guide/test-context) (`test.extend`) types fixtures for Vitest. [vitest-chain](/packages/vitest-chain/) brings the hook-based style to Vitest instead.
+
+## Related
+
+<ProjectRelated />

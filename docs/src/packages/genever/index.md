@@ -4,6 +4,8 @@ description: Generate TypeScript types from JSON Schema files and OpenAPI docume
 
 # genever
 
+<ProjectHeader />
+
 Generate TypeScript types from a JSON Schema file, or the schemas of an OpenAPI document, with strict checks of the schema itself.
 
 Point it at a schema:
@@ -56,3 +58,7 @@ Each tool was given the same schema, built with Juniper, and its type checked ag
 - [quicktype](https://www.npmjs.com/package/quicktype) merges `oneOf` objects into one type with optional fields.
 - [json-schema-to-zod](https://www.npmjs.com/package/json-schema-to-zod) generates a validator, but every `$ref` becomes `z.any()`.
 - [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts) and TypeBox infer types inside TypeScript, so the schema has to be pasted in `as const`. An imported `.json` file widens to `unknown`.
+
+## Related
+
+<ProjectRelated />

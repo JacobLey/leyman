@@ -4,6 +4,8 @@ description: Turn any caught unknown into a real Error without throwing, even fo
 
 # unknown-error
 
+<ProjectHeader />
+
 Turn whatever a `catch` receives into a real Error, and print its whole cause chain, without ever throwing.
 
 ```ts

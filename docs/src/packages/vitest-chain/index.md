@@ -4,6 +4,8 @@ description: Chain Vitest hooks so each one passes typed context to the next. Th
 
 # vitest-chain
 
+<ProjectHeader />
+
 Chain Vitest hooks so each one passes typed context to the next. The same API as [mocha-chain](/packages/mocha-chain/), for Vitest.
 
 ```ts
@@ -40,3 +42,7 @@ describe('Counter', () => {
 ## Compared to
 
 Vitest's [test context](https://vitest.dev/guide/test-context) can be extended with typed fixtures (`test.extend`), which are set up per test, on demand. vitest-chain uses hooks instead, so the same code works across Mocha and Vitest, and once-per-suite setup (`beforeAll`) can pass context as well.
+
+## Related
+
+<ProjectRelated />

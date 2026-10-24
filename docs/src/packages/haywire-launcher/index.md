@@ -4,6 +4,8 @@ description: Run a Haywire-built entry script in one line. The container is only
 
 # haywire-launcher
 
+<ProjectHeader />
+
 Run a [Haywire](/packages/haywire/)-built [entry script](/packages/entry-script/) in one line. The container is only built when the script runs, not when it's imported.
 
 ```ts
@@ -28,3 +30,7 @@ export default launch(container, Cli);
 - **Testable**: `getOriginal()` returns the instance the container builds, for testing the wiring itself.
 
 Every CLI in this repository (barrelify, genever, nx-lifecycle, …) starts this way.
+
+## Related
+
+<ProjectRelated />

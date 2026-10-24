@@ -4,7 +4,7 @@ description: Read-through caching on Valkey with BentoCache and lease-cache, wit
 
 # Read-through cache
 
-**Source:** [`demos/read-through-cache`](https://github.com/JacobLey/leyman/tree/main/demos/read-through-cache)
+<ProjectHeader />
 
 Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, one load per key across instances with lease-cache, and sharding with weighted rendezvous hashing.
 

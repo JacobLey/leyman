@@ -4,7 +4,7 @@ description: A small notes API with the whole path from spec to database built p
 
 # OpenAPI
 
-**Source:** [`demos/openapi`](https://github.com/JacobLey/leyman/tree/main/demos/openapi)
+<ProjectHeader />
 
 A deliberately small API (notes: add one, read one, list the newest), with the whole path from spec to database built properly, because the plumbing is the point:
 

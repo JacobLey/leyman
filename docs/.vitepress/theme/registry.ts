@@ -31,3 +31,22 @@ export const demoLink = (slug: string): { text: string; link: string } => ({
     text: demoTitles.get(slug) ?? slug,
     link: `/demos/${slug}/`,
 });
+
+/**
+ * The package or demo an overview page (`packages/<slug>/index.md`, `demos/<slug>/index.md`) is
+ * about.
+ */
+export const projectOf = (
+    relativePath: string
+):
+    | { readonly kind: 'package'; readonly project: (typeof packages)[number] }
+    | { readonly kind: 'demo'; readonly project: (typeof demos)[number] }
+    | undefined => {
+    const [section, slug] = relativePath.split('/');
+    const pkg = section === 'packages' ? packages.find(p => p.slug === slug) : undefined;
+    if (pkg) {
+        return { kind: 'package', project: pkg };
+    }
+    const demo = section === 'demos' ? demos.find(d => d.slug === slug) : undefined;
+    return demo && { kind: 'demo', project: demo };
+};

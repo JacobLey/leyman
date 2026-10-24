@@ -4,6 +4,8 @@ description: Type-safe query definitions for TanStack Query. Define each key and
 
 # normalized-react-query
 
+<ProjectHeader />
+
 Type-safe query definitions for [TanStack Query](https://tanstack.com/query/latest). Define each key and fetcher once, and link related queries so they prefetch together.
 
 ```ts

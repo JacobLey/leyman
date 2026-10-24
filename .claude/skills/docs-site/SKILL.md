@@ -38,7 +38,8 @@ Demos ([`demos/`](../../../demos/)) each have a directory in [`docs/src/demos/`]
 |------|------|
 | [`read-through-cache`](../../../demos/read-through-cache/) | [`docs/src/demos/read-through-cache/index.md`](../../../docs/src/demos/read-through-cache/index.md) |
 | [`openapi`](../../../demos/openapi/) | [`docs/src/demos/openapi/index.md`](../../../docs/src/demos/openapi/index.md) |
-| [`agents`](../../../demos/agents/) | [`docs/src/demos/agents/index.md`](../../../docs/src/demos/agents/index.md) |
+| [`agents/mcp`](../../../demos/agents/mcp/) | [`docs/src/demos/mcp-server/index.md`](../../../docs/src/demos/mcp-server/index.md) |
+| [`agents/cli`](../../../demos/agents/cli/) | [`docs/src/demos/agent-cli/index.md`](../../../docs/src/demos/agent-cli/index.md) |
 | [`oauth-server`](../../../demos/oauth-server/) | [`docs/src/demos/oauth-server/index.md`](../../../docs/src/demos/oauth-server/index.md) |
 
 **When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (the nav, sidebars, home page and package and demo lists are built from it, and the build fails if a pages directory has no entry), a row here, and its paths to [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**

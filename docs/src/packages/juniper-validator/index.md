@@ -4,6 +4,8 @@ description: Standard Schema compliant validators for Juniper schemas, with type
 
 # Juniper Validator
 
+<ProjectHeader />
+
 Validate data against a [Juniper](/packages/juniper/) schema, and narrow it to the schema's type.
 
 ```ts
@@ -37,3 +39,7 @@ if (validator.is(input)) {
 - **[Standard Schema](https://standardschema.dev/)**: Works with any library that accepts Standard Schema validators, such as form libraries and API frameworks. See [Standard Schema](/packages/juniper-validator/guides/standard-schema).
 - **Strict Ajv underneath**: Compiles with [Ajv](https://ajv.js.org/) in strict mode, and validates standard formats like `email`, `uuid` and `date-time`.
 - **Any JSON Schema**: Takes a Juniper schema, or a rendered JSON Schema object.
+
+## Related
+
+<ProjectRelated />

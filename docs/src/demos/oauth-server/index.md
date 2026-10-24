@@ -4,11 +4,11 @@ description: oidc-provider as a local authorization server - the real OAuth 2.1 
 
 # Dev OAuth server
 
-**Source:** [`demos/oauth-server`](https://github.com/JacobLey/leyman/tree/main/demos/oauth-server)
+<ProjectHeader />
 
 A development authorization server on [oidc-provider](https://github.com/panva/node-oidc-provider): a real OAuth 2.1 flow, with a fake user.
 
-A worked example, not a package: it is never published. Other demos log in through it (the [notes API](/demos/openapi/), its [MCP server and CLI](/demos/agents/)), so their tests run the same OAuth flow a deployed client would, with no hosted identity provider, no account and no network. Everything a client sees is real; only the login page is skipped.
+A worked example, not a package: it is never published. Other demos log in through it (the [notes API](/demos/openapi/), its [MCP server](/demos/mcp-server/) and [CLI](/demos/agent-cli/)), so their tests run the same OAuth flow a deployed client would, with no hosted identity provider, no account and no network. Everything a client sees is real; only the login page is skipped.
 
 ## Example
 

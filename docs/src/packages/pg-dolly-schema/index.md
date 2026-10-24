@@ -4,6 +4,8 @@ description: Keep a schema.sql of what your Postgres migrations build - migrate 
 
 # pg-dolly-schema
 
+<ProjectHeader />
+
 Keep a `schema.sql` of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale.
 
 ```sh
@@ -23,3 +25,7 @@ This clones an empty database on the server, runs the migrate command with `DATA
 - **Ready for tests**: `schema.sql` is what [pg-dolly](/packages/pg-dolly/) builds each test's database from, and the dump is built as a template on the way, which proves it applies.
 
 The `structure.sql` approach, for any stack. For why the schema is SQL, see [Why pg-dolly](/packages/pg-dolly/why#why-the-schema-is-sql). The [OpenAPI demo](/demos/openapi/) keeps its `schema.sql` this way, with Drizzle.
+
+## Related
+
+<ProjectRelated />
