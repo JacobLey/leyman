@@ -132,9 +132,9 @@ catalog:
   '@types/sinon': ^22.0.0
   '@types/tmp': ^0.2.6
   '@types/yargs': ^17.0.35
-  '@typescript-eslint/eslint-plugin': ^8.70.1
-  '@typescript-eslint/parser': ^8.70.1
-  '@typescript-eslint/utils': ^8.70.1
+  '@typescript-eslint/eslint-plugin': ^8.71.2
+  '@typescript-eslint/parser': ^8.71.2
+  '@typescript-eslint/utils': ^8.71.2
   '@typescript/native': npm:typescript@^7.0.2
   '@valkey/valkey-glide': ^2.5.3
   ajv: ^8.20.0
@@ -224,4 +224,4 @@ catalogs:
 patchedDependencies:
   # `prefer-string-starts-ends-with` parses a `v`-flag RegExp as if it had no flags, so it autofixes `/^\p{N}/v.test(s)`
   # to `s.startsWith('p{N}')`
-  '@typescript-eslint/eslint-plugin@8.70.1': patches/@typescript-eslint__eslint-plugin@8.70.1.patch
+  '@typescript-eslint/eslint-plugin@8.71.2': patches/@typescript-eslint__eslint-plugin@8.71.2.patch
