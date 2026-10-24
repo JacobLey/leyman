@@ -12,11 +12,12 @@ A project is any directory with a `project.json`. Every project has a README.md.
 - `leyman/`: private, repo-internal packages that are never published.
 - `docs/`: the documentation site (private, never published). See its [README](../../../docs/README.md).
 - `e2e/`: private, test-only packages that check several packages together, in ways no single package can (e.g. because depending on each other would be circular). See [create-package](../create-package/SKILL.md#e2e-packages).
+- `infra/`: deployed, never-published infrastructure, e.g. the hosted Nx cache (`infra/nx-cache`: a Worker, and the OpenTofu configuration of its Cloudflare resources). See its [README](../../../infra/nx-cache/README.md).
 - `demos/`: private, never-published worked examples of using open-source projects and services well (e.g. a cache on Valkey), tested against the real services. See [create-package](../create-package/SKILL.md#demo-packages).
 
 ## Packages
 
-**When you add or remove a package, update the table in this file.** Add the new row in alphabetical order within the correct section (Apps, Tools, Leyman, E2E, or Demos). The description should match the one-line subtitle in the package's README.md.
+**When you add or remove a package, update the table in this file.** Add the new row in alphabetical order within the correct section (Apps, Tools, Leyman, E2E, Demos, or Infra). The description should match the one-line subtitle in the package's README.md.
 
 **When you remove a published package, add it to the top of [`DEPRECATED_PACKAGES.md`](../../../DEPRECATED_PACKAGES.md)**, linking its source at the last commit before the removal.
 
@@ -98,3 +99,10 @@ See each package's README.md for full usage documentation.
 | [`openapi/server`](../../../demos/openapi/server) | The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication |
 | [`openapi/spec`](../../../demos/openapi/spec) | The OpenAPI document of the OpenAPI demo's notes API, built from Juniper schemas and published as openapi.json |
 | [`read-through-cache`](../../../demos/read-through-cache) | Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, cluster-wide stampede protection, and sharding with weighted rendezvous hashing |
+
+### Infra
+
+| Project | Description |
+|---------|-------------|
+| [`nx-cache/tofu`](../../../infra/nx-cache/tofu) | OpenTofu configuration of the hosted Nx cache's Cloudflare resources: its R2 bucket, lifecycle rule, and CI's deploy token |
+| [`nx-cache/worker`](../../../infra/nx-cache/worker) | Hosted Nx remote cache on a Cloudflare Worker and R2: anyone may read, only CI on main may write |

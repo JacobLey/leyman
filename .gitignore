@@ -16,6 +16,8 @@
 **/.wrangler
 # OpenTofu's providers and local state, from `tofu init`. The lock file is committed
 **/.terraform
+# Saved plans hold the state's values (encrypted, but never committed)
+**/*.tfplan
 **/.swcrc
 
 /.claude-config
