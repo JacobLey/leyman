@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "apps/juniper-validator"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/juniper-validator#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/juniper-validator/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

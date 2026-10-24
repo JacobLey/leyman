@@ -14,7 +14,7 @@ Turn any caught `unknown` into a real Error without throwing, even for hostile v
 - **Whole error trees**: Walks `cause` chains and `AggregateError` entries without recursion, so circular or 100,000-deep chains end instead of overflowing the stack.
 - **Doesn't modify your errors**: Errors are returned as they are, never patched in place.
 
-For why it exists and the design decisions behind it, see [WHY-UNKNOWN-ERROR.md](https://github.com/JacobLey/leyman/blob/main/tools/unknown-error/WHY-UNKNOWN-ERROR.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/unknown-error/). For why it exists and the design decisions behind it, see [WHY-UNKNOWN-ERROR.md](https://github.com/JacobLey/leyman/blob/main/tools/unknown-error/WHY-UNKNOWN-ERROR.md).
 
 ## Contents
 - [Install](#install)

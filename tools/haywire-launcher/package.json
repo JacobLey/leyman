@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "tools/haywire-launcher"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/haywire-launcher#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/haywire-launcher/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

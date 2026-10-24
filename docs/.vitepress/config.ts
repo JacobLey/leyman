@@ -25,6 +25,10 @@ if (errors.length > 0) {
 }
 
 const repoRoot = fileURLToPath(new URL('../../', import.meta.url));
+/**
+ * Where the site is published (GitHub Pages, under `base`).
+ */
+const siteUrl = 'https://jacobley.github.io/leyman/';
 const srcDir = fileURLToPath(new URL('../src/', import.meta.url));
 
 /**
@@ -44,7 +48,8 @@ const existsOrExcluded = (path: string): boolean =>
 
 /**
  * Fails the build when the registry and the repo disagree: a source path that moved, a slug that
- * names nothing, or a pages directory with no entry.
+ * names nothing, a pages directory with no entry, or a documented package whose `homepage` and
+ * README don't point at its pages.
  */
 const checkRegistry = (): void => {
     const problems: string[] = [];
@@ -57,6 +62,23 @@ const checkRegistry = (): void => {
                 if (!existsSync(`${repoRoot}${source}/${file}`)) {
                     problems.push(`Package ${slug}: no ${file} in ${source}`);
                 }
+            }
+            const pageUrl = `${siteUrl}packages/${slug}/`;
+            if (existsSync(`${repoRoot}${source}/package.json`)) {
+                const { homepage } = JSON.parse(
+                    readFileSync(`${repoRoot}${source}/package.json`, 'utf8')
+                ) as { homepage?: string };
+                if (homepage !== pageUrl) {
+                    problems.push(
+                        `Package ${slug}: ${source}/package.json "homepage" is not ${pageUrl}`
+                    );
+                }
+            }
+            const readme = existsSync(`${repoRoot}${source}/README.md`)
+                ? readFileSync(`${repoRoot}${source}/README.md`, 'utf8')
+                : '';
+            if (!readme.includes(`](${pageUrl})`)) {
+                problems.push(`Package ${slug}: ${source}/README.md doesn't link ${pageUrl}`);
             }
         }
         for (const other of related) {

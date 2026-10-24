@@ -14,7 +14,7 @@ Declare your workflow once — `build` runs hooks `pre` → `run` → `post`, `t
 - **Per-project implementations** — each project opts into the bound targets it declares, so TypeScript, Go and Java projects can all answer to the same `build` and `test`.
 - **Nothing to commit** — the plugin infers targets when Nx builds the project graph, and fails with the fix if a project's `dependsOn` breaks the wiring. An executor that writes the config to files is also available.
 
-For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/nx-lifecycle/). For the problem this solves and design rationale, see [WHY-NX-LIFECYCLE.md](https://github.com/JacobLey/leyman/blob/main/apps/nx-lifecycle/WHY-NX-LIFECYCLE.md).
 
 ## Contents
 

@@ -16,7 +16,7 @@ Read-through caching on Valkey or Redis with leases: one load per key across eve
 
 Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf), section 3.2.1), done here with three small Lua scripts. It covers one part of a cache: no memory tier or stale-while-revalidate on expiry, so pair it with a fuller cache when you need those.
 
-For the problem in detail, why the guarantees hold (and what they rely on), and the comparison to other caches, see [WHY-LEASE-CACHE.md](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/lease-cache/). For the problem in detail, why the guarantees hold (and what they rely on), and the comparison to other caches, see [WHY-LEASE-CACHE.md](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md).
 
 ## Contents
 - [Install](#install)

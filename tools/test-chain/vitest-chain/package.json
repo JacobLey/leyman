@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "tools/test-chain/vitest-chain"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/test-chain/vitest-chain#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/vitest-chain/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

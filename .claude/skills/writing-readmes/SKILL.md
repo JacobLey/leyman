@@ -142,6 +142,7 @@ The README is rendered on npmjs.com, which does not resolve relative links insid
 
 - Another package's README → its npm page: `https://www.npmjs.com/package/<name>`
 - Any other repo file (WHY file, LICENSE, config) → `https://github.com/JacobLey/leyman/blob/main/<repo path>`
+- A package on the [docs site](../docs-site/SKILL.md#documented-packages) links its overview page near the top: `Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/<slug>/).` Its `package.json` `homepage` is that page too (npm's "Homepage" link is for a project site; npm already shows the README). Others keep `homepage` on the GitHub README. The docs build fails when either is missing.
 - In-page anchors (`#...`) are fine, but must match GitHub's slug of the full heading text: `` ### `suite(title, fn)` `` is `#suitetitle-fn`, not `#suite`. Repeated headings get `-1`, `-2` suffixes.
 
 The same applies to WHY files, which link back to the README via its npm page.

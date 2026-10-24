@@ -15,7 +15,7 @@ Generate TypeScript types from JSON Schema files and OpenAPI documents, with str
 - **Generated files stay in sync** — a `--ci` mode fails when a committed file is out of date, like [populate-files](https://www.npmjs.com/package/populate-files).
 - **Types only** — the output is plain TypeScript types, with no runtime dependency.
 
-For the motivation, and how it compares to other generators, see [WHY-GENEVER.md](https://github.com/JacobLey/leyman/blob/main/apps/genever/WHY-GENEVER.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/genever/). For the motivation, and how it compares to other generators, see [WHY-GENEVER.md](https://github.com/JacobLey/leyman/blob/main/apps/genever/WHY-GENEVER.md).
 
 ## Contents
 - [Install](#install)

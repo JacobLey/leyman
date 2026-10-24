@@ -16,7 +16,7 @@ Missing bindings, mismatched types and duplicate registrations are all TypeScrip
 - **Real-world lifecycles** — singleton, request and transient scopes; opt-in async initialization; explicit circular dependencies; runtime values (like an HTTP request) supplied per call; `await using` disposal of what the container created.
 - **Immutable and independent** — modules never mutate, and containers share no global registry, so tests can build their own and swap in fakes with a type-checked `replaceBinding()`.
 
-For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.com/JacobLey/leyman/blob/main/tools/haywire/WHY-HAYWIRE.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/haywire/). For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.com/JacobLey/leyman/blob/main/tools/haywire/WHY-HAYWIRE.md).
 
 ## Table of Contents
 

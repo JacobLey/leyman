@@ -20,7 +20,7 @@ Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://aj
 
 Juniper writes the `format` keyword as given, and does not check it. If a schema uses `format`, use a validator that supports the formats you need: juniper-validator does, and Ajv needs [ajv-formats](https://www.npmjs.com/package/ajv-formats) (with `strict: true`, compiling a schema with `format: 'email'` throws `unknown format "email" ignored` without it).
 
-For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/juniper/). For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md).
 
 ## Contents
 - [Install](#install)

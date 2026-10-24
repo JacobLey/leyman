@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "tools/lease-cache"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/lease-cache#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/lease-cache/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

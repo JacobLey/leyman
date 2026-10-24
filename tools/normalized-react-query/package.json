@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "tools/normalized-react-query"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/normalized-react-query#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/normalized-react-query/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

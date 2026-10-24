@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "apps/populate-files/populate-files"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/populate-files/populate-files#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/populate-files/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

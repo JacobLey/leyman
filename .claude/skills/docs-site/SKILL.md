@@ -65,7 +65,7 @@ Infrastructure ([`infra/`](../../../infra/)) is documented the same way as demos
 |------|------|
 | [`nx-cache`](../../../infra/nx-cache/) | [`docs/src/infrastructure/nx-cache/index.md`](../../../docs/src/infrastructure/nx-cache/index.md) |
 
-**When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (see [Site layout](#site-layout)), a row here, and its paths to [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md). When a demo starts using a documented package, add it to the demo's `uses`.**
+**When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (see [Site layout](#site-layout)), a row here, and its paths to [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md). Point the package's `homepage` at its overview page, and link that page from its README (see [writing-readmes](../writing-readmes/SKILL.md#links)): the build checks both. When a demo starts using a documented package, add it to the demo's `uses`.**
 
 ## Keeping pages in sync
 

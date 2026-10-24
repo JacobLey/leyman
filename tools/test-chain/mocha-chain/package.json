@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "tools/test-chain/mocha-chain"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/test-chain/mocha-chain#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/mocha-chain/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

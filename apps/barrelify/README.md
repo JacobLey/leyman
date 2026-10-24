@@ -8,6 +8,8 @@ Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/C
 
 </div>
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/barrelify/).
+
 - **Specifiers that resolve** — writes `./foo.js`, `./foo.cjs` and `./foo.mjs` (never extensionless paths, and `.tsx` components export as `./Button.js`), so barrels work under Node ESM and TypeScript's `nodenext` resolution.
 - **ESM/CJS aware** — reads the nearest `package.json` `"type"` and only re-exports files the index can actually load (a CommonJS index never re-exports `.mts`).
 - **Opt-in** — only rewrites `index.ts` files that start with `// AUTO-BARREL`; it never creates files or touches hand-written barrels.

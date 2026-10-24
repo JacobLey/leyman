@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "apps/pg-dolly-schema"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/pg-dolly-schema#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/pg-dolly-schema/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

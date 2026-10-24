@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "apps/nx-lifecycle"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/nx-lifecycle#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/nx-lifecycle/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

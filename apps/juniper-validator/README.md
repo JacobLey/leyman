@@ -8,6 +8,8 @@ StandardSchema-compliant validator for [Juniper](https://www.npmjs.com/package/j
 
 </div>
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/juniper-validator/).
+
 ## Contents
 - [Install](#install)
 - [Example](#example)
