@@ -146,6 +146,15 @@ The README is rendered on npmjs.com, which does not resolve relative links insid
 
 The same applies to WHY files, which link back to the README via its npm page.
 
+## Prose
+
+Write plainly, and avoid the patterns that make text read as AI-written. This applies to READMEs, WHY files, docs site pages and code comments:
+
+- Headings say what the section covers ("Cost", "wrangler and OpenTofu"), not a slogan ("Two tools, split by who runs them").
+- Use the plain word: a client *sends* or *identifies* a server rather than *naming* it; avoid *lands*, *surfaces*, *earns its place*, *load-bearing*, *seam*, *story*.
+- Skip catchphrases and set-ups like "bounded by design", "by construction", "X is a target:", "That is the whole trick:". State the fact.
+- Don't stack "not X, but Y" contrasts, rule-of-three lists or short moral-like sentences at the end of a paragraph for rhetorical effect.
+
 ## What NOT to Put in a README
 
 - Extended motivation or "the problem this solves" → WHY file (the pitch keeps a few bullets)

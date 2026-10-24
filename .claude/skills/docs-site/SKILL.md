@@ -92,6 +92,7 @@ Each package has the same layout. Follow an existing package (haywire is the ful
 | `why.md` | Only when the package has a `WHY-<PACKAGE>.md`. |
 
 - Every page has a `description` in frontmatter.
+- Write plainly: see [Prose](../writing-readmes/SKILL.md#prose).
 - Add each page to its package's `pages` in [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts), which builds the sidebar.
 - Add a new package to `docs/package.json` `devDependencies` (`workspace:^`), so examples type-check against it and the site rebuilds when it changes.
 - Link between pages with site paths (`/packages/haywire/guides/scopes`, `/demos/openapi/`), and to other documented packages' pages rather than npm. Dead links fail the build.
