@@ -1,5 +1,11 @@
 # generated-signature
 
+## 0.1.2
+
+### Patch Changes
+
+- ea484ef: The ESLint rule's documentation link points at the docs site's new address, under `/packages/`. The old address redirects there.
+
 ## 0.1.1
 
 ### Patch Changes

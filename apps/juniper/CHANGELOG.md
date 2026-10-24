@@ -1,5 +1,11 @@
 # juniper
 
+## 2.4.4
+
+### Patch Changes
+
+- ea484ef: The ESLint rule's documentation link points at the docs site's new address, under `/packages/`. The old address redirects there.
+
 ## 2.4.3
 
 ### Patch Changes

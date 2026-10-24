@@ -1,6 +1,6 @@
 {
   "name": "genever",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers.",
   "engines": {
     "node": ">=24.22.1"
