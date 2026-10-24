@@ -10,6 +10,9 @@ import { fillScript, invalidateScript, readOrLeaseScript, releaseScript } from '
 
 /**
  * Values are stored as JSON, so only JSON survives the round trip: a `Date` would come back as a string.
+ *
+ * Declare loaded values with `type` rather than `interface`: TypeScript doesn't treat an interface as having an index
+ * signature, so it doesn't extend `Json`.
  */
 export type Json =
     | boolean

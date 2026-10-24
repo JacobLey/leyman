@@ -158,6 +158,8 @@ Durations are rounded up to whole milliseconds. Each must be a finite number abo
 
 Returns the cached value, or calls `load` and caches what it returns. Rejects with what `load` threw. `T` must be JSON (`Json`): a loader that returns `undefined` anyway rejects with `LeaseCacheValueError`, caching nothing.
 
+Use type aliases, rather than interfaces, for loaded values: TypeScript doesn't treat an interface as having an index signature, so it doesn't extend `Json`, even when every field is JSON.
+
 `options.ttlMs` caches this value for its own time, in place of the cache's `ttlMs`. A function gets the loaded value, e.g. to cache a missing row for less time than a found one:
 
 ```ts
@@ -168,7 +170,16 @@ const user = await cache.get(`user:${id}`, async () => db.users.find(id), {
 
 #### `cache.read(key, load, options?)`
 
-As `get`, but returns `{ value, source, ttlMs }`: where the value came from (`'hit'`, `'filled'`, `'lost'`, `'stale'`, `'timeout'` or `'unavailable'`), and how much longer Valkey caches it (`0` when it doesn't). For a cache in front of this one, such as a memory tier: it should keep a value no longer than `ttlMs`, and not at all at `0`, since a value Valkey didn't cache may already be outdated.
+As `get`, but returns `{ value, source, ttlMs }`: where the value came from, and how much longer Valkey caches it. For a cache in front of this one, such as a memory tier: it should keep a value no longer than `ttlMs`, and not at all at `0`, since a value Valkey didn't cache may already be outdated.
+
+| `source` | The value | `ttlMs` |
+|---|---|---|
+| `'hit'` | Was cached already. | The time it has left. |
+| `'filled'` | Was loaded with the lease, and cached. | The value's `ttlMs`. |
+| `'lost'` | Was loaded, but the lease was lost first (invalidated, or run out), so it wasn't cached. | `0` |
+| `'stale'` | Was kept by an invalidation (`staleMs`), and returned rather than waiting. | `0` |
+| `'timeout'` | Was loaded without a lease, after waiting `waitMs`. | `0` |
+| `'unavailable'` | Was loaded without the cache, as Valkey failed. Only with `onUnavailable`. | `0` |
 
 #### `cache.invalidate(key)`
 
