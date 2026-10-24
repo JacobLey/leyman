@@ -39,7 +39,10 @@ export type NormalizedParams = { inputs?: ManifestInputs } & (
       }
 );
 
-export interface RawOptions {
+/**
+ * Options of `populateFile` and `populateFiles`.
+ */
+export interface PopulateOptions {
     check?: boolean | null | undefined;
     dryRun?: boolean | null | undefined;
     cwd?: Directory | null | undefined;

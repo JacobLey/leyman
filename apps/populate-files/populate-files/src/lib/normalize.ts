@@ -4,7 +4,7 @@ import type {
     NormalizedFilesParams,
     NormalizedParams,
     PopulateFileParams,
-    RawOptions,
+    PopulateOptions,
 } from './lib/types.js';
 import Path from 'node:path';
 import { isCI } from 'ci-info';
@@ -49,11 +49,14 @@ const normalizeParams = async (
     return { filePath, content: await parseContent(content), signed: false, ...inputs };
 };
 
-const resolveTargetDir = async (options: RawOptions): Promise<string> =>
+const resolveTargetDir = async (options: PopulateOptions): Promise<string> =>
     Path.resolve(await parseCwd(options.cwd), options.targetDir ?? '.');
 
 // Relative to `cwd`, like `targetDir`, so it can sit outside the target directory.
-const resolveManifestPath = async ({ cwd, manifest = null }: RawOptions): Promise<string | null> =>
+const resolveManifestPath = async ({
+    cwd,
+    manifest = null,
+}: PopulateOptions): Promise<string | null> =>
     manifest === null ? null : Path.resolve(await parseCwd(cwd), manifest);
 
 const shouldCheck = (check?: boolean | null): boolean => check ?? isCI;
@@ -68,7 +71,7 @@ const isDryRun = (dryRun?: boolean | null): boolean => dryRun === true;
  */
 export const normalizeFileParams = async (
     params: PopulateFileParams,
-    options: RawOptions = {}
+    options: PopulateOptions = {}
 ): Promise<NormalizedFileParams> => {
     const [normalized, manifestPath] = await Promise.all([
         normalizeParams(params, resolveTargetDir(options)),
@@ -92,8 +95,8 @@ export const normalizeFileParams = async (
  * @rejects {TypeError} if signed content isn't a string, or a file is populated more than once
  */
 export const normalizeFilesParams = async (
-    params: PopulateFileParams[],
-    options: RawOptions = {}
+    params: readonly PopulateFileParams[],
+    options: PopulateOptions = {}
 ): Promise<NormalizedFilesParams> => {
     const targetDirPromise = resolveTargetDir(options);
     const [targetDir, files, manifestPath] = await Promise.all([

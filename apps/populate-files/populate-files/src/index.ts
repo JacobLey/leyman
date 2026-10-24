@@ -3,6 +3,7 @@ export type {
     FileContent,
     OwnershipReason,
     PopulateFileParams,
+    PopulateOptions,
     PopulationResponse,
     SignedPopulateFileParams,
     UnsignedPopulateFileParams,

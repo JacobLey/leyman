@@ -3,9 +3,9 @@ import type {
     NormalizedOptions,
     NormalizedParams,
     PopulateFileParams,
+    PopulateOptions,
     PopulationResponse,
     PopulationResponseUpdated,
-    RawOptions,
 } from './lib/lib/types.js';
 import type { ManifestEntries } from './lib/manifest.js';
 import { readdir, rm } from 'node:fs/promises';
@@ -33,7 +33,7 @@ import { internalPopulateFile } from './lib/populate-file.js';
  */
 export type PopulateFile = (
     params: PopulateFileParams,
-    options?: RawOptions
+    options?: PopulateOptions
 ) => Promise<PopulationResponse>;
 
 /**
@@ -47,8 +47,8 @@ export type PopulateFile = (
  * @rejects {TypeError} if two files resolve to the same path, or `signed` content isn't a string
  */
 export type PopulateFiles = (
-    params: PopulateFileParams[],
-    options?: RawOptions
+    params: readonly PopulateFileParams[],
+    options?: PopulateOptions
 ) => Promise<PopulationResponse[]>;
 
 /**

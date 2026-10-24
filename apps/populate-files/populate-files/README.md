@@ -71,7 +71,7 @@ Writes the provided content to the file at `params.filePath`.
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `params` | `object` | — | Required. See [params](#params) below. |
-| `options` | `object` | `{}` | Optional. See [options](#options) below. |
+| `options` | `PopulateOptions` | `{}` | Optional. See [options](#options) below. |
 
 **Returns** `Promise<PopulationResponse>`: `{ filePath, updated: false }` if the file already had this content, else `{ filePath, updated: true, reason }` with `reason` `'file-not-exist'` or `'content-changed'`. `filePath` is absolute. With `dryRun`, what would have been written.
 
@@ -87,6 +87,8 @@ Writes the provided content to the file at `params.filePath`.
 | `manifestInputs` | `Record<string, string>` | — | With the `manifest` option, hashes of what produced the file, recorded in its manifest entry. See [Manifest](#manifest). |
 
 #### `options`
+
+Typed as `PopulateOptions`.
 
 | Property | Type | Default | Description |
 |----------|------|---------|-------------|
@@ -108,8 +110,8 @@ Writes multiple files in parallel. Each `filePath` must be unique: two that reso
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `params` | `PopulateFileParams[]` | — | Required. A list of [populateFile params](#params), with unique `filePath`s. |
-| `options` | `object` | `{}` | Optional. Same as [populateFile options](#options). |
+| `params` | `readonly PopulateFileParams[]` | — | Required. A list of [populateFile params](#params), with unique `filePath`s. |
+| `options` | `PopulateOptions` | `{}` | Optional. Same as [populateFile options](#options). |
 
 **Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean` (`reason: 'stale-file'`).
 
