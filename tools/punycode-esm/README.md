@@ -45,6 +45,8 @@ toUnicode('xn----dqo34k.com');  // '☃-⌘.com'
 
 `punycode-esm` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { encode } = await import('punycode-esm')`.
 
+Functions throw `RangeError` for malformed Punycode: `decode` and `toUnicode` for input that is not ASCII (`Invalid input`), is not valid Punycode, or needs wider integers than JavaScript numbers hold (`Overflow: input needs wider integers to process`); `encode` and `toASCII` for the overflow case only. `toASCII` and `toUnicode` only convert labels, and do none of the other IDNA processing: no case folding, no Unicode normalization and no length checks. They split on `.` and the other full-stop characters `。`, `．` and `｡` (all written as `.` in the result), and only recognise the lowercase `xn--` prefix.
+
 ## API
 
 ### `encode(string)`
