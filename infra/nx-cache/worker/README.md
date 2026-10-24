@@ -10,7 +10,7 @@ The hosted Nx remote cache: a Cloudflare Worker on R2 that implements Nx's [self
 - **Results expire 7 days after they were stored** (`maxAgeDays`): never served after, and replaced by the next `PUT`. The bucket's lifecycle rule deletes them, some time later.
 - `Last-Modified` on a result is when it was stored, so the cache server in front of this one expires its copy at the same time.
 
-A `PUT` needs a `Content-Length` (411 without one): R2 only stores a stream of known length. Tokens are checked without any library: WebCrypto verifies the signature, and GitHub's keys are kept for an hour, or until a token names a key that isn't among them.
+A `PUT` needs a `Content-Length` (411 without one): R2 only stores a stream of known length. Tokens are checked without any library: WebCrypto verifies the signature, and GitHub's keys are kept for an hour, or until a token is signed with a key that isn't among them.
 
 ## Configuration
 

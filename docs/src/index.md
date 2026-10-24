@@ -24,12 +24,12 @@ Published to npm, each with a getting-started guide, guides and a full reference
 
 ## Demos
 
-Worked examples, never published: small packages fully tested against real services, written up as what they do and why. [All demos →](/demos/)
+Worked examples, never published: small packages fully tested against real services, each with a page on what it does and why. [All demos →](/demos/)
 
 <DemoCards />
 
 ## Infrastructure
 
-What this repository runs on, written up like the demos: real, deployed systems, and how they are built. [All infrastructure →](/infrastructure/)
+What this repository runs on: real, deployed systems, and how they are built. [All infrastructure →](/infrastructure/)
 
 <InfrastructureCards />
