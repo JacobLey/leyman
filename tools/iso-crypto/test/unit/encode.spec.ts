@@ -1,8 +1,15 @@
-import type { Uint8ArrayBuffer } from '#internal/iso/lib/types.js';
+import type { InputText, Uint8ArrayBuffer } from 'iso-crypto';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { decode, decodeObject, encodeObject } from 'iso-crypto';
 import { suite, test } from 'mocha-chain';
+
+suite('Exported types', () => {
+    test('decode takes InputText and returns Uint8ArrayBuffer', () => {
+        expectTypeOf(decode).parameter(0).toEqualTypeOf<InputText>();
+        expectTypeOf(decode).returns.toEqualTypeOf<Uint8ArrayBuffer>();
+    });
+});
 
 suite('EncodeObject', () => {
     suite('decodeObject', () => {

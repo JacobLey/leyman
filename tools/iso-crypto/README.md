@@ -479,13 +479,15 @@ Ensure that the provided curve + encryption algorithm is the same as used to enc
 
 ## Types
 
-These types are not exported by name (only `Encryption`, `Hash`, `Curve`, `Encoding`, `HkdfOptions` and `Pbkdf2Options` are). To name `InputText` in your own code, use `Parameters<typeof decode>[0]`.
+Each is exported as a type, e.g. `import type { InputText } from 'iso-crypto'`.
 
 ### InputText
 
 Type used to represent allowed text/data input.
 
 `string | Uint8Array<ArrayBuffer> | { text: string; encoding: 'hex' | 'base64' | 'base64url' | 'utf8' } | { text: Uint8Array<ArrayBuffer>; encoding: 'raw' }`.
+
+`Uint8ArrayBuffer` is the `Uint8Array<ArrayBuffer>` member.
 
 To verify the "buffer" input, pass the text to `decode` (which is done internally).
 
@@ -497,7 +499,7 @@ Type used to represent a specific hash algorithm.
 
 `{ algorithm: 'SHA1'; size?: 160 } | { algorithm: 'SHA2'; size: 256 | 384 | 512 } | 'raw'`.
 
-To avoid hashing (as it is sometimes used internally by algorithms) provide the `'raw'` option to return the input unchanged.
+To avoid hashing (as it is sometimes used internally by algorithms) provide the `'raw'` option to return the input unchanged. `HashAlgorithm` is the same type without `'raw'`.
 
 Generally defaults to `{ algorithm: 'SHA2', size: 256 }`.
 

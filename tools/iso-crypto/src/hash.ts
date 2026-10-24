@@ -1,2 +1,2 @@
 export * from '#hash';
-export type { Hash } from './iso/lib/types.js';
+export type { Hash, HashAlgorithm } from './iso/lib/types.js';
