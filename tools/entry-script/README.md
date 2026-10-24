@@ -17,6 +17,8 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 - [Usage](#usage)
 - [API](#api)
   - [EntryScript](#entryscript)
+  - [Main](#main)
+  - [MainNotImplementedError](#mainnotimplementederror)
 - [Also See](#also-see)
 
 ## The Problem
@@ -92,13 +94,17 @@ export default MyApp;
 
 ## Usage
 
-`entry-script` is an ESM module. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { EntryScript } = await import('entry-script');`.
+`entry-script` is an ESM module, for Node.js 24 or later. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { EntryScript } = await import('entry-script');`.
 
 The `default` export of a module using `entry-script` must be either:
 - An **instance** of an `EntryScript` subclass — the instance `main(argv)` method will be called.
 - The **class** itself (an `EntryScript` subclass) — the static `main(argv)` method will be called.
 
 Exactly one of the static or instance `main` must be implemented.
+
+When Node starts, `entry-script` imports the script Node was started with (`process.argv[1]`) and calls `main` on its `default` export, once. The check is on the entry point's default export, wherever it was defined, so a `bin.mjs` containing only `export { default } from './dist/cli.js';` runs the script it re-exports. Importing the module from anywhere else does nothing.
+
+An error thrown by `main` is an unhandled rejection: Node prints it and exits with code 1.
 
 ## API
 
@@ -129,7 +135,9 @@ The method to implement is determined by the export pattern:
 
 `node ./my-app.js --port 8080` passes `argv = ['--port', '8080']`.
 
-**Throws** `MainNotImplementedError` — if neither the static nor instance `main` has been overridden.
+**Throws** `MainNotImplementedError` (as a rejection, since `main` is `async`) — if the `main` that was called (static or instance) has not been overridden.
+
+`EntryScript` is abstract: `new EntryScript()` is a type error, so extend it.
 
 ### `Main`
 
@@ -137,6 +145,14 @@ Interface satisfied by any class with a `main(argv: string[]): Promise<void>` me
 
 ```ts
 import type { Main } from 'entry-script';
+```
+
+### `MainNotImplementedError`
+
+Extends `Error`, with `name` `'MainNotImplementedError'`. Rejected by the base class's `main` (instance or static) when a subclass did not override the one that was called.
+
+```ts
+import { MainNotImplementedError } from 'entry-script';
 ```
 
 ## Also See
