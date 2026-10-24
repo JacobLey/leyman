@@ -73,6 +73,15 @@ export interface ToJsonParams {
     schema?: boolean;
 }
 
+/**
+ * Any Juniper schema describing `T`, for accepting a schema and rendering it (`toJSON`),
+ * or passing it to `components`, `serializeSpec` and `anyOf`.
+ *
+ * Cannot be passed to builders that nest a schema (`properties`, `arraySchema(...)`): they need the
+ * schema's own class type, so keep the inferred type of the schema you built.
+ *
+ * @template T
+ */
 export interface Schema<T> extends StandardJSONSchemaV1<T> {
     [typeCache]?: {
         type: T;

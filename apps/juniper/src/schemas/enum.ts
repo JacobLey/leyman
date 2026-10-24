@@ -13,10 +13,10 @@ interface EnumGenerics<T> extends SchemaGenerics<T> {
 /**
  * Schema for defining enum types.
  *
- * To ensure best type inference, it is recommended to pass parameters `as const`.
+ * Pass values `as const`. Without it the literals widen (`['a', 'b']` is typed `string`, not `'a' | 'b'`).
  *
  * @example
- * const schema = EnumSchema.create({ enums: [1, 2] as const }).enum(3 as const);
+ * const schema = EnumSchema.create({ enum: [1, 2] as const }).enum(3 as const);
  *
  * @template T
  */
@@ -44,7 +44,7 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
     declare public not: never;
 
     /**
-     * Not applicable.
+     * Not applicable. Include `null` in the enum, or use `mergeSchema().anyOf([enumSchema(...), nullSchema()])`.
      */
     declare public nullable: never;
 
@@ -65,7 +65,7 @@ export class EnumSchema<T = never> extends AbstractSchema<EnumGenerics<T>> {
      * Create a new instance of EnumSchema.
      *
      * @param [options] - optional
-     * @param [options.enums] - initial enum values.
+     * @param [options.enum] - initial enum values, `as const` to keep their literal types.
      * @param [options.title] - Add title to schema
      * @param [options.description] - Add description to schema
      * @param [options.deprecated] - flag schema as deprecated

@@ -1374,6 +1374,12 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
     }
 }
 
+/**
+ * Whether `schema` is a Juniper schema instance.
+ *
+ * @param schema - value to check
+ * @returns true when `schema` is a Juniper schema
+ */
 export const isSchema = <T>(schema: unknown): schema is Schema<T> =>
     schema instanceof AbstractSchema;
 

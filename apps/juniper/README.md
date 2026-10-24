@@ -18,7 +18,7 @@ Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-read
 
 Juniper builds schemas; it does not validate data. Pair it with [Ajv](https://ajv.js.org/) or [juniper-validator](https://www.npmjs.com/package/juniper-validator).
 
-Juniper writes the `format` keyword as given, and does not check it. If a schema uses `format`, use a validator that supports the formats you need: juniper-validator does, and Ajv needs [ajv-formats](https://www.npmjs.com/package/ajv-formats).
+Juniper writes the `format` keyword as given, and does not check it. If a schema uses `format`, use a validator that supports the formats you need: juniper-validator does, and Ajv needs [ajv-formats](https://www.npmjs.com/package/ajv-formats) (with `strict: true`, compiling a schema with `format: 'email'` throws `unknown format "email" ignored` without it).
 
 For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md).
 
@@ -39,6 +39,8 @@ For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https:
 ```sh
 npm i juniper
 ```
+
+Requires Node 24 or later. `eslint` is an optional peer dependency, only needed for the [ESLint rules](#eslint-rules). The Example below also needs `npm i ajv`.
 
 ## Example
 
@@ -151,6 +153,16 @@ const obj = objectSchema({
 ```
 
 The above code fails TypeScript validation. It does not necessarily fail at runtime, and the resulting JSON Schema may be nonsensical.
+
+### Type traps
+
+TypeScript's errors for these don't say what to change:
+
+- **Enum values need `as const`.** `enumSchema({ enum: ['a', 'b'] })` is typed `string`, not `'a' | 'b'`. Write `enumSchema({ enum: ['a', 'b'] as const })`.
+- **`required` must be an inline array literal.** Passing a variable fails: `const keys = ['id']; objectSchema({ properties, required: keys })` is `Type 'string[]' is not assignable to type '"id"[]'`, and a `readonly` or `as const` array fails too (`TS4104`). Write `required: ['id']` in place.
+- **`Schema<T>` cannot be nested.** `Schema<T>` is for accepting a schema and rendering it (`toJSON`, `components`, `serializeSpec`, `anyOf`). It can't be used inside `properties`, `arraySchema(...)` or other builders: `const item: Schema<Item> = ...; arraySchema(item)` fails with `Type 'Schema<Item>' is missing the following properties from type 'AbstractSchema<...>'`. Keep the schema's own inferred type for anything you build on.
+- **`SchemaType` is the validated shape, not your class.** Dates are strings (`stringSchema({ format: 'date-time' })` is `string`), and with `exactOptionalPropertyTypes` an optional property cannot be `undefined`.
+- **`EnumSchema` has no `nullable()`** (it is typed `never`, so calling it reports `This expression is not callable`). Put `null` in the enum, or use `mergeSchema().anyOf([enumSchema(...), nullSchema()])`.
 
 ## Schemas
 
@@ -323,12 +335,15 @@ A complete users and posts API, built both ways, with [openapi3-ts](https://www.
 | Type | Interface | Description |
 |------|-----------|-------------|
 | `SchemaType` | `SchemaType<Schema>` \| `SchemaType<JSON>` | Extracts the TypeScript type from a Juniper class or JSON Schema object. |
-| `Schema` | `Schema<number>` | A Juniper Schema instance describing a TypeScript interface. Usable for rendering to JSON or passing as a parameter to other Juniper instances. |
+| `Schema` | `Schema<number>` | A Juniper Schema instance describing a TypeScript type. Accept it as a parameter to render it, or to pass to `components`, `serializeSpec`, `anyOf` and the like. It can't be passed to `properties` or `arraySchema`; see [Type traps](#type-traps). |
 | `JsonSchema` | `JsonSchema<number>` | A JSON Schema object describing the specified TypeScript type. |
 | `OpenApi30JsonSchema` | `OpenApi30JsonSchema<number>` | What `toJSON({ openApi30: true })` returns: no `true`/`false` sub-schemas, and a single `type`, so it can be assigned to OpenAPI libraries' 3.0 schema types (e.g. openapi3-ts's `oas30.SchemaObject`) without a cast. |
 | `EmptyObject` | `EmptyObject` | Describes an actually-empty object. Mostly internal but exposed for convenience. |
 | `PatternProperties` | ``PatternProperties<`abc${string}`>`` | Describes a string pattern type. See [`ObjectSchema.patternProperties`](#objectschema). |
 | `KnownFormat` | `KnownFormat` | String formats defined by JSON Schema and OpenAPI 3.0. See [`StringSchema.format`](#stringschema). |
+| `RecursiveSchema` | `RecursiveSchema<T>` | What [`defineRecursive`](#definerecursivetname-build) returns, and its `self` argument. |
+
+`isSchema(value)` is a type guard for whether `value` is a Juniper schema (`value is Schema<T>`). `ComponentsParams`, `SerializedSpec`, `SerializedSpecValue`, `JsonSchemaType` and `EmptyIndex` are also exported, for typing the parameters and results of the functions above.
 
 ### Constructors
 
@@ -812,6 +827,19 @@ OpenAPI 3.0 has no `contentEncoding` or `contentMediaType`, so they are left out
 ### `TupleSchema`
 
 Represents `type: 'array'` with strict tuple semantics. TypeScript type: `[unknown]`. A convenience wrapper around `ArraySchema` that prevents editing `items` directly. Every `TupleSchema` is an `ArraySchema`.
+
+Items are added in order with `prefixItem` (or in front with `prependPrefixItem`). The constructor has no item option, and `minItems`, `maxItems` and `items` are set for you (the length is fixed, with no extra items):
+
+```ts
+import { numberSchema, stringSchema, tupleSchema, type SchemaType } from 'juniper';
+
+const pair = tupleSchema().prefixItem(stringSchema()).prefixItem(numberSchema());
+// [string, number]
+type Pair = SchemaType<typeof pair>;
+
+pair.toJSON();
+// { type: 'array', minItems: 2, maxItems: 2, items: false, prefixItems: [{ type: 'string' }, { type: 'number' }] }
+```
 
 | Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
 |--------|:--------------------:|:------------:|:-------------:|:-----------:|

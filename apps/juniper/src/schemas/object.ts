@@ -129,6 +129,10 @@ interface ObjectParams<
     minProperties?: number;
     maxProperties?: number;
     properties?: P;
+    /**
+     * Keys that must be present. Write the array inline: a variable (`string[]`, or a `readonly`
+     * `as const` array) is a compile error.
+     */
     required?: R[];
     unevaluatedProperties?: boolean | typeof ignoreUnevaluatedProperties;
     [dependentRequiredSym]?: Record<string, string[]>;
