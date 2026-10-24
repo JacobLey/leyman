@@ -72,9 +72,9 @@ For the full motivation and requirements, see [WHY-HAYWIRE.md](https://github.co
 
 `npm i haywire`
 
-Haywire is an ESM package. It _must_ be imported.
+Haywire is an ESM package for Node.js 24 or later. It _must_ be imported; from CommonJS, use a dynamic import: `const { bind } = await import('haywire');`.
 
-The type safety of haywire is a primary benefit, but does not require typescript or any further build step to support.
+The type safety of haywire is a primary benefit, but does not require typescript or any further build step to support. It has one runtime dependency (`p-defer`) and no peer dependencies. With TypeScript, turn on `strict` and `exactOptionalPropertyTypes` (see [Typescript configuration](#typescript-configuration)).
 
 ## Example
 
@@ -87,7 +87,7 @@ Note the actual pattern of where to define `identifier`s and `bind`ings is just 
 // types.ts
 import { identifier } from 'haywire';
 
-interface ILogger {
+export interface ILogger {
     info(message: string): void;
 }
 export const loggerId = identifier<ILogger>();
@@ -141,14 +141,14 @@ export const passwordBinding = bind(dbPasswordId)
 // database.ts
 import { bind } from 'haywire';
 
-import { dbUrlId, dbPasswordId, IDatabase, ILogger, loggerId } from './types.js';
+import { type IDatabase, type ILogger, databaseId, dbPasswordId, dbUrlId, loggerId } from './types.js';
 
 export class Database implements IDatabase {
 
-    private postgres: FakePostgresClient;
+    private postgres: PostgresClient;
 
     constructor(private logger: ILogger, url: string, password: string) {
-        this.postgres = new Postgres(url, password);
+        this.postgres = new PostgresClient(url, password);
     }
 
     getRowById<T>(table: string, id: number): T {
@@ -167,14 +167,14 @@ export const databaseBinding = bind(databaseId)
 // user-service.ts
 import { bind } from 'haywire';
 
-import { databaseId, loggerId} from './types.js';
+import { type IDatabase, type ILogger, databaseId, loggerId } from './types.js';
 
 export class UserService {
 
     constructor(private database: IDatabase, private logger?: ILogger) {}
 
     getUserById(id: number): User {
-        const user = this.database.getRowById<User>(id);
+        const user = this.database.getRowById<User>('users', id);
         this.logger?.info(`Received user ${JSON.stringify(user)}`);
         return user;
     }
@@ -1059,6 +1059,8 @@ Haywire _extensively_ uses generics to track the state of various resources like
 In general, users should _not_ consider the generics as part of the API. They should allow Typescript's default values to be used, perhaps with the occasional `as const` assertion to parameters.
 
 That means the types of virtually all values should be inferred, rather than declared/enforced.
+
+One trap: `withDependencies()` takes a mutable tuple. An inline array literal (even with `as const`) works, but a value typed as a `readonly` array is rejected with `TS4104: The type 'readonly [...]' is 'readonly' and cannot be assigned to the mutable type '[...]'`.
 
 ```ts
 // Do this!
