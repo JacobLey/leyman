@@ -243,7 +243,8 @@
           "externalDependencies": [
             "@arethetypeswrong/core",
             "ignore",
-            "publint"
+            "publint",
+            "typescript"
           ]
         }
       ],

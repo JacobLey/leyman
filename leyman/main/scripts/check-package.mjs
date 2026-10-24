@@ -6,6 +6,10 @@
 //
 // Also checks every top-level path of the package is either published or known not to be, so a new one (like
 // `data/`) can't be left out of `files` by accident, and nothing that should stay private is published.
+//
+// Finally type checks the published declaration files as a strict consumer with `skipLibCheck: false` would. A
+// `@ts-expect-error` in the source doesn't reach the declarations, so an error it hid surfaces only there. Errors in
+// dependencies' declarations are not ours to fix, so only those in the package's own files are reported.
 
 import { execFileSync } from 'node:child_process';
 import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
@@ -37,6 +41,9 @@ if (workspaceRoot === undefined) {
 // Build output and other untracked files. Read from .gitignore rather than Git, which CI's source has no history for.
 const gitignored = ignore().add(readFileSync(path.join(workspaceRoot, '.gitignore'), 'utf8'));
 const projectPath = path.relative(workspaceRoot, process.cwd()).replaceAll(path.sep, '/');
+
+const tsc = path.join(import.meta.dirname, '../node_modules/.bin/tsc');
+const declarationFile = /\.d\.[cm]?ts$/v;
 
 const packDir = mkdtempSync(path.join(tmpdir(), 'check-package-'));
 try {
@@ -105,12 +112,52 @@ try {
         }
     }
 
+    const declarations = files.map(file => file.path).filter(file => declarationFile.test(file));
+    if (declarations.length > 0) {
+        let output = '';
+        try {
+            execFileSync(
+                tsc,
+                [
+                    '--ignoreConfig',
+                    '--noEmit',
+                    // Nx forces color, which would prefix each diagnostic
+                    '--pretty',
+                    'false',
+                    '--strict',
+                    '--skipLibCheck',
+                    'false',
+                    '--module',
+                    'nodenext',
+                    '--target',
+                    'esnext',
+                    '--lib',
+                    'esnext,dom',
+                    '--types',
+                    'node',
+                    ...declarations,
+                ],
+                { encoding: 'utf8' }
+            );
+        } catch (error) {
+            output = error.stdout;
+        }
+        const own = new Set(declarations);
+        for (const line of output.split('\n')) {
+            // Each diagnostic starts with `<file>(<line>,<column>): error`, followed by indented detail
+            const file = line.slice(0, line.indexOf('('));
+            if (own.has(file)) {
+                errors.push(`tsc (skipLibCheck: false): ${line}`);
+            }
+        }
+    }
+
     if (errors.length > 0) {
         console.error(errors.join('\n'));
         process.exitCode = 1;
     } else {
         console.log(
-            `${path.basename(filename)}: publint, attw and the published files check found no problems`
+            `${path.basename(filename)}: publint, attw, the published files check and tsc found no problems`
         );
     }
 } finally {

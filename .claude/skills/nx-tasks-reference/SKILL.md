@@ -90,6 +90,7 @@ Packs the package with `pnpm pack`, exactly as it would be published, and checks
 
 - [publint](https://publint.dev/), in strict mode: `exports`, `bin` and other entry points exist in the tarball and are well formed.
 - [Are The Types Wrong](https://arethetypeswrong.github.io/): every entry point resolves to JavaScript and types for ESM consumers, under both Node.js (`node16`) and bundler resolution. CommonJS and `node10` resolution are expected to fail for ESM-only packages, so they are not checked.
+- Declarations: `tsc` type checks the published `.d.ts` files as a strict consumer with `skipLibCheck: false` would. A `@ts-expect-error` in `src/` doesn't reach the declarations, so the error it hid fails here. Errors in dependencies' declarations are ignored.
 - Published files: every top-level path not ignored by `.gitignore` is either published, or on the script's `notPublished` list (`src`, `test`, `project.json`, ...), and nothing on that list is published. A new path, like `data/`, fails until it is added to one or the other.
 
 `e2e/published-entrypoints` complements it at runtime, importing every entry point from the published files.
