@@ -30,7 +30,7 @@ npm i load-populate-files
 ## Example
 
 ```ts
-// config.ts
+// config.ts, compiled to config.js
 export default [
     {
         filePath: './foo.json',
@@ -54,7 +54,7 @@ await loadAndPopulateFiles({ filePath: './config.js' });
 
 `load-populate-files` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { loadAndPopulateFiles } = await import('load-populate-files');`.
 
-Instead of calling `populateFiles()` directly, export file configs from a dedicated config module, then point `loadAndPopulateFiles()` at that file. The loaded file may export a single config object or an array of configs.
+Instead of calling `populateFiles()` directly, export file configs from a dedicated config module, then point `loadAndPopulateFiles()` at that file. The config module is loaded with `import()`, so it must be JavaScript that Node can run: point at the compiled `.js`, not the `.ts` source. Its default export may be a single config object or an array of configs.
 
 This package is also available as a CLI:
 
@@ -78,15 +78,17 @@ Loads the config exported at `params.filePath` and passes it to [`populateFiles(
 
 **Returns** `Promise<PopulationResponse[]>`, from `populateFiles()`.
 
+**Throws** (rejects) `Error` with `JS file not found: <path>` if the module doesn't exist, or with `File content does not fulfill populate-file input at: <path>` followed by a line per problem (e.g. `- 0.filePath: must have required property 'filePath'`) if the default export isn't a valid config. Errors from `populateFiles()` (such as `File <path> not up to date. Reason: <reason>` with `check`) pass through. The CLI prints the error and exits with code 1.
+
 #### `options`
 
 Options are passed through to the underlying `populateFiles()` call. They are also available as CLI flags.
 
 | Property | CLI flag | Type | Default | Description |
 |----------|----------|------|---------|-------------|
-| `check` | `--ci` | `boolean` | `true` in CI, else `false` | If `true`, fails if writing a file would change its content. Useful for verifying version-controlled files are up to date before deployment. |
+| `check` | `--ci`, `--check` (`--no-ci` to write in CI) | `boolean` | `true` in CI, else `false` | If `true`, fails if writing a file would change its content. Useful for verifying version-controlled files are up to date before deployment. |
 | `dryRun` | `--dry-run` | `boolean` | `false` | If `true`, does not write any files regardless of changes. Can still fail if `check` is `true`. |
-| `cwd` | `--cwd` | `string \| URL` | `process.env.PWD` | Used as the current working directory for `filePath` and re-used for relative `filePath`s in the loaded config. |
+| `cwd` | `--cwd` | `string \| URL` | `process.cwd()` | Used as the current working directory for `filePath` and the `targetDir` and `manifest` paths. Must be an existing directory. |
 | `targetDir` | `--target-dir`, `-t` | `string` | `'.'` | Target directory for resolving output file paths. Resolved relative to `cwd`. |
 | `clean` | `--clean` | `boolean` | `false` | If `true`, removes files in `targetDir` that were not generated (with `manifest`, only files it lists). In `--ci` mode, fails instead of removing. |
 | `force` | `--force` | `boolean` | `false` | Applies to `signed` files and the `manifest`. If `true`, overwrites files that were edited, are not signed or not listed, or are malformed. See [`populate-files`](https://www.npmjs.com/package/populate-files#signed-files). |
