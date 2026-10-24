@@ -1,5 +1,7 @@
+import type { Context } from 'mocha';
 import Path from 'node:path';
 import ts from 'typescript';
+import { before } from 'mocha-chain';
 
 /**
  * Root of this package. Virtual files are placed inside it so `juniper` and `expect-type` resolve
@@ -71,3 +73,14 @@ export const typeCheck = (files: Readonly<Record<string, string>>): string[] => 
         )
         .toArray();
 };
+
+// The first check parses TypeScript's libs and `expect-type`, which takes seconds on a loaded CI machine, then
+// `sourceFileCache` keeps them. A root hook does it once, before any test, so it never counts against whichever
+// test happens to run first.
+before(function (this: Context) {
+    this.timeout(30_000);
+    typeCheck({
+        'warm.ts':
+            "import { expectTypeOf } from 'expect-type';\nexpectTypeOf<1>().toEqualTypeOf<1>();",
+    });
+});
