@@ -35,8 +35,8 @@ await parseCwd(import.meta.url);               // /path/to/cwd/foo/bar
 await parseCwd(new URL(import.meta.url));      // /path/to/cwd/foo/bar
 await parseCwd({ cwd: 'foo/bar/my-file.js' }); // /path/to/cwd/foo/bar
 
-// Throws if the resolved directory does not exist
-await parseCwd('does/not/exist'); // Error: Directory not found
+// Rejects if the path does not exist (file or directory)
+await parseCwd('does/not/exist'); // Error: Directory not found: /path/to/cwd/does/not/exist
 ```
 
 ## Usage
@@ -47,14 +47,14 @@ await parseCwd('does/not/exist'); // Error: Directory not found
 
 ### `parseCwd(cwd?)`
 
-Resolves a path or URL to an absolute directory path and validates that the directory exists. When given a file path, returns the file's parent directory. Accepts an options object with a `cwd` key for convenient pass-through of higher-level options objects.
+Resolves a path or URL to an absolute directory path and validates that it exists. When the path is an existing file, returns the file's parent directory. A path that does not exist is rejected, even if it looks like a file name and its parent directory exists. Strings starting with `file://` are treated as URLs. Accepts an options object with a `cwd` key for convenient pass-through of higher-level options objects.
 
 **Parameters**
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `cwd` | `string \| URL \| { cwd?: string \| URL } \| null \| undefined` | `undefined` | Optional. Path, URL, or options object to resolve. Relative paths are resolved from `process.cwd()`. When omitted or `null`, returns `process.cwd()` unchanged. |
+| `cwd` | `string \| URL \| { cwd?: string \| URL } \| null \| undefined` | `undefined` | Optional. Path, URL, or options object to resolve. Relative paths are resolved from `process.cwd()`. When omitted, `null`, or an object without `cwd`, returns `process.cwd()` unchanged. |
 
 **Returns** `Promise<string>` — the absolute path to the resolved directory.
 
-**Throws** `Error` — if the resolved directory does not exist on the filesystem.
+**Rejects** `Error` (`Directory not found: <absolute path>`) — if the resolved path does not exist on the filesystem. The function is async, so it never throws synchronously.
