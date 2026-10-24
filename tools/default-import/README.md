@@ -42,6 +42,8 @@ console.log(defaultImport(await import('./a.cjs'))); // 123
 
 `defaultImport()` is idempotent — it is safe to call on values that are already correctly typed default exports.
 
+At runtime it unwraps a module namespace (an object tagged `Symbol.toStringTag` `'Module'`) to its `default`, and then an object with `__esModule: true` and a defined `default` to that `default`. Anything else, including a plain object that merely has a `default` key, is returned as is. The return type unwraps any object with a `default` property, up to two levels, so for a plain `{ default: x }` the type is `typeof x` while the value is still the object.
+
 ## API
 
 ### `defaultImport(value)`
