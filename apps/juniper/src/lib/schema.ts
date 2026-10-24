@@ -9,6 +9,7 @@ import type {
     ToJsonParams,
     typeCache,
 } from './types.js';
+import { toDraft07 } from './draft-07.js';
 import { reservedWords } from './types.js';
 import { copyJson, mergeAllOf, mergeRef } from './utils.js';
 
@@ -280,6 +281,9 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
                 }
                 if (target === 'openapi-3.0') {
                     return this.toJSON({ ...options, openApi30: true });
+                }
+                if (target === 'draft-07') {
+                    return toDraft07(this.toJSON({ ...options }));
                 }
                 throw new Error(`JSON Schema target: "${target}" not supported`);
             },

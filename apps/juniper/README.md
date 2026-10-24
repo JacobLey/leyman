@@ -390,6 +390,9 @@ schema['~standard'].jsonSchema.input({ target: 'openapi-3.0' });
 |--------|---------|
 | `'draft-2020-12'` | `toJSON()` |
 | `'openapi-3.0'` | `toJSON({ openApi30: true })` |
+| `'draft-07'` | `toJSON()`, rewritten as draft-07 |
+
+`'draft-07'` is the target some tool libraries request, such as the AI SDK and Mastra. Each 2020-12 keyword is rewritten to its draft-07 form: `$defs` become `definitions`, `prefixItems` becomes the array form of `items` (with `additionalItems`), `dependentRequired` and `dependentSchemas` become `dependencies`, and a `$ref` with constraints beside it moves into `allOf`. `unevaluatedProperties` becomes `additionalProperties` when nothing else in the schema evaluates properties. A schema that has no exact draft-07 form, such as one using `maxContains`, throws, so the draft-07 schema accepts the same values as the 2020-12 one.
 
 Other targets throw. `input` and `output` render the same schema, and accept the other `toJSON` options as a second argument.
 

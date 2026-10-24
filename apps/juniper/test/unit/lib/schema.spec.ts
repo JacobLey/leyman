@@ -1091,9 +1091,12 @@ suite('schema', () => {
             expect(schema['~standard'].jsonSchema.input({ target: 'openapi-3.0' })).to.deep.equal(
                 schema.toJSON({ openApi30: true })
             );
-            expect(() => schema['~standard'].jsonSchema.input({ target: 'draft-07' })).to.throw(
+            expect(schema['~standard'].jsonSchema.input({ target: 'draft-07' })).to.deep.equal(
+                schema.toJSON()
+            );
+            expect(() => schema['~standard'].jsonSchema.input({ target: 'draft-04' })).to.throw(
                 Error,
-                'JSON Schema target: "draft-07" not supported'
+                'JSON Schema target: "draft-04" not supported'
             );
         });
     });
