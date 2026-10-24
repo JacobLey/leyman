@@ -18,6 +18,7 @@ Lookups take time in proportion to the number of nodes, about 1µs for 100 nodes
 ## Contents
 - [Install](#install)
 - [Example](#example)
+- [Usage](#usage)
 - [API](#api)
   - [createRendezvousHash](#createrendezvoushashnodes-options)
 - [Compared to alternatives](#compared-to-alternatives)
@@ -49,6 +50,10 @@ const next = nodes.update([
 nodes.moved(next); // 0.25, the share 'ab' takes
 ```
 
+## Usage
+
+`weighted-rendezvous-hash` is an ESM module (Node.js 24 or later) that depends on [constant-consistent-hash](https://www.npmjs.com/package/constant-consistent-hash), installed with it. To load from a CommonJS module, use dynamic import: `const { createRendezvousHash } = await import('weighted-rendezvous-hash');`. Types `WeightedNode`, `RendezvousHash` and `RendezvousHashOptions` are exported.
+
 ## API
 
 ### `createRendezvousHash(nodes, options?)`
@@ -57,7 +62,7 @@ Builds an assignment of keys to nodes.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `nodes` | `Iterable<{ name: string; size: number }>` | — | Required. Nodes in any order, with unique names. Sizes are non-negative integers, and at least one must be positive. A node of size `0` receives no keys. Extra properties are kept, and returned by `get`. |
+| `nodes` | `Iterable<{ name: string; size: number }>` | — | Required. Nodes in any order, with unique names. Sizes are non-negative safe integers (at most 2^53 - 1), and at least one must be positive. A node of size `0` receives no keys. Extra properties are kept, and returned by `get`. |
 | `options.seed` | `number` | `0` | Integer between 0 and 2^32 - 1 that selects an independent hash function. |
 
 **Returns** `RendezvousHash`:
@@ -70,7 +75,7 @@ Builds an assignment of keys to nodes.
 | `moved(next)` | Expected fraction of keys `next` assigns to a different node. `next` must come from `createRendezvousHash` (or `update`) of the same installed copy of this package, or it throws `TypeError`. |
 | `update(nodes)` | Builds the assignment for new nodes, with the same options. |
 
-**Throws** `RangeError` — when names repeat, sizes or the seed are out of bounds, or no node has a positive size.
+**Throws** `RangeError` — from `createRendezvousHash` and `update`, when names repeat, sizes or the seed are out of bounds, or no node has a positive size.
 
 ## Compared to alternatives
 
