@@ -8,7 +8,16 @@ export interface FileFormatterOptions {
     formatter?: Formatters | null | undefined;
 }
 
+/**
+ * Format files in place, relative paths resolve from `process.cwd()`.
+ *
+ * Never rejects because of a formatter: a missing formatter, a file it fails on (or ignores) and a missing file
+ * are left unchanged without an error. `files` must be a mutable array.
+ */
 export type FilesFormatter = (files: string[], options?: FileFormatterOptions) => Promise<void>;
+/**
+ * Format a file in place. Like {@link FilesFormatter}, it never rejects because of a formatter.
+ */
 export type FileFormatter = (file: string, options?: FileFormatterOptions) => Promise<void>;
 
 export interface TextFormatterOptions extends FileFormatterOptions {
@@ -18,6 +27,10 @@ export interface TextFormatterOptions extends FileFormatterOptions {
      */
     ext?: '.json' | `.${'' | 'c' | 'm'}${'js' | 'ts'}${'' | 'x'}`;
 }
+/**
+ * Format text as if it were a file in the working directory, so the project's configuration applies.
+ * Returns the text unchanged if no formatter succeeds.
+ */
 export type TextFormatter = (text: string, options?: TextFormatterOptions) => Promise<string>;
 
 /**

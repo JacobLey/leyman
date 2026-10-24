@@ -52,11 +52,11 @@ const result = await formatText(
 
 `format-file` is an ESM module. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { formatFile } = await import('format-file');`.
 
-Formatting is best-effort. If neither biome nor prettier is installed and configured, files are returned unchanged. It is recommended to produce reasonable output before formatting (e.g. `JSON.stringify(data, null, 2)`), treating formatting as a polish step rather than a correctness requirement.
+Formatting is best-effort and never throws because of the formatter. If neither biome nor prettier is installed, files and text are left unchanged. So is anything a formatter fails on (such as a syntax error), a file that does not exist, and a file the formatter's own ignore settings exclude. Nothing is reported, so check the result if it matters. It is recommended to produce reasonable output before formatting (e.g. `JSON.stringify(data, null, 2)`), treating formatting as a polish step rather than a correctness requirement.
 
 Every file passed is formatted, even when `.gitignore` lists it, since generated files are often ignored. Biome runs with its VCS integration off and Prettier reads only `.prettierignore`, so each formatter's own ignore settings (Biome's `files.includes`, `.prettierignore`) still apply.
 
-In this monorepo, `biome` is the default formatter and will be preferred when `formatter` is not specified.
+Without `formatter` (`'inherit'`), every installed formatter is tried: one with a config file found (`biome.json`/`biome.jsonc` above the working directory, or a Prettier config) first, then `biome` before `prettier`. The first one that succeeds is used, and the others are not run. Which formatters are installed and configured is determined once per process. Both are resolved as peer dependencies of `format-file`, so install them where `format-file` is installed.
 
 ## API
 
@@ -80,6 +80,8 @@ await formatFile('./config.json', { formatter: 'prettier' });
 
 #### FileFormatterOptions
 
+The option types are not exported by name. Use `Parameters<typeof formatFile>[1]` and `Parameters<typeof formatText>[1]`.
+
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `formatter` | `'biome' \| 'prettier' \| 'inherit'` | `'inherit'` | Formatter to use. `'inherit'` tries each available formatter in order. |
@@ -94,7 +96,7 @@ Formats a set of files in-place. Equivalent to calling `formatFile` on each path
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `filePaths` | `string[]` | — | Required. List of file paths. Relative paths resolve from `process.cwd()`. |
+| `filePaths` | `string[]` | — | Required. List of file paths. Relative paths resolve from `process.cwd()`. Must be a mutable array: a `readonly` array or `as const` tuple is a type error. An empty list does nothing. |
 | `options` | `FileFormatterOptions` | `{}` | Optional. Same options as [`formatFile`](#formatfilefilepath-options). |
 
 **Returns** `Promise<void>` — resolves when all files have been formatted and written.
@@ -129,4 +131,4 @@ Extends [FileFormatterOptions](#fileformatteroptions) with:
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `formatter` | `'biome' \| 'prettier' \| 'inherit'` | `'inherit'` | Formatter to use. |
-| `ext` | `'.json' \| '.js' \| '.ts' \| '.mjs' \| '.mts' \| '.cjs' \| '.cts' \| '.jsx' \| '.tsx'` | `'.js'` | File extension used to select formatting rules. |
+| `ext` | `'.json'` or `` `.${'' \| 'c' \| 'm'}${'js' \| 'ts'}${'' \| 'x'}` `` (`.js`, `.ts`, `.mjs`, `.mts`, `.cjs`, `.cts`, `.jsx`, `.tsx`, …) | `'.js'` | File extension used to select formatting rules. |
