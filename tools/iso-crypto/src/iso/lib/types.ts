@@ -4,6 +4,12 @@
  * @template E - either entire enum or single value
  */
 type EnumToString<E extends string> = `${E}`;
+/**
+ * Allows number literals in place of enum.
+ *
+ * @template E - either entire enum or single value
+ */
+type EnumToNumber<E extends number> = `${E}` extends `${infer N extends number}` ? N : never;
 
 export enum Ciphers {
     AES = 'AES',
@@ -29,17 +35,18 @@ export enum Sizes {
 /**
  * AES key sizes. 192 bits is deprecated, as Chromium-based browsers do not support it.
  */
-type AesSize =
+type AesSize = EnumToNumber<
     | Sizes.KEY_128
     // eslint-disable-next-line @typescript-eslint/no-deprecated -- still accepted, so existing data stays readable
     | Sizes.KEY_192
-    | Sizes.KEY_256;
+    | Sizes.KEY_256
+>;
 
 export type Encryption =
     | {
           cipher: EnumToString<Ciphers.AES>;
           // Only key sizes every browser supports
-          size: Sizes.KEY_128 | Sizes.KEY_256;
+          size: EnumToNumber<Sizes.KEY_128 | Sizes.KEY_256>;
           mode: EnumToString<Modes.GCM>;
       }
     | {
@@ -83,11 +90,11 @@ export enum Algorithms {
 export type HashAlgorithm =
     | {
           algorithm: EnumToString<Algorithms.SHA1>;
-          size?: Sizes.KEY_160;
+          size?: EnumToNumber<Sizes.KEY_160>;
       }
     | {
           algorithm: EnumToString<Algorithms.SHA2>;
-          size: Sizes.KEY_256 | Sizes.KEY_384 | Sizes.KEY_512;
+          size: EnumToNumber<Sizes.KEY_256 | Sizes.KEY_384 | Sizes.KEY_512>;
       };
 
 export type Hash = EnumToString<Algorithms.RAW> | HashAlgorithm;
