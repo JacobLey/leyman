@@ -68,7 +68,7 @@ export const enumToArray = <Enum extends Record<string, unknown>>(
  * }
  * console.log(enumToValues(MyEnum));
  * // ['BAR', 123, 'BAR']
- * console.log(enumToValues(MyEnum), { unique: true });
+ * console.log(enumToValues(MyEnum, { unique: true }));
  * // ['BAR', 123]
  *
  * @param enumDict - enum variable

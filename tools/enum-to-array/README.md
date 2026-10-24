@@ -50,6 +50,8 @@ console.log(enumToArray(MyEnum));
 
 TypeScript's [reverse mappings](https://www.typescriptlang.org/docs/handbook/enums.html#reverse-mappings) for numeric enums add extra entries to the enum object (e.g. `{ FOO: 0, 0: 'FOO' }`). All three functions filter these out automatically, returning only the forward key→value pairs.
 
+Any object with string keys is accepted, so an `as const` object works the same way as an enum. Its type must be a type alias or inferred object type: a value typed as an `interface` is rejected, as interfaces have no index signature. Results are arrays of the union of members rather than tuples, and an enum with no members gives `[]`. Order follows `Object.keys`, so integer-like keys of a plain object come first, in ascending order.
+
 ## API
 
 ### `enumToArray(enumDict)`
