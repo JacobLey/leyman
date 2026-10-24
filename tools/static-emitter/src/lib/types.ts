@@ -2,9 +2,9 @@ import type { TypedCustomEvent } from '../typed-custom-event.js';
 
 /**
  * Map of event name to either an `Event` (dispatched as-is) or a detail value
- * (wrapped in a `TypedCustomEvent`).
+ * (wrapped in a `TypedCustomEvent`). Any object type, so an interface works too.
  */
-export type EventMap = Record<string, unknown>;
+export type EventMap = object;
 
 /**
  * Default event map, which declares no events.

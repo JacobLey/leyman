@@ -44,6 +44,23 @@ suite('StaticEmitter', () => {
         });
     });
 
+    test('Events can be an interface', () => {
+        interface Events {
+            data: string;
+            server: ServerEvent<'server'>;
+        }
+        const emitter = new StaticEmitter<Events>();
+        const received: string[] = [];
+
+        emitter.on('data', detail => {
+            expectTypeOf(detail).toEqualTypeOf<string>();
+            received.push(detail);
+        });
+        emitter.emit('data', '<data>');
+
+        expect(received).to.deep.equal(['<data>']);
+    });
+
     suite('on', () => {
         test('Receives detail and event', () => {
             const emitter = new CustomEmitter();

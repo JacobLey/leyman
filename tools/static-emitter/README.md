@@ -74,17 +74,7 @@ Events are declared as a map of `eventName → value`, passed as a generic:
 
 Event names must be strings, as required by `EventTarget`.
 
-Declare the map as a type alias or inline object type, not an `interface`. `EventMap` is `Record<string, unknown>`, which an interface does not satisfy (it has no implicit index signature):
-
-```ts
-interface Events { data: string }
-new StaticEmitter<Events>();
-// error TS2344: Type 'Events' does not satisfy the constraint 'EventMap'.
-//   Index signature for type 'string' is missing in type 'Events'.
-
-type EventsAlias = { data: string };
-new StaticEmitter<EventsAlias>(); // OK
-```
+The map can be an `interface`, a type alias or an inline object type.
 
 A detail of `undefined` (or a type including it) can be left out of `emit()`, but a detail of `null` cannot: `emit('done', null)`. (`new TypedCustomEvent` is the opposite: it may omit a `null` detail, not an `undefined` one.) A `StaticEmitter` listener receives `undefined` when none was given.
 
@@ -225,7 +215,7 @@ class ServerEvent<T extends string> extends TypedEvent<T> {
 
 | Type | Description |
 |------|-------------|
-| `EventMap` | Constraint for event maps: `Record<string, unknown>`. |
+| `EventMap` | Constraint for event maps: `object`, so interfaces satisfy it. |
 | `NoEvents` | Default event map, with no events. |
 | `EventName<Events>` | All declared event names. |
 | `DetailEventName<Events>` | Event names usable with the `StaticEmitter` helpers. |
