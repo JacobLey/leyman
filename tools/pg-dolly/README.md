@@ -231,7 +231,7 @@ Connects to the server, and drops what earlier runs left behind (see [How it wor
 
 **Returns** `Promise<PgDolly>`
 
-**Throws** `PgDollyMissingUrlError` without `url` or `DATABASE_URL`, and `PgDollyPrefixError` for an invalid prefix.
+**Rejects** with `PgDollyMissingUrlError` without `url` or `DATABASE_URL`, and `PgDollyPrefixError` for an invalid prefix. Also with the error from `pg` if the server can't be reached.
 
 #### Options
 
@@ -253,7 +253,7 @@ Gets the template for a schema, building it unless an earlier run already did. C
 
 **Returns** `Promise<DollyTemplate>`: `{ name, hash, clone }`, where `hash` is the hash of the SQL (schema and seed), and `name` is `<prefix>_t_<hash>`.
 
-**Rejects** with the error from Postgres if the SQL fails. Nothing is left behind, and the next call tries again.
+**Rejects** with the error from Postgres if the SQL fails. Nothing is left behind, and the next call tries again. After `close()`, with `PgDollyClosedError`.
 
 ### `template.clone()`
 
@@ -283,11 +283,13 @@ Needs `pg_dump` on the `PATH`, at least the server's major version.
 
 **Returns** `Promise<string>`
 
+**Rejects** if `pg_dump` fails (it is not on the `PATH`, or can't connect).
+
 To keep a committed `schema.sql` up to date, and check it in CI, use [`pg-dolly-schema`](https://www.npmjs.com/package/pg-dolly-schema).
 
 ### Errors
 
-Every error `pg-dolly` throws extends `PgDollyError`.
+Every error `pg-dolly` throws extends `PgDollyError`. The types `PgDollyOptions`, `DollyTemplate`, `DollyDatabase`, `TemplateOptions`, `DatabaseSetting` and `DumpSchemaOptions` are exported too.
 
 | Error | When |
 |-------|------|

@@ -66,6 +66,7 @@ const pgDump = async (url: string, args: readonly string[]): Promise<string> => 
  * @param url - Database to dump, as a `postgres://` URL
  * @param options - Tables whose rows to dump too
  * @returns The schema as SQL
+ * @rejects When `pg_dump` fails: it is not on the `PATH`, or can't connect
  */
 export const dumpSchema = async (url: string, options: DumpSchemaOptions = {}): Promise<string> => {
     const { data = [] } = options;
