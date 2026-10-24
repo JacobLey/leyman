@@ -34,7 +34,7 @@ pg-dolly needs a Postgres server, in `DATABASE_URL`, as a user that can create d
 export DATABASE_URL=postgres://postgres:postgres@localhost:5432/postgres
 ```
 
-A local server, a devcontainer sidecar or a CI service all work. Without one, it fails rather than skipping the tests: leaving out integration tests should be a choice, not something that happens quietly.
+A local server, a devcontainer sidecar or a CI service all work. Without one, it fails rather than skipping the tests, so integration tests are never left out by accident.
 
 Test databases don't need to survive a restart, so a server only for tests can run with `fsync=off`, `synchronous_commit=off` and `full_page_writes=off`, and its data on a `tmpfs`.
 

@@ -44,7 +44,7 @@ const useExample = () => {
 };
 ```
 
-`normalized-react-query` solves this by forcing the key and query function to be defined together in one place, then reused as a singleton. Every call site uses the same key and the same function — no divergence is possible. Call sites pass typed params instead of building keys, and the cache helpers (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
+`normalized-react-query` solves this by forcing the key and query function to be defined together in one place, then reused as a singleton. Every call site uses the same key and the same function, so they can't diverge. Call sites pass typed params instead of building keys, and the cache helpers (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
 
 
 ## Request Waterfalls

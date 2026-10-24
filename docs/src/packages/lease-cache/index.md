@@ -47,7 +47,7 @@ await cache.invalidate(`user:${id}`);
 - **A failed or stuck load holds no one up for long**: a failed load frees its lease right away, and readers stop waiting after `waitMs`.
 - **No client dependency**: anything with an `eval` command works. ioredis and iovalkey fit as they are, and node-redis and Valkey GLIDE need a few lines. See [Clients](/packages/lease-cache/guides/clients). Keys use hash tags, so it works on a cluster.
 
-Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf), section 3.2.1), done here with a few small Lua scripts. It is the narrow part of a cache, not a whole one: pair it with a fuller cache for a memory tier or stale-while-revalidate on expiry, as the [read-through cache demo](/demos/read-through-cache/) does with BentoCache.
+Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf), section 3.2.1), done here with a few small Lua scripts. It covers one part of a cache: pair it with a fuller cache for a memory tier or stale-while-revalidate on expiry, as the [read-through cache demo](/demos/read-through-cache/) does with BentoCache.
 
 ## Compared to
 

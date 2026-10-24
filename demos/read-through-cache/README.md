@@ -2,7 +2,7 @@
 
 Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, one load per key across instances with lease-cache, and sharding with weighted rendezvous hashing.
 
-A worked example, not a package: it is never published. It shows how to put [BentoCache](https://bentocache.dev) together with Valkey (and [lease-cache](../../tools/lease-cache), where BentoCache falls short) for a production-shaped cache, with every feature behind an option so its effect (and cost) can be tested on its own. The code is short; this README explains why it is shaped the way it is, including what BentoCache does not do and what was learned building it.
+A worked example, not a package: it is never published. It shows how to put [BentoCache](https://bentocache.dev) together with Valkey (and [lease-cache](../../tools/lease-cache), where BentoCache falls short) for a cache fit for production, with every feature behind an option so its effect (and cost) can be tested on its own. The code is short; this README explains why it is built this way, including what BentoCache does not do and what was learned building it.
 
 ## Contents
 - [Example](#example)
@@ -282,7 +282,7 @@ A missing or doubled choice is a type error, and every combination works. Each f
 
 ## Testing
 
-The tests run against a real Valkey: a `valkey` sidecar in the devcontainer, and a service bound under the same hostname in Dagger. Nothing in this demo is mocked.
+The tests run against a real Valkey: a `valkey` sidecar in the devcontainer, and a service bound under the same hostname in Dagger. No part of the demo is mocked.
 
 - **Several databases stand in for several servers.** Nodes in the tests are logical databases `1` to `4` of one server: they never share keys, which is all sharding needs.
 - **Tests vary one feature at a time.** Each starts from a baseline module (one node, BentoCache's own Valkey tier, no memory tier, no grace), and swaps in the feature it is about with `replaceBinding()`, which haywire type-checks like any other binding. `createReadThroughCache` gets its own tests, of each option.

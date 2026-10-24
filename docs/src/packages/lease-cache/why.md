@@ -22,7 +22,7 @@ miss, start loading
   cache what was read (old)
 ```
 
-The invalidation happened, yet the old row is now cached, and served until it expires. Nothing is wrong with either side: the reader read before the update, and the writer invalidated after it. The race is between the reader's read and its write to the cache.
+The invalidation happened, yet the old row is now cached, and served until it expires. Neither side did anything wrong: the reader read before the update, and the writer invalidated after it. The race is between the reader's read and its write to the cache.
 
 Both are well known, and [memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf) (Nishtala et al., NSDI 2013, section 3.2.1) solves both with one mechanism: **leases**. This package implements them on Valkey (or Redis).
 
@@ -50,7 +50,7 @@ The stampede is gone because only the lease holder loads: every other instance w
 3. So a fill that succeeds after an invalidation belongs to a lease taken after the invalidation, and its reader took the lease before it started loading.
 4. That load therefore started after the invalidation, and so after the change it was invalidated for. It reads the new data.
 
-The fill that loses its lease still returns what it loaded to its own caller. That value was current when the read began, which is all any read without a lock can promise.
+The fill that loses its lease still returns what it loaded to its own caller. That value was current when the read began, which is the most a read without a lock can guarantee.
 
 **What it relies on:**
 
@@ -92,7 +92,7 @@ As of October 2026:
 
 BentoCache's maintainer considered distributed locks and decided against them for now ([Julien-R44/bentocache#2](https://github.com/Julien-R44/bentocache/issues/2)). A distributed lock (e.g. Redlock) around the loader stops the stampede, but not the race: the lock decides who loads, not whether the result may still be cached.
 
-lease-cache is the narrow part: it composes with a fuller cache rather than replacing one. The [read-through cache demo](/demos/read-through-cache/) makes it the shared tier under BentoCache's memory tier and stale-while-revalidate.
+lease-cache covers one part of a cache, and works alongside a fuller cache rather than replacing one. The [read-through cache demo](/demos/read-through-cache/) makes it the shared tier under BentoCache's memory tier and stale-while-revalidate.
 
 ## Non-goals
 

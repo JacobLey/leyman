@@ -315,7 +315,7 @@ The same key (this is what makes it "symmetric") can then be used decrypt the ou
 
 The key length is specified by the algorithm (e.g. `aes-256-ctr` requires 32 bytes), which may not necessarily match the actual length of the secret provided. Similarly the provided secret may not have "uniform distribution" of bytes (e.g. `Password123` only has bytes between `30`-`7A`). To mediate, the secret is hashed, and has bytes removed from (or, for CBC and CTR, prepended to) the beginning of the buffer to match. A single hash is not enough for passwords: derive the key with `deriveKey` and pass it with `{ hash: 'raw' }`.
 
-These algorithms also require an effectively random "Initialization Vector" (a.k.a. `iv`). This buffer is not necessarily private, it just cannot be known ahead of time, and should never be reused. Encryption methods in `iso-crypto` will generate this `iv` internally from a random number generator (see `randomBytes`) and exposed in the output alongside the encrypted data.
+These algorithms also require an effectively random "Initialization Vector" (a.k.a. `iv`). This buffer is not necessarily private, but it must not be known ahead of time, and should never be reused. Encryption methods in `iso-crypto` will generate this `iv` internally from a random number generator (see `randomBytes`) and exposed in the output alongside the encrypted data.
 
 Given that the same secret it used to both encrypt and decrypt a message, it is not appropriate for sending messages between multiple parties. Instead, it should be used only in cases where the data is being stored/transferred by an untrusted third party and then re-read by original party (e.g. storing sensitive files on a third party server).
 

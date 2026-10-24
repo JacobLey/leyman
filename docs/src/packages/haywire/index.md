@@ -8,7 +8,7 @@ description: Compile-time checked dependency injection for TypeScript — no dec
 
 Compile-time checked dependency injection for TypeScript: no decorators, no `reflect-metadata`, no global state.
 
-If your container compiles, it is complete: missing bindings, mismatched types and duplicate registrations are all TypeScript errors, not runtime crashes.
+Missing bindings, mismatched types and duplicate registrations are all TypeScript errors, so a container that compiles has everything it needs.
 
 ```ts
 import { bind, createContainer, createModule, identifier, singletonScope } from 'haywire';

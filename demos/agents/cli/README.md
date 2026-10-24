@@ -59,16 +59,16 @@ An agent with a shell can use any CLI, and a good one costs it very little: `not
 
 - **Output is short by default**, and the same shape every time: a list is ids, times and titles, one per line; `get` is the title, then the body. `--json` when a program (or an agent that wants to parse it) reads it.
 - **Users' text is printed escaped.** A title or body could hold a terminal escape sequence (to recolour or rewrite what's shown) or a carriage return (to hide what came before): control characters are printed as JSON would (`\u001b`), but for a body's newlines and tabs. A title's newline is escaped too, so a list stays one line per note.
-- **Nothing is asked interactively**, except the browser login: every input is a flag, with a default where one makes sense.
+- **The CLI never prompts**, except the browser login: every input is a flag, with a default where one makes sense.
 - **stdin is read only with `--stdin`.** An agent's shell may leave stdin open, and a CLI that reads it unasked waits forever.
-- **The login is set up once, by a person**, and every command after just works: the CLI refreshes the token when it expires, and saves the new one. An agent never handles a token.
+- **The login is set up once, by a person**, and later commands don't need it: the CLI refreshes the token when it expires, and saves the new one. An agent never handles a token.
 - **A failure is one line on stderr, saying what to do**, and its exit code says what kind it is: `3` when only logging in again can fix it, so an agent can ask its user to without parsing the message (see [Errors](#errors)).
 
 ## Login
 
 `notes login` needs only the API's URL. Everything else is discovered:
 
-1. The API's Protected Resource Metadata (RFC 9728) names its authorization server, its scopes, and its canonical identifier.
+1. The API's Protected Resource Metadata (RFC 9728) lists its authorization server, its scopes, and its canonical identifier.
 2. The authorization server's metadata gives its endpoints: at RFC 8414's well-known URL, else at OpenID Connect's (which Keycloak serves instead), in the order the MCP spec gives.
 3. The CLI listens on a free port of `127.0.0.1` (a loopback redirect, RFC 8252), and sends the user to authorize: the URL is printed, and opened with `$BROWSER` when it's set. PKCE (S256), a random `state`, and `resource` set to the API (RFC 8707), asking for every scope the API names (or none, for the server's default, if it names none). It waits 10 minutes (`--timeout`) for the browser to come back.
 4. The browser comes back to the loopback with a code. The CLI checks the `state`, and that the response came from the server it went to (`iss`, RFC 9207), then trades the code for tokens.
@@ -104,7 +104,7 @@ Every request (discovery, tokens, the API) gives up after 10 seconds. The CLI is
 
 ## Testing
 
-Each test runs `./bin.mjs` as a separate process, as anyone would, against a [dev OAuth server](../../oauth-server) and the [notes API](../../openapi/server) on a database of its own. `$BROWSER` is a small script playing the user: it signs in, asks for `/favicon.ico` as a browser would, and comes back to the CLI. It can come back with something else instead (a denial, a forged `state`), and a test can open the printed URL instead, as a user without `$BROWSER` would. Expiry is tested by editing the saved session, never by waiting, and logging out by putting the session file back after: it can't be refreshed. Commands run at once are tested too, by running four: without the lock, three of them find the login revoked. Two users, each logged in from a config directory of their own (`$BROWSER` signs in as `BROWSER_USER`), see only their own notes. A device login is approved (or denied) by the dev server's `approveDevice`, as the user opening the printed URL elsewhere; a fake authorization server answers each poll as a test asks (`slow_down`, a gateway error), as the dev server never does. One test logs in at a server that says the least the standards allow (OpenID discovery only, no scopes, no `iss`, tokens with no expiry or refresh token), which the CLI must still work with.
+Each test runs `./bin.mjs` as a separate process, as anyone would, against a [dev OAuth server](../../oauth-server) and the [notes API](../../openapi/server) on a database of its own. `$BROWSER` is a small script playing the user: it signs in, asks for `/favicon.ico` as a browser would, and comes back to the CLI. It can come back with something else instead (a denial, a forged `state`), and a test can open the printed URL instead, as a user without `$BROWSER` would. Expiry is tested by editing the saved session, never by waiting, and logging out by putting the session file back after: it can't be refreshed. Commands run at once are tested too, by running four: without the lock, three of them find the login revoked. Two users, each logged in from a config directory of their own (`$BROWSER` signs in as `BROWSER_USER`), see only their own notes. A device login is approved (or denied) by the dev server's `approveDevice`, as the user opening the printed URL elsewhere; a fake authorization server answers each poll as a test asks (`slow_down`, a gateway error), as the dev server never does. One test logs in at a server that publishes only the minimum the standards require (OpenID discovery only, no scopes, no `iss`, tokens with no expiry or refresh token), which the CLI must still work with.
 
 ## What was learned
 

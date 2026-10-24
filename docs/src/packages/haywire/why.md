@@ -6,7 +6,7 @@ description: The problems Haywire solves, its requirements, how its type checks 
 
 ## The Problem
 
-Dependency injection is a powerful pattern, but JavaScript DI libraries tend to let bugs escape to runtime, often at the worst moment.
+Dependency injection is a powerful pattern, but JavaScript DI libraries tend to let bugs escape to runtime.
 
 Here are the failure modes that motivated Haywire:
 

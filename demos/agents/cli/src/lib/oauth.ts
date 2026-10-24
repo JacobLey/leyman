@@ -68,7 +68,7 @@ interface Discovered {
 }
 
 /**
- * Finds who issues the API's tokens, from the API alone: its Protected Resource Metadata (RFC 9728) names the
+ * Finds who issues the API's tokens, from the API alone: its Protected Resource Metadata (RFC 9728) gives the
  * authorization server and the scopes, and the server's metadata its endpoints. Both are checked to be about what
  * was asked for.
  *

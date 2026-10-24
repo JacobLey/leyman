@@ -52,9 +52,9 @@ export interface TokenExchangeOptions {
  * grant, so this registers one, and signs its tokens as oidc-provider signs every access token (RFC 9068, with the
  * same key), so a resource server can't tell them apart.
  *
- * The new token is the user's (`sub`), for the resource asked for (`aud`), with `act` naming the service acting for
- * them (RFC 8693 §4.1). Its scopes are at most what the user granted, the resource understands, and the service may
- * have; and it never outlives the token it was exchanged for.
+ * The new token is the user's (`sub`), for the resource asked for (`aud`), with `act` identifying the service acting
+ * for them (RFC 8693 §4.1). Its scopes are at most what the user granted, the resource understands, and the service
+ * may have; and it never outlives the token it was exchanged for.
  *
  * @param options - The issuer, its keys, the resources and the services
  * @returns oidc-provider's handler for the grant

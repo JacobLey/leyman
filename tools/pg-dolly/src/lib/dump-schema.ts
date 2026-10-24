@@ -41,7 +41,7 @@ export interface DumpSchemaOptions {
 }
 
 /**
- * Runs `pg_dump`, leaving out what names one server: owners, privileges and tablespaces.
+ * Runs `pg_dump`, leaving out what is specific to one server: owners, privileges and tablespaces.
  *
  * @param url - As a `postgres://` URL
  * @param args - What to dump

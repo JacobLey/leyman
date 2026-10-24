@@ -8,7 +8,7 @@ By participating in this project you agree to abide by the [Code of Conduct](./C
 
 Open an [issue](https://github.com/JacobLey/leyman/issues/new/choose) and pick the matching template. Please search existing issues first.
 
-A good bug report names the package and version, includes a minimal reproduction, and says what you expected to happen.
+A good bug report gives the package and version, includes a minimal reproduction, and says what you expected to happen.
 
 **Security vulnerabilities should not be reported in public issues.** See the [security policy](./SECURITY.md).
 

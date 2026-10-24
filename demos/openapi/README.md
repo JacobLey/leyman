@@ -1,6 +1,6 @@
 # OpenAPI demo
 
-A deliberately small API (notes: add one, read one, list the newest), with the whole path from spec to database built properly, because the plumbing is the point:
+A deliberately small API (notes: add one, read one, list the newest), with the whole path from spec to database built properly, since connecting those parts is what the demo shows:
 
 ```
 spec (juniper) ──► openapi.json ──┬──► client: genever types + a typed fetch client
@@ -22,7 +22,7 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 
 - **The spec is the contract, and the one source of truth.** It's written in TypeScript with [Juniper](../../apps/juniper), whose schemas carry their types, and `serializeSpec` turns it into a plain `openapi.json` (OpenAPI 3.1). That file is committed, and CI fails if it's stale (`populate-files`). Both sides read the file, as any outside client would, never the TypeScript.
 - **Types are generated from the file, on each side.** [genever](../../apps/genever) writes `Paths` and `Operations` types into each package's `src/generated/`, from the spec package's `openapi.json` as installed. A change to the spec that breaks a handler or a call is a type error in that package.
-- **The server checks every request and response against the document at runtime**, with Ajv compiled from `openapi.json`. Types only hold within TypeScript; the network is where the contract is actually kept.
+- **The server checks every request and response against the document at runtime**, with Ajv compiled from `openapi.json`. Types only hold within TypeScript, so the contract is checked again on the wire.
 - **The database schema is what the migrations build.** Drizzle generates SQL migrations, [`pg-dolly-schema`](../../apps/pg-dolly-schema) dumps what they build into `schema.sql`, and every test gets a database of its own cloned from it with [`pg-dolly`](../../tools/pg-dolly).
 
 ## What was learned

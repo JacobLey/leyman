@@ -69,7 +69,7 @@ export class AgentOAuthProvider implements OAuthClientProvider {
         this.authorizations.push(authorizationUrl);
         const signIn = new URL(authorizationUrl);
         if (this.#user !== undefined) {
-            // As a user typing their name in at the dev server's login, which takes whoever they say
+            // As a user typing their name in at the dev server's login, which accepts any account
             signIn.searchParams.set('login_hint', this.#user);
         }
         this.callback = await followAuthorization(signIn, this.redirectUrl);

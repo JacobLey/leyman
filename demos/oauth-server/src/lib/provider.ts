@@ -77,7 +77,7 @@ export interface DevAuthorizationServerOptions {
     readonly services: readonly ServiceClient[];
     /**
      * The account a login signs in as, unless the authorization request names another (`login_hint`). A stand-in
-     * for a real login page, so there are no passwords: whoever asks is signed in as whoever they say.
+     * for a real login page, so there are no passwords: a request is signed in as whichever account it asks for.
      */
     readonly accountId: string;
     /**
@@ -144,7 +144,7 @@ const defaultDeviceInterval = 5;
 const deviceCodeGrantType = 'urn:ietf:params:oauth:grant-type:device_code';
 
 /**
- * A page for the device flow, with nothing but what it says and its form: the dev login has no look to keep.
+ * A page for the device flow, with nothing but what it says and its form: the dev login has no styling to match.
  *
  * @param text - What it says
  * @param form - oidc-provider's form, and its submit button
@@ -314,7 +314,7 @@ export const createDevAuthorizationServer = async (
                         `${form}<button type="submit" form="op.deviceInputForm">Continue</button>`
                     );
                 },
-                // The page a user opening `verification_uri_complete` lands on: confirming the code is theirs is
+                // The page shown at `verification_uri_complete`: confirming the code is theirs is
                 // what stops a phished code being approved unseen, so it's kept, even in the dev login
                 userCodeConfirmSource: (ctx, form, _client, _deviceInfo, userCode) => {
                     ctx.body = devicePage(
@@ -336,8 +336,8 @@ export const createDevAuthorizationServer = async (
             },
             resourceIndicators: {
                 enabled: true,
-                // A client names the server it wants a token for, in the authorization and the token request: a token
-                // is never for a default audience
+                // A client sends the resource server it wants a token for in the authorization and the token request.
+                // There is no default audience
                 // eslint-disable-next-line unicorn/no-useless-undefined -- oidc-provider reads `undefined` as "none"
                 defaultResource: () => undefined,
                 getResourceServerInfo: (_ctx: KoaContextWithOIDC, indicator: string) => {

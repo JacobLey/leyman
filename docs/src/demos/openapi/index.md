@@ -6,7 +6,7 @@ description: A small notes API with the whole path from spec to database built p
 
 <ProjectHeader />
 
-A deliberately small API (notes: add one, read one, list the newest), with the whole path from spec to database built properly, because the plumbing is the point:
+A deliberately small API (notes: add one, read one, list the newest), with the whole path from spec to database built properly, since connecting those parts is what the demo shows:
 
 ```
 spec (juniper) ──► openapi.json ──┬──► client: genever types + a typed fetch client
@@ -28,7 +28,7 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 
 - **The spec is the contract, and the one source of truth.** It's written in TypeScript with [Juniper](/packages/juniper/), whose schemas carry their types, and `serializeSpec` turns it into a plain `openapi.json` (OpenAPI 3.1). That file is committed, and CI fails if it's stale ([populate-files](/packages/populate-files/)). Both sides read the file, as any outside client would, never the TypeScript.
 - **Types are generated from the file, on each side.** [genever](/packages/genever/) writes `Paths` and `Operations` types into each package's `src/generated/`, from the spec package's `openapi.json` as installed. A change to the spec that breaks a handler or a call is a type error in that package.
-- **The server checks every request and response against the document at runtime**, with Ajv compiled from `openapi.json`. Types only hold within TypeScript; the network is where the contract is actually kept.
+- **The server checks every request and response against the document at runtime**, with Ajv compiled from `openapi.json`. Types only hold within TypeScript, so the contract is checked again on the wire.
 - **The database schema is what the migrations build.** Drizzle generates SQL migrations, [pg-dolly-schema](/packages/pg-dolly-schema/) dumps what they build into `schema.sql`, and every test gets a database of its own cloned from it with [pg-dolly](/packages/pg-dolly/).
 
 ## The spec
@@ -200,7 +200,7 @@ An `Authenticator` gets the token and the operation's scopes, and answers with t
 - **`jwtAuthenticator({ issuer, audience })`** accepts JWT access tokens (RFC 9068) from an authorization server: signed with one of its keys (found by OpenID Connect discovery, then cached by `jose`), issued by it, for this API (`aud`, so a token meant for another service from the same issuer is refused), not expired, and with every scope needed, as its subject (`sub`, which RFC 9068 requires). Only a token that's wrong is `invalid`: an issuer that can't be reached (its discovery document, or its keys answering an error) is a `500` reported to `onError`, since the token may well be fine. Discovery is retried on the next request. A [dev OAuth server](https://github.com/JacobLey/leyman/tree/main/demos/oauth-server) issues such tokens in the tests.
 - **`staticTokens([{ token, subject }])`** accepts a fixed list (e.g. API keys from a secret store), each for its subject, with every scope. Each token is hashed (SHA-256) and compared with `timingSafeEqual` against every allowed token, so neither the time a comparison takes nor where a match is found says anything about a guess.
 
-With `protectedResource`, the API also serves its Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`, naming its authorization server and scopes, and every challenge points to it (`resource_metadata="..."`). `resource` is where the API is served: with a path (the API mounted under it by a proxy), the metadata is served under that path too, as RFC 9728 places it. A client then needs only the API's URL to log in.
+With `protectedResource`, the API also serves its Protected Resource Metadata (RFC 9728) at `/.well-known/oauth-protected-resource`, listing its authorization server and scopes, and every challenge points to it (`resource_metadata="..."`). `resource` is where the API is served: with a path (the API mounted under it by a proxy), the metadata is served under that path too, as RFC 9728 places it. A client then needs only the API's URL to log in.
 
 ### The database
 

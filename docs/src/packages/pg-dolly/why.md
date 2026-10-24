@@ -52,7 +52,7 @@ Tests usually run against the same server as a developer's own databases, and ma
 ## Non-goals
 
 - **Running migrations.** Each ORM has its own way (Drizzle's `migrate`, Prisma's `migrate deploy`, Kysely's `Migrator`). `template('')` gives an empty database to run them in, and [pg-dolly-schema](/packages/pg-dolly-schema/) runs a project's own migrate command in one to keep its `schema.sql`.
-- **Providing the server.** It takes `DATABASE_URL`, and fails without it: leaving out integration tests should be a choice of which tests to run, not something that happens quietly.
+- **Providing the server.** It takes `DATABASE_URL`, and fails without it, so integration tests are only left out when you choose which tests to run.
 - **Fixtures.** Data only some tests need is inserted by those tests, after cloning, so it's visible where it matters. Data every test needs can be a seed, run into the template once, but only as SQL: pg-dolly has to hash it to know when to build again.
 
 ## Compared to alternatives
@@ -61,4 +61,4 @@ Tests usually run against the same server as a developer's own databases, and ma
 - **A transaction rolled back per test** is the cheapest per test, and fine for code that never commits, listens or races connections. See [above](#why-a-database-per-test).
 - **[Testcontainers](https://testcontainers.com/)** starts a container (often one per test file or suite). It provides the server, which `pg-dolly` leaves to the environment (a devcontainer sidecar, a CI service). The two combine: a container as the server, `pg-dolly` for a database per test.
 - **[PGlite](https://pglite.dev/)** runs Postgres in WebAssembly, in process, with nothing to install. A fresh instance per test is cheap, but it takes one connection at a time, so concurrent connections can't be tested, and it isn't the server production runs.
-- **Writing it by hand** is common: migrate a template once, `CREATE DATABASE … TEMPLATE` per test. The pattern is simple. Making it safe next to dev data, between parallel runs, and after crashes is most of the work.
+- **Writing it by hand** is common: migrate a template once, `CREATE DATABASE … TEMPLATE` per test. The pattern is short; most of the work is making it safe next to dev data, between parallel runs, and after crashes.

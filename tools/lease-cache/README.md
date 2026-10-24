@@ -14,7 +14,7 @@ Read-through caching on Valkey or Redis with leases: one load per key across eve
 - **Optionally, no waiting after an invalidation**: with `staleMs`, the invalidated value is kept as stale, and readers that would wait on the next load return it instead.
 - **No client dependency**: anything with an `eval` command works. ioredis and iovalkey fit as they are, and node-redis and Valkey GLIDE need a few lines (see [Clients](#clients)). Keys use hash tags, so it works on a cluster.
 
-Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf), section 3.2.1), done here with three small Lua scripts. It is the narrow part of a cache, not a whole one: no memory tier or stale-while-revalidate on expiry, so pair it with a fuller cache when you need those.
+Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Facebook](https://www.usenix.org/system/files/conference/nsdi13/nsdi13-final170_update.pdf), section 3.2.1), done here with three small Lua scripts. It covers one part of a cache: no memory tier or stale-while-revalidate on expiry, so pair it with a fuller cache when you need those.
 
 For the problem in detail, why the guarantees hold (and what they rely on), and the comparison to other caches, see [WHY-LEASE-CACHE.md](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md).
 

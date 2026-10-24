@@ -8,7 +8,7 @@ description: oidc-provider as a local authorization server - the real OAuth 2.1 
 
 A development authorization server on [oidc-provider](https://github.com/panva/node-oidc-provider): a real OAuth 2.1 flow, with a fake user.
 
-A worked example, not a package: it is never published. Other demos log in through it (the [notes API](/demos/openapi/), its [MCP server](/demos/mcp-server/) and [CLI](/demos/agent-cli/)), so their tests run the same OAuth flow a deployed client would, with no hosted identity provider, no account and no network. Everything a client sees is real; only the login page is skipped.
+A worked example, not a package: it is never published. Other demos log in through it (the [notes API](/demos/openapi/), its [MCP server](/demos/mcp-server/) and [CLI](/demos/agent-cli/)), so their tests run the same OAuth flow a deployed client would, with no hosted identity provider, no account and no network. Only the login page is skipped: everything else a client sees is the real flow.
 
 ## Example
 
@@ -65,18 +65,18 @@ await server.close();
 
 - **Discovery**: metadata at `/.well-known/oauth-authorization-server` (RFC 8414) and `/.well-known/openid-configuration`.
 - **Authorization code flow with PKCE**, S256 only, required for every client.
-- **Resource indicators** (RFC 8707): a client names the server a token is for, in the authorization and the token request. There is no default audience: a token is never valid everywhere.
+- **Resource indicators** (RFC 8707): a client sends the server a token is for in the authorization and the token request. There is no default audience: a token is never valid everywhere.
 - **JWT access tokens** (RFC 9068, `typ: at+jwt`), with `aud`, `scope` and `client_id`, signed with an ES256 key generated at startup. A resource server verifies them against the issuer's JWKS, without calling back.
 - **`iss` in authorization responses** (RFC 9207), so a client can tell which server answered.
 - **Refresh tokens** for native apps, and the **client credentials grant** for services.
-- **The device authorization grant** (RFC 8628) for native apps that opt in (`deviceAuthorization: true`): the user approves at `/device` on another device, confirming the code the device shows. The response names the poll `interval` (`deviceInterval`, 5 seconds by default; a test can make it 1).
-- **Token exchange** (RFC 8693) for a service that is itself a resource (an MCP server): it trades a user's token issued for it for one for a resource it calls, as the same user (`sub`), with `act` naming the service (§4.1). The new token has at most the scopes the user granted, the resource understands and the service may have, never outlives the token it came from, and is signed like every other, so a resource server can't tell them apart. A token issued for anything but the service itself is refused (`invalid_grant`): a service exchanges only what was meant for it.
+- **The device authorization grant** (RFC 8628) for native apps that opt in (`deviceAuthorization: true`): the user approves at `/device` on another device, confirming the code the device shows. The response sets the poll `interval` (`deviceInterval`, 5 seconds by default; a test can make it 1).
+- **Token exchange** (RFC 8693) for a service that is itself a resource (an MCP server): it trades a user's token issued for it for one for a resource it calls, as the same user (`sub`), with `act` identifying the service (§4.1). The new token has at most the scopes the user granted, the resource understands and the service may have, never outlives the token it came from, and is signed like every other, so a resource server can't tell them apart. A token issued for anything but the service itself is refused (`invalid_grant`): a service exchanges only what was meant for it.
 - **Revocation** (RFC 7009) of refresh tokens: revoking one revokes the grant it came from, and every refresh token issued under it. A client revokes only its own. Access tokens can't be revoked (`unsupported_token_type`): they're JWTs, which resource servers check without calling back, so a revoked login's access tokens stay good until they expire (10 minutes, by default).
 - **Scopes per resource**: a token carries only scopes its resource understands, and a service only those it's registered for (asking for more is `invalid_scope`).
 
 ## What's fake
 
-- **The login.** There's no login page: the interaction route signs in as the account the authorization request names (`login_hint`), else `accountId`, and grants what was asked for. A browser (or `followAuthorization`) goes straight through the redirects. Whoever asks is whoever they say, which is what tests of per-user data need, and why it must never be reachable.
+- **The login.** There's no login page: the interaction route signs in as the account given in the authorization request (`login_hint`), else `accountId`, and grants what was asked for. A browser (or `followAuthorization`) goes straight through the redirects. It signs in as any account asked for, which tests of per-user data need, and is why it must never be reachable.
 - **The storage.** oidc-provider's in-memory adapter (it warns about it on start): restart it and every grant and refresh token is gone.
 - **The keys and cookie secret**, generated at startup.
 - **The device pages** (enter the code, confirm it, done): plain HTML, a sentence and a form each.

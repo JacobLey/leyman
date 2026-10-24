@@ -6,7 +6,7 @@
 
 ## The Problem
 
-Dependency injection is a powerful pattern, but JavaScript DI libraries tend to let bugs escape to runtime — often at the worst moment.
+Dependency injection is a powerful pattern, but JavaScript DI libraries tend to let bugs escape to runtime.
 
 Here are the failure modes that motivated Haywire:
 
@@ -76,7 +76,7 @@ There are several TypeScript DI libraries available. None satisfy all of the req
 
 ## How Haywire Is Different
 
-Haywire checks every box above. It achieves type safety without decorators, without global state, and without runtime surprises by encoding dependency relationships entirely in TypeScript's type system.
+Haywire meets all of the requirements above. It gets type safety without decorators or global state by encoding dependency relationships entirely in TypeScript's type system.
 
 - Duplicate bindings are **a type error**
 - Missing dependencies are **a type error**
@@ -84,8 +84,6 @@ Haywire checks every box above. It achieves type safety without decorators, with
 - Passing the wrong identifier to `container.get()` is **a type error**
 
 When the code compiles, the container is guaranteed to work (barring external runtime issues like bad credentials or network failures). The remaining runtime validation — circular dependency detection, sync supplier validation — is exposed via `container.check()`, which is designed to be called in your test suite.
-
-The result: dependency injection that fails at build time, not in production.
 
 
 ---

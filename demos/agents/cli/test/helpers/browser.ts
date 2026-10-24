@@ -7,7 +7,7 @@ const authorization = new URL(process.argv[2]!);
 // eslint-disable-next-line n/no-process-env -- How a test signs in as someone else
 const user = process.env.BROWSER_USER;
 if (user !== undefined) {
-    // As a user typing their name in at the dev server's login, which takes whoever they say
+    // As a user typing their name in at the dev server's login, which accepts any account
     authorization.searchParams.set('login_hint', user);
 }
 const callback = await followAuthorization(

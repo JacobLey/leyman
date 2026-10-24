@@ -6,7 +6,7 @@ description: The problems Juniper solves, its design goals and non-goals, and ho
 
 ## The Problem
 
-[JSON Schema](https://json-schema.org/) is a powerful vocabulary for describing data formats. It is both human and machine readable, widely supported, and forms the backbone of tools like OpenAPI. But writing and maintaining JSON Schemas by hand is surprisingly treacherous.
+[JSON Schema](https://json-schema.org/) is a vocabulary for describing data formats. It is both human and machine readable, widely supported, and forms the backbone of tools like OpenAPI. But writing and maintaining JSON Schemas by hand is error-prone.
 
 Here are the failure modes that motivated Juniper:
 
@@ -32,7 +32,7 @@ This appears to enforce an array of numbers. But because `"type": "array"` is om
 }
 ```
 
-`maxLength` is a string keyword. The correct keyword for arrays is `maxItems`. Most JSON Schema validators will silently ignore the unrecognized keyword. Your constraint simply does not apply, and nothing tells you.
+`maxLength` is a string keyword. The correct keyword for arrays is `maxItems`. Most JSON Schema validators will silently ignore the unrecognized keyword. The constraint is ignored without any warning.
 
 ### Typos in property names cause invisible bugs
 
@@ -52,7 +52,7 @@ Ajv's `{ strict: true }` mode catches all three of these, but only when the sche
 
 ## The DRY Problem
 
-Good code avoids duplication. JSON Schema does not help with this.
+JSON Schema does nothing to avoid duplication.
 
 JSON Schema is JSON — it has no runtime meaning in TypeScript. The standard workflow is to write a JSON Schema and then write a matching TypeScript interface separately. As schemas evolve, the two drift apart. A field added to one is forgotten in the other. A required field becomes optional in the schema but not in the type. The mismatch is invisible until runtime.
 
@@ -123,4 +123,4 @@ There are many other tools for working with JSON Schema in TypeScript. None cove
 - [`JSONSchemaType<T>`](https://ajv.js.org/guide/typescript.html) — Type-checks a hand-written schema against a TypeScript type, so a missing `type` or a typo in `required` fails to compile. But the schema and the type are written separately, and `maxLength` on an array still compiles.
 - [JTD for Ajv](https://ajv.js.org/json-type-definition.html) — Uses JSON Type Definition rather than JSON Schema; not interchangeable.
 
-Juniper's position: author the schema with full TypeScript safety, get types for free, and output valid JSON Schema for any target environment. It does not require you to choose between schema authoring and type safety — it provides both from a single definition.
+Juniper's position: author the schema with full TypeScript safety, get types for free, and output valid JSON Schema for any target environment. One definition gives both the schema and its types.

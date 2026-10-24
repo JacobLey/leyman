@@ -8,7 +8,7 @@ Compile-time checked dependency injection for TypeScript — no decorators, no r
 
 </div>
 
-If your container compiles, it is complete: missing bindings, mismatched types and duplicate registrations are all TypeScript errors, not runtime crashes.
+Missing bindings, mismatched types and duplicate registrations are all TypeScript errors, so a container that compiles has everything it needs.
 
 - **Wiring mistakes are type errors** — a missing dependency, a duplicate binding, the wrong id passed to `container.get()`, or a nullable value injected into a non-nullable parameter all fail to build.
 - **Plain JavaScript** — constructor injection with no decorators, `experimentalDecorators` or `reflect-metadata`. Works with private fields, and in plain JS too.
@@ -247,7 +247,7 @@ const sym = Symbol();
 const namedId = identifier(UserService).named(sym);
 ```
 
-Just like everything else, this is 100% type safe! It is enforced that the symbol is "unique", and usages of a different unique symbol will result in different ids.
+This is type safe too. It is enforced that the symbol is "unique", and usages of a different unique symbol will result in different ids.
 
 Sometimes we want to inject values that don't map directly to a class. Most likely because we are coding to an interface, or are dealing with combinations of types.
 
@@ -607,7 +607,7 @@ A Haywire `Module` is a module in the Guice sense (an immutable bundle of bindin
 
 You can turn a single binding into a Module using `createModule(<binding>)`. This method is an alias for `Module.fromBinding`, so use whichever you prefer.
 
-You can continue to attach bindings to the module with `module.addBinding`. Like all things Haywire, this is type safe! So attaching a binding is an immutable operation, it does not mutate the existing module, but instead return a _new_ module with updated types.
+You can continue to attach bindings to the module with `module.addBinding`. This is type safe, so attaching a binding is an immutable operation, it does not mutate the existing module, but instead return a _new_ module with updated types.
 
 You can also attach an entire other module! `module.mergeModule(otherModule)` will return a new module that is a combination of both. The order that bindings and modules are combined does not matter.
 

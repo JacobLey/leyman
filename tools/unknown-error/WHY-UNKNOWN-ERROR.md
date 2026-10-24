@@ -6,14 +6,14 @@
 
 ## The Problem
 
-In TypeScript's `strict` mode, a `catch` variable is `unknown`, and with reason: JavaScript can throw anything. To log it, report it or wrap it, you need an Error, so nearly every codebase ends up with something like this:
+In TypeScript's `strict` mode, a `catch` variable is `unknown`, because JavaScript can throw anything. To log it, report it or wrap it, you need an Error, so nearly every codebase ends up with something like this:
 
 ```ts
 const toError = (value: unknown): Error =>
     value instanceof Error ? value : new Error(String(value));
 ```
 
-It handles the cases that come to mind first: an Error, or a thrown string. It falls apart on the rest, and it fails inside the `catch` block that was meant to handle the failure.
+It handles the cases that come to mind first: an Error, or a thrown string. It fails on anything else, and throws inside the `catch` block that was meant to handle the error.
 
 ### Errors from another realm aren't `instanceof Error`
 

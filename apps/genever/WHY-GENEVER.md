@@ -19,7 +19,7 @@ There are two ways to get types from a JSON Schema:
 - **Inference**, by a TypeScript type that reads the schema (`FromSchema<typeof schema>` in [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts), `Static` in TypeBox). Nothing to run, but the schema must be written in TypeScript `as const`. TypeScript widens an imported `.json` file (`"type": "string"` becomes `type: string`), and there is no way to import JSON `as const`. A schema that arrives as a file, which is the whole problem, gets `unknown`. Type-level parsing is also slow, and hits TypeScript's recursion limits on real schemas.
 - **Generation**, by a tool that reads the file and writes TypeScript. It needs a build step, but works on any file, and the output is ordinary types: fast to check, readable in a diff, and with no runtime dependency.
 
-genever generates. Run it once, commit the output, and `--ci` keeps it in sync.
+genever uses generation. Run it once, commit the output, and `--ci` keeps it in sync.
 
 ## Compared to alternatives
 
@@ -47,7 +47,7 @@ genever writes `export type` declarations, not Juniper builder code. Recursive s
 
 The test suite builds schemas with Juniper, serializes them to JSON text, generates types from that, and checks the generated type against Juniper's `SchemaType` with TypeScript's own identity check. Where genever deliberately differs (where the JSON says more than Juniper's type does), the difference is its own test. The round trip already found a case where Juniper's emitted JSON disagrees with its type.
 
-### Types are the API, text is not
+### Tests compare types
 
 Tests never compare generated text, only the types TypeScript reads. A formatting change, or writing `Record<string, number>` instead of `{ [key: string]: number }`, is not a breaking change. A generated type that accepts different values, or reads differently, is.
 

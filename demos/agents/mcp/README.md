@@ -69,7 +69,7 @@ The tools are shaped around what an agent does, not mirrored from the endpoints:
 
 ## Keeping agents' context small
 
-Every connected agent pays for `tools/list` in its context, on every conversation. A test holds the whole list (names, descriptions and schemas, as JSON) to a budget, about 550 tokens, so it grows only on purpose. What keeps it there: three tools rather than one per endpoint, descriptions of one or two sentences that say when to use another tool, and output schemas without limits.
+Every connected agent pays for `tools/list` in its context, on every conversation. A test holds the whole list (names, descriptions and schemas, as JSON) to a budget, about 550 tokens, so it can't grow by accident. What keeps it there: three tools rather than one per endpoint, descriptions of one or two sentences that say when to use another tool, and output schemas without limits.
 
 ## Authorization
 
@@ -114,7 +114,7 @@ Another authorization server (Keycloak, a hosted provider) is a different `issue
 
 ## Testing
 
-Everything is real, as deployed: a [dev OAuth server](../../oauth-server), the [notes API](../../openapi/server) on a database of its own (from [`pg-dolly`](../../../tools/pg-dolly)) accepting only that server's tokens, and the MCP server in front, each on a free port. The agent is the SDK's own `Client`, with an OAuth provider that plays the user with `followAuthorization`, so each test runs the whole flow: the `401`, discovery, PKCE, the token, the step-up for `add_note`, and the exchange. Two agents, signed in as different users (`login_hint` at the dev server's login), each find only their own notes. Failures are made, not mocked: the API stopped, the API accepting another audience, an issuer with no discovery document, keys that can't be fetched. Token expiry is tested by moving the clock (Sinon's fake `Date`), never by waiting.
+Everything is real, as deployed: a [dev OAuth server](../../oauth-server), the [notes API](../../openapi/server) on a database of its own (from [`pg-dolly`](../../../tools/pg-dolly)) accepting only that server's tokens, and the MCP server in front, each on a free port. The agent is the SDK's own `Client`, with an OAuth provider that plays the user with `followAuthorization`, so each test runs the whole flow: the `401`, discovery, PKCE, the token, the step-up for `add_note`, and the exchange. Two agents, signed in as different users (`login_hint` at the dev server's login), each find only their own notes. Failures are caused for real rather than mocked: the API stopped, the API accepting another audience, an issuer with no discovery document, keys that can't be fetched. Token expiry is tested by moving the clock (Sinon's fake `Date`), never by waiting.
 
 ## What was learned
 

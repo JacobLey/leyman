@@ -38,7 +38,7 @@ export const listenDevAuthorizationServer = async (
     options: ListenOptions
 ): Promise<ListeningAuthorizationServer> => {
     const { port = 0, hostname = '127.0.0.1', ...rest } = options;
-    // Before listening, so a server that shouldn't listen never does
+    // Before listening, so a server that shouldn't listen never starts
     assertLocal(hostname, rest.dangerouslyAllowNonLocal);
     const server = createServer();
     server.listen(port, hostname);

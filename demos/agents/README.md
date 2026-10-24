@@ -2,7 +2,7 @@
 
 How to make a REST API easy for AI agents to use, from both sides: an MCP server for agents that connect to services, and a CLI for agents with a shell, both on top of the [notes API](../openapi), authorized end to end with OAuth.
 
-The thesis: an agent is good at wiring things together, but every call it makes costs context and a chance to go wrong. So the happy path should be one short, typed, authorized call per task, with the plumbing (discovery, tokens, refresh, mapping onto the API, errors) done for it on the other side.
+The idea: an agent is good at wiring things together, but every call it makes costs context and a chance to go wrong. So the happy path should be one short, typed, authorized call per task, with the plumbing (discovery, tokens, refresh, mapping onto the API, errors) done for it on the other side.
 
 ```
 agent ──MCP──► mcp ──(exchanged)──────┐
@@ -21,7 +21,7 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 ## Why each piece
 
 - **MCP and a CLI are the two sides of the same idea.** MCP serves agents that connect to services; a CLI serves agents with a shell, where `notes list --q sheep` is a few tokens for a fully authorized request. Both keep the plumbing on their side.
-- **The API stays an API.** The notes API is a REST API described by OpenAPI, unaware of agents. MCP is a different protocol (JSON-RPC on one endpoint, describing itself through `tools/list`), so it sits beside the API rather than inside it, and calls it like any other client would.
+- **The API doesn't change for agents.** The notes API is a REST API described by OpenAPI, unaware of agents. MCP is a different protocol (JSON-RPC on one endpoint, describing itself through `tools/list`), so it sits beside the API rather than inside it, and calls it like any other client would.
 - **Tools are shaped for tasks, not mirrored from endpoints**: summaries by default, details on request, and the API's own constraints, read from `openapi.json`, so a tool can't accept what the API would reject.
-- **Every hop has its own token, and the user goes all the way.** The agent gets a token for the MCP server; the MCP server exchanges it (RFC 8693) for one for the API, as the same user, with no more scopes. No token is passed on, each server checks a token was issued for it (`aud`), and the API shows each user only their notes, whether they came through MCP or the CLI.
-- **One authorization server, three kinds of token**: the agent's for the MCP server and the CLI's for the API (authorization code with PKCE, refresh tokens), and the MCP server's for the API, exchanged for the agent's (token exchange, with `act` naming the server). The API names its authorization server (RFC 9728), so the CLI needs only its URL. The dev OAuth server runs the real flow locally; a Keycloak sidecar or a hosted provider could replace it by changing URLs.
+- **Every hop has its own token, for the same user.** The agent gets a token for the MCP server; the MCP server exchanges it (RFC 8693) for one for the API, as the same user, with no more scopes. No token is passed on, each server checks a token was issued for it (`aud`), and the API shows each user only their notes, whether they came through MCP or the CLI.
+- **One authorization server, three kinds of token**: the agent's for the MCP server and the CLI's for the API (authorization code with PKCE, refresh tokens), and the MCP server's for the API, exchanged for the agent's (token exchange, with `act` identifying the server). The API points to its authorization server (RFC 9728), so the CLI needs only its URL. The dev OAuth server runs the real flow locally; a Keycloak sidecar or a hosted provider could replace it by changing URLs.

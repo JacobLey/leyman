@@ -42,7 +42,7 @@ When the count `n` is not a power of 2, let `m` be the next power of 2 and `h = 
 
 Jump and Power consistent hashing find that last jump by generating the jumps one by one with independent coins per bucket. A block can hold any number of jumps, hence the loop.
 
-The insight here is that balance and minimal disruption do not need independent coins. They only constrain *consecutive* jumps (see [below](#why-it-is-correct)), and a block never needs more than 2 jumps to satisfy them. Given the block's last jump `M`, uniform in `[h, 2h)`:
+Balance and minimal disruption do not need independent coins. They only constrain *consecutive* jumps (see [below](#why-it-is-correct)), and a block never needs more than 2 jumps to satisfy them. Given the block's last jump `M`, uniform in `[h, 2h)`:
 
 - the block has a second jump with probability `2h(M - h) / (M(M + 1))`,
 - and that jump is uniform in `[h, M)`.

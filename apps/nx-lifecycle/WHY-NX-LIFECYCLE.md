@@ -6,7 +6,7 @@
 
 ## The Problem
 
-Nx's `dependsOn` field is powerful — it lets you declare that a target must wait for other targets to complete before it runs. But as a monorepo grows, managing those dependencies by hand becomes a significant maintenance burden.
+Nx's `dependsOn` field lets you declare that a target must wait for other targets to complete before it runs. But as a monorepo grows, managing those dependencies by hand becomes a significant maintenance burden.
 
 ### Manual `dependsOn` doesn't scale
 
@@ -61,4 +61,4 @@ The `dependsOn` fields become a tangled web of implementation details rather tha
 
 The result: adding a new step means updating one binding. Every downstream `dependsOn` is recomputed. With the plugin this happens every time Nx builds the project graph, so there is nothing to keep in sync. With the executor the generated configs are committed, and CI checks they are up to date.
 
-Now you can just run `nx run <project>:build` and let the projects determine what "building" means to it.
+Now `nx run <project>:build` runs whatever "building" means for each project.

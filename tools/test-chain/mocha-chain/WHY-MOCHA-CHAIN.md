@@ -27,7 +27,7 @@ suite('Division.divide', () => {
 });
 ```
 
-TypeScript knows `division` could be `null` — it was declared that way. So every test has to assert non-null with `!`, or cast the type, or initialize with a fake value. The type annotation lies: the variable is always set by test time, but nothing in the type system reflects that guarantee.
+TypeScript knows `division` could be `null` — it was declared that way. So every test has to assert non-null with `!`, or cast the type, or initialize with a fake value. The type annotation is wrong: the variable is always set by test time, but nothing in the type system reflects that guarantee.
 
 ### Hoisting the variable out doesn't help for mutable state
 

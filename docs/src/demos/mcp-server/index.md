@@ -8,7 +8,7 @@ description: An MCP server that makes a REST API easy for AI agents - tools shap
 
 An MCP server over the notes API: tools shaped for agents, an OAuth resource server, calling the API as the agent's user by token exchange.
 
-It's one of two demos making the [notes API](/demos/openapi/) easy for AI agents to use, from both sides: this one for agents that connect to services, and a [CLI](/demos/agent-cli/) for agents with a shell. The thesis: an agent is good at wiring things together, but every call it makes costs context and a chance to go wrong. So the happy path should be one short, typed, authorized call per task, with the plumbing (discovery, tokens, mapping onto the API, errors) done for it on the other side.
+It's one of two demos making the [notes API](/demos/openapi/) easy for AI agents to use, from both sides: this one for agents that connect to services, and a [CLI](/demos/agent-cli/) for agents with a shell. The idea: an agent is good at wiring things together, but every call it makes costs context and a chance to go wrong. So the happy path should be one short, typed, authorized call per task, with the plumbing (discovery, tokens, mapping onto the API, errors) done for it on the other side.
 
 ```
 agent ──MCP──► MCP server ──(exchanged token)──► notes API ──► Postgres
@@ -17,9 +17,9 @@ agent ──MCP──► MCP server ──(exchanged token)──► notes API �
 
 ## Why each piece
 
-- **The API stays an API.** The notes API is a REST API described by OpenAPI, unaware of agents. MCP is a different protocol (JSON-RPC on one endpoint, describing itself through `tools/list`), so it sits beside the API rather than inside it, and calls it like any other client would.
+- **The API doesn't change for agents.** The notes API is a REST API described by OpenAPI, unaware of agents. MCP is a different protocol (JSON-RPC on one endpoint, describing itself through `tools/list`), so it sits beside the API rather than inside it, and calls it like any other client would.
 - **Tools are shaped for tasks, not mirrored from endpoints**: summaries by default, details on request, and the API's own constraints, read from `openapi.json`, so a tool can't accept what the API would reject.
-- **Every hop has its own token, and the user goes all the way.** The agent gets a token for the MCP server; the MCP server exchanges it (RFC 8693) for one for the API, as the same user, with no more scopes (`act` naming the server). No token is passed on, each server checks a token was issued for it (`aud`), and the API shows each user only their notes, whether they came through MCP or the CLI.
+- **Every hop has its own token, for the same user.** The agent gets a token for the MCP server; the MCP server exchanges it (RFC 8693) for one for the API, as the same user, with no more scopes (`act` identifies the server). No token is passed on, each server checks a token was issued for it (`aud`), and the API shows each user only their notes, whether they came through MCP or the CLI.
 - **The authorization server is standard.** The [dev OAuth server](/demos/oauth-server/) runs the real flow locally; a Keycloak sidecar or a hosted provider could replace it by changing URLs.
 
 A worked example, not a package: it isn't published. It's a full package (lint, types, 100% coverage), tested against the real notes API, Postgres, and the dev OAuth server.
@@ -78,7 +78,7 @@ The tools are shaped around what an agent does, not mirrored from the endpoints:
 
 ## Keeping agents' context small
 
-Every connected agent pays for `tools/list` in its context, on every conversation. A test holds the whole list (names, descriptions and schemas, as JSON) to a budget, about 550 tokens, so it grows only on purpose. What keeps it there: three tools rather than one per endpoint, descriptions of one or two sentences that say when to use another tool, and output schemas without limits.
+Every connected agent pays for `tools/list` in its context, on every conversation. A test holds the whole list (names, descriptions and schemas, as JSON) to a budget, about 550 tokens, so it can't grow by accident. What keeps it there: three tools rather than one per endpoint, descriptions of one or two sentences that say when to use another tool, and output schemas without limits.
 
 ## Authorization
 
@@ -123,7 +123,7 @@ Another authorization server (Keycloak, a hosted provider) is a different `issue
 
 ## Testing
 
-Everything is real, as deployed: a [dev OAuth server](/demos/oauth-server/), the [notes API](/demos/openapi/#the-server) on a database of its own (from [`pg-dolly`](/packages/pg-dolly/)) accepting only that server's tokens, and the MCP server in front, each on a free port. The agent is the SDK's own `Client`, with an OAuth provider that plays the user with `followAuthorization`, so each test runs the whole flow: the `401`, discovery, PKCE, the token, the step-up for `add_note`, and the exchange. Two agents, signed in as different users (`login_hint` at the dev server's login), each find only their own notes. Failures are made, not mocked: the API stopped, the API accepting another audience, an issuer with no discovery document, keys that can't be fetched. Token expiry is tested by moving the clock (Sinon's fake `Date`), never by waiting.
+Everything is real, as deployed: a [dev OAuth server](/demos/oauth-server/), the [notes API](/demos/openapi/#the-server) on a database of its own (from [`pg-dolly`](/packages/pg-dolly/)) accepting only that server's tokens, and the MCP server in front, each on a free port. The agent is the SDK's own `Client`, with an OAuth provider that plays the user with `followAuthorization`, so each test runs the whole flow: the `401`, discovery, PKCE, the token, the step-up for `add_note`, and the exchange. Two agents, signed in as different users (`login_hint` at the dev server's login), each find only their own notes. Failures are caused for real rather than mocked: the API stopped, the API accepting another audience, an issuer with no discovery document, keys that can't be fetched. Token expiry is tested by moving the clock (Sinon's fake `Date`), never by waiting.
 
 ## What was learned
 
