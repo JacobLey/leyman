@@ -39,12 +39,12 @@ import { findImport } from 'find-import';
 
 // Searches upward from cwd — finds closest match first
 const found = await findImport(['my-file.cjs', 'my-file.json']);
-found.content;  // { foo: 'bar' }
+found.content;  // { foo: 'bar' } (JSON is the parsed value)
 found.filePath; // /root/my-package/my-file.json
 
 // Search downward — finds top-most match first
 const fromTop = await findImport(['my-file.cjs', 'my-file.json'], { direction: 'down' });
-fromTop.content;  // { abc: 123 }
+fromTop.content;  // the module namespace: { default: { abc: 123 }, ... }
 fromTop.filePath; // /root/my-file.cjs
 
 // Limit search to a subtree
@@ -59,7 +59,7 @@ scoped.filePath; // /root/my-package/my-file.json
 
 `find-import` is an ESM module. It must be `import`ed. To load from a CJS module, use dynamic import: `const { findImport } = await import('find-import');`.
 
-Supports `.json`, `.cjs`, `.mjs`, and `.js` files.
+Supports `.json`, `.cjs`, `.mjs`, and `.js` files. `content` is the parsed value for `.json`, and the module namespace object for the others, so a CommonJS `module.exports` is under `.default`.
 
 ## API
 
@@ -69,7 +69,7 @@ Searches directories for the first matching file from `fileNames` and loads it. 
 
 Only missing files are skipped. If a matching file exists but fails to load, such as invalid JSON or a module that throws, `findImport` rejects with `Failed to load <path>` (the original error as its `cause`), rather than moving on to another directory.
 
-The `content` field is the result of a dynamic `import()` call. When importing CJS modules, extracting the default export may require [`default-import`](https://www.npmjs.com/package/default-import).
+`content` is typed `unknown`, so narrow it or cast it before use. For JS files it is the result of a dynamic `import()`; to get the intended default export, pass it to [`default-import`](https://www.npmjs.com/package/default-import).
 
 **Parameters**
 
@@ -77,9 +77,9 @@ The `content` field is the result of a dynamic `import()` call. When importing C
 |-----------|------|---------|-------------|
 | `fileNames` | `string \| string[]` | — | Required. One or more file names to search for in each directory. |
 | `options` | `object` | `{}` | Optional. Search configuration. |
-| `options.cwd` | `string \| URL` | `process.cwd()` | Bottom-most directory to begin the search from. |
+| `options.cwd` | `string \| URL` | `process.cwd()` | Bottom-most directory to begin the search from. Relative paths resolve from `process.cwd()`. Rejects with `Directory not found: <path>` if it does not exist. |
 | `options.direction` | `'up' \| 'down'` | `'up'` | `'up'` searches from `cwd` toward `/` (returns deepest match); `'down'` reverses the order (returns top-most match). |
-| `options.startAt` | `string \| URL` | `'/'` | Top-most directory that bounds the search. |
+| `options.startAt` | `string \| URL` | `'/'` | Top-most directory that bounds the search. Resolved like `cwd`. When `cwd` is not inside it, the result is `null`. |
 
 **Returns** `Promise<{ filePath: string; content: unknown } | null>` — the absolute path and loaded content of the first matching file, or `null` if none is found.
 
