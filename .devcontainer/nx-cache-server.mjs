@@ -12,12 +12,22 @@
  * actions/cache preserves it in CI). A result older than `NX_CACHE_SERVER_MAX_AGE_DAYS` is never
  * served, and is deleted at startup and every hour after, so the directory doesn't grow forever.
  *
+ * With `NX_CACHE_SERVER_UPSTREAM` (the hosted cache, `infra/nx-cache`), it is a tier in front of another
+ * cache server:
+ * - A result it doesn't have is read from the upstream, and kept, timestamped when the upstream stored it
+ *   (its `Last-Modified`), so it expires here when it does there.
+ * - Results are only written to the upstream with `NX_CACHE_SERVER_UPSTREAM_WRITE=github-oidc`: in a GitHub
+ *   Actions job with `id-token: write`, each upload carries an OIDC token for `NX_CACHE_SERVER_OIDC_AUDIENCE`.
+ *   The upstream decides who may write (CI on pushes to `main`), so this never needs a secret.
+ * - The upstream failing is a miss, never an error: Nx runs the task instead.
+ *
  * Uses only Node built-ins so it runs before (and independently of) `pnpm install`.
  */
 import { createReadStream, createWriteStream } from 'node:fs';
-import { mkdir, readdir, rename, rm, stat } from 'node:fs/promises';
+import { mkdir, readdir, rename, rm, stat, utimes } from 'node:fs/promises';
 import { createServer } from 'node:http';
 import { join } from 'node:path';
+import { Readable } from 'node:stream';
 import { pipeline } from 'node:stream/promises';
 
 const cacheDir = process.env.NX_CACHE_SERVER_DIR ?? '/cache';
@@ -25,6 +35,19 @@ const port = Number(process.env.NX_CACHE_SERVER_PORT ?? 3000);
 const maxAgeMs = Number(process.env.NX_CACHE_SERVER_MAX_AGE_DAYS ?? 7) * 24 * 60 * 60 * 1000;
 const sweepIntervalMs = 60 * 60 * 1000;
 const hashPattern = /^\/v1\/cache\/(?<hash>[\w\-]+)$/v;
+// Without a trailing slash, so `${upstream}/v1/...` is one
+const upstream = process.env.NX_CACHE_SERVER_UPSTREAM?.replace(/\/+$/v, '') || null;
+const writesUpstream = upstream !== null && process.env.NX_CACHE_SERVER_UPSTREAM_WRITE === 'github-oidc';
+const oidcAudience = process.env.NX_CACHE_SERVER_OIDC_AUDIENCE ?? 'leyman-nx-cache';
+// Reading a result is quick, but a large one uploads for a while
+const upstreamReadTimeoutMs = 60 * 1000;
+const upstreamWriteTimeoutMs = 5 * 60 * 1000;
+
+if (writesUpstream && !process.env.ACTIONS_ID_TOKEN_REQUEST_URL) {
+    throw new Error(
+        'NX_CACHE_SERVER_UPSTREAM_WRITE=github-oidc needs a GitHub Actions job with `id-token: write`'
+    );
+}
 
 await mkdir(cacheDir, { recursive: true });
 
@@ -59,6 +82,101 @@ const sweep = async () => {
     console.log(`Expired results: ${expired}`);
 };
 
+/**
+ * Write a stream to a file, through a unique temp file then a rename, so concurrent writers (other worktrees)
+ * never observe a partial artifact.
+ */
+const writeAtomically = async (file, stream, storedAt) => {
+    const tmp = `${file}.${process.pid}.${Date.now()}.${Math.random()}.tmp`;
+    try {
+        await pipeline(stream, createWriteStream(tmp));
+        if (storedAt) {
+            await utimes(tmp, storedAt, storedAt);
+        }
+        await rename(tmp, file);
+    } finally {
+        await rm(tmp, { force: true });
+    }
+};
+
+/**
+ * Copy a result from the upstream into the cache directory.
+ *
+ * @returns whether the upstream had a fresh result
+ */
+const readUpstream = async (hash, file) => {
+    try {
+        const response = await fetch(`${upstream}/v1/cache/${hash}`, {
+            signal: AbortSignal.timeout(upstreamReadTimeoutMs),
+        });
+        if (response.status !== 200 || !response.body) {
+            await response.body?.cancel();
+            if (response.status !== 404) {
+                console.error(`Reading ${hash} from upstream failed: HTTP ${response.status}`);
+            }
+            return false;
+        }
+        const lastModified = Date.parse(response.headers.get('last-modified') ?? '');
+        const storedAt = Number.isNaN(lastModified) ? null : new Date(lastModified);
+        await writeAtomically(file, Readable.fromWeb(response.body), storedAt);
+        return isFresh(file);
+    } catch (err) {
+        console.error(`Reading ${hash} from upstream failed`, err);
+        return false;
+    }
+};
+
+/**
+ * A GitHub Actions OIDC token for the upstream, reused until a minute before it expires (they only last minutes,
+ * and a CI run writes for longer).
+ */
+let oidcToken = null;
+const getOidcToken = async () => {
+    if (oidcToken && oidcToken.expiresAt - 60 * 1000 > Date.now()) {
+        return oidcToken.value;
+    }
+    const url = new URL(process.env.ACTIONS_ID_TOKEN_REQUEST_URL);
+    url.searchParams.set('audience', oidcAudience);
+    const response = await fetch(url, {
+        headers: { authorization: `bearer ${process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN}` },
+        signal: AbortSignal.timeout(upstreamReadTimeoutMs),
+    });
+    if (!response.ok) {
+        throw new Error(`Requesting an OIDC token failed: HTTP ${response.status}`);
+    }
+    const { value } = await response.json();
+    const { exp } = JSON.parse(Buffer.from(value.split('.')[1], 'base64url').toString());
+    oidcToken = { expiresAt: exp * 1000, value };
+    return value;
+};
+
+/**
+ * Upload a stored result to the upstream. A result it already has (409) is fine.
+ */
+const writeUpstream = async (hash, file) => {
+    try {
+        const { size } = await stat(file);
+        const response = await fetch(`${upstream}/v1/cache/${hash}`, {
+            method: 'PUT',
+            body: Readable.toWeb(createReadStream(file)),
+            duplex: 'half',
+            headers: {
+                authorization: `Bearer ${await getOidcToken()}`,
+                'content-length': String(size),
+                'content-type': 'application/octet-stream',
+            },
+            signal: AbortSignal.timeout(upstreamWriteTimeoutMs),
+        });
+        // Read rather than cancelled: it's short, and cancelling breaks the connection mid-response
+        const text = await response.text();
+        if (response.status !== 200 && response.status !== 409) {
+            console.error(`Writing ${hash} upstream failed: HTTP ${response.status} ${text}`);
+        }
+    } catch (err) {
+        console.error(`Writing ${hash} upstream failed`, err);
+    }
+};
+
 const server = createServer(async (req, res) => {
     // Never reuse connections: Dagger's host service tunnel (CI) doesn't forward the server closing an
     // idle keep-alive connection, so Nx would send its next request into a dead socket and hang forever.
@@ -72,7 +190,7 @@ const server = createServer(async (req, res) => {
 
     try {
         if (req.method === 'GET') {
-            if (!(await isFresh(file))) {
+            if (!(await isFresh(file)) && !(upstream && (await readUpstream(hash, file)))) {
                 res.writeHead(404).end();
                 return;
             }
@@ -84,14 +202,10 @@ const server = createServer(async (req, res) => {
                 res.writeHead(409).end();
                 return;
             }
-            // Write to a unique temp file then rename, so concurrent writers
-            // (other worktrees) never observe a partial artifact.
-            const tmp = `${file}.${process.pid}.${Date.now()}.tmp`;
-            try {
-                await pipeline(req, createWriteStream(tmp));
-                await rename(tmp, file);
-            } finally {
-                await rm(tmp, { force: true });
+            await writeAtomically(file, req, null);
+            // Before responding, so the upload is done by the time Nx finishes (and CI ends the job)
+            if (writesUpstream) {
+                await writeUpstream(hash, file);
             }
             res.writeHead(200).end();
         } else {
@@ -113,7 +227,8 @@ setInterval(() => {
 }, sweepIntervalMs);
 
 server.listen(port, () => {
-    console.log(`Nx cache server listening on :${port}, storing in ${cacheDir}`);
+    const tier = upstream ? `, in front of ${upstream}${writesUpstream ? ' (writing to it)' : ''}` : '';
+    console.log(`Nx cache server listening on :${port}, storing in ${cacheDir}${tier}`);
 });
 
 const shutdown = () => server.close(() => process.exit(0));
