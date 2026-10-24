@@ -141,7 +141,7 @@ export const barrelFiles = async ({
 }: {
     cwd: string;
     dryRun: boolean;
-    ignore: string[];
+    ignore: readonly string[];
 }): Promise<string[]> => {
     // Loaded once: every index file is inside `cwd`, so the same rules cover all of them
     const isGitignored = await loadGitignore(cwd);

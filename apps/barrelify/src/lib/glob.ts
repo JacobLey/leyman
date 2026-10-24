@@ -26,7 +26,7 @@ export const findIndexFiles = async ({
     isGitignored,
 }: {
     dir: string;
-    ignore: string[];
+    ignore: readonly string[];
     isGitignored: IsGitignored;
 }): Promise<string[]> => {
     const files = await glob(`**/${INDEX}`, {

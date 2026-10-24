@@ -27,6 +27,24 @@ suite('barrelify', () => {
             ).to.deep.equal([Path.join(rootDir, 'test/data/wrong/index.ts')]);
         });
 
+        test('Accepts readonly ignore, and options set to undefined', async () => {
+            const ignore = ['**/wrong/*'] as const;
+            expect(
+                await barrelify({
+                    cwd: rootDir,
+                    dryRun: undefined,
+                    ignore,
+                })
+            ).to.deep.equal([]);
+            expect(
+                await barrelify({
+                    cwd: rootDir,
+                    dryRun: true,
+                    ignore: undefined,
+                })
+            ).to.deep.equal([Path.join(rootDir, 'test/data/wrong/index.ts')]);
+        });
+
         test('Accepts a file as cwd', async () => {
             expect(
                 await barrelify({

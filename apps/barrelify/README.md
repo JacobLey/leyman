@@ -122,7 +122,7 @@ await barrelify({ cwd: './src', ignore: ['**/generated/**'] });
 |--------|------|---------|-------------|
 | `cwd` | `string \| URL` | `process.cwd()` | Root directory to start searching for index files. Searches recursively. A relative path is resolved from `process.cwd()`, and a file path means its parent directory. |
 | `dryRun` | `boolean` | `false` | If `true`, computes barrel output but does not write any files. |
-| `ignore` | `string[]` | `[]` | Glob patterns for index files to skip, relative to `cwd`. Must be a mutable `string[]`: a `readonly` array or `as const` tuple is a type error. |
+| `ignore` | `readonly string[]` | `[]` | Glob patterns for index files to skip, relative to `cwd`. |
 
 ## CLI
 
