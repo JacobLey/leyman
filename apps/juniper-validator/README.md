@@ -24,18 +24,21 @@ StandardSchema-compliant validator for [Juniper](https://www.npmjs.com/package/j
 npm i juniper juniper-validator
 ```
 
+`juniper` is a required peer dependency (`^2.4.4`). Requires Node 24 or later. `ajv` and `ajv-formats` are installed with this package.
+
 ## Example
 
 ```ts
-import { mergeSchema, numberSchema, stringSchema } from 'juniper';
-import { makeValidator } from 'juniper-validator';
+import { mergeSchema, numberSchema, stringSchema, type SchemaType } from 'juniper';
+import { makeValidator, type JuniperValidator } from 'juniper-validator';
 
 const schema = mergeSchema().anyOf([
     numberSchema().exclusiveMinimum(2).maximum(13),
     stringSchema().contains('foo').endsWith('bar'),
 ]);
 
-const validator = makeValidator(schema);
+// `assert` only narrows when the validator's type is written out (see `.assert` below)
+const validator: JuniperValidator<SchemaType<typeof schema>> = makeValidator(schema);
 
 // Type guard
 if (validator.is(value)) {
@@ -64,7 +67,9 @@ Pass a Juniper `Schema` instance (or a plain `JsonSchema` object) to `makeValida
 
 Ajv is used internally to compile and run validation. The `strict` option is always `true`; keywords added with Juniper's `.metadata()` are registered as annotations, so they pass it. Ajv's `strictTuples` check is off by default, since it rejects Juniper's open tuples (`arraySchema().prefixItem(...)`); pass `strictTuples: true` to turn it on. Ajv's `discriminator` option is on by default, for Juniper's discriminated `oneOf`.
 
-The validator also implements [Standard JSON Schema](https://standardschema.dev/), the same as the Juniper schema it was made from.
+Ajv stops at the first failure within a schema, so `validate` reports one issue for an object missing two properties unless you pass `allErrors: true`.
+
+The validator also implements [Standard JSON Schema](https://standardschema.dev/), the same as the Juniper schema it was made from. A validator made from a plain `JsonSchema` object only supports the `'draft-2020-12'` target, and throws for the others.
 
 ## API
 
@@ -85,7 +90,7 @@ Creates a `JuniperValidator` from a Juniper `Schema` instance or a compiled `Jso
 
 ### `JuniperValidator<T>`
 
-Implements the [StandardSchema v1](https://standardschema.dev/) and Standard JSON Schema v1 interfaces. Returned by `makeValidator`.
+Exported as a type. Implements the [StandardSchema v1](https://standardschema.dev/) and Standard JSON Schema v1 interfaces. Returned by `makeValidator`.
 
 #### `.is(value): value is T`
 
@@ -101,10 +106,18 @@ if (validator.is(value)) {
 
 Throws an `Error` with message `'Value does not match schema'` and Ajv error objects as `cause` if validation fails. Narrows the type to `T` after the call.
 
+TypeScript only narrows with an assertion function whose type is written out. Calling `assert` on `const validator = makeValidator(schema)`, or on a destructured `const { assert } = validator`, fails with `TS2775: Assertions require every name in the call target to be declared with an explicit type annotation`. Annotate the validator with `JuniperValidator<T>`, or the function with `AssertionType`:
+
 ```ts
+const validator: JuniperValidator<string> = makeValidator(stringSchema());
 validator.assert(value);
-// value is T
+// value is string
+
+const assertString: AssertionType<typeof validator> = validator.assert;
+assertString(other);
 ```
+
+`is` and `validate` have no such restriction.
 
 #### `.validate(value): StandardSchemaV1.Result<T>`
 
