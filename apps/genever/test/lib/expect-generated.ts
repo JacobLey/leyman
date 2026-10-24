@@ -1,6 +1,8 @@
+import type { Context } from 'mocha';
 import type { GeneverOptions } from 'genever';
 import { expect } from '@leyman/expect';
 import { genever } from 'genever';
+import { before } from 'mocha-chain';
 import { typeCheck } from './type-check.js';
 
 /**
@@ -72,5 +74,12 @@ export const expectGenerated = (
 ): void => {
     expectTypes(genever(schema, options), expected);
 };
+
+// The first check parses TypeScript's libs and what assertions import, which takes seconds on a loaded CI machine.
+// A root hook does it once, before any test, so it never counts against whichever test happens to run first.
+before(function (this: Context) {
+    this.timeout(30_000);
+    expectGenerated({ type: 'string' }, { Schema: 'string' });
+});
 
 export { assertionImports };
