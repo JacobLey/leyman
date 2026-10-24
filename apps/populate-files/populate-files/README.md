@@ -58,7 +58,7 @@ await populateFile(
 
 Provide the file path and content, and the file will be written. Optionally specify `check: true` to fail when the file content would change — useful for enforcing that generated files are committed and up to date in CI.
 
-By default the file is overwritten whatever it contains. Set `signed: true` to sign it instead, so hand edits are detected and manual sections survive regeneration (see [Signed files](#signed-files)).
+Missing directories are created, and a file that already has this content is not written again. By default the file is overwritten whatever it contains. Set `signed: true` to sign it instead, so hand edits are detected and manual sections survive regeneration (see [Signed files](#signed-files)).
 
 ## API
 
@@ -73,7 +73,9 @@ Writes the provided content to the file at `params.filePath`.
 | `params` | `object` | — | Required. See [params](#params) below. |
 | `options` | `object` | `{}` | Optional. See [options](#options) below. |
 
-**Returns** `Promise<PopulationResponse>`: `{ filePath, updated: false }` if the file already had this content, else `{ filePath, updated: true, reason }` with `reason` `'file-not-exist'` or `'content-changed'`. With `dryRun`, what would have been written.
+**Returns** `Promise<PopulationResponse>`: `{ filePath, updated: false }` if the file already had this content, else `{ filePath, updated: true, reason }` with `reason` `'file-not-exist'` or `'content-changed'`. `filePath` is absolute. With `dryRun`, what would have been written.
+
+**Throws** (rejects) a plain `Error` with `check` when the file would be created or changed: `File <path> not up to date. Reason: <reason>`. A `PopulateFilesOwnershipError` for signed or manifest-tracked files (see [Errors](#errors)).
 
 #### `params`
 
@@ -90,7 +92,7 @@ Writes the provided content to the file at `params.filePath`.
 |----------|------|---------|-------------|
 | `check` | `boolean` | `true` in CI, else `false` | If `true`, fails if writing the file would change its content. Useful for CI environments to verify version-controlled files are up to date before deployment. |
 | `dryRun` | `boolean` | `false` | If `true`, does not write the file regardless of changes. Can still fail if `check` is `true`. |
-| `cwd` | `string \| URL` | `process.env.PWD` | Used as the current working directory when `params.filePath` is a relative path. |
+| `cwd` | `string \| URL` | `process.cwd()` | Used as the current working directory when `params.filePath` is a relative path. A path must be an existing directory. |
 | `targetDir` | `string` | `'.'` | Directory used to resolve relative `filePath`s in params. Resolved relative to `cwd`. |
 | `clean` | `boolean` | `false` | Only applies to `populateFiles`. If `true`, removes files in `targetDir` that are not in the provided params. In `check` mode, fails instead of removing. |
 | `force` | `boolean` | `false` | Applies to `signed` files and the `manifest`. If `true`, overwrites files that were edited (outside manual sections), are not signed or not listed, or are malformed, and drops orphaned manual sections. Use it once when starting to sign an existing file. |
@@ -111,11 +113,13 @@ Writes multiple files in parallel. Each `filePath` must be unique: two that reso
 
 **Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean` (`reason: 'stale-file'`).
 
+With `check`, every file is computed first and one `Error` reports everything out of date, but a `PopulateFilesOwnershipError` is thrown as soon as it is found.
+
 ---
 
 ### Errors
 
-`PopulateFilesOwnershipError` (extends the abstract `PopulateFilesError`) is thrown when a `signed` file can't be overwritten without `force`. Its `filePath` property is the file, and `reason` is one of:
+Both are exported: `import { PopulateFilesOwnershipError } from 'populate-files'`. `PopulateFilesOwnershipError` (extends the abstract `PopulateFilesError`) is thrown when a `signed` file can't be overwritten without `force`. Its `filePath` property is the file, and `reason` is one of:
 
 | `reason` | Meaning |
 |----------|---------|
@@ -124,7 +128,7 @@ Writes multiple files in parallel. Each `filePath` must be unique: two that reso
 | `'malformed'` | The file's signature or manual section markers can't be read. |
 | `'orphaned-section'` | The file has a manual section with content that the new content no longer has. |
 
-These are thrown with or without `check`, so CI also fails on hand-edited files. An existing file that can't be read for any reason other than not existing (e.g. `EACCES`) fails with the error from `node:fs`. An invalid manifest throws `GeneratedSignatureManifestError` from [`generated-signature`](https://www.npmjs.com/package/generated-signature).
+These are thrown with or without `check`, so CI also fails on hand-edited files. An existing file that can't be read for any reason other than not existing (e.g. `EACCES`) fails with the error from `node:fs`. An invalid manifest throws `GeneratedSignatureManifestError`, and a `signed` file with no known comment syntax (e.g. a new `.json` file) throws `GeneratedSignatureCommentStyleError`, both from [`generated-signature`](https://www.npmjs.com/package/generated-signature). Signed content that isn't a string rejects with a `TypeError` (a type error in TypeScript).
 
 ## Signed files
 

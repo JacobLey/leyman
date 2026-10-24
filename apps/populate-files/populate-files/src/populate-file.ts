@@ -22,11 +22,30 @@ import { internalPopulateFile } from './lib/populate-file.js';
  * @import { PopulateFilesOwnershipError } from './lib/lib/errors.js'
  */
 
+/**
+ * Write one file, or with `check` fail if it would change.
+ *
+ * Resolves to whether the file was (or, with `dryRun`, would be) written, with an absolute `filePath`.
+ *
+ * @rejects {Error} `File <path> not up to date. Reason: <reason>` with `check`, when the file would be created or changed
+ * @rejects {PopulateFilesOwnershipError} if a signed or manifest-tracked file can't be overwritten without losing edits (unless `force`)
+ * @rejects {TypeError} if `signed` content isn't a string
+ */
 export type PopulateFile = (
     params: PopulateFileParams,
     options?: RawOptions
 ) => Promise<PopulationResponse>;
 
+/**
+ * Write several files in parallel. Each `filePath` must be unique.
+ *
+ * Resolves to one result per file, then one for the manifest, then one per file removed by `clean`.
+ * With `check`, every file is computed first and one `Error` lists everything out of date.
+ *
+ * @rejects {Error} `File <path> not up to date. Reason: <reason>` with `check`, joined with `, ` per file
+ * @rejects {PopulateFilesOwnershipError} as for {@link PopulateFile}, thrown as soon as found
+ * @rejects {TypeError} if two files resolve to the same path, or `signed` content isn't a string
+ */
 export type PopulateFiles = (
     params: PopulateFileParams[],
     options?: RawOptions
