@@ -15,7 +15,7 @@ export class Biome {
     readonly #getBiomePath: Supplier<string>;
 
     public readonly canUseBiome: () => Promise<CanUseFormatter>;
-    public readonly formatBiomeFiles: (files: string[]) => Promise<void>;
+    public readonly formatBiomeFiles: (files: readonly string[]) => Promise<void>;
     public readonly formatBiomeText: (text: string, filePath: string) => Promise<string>;
 
     public constructor(getBiomePath: Supplier<string>) {
@@ -37,7 +37,7 @@ export class Biome {
         return file === undefined ? 1 : 2;
     }
 
-    async #formatBiomeFiles(files: string[]): Promise<void> {
+    async #formatBiomeFiles(files: readonly string[]): Promise<void> {
         await execFileAsync(this.#getBiomePath(), [
             'format',
             '--vcs-enabled=false',

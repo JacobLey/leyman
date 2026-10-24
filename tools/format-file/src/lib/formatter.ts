@@ -36,7 +36,10 @@ export class Formatter {
         this.formatText = this.#formatText.bind(this);
     }
 
-    async #formatFiles(files: string[], options: FileFormatterOptions = {}): Promise<void> {
+    async #formatFiles(
+        files: readonly string[],
+        options: FileFormatterOptions = {}
+    ): Promise<void> {
         if (files.length === 0) {
             return;
         }
@@ -77,7 +80,7 @@ export class Formatter {
      */
     async #getFormatters({ formatter = 'inherit' }: FileFormatterOptions): Promise<
         {
-            formatFiles: (files: string[]) => Promise<void>;
+            formatFiles: (files: readonly string[]) => Promise<void>;
             formatText: (text: string, filePath: string) => Promise<string>;
         }[]
     > {

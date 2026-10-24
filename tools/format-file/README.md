@@ -80,7 +80,7 @@ await formatFile('./config.json', { formatter: 'prettier' });
 
 #### FileFormatterOptions
 
-The option types are not exported by name. Use `Parameters<typeof formatFile>[1]` and `Parameters<typeof formatText>[1]`.
+Exported as a type: `import type { FileFormatterOptions } from 'format-file'`.
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
@@ -96,7 +96,7 @@ Formats a set of files in-place. Equivalent to calling `formatFile` on each path
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `filePaths` | `string[]` | — | Required. List of file paths. Relative paths resolve from `process.cwd()`. Must be a mutable array: a `readonly` array or `as const` tuple is a type error. An empty list does nothing. |
+| `filePaths` | `readonly string[]` | — | Required. List of file paths. Relative paths resolve from `process.cwd()`. An empty list does nothing. |
 | `options` | `FileFormatterOptions` | `{}` | Optional. Same options as [`formatFile`](#formatfilefilepath-options). |
 
 **Returns** `Promise<void>` — resolves when all files have been formatted and written.

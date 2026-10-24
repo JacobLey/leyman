@@ -13,7 +13,7 @@ export class Prettier {
     readonly #getPrettierPath: Supplier<string>;
 
     public readonly canUsePrettier: () => Promise<CanUseFormatter>;
-    public readonly formatPrettierFiles: (files: string[]) => Promise<void>;
+    public readonly formatPrettierFiles: (files: readonly string[]) => Promise<void>;
     public readonly formatPrettierText: (text: string, filePath: string) => Promise<string>;
 
     public constructor(getPrettierPath: Supplier<string>) {
@@ -36,7 +36,7 @@ export class Prettier {
         return (await resolveConfigFile()) === null ? 1 : 2;
     }
 
-    async #formatPrettierFiles(files: string[]): Promise<void> {
+    async #formatPrettierFiles(files: readonly string[]): Promise<void> {
         await execFileAsync(this.#getPrettierPath(), [
             ...files,
             '--ignore-path=.prettierignore',

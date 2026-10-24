@@ -1,7 +1,7 @@
 {
   "name": "format-file",
   "version": "1.0.3",
-  "description": "Utility API to format files via biome",
+  "description": "Format files and text with Biome or Prettier, whichever the project uses",
   "engines": {
     "node": ">=24"
   },

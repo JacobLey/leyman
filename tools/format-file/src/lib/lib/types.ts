@@ -12,9 +12,12 @@ export interface FileFormatterOptions {
  * Format files in place, relative paths resolve from `process.cwd()`.
  *
  * Never rejects because of a formatter: a missing formatter, a file it fails on (or ignores) and a missing file
- * are left unchanged without an error. `files` must be a mutable array.
+ * are left unchanged without an error.
  */
-export type FilesFormatter = (files: string[], options?: FileFormatterOptions) => Promise<void>;
+export type FilesFormatter = (
+    files: readonly string[],
+    options?: FileFormatterOptions
+) => Promise<void>;
 /**
  * Format a file in place. Like {@link FilesFormatter}, it never rejects because of a formatter.
  */

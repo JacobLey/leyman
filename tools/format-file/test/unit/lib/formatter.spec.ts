@@ -21,6 +21,15 @@ suite('Formatter', () => {
             expect(await ctx.read('file.js')).to.equal(formatted.biome);
         });
 
+        withTmpCwd.test('Accepts a readonly array', async ctx => {
+            await ctx.write('file.js', unformatted.js);
+            const files = [ctx.resolve('file.js')] as const;
+
+            await createFormatters().formatter.formatFiles(files);
+
+            expect(await ctx.read('file.js')).to.equal(formatted.biome);
+        });
+
         withTmpCwd.test('Prefers configured formatter', async ctx => {
             await ctx.write('.prettierrc', '{}');
             await ctx.write('file.js', unformatted.js);
