@@ -110,7 +110,7 @@ pg-dolly-schema --migrate <command> [--file schema.sql] [--cwd .] [--check] [--d
 | `--data` | — | Table to keep the rows of too, e.g. the migration tool's own. Repeat for several. See [Migrate commands](#migrate-commands). |
 | `--prefix` | `pg_dolly` | Prefix of the databases created, as in [`PgDolly.connect()`](https://www.npmjs.com/package/pg-dolly#options). |
 
-Every option can also be set as an environment variable: `PG_DOLLY_SCHEMA_` and the option in capitals (`PG_DOLLY_SCHEMA_MIGRATE`).
+Every option can also be set as an environment variable: `PG_DOLLY_SCHEMA_` and the option in capitals (`PG_DOLLY_SCHEMA_MIGRATE`). The server is always `DATABASE_URL`: the CLI has no `--url`.
 
 ## API
 
@@ -120,14 +120,16 @@ What the CLI runs. Options as above: `migrate` (required), `file`, `cwd`, `check
 
 **Returns** `Promise<void>`
 
-**Throws**
+**Rejects**
 
 | Error | When |
 |-------|------|
 | `PgDollySchemaMigrateError` | The migrate command failed. Has `command`, `exitCode` (`null` if killed) and `database`, which is kept. |
 | `PgDollySchemaEmptyError` | The migrate command succeeded but left the database empty. Has `command`. |
 | From [`populate-files`](https://www.npmjs.com/package/populate-files) | With `check`, the file is not up to date. |
+| From [`pg-dolly`](https://www.npmjs.com/package/pg-dolly#errors) | `PgDollyMissingUrlError` without `url` or `DATABASE_URL`, `PgDollyPrefixError` for an invalid prefix. |
+| An `Error` | `pg_dump` failed (e.g. a `--data` table that doesn't exist, or `pg_dump` is not on the `PATH`). |
 
-`PgDollySchemaMigrateError` and `PgDollySchemaEmptyError` extend `PgDollySchemaError`.
+`PgDollySchemaMigrateError` and `PgDollySchemaEmptyError` extend `PgDollySchemaError`. The `SnapshotSchemaOptions` type is exported too.
 
-To dump a database's schema yourself, use [`dumpSchema()`](https://www.npmjs.com/package/pg-dolly#dumpschemaurl) from `pg-dolly`.
+To dump a database's schema yourself, use [`dumpSchema()`](https://www.npmjs.com/package/pg-dolly#dumpschemaurl-options) from `pg-dolly`.

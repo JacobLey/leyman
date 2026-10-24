@@ -75,6 +75,8 @@ const run = async (command: string, cwd: string, url: string): Promise<number | 
  * @param options - The migrate command, and where the schema goes
  * @throws {PgDollySchemaMigrateError} When the migrate command fails
  * @throws {PgDollySchemaEmptyError} When the migrate command leaves the database empty
+ * @throws {Error} `pg-dolly`'s `PgDollyMissingUrlError` without `url` or `DATABASE_URL`, and `PgDollyPrefixError` for an
+ * invalid `prefix`
  */
 export const snapshotSchema = async (options: SnapshotSchemaOptions): Promise<void> => {
     const cwd = options.cwd ?? process.cwd();
