@@ -13,35 +13,35 @@ The site is built with VitePress and deployed to GitHub Pages by CI on every pus
 
 | Package | Pages |
 |---------|-------|
-| [`barrelify`](../../../apps/barrelify/) | [`docs/src/barrelify/`](../../../docs/src/barrelify/) |
-| [`entry-script`](../../../tools/entry-script/) | [`docs/src/entry-script/`](../../../docs/src/entry-script/) |
-| [`generated-signature`](../../../tools/generated-signature/generated-signature/) | [`docs/src/generated-signature/`](../../../docs/src/generated-signature/) |
-| [`genever`](../../../apps/genever/) | [`docs/src/genever/`](../../../docs/src/genever/) |
-| [`haywire`](../../../tools/haywire/) | [`docs/src/haywire/`](../../../docs/src/haywire/) |
-| [`haywire-launcher`](../../../tools/haywire-launcher/) | [`docs/src/haywire-launcher/`](../../../docs/src/haywire-launcher/) |
-| [`juniper`](../../../apps/juniper/) | [`docs/src/juniper/`](../../../docs/src/juniper/) |
-| [`juniper-validator`](../../../apps/juniper-validator/) | [`docs/src/juniper-validator/`](../../../docs/src/juniper-validator/) |
-| [`lease-cache`](../../../tools/lease-cache/) | [`docs/src/lease-cache/`](../../../docs/src/lease-cache/) |
-| [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | [`docs/src/populate-files/`](../../../docs/src/populate-files/) |
-| [`mocha-chain`](../../../tools/test-chain/mocha-chain/) | [`docs/src/mocha-chain/`](../../../docs/src/mocha-chain/) |
-| [`normalized-react-query`](../../../tools/normalized-react-query/) | [`docs/src/normalized-react-query/`](../../../docs/src/normalized-react-query/) |
-| [`nx-lifecycle`](../../../apps/nx-lifecycle/) | [`docs/src/nx-lifecycle/`](../../../docs/src/nx-lifecycle/) |
-| [`pg-dolly`](../../../tools/pg-dolly/) | [`docs/src/pg-dolly/`](../../../docs/src/pg-dolly/) |
-| [`pg-dolly-schema`](../../../apps/pg-dolly-schema/) | [`docs/src/pg-dolly-schema/`](../../../docs/src/pg-dolly-schema/) |
-| [`populate-files`](../../../apps/populate-files/populate-files/) | [`docs/src/populate-files/`](../../../docs/src/populate-files/) |
-| [`unknown-error`](../../../tools/unknown-error/) | [`docs/src/unknown-error/`](../../../docs/src/unknown-error/) |
-| [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | [`docs/src/vitest-chain/`](../../../docs/src/vitest-chain/) |
+| [`barrelify`](../../../apps/barrelify/) | [`docs/src/packages/barrelify/`](../../../docs/src/packages/barrelify/) |
+| [`entry-script`](../../../tools/entry-script/) | [`docs/src/packages/entry-script/`](../../../docs/src/packages/entry-script/) |
+| [`generated-signature`](../../../tools/generated-signature/generated-signature/) | [`docs/src/packages/generated-signature/`](../../../docs/src/packages/generated-signature/) |
+| [`genever`](../../../apps/genever/) | [`docs/src/packages/genever/`](../../../docs/src/packages/genever/) |
+| [`haywire`](../../../tools/haywire/) | [`docs/src/packages/haywire/`](../../../docs/src/packages/haywire/) |
+| [`haywire-launcher`](../../../tools/haywire-launcher/) | [`docs/src/packages/haywire-launcher/`](../../../docs/src/packages/haywire-launcher/) |
+| [`juniper`](../../../apps/juniper/) | [`docs/src/packages/juniper/`](../../../docs/src/packages/juniper/) |
+| [`juniper-validator`](../../../apps/juniper-validator/) | [`docs/src/packages/juniper-validator/`](../../../docs/src/packages/juniper-validator/) |
+| [`lease-cache`](../../../tools/lease-cache/) | [`docs/src/packages/lease-cache/`](../../../docs/src/packages/lease-cache/) |
+| [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | [`docs/src/packages/populate-files/`](../../../docs/src/packages/populate-files/) |
+| [`mocha-chain`](../../../tools/test-chain/mocha-chain/) | [`docs/src/packages/mocha-chain/`](../../../docs/src/packages/mocha-chain/) |
+| [`normalized-react-query`](../../../tools/normalized-react-query/) | [`docs/src/packages/normalized-react-query/`](../../../docs/src/packages/normalized-react-query/) |
+| [`nx-lifecycle`](../../../apps/nx-lifecycle/) | [`docs/src/packages/nx-lifecycle/`](../../../docs/src/packages/nx-lifecycle/) |
+| [`pg-dolly`](../../../tools/pg-dolly/) | [`docs/src/packages/pg-dolly/`](../../../docs/src/packages/pg-dolly/) |
+| [`pg-dolly-schema`](../../../apps/pg-dolly-schema/) | [`docs/src/packages/pg-dolly-schema/`](../../../docs/src/packages/pg-dolly-schema/) |
+| [`populate-files`](../../../apps/populate-files/populate-files/) | [`docs/src/packages/populate-files/`](../../../docs/src/packages/populate-files/) |
+| [`unknown-error`](../../../tools/unknown-error/) | [`docs/src/packages/unknown-error/`](../../../docs/src/packages/unknown-error/) |
+| [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | [`docs/src/packages/vitest-chain/`](../../../docs/src/packages/vitest-chain/) |
 
-Demos ([`demos/`](../../../demos/)) each have one page in [`docs/src/demos/`](../../../docs/src/demos/), ported from the demo's README, and a row in its `index.md`:
+Demos ([`demos/`](../../../demos/)) each have a directory in [`docs/src/demos/`](../../../docs/src/demos/), ported from the demo's README:
 
 | Demo | Page |
 |------|------|
-| [`read-through-cache`](../../../demos/read-through-cache/) | [`docs/src/demos/read-through-cache.md`](../../../docs/src/demos/read-through-cache.md) |
-| [`openapi`](../../../demos/openapi/) | [`docs/src/demos/openapi.md`](../../../docs/src/demos/openapi.md) |
-| [`agents`](../../../demos/agents/) | [`docs/src/demos/agents.md`](../../../docs/src/demos/agents.md) |
-| [`oauth-server`](../../../demos/oauth-server/) | [`docs/src/demos/oauth-server.md`](../../../docs/src/demos/oauth-server.md) |
+| [`read-through-cache`](../../../demos/read-through-cache/) | [`docs/src/demos/read-through-cache/index.md`](../../../docs/src/demos/read-through-cache/index.md) |
+| [`openapi`](../../../demos/openapi/) | [`docs/src/demos/openapi/index.md`](../../../docs/src/demos/openapi/index.md) |
+| [`agents`](../../../demos/agents/) | [`docs/src/demos/agents/index.md`](../../../docs/src/demos/agents/index.md) |
+| [`oauth-server`](../../../demos/oauth-server/) | [`docs/src/demos/oauth-server/index.md`](../../../docs/src/demos/oauth-server/index.md) |
 
-**When you document a new package or demo, add a row here and to the `paths` of [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**
+**When you document a new package or demo, add an entry to [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts) (the nav, sidebars, home page and package and demo lists are built from it, and the build fails if a pages directory has no entry), a row here, and its paths to [`.claude/rules/docs-site-sync.md`](../../rules/docs-site-sync.md).**
 
 ## Keeping pages in sync
 
@@ -68,8 +68,8 @@ Each package has the same layout. Follow an existing package (haywire is the ful
 | `why.md` | Only when the package has a `WHY-<PACKAGE>.md`. |
 
 - Every page has a `description` in frontmatter.
-- Add each page to the sidebar in [`docs/.vitepress/config.ts`](../../../docs/.vitepress/config.ts), and a new package to the home page features in [`docs/src/index.md`](../../../docs/src/index.md).
+- Add each page to its package's `pages` in [`docs/.vitepress/projects.ts`](../../../docs/.vitepress/projects.ts), which builds the sidebar.
 - Add a new package to `docs/package.json` `devDependencies` (`workspace:^`), so examples type-check against it and the site rebuilds when it changes.
-- Link between pages with site paths (`/haywire/guides/scopes`), and to other documented packages' pages rather than npm. Dead links fail the build.
+- Link between pages with site paths (`/packages/haywire/guides/scopes`, `/demos/openapi/`), and to other documented packages' pages rather than npm. Dead links fail the build.
 - Every `ts` block is type-checked. Use `// ---cut---` to hide setup, `// ^?` to show a type, and `// @errors: <code>` for an example that must fail. Use `// @noErrors` only for code that can't compile in isolation, like generated files that import their siblings.
-- Use `json` or `sh` blocks for config and commands. They aren't checked, so where a config has a TypeScript type, also show it in a `ts` block with `satisfies` (see [nx-lifecycle's configuration](../../../docs/src/nx-lifecycle/reference/configuration.md)).
+- Use `json` or `sh` blocks for config and commands. They aren't checked, so where a config has a TypeScript type, also show it in a `ts` block with `satisfies` (see [nx-lifecycle's configuration](../../../docs/src/packages/nx-lifecycle/reference/configuration.md)).
