@@ -128,6 +128,49 @@
         "prepare:generate"
       ]
     },
+    "tofu-fmt": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "${NX_WORKSPACE_ROOT}/scripts/nx/tofu-fmt.sh"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "inputs": [
+        "{projectRoot}/**/*.tf"
+      ],
+      "outputs": [
+        "{projectRoot}/**/*.tf"
+      ],
+      "dependsOn": [
+        "prepare:generate"
+      ]
+    },
+    "tofu-validate": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "${NX_WORKSPACE_ROOT}/scripts/nx/tofu-validate.sh"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/**/*.tf",
+        "{projectRoot}/.terraform.lock.hcl",
+        "{workspaceRoot}/scripts/nx/tofu-validate.sh",
+        {
+          "runtime": "tofu version"
+        }
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "check:_"
+      ]
+    },
     "eslint": {
       "executor": "nx:run-commands",
       "options": {
@@ -661,7 +704,8 @@
       "dependsOn": [
         "prepare:generate",
         "biome",
-        "gofmt"
+        "gofmt",
+        "tofu-fmt"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -694,7 +738,8 @@
         "eslint",
         "check-package",
         "drizzle-kit-check",
-        "go-vet"
+        "go-vet",
+        "tofu-validate"
       ],
       "configurations": {
         "__lifecycle": {}

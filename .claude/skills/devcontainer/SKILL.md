@@ -53,6 +53,7 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 | Node.js | `ARG NODE_VERSION` in `.devcontainer/Dockerfile` | `nodeImage` tag in `dagger/main.go` |
 | pnpm | `ARG PNPM_VERSION` in `.devcontainer/Dockerfile` | `pnpmVersion` in `dagger/main.go` |
 | Go | `ARG GO_VERSION` in `.devcontainer/Dockerfile` | `goImage` tag in `dagger/main.go` (pinned by digest, like `nodeImage`) |
+| OpenTofu | `ARG TOFU_IMAGE` in `.devcontainer/Dockerfile` | `tofuImage` in `dagger/main.go`. The same image, pinned by digest: only its `tofu` binary is copied in |
 | dagger | `ARG DAGGER_VERSION` in `.devcontainer/Dockerfile` | `engineVersion` in `dagger/dagger.json`, and `DAGGER_VERSION` in `.github/workflows/ci.yml` |
 | Debian | base image tag in `.devcontainer/Dockerfile` (`debian13`) | `debianImage` in `dagger/main.go`, and the `nodeImage` and `goImage` variants (`trixie` = Debian 13) |
 | Playwright | `ARG PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` | `playwrightVersion` in `dagger/main.go`. Both must also match `playwright` in `pnpm-workspace.yaml` |

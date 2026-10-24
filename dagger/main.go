@@ -34,6 +34,10 @@ const (
 	// golang:1.26.10-trixie. Under 7 days old: an emergency security bump. Drop this note after 2026-10-27.
 	// Only its Go toolchain is copied into the Node image, for projects written in Go.
 	goImage = "golang:1.26.10-trixie@sha256:909771fef53e3dcb0950255f0c9a8b4728c3b841e61509c7b29b098de7ee02d4"
+	// ghcr.io/opentofu/opentofu:1.13.2-minimal, for `infra/`. Keep in sync with `TOFU_IMAGE` in `.devcontainer/Dockerfile`.
+	// Under 7 days old: an emergency security bump (1.13.2 stops trusting compromised intermediate certificates when
+	// `tofu init` downloads providers). Drop this note after 2026-10-28.
+	tofuImage = "ghcr.io/opentofu/opentofu:1.13.2-minimal@sha256:622dc6bb98b105c18f53cf419ab64a4f3b88bd9f8c16cc978cf89e4202f4613f"
 	// valkey/valkey:9.1.2-trixie. Keep in sync with the `valkey` service in `.devcontainer/docker-compose.yml`.
 	valkeyImage = "valkey/valkey:9.1.2-trixie@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd"
 	// postgres:18.6-trixie. Keep in sync with the `postgres` service in `.devcontainer/docker-compose.yml`.
@@ -484,7 +488,7 @@ func system() *dagger.Container {
 			" && apt-get install --yes --no-install-recommends postgresql-client-" + postgresMajor})
 }
 
-// Adds Go, pnpm and Node, matching the devcontainer: last, so bumping one reruns only these copies. No npm (as in the
+// Adds Go, pnpm, Node and OpenTofu, matching the devcontainer: last, so bumping one reruns only these copies. No npm (as in the
 // devcontainer), so nothing silently depends on it.
 func withTools(ctr *dagger.Container) *dagger.Container {
 	// pnpm is a native binary, installed with npm and copied in with its package
@@ -498,6 +502,7 @@ func withTools(ctr *dagger.Container) *dagger.Container {
 		WithEnvVariable("GOTOOLCHAIN", "local").
 		WithDirectory(pnpmDir, pnpm).
 		WithFile("/usr/local/bin/node", dag.Container().From(nodeImage).File("/usr/local/bin/node")).
+		WithFile("/usr/local/bin/tofu", dag.Container().From(tofuImage).File("/usr/local/bin/tofu")).
 		WithEnvVariable("PATH", "${PATH}:"+goRoot+"/bin:"+pnpmDir, dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithEnvVariable("pnpm_config_store_dir", storeDir).
 		WithEnvVariable("pnpm_config_cache_dir", cacheDir).

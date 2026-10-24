@@ -1,0 +1,30 @@
+{
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/nx-cache-tofu",
+  "targets": {
+    "biome": {},
+    "tofu-fmt": {},
+    "tofu-validate": {},
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}

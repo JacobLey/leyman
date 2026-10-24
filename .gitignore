@@ -14,6 +14,8 @@
 **/dist-test
 # wrangler's local state and temporary bundles
 **/.wrangler
+# OpenTofu's providers and local state, from `tofu init`. The lock file is committed
+**/.terraform
 **/.swcrc
 
 /.claude-config

@@ -100,6 +100,22 @@ Runs in `check:lint`, after the package's own build, so a packaging mistake fail
 
 ---
 
+### `tofu-fmt`
+
+Formats OpenTofu configuration with `tofu fmt` (`scripts/nx/tofu-fmt.sh`). Like `gofmt`, writes changes, except in CI where it fails showing the diff.
+
+**Add when:** OpenTofu projects (`*.tf` files, e.g. `infra/nx-cache/tofu`).
+
+---
+
+### `tofu-validate`
+
+Runs `tofu init -backend=false -lockfile=readonly` then `tofu validate` (`scripts/nx/tofu-validate.sh`): the configuration is valid, with the providers in the committed lock file. Needs no credentials or state, so it runs on pull requests. `plan` and `apply` are never targets: they need credentials, and are run by hand (see `infra/nx-cache/README.md`). Runs in `check:lint`.
+
+**Add when:** OpenTofu projects, with `tofu-fmt`.
+
+---
+
 ### `go-vet`
 
 Runs `go vet ./...`, Go's built-in static checks. Runs in `check:lint`, like `eslint`. Inferred by gonx (see [Go projects](#go-projects)).

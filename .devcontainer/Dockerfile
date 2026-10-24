@@ -10,8 +10,14 @@ ARG BASE_IMAGE=mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 ARG NODE_VERSION=24.22.1
 # Under 7 days old: an emergency security bump. Drop this note after 2026-10-27
 ARG GO_VERSION=1.26.10
+# OpenTofu, for `infra/` (see `tofuImage` in `dagger/main.go`). Under 7 days old: an emergency security bump (1.13.2
+# stops trusting compromised intermediate certificates when `tofu init` downloads providers). Drop this note after
+# 2026-10-28
+ARG TOFU_IMAGE=ghcr.io/opentofu/opentofu:1.13.2-minimal@sha256:622dc6bb98b105c18f53cf419ab64a4f3b88bd9f8c16cc978cf89e4202f4613f
 
 FROM node:${NODE_VERSION}-trixie-slim AS node
+
+FROM ${TOFU_IMAGE} AS tofu
 
 FROM golang:${GO_VERSION}-trixie AS go
 # The latest gopls may need a newer Go than the pinned one: let Go fetch it for this build only
@@ -114,6 +120,7 @@ RUN mkdir -p $HOME/.config/vscode-dev-containers && \
 
 # The tools, last. No npm: pnpm only
 COPY --from=gh /opt/gh/bin/gh /usr/local/bin/gh
+COPY --from=tofu /usr/local/bin/tofu /usr/local/bin/tofu
 COPY --from=dagger --chown=$USER:$USER /opt/dagger/dagger $HOME/.local/bin/dagger
 COPY --from=python --chown=$USER:$USER $HOME/.python $HOME/.python
 ENV PATH=$PATH:$HOME/.python/bin
