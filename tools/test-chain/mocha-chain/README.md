@@ -22,7 +22,7 @@ Chain mocha BDD methods together for deterministic and type safe tests.
     - [afterEach](#aftereachtitle-fn)
     - [after](#aftertitle-fn)
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/mocha-chain/). For the problem this solves and design rationale, see [WHY-MOCHA-CHAIN.md](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/mocha-chain/). For the problem this solves and design rationale, see [WHY-MOCHA-CHAIN.md](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md).
 
 ## Install
 
@@ -160,7 +160,7 @@ before(() => {
 });
 ```
 
-The chain only decides which context a test receives. Which hooks _run_ is up to Mocha, as usual: every `beforeEach` in a suite runs before each of its tests, including tests chained from an earlier handle that never see its context. A hook whose side effects only some tests want (inserting rows, starting a server) belongs in a nested `suite` with those tests. See [Branching](https://jacobley.github.io/leyman/mocha-chain/guides/chaining#branching).
+The chain only decides which context a test receives. Which hooks _run_ is up to Mocha, as usual: every `beforeEach` in a suite runs before each of its tests, including tests chained from an earlier handle that never see its context. A hook whose side effects only some tests want (inserting rows, starting a server) belongs in a nested `suite` with those tests. See [Branching](https://jacobley.github.io/leyman/packages/mocha-chain/guides/chaining#branching).
 
 ## API
 

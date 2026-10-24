@@ -8,7 +8,7 @@ Populate static files with dynamic content, and make sure they stay in sync.
 
 </div>
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/populate-files/).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/populate-files/).
 
 ## Contents
 

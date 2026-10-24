@@ -1,5 +1,5 @@
-import { existsSync, readdirSync, readFileSync, statSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { transformerTwoslash } from '@shikijs/vitepress-twoslash';
 import ts from 'typescript';
@@ -194,6 +194,37 @@ const pageOrder = new Map(
     )
 );
 
+/**
+ * Package pages used to be at the site root (`/haywire/guides/scopes`), and those URLs are in
+ * published READMEs and ESLint rules' docs links. Writes a redirect page at each old path, keeping
+ * the `#hash`. Generated from the registry, so nothing is kept by hand. (Old demo URLs need none:
+ * GitHub Pages redirects `/demos/openapi` to the directory `/demos/openapi/` itself.)
+ */
+const writeRedirects = (outDir: string, base: string): void => {
+    for (const { slug, pages } of packages) {
+        for (const { link } of flattenPages(`/packages/${slug}/`, pages)) {
+            const target = `${base}${link.slice(1)}`;
+            const old = link.slice('/packages/'.length);
+            const file = join(outDir, old.endsWith('/') ? `${old}index.html` : `${old}.html`);
+            mkdirSync(dirname(file), { recursive: true });
+            writeFileSync(
+                file,
+                `<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<title>Moved</title>
+<meta name="robots" content="noindex">
+<link rel="canonical" href="${target}">
+<meta http-equiv="refresh" content="0; url=${target}">
+<script>location.replace(${JSON.stringify(target)} + location.hash)</script>
+<p>This page moved to <a href="${target}">${target}</a>.</p>
+</html>
+`
+            );
+        }
+    }
+};
+
 const nav: DefaultTheme.NavItem[] = [
     {
         text: 'Packages',
@@ -249,6 +280,9 @@ export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
         ],
         // `tsx` too, for code in libraries' JSDoc that twoslash shows in hovers (e.g. TanStack Query's)
         languages: ['js', 'ts', 'tsx', 'json', 'sh'],
+    },
+    buildEnd({ outDir, site }) {
+        writeRedirects(outDir, site.base);
     },
     transformPageData(pageData) {
         // `packages/haywire/index.md` is linked as `/packages/haywire/`, other pages without `.md`

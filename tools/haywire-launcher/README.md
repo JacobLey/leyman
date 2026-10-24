@@ -8,7 +8,7 @@ Instantiate and execute your haywire-managed entry script in one line.
 
 </div>
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/haywire-launcher/).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/haywire-launcher/).
 
 ## Contents
 - [Install](#install)

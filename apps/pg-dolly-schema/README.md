@@ -16,7 +16,7 @@ Keep a schema.sql of what your Postgres migrations build: migrate an empty datab
 
 The `structure.sql` approach, for any stack. For why the schema is SQL, see [pg-dolly's WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md#why-the-schema-is-sql).
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/pg-dolly-schema/).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/pg-dolly-schema/).
 
 ## Contents
 - [Install](#install)

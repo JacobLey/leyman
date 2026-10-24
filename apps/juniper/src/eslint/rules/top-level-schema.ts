@@ -76,7 +76,7 @@ export const topLevelSchema: Rule.RuleModule = {
         type: 'problem',
         docs: {
             description: 'Require juniper schemas to be built at module scope',
-            url: 'https://jacobley.github.io/leyman/juniper/guides/eslint#juniper-top-level-schema',
+            url: 'https://jacobley.github.io/leyman/packages/juniper/guides/eslint#juniper-top-level-schema',
         },
         messages: {
             topLevel:

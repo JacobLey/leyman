@@ -8,7 +8,7 @@ Load and dynamically populate file content based on a single file's config.
 
 </div>
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/populate-files/guides/config-modules).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/populate-files/guides/config-modules).
 
 ## Contents
 

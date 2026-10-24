@@ -14,7 +14,7 @@ Type-safe query definitions for TanStack Query — define each key and fetcher o
 - **SSR in one call** — `.query(client, params, { awaitLinks: true })` loads a query and everything it links to, ready to dehydrate.
 - **Every hook flavour** — plain, suspense, nullable (`skipToken`), infinite and prefetched variants of TanStack's hooks.
 
-Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/normalized-react-query/). For the full motivation, see [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md).
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/normalized-react-query/). For the full motivation, see [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md).
 
 ## Contents
 

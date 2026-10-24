@@ -200,7 +200,7 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 
 - `$dynamicRef` and `$recursiveRef` throw `GeneverUnsupportedError`. `genever()` only reads one document, so with it, a `$ref` to another file does too (see [References to other files](#references-to-other-files)). References may use `$id` and `$anchor`.
 - `unevaluatedProperties`, `unevaluatedItems` and `contains` are accepted, but don't change the type.
-- `discriminator` is accepted in plain JSON Schema too, since [Juniper](https://jacobley.github.io/leyman/juniper/) and Ajv use it there, and doesn't change the type: the branches narrow on the property as a union does. Strict mode checks it can tell the branches apart: the property must be required, by the schema or by every `oneOf`/`anyOf` branch, and every `mapping` target must exist. Its values aren't checked, as OpenAPI may take them from component names.
+- `discriminator` is accepted in plain JSON Schema too, since [Juniper](https://jacobley.github.io/leyman/packages/juniper/) and Ajv use it there, and doesn't change the type: the branches narrow on the property as a union does. Strict mode checks it can tell the branches apart: the property must be required, by the schema or by every `oneOf`/`anyOf` branch, and every `mapping` target must exist. Its values aren't checked, as OpenAPI may take them from component names.
 - Swagger 2.0 documents.
 - An OpenAPI document's `webhooks` and operations' `callbacks` have no types, though their schemas in `components` do.
 

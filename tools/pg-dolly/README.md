@@ -16,7 +16,7 @@ pg-dolly gives each test its own Postgres database. It builds a template from yo
 - Bring your own migrations, client and test runner. It takes SQL, and gives back a connection URL.
 - A failed test's database is kept so you can look at it. Everything else is dropped, including what a crashed run left behind.
 
-Named after Dolly the sheep. The design follows Go's [pgtestdb](https://github.com/peterldowns/pgtestdb). For why each test gets a database, and how runs stay out of each other's way, see [WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md). Guides for each test runner, and the full reference, are on the [docs site](https://jacobley.github.io/leyman/pg-dolly/).
+Named after Dolly the sheep. The design follows Go's [pgtestdb](https://github.com/peterldowns/pgtestdb). For why each test gets a database, and how runs stay out of each other's way, see [WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md). Guides for each test runner, and the full reference, are on the [docs site](https://jacobley.github.io/leyman/packages/pg-dolly/).
 
 ## Contents
 - [Install](#install)
@@ -180,7 +180,7 @@ suite('Items', () => {
 
 The second test only works because the insert commits: in a transaction rolled back after the test, the notification would never be sent.
 
-The docs site shows the same with [Mocha and Vitest](https://jacobley.github.io/leyman/pg-dolly/guides/test-runners).
+The docs site shows the same with [Mocha and Vitest](https://jacobley.github.io/leyman/packages/pg-dolly/guides/test-runners).
 
 ## Data every test needs
 
