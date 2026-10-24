@@ -12,7 +12,7 @@ import { readdir, rm } from 'node:fs/promises';
 import Path from 'node:path';
 import { stringToUint8Array } from 'uint8array-extras';
 import { hasCode } from 'unknown-error';
-import { formatErrorMessage } from './lib/lib/errors.js';
+import { PopulateFilesCheckError } from './lib/lib/errors.js';
 import { safeLoadFile } from './lib/loader.js';
 import { assertOwnedByManifest, entryFor, loadManifest, renderManifest } from './lib/manifest.js';
 import { normalizeFileParams, normalizeFilesParams } from './lib/normalize.js';
@@ -27,7 +27,8 @@ import { internalPopulateFile } from './lib/populate-file.js';
  *
  * Resolves to whether the file was (or, with `dryRun`, would be) written, with an absolute `filePath`.
  *
- * @rejects {Error} `File <path> not up to date. Reason: <reason>` with `check`, when the file would be created or changed
+ * @rejects {PopulateFilesCheckError} `File <path> not up to date. Reason: <reason>` with `check`, when the file would be
+ *   created or changed
  * @rejects {PopulateFilesOwnershipError} if a signed or manifest-tracked file can't be overwritten without losing edits (unless `force`)
  * @rejects {TypeError} if `signed` content isn't a string
  */
@@ -42,7 +43,8 @@ export type PopulateFile = (
  * Resolves to one result per file, then one for the manifest, then one per file removed by `clean`.
  * With `check`, every file is computed first and one `Error` lists everything out of date.
  *
- * @rejects {Error} `File <path> not up to date. Reason: <reason>` with `check`, joined with `, ` per file
+ * @rejects {PopulateFilesCheckError} `File <path> not up to date. Reason: <reason>` with `check`, joined with `, ` per
+ *   file
  * @rejects {PopulateFilesOwnershipError} as for {@link PopulateFile}, thrown as soon as found
  * @rejects {TypeError} if two files resolve to the same path, or `signed` content isn't a string
  */
@@ -223,7 +225,9 @@ export const populateFiles: PopulateFiles = async (params, options) => {
             (result): result is PopulationResponseUpdated => result.updated
         );
         if (writes.length > 0) {
-            throw new Error(writes.map(write => formatErrorMessage(write)).join(', '));
+            throw new PopulateFilesCheckError(
+                writes.map(({ filePath, reason }) => ({ filePath, reason }))
+            );
         }
     }
 

@@ -75,7 +75,7 @@ Writes the provided content to the file at `params.filePath`.
 
 **Returns** `Promise<PopulationResponse>`: `{ filePath, updated: false }` if the file already had this content, else `{ filePath, updated: true, reason }` with `reason` `'file-not-exist'` or `'content-changed'`. `filePath` is absolute. With `dryRun`, what would have been written.
 
-**Throws** (rejects) a plain `Error` with `check` when the file would be created or changed: `File <path> not up to date. Reason: <reason>`. A `PopulateFilesOwnershipError` for signed or manifest-tracked files (see [Errors](#errors)).
+**Throws** (rejects) a `PopulateFilesCheckError` with `check` when the file would be created or changed: `File <path> not up to date. Reason: <reason>`. A `PopulateFilesOwnershipError` for signed or manifest-tracked files (see [Errors](#errors)).
 
 #### `params`
 
@@ -115,13 +115,17 @@ Writes multiple files in parallel. Each `filePath` must be unique: two that reso
 
 **Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean` (`reason: 'stale-file'`).
 
-With `check`, every file is computed first and one `Error` reports everything out of date, but a `PopulateFilesOwnershipError` is thrown as soon as it is found.
+With `check`, every file is computed first and one `PopulateFilesCheckError` reports everything out of date, but a `PopulateFilesOwnershipError` is thrown as soon as it is found.
 
 ---
 
 ### Errors
 
-Both are exported: `import { PopulateFilesOwnershipError } from 'populate-files'`. `PopulateFilesOwnershipError` (extends the abstract `PopulateFilesError`) is thrown when a `signed` file can't be overwritten without `force`. Its `filePath` property is the file, and `reason` is one of:
+Both errors are exported (`import { PopulateFilesCheckError, PopulateFilesOwnershipError } from 'populate-files'`) and extend the abstract `PopulateFilesError`.
+
+`PopulateFilesCheckError` is thrown with `check` when files are out of date. Its `files` property lists each one, with its `filePath` and a `reason`: `'file-not-exist'`, `'content-changed'` or `'stale-file'`.
+
+`PopulateFilesOwnershipError` is thrown when a `signed` file can't be overwritten without `force`. Its `filePath` property is the file, and `reason` is one of:
 
 | `reason` | Meaning |
 |----------|---------|

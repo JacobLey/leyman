@@ -53,7 +53,7 @@ Commit the generated files, like any other source file.
 Run the same script in CI. It checks instead of writing: it computes every file, and fails if any would be created or changed, without writing anything:
 
 ```
-Error: File /repo/generated/config.json not up to date. Reason: content-changed
+PopulateFilesCheckError: File /repo/generated/config.json not up to date. Reason: content-changed
 ```
 
 `check` is on by default when populate-files detects CI (with [ci-info](https://www.npmjs.com/package/ci-info)). Pass `check: true` or `check: false` to choose yourself.

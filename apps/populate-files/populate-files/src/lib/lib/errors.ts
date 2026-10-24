@@ -1,12 +1,12 @@
 import type { OwnershipReason, PopulationResponseUpdateReason } from './types.js';
 
-export const formatErrorMessage = ({
-    filePath,
-    reason,
-}: {
-    filePath: string;
-    reason: PopulationResponseUpdateReason;
-}): string => `File ${filePath} not up to date. Reason: ${reason}`;
+interface OutdatedFile {
+    readonly filePath: string;
+    readonly reason: PopulationResponseUpdateReason;
+}
+
+const formatErrorMessage = ({ filePath, reason }: OutdatedFile): string =>
+    `File ${filePath} not up to date. Reason: ${reason}`;
 
 const ownershipMessages = {
     edited: 'was edited since it was generated',
@@ -50,5 +50,21 @@ export class PopulateFilesOwnershipError extends PopulateFilesError {
         this.name = 'PopulateFilesOwnershipError';
         this.filePath = filePath;
         this.reason = reason;
+    }
+}
+
+/**
+ * With `check`, files are out of date: they would be created, changed or (with `clean`) removed.
+ */
+export class PopulateFilesCheckError extends PopulateFilesError {
+    public readonly files: readonly OutdatedFile[];
+
+    /**
+     * @param files - every file that is out of date, and why
+     */
+    public constructor(files: readonly OutdatedFile[]) {
+        super(files.map(file => formatErrorMessage(file)).join(', '));
+        this.name = 'PopulateFilesCheckError';
+        this.files = files;
     }
 }

@@ -8,5 +8,9 @@ export type {
     SignedPopulateFileParams,
     UnsignedPopulateFileParams,
 } from './lib/lib/types.js';
-export { PopulateFilesError, PopulateFilesOwnershipError } from './lib/lib/errors.js';
+export {
+    PopulateFilesCheckError,
+    PopulateFilesError,
+    PopulateFilesOwnershipError,
+} from './lib/lib/errors.js';
 export { populateFile, populateFiles } from './populate-file.js';

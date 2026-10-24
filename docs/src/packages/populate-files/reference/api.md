@@ -26,7 +26,7 @@ const result = await populateFile({ filePath: './out/config.json', content: { po
 | `true` | `'content-changed'` | The file was overwritten. |
 | `true` | `'stale-file'` | The file was removed by `clean` (`populateFiles` only). |
 
-With `check`, any of the `updated` results throws instead: `File <path> not up to date. Reason: <reason>`.
+With `check`, any of the `updated` results throws a `PopulateFilesCheckError` instead: `File <path> not up to date. Reason: <reason>`. Its `files` lists each file and reason.
 
 ### `params`
 
@@ -102,6 +102,8 @@ await loadAndPopulateFiles({ filePath: './dist/file-content.js' }, { targetDir: 
 **Throws** `Error` if the module doesn't exist, or its default export isn't a valid config.
 
 ## Errors
+
+`PopulateFilesCheckError` extends the abstract `PopulateFilesError`. It is thrown with `check` when files are out of date. Its `files` property lists each one, as `{ filePath, reason }`, with `reason` one of `'file-not-exist'`, `'content-changed'` or `'stale-file'`.
 
 `PopulateFilesOwnershipError` extends the abstract `PopulateFilesError`. It is thrown when an existing file can't be overwritten (or removed by `clean`) without losing someone's edits. It is thrown with or without `check`, and `force` skips it.
 

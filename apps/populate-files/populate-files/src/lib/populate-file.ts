@@ -7,7 +7,7 @@ import type {
 import { mkdir, writeFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { areUint8ArraysEqual, stringToUint8Array, uint8ArrayToString } from 'uint8array-extras';
-import { formatErrorMessage } from './lib/errors.js';
+import { PopulateFilesCheckError } from './lib/errors.js';
 import { safeLoadFile } from './loader.js';
 import { assertOwnedByManifest } from './manifest.js';
 import { signContent } from './sign-content.js';
@@ -67,7 +67,7 @@ export const internalPopulateFile = async (
     if (rawFile === null) {
         reason = 'file-not-exist';
         if (check) {
-            throw new Error(formatErrorMessage({ filePath, reason }));
+            throw new PopulateFilesCheckError([{ filePath, reason }]);
         }
 
         await createPathAndWrite({ filePath, content, dryRun });
@@ -86,7 +86,7 @@ export const internalPopulateFile = async (
     }
 
     if (check) {
-        throw new Error(formatErrorMessage({ filePath, reason }));
+        throw new PopulateFilesCheckError([{ filePath, reason }]);
     }
     await createPathAndWrite({ filePath, content, dryRun });
 

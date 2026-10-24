@@ -4,7 +4,7 @@ import { dir, file } from 'tmp-promise';
 import { stringToUint8Array } from 'uint8array-extras';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
-import { populateFile, populateFiles } from 'populate-files';
+import { populateFile, populateFiles, PopulateFilesCheckError } from 'populate-files';
 
 const prettyJson = (json: object) => `${JSON.stringify(json, null, 2)}\n`;
 
@@ -125,7 +125,7 @@ suite('Integration test', () => {
                     },
                     { check: true, dryRun: true }
                 )
-            ).to.be.rejectedWith(Error);
+            ).to.be.rejectedWith(PopulateFilesCheckError);
             expect(thrown)
                 .to.have.property('message')
                 .that.includes(
@@ -148,7 +148,7 @@ suite('Integration test', () => {
                     },
                     { check: true, dryRun: true }
                 )
-            ).to.be.rejectedWith(Error);
+            ).to.be.rejectedWith(PopulateFilesCheckError);
             expect(thrown)
                 .to.have.property('message')
                 .that.includes(`File ${txtPath} not up to date. Reason: file-not-exist`);
@@ -333,7 +333,7 @@ suite('Integration test', () => {
                     ],
                     { check: true, dryRun: true }
                 )
-            ).to.be.rejectedWith(Error);
+            ).to.be.rejectedWith(PopulateFilesCheckError);
             expect(thrown)
                 .to.have.property('message')
                 .that.includes(
@@ -342,6 +342,12 @@ suite('Integration test', () => {
                         `File ${txtPath} not up to date. Reason: file-not-exist`,
                     ].join(', ')
                 );
+            expect(thrown)
+                .to.have.property('files')
+                .that.deep.equals([
+                    { filePath: ctx.tmpJsonFile.path, reason: 'content-changed' },
+                    { filePath: txtPath, reason: 'file-not-exist' },
+                ]);
 
             const jsonData = await readFile(ctx.tmpJsonFile.path, 'utf8');
             expect(jsonData).to.not.equal(prettyJson(jsonContent));
@@ -428,7 +434,7 @@ suite('Integration test', () => {
                     clean: true,
                     targetDir: ctx.tmpDir.path,
                 })
-            ).to.be.rejectedWith(Error);
+            ).to.be.rejectedWith(PopulateFilesCheckError);
             expect(thrown)
                 .to.have.property('message')
                 .that.includes(`File ${stalePath} not up to date. Reason: stale-file`);
