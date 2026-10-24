@@ -1,6 +1,6 @@
 # Hosted Nx remote cache
 
-One Nx cache for CI and every devcontainer, on Cloudflare: anyone can read it, only CI on `main` can write to it. Also this repository's worked example of a cloud deployment, split between two tools by what each is good at.
+One Nx cache for CI and every devcontainer, on Cloudflare: anyone can read it, only CI on `main` can write to it. Also this repository's worked example of a cloud deployment, split between two tools by what each is good at. Written up for readers on the docs site: [Hosted Nx cache](https://jacobley.github.io/leyman/infrastructure/nx-cache/). This README is the maintainer's runbook.
 
 | Part | What | Run by |
 |---|---|---|

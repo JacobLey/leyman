@@ -4,7 +4,16 @@ import { fileURLToPath } from 'node:url';
 import { transformerTwoslash } from '@shikijs/vitepress-twoslash';
 import ts from 'typescript';
 import { type DefaultTheme, defineConfigWithTheme } from 'vitepress';
-import { categories, demos, hasRelated, type Links, type Page, packages } from './projects.js';
+import {
+    categories,
+    type Demo,
+    demos,
+    hasRelated,
+    infrastructure,
+    type Links,
+    type Page,
+    packages,
+} from './projects.js';
 
 const tsConfigPath = fileURLToPath(new URL('../tsconfig.twoslash.json', import.meta.url));
 const { options: compilerOptions, errors } = ts.convertCompilerOptionsFromJson(
@@ -41,6 +50,7 @@ const checkRegistry = (): void => {
     const problems: string[] = [];
     const packageSlugs = new Set(packages.map(({ slug }) => slug));
     const demoSlugs = new Set(demos.map(({ slug }) => slug));
+    const infrastructureSlugs = new Set(infrastructure.map(({ slug }) => slug));
     for (const { slug, sources, related = [] } of packages) {
         for (const source of sources) {
             for (const file of ['package.json', 'CHANGELOG.md']) {
@@ -55,26 +65,33 @@ const checkRegistry = (): void => {
             }
         }
     }
-    for (const { slug, source, files, uses, related = [] } of demos) {
-        for (const path of [source, ...files.map(file => file.path)]) {
-            if (!existsOrExcluded(path)) {
-                problems.push(`Demo ${slug}: ${path} does not exist`);
+    // Infrastructure entries have a demo's shape, and `related` names entries of the same list
+    for (const [kind, entries, slugs] of [
+        ['Demo', demos, demoSlugs],
+        ['Infrastructure', infrastructure, infrastructureSlugs],
+    ] as const) {
+        for (const { slug, source, files, uses, related = [] } of entries) {
+            for (const path of [source, ...files.map(file => file.path)]) {
+                if (!existsOrExcluded(path)) {
+                    problems.push(`${kind} ${slug}: ${path} does not exist`);
+                }
             }
-        }
-        for (const used of uses) {
-            if (!packageSlugs.has(used)) {
-                problems.push(`Demo ${slug}: used package ${used} is not documented`);
+            for (const used of uses) {
+                if (!packageSlugs.has(used)) {
+                    problems.push(`${kind} ${slug}: used package ${used} is not documented`);
+                }
             }
-        }
-        for (const other of related) {
-            if (!demoSlugs.has(other)) {
-                problems.push(`Demo ${slug}: related demo ${other} does not exist`);
+            for (const other of related) {
+                if (!slugs.has(other)) {
+                    problems.push(`${kind} ${slug}: related ${other} does not exist`);
+                }
             }
         }
     }
     for (const [section, slugs] of [
         ['packages', packageSlugs],
         ['demos', demoSlugs],
+        ['infrastructure', infrastructureSlugs],
     ] as const) {
         for (const entry of readdirSync(`${srcDir}${section}`, { withFileTypes: true })) {
             if (entry.isDirectory() && !slugs.has(entry.name)) {
@@ -87,6 +104,7 @@ const checkRegistry = (): void => {
     for (const [section, slug, related] of [
         ...packages.map(({ slug }) => ['packages', slug, hasRelated(slug)] as const),
         ...demos.map(({ slug }) => ['demos', slug, undefined] as const),
+        ...infrastructure.map(({ slug }) => ['infrastructure', slug, undefined] as const),
     ]) {
         const path = `src/${section}/${slug}/index.md`;
         const page = existsSync(`${srcDir}${section}/${slug}/index.md`)
@@ -116,6 +134,20 @@ checkRegistry();
 const github = (path: string): string =>
     `https://github.com/JacobLey/leyman/${existsSync(`${repoRoot}${path}`) && statSync(`${repoRoot}${path}`).isDirectory() ? 'tree' : 'blob'}/main/${path}`;
 
+/**
+ * GitHub links of each demo or infrastructure entry: its source and its `files`.
+ */
+const showcaseLinks = (entries: readonly Demo[]): Links['demos'] =>
+    Object.fromEntries(
+        entries.map(({ slug, source, files }) => [
+            slug,
+            {
+                source: github(source),
+                files: files.map(({ label, path }) => ({ label, url: github(path) })),
+            },
+        ])
+    );
+
 const links: Links = {
     packages: Object.fromEntries(
         packages.map(({ slug, sources }) => [
@@ -135,15 +167,8 @@ const links: Links = {
             }),
         ])
     ),
-    demos: Object.fromEntries(
-        demos.map(({ slug, source, files }) => [
-            slug,
-            {
-                source: github(source),
-                files: files.map(({ label, path }) => ({ label, url: github(path) })),
-            },
-        ])
-    ),
+    demos: showcaseLinks(demos),
+    infrastructure: showcaseLinks(infrastructure),
 };
 
 const toSidebarItem = (base: string, page: Page): DefaultTheme.SidebarItem =>
@@ -168,18 +193,32 @@ const packagesSidebar = (open?: string): DefaultTheme.SidebarItem[] => [
     })),
 ];
 
-const demosSidebar = (open?: string): DefaultTheme.SidebarItem[] => [
-    { text: 'All demos', link: '/demos/' },
-    ...demos.map(({ slug, title, pages }) =>
+/**
+ * Every entry of a section of demos or infrastructure, with the pages of `open` (if any) expanded.
+ */
+const showcaseSidebar = (
+    section: 'demos' | 'infrastructure',
+    allText: string,
+    entries: readonly Demo[],
+    open?: string
+): DefaultTheme.SidebarItem[] => [
+    { text: allText, link: `/${section}/` },
+    ...entries.map(({ slug, title, pages }) =>
         pages.length === 1
-            ? { text: title, link: `/demos/${slug}/` }
+            ? { text: title, link: `/${section}/${slug}/` }
             : {
                   text: title,
                   collapsed: slug !== open,
-                  items: pages.map(page => toSidebarItem(`/demos/${slug}/`, page)),
+                  items: pages.map(page => toSidebarItem(`/${section}/${slug}/`, page)),
               }
     ),
 ];
+
+const demosSidebar = (open?: string): DefaultTheme.SidebarItem[] =>
+    showcaseSidebar('demos', 'All demos', demos, open);
+
+const infrastructureSidebar = (open?: string): DefaultTheme.SidebarItem[] =>
+    showcaseSidebar('infrastructure', 'All infrastructure', infrastructure, open);
 
 // One sidebar per package and demo (VitePress picks the longest matching path), so the current
 // one is already expanded in the rendered HTML, rather than only after the page's script runs
@@ -188,6 +227,8 @@ const sidebar: DefaultTheme.SidebarMulti = Object.fromEntries([
     ...packages.map(({ slug }) => [`/packages/${slug}/`, packagesSidebar(slug)]),
     ['/demos/', demosSidebar()],
     ...demos.map(({ slug }) => [`/demos/${slug}/`, demosSidebar(slug)]),
+    ['/infrastructure/', infrastructureSidebar()],
+    ...infrastructure.map(({ slug }) => [`/infrastructure/${slug}/`, infrastructureSidebar(slug)]),
 ]);
 
 const flattenPages = (base: string, pages: readonly Page[]): { text: string; link: string }[] =>
@@ -205,6 +246,7 @@ const pageOrder = new Map(
     [
         ...packages.map(({ slug, pages }) => flattenPages(`/packages/${slug}/`, pages)),
         ...demos.map(({ slug, pages }) => flattenPages(`/demos/${slug}/`, pages)),
+        ...infrastructure.map(({ slug, pages }) => flattenPages(`/infrastructure/${slug}/`, pages)),
     ].flatMap(order =>
         order.map((page, index) => [
             page.link,
@@ -264,6 +306,17 @@ const nav: DefaultTheme.NavItem[] = [
         items: [
             { text: 'All demos', link: '/demos/' },
             ...demos.map(({ slug, title }) => ({ text: title, link: `/demos/${slug}/` })),
+        ],
+    },
+    {
+        text: 'Infrastructure',
+        activeMatch: '^/infrastructure/',
+        items: [
+            { text: 'All infrastructure', link: '/infrastructure/' },
+            ...infrastructure.map(({ slug, title }) => ({
+                text: title,
+                link: `/infrastructure/${slug}/`,
+            })),
         ],
     },
 ];

@@ -2,7 +2,7 @@
 import { useData, withBase } from 'vitepress';
 import { computed } from 'vue';
 import type { Links } from '../../projects.js';
-import { demoLink, packageLink, projectOf } from '../registry.js';
+import { demoLink, infrastructureLink, packageLink, projectOf } from '../registry.js';
 
 const { page, theme } = useData<{ links: Links }>();
 
@@ -42,17 +42,26 @@ const rows = computed((): Row[] => {
             ],
         }));
     }
-    const { source, files } = theme.value.links.demos[found.project.slug] ?? {
-        source: '',
-        files: [],
-    };
+    // A demo and an infrastructure entry have the same shape: `related` names entries of the same kind
+    const isDemo = found.kind === 'demo';
+    const { source, files } = (isDemo ? theme.value.links.demos : theme.value.links.infrastructure)[
+        found.project.slug
+    ] ?? { source: '', files: [] };
     const { project } = found;
+    const relatedLink = isDemo ? demoLink : infrastructureLink;
     return [
         { label: 'Source', links: [external(project.source, source)] },
         { label: 'Files', links: files.map(({ label, url }) => external(label, url)) },
-        { label: 'Uses', links: project.uses.map(slug => internal(packageLink(slug))) },
+        ...(project.uses.length
+            ? [{ label: 'Uses', links: project.uses.map(slug => internal(packageLink(slug))) }]
+            : []),
         ...(project.related?.length
-            ? [{ label: 'See also', links: project.related.map(slug => internal(demoLink(slug))) }]
+            ? [
+                  {
+                      label: 'See also',
+                      links: project.related.map(slug => internal(relatedLink(slug))),
+                  },
+              ]
             : []),
     ];
 });

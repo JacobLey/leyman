@@ -1,6 +1,6 @@
-import { type Category, categories, demos, packages } from '../projects.js';
+import { type Category, categories, demos, infrastructure, packages } from '../projects.js';
 
-export { categories, demos, packages };
+export { categories, demos, infrastructure, packages };
 
 export interface Card {
     readonly title: string;
@@ -32,15 +32,23 @@ export const demoLink = (slug: string): { text: string; link: string } => ({
     link: `/demos/${slug}/`,
 });
 
+const infrastructureTitles = new Map(infrastructure.map(({ slug, title }) => [slug, title]));
+
+export const infrastructureLink = (slug: string): { text: string; link: string } => ({
+    text: infrastructureTitles.get(slug) ?? slug,
+    link: `/infrastructure/${slug}/`,
+});
+
 /**
- * The package or demo an overview page (`packages/<slug>/index.md`, `demos/<slug>/index.md`) is
- * about.
+ * The package, demo or infrastructure entry an overview page (`packages/<slug>/index.md`,
+ * `demos/<slug>/index.md`, `infrastructure/<slug>/index.md`) is about.
  */
 export const projectOf = (
     relativePath: string
 ):
     | { readonly kind: 'package'; readonly project: (typeof packages)[number] }
     | { readonly kind: 'demo'; readonly project: (typeof demos)[number] }
+    | { readonly kind: 'infrastructure'; readonly project: (typeof infrastructure)[number] }
     | undefined => {
     const [section, slug] = relativePath.split('/');
     const pkg = section === 'packages' ? packages.find(p => p.slug === slug) : undefined;
@@ -48,5 +56,10 @@ export const projectOf = (
         return { kind: 'package', project: pkg };
     }
     const demo = section === 'demos' ? demos.find(d => d.slug === slug) : undefined;
-    return demo && { kind: 'demo', project: demo };
+    if (demo) {
+        return { kind: 'demo', project: demo };
+    }
+    const entry =
+        section === 'infrastructure' ? infrastructure.find(i => i.slug === slug) : undefined;
+    return entry && { kind: 'infrastructure', project: entry };
 };

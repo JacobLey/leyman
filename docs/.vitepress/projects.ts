@@ -90,15 +90,16 @@ export interface Links {
             }[]
         >
     >;
-    readonly demos: Readonly<
-        Record<
-            string,
-            {
-                readonly source: string;
-                readonly files: readonly { readonly label: string; readonly url: string }[];
-            }
-        >
-    >;
+    readonly demos: Readonly<Record<string, ShowcaseLinks>>;
+    readonly infrastructure: Readonly<Record<string, ShowcaseLinks>>;
+}
+
+/**
+ * GitHub links of a demo or an infrastructure entry: its source, and its `files`.
+ */
+export interface ShowcaseLinks {
+    readonly source: string;
+    readonly files: readonly { readonly label: string; readonly url: string }[];
 }
 
 export const packages: readonly Package[] = [
@@ -547,6 +548,35 @@ export const demos: readonly Demo[] = [
         ],
         uses: ['mocha-chain'],
         related: ['openapi'],
+        pages: [{ text: 'Overview', link: '' }],
+    },
+];
+
+/**
+ * The infrastructure this repository runs on, written up like a demo: the same shape, but real, deployed
+ * systems rather than examples, so `related` names other infrastructure entries. Pages live in
+ * `src/infrastructure/<slug>/`.
+ */
+export const infrastructure: readonly Demo[] = [
+    {
+        slug: 'nx-cache',
+        title: 'Hosted Nx cache',
+        pitch: 'One Nx cache for CI and every devcontainer, on a Cloudflare Worker and R2: anyone can read it, only CI on main can write to it, with GitHub OIDC. Deployed with wrangler, its bucket and tokens managed with OpenTofu.',
+        source: 'infra/nx-cache',
+        files: [
+            { label: 'The Worker', path: 'infra/nx-cache/worker/src/handle.ts' },
+            { label: 'OIDC check', path: 'infra/nx-cache/worker/src/github-oidc.ts' },
+            {
+                label: 'Worker tests',
+                path: 'infra/nx-cache/worker/test/integration/worker.spec.ts',
+            },
+            { label: 'wrangler config', path: 'infra/nx-cache/worker/wrangler.jsonc' },
+            { label: 'OpenTofu', path: 'infra/nx-cache/tofu' },
+            { label: 'Cache server', path: '.devcontainer/nx-cache-server.mjs' },
+            { label: 'CI', path: '.github/workflows/ci.yml' },
+            { label: 'Setup runbook', path: 'infra/nx-cache/README.md' },
+        ],
+        uses: [],
         pages: [{ text: 'Overview', link: '' }],
     },
 ];
