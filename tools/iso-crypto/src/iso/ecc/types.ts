@@ -1,7 +1,7 @@
 import type { Curve, Encryption, InputText, Uint8ArrayBuffer } from '../lib/types.js';
 
 /**
- * Generate a prime256v1 ECC private key.
+ * Generate a random ECC private key on the given curve.
  *
  * @param [curve] - curve algorithm, defaults to p256
  * @returns random private key
@@ -108,11 +108,11 @@ export declare const eccDecrypt: (
         /**
          * "receiver's" private key.
          */
-        publicKey: InputText;
+        privateKey: InputText;
         /**
          * "sender's" public key. See output of `eccEncrypt`.
          */
-        privateKey: InputText;
+        publicKey: InputText;
     },
     options?: {
         /**

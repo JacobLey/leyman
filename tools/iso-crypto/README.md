@@ -22,6 +22,7 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 - [Supported Algorithms](#supported-algorithms)
   - [Hash](#hash)
   - [Symmetric Encryption](#symmetric-encryption)
+  - [Key Derivation](#key-derivation)
   - [ECDH (Asymmetric)](#ecdh-asymmetric)
 - [Install](#install)
 - [Example](#example)
@@ -29,6 +30,7 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
   - [Random](#random)
   - [Hash](#hash-1)
   - [Symmetric Encryption](#symmetric-encryption-1)
+  - [Authenticated encryption with a password](#authenticated-encryption-with-a-password)
   - [ECC](#ecc)
 - [Usage](#usage)
 - [Upgrading to 3.0](#upgrading-to-30)
@@ -38,10 +40,10 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 - [API](#api)
   - [randomBytes](#randombytessize-number)
   - [decode](#decodeinput-inputtext)
-  - [encode](#encodeinput-inputtext-outputencoding-string)
+  - [encode](#encodeinput-inputtext-outputencoding-hex--base64--base64url--utf8)
   - [decodeObject](#decodeobjectinput-recordstring-string)
   - [encodeObject](#encodeobjectinput-recordstring-uint8array)
-  - [hash](#hashinput-inputtext-algorithm-algorithm)
+  - [hash](#hashinput-inputtext-algorithm-hash)
   - [deriveKey](#derivekeyparams--secret-inputtext-salt-inputtext--options-pbkdf2options--hkdfoptions)
   - [decrypt](#decryptparams--encrypted-inputtext-iv-inputtext-secret-inputtext--options--hash-hash-encryption-encryption-)
   - [encrypt](#encryptparams--data-inputtext-secret-inputtext--options--hash-hash-encryption-encryption-)
@@ -52,7 +54,7 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
   - [eccEncrypt](#eccencryptparams--data-inputtext-privatekey-inputtext-publickey-inputtext--options--curve-curve-encryption-encryption-)
   - [eccDecrypt](#eccdecryptparams--encrypted-inputtext-iv-inputtext-privatekey-inputtext-publickey-inputtext--options--curve-curve-encryption-encryption-)
 - [Types](#types)
-  - [InputType](#inputtype)
+  - [InputText](#inputtext)
   - [Hash](#hash-2)
   - [Encryption](#encryption)
   - [Curve](#curve)
@@ -95,6 +97,8 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 ```sh
 npm i iso-crypto
 ```
+
+No dependencies or peer dependencies. Requires Node.js 24 or later (`engines`); browsers use `crypto.subtle`.
 
 ## Example
 
@@ -248,11 +252,15 @@ iso-crypto is an ESM module. That means it _must_ be `import`ed. To load from a 
 
 Most cryptographic methods return instances of [`Uint8Array`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Uint8Array), instead of strings. Those can encoded as text via the `encode` method. In NodeJS the response is often actually a [`Buffer`](https://nodejs.org/api/buffer.html) which extends `Uint8Array`.
 
-Any method that takes input "text" allows 3 formats:
+Any method that takes input "text" (`InputText`, see [Types](#types)) allows 3 formats:
 - string - inferred as `UTF8` encoding
 - Uint8Array - "raw" encoding
 - { text: string; encoding: string } - text with a custom encoding
     - Supported encodings: `hex`, `base64`, `base64url`, `utf8`
+
+A `Uint8Array` input must be typed `Uint8Array<ArrayBuffer>` (what `new Uint8Array(n)`, `decode` and every iso-crypto output give you). A value typed as a plain `Uint8Array` (`Uint8Array<ArrayBufferLike>`) is a type error, because it could be backed by a `SharedArrayBuffer`.
+
+Algorithm options are literal types. An options object declared on its own widens `'AES'` to `string` and `128` to `number`, which is a type error when passed in. Annotate it (`const encryption: Encryption = { ... }`), add `as const`, or write it inline in the call. The `Sizes`, `Ciphers`, `Modes` and `Algorithms` enums are exported and accepted in place of the literals.
 
 Any method that performs hashing can take the Hash algorithm as an option. The default algorithm is `SHA256`. In any case where hashing _should not_ be used (e.g. custom hashing already implemented), declare the `raw` option.
 
@@ -361,7 +369,7 @@ Decodes any input as Uint8Array, given the provided encoding (see `InputText`).
 
 Throws a `TypeError` for hex text with characters other than `0-9` and `a-f` (in either case). Odd-length hex implies a leading `0`.
 
-### encode(input: InputText, outputEncoding?: string)
+### encode(input: InputText, outputEncoding?: 'hex' | 'base64' | 'base64url' | 'utf8')
 
 Encodes any input (ideally as Uint8Array, but potentially as a differently encoded text) as the desired encoding.
 
@@ -379,9 +387,11 @@ Encodes each attribute in an object to string. Convenience method around manuall
 
 Potentially useful for serializing decoded text (JSON does not like raw Uint8Array).
 
-### hash(input: InputText, algorithm?: Algorithm)
+### hash(input: InputText, algorithm?: Hash)
 
-Asynchronously hashes the input, and returns the output buffer. Defaults to `SHA256` algorithm.
+Asynchronously hashes the input, and returns the output buffer. Defaults to `SHA256` algorithm. With `'raw'` the input is returned unchanged (as bytes).
+
+`algorithm` is `{ algorithm: 'SHA1' }` or `{ algorithm: 'SHA2', size: 256 | 384 | 512 }`.
 
 ### encrypt(params: { data: InputText; secret: InputText }, options?: { hash?: Hash; encryption?: Encryption })
 
@@ -422,8 +432,8 @@ Asynchronously derives a key of a fixed size from a secret. Use the result as th
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
 | `algorithm` | `'PBKDF2' \| 'HKDF'` | `'PBKDF2'` | PBKDF2 is deliberately slow, for passwords. HKDF is fast, for secrets that are already random, such as an ECDH shared secret. |
-| `hash` | `HashAlgorithm` | SHA256 | Hash the derivation is built on. |
-| `size` | `number` | `256` | Size of the key in bits. |
+| `hash` | `HashAlgorithm` | SHA256 | Hash the derivation is built on: `{ algorithm: 'SHA1' }` or `{ algorithm: 'SHA2', size: 256 \| 384 \| 512 }`. Unlike `Hash`, `'raw'` is not accepted. |
+| `size` | `number` | `256` | Size of the key in bits, a multiple of 8. |
 | `iterations` | `number` | `600_000` | PBKDF2 only. OWASP's recommendation for PBKDF2 with SHA256. |
 | `info` | `InputText` | `''` | HKDF only. Context for the key, so one secret can derive several unrelated keys. |
 
@@ -469,11 +479,13 @@ Ensure that the provided curve + encryption algorithm is the same as used to enc
 
 ## Types
 
-### InputType
+These types are not exported by name (only `Encryption`, `Hash`, `Curve`, `Encoding`, `HkdfOptions` and `Pbkdf2Options` are). To name `InputText` in your own code, use `Parameters<typeof decode>[0]`.
+
+### InputText
 
 Type used to represent allowed text/data input.
 
-`string | Uint8Array | { text: string; encoding: string }`.
+`string | Uint8Array<ArrayBuffer> | { text: string; encoding: 'hex' | 'base64' | 'base64url' | 'utf8' } | { text: Uint8Array<ArrayBuffer>; encoding: 'raw' }`.
 
 To verify the "buffer" input, pass the text to `decode` (which is done internally).
 
@@ -483,7 +495,7 @@ A plain string is inferred to be `UTF8` encoded.
 
 Type used to represent a specific hash algorithm.
 
-`{ algorithm: string; size: number } | 'raw'`.
+`{ algorithm: 'SHA1'; size?: 160 } | { algorithm: 'SHA2'; size: 256 | 384 | 512 } | 'raw'`.
 
 To avoid hashing (as it is sometimes used internally by algorithms) provide the `'raw'` option to return the input unchanged.
 
@@ -501,6 +513,6 @@ Defaults to `{ cipher: 'AES', size: 256, mode: 'GCM' }`. `unsafeLegacyEncryption
 
 ### Curve
 
-Type used to represent a specific ECC curve. `string`.
+Type used to represent a specific ECC curve. `'p256' | 'p384' | 'p521'` (`prime256v1`, `secp384r1`, `secp521r1`).
 
 Generally defaults to `p256`.
