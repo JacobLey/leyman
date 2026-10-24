@@ -252,6 +252,12 @@ suite('bind', () => {
             // @ts-expect-error
             eggProvider.withDependencies([identifier(Egg)]);
 
+            const deferredEgg = [identifier(Egg).deferred()] as const;
+            eggProvider.withDependencies(deferredEgg);
+            const plainEgg = [identifier(Egg)] as const;
+            // @ts-expect-error
+            eggProvider.withDependencies(plainEgg);
+
             const chickenProvider = chickenBind.withConstructorProvider();
             chickenProvider.withDependencies([Egg]);
             // @ts-expect-error
@@ -479,6 +485,20 @@ suite('bind', () => {
 
             const barProviderBinding = barBind.withProvider((bar: Bar) => bar);
             barProviderBinding.withDependencies([ExtendsBar]);
+            const extendsBarDeps = [ExtendsBar] as const;
+            barProviderBinding.withDependencies(extendsBarDeps);
+            expectTypeOf(
+                bind(Foo)
+                    .withDependencies(extendsBarDeps)
+                    .withAsyncProvider(async (extendsBar: ExtendsBar) => {
+                        expectTypeOf(extendsBar).toEqualTypeOf<ExtendsBar>();
+                        return new ExtendsFoo();
+                    })
+            ).toEqualTypeOf(
+                bind(Foo)
+                    .withDependencies([ExtendsBar])
+                    .withAsyncProvider(async () => new ExtendsFoo())
+            );
 
             const extendsBarProviderBinding = barBind.withProvider(
                 (extendsBar: ExtendsBar) => extendsBar

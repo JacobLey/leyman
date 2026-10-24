@@ -564,7 +564,7 @@ type AsyncPromiseOutput<OutputId extends GenericHaywireId> =
         : [];
 
 const idOrClassToIds = <Dependencies extends readonly (GenericHaywireId | IsClass)[]>(
-    ids: [...Dependencies]
+    ids: readonly [...Dependencies]
 ): IdOrClassToIds<Dependencies> =>
     ids.map(id => unsafeIdentifier(id as GenericHaywireId)) as IdOrClassToIds<Dependencies>;
 
@@ -706,10 +706,11 @@ export class ProviderBindingBuilder<
     }
 
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
-        depIds: Invalid<DependenciesMisMatch<DependencyIds, Dependencies>> & [...DependencyIds]
+        depIds: Invalid<DependenciesMisMatch<DependencyIds, Dependencies>> &
+            readonly [...DependencyIds]
     ): Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, false>;
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
-        depIds: [...DependencyIds]
+        depIds: readonly [...DependencyIds]
     ): Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, false> {
         return new Binding(
             normalizeOutputId(this.#outputId),
@@ -755,10 +756,11 @@ export class AsyncProviderBindingBuilder<
     }
 
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
-        depIds: Invalid<DependenciesMisMatch<DependencyIds, Dependencies>> & [...DependencyIds]
+        depIds: Invalid<DependenciesMisMatch<DependencyIds, Dependencies>> &
+            readonly [...DependencyIds]
     ): Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, true>;
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
-        depIds: [...DependencyIds]
+        depIds: readonly [...DependencyIds]
     ): Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, true> {
         return new Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, true>(
             normalizeOutputId(this.#outputId),
@@ -864,7 +866,7 @@ export class BindingBuilder<OutputId extends GenericHaywireId> {
     }
 
     public withDependencies<Dependencies extends readonly (GenericHaywireId | IsClass)[]>(
-        dependencyIds: [...Dependencies]
+        dependencyIds: readonly [...Dependencies]
     ): DepsBindingBuilder<OutputId, IdOrClassToIds<Dependencies>> {
         return new DepsBindingBuilder(this.#outputId, idOrClassToIds(dependencyIds));
     }

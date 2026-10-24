@@ -1060,8 +1060,6 @@ In general, users should _not_ consider the generics as part of the API. They sh
 
 That means the types of virtually all values should be inferred, rather than declared/enforced.
 
-One trap: `withDependencies()` takes a mutable tuple. An inline array literal (even with `as const`) works, but a value typed as a `readonly` array is rejected with `TS4104: The type 'readonly [...]' is 'readonly' and cannot be assigned to the mutable type '[...]'`.
-
 ```ts
 // Do this!
 const myModule = createModule(myBinding);
@@ -1136,16 +1134,16 @@ Begins the process of binding an identifier to a provider with dependencies. Doe
 | ❌ | `bind(idOrClass: HaywireId \| Foo)` | Either a `HaywireId` or a raw class (equivalent to `identifier(Foo)`) | `BindingBuilder` | |
 | `BindingBuilder` | `withInstance(value: T)` | A singleton instance that satisfies the type of id | `Binding` | Scopes are irrelevant to resulting binding, because it is always a singleton |
 | `BindingBuilder` | `withFactory(() => T)` | A method with no parameters that returns the requested type | `Binding` | |
-| `BindingBuilder` | `withAsyncFactory(() => Promise<T>)` | A method with no parameters that asynchronously returns the requested type | `Binding` | Will result in container being async. |
+| `BindingBuilder` | `withAsyncFactory(() => T \| Promise<T>)` | A method with no parameters that returns the requested type, or a `Promise` of it | `Binding` | Will result in container being async. |
 | `BindingBuilder` | `withConstructorFactory()` | Instructs Haywire to use the classes constructor directly with no parameters | `Binding` | Only available to ids constructed via a class |
 | `BindingBuilder` | `withProvider(provider: (X, Y) => T)` | Declare a method that will construct the type based on dependencies | `ProviderBindingBuilder` | |
-| `BindingBuilder` | `withAsyncProvider(provider: (X, Y) => Promise<T>)` | Declare a method that will asynchronously construct the type based on dependencies. | `AsyncProviderBindingBuilder` | Will result in container being async. |
+| `BindingBuilder` | `withAsyncProvider(provider: (X, Y) => T \| Promise<T>)` | Declare a method that constructs the type, or a `Promise` of it, based on dependencies. | `AsyncProviderBindingBuilder` | Will result in container being async. |
 | `BindingBuilder` | `withConstructorProvider()` | Tells Haywire to use the constructor of the class directly, and infer any dependencies for that. | `ProviderBindingBuilder` | Only available to ids constructed via a class |
 | `BindingBuilder` | `withDependencies([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | |
 | `ProviderBindingBuilder` | `withDependencies([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | The list is enforced via types to match types declared as parameters for the provider |
 | `AsyncProviderBindingBuilder` | `withDependencies([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | The list is enforced via types to match types declared as parameters for the provider |
 | `DepsBindingBuilder` | `withProvider(provider: (X, Y) => T)` | Declare a method that will construct the type based on dependencies | `Binding` | Types of parameters are auto-populated based on provided ids |
-| `DepsBindingBuilder` | `withAsyncProvider(provider: (X, Y) => Promise<T>)` | Declare a method that will asynchronously construct the type based on dependencies. | `Binding` | Will result in container being async. |
+| `DepsBindingBuilder` | `withAsyncProvider(provider: (X, Y) => T \| Promise<T>)` | Declare a method that constructs the type, or a `Promise` of it, based on dependencies. | `Binding` | Will result in container being async. |
 | `DepsBindingBuilder` | `withConstructorProvider()` | Tells Haywire to use the constructor of the class directly.  | `ProviderBindingBuilder` | Enforces that the type signature of the constructor matches the provided dependencies |
 
 #### `createModule`
