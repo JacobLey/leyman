@@ -12,7 +12,14 @@ import type {
 import EntryScript from 'entry-script';
 import { identifier } from 'haywire';
 
+/**
+ * What `launch()` returns: an `EntryScript` subclass, to export as the module's `default`.
+ * Its static `main(argv)` gets the id from the container and calls its `main(argv)`.
+ */
 export interface WrapperMain extends Main {
+    /**
+     * Gets the id from the container without calling `main`, to test the wiring.
+     */
     getOriginal: () => Promise<Main>;
 }
 

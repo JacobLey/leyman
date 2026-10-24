@@ -21,8 +21,10 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 ## Install
 
 ```sh
-npm i haywire-launcher
+npm i haywire-launcher haywire entry-script
 ```
+
+`haywire` and `entry-script` are required peer dependencies (not optional), so install them too. Node.js 24 or later; ESM only.
 
 ## Example
 
@@ -79,7 +81,12 @@ Returns an `EntryScript` subclass that, when invoked as the entry point, resolve
 | `id` | `HaywireId` or class | `EntryScript` | Optional. The haywire id, or class, to request from the container. Must resolve to a type implementing `Main`. |
 | `options.dispose` | `boolean` | `false` | Optional. Dispose the container (`container.disposeAsync()`) once `main()` resolves or rejects, or when getting the id fails. Off by default, for a `main()` that returns while what it started (like a server) keeps running. If disposing fails after `main()` rejected, rejects with a `SuppressedError` of both, as `await using` does. |
 
-**Returns** `WrapperMain` (an `EntryScript` subclass) — a class that can be exported as `default` and will be picked up by the `entry-script` lifecycle.
+**Returns** `WrapperMain` (an `EntryScript` subclass) — a class that can be exported as `default` and will be picked up by the `entry-script` lifecycle. Its members are static, so use it as the class itself, not an instance:
+
+| Member | Description |
+|--------|-------------|
+| `main(argv)` | Gets the id from the container with `getAsync()` and calls its `main(argv)`. Called by `entry-script` when the module is the entry point. |
+| `getOriginal()` | Gets the id from the container without calling `main`, to test the wiring. |
 
 **Type errors** — Passing a container that cannot provide a binding for the given id, or an id whose type does not implement `Main`, is a compile-time error that says which, e.g. `Property 'error' is missing ... '{ error: "Error: the container has no binding for this id."; }'`.
 
