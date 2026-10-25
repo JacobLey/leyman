@@ -170,16 +170,19 @@ const showcaseLinks = (entries: readonly Demo[]): Links['demos'] =>
         ])
     );
 
+/**
+ * The npm name of a package's source directory.
+ */
+const npmName = (source: string): string =>
+    (JSON.parse(readFileSync(`${repoRoot}${source}/package.json`, 'utf8')) as { name: string })
+        .name;
+
 const links: Links = {
     packages: Object.fromEntries(
         packages.map(({ slug, sources }) => [
             slug,
             sources.map(source => {
-                const { name } = JSON.parse(
-                    readFileSync(`${repoRoot}${source}/package.json`, 'utf8')
-                ) as {
-                    name: string;
-                };
+                const name = npmName(source);
                 return {
                     name,
                     npm: `https://www.npmjs.com/package/${name}`,
@@ -308,6 +311,51 @@ const writeRedirects = (outDir: string, base: string): void => {
     }
 };
 
+/**
+ * Writes `/llms.txt` ([llmstxt.org](https://llmstxt.org/)): an index of every package, demo and
+ * infrastructure entry for AI agents, with links to the pages, npm and GitHub. Generated from the
+ * registry, so it lists exactly what the site does.
+ */
+const writeLlmsTxt = (outDir: string): void => {
+    const showcase = (section: 'demos' | 'infrastructure', entries: readonly Demo[]): string[] =>
+        entries.map(
+            ({ slug, title, pitch, source }) =>
+                `- [${title}](${siteUrl}${section}/${slug}/): ${pitch} Source: [${source}](${github(source)})`
+        );
+    const lines = [
+        '# Leyman',
+        '',
+        '> TypeScript libraries and tools for Node.js ESM environments, and worked examples of putting open-source projects together well.',
+        '',
+        'Packages are published to npm. Each ships its README and `.d.ts` files (with JSDoc) in the tarball, matching the installed version; the pages below document the latest release. Demos are never published: each is a small package tested against real services.',
+        ...categories.flatMap(category => [
+            '',
+            `## ${category}`,
+            '',
+            ...packages
+                .filter(pkg => pkg.category === category)
+                .map(({ slug, title, pitch, sources }) => {
+                    const npm = sources
+                        .map(source => {
+                            const name = npmName(source);
+                            return `[\`${name}\`](https://www.npmjs.com/package/${name}) ([README](${github(`${source}/README.md`)}))`;
+                        })
+                        .join(', ');
+                    return `- [${title}](${siteUrl}packages/${slug}/): ${pitch} npm: ${npm}`;
+                }),
+        ]),
+        '',
+        '## Demos',
+        '',
+        ...showcase('demos', demos),
+        '',
+        '## Infrastructure',
+        '',
+        ...showcase('infrastructure', infrastructure),
+    ];
+    writeFileSync(join(outDir, 'llms.txt'), `${lines.join('\n')}\n`);
+};
+
 const nav: DefaultTheme.NavItem[] = [
     {
         text: 'Packages',
@@ -377,6 +425,7 @@ export default defineConfigWithTheme<DefaultTheme.Config & { links: Links }>({
     },
     buildEnd({ outDir, site }) {
         writeRedirects(outDir, site.base);
+        writeLlmsTxt(outDir);
     },
     transformPageData(pageData) {
         // `packages/haywire/index.md` is linked as `/packages/haywire/`, other pages without `.md`

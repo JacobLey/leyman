@@ -33,3 +33,7 @@ Worked examples, never published: small packages fully tested against real servi
 What this repository runs on: real, deployed systems, and how they are built. [All infrastructure →](/infrastructure/)
 
 <InfrastructureCards />
+
+## For AI agents
+
+[`llms.txt`](/llms.txt) lists every package, demo and piece of infrastructure, with links to its pages, npm and source. A package's README and types also ship with it on npm.
