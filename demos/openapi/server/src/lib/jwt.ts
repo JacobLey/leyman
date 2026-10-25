@@ -70,7 +70,7 @@ const discoverKeys = async (issuer: string): Promise<JWTVerifyGetKey> => {
 // eslint-disable-next-line jsdoc/require-rejects -- The authenticator it returns rejects, not this function
 /**
  * Accepts JWT access tokens (RFC 9068) from an authorization server: signed by one of its keys, issued by it, for
- * this API, not expired, and with every scope the operation needs, as its subject (`sub`). The keys are discovered on the first request, and
+ * this API, not expired, and with every scope the operation needs, as its subject (`sub`), which is a user: a client's own token is refused. The keys are discovered on the first request, and
  * again after a discovery fails. Only a token that's wrong is `invalid`: an issuer that can't be reached (its
  * discovery, or its keys) rejects (a `500`, reported), since it says nothing about the token.
  *
@@ -90,7 +90,11 @@ export const jwtAuthenticator = (options: JwtAuthenticatorOptions): Authenticato
     };
     return async (token, scopes) => {
         const getKey = await keys();
-        let payload: { readonly sub?: string; readonly scope?: unknown };
+        let payload: {
+            readonly sub?: string;
+            readonly scope?: unknown;
+            readonly client_id?: unknown;
+        };
         try {
             ({ payload } = await jwtVerify(token, getKey, {
                 issuer: options.issuer,
@@ -105,7 +109,11 @@ export const jwtAuthenticator = (options: JwtAuthenticatorOptions): Authenticato
             }
             throw error;
         }
-        const { sub, scope } = payload;
+        const { sub, scope, client_id: clientId } = payload;
+        // A client's own token (client credentials: `sub` is its `client_id`, RFC 9068), not a user's
+        if (sub === clientId) {
+            return 'invalid';
+        }
         const granted = new Set(typeof scope === 'string' ? scope.split(' ') : []);
         return scopes.every(needed => granted.has(needed))
             ? { subject: sub! }

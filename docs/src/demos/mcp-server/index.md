@@ -90,7 +90,7 @@ The server is an OAuth 2.1 resource server, as the MCP spec (2026-07-28) require
 4. The token is verified as a JWT (RFC 9068): signed with one of the issuer's keys (by discovery), issued by it, for this server (`aud`), not expired, with `notes:read`.
 5. `add_note` needs `notes:write` too. Without it, the call is a `403` with `error="insufficient_scope", scope="notes:read notes:write"` (every scope the call needs, not only the missing one, as a client may ask for exactly what it's told), and the client steps up: it asks the user again, and retries.
 
-A token for another service, even from the same issuer (the token the server exchanged for the API's, say), is refused. A refused token is the caller's mistake, so it isn't reported. A verifier that can't check a token for another reason (its issuer's keys unreachable) is a `500`, reported to `onError`: the token may well be fine, and the operators need to know.
+A token for another service, even from the same issuer (the token the server exchanged for the API's, say), is refused, and so is a service's own token (client credentials), whose subject is its `client_id` rather than a user. A refused token is the caller's mistake, so it isn't reported. A verifier that can't check a token for another reason (its issuer's keys unreachable) is a `500`, reported to `onError`: the token may well be fine, and the operators need to know.
 
 ## Calling the API as the user
 

@@ -1,6 +1,7 @@
 import type { ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { ListeningAuthorizationServer } from 'oauth-dev-server';
+import { createHash, randomBytes } from 'node:crypto';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { drizzle } from 'drizzle-orm/node-postgres';
@@ -22,7 +23,7 @@ import {
 import { expect } from '@leyman/expect';
 import { bind, createContainer } from 'haywire';
 import { suite } from 'mocha-chain';
-import { listenDevAuthorizationServer } from 'oauth-dev-server';
+import { followAuthorization, listenDevAuthorizationServer } from 'oauth-dev-server';
 import { withDatabase } from '../helpers/database.js';
 import { listen } from '../helpers/serve.js';
 
@@ -31,33 +32,72 @@ import { listen } from '../helpers/serve.js';
  */
 const audience = 'https://notes.test';
 
-const reader = { clientId: 'reader', clientSecret: 'reader-secret', scopes: ['notes:read'] };
-const writer = {
-    clientId: 'writer',
-    clientSecret: 'writer-secret',
-    scopes: ['notes:read', 'notes:write'],
+/**
+ * A native app users sign in to the API with.
+ */
+const app = { clientId: 'app', redirectUris: ['http://127.0.0.1/callback'] };
+const redirectUri = 'http://127.0.0.1:1/callback';
+const service = { clientId: 'service', clientSecret: 'service-secret', scopes: ['notes:read'] };
+
+/**
+ * A user's token, by the authorization code flow, with the dev login playing the user.
+ *
+ * @param server - The authorization server
+ * @param options - Who signs in, and the resource and scopes to ask for
+ * @returns The access token
+ */
+const userToken = async (
+    server: ListeningAuthorizationServer,
+    options: { readonly user?: string; readonly resource?: string; readonly scope?: string } = {}
+): Promise<string> => {
+    const { user = 'dolly', resource = audience, scope = 'notes:read' } = options;
+    const verifier = randomBytes(32).toString('base64url');
+    const query = new URLSearchParams({
+        response_type: 'code',
+        client_id: app.clientId,
+        redirect_uri: redirectUri,
+        code_challenge: createHash('sha256').update(verifier).digest('base64url'),
+        code_challenge_method: 'S256',
+        login_hint: user,
+        resource,
+        scope,
+    });
+    const callback = await followAuthorization(
+        `${server.issuer}/auth?${query.toString()}`,
+        redirectUri
+    );
+    const response = await fetch(`${server.issuer}/token`, {
+        method: 'POST',
+        body: new URLSearchParams({
+            grant_type: 'authorization_code',
+            client_id: app.clientId,
+            redirect_uri: redirectUri,
+            code: callback.searchParams.get('code')!,
+            code_verifier: verifier,
+            resource,
+        }),
+    });
+    const { access_token: token } = (await response.json()) as { readonly access_token: string };
+    return token;
 };
 
 /**
- * A token for a service, with the client credentials grant.
+ * A service's own token, with the client credentials grant: valid, but no user's.
  *
  * @param server - The authorization server
- * @param service - Which service
- * @param options - The resource and scopes to ask for
  * @returns The access token
  */
-const serviceToken = async (
-    server: ListeningAuthorizationServer,
-    service: typeof reader,
-    options: { readonly resource?: string; readonly scope?: string } = {}
-): Promise<string> => {
-    const { resource = audience, scope = service.scopes.join(' ') } = options;
+const serviceToken = async (server: ListeningAuthorizationServer): Promise<string> => {
     const response = await fetch(`${server.issuer}/token`, {
         method: 'POST',
         headers: {
             authorization: `Basic ${btoa([service.clientId, service.clientSecret].join(':'))}`,
         },
-        body: new URLSearchParams({ grant_type: 'client_credentials', resource, scope }),
+        body: new URLSearchParams({
+            grant_type: 'client_credentials',
+            resource: audience,
+            scope: 'notes:read',
+        }),
     });
     const { access_token: token } = (await response.json()) as { readonly access_token: string };
     return token;
@@ -73,8 +113,8 @@ suite('JWT authentication', () => {
                 { url: audience, scopes: ['notes:read', 'notes:write'] },
                 { url: 'https://other.test', scopes: ['notes:read'] },
             ],
-            clients: [],
-            services: [reader, writer],
+            clients: [app],
+            services: [service],
             accountId: 'dev-user',
         });
         const pool = new Pool({ connectionString: database.url, max: 2 });
@@ -111,7 +151,7 @@ suite('JWT authentication', () => {
     });
 
     withServer.test('Accepts a token with the scope', async ({ authorization, clientWith }) => {
-        const client = clientWith(await serviceToken(authorization, reader));
+        const client = clientWith(await userToken(authorization));
 
         expect(await client.call('listNotes', {})).to.deep.equal({
             status: 200,
@@ -120,7 +160,9 @@ suite('JWT authentication', () => {
     });
 
     withServer.test('Accepts a token with every scope', async ({ authorization, clientWith }) => {
-        const client = clientWith(await serviceToken(authorization, writer));
+        const client = clientWith(
+            await userToken(authorization, { scope: 'notes:read notes:write' })
+        );
 
         const created = await client.call('createNote', { body: { title: 'Dolly', body: '' } });
 
@@ -128,20 +170,20 @@ suite('JWT authentication', () => {
     });
 
     withServer.test("Acts as the token's subject", async ({ authorization, clientWith, db }) => {
-        const token = await serviceToken(authorization, writer);
+        const token = await userToken(authorization, { scope: 'notes:write' });
         const client = clientWith(token);
 
         await client.call('createNote', { body: { title: 'Dolly', body: '' } });
 
         const [row] = await db.select().from(notes);
-        // A service's token is for itself (RFC 9068)
-        expect(row).to.include({ owner: decodeJwt(token).sub });
+        expect(decodeJwt(token).sub).to.equal('dolly');
+        expect(row).to.include({ owner: 'dolly' });
     });
 
     withServer.test(
         'Refuses a token without the scope, naming it',
         async ({ authorization, served }) => {
-            const token = await serviceToken(authorization, reader);
+            const token = await userToken(authorization);
 
             const response = await fetch(`${served.url}/notes`, {
                 method: 'POST',
@@ -158,7 +200,8 @@ suite('JWT authentication', () => {
     );
 
     withServer.test('Refuses a token with no scope', async ({ authorization, clientWith }) => {
-        const client = clientWith(await serviceToken(authorization, reader, { scope: '' }));
+        // Signed in, with none of the API's scopes: a login asks for at least one scope
+        const client = clientWith(await userToken(authorization, { scope: 'openid' }));
 
         const listed = await client.call('listNotes', {});
 
@@ -169,8 +212,20 @@ suite('JWT authentication', () => {
         'Refuses a token for another audience, from the same issuer',
         async ({ authorization, clientWith }) => {
             const client = clientWith(
-                await serviceToken(authorization, reader, { resource: 'https://other.test' })
+                await userToken(authorization, { resource: 'https://other.test' })
             );
+
+            const listed = await client.call('listNotes', {});
+
+            expect(listed.status).to.equal(401);
+        }
+    );
+
+    withServer.test(
+        "Refuses a service's own token, which is no user's",
+        async ({ authorization, clientWith }) => {
+            // Its subject is the service (RFC 9068): accepting it would act as a user named after it
+            const client = clientWith(await serviceToken(authorization));
 
             const listed = await client.call('listNotes', {});
 
@@ -243,8 +298,8 @@ suite('JWT authentication', () => {
         const withIssuer = withDatabase().beforeEach(async ({ database }) => {
             const authorization = await listenDevAuthorizationServer({
                 resources: [{ url: audience, scopes: ['notes:read'] }],
-                clients: [],
-                services: [reader],
+                clients: [app],
+                services: [],
                 accountId: 'dev-user',
             });
             const pool = new Pool({ connectionString: database.url, max: 2 });
@@ -275,7 +330,7 @@ suite('JWT authentication', () => {
                     const list = async (): Promise<number> => {
                         const response = await fetch(`${served.url}/notes`, {
                             headers: {
-                                authorization: `Bearer ${await serviceToken(authorization, reader)}`,
+                                authorization: `Bearer ${await userToken(authorization)}`,
                             },
                         });
                         return response.status;
@@ -300,7 +355,7 @@ suite('JWT authentication', () => {
                 try {
                     const response = await fetch(`${served.url}/notes`, {
                         headers: {
-                            authorization: `Bearer ${await serviceToken(authorization, reader)}`,
+                            authorization: `Bearer ${await userToken(authorization)}`,
                         },
                     });
 
@@ -329,7 +384,7 @@ suite('JWT authentication', () => {
                 try {
                     const response = await fetch(`${served.url}/notes`, {
                         headers: {
-                            authorization: `Bearer ${await serviceToken(authorization, reader)}`,
+                            authorization: `Bearer ${await userToken(authorization)}`,
                         },
                     });
 
@@ -363,7 +418,7 @@ suite('JWT authentication', () => {
                 try {
                     const response = await fetch(`${served.url}/notes`, {
                         headers: {
-                            authorization: `Bearer ${await serviceToken(authorization, reader)}`,
+                            authorization: `Bearer ${await userToken(authorization)}`,
                         },
                     });
 

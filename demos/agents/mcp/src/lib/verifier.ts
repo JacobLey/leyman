@@ -35,7 +35,7 @@ const tokenErrors = [
 
 /**
  * Verifies agents' JWT access tokens (RFC 9068): signed by one of the issuer's keys, issued by it, for this server,
- * and not expired. The keys are discovered on first use.
+ * not expired, and a user's: a client's own token is refused. The keys are discovered on first use.
  *
  * @param options - The issuer, and this server's audience
  * @returns A verifier for the SDK's bearer authentication, which checks scopes and expiry against what it returns
@@ -55,6 +55,13 @@ export const jwtVerifier = (options: JwtVerifierOptions): OAuthTokenVerifier => 
                     typ: 'at+jwt',
                     requiredClaims: ['exp', 'client_id'],
                 });
+                // A client's own token (client credentials: `sub` is its `client_id`, RFC 9068), not a user's
+                if (payload.sub === payload.client_id) {
+                    throw new OAuthError(
+                        OAuthErrorCode.InvalidToken,
+                        "A client's own token, not a user's"
+                    );
+                }
                 return {
                     token,
                     clientId: String(payload.client_id),
