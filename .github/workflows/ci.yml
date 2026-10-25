@@ -181,13 +181,16 @@ jobs:
       group: publish
       cancel-in-progress: false
     permissions:
-      # Push release tags
-      contents: write
+      # Release tags are pushed with RELEASE_TAG_TOKEN instead
+      contents: read
       # npm trusted publishing (OIDC) and provenance
       id-token: write
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          # Only the tag step pushes, with its own token
+          persist-credentials: false
 
       # npm runs inside Dagger, so hand it the GitHub Actions environment it uses for OIDC and provenance
       - name: Capture GitHub environment
@@ -210,13 +213,17 @@ jobs:
       - name: Tag releases
         env:
           RESULTS: ${{ steps.publish.outputs.output }}
+          # A fine-grained PAT (Contents and Workflows write on this repository only) in the `npm` environment.
+          # GITHUB_TOKEN can't push a tag whose commit's workflows differ from main's, as when main changed them during
+          # the release
+          TAG_TOKEN: ${{ secrets.RELEASE_TAG_TOKEN }}
         run: |
           tags=$(printf '%s\n' "$RESULTS" | sed -n 's/^published //p')
           for tag in $tags; do
             git tag "$tag"
           done
           if [ -n "$tags" ]; then
-            git push origin --tags
+            git push "https://x-access-token:${TAG_TOKEN}@github.com/${GITHUB_REPOSITORY}" --tags
           fi
           if printf '%s\n' "$RESULTS" | grep '^failed '; then
             exit 1
