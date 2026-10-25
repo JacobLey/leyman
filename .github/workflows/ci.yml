@@ -7,13 +7,20 @@ on:
   push:
     branches:
       - main
+  # Off the top of the hour, when GitHub delays and drops scheduled runs
+  schedule:
+    # Nightly `test` of main: catches what changes outside the repository, and writes like a push, so the hosted Nx
+    # cache stays warm through a week without pushes
+    - cron: '17 9 * * *'
+    # Weekly `test-uncached`. Keep in sync with both jobs' `if`
+    - cron: '47 9 * * 0'
 
 permissions:
   contents: read
 
 concurrency:
-  # Superseded PR pushes are cancelled; every commit to main gets its own run
-  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.sha }}
+  # Superseded PR pushes are cancelled; every commit to main gets its own run, and scheduled runs never cancel another
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.event_name == 'schedule' && github.run_id || github.sha }}
   cancel-in-progress: true
 
 env:
@@ -31,13 +38,14 @@ env:
 
 jobs:
   test:
+    if: ${{ github.event.schedule != '47 9 * * 0' }}
     runs-on: ubuntu-latest
     # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
     timeout-minutes: 30
     permissions:
       contents: read
       # The cache server's uploads to the hosted cache carry an OIDC token. The hosted cache only accepts one from a
-      # push to main, so a pull request's token (and a fork's gets none) can't write
+      # push to main or a scheduled run, so a pull request's token (and a fork's gets none) can't write
       id-token: write
     steps:
       - name: Checkout
@@ -55,14 +63,14 @@ jobs:
 
       # Deletes expired results before it starts listening, and never serves one. In front of the hosted cache
       # (`infra/nx-cache`) once the `NX_CACHE_UPSTREAM` variable names it: every run reads from it, and pushes to
-      # main write to it
+      # main and nightly runs write to it
       - name: Start Nx cache server
         env:
           NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
           NX_CACHE_SERVER_MAX_AGE_DAYS: ${{ env.NX_CACHE_MAX_AGE_DAYS }}
           NX_CACHE_SERVER_REFRESH_AFTER_DAYS: ${{ env.NX_CACHE_REFRESH_AFTER_DAYS }}
           NX_CACHE_SERVER_UPSTREAM: ${{ vars.NX_CACHE_UPSTREAM }}
-          NX_CACHE_SERVER_UPSTREAM_WRITE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.NX_CACHE_UPSTREAM != '' && 'github-oidc' || '' }}
+          NX_CACHE_SERVER_UPSTREAM_WRITE: ${{ (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/main' && vars.NX_CACHE_UPSTREAM != '' && 'github-oidc' || '' }}
         run: |
           node .devcontainer/nx-cache-server.mjs &
           curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null
@@ -86,6 +94,31 @@ jobs:
         with:
           path: ${{ env.NX_CACHE_DIR }}
           key: nx-${{ env.NX_CACHE_VERSION }}-${{ github.sha }}
+
+  # Weekly, every task with no Nx cache at all, reading or writing. A task that fails here but passes from the cache
+  # all week depends on something its inputs don't hash: add the input, rather than re-running
+  test-uncached:
+    if: ${{ github.event.schedule == '47 9 * * 0' }}
+    runs-on: ubuntu-latest
+    # A cold run takes well under this; fail a hung pipeline instead of waiting out the 6 hour default
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Test
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: ${{ env.DAGGER_VERSION }}
+          verb: call
+          module: ./dagger
+          # Only for Dagger Cloud traces, as in `test`
+          cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
+          args: test
 
   # Opens (or updates) a "Version Packages" PR applying pending changesets
   version:
