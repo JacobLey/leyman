@@ -375,8 +375,8 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint/ban-ts-comment': [
                     'error',
                     {
-                        // Type tests expect an error on the line below, which says what's wrong with it
-                        'ts-expect-error': false,
+                        // Outside tests, an expected error is a suppression, so needs its reason
+                        'ts-expect-error': 'allow-with-description',
                         'ts-check': true,
                     },
                 ],
@@ -1022,6 +1022,14 @@ export default function makeEslintConfigForPackage({
                 'unicorn/consistent-function-scoping': 'off',
                 // Fluent test setup (e.g. haywire's `bind(identifier(A).nullable())`) nests calls by design
                 'unicorn/max-nested-calls': 'off',
+                '@typescript-eslint/ban-ts-comment': [
+                    'error',
+                    {
+                        // Type tests expect an error on the line below, which says what's wrong with it
+                        'ts-expect-error': false,
+                        'ts-check': true,
+                    },
+                ],
             },
         },
         // Not in tests, which build fixtures freely (e.g. a schema per test)
