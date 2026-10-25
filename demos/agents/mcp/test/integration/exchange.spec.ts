@@ -1,11 +1,11 @@
-import type { ListeningAuthorizationServer } from '@leyman/demo-oauth-server';
+import type { ListeningAuthorizationServer } from 'oauth-dev-server';
 import { createHash, randomBytes } from 'node:crypto';
 import { decodeJwt } from 'jose';
 import sinon from 'sinon';
 import { NotesMcpAuthorizationServerError, tokenExchange } from '@leyman/demo-agents-mcp';
-import { followAuthorization, listenDevAuthorizationServer } from '@leyman/demo-oauth-server';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
+import { followAuthorization, listenDevAuthorizationServer } from 'oauth-dev-server';
 
 const mcpResource = 'https://notes-mcp.test';
 const apiResource = 'https://notes-api.test';

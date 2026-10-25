@@ -11,7 +11,7 @@ agent ──shell──► notes CLI ──(user's)─┘
        (both log in at the dev OAuth server; each server verifies its own tokens)
 ```
 
-Worked examples, not packages: none is published. Each is a full package (lint, types, 100% coverage), tested against the real notes API, Postgres, and the [dev OAuth server](../oauth-server).
+Worked examples, not packages: none is published. Each is a full package (lint, types, 100% coverage), tested against the real notes API, Postgres, and the [dev OAuth server](../../tools/oauth-dev-server).
 
 | Package | What it is | README |
 |---|---|---|

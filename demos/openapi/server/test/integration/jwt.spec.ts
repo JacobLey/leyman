@@ -1,12 +1,11 @@
 import type { ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
-import type { ListeningAuthorizationServer } from '@leyman/demo-oauth-server';
+import type { ListeningAuthorizationServer } from 'oauth-dev-server';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { decodeJwt } from 'jose';
 import { Pool } from 'pg';
-import { listenDevAuthorizationServer } from '@leyman/demo-oauth-server';
 import { NotesClient } from '@leyman/demo-openapi-client';
 import {
     appConfigId,
@@ -23,6 +22,7 @@ import {
 import { expect } from '@leyman/expect';
 import { bind, createContainer } from 'haywire';
 import { suite } from 'mocha-chain';
+import { listenDevAuthorizationServer } from 'oauth-dev-server';
 import { withDatabase } from '../helpers/database.js';
 import { listen } from '../helpers/serve.js';
 

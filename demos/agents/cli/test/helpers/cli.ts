@@ -3,7 +3,7 @@ import { once } from 'node:events';
 import { mkdtemp, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import Path from 'node:path';
-import { approveDevice, followAuthorization } from '@leyman/demo-oauth-server';
+import { approveDevice, followAuthorization } from 'oauth-dev-server';
 
 export interface CliResult {
     readonly code: number | null;

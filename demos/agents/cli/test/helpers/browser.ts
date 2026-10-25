@@ -1,7 +1,7 @@
 // Plays the user's browser for `notes login`, run as `$BROWSER` with the authorization URL: signs in at the dev
 // authorization server, and comes back to the CLI's redirect URI. With `BROWSER_ANSWER`, it comes back with that
 // query instead (`{state}` and `{iss}` filled in). With `BROWSER_USER`, it signs in as that user.
-import { followAuthorization } from '@leyman/demo-oauth-server';
+import { followAuthorization } from 'oauth-dev-server';
 
 const authorization = new URL(process.argv[2]!);
 // eslint-disable-next-line n/no-process-env -- How a test signs in as someone else

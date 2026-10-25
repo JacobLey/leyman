@@ -979,9 +979,6 @@ importers:
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.1.5(hono@4.13.13)
-      '@leyman/demo-oauth-server':
-        specifier: workspace:^
-        version: file:demos/oauth-server(supports-color@8.1.1)
       '@leyman/demo-openapi-database':
         specifier: workspace:^
         version: file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
@@ -1030,6 +1027,9 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      oauth-dev-server:
+        specifier: workspace:^
+        version: file:tools/oauth-dev-server(supports-color@8.1.1)
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1067,9 +1067,6 @@ importers:
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.1.5(hono@4.13.13)
-      '@leyman/demo-oauth-server':
-        specifier: workspace:^
-        version: file:demos/oauth-server(supports-color@8.1.1)
       '@leyman/demo-openapi-database':
         specifier: workspace:^
         version: file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
@@ -1124,6 +1121,9 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      oauth-dev-server:
+        specifier: workspace:^
+        version: file:tools/oauth-dev-server(supports-color@8.1.1)
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1133,58 +1133,6 @@ importers:
       sinon:
         specifier: 'catalog:'
         version: 22.1.0
-      typescript:
-        specifier: 'catalog:'
-        version: '@typescript/typescript6@6.0.2'
-
-  demos/oauth-server:
-    dependencies:
-      jose:
-        specifier: 'catalog:'
-        version: 6.2.12
-      oidc-provider:
-        specifier: 'catalog:'
-        version: 9.12.2(supports-color@8.1.1)
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 'catalog:'
-        version: 2.5.14
-      '@leyman/eslint-config':
-        specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
-      '@leyman/expect':
-        specifier: workspace:^
-        version: file:leyman/expect
-      '@swc/cli':
-        specifier: 'catalog:'
-        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
-      '@swc/core':
-        specifier: 'catalog:'
-        version: 1.16.18(@swc/helpers@0.5.23)
-      '@types/mocha':
-        specifier: 'catalog:'
-        version: 10.0.10
-      '@types/node':
-        specifier: 'catalog:'
-        version: 24.19.0
-      '@types/oidc-provider':
-        specifier: 'catalog:'
-        version: 9.12.1
-      '@typescript/native':
-        specifier: 'catalog:'
-        version: typescript@7.0.2
-      c8:
-        specifier: 'catalog:'
-        version: 12.0.0
-      eslint:
-        specifier: 'catalog:'
-        version: 10.13.0(supports-color@8.1.1)
-      mocha:
-        specifier: 'catalog:'
-        version: 12.0.3
-      mocha-chain:
-        specifier: workspace:^
-        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1341,9 +1289,6 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.5.14
-      '@leyman/demo-oauth-server':
-        specifier: workspace:^
-        version: file:demos/oauth-server(supports-color@8.1.1)
       '@leyman/demo-openapi-client':
         specifier: workspace:^
         version: file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))
@@ -1389,6 +1334,9 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      oauth-dev-server:
+        specifier: workspace:^
+        version: file:tools/oauth-dev-server(supports-color@8.1.1)
       pg-dolly:
         specifier: workspace:^
         version: file:tools/pg-dolly
@@ -1529,9 +1477,6 @@ importers:
       '@leyman/demo-agents-mcp':
         specifier: workspace:^
         version: file:demos/agents/mcp(eslint@10.13.0(supports-color@8.1.1))
-      '@leyman/demo-oauth-server':
-        specifier: workspace:^
-        version: file:demos/oauth-server(supports-color@8.1.1)
       '@leyman/demo-openapi-client':
         specifier: workspace:^
         version: file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))
@@ -3051,6 +2996,58 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 19.3.1(react@19.3.1)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
+  tools/oauth-dev-server:
+    dependencies:
+      jose:
+        specifier: 'catalog:'
+        version: 6.2.12
+      oidc-provider:
+        specifier: 'catalog:'
+        version: 9.12.2(supports-color@8.1.1)
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.5.14
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.18(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      '@types/oidc-provider':
+        specifier: 'catalog:'
+        version: 9.12.1
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.13.0(supports-color@8.1.1)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -5212,10 +5209,6 @@ packages:
 
   '@leyman/demo-agents-mcp@file:demos/agents/mcp':
     resolution: {directory: demos/agents/mcp, type: directory}
-    engines: {node: '>=24'}
-
-  '@leyman/demo-oauth-server@file:demos/oauth-server':
-    resolution: {directory: demos/oauth-server, type: directory}
     engines: {node: '>=24'}
 
   '@leyman/demo-openapi-client@file:demos/openapi/client':
@@ -8919,6 +8912,10 @@ packages:
       '@swc/core':
         optional: true
 
+  oauth-dev-server@file:tools/oauth-dev-server:
+    resolution: {directory: tools/oauth-dev-server, type: directory}
+    engines: {node: '>=24'}
+
   oauth4webapi@3.8.8:
     resolution: {integrity: sha512-8N28E+a/oxfXWBgOMt+ZP/JUf/XR+IFbvkAEPP3gznXOMv9BpAAwiIj0TFNz3tGTPc0ZQ8zmWBNgN1nAys0gng==}
 
@@ -12038,13 +12035,6 @@ snapshots:
       jose: 6.2.12
     transitivePeerDependencies:
       - eslint
-
-  '@leyman/demo-oauth-server@file:demos/oauth-server(supports-color@8.1.1)':
-    dependencies:
-      jose: 6.2.12
-      oidc-provider: 9.12.2(supports-color@8.1.1)
-    transitivePeerDependencies:
-      - supports-color
 
   '@leyman/demo-openapi-client@file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))':
     dependencies:
@@ -16157,6 +16147,13 @@ snapshots:
       '@nx/nx-win32-arm64-msvc': 23.3.0
       '@nx/nx-win32-x64-msvc': 23.3.0
       '@swc/core': 1.16.18(@swc/helpers@0.5.23)
+
+  oauth-dev-server@file:tools/oauth-dev-server(supports-color@8.1.1):
+    dependencies:
+      jose: 6.2.12
+      oidc-provider: 9.12.2(supports-color@8.1.1)
+    transitivePeerDependencies:
+      - supports-color
 
   oauth4webapi@3.8.8: {}
 

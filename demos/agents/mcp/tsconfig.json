@@ -38,7 +38,7 @@
       "path": "../../openapi/database"
     },
     {
-      "path": "../../oauth-server"
+      "path": "../../../tools/oauth-dev-server"
     }
   ]
 }

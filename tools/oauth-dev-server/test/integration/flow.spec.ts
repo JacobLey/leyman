@@ -3,6 +3,8 @@ import { createHash, randomBytes } from 'node:crypto';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify } from 'jose';
+import { expect } from '@leyman/expect';
+import { beforeEach, suite, test } from 'mocha-chain';
 import {
     approveDevice,
     createDevAuthorizationServer,
@@ -10,30 +12,28 @@ import {
     DevAuthorizationServerNotLocalError,
     followAuthorization,
     listenDevAuthorizationServer,
-} from '@leyman/demo-oauth-server';
-import { expect } from '@leyman/expect';
-import { beforeEach, suite, test } from 'mocha-chain';
+} from 'oauth-dev-server';
 
 const resource = 'http://127.0.0.1:1/mcp';
 const otherResource = 'http://127.0.0.1:2/mcp';
-const clientId = 'demo-client';
+const clientId = 'test-client';
 // A native app's loopback redirect matches on any port
 const registeredRedirectUri = 'http://127.0.0.1/callback';
 const redirectUri = 'http://127.0.0.1:3/callback';
 const service = {
-    clientId: 'demo-service',
+    clientId: 'test-service',
     clientSecret: 'service-secret',
     scopes: ['notes:write'],
 };
 // A resource users have tokens for (`resource`), calling another as them
 const apiResource = 'http://127.0.0.1:4/api';
 const exchanger = {
-    clientId: 'demo-exchanger',
+    clientId: 'test-exchanger',
     clientSecret: 'exchanger-secret',
     scopes: ['notes:read', 'notes:write'],
     tokenExchange: { subjectAudience: resource },
 };
-const deviceClientId = 'demo-device';
+const deviceClientId = 'test-device';
 const deviceCodeGrant = 'urn:ietf:params:oauth:grant-type:device_code';
 const tokenExchangeGrant = 'urn:ietf:params:oauth:grant-type:token-exchange';
 const accessTokenType = 'urn:ietf:params:oauth:token-type:access_token';

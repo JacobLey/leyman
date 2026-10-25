@@ -10,7 +10,7 @@ import {
     StreamableHTTPClientTransport,
     UnauthorizedError,
 } from '@modelcontextprotocol/client';
-import { followAuthorization } from '@leyman/demo-oauth-server';
+import { followAuthorization } from 'oauth-dev-server';
 
 export const agentClientId = 'demo-agent';
 

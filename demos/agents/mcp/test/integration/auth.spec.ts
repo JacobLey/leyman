@@ -1,4 +1,4 @@
-import type { ListeningAuthorizationServer } from '@leyman/demo-oauth-server';
+import type { ListeningAuthorizationServer } from 'oauth-dev-server';
 import {
     createMcpApp,
     jwtVerifier,

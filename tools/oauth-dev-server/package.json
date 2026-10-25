@@ -1,7 +1,7 @@
 {
-  "name": "@leyman/demo-oauth-server",
+  "name": "oauth-dev-server",
   "version": "0.0.1",
-  "description": "A development authorization server: oidc-provider with a dev login, issuing audience-bound JWT access tokens through a real OAuth 2.1 flow.",
+  "description": "A local OAuth 2.1 authorization server for tests: oidc-provider with a dev login, issuing audience-bound JWT access tokens through the real flow.",
   "engines": {
     "node": ">=24"
   },
@@ -9,22 +9,34 @@
   "type": "module",
   "author": "JacobLey",
   "license": "MIT",
-  "repository": "JacobLey/leyman",
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/oauth-server#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "tools/oauth-dev-server"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/oauth-dev-server#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
+  "keywords": [
+    "oauth",
+    "oauth2",
+    "oidc",
+    "authorization-server",
+    "testing",
+    "integration-test",
+    "pkce",
+    "token-exchange"
+  ],
+  "sideEffects": false,
   "files": [
     "dist",
     "!dist/**/*.map",
     "!dist/tsconfig.tsbuildinfo"
   ],
-  "types": "./dist/auth.js",
+  "types": "./dist/oauth-dev-server.js",
   "exports": {
-    ".": "./dist/auth.js"
-  },
-  "imports": {
-    "#internal/*": "./dist/*"
+    ".": "./dist/oauth-dev-server.js"
   },
   "dependencies": {
     "jose": "catalog:",

@@ -113,7 +113,7 @@
       "path": "./demos/openapi/database"
     },
     {
-      "path": "./demos/oauth-server"
+      "path": "./tools/oauth-dev-server"
     },
     {
       "path": "./demos/agents/mcp"

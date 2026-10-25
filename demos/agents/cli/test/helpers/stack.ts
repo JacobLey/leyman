@@ -3,8 +3,8 @@ import { tmpdir } from 'node:os';
 import Path from 'node:path';
 import { drizzle } from 'drizzle-orm/node-postgres';
 import { Pool } from 'pg';
-import { listenDevAuthorizationServer } from '@leyman/demo-oauth-server';
 import { createNotesApp, jwtAuthenticator } from '@leyman/demo-openapi-server';
+import { listenDevAuthorizationServer } from 'oauth-dev-server';
 import { withDatabase } from './database.js';
 import { listen } from './serve.js';
 

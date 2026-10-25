@@ -40,12 +40,11 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
-    "@leyman/demo-oauth-server": "workspace:^",
+    "@hono/node-server": "catalog:",
     "@leyman/demo-openapi-database": "workspace:^",
     "@leyman/demo-openapi-server": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",
-    "@hono/node-server": "catalog:",
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
@@ -58,6 +57,7 @@
     "eslint": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
+    "oauth-dev-server": "workspace:^",
     "pg": "catalog:",
     "pg-dolly": "workspace:^",
     "typescript": "catalog:"
