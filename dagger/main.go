@@ -28,9 +28,11 @@ const (
 	// 12.9.1 fixes `--frozen-lockfile` rejecting the lockfile of injected workspace packages with `catalog:`
 	// peer dependencies.
 	pnpmVersion = "12.9.1"
-	// Keep in sync with `playwright` in `pnpm-workspace.yaml`. Only installs the browsers' system libraries here;
-	// the `playwright-install` target downloads the browsers themselves.
+	// Keep in sync with `playwright` in `pnpm-workspace.yaml`: a client connects only to a server of its own version.
 	playwrightVersion = "1.62.1"
+	// mcr.microsoft.com/playwright:v1.62.1-noble, with every browser and its system libraries, for tests to connect to.
+	// Keep its version in sync with `playwrightVersion`.
+	playwrightImage = "mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e"
 	// golang:1.26.10-trixie. Under 7 days old: an emergency security bump. Drop this note after 2026-10-27.
 	// Only its Go toolchain is copied into the Node image, for projects written in Go.
 	goImage = "golang:1.26.10-trixie@sha256:909771fef53e3dcb0950255f0c9a8b4728c3b841e61509c7b29b098de7ee02d4"
@@ -52,7 +54,6 @@ const (
 	storeDir    = "/pnpm-store"
 	cacheDir    = "/pnpm-cache"
 	tarballDir  = "/tarballs"
-	browsersDir = "/playwright-browsers"
 	goRoot      = "/usr/local/go"
 	pnpmDir     = "/usr/local/pnpm"
 	npmRegistry = "https://registry.npmjs.org"
@@ -103,7 +104,7 @@ func (m *Ci) Test(
 	nxCache *dagger.Service,
 ) error {
 	// Pending changesets don't affect tests, so keep them from invalidating the cache
-	ctr := m.installedOn(m.browserBase(), m.Source.WithoutDirectory(".changeset"))
+	ctr := m.installed(m.Source.WithoutDirectory(".changeset"))
 	if nxCache != nil {
 		ctr = ctr.
 			WithServiceBinding("nx-cache", nxCache).
@@ -116,6 +117,9 @@ func (m *Ci) Test(
 	eg.Go(func() error {
 		_, err := built.
 			WithServiceBinding("valkey", valkeyService()).
+			// Browser tests connect to it rather than launching their own, so `playwright-install` downloads none
+			WithServiceBinding("playwright", playwrightService()).
+			WithEnvVariable("PW_TEST_CONNECT_WS_ENDPOINT", "ws://playwright:3000/").
 			WithExec([]string{"test-ci"}).
 			Sync(ctx)
 		return err
@@ -496,6 +500,19 @@ func valkeyService() *dagger.Service {
 		})
 }
 
+// A Playwright server, which launches whichever browser a test connects for (chromium, firefox or webkit). The image
+// has every browser and the system libraries they need, so the tests' container needs neither.
+func playwrightService() *dagger.Service {
+	return dag.Container().
+		From(playwrightImage).
+		WithUser("pwuser").
+		WithWorkdir("/home/pwuser").
+		WithExposedPort(3000).
+		AsService(dagger.ContainerAsServiceOpts{
+			Args: []string{"npx", "--yes", "playwright@" + playwrightVersion, "run-server", "--port", "3000", "--host", "0.0.0.0"},
+		})
+}
+
 // Postgres for tests, with nothing persisted and durability off, matching the devcontainer's `postgres` sidecar
 func postgresService() *dagger.Service {
 	return dag.Container().
@@ -553,33 +570,10 @@ func (m *Ci) base() *dagger.Container {
 	return withTools(system())
 }
 
-// Base image plus the system libraries Playwright's browsers need, with the browsers kept in a cache volume.
-//
-// The libraries are installed from the list `install-deps` would install (one package per line), not by running it:
-// that needs Node, and the list doesn't change when Node does. So the install reruns only when the list changes.
-func (m *Ci) browserBase() *dagger.Container {
-	deps := m.base().
-		WithExec([]string{"sh", "-c", "pnpm dlx playwright@" + playwrightVersion +
-			" install-deps --dry-run chromium firefox webkit" +
-			` | sed -n 's/^  \([a-z0-9][a-z0-9.+-]*\)$/\1/p' > /tmp/playwright-deps.txt` +
-			" && test -s /tmp/playwright-deps.txt"}).
-		File("/tmp/playwright-deps.txt")
-	return withTools(system().
-		WithMountedFile("/tmp/playwright-deps.txt", deps).
-		WithExec([]string{"xargs", "--arg-file=/tmp/playwright-deps.txt", "apt-get", "install", "--yes", "--no-install-recommends"})).
-		WithMountedCache(browsersDir, dag.CacheVolume("playwright-browsers-"+playwrightVersion)).
-		WithEnvVariable("PLAYWRIGHT_BROWSERS_PATH", browsersDir)
-}
-
 // Workspace with dependencies installed.
-func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
-	return m.installedOn(m.base(), source)
-}
-
-// Workspace with dependencies installed on top of `base`.
 //
 // Dependencies are fetched from the lockfile alone, so source-only changes reuse the cached fetch layer.
-func (m *Ci) installedOn(base *dagger.Container, source *dagger.Directory) *dagger.Container {
+func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
 	lockfiles := source.Filter(dagger.DirectoryFilterOpts{
 		// `pnpm fetch` applies `patchedDependencies` too
 		Include: []string{"pnpm-lock.yaml", "pnpm-workspace.yaml", "patches/**"},
@@ -596,7 +590,7 @@ func (m *Ci) installedOn(base *dagger.Container, source *dagger.Directory) *dagg
 		WithExec([]string{"sh", "-c", `grep -oE 'resolution: \{directory: [^,]+' pnpm-lock.yaml | cut -d ' ' -f 3 | xargs -r mkdir -p`}).
 		WithExec([]string{"pnpm", "fetch"})
 
-	return base.
+	return m.base().
 		WithDirectory(storeDir, fetched.Directory(storeDir)).
 		WithDirectory(cacheDir, fetched.Directory(cacheDir)).
 		WithDirectory(workdir, source).

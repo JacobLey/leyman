@@ -19,6 +19,20 @@ declare global {
 const nodeModules = new Set([...builtinModules, ...builtinModules.map(name => `node:${name}`)]);
 
 /**
+ * Starts a browser: on the Playwright server at `PW_TEST_CONNECT_WS_ENDPOINT` when there is one (CI runs one, with
+ * the browsers and their system libraries), else here.
+ *
+ * @param browserType - browser to start
+ * @returns the browser
+ */
+const launch = async (browserType: BrowserType): Promise<Browser> => {
+    // Set by Dagger, which runs the server. Node's `process`: this file's globals are the browser's, for what runs
+    // in the page
+    const endpoint = globalThis.process.env.PW_TEST_CONNECT_WS_ENDPOINT;
+    return endpoint === undefined ? browserType.launch() : browserType.connect(endpoint);
+};
+
+/**
  * Bundles unknown-error as a browser app would, failing on any import of a Node.js module.
  *
  * @returns bundled script, which assigns unknown-error to `unknownError`
@@ -106,7 +120,7 @@ suite('unknown-error in the browser', () => {
         suite(browserType.name(), () => {
             const withBrowser = withBundle.before(async function (this: Context) {
                 this.timeout(30_000);
-                return { browser: await browserType.launch() };
+                return { browser: await launch(browserType) };
             });
             withBrowser.after(async ({ browser }) => {
                 // Missing when launching failed, which would otherwise be reported twice

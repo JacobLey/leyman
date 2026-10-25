@@ -13,4 +13,4 @@ It is not published, and has no source of its own: only tests.
 
 ## Browsers
 
-The `playwright-install` target downloads the browsers before the tests run, to `PLAYWRIGHT_BROWSERS_PATH` (shared between worktrees in the devcontainer). Their system libraries need root, so the devcontainer image and the Dagger pipeline install them. The Playwright version is pinned in `pnpm-workspace.yaml`, `.devcontainer/Dockerfile` and `dagger/main.go`, which must match.
+The `playwright-install` target downloads the browsers before the tests run, to `PLAYWRIGHT_BROWSERS_PATH` (shared between worktrees in the devcontainer). Their system libraries need root, so the devcontainer image installs them. In the Dagger pipeline the tests instead connect to a Playwright server with every browser (the official image), named by `PW_TEST_CONNECT_WS_ENDPOINT`, and nothing is downloaded. The Playwright version is pinned in `pnpm-workspace.yaml`, `.devcontainer/Dockerfile` and `dagger/main.go`, which must match.

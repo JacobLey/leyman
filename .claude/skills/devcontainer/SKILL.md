@@ -56,7 +56,7 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 | OpenTofu | `ARG TOFU_IMAGE` in `.devcontainer/Dockerfile` | `tofuImage` in `dagger/main.go`. The same image, pinned by digest: only its `tofu` binary is copied in |
 | dagger | `ARG DAGGER_VERSION` in `.devcontainer/Dockerfile` | `engineVersion` in `dagger/dagger.json`, and `DAGGER_VERSION` in `.github/workflows/ci.yml` |
 | Debian | base image tag in `.devcontainer/Dockerfile` (`debian13`) | `debianImage` in `dagger/main.go`, and the `nodeImage` and `goImage` variants (`trixie` = Debian 13) |
-| Playwright | `ARG PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` | `playwrightVersion` in `dagger/main.go`. Both must also match `playwright` in `pnpm-workspace.yaml` |
+| Playwright | `ARG PLAYWRIGHT_VERSION` in `.devcontainer/Dockerfile` | `playwrightVersion` and the `playwrightImage` tag in `dagger/main.go`. All must match `playwright` in `pnpm-workspace.yaml`. Dagger doesn't install browsers: tests connect to a `playwright` service (`run-server` in the official image, pinned by digest) at `PW_TEST_CONNECT_WS_ENDPOINT`, where the devcontainer launches them locally |
 | Valkey | `valkey` service image in `.devcontainer/docker-compose.yml` | `valkeyImage` in `dagger/main.go`. Both pinned by digest, and the service is bound under the same hostname (`valkey`) |
 | Postgres | `postgres` service image and `command` settings in `.devcontainer/docker-compose.yml` | `postgresImage` and `postgresService` in `dagger/main.go`. Both pinned by digest, bound under the same hostname (`postgres`), with the same `DATABASE_URL` |
 | Postgres client tools | `ARG POSTGRES_MAJOR` in `.devcontainer/Dockerfile` | `postgresMajor` in `dagger/main.go`. Must match the Postgres image's major version |

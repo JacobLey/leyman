@@ -517,7 +517,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "playwright install chromium firefox webkit"
+          "[ -n \"$PW_TEST_CONNECT_WS_ENDPOINT\" ] || playwright install chromium firefox webkit"
         ],
         "color": true,
         "cwd": "{projectRoot}"
