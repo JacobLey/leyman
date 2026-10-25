@@ -1,5 +1,13 @@
 # haywire
 
+## 2.0.4
+
+### Patch Changes
+
+- 4c6cc67: Fix the README example so it compiles (missing imports and export), and document the Node.js version, CommonJS import and readonly `withDependencies()` arrays.
+- bfbffcf: `withDependencies()` accepts a `readonly` tuple, such as an `as const` variable.
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+
 ## 2.0.3
 
 ### Patch Changes

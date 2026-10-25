@@ -1,6 +1,6 @@
 {
   "name": "unknown-error",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Turn any caught `unknown` into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains",
   "engines": {
     "node": ">=24"

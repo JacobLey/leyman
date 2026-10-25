@@ -1,5 +1,18 @@
 # haywire-launcher
 
+## 1.1.1
+
+### Patch Changes
+
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- 772efd5: Document the required `haywire` and `entry-script` peer dependencies in the install line, and the `getOriginal()` and `main()` members of the launched class.
+- Updated dependencies [dc1bbaa]
+- Updated dependencies [4c6cc67]
+- Updated dependencies [bfbffcf]
+- Updated dependencies [7e4c3b2]
+  - entry-script@4.1.2
+  - haywire@2.0.4
+
 ## 1.1.0
 
 ### Minor Changes

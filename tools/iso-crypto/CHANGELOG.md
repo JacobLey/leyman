@@ -1,5 +1,13 @@
 # iso-crypto
 
+## 3.0.2
+
+### Patch Changes
+
+- 6798aca: Document the exported and unexported types accurately (`InputText`, `Hash`, `Curve`), the `as const` and `Uint8Array<ArrayBuffer>` type traps, and the Node.js requirement. Fix the swapped `privateKey` and `publicKey` descriptions on `eccDecrypt`.
+- 4a1b259: `InputText`, `HashAlgorithm` and `Uint8ArrayBuffer` are exported as types.
+- 9be943b: Type `size` options as the number literals they accept (e.g. `256`), like `cipher` and `mode` already accept their string literals. The `Sizes` enum still works.
+
 ## 3.0.1
 
 ### Patch Changes

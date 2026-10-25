@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.2
+
+### Patch Changes
+
+- a3be118: Document in the README exactly which values `defaultImport` unwraps at runtime.
+
 ## 3.0.1
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # normalized-react-query
 
+## 2.1.1
+
+### Patch Changes
+
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- b7f43d7: `Linked` is exported as a type.
+- f4053c3: Document the required peer dependencies in the install line, that `Linked` is not exported by name, `link()` options (`isolateErrors`) and its error, and what hook `select` receives.
+
 ## 2.1.0
 
 ### Minor Changes

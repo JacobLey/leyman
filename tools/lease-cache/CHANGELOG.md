@@ -1,5 +1,13 @@
 # lease-cache
 
+## 0.3.1
+
+### Patch Changes
+
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- 9a353c5: `get` and `read` accept values typed with interfaces. Loaded values are checked with the new `JsonValue<T>` type, which still rejects a `Date`, a function or `undefined`.
+- 321d0cc: Say in the README and on `Json` that loaded values must be type aliases rather than interfaces, and list what each `read()` source means in the README.
+
 ## 0.3.0
 
 ### Minor Changes

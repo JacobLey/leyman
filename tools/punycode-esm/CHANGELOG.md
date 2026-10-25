@@ -1,5 +1,11 @@
 # punycode-esm
 
+## 2.0.2
+
+### Patch Changes
+
+- fbd65a9: Document thrown errors and IDNA limits of `toASCII` and `toUnicode` in the README.
+
 ## 2.0.1
 
 ### Patch Changes

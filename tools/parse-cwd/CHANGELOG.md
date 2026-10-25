@@ -1,5 +1,11 @@
 # parse-cwd
 
+## 2.0.3
+
+### Patch Changes
+
+- d940d01: Document in the README that a path that does not exist is rejected, including a file name whose parent exists.
+
 ## 2.0.2
 
 ### Patch Changes

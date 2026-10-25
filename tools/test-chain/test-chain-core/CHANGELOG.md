@@ -1,5 +1,12 @@
 # test-chain-core
 
+## 0.1.3
+
+### Patch Changes
+
+- bc61063: Hooks must return a plain object, a `Promise` of one, or nothing. Returning an array, function, `Map`, `Set`, `Date` or `RegExp` is now a type error, and a hook that returns a class instance (or any other object whose prototype isn't `Object.prototype` or `null`) fails with `HookContextError`, rather than leaving the instance's methods typed on the context but missing from it. `test-chain-core` exports `HookContextError` and `CheckedAdditionalContext`.
+- a924b13: Document in the README what `createChain` returns, the `ChainNames` fields, `HookOrderError` and the exported types.
+
 ## 0.1.2
 
 ### Patch Changes

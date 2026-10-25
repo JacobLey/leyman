@@ -1,5 +1,30 @@
 # barrelify
 
+## 2.2.2
+
+### Patch Changes
+
+- 3f0d7af: `barrelify()` accepts a `readonly` `ignore` array, and options set to `undefined` (for `exactOptionalPropertyTypes`).
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- 6d67b85: Document which files each barrel extension exports, relative `ignore` globs, the `Directory not found` rejection and that `ignore` must be a mutable array in the README and JSDoc.
+- 24ce53b: Update dependencies: ignore@7.0.12, fast-equals@6.2.1
+- Updated dependencies [dc1bbaa]
+- Updated dependencies [4c6cc67]
+- Updated dependencies [d940d01]
+- Updated dependencies [bfbffcf]
+- Updated dependencies [7e4c3b2]
+- Updated dependencies [d8baa7e]
+- Updated dependencies [2939d32]
+- Updated dependencies [bdde13d]
+- Updated dependencies [6f2cb13]
+- Updated dependencies [772efd5]
+  - entry-script@4.1.2
+  - haywire@2.0.4
+  - parse-cwd@2.0.3
+  - haywire-launcher@1.1.1
+  - populate-files@1.2.0
+  - unknown-error@0.1.1
+
 ## 2.2.1
 
 ### Patch Changes

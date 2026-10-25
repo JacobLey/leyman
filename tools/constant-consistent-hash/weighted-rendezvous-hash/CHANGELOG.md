@@ -1,5 +1,11 @@
 # weighted-rendezvous-hash
 
+## 0.1.2
+
+### Patch Changes
+
+- 37616d3: Document the size limit, the errors from `update`, and the module format in the README.
+
 ## 0.1.1
 
 ### Patch Changes

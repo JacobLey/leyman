@@ -1,5 +1,14 @@
 # Change Log
 
+## 4.1.2
+
+### Patch Changes
+
+- dc1bbaa: Document how `main` is invoked (default export of the entry point, re-exporting shims, unhandled rejection on error), `MainNotImplementedError`, and the Node.js version.
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- Updated dependencies [a3be118]
+  - default-import@3.0.2
+
 ## 4.1.1
 
 ### Patch Changes

@@ -1,5 +1,13 @@
 # find-import
 
+## 2.1.1
+
+### Patch Changes
+
+- a7b6ad5: Document the shape of `content`, the rejection for a missing `cwd`, and `startAt` bounds in the README.
+- Updated dependencies [d940d01]
+  - parse-cwd@2.0.3
+
 ## 2.1.0
 
 ### Minor Changes

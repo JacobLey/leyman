@@ -1,6 +1,6 @@
 {
   "name": "haywire",
-  "version": "2.0.3",
+  "version": "2.0.4",
   "description": "Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state.",
   "engines": {
     "node": ">=24"
