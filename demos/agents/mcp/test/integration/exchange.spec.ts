@@ -6,6 +6,7 @@ import { NotesMcpAuthorizationServerError, tokenExchange } from '@leyman/demo-ag
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
 import { followAuthorization, listenDevAuthorizationServer } from 'oauth-dev-server';
+import { listen } from '../helpers/serve.js';
 
 const mcpResource = 'https://notes-mcp.test';
 const apiResource = 'https://notes-api.test';
@@ -176,6 +177,26 @@ suite('tokenExchange', () => {
             );
         }
     );
+
+    withServer.test('Rejects a discovery document with no token endpoint', async ({ alice }) => {
+        // Its keys are enough to verify tokens, not to exchange them
+        const issuer = await listen();
+        issuer.use(() => Response.json({ issuer: issuer.url, jwks_uri: `${issuer.url}/jwks` }));
+        try {
+            const exchange = tokenExchange({
+                issuer: issuer.url,
+                resource: apiResource,
+                ...service,
+            });
+
+            await expect(exchange(alice)).to.be.rejectedWith(
+                NotesMcpAuthorizationServerError,
+                'discovery named no token_endpoint'
+            );
+        } finally {
+            await issuer.close();
+        }
+    });
 
     withServer.test(
         'Rejects a discovery document for another issuer',

@@ -53,10 +53,7 @@ interface Exchanged {
 export const tokenExchange = (
     options: TokenExchangeOptions
 ): ((agentToken: string) => Promise<string>) => {
-    const tokenEndpoint = lazily(async () => {
-        const { token_endpoint: endpoint } = await discover(options.issuer);
-        return endpoint;
-    });
+    const tokenEndpoint = lazily(async () => discover(options.issuer, 'token_endpoint'));
     const credentials = [formEncode(options.clientId), formEncode(options.clientSecret)].join(':');
     const authorization = `Basic ${btoa(credentials)}`;
 

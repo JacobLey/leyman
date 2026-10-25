@@ -42,7 +42,7 @@ const tokenErrors = [
  */
 export const jwtVerifier = (options: JwtVerifierOptions): OAuthTokenVerifier => {
     const keys = lazily(async (): Promise<JWTVerifyGetKey> => {
-        const { jwks_uri: jwksUri } = await discover(options.issuer);
+        const jwksUri = await discover(options.issuer, 'jwks_uri');
         return createRemoteJWKSet(new URL(jwksUri));
     });
     return {

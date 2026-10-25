@@ -1,5 +1,6 @@
 import type { ListeningAuthorizationServer } from 'oauth-dev-server';
 import { createHash, randomBytes } from 'node:crypto';
+import { exportJWK, generateKeyPair, SignJWT } from 'jose';
 import {
     createMcpApp,
     jwtVerifier,
@@ -307,6 +308,43 @@ suite('Authorization', () => {
 
                 expect(response.status).to.equal(500);
                 expect(errors[0]).to.be.instanceOf(NotesMcpAuthorizationServerError);
+            }
+        );
+
+        withBroken.test(
+            'Verifies tokens from an issuer with no token endpoint, which only exchanging needs',
+            async ({ url, errors, served, serveWith }) => {
+                // An issuer of its own, with keys and nothing else
+                const { privateKey, publicKey } = await generateKeyPair('ES256');
+                const issuer = await listen();
+                const jwks = {
+                    keys: [{ ...(await exportJWK(publicKey)), kid: 'key', alg: 'ES256' }],
+                };
+                issuer.use(({ url: requested }) =>
+                    URL.parse(requested)?.pathname === '/jwks'
+                        ? Response.json(jwks)
+                        : Response.json({ issuer: issuer.url, jwks_uri: `${issuer.url}/jwks` })
+                );
+                try {
+                    serveWith(issuer.url);
+                    const claims = new SignJWT({ client_id: agentClientId, scope: 'notes:read' });
+                    const token = await claims
+                        .setProtectedHeader({ alg: 'ES256', typ: 'at+jwt', kid: 'key' })
+                        .setIssuer(issuer.url)
+                        .setAudience(url)
+                        .setSubject('alice')
+                        .setExpirationTime('5m')
+                        .sign(privateKey);
+
+                    const response = await post(`${served.url}/mcp`, {
+                        authorization: `Bearer ${token}`,
+                    });
+
+                    expect(response.status).to.equal(200);
+                    expect(errors).to.deep.equal([]);
+                } finally {
+                    await issuer.close();
+                }
             }
         );
 

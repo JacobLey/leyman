@@ -7,24 +7,26 @@ import { NotesMcpAuthorizationServerError } from './errors.js';
 export const requestTimeoutMs = 10_000;
 
 /**
- * The parts of an authorization server's metadata this server uses.
+ * The endpoints of an authorization server's metadata this server uses: its keys to verify tokens with, and where to
+ * exchange them.
  */
-export interface AuthorizationServerMetadata {
-    readonly issuer: string;
-    readonly jwks_uri: string;
-    readonly token_endpoint: string;
-}
+export type AuthorizationServerEndpoint = 'jwks_uri' | 'token_endpoint';
 
 /**
- * An authorization server's metadata, by OpenID Connect discovery (`/.well-known/openid-configuration`), which every
- * common provider serves.
+ * An endpoint of an authorization server, by OpenID Connect discovery (`/.well-known/openid-configuration`), which
+ * every common provider serves. Only the endpoint asked for is required, so an issuer that, say, exchanges no
+ * tokens can still have its tokens verified.
  *
  * @param issuer - The authorization server
- * @returns Its metadata
- * @rejects {NotesMcpAuthorizationServerError} When the document is missing, names another issuer, or lacks an
+ * @param endpoint - Which endpoint
+ * @returns Its URL
+ * @rejects {NotesMcpAuthorizationServerError} When the document is missing, names another issuer, or lacks the
  * endpoint
  */
-export const discover = async (issuer: string): Promise<AuthorizationServerMetadata> => {
+export const discover = async (
+    issuer: string,
+    endpoint: AuthorizationServerEndpoint
+): Promise<string> => {
     const response = await fetch(`${issuer.replace(/\/$/v, '')}/.well-known/openid-configuration`, {
         signal: AbortSignal.timeout(requestTimeoutMs),
     });
@@ -32,20 +34,17 @@ export const discover = async (issuer: string): Promise<AuthorizationServerMetad
         throw new NotesMcpAuthorizationServerError(issuer, `discovery answered ${response.status}`);
     }
     const metadata = (await response.json()) as Partial<
-        Record<keyof AuthorizationServerMetadata, unknown>
+        Record<'issuer' | AuthorizationServerEndpoint, unknown>
     >;
     // A document for another issuer would trust its keys, and send it credentials, for this one
-    if (
-        metadata.issuer !== issuer ||
-        typeof metadata.jwks_uri !== 'string' ||
-        typeof metadata.token_endpoint !== 'string'
-    ) {
-        throw new NotesMcpAuthorizationServerError(
-            issuer,
-            'discovery named another issuer, or no keys or token endpoint'
-        );
+    if (metadata.issuer !== issuer) {
+        throw new NotesMcpAuthorizationServerError(issuer, 'discovery named another issuer');
     }
-    return metadata as AuthorizationServerMetadata;
+    const url = metadata[endpoint];
+    if (typeof url !== 'string') {
+        throw new NotesMcpAuthorizationServerError(issuer, `discovery named no ${endpoint}`);
+    }
+    return url;
 };
 
 // eslint-disable-next-line jsdoc/require-rejects -- The function it returns rejects, not this one
