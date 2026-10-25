@@ -1,5 +1,28 @@
 # populate-files
 
+## 1.2.0
+
+### Minor Changes
+
+- bdde13d: With `check`, out-of-date files reject with a new `PopulateFilesCheckError` (extends `PopulateFilesError`), rather than a plain `Error`. The message is unchanged, and its `files` property lists each file and reason.
+
+### Patch Changes
+
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- d8baa7e: Document the error `check` throws, the errors of unsigned file types, absolute result paths and the `cwd` default in the README and JSDoc.
+- 6f2cb13: The options type is exported as `PopulateOptions`, and `populateFiles` accepts a `readonly` array.
+- Updated dependencies [d940d01]
+- Updated dependencies [067c8d0]
+- Updated dependencies [7e4c3b2]
+- Updated dependencies [7bdadd1]
+- Updated dependencies [2939d32]
+- Updated dependencies [1e84296]
+- Updated dependencies [0fe6d69]
+  - parse-cwd@2.0.3
+  - format-file@1.1.0
+  - generated-signature@0.1.3
+  - unknown-error@0.1.1
+
 ## 1.1.3
 
 ### Patch Changes

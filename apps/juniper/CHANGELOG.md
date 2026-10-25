@@ -1,5 +1,19 @@
 # juniper
 
+## 2.5.0
+
+### Minor Changes
+
+- 07bbb23: Support the `draft-07` target of Standard JSON Schema (`schema['~standard'].jsonSchema.input({ target: 'draft-07' })`), which libraries such as the AI SDK, Mastra and TanStack AI request for tool schemas. Keywords are rewritten to their exact draft-07 forms, and a schema with none (such as one using `maxContains`) throws.
+
+### Patch Changes
+
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- 1fab8f0: - The published type declarations type-check with `skipLibCheck: false`.
+  - `required`, `dependentRequired`, `examples`, `anyOf` and `oneOf` accept `readonly` arrays, so `as const` variables work.
+  - New `NestableSchema<T>` type: annotate a schema with it, and it can still be passed to `properties`, `arraySchema` and other builders.
+- d1827b1: Document the type traps in the README and JSDoc: enum values need `as const`, `required` must be an inline array, `Schema<T>` cannot be nested in builders, and `EnumSchema` has no `nullable()`. Also document `isSchema`, the tuple builder and Ajv's strict `format` error.
+
 ## 2.4.4
 
 ### Patch Changes

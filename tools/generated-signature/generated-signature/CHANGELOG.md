@@ -1,5 +1,12 @@
 # generated-signature
 
+## 0.1.3
+
+### Patch Changes
+
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- 1e84296: List the comment syntax of each file type, the ESLint peer range and rule configuration, and the `verifyManifestEntry` content type in the README.
+
 ## 0.1.2
 
 ### Patch Changes

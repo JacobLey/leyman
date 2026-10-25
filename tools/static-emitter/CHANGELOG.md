@@ -1,5 +1,12 @@
 # Change Log
 
+## 4.0.1
+
+### Patch Changes
+
+- df4726e: The event map can be an `interface`: `EventMap` is now `object` rather than `Record<string, unknown>`.
+- 920cd66: Document that event maps must be type aliases rather than interfaces, how `null` and `undefined` details differ when emitting, and the runtime requirements.
+
 ## 4.0.0
 
 ### Major Changes

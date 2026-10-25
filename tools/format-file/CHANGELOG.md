@@ -1,5 +1,20 @@
 # format-file
 
+## 1.1.0
+
+### Minor Changes
+
+- 7bdadd1: Format files that `.gitignore` lists. Biome now runs with `--vcs-enabled=false` and Prettier with `--ignore-path=.prettierignore`, so a generated file in an ignored folder is no longer left unformatted, and Biome 2.5.15 and later no longer crash on files outside the project. Biome's `files.includes` and `.prettierignore` still apply.
+
+### Patch Changes
+
+- 067c8d0: `formatFiles` accepts a `readonly` array. `FileFormatterOptions` and `TextFormatterOptions` are exported as types.
+- 0fe6d69: Document that formatter failures never throw, how `inherit` picks a formatter, and that the option types are not exported, in the README and JSDoc.
+- Updated dependencies [4c6cc67]
+- Updated dependencies [bfbffcf]
+- Updated dependencies [7e4c3b2]
+  - haywire@2.0.4
+
 ## 1.0.3
 
 ### Patch Changes

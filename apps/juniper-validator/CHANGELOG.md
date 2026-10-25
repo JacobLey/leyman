@@ -1,5 +1,19 @@
 # juniper-validator
 
+## 0.5.1
+
+### Patch Changes
+
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- 3bb3727: Fix the README example so it compiles: `assert` only narrows on a validator annotated with `JuniperValidator<T>` or `AssertionType`. Also document the peer dependency, Ajv's first-error behaviour and the Standard JSON Schema targets.
+- Updated dependencies [7e4c3b2]
+- Updated dependencies [1fab8f0]
+- Updated dependencies [d1827b1]
+- Updated dependencies [07bbb23]
+- Updated dependencies [a3be118]
+  - juniper@2.5.0
+  - default-import@3.0.2
+
 ## 0.5.0
 
 ### Minor Changes

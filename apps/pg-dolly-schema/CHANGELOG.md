@@ -1,5 +1,28 @@
 # pg-dolly-schema
 
+## 0.1.2
+
+### Patch Changes
+
+- 1796f85: Docs name `PopulateFilesCheckError` as the error of a failed check.
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- 4234726: The CLI prints only the message of an expected failure (a failed migration, a missing `DATABASE_URL`, an outdated file with `--check`), without a stack trace, and exits with code 1.
+- 8ca7953: Document in the README and `snapshotSchema()`'s JSDoc the errors that come from `pg-dolly` and `pg_dump`, and fix the link to `dumpSchema()`.
+- Updated dependencies [dc1bbaa]
+- Updated dependencies [4c6cc67]
+- Updated dependencies [bfbffcf]
+- Updated dependencies [7e4c3b2]
+- Updated dependencies [86e2c1f]
+- Updated dependencies [d8baa7e]
+- Updated dependencies [bdde13d]
+- Updated dependencies [6f2cb13]
+- Updated dependencies [772efd5]
+  - entry-script@4.1.2
+  - haywire@2.0.4
+  - haywire-launcher@1.1.1
+  - pg-dolly@0.2.1
+  - populate-files@1.2.0
+
 ## 0.1.1
 
 ### Patch Changes

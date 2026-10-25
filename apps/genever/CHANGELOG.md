@@ -1,5 +1,33 @@
 # genever
 
+## 0.7.1
+
+### Patch Changes
+
+- 1796f85: Docs name `PopulateFilesCheckError` as the error of a failed check.
+- 49ca9c1: Correct the README example output, and document the Node version, the errors for missing or invalid input files, YAML parse errors and the CLI exit code.
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- Updated dependencies [dc1bbaa]
+- Updated dependencies [4c6cc67]
+- Updated dependencies [d940d01]
+- Updated dependencies [067c8d0]
+- Updated dependencies [bfbffcf]
+- Updated dependencies [7e4c3b2]
+- Updated dependencies [7bdadd1]
+- Updated dependencies [d8baa7e]
+- Updated dependencies [bdde13d]
+- Updated dependencies [6f2cb13]
+- Updated dependencies [772efd5]
+- Updated dependencies [1e84296]
+- Updated dependencies [0fe6d69]
+  - entry-script@4.1.2
+  - haywire@2.0.4
+  - parse-cwd@2.0.3
+  - format-file@1.1.0
+  - haywire-launcher@1.1.1
+  - populate-files@1.2.0
+  - generated-signature@0.1.3
+
 ## 0.7.0
 
 ### Minor Changes

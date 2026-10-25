@@ -1,5 +1,12 @@
 # enum-to-array
 
+## 2.0.2
+
+### Patch Changes
+
+- f5042a8: Accepts an object typed with an `interface`: the parameter is constrained to `object` rather than `Record<string, unknown>`.
+- 5a86615: Document accepted inputs, result types and ordering in the README, and fix the `enumToValues` JSDoc example.
+
 ## 2.0.1
 
 ### Patch Changes

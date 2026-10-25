@@ -1,5 +1,37 @@
 # load-populate-files
 
+## 1.1.3
+
+### Patch Changes
+
+- 1796f85: Docs name `PopulateFilesCheckError` as the error of a failed check.
+- a1722e4: Document that the config module must be compiled JavaScript, the errors it throws, and the `--check` alias and `cwd` default in the README.
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- Updated dependencies [dc1bbaa]
+- Updated dependencies [4c6cc67]
+- Updated dependencies [d940d01]
+- Updated dependencies [bfbffcf]
+- Updated dependencies [7e4c3b2]
+- Updated dependencies [1fab8f0]
+- Updated dependencies [d1827b1]
+- Updated dependencies [3bb3727]
+- Updated dependencies [d8baa7e]
+- Updated dependencies [07bbb23]
+- Updated dependencies [2939d32]
+- Updated dependencies [bdde13d]
+- Updated dependencies [6f2cb13]
+- Updated dependencies [a3be118]
+- Updated dependencies [772efd5]
+  - entry-script@4.1.2
+  - haywire@2.0.4
+  - parse-cwd@2.0.3
+  - juniper@2.5.0
+  - juniper-validator@0.5.1
+  - haywire-launcher@1.1.1
+  - populate-files@1.2.0
+  - unknown-error@0.1.1
+  - default-import@3.0.2
+
 ## 1.1.2
 
 ### Patch Changes

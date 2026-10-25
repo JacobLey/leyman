@@ -1,5 +1,12 @@
 # pg-dolly
 
+## 0.2.1
+
+### Patch Changes
+
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- 86e2c1f: Document in the README that `connect()` and `dumpSchema()` reject rather than throw, that `template()` rejects after `close()`, and which types are exported.
+
 ## 0.2.0
 
 ### Minor Changes

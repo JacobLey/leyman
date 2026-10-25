@@ -1,5 +1,39 @@
 # nx-lifecycle
 
+## 1.2.0
+
+### Minor Changes
+
+- e33bc5e: The command is also installed as `nx-lifecycle`, matching the package name, and its help shows that name. `lifecycle` still works.
+
+### Patch Changes
+
+- 7e4c3b2: `homepage` points at the package's docs site page, which the README links too.
+- 6c22e3d: Document the `lifecycle` command name, the `LifecyclePluginOptions` type, stage `dependsOn` entries and config errors, and the Nx version in the README.
+- 24ce53b: Update dependencies: ignore@7.0.12, fast-equals@6.2.1
+- Updated dependencies [dc1bbaa]
+- Updated dependencies [4c6cc67]
+- Updated dependencies [d940d01]
+- Updated dependencies [067c8d0]
+- Updated dependencies [bfbffcf]
+- Updated dependencies [7e4c3b2]
+- Updated dependencies [7bdadd1]
+- Updated dependencies [1fab8f0]
+- Updated dependencies [d1827b1]
+- Updated dependencies [3bb3727]
+- Updated dependencies [07bbb23]
+- Updated dependencies [2939d32]
+- Updated dependencies [772efd5]
+- Updated dependencies [0fe6d69]
+  - entry-script@4.1.2
+  - haywire@2.0.4
+  - parse-cwd@2.0.3
+  - format-file@1.1.0
+  - juniper@2.5.0
+  - juniper-validator@0.5.1
+  - haywire-launcher@1.1.1
+  - unknown-error@0.1.1
+
 ## 1.1.4
 
 ### Patch Changes

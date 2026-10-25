@@ -1,6 +1,6 @@
 {
   "name": "format-file",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Format files and text with Biome or Prettier, whichever the project uses",
   "engines": {
     "node": ">=24"

@@ -1,6 +1,6 @@
 {
   "name": "pg-dolly-schema",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Keep a schema.sql of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale.",
   "engines": {
     "node": ">=24"
