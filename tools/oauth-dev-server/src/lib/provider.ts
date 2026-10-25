@@ -3,6 +3,7 @@ import type { ClientMetadata, Configuration, KoaContextWithOIDC } from 'oidc-pro
 import { randomBytes, randomUUID } from 'node:crypto';
 import { exportJWK, generateKeyPair } from 'jose';
 import OidcProvider, { errors } from 'oidc-provider';
+import { memoryAdapter } from './adapter.js';
 import { DevAuthorizationServerNotLocalError } from './errors.js';
 import { tokenExchange, tokenExchangeGrantType, tokenExchangeParameters } from './exchange.js';
 
@@ -144,6 +145,17 @@ const defaultDeviceInterval = 5;
 const deviceCodeGrantType = 'urn:ietf:params:oauth:grant-type:device_code';
 
 /**
+ * How long a user has to finish a login: an interaction, or approving a device's code. In seconds.
+ */
+const loginTtl = 600;
+
+/**
+ * How long a login lasts, in seconds: its session, its grant and its refresh tokens. Longer than any test or dev
+ * session, and the server restarting ends it anyway.
+ */
+const sessionTtl = 86_400;
+
+/**
  * A page for the device flow, with nothing but what it says and its form: the dev login has no styling to match.
  *
  * @param text - What it says
@@ -152,6 +164,19 @@ const deviceCodeGrantType = 'urn:ietf:params:oauth:grant-type:device_code';
  */
 const devicePage = (text: string, form = ''): string =>
     `<!DOCTYPE html><html><head><meta charset="utf-8"><title>Dev login</title></head><body><p>${text}</p>${form}</body></html>`;
+
+/**
+ * Escapes text for HTML.
+ *
+ * @param text - Any text, e.g. an error's description, which may echo the request
+ * @returns The text, safe in an element
+ */
+const escapeHtml = (text: string): string =>
+    text
+        .replaceAll('&', '&amp;')
+        .replaceAll('<', '&lt;')
+        .replaceAll('>', '&gt;')
+        .replaceAll('"', '&quot;');
 
 /**
  * Bytes of randomness in the key that signs cookies.
@@ -291,6 +316,8 @@ export const createDevAuthorizationServer = async (
 
     const configuration: Configuration = {
         clients,
+        // Kept in this process, like everything else here
+        adapter: memoryAdapter,
         jwks: { keys: [signingKey] },
         // Its one key is ES256, so everything it signs is
         clientDefaults: { id_token_signed_response_alg: 'ES256' },
@@ -301,10 +328,35 @@ export const createDevAuthorizationServer = async (
             url: (_ctx, interaction) => `/interaction/${interaction.uid}`,
         },
         pkce: { required: () => true },
+        ttl: {
+            AccessToken: accessTokenTtl,
+            ClientCredentials: accessTokenTtl,
+            // Only with the `openid` scope
+            IdToken: accessTokenTtl,
+            DeviceCode: loginTtl,
+            Interaction: loginTtl,
+            Session: sessionTtl,
+            Grant: sessionTtl,
+            RefreshToken: sessionTtl,
+        },
+        // Its clients are native apps and services, neither of which calls from a browser. Discovery and the JWKS
+        // are open to every origin regardless
+        clientBasedCORS: () => false,
+        // An error in a browser (a bad authorization request, say), as plain as the device pages
+        renderError: (ctx, out) => {
+            ctx.type = 'html';
+            ctx.body = devicePage(
+                Object.entries(out)
+                    .map(([name, value]) => `${name}: ${escapeHtml(String(value))}`)
+                    .join('<br>')
+            );
+        },
         // Every client allowed the grant gets one, without asking for `offline_access`
         issueRefreshToken: (_ctx, client) => client.grantTypeAllowed('refresh_token'),
         features: {
             devInteractions: { enabled: false },
+            // A login is never ended early: its session lasts until it expires, or the server restarts
+            rpInitiatedLogout: { enabled: false },
             clientCredentials: { enabled: true },
             deviceFlow: {
                 enabled: true,
@@ -348,7 +400,6 @@ export const createDevAuthorizationServer = async (
                     return {
                         scope: resource.scopes.join(' '),
                         audience: resource.url,
-                        accessTokenTTL: accessTokenTtl,
                         accessTokenFormat: 'jwt',
                         jwt: { sign: { alg: 'ES256' } },
                     };

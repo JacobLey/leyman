@@ -4,6 +4,7 @@ import { createHash, randomBytes } from 'node:crypto';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { createRemoteJWKSet, decodeJwt, decodeProtectedHeader, jwtVerify } from 'jose';
+import sinon from 'sinon';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
 import {
@@ -200,9 +201,64 @@ suite('Dev authorization server', () => {
 
             expect(body.issuer).to.equal(server.issuer);
         });
+
+        withServer.test('Has no logout', ({ metadata }) => {
+            expect(metadata).to.not.have.property('end_session_endpoint');
+        });
     });
 
     suite('Authorization code flow', () => {
+        withServer.test('Refuses a login after a day', async ({ metadata }) => {
+            const tokens = await userTokens({
+                clientId,
+                redirectUri,
+                resource,
+                issuer: metadata.issuer,
+                scope: 'notes:read',
+            });
+            // Only the clock: requests still run in real time
+            const clock = sinon.useFakeTimers({ now: Date.now(), toFake: ['Date'] });
+            try {
+                clock.tick(86_400_000);
+                const { status, body } = await exchange(metadata, {
+                    grant_type: 'refresh_token',
+                    refresh_token: tokens.refresh_token!,
+                    redirect_uri: undefined,
+                });
+
+                expect(status).to.equal(400);
+                expect(body).to.include({ error: 'invalid_grant' });
+            } finally {
+                clock.restore();
+            }
+        });
+
+        withServer.test('Shows a browser its error as a page', async ({ metadata }) => {
+            const response = await fetch(authorizationUrl(metadata, { client_id: '<unknown>' }), {
+                headers: { accept: 'text/html' },
+            });
+            const body = await response.text();
+
+            expect(response.status).to.equal(400);
+            expect(response.headers.get('content-type')).to.match(/^text\/html/v);
+            expect(body).to.include('error: invalid_client');
+            expect(body).to.not.include('<unknown>');
+        });
+
+        withServer.test('Refuses a call from a browser', async ({ metadata }) => {
+            const response = await fetch(metadata.token_endpoint, {
+                method: 'POST',
+                headers: { origin: 'http://127.0.0.1:5' },
+                body: new URLSearchParams({
+                    grant_type: 'authorization_code',
+                    client_id: clientId,
+                    code: 'some-code',
+                }),
+            });
+
+            expect(response.headers.get('access-control-allow-origin')).to.equal(null);
+        });
+
         withServer.test(
             'Redirects back with a code, the state and the issuer',
             async ({ server, metadata }) => {

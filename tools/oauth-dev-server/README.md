@@ -264,7 +264,8 @@ A resource server should tell a service's own token from a user's: both have a `
 ## What's fake
 
 - **The login.** There's no login page: the interaction route signs in as the account given in the authorization request (`login_hint`), else `accountId`, and grants what was asked for. It signs in as any account asked for, which tests of per-user data need, and is why it must never be reachable.
-- **The storage.** oidc-provider's in-memory adapter (it warns about it on start): restart it and every grant and refresh token is gone.
+- **The storage.** Everything is kept in memory, and dropped once it expires: restart the server and every grant and refresh token is gone.
+- **The lifetimes.** A login (its session, grant and refresh tokens) lasts a day, and has 10 minutes to finish (an interaction, or approving a device's code). An access token or ID token lasts `accessTokenTtl`.
 - **The keys and cookie secret**, generated at startup.
 - **The device pages** (enter the code, confirm it, done): plain HTML, a sentence and a form each.
 
@@ -289,11 +290,13 @@ What building it on oidc-provider took, for anyone configuring it themselves:
 - **It has no token exchange**, but registers custom grants (`registerGrantType`): it authenticates the client, checks it's allowed the grant, and resolves `resource` (refusing one it doesn't know) before the handler runs. A grant type the client isn't allowed is `invalid_request`, where RFC 6749 says `unauthorized_client`.
 - **Its JWT access tokens can't be minted outside a grant it runs**, so exchanged tokens are signed with `jose` and the same key, with the claims it would give (`typ: at+jwt`, `iss`, `sub`, `aud`, `client_id`, `scope`, `jti`).
 - **Its device authorization response names no `interval`**, which means 5 seconds to a client, so this server adds one. And **`verification_uri_complete` doesn't skip the code**: it opens a form, filled in, that posts itself (a browser's script does it), and then asks the user to confirm.
+- **It logs a notice or warning for each default you should change**: the in-memory adapter, every artifact's `ttl`, `clientBasedCORS` and `renderError`, and each page of a feature left enabled (RP-initiated logout is, by default). Setting them, and disabling what isn't used, leaves it quiet.
 - **Client ID Metadata Documents** need an `https` client id, which a local test can't serve, so clients here are pre-registered.
 
 ## Not covered
 
 - A login page, consent screen, accounts, or any user store.
+- Logging out (RP-initiated logout): a login lasts until it expires, or its refresh token is revoked.
 - Persistence (a database adapter), key rotation, and several instances.
 - Dynamic Client Registration and Client ID Metadata Documents.
 - Token introspection, and so revoking access tokens.

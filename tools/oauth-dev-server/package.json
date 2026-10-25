@@ -62,11 +62,13 @@
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
     "@types/oidc-provider": "catalog:",
+    "@types/sinon": "catalog:",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
+    "sinon": "catalog:",
     "typescript": "catalog:"
   }
 }
