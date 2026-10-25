@@ -9,6 +9,19 @@
         "runtime": "node --version"
       }
     ],
+    "postgres": [
+      {
+        "runtime": "pg_dump --version"
+      },
+      {
+        "runtime": "psql \"$DATABASE_URL\" -XtAc 'SHOW server_version'"
+      }
+    ],
+    "valkey": [
+      {
+        "runtime": "node -e \"const s=require('node:net').connect(6379,'valkey',()=>s.end('INFO server\\r\\n'));let d='';s.on('data',c=>d+=c).on('end',()=>console.log(/valkey_version:(\\S+)/.exec(d)[1]))\""
+      }
+    ],
     "package-files": [
       "{projectRoot}/package.json",
       "{projectRoot}/executors.json",
@@ -321,12 +334,7 @@
         "{projectRoot}/schema.sql",
         "dependency-builds",
         "^package-files",
-        {
-          "runtime": "pg_dump --version"
-        },
-        {
-          "runtime": "psql \"$DATABASE_URL\" -XtAc 'SHOW server_version'"
-        },
+        "postgres",
         {
           "env": "CI"
         },

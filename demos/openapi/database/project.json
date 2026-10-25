@@ -20,12 +20,7 @@
         "{projectRoot}/schema.sql",
         "dependency-builds",
         "^package-files",
-        {
-          "runtime": "pg_dump --version"
-        },
-        {
-          "runtime": "psql \"$DATABASE_URL\" -XtAc 'SHOW server_version'"
-        },
+        "postgres",
         {
           "env": "CI"
         },
@@ -37,7 +32,12 @@
     "update-ts-references": {},
     "tsc": {},
     "tsc-test": {},
-    "mocha-integration-test": {},
+    "mocha-integration-test": {
+      "inputs": [
+        "...",
+        "postgres"
+      ]
+    },
     "coverage-report": {},
     "sync-injected": {},
     "install:_": {},

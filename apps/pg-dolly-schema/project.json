@@ -9,7 +9,12 @@
     "tsc": {},
     "tsc-test": {},
     "mocha-unit-test": {},
-    "mocha-integration-test": {},
+    "mocha-integration-test": {
+      "inputs": [
+        "...",
+        "postgres"
+      ]
+    },
     "coverage-report": {},
     "sync-injected": {},
     "install:_": {},

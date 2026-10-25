@@ -8,7 +8,12 @@
     "tsc": {},
     "tsc-test": {},
     "mocha-unit-test": {},
-    "mocha-integration-test": {},
+    "mocha-integration-test": {
+      "inputs": [
+        "...",
+        "valkey"
+      ]
+    },
     "coverage-report": {},
     "sync-injected": {},
     "install:_": {},

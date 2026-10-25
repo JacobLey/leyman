@@ -34,6 +34,7 @@ Named inputs in [`nx.json`](../../../nx.json):
 - `test-source`: `ts-source` plus `test/`, `configs/tsconfig.test.json`, the project's own `package-files`, the builds of its dependencies and itself, and the c8 config.
 - `goSource`: a Go project's `go.mod`, `go.sum` and `.go` files, defined per project by gonx. Go targets also hash `^goSource` and the Go version.
 - `shared-globals`: the Node version. The cache is shared between worktrees through the `nx-cache` sidecar.
+- `postgres` and `valkey`: the versions of the services a task runs against (and of `pg_dump`), read from the running server, since the same image in the devcontainer and in Dagger is only pinned by convention. A project whose integration tests use one adds it to the target defaults' inputs with Nx's spread, rather than copying the list: `"mocha-integration-test": { "inputs": ["...", "valkey"] }`. Any other tool from outside the repository that a task's result depends on needs a `runtime` input like these, or a cached result outlives a change to it.
 
 Gotchas, all verified on Nx 22:
 
@@ -143,7 +144,7 @@ The package devDepends on `pg-dolly-schema` and sets its own migrate command, in
 "schema-snapshot": { "options": { "env": { "PG_DOLLY_SCHEMA_MIGRATE": "drizzle-kit migrate" } } }
 ```
 
-Hashes `src/`, `migrations/`, `schema.sql`, dependencies' builds, `pg_dump --version`, the server's version (`psql "$DATABASE_URL" -XtAc 'SHOW server_version'`) and `CI`. Migrations elsewhere, or a migrate tool's config file outside `src/` (e.g. `drizzle.config.js`), go in the project's own `inputs` (this repo's Drizzle packages add `drizzle.config.js`). The command runs before the package is built, so a TypeScript migrate script runs with Node's type stripping (`node migrate.ts`), not from `dist/`.
+Hashes `src/`, `migrations/`, `schema.sql`, dependencies' builds, `postgres` (`pg_dump --version` and the server's version, `psql "$DATABASE_URL" -XtAc 'SHOW server_version'`) and `CI`. Migrations elsewhere, or a migrate tool's config file outside `src/` (e.g. `drizzle.config.js`), go in the project's own `inputs` (this repo's Drizzle packages add `drizzle.config.js`). The command runs before the package is built, so a TypeScript migrate script runs with Node's type stripping (`node migrate.ts`), not from `dist/`.
 
 **Add when:** The package has Postgres migrations.
 
