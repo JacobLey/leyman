@@ -1,6 +1,6 @@
 import pDefer from 'p-defer';
 import { HookOrderError } from './errors.js';
-import { mergeContexts } from './merge-context.js';
+import { mergeContexts, toAdditionalContext } from './merge-context.js';
 
 /**
  * Callback provided by the end user to a hook or test.
@@ -129,7 +129,7 @@ export const wrapOneTimeHook = (
         // Set synchronously, before any await, so that hooks executed concurrently can observe it.
         result.started = true;
         try {
-            deferred.resolve(await call({ ...(await existing.context) }));
+            deferred.resolve(toAdditionalContext(await call({ ...(await existing.context) })));
         } catch (err) {
             deferred.resolve(undefined);
             throw err;
@@ -181,8 +181,8 @@ export const wrapPerTestHook = <Key>(
 
         const existing = await existingContext;
         try {
-            const additional = await call({ ...existing });
-            deferred.resolve(await mergeContexts(existing, additional as object | undefined));
+            const additional = toAdditionalContext(await call({ ...existing }));
+            deferred.resolve(await mergeContexts(existing, additional));
         } catch (err) {
             deferred.resolve(existing);
             throw err;

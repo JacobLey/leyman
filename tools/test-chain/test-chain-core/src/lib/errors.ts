@@ -12,3 +12,19 @@ export class HookOrderError extends Error {
         this.name = 'HookOrderError';
     }
 }
+
+/**
+ * Thrown when a hook returns a value other than a plain object, `undefined` or `null`.
+ *
+ * Only a plain object's own properties are merged into the context, so the methods of a class instance (or the
+ * items of an array) would be typed on the context but missing from it.
+ */
+export class HookContextError extends Error {
+    public constructor(received: string, options?: ErrorOptions) {
+        super(
+            `Hook returned ${received}, but must return a plain object, undefined or null. Only a plain object's own properties are merged into the context, so wrap the value in one, such as \`return { client }\`.`,
+            options
+        );
+        this.name = 'HookContextError';
+    }
+}

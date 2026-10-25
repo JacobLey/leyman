@@ -78,9 +78,9 @@ Hooks that execute out of order reject with `HookOrderError`, rather than silent
 
 ## API
 
-Each hook returns an object of chained hooks/tests, which receive the merged context returned by all previous hooks in the chain as their first parameter. Returning a falsy value leaves the context unchanged.
+Each hook returns an object of chained hooks/tests, which receive the merged context returned by all previous hooks in the chain as their first parameter. Returning nothing (`undefined` or `null`) leaves the context unchanged.
 
-A hook returns an object, a `Promise` of one, or nothing; returning anything else (a number, a string) is a type error. Only the object's own enumerable properties are copied into the context, so return `{ db }` rather than a class instance, whose methods would be typed on the context but missing at runtime. A hook written as an arrow function without braces (`beforeEach(() => db.clear())`) returns whatever that call returns, and merges it: use braces when the hook shouldn't add context. If two hooks return the same key, the later value replaces the earlier at runtime, but the type is the intersection of both (`never` for unrelated types).
+A hook returns a plain object, a `Promise` of one, or nothing. Only the object's own enumerable properties are copied into the context, so return `{ db }` rather than a class instance (`return db`), whose methods would be missing from the context. A number or a string, and an array, function, `Map`, `Set`, `Date` or `RegExp`, is a type error. Types can't tell a class instance from a plain object, so a hook that returns one (or any object whose prototype isn't `Object.prototype` or `null`) fails with `HookContextError`. A hook written as an arrow function without braces (`beforeEach(() => db.clear())`) returns whatever that call returns, and merges it: use braces when the hook shouldn't add context. If two hooks return the same key, the later value replaces the earlier at runtime, but the type is the intersection of both (`never` for unrelated types).
 
 Each test gets a shallow copy of the context, so reassigning a key in one test does not affect others, while objects inside it, like `db`, are shared.
 

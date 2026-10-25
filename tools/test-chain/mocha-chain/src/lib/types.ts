@@ -1,13 +1,28 @@
 import type { Done, Context as MochaContext, Suite as MochaSuite, Test as MochaTest } from 'mocha';
-import type { AllowableAdditionalContext, EmptyContext, MergeContext } from 'test-chain-core';
+import type {
+    AllowableAdditionalContext,
+    CheckedAdditionalContext,
+    EmptyContext,
+    MergeContext,
+} from 'test-chain-core';
 
 export type ValidDoneReturnTypes = '' | 0 | 0n | false | null | undefined | void;
 
 export interface GenericContextualHook {
-    (fn: (this: MochaContext, ctx: object, done: Done) => AllowableAdditionalContext): object;
-    (
+    <AdditionalContext extends AllowableAdditionalContext>(
+        fn: (
+            this: MochaContext,
+            ctx: object,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
+    ): object;
+    <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (this: MochaContext, ctx: object, done: Done) => AllowableAdditionalContext
+        fn: (
+            this: MochaContext,
+            ctx: object,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): object;
 }
 
@@ -52,11 +67,19 @@ export interface EntrypointTest extends ExclusiveEntrypointTest {
 export interface ContextualAfterEachHook<ExistingContext extends object>
     extends GenericContextualHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            ctx: ExistingContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): AfterEachChain<ExistingContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            ctx: ExistingContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): AfterEachChain<ExistingContext, AdditionalContext>;
 }
 export interface AfterEachChain<
@@ -68,11 +91,17 @@ export interface AfterEachChain<
 }
 export interface EntrypointAfterEachHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (this: MochaContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): AfterEachChain<EmptyContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (this: MochaContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): AfterEachChain<EmptyContext, AdditionalContext>;
 }
 
@@ -80,11 +109,19 @@ export interface EntrypointAfterEachHook {
 
 export interface ContextualAfterHook<ExistingContext extends object> extends GenericContextualHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            ctx: ExistingContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): AfterChain<ExistingContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            ctx: ExistingContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): AfterChain<ExistingContext, AdditionalContext>;
 }
 export interface AfterChain<
@@ -96,11 +133,17 @@ export interface AfterChain<
 }
 export interface EntrypointAfterHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (this: MochaContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): AfterChain<EmptyContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (this: MochaContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): AfterChain<EmptyContext, AdditionalContext>;
 }
 
@@ -109,11 +152,19 @@ export interface EntrypointAfterHook {
 export interface ContextualBeforeEachHook<ExistingContext extends object>
     extends GenericContextualHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            ctx: ExistingContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): BeforeEachChain<ExistingContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            ctx: ExistingContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): BeforeEachChain<ExistingContext, AdditionalContext>;
 }
 export interface BeforeEachChain<
@@ -132,11 +183,17 @@ export interface BeforeEachChain<
 }
 export interface EntrypointBeforeEachHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (this: MochaContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): BeforeEachChain<EmptyContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (this: MochaContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): BeforeEachChain<EmptyContext, AdditionalContext>;
 }
 
@@ -145,11 +202,19 @@ export interface EntrypointBeforeEachHook {
 export interface ContextualBeforeHook<ExistingContext extends object>
     extends GenericContextualHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            ctx: ExistingContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): BeforeChain<ExistingContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (this: MochaContext, ctx: ExistingContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            ctx: ExistingContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): BeforeChain<ExistingContext, AdditionalContext>;
 }
 export interface BeforeChain<
@@ -162,11 +227,17 @@ export interface BeforeChain<
 }
 export interface EntrypointBeforeHook {
     <AdditionalContext extends AllowableAdditionalContext>(
-        fn: (this: MochaContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): BeforeChain<EmptyContext, AdditionalContext>;
     <AdditionalContext extends AllowableAdditionalContext>(
         name: string,
-        fn: (this: MochaContext, done: Done) => AdditionalContext
+        fn: (
+            this: MochaContext,
+            done: Done
+        ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
     ): BeforeChain<EmptyContext, AdditionalContext>;
 }
 

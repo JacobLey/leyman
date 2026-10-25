@@ -1,5 +1,10 @@
 import type * as vitest from 'vitest';
-import type { AllowableAdditionalContext, EmptyContext, MergeContext } from 'test-chain-core';
+import type {
+    AllowableAdditionalContext,
+    CheckedAdditionalContext,
+    EmptyContext,
+    MergeContext,
+} from 'test-chain-core';
 
 /**
  * Arguments vitest passes to each kind of hook/test.
@@ -39,7 +44,10 @@ export interface EntrypointTest extends ExclusiveEntrypointTest {
 export type ContextualAfterEachHook<ExistingContext extends object> = <
     AdditionalContext extends AllowableAdditionalContext,
 >(
-    fn: (ctx: ExistingContext, ...args: AfterEachArgs) => AdditionalContext
+    fn: (
+        ctx: ExistingContext,
+        ...args: AfterEachArgs
+    ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
 ) => AfterEachChain<ExistingContext, AdditionalContext>;
 export interface AfterEachChain<
     ExistingContext extends object,
@@ -48,7 +56,7 @@ export interface AfterEachChain<
     afterEach: ContextualAfterEachHook<MergeContext<ExistingContext, Awaited<AdditionalContext>>>;
 }
 export type EntrypointAfterEachHook = <AdditionalContext extends AllowableAdditionalContext>(
-    fn: (...args: AfterEachArgs) => AdditionalContext
+    fn: (...args: AfterEachArgs) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
 ) => AfterEachChain<EmptyContext, AdditionalContext>;
 
 // After All
@@ -56,7 +64,10 @@ export type EntrypointAfterEachHook = <AdditionalContext extends AllowableAdditi
 export type ContextualAfterAllHook<ExistingContext extends object> = <
     AdditionalContext extends AllowableAdditionalContext,
 >(
-    fn: (ctx: ExistingContext, ...args: AfterAllArgs) => AdditionalContext
+    fn: (
+        ctx: ExistingContext,
+        ...args: AfterAllArgs
+    ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
 ) => AfterAllChain<ExistingContext, AdditionalContext>;
 export interface AfterAllChain<
     ExistingContext extends object,
@@ -65,7 +76,7 @@ export interface AfterAllChain<
     afterAll: ContextualAfterAllHook<MergeContext<ExistingContext, Awaited<AdditionalContext>>>;
 }
 export type EntrypointAfterAllHook = <AdditionalContext extends AllowableAdditionalContext>(
-    fn: (...args: AfterAllArgs) => AdditionalContext
+    fn: (...args: AfterAllArgs) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
 ) => AfterAllChain<EmptyContext, AdditionalContext>;
 
 // Before Each
@@ -73,7 +84,10 @@ export type EntrypointAfterAllHook = <AdditionalContext extends AllowableAdditio
 export type ContextualBeforeEachHook<ExistingContext extends object> = <
     AdditionalContext extends AllowableAdditionalContext,
 >(
-    fn: (ctx: ExistingContext, ...args: BeforeEachArgs) => AdditionalContext
+    fn: (
+        ctx: ExistingContext,
+        ...args: BeforeEachArgs
+    ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
 ) => BeforeEachChain<ExistingContext, AdditionalContext>;
 export interface BeforeEachChain<
     ExistingContext extends object,
@@ -84,7 +98,7 @@ export interface BeforeEachChain<
     test: ContextualTest<MergeContext<ExistingContext, Awaited<AdditionalContext>>>;
 }
 export type EntrypointBeforeEachHook = <AdditionalContext extends AllowableAdditionalContext>(
-    fn: (...args: BeforeEachArgs) => AdditionalContext
+    fn: (...args: BeforeEachArgs) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
 ) => BeforeEachChain<EmptyContext, AdditionalContext>;
 
 // Before All
@@ -92,7 +106,10 @@ export type EntrypointBeforeEachHook = <AdditionalContext extends AllowableAddit
 export type ContextualBeforeAllHook<ExistingContext extends object> = <
     AdditionalContext extends AllowableAdditionalContext,
 >(
-    fn: (ctx: ExistingContext, ...args: BeforeAllArgs) => AdditionalContext
+    fn: (
+        ctx: ExistingContext,
+        ...args: BeforeAllArgs
+    ) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
 ) => BeforeAllChain<ExistingContext, AdditionalContext>;
 export interface BeforeAllChain<
     ExistingContext extends object,
@@ -102,7 +119,7 @@ export interface BeforeAllChain<
     beforeAll: ContextualBeforeAllHook<MergeContext<ExistingContext, Awaited<AdditionalContext>>>;
 }
 export type EntrypointBeforeAllHook = <AdditionalContext extends AllowableAdditionalContext>(
-    fn: (...args: BeforeAllArgs) => AdditionalContext
+    fn: (...args: BeforeAllArgs) => AdditionalContext & CheckedAdditionalContext<AdditionalContext>
 ) => BeforeAllChain<EmptyContext, AdditionalContext>;
 
 // Describe

@@ -9,9 +9,10 @@ export type {
 } from './lib/framework.js';
 export type {
     AllowableAdditionalContext,
+    CheckedAdditionalContext,
     EmptyContext,
     MergeContext,
 } from './lib/merge-context.js';
 export type { UserCallback } from './lib/wrappers.js';
 export { createChain } from './lib/chain.js';
-export { HookOrderError } from './lib/errors.js';
+export { HookContextError, HookOrderError } from './lib/errors.js';

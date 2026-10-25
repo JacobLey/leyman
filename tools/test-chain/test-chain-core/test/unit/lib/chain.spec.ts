@@ -2,7 +2,7 @@ import type { Chain, ChainHook, ChainTest } from 'test-chain-core';
 import type { FakeKey } from '../../fixtures/fake-framework.js';
 import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
-import { createChain, HookOrderError } from 'test-chain-core';
+import { createChain, HookContextError, HookOrderError } from 'test-chain-core';
 import { createFakeFramework } from '../../fixtures/fake-framework.js';
 
 const hookOf = (chain: Chain, name: string): ChainHook => chain[name] as ChainHook;
@@ -300,6 +300,77 @@ suite('createChain', () => {
             expect(thrown).to.equal(error);
             await fake.run('afterEach');
 
+            expect(seen).to.deep.equal({ a: 1 });
+        });
+
+        test('Hook returns a value that is not a plain object', async () => {
+            class Client {
+                readonly #connected = true;
+
+                public isConnected(): boolean {
+                    return this.#connected;
+                }
+            }
+            const fake = createFakeFramework();
+            const chain = createChain(fake.framework);
+            let seen: unknown;
+
+            const root = chain.before('root', () => ({ a: 1 }));
+            hookOf(root, 'before')('class', () => new Client());
+            hookOf(root, 'before')('array', async () => [1]);
+            hookOf(root, 'before')('function', () => () => 1);
+            hookOf(root, 'before')('prototype', () => Object.create({ b: 2 }) as object);
+            hookOf(root, 'before')('number', () => 5);
+            const nullPrototype = hookOf(root, 'before')('null prototype', () =>
+                Object.assign(Object.create(null) as object, { b: 2 })
+            );
+            hookOf(nullPrototype, 'before')('after null prototype', (ctx: object) => {
+                seen = ctx;
+            });
+
+            await fake.run('root');
+            await expect(fake.run('class')).to.be.rejectedWith(
+                HookContextError,
+                'Hook returned an instance of Client, but must return a plain object'
+            );
+            await expect(fake.run('array')).to.be.rejectedWith(
+                HookContextError,
+                'returned an array'
+            );
+            await expect(fake.run('function')).to.be.rejectedWith(
+                HookContextError,
+                'returned a function'
+            );
+            await expect(fake.run('prototype')).to.be.rejectedWith(
+                HookContextError,
+                'returned an object with a prototype'
+            );
+            await expect(fake.run('number')).to.be.rejectedWith(
+                HookContextError,
+                'returned a number'
+            );
+            await fake.run('null prototype');
+            await fake.run('after null prototype');
+            expect(seen).to.deep.equal({ a: 1, b: 2 });
+        });
+
+        test('Per-test hook returns a value that is not a plain object', async () => {
+            const fake = createFakeFramework();
+            const chain = createChain(fake.framework);
+            let seen: unknown;
+
+            const root = chain.beforeEach('root', () => ({ a: 1 }));
+            const failing = hookOf(root, 'beforeEach')('failing', () => new Map([['b', 2]]));
+            hookOf(failing, 'afterEach')('afterEach', (ctx: object) => {
+                seen = ctx;
+            });
+
+            await fake.run('root');
+            await expect(fake.run('failing')).to.be.rejectedWith(
+                HookContextError,
+                'returned an instance of Map'
+            );
+            await fake.run('afterEach');
             expect(seen).to.deep.equal({ a: 1 });
         });
 

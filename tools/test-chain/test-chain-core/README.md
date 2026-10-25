@@ -64,9 +64,13 @@ Declaring a hook, test, or suite while a hook/test is executing throws an error.
 
 Fails a chained hook or test that executes before the hook it is chained from. Context only flows forward, so the framework must run hooks in the order they were registered.
 
+### `HookContextError`
+
+Fails a hook that returns anything but a plain object (prototype `Object.prototype` or `null`), `undefined` or `null`. Only a plain object's own properties are merged into the context, so a class instance's methods or an array's items would be typed on the context but missing from it.
+
 ### Types
 
-`Chain`, `ChainEntrypoints`, `ChainHook`, `ChainTest`, `ChainFramework`, `ChainNames`, `ChainSuite`, `NativeMethod`, `NativeMethods`, `NativeMethodWithModifiers` and `UserCallback` describe the framework side. `EmptyContext`, `AllowableAdditionalContext` (`object | null | undefined | void`) and `MergeContext<Existing, Additional>` are the types framework packages use to type the context: merging an object intersects it into the existing context, and any other value leaves it unchanged.
+`Chain`, `ChainEntrypoints`, `ChainHook`, `ChainTest`, `ChainFramework`, `ChainNames`, `ChainSuite`, `NativeMethod`, `NativeMethods`, `NativeMethodWithModifiers` and `UserCallback` describe the framework side. `EmptyContext`, `AllowableAdditionalContext` (`object | null | undefined | void`), `CheckedAdditionalContext<Additional>` and `MergeContext<Existing, Additional>` are the types framework packages use to type the context: merging an object intersects it into the existing context, and any other value leaves it unchanged. Intersect a hook callback's return type with `CheckedAdditionalContext` to make returning an array, function, `Map`, `Set`, `Date` or `RegExp` (or a `Promise` of one) a type error.
 
 ## Also See
 
