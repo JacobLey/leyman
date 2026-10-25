@@ -1,16 +1,9 @@
-import type {
-    OAuthClientMetadata,
-    OAuthClientProvider,
-    OAuthDiscoveryState,
-    StoredOAuthClientInformation,
-    StoredOAuthTokens,
-} from '@modelcontextprotocol/client';
 import {
     Client,
     StreamableHTTPClientTransport,
     UnauthorizedError,
 } from '@modelcontextprotocol/client';
-import { followAuthorization } from 'oauth-dev-server';
+import { DevOAuthClientProvider } from 'oauth-dev-server/mcp';
 
 export const agentClientId = 'demo-agent';
 
@@ -19,87 +12,9 @@ export const agentClientId = 'demo-agent';
  */
 export const agentRedirectUri = 'http://127.0.0.1/callback';
 
-/**
- * An agent's OAuth client, kept in memory, as a pre-registered public client. The user's part (opening the
- * authorization URL in a browser, signing in, approving) is played by `followAuthorization`, signing in as `user`
- * (else the dev server's default account).
- */
-export class AgentOAuthProvider implements OAuthClientProvider {
-    public readonly redirectUrl = 'http://127.0.0.1:9/callback';
-    public readonly clientMetadata: OAuthClientMetadata = {
-        client_name: 'Demo agent',
-        redirect_uris: [this.redirectUrl],
-        grant_types: ['authorization_code', 'refresh_token'],
-        response_types: ['code'],
-        token_endpoint_auth_method: 'none',
-    };
-    /**
-     * Every authorization URL the agent was sent to, in order.
-     */
-    public readonly authorizations: URL[] = [];
-    /**
-     * Where the last authorization redirected back to, with its code.
-     */
-    public callback: URL | null = null;
-    #tokens: StoredOAuthTokens | undefined;
-    #codeVerifier = '';
-    #discoveryState: OAuthDiscoveryState | undefined;
-    readonly #user: string | undefined;
-
-    /**
-     * @param user - Who signs in
-     */
-    public constructor(user?: string) {
-        this.#user = user;
-    }
-
-    public clientInformation(): StoredOAuthClientInformation {
-        return { client_id: agentClientId };
-    }
-
-    public tokens(): StoredOAuthTokens | undefined {
-        return this.#tokens;
-    }
-
-    public saveTokens(tokens: StoredOAuthTokens): void {
-        this.#tokens = tokens;
-    }
-
-    public async redirectToAuthorization(authorizationUrl: URL): Promise<void> {
-        this.authorizations.push(authorizationUrl);
-        const signIn = new URL(authorizationUrl);
-        if (this.#user !== undefined) {
-            // As a user typing their name in at the dev server's login, which accepts any account
-            signIn.searchParams.set('login_hint', this.#user);
-        }
-        this.callback = await followAuthorization(signIn, this.redirectUrl);
-    }
-
-    public saveCodeVerifier(codeVerifier: string): void {
-        this.#codeVerifier = codeVerifier;
-    }
-
-    public codeVerifier(): string {
-        return this.#codeVerifier;
-    }
-
-    /**
-     * Kept with the code verifier, so the SDK can check the authorization came back from the server it went to.
-     *
-     * @param state - What discovery found
-     */
-    public saveDiscoveryState(state: OAuthDiscoveryState): void {
-        this.#discoveryState = state;
-    }
-
-    public discoveryState(): OAuthDiscoveryState | undefined {
-        return this.#discoveryState;
-    }
-}
-
 export interface Agent {
     readonly client: Client;
-    readonly provider: AgentOAuthProvider;
+    readonly provider: DevOAuthClientProvider;
     /**
      * Runs a request, and when it needs the user to authorize (first, or to step up), finishes the authorization
      * and runs it again: what an agent's host does when the user comes back from the browser.
@@ -124,7 +39,13 @@ export const connectAgent = async (
     url: string,
     options: { readonly legacy?: boolean; readonly user?: string } = {}
 ): Promise<Agent> => {
-    const provider = new AgentOAuthProvider(options.user);
+    // The user's part (opening the authorization URL in a browser, signing in, approving) is played by the dev
+    // authorization server's provider
+    const provider = new DevOAuthClientProvider({
+        clientId: agentClientId,
+        redirectUri: 'http://127.0.0.1:9/callback',
+        user: options.user,
+    });
     const client = new Client(
         { name: 'demo-agent', version: '1.0.0' },
         options.legacy === true ? { versionNegotiation: { mode: 'legacy' } } : {}
@@ -135,12 +56,11 @@ export const connectAgent = async (
         try {
             return await request();
         } catch (error) {
-            if (!(error instanceof UnauthorizedError) || !provider.callback) {
+            const callback = error instanceof UnauthorizedError ? provider.takeCallback() : null;
+            if (!callback) {
                 throw error;
             }
-            const { callback } = provider;
-            provider.callback = null;
-            await transport.finishAuth(callback.searchParams);
+            await transport.finishAuth(callback);
             return request();
         }
     };

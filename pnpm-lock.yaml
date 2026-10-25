@@ -1029,7 +1029,7 @@ importers:
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       oauth-dev-server:
         specifier: workspace:^
-        version: file:tools/oauth-dev-server(supports-color@8.1.1)
+        version: file:tools/oauth-dev-server(@modelcontextprotocol/client@2.3.1)(supports-color@8.1.1)
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1123,7 +1123,7 @@ importers:
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       oauth-dev-server:
         specifier: workspace:^
-        version: file:tools/oauth-dev-server(supports-color@8.1.1)
+        version: file:tools/oauth-dev-server(@modelcontextprotocol/client@2.3.1)(supports-color@8.1.1)
       pg:
         specifier: 'catalog:'
         version: 8.23.1
@@ -1336,7 +1336,7 @@ importers:
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
       oauth-dev-server:
         specifier: workspace:^
-        version: file:tools/oauth-dev-server(supports-color@8.1.1)
+        version: file:tools/oauth-dev-server(@modelcontextprotocol/client@2.3.1)(supports-color@8.1.1)
       pg-dolly:
         specifier: workspace:^
         version: file:tools/pg-dolly
@@ -3018,6 +3018,9 @@ importers:
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
+      '@modelcontextprotocol/client':
+        specifier: 'catalog:'
+        version: 2.3.1
       '@swc/cli':
         specifier: 'catalog:'
         version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
@@ -8915,6 +8918,11 @@ packages:
   oauth-dev-server@file:tools/oauth-dev-server:
     resolution: {directory: tools/oauth-dev-server, type: directory}
     engines: {node: '>=24'}
+    peerDependencies:
+      '@modelcontextprotocol/client': ^2.3.1
+    peerDependenciesMeta:
+      '@modelcontextprotocol/client':
+        optional: true
 
   oauth4webapi@3.8.8:
     resolution: {integrity: sha512-8N28E+a/oxfXWBgOMt+ZP/JUf/XR+IFbvkAEPP3gznXOMv9BpAAwiIj0TFNz3tGTPc0ZQ8zmWBNgN1nAys0gng==}
@@ -16148,10 +16156,12 @@ snapshots:
       '@nx/nx-win32-x64-msvc': 23.3.0
       '@swc/core': 1.16.18(@swc/helpers@0.5.23)
 
-  oauth-dev-server@file:tools/oauth-dev-server(supports-color@8.1.1):
+  oauth-dev-server@file:tools/oauth-dev-server(@modelcontextprotocol/client@2.3.1)(supports-color@8.1.1):
     dependencies:
       jose: 6.2.12
       oidc-provider: 9.12.2(supports-color@8.1.1)
+    optionalDependencies:
+      '@modelcontextprotocol/client': 2.3.1
     transitivePeerDependencies:
       - supports-color
 

@@ -10,7 +10,7 @@ A real authorization server ([oidc-provider](https://github.com/panva/node-oidc-
 - **Strict, like a real provider.** Clients, redirect URIs, resources and scopes are registered up front, PKCE is required, and every token is for one resource (`aud`). A client that gets the flow wrong fails here, as it would in production.
 - **The grants a native app or a service uses**: authorization code with PKCE, refresh, client credentials, device authorization (RFC 8628) and token exchange (RFC 8693), with revocation.
 - **JWT access tokens** (RFC 9068), signed with a key generated at startup and verified against its JWKS, as a resource server would verify any provider's.
-- **Plays the user too**: `userTokens` signs a user in for a token in one call, and `followAuthorization` and `approveDevice` play the browser for a client under test, signing in as any account.
+- **Plays the user too**: `userTokens` signs a user in for a token in one call, and `followAuthorization` and `approveDevice` play the browser for a client under test, signing in as any account. For MCP, `oauth-dev-server/mcp` has an `OAuthClientProvider` that does the same for the SDK's client.
 - **Local only.** It approves every login, so it refuses to serve anywhere but this machine unless told otherwise.
 
 Private for now: depend on it from the workspace (`"oauth-dev-server": "workspace:^"`). Runner-agnostic: plain functions, and a server to close.
@@ -23,6 +23,7 @@ Private for now: depend on it from the workspace (`"oauth-dev-server": "workspac
   - [userTokens](#usertokensoptions)
   - [followAuthorization](#followauthorizationauthorizationurl-redirecturi-options)
   - [approveDevice](#approvedeviceverificationuri-options)
+  - [DevOAuthClientProvider (MCP)](#devoauthclientprovider-mcp)
   - [Errors](#errors)
 - [Clients](#clients)
 - [What's real](#whats-real)
@@ -170,9 +171,60 @@ Plays the user on another device for the device authorization grant: opens the `
 
 **Rejects** with `DevAuthorizationFlowError` when the server refuses the code, shows no form, or doesn't finish.
 
+### `DevOAuthClientProvider` (MCP)
+
+```ts
+import { DevOAuthClientProvider } from 'oauth-dev-server/mcp';
+```
+
+An `OAuthClientProvider` for the [MCP TypeScript SDK](https://www.npmjs.com/package/@modelcontextprotocol/client)'s client, to test an MCP server's authorization end to end: the `401`, discovery (RFC 9728), PKCE, the token, and stepping up to more scopes. It's a public client registered with the dev server, keeping its tokens in memory. When the SDK sends the user to authorize, it plays them with `followAuthorization` and keeps the redirect back for you to finish the authorization with.
+
+Needs `@modelcontextprotocol/client` (an optional peer dependency: the main entry point doesn't).
+
+```ts
+const provider = new DevOAuthClientProvider({
+    clientId: 'files-cli',
+    redirectUri: 'http://127.0.0.1:8123/callback',
+    user: 'alice',
+});
+const url = new URL(mcpServerUrl);
+const client = new Client({ name: 'test', version: '1.0.0' });
+let transport = new StreamableHTTPClientTransport(url, { authProvider: provider });
+
+try {
+    await client.connect(transport);
+} catch (error) {
+    // The SDK stops at the redirect, as a host would wait for the user to come back from the browser
+    const callback = error instanceof UnauthorizedError ? provider.takeCallback() : null;
+    if (!callback) {
+        throw error;
+    }
+    await transport.finishAuth(callback);
+    // Connect again, with the tokens the provider now has
+    await client.close();
+    transport = new StreamableHTTPClientTransport(url, { authProvider: provider });
+    await client.connect(transport);
+}
+```
+
+The same applies when a tool call needs more scopes (`403 insufficient_scope`): the SDK authorizes again, and the provider's cookies resume the session, so it's the same user, with the grant extended.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `clientId` | `string` | — | Required. A registered public client. |
+| `redirectUri` | `string` | — | Required. One of its redirect URIs; a loopback one may name any port. Nothing needs to listen there. |
+| `user` | `string` | `accountId` | Who signs in (`login_hint`). |
+| `cookies` | `Map<string, string>` | a new jar | The browser's cookies, kept across the provider's authorizations. |
+
+| Member | Description |
+|--------|-------------|
+| `takeCallback()` | The redirect back from the last authorization (`code`, `state`, `iss`, or `error`), to pass to `transport.finishAuth`. Clears it; `null` when none is waiting. |
+| `authorizations` | Every authorization URL the SDK sent the user to, in order: one per login or step-up, to check the scopes and `resource` asked for. |
+| `tokens()` | The tokens the SDK saved. |
+
 ### Errors
 
-Every error extends `DevAuthorizationError`. The types `ListenOptions`, `ListeningAuthorizationServer`, `DevAuthorizationServerOptions`, `DevAuthorizationServer`, `ResourceServer`, `PublicClient`, `ServiceClient`, `UserTokensOptions`, `UserTokens`, `FollowAuthorizationOptions` and `ApproveDeviceOptions` are exported too.
+Every error extends `DevAuthorizationError`. The types `ListenOptions`, `ListeningAuthorizationServer`, `DevAuthorizationServerOptions`, `DevAuthorizationServer`, `ResourceServer`, `PublicClient`, `ServiceClient`, `UserTokensOptions`, `DevOAuthClientProviderOptions`, `UserTokens`, `FollowAuthorizationOptions` and `ApproveDeviceOptions` are exported too.
 
 | Error | When |
 |-------|------|

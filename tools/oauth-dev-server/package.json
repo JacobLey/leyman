@@ -26,7 +26,8 @@
     "testing",
     "integration-test",
     "pkce",
-    "token-exchange"
+    "token-exchange",
+    "mcp"
   ],
   "sideEffects": false,
   "files": [
@@ -36,16 +37,26 @@
   ],
   "types": "./dist/oauth-dev-server.js",
   "exports": {
-    ".": "./dist/oauth-dev-server.js"
+    ".": "./dist/oauth-dev-server.js",
+    "./mcp": "./dist/mcp.js"
   },
   "dependencies": {
     "jose": "catalog:",
     "oidc-provider": "catalog:"
   },
+  "peerDependencies": {
+    "@modelcontextprotocol/client": "catalog:"
+  },
+  "peerDependenciesMeta": {
+    "@modelcontextprotocol/client": {
+      "optional": true
+    }
+  },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",
+    "@modelcontextprotocol/client": "catalog:",
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
