@@ -31,7 +31,12 @@ export interface Env {
      */
     readonly oidcIssuer: string;
     /**
-     * ID of the repository whose pushes to `main` may write.
+     * Days after which a stored result may be replaced, though it hasn't expired yet: CI re-uploads a result it reads
+     * once it is this old, so a result in use never expires. Below `maxAgeDays`.
+     */
+    readonly refreshAfterDays: string;
+    /**
+     * ID of the repository whose pushes to `main`, and scheduled runs, may write.
      */
     readonly repositoryId: string;
 }
@@ -55,15 +60,15 @@ const cachePath = /^\/v1\/cache\/(?<hash>[\w\-]+)$/v;
 const status = (code: number, text = ''): Response => new Response(text, { status: code });
 
 /**
- * Whether a result is too old to serve.
+ * Whether a result is older than a number of days.
  *
  * @param uploaded - when it was stored
- * @param env - the Worker's variables
+ * @param days - the age, in days (a Worker variable, so a string)
  * @param now - current time, in milliseconds
- * @returns true if it is older than the maximum age
+ * @returns true if it is older
  */
-const isExpired = (uploaded: Date, env: Env, now: number): boolean =>
-    now - uploaded.getTime() > Number(env.maxAgeDays) * dayMs;
+const isOlderThan = (uploaded: Date, days: string, now: number): boolean =>
+    now - uploaded.getTime() > Number(days) * dayMs;
 
 /**
  * Serve a task result. Anyone may read: results are built from the public repository.
@@ -77,7 +82,7 @@ const isExpired = (uploaded: Date, env: Env, now: number): boolean =>
  */
 const read = async (hash: string, env: Env, now: number): Promise<Response> => {
     const object = await env.cache.get(hash);
-    if (!object || isExpired(object.uploaded, env, now)) {
+    if (!object || isOlderThan(object.uploaded, env.maxAgeDays, now)) {
         await object?.body.cancel();
         return status(statusNotFound);
     }
@@ -91,13 +96,14 @@ const read = async (hash: string, env: Env, now: number): Promise<Response> => {
 };
 
 /**
- * Store a task result, if the request is from CI on a push to `main`. The first result stored for a hash is kept.
+ * Store a task result, if the request is from CI on a push to `main` or a scheduled run. The first result stored for
+ * a hash is kept until it is `refreshAfterDays` old, then replaced by the next one (the same result, re-uploaded).
  *
  * @param hash - Nx's hash of the task
  * @param request - the request, with the tarball as its body
  * @param env - the Worker's bindings
  * @param now - current time, in milliseconds
- * @returns 200 if stored, 409 if already stored, 401 or 403 if it may not write, 411 without a length, and 503 if
+ * @returns 200 if stored, 409 if already stored (and not old enough to replace), 401 or 403 if it may not write, 411 without a length, and 503 if
  * the token can't be checked
  */
 const write = async (hash: string, request: Request, env: Env, now: number): Promise<Response> => {
@@ -118,14 +124,14 @@ const write = async (hash: string, request: Request, env: Env, now: number): Pro
         return status(statusUnauthorized, 'A GitHub Actions OIDC token is required to write');
     }
     if (check === 'forbidden') {
-        return status(statusForbidden, 'Only pushes to main may write');
+        return status(statusForbidden, 'Only pushes to main, and scheduled runs, may write');
     }
     // R2 stores a stream only of a known length
     if (!request.body || !request.headers.has('content-length')) {
         return status(statusLengthRequired);
     }
     const existing = await env.cache.head(hash);
-    if (existing && !isExpired(existing.uploaded, env, now)) {
+    if (existing && !isOlderThan(existing.uploaded, env.refreshAfterDays, now)) {
         return status(statusConflict);
     }
     await env.cache.put(hash, request.body);

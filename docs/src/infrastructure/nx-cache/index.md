@@ -6,7 +6,7 @@ description: "A hosted Nx remote cache on a Cloudflare Worker and R2, shared by 
 
 <ProjectHeader />
 
-One [Nx remote cache](https://nx.dev/docs/guides/tasks--caching/self-hosted-caching) for CI and every devcontainer: a task `main` already built is a cache hit everywhere, so a fresh worktree starts warm. It runs on Cloudflare's free tiers, as a Worker in front of an R2 bucket. Anyone can read from it, and only CI on a push to `main` can write to it.
+One [Nx remote cache](https://nx.dev/docs/guides/tasks--caching/self-hosted-caching) for CI and every devcontainer: a task `main` already built is a cache hit everywhere, so a fresh worktree starts warm. It runs on Cloudflare's free tiers, as a Worker in front of an R2 bucket. Anyone can read from it, and only CI on `main` can write to it.
 
 It is also this repository's worked example of a cloud deployment. **wrangler** deploys the Worker's code from CI, and **OpenTofu**, run by hand, manages the bucket and the credentials.
 
@@ -33,9 +33,9 @@ A result written by a pull request and then served to `main` runs that pull requ
 
 - signed with RS256 by GitHub Actions, for this cache's audience, and unexpired;
 - from this repository, by its numeric ID, which unlike its name can't be renamed and claimed by someone else;
-- from a `push` to `refs/heads/main`. A pull request's token has another ref and event, and a fork's pull request gets no token at all.
+- from a `push` to `refs/heads/main`, or a `schedule` run, which always runs `main`. A pull request's token has another ref and event, and a fork's pull request gets no token at all. A `workflow_dispatch` can't write even on `main`: it runs whatever branch it is given.
 
-There is no long-lived write secret, since each job gets its own token. The first result stored for a hash is kept, and results expire 7 days after they were stored. Reading needs nothing: results are built from this public repository, so they hold nothing that isn't public already.
+There is no long-lived write secret, since each job gets its own token. The first result stored for a hash is kept until it is 5 days old, when CI may upload it again, and results expire 7 days after they were stored. Reading needs nothing: results are built from this public repository, so they hold nothing that isn't public already.
 
 ## wrangler and OpenTofu
 

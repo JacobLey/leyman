@@ -5,8 +5,8 @@ The hosted Nx remote cache: a Cloudflare Worker on R2 that implements Nx's [self
 ## Who may read and write
 
 - **Anyone may read.** Results are built from this public repository, and are public anyway (the repository and npm).
-- **Only CI on a push to `main` may write.** A `PUT` needs a GitHub Actions OIDC token, which the Worker verifies itself against GitHub's signing keys: RS256, `iss` GitHub Actions, `aud` `leyman-nx-cache`, unexpired, and `repository_id`, `ref == refs/heads/main` and `event_name == push`. So no pull request, from a fork or not, can write a result that `main` later trusts (cache poisoning, e.g. CVE-2025-36852). The repository's numeric ID is checked rather than its name, which could be renamed and taken by someone else.
-- **The first result for a hash is kept**: a second `PUT` is a 409, as with the devcontainer's cache server.
+- **Only CI on `main`, from a push or a scheduled run, may write.** A `PUT` needs a GitHub Actions OIDC token, which the Worker verifies itself against GitHub's signing keys: RS256, `iss` GitHub Actions, `aud` `leyman-nx-cache`, unexpired, and `repository_id`, `ref == refs/heads/main`, and `event_name` `push` or `schedule`. Not `workflow_dispatch`: it runs whatever branch it is given. So no pull request, from a fork or not, can write a result that `main` later trusts (cache poisoning, e.g. CVE-2025-36852). The repository's numeric ID is checked rather than its name, which could be renamed and taken by someone else.
+- **The first result for a hash is kept**: a second `PUT` is a 409, as with the devcontainer's cache server. Once the result is 5 days old (`refreshAfterDays`), a `PUT` replaces it: CI re-uploads a result it still reads, so it doesn't expire while in use.
 - **Results expire 7 days after they were stored** (`maxAgeDays`): never served after, and replaced by the next `PUT`. The bucket's lifecycle rule deletes them, some time later.
 - `Last-Modified` on a result is when it was stored, so the cache server in front of this one expires its copy at the same time.
 

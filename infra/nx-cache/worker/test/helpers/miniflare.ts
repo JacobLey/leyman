@@ -20,6 +20,7 @@ export const startWorker = async (issuer: string): Promise<{ env: Env; miniflare
         maxAgeDays: '7',
         oidcAudience: audience,
         oidcIssuer: issuer,
+        refreshAfterDays: '5',
         repositoryId,
     };
     const miniflare = new Miniflare({

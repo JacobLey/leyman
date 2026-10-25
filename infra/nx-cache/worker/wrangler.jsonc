@@ -20,6 +20,8 @@
     "maxAgeDays": "7",
     "oidcAudience": "leyman-nx-cache",
     "oidcIssuer": "https://token.actions.githubusercontent.com",
+    // Keep in sync with `NX_CACHE_REFRESH_AFTER_DAYS` in `.github/workflows/ci.yml`
+    "refreshAfterDays": "5",
     // JacobLey/leyman: `gh api repos/JacobLey/leyman --jq .id`
     "repositoryId": "785932586"
   }

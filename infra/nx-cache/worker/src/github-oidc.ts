@@ -19,7 +19,7 @@ export interface WriterPolicy {
 
 /**
  * Whether a token may write: `valid` if so, `invalid` if it isn't a token from the issuer (expired, malformed,
- * or badly signed), and `forbidden` if it is, but not from a push to `main` of the repository.
+ * or badly signed), and `forbidden` if it is, but not from a push to `main` of the repository or a scheduled run.
  */
 export type TokenCheck = 'forbidden' | 'invalid' | 'valid';
 
@@ -107,8 +107,15 @@ const signingKey = async (issuer: string, kid: string, now: number): Promise<Sig
 };
 
 /**
+ * Events whose runs on `main` may write: a push, and a scheduled run (which always runs `main`). Not
+ * `workflow_dispatch`, which runs whatever branch it is given.
+ */
+const writerEvents: ReadonlySet<unknown> = new Set(['push', 'schedule']);
+
+/**
  * Check a GitHub Actions OIDC token: signed by the issuer with RS256, for the audience, unexpired, and from a push to
- * `main` of the repository. So a pull request, even one from the same repository, can never write.
+ * `main` of the repository or a scheduled run of it. So a pull request, even one from the same repository, can never
+ * write.
  *
  * @param token - the JWT
  * @param policy - claims it must have
@@ -172,7 +179,7 @@ export const checkToken = async (
     }
     return claims.repository_id === policy.repositoryId &&
         claims.ref === 'refs/heads/main' &&
-        claims.event_name === 'push'
+        writerEvents.has(claims.event_name)
         ? 'valid'
         : 'forbidden';
 };

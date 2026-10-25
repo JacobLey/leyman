@@ -138,6 +138,25 @@ suite('nx-cache-worker', () => {
             expect(await read.text()).to.equal('second');
         });
 
+        withWorker.test(
+            'a result older than the refresh age is replaced',
+            async ({ env, issuer }) => {
+                const hash = await store(env, issuer.sign(), 'first');
+                const stored = await env.cache.head(hash);
+                const uploaded = stored?.uploaded.getTime() ?? 0;
+                const atRefreshAge = uploaded + 5 * dayMs;
+                const token = issuer.sign({ exp: (atRefreshAge + dayMs) / 1000 });
+
+                const kept = await handle(put(hash, 'second', token), env, atRefreshAge);
+                expect(kept.status).to.equal(409);
+
+                const replaced = await handle(put(hash, 'third', token), env, atRefreshAge + 1);
+                expect(replaced.status).to.equal(200);
+                const read = await handle(new Request(url(hash)), env, Date.now());
+                expect(await read.text()).to.equal('third');
+            }
+        );
+
         withWorker.test('without a length', async ({ env, issuer }) => {
             // `duplex` is needed for a stream body, but missing from the DOM types
             const blob = new Blob(['tarball']);
@@ -240,6 +259,16 @@ suite('nx-cache-worker', () => {
                 }
             });
 
+            withWorker.test('a scheduled run', async ({ env, issuer }) => {
+                const response = await handle(
+                    put(uniqueHash(), 'tarball', issuer.sign({ event_name: 'schedule' })),
+                    env,
+                    Date.now()
+                );
+
+                expect(response.status).to.equal(200);
+            });
+
             withWorker.test('one of several audiences', async ({ env, issuer }) => {
                 const response = await handle(
                     put(uniqueHash(), 'tarball', issuer.sign({ aud: ['other', env.oidcAudience] })),
@@ -251,7 +280,7 @@ suite('nx-cache-worker', () => {
             });
 
             withWorker.test(
-                'not from a push to main of the repository',
+                'not from a push to main of the repository, or a scheduled run',
                 async ({ env, issuer }) => {
                     const tokens = {
                         'another repository': issuer.sign({ repository_id: '1' }),
@@ -262,6 +291,12 @@ suite('nx-cache-worker', () => {
                         }),
                         // `pull_request_target` runs in main's context, but for code from the pull request
                         'a pull_request_target': issuer.sign({ event_name: 'pull_request_target' }),
+                        // Runs whatever branch it is given, so `main`'s can't be told from another's by the event
+                        'a workflow_dispatch': issuer.sign({ event_name: 'workflow_dispatch' }),
+                        'a scheduled run of another branch': issuer.sign({
+                            event_name: 'schedule',
+                            ref: 'refs/heads/feature',
+                        }),
                     };
 
                     for (const [name, token] of Object.entries(tokens)) {
