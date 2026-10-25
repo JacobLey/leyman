@@ -1,7 +1,6 @@
 import type { ServerResponse } from 'node:http';
 import type { AddressInfo } from 'node:net';
 import type { ListeningAuthorizationServer } from 'oauth-dev-server';
-import { createHash, randomBytes } from 'node:crypto';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
 import { drizzle } from 'drizzle-orm/node-postgres';
@@ -23,7 +22,7 @@ import {
 import { expect } from '@leyman/expect';
 import { bind, createContainer } from 'haywire';
 import { suite } from 'mocha-chain';
-import { followAuthorization, listenDevAuthorizationServer } from 'oauth-dev-server';
+import { listenDevAuthorizationServer, userTokens } from 'oauth-dev-server';
 import { withDatabase } from '../helpers/database.js';
 import { listen } from '../helpers/serve.js';
 
@@ -51,34 +50,15 @@ const userToken = async (
     options: { readonly user?: string; readonly resource?: string; readonly scope?: string } = {}
 ): Promise<string> => {
     const { user = 'dolly', resource = audience, scope = 'notes:read' } = options;
-    const verifier = randomBytes(32).toString('base64url');
-    const query = new URLSearchParams({
-        response_type: 'code',
-        client_id: app.clientId,
-        redirect_uri: redirectUri,
-        code_challenge: createHash('sha256').update(verifier).digest('base64url'),
-        code_challenge_method: 'S256',
-        login_hint: user,
+    const tokens = await userTokens({
+        user,
         resource,
         scope,
+        redirectUri,
+        issuer: server.issuer,
+        clientId: app.clientId,
     });
-    const callback = await followAuthorization(
-        `${server.issuer}/auth?${query.toString()}`,
-        redirectUri
-    );
-    const response = await fetch(`${server.issuer}/token`, {
-        method: 'POST',
-        body: new URLSearchParams({
-            grant_type: 'authorization_code',
-            client_id: app.clientId,
-            redirect_uri: redirectUri,
-            code: callback.searchParams.get('code')!,
-            code_verifier: verifier,
-            resource,
-        }),
-    });
-    const { access_token: token } = (await response.json()) as { readonly access_token: string };
-    return token;
+    return tokens.access_token;
 };
 
 /**

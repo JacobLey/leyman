@@ -22,3 +22,4 @@ export {
     type ResourceServer,
     type ServiceClient,
 } from './lib/provider.js';
+export { type UserTokens, type UserTokensOptions, userTokens } from './lib/tokens.js';

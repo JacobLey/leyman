@@ -10,7 +10,7 @@ A real authorization server ([oidc-provider](https://github.com/panva/node-oidc-
 - **Strict, like a real provider.** Clients, redirect URIs, resources and scopes are registered up front, PKCE is required, and every token is for one resource (`aud`). A client that gets the flow wrong fails here, as it would in production.
 - **The grants a native app or a service uses**: authorization code with PKCE, refresh, client credentials, device authorization (RFC 8628) and token exchange (RFC 8693), with revocation.
 - **JWT access tokens** (RFC 9068), signed with a key generated at startup and verified against its JWKS, as a resource server would verify any provider's.
-- **Plays the user too**: `followAuthorization` and `approveDevice` sign in as any account, with no browser.
+- **Plays the user too**: `userTokens` signs a user in for a token in one call, and `followAuthorization` and `approveDevice` play the browser for a client under test, signing in as any account.
 - **Local only.** It approves every login, so it refuses to serve anywhere but this machine unless told otherwise.
 
 Private for now: depend on it from the workspace (`"oauth-dev-server": "workspace:^"`). Runner-agnostic: plain functions, and a server to close.
@@ -20,6 +20,7 @@ Private for now: depend on it from the workspace (`"oauth-dev-server": "workspac
 - [API](#api)
   - [listenDevAuthorizationServer](#listendevauthorizationserveroptions)
   - [createDevAuthorizationServer](#createdevauthorizationserveroptions)
+  - [userTokens](#usertokensoptions)
   - [followAuthorization](#followauthorizationauthorizationurl-redirecturi-options)
   - [approveDevice](#approvedeviceverificationuri-options)
   - [Errors](#errors)
@@ -34,7 +35,7 @@ Private for now: depend on it from the workspace (`"oauth-dev-server": "workspac
 ## Example
 
 ```ts
-import { approveDevice, followAuthorization, listenDevAuthorizationServer } from 'oauth-dev-server';
+import { approveDevice, followAuthorization, listenDevAuthorizationServer, userTokens } from 'oauth-dev-server';
 
 const server = await listenDevAuthorizationServer({
     // Who accepts its tokens, and with which scopes
@@ -63,7 +64,17 @@ const server = await listenDevAuthorizationServer({
 
 server.issuer; // http://127.0.0.1:<port>, also where its metadata is
 
-// In a test, play the user's browser: sign in, approve, and get the redirect back to the client
+// Testing a resource server: a user's token for it, in one call
+const { access_token } = await userTokens({
+    issuer: server.issuer,
+    clientId: 'files-cli',
+    redirectUri: 'http://127.0.0.1:8123/callback',
+    resource: 'http://127.0.0.1:3000',
+    scope: 'files:read',
+    user: 'alice',
+});
+
+// Testing a client: play the user's browser for its authorization request, and get the redirect back to it
 const callback = await followAuthorization(authorizationUrl, 'http://127.0.0.1:8123/callback');
 callback.searchParams.get('code');
 
@@ -113,6 +124,24 @@ Builds the server as a `node:http` listener, for a server you already have.
 | `deviceInterval` | `number` | `5` | Seconds a device waits between polls (the device authorization response's `interval`). `1` makes tests quicker. |
 | `dangerouslyAllowNonLocal` | `boolean` | `false` | Serve at an issuer other machines can reach. Anyone who can reach it gets tokens: only in an isolated network. |
 
+### `userTokens(options)`
+
+Signs a user in through the whole authorization code flow with PKCE, as a native app would, with the dev login playing the user. For a test that needs a user's token (of a resource server, say) without testing how a client gets one.
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `issuer` | `string` | — | Required. The server's issuer. |
+| `clientId` | `string` | — | Required. A registered public client. |
+| `redirectUri` | `string` | — | Required. One of the client's redirect URIs; a loopback one may name any port. |
+| `resource` | `string` | — | Required. A registered resource's URL: the token's `aud`. |
+| `scope` | `string` | — | Required. Space-separated scopes. At least one: `openid` alone gets a token for the resource with none of its scopes. |
+| `user` | `string` | `accountId` | Who signs in (`login_hint`). |
+| `cookies` | `Map<string, string>` | a new jar | As for `followAuthorization`. |
+
+**Returns** `Promise<UserTokens>`: the token endpoint's response, `{ access_token, token_type, expires_in, scope?, refresh_token? }` (a refresh token unless the client opted out).
+
+**Rejects** with `DevAuthorizationFlowError` when the authorization is refused (no scope the resource has, say) or the token request is.
+
 ### `followAuthorization(authorizationUrl, redirectUri, options?)`
 
 Plays the user's browser for an authorization request: follows the server's redirects, keeping its cookies, through the dev login and consent, until it redirects to the client's redirect URI. That redirect isn't fetched.
@@ -143,12 +172,12 @@ Plays the user on another device for the device authorization grant: opens the `
 
 ### Errors
 
-Every error extends `DevAuthorizationError`. The types `ListenOptions`, `ListeningAuthorizationServer`, `DevAuthorizationServerOptions`, `DevAuthorizationServer`, `ResourceServer`, `PublicClient`, `ServiceClient`, `FollowAuthorizationOptions` and `ApproveDeviceOptions` are exported too.
+Every error extends `DevAuthorizationError`. The types `ListenOptions`, `ListeningAuthorizationServer`, `DevAuthorizationServerOptions`, `DevAuthorizationServer`, `ResourceServer`, `PublicClient`, `ServiceClient`, `UserTokensOptions`, `UserTokens`, `FollowAuthorizationOptions` and `ApproveDeviceOptions` are exported too.
 
 | Error | When |
 |-------|------|
 | `DevAuthorizationServerNotLocalError` | It would serve where other machines can reach it. Has `hostname`. |
-| `DevAuthorizationFlowError` | `followAuthorization` or `approveDevice` didn't finish. Has `url`, the last URL fetched. |
+| `DevAuthorizationFlowError` | `userTokens`, `followAuthorization` or `approveDevice` didn't finish. Has `url`, the last URL fetched. |
 
 ## Clients
 

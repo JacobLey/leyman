@@ -1,8 +1,9 @@
 import type { AddressInfo } from 'node:net';
+import type { UserTokensOptions } from 'oauth-dev-server';
 import { createHash, randomBytes } from 'node:crypto';
 import { once } from 'node:events';
 import { createServer } from 'node:http';
-import { createRemoteJWKSet, decodeProtectedHeader, jwtVerify } from 'jose';
+import { createRemoteJWKSet, decodeJwt, decodeProtectedHeader, jwtVerify } from 'jose';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite, test } from 'mocha-chain';
 import {
@@ -12,6 +13,7 @@ import {
     DevAuthorizationServerNotLocalError,
     followAuthorization,
     listenDevAuthorizationServer,
+    userTokens,
 } from 'oauth-dev-server';
 
 const resource = 'http://127.0.0.1:1/mcp';
@@ -150,30 +152,25 @@ suite('Dev authorization server', () => {
     };
 
     /**
-     * A user's access token for `resource`, by the whole authorization code flow.
+     * A user's access token for `resource`, signed in by `userTokens`.
      *
      * @param metadata - The authorization server's metadata
-     * @param params - Authorization parameters, over the defaults
+     * @param options - Over the defaults
      * @returns The access token
      */
     const userToken = async (
         metadata: Metadata,
-        params: Readonly<Record<string, string | undefined>> = {}
+        options: Partial<UserTokensOptions> = {}
     ): Promise<string> => {
-        const { verifier, challenge } = pkce();
-        const callback = await followAuthorization(
-            authorizationUrl(metadata, {
-                code_challenge: challenge,
-                code_challenge_method: 'S256',
-                ...params,
-            }),
-            redirectUri
-        );
-        const { body } = await exchange(metadata, {
-            code: callback.searchParams.get('code')!,
-            code_verifier: verifier,
+        const tokens = await userTokens({
+            clientId,
+            redirectUri,
+            resource,
+            issuer: metadata.issuer,
+            scope: 'notes:read',
+            ...options,
         });
-        return body.access_token as string;
+        return tokens.access_token;
     };
 
     suite('Metadata', () => {
@@ -449,37 +446,19 @@ suite('Dev authorization server', () => {
             return { status: response.status, body: await response.text() };
         };
 
-        /**
-         * Tokens for `resource`, by the whole authorization code flow.
-         *
-         * @param metadata - The authorization server's metadata
-         * @returns The token endpoint's body
-         */
-        const userTokens = async (
-            metadata: Metadata
-        ): Promise<Readonly<Record<string, unknown>>> => {
-            const { verifier, challenge } = pkce();
-            const callback = await followAuthorization(
-                authorizationUrl(metadata, {
-                    code_challenge: challenge,
-                    code_challenge_method: 'S256',
-                }),
-                redirectUri
-            );
-            const { body } = await exchange(metadata, {
-                code: callback.searchParams.get('code')!,
-                code_verifier: verifier,
-            });
-            return body;
-        };
-
         withServer.test('Revokes a refresh token', async ({ metadata }) => {
-            const tokens = await userTokens(metadata);
+            const tokens = await userTokens({
+                clientId,
+                redirectUri,
+                resource,
+                issuer: metadata.issuer,
+                scope: 'notes:read',
+            });
 
-            const revoked = await revoke(metadata, tokens.refresh_token as string);
+            const revoked = await revoke(metadata, tokens.refresh_token!);
             const { status, body } = await exchange(metadata, {
                 grant_type: 'refresh_token',
-                refresh_token: tokens.refresh_token as string,
+                refresh_token: tokens.refresh_token!,
                 redirect_uri: undefined,
             });
 
@@ -496,9 +475,15 @@ suite('Dev authorization server', () => {
         });
 
         withServer.test('Can not revoke a JWT access token', async ({ metadata }) => {
-            const tokens = await userTokens(metadata);
+            const tokens = await userTokens({
+                clientId,
+                redirectUri,
+                resource,
+                issuer: metadata.issuer,
+                scope: 'notes:read',
+            });
 
-            const { status, body } = await revoke(metadata, tokens.access_token as string);
+            const { status, body } = await revoke(metadata, tokens.access_token);
 
             expect(status).to.equal(400);
             expect(JSON.parse(body)).to.include({ error: 'unsupported_token_type' });
@@ -581,7 +566,7 @@ suite('Dev authorization server', () => {
 
     suite('login_hint', () => {
         withServer.test('Signs in as the account it names', async ({ metadata }) => {
-            const token = await userToken(metadata, { login_hint: 'alice' });
+            const token = await userToken(metadata, { user: 'alice' });
 
             const { payload } = await jwtVerify(
                 token,
@@ -636,7 +621,7 @@ suite('Dev authorization server', () => {
             "Issues a token for the resource asked for, as the user, with the user's scopes",
             async ({ server, metadata }) => {
                 const subjectToken = await userToken(metadata, {
-                    login_hint: 'alice',
+                    user: 'alice',
                     scope: 'notes:read notes:write',
                 });
 
@@ -966,6 +951,93 @@ suite('Dev authorization server', () => {
                 DevAuthorizationFlowError,
                 '/nowhere: answered 404, not a form'
             );
+        });
+    });
+
+    suite('userTokens', () => {
+        withServer.test(
+            'Signs a user in, for a token for the resource',
+            async ({ server, metadata }) => {
+                const tokens = await userTokens({
+                    clientId,
+                    redirectUri,
+                    resource,
+                    issuer: server.issuer,
+                    scope: 'notes:read notes:write',
+                    user: 'alice',
+                });
+
+                const { payload } = await jwtVerify(
+                    tokens.access_token,
+                    createRemoteJWKSet(new URL(metadata.jwks_uri)),
+                    { issuer: server.issuer, audience: resource }
+                );
+                expect(payload).to.include({
+                    sub: 'alice',
+                    client_id: clientId,
+                    scope: 'notes:read notes:write',
+                });
+                expect(tokens).to.include({
+                    token_type: 'Bearer',
+                    scope: 'notes:read notes:write',
+                });
+                expect(tokens.refresh_token).to.be.a('string');
+            }
+        );
+
+        withServer.test('Signs in as the default account', async ({ server }) => {
+            const tokens = await userTokens({
+                clientId,
+                redirectUri,
+                resource,
+                issuer: server.issuer,
+                scope: 'notes:read',
+            });
+
+            expect(decodeJwt(tokens.access_token).sub).to.equal('dev-user');
+        });
+
+        withServer.test('Rejects when the authorization is refused', async ({ server }) => {
+            // No scope at all: the dev login has nothing to grant
+            await expect(
+                userTokens({ clientId, redirectUri, resource, issuer: server.issuer, scope: '' })
+            ).to.be.rejectedWith(
+                DevAuthorizationFlowError,
+                '/auth: refused the authorization: access_denied'
+            );
+        });
+
+        test('Rejects when the token request is refused', async () => {
+            // An issuer that redirects straight back with a code, and refuses it
+            const issuer = createServer((request, response) => {
+                if (request.url!.startsWith('/auth')) {
+                    response.writeHead(302, { location: `${redirectUri}?code=bad` }).end();
+                } else {
+                    response
+                        .writeHead(400, { 'content-type': 'application/json' })
+                        .end(JSON.stringify({ error: 'invalid_grant' }));
+                }
+            });
+            issuer.listen(0, '127.0.0.1');
+            await once(issuer, 'listening');
+            const { port } = issuer.address() as AddressInfo;
+            try {
+                await expect(
+                    userTokens({
+                        clientId,
+                        redirectUri,
+                        resource,
+                        issuer: `http://127.0.0.1:${port}`,
+                        scope: 'notes:read',
+                    })
+                ).to.be.rejectedWith(
+                    DevAuthorizationFlowError,
+                    '/token: refused the token request: invalid_grant'
+                );
+            } finally {
+                issuer.close();
+                issuer.closeAllConnections();
+            }
         });
     });
 

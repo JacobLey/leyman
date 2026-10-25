@@ -1,5 +1,4 @@
 import type { ListeningAuthorizationServer } from 'oauth-dev-server';
-import { createHash, randomBytes } from 'node:crypto';
 import { exportJWK, generateKeyPair, SignJWT } from 'jose';
 import {
     createMcpApp,
@@ -9,7 +8,7 @@ import {
 import { NotesClient } from '@leyman/demo-openapi-client';
 import { expect } from '@leyman/expect';
 import { suite } from 'mocha-chain';
-import { followAuthorization } from 'oauth-dev-server';
+import { userTokens } from 'oauth-dev-server';
 import { agentClientId, agentRedirectUri, connectAgent } from '../helpers/agent.js';
 import { listen } from '../helpers/serve.js';
 import { apiAudience, mcpService, withStack } from '../helpers/stack.js';
@@ -33,33 +32,14 @@ const userToken = async (
     resource: string,
     scope: string
 ): Promise<string> => {
-    const verifier = randomBytes(32).toString('base64url');
-    const query = new URLSearchParams({
-        response_type: 'code',
-        client_id: agentClientId,
-        redirect_uri: redirectUri,
-        code_challenge: createHash('sha256').update(verifier).digest('base64url'),
-        code_challenge_method: 'S256',
+    const tokens = await userTokens({
         resource,
         scope,
+        redirectUri,
+        issuer: authorization.issuer,
+        clientId: agentClientId,
     });
-    const callback = await followAuthorization(
-        `${authorization.issuer}/auth?${query.toString()}`,
-        redirectUri
-    );
-    const response = await fetch(`${authorization.issuer}/token`, {
-        method: 'POST',
-        body: new URLSearchParams({
-            grant_type: 'authorization_code',
-            client_id: agentClientId,
-            redirect_uri: redirectUri,
-            code: callback.searchParams.get('code')!,
-            code_verifier: verifier,
-            resource,
-        }),
-    });
-    const { access_token: token } = (await response.json()) as { readonly access_token: string };
-    return token;
+    return tokens.access_token;
 };
 
 /**

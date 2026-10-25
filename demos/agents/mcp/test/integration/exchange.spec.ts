@@ -1,11 +1,10 @@
 import type { ListeningAuthorizationServer } from 'oauth-dev-server';
-import { createHash, randomBytes } from 'node:crypto';
 import { decodeJwt } from 'jose';
 import sinon from 'sinon';
 import { NotesMcpAuthorizationServerError, tokenExchange } from '@leyman/demo-agents-mcp';
 import { expect } from '@leyman/expect';
 import { beforeEach, suite } from 'mocha-chain';
-import { followAuthorization, listenDevAuthorizationServer } from 'oauth-dev-server';
+import { listenDevAuthorizationServer, userTokens } from 'oauth-dev-server';
 import { listen } from '../helpers/serve.js';
 
 const mcpResource = 'https://notes-mcp.test';
@@ -22,34 +21,15 @@ const service = { clientId: 'service', clientSecret: 'p%s+s:w rd' };
  * @returns An access token, issued for the MCP server
  */
 const agentToken = async (server: ListeningAuthorizationServer, user: string): Promise<string> => {
-    const verifier = randomBytes(32).toString('base64url');
-    const query = new URLSearchParams({
-        response_type: 'code',
-        client_id: agent.clientId,
-        redirect_uri: agent.redirectUri,
+    const tokens = await userTokens({
+        user,
+        issuer: server.issuer,
+        clientId: agent.clientId,
+        redirectUri: agent.redirectUri,
         resource: mcpResource,
         scope: 'notes:read',
-        login_hint: user,
-        code_challenge: createHash('sha256').update(verifier).digest('base64url'),
-        code_challenge_method: 'S256',
     });
-    const callback = await followAuthorization(
-        new URL(`${server.issuer}/auth?${query}`),
-        agent.redirectUri
-    );
-    const response = await fetch(`${server.issuer}/token`, {
-        method: 'POST',
-        body: new URLSearchParams({
-            grant_type: 'authorization_code',
-            client_id: agent.clientId,
-            redirect_uri: agent.redirectUri,
-            resource: mcpResource,
-            code: callback.searchParams.get('code')!,
-            code_verifier: verifier,
-        }),
-    });
-    const { access_token: token } = (await response.json()) as { readonly access_token: string };
-    return token;
+    return tokens.access_token;
 };
 
 suite('tokenExchange', () => {
