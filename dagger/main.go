@@ -199,7 +199,7 @@ func (m *Ci) VersionNotes(
 	}
 
 	type release struct {
-		name, from, to, changelog string
+		name, from, to, bump, changelog string
 	}
 	releases := []release{}
 	for _, file := range paths {
@@ -221,19 +221,25 @@ func (m *Ci) VersionNotes(
 		if err != nil {
 			return "", err
 		}
-		releases = append(releases, release{after.Name, before.Version, after.Version, changelog})
+		releases = append(releases, release{after.Name, before.Version, after.Version, bumpType(before.Version, after.Version), changelog})
 	}
-	sort.Slice(releases, func(i, j int) bool { return releases[i].name < releases[j].name })
+	// Biggest bumps first, as they need the most review
+	sort.Slice(releases, func(i, j int) bool {
+		if rank, other := bumpRank[releases[i].bump], bumpRank[releases[j].bump]; rank != other {
+			return rank < other
+		}
+		return releases[i].name < releases[j].name
+	})
 
 	summary := []string{
 		"Merging this PR publishes the packages below to npm.",
 		"",
-		"| Package | Version |",
-		"| --- | --- |",
+		"| Package | Bump | Version |",
+		"| --- | --- | --- |",
 	}
 	notes := []string{}
 	for _, r := range releases {
-		summary = append(summary, fmt.Sprintf("| `%s` | %s → **%s** |", r.name, r.from, r.to))
+		summary = append(summary, fmt.Sprintf("| `%s` | %s | %s → **%s** |", r.name, r.bump, r.from, r.to))
 		notes = append(notes, strings.TrimSpace(fmt.Sprintf("## %s@%s\n\n%s", r.name, r.to, r.changelog)))
 	}
 
@@ -243,6 +249,19 @@ func (m *Ci) VersionNotes(
 			"\n\nThe changelogs are too long to include here; see each package's CHANGELOG.md in this PR."
 	}
 	return body, nil
+}
+
+var bumpRank = map[string]int{"major": 0, "minor": 1, "patch": 2}
+
+// The most significant part of a release version that changed: `major`, `minor` or `patch`
+func bumpType(from string, to string) string {
+	before, after := strings.Split(from, "."), strings.Split(to, ".")
+	for i, bump := range []string{"major", "minor"} {
+		if i >= len(before) || i >= len(after) || before[i] != after[i] {
+			return bump
+		}
+	}
+	return "patch"
 }
 
 func readJSON(ctx context.Context, file *dagger.File, v any) error {
