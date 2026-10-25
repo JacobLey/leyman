@@ -25,6 +25,9 @@ env:
   NX_CACHE_VERSION: v1
   # Cached Nx results older than this are never served
   NX_CACHE_MAX_AGE_DAYS: 7
+  # Runs that write to the hosted cache upload a result they read again once it is this old, so a result in use never
+  # expires. Keep in sync with `refreshAfterDays` in `infra/nx-cache/worker/wrangler.jsonc`
+  NX_CACHE_REFRESH_AFTER_DAYS: 5
 
 jobs:
   test:
@@ -57,6 +60,7 @@ jobs:
         env:
           NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
           NX_CACHE_SERVER_MAX_AGE_DAYS: ${{ env.NX_CACHE_MAX_AGE_DAYS }}
+          NX_CACHE_SERVER_REFRESH_AFTER_DAYS: ${{ env.NX_CACHE_REFRESH_AFTER_DAYS }}
           NX_CACHE_SERVER_UPSTREAM: ${{ vars.NX_CACHE_UPSTREAM }}
           NX_CACHE_SERVER_UPSTREAM_WRITE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.NX_CACHE_UPSTREAM != '' && 'github-oidc' || '' }}
         run: |

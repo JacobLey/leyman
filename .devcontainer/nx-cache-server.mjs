@@ -18,7 +18,10 @@
  *   (its `Last-Modified`), so it expires here when it does there.
  * - Results are only written to the upstream with `NX_CACHE_SERVER_UPSTREAM_WRITE=github-oidc`: in a GitHub
  *   Actions job with `id-token: write`, each upload carries an OIDC token for `NX_CACHE_SERVER_OIDC_AUDIENCE`.
- *   The upstream decides who may write (CI on pushes to `main`), so this never needs a secret.
+ *   The upstream decides who may write (CI on `main`), so this never needs a secret.
+ * - With `NX_CACHE_SERVER_REFRESH_AFTER_DAYS` too, a result it serves that was stored longer ago than that is uploaded
+ *   again first, so a result that is still read never expires upstream. The upstream must accept a result that old
+ *   being replaced (the hosted cache's `refreshAfterDays`).
  * - The upstream failing is a miss, never an error: Nx runs the task instead.
  *
  * Uses only Node built-ins so it runs before (and independently of) `pnpm install`.
@@ -39,6 +42,10 @@ const hashPattern = /^\/v1\/cache\/(?<hash>[\w\-]+)$/v;
 const upstream = process.env.NX_CACHE_SERVER_UPSTREAM?.replace(/\/+$/v, '') || null;
 const writesUpstream = upstream !== null && process.env.NX_CACHE_SERVER_UPSTREAM_WRITE === 'github-oidc';
 const oidcAudience = process.env.NX_CACHE_SERVER_OIDC_AUDIENCE ?? 'leyman-nx-cache';
+const refreshAfterMs =
+    writesUpstream && process.env.NX_CACHE_SERVER_REFRESH_AFTER_DAYS
+        ? Number(process.env.NX_CACHE_SERVER_REFRESH_AFTER_DAYS) * 24 * 60 * 60 * 1000
+        : null;
 // Reading a result is quick, but a large one uploads for a while
 const upstreamReadTimeoutMs = 60 * 1000;
 const upstreamWriteTimeoutMs = 5 * 60 * 1000;
@@ -152,6 +159,8 @@ const getOidcToken = async () => {
 
 /**
  * Upload a stored result to the upstream. A result it already has (409) is fine.
+ *
+ * @returns whether the upstream stored it
  */
 const writeUpstream = async (hash, file) => {
     try {
@@ -172,8 +181,29 @@ const writeUpstream = async (hash, file) => {
         if (response.status !== 200 && response.status !== 409) {
             console.error(`Writing ${hash} upstream failed: HTTP ${response.status} ${text}`);
         }
+        return response.status === 200;
     } catch (err) {
         console.error(`Writing ${hash} upstream failed`, err);
+        return false;
+    }
+};
+
+/**
+ * Upload a result again if it was stored more than `refreshAfterMs` ago, and restamp it once the upstream has it.
+ * A 409 (the upstream's copy is newer than this one's timestamp) leaves it for the next read.
+ */
+const refreshUpstream = async (hash, file) => {
+    try {
+        if (Date.now() - (await stat(file)).mtimeMs <= refreshAfterMs) {
+            return;
+        }
+        if (await writeUpstream(hash, file)) {
+            const now = new Date();
+            await utimes(file, now, now);
+            console.log(`Refreshed ${hash} upstream`);
+        }
+    } catch (err) {
+        console.error(`Refreshing ${hash} upstream failed`, err);
     }
 };
 
@@ -193,6 +223,10 @@ const server = createServer(async (req, res) => {
             if (!(await isFresh(file)) && !(upstream && (await readUpstream(hash, file)))) {
                 res.writeHead(404).end();
                 return;
+            }
+            // Before responding, like a write, so the upload is done by the time Nx finishes
+            if (refreshAfterMs !== null) {
+                await refreshUpstream(hash, file);
             }
             res.writeHead(200, { 'content-type': 'application/octet-stream' });
             await pipeline(createReadStream(file), res);
@@ -227,7 +261,8 @@ setInterval(() => {
 }, sweepIntervalMs);
 
 server.listen(port, () => {
-    const tier = upstream ? `, in front of ${upstream}${writesUpstream ? ' (writing to it)' : ''}` : '';
+    const writing = refreshAfterMs === null ? ' (writing to it)' : ' (writing to it, and refreshing results)';
+    const tier = upstream ? `, in front of ${upstream}${writesUpstream ? writing : ''}` : '';
     console.log(`Nx cache server listening on :${port}, storing in ${cacheDir}${tier}`);
 });
 
