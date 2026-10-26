@@ -536,6 +536,25 @@ export const demos: readonly Demo[] = [
         related: ['openapi'],
         pages: [{ text: 'Overview', link: '' }],
     },
+    {
+        slug: 'local-ingress',
+        title: 'Local ingress',
+        pitch: 'A Vite dev server behind one machine-wide Caddy: every worktree at its own https://<worktree>.<repo>.localhost, with a locally trusted certificate, hot reload through the proxy, and tunnels for phones.',
+        source: 'demos/local-ingress',
+        files: [
+            { label: 'Vite config', path: 'demos/local-ingress/src/vite-config.ts' },
+            {
+                label: 'Dev server integration test',
+                path: 'demos/local-ingress/test/integration/dev-server.spec.ts',
+            },
+            { label: 'Run with only Docker', path: 'demos/local-ingress/run' },
+            { label: 'The ingress', path: 'tools/local-ingress' },
+            { label: 'Its Caddyfile', path: 'tools/local-ingress/Caddyfile' },
+            { label: 'Devcontainer labels', path: '.devcontainer/docker-compose.yml' },
+        ],
+        uses: ['mocha-chain'],
+        pages: [{ text: 'Overview', link: '' }],
+    },
 ];
 
 /**

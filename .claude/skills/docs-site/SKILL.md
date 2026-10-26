@@ -58,6 +58,7 @@ Demos ([`demos/`](../../../demos/)) each have a directory in [`docs/src/demos/`]
 | [`openapi`](../../../demos/openapi/) | [`docs/src/demos/openapi/index.md`](../../../docs/src/demos/openapi/index.md) |
 | [`agents/mcp`](../../../demos/agents/mcp/) | [`docs/src/demos/mcp-server/index.md`](../../../docs/src/demos/mcp-server/index.md) |
 | [`agents/cli`](../../../demos/agents/cli/) | [`docs/src/demos/agent-cli/index.md`](../../../docs/src/demos/agent-cli/index.md) |
+| [`local-ingress`](../../../demos/local-ingress/) | [`docs/src/demos/local-ingress/index.md`](../../../docs/src/demos/local-ingress/index.md) |
 
 Infrastructure ([`infra/`](../../../infra/)) is documented the same way as demos, in [`docs/src/infrastructure/`](../../../docs/src/infrastructure/). The page is the narrative (what, how, why, cost); the `infra/` README stays the maintainer's runbook, and the page links to it rather than repeating the setup steps:
 

@@ -33,20 +33,22 @@ tools/local-ingress/ensure --force  # rebuild and replace it at this checkout's 
 
 ## Trusting the CA
 
-Open [http://ingress.localhost](http://ingress.localhost). It is the one host served over plain HTTP, so it loads before anything is trusted. It has the root certificate to download and the steps for each OS and browser. In short:
+Open [http://ingress.localhost](http://ingress.localhost). It is the one host served over plain HTTP, so it loads before anything is trusted. It has the root certificate to download and the steps for each OS and browser. **Firefox keeps its own store**, so it needs its own step (below). In short:
 
 ```sh
 curl -fsSo local-ingress-root.crt http://ingress.localhost/root.crt
 
-# macOS
+# macOS: every prompt wants your login password (sudo's, then macOS's own dialog)
 sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain local-ingress-root.crt
+# macOS, for your user only: no sudo, one prompt
+security add-trusted-cert -r trustRoot -k ~/Library/Keychains/login.keychain-db local-ingress-root.crt
 # Debian, Ubuntu (Chrome on Linux keeps its own store: import it under Settings → Manage certificates → Authorities)
 sudo cp local-ingress-root.crt /usr/local/share/ca-certificates/ && sudo update-ca-certificates
 # Windows, as administrator
 certutil -addstore -f ROOT local-ingress-root.crt
 ```
 
-Firefox uses its own store: import the certificate under Settings → Certificates → Authorities, or set `security.enterprise_roots.enabled` to `true` in `about:config` to trust the system's.
+Firefox uses its own store: import the certificate under Settings → Certificates → Authorities, or set `security.enterprise_roots.enabled` to `true` in `about:config` to trust the system's. An exception left by clicking through a warning earlier stays until you delete it (Certificates → Servers).
 
 Trust is per machine, once. The root lasts 10 years and survives every upgrade. Only [removing it](#removing-it) with its volume creates a new one.
 
@@ -84,7 +86,7 @@ Labels are read when a container starts, with no ingress restart. A container th
 | Request | Answer |
 |---|---|
 | `https://<host>` labelled by a running container | Proxied to the container, with `X-Forwarded-Host` and `X-Forwarded-Proto` |
-| `https://<host>.localhost` nothing serves | The help page, with a 404 saying nothing serves it |
+| `https://<host>.localhost` nothing serves | The help page, with a 404 saying nothing serves it. A name exists only while a container labelled with it runs: a devcontainer's while it's up (and loads while its dev server listens), a name a script started until the script stops |
 | `http://ingress.localhost`, `https://ingress.localhost` | The help page and `/root.crt` |
 | Any other `http://` | A temporary redirect (302) to `https://`. There's no HSTS, which browsers would remember |
 | A host outside `.localhost` | Refused: no certificate is issued for it |

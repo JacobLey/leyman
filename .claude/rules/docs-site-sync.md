@@ -42,6 +42,7 @@ paths:
   - "tools/test-chain/test-chain-core/src/**"
   - "tools/test-chain/vitest-chain/src/**"
   - "tools/test-chain/vitest-chain/README.md"
+  - "tools/local-ingress/README.md"
   - "tools/lease-cache/src/**"
   - "tools/lease-cache/README.md"
   - "tools/lease-cache/WHY-LEASE-CACHE.md"

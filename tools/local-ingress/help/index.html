@@ -18,16 +18,18 @@ pre { padding: 0.75rem; overflow-x: auto; }
 <body>
 <h1>Local ingress</h1>
 {{if and (ne .Host "ingress.localhost") (ne .Host "127.0.0.1") (ne .Host "localhost")}}
-<p class="notice">Nothing is serving <strong>{{.Host}}</strong>. Is its devcontainer running, and is the dev server listening on the port its labels name?</p>
+<p class="notice">Nothing is serving <strong>{{.Host}}</strong>. A name is served only while a container labelled with it is running, and listening on the port its labels name: for a worktree's devcontainer, start its dev server; for a name a script started (like a demo's <code>run</code>), the name went when the script stopped.</p>
 {{end}}
 <p>Routes <code>https://&lt;worktree&gt;.&lt;repo&gt;.localhost</code> to each worktree's devcontainer, with certificates from a certificate authority (CA) created on this machine. Trust that CA once, and every worktree of every repo loads without a warning.</p>
 
 <h2>Trust the CA</h2>
-<p><a href="/root.crt" download>Download the root certificate</a>, then add it to your system's trust store, or from a terminal:</p>
+<p><a href="/root.crt" download>Download the root certificate</a>, then add it to your system's trust store, and to <a href="#firefox">Firefox's</a> if you use it, which keeps its own. Or from a terminal:</p>
 <pre>curl -fsSo local-ingress-root.crt http://ingress.localhost/root.crt</pre>
 
 <h3>macOS</h3>
 <pre>sudo security add-trusted-cert -d -r trustRoot -k /Library/Keychains/System.keychain local-ingress-root.crt</pre>
+<p class="muted">Every prompt wants your Mac login password, and there are several: <code>sudo</code>'s, then macOS's own dialog. Your account must be an administrator. To trust it for your user only, with no <code>sudo</code> and one prompt:</p>
+<pre>security add-trusted-cert -r trustRoot -k ~/Library/Keychains/login.keychain-db local-ingress-root.crt</pre>
 
 <h3>Linux (Debian, Ubuntu)</h3>
 <pre>sudo cp local-ingress-root.crt /usr/local/share/ca-certificates/local-ingress-root.crt
@@ -37,8 +39,8 @@ sudo update-ca-certificates</pre>
 <h3>Windows (an administrator prompt)</h3>
 <pre>certutil -addstore -f ROOT local-ingress-root.crt</pre>
 
-<h3>Firefox</h3>
-<p>Firefox keeps its own store. Either import the certificate (Settings → Privacy &amp; Security → Certificates → View Certificates → Authorities → Import, then tick "Trust this CA to identify websites"), or have it trust the system's store by setting <code>security.enterprise_roots.enabled</code> to <code>true</code> in <code>about:config</code>.</p>
+<h3 id="firefox">Firefox</h3>
+<p>Firefox keeps its own store. Either import the certificate (Settings → Privacy &amp; Security → Certificates → View Certificates → Authorities → Import, then tick "Trust this CA to identify websites"), or have it trust the system's store by setting <code>security.enterprise_roots.enabled</code> to <code>true</code> in <code>about:config</code>. If you clicked through a warning before, delete the exception it left (View Certificates → Servers).</p>
 
 <p>Restart the browser afterwards. The root never needs replacing: it lives as long as the ingress's data volume.</p>
 
