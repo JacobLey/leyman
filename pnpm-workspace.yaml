@@ -100,6 +100,9 @@ overrides:
   # Optional peer of @vueuse/integrations (via vitepress) for its `useAxios` composable, which the docs site never uses.
   # pnpm still resolves it, so remove it outright.
   '@vueuse/integrations>axios': '-'
+  # drizzle-kit declares it but never loads it (its bundle uses esbuild directly), and it brings esbuild 0.18,
+  # which has a dev server advisory fixed in 0.25.
+  drizzle-kit>@esbuild-kit/esm-loader: '-'
 
 catalog:
   '@apidevtools/swagger-parser': ^13.1.0
