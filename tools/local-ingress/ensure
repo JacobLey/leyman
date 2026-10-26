@@ -1,0 +1,91 @@
+#!/bin/sh
+# Starts this machine's local ingress if it isn't running, or upgrades it if this checkout's VERSION is newer.
+# Runs on the host (POSIX sh), or anywhere with the host's Docker. See README.md.
+#
+#   ensure            start or upgrade; never downgrade
+#   ensure --force    rebuild and replace at this checkout's version, even a downgrade
+#   ensure status     print the running version and which checkout started it
+set -eu
+
+network=local-ingress
+container=local-ingress
+
+cd "$(dirname "$0")"
+LOCAL_INGRESS_VERSION="$(cat VERSION)"
+export LOCAL_INGRESS_VERSION
+
+# The version of the existing container, running or not, or nothing
+existing_version() {
+    docker inspect --format '{{index .Config.Labels "org.opencontainers.image.version"}}' "$container" 2>/dev/null || true
+}
+
+status() {
+    version="$(existing_version)"
+    if [ -z "$version" ]; then
+        echo "local-ingress: not created (this checkout has version $LOCAL_INGRESS_VERSION)"
+        return
+    fi
+    docker inspect --format \
+        'local-ingress: version {{index .Config.Labels "org.opencontainers.image.version"}}, {{.State.Status}}, started from {{index .Config.Labels "com.docker.compose.project.working_dir"}}' \
+        "$container"
+    echo "this checkout has version $LOCAL_INGRESS_VERSION"
+}
+
+up() {
+    if ! output="$(docker compose up --detach --quiet-pull "$@" 2>&1)"; then
+        echo "$output" >&2
+        case "$output" in
+        *'address already in use'* | *'port is already allocated'* | *'bind'*)
+            echo "local-ingress: port ${LOCAL_INGRESS_HTTPS_PORT:-443} or ${LOCAL_INGRESS_HTTP_PORT:-80} is taken by something else." >&2
+            echo "  Free it, or pick others with LOCAL_INGRESS_HTTPS_PORT and LOCAL_INGRESS_HTTP_PORT; URLs then carry the port." >&2
+            ;;
+        esac
+        return 1
+    fi
+}
+
+case "${1:-}" in
+status)
+    status
+    exit
+    ;;
+--force)
+    force=true
+    ;;
+'')
+    force=false
+    ;;
+*)
+    echo "usage: $0 [--force | status]" >&2
+    exit 2
+    ;;
+esac
+
+# Created here rather than by the compose project, so devcontainers can join it before the ingress first starts.
+# Two checkouts may race to create it.
+if ! docker network inspect "$network" > /dev/null 2>&1; then
+    docker network create "$network" > /dev/null 2>&1 || docker network inspect "$network" > /dev/null
+fi
+
+if [ "$force" = true ]; then
+    up --build --force-recreate
+    echo "local-ingress: version $LOCAL_INGRESS_VERSION, rebuilt"
+    exit
+fi
+
+running="$(existing_version)"
+if [ -n "$running" ] && [ "$running" -gt "$LOCAL_INGRESS_VERSION" ]; then
+    # Never downgrade: worktrees on older branches would flip it back and forth
+    docker start "$container" > /dev/null
+    echo "local-ingress: version $running is newer than this checkout's $LOCAL_INGRESS_VERSION, leaving it"
+    exit
+fi
+
+# Builds the image if this version's is missing, and replaces the container only if its configuration changed
+up
+if [ "$running" != "$LOCAL_INGRESS_VERSION" ]; then
+    echo "local-ingress: version $LOCAL_INGRESS_VERSION started${running:+ (was $running)}"
+    if [ -n "$running" ]; then
+        docker image rm "local-ingress:$running" > /dev/null 2>&1 || true
+    fi
+fi

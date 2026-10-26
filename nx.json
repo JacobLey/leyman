@@ -668,6 +668,11 @@
         "test:run"
       ]
     },
+    "check-version": {
+      "dependsOn": [
+        "check:_"
+      ]
+    },
     "install:_": {
       "executor": "nx:noop",
       "dependsOn": [
@@ -748,7 +753,8 @@
         "check-package",
         "drizzle-kit-check",
         "go-vet",
-        "tofu-validate"
+        "tofu-validate",
+        "check-version"
       ],
       "configurations": {
         "__lifecycle": {}

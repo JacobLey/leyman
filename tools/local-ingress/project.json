@@ -1,0 +1,46 @@
+{
+  "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/local-ingress",
+  "targets": {
+    "biome": {},
+    "check-version": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "./check-version",
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "{projectRoot}/Dockerfile",
+        "{projectRoot}/Caddyfile",
+        "{projectRoot}/compose.yml",
+        "{projectRoot}/help/**",
+        "{projectRoot}/VERSION",
+        "{projectRoot}/VERSION.sha256",
+        "{projectRoot}/check-version"
+      ],
+      "outputs": []
+    },
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}

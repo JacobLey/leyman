@@ -1,0 +1,44 @@
+# One per machine, shared by every repo: run it through `ensure`, which sets LOCAL_INGRESS_VERSION from VERSION.
+# Bump VERSION on any change here.
+name: local-ingress
+
+services:
+  caddy:
+    build:
+      context: .
+      args:
+        VERSION: ${LOCAL_INGRESS_VERSION:?run tools/local-ingress/ensure}
+    image: local-ingress:${LOCAL_INGRESS_VERSION}
+    container_name: local-ingress
+    command:
+      - docker-proxy
+      - --caddyfile-path=/etc/local-ingress/Caddyfile
+      # Proxies to containers' addresses on this network only
+      - --ingress-networks=local-ingress
+    environment:
+      LOCAL_INGRESS_HTTP_PORT: ${LOCAL_INGRESS_HTTP_PORT:-80}
+      LOCAL_INGRESS_HTTPS_PORT: ${LOCAL_INGRESS_HTTPS_PORT:-443}
+    # Loopback only, never 0.0.0.0: other machines reach a worktree through a tunnel
+    ports:
+      - 127.0.0.1:${LOCAL_INGRESS_HTTP_PORT:-80}:${LOCAL_INGRESS_HTTP_PORT:-80}
+      - 127.0.0.1:${LOCAL_INGRESS_HTTPS_PORT:-443}:${LOCAL_INGRESS_HTTPS_PORT:-443}
+      - '[::1]:${LOCAL_INGRESS_HTTP_PORT:-80}:${LOCAL_INGRESS_HTTP_PORT:-80}'
+      - '[::1]:${LOCAL_INGRESS_HTTPS_PORT:-443}:${LOCAL_INGRESS_HTTPS_PORT:-443}'
+    volumes:
+      # Reads labels and follows containers starting and stopping
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      # The CA. Tooling never deletes it: it would have to be trusted again
+      - data:/data
+    networks:
+      - local-ingress
+    restart: unless-stopped
+
+networks:
+  # Created by `ensure` (and devcontainers' setup), so a container can join it before the ingress first starts
+  local-ingress:
+    name: local-ingress
+    external: true
+
+volumes:
+  data:
+    name: local-ingress-data

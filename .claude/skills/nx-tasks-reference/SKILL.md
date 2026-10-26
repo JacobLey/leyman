@@ -118,6 +118,14 @@ Runs `tofu init -backend=false -lockfile=readonly` then `tofu validate` (`script
 
 ---
 
+### `check-version`
+
+Fails if `tools/local-ingress`'s image or compose file changed without a `VERSION` bump (`tools/local-ingress/check-version`), since `ensure` only replaces a running ingress with a newer version. Defined in that project's `project.json`, not in `targetDefaults`. Runs in `check:lint`.
+
+**Add when:** Never: only `tools/local-ingress` has it.
+
+---
+
 ### `go-vet`
 
 Runs `go vet ./...`, Go's built-in static checks. Runs in `check:lint`, like `eslint`. Inferred by gonx (see [Go projects](#go-projects)).

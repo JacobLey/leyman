@@ -1,0 +1,78 @@
+# The base configuration. caddy-docker-proxy adds a site for each container labelled `caddy: <host>`
+# on the `local-ingress` network.
+{
+	# Every certificate comes from Caddy's own CA, never a public one: these names only exist on this machine
+	local_certs
+	# The CA is trusted on the host by hand (see the README), which Caddy can't do from a container
+	skip_install_trust
+
+	# Equal inside and out, so redirects and absolute URLs carry the port when it's overridden
+	http_port {$LOCAL_INGRESS_HTTP_PORT:80}
+	https_port {$LOCAL_INGRESS_HTTPS_PORT:443}
+	# Caddy's own redirects drop an overridden port, so `http://` below redirects every host instead
+	auto_https disable_redirects
+
+	pki {
+		ca local {
+			name "Local Ingress"
+			root_cn "Local Ingress Root"
+		}
+	}
+
+	# Certificates for hosts nothing serves, so they reach the help page rather than a TLS error.
+	# Only for `*.localhost`: anything else should never be routed here.
+	on_demand_tls {
+		ask http://127.0.0.1:2020/ask
+	}
+}
+
+# Answers on_demand_tls: may Caddy issue a certificate for `?domain=`?
+http://127.0.0.1:2020 {
+	bind 127.0.0.1
+	@localhost expression `{query.domain}.endsWith('.localhost')`
+	respond @localhost 200
+	respond 403
+}
+
+# How to trust the CA, and the root certificate to download
+(help) {
+	handle /root.crt {
+		root * /data/caddy/pki/authorities/local
+		header Content-Type application/x-x509-ca-cert
+		header Content-Disposition "attachment; filename=local-ingress-root.crt"
+		file_server
+	}
+	handle {
+		root * /srv/help
+		templates
+		rewrite * /index.html
+		file_server
+	}
+}
+
+# Over HTTP too, the one host that doesn't redirect: the browser can't load it over HTTPS until the CA is trusted
+ingress.localhost, http://ingress.localhost {
+	import help
+}
+
+# Hosts no container serves get the help page, saying so
+https:// {
+	tls {
+		on_demand
+	}
+	handle /root.crt {
+		redir https://ingress.localhost:{$LOCAL_INGRESS_HTTPS_PORT:443}/root.crt
+	}
+	handle {
+		root * /srv/help
+		templates
+		rewrite * /index.html
+		file_server {
+			status 404
+		}
+	}
+}
+
+http:// {
+	redir https://{host}:{$LOCAL_INGRESS_HTTPS_PORT:443}{uri}
+}

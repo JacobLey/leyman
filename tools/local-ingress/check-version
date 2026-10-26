@@ -1,0 +1,36 @@
+#!/bin/sh
+# Fails if the ingress's image or compose file changed without a VERSION bump, since `ensure` only replaces a
+# running ingress with a newer version. VERSION.sha256 records the version and a hash of those files.
+#
+#   check-version            check
+#   check-version --record   record the current files, after bumping VERSION
+set -eu
+
+cd "$(dirname "$0")"
+
+hash_files() {
+    find Dockerfile Caddyfile compose.yml help -type f | LC_ALL=C sort | xargs sha256sum | sha256sum | cut -d ' ' -f 1
+}
+
+version="$(cat VERSION)"
+hash="$(hash_files)"
+read -r recorded_version recorded_hash < VERSION.sha256
+
+if [ "${1:-}" = --record ]; then
+    if [ "$version" -gt "$recorded_version" ]; then
+        echo "$version $hash" > VERSION.sha256
+        echo "Recorded version $version"
+    elif [ "$hash" = "$recorded_hash" ]; then
+        echo "Nothing changed since version $recorded_version"
+    else
+        echo "Bump VERSION past $recorded_version first" >&2
+        exit 1
+    fi
+    exit
+fi
+
+if [ "$version" != "$recorded_version" ] || [ "$hash" != "$recorded_hash" ]; then
+    echo "The ingress's files changed since version $recorded_version was recorded." >&2
+    echo "Bump VERSION, then run tools/local-ingress/check-version --record" >&2
+    exit 1
+fi
