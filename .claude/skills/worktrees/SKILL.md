@@ -53,7 +53,7 @@ Each worktree's devcontainer serves port 5173 at `https://<worktree>.<repo>.loca
 
 Once per machine, trust its CA: open `http://ingress.localhost` for the root certificate and the steps for your OS. Until then, browsers warn about the certificate.
 
-Bind dev servers to `0.0.0.0:5173` inside the container, so the ingress can reach them.
+Bind dev servers to `0.0.0.0:5173` inside the container, so the ingress can reach them. `serve [project]` runs a project's `dev` target and prints the URL.
 
 For a phone or anyone off this machine, bring a tunnel (cloudflared, ngrok). To have the app see the tunnel's own host, set `TUNNEL_HOST` in the worktree's `.devcontainer/.env` and rebuild: recipes in [the ingress's tunnels section](../../../tools/local-ingress/README.md#tunnels).
 

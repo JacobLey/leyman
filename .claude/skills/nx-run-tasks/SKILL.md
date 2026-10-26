@@ -28,6 +28,7 @@ Run the high-level target you care about (`build`, `test`, `check`, `verify`). I
 | `test-only` | `test` with `--nxBail`: build + test, no lint. Fastest feedback |
 | `test-and-fix` | `verify` with `-c fix` |
 | `test-ci` | `verify` (lint + test, including `coverage-report`): what CI runs |
+| `serve [project]` | `dev` with plain output (no task view), at `https://<worktree>.<repo>.localhost`. Without a project, the only one with a `dev` target |
 | `dagger-test` | The full CI pipeline in a container (see [dagger-ci](../dagger-ci/SKILL.md)) |
 
 ## Finding targets

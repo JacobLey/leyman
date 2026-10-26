@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Runs a project's `dev` server, at https://<worktree>.<repo>.localhost through tools/local-ingress. With no
+# project, runs the only one that has a `dev` target. Plain output rather than Nx's task view, which otherwise
+# stays open for as long as the server runs.
+#
+#   serve [project]
+
+set -euo pipefail
+
+project="${1:-}"
+if [ -z "$project" ]; then
+    mapfile -t projects < <(nx show projects --with-target dev --json | jq -r '.[]')
+    if [ "${#projects[@]}" -ne 1 ]; then
+        echo "usage: serve <project>, one of: ${projects[*]}" >&2
+        exit 2
+    fi
+    project="${projects[0]}"
+fi
+
+echo "Serving $project at https://${WORKTREE_NAME:-<worktree>}.${REPO_NAME:-<repo>}.localhost"
+exec nx run "$project:dev" --tui=false

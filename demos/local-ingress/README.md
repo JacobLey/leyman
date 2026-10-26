@@ -19,7 +19,7 @@ A worked example, not a package: it is never published. It is the proof that a f
 In a devcontainer, whose `leyman` service is labelled for the ingress (see the [worktrees skill](../../.claude/skills/worktrees/SKILL.md#urls)):
 
 ```sh
-nx run @leyman/demo-local-ingress:dev
+serve   # scripts/commands/serve: nx run @leyman/demo-local-ingress:dev --tui=false
 ```
 
 Then open `https://<worktree>.leyman.localhost` (`scripts/worktree up` prints it). The page reads "You are loading **<worktree>** in **leyman**". Edit `src/page.ts` and the page reloads with the change. The first time on a machine, trust the CA from `http://ingress.localhost`.
