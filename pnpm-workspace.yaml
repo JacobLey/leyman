@@ -91,8 +91,12 @@ packageExtensions:
         optional: true
 
 overrides:
-  # nx pins undici exactly at 7.29.0 (advisories fixed in 7.29.1). Remove once an nx release depends on >=7.29.1.
-  nx>undici: ~7.29.1
+  # nx (7.29.0), miniflare 4 (7.28.0) and wrangler's miniflare 5 prerelease (7.29.1) pin undici exactly,
+  # below the advisory fixes in 7.30.1. Remove once none of them pins a version below that.
+  undici@7: ^7.30.1
+  # miniflare 4 pins sharp exactly at 0.35.2 (libheif and librsvg advisories fixed in 0.35.5), and its stable line
+  # has had no release since. Remove once a miniflare 4 release depends on >=0.35.5.
+  miniflare>sharp: 0.35.5
   # Optional peer of @vueuse/integrations (via vitepress) for its `useAxios` composable, which the docs site never uses.
   # pnpm still resolves it, so remove it outright.
   '@vueuse/integrations>axios': '-'
