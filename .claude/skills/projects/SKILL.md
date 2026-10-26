@@ -57,6 +57,7 @@ See each package's README.md for full usage documentation.
 | [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | Type-safe Vitest hook chaining with typed context propagation |
 | [`test-chain-core`](../../../tools/test-chain/test-chain-core/) | Framework-agnostic internals shared by `mocha-chain` and `vitest-chain` |
 | [`normalized-react-query`](../../../tools/normalized-react-query/) | Type-safe React Query wrappers that enforce consistent key/query pairing |
+| [`local-ingress`](../../../tools/local-ingress/) | One HTTPS reverse proxy per machine (Caddy, through caddy-docker-proxy) routing `https://<worktree>.<repo>.localhost` to labelled containers, with a local CA trusted once. A Docker image and compose project, not a package (private) |
 | [`oauth-dev-server`](../../../tools/oauth-dev-server/) | A local OAuth 2.1 authorization server for tests: oidc-provider with a dev login, issuing audience-bound JWT access tokens through the real flow (private) |
 | [`parse-cwd`](../../../tools/parse-cwd/) | Resolve and validate a working directory from string, URL, or undefined |
 | [`pg-dolly`](../../../tools/pg-dolly/) | A fresh Postgres database for every test, cloned from a template built once from your schema's SQL: integration tests on Postgres |
@@ -99,6 +100,7 @@ See each package's README.md for full usage documentation.
 | [`openapi/database`](../../../demos/openapi/database) | The OpenAPI demo's Postgres schema: Drizzle tables, the migrations that build them, and schema.sql, what the migrations build, for tests to clone |
 | [`openapi/server`](../../../demos/openapi/server) | The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication |
 | [`openapi/spec`](../../../demos/openapi/spec) | The OpenAPI document of the OpenAPI demo's notes API, built from Juniper schemas and published as openapi.json |
+| [`local-ingress`](../../../demos/local-ingress) | A Vite dev server behind tools/local-ingress: each worktree at https://<worktree>.<repo>.localhost, with hot reload through the proxy |
 | [`read-through-cache`](../../../demos/read-through-cache) | Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, cluster-wide stampede protection, and sharding with weighted rendezvous hashing |
 
 ### Infra

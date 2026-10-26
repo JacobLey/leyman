@@ -123,6 +123,9 @@
     },
     {
       "path": "./infra/nx-cache/worker"
+    },
+    {
+      "path": "./demos/local-ingress"
     }
   ]
 }

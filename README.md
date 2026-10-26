@@ -48,13 +48,14 @@ A documentation site, with every code example type-checked, is in [`docs/`](./do
 
 ## Demos
 
-Worked examples of putting open-source projects and services together well, in [`demos/`](./demos). They are never published: the code and its write-up are the point. Each is tested against real services (devcontainer sidecars, and the same images in CI) with 100% coverage, with every feature behind a [haywire](./tools/haywire) binding so each can be tested on its own. Also on the [docs site](https://jacobley.github.io/leyman/demos/).
+Worked examples of putting open-source projects and services together well, in [`demos/`](./demos). They are never published: the code and its write-up are the point. Each is tested against real services (devcontainer sidecars, and the same images in CI) with 100% coverage, with features that compose at runtime behind [haywire](./tools/haywire) bindings so each can be tested on its own. Also on the [docs site](https://jacobley.github.io/leyman/demos/).
 
 | Demo | What it shows | Source |
 |---|---|---|
 | [OpenAPI, spec to server](./demos/openapi) | A spec built with [Juniper](./apps/juniper), a client and a server typed by [genever](./apps/genever), the server validating every request and response against `openapi.json` with bearer auth, on Postgres with Drizzle, tested with [`pg-dolly`](./tools/pg-dolly). | [`demos/openapi`](./demos/openapi) |
 | [Agents](./demos/agents) | Making the notes API easy for AI agents: an MCP server (SDK v2, stateless) with tools shaped for tasks, step-up scopes and token exchange to call the API as the user, and a CLI that logs in once (PKCE, loopback redirect, discovered from the API) then runs one short command per task. | [`demos/agents`](./demos/agents) |
 | [Read-through cache](https://jacobley.github.io/leyman/demos/read-through-cache/) | BentoCache on Valkey: a memory tier kept in sync, stale-while-revalidate, one load per key across instances with [`lease-cache`](./tools/lease-cache), and sharding with [`weighted-rendezvous-hash`](./tools/constant-consistent-hash/weighted-rendezvous-hash). | [`demos/read-through-cache`](./demos/read-through-cache) |
+| [Local ingress](./demos/local-ingress) | A Vite dev server at `https://<worktree>.<repo>.localhost` behind [`tools/local-ingress`](./tools/local-ingress), a shared Caddy with its own CA: the few settings it needs, hot reload through the proxy, and cookies kept per worktree. | [`demos/local-ingress`](./demos/local-ingress) |
 
 ## Getting Started
 

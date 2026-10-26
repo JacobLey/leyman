@@ -1,0 +1,48 @@
+{
+  "name": "@leyman/demo-local-ingress",
+  "version": "0.0.1",
+  "description": "A Vite dev server behind tools/local-ingress: each worktree at https://<worktree>.<repo>.localhost, with hot reload through the proxy.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/local-ingress#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/vite-config.js",
+  "exports": {
+    ".": "./dist/vite-config.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "dependencies": {
+    "vite": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@happy-dom/global-registrator": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  }
+}
