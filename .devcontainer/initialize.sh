@@ -54,8 +54,29 @@ if [ "$worktree" != "$main_checkout" ]; then
 fi
 project="$(printf '%s' "$project" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_-' '-')"
 
+# DNS labels for this worktree's URL, `https://<worktree>.<repo>.localhost`: at most 63 characters of
+# `a-z0-9-`, not starting or ending with `-`. The main checkout is `main`.
+dns_label() {
+    printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | cut -c 1-63 | sed 's/^-*//; s/-*$//'
+}
+repo_name="$(dns_label "$(basename "$main_checkout")")"
+worktree_name=main
+if [ "$worktree" != "$main_checkout" ]; then
+    worktree_name="$(dns_label "$(basename "$worktree")")"
+fi
+
 {
     printf 'MAIN_CHECKOUT="%s"\n' "$main_checkout"
     printf 'WORKTREES_DIR="%s"\n' "$worktrees_dir"
     printf 'COMPOSE_PROJECT_NAME="%s"\n' "$project"
+    printf 'REPO_NAME="%s"\n' "$repo_name"
+    printf 'WORKTREE_NAME="%s"\n' "$worktree_name"
 } > .devcontainer/.env
+
+# The machine's shared HTTPS ingress (tools/local-ingress). Never blocks the container from starting: without it,
+# only the URL above doesn't load. The network must exist either way, as the container joins it.
+if ! sh tools/local-ingress/ensure; then
+    echo "warning: local-ingress didn't start, so https://$worktree_name.$repo_name.localhost won't load." >&2
+    echo "         See tools/local-ingress/README.md, then run tools/local-ingress/ensure." >&2
+    docker network inspect local-ingress > /dev/null 2>&1 || docker network create local-ingress > /dev/null 2>&1 || true
+fi

@@ -1,4 +1,4 @@
-# MAIN_CHECKOUT and WORKTREES_DIR come from `.devcontainer/.env`, written by `initialize.sh`
+# MAIN_CHECKOUT, WORKTREES_DIR, REPO_NAME and WORKTREE_NAME come from `.devcontainer/.env`, written by `initialize.sh`
 # (the devcontainer `initializeCommand`).
 
 services:
@@ -26,6 +26,21 @@ services:
       NX_SELF_HOSTED_REMOTE_CACHE_SERVER: http://nx-cache:3000
       # The `postgres` sidecar. A fixed dev password: local-only, not a secret
       DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
+      # This worktree's URL is https://${WORKTREE_NAME}.${REPO_NAME}.localhost
+      REPO_NAME: ${REPO_NAME:?run .devcontainer/initialize.sh}
+      WORKTREE_NAME: ${WORKTREE_NAME:?run .devcontainer/initialize.sh}
+
+    # Only this container joins the machine's shared ingress (`tools/local-ingress`). The sidecars stay off it, so
+    # `postgres` and `valkey` resolve to this worktree's own, while every worktree's are named the same.
+    networks:
+      - default
+      - local-ingress
+    # Serves https://<worktree>.<repo>.localhost from port 5173: one web port per container, so worktrees never clash.
+    # `upstreams` is this container's address on the ingress network, since every worktree's service is `leyman`.
+    labels:
+      caddy: ${WORKTREE_NAME}.${REPO_NAME}.localhost
+      caddy.reverse_proxy: '{{upstreams 5173}}'
+      caddy.tls: internal
 
     depends_on:
       - nx-cache
@@ -90,3 +105,8 @@ services:
       - -c
       - max_connections=500
     restart: unless-stopped
+
+networks:
+  # Created by `initialize.sh`, shared by every repo's devcontainers
+  local-ingress:
+    external: true

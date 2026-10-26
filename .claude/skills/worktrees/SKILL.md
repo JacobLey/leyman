@@ -42,7 +42,18 @@ The container's workspace folder is therefore the host path (for example `/Users
 - Fails if the folder being opened is neither the main checkout nor a direct child of `<main>-worktrees/`.
 - Creates `.shared/`. The first time, it moves `<main>/.pnpm-store` into `.shared/` and copies `<main>/.claude-config` there.
 - Links `<worktree>/plans` to `.shared/plans/`. Plans written there are visible from every worktree and never committed (`/plans` is gitignored).
-- Writes the paths and a namespaced `COMPOSE_PROJECT_NAME` (`leyman`, `leyman_feat-x`) to `.devcontainer/.env`, which is gitignored and read by `docker-compose.yml`. Container names therefore never clash with same-named worktrees from other repos.
+- Writes the paths and a namespaced `COMPOSE_PROJECT_NAME` (`leyman`, `leyman_feat-x`) to `.devcontainer/.env`, which is gitignored and read by `docker-compose.yml`. Container names therefore never clash with same-named worktrees from other repos. It also writes `REPO_NAME` and `WORKTREE_NAME` (`main` for the main checkout), as DNS labels, for the worktree's URL.
+- Starts the machine's shared HTTPS ingress, [`tools/local-ingress`](../../../tools/local-ingress/README.md), if it isn't running. A failure only warns: the container still starts, without its URL.
+
+---
+
+## URLs
+
+Each worktree's devcontainer serves port 5173 at `https://<worktree>.<repo>.localhost`, e.g. `https://feat-x.leyman.localhost` (the main checkout is `main.leyman.localhost`). Browsers resolve `*.localhost` to this machine themselves. One Caddy per machine ([`tools/local-ingress`](../../../tools/local-ingress/README.md)) routes by host name to the container labelled with it, so worktrees never compete for a port. `scripts/worktree up` prints the URL.
+
+Once per machine, trust its CA: open `http://ingress.localhost` for the root certificate and the steps for your OS. Until then, browsers warn about the certificate.
+
+Bind dev servers to `0.0.0.0:5173` inside the container, so the ingress can reach them.
 
 ---
 

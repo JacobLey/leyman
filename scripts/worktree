@@ -161,6 +161,22 @@ cmd_up() {
     path="$(existing_worktree "${1:-}")"
     devcontainer up --workspace-folder "$path"
     echo "Shell into it with: scripts/worktree shell $path"
+    print_url "$path"
+}
+
+# The worktree's URL through tools/local-ingress, from the names `initialize.sh` wrote
+print_url() {
+    local env="$1/.devcontainer/.env" repo worktree port=''
+    [ -f "$env" ] || return 0
+    repo="$(sed -n 's/^REPO_NAME="\(.*\)"$/\1/p' "$env")"
+    worktree="$(sed -n 's/^WORKTREE_NAME="\(.*\)"$/\1/p' "$env")"
+    [ -n "$repo" ] && [ -n "$worktree" ] || return 0
+    case "${LOCAL_INGRESS_HTTPS_PORT:-443}" in
+    443) ;;
+    *) port=":$LOCAL_INGRESS_HTTPS_PORT" ;;
+    esac
+    echo "Its dev server (port 5173) is at https://$worktree.$repo.localhost$port"
+    echo "First time? Trust the local CA: http://ingress.localhost${LOCAL_INGRESS_HTTP_PORT:+:$LOCAL_INGRESS_HTTP_PORT}"
 }
 
 cmd_shell() {
