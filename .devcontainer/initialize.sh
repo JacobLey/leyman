@@ -57,12 +57,18 @@ project="$(printf '%s' "$project" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_-
 # DNS labels for this worktree's URL, `https://<worktree>.<repo>.localhost`
 . .devcontainer/names.sh
 
+# Yours to set in `.devcontainer/.env`, kept when the file is rewritten (tools/local-ingress/README.md#tunnels)
+tunnel_host="$(sed -n 's/^TUNNEL_HOST="\(.*\)"$/\1/p' .devcontainer/.env 2> /dev/null || true)"
+
 {
     printf 'MAIN_CHECKOUT="%s"\n' "$main_checkout"
     printf 'WORKTREES_DIR="%s"\n' "$worktrees_dir"
     printf 'COMPOSE_PROJECT_NAME="%s"\n' "$project"
     printf 'REPO_NAME="%s"\n' "$repo_name"
     printf 'WORKTREE_NAME="%s"\n' "$worktree_name"
+    if [ -n "$tunnel_host" ]; then
+        printf 'TUNNEL_HOST="%s"\n' "$tunnel_host"
+    fi
 } > .devcontainer/.env
 
 # The machine's shared HTTPS ingress (tools/local-ingress). Never blocks the container from starting: without it,

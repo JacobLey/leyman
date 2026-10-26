@@ -1,5 +1,5 @@
 # MAIN_CHECKOUT, WORKTREES_DIR, REPO_NAME and WORKTREE_NAME come from `.devcontainer/.env`, written by `initialize.sh`
-# (the devcontainer `initializeCommand`).
+# (the devcontainer `initializeCommand`). So does TUNNEL_HOST, when you add it there (it's kept across rewrites).
 
 services:
   leyman:
@@ -29,6 +29,8 @@ services:
       # This worktree's URL is https://${WORKTREE_NAME}.${REPO_NAME}.localhost
       REPO_NAME: ${REPO_NAME:?run .devcontainer/initialize.sh}
       WORKTREE_NAME: ${WORKTREE_NAME:?run .devcontainer/initialize.sh}
+      # A tunnel's public host name, served as well (tools/local-ingress/README.md#tunnels). Empty for none
+      TUNNEL_HOST: ${TUNNEL_HOST:-}
 
     # Only this container joins the machine's shared ingress (`tools/local-ingress`). The sidecars stay off it, so
     # `postgres` and `valkey` resolve to this worktree's own, while every worktree's are named the same.
@@ -36,9 +38,10 @@ services:
       - default
       - local-ingress
     # Serves https://<worktree>.<repo>.localhost from port 5173: one web port per container, so worktrees never clash.
+    # Also serves TUNNEL_HOST, if set: a tunnel connects as the `.localhost` name and keeps its own `Host`.
     # `upstreams` is this container's address on the ingress network, since every worktree's service is `leyman`.
     labels:
-      caddy: ${WORKTREE_NAME}.${REPO_NAME}.localhost
+      caddy: ${WORKTREE_NAME}.${REPO_NAME}.localhost ${TUNNEL_HOST:-}
       caddy.reverse_proxy: '{{upstreams 5173}}'
       caddy.tls: internal
 

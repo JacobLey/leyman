@@ -24,6 +24,8 @@ nx run @leyman/demo-local-ingress:dev
 
 Then open `https://<worktree>.leyman.localhost` (`scripts/worktree up` prints it). The page reads "You are loading **<worktree>** in **leyman**". Edit `src/page.ts` and the page reloads with the change. The first time on a machine, trust the CA from `http://ingress.localhost`.
 
+To reach it from a phone, start a tunnel and set `TUNNEL_HOST` (see [the ingress's tunnels](../../tools/local-ingress/README.md#tunnels)). Vite accepts the tunnel's host through `server.allowedHosts`, and its hot reload goes through the tunnel too.
+
 `dev` builds the package first: `vite.config.js` imports the config from `dist/`, where it is compiled from `src/vite-config.ts` and tested.
 
 ### Without the devcontainer
@@ -34,7 +36,7 @@ With only Docker (and git) on the host, no Node, pnpm or Nx:
 demos/local-ingress/run
 ```
 
-It starts the ingress if needed, then runs the dev server in a container on the `local-ingress` network, at `https://demo.<worktree>.leyman.localhost`. That's a name of its own, so it never shares a host with the devcontainer's `https://<worktree>.leyman.localhost`. Inside, it installs only the lockfile's `vite` (its dependencies held to the 7-day rule with `npm install --before`). Node loads `src/vite-config.ts` with its types stripped, which `erasableSyntaxOnly` in `tsconfig.json` keeps possible, so nothing is built first. The checkout is mounted read-only, edits still reload the page, and Ctrl-C removes the container.
+It starts the ingress if needed (it refuses to start twice for one worktree), then runs the dev server in a container on the `local-ingress` network, at `https://demo.<worktree>.leyman.localhost`. That's a name of its own, so it never shares a host with the devcontainer's `https://<worktree>.leyman.localhost`. Inside, it installs only the lockfile's `vite` (its dependencies held to the 7-day rule with `npm install --before`). Node loads `src/vite-config.ts` with its types stripped, which `erasableSyntaxOnly` in `tsconfig.json` keeps possible, so nothing is built first. The checkout is mounted read-only, edits still reload the page, and Ctrl-C removes the container. `TUNNEL_HOST=<host> demos/local-ingress/run` serves a tunnel's host as well.
 
 ## The Vite settings
 
@@ -73,7 +75,6 @@ Caddy sends `X-Forwarded-Host` (with the port, when the ingress runs on another 
 
 ## Not covered
 
-- **Tunnels.** `TUNNEL_HOST` is accepted by the dev server, but routing a tunnel's host to a worktree is up to the ingress labels. Recipes are planned for the ingress's README.
 - **A production build.** Only the dev server is shown: `vite build` output is static files, served by whatever serves them.
 - **Frameworks.** Vanilla TypeScript only. Most frameworks' dev servers are Vite's (SvelteKit, Nuxt, Astro, React Router, SolidStart), so these settings carry over. Next.js runs its own server and needs its own check (`allowedDevOrigins`).
 - **haywire.** Unlike the other demos, nothing here composes at runtime: a Vite config is a value, built by functions that are tested directly.

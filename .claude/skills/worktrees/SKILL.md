@@ -55,6 +55,8 @@ Once per machine, trust its CA: open `http://ingress.localhost` for the root cer
 
 Bind dev servers to `0.0.0.0:5173` inside the container, so the ingress can reach them.
 
+For a phone or anyone off this machine, bring a tunnel (cloudflared, ngrok). To have the app see the tunnel's own host, set `TUNNEL_HOST` in the worktree's `.devcontainer/.env` and rebuild: recipes in [the ingress's tunnels section](../../../tools/local-ingress/README.md#tunnels).
+
 ---
 
 ## Daily workflow

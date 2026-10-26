@@ -2,6 +2,7 @@
 # Runs the demo's dev server in a container behind tools/local-ingress, so the host needs only Docker: no Node,
 # pnpm or Nx. It serves at `https://demo.<worktree>.<repo>.localhost`, beside the devcontainer's own
 # `https://<worktree>.<repo>.localhost`, and edits to the checkout reload the page. Stop it with Ctrl-C.
+# `TUNNEL_HOST`, if set, is a tunnel's public host name, served too (see tools/local-ingress/README.md#tunnels).
 set -eu
 
 demo="$(cd "$(dirname "$0")" && pwd -P)"
@@ -15,6 +16,12 @@ image='node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e
 vite="$(awk '/^catalogs:/ { catalogs = 1 } catalogs && /^    vite:/ { getline; getline; print $2; exit }' \
     "$checkout/pnpm-lock.yaml")"
 
+container="local-ingress-demo-$repo_name-$worktree_name"
+if [ -n "$(docker ps --all --quiet --filter "name=^$container\$")" ]; then
+    echo "Already running as container $container. Stop that one first: docker rm --force $container" >&2
+    exit 1
+fi
+
 sh "$checkout/tools/local-ingress/ensure"
 
 host="demo.$worktree_name.$repo_name.localhost"
@@ -23,7 +30,7 @@ case "${LOCAL_INGRESS_HTTPS_PORT:-443}" in
 443) ;;
 *) port=":$LOCAL_INGRESS_HTTPS_PORT" ;;
 esac
-echo "Serving at https://$host$port once Vite is ready"
+echo "Serving at https://$host$port${TUNNEL_HOST:+ and https://$TUNNEL_HOST} once Vite is ready"
 
 tty=''
 if [ -t 0 ]; then
@@ -35,9 +42,9 @@ fi
 # the config's types itself (`--configLoader native`), so the demo isn't built first.
 # shellcheck disable=SC2086,SC2016 # $tty is zero or two flags; the script expands its variables in the container
 docker run --rm --init $tty \
-    --name "local-ingress-demo-$repo_name-$worktree_name" \
+    --name "$container" \
     --network local-ingress \
-    --label "caddy=$host" \
+    --label "caddy=$host${TUNNEL_HOST:+ $TUNNEL_HOST}" \
     --label 'caddy.reverse_proxy={{upstreams 5173}}' \
     --label caddy.tls=internal \
     --env "WORKTREE_NAME=$worktree_name" \

@@ -16,6 +16,7 @@ Private, not a package: a Docker image and compose project, started by [`ensure`
 - [Joining from a container](#joining-from-a-container)
 - [How it routes](#how-it-routes)
 - [Ports taken](#ports-taken)
+- [Tunnels](#tunnels)
 - [Upgrading](#upgrading)
 - [Removing it](#removing-it)
 - [Compared to alternatives](#compared-to-alternatives)
@@ -72,7 +73,7 @@ networks:
 
 - Only the container serving the app joins. Its sidecars stay off the network, so names like `postgres` keep resolving to the project's own copies.
 - The network is external: `ensure` creates it, so run `ensure` (or `docker network create local-ingress`) before `docker compose up`.
-- `caddy` may list several hosts, separated by spaces, e.g. a tunnel's host as well.
+- `caddy` may list several hosts, separated by spaces, e.g. a [tunnel's](#tunnels) host as well.
 - Name hosts `<worktree>.<repo>.localhost`, and further services `<service>.<worktree>.<repo>.localhost`. Each DNS label is at most 63 characters.
 - Cookies stay host-only: never set `Domain=.<repo>.localhost`, or worktrees share them.
 
@@ -99,6 +100,56 @@ LOCAL_INGRESS_HTTPS_PORT=8443 LOCAL_INGRESS_HTTP_PORT=8080 tools/local-ingress/e
 ```
 
 URLs then carry the port (`https://main.leyman.localhost:8443`), and redirects keep it. Set both variables in your shell profile, so that `ensure` keeps the ports when a devcontainer runs it.
+
+## Tunnels
+
+The ingress only listens on loopback, so a phone or a colleague reaches a worktree through a tunnel you bring: [cloudflared](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/), [ngrok](https://ngrok.com/), or similar. The tunnel's own public certificate is what they see, so they never need the local CA. Anyone with the URL reaches your dev server, so stop the tunnel when you're done.
+
+Every recipe connects to the ingress over HTTPS as the worktree's `.localhost` name (the TLS server name, which picks the certificate), and verifies it against the root you downloaded for [trusting the CA](#trusting-the-ca). Plain HTTP doesn't work: the ingress would redirect the tunnel's requests to `https://`, in a loop.
+
+### Quick: no setup
+
+The tunnel rewrites `Host` to the worktree's name, so the ingress needs nothing. With cloudflared as a container on the ingress's network, no account needed:
+
+```sh
+docker run --rm --network local-ingress -v "$PWD/local-ingress-root.crt:/root.crt:ro" cloudflare/cloudflared \
+  tunnel --no-autoupdate --url https://local-ingress:443 \
+  --origin-server-name feat-x.leyman.localhost --http-host-header feat-x.leyman.localhost --origin-ca-pool /root.crt
+```
+
+It prints a random `https://<words>.trycloudflare.com`. The catch: the app sees `Host: feat-x.leyman.localhost`, so absolute URLs it builds (redirects, OAuth redirect URIs) point at `.localhost`, which the phone can't load. A dev server alone, like Vite's, works.
+
+### The tunnel's own host
+
+For URLs the app gets right, the tunnel keeps its public `Host`, and the worktree serves that host too. The host has to be known in advance, so use a fixed one: ngrok's free static domain, or a [named Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/) on your own domain.
+
+1. Add it to the worktree's `.devcontainer/.env`, which `initialize.sh` keeps when it rewrites the file:
+   ```sh
+   TUNNEL_HOST="feat-x.example.com"
+   ```
+2. Rebuild or reopen the devcontainer. The `caddy` label becomes `feat-x.leyman.localhost feat-x.example.com`, and `TUNNEL_HOST` reaches the container, where a dev server must accept the host (Vite's `server.allowedHosts`; see [the demo](../../demos/local-ingress)).
+3. Start the tunnel with the `.localhost` name for TLS, and without rewriting `Host`:
+   - **cloudflared**, a named tunnel: route the public hostname to `https://local-ingress:443` with these [origin settings](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/configure-tunnels/origin-parameters/), and run the tunnel as a container on the `local-ingress` network with the root mounted. In a locally managed tunnel's `config.yml`:
+     ```yaml
+     ingress:
+       - hostname: feat-x.example.com
+         service: https://local-ingress:443
+         originRequest:
+           originServerName: feat-x.leyman.localhost
+           caPool: /root.crt
+       - service: http_status:404
+     ```
+     A tunnel managed in the dashboard has the same settings under the hostname's TLS options (Origin Server Name), but no CA file, so it skips verification instead (No TLS Verify).
+   - **ngrok**, on the host, where the OS trust store already has the root (ngrok checks upstream certificates against it, or `SSL_CERT_FILE`):
+     ```sh
+     ngrok http https://feat-x.leyman.localhost --url feat-x.ngrok-free.app
+     ```
+
+The app then sees `Host: feat-x.example.com` and `X-Forwarded-Proto: https`, as in production.
+
+Without the devcontainer, [`demos/local-ingress/run`](../../demos/local-ingress/run) takes `TUNNEL_HOST` from the environment instead. Its container is cheap to recreate, so a quick tunnel's random host works there too: start the tunnel without `--http-host-header`, then `TUNNEL_HOST=<words>.trycloudflare.com demos/local-ingress/run`.
+
+Checked with the demo: both cloudflared quick tunnel recipes (page, compiled modules and hot reload through the tunnel, and Vite refusing the tunnel's host until it was in `TUNNEL_HOST`). The named cloudflared tunnel and ngrok follow the same settings, unchecked.
 
 ## Upgrading
 
