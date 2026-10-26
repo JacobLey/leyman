@@ -34,6 +34,13 @@ http://127.0.0.1:2020 {
 	respond 403
 }
 
+# Redirects to `https://<host><path>` (the arguments), naming the port only when it isn't HTTPS's default
+(to_https) {
+	@default_https_port expression `{$LOCAL_INGRESS_HTTPS_PORT:443} == 443`
+	redir @default_https_port https://{args[0]}{args[1]}
+	redir https://{args[0]}:{$LOCAL_INGRESS_HTTPS_PORT:443}{args[1]}
+}
+
 # How to trust the CA, and the root certificate to download
 (help) {
 	handle /root.crt {
@@ -61,7 +68,7 @@ https:// {
 		on_demand
 	}
 	handle /root.crt {
-		redir https://ingress.localhost:{$LOCAL_INGRESS_HTTPS_PORT:443}/root.crt
+		import to_https ingress.localhost /root.crt
 	}
 	handle {
 		root * /srv/help
@@ -74,5 +81,5 @@ https:// {
 }
 
 http:// {
-	redir https://{host}:{$LOCAL_INGRESS_HTTPS_PORT:443}{uri}
+	import to_https {host} {uri}
 }

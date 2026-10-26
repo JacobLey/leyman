@@ -81,8 +81,9 @@ if [ -n "$running" ] && [ "$running" -gt "$LOCAL_INGRESS_VERSION" ]; then
     exit
 fi
 
-# Builds the image if this version's is missing, and replaces the container only if its configuration changed
-up
+# Always builds, from cache when nothing changed, so a leftover image tagged with this version can't stand in for
+# these files. Replaces the container only if its image or configuration changed.
+up --build
 if [ "$running" != "$LOCAL_INGRESS_VERSION" ]; then
     echo "local-ingress: version $LOCAL_INGRESS_VERSION started${running:+ (was $running)}"
     if [ -n "$running" ]; then

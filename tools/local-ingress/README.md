@@ -105,7 +105,7 @@ URLs then carry the port (`https://main.leyman.localhost:8443`), and redirects k
 One ingress serves every worktree, on whatever branch, so its configuration is versioned:
 
 - **The image is the whole configuration.** The `Caddyfile` and help page are copied into `local-ingress:<VERSION>`, built from this folder, and nothing is mounted from a checkout. Deleting a worktree never breaks the running ingress.
-- **`ensure` only moves forward.** A checkout with a newer [`VERSION`](VERSION) replaces the container. One with the same version does nothing, and one with an older version leaves it running, so worktrees on old branches don't downgrade it.
+- **`ensure` only moves forward.** A checkout with a newer [`VERSION`](VERSION) replaces the container. One with the same version changes nothing (its build comes from cache; only uncommitted edits to the ingress's files would replace it), and one with an older version leaves it running, so worktrees on old branches don't downgrade it.
 - **The CA is kept.** It lives in the `local-ingress-data` volume, which upgrades never touch.
 - **Changes are additive.** A newer ingress keeps serving older worktrees' labels and network. A breaking change (network name, label format, ports) gets its own version and migration notes here.
 
