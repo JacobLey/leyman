@@ -54,16 +54,8 @@ if [ "$worktree" != "$main_checkout" ]; then
 fi
 project="$(printf '%s' "$project" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9_-' '-')"
 
-# DNS labels for this worktree's URL, `https://<worktree>.<repo>.localhost`: at most 63 characters of
-# `a-z0-9-`, not starting or ending with `-`. The main checkout is `main`.
-dns_label() {
-    printf '%s' "$1" | tr '[:upper:]' '[:lower:]' | tr -c 'a-z0-9-' '-' | cut -c 1-63 | sed 's/^-*//; s/-*$//'
-}
-repo_name="$(dns_label "$(basename "$main_checkout")")"
-worktree_name=main
-if [ "$worktree" != "$main_checkout" ]; then
-    worktree_name="$(dns_label "$(basename "$worktree")")"
-fi
+# DNS labels for this worktree's URL, `https://<worktree>.<repo>.localhost`
+. .devcontainer/names.sh
 
 {
     printf 'MAIN_CHECKOUT="%s"\n' "$main_checkout"

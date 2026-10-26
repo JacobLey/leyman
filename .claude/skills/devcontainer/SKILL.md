@@ -51,7 +51,7 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 
 | Runtime | DevContainer | Dagger |
 |---------|-------------|--------|
-| Node.js | `ARG NODE_VERSION` in `.devcontainer/Dockerfile` | `nodeImage` tag in `dagger/main.go` |
+| Node.js | `ARG NODE_VERSION` in `.devcontainer/Dockerfile`, the `nx-cache` image in `.devcontainer/docker-compose.yml`, and `image` in `demos/local-ingress/run` (pinned by digest, the same as `nodeImage`) | `nodeImage` tag in `dagger/main.go` |
 | pnpm | `ARG PNPM_VERSION` in `.devcontainer/Dockerfile` | `pnpmVersion` in `dagger/main.go` |
 | Go | `ARG GO_VERSION` in `.devcontainer/Dockerfile` | `goImage` tag in `dagger/main.go` (pinned by digest, like `nodeImage`) |
 | OpenTofu | `ARG TOFU_IMAGE` in `.devcontainer/Dockerfile` | `tofuImage` in `dagger/main.go`. The same image, pinned by digest: only its `tofu` binary is copied in |

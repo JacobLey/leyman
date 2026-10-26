@@ -26,6 +26,16 @@ Then open `https://<worktree>.leyman.localhost` (`scripts/worktree up` prints it
 
 `dev` builds the package first: `vite.config.js` imports the config from `dist/`, where it is compiled from `src/vite-config.ts` and tested.
 
+### Without the devcontainer
+
+With only Docker (and git) on the host, no Node, pnpm or Nx:
+
+```sh
+demos/local-ingress/run
+```
+
+It starts the ingress if needed, then runs the dev server in a container on the `local-ingress` network, at `https://demo.<worktree>.leyman.localhost`. That's a name of its own, so it never shares a host with the devcontainer's `https://<worktree>.leyman.localhost`. Inside, it installs only the lockfile's `vite` (its dependencies held to the 7-day rule with `npm install --before`). Node loads `src/vite-config.ts` with its types stripped, which `erasableSyntaxOnly` in `tsconfig.json` keeps possible, so nothing is built first. The checkout is mounted read-only, edits still reload the page, and Ctrl-C removes the container.
+
 ## The Vite settings
 
 Everything is in [`src/vite-config.ts`](src/vite-config.ts), and it's short, because Vite 8 already does most of it:
