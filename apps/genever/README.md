@@ -97,7 +97,7 @@ export type Address = {
 
 genever is an ESM module, and a CLI. Most projects run the CLI as a build step, and commit the generated file. In CI, `--ci` (on by default when the `CI` environment variable is set) fails instead of writing when the file is out of date.
 
-The programmatic API is the same: `genever(schema)` returns the TypeScript source, and `geneverFile(path)` reads a schema file and writes the types next to it.
+The programmatic API is the same: `genever(schema)` returns the TypeScript source, and `geneverFile(path)` reads a schema file and writes the types next to it. `parseYaml(text)` reads YAML as the CLI does, for `genever`.
 
 The root schema becomes a type named `Schema` (or `--name`). Every definition in the root `$defs` (or draft 7 `definitions`) becomes an exported type named after its key, in PascalCase. A schema referenced by `$ref` from elsewhere in the document becomes a named type too, named after its key in any nested `$defs`, or else after its path. Everything else is inlined.
 
@@ -310,6 +310,27 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
 
 **Throws** `GeneverError` — see [Errors](#errors). With `check`, also throws a `PopulateFilesCheckError` (from [`populate-files`](https://www.npmjs.com/package/populate-files#errors), `... not up to date. Reason: content-changed`) if the file is out of date. Rejects with the file system's error (`ENOENT`) if `input` doesn't exist, and a `SyntaxError` for invalid JSON. Throws a `TypeError` if `fetch` lists something that is not a host.
+
+---
+
+### `parseYaml(text)`
+
+Parse a YAML (or JSON) document the way genever reads a `.yaml` file, for [`genever`](#geneverschema-options) to generate types from. See [YAML](#yaml) for what is read and what is an error.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `text` | `string` | — | Required. YAML 1.2 source. JSON is YAML too. |
+
+**Returns** `unknown` — the parsed document, with only the values JSON has.
+
+**Throws** the [`yaml`](https://www.npmjs.com/package/yaml) package's `YAMLError` if the text isn't YAML or uses a feature JSON doesn't have, and a `GeneverError` for a value with no JSON equivalent, or a recursive schema genever doesn't support.
+
+```ts
+import { genever, parseYaml } from 'genever';
+
+genever(parseYaml('type: array\nitems: { type: string }\n'), { name: 'Tags' });
+// export type Tags = string[];
+```
 
 ---
 

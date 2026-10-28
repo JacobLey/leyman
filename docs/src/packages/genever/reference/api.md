@@ -79,6 +79,17 @@ Read a JSON Schema file, or OpenAPI document, in JSON or YAML, and write its typ
 
 ---
 
+## `parseYaml(text)`
+
+Parse a YAML (or JSON) document the way genever reads a `.yaml` file, for `genever` to generate types from. Returns the parsed document, with only the values JSON has. What is read, and what is an error, is described [below](#yaml).
+
+```ts
+import { genever, parseYaml } from 'genever';
+
+genever(parseYaml('type: array\nitems: { type: string }\n'), { name: 'Tags' });
+// export type Tags = string[];
+```
+
 ## YAML
 
 A `.yaml` or `.yml` file is read as YAML 1.2, whether it is the input or a file it references, and so is a URL served with a YAML media type. YAML 1.2 reads `on`, `off`, `yes` and `no` as strings, not booleans.
