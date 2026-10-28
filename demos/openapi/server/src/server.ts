@@ -1,5 +1,12 @@
 export { notes } from '@leyman/demo-openapi-database';
-export type { ApiError, NewNote, Note, NoteList, Operations, Paths } from './generated/api.js';
+export type {
+    ApiError,
+    NewNote,
+    Note,
+    NoteList,
+    Operations,
+    Paths,
+} from '@leyman/demo-openapi-spec/notes.openapi.yaml';
 export { createApp, type NotesAppConfig, type ProtectedResource } from './lib/app.js';
 export { type StaticToken, staticTokens } from './lib/auth.js';
 export {

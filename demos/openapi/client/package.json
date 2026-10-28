@@ -34,11 +34,11 @@
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
     "@types/node": "catalog:",
-    "@typescript/native": "catalog:",
+    "@typescript/native": "catalog:typescript-next",
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
-    "genever": "workspace:^",
+    "genever-content-mapper": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "typescript": "catalog:"

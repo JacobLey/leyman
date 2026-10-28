@@ -9,8 +9,8 @@ description: A small notes API with the whole path from spec to database built p
 A deliberately small API (notes: add one, read one, list the newest), with the whole path from spec to database built properly, since connecting those parts is what the demo shows:
 
 ```
-spec (juniper) ──► openapi.json ──┬──► client: genever types + a typed fetch client
-                                  └──► server: genever types + Hono, validating against openapi.json
+spec (juniper) ──► openapi.json, notes.openapi.yaml ──┬──► client: imported types + a typed fetch client
+                                                     └──► server: imported types + Hono, validating against openapi.json
                                          ▲ Drizzle tables, and schema.sql for pg-dolly per test
 database: Drizzle migrations ──► schema.sql (what the migrations build, against Postgres)
 ```
@@ -19,15 +19,16 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 
 | Package | Output |
 |---|---|
-| [`spec`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/spec) | `openapi.json`, built from [Juniper](/packages/juniper/) schemas. See [The spec](#the-spec). |
+| [`spec`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/spec) | `openapi.json` and `notes.openapi.yaml`, built from [Juniper](/packages/juniper/) schemas. See [The spec](#the-spec). |
 | [`client`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/client) | A typed client, from `openapi.json`. See [The client](#the-client). |
 | [`database`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/database) | The Drizzle schema, its migrations, and `schema.sql`. See [The database](#the-database). |
 | [`server`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/server) | The service: Hono on Postgres. See [The server](#the-server). |
 
 ## Why each piece
 
-- **The spec is the contract, and the one source of truth.** It's written in TypeScript with [Juniper](/packages/juniper/), whose schemas carry their types, and `serializeSpec` turns it into a plain `openapi.json` (OpenAPI 3.1). That file is committed, and CI fails if it's stale ([populate-files](/packages/populate-files/)). Both sides read the file, as any outside client would, never the TypeScript.
-- **Types are generated from the file, on each side.** [genever](/packages/genever/) writes `Paths` and `Operations` types into each package's `src/generated/`, from the spec package's `openapi.json` as installed. A change to the spec that breaks a handler or a call is a type error in that package.
+- **The spec is the contract, and the one source of truth.** It's written in TypeScript with [Juniper](/packages/juniper/), whose schemas carry their types, and `serializeSpec` turns it into a plain `openapi.json` (OpenAPI 3.1), and the same document as `notes.openapi.yaml`. Both files are committed, and CI fails if either is stale ([populate-files](/packages/populate-files/)). Both sides read the files, as any outside client would, never the TypeScript.
+- **Types come straight from the document, on each side.** The client and server `import type { Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml'`, and genever-content-mapper, a TypeScript 7.1 content mapper, gives that import [genever](/packages/genever/)'s types as `tsc` runs. Nothing is generated or committed on either side, so nothing can go stale. A change to the spec that breaks a handler or a call is a type error in that package. It needs TypeScript 7.1 (these two packages are on its beta) and `tsc --runExternalCode`, passed only in their `tsc` targets.
+- **Lint reads the same types from a declaration file.** typescript-eslint runs on TypeScript 6, which can't run content mappers. So the spec package also writes genever's types beside the document as `notes.openapi.d.yaml.ts`, which TypeScript 6 reads for the import through `allowArbitraryExtensions`. `tsc` 7.1 running the mapper ignores it. It goes once typescript-eslint can run mappers.
 - **The server checks every request and response against the document at runtime**, with Ajv compiled from `openapi.json`. Types only hold within TypeScript, so the contract is checked again on the wire.
 - **The database schema is what the migrations build.** Drizzle generates SQL migrations, [pg-dolly-schema](/packages/pg-dolly-schema/) dumps what they build into `schema.sql`, and every test gets a database of its own cloned from it with [pg-dolly](/packages/pg-dolly/).
 
@@ -88,7 +89,7 @@ const spec = serializeSpec({
 
 (Trimmed: the [full spec](https://github.com/JacobLey/leyman/tree/main/demos/openapi/spec/src/spec.ts) has every operation, and the bearer security scheme.)
 
-A `populate-files` target writes it to `out/openapi.json`, committed, and CI fails if it's stale. The package exports only that file (`@leyman/demo-openapi-spec/openapi.json`): the client and server read the JSON, never the TypeScript.
+A `populate-files` target writes it to `out/openapi.json`, and the same document as YAML to `out/notes.openapi.yaml`, both committed, and CI fails if either is stale. The package exports only those files: the client and server read the JSON at runtime, and import their types from the YAML through the content mapper, never the TypeScript. The YAML's name ends in `.openapi.yaml` because TypeScript won't map a `.json` file, and a compound extension leaves other YAML files alone. Beside it, `notes.openapi.d.yaml.ts` holds the same types for typescript-eslint, until it can run content mappers.
 
 The spec's tests check that the document is valid OpenAPI 3.1 with every `$ref` resolving ([`@apidevtools/swagger-parser`](https://www.npmjs.com/package/@apidevtools/swagger-parser)), that every operation requires a bearer token with its scope (`notes:read` or `notes:write`) and documents its `401` and `403`, that it uses only security schemes it defines, and that every operation documents a `400`, since the server rejects requests that don't match.
 
@@ -116,9 +117,9 @@ switch (created.status) {
 }
 ```
 
-- **Types come from the spec.** A `genever` target writes `src/generated/api.ts` from `openapi.json` (see [genever's OpenAPI guide](/packages/genever/guides/openapi)), and CI fails if it's stale. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`: an operation's `path`, `query` and `body` appear only if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
+- **Types come from the spec.** `import type { Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml'` is typed by genever-content-mapper as `tsc` runs (the types are genever's, see [genever's OpenAPI guide](/packages/genever/guides/openapi)), so no file is generated or committed. `OperationInput<Id>` and `OperationResult<Id>` are mapped from genever's `Operations`: an operation's `path`, `query` and `body` appear only if it has them, and the result is a union of every documented `{ status, body }`, so a `switch` on `status` narrows `body`.
 - **Routes come from the spec too.** The method and path of each operation, and the statuses it documents are read from `openapi.json` when the module loads. Only the types are generated, so there's no generated runtime code to keep in sync.
-- **One generic `call`**, rather than a method per operation: a new operation in the spec works as soon as the types are regenerated.
+- **One generic `call`**, rather than a method per operation: a new operation in the spec works as soon as the spec package is rebuilt.
 - **The token can be a function**, called before every request, so a token that expires is refreshed rather than baked in. Every operation needs one.
 - **A status the spec doesn't document** (say, a 500) throws `NotesClientUnexpectedStatusError`, rather than being returned as if it matched a type.
 

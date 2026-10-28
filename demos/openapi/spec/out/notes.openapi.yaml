@@ -1,0 +1,211 @@
+openapi: 3.1.0
+info:
+  title: Notes API
+  version: 1.0.0
+  description: "The OpenAPI demo: a document built with Juniper, a typed client
+    and a validating server."
+paths:
+  /notes:
+    get:
+      operationId: listNotes
+      summary: The caller's newest notes, optionally only those whose title contains
+        some text
+      security:
+        - bearer:
+            - notes:read
+      parameters:
+        - name: q
+          in: query
+          description: Only notes whose title contains this, ignoring case
+          schema:
+            type: string
+            minLength: 1
+            maxLength: 200
+            pattern: ^[^\u0000]*$
+        - name: limit
+          in: query
+          schema:
+            type: integer
+            default: 20
+            minimum: 1
+            maximum: 100
+      responses:
+        "200":
+          description: Notes, newest first
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/NoteList"
+        "400":
+          description: The request does not match the spec
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: The token lacks the scope the operation needs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+    post:
+      operationId: createNote
+      summary: Add a note, as the caller's
+      security:
+        - bearer:
+            - notes:write
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewNote"
+      responses:
+        "201":
+          description: The note added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "400":
+          description: The request does not match the spec
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: The token lacks the scope the operation needs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "413":
+          description: The body is larger than any valid request
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+  /notes/{noteId}:
+    parameters:
+      - name: noteId
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+    get:
+      operationId: getNote
+      summary: One of the caller's notes
+      security:
+        - bearer:
+            - notes:read
+      responses:
+        "200":
+          description: The note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Note"
+        "400":
+          description: The request does not match the spec
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "401":
+          description: Missing or invalid bearer token
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "403":
+          description: The token lacks the scope the operation needs
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+        "404":
+          description: No such note
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ApiError"
+components:
+  securitySchemes:
+    bearer:
+      type: http
+      scheme: bearer
+  schemas:
+    ApiError:
+      type: object
+      additionalProperties: false
+      properties:
+        code:
+          type: string
+        message:
+          type: string
+      required:
+        - code
+        - message
+    NewNote:
+      type: object
+      additionalProperties: false
+      properties:
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[^\u0000]*$
+        body:
+          type: string
+          maxLength: 10000
+          pattern: ^[^\u0000]*$
+      required:
+        - title
+        - body
+    Note:
+      type: object
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+          minLength: 1
+          maxLength: 200
+          pattern: ^[^\u0000]*$
+        body:
+          type: string
+          maxLength: 10000
+          pattern: ^[^\u0000]*$
+        createdAt:
+          type: string
+          format: date-time
+      required:
+        - id
+        - title
+        - body
+        - createdAt
+    NoteList:
+      type: object
+      additionalProperties: false
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Note"
+      required:
+        - items

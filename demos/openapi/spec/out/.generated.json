@@ -1,6 +1,12 @@
 {
   "version": 1,
   "files": {
+    "notes.openapi.d.yaml.ts": {
+      "hash": "v1:ea9e727140235f42b2a7928b1e5923c0"
+    },
+    "notes.openapi.yaml": {
+      "hash": "v1:7b1070b6201f78287d5ca6bd0581a9c5"
+    },
     "openapi.json": {
       "hash": "v1:a3ee6e187d12c7a63ec26adfe4194335"
     }

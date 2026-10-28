@@ -1,6 +1,8 @@
 import type { OpenAPIV3_1 } from 'openapi-types';
 import SwaggerParser from '@apidevtools/swagger-parser';
 import { expect } from '@leyman/expect';
+import { formatText } from 'format-file';
+import { genever, parseYaml } from 'genever';
 import { suite, test } from 'mocha-chain';
 import fileContent from '#internal/file-content.js';
 import { spec } from '#internal/spec.js';
@@ -62,7 +64,25 @@ suite('spec', () => {
         }
     });
 
-    test('Writes the spec to openapi.json', () => {
-        expect(fileContent).to.deep.equal([{ filePath: './openapi.json', content: spec }]);
+    test('Writes the spec to openapi.json and notes.openapi.yaml, the same document', () => {
+        const [json, yaml] = fileContent;
+
+        expect(json).to.deep.equal({ filePath: './openapi.json', content: spec });
+        expect(yaml.filePath).to.equal('./notes.openapi.yaml');
+        expect(parseYaml(yaml.content)).to.deep.equal(spec);
+    });
+
+    test("Writes genever's types beside notes.openapi.yaml, for tools that can't run the content mapper", async () => {
+        const [, yaml, sidecar] = fileContent;
+
+        expect(sidecar).to.deep.equal({
+            filePath: './notes.openapi.d.yaml.ts',
+            content: await formatText(
+                genever(parseYaml(yaml.content), { parameterDefaults: true }),
+                {
+                    ext: '.ts',
+                }
+            ),
+        });
     });
 });

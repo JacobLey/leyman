@@ -65,7 +65,7 @@ With `protectedResource`, the API also serves its Protected Resource Metadata (R
 ## The database
 
 - **The schema is in [`database`](../database)**: the Drizzle tables, their migrations, and `schema.sql`, what the migrations build. The server queries the `notes` table it exports.
-- **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in. `q` is matched with `ILIKE`, its `%`, `_` and `\` escaped so they match themselves. The type says so too: handlers take genever's `OperationRequest` (`--parameter-defaults`), where `limit` is always there, rather than the caller's view, where it's optional.
+- **Handlers trust their input.** Validation already happened, so `listNotes` uses the `limit` it's given, with the spec's default filled in. `q` is matched with `ILIKE`, its `%`, `_` and `\` escaped so they match themselves. The type says so too: handlers take genever's `OperationRequest` (the mapper's `parameterDefaults` option, in `tsconfig.json`), where `limit` is always there, rather than the caller's view, where it's optional.
 
 ## Composing with haywire
 

@@ -20,6 +20,12 @@
       "path": "../../../apps/populate-files/load-populate-files"
     },
     {
+      "path": "../../../apps/genever"
+    },
+    {
+      "path": "../../../tools/format-file"
+    },
+    {
       "path": "../../../leyman/expect"
     },
     {

@@ -3,9 +3,9 @@
 A deliberately small API (notes: add one, read one, list the newest), with the whole path from spec to database built properly, since connecting those parts is what the demo shows:
 
 ```
-spec (juniper) ──► openapi.json ──┬──► client: genever types + a typed fetch client
-                                  └──► server: genever types + Hono, validating against openapi.json
-                                         ▲ Drizzle tables, and schema.sql for pg-dolly per test
+spec (juniper) ──► openapi.json, notes.openapi.yaml ──┬──► client: imported types + a typed fetch client
+                                                     └──► server: imported types + Hono, validating against openapi.json
+                                                            ▲ Drizzle tables, and schema.sql for pg-dolly per test
 database: Drizzle migrations ──► schema.sql (what the migrations build, against Postgres)
 ```
 
@@ -13,15 +13,16 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 
 | Package | Output | README |
 |---|---|---|
-| [`spec`](./spec) | `openapi.json`, built from Juniper schemas | [What the spec says, and how it is checked](./spec/README.md) |
+| [`spec`](./spec) | `openapi.json` and `notes.openapi.yaml`, built from Juniper schemas | [What the spec says, and how it is checked](./spec/README.md) |
 | [`client`](./client) | A typed client, from `openapi.json` | [How the types and routes come from the spec](./client/README.md) |
 | [`database`](./database) | The Drizzle schema, its migrations, and `schema.sql` | [The schema, and what the migrations build](./database/README.md) |
 | [`server`](./server) | The service: Hono on Postgres | [Validation, authentication, the database and its tests](./server/README.md) |
 
 ## Why each piece
 
-- **The spec is the contract, and the one source of truth.** It's written in TypeScript with [Juniper](../../apps/juniper), whose schemas carry their types, and `serializeSpec` turns it into a plain `openapi.json` (OpenAPI 3.1). That file is committed, and CI fails if it's stale (`populate-files`). Both sides read the file, as any outside client would, never the TypeScript.
-- **Types are generated from the file, on each side.** [genever](../../apps/genever) writes `Paths` and `Operations` types into each package's `src/generated/`, from the spec package's `openapi.json` as installed. A change to the spec that breaks a handler or a call is a type error in that package.
+- **The spec is the contract, and the one source of truth.** It's written in TypeScript with [Juniper](../../apps/juniper), whose schemas carry their types, and `serializeSpec` turns it into a plain `openapi.json` (OpenAPI 3.1), and the same document as `notes.openapi.yaml`. Both files are committed, and CI fails if it's stale (`populate-files`). Both sides read the files, as any outside client would, never the TypeScript.
+- **Types come straight from the document, on each side.** The client and server `import type { Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml'`, and [genever-content-mapper](../../apps/genever-content-mapper), a TypeScript 7.1 content mapper, gives that import [genever](../../apps/genever)'s types as `tsc` runs. Nothing is generated or committed on either side, so nothing can go stale. A change to the spec that breaks a handler or a call is a type error in that package. It needs TypeScript 7.1 (these two packages are on its beta) and `tsc --runExternalCode`, passed only in their `tsc` targets.
+- **Lint reads the same types from a declaration file.** typescript-eslint runs on TypeScript 6, which can't run content mappers. So the spec package also writes genever's types beside the document as `notes.openapi.d.yaml.ts`, which TypeScript 6 reads for the import through `allowArbitraryExtensions`. `tsc` 7.1 running the mapper ignores it. It goes once typescript-eslint can run mappers.
 - **The server checks every request and response against the document at runtime**, with Ajv compiled from `openapi.json`. Types only hold within TypeScript, so the contract is checked again on the wire.
 - **The database schema is what the migrations build.** Drizzle generates SQL migrations, [`pg-dolly-schema`](../../apps/pg-dolly-schema) dumps what they build into `schema.sql`, and every test gets a database of its own cloned from it with [`pg-dolly`](../../tools/pg-dolly).
 

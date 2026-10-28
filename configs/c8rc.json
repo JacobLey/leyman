@@ -8,7 +8,8 @@
     "*.config.{,c,m}js",
     "test/**",
     "dist-test/**",
-    "**/*.d.{,c,m}ts"
+    "**/*.d.{,c,m}ts",
+    "**/*.d.*.{,c,m}ts"
   ],
   "exclude-after-remap": true,
   "extension": [

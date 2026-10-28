@@ -3,8 +3,20 @@
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",
-    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo"
+    "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo",
+    "allowArbitraryExtensions": true
   },
+  "contentMappers": [
+    {
+      "package": "genever-content-mapper",
+      "extensions": [
+        ".openapi.yaml"
+      ],
+      "options": {
+        "parameterDefaults": true
+      }
+    }
+  ],
   "include": [
     "src",
     "*.d.ts"
@@ -26,10 +38,13 @@
       "path": "../../../tools/pg-dolly"
     },
     {
+      "path": "../../../tools/oauth-dev-server"
+    },
+    {
       "path": "../../../tools/test-chain/mocha-chain"
     },
     {
-      "path": "../../../apps/genever"
+      "path": "../../../apps/genever-content-mapper"
     },
     {
       "path": "../../../leyman/expect"
@@ -39,9 +54,6 @@
     },
     {
       "path": "../client"
-    },
-    {
-      "path": "../../../tools/oauth-dev-server"
     }
   ]
 }

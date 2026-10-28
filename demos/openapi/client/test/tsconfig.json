@@ -4,5 +4,16 @@
     {
       "path": ".."
     }
+  ],
+  "compilerOptions": {
+    "allowArbitraryExtensions": true
+  },
+  "contentMappers": [
+    {
+      "package": "genever-content-mapper",
+      "extensions": [
+        ".openapi.yaml"
+      ]
+    }
   ]
 }

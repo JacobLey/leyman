@@ -1,4 +1,4 @@
-import type { OperationRequest, Operations } from '../generated/api.js';
+import type { OperationRequest, Operations } from '@leyman/demo-openapi-spec/notes.openapi.yaml';
 
 export type OperationId = keyof Operations;
 

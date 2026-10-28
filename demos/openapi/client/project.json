@@ -4,14 +4,29 @@
   "targets": {
     "biome": {},
     "eslint": {},
-    "genever": {
+    "update-ts-references": {},
+    "tsc": {
       "options": {
-        "args": "--output src/generated/api.ts node_modules/@leyman/demo-openapi-spec/out/openapi.json"
+        "commands": [
+          "rm -rf ./dist",
+          "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.ts?(x)'",
+          "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
+          "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
+          "tsc --runExternalCode"
+        ]
       }
     },
-    "update-ts-references": {},
-    "tsc": {},
-    "tsc-test": {},
+    "tsc-test": {
+      "options": {
+        "commands": [
+          "rm -rf ./dist-test",
+          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C jsc.externalHelpers=false --only '**/*.ts?(x)'",
+          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C jsc.externalHelpers=false --only '**/*.mts?(x)' --out-file-extension mjs",
+          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C jsc.externalHelpers=false -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
+          "tsc -p ./test --runExternalCode"
+        ]
+      }
+    },
     "mocha-unit-test": {},
     "coverage-report": {},
     "sync-injected": {},

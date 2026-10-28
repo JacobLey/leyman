@@ -55,7 +55,7 @@ tsc --runExternalCode -p .
 
 The mapper turns each file with one of the registered extensions into genever's types. A document with an `openapi` version is an OpenAPI 3.0 or 3.1 document, with a type per `components.schemas` entry, plus `Paths` and `Operations`. Anything else is a JSON Schema, whose root is the `Schema` type (see the `name` option) and each `$defs` entry a type of its own. See genever's README for how schemas become types.
 
-**Which extensions.** You choose them in `tsconfig.json`. Files are read as YAML 1.2, so a file of JSON works too. A compound extension (`.openapi.yaml`, `.schema.yaml`) keeps unrelated YAML files out. TypeScript refuses to map an extension ending in one it reads itself, such as `.json` or `.openapi.json`, so a JSON document needs a mapped name like `api.openapi.yaml`. Its contents can stay JSON.
+**Which extensions.** You choose them in `tsconfig.json`. Files are read as YAML 1.2, so a file of JSON works too. Prefer a compound extension (`.openapi.yaml`, `.schema.yaml`): TypeScript gives each file to the mapper with the longest matching extension, so plain `.yaml` stays free for other YAML files, or another mapper. A mapper can't pass a file on once it matches, so with bare `.yaml` registered, every YAML file in the project must be a schema. TypeScript refuses to map an extension ending in one it reads itself, such as `.json` or `.openapi.json`, so a JSON document needs a mapped name like `api.openapi.yaml`. Its contents can stay JSON.
 
 **Type-only imports.** The types exist only for the compiler: nothing at runtime can import the document through the mapper. Use `import type`, which every JavaScript build drops.
 

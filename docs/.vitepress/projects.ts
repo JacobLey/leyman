@@ -477,6 +477,8 @@ export const demos: readonly Demo[] = [
         files: [
             { label: 'The spec', path: 'demos/openapi/spec/src/spec.ts' },
             { label: 'openapi.json', path: 'demos/openapi/spec/out/openapi.json' },
+            { label: 'notes.openapi.yaml', path: 'demos/openapi/spec/out/notes.openapi.yaml' },
+            { label: 'Content mapper config', path: 'demos/openapi/client/tsconfig.json' },
             { label: 'Migrations', path: 'demos/openapi/database/migrations' },
             { label: 'schema.sql', path: 'demos/openapi/database/schema.sql' },
             { label: 'Server composition', path: 'demos/openapi/server/src/lib/module.ts' },

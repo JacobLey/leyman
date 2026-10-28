@@ -1,6 +1,6 @@
 # demo-openapi-spec
 
-The OpenAPI document of the OpenAPI demo's notes API, built from Juniper schemas and published as openapi.json.
+The OpenAPI document of the OpenAPI demo's notes API, built from Juniper schemas and published as openapi.json and notes.openapi.yaml.
 
 Part of the [OpenAPI demo](../README.md). A worked example, never published.
 
@@ -18,7 +18,9 @@ Every error is an `ApiError` (`{ code, message }`). `q` keeps only notes whose t
 
 [`src/spec.ts`](./src/spec.ts) is the document as plain data, with [Juniper](../../../apps/juniper) schemas where the schemas go. Juniper's `serializeSpec` turns each into JSON Schema 2020-12 (OpenAPI 3.1), and collects every schema given a name with `define()` into `components.schemas`, so no `$ref` can be left dangling and nothing has to be listed twice. No builder library is needed for the paths and security: they are a few lines of plain data.
 
-The `populate-files` target writes it to `out/openapi.json`, committed, and CI fails if it's stale. The package exports only that file (`@leyman/demo-openapi-spec/openapi.json`): the client and server read the JSON, never the TypeScript, as any outside consumer would.
+The `populate-files` target writes it to `out/openapi.json`, and the same document as YAML to `out/notes.openapi.yaml`, both committed, and CI fails if either is stale. The package exports only those files: the client and server read the JSON at runtime (`@leyman/demo-openapi-spec/openapi.json`), and import their types from the YAML (`@leyman/demo-openapi-spec/notes.openapi.yaml`) through [genever-content-mapper](../../../apps/genever-content-mapper), never the TypeScript, as any outside consumer would. The YAML's name ends in `.openapi.yaml` because TypeScript won't map a `.json` file, and a compound extension leaves other YAML files alone.
+
+It also writes `out/notes.openapi.d.yaml.ts`: genever's types for the YAML (with `OperationRequest`, which only the server uses), for tools that can't run content mappers. typescript-eslint, on TypeScript 6, reads it for the import through `allowArbitraryExtensions`, and `tsc` 7.1 running the mapper ignores it. It goes once typescript-eslint can run mappers.
 
 ## Checks
 
