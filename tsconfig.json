@@ -129,6 +129,9 @@
     },
     {
       "path": "./apps/genever-content-mapper"
+    },
+    {
+      "path": "./apps/trusted-tsc"
     }
   ]
 }

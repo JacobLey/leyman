@@ -1,0 +1,59 @@
+{
+  "name": "trusted-tsc",
+  "version": "0.0.1",
+  "description": "Run TypeScript 7.1's tsc with only the content mappers you trust, each in Node's permission sandbox.",
+  "engines": {
+    "node": ">=24.22.1"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "apps/trusted-tsc"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/trusted-tsc#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "typescript",
+    "tsc",
+    "content-mapper",
+    "security",
+    "sandbox",
+    "allowlist"
+  ],
+  "sideEffects": false,
+  "bin": {
+    "trusted-tsc": "./bin.mjs"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "bin.mjs"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:typescript-next",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "genever-content-mapper": "workspace:^",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "tmp-promise": "catalog:",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  }
+}

@@ -1013,6 +1013,54 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
+  apps/trusted-tsc:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.5.14
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.18(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      '@typescript/native':
+        specifier: catalog:typescript-next
+        version: typescript@7.1.0-beta
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.13.0(supports-color@8.1.1)
+      genever-content-mapper:
+        specifier: workspace:^
+        version: file:apps/genever-content-mapper(@biomejs/biome@2.5.14)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      tmp-promise:
+        specifier: 'catalog:'
+        version: 3.0.3
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+
   demos/agents/cli:
     dependencies:
       '@leyman/demo-openapi-client':

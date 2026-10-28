@@ -30,6 +30,7 @@ See each package's README.md for full usage documentation.
 | [`barrelify`](../../../apps/barrelify/) | Auto-generate TypeScript barrel (`index.ts`) files |
 | [`genever`](../../../apps/genever/) | Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers |
 | [`genever-content-mapper`](../../../apps/genever-content-mapper/) | A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file. Private, on `catalog:typescript-next` |
+| [`trusted-tsc`](../../../apps/trusted-tsc/) | Run TypeScript 7.1's tsc with only the content mappers listed in `package.json`, each in Node's permission sandbox. Private, on `catalog:typescript-next` |
 | [`juniper`](../../../apps/juniper/) | JSON Schema builder with static TypeScript inference |
 | [`juniper-validator`](../../../apps/juniper-validator/) | StandardSchema-compliant validator wrapping Juniper schemas |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | Nx plugin for managing ordered task dependency lifecycles |
