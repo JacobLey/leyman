@@ -529,6 +529,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.5.14
+      '@leyman/demo-openapi-spec':
+        specifier: workspace:^
+        version: file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)

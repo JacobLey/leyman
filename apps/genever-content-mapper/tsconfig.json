@@ -21,6 +21,9 @@
     },
     {
       "path": "../../leyman/eslint-config"
+    },
+    {
+      "path": "../../demos/openapi/spec"
     }
   ]
 }
