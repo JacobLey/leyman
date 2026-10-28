@@ -26,8 +26,8 @@ catalogs:
       specifier: ^10.0.1
       version: 10.0.1
     '@happy-dom/global-registrator':
-      specifier: ^20.14.5
-      version: 20.14.5
+      specifier: ^21.0.4
+      version: 21.0.4
     '@hono/node-server':
       specifier: ^2.1.5
       version: 2.1.5
@@ -1150,7 +1150,7 @@ importers:
         version: 2.5.14
       '@happy-dom/global-registrator':
         specifier: 'catalog:'
-        version: 20.14.5
+        version: 21.0.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1665,10 +1665,10 @@ importers:
         version: 2.0.0-alpha.20(@types/node@24.19.0)(@typescript/typescript6@6.0.2)(change-case@5.4.4)(esbuild@0.28.2)(postcss@8.5.30)(tsx@4.23.15)(yaml@2.9.0)
       vitest:
         specifier: 'catalog:'
-        version: 5.0.5(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
+        version: 5.0.5(@types/node@24.19.0)(happy-dom@21.0.4)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
       vitest-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/vitest-chain(vitest@5.0.5(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)))
+        version: file:tools/test-chain/vitest-chain(vitest@5.0.5(@types/node@24.19.0)(happy-dom@21.0.4)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)))
 
   e2e/eslint-config-schema:
     devDependencies:
@@ -1839,7 +1839,7 @@ importers:
         version: 2.5.14
       '@happy-dom/global-registrator':
         specifier: 'catalog:'
-        version: 20.14.5
+        version: 21.0.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2028,10 +2028,10 @@ importers:
         version: file:tools/unknown-error
       vitest:
         specifier: 'catalog:'
-        version: 5.0.5(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
+        version: 5.0.5(@types/node@24.19.0)(happy-dom@21.0.4)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
       vitest-chain:
         specifier: workspace:^
-        version: file:tools/test-chain/vitest-chain(vitest@5.0.5(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)))
+        version: file:tools/test-chain/vitest-chain(vitest@5.0.5(@types/node@24.19.0)(happy-dom@21.0.4)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)))
       weighted-rendezvous-hash:
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/weighted-rendezvous-hash
@@ -2989,7 +2989,7 @@ importers:
         version: 2.5.14
       '@happy-dom/global-registrator':
         specifier: 'catalog:'
-        version: 20.14.5
+        version: 21.0.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3429,7 +3429,7 @@ importers:
         version: 8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)
       vitest:
         specifier: 'catalog:'
-        version: 5.0.5(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
+        version: 5.0.5(@types/node@24.19.0)(happy-dom@21.0.4)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
 
   tools/unknown-error:
     devDependencies:
@@ -4701,8 +4701,8 @@ packages:
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
 
-  '@happy-dom/global-registrator@20.14.5':
-    resolution: {integrity: sha512-B05ID9DhSwLs6mlm1fzlkAtTIvB3duCvjJjfr19LBrlTK7VZtRjDqoTRIVv13GuYuNdhByu8LSZgThwV3Rkj7g==}
+  '@happy-dom/global-registrator@21.0.4':
+    resolution: {integrity: sha512-Bbr0hW9hhDhBf3Jp0EyDlkCbFgbr0z2jd3BMKYOYW+fOkPM4Nx195GMXyCtRCGEgoNn6i09FabXrSkNFm2ONzg==}
     engines: {node: '>=20.0.0'}
 
   '@hono/node-server@2.1.5':
@@ -7738,8 +7738,8 @@ packages:
   graceful-fs@4.2.11:
     resolution: {integrity: sha512-RbJ5/jmFcNNCcDV5o9eTnBLJ/HszWV0P73bc+Ff4nS/rJj+YaS6IGyiOL0VoBYX+l1Wrl3k63h/KrH+nhJ0XvQ==}
 
-  happy-dom@20.14.5:
-    resolution: {integrity: sha512-x/RzkpWO40bTjIoT30iQtt64FLLmH/iRcUCN2X//bLx7H3ifkdfPXyqsro/OYtqzIAhiLMMA7mmiOR9C3NOKjQ==}
+  happy-dom@21.0.4:
+    resolution: {integrity: sha512-tFm+GaLBgo6o0awHnvHaNoraVo27qJ+2tZEtZ+cIa08hXbeitrxAJajLI05hsUy/2/YTKcUjQYzHe5mCcraLBw==}
     engines: {node: '>=20.0.0'}
 
   has-bigints@1.1.0:
@@ -11381,10 +11381,10 @@ snapshots:
 
   '@floating-ui/utils@0.2.12': {}
 
-  '@happy-dom/global-registrator@20.14.5':
+  '@happy-dom/global-registrator@21.0.4':
     dependencies:
       '@types/node': 24.19.0
-      happy-dom: 20.14.5
+      happy-dom: 21.0.4
     transitivePeerDependencies:
       - bufferutil
       - utf-8-validate
@@ -14520,7 +14520,7 @@ snapshots:
 
   graceful-fs@4.2.11: {}
 
-  happy-dom@20.14.5:
+  happy-dom@21.0.4:
     dependencies:
       '@types/node': 24.19.0
       '@types/whatwg-mimetype': 3.0.2
@@ -17046,12 +17046,12 @@ snapshots:
       - universal-cookie
       - yaml
 
-  vitest-chain@file:tools/test-chain/vitest-chain(vitest@5.0.5(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))):
+  vitest-chain@file:tools/test-chain/vitest-chain(vitest@5.0.5(@types/node@24.19.0)(happy-dom@21.0.4)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))):
     dependencies:
       test-chain-core: file:tools/test-chain/test-chain-core
-      vitest: 5.0.5(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
+      vitest: 5.0.5(@types/node@24.19.0)(happy-dom@21.0.4)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
 
-  vitest@5.0.5(@types/node@24.19.0)(happy-dom@20.14.5)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)):
+  vitest@5.0.5(@types/node@24.19.0)(happy-dom@21.0.4)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)):
     dependencies:
       '@types/chai': 5.2.3
       '@vitest/mocker': 5.0.5(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
@@ -17069,7 +17069,7 @@ snapshots:
       why-is-node-running: 3.2.1
     optionalDependencies:
       '@types/node': 24.19.0
-      happy-dom: 20.14.5
+      happy-dom: 21.0.4
     transitivePeerDependencies:
       - msw
 
