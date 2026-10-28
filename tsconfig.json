@@ -126,6 +126,9 @@
     },
     {
       "path": "./demos/local-ingress"
+    },
+    {
+      "path": "./apps/genever-content-mapper"
     }
   ]
 }

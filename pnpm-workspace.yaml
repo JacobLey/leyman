@@ -227,6 +227,11 @@ catalogs:
   # Ideally they are packages that are not even `imported` but rather a separate CLI command
   leyman:
     npm-barrelify: npm:barrelify@^2.2.1
+  # TypeScript's next release, for content-mapper packages and the demos that use them only: every other package stays
+  # on the stable `catalog:`. Pinned exactly, since `^` doesn't match prereleases. Delete this catalog once the stable
+  # release is 7 days old, moving `catalog:` to it.
+  typescript-next:
+    '@typescript/native': npm:typescript@7.1.0-beta
 # Each patch fixes a bug that a release doesn't yet. Delete it once a release with the fix is at least 7 days old.
 patchedDependencies:
   # `prefer-string-starts-ends-with` parses a `v`-flag RegExp as if it had no flags, so it autofixes `/^\p{N}/v.test(s)`

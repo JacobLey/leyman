@@ -1,0 +1,71 @@
+{
+  "name": "genever-content-mapper",
+  "version": "0.0.1",
+  "description": "A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file.",
+  "engines": {
+    "node": ">=24.22.1"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "apps/genever-content-mapper"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/genever-content-mapper#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "typescript",
+    "content-mapper",
+    "json-schema",
+    "openapi",
+    "types",
+    "genever"
+  ],
+  "sideEffects": false,
+  "types": "./dist/index.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "bin.mjs"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "typescript": {
+    "contentMapper": {
+      "exec": [
+        "node",
+        "bin.mjs"
+      ]
+    }
+  },
+  "dependencies": {
+    "genever": "workspace:^",
+    "yaml": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:typescript-next",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "tmp-promise": "catalog:",
+    "typescript": "catalog:"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  }
+}
