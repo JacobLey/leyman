@@ -28,7 +28,7 @@ Task outputs are also shared between worktrees through the `nx-cache` sidecar. `
 
 ## Inspecting targets
 
-Some targets (e.g. `typecheck`) are inferred by the `@nx/js/typescript` plugin and never appear in `project.json`. Use the resolved config:
+Some targets (e.g. `go-build`) are inferred by plugins like `@naxodev/gonx` and never appear in `project.json`, and most come from `targetDefaults` in `nx.json`. Use the resolved config:
 
 ```bash
 nx show project <project> --json | jq '.targets.<target>'

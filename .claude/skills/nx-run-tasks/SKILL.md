@@ -33,4 +33,4 @@ Run the high-level target you care about (`build`, `test`, `check`, `verify`). I
 
 ## Finding targets
 
-`nx show project <project>` lists the resolved targets, including ones inferred by plugins (e.g. `typecheck`). Work targets are described in [nx-tasks-reference](../nx-tasks-reference/SKILL.md).
+`nx show project <project>` lists the resolved targets, including ones inferred by plugins (e.g. `go-build`). Work targets are described in [nx-tasks-reference](../nx-tasks-reference/SKILL.md).

@@ -28,7 +28,7 @@ Even at ESNext, SWC rewrites a few constructs into calls to `@swc/helpers`: `usi
 
 ## TypeScript 6 and 7
 
-`tsc` is TypeScript 7, the native (Go) compiler. TypeScript 7.0 ships no compiler API, so tools that load `typescript` as a library (typescript-eslint, Nx's `@nx/js/typescript` plugin) still need TypeScript 6. The catalog runs both side by side, as the TypeScript team recommends:
+`tsc` is TypeScript 7, the native (Go) compiler. TypeScript 7.0 ships no compiler API, so tools that load `typescript` as a library (typescript-eslint, Nx's `@nx/js:typescript-sync` generator) still need TypeScript 6. The catalog runs both side by side, as the TypeScript team recommends:
 
 - `typescript` is an alias of `@typescript/typescript6`: the TypeScript 6 API (its CLI is `tsc6`)
 - `@typescript/native` is an alias of `typescript@7`: the `tsc` binary
