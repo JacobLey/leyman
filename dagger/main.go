@@ -22,7 +22,7 @@ const (
 	// debian:trixie-slim, the Debian release the Node and Go images are built on. The CI image starts from it and copies
 	// in Node, pnpm and Go last, so bumping one doesn't rerun the apt installs.
 	debianImage = "debian:trixie-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad"
-	// node:24.22.1-trixie-slim. Under 7 days old: an emergency security bump. Drop this note after 2026-10-27.
+	// node:24.22.1-trixie-slim.
 	nodeImage = "node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea"
 	// Outside the lockfile, so `minimumReleaseAge` can't check it: only bump to a release at least 7 days old.
 	// 12.9.1 fixes `--frozen-lockfile` rejecting the lockfile of injected workspace packages with `catalog:`
@@ -33,7 +33,7 @@ const (
 	// mcr.microsoft.com/playwright:v1.62.1-noble, with every browser and its system libraries, for tests to connect to.
 	// Keep its version in sync with `playwrightVersion`.
 	playwrightImage = "mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e"
-	// golang:1.26.10-trixie. Under 7 days old: an emergency security bump. Drop this note after 2026-10-27.
+	// golang:1.26.10-trixie.
 	// Only its Go toolchain is copied into the Node image, for projects written in Go.
 	goImage = "golang:1.26.10-trixie@sha256:909771fef53e3dcb0950255f0c9a8b4728c3b841e61509c7b29b098de7ee02d4"
 	// ghcr.io/opentofu/opentofu:1.13.2-minimal, for `infra/`. Keep in sync with `TOFU_IMAGE` in `.devcontainer/Dockerfile`.

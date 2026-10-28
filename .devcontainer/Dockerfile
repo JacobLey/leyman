@@ -6,9 +6,7 @@
 
 # https://github.com/devcontainers/images/blob/main/src/base-debian/history
 ARG BASE_IMAGE=mcr.microsoft.com/devcontainers/base:2.2.1-debian13
-# Under 7 days old: an emergency security bump. Drop this note after 2026-10-27
 ARG NODE_VERSION=24.22.1
-# Under 7 days old: an emergency security bump. Drop this note after 2026-10-27
 ARG GO_VERSION=1.26.10
 # OpenTofu, for `infra/` (see `tofuImage` in `dagger/main.go`). Under 7 days old: an emergency security bump (1.13.2
 # stops trusting compromised intermediate certificates when `tofu init` downloads providers). Drop this note after
