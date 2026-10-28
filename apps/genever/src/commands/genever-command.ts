@@ -117,14 +117,16 @@ export const geneverCommand: Command<GeneverCommandExtendedInput> = {
                     type: 'string',
                 },
             })
-            .check(({ fetch, fetchHost }) => {
-                if (!fetch && fetchHost !== undefined) {
-                    throw new Error('--fetch-host loads URLs, which --no-fetch disables');
-                }
-                return true;
-            })
             .strict(),
     handler: async options => {
+        // Checked here rather than in a builder `.check()`, whose failure still runs the handler when
+        // `parseAsync` is given a callback: https://github.com/yargs/yargs/issues/1975
+        if (!options.fetch && options.fetchHost !== undefined) {
+            console.error('--fetch-host loads URLs, which --no-fetch disables');
+            process.exitCode = 1;
+            return;
+        }
+
         const { output, updated } = await geneverFile(options.input, {
             check: options.ci,
             cwd: options.cwd,

@@ -61,6 +61,8 @@ export const myCliBinding = bind(MyCli).withDependencies([commandId]).withConstr
 
 haywire does not guarantee the order of list elements from separate bindings, so don't depend on command order (it only affects the order of `--help`).
 
+Don't validate options with `.check()`: while [yargs#1975](https://github.com/yargs/yargs/issues/1975) is open, a failing check still runs the handler whenever `parseAsync` is given a callback, as above. Validate in the handler instead: print the problem with `console.error`, set `process.exitCode = 1` and return. Validation yargs does itself (`demandOption`, `choices`, `.strict()`) is unaffected.
+
 Commands themselves only take dependencies from haywire when they meet the [DI bar](../coding-patterns/SKILL.md#dependency-injection-when-to-use-it-when-not-to). Otherwise they import directly.
 
 ## Tests

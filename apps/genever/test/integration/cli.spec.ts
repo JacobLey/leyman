@@ -206,10 +206,17 @@ suite('cli', () => {
             });
 
             withTmpDir.test('--no-fetch with --fetch-host', async ctx => {
+                await ctx.writeJson('user.json', userSchema);
+
                 const thrown: unknown = await expect(
-                    generateRemote(ctx, '--no-fetch --fetch-host example.test')
+                    execAsync(
+                        `./bin.mjs user.json --ci=false --no-fetch --fetch-host example.test --cwd ${ctx.tmpDir.path}`
+                    )
                 ).to.be.rejectedWith(Error);
-                expect(thrown).to.have.property('stderr').that.includes('--no-fetch disables');
+                expect(thrown)
+                    .to.have.property('stderr')
+                    .that.equals('--fetch-host loads URLs, which --no-fetch disables\n');
+                await expect(access(ctx.resolve('user.ts'))).to.be.rejectedWith(Error);
             });
         });
     });
