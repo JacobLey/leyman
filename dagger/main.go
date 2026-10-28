@@ -29,10 +29,10 @@ const (
 	// peer dependencies.
 	pnpmVersion = "12.9.1"
 	// Keep in sync with `playwright` in `pnpm-workspace.yaml`: a client connects only to a server of its own version.
-	playwrightVersion = "1.62.1"
-	// mcr.microsoft.com/playwright:v1.62.1-noble, with every browser and its system libraries, for tests to connect to.
+	playwrightVersion = "1.64.1"
+	// mcr.microsoft.com/playwright:v1.64.1-noble, with every browser and its system libraries, for tests to connect to.
 	// Keep its version in sync with `playwrightVersion`.
-	playwrightImage = "mcr.microsoft.com/playwright:v1.62.1-noble@sha256:dcc5531e97840b9b5e794f2814476b21571c5124a3fca2267d73041f56e7580e"
+	playwrightImage = "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea"
 	// golang:1.26.10-trixie.
 	// Only its Go toolchain is copied into the Node image, for projects written in Go.
 	goImage = "golang:1.26.10-trixie@sha256:909771fef53e3dcb0950255f0c9a8b4728c3b841e61509c7b29b098de7ee02d4"

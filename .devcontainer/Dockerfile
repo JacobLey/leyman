@@ -43,7 +43,7 @@ FROM base AS playwright-deps
 COPY --from=node /usr/local/bin/node /usr/local/bin/node
 COPY --from=pnpm $HOME/.local/share/pnpm $HOME/.local/share/pnpm
 # Only for the browsers' system libraries; browsers themselves are installed by the `playwright-install` target
-ARG PLAYWRIGHT_VERSION=1.62.1
+ARG PLAYWRIGHT_VERSION=1.64.1
 RUN cd /tmp \
     && $HOME/.local/share/pnpm/bin/pnpm dlx playwright@${PLAYWRIGHT_VERSION} install-deps --dry-run chromium firefox webkit \
         | sed -n 's/^  \([a-z0-9][a-z0-9.+-]*\)$/\1/p' > /playwright-deps.txt \
