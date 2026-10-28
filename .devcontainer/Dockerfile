@@ -74,7 +74,7 @@ RUN wget "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VE
     && rm /tmp/gh.tar.gz
 
 FROM base AS dagger
-ARG DAGGER_VERSION=0.21.10
+ARG DAGGER_VERSION=0.21.11
 RUN curl -fsSL https://dl.dagger.io/dagger/install.sh | DAGGER_VERSION=${DAGGER_VERSION} BIN_DIR=/opt/dagger sh
 
 FROM base
