@@ -45,18 +45,22 @@ type PrintType = (type: TsType, indent: string, minimum?: Precedence) => Printed
 
 /**
  * Concatenate printed parts, moving each name to its index in the result.
+ * Takes an array, rather than spreading parts as arguments, as an object may have more properties than a call
+ * has room for arguments.
  *
  * @param parts - text, or printed source
  * @returns printed source of all the parts
  */
-const concat = (...parts: readonly Part[]): Printed => {
+const concat = (parts: readonly Part[]): Printed => {
     let text = '';
     const names: PrintedName[] = [];
     for (const part of parts) {
         if (typeof part === 'string') {
             text += part;
         } else {
-            names.push(...part.names.map(name => ({ ...name, start: name.start + text.length })));
+            for (const name of part.names) {
+                names.push({ ...name, start: name.start + text.length });
+            }
             text += part.text;
         }
     }
@@ -64,7 +68,7 @@ const concat = (...parts: readonly Part[]): Printed => {
 };
 
 const join = (parts: readonly Part[], separator: string): Printed =>
-    concat(...parts.flatMap((part, i) => (i > 0 ? [separator, part] : [part])));
+    concat(parts.flatMap((part, i) => (i > 0 ? [separator, part] : [part])));
 
 /**
  * Print documentation as a JSDoc comment.
@@ -143,11 +147,11 @@ const precedenceOf = (type: TsType): Precedence => {
 const printObject = (type: TsType & { kind: 'object' }, indent: string, print: PrintType): Part => {
     const inner = indent + indentUnit;
     const printIndex = (index: TsIndex): Printed =>
-        concat('[key: ', print(index.key, inner), ']: ', print(index.value, inner), ';');
+        concat(['[key: ', print(index.key, inner), ']: ', print(index.value, inner), ';']);
     const lines = [
         ...type.properties.map(property => {
             const name = printPropertyName(property.name);
-            return concat(
+            return concat([
                 inner,
                 printDoc(property.doc, inner),
                 property.pointer === undefined
@@ -156,12 +160,12 @@ const printObject = (type: TsType & { kind: 'object' }, indent: string, print: P
                 property.optional ? '?' : '',
                 ': ',
                 print(property.type, inner),
-                ';'
-            );
+                ';',
+            ]);
         }),
-        ...type.index.map(index => concat(inner, printIndex(index))),
+        ...type.index.map(index => concat([inner, printIndex(index)])),
     ];
-    return lines.length > 0 ? concat('{\n', join(lines, '\n'), `\n${indent}}`) : '{}';
+    return lines.length > 0 ? concat(['{\n', join(lines, '\n'), `\n${indent}}`]) : '{}';
 };
 
 /**
@@ -183,17 +187,17 @@ const printers: {
         );
         return `\`${parts.join('')}\``;
     },
-    array: (type, indent, print) => concat(print(type.element, indent, precedence.primary), '[]'),
+    array: (type, indent, print) => concat([print(type.element, indent, precedence.primary), '[]']),
     tuple: (type, indent, print) => {
         const elements = type.elements.map(element =>
             element.optional
-                ? concat(print(element.type, indent, precedence.primary), '?')
+                ? concat([print(element.type, indent, precedence.primary), '?'])
                 : print(element.type, indent)
         );
         if (type.rest) {
-            elements.push(concat('...', print(type.rest, indent, precedence.primary), '[]'));
+            elements.push(concat(['...', print(type.rest, indent, precedence.primary), '[]']));
         }
-        return concat('[', join(elements, ', '), ']');
+        return concat(['[', join(elements, ', '), ']']);
     },
     object: (type, indent, print) =>
         join(
@@ -228,5 +232,8 @@ export const printType = (
     // Each printer only accepts its own kind, which `type.kind` guarantees
     const printer = printers[type.kind] as (type: TsType, indent: string, print: PrintType) => Part;
     const printed = printer(type, indent, printType);
-    return precedenceOf(type) < minimum ? concat('(', printed, ')') : concat(printed);
+    if (precedenceOf(type) < minimum) {
+        return concat(['(', printed, ')']);
+    }
+    return typeof printed === 'string' ? { names: [], text: printed } : printed;
 };

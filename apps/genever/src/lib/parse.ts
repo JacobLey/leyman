@@ -1,5 +1,14 @@
-import type { Alias } from 'yaml';
-import { isAlias, LineCounter, parseDocument, visit, YAMLParseError } from 'yaml';
+import type { Alias, Document } from 'yaml';
+import {
+    isAlias,
+    isPair,
+    isScalar,
+    isSeq,
+    LineCounter,
+    parseDocument,
+    visit,
+    YAMLParseError,
+} from 'yaml';
 import { GeneverInvalidSchemaError, GeneverUnsupportedError } from './errors.js';
 import { openApiDialect } from './openapi.js';
 import { childPointer } from './pointer.js';
@@ -214,24 +223,68 @@ class JsonTree {
 }
 
 /**
- * The error for an alias with no anchor before it, which `yaml` throws only once the document is converted, and
- * as a plain `ReferenceError`.
+ * An error at an alias that `yaml` can't expand, which it throws only once the document is converted, and as a
+ * plain `ReferenceError`.
  *
- * @param alias - alias whose anchor is missing, or after it
+ * @param alias - alias to report
+ * @param problem - what is wrong with it, before its position
  * @param lineCounter - line starts of the text
  * @returns error at the alias
  */
-const unresolvedAlias = (alias: Alias, lineCounter: LineCounter): YAMLParseError => {
+const mergeKey = '<<';
+
+const aliasError = (alias: Alias, problem: string, lineCounter: LineCounter): YAMLParseError => {
     // The parser sets every node's range
     const [start, end] = alias.range!;
     const { line, col } = lineCounter.linePos(start);
     const error = new YAMLParseError(
         [start, end],
         'BAD_ALIAS',
-        `Alias *${alias.source} has no anchor &${alias.source} before it at line ${line}, column ${col}`
+        `${problem} at line ${line}, column ${col}`
     );
     error.linePos = [lineCounter.linePos(start), lineCounter.linePos(end)];
     return error;
+};
+
+/**
+ * Check each alias can be expanded: it has an anchor before it, and a merge key's alias isn't inside the map it
+ * names, which would merge that map into itself without end.
+ *
+ * @param document - parsed document
+ * @param lineCounter - line starts of the text
+ * @throws {YAMLParseError} at the first alias that can't be expanded
+ */
+const checkAliases = (document: Document, lineCounter: LineCounter): void => {
+    visit(document, (_key, node) => {
+        if (isAlias(node) && !node.resolve(document)) {
+            throw aliasError(
+                node,
+                `Alias *${node.source} has no anchor &${node.source} before it`,
+                lineCounter
+            );
+        }
+        // With `stringKeys`, a merge key is the string `<<`, and only unquoted
+        if (
+            !isPair(node) ||
+            !isScalar(node.key) ||
+            node.key.type !== 'PLAIN' ||
+            node.key.value !== mergeKey
+        ) {
+            return;
+        }
+        const sources = isSeq(node.value) ? node.value.items : [node.value];
+        for (const source of sources) {
+            const target = isAlias(source) ? source.resolve(document) : undefined;
+            // An anchor is before its aliases, so an alias is inside its map if it starts before the map ends
+            if (target && isAlias(source) && source.range![0] < target.range![1]) {
+                throw aliasError(
+                    source,
+                    `Merge key's alias *${source.source} is inside the map &${source.source} it merges`,
+                    lineCounter
+                );
+            }
+        }
+    });
 };
 
 /**
@@ -239,7 +292,8 @@ const unresolvedAlias = (alias: Alias, lineCounter: LineCounter): YAMLParseError
  *
  * Aliases are expanded, and merge keys (`<<`) merged. An alias inside the schema it names, a recursive
  * schema, becomes a `$ref` to that schema. Tags other than the core schema's (e.g. `!!binary`), keys that
- * aren't strings, duplicate keys, and an alias with no anchor before it are errors.
+ * aren't strings, duplicate keys, an alias with no anchor before it, and a merge key (`<<`) that merges a map
+ * into itself are errors.
  *
  * @param text - YAML source
  * @returns parsed document
@@ -261,11 +315,7 @@ export const parseYaml = (text: string): unknown => {
     if (problem) {
         throw problem;
     }
-    visit(document, (_key, node) => {
-        if (isAlias(node) && !node.resolve(document)) {
-            throw unresolvedAlias(node, lineCounter);
-        }
-    });
+    checkAliases(document, lineCounter);
     const parsed: unknown = document.toJS();
     const roots = inputSchemas(parsed, openApiDialect(parsed) !== null).map(
         ({ pointer }) => pointer

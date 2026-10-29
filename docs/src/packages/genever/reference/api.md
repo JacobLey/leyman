@@ -94,7 +94,7 @@ genever(parseYaml('type: array\nitems: { type: string }\n'), { name: 'Tags' });
 
 Generate types as `genever` does, and say where each type's name is in the source and which part of the document it comes from, so a tool showing the types can link each name back to its schema. Takes the same options as `genever`.
 
-Returns `{ text, names }`. `text` is the same source `genever` returns. `names` lists each type generated from a schema, or a document's `paths`, and each property generated from a schema's `properties` (or a `patternProperties` pattern matching one key), in the order they are in `text`, as `{ name, pointer, start }`: `start` is the index of the name in `text`, and `pointer` the JSON Pointer to its schema (`#/$defs/Note`, `#/components/schemas/Note/properties/body`) or `#/paths` for `Paths`, in the same form as an [error](#errors)'s. A property's `name` is as printed, so quoted if it isn't an identifier (`"created at"`). A property merged from several `allOf` members points to the first. An OpenAPI document's helper types (`Operations`, `OperationInput` and the rest), and their own properties, aren't listed.
+Returns `{ text, names }`. `text` is the same source `genever` returns. `names` lists each type generated from a schema, or a document's `paths`, and each property generated from a schema's `properties` (or a `patternProperties` pattern matching one key), in the order they are in `text`, as `{ name, pointer, start }`: `start` is the index of the name in `text`, and `pointer` the JSON Pointer to its schema (`#/$defs/Note`, `#/components/schemas/Note/properties/body`) or `#/paths` for `Paths`, in the same form as an [error](#errors)'s. A property's `name` is as printed, so quoted if it isn't an identifier (`"created at"`). A property declared by both a schema and its `allOf` members points to the schema's own `properties`, or else the first member that declares it. An OpenAPI document's helper types (`Operations`, `OperationInput` and the rest), and their own properties, aren't listed.
 
 ```ts
 import { geneverSource } from 'genever';
@@ -119,7 +119,7 @@ properties:
 
 The `$ref` follows the usual rules: one that applies to the same value again, such as `&a { anyOf: [*a, …] }`, breaks [strict mode](/packages/genever/guides/strict-mode). A recursive schema with another `$id` between the alias and its anchor throws a `GeneverUnsupportedError`.
 
-Anything else JSON can't hold is an error. Tags beyond YAML's core schema (such as `!!binary`), keys that aren't strings, duplicate keys, an alias with no anchor before it and more than one document throw the [`yaml`](https://www.npmjs.com/package/yaml) package's `YAMLError`, as invalid JSON throws a `SyntaxError`. `.inf`, `.nan`, and an alias inside a value that isn't a schema (such as a `const`) throw a `GeneverInvalidSchemaError`. In a referenced file, any of these is a `GeneverLoadError`.
+Anything else JSON can't hold is an error. Tags beyond YAML's core schema (such as `!!binary`), keys that aren't strings, duplicate keys, an alias with no anchor before it, a merge key that merges a map into itself (`<<: *a` inside `&a`) and more than one document throw the [`yaml`](https://www.npmjs.com/package/yaml) package's `YAMLError`, as invalid JSON throws a `SyntaxError`. `.inf`, `.nan`, and an alias inside a value that isn't a schema (such as a `const`) throw a `GeneverInvalidSchemaError`. In a referenced file, any of these is a `GeneverLoadError`.
 
 ## Errors
 

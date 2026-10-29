@@ -84,7 +84,7 @@ export interface GeneratedName {
 export interface GeneratedSource {
     /**
      * Each type generated from a schema, or a document's `paths`, and each property generated from a schema
-     * under `properties`, in the order they are in the source. Helper types, and their properties, which aren't
+     * under `properties` (or a `patternProperties` pattern matching one key), in the order they are in the source. Helper types, and their properties, which aren't
      * generated from part of the document, aren't listed.
      */
     readonly names: readonly GeneratedName[];
@@ -137,13 +137,9 @@ export const generate = (
             text += type;
         } else {
             const printed = printType(type);
-            const offset = text.length;
-            names.push(
-                ...printed.names.map(printedName => ({
-                    ...printedName,
-                    start: printedName.start + offset,
-                }))
-            );
+            for (const printedName of printed.names) {
+                names.push({ ...printedName, start: printedName.start + text.length });
+            }
             text += printed.text;
         }
         text += ';';

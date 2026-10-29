@@ -1,3 +1,4 @@
+import type { Context } from 'mocha';
 import { expect } from '@leyman/expect';
 import { genever, geneverSource } from 'genever';
 import { suite, test } from 'mocha-chain';
@@ -73,6 +74,27 @@ suite('geneverSource', () => {
             { name: 'a', pointer: '#/allOf/0/properties/a', at: 'a' },
             { name: 'b', pointer: '#/allOf/1/properties/b', at: 'b' },
         ]);
+    });
+
+    test("a property the schema and its allOf members declare is the schema's own", () => {
+        const names = namesOf({
+            type: 'object',
+            allOf: [{ properties: { a: { type: 'string', minLength: 1 } } }],
+            properties: { a: { type: 'string' } },
+        });
+
+        expect(names).to.deep.include({ name: 'a', pointer: '#/properties/a', at: 'a' });
+    });
+
+    test('an object with more properties than a call has room for arguments', function (this: Context) {
+        // About 150,000 arguments overflow Node's default stack
+        this.timeout(20_000);
+        const count = 200_000;
+        const properties = Object.fromEntries(
+            Array.from({ length: count }, (_, i) => [`p${i}`, { type: 'string' }])
+        );
+
+        expect(namesOf({ type: 'object', properties })).to.have.length(count + 1);
     });
 
     test('a pattern matching one key, but not a property only required', () => {

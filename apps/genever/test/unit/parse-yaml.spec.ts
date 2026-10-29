@@ -47,4 +47,27 @@ suite('parseYaml', () => {
                 .that.deep.equals([start, start + 2]);
         }
     });
+
+    test('rejects a merge key that merges a map into itself', () => {
+        for (const [text, name, start, line, column] of [
+            ['properties: &p\n  a: { type: string }\n  <<: *p\n', 'p', 43, 3, 7],
+            ['a: &a\n  b: { <<: [{ c: 1 }, *a] }\n', 'a', 28, 2, 23],
+        ] as const) {
+            expect(() => parseYaml(text))
+                .to.throw(
+                    YAMLError,
+                    `Merge key's alias *${name} is inside the map &${name} it merges at line ${line}, column ${column}`
+                )
+                .with.property('pos')
+                .that.deep.equals([start, start + 2]);
+        }
+    });
+
+    test('merges an earlier map, and keeps a quoted "<<" key', () => {
+        expect(parseYaml('a: &a { b: 1 }\nc: { <<: *a }\nd: { "<<": 2 }\n')).to.deep.equal({
+            a: { b: 1 },
+            c: { b: 1 },
+            d: { '<<': 2 },
+        });
+    });
 });
