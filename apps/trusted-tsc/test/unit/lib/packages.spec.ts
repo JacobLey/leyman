@@ -74,6 +74,23 @@ suite('packages', () => {
             expect([
                 ...(await readGrants(fixture.path('hoisted/node_modules/plain'))),
             ]).to.deep.equal([`${root}/hoisted/node_modules/plain`]);
+
+            // A link to a link, as a package linked into another project is
+            await fixture.write({ 'linked/package.json': { dependencies: { plain: '1' } } });
+            await fixture.link('hoisted/node_modules/plain', 'other/node_modules/plain');
+            await fixture.link('other/node_modules/plain', 'linked/node_modules/plain');
+            expect(
+                [...(await readGrants(fixture.path('linked')))].toSorted((a, b) =>
+                    a.localeCompare(b)
+                )
+            ).to.deep.equal(
+                [
+                    'hoisted/node_modules/plain',
+                    'linked',
+                    'linked/node_modules',
+                    'other/node_modules',
+                ].map(path => `${root}/${path}`)
+            );
         }
     );
 });

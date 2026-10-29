@@ -78,7 +78,7 @@ It refuses `--runExternalCode` (the allowlist replaces it) and `--build` (run ea
 
 ## The sandbox
 
-`trusted-tsc` runs `tsc` with `NODE_OPTIONS` set to `--permission`, plus an `--allow-fs-read` for each directory the mappers need: each mapper's package, each of its dependencies (including optional and peer ones), and, for a dependency installed as a link (as pnpm does), the `node_modules` directory that holds the link. `tsc` passes its environment to the mapper processes it starts, so each one runs with these permissions, and nothing else:
+`trusted-tsc` runs `tsc` with `NODE_OPTIONS` set to `--permission`, plus an `--allow-fs-read` for each directory the mappers need: each mapper's package, each of its dependencies (including optional and peer ones), and, for a dependency installed as a link (as pnpm does), the directory holding the link, and that of any link it leads through. `tsc` passes its environment to the mapper processes it starts, so each one runs with these permissions, and nothing else:
 
 - **Reading** only those directories. TypeScript sends a mapper each file's contents, so it never needs to read your project.
 - **No writing** files, starting processes, worker threads, native addons or WASI.

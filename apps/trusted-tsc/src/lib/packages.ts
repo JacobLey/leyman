@@ -1,4 +1,4 @@
-import { access, readFile, realpath } from 'node:fs/promises';
+import { access, lstat, readFile, readlink, realpath } from 'node:fs/promises';
 import Path from 'node:path';
 
 /**
@@ -71,19 +71,26 @@ export const findManifest = async (from: string): Promise<string | null> => {
 
 /**
  * The directories a Node program needs to read to load a package and its dependencies: each package's real
- * directory, and, for a dependency installed as a symbolic link (as pnpm does), the directory holding the link.
- * Node resolves links in its permission grants, so the link itself is only readable through its parent.
+ * directory, and, for a dependency installed as a symbolic link (as pnpm does), the directory holding the link, and
+ * that of each link it leads through. Node resolves links in its permission grants, so a link is only readable
+ * through its parent.
  *
  * @param directory - the package's directory
  * @returns directories to grant read access to
  */
 export const readGrants = async (directory: string): Promise<Set<string>> => {
     const grants = new Set<string>();
-    const visit = async (found: string): Promise<void> => {
-        const real = await realpath(found);
-        if (real !== found) {
-            grants.add(Path.dirname(found));
+    const grantLinks = async (path: string): Promise<void> => {
+        const stats = await lstat(path);
+        if (!stats.isSymbolicLink()) {
+            return;
         }
+        grants.add(await realpath(Path.dirname(path)));
+        await grantLinks(Path.resolve(Path.dirname(path), await readlink(path)));
+    };
+    const visit = async (found: string): Promise<void> => {
+        await grantLinks(found);
+        const real = await realpath(found);
         if (grants.has(real)) {
             return;
         }

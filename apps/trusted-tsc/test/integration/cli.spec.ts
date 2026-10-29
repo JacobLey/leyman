@@ -118,11 +118,15 @@ suite('trusted-tsc', () => {
                 dependencies: { 'genever-content-mapper': '*' },
                 typescript: { contentMapper: { exec: ['node', 'bin.mjs'] } },
             },
+            // Serves only if it can't read the project's package.json
             'reader/bin.mjs': [
                 "import { readFileSync } from 'node:fs';",
                 "import { serve } from 'genever-content-mapper';",
                 '',
-                "readFileSync(new URL('../package.json', import.meta.url));",
+                'try {',
+                "    readFileSync(new URL('../package.json', import.meta.url));",
+                '    process.exit(1);',
+                '} catch {}',
                 '',
                 'export default serve(process.stdin, process.stdout);',
                 '',
@@ -137,15 +141,21 @@ suite('trusted-tsc', () => {
         await fixture.link('reader', 'node_modules/reader-mapper');
 
         // Without the sandbox, it reads the project's package.json
-        expect(
-            await run(tsc, ['--runExternalCode', '--pretty', 'false'], fixture.tmpDir.path)
-        ).to.deep.equal({ code: 0, stdout: '', stderr: '' });
-
-        const { code, stdout } = await run(bin, ['--pretty', 'false'], fixture.tmpDir.path);
-        expect(code).to.equal(2);
-        expect(stdout).to.contain(
+        const plain = await run(
+            tsc,
+            ['--runExternalCode', '--pretty', 'false'],
+            fixture.tmpDir.path
+        );
+        expect(plain.code).to.equal(2);
+        expect(plain.stdout).to.contain(
             "error TS18099: The content mapper 'reader-mapper' could not be initialized."
         );
+
+        expect(await run(bin, ['--pretty', 'false'], fixture.tmpDir.path)).to.deep.equal({
+            code: 0,
+            stdout: '',
+            stderr: '',
+        });
     });
 
     withProject.test('runs tsc as it is for a project without mappers', async ({ fixture }) => {
