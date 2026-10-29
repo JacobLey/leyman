@@ -1,7 +1,7 @@
-import type { Document, Node } from 'yaml';
+import type { Document, Node, Pair, Scalar, YAMLMap } from 'yaml';
 import type { MapperOptions } from './options.js';
 import { pathToFileURL } from 'node:url';
-import { isAlias, isMap, isNode, isPair, isScalar, isSeq, parseDocument, YAMLError } from 'yaml';
+import { isAlias, isMap, isNode, isPair, isSeq, parseDocument, YAMLError } from 'yaml';
 import {
     GeneverError,
     geneverSource,
@@ -48,7 +48,8 @@ export interface MappedDocument {
     readonly text: string;
     readonly diagnostics: readonly DocumentDiagnostic[];
     /**
-     * Each type's name, mapped to the key of its schema (or of `paths`) in the document, in the order of the types.
+     * Each type's and property's name, mapped to the key of its schema (or of `paths`) in the document, in the
+     * order of the names in `text`.
      */
     readonly mappings: readonly Mapping[];
 }
@@ -104,6 +105,53 @@ const rangeOf = (node: Node): Span => {
 const parseLocated = (text: string): Document =>
     parseDocument(text, { merge: true, stringKeys: true });
 
+const mergeKey = '<<';
+
+/**
+ * Each map's entries by key, built once per map.
+ */
+const entryIndex = new WeakMap<YAMLMap, ReadonlyMap<string, Pair>>();
+
+/**
+ * A map's entries by key, as the parsed value has them: its own, then those its merge keys (`<<: *base`) bring
+ * in, an earlier merged map's before a later one's. A quoted `"<<"` is an ordinary key.
+ *
+ * @param map - parsed map
+ * @param document - the parsed document, which aliases resolve in
+ * @returns entries by key
+ */
+const entriesOf = (map: YAMLMap, document: Document): ReadonlyMap<string, Pair> => {
+    const indexed = entryIndex.get(map);
+    if (indexed) {
+        return indexed;
+    }
+    const entries = new Map<string, Pair>();
+    // Before merging, so a map merging itself finds what it has so far rather than recursing
+    entryIndex.set(map, entries);
+    const merged: unknown[] = [];
+    for (const item of map.items) {
+        // Every key is a string, or genever would have refused the document
+        const key = String((item.key as Scalar).value);
+        if (key === mergeKey && (item.key as Scalar).type === 'PLAIN') {
+            const value = isAlias(item.value) ? item.value.resolve(document) : item.value;
+            merged.push(...(isSeq(value) ? value.items : [value]));
+        } else if (!entries.has(key)) {
+            entries.set(key, item);
+        }
+    }
+    for (const source of merged) {
+        const resolved = isAlias(source) ? source.resolve(document) : source;
+        if (isMap(resolved)) {
+            for (const [key, pair] of entriesOf(resolved, document)) {
+                if (!entries.has(key)) {
+                    entries.set(key, pair);
+                }
+            }
+        }
+    }
+    return entries;
+};
+
 /**
  * Where a JSON Pointer points in the document's text.
  */
@@ -134,9 +182,7 @@ const find = (document: Document, textLength: number, pointer: string): Located 
         if (isAlias(node)) {
             node = node.resolve(document);
         }
-        const pair = isMap(node)
-            ? node.items.find(item => isScalar(item.key) && String(item.key.value) === segment)
-            : undefined;
+        const pair = isMap(node) ? entriesOf(node, document).get(segment) : undefined;
         const item: unknown = pair ?? (isSeq(node) ? node.items[Number(segment)] : undefined);
         if (isPair(item)) {
             key = rangeOf(item.key as Node);

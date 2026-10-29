@@ -1,3 +1,4 @@
+import type { MapperOptions } from 'genever-content-mapper';
 import { expect } from '@leyman/expect';
 import { genever, parseYaml } from 'genever';
 import { diagnosticCodes, mapDocument } from 'genever-content-mapper';
@@ -81,10 +82,14 @@ suite('mapDocument', () => {
          * Each mapping, as the name in the types and the text of the document it maps to.
          *
          * @param text - the document's contents
+         * @param options - genever's options
          * @returns name and document text of each mapping
          */
-        const mapped = (text: string): { kind: number; name: string; original: string }[] => {
-            const { mappings, text: types } = mapDocument(text, fileName);
+        const mapped = (
+            text: string,
+            options?: MapperOptions
+        ): { kind: number; name: string; original: string }[] => {
+            const { mappings, text: types } = mapDocument(text, fileName, options);
             return mappings.map(
                 ([virtualStart, virtualLength, originalStart, originalLength, kind]) => ({
                     kind,
@@ -163,6 +168,40 @@ suite('mapDocument', () => {
                 { kind: 2, name: 'ANote', original: '"A note"' },
                 { kind: 2, name: 'Paths', original: 'paths' },
             ]);
+        });
+
+        test('a key a merge key brings in, where it is defined', () => {
+            expect(
+                mapped(
+                    [
+                        'x: &p { a: { type: string } }',
+                        'type: object',
+                        'properties:',
+                        '  <<: *p',
+                        '  b: { type: number }',
+                        '"<<": { c: 1 }',
+                        '',
+                    ].join('\n'),
+                    { strict: false }
+                )
+            ).to.deep.equal([
+                { kind: 2, name: 'a', original: 'a' },
+                { kind: 2, name: 'b', original: 'b' },
+            ]);
+        });
+
+        test("an earlier merged map's key before a later one's", () => {
+            const text = [
+                'x: &a { b: { type: string } }',
+                'z: &c { b: { type: number }, d: { type: number } }',
+                'type: object',
+                'properties: { <<: [*a, *c] }',
+                '',
+            ].join('\n');
+
+            expect(
+                mapDocument(text, fileName, { strict: false }).mappings.map(mapping => mapping[2])
+            ).to.deep.equal([text.indexOf('b:'), text.lastIndexOf('d:')]);
         });
 
         test('a key reached through an alias, at its anchor', () => {
@@ -265,10 +304,22 @@ suite('mapDocument', () => {
             ).to.include({ covers: 'bogus: 1' });
         });
 
-        test('through a merge key, at the nearest entry', () => {
+        test('through a merge key, at the merged entry', () => {
             expect(
                 mapError('type: object\nproperties:\n  y: { <<: { type: string, bogus: 1 } }\n')
-            ).to.include({ covers: 'y: { <<: { type: string, bogus: 1 } }' });
+            ).to.include({ covers: 'bogus: 1' });
+        });
+
+        test('a map that merges itself covers the alias', () => {
+            expect(
+                mapError('type: object\nproperties: &p\n  a: { type: string }\n  <<: *p\n')
+            ).to.include({ code: diagnosticCodes.syntax, covers: '*p' });
+        });
+
+        test('a key not in the document, at its parent', () => {
+            expect(mapError('type: object\ndiscriminator: {}\n')).to.include({
+                covers: 'discriminator: {}',
+            });
         });
 
         test('a key without a value', () => {
