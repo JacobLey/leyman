@@ -88,6 +88,10 @@ export interface NamedType {
     readonly doc: TsDoc | null;
     readonly name: string;
     /**
+     * JSON Pointer to what the type is generated from: its schema, or a document's `paths`. None for a helper.
+     */
+    readonly pointer?: string;
+    /**
      * Type parameters, e.g. `<Id extends keyof Operations>`, for the generic helpers of a document's operations.
      */
     readonly parameters?: string;
@@ -480,7 +484,7 @@ export class Converter {
             ...this.#convertPending().toSorted(compareNames),
             ...(operations
                 ? [
-                      { doc: null, name: pathsName, type: operations.paths },
+                      { doc: null, name: pathsName, pointer: '#/paths', type: operations.paths },
                       { doc: null, name: operationsName, type: operations.operations },
                       ...operationHelpers(helperNames, operations.requestParameters),
                   ]
@@ -494,6 +498,7 @@ export class Converter {
         for (const { name, pointer, schema } of this.#pending) {
             types.push({
                 name,
+                pointer,
                 doc: readDoc(schema),
                 type: this.#convert(schema, pointer, { ...emptyScope, unguarded: [pointer] }),
             });

@@ -1,5 +1,5 @@
 ---
-description: The genever CLI and its flags, the genever() and geneverFile() functions, and the errors they throw.
+description: The genever CLI and its flags, the genever(), geneverFile(), parseYaml() and geneverSource() functions, and the errors they throw.
 ---
 
 # API and CLI
@@ -88,6 +88,19 @@ import { genever, parseYaml } from 'genever';
 
 genever(parseYaml('type: array\nitems: { type: string }\n'), { name: 'Tags' });
 // export type Tags = string[];
+```
+
+## `geneverSource(schema, options?)`
+
+Generate types as `genever` does, and say where each type's name is in the source and which part of the document it comes from, so a tool showing the types can link each name back to its schema. Takes the same options as `genever`.
+
+Returns `{ text, names }`. `text` is the same source `genever` returns. `names` lists each type generated from a schema, or a document's `paths`, in the order declared, as `{ name, pointer, start }`: `start` is the index of the name in `text`, and `pointer` the JSON Pointer to its schema (`#/$defs/Note`, `#/components/schemas/Note`) or `#/paths` for `Paths`, in the same form as an [error](#errors)'s. An OpenAPI document's helper types (`Operations`, `OperationInput` and the rest) aren't listed.
+
+```ts
+import { geneverSource } from 'genever';
+
+const { text, names } = geneverSource({ $defs: { Note: { type: 'string' } } });
+// names: [{ name: 'Schema', pointer: '#', start: … }, { name: 'Note', pointer: '#/$defs/Note', start: … }]
 ```
 
 ## YAML
