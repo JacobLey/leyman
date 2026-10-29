@@ -36,6 +36,23 @@ export interface TscPlan {
 const permissionFlag = /^--(?:allow-|experimental-permission|permission)/iv;
 
 /**
+ * The only environment variables `tsc`, and so each mapper, gets: where to find `node`, `tsc`'s colours, and the
+ * settings of Go's runtime, which `tsc` is built on. Anything else, such as a token, never reaches a mapper.
+ */
+const keptEnv = [
+    'COLORTERM',
+    'FORCE_COLOR',
+    'GOGC',
+    'GOMAXPROCS',
+    'GOMEMLIMIT',
+    'NO_COLOR',
+    'PATH',
+    'TERM',
+    'TMPDIR',
+    'TZ',
+] as const;
+
+/**
  * Find the project's tsconfig from `tsc`'s arguments.
  *
  * @param args - `tsc`'s arguments
@@ -105,8 +122,8 @@ const readTrusted = async (projectDirectory: string): Promise<readonly string[]>
  *
  * Each mapper must be named in the `trustedContentMappers` of the project's nearest `package.json`, installed, and
  * run by `node`. The mappers may read their own packages and their dependencies, and nothing else: not the project,
- * other files, or (with no grant) child processes and workers. Node can't restrict the network or environment
- * variables.
+ * other files, or (with no grant) child processes and workers. `tsc` runs with only a few environment variables,
+ * which it passes on to the mappers. Node can't restrict the network.
  *
  * @param args - arguments for `tsc`
  * @param cwd - working directory, where `tsc` runs
@@ -179,6 +196,11 @@ export const planTsc = async (
         configFile,
         mappers,
         args: [...args, '--runExternalCode'],
-        env: { ...env, NODE_OPTIONS: [nodeOptions, ...sandbox].join(' ').trim() },
+        env: {
+            ...Object.fromEntries(
+                keptEnv.filter(name => env[name] !== undefined).map(name => [name, env[name]])
+            ),
+            NODE_OPTIONS: [nodeOptions, ...sandbox].join(' ').trim(),
+        },
     };
 };

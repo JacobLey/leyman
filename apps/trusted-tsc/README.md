@@ -6,8 +6,8 @@ Run TypeScript 7.1's tsc with only the content mappers you trust, each in Node's
 </div>
 
 - **An allowlist TypeScript doesn't have.** `tsc --runExternalCode` runs every content mapper a tsconfig names, including one an `extends` brings in. `trusted-tsc` passes the flag only once every mapper is listed in your `package.json`, so adding one is a reviewed change.
-- **Sandboxed.** Each mapper runs under Node's permission model. It can read its own package and its dependencies, and not your project, home directory or credentials. It can't write files or start processes either.
-- **Drop-in.** `trusted-tsc -p test` takes `tsc`'s arguments, runs the native `tsc`, and exits with its code. A project without content mappers runs as plain `tsc`.
+- **Sandboxed.** Each mapper runs under Node's permission model. It can read its own package and its dependencies, and not your project, home directory or credentials. It can't write files or start processes either, and sees only a few environment variables, so not your tokens.
+- **Drop-in.** `trusted-tsc -p test` takes `tsc`'s arguments, runs the native `tsc`, and exits with its code. A project without content mappers runs as plain `tsc`, with your whole environment.
 - **Checkable.** `trusted-tsc --check` refuses the same mappers without running `tsc`, for CI.
 - **No dependencies.**
 
@@ -82,6 +82,7 @@ It refuses `--runExternalCode` (the allowlist replaces it) and `--build` (run ea
 
 - **Reading** only those directories. TypeScript sends a mapper each file's contents, so it never needs to read your project.
 - **No writing** files, starting processes, worker threads, native addons or WASI.
+- **Only a few environment variables**: `PATH` (to find `node`), `tsc`'s colour settings (`TERM`, `COLORTERM`, `NO_COLOR`, `FORCE_COLOR`), `TMPDIR`, `TZ`, the Go runtime's `GOGC`, `GOMAXPROCS` and `GOMEMLIMIT` (`tsc` is written in Go), and `NODE_OPTIONS`. `tsc` runs with only these too, so a token or key in your shell or CI job never reaches a mapper.
 
 It runs the native `tsc` executable directly, since the `tsc` command is a Node script, which the sandbox would stop.
 
@@ -89,7 +90,7 @@ Other `NODE_OPTIONS` are kept, unless they set permissions themselves (`--allow-
 
 ## Limitations
 
-- **The network and environment variables are open.** Node's permission model doesn't cover them yet. A mapper can still read `process.env` and make requests. Don't run mappers in jobs that hold secrets.
+- **The network is open.** Node's permission model doesn't cover it yet, so a mapper can still make requests. It has no secrets to send, but can send what it maps: your documents.
 - **Node mappers only.** A mapper run by anything other than `node` is refused, as nothing would sandbox it.
 - **Editors aren't covered.** The language server runs mappers itself, gated by workspace trust and its content mapper permission, not by `trusted-tsc`. `--check` in CI catches a mapper an editor would run.
 - **Linux and macOS.** It doesn't look for `tsc.exe` yet.

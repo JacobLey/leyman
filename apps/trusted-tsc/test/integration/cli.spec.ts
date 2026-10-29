@@ -15,10 +15,15 @@ const tsc = Path.resolve('node_modules/.bin/tsc');
 const run = async (
     command: string,
     args: readonly string[],
-    cwd: string
+    cwd: string,
+    env: Readonly<Record<string, string>> = {}
 ): Promise<{ code: number; stdout: string; stderr: string }> => {
     try {
-        const { stdout, stderr } = await execFileAsync(command, args, { cwd });
+        const { stdout, stderr } = await execFileAsync(command, args, {
+            cwd,
+            // eslint-disable-next-line n/no-process-env -- Run as from the test's shell
+            env: { ...process.env, ...env },
+        });
         return { code: 0, stdout, stderr };
     } catch (error) {
         const { code, stdout, stderr } = error as { code: number; stdout: string; stderr: string };
@@ -152,6 +157,54 @@ suite('trusted-tsc', () => {
         );
 
         expect(await run(bin, ['--pretty', 'false'], fixture.tmpDir.path)).to.deep.equal({
+            code: 0,
+            stdout: '',
+            stderr: '',
+        });
+    });
+
+    withProject.test('a mapper sees only a few environment variables', async ({ fixture }) => {
+        await fixture.write({
+            'spy/package.json': {
+                name: 'spy-mapper',
+                version: '1.0.0',
+                type: 'module',
+                dependencies: { 'genever-content-mapper': '*' },
+                typescript: { contentMapper: { exec: ['node', 'bin.mjs'] } },
+            },
+            'spy/bin.mjs': [
+                "import { serve } from 'genever-content-mapper';",
+                '',
+                'if (process.env.TRUSTED_TSC_TOKEN !== undefined || process.env.PATH === undefined) {',
+                "    throw new Error('Unexpected environment');",
+                '}',
+                '',
+                'export default serve(process.stdin, process.stdout);',
+                '',
+            ].join('\n'),
+            'package.json': {
+                type: 'module',
+                devDependencies: { '@typescript/native': '*' },
+                trustedContentMappers: ['spy-mapper'],
+            },
+            'tsconfig.json': tsconfig('spy-mapper'),
+        });
+        await fixture.link('spy', 'node_modules/spy-mapper');
+        const env = { TRUSTED_TSC_TOKEN: 'secret' };
+
+        // Without trusted-tsc, it sees the token
+        const plain = await run(
+            tsc,
+            ['--runExternalCode', '--pretty', 'false'],
+            fixture.tmpDir.path,
+            env
+        );
+        expect(plain.code).to.equal(2);
+        expect(plain.stdout).to.contain(
+            "error TS18099: The content mapper 'spy-mapper' could not be initialized."
+        );
+
+        expect(await run(bin, ['--pretty', 'false'], fixture.tmpDir.path, env)).to.deep.equal({
             code: 0,
             stdout: '',
             stderr: '',

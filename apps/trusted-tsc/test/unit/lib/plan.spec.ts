@@ -26,11 +26,18 @@ suite('planTsc', () => {
     withProject.test('runs trusted mappers in the sandbox', async ({ fixture }) => {
         const root = await realpath(fixture.tmpDir.path);
 
-        expect(await planTsc(['--noEmit'], fixture.tmpDir.path, { HOME: '/home' })).to.deep.equal({
+        expect(
+            await planTsc(['--noEmit'], fixture.tmpDir.path, {
+                HOME: '/home',
+                PATH: '/bin',
+                TOKEN: 'secret',
+                NO_COLOR: undefined,
+            })
+        ).to.deep.equal({
             configFile: fixture.path('tsconfig.json'),
             args: ['--noEmit', '--runExternalCode'],
             env: {
-                HOME: '/home',
+                PATH: '/bin',
                 NODE_OPTIONS: `--permission --allow-fs-read="${root}/node_modules/mapper"`,
             },
             mappers: [
@@ -60,6 +67,13 @@ suite('planTsc', () => {
         expect(plan.mappers).to.deep.equal([
             { name: 'mapper', version: '', directory: fixture.path('node_modules/mapper') },
         ]);
+    });
+
+    withProject.test('keeps the whole environment without mappers', async ({ fixture }) => {
+        await fixture.write({ 'tsconfig.json': {} });
+
+        const { env } = await planTsc([], fixture.tmpDir.path, { TOKEN: 'secret' });
+        expect(env).to.deep.equal({ TOKEN: 'secret' });
     });
 
     withProject.test('finds the tsconfig of -p and --project', async ({ fixture }) => {
