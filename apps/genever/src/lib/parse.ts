@@ -1,4 +1,5 @@
-import { parseDocument } from 'yaml';
+import type { Alias } from 'yaml';
+import { isAlias, LineCounter, parseDocument, visit, YAMLParseError } from 'yaml';
 import { GeneverInvalidSchemaError, GeneverUnsupportedError } from './errors.js';
 import { openApiDialect } from './openapi.js';
 import { childPointer } from './pointer.js';
@@ -213,11 +214,32 @@ class JsonTree {
 }
 
 /**
+ * The error for an alias with no anchor before it, which `yaml` throws only once the document is converted, and
+ * as a plain `ReferenceError`.
+ *
+ * @param alias - alias whose anchor is missing, or after it
+ * @param lineCounter - line starts of the text
+ * @returns error at the alias
+ */
+const unresolvedAlias = (alias: Alias, lineCounter: LineCounter): YAMLParseError => {
+    // The parser sets every node's range
+    const [start, end] = alias.range!;
+    const { line, col } = lineCounter.linePos(start);
+    const error = new YAMLParseError(
+        [start, end],
+        'BAD_ALIAS',
+        `Alias *${alias.source} has no anchor &${alias.source} before it at line ${line}, column ${col}`
+    );
+    error.linePos = [lineCounter.linePos(start), lineCounter.linePos(end)];
+    return error;
+};
+
+/**
  * Parse a YAML 1.2 document, with only the values JSON has.
  *
  * Aliases are expanded, and merge keys (`<<`) merged. An alias inside the schema it names, a recursive
  * schema, becomes a `$ref` to that schema. Tags other than the core schema's (e.g. `!!binary`), keys that
- * aren't strings, and duplicate keys are errors.
+ * aren't strings, duplicate keys, and an alias with no anchor before it are errors.
  *
  * @param text - YAML source
  * @returns parsed document
@@ -227,7 +249,9 @@ class JsonTree {
  * @throws {GeneverUnsupportedError} if the document is an unsupported OpenAPI version
  */
 export const parseYaml = (text: string): unknown => {
+    const lineCounter = new LineCounter();
     const document = parseDocument(text, {
+        lineCounter,
         merge: true,
         resolveKnownTags: false,
         schema: 'core',
@@ -237,6 +261,11 @@ export const parseYaml = (text: string): unknown => {
     if (problem) {
         throw problem;
     }
+    visit(document, (_key, node) => {
+        if (isAlias(node) && !node.resolve(document)) {
+            throw unresolvedAlias(node, lineCounter);
+        }
+    });
     const parsed: unknown = document.toJS();
     const roots = inputSchemas(parsed, openApiDialect(parsed) !== null).map(
         ({ pointer }) => pointer

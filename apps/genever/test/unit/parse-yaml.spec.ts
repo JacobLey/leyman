@@ -32,4 +32,19 @@ suite('parseYaml', () => {
         expect(() => parseYaml('a: 1\na: 2\n')).to.throw(YAMLError);
         expect(() => parseYaml('const: .inf\n')).to.throw(GeneverInvalidSchemaError);
     });
+
+    test('rejects an alias with no anchor before it', () => {
+        for (const [text, start, line] of [
+            ['type: object\nproperties:\n  a: *b\n', 30, 3],
+            ['$defs:\n  a: *b\n  b: &b { type: string }\n', 12, 2],
+        ] as const) {
+            expect(() => parseYaml(text))
+                .to.throw(
+                    YAMLError,
+                    `Alias *b has no anchor &b before it at line ${line}, column 6`
+                )
+                .with.property('pos')
+                .that.deep.equals([start, start + 2]);
+        }
+    });
 });

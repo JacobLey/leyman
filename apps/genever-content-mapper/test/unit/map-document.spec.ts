@@ -79,6 +79,13 @@ suite('mapDocument', () => {
             expect(mapError('a: [\n')).to.include({ code: diagnosticCodes.syntax, covers: '' });
         });
 
+        test('an alias with no anchor before it covers the alias', () => {
+            expect(mapError('type: object\nproperties:\n  a: *b\n')).to.include({
+                code: diagnosticCodes.syntax,
+                covers: '*b',
+            });
+        });
+
         test('a value JSON has no equivalent for', () => {
             expect(mapError('const: .inf\n')).to.deep.equal({
                 code: diagnosticCodes.invalidSchema,
@@ -176,11 +183,22 @@ suite('mapDocument', () => {
         });
 
         test('anything else, at the start of the document', () => {
-            expect(mapError('type: object\nproperties:\n  y: *b\n')).to.deep.equal({
-                code: diagnosticCodes.unexpected,
-                messageText:
-                    'ReferenceError: Unresolved alias (the anchor must be set before the alias): b',
-                covers: '',
+            const options = {
+                get strict(): boolean {
+                    throw new TypeError('Unexpected');
+                },
+            };
+
+            expect(mapDocument('type: string\n', fileName, options)).to.deep.equal({
+                text: 'export {};\n',
+                diagnostics: [
+                    {
+                        code: diagnosticCodes.unexpected,
+                        messageText: 'TypeError: Unexpected',
+                        start: 0,
+                        length: 0,
+                    },
+                ],
             });
         });
     });
