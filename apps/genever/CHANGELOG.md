@@ -1,5 +1,15 @@
 # genever
 
+## 0.8.0
+
+### Minor Changes
+
+- 20f22f6: Export `parseYaml`, which reads a YAML (or JSON) document the way genever reads a `.yaml` file, so a caller with the text in hand gets the same types from `genever` as the CLI.
+
+### Patch Changes
+
+- 8e5bb98: `--fetch-host` with `--no-fetch` now stops the CLI before it writes anything. It printed the error, then generated the file anyway.
+
 ## 0.7.1
 
 ### Patch Changes
