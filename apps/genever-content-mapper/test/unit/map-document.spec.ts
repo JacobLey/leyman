@@ -29,6 +29,7 @@ suite('mapDocument', () => {
             expect(mapDocument(text, fileName)).to.deep.equal({
                 text: genever(parseYaml(text)),
                 diagnostics: [],
+                mappings: [],
             });
         });
 
@@ -71,6 +72,77 @@ suite('mapDocument', () => {
             ].join('\n');
 
             expect(mapDocument(text, fileName).diagnostics).to.deep.equal([]);
+        });
+    });
+
+    suite('mappings', () => {
+        /**
+         * Each mapping, as the name in the types and the text of the document it maps to.
+         *
+         * @param text - the document's contents
+         * @returns name and document text of each mapping
+         */
+        const mapped = (text: string): { kind: number; name: string; original: string }[] => {
+            const { mappings, text: types } = mapDocument(text, fileName);
+            return mappings.map(
+                ([virtualStart, virtualLength, originalStart, originalLength, kind]) => ({
+                    kind,
+                    name: types.slice(virtualStart, virtualStart + virtualLength),
+                    original: text.slice(originalStart, originalStart + originalLength),
+                })
+            );
+        };
+
+        test("each definition's name to its key, not the root's", () => {
+            expect(
+                mapped(
+                    [
+                        'type: object',
+                        'properties:',
+                        '  note: { $ref: "#/$defs/Note" }',
+                        '  tags: { $ref: "#/properties/list" }',
+                        '  list: { type: array, items: { type: string } }',
+                        '$defs:',
+                        '  Note: { type: string }',
+                        '',
+                    ].join('\n')
+                )
+            ).to.deep.equal([
+                { kind: 2, name: 'Note', original: 'Note' },
+                { kind: 2, name: 'PropertiesList', original: 'list' },
+            ]);
+        });
+
+        test("each component's name, and Paths, to its key", () => {
+            expect(
+                mapped(
+                    [
+                        'openapi: 3.1.0',
+                        'info: { title: Notes, version: "1" }',
+                        'paths:',
+                        '  /notes:',
+                        '    get:',
+                        '      operationId: listNotes',
+                        '      responses: { "204": { description: None } }',
+                        'components:',
+                        '  schemas:',
+                        '    "A note": { type: string }',
+                        '',
+                    ].join('\n')
+                )
+            ).to.deep.equal([
+                { kind: 2, name: 'ANote', original: '"A note"' },
+                { kind: 2, name: 'Paths', original: 'paths' },
+            ]);
+        });
+
+        test('a key reached through an alias, at its anchor', () => {
+            expect(
+                mapped('$defs:\n  Base: &base { type: string }\n  Other: *base\n')
+            ).to.deep.equal([
+                { kind: 2, name: 'Base', original: 'Base' },
+                { kind: 2, name: 'Other', original: 'Other' },
+            ]);
         });
     });
 
@@ -199,6 +271,7 @@ suite('mapDocument', () => {
                         length: 0,
                     },
                 ],
+                mappings: [],
             });
         });
     });

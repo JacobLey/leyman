@@ -36,13 +36,12 @@ const handlers = (): Readonly<Record<string, (params: Params) => unknown>> => {
             return null;
         },
         transform: params => {
-            const { text, diagnostics } = mapDocument(
+            const { text, diagnostics, mappings } = mapDocument(
                 String(params.content),
                 String(params.fileName),
                 projects.get(params.projectHandle)
             );
-            // Synthesized: no span of the types maps back to the document
-            return { text, diagnostics, extension: '.ts', mappings: [] };
+            return { text, diagnostics, mappings, extension: '.ts' };
         },
     };
 };

@@ -1,10 +1,10 @@
-import type { Node } from 'yaml';
+import type { Document, Node } from 'yaml';
 import type { MapperOptions } from './options.js';
 import { pathToFileURL } from 'node:url';
 import { isAlias, isMap, isNode, isPair, isScalar, isSeq, parseDocument, YAMLError } from 'yaml';
 import {
-    genever,
     GeneverError,
+    geneverSource,
     GeneverStrictModeError,
     GeneverUnsupportedError,
     parseYaml,
@@ -24,6 +24,21 @@ export interface DocumentDiagnostic {
 }
 
 /**
+ * A segment of TypeScript's span map: `[virtualStart, virtualLength, originalStart, originalLength, kind]`, from a
+ * span of the types to a span of the document, in UTF-16 code units. Kind `2` (alias) says both are names of the
+ * same thing, so go to definition, hover and find references cross between them.
+ */
+export type Mapping = readonly [
+    virtualStart: number,
+    virtualLength: number,
+    originalStart: number,
+    originalLength: number,
+    kind: typeof aliasKind,
+];
+
+const aliasKind = 2;
+
+/**
  * The types of a mapped document, or why there are none.
  */
 export interface MappedDocument {
@@ -32,6 +47,10 @@ export interface MappedDocument {
      */
     readonly text: string;
     readonly diagnostics: readonly DocumentDiagnostic[];
+    /**
+     * Each type's name, mapped to the key of its schema (or of `paths`) in the document, in the order of the types.
+     */
+    readonly mappings: readonly Mapping[];
 }
 
 /**
@@ -82,6 +101,58 @@ const rangeOf = (node: Node): Span => {
     return [start, end];
 };
 
+const parseLocated = (text: string): Document =>
+    parseDocument(text, { merge: true, stringKeys: true });
+
+/**
+ * Where a JSON Pointer points in the document's text.
+ */
+interface Located {
+    /**
+     * Range of the entry (key and value) or item the pointer ends at, or of its deepest ancestor in the text.
+     */
+    readonly entry: Span;
+    /**
+     * Range of the key the pointer ends at, if every key is in the text and the last is an entry's.
+     */
+    readonly key: Span | null;
+}
+
+/**
+ * Find where a JSON Pointer points in the document's text.
+ *
+ * @param document - the parsed document
+ * @param textLength - length of the document's text
+ * @param pointer - JSON Pointer from genever
+ * @returns ranges of the entry, and of its key
+ */
+const find = (document: Document, textLength: number, pointer: string): Located => {
+    let node: unknown = document.contents;
+    let entry: Span = isNode(node) ? rangeOf(node) : [0, textLength];
+    let key: Span | null = null;
+    for (const segment of pointerKeys(pointer)) {
+        if (isAlias(node)) {
+            node = node.resolve(document);
+        }
+        const pair = isMap(node)
+            ? node.items.find(item => isScalar(item.key) && String(item.key.value) === segment)
+            : undefined;
+        const item: unknown = pair ?? (isSeq(node) ? node.items[Number(segment)] : undefined);
+        if (isPair(item)) {
+            key = rangeOf(item.key as Node);
+            entry = [key[0], rangeOf(isNode(item.value) ? item.value : (item.key as Node))[1]];
+            node = item.value;
+        } else if (isNode(item)) {
+            key = null;
+            entry = rangeOf(item);
+            node = item;
+        } else {
+            return { entry, key: null };
+        }
+    }
+    return { entry, key };
+};
+
 /**
  * Find where a JSON Pointer points in the document's text.
  *
@@ -90,28 +161,7 @@ const rangeOf = (node: Node): Span => {
  * @returns range of the entry (key and value) or item the pointer ends at, or of its deepest ancestor in the text
  */
 const locate = (text: string, pointer: string): { start: number; length: number } => {
-    const document = parseDocument(text, { merge: true, stringKeys: true });
-    let node: unknown = document.contents;
-    let [start, end] = isNode(node) ? rangeOf(node) : [0, text.length];
-    for (const key of pointerKeys(pointer)) {
-        if (isAlias(node)) {
-            node = node.resolve(document);
-        }
-        const pair = isMap(node)
-            ? node.items.find(item => isScalar(item.key) && String(item.key.value) === key)
-            : undefined;
-        const item: unknown = pair ?? (isSeq(node) ? node.items[Number(key)] : undefined);
-        if (isPair(item)) {
-            [start] = rangeOf(item.key as Node);
-            [, end] = rangeOf(isNode(item.value) ? item.value : (item.key as Node));
-            node = item.value;
-        } else if (isNode(item)) {
-            [start, end] = rangeOf(item);
-            node = item;
-        } else {
-            break;
-        }
-    }
+    const [start, end] = find(parseLocated(text), text.length, pointer).entry;
     return { start, length: end - start };
 };
 
@@ -149,7 +199,7 @@ const diagnose = (text: string, error: unknown): DocumentDiagnostic => {
  * @param text - the document's contents
  * @param fileName - absolute path of the document, which `$id`s and `$ref`s resolve against
  * @param options - genever's options
- * @returns the types, or diagnostics in the document's text
+ * @returns the types, with each name mapped to its schema's key, or diagnostics in the document's text
  */
 export const mapDocument = (
     text: string,
@@ -158,8 +208,14 @@ export const mapDocument = (
 ): MappedDocument => {
     try {
         const baseUri = pathToFileURL(fileName).href;
-        return { text: genever(parseYaml(text), { ...options, baseUri }), diagnostics: [] };
+        const source = geneverSource(parseYaml(text), { ...options, baseUri });
+        const document = parseLocated(text);
+        const mappings = source.names.flatMap(({ name, pointer, start }): Mapping[] => {
+            const { key } = find(document, text.length, pointer);
+            return key ? [[start, name.length, key[0], key[1] - key[0], aliasKind]] : [];
+        });
+        return { text: source.text, diagnostics: [], mappings };
     } catch (error) {
-        return { text: emptyModule, diagnostics: [diagnose(text, error)] };
+        return { text: emptyModule, diagnostics: [diagnose(text, error)], mappings: [] };
     }
 };
