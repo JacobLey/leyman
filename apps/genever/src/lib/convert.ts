@@ -1204,6 +1204,7 @@ export class Converter {
                 name,
                 doc: readDoc(propertySchema),
                 optional: !required.includes(name),
+                pointer: childPointer(childPointer(pointer, 'properties'), name),
                 type: scope.properties.get(name)!,
             })
         );
@@ -1323,6 +1324,7 @@ export class Converter {
                     name: key.value as string,
                     doc: null,
                     optional: true,
+                    pointer: keyPointer,
                     type: value,
                 });
             } else {

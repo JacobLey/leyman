@@ -8,7 +8,7 @@ A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file 
 - **No codegen step.** `import type { Paths } from './api.openapi.yaml'` is typed straight from the document, so nothing is generated, committed or checked for drift.
 - **The same types as genever.** It runs [genever](../genever/) on the file, with the same strict checks and options, so switching from a generated file changes nothing.
 - **Errors where they are.** A strict mode mistake, or an invalid schema, is reported by `tsc` (and editors) at its line and column in the YAML file.
-- **Go to definition into the document.** In an editor, a type's name leads to its schema's key, `Note:` under `components.schemas`. Hover shows the type.
+- **Go to definition into the document.** In an editor, a type's name leads to its schema's key, `Note:` under `components.schemas`, and a property (`note.body`) to its key under `properties`. Hover shows the type.
 - **Inert.** It reads only the text TypeScript sends it: no other files, no network, no environment variables.
 
 **Requires TypeScript 7.1** (`typescript@7.1.0-beta` or later), whose content mappers are new and may still change before its stable release. Private for now, and not on npm yet.
@@ -99,7 +99,7 @@ The error covers the entry it is about (its key and value), e.g. `minLenght: 1` 
 - **One file at a time.** TypeScript sends a mapper one file, and never runs it again when another file changes, so a type built from another file would go stale in editors and incremental builds. A `$ref` to another file or a URL is an error (`genever104`): keep each document self-contained, or bundle it first. References within the document (`#/components/schemas/Note`) work as usual.
 - **Errors stop type checking.** TypeScript reports a mapper's errors as syntax errors, and doesn't type check a project with syntax errors, so other errors only show up once the document's are fixed.
 - **Option errors need a mapped file.** TypeScript only asks the mapper about its options once a mapped file is in the program.
-- **Navigation stops at type names.** A type defined in the document leads to its schema's key, and `Paths` to `paths`, but a property (`note.body`) leads into the generated types, not to its schema. The root schema's type (`Schema`) and an OpenAPI document's helpers (`Operations`, `OperationInput`...) have no key to lead to.
+- **Navigation covers schemas' types and properties.** A type defined in the document leads to its schema's key, `Paths` to `paths`, and a property to its key under `properties`, or the first `allOf` member's when several declare it. The root schema's type (`Schema`) and an OpenAPI document's helpers (`Operations`, `OperationInput`...), with their own properties such as an operation's `path` or `query`, lead into the generated types instead.
 - **Tools on the TypeScript 6 API don't run mappers**, such as typescript-eslint. To them, an import of a mapped file is unresolved.
 
 ## Security
@@ -122,7 +122,7 @@ The types of one document, as the mapper returns them to TypeScript.
 | `fileName` | `string` | — | Required. Absolute path of the document, which `$id`s resolve against. |
 | `options` | `MapperOptions` | `{}` | See [Options](#options). |
 
-**Returns** `MappedDocument`: `{ text, diagnostics, mappings }`. `text` is genever's TypeScript source, or `export {};` if the document has errors. Each diagnostic is `{ messageText, start, length, code }`. Each mapping is TypeScript's span map tuple `[virtualStart, virtualLength, originalStart, originalLength, 2]`, an alias from a type's name in `text` to its schema's key in the document. Offsets are JavaScript string indices.
+**Returns** `MappedDocument`: `{ text, diagnostics, mappings }`. `text` is genever's TypeScript source, or `export {};` if the document has errors. Each diagnostic is `{ messageText, start, length, code }`. Each mapping is TypeScript's span map tuple `[virtualStart, virtualLength, originalStart, originalLength, 2]`, an alias from a type's or property's name in `text` to its schema's key in the document. Offsets are JavaScript string indices.
 
 ### `serve(input, output)`
 

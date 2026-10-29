@@ -94,13 +94,13 @@ genever(parseYaml('type: array\nitems: { type: string }\n'), { name: 'Tags' });
 
 Generate types as `genever` does, and say where each type's name is in the source and which part of the document it comes from, so a tool showing the types can link each name back to its schema. Takes the same options as `genever`.
 
-Returns `{ text, names }`. `text` is the same source `genever` returns. `names` lists each type generated from a schema, or a document's `paths`, in the order declared, as `{ name, pointer, start }`: `start` is the index of the name in `text`, and `pointer` the JSON Pointer to its schema (`#/$defs/Note`, `#/components/schemas/Note`) or `#/paths` for `Paths`, in the same form as an [error](#errors)'s. An OpenAPI document's helper types (`Operations`, `OperationInput` and the rest) aren't listed.
+Returns `{ text, names }`. `text` is the same source `genever` returns. `names` lists each type generated from a schema, or a document's `paths`, and each property generated from a schema's `properties` (or a `patternProperties` pattern matching one key), in the order they are in `text`, as `{ name, pointer, start }`: `start` is the index of the name in `text`, and `pointer` the JSON Pointer to its schema (`#/$defs/Note`, `#/components/schemas/Note/properties/body`) or `#/paths` for `Paths`, in the same form as an [error](#errors)'s. A property's `name` is as printed, so quoted if it isn't an identifier (`"created at"`). A property merged from several `allOf` members points to the first. An OpenAPI document's helper types (`Operations`, `OperationInput` and the rest), and their own properties, aren't listed.
 
 ```ts
 import { geneverSource } from 'genever';
 
-const { text, names } = geneverSource({ $defs: { Note: { type: 'string' } } });
-// names: [{ name: 'Schema', pointer: '#', start: … }, { name: 'Note', pointer: '#/$defs/Note', start: … }]
+const { text, names } = geneverSource({ type: 'object', properties: { body: { type: 'string' } } });
+// names: [{ name: 'Schema', pointer: '#', start: … }, { name: 'body', pointer: '#/properties/body', start: … }]
 ```
 
 ## YAML

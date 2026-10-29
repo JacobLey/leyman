@@ -97,7 +97,7 @@ export type Address = {
 
 genever is an ESM module, and a CLI. Most projects run the CLI as a build step, and commit the generated file. In CI, `--ci` (on by default when the `CI` environment variable is set) fails instead of writing when the file is out of date.
 
-The programmatic API is the same: `genever(schema)` returns the TypeScript source, and `geneverFile(path)` reads a schema file and writes the types next to it. `parseYaml(text)` reads YAML as the CLI does, for `genever`. `geneverSource(schema)` also says where each type's name is, and which schema it comes from.
+The programmatic API is the same: `genever(schema)` returns the TypeScript source, and `geneverFile(path)` reads a schema file and writes the types next to it. `parseYaml(text)` reads YAML as the CLI does, for `genever`. `geneverSource(schema)` also says where each type's and property's name is, and which schema it comes from.
 
 The root schema becomes a type named `Schema` (or `--name`). Every definition in the root `$defs` (or draft 7 `definitions`) becomes an exported type named after its key, in PascalCase. A schema referenced by `$ref` from elsewhere in the document becomes a named type too, named after its key in any nested `$defs`, or else after its path. Everything else is inlined.
 
@@ -343,15 +343,15 @@ Generate types as [`genever`](#geneverschema-options) does, and say where each t
 | `schema` | `unknown` | — | Required. Parsed JSON Schema, or OpenAPI document. |
 | `options` | `GeneverOptions` | `{}` | Same as [`genever`](#geneverschema-options). |
 
-**Returns** `{ text, names }`. `text` is the same source `genever` returns. `names` lists each type generated from a schema, or a document's `paths`, in the order declared, as `{ name, pointer, start }`: `start` is the index of the name in `text`, and `pointer` the JSON Pointer to its schema (`#/$defs/Note`, `#/components/schemas/Note`) or `#/paths` for `Paths`, in the same form as an [error](#errors)'s. An OpenAPI document's helper types (`Operations`, `OperationInput` and the rest) aren't listed.
+**Returns** `{ text, names }`. `text` is the same source `genever` returns. `names` lists each type generated from a schema, or a document's `paths`, and each property generated from a schema's `properties` (or a `patternProperties` pattern matching one key), in the order they are in `text`, as `{ name, pointer, start }`: `start` is the index of the name in `text`, and `pointer` the JSON Pointer to its schema (`#/$defs/Note`, `#/components/schemas/Note/properties/body`) or `#/paths` for `Paths`, in the same form as an [error](#errors)'s. A property's `name` is as printed, so quoted if it isn't an identifier (`"created at"`). A property merged from several `allOf` members points to the first. An OpenAPI document's helper types (`Operations`, `OperationInput` and the rest), and their own properties, aren't listed.
 
 **Throws** `GeneverError` — see [Errors](#errors).
 
 ```ts
 import { geneverSource } from 'genever';
 
-const { text, names } = geneverSource({ $defs: { Note: { type: 'string' } } });
-// names: [{ name: 'Schema', pointer: '#', start: … }, { name: 'Note', pointer: '#/$defs/Note', start: … }]
+const { text, names } = geneverSource({ type: 'object', properties: { body: { type: 'string' } } });
+// names: [{ name: 'Schema', pointer: '#', start: … }, { name: 'body', pointer: '#/properties/body', start: … }]
 ```
 
 ---

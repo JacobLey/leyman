@@ -25,11 +25,12 @@ suite('mapDocument', () => {
     suite('types', () => {
         test("genever's types for the document", () => {
             const text = 'type: object\nrequired: [id]\nproperties:\n  id: { type: string }\n';
+            const types = genever(parseYaml(text));
 
             expect(mapDocument(text, fileName)).to.deep.equal({
-                text: genever(parseYaml(text)),
+                text: types,
                 diagnostics: [],
-                mappings: [],
+                mappings: [[types.indexOf('id:'), 2, text.indexOf('id:'), 2, 2]],
             });
         });
 
@@ -93,7 +94,7 @@ suite('mapDocument', () => {
             );
         };
 
-        test("each definition's name to its key, not the root's", () => {
+        test("each definition's and property's name to its key, not the root's", () => {
             expect(
                 mapped(
                     [
@@ -108,8 +109,36 @@ suite('mapDocument', () => {
                     ].join('\n')
                 )
             ).to.deep.equal([
+                { kind: 2, name: 'note', original: 'note' },
+                { kind: 2, name: 'tags', original: 'tags' },
+                { kind: 2, name: 'list', original: 'list' },
                 { kind: 2, name: 'Note', original: 'Note' },
                 { kind: 2, name: 'PropertiesList', original: 'list' },
+            ]);
+        });
+
+        test("a component's properties, quoted or not, to their keys", () => {
+            expect(
+                mapped(
+                    [
+                        'openapi: 3.1.0',
+                        'info: { title: Notes, version: "1" }',
+                        'paths: {}',
+                        'components:',
+                        '  schemas:',
+                        '    Note:',
+                        '      type: object',
+                        '      properties:',
+                        '        body: { type: string }',
+                        '        "created at": { type: string }',
+                        '',
+                    ].join('\n')
+                )
+            ).to.deep.equal([
+                { kind: 2, name: 'Note', original: 'Note' },
+                { kind: 2, name: 'body', original: 'body' },
+                { kind: 2, name: '"created at"', original: '"created at"' },
+                { kind: 2, name: 'Paths', original: 'paths' },
             ]);
         });
 

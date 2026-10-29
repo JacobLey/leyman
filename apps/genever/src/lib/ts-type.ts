@@ -24,6 +24,11 @@ export interface TsProperty {
     readonly doc: TsDoc | null;
     readonly name: string;
     readonly optional: boolean;
+    /**
+     * JSON Pointer to the property's schema, under `properties` (or `patternProperties`), if it has one.
+     * Not part of the type: two properties differing only in this are the same.
+     */
+    readonly pointer?: string;
     readonly type: TsType;
 }
 
@@ -99,7 +104,8 @@ export const objectType: TsType = { kind: 'keyword', keyword: 'object' };
  */
 const maxDistributedMembers = 32;
 
-const typeKey = (type: TsType): string => JSON.stringify(type);
+const typeKey = (type: TsType): string =>
+    JSON.stringify(type, (key, value: unknown) => (key === 'pointer' ? undefined : value));
 
 const isKeyword = (type: TsType, keyword: TsType & { kind: 'keyword' }): boolean =>
     type.kind === 'keyword' && type.keyword === keyword.keyword;
@@ -205,6 +211,9 @@ const mergeObjects = (objects: readonly (TsType & { kind: 'object' })[]): TsType
                 property.name,
                 existing
                     ? {
+                          // The first pointer either has
+                          ...(property.pointer !== undefined && { pointer: property.pointer }),
+                          ...(existing.pointer !== undefined && { pointer: existing.pointer }),
                           doc: existing.doc ?? property.doc,
                           name: property.name,
                           optional: existing.optional && property.optional,

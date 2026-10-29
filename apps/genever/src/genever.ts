@@ -59,31 +59,33 @@ export interface GeneverOptions {
 }
 
 /**
- * A type's name in the source {@link geneverSource} generates, and what it is generated from.
+ * A type's or property's name in the source {@link geneverSource} generates, and what it is generated from.
  */
 export interface GeneratedName {
     /**
-     * The type's name.
+     * The name as it is in the source: a property's name is quoted if it isn't an identifier.
      */
     readonly name: string;
     /**
-     * JSON Pointer to what the type is generated from in the document: its schema (e.g. `#/$defs/Note`), or an
-     * OpenAPI document's `paths` for `Paths`. The same form as a {@link GeneverError}'s `pointer`.
+     * JSON Pointer to what the name is generated from in the document: a type's schema (e.g. `#/$defs/Note`),
+     * or an OpenAPI document's `paths` for `Paths`, and a property's schema under `properties`
+     * (`#/$defs/Note/properties/body`). The same form as a {@link GeneverError}'s `pointer`.
      */
     readonly pointer: string;
     /**
-     * Index of the name in the source, where the type is declared.
+     * Index of the name in the source, where the type or property is declared.
      */
     readonly start: number;
 }
 
 /**
- * Source {@link geneverSource} generates, with where each type's name is.
+ * Source {@link geneverSource} generates, with where each type's and property's name is.
  */
 export interface GeneratedSource {
     /**
-     * Each type generated from a schema, or a document's `paths`, in the order declared. Helper types, which
-     * aren't generated from part of the document, aren't listed.
+     * Each type generated from a schema, or a document's `paths`, and each property generated from a schema
+     * under `properties`, in the order they are in the source. Helper types, and their properties, which aren't
+     * generated from part of the document, aren't listed.
      */
     readonly names: readonly GeneratedName[];
     /**
@@ -102,7 +104,7 @@ const separator = '\n\n';
  * @param schema - parsed JSON Schema, or OpenAPI document, with every schema file it references embedded
  * @param options - see {@link GeneverOptions}
  * @param files - OpenAPI documents, and files of OpenAPI objects, it references, keyed by URI
- * @returns TypeScript source, and where each type's name is
+ * @returns TypeScript source, and where each type's and property's name is
  * @throws {GeneverError} if the schema is invalid, breaks a strict mode rule, or is not supported
  */
 export const generate = (
@@ -130,7 +132,21 @@ export const generate = (
         if (pointer !== undefined) {
             names.push({ name, pointer, start: text.length });
         }
-        text += `${name}${parameters} = ${typeof type === 'string' ? type : printType(type)};`;
+        text += `${name}${parameters} = `;
+        if (typeof type === 'string') {
+            text += type;
+        } else {
+            const printed = printType(type);
+            const offset = text.length;
+            names.push(
+                ...printed.names.map(printedName => ({
+                    ...printedName,
+                    start: printedName.start + offset,
+                }))
+            );
+            text += printed.text;
+        }
+        text += ';';
     }
     return { names, text: `${text}\n` };
 };
@@ -157,13 +173,13 @@ export const genever = (schema: unknown, options: GeneverOptions = {}): string =
     generate(schema, options, new Map()).text;
 
 /**
- * Generate types as {@link genever} does, and say where each type's name is in the source, and which part of the
- * document it is generated from. A tool showing the types can link each name back to its schema, as a TypeScript
- * content mapper does for go to definition.
+ * Generate types as {@link genever} does, and say where each type's and property's name is in the source, and
+ * which part of the document it is generated from. A tool showing the types can link each name back to its
+ * schema, as a TypeScript content mapper does for go to definition.
  *
  * @param schema - parsed JSON Schema, or OpenAPI document
  * @param [options] - see {@link genever}
- * @returns TypeScript source, and where each type's name is
+ * @returns TypeScript source, and where each type's and property's name is
  * @throws {GeneverError} if the schema is invalid, breaks a strict mode rule, or is not supported
  */
 export const geneverSource = (schema: unknown, options: GeneverOptions = {}): GeneratedSource =>
