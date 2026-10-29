@@ -1343,6 +1343,9 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      trusted-tsc:
+        specifier: workspace:^
+        version: file:apps/trusted-tsc
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1498,6 +1501,9 @@ importers:
       pg-dolly:
         specifier: workspace:^
         version: file:tools/pg-dolly
+      trusted-tsc:
+        specifier: workspace:^
+        version: file:apps/trusted-tsc
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -9865,6 +9871,11 @@ packages:
   trim-lines@3.0.1:
     resolution: {integrity: sha512-kRj8B+YHZCc9kQYdWfJB2/oUl9rA99qbowYYBtr4ui4mZyAQ2JpvVBd/6U2YloATfqBhBTSMhTpgBHtU0Mf3Rg==}
 
+  trusted-tsc@file:apps/trusted-tsc:
+    resolution: {directory: apps/trusted-tsc, type: directory}
+    engines: {node: '>=24.22.1'}
+    hasBin: true
+
   ts-api-utils@2.5.0:
     resolution: {integrity: sha512-OJ/ibxhPlqrMM0UiNHJ/0CKQkoKF243/AEmplt3qpRgkW8VG7IfOS41h7V8TjITqdByHzrjcS/2si+y4lIh8NA==}
     engines: {node: '>=18.12'}
@@ -17040,6 +17051,8 @@ snapshots:
       node-gyp-build: 4.8.4
 
   trim-lines@3.0.1: {}
+
+  trusted-tsc@file:apps/trusted-tsc: {}
 
   ts-api-utils@2.5.0(@typescript/typescript6@6.0.2):
     dependencies:

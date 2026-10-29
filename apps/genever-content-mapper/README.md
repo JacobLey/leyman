@@ -51,6 +51,8 @@ And run `tsc` with `--runExternalCode`, which TypeScript requires before it runs
 tsc --runExternalCode -p .
 ```
 
+Or, to run only the mappers you trust, and sandboxed, list it in `trustedContentMappers` in `package.json` and run [trusted-tsc](../trusted-tsc/) instead.
+
 ## Usage
 
 The mapper turns each file with one of the registered extensions into genever's types. A document with an `openapi` version is an OpenAPI 3.0 or 3.1 document, with a type per `components.schemas` entry, plus `Paths` and `Operations`. Anything else is a JSON Schema, whose root is the `Schema` type (see the `name` option) and each `$defs` entry a type of its own. See genever's README for how schemas become types.
@@ -101,9 +103,9 @@ The error covers the entry it is about (its key and value), e.g. `minLenght: 1` 
 
 ## Security
 
-A content mapper is a program TypeScript runs, in the compiler and in editors, whenever a mapped file is in the program. That's why `tsc` needs `--runExternalCode`, and VS Code workspace trust plus its content mapper permission. Pass `--runExternalCode` only where a mapper is used, rather than in a shared config.
+A content mapper is a program TypeScript runs, in the compiler and in editors, whenever a mapped file is in the program. That's why `tsc` needs `--runExternalCode`, and VS Code workspace trust plus its content mapper permission. Pass `--runExternalCode` only where a mapper is used, rather than in a shared config, or use [trusted-tsc](../trusted-tsc/), which passes it only for the mappers a `package.json` trusts.
 
-This mapper is inert: it reads only the text TypeScript sends it, and never another file, the network or the environment. A `$ref` to a file or URL is an error rather than a fetch.
+This mapper is inert: it reads only the text TypeScript sends it, and never another file, the network or the environment. A `$ref` to a file or URL is an error rather than a fetch. It runs in trusted-tsc's sandbox, which allows it to read only its own packages.
 
 ## API
 

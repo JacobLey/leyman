@@ -41,9 +41,13 @@
     "genever-content-mapper": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
+    "trusted-tsc": "workspace:^",
     "typescript": "catalog:"
   },
   "imports": {
     "#internal/*": "./dist/*"
-  }
+  },
+  "trustedContentMappers": [
+    "genever-content-mapper"
+  ]
 }

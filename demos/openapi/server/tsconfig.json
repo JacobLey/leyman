@@ -35,6 +35,9 @@
       "path": "../database"
     },
     {
+      "path": "../../../apps/trusted-tsc"
+    },
+    {
       "path": "../../../tools/pg-dolly"
     },
     {

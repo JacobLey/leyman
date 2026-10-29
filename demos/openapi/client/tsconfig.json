@@ -23,6 +23,9 @@
       "path": "../spec"
     },
     {
+      "path": "../../../apps/trusted-tsc"
+    },
+    {
       "path": "../../../tools/test-chain/mocha-chain"
     },
     {

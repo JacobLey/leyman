@@ -58,6 +58,10 @@
     "mocha-chain": "workspace:^",
     "oauth-dev-server": "workspace:^",
     "pg-dolly": "workspace:^",
+    "trusted-tsc": "workspace:^",
     "typescript": "catalog:"
-  }
+  },
+  "trustedContentMappers": [
+    "genever-content-mapper"
+  ]
 }
