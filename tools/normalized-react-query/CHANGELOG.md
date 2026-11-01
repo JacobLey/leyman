@@ -1,5 +1,11 @@
 # normalized-react-query
 
+## 2.2.0
+
+### Minor Changes
+
+- 5dd2604: Update dependencies: ignore@7.0.14, @tanstack/react-query@5.104.5
+
 ## 2.1.1
 
 ### Patch Changes

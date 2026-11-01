@@ -1,5 +1,11 @@
 # barrelify
 
+## 2.2.3
+
+### Patch Changes
+
+- 5dd2604: Update dependencies: ignore@7.0.14, @tanstack/react-query@5.104.5
+
 ## 2.2.2
 
 ### Patch Changes
