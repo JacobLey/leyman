@@ -64,6 +64,7 @@
     "tofu-fmt": "prepare:format",
     "eslint": "check:lint",
     "check-package": "check:lint",
+    "check-parity": "check:lint",
     "drizzle-kit-check": "check:lint",
     "go-vet": "check:lint",
     "rust-clippy": "check:lint",

@@ -55,6 +55,10 @@ jobs:
         with:
           persist-credentials: false
 
+      # Here, because the source Dagger tests leaves out the devcontainer, this workflow and the Dagger module
+      - name: Check version parity
+        run: node leyman/main/scripts/check-parity.mjs
+
       # PRs can read main's cache, but main never reads a PR's
       - name: Restore Nx cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

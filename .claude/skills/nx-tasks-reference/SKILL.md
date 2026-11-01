@@ -111,6 +111,14 @@ Runs in `check:lint`, after the package's own build, so a packaging mistake fail
 
 ---
 
+### `check-parity`
+
+Fails if the versions the devcontainer and CI pin separately differ (`leyman/main/scripts/check-parity.mjs`), naming each location and its value. Runs in `check:lint`. It skips inside Dagger, whose source leaves out `.devcontainer`, `.github` and `dagger`, so CI's `test` job runs the script from the checkout before Dagger starts.
+
+**Add when:** Never: only `@leyman/main` has it. A new pin goes in the script's `checks`.
+
+---
+
 ### `tofu-fmt`
 
 Formats OpenTofu configuration with `tofu fmt` (`scripts/nx/tofu-fmt.sh`). Like `gofmt`, writes changes, except in CI where it fails showing the diff.

@@ -301,6 +301,34 @@
         "check:_"
       ]
     },
+    "check-parity": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node ${NX_WORKSPACE_ROOT}/leyman/main/scripts/check-parity.mjs"
+        ],
+        "color": true
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/leyman/main/scripts/check-parity.mjs",
+        "{workspaceRoot}/.devcontainer/Dockerfile",
+        "{workspaceRoot}/.devcontainer/docker-compose.yml",
+        "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/Cargo.lock",
+        "{workspaceRoot}/Cargo.toml",
+        "{workspaceRoot}/dagger/dagger.json",
+        "{workspaceRoot}/dagger/main.go",
+        "{workspaceRoot}/demos/local-ingress/run",
+        "{workspaceRoot}/infra/nx-cache/tofu/variables.tf",
+        "{workspaceRoot}/infra/nx-cache/worker/wrangler.jsonc",
+        "{workspaceRoot}/pnpm-workspace.yaml"
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "check:_"
+      ]
+    },
     "go-vet": {
       "options": {
         "linter": "go",
@@ -864,6 +892,7 @@
         "check:_",
         "eslint",
         "check-package",
+        "check-parity",
         "drizzle-kit-check",
         "go-vet",
         "rust-clippy",
