@@ -1,4 +1,4 @@
-// eslint-disable-next-line import-x/unambiguous -- Ambient declarations, so not a module
+/* eslint-disable import-x/unambiguous -- Ambient declarations, so not a module */
 declare module '@eslint/js' {
     const configs: {
         all: {
