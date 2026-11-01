@@ -44,7 +44,7 @@ Private workspace packages (shared configs and tooling) are listed in the [proje
 
 Packages that have been removed from the repo but are still on npm are listed in [`DEPRECATED_PACKAGES.md`](./DEPRECATED_PACKAGES.md).
 
-A documentation site, with every code example type-checked, is in [`docs/`](./docs) (`barrelify`, `entry-script`, `generated-signature`, `genever`, `haywire`, `haywire-launcher`, `juniper`, `juniper-validator`, `lease-cache`, `mocha-chain`, `normalized-react-query`, `nx-lifecycle`, `populate-files`, `unknown-error` and `vitest-chain` so far), plus the demos.
+A documentation site, with every code example type-checked, is in [`docs/`](./docs) (`barrelify`, `entry-script`, `generated-signature`, `genever`, `haywire`, `haywire-launcher`, `juniper`, `juniper-validator`, `lease-cache`, `mocha-chain`, `normalized-react-query`, `nx-lifecycle`, `pg-dolly`, `pg-dolly-schema`, `populate-files`, `unknown-error` and `vitest-chain` so far), plus the demos.
 
 ## Demos
 
@@ -110,10 +110,11 @@ This project follows the [Contributor Covenant Code of Conduct](./CODE_OF_CONDUC
 | [PNPM](https://pnpm.io/) | Package manager with workspace support |
 | [Nx](https://nx.dev/) | Task runner with caching and dependency graph |
 | [TypeScript](https://www.typescriptlang.org/) | Language (ESM, strict mode) |
+| [Go](https://go.dev/) and [Rust](https://www.rust-lang.org/) | Languages of a few projects, such as the `constant-consistent-hash` implementations |
 | [SWC](https://swc.rs/) | Fast TypeScript compiler |
 | [ESLint](https://eslint.org/) | Linting (opinionated, 15+ plugins) |
 | [Biome](https://biomejs.dev/) | Formatting |
-| [Mocha](https://mochajs.org/) + [Chai](https://www.chaijs.com/) (via `@leyman/expect`) | Testing |
+| [Mocha](https://mochajs.org/) + [Chai](https://www.chaijs.com/) (via `@leyman/expect`) | Testing, with [Vitest](https://vitest.dev/) for `vitest-chain` |
 | [C8](https://github.com/bcoe/c8) | Coverage (100% required) |
 | [Dagger](https://dagger.io/) | CI pipeline |
 | [Changesets](https://github.com/changesets/changesets) | Versioning and changelogs |

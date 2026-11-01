@@ -34,7 +34,7 @@ To run a single test from VS Code, see [`vscode-tests`](./leyman/vscode-tests/RE
 
 ## Making changes
 
-The repo is an [Nx](https://nx.dev) monorepo. Published packages live in [`apps/`](./apps) and [`tools/`](./tools), and private shared configs live in [`leyman/`](./leyman). The [README](./README.md#packages) lists each package and where it lives.
+The repo is an [Nx](https://nx.dev) monorepo. Published packages live in [`apps/`](./apps) and [`tools/`](./tools), though a few there are private. The rest is never published: shared configs in [`leyman/`](./leyman), checks across packages in [`e2e/`](./e2e), worked examples in [`demos/`](./demos), the docs site in [`docs/`](./docs) and deployed infrastructure in [`infra/`](./infra). The [README](./README.md#packages) lists each package and where it lives.
 
 Conventions are documented as skills in [`.claude/skills/`](./.claude/skills), indexed in [`AGENTS.md`](./AGENTS.md). They are written for coding agents but are just as useful to people. The most relevant ones are:
 
