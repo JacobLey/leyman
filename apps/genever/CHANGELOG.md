@@ -1,5 +1,15 @@
 # genever
 
+## 0.9.0
+
+### Minor Changes
+
+- 0b47b54: Add `geneverSource`, which returns the same source as `genever` along with where each type's and property's name is in it and the JSON Pointer of the schema (or `paths`) it comes from, so a tool can link a type or property back to its schema, as a content mapper does for go to definition.
+
+### Patch Changes
+
+- 7185f18: A YAML alias with no anchor before it (`*b` with no `&b`, or one after it) is a `YAMLError` at the alias, with its line and column, rather than a `ReferenceError` from the `yaml` package with no location. So is a merge key that merges a map into itself (`<<: *a` inside the map `&a` names), which `yaml` reported as excessive aliasing.
+
 ## 0.8.0
 
 ### Minor Changes
