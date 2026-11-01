@@ -27,3 +27,7 @@ Tests come from the syntax of each `*.spec.ts`, without running it. Any `test`, 
 A title only known at runtime can't be selected on its own: run its enclosing suite or file, and it appears in the list with its result. The same goes for a failing hook.
 
 Go and Rust tests have their own buttons, from their language extensions.
+
+## Private for now
+
+This only works in this repo: it assumes its Nx targets, compiled test layout and tool paths. If there is a need elsewhere, re-investigate making it reusable. VS Code extensions aren't installed from npm, so that means turning those assumptions into settings, bundling a `.vsix`, and publishing to the VS Code Marketplace and Open VSX.
