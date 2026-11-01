@@ -415,36 +415,6 @@
         "{projectRoot}/schema.sql"
       ]
     },
-    "genever": {
-      "executor": "nx:run-commands",
-      "options": {
-        "commands": [
-          "genever"
-        ],
-        "color": true,
-        "cwd": "{projectRoot}"
-      },
-      "dependsOn": [
-        "prepare:_"
-      ],
-      "cache": true,
-      "inputs": [
-        "shared-globals",
-        "{projectRoot}/package.json",
-        "{projectRoot}/src/generated/**/*",
-        "dependency-builds",
-        "^dependency-files",
-        {
-          "env": "CI"
-        },
-        {
-          "externalDependencies": []
-        }
-      ],
-      "outputs": [
-        "{projectRoot}/src/generated"
-      ]
-    },
     "update-ts-references": {
       "executor": "nx:noop",
       "syncGenerators": [
@@ -841,7 +811,6 @@
         "barrelify",
         "update-ts-references",
         "schema-snapshot",
-        "genever",
         "dagger-develop"
       ],
       "configurations": {
