@@ -8,6 +8,7 @@
   "remoteUser": "leyman",
 
   "remoteEnv": {
+    "NX_DAEMON": "true",
     "NX_PARALLEL": "5",
     "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/leyman/main/node_modules/.bin:${containerWorkspaceFolder}/scripts/commands"
   },
