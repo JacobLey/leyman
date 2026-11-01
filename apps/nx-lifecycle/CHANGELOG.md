@@ -1,5 +1,14 @@
 # nx-lifecycle
 
+## 1.2.1
+
+### Patch Changes
+
+- bfd7e90: Update dependencies: nx@23.3.1, @nx/devkit@23.3.1
+- Updated dependencies [e68963c]
+- Updated dependencies [289e7fb]
+  - format-file@1.2.0
+
 ## 1.2.0
 
 ### Minor Changes
