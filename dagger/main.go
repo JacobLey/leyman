@@ -31,9 +31,11 @@ const (
 	// mcr.microsoft.com/playwright:v1.64.1-noble, with every browser and its system libraries, for tests to connect to.
 	// Keep its version in sync with `playwrightVersion`.
 	playwrightImage = "mcr.microsoft.com/playwright:v1.64.1-noble@sha256:47b510dd9230bf0b9bfc9b20102241e577ea7a99334ab4c3ca19f19770e9b8ea"
-	// golang:1.26.10-trixie.
+	// golang:1.27.3-trixie.
 	// Only its Go toolchain is copied into the Node image, for projects written in Go.
-	goImage = "golang:1.26.10-trixie@sha256:909771fef53e3dcb0950255f0c9a8b4728c3b841e61509c7b29b098de7ee02d4"
+	// The same Go minor as the Dagger engine (`GolangVersion` in its `engine/distconsts/consts.go`), which builds this
+	// module. Keep in sync with `GO_IMAGE` in `.devcontainer/Dockerfile`.
+	goImage = "golang:1.27.3-trixie@sha256:fbb7ae40b62ff8afe31662df570d39b4f5052ac32b90dae8e60d7657a20a74f4"
 	// rust:1.99.1-trixie.
 	// Only its toolchain is copied into the Node image, for projects written in Rust.
 	rustImage = "rust:1.99.1-trixie@sha256:09027f873d45b8ecd1dc86f1fa13b7a62b875c961f017a0e331267b350430137"

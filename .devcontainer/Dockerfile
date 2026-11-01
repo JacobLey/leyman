@@ -7,7 +7,8 @@
 # https://github.com/devcontainers/images/blob/main/src/base-debian/history
 ARG BASE_IMAGE=mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 ARG NODE_VERSION=24.22.1
-ARG GO_VERSION=1.26.10
+# The same Go minor as the Dagger engine, see `goImage` in `dagger/main.go`
+ARG GO_IMAGE=golang:1.27.3-trixie@sha256:fbb7ae40b62ff8afe31662df570d39b4f5052ac32b90dae8e60d7657a20a74f4
 ARG RUST_IMAGE=rust:1.99.1-trixie@sha256:09027f873d45b8ecd1dc86f1fa13b7a62b875c961f017a0e331267b350430137
 # OpenTofu, for `infra/` (see `tofuImage` in `dagger/main.go`)
 ARG TOFU_IMAGE=ghcr.io/opentofu/opentofu:1.13.2-minimal@sha256:622dc6bb98b105c18f53cf419ab64a4f3b88bd9f8c16cc978cf89e4202f4613f
@@ -16,7 +17,7 @@ FROM node:${NODE_VERSION}-trixie-slim AS node
 
 FROM ${TOFU_IMAGE} AS tofu
 
-FROM golang:${GO_VERSION}-trixie AS go
+FROM ${GO_IMAGE} AS go
 # The latest gopls may need a newer Go than the pinned one: let Go fetch it for this build only
 RUN GOTOOLCHAIN=auto go install golang.org/x/tools/gopls@latest
 
