@@ -501,9 +501,15 @@ importers:
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
       juniper:
         specifier: workspace:^
         version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
+      juniper-arbitrary:
+        specifier: workspace:^
+        version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       mocha:
         specifier: 'catalog:'
         version: 12.0.3

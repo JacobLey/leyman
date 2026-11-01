@@ -23,6 +23,9 @@
       "path": "../../tools/haywire"
     },
     {
+      "path": "../../tools/generated-signature/generated-signature"
+    },
+    {
       "path": "../../tools/format-file"
     },
     {
@@ -32,10 +35,10 @@
       "path": "../../tools/test-chain/mocha-chain"
     },
     {
-      "path": "../juniper"
+      "path": "../juniper-arbitrary"
     },
     {
-      "path": "../../tools/generated-signature/generated-signature"
+      "path": "../juniper"
     },
     {
       "path": "../../leyman/expect"
