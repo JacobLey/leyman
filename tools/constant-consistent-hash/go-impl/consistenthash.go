@@ -25,6 +25,8 @@ const (
 )
 
 // mix32 is the lowbias32 integer hash of a seed offset by an index.
+//
+//nolint:varnamelen // Named as in lowbias32
 func mix32(seed, index uint32) uint32 {
 	x := seed + (index+1)*0x9e3779b9
 	x ^= x >> 16
@@ -32,6 +34,7 @@ func mix32(seed, index uint32) uint32 {
 	x ^= x >> 15
 	x *= 0x846ca68b
 	x ^= x >> 16
+
 	return x
 }
 
@@ -41,9 +44,12 @@ type lanes struct {
 }
 
 // hashKey hashes the bytes of a key (two 32 bit lanes, as in cyrb53).
+//
+//nolint:varnamelen // Named as in cyrb53
 func hashKey(key string, seed uint32) lanes {
 	h1 := 0xdeadbeef ^ seed
 	h2 := 0x41c6ce57 ^ seed
+
 	for i := range len(key) {
 		b := uint32(key[i])
 		h1 = (h1 ^ b) * 2654435761
@@ -54,6 +60,7 @@ func hashKey(key string, seed uint32) lanes {
 	h1 ^= (h2 ^ (h2 >> 13)) * 3266489909
 	h2 = (h2 ^ (h2 >> 16)) * 2246822507
 	h2 ^= (h1 ^ (h1 >> 13)) * 3266489909
+	//nolint:gosec // A hash input, so a key over 4 GiB wraps rather than fails
 	return lanes{a: h1, b: mix32(h2, uint32(len(key)))}
 }
 
@@ -62,12 +69,15 @@ func hashKey(key string, seed uint32) lanes {
 // For building other hashing schemes on, such as rendezvous hashing. Not cryptographic.
 func HashKey(key string, seed uint32) [2]uint32 {
 	l := hashKey(key, seed)
+
 	return [2]uint32{l.a, l.b}
 }
 
 // random is the 64 bit random value for a block and salt.
 func (l lanes) random(block int, salt uint32) uint64 {
+	//nolint:gosec // A block is below 48, see MaxBuckets
 	index := uint32(block)*3 + salt
+
 	return uint64(mix32(l.b, index))<<32 | uint64(mix32(l.a, index))
 }
 
@@ -79,10 +89,12 @@ func (l lanes) uniform(block int, salt uint32) float64 {
 // f is the bucket in [0, 2^power) when the number of buckets is a power of 2.
 func (l lanes) f(power int) uint64 {
 	selection := uint64(l.b>>16)<<32 | uint64(l.a)
+
 	k := selection & (1<<power - 1)
 	if k == 0 {
 		return 0
 	}
+
 	block := bits.Len64(k) - 1
 	// Shifting a uint64 by 64 is 0 in Go, which is the offset within block 0
 	return 1<<block + l.random(block, saltTop)>>(64-block)
@@ -100,9 +112,10 @@ func Bucket(key string, buckets uint64, seed uint32) (uint64, error) {
 		return 0, fmt.Errorf("%w, received %d", ErrBuckets, buckets)
 	}
 
-	l := hashKey(key, seed)
+	hashed := hashKey(key, seed)
 	power := bits.Len64(buckets - 1)
-	top := l.f(power)
+
+	top := hashed.f(power)
 	if top < buckets {
 		return top, nil
 	}
@@ -113,14 +126,14 @@ func Bucket(key string, buckets uint64, seed uint32) (uint64, error) {
 	h := uint64(1) << block
 
 	// Explicit float64 conversions round each product, as Go may otherwise fuse floating point operations
-	pair := float64(float64(l.uniform(block, saltPair)*float64(top)) * float64(top+1))
+	pair := float64(float64(hashed.uniform(block, saltPair)*float64(top)) * float64(top+1))
 	if pair < 2*float64(h)*float64(top-h) {
-		second := h + uint64(math.Floor(float64(l.uniform(block, saltSecond)*float64(top-h))))
+		second := h + uint64(math.Floor(float64(hashed.uniform(block, saltSecond)*float64(top-h))))
 		if second < buckets {
 			return second, nil
 		}
 	}
 
 	// Nothing in the top block is in range, so fall back to the lower blocks
-	return l.f(block), nil
+	return hashed.f(block), nil
 }
