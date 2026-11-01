@@ -132,11 +132,6 @@ export interface ReadResult<T> {
     readonly ttlMs: number;
 }
 
-type GetOrLeaseResult =
-    | readonly ['hit', string, number]
-    | readonly ['lease']
-    | readonly ['wait', string | null];
-
 /**
  * Valkey takes whole milliseconds, so durations are rounded up.
  *
@@ -292,6 +287,11 @@ export class LeaseCache {
         const deadline = Date.now() + waitMs;
         let isWaiting = false;
         for (;;) {
+            type GetOrLeaseResult =
+                | readonly ['hit', string, number]
+                | readonly ['lease']
+                | readonly ['wait', string | null];
+
             const read = await this.#evalForRead(readOrLeaseScript, keys, token, leaseMs);
             if (!read.isOk) {
                 return this.#unavailable(read.error, key, load);
