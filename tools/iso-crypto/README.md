@@ -1,7 +1,7 @@
 <div style="text-align:center">
 
 # iso-crypto
-Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES and ECDH.
+Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES (including GCM), PBKDF2/HKDF key derivation and ECDH.
 
 [![npm package](https://badge.fury.io/js/iso-crypto.svg)](https://www.npmjs.com/package/iso-crypto)
 [![License](https://img.shields.io/npm/l/iso-crypto.svg)](https://github.com/JacobLey/leyman/blob/main/tools/iso-crypto/LICENSE)

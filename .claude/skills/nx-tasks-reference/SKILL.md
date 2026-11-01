@@ -37,7 +37,7 @@ Named inputs in [`nx.json`](../../../nx.json):
 - `shared-globals`: the Node version. The cache is shared between worktrees through the `nx-cache` sidecar.
 - `postgres` and `valkey`: the versions of the services a task runs against (and of `pg_dump`), read from the running server, since the same image in the devcontainer and in Dagger is only pinned by convention. A project whose integration tests use one adds it to the target defaults' inputs with Nx's spread, rather than copying the list: `"mocha-integration-test": { "inputs": ["...", "valkey"] }`. Any other tool from outside the repository that a task's result depends on needs a `runtime` input like these, or a cached result outlives a change to it.
 
-Gotchas, all verified on Nx 22:
+Gotchas, all verified on Nx 23:
 
 - **Never hash `dist/` with a file glob.** `dist/` is gitignored, and Nx only sees git-visible files, so a glob like `^{projectRoot}/dist/**` silently matches nothing. Use `dependentTasksOutputFiles`.
 - **`dependentTasksOutputFiles` does not support extglobs** like `*.(c|m)?js`. Use one entry per extension. Plain file inputs do support them.

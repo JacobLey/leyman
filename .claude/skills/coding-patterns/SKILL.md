@@ -86,20 +86,6 @@ For reason 1, external consumers of a package should never be aware of its DI se
 
 See the haywire README for the constructor provider pattern used in this repo.
 
----|---|
-| Network calls and remote services | File system (temp dirs via `tmp-promise`, fixtures in `test/data/`) |
-| Time, timers, randomness | Console output, exit codes, argv (run the CLI as a subprocess) |
-| Host state a test can't safely change (installed tools, OS, global config) | `process.cwd()` and paths (pass `cwd`, or `chdir` and restore) |
-| Failures that can't be triggered for real (disk full, permission denied) | Other workspace packages and pure functions |
-
-If a branch is only reachable by substituting a dependency, that dependency needs DI. Otherwise, testing against real inputs is preferred: it exercises the real dependency's behavior, which a stub can only assume.
-
-When DI is necessary, use `haywire` rather than hand-rolling it (e.g. constructor parameters with production defaults). Inject only the dependencies that meet the bar above; everything else stays a direct import, even within the same class.
-
-External consumers of a package should never be aware of its DI setup. The container wiring is an internal implementation detail. Expose a clean, non-DI API at the package boundary.
-
-See the haywire README for the constructor provider pattern used in this repo.
-
 ---
 
 ## TypeScript: model data precisely

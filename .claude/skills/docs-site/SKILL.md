@@ -5,7 +5,7 @@ description: Writing docs site pages, and keeping them in sync when a documented
 
 # Docs Site
 
-> Site: [`../../../docs/`](../../../docs/) · Setup and twoslash: [`docs/README.md`](../../../docs/README.md) · Deploy: [dagger-ci](../dagger-ci/SKILL.md#workflows)
+> Site: [`../../../docs/`](../../../docs/) · Setup and twoslash: [`docs/README.md`](../../../docs/README.md) · Deploy: [dagger-ci](../dagger-ci/SKILL.md#releasing)
 
 The site is built with VitePress and deployed to GitHub Pages by CI on every push to `main`. Nothing to do per package beyond writing pages.
 

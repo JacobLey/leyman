@@ -17,7 +17,7 @@ A project is any directory with a `project.json`. Every project has a README.md.
 
 ## Packages
 
-**When you add or remove a package, update the table in this file.** Add the new row in alphabetical order within the correct section (Apps, Tools, Leyman, E2E, Demos, or Infra). The description should match the one-line subtitle in the package's README.md.
+**When you add or remove a package, update the table in this file.** Add the new row in alphabetical order within the correct section (Apps, Tools, Leyman, E2E, Demos, or Infra). The description is the package's `package.json` `description`, which its README's subtitle repeats.
 
 **When you remove a published package, add it to the top of [`DEPRECATED_PACKAGES.md`](../../../DEPRECATED_PACKAGES.md)**, linking its source at the last commit before the removal.
 
@@ -27,11 +27,11 @@ See each package's README.md for full usage documentation.
 
 | Package | Description |
 |---------|-------------|
-| [`barrelify`](../../../apps/barrelify/) | Auto-generate TypeScript barrel (`index.ts`) files |
+| [`barrelify`](../../../apps/barrelify/) | Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions. |
 | [`genever`](../../../apps/genever/) | Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers |
 | [`genever-content-mapper`](../../../apps/genever-content-mapper/) | A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file. Private, on `catalog:typescript-next` |
 | [`trusted-tsc`](../../../apps/trusted-tsc/) | Run TypeScript 7.1's tsc with only the content mappers listed in `package.json`, each in Node's permission sandbox. Private, on `catalog:typescript-next` |
-| [`juniper`](../../../apps/juniper/) | JSON Schema builder with static TypeScript inference |
+| [`juniper`](../../../apps/juniper/) | Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output. |
 | [`juniper-validator`](../../../apps/juniper-validator/) | StandardSchema-compliant validator wrapping Juniper schemas |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | Nx plugin for managing ordered task dependency lifecycles |
 | [`pg-dolly-schema`](../../../apps/pg-dolly-schema/) | Keep a schema.sql of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale |
@@ -51,11 +51,11 @@ See each package's README.md for full usage documentation.
 | [`entry-script`](../../../tools/entry-script/) | Safe CLI entry point pattern — runs only as the Node entrypoint |
 | [`enum-to-array`](../../../tools/enum-to-array/) | Convert TypeScript enums to typed arrays of keys/values |
 | [`find-import`](../../../tools/find-import/) | Find and load the first matching JS/JSON file in parent directories |
-| [`format-file`](../../../tools/format-file/) | Format file content via Biome or Prettier |
+| [`format-file`](../../../tools/format-file/) | Format files and text with Biome or Prettier, whichever the project uses |
 | [`generated-signature`](../../../tools/generated-signature/generated-signature/) | Sign generated files so hand edits are detected, while keeping manual sections editable |
-| [`haywire`](../../../tools/haywire/) | Type-safe dependency injection — invalid containers are compile errors |
+| [`haywire`](../../../tools/haywire/) | Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state. |
 | [`haywire-launcher`](../../../tools/haywire-launcher/) | Connect Haywire DI containers to `entry-script` CLI entry points |
-| [`iso-crypto`](../../../tools/iso-crypto/) | Isomorphic cryptography for Node.js and Browser |
+| [`iso-crypto`](../../../tools/iso-crypto/) | Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES (including GCM), PBKDF2/HKDF key derivation and ECDH. |
 | [`lease-cache`](../../../tools/lease-cache/) | Read-through caching on Valkey or Redis with leases: one load per key across every instance, and a load that finishes after an invalidation never caches its outdated value |
 | [`mocha-chain`](../../../tools/test-chain/mocha-chain/) | Type-safe Mocha hook chaining with typed context propagation |
 | [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | Type-safe Vitest hook chaining with typed context propagation |
@@ -66,8 +66,8 @@ See each package's README.md for full usage documentation.
 | [`parse-cwd`](../../../tools/parse-cwd/) | Resolve and validate a working directory from string, URL, or undefined |
 | [`pg-dolly`](../../../tools/pg-dolly/) | A fresh Postgres database for every test, cloned from a template built once from your schema's SQL: integration tests on Postgres |
 | [`punycode-esm`](../../../tools/punycode-esm/) | ESM port of the Punycode encoding library |
-| [`static-emitter`](../../../tools/static-emitter/) | Typed EventEmitter/EventTarget for Node.js and Browser |
-| [`unknown-error`](../../../tools/unknown-error/) | Convert caught `unknown` values to real Errors, and walk or format cause chains, without throwing |
+| [`static-emitter`](../../../tools/static-emitter/) | Statically typed event emitter. |
+| [`unknown-error`](../../../tools/unknown-error/) | Turn any caught `unknown` into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains |
 | [`weighted-rendezvous-hash`](../../../tools/constant-consistent-hash/weighted-rendezvous-hash/) | Weighted rendezvous hashing for any set of nodes, in any order |
 
 
@@ -94,6 +94,7 @@ See each package's README.md for full usage documentation.
 | [`eslint-config-schema`](../../../e2e/eslint-config-schema) | Checks that eslint-config's hand-written package.json schema matches what juniper builds |
 | [`normalized-react-query-ssr`](../../../e2e/normalized-react-query-ssr) | Checks that normalized-react-query's preloading carries across a server render into client hydration |
 | [`iso-crypto-browser`](../../../e2e/iso-crypto-browser) | Checks that iso-crypto's browser build runs on web APIs alone, with no Node.js APIs |
+| [`juniper-openapi`](../../../e2e/juniper-openapi) | Builds an example users and posts OpenAPI spec with juniper, and checks it is valid OpenAPI 3.0 and 3.1. |
 | [`published-entrypoints`](../../../e2e/published-entrypoints) | Imports every entry point of every published package from the files it publishes, with only its runtime dependencies |
 | [`unknown-error-comparison`](../../../e2e/unknown-error-comparison) | Runs unknown-error and the libraries it is compared to through the same edge cases, to keep its comparison table accurate |
 | [`unknown-error-browser`](../../../e2e/unknown-error-browser) | Checks that unknown-error runs in real browsers, with and without `Error.isError` |
@@ -102,6 +103,8 @@ See each package's README.md for full usage documentation.
 
 | Package | Description |
 |---------|-------------|
+| [`agents/cli`](../../../demos/agents/cli) | A CLI for the notes API, made for agents and people: one short command per task, with login, tokens and errors handled inside. |
+| [`agents/mcp`](../../../demos/agents/mcp) | An MCP server over the notes API: tools shaped for agents, an OAuth resource server, calling the API as the agent's user by token exchange. |
 | [`blake3-wasm/rust`](../../../demos/blake3-wasm/rust) | BLAKE3 from the blake3 crate, compiled to WASM with SIMD, for the blake3-wasm demo |
 | [`blake3-wasm/typescript`](../../../demos/blake3-wasm/typescript) | BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers: blocking or in a worker, measured against JavaScript to find where WASM pays off |
 | [`openapi/client`](../../../demos/openapi/client) | A typed client for the OpenAPI demo's notes API: types generated by genever from openapi.json, routes read from it at runtime |
