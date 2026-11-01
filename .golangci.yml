@@ -1,6 +1,11 @@
 # Every linter is on, as with ESLint and Clippy. A linter or a path is only turned off here with its reason.
 version: '2'
 
+run:
+  # Nx lints Go projects in parallel. Each only reads its own project, and the default lock makes one
+  # fail with "parallel golangci-lint is running" once another has held it for more than a moment
+  allow-parallel-runners: true
+
 linters:
   default: all
   disable:
