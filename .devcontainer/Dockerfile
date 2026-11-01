@@ -8,6 +8,7 @@
 ARG BASE_IMAGE=mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 ARG NODE_VERSION=24.22.1
 ARG GO_VERSION=1.26.10
+ARG RUST_IMAGE=rust:1.99.1-trixie@sha256:09027f873d45b8ecd1dc86f1fa13b7a62b875c961f017a0e331267b350430137
 # OpenTofu, for `infra/` (see `tofuImage` in `dagger/main.go`). Under 7 days old: an emergency security bump (1.13.2
 # stops trusting compromised intermediate certificates when `tofu init` downloads providers). Drop this note after
 # 2026-10-28
@@ -20,6 +21,16 @@ FROM ${TOFU_IMAGE} AS tofu
 FROM golang:${GO_VERSION}-trixie AS go
 # The latest gopls may need a newer Go than the pinned one: let Go fetch it for this build only
 RUN GOTOOLCHAIN=auto go install golang.org/x/tools/gopls@latest
+
+# wasm-bindgen-cli must match the `wasm-bindgen` crate in `Cargo.lock`. See `rustImage` in `dagger/main.go`
+FROM ${RUST_IMAGE} AS rust
+ARG CARGO_LLVM_COV_VERSION=0.9.1
+ARG WASM_BINDGEN_VERSION=0.2.129
+RUN rustup component add rustfmt clippy llvm-tools-preview rust-analyzer rust-src \
+    && rustup target add wasm32-unknown-unknown \
+    && cargo install --locked --version ${CARGO_LLVM_COV_VERSION} cargo-llvm-cov \
+    && cargo install --locked --version ${WASM_BINDGEN_VERSION} wasm-bindgen-cli \
+    && rm -rf /usr/local/cargo/registry /usr/local/cargo/git
 
 FROM ${BASE_IMAGE} AS base
 RUN apt-get update \
@@ -125,6 +136,9 @@ ENV PATH=$PATH:$HOME/.python/bin
 COPY --from=go --chown=$USER:$USER /usr/local/go $HOME/.go
 COPY --from=go --chown=$USER:$USER /go/bin/gopls $HOME/go/bin/gopls
 ENV PATH=$PATH:$HOME/.go/bin
+COPY --from=rust --chown=$USER:$USER /usr/local/rustup $HOME/.rustup
+COPY --from=rust --chown=$USER:$USER /usr/local/cargo $HOME/.cargo
+ENV PATH=$PATH:$HOME/.cargo/bin
 ENV PNPM_HOME="$HOME/.local/share/pnpm"
 COPY --from=pnpm --chown=$USER:$USER $PNPM_HOME $PNPM_HOME
 # pnpm 11+ installs global binaries (including itself) under `bin`

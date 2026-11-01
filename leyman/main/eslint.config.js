@@ -22,6 +22,8 @@ export default [
         rules: {
             // Plain JS can't declare return types
             '@typescript-eslint/explicit-function-return-type': 'off',
+            // Same reason, for what the Nx plugin exports
+            '@typescript-eslint/explicit-module-boundary-types': 'off',
             // Reporting to the terminal is their output
             'no-console': 'off',
             // Nx passes its context (e.g. `NX_WORKSPACE_ROOT`) through the environment

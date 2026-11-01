@@ -67,3 +67,21 @@ Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go-impl`. 
 - Source and `_test.go` files at the project root.
 - `project.json` targets: `biome` (formats `project.json`), `gofmt`, and `go-coverage-report` when it has tests (see the [Go template](../nx-tasks-reference/SKILL.md#go-project)). `go-vet` and `go-test` are inferred. No `tsconfig.json`, `eslint.config.js` or TypeScript targets.
 - Not published: nothing deploys Go modules yet.
+
+## Rust projects
+
+Copy `tools/constant-consistent-hash/rust-impl`, or `test-vectors` for a crate with only data. Rust is in the devcontainer and the Dagger pipeline (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)), and the repo's plugin makes targets of every `Cargo.toml` (see [Rust projects](../nx-tasks-reference/SKILL.md#rust-projects)). Compared to a regular package:
+
+- `Cargo.toml`: add the crate to `members` in the root `Cargo.toml`, take `edition`, `rust-version`, `license` and `publish` from the workspace (`edition.workspace = true`), and set `[lints] workspace = true`. There is one `Cargo.lock` and one `target/`, both at the root. After changing dependencies run `cargo check --workspace` and commit `Cargo.lock`.
+- Depend on another crate of the workspace with `name = { path = "../name" }`. The plugin infers the Nx dependency from that. To share data with TypeScript, give the other project a `Cargo.toml` too, and `include_str!` the data (see `tools/constant-consistent-hash/test-vectors`).
+- Source in `src/`, tests in `tests/`.
+- `project.json`, named `@leyman/<name>`, targets: `biome` (formats `project.json`), `rustfmt`, and `rust-coverage-report` when it has tests (see the [Rust template](../nx-tasks-reference/SKILL.md#rust-project)). `rust-clippy`, `rust-test` and `rust-wasm` are inferred. No `tsconfig.json`, `eslint.config.js` or TypeScript targets.
+- No `unsafe`: it is denied across the workspace. Only `#[wasm_bindgen]`'s generated code allows it, in a file that holds nothing else.
+- No `package.json`, unless TypeScript uses it.
+- Not published: nothing deploys crates yet.
+
+### Calling Rust from TypeScript
+
+A crate that depends on `wasm-bindgen` also gets `rust-wasm`, which builds `dist/`. Keep it on `wasm32` only, under `[target.'cfg(target_arch = "wasm32")'.dependencies]`, with the bindings in a logic-free `src/wasm.rs`: `cargo llvm-cov` runs natively and never sees that file, so tests through TypeScript are what cover it. Pin it exactly, to the `wasm-bindgen-cli` version in the toolchain.
+
+Give that crate a minimal `package.json` exporting `dist/` (with `sync-injected` in its targets, and `dist` in `files`), and wrap it in a regular TypeScript package with a `workspace:^` dependency, which also gives Nx the build order. Copy `tools/constant-consistent-hash/wasm-impl`: its `node` and `browser` entry points each load the `.wasm` their own way. To run it on a frontend, copy `e2e/constant-consistent-hash-wasm-browser`.

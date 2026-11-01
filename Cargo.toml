@@ -1,0 +1,27 @@
+[workspace]
+resolver = "3"
+members = [
+    "tools/constant-consistent-hash/rust-impl",
+    "tools/constant-consistent-hash/test-vectors",
+]
+
+[workspace.package]
+edition = "2024"
+rust-version = "1.99"
+license = "MIT"
+publish = false
+
+# Same bar as ESLint: every pedantic lint, with explicit allows that state their reasons
+[workspace.lints.clippy]
+pedantic = { level = "warn", priority = -1 }
+
+[workspace.lints.rust]
+unsafe_code = "deny"
+
+# Smallest and most reproducible output, for WASM. Nothing unwinds across the boundary to JavaScript
+[profile.release]
+codegen-units = 1
+lto = true
+opt-level = "s"
+panic = "abort"
+strip = true

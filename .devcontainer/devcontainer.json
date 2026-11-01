@@ -22,6 +22,7 @@
         "golang.go",
         "ms-azuretools.vscode-docker",
         "ritwickdey.LiveServer",
+        "rust-lang.rust-analyzer",
         "TypeScriptTeam.native-preview"
       ]
     }

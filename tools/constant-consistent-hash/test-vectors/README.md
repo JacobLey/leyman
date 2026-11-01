@@ -2,7 +2,7 @@
 
 Test vectors shared by every [constant-consistent-hash](../constant-consistent-hash/) implementation.
 
-Each implementation depends on this package, through its own package manager, and asserts that it returns exactly these buckets, so the TypeScript package and the [Go implementation](../go-impl/) are held to the same [specification](../constant-consistent-hash/SPEC.md), not to each other.
+Each implementation depends on this package, through its own package manager, and asserts that it returns exactly these buckets, so the TypeScript package, the [Go implementation](../go-impl/) and the [Rust implementation](../rust-impl/) are held to the same [specification](../constant-consistent-hash/SPEC.md), not to each other.
 
 ```ts
 import testVectors from '@leyman/constant-consistent-hash-test-vectors/test-vectors.json' with { type: 'json' };
@@ -16,7 +16,13 @@ import testvectors "github.com/JacobLey/leyman/tools/constant-consistent-hash/te
 json.Unmarshal(testvectors.JSON, &vectors)
 ```
 
-The module is not published, so require it with a `replace` pointing at this directory (see the [Go implementation](../go-impl/go.mod)). Implementations in other languages can read [`data/test-vectors.json`](./data/test-vectors.json) directly.
+The module is not published, so require it with a `replace` pointing at this directory (see the [Go implementation](../go-impl/go.mod)). It is a Rust crate too, including the same file:
+
+```rust
+let vectors: serde_json::Value = serde_json::from_str(testvectors::JSON)?;
+```
+
+Depend on it by path (see the [Rust implementation](../rust-impl/Cargo.toml)). Implementations in other languages can read [`data/test-vectors.json`](./data/test-vectors.json) directly.
 
 ## Format
 

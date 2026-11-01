@@ -107,7 +107,7 @@ Like `consistentHash`, it is fast but not cryptographic.
 
 ## Other languages
 
-[SPEC.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/SPEC.md) describes the algorithm step by step, in terms any language can implement exactly, along with test vectors. A [Go implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/go-impl), written from the specification, is tested against the same vectors. It is not published.
+[SPEC.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/SPEC.md) describes the algorithm step by step, in terms any language can implement exactly, along with test vectors. A [Go implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/go-impl), written from the specification, is tested against the same vectors, as is a [Rust implementation](https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/rust-impl). Neither is published.
 
 ## Compared to alternatives
 

@@ -24,3 +24,9 @@ By default only apply **minor/patch** updates. Only bump a **major** version whe
 7. **Test:** `test-only`, then `test-and-fix` (adds lint + auto-fix). For a major bump, finish with `test-ci`.
 
 Report any test or lint failures to the user instead of working around them. Small fixes are fine to propose, but anything needing a refactor is the user's call.
+
+## Crates
+
+Crates are outside `catalog:` and pnpm's `minimumReleaseAge`, and Cargo has no setting that holds a release back, so hold the 7-day rule by hand: check each release date on crates.io, then `cargo update --package <crate> --precise <version>`. Commit `Cargo.lock`, which every build reads with `--locked`.
+
+`wasm-bindgen` moves together: its exact version in `tools/constant-consistent-hash/rust-impl/Cargo.toml`, and `wasm-bindgen-cli` in `.devcontainer/Dockerfile` and `dagger/main.go` (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)).

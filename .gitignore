@@ -10,6 +10,8 @@
 **/coverage
 # Go coverage profiles, from `go-test`
 **/cover.out
+# Rust build output, shared by the workspace in `Cargo.toml`
+/target
 **/dist
 **/dist-test
 # wrangler's local state and temporary bundles

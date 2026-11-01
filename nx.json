@@ -68,6 +68,10 @@
       {
         "dependentTasksOutputFiles": "**/dist/**/*.d.cts",
         "transitive": true
+      },
+      {
+        "dependentTasksOutputFiles": "**/dist/**/*.wasm",
+        "transitive": true
       }
     ],
     "test-source": [
@@ -78,6 +82,16 @@
       "package-files",
       "dependency-builds",
       "{workspaceRoot}/configs/c8rc.json"
+    ],
+    "rustSource": [
+      "{projectRoot}/Cargo.toml",
+      "{projectRoot}/src/**/*.rs",
+      "{projectRoot}/tests/**/*.rs",
+      "{workspaceRoot}/Cargo.toml",
+      "{workspaceRoot}/Cargo.lock",
+      {
+        "externalDependencies": []
+      }
     ]
   },
   "sync": {
@@ -136,6 +150,26 @@
       ],
       "outputs": [
         "{projectRoot}/**/*.go"
+      ],
+      "dependsOn": [
+        "prepare:generate"
+      ]
+    },
+    "rustfmt": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "${NX_WORKSPACE_ROOT}/scripts/nx/rustfmt.sh"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "inputs": [
+        "{projectRoot}/**/*.rs"
+      ],
+      "outputs": [
+        "{projectRoot}/**/*.rs"
       ],
       "dependsOn": [
         "prepare:generate"
@@ -285,6 +319,21 @@
         "check:_"
       ]
     },
+    "rust-clippy": {
+      "cache": true,
+      "inputs": [
+        "rustSource",
+        "^rustSource",
+        "^package-files",
+        {
+          "runtime": "rustc --version"
+        }
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "check:_"
+      ]
+    },
     "barrelify": {
       "executor": "nx:run-commands",
       "options": {
@@ -412,6 +461,26 @@
         "ts-source",
         "dependency-builds",
         "^package-files"
+      ],
+      "outputs": [
+        "{projectRoot}/dist"
+      ],
+      "dependsOn": [
+        "build:_"
+      ]
+    },
+    "rust-wasm": {
+      "cache": true,
+      "inputs": [
+        "rustSource",
+        "^rustSource",
+        "^package-files",
+        {
+          "runtime": "rustc --version"
+        },
+        {
+          "runtime": "wasm-bindgen --version"
+        }
       ],
       "outputs": [
         "{projectRoot}/dist"
@@ -616,6 +685,23 @@
         "{projectRoot}/cover.out"
       ]
     },
+    "rust-test": {
+      "cache": true,
+      "inputs": [
+        "rustSource",
+        "^rustSource",
+        "^package-files",
+        {
+          "runtime": "rustc --version"
+        }
+      ],
+      "outputs": [
+        "{projectRoot}/coverage"
+      ],
+      "dependsOn": [
+        "test:compile"
+      ]
+    },
     "coverage-report": {
       "executor": "nx:run-commands",
       "options": {
@@ -661,6 +747,31 @@
         "{workspaceRoot}/scripts/nx/go-coverage-report.sh",
         {
           "dependentTasksOutputFiles": "**/cover.out"
+        }
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "test:run"
+      ]
+    },
+    "rust-coverage-report": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "${NX_WORKSPACE_ROOT}/scripts/nx/rust-coverage-report.sh"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": true,
+      "inputs": [
+        "rustSource",
+        "{workspaceRoot}/scripts/nx/rust-coverage-report.sh",
+        {
+          "runtime": "rustc --version"
+        },
+        {
+          "dependentTasksOutputFiles": "**/coverage/llvm-cov.json"
         }
       ],
       "outputs": [],
@@ -719,6 +830,7 @@
         "prepare:generate",
         "biome",
         "gofmt",
+        "rustfmt",
         "tofu-fmt"
       ],
       "configurations": {
@@ -753,6 +865,7 @@
         "check-package",
         "drizzle-kit-check",
         "go-vet",
+        "rust-clippy",
         "tofu-validate",
         "check-version"
       ],
@@ -784,7 +897,8 @@
       "dependsOn": [
         "build:_",
         "tsc",
-        "vitepress-build"
+        "vitepress-build",
+        "rust-wasm"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -846,7 +960,8 @@
         "mocha-unit-test",
         "mocha-integration-test",
         "vitest-unit-test",
-        "go-test"
+        "go-test",
+        "rust-test"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -857,7 +972,8 @@
       "dependsOn": [
         "test:run",
         "coverage-report",
-        "go-coverage-report"
+        "go-coverage-report",
+        "rust-coverage-report"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -907,7 +1023,8 @@
         "runTargetName": "go-serve",
         "releasePublishTargetName": "go-release-publish"
       }
-    }
+    },
+    "./leyman/main/scripts/nx-rust-plugin.mjs"
   ],
   "analytics": false,
   "neverConnectToCloud": true

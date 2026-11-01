@@ -36,6 +36,13 @@ const (
 	// golang:1.26.10-trixie.
 	// Only its Go toolchain is copied into the Node image, for projects written in Go.
 	goImage = "golang:1.26.10-trixie@sha256:909771fef53e3dcb0950255f0c9a8b4728c3b841e61509c7b29b098de7ee02d4"
+	// rust:1.99.1-trixie.
+	// Only its toolchain is copied into the Node image, for projects written in Rust.
+	rustImage = "rust:1.99.1-trixie@sha256:09027f873d45b8ecd1dc86f1fa13b7a62b875c961f017a0e331267b350430137"
+	// Installed with the toolchain, at a release at least 7 days old.
+	cargoLlvmCovVersion = "0.9.1"
+	// Must match the `wasm-bindgen` crate in `Cargo.lock`.
+	wasmBindgenVersion = "0.2.129"
 	// ghcr.io/opentofu/opentofu:1.13.2-minimal, for `infra/`. Keep in sync with `TOFU_IMAGE` in `.devcontainer/Dockerfile`.
 	// Under 7 days old: an emergency security bump (1.13.2 stops trusting compromised intermediate certificates when
 	// `tofu init` downloads providers). Drop this note after 2026-10-28.
@@ -55,6 +62,8 @@ const (
 	cacheDir    = "/pnpm-cache"
 	tarballDir  = "/tarballs"
 	goRoot      = "/usr/local/go"
+	rustupHome  = "/usr/local/rustup"
+	cargoHome   = "/usr/local/cargo"
 	pnpmDir     = "/usr/local/pnpm"
 	npmRegistry = "https://registry.npmjs.org"
 	// Same as the devcontainer's. A fixed password: the service only lives as long as the test run.
@@ -541,10 +550,23 @@ func system() *dagger.Container {
 		WithExec([]string{"sh", "-c", "apt-get update" +
 			" && apt-get install --yes --no-install-recommends ca-certificates postgresql-common" +
 			" && /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y" +
-			" && apt-get install --yes --no-install-recommends postgresql-client-" + postgresMajor})
+			" && apt-get install --yes --no-install-recommends postgresql-client-" + postgresMajor +
+			// `cargo test` links with `cc`. Building WASM doesn't need it, with its own bundled linker
+			" && apt-get install --yes --no-install-recommends gcc libc6-dev"})
 }
 
-// Adds Go, pnpm, Node and OpenTofu, matching the devcontainer: last, so bumping one reruns only these copies. No npm (as in the
+// The Rust toolchain, with the same components and tools as the devcontainer's, and no crates downloaded
+func rustToolchain() *dagger.Container {
+	return dag.Container().
+		From(rustImage).
+		WithExec([]string{"sh", "-c", "rustup component add rustfmt clippy llvm-tools-preview" +
+			" && rustup target add wasm32-unknown-unknown" +
+			" && cargo install --locked --version " + cargoLlvmCovVersion + " cargo-llvm-cov" +
+			" && cargo install --locked --version " + wasmBindgenVersion + " wasm-bindgen-cli" +
+			" && rm -rf " + cargoHome + "/registry " + cargoHome + "/git"})
+}
+
+// Adds Go, Rust, pnpm, Node and OpenTofu, matching the devcontainer: last, so bumping one reruns only these copies. No npm (as in the
 // devcontainer), so nothing silently depends on it.
 func withTools(ctr *dagger.Container) *dagger.Container {
 	// pnpm is a native binary, installed with npm and copied in with its package
@@ -552,20 +574,27 @@ func withTools(ctr *dagger.Container) *dagger.Container {
 		From(nodeImage).
 		WithExec([]string{"npm", "install", "--global", "pnpm@" + pnpmVersion}).
 		Directory("/usr/local/lib/node_modules/pnpm")
+	rust := rustToolchain()
 	return ctr.
 		WithDirectory(goRoot, dag.Container().From(goImage).Directory(goRoot)).
+		WithDirectory(rustupHome, rust.Directory(rustupHome)).
+		WithDirectory(cargoHome, rust.Directory(cargoHome)).
+		WithEnvVariable("RUSTUP_HOME", rustupHome).
+		WithEnvVariable("CARGO_HOME", cargoHome).
+		// Crates come from `cargo fetch` alone, see `installed`
+		WithEnvVariable("CARGO_NET_OFFLINE", "true").
 		// Use the pinned toolchain, never one downloaded for a newer `go` directive in a go.mod
 		WithEnvVariable("GOTOOLCHAIN", "local").
 		WithDirectory(pnpmDir, pnpm).
 		WithFile("/usr/local/bin/node", dag.Container().From(nodeImage).File("/usr/local/bin/node")).
 		WithFile("/usr/local/bin/tofu", dag.Container().From(tofuImage).File("/usr/local/bin/tofu")).
-		WithEnvVariable("PATH", "${PATH}:"+goRoot+"/bin:"+pnpmDir, dagger.ContainerWithEnvVariableOpts{Expand: true}).
+		WithEnvVariable("PATH", "${PATH}:"+goRoot+"/bin:"+cargoHome+"/bin:"+pnpmDir, dagger.ContainerWithEnvVariableOpts{Expand: true}).
 		WithEnvVariable("pnpm_config_store_dir", storeDir).
 		WithEnvVariable("pnpm_config_cache_dir", cacheDir).
 		WithWorkdir(workdir)
 }
 
-// Node + pnpm + Go + Postgres client tools, matching the devcontainer
+// Node + pnpm + Go + Rust + Postgres client tools, matching the devcontainer
 func (m *Ci) base() *dagger.Container {
 	return withTools(system())
 }
@@ -590,9 +619,21 @@ func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
 		WithExec([]string{"sh", "-c", `grep -oE 'resolution: \{directory: [^,]+' pnpm-lock.yaml | cut -d ' ' -f 3 | xargs -r mkdir -p`}).
 		WithExec([]string{"pnpm", "fetch"})
 
+	// As with pnpm, crates are fetched from the lockfile alone. Cargo also reads every manifest of the workspace, each of
+	// which needs a library to be valid: empty files satisfy it, keeping this layer independent of the source.
+	cargoFiles := source.Filter(dagger.DirectoryFilterOpts{
+		Include: []string{"Cargo.lock", "**/Cargo.toml"},
+	})
+	crates := m.base().
+		WithDirectory(workdir, cargoFiles).
+		WithEnvVariable("CARGO_NET_OFFLINE", "false").
+		WithExec([]string{"sh", "-c", `find . -mindepth 2 -name Cargo.toml -execdir sh -c 'mkdir -p src && touch src/lib.rs' \;`}).
+		WithExec([]string{"cargo", "fetch", "--locked"})
+
 	return m.base().
 		WithDirectory(storeDir, fetched.Directory(storeDir)).
 		WithDirectory(cacheDir, fetched.Directory(cacheDir)).
+		WithDirectory(cargoHome+"/registry", crates.Directory(cargoHome+"/registry")).
 		WithDirectory(workdir, source).
 		WithExec([]string{"pnpm", "install", "--frozen-lockfile", "--offline"}).
 		WithEnvVariable("PATH", "${PATH}:"+workdir+"/leyman/main/node_modules/.bin:"+workdir+"/scripts/commands", dagger.ContainerWithEnvVariableOpts{Expand: true}).

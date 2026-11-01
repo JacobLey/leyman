@@ -4,6 +4,7 @@
   "targets": {
     "biome": {},
     "gofmt": {},
+    "rustfmt": {},
     "sync-injected": {},
     "install:_": {},
     "install": {},

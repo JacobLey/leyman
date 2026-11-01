@@ -5,7 +5,7 @@ description: Understanding the various projects/packages available
 
 # Projects
 
-A project is any directory with a `project.json`. Every project has a README.md. Almost all are TypeScript packages with a `package.json`. A `go.mod` makes a Go project (see [create-package](../create-package/SKILL.md#go-projects)): [`go-impl`](../../../tools/constant-consistent-hash/go-impl/) is only Go, and [`test-vectors`](../../../tools/constant-consistent-hash/test-vectors/) is both an npm package and a Go module.
+A project is any directory with a `project.json`. Every project has a README.md. Almost all are TypeScript packages with a `package.json`. A `go.mod` makes a Go project (see [create-package](../create-package/SKILL.md#go-projects)), and a `Cargo.toml` a Rust one (see [Rust projects](../create-package/SKILL.md#rust-projects)): [`go-impl`](../../../tools/constant-consistent-hash/go-impl/) is only Go, and [`test-vectors`](../../../tools/constant-consistent-hash/test-vectors/) is both an npm package and a Go module.
 
 - `tools/`: libraries consumed via `import`.
 - `apps/`: CLIs, Nx plugins, and larger packages that are used other than by plain `import`.
@@ -44,7 +44,9 @@ See each package's README.md for full usage documentation.
 |---------|-------------|
 | [`constant-consistent-hash`](../../../tools/constant-consistent-hash/constant-consistent-hash/) | Stateless consistent hashing in constant time, with minimal key movement |
 | [`constant-consistent-hash-go`](../../../tools/constant-consistent-hash/go-impl/) | Go implementation of constant-consistent-hash, tested against the shared test vectors (private, Go) |
+| [`constant-consistent-hash-rust`](../../../tools/constant-consistent-hash/rust-impl/) | Rust implementation of constant-consistent-hash, compiled to WASM for TypeScript (private, Rust) |
 | [`constant-consistent-hash-test-vectors`](../../../tools/constant-consistent-hash/test-vectors/) | Test vectors shared by every constant-consistent-hash implementation (private) |
+| [`constant-consistent-hash-wasm`](../../../tools/constant-consistent-hash/wasm-impl/) | constant-consistent-hash from TypeScript, through its Rust implementation compiled to WASM, on Node.js and in browsers (private) |
 | [`default-import`](../../../tools/default-import/) | Correctly extract default exports from CJS modules in ESM |
 | [`entry-script`](../../../tools/entry-script/) | Safe CLI entry point pattern — runs only as the Node entrypoint |
 | [`enum-to-array`](../../../tools/enum-to-array/) | Convert TypeScript enums to typed arrays of keys/values |
@@ -87,6 +89,7 @@ See each package's README.md for full usage documentation.
 
 | Package | Description |
 |---------|-------------|
+| [`constant-consistent-hash-wasm-browser`](../../../e2e/constant-consistent-hash-wasm-browser) | Checks that constant-consistent-hash's Rust implementation, compiled to WASM, bundles for a frontend and runs in real browsers |
 | [`eslint-config-schema`](../../../e2e/eslint-config-schema) | Checks that eslint-config's hand-written package.json schema matches what juniper builds |
 | [`normalized-react-query-ssr`](../../../e2e/normalized-react-query-ssr) | Checks that normalized-react-query's preloading carries across a server render into client hydration |
 | [`iso-crypto-browser`](../../../e2e/iso-crypto-browser) | Checks that iso-crypto's browser build runs on web APIs alone, with no Node.js APIs |

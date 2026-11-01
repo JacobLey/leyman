@@ -33,6 +33,7 @@ Named inputs in [`nx.json`](../../../nx.json):
 - `^package-files`: dependencies' tracked entry points (`package.json`, `bin.mjs`, `out/`, `data/`…). Targets list it directly, because Nx does not allow `^` inside a named input.
 - `test-source`: `ts-source` plus `test/`, `configs/tsconfig.test.json`, the project's own `package-files`, the builds of its dependencies and itself, and the c8 config.
 - `goSource`: a Go project's `go.mod`, `go.sum` and `.go` files, defined per project by gonx. Go targets also hash `^goSource` and the Go version.
+- `rustSource`: a Rust project's `Cargo.toml`, `src/**/*.rs` and `tests/**/*.rs`, with the root `Cargo.toml` and `Cargo.lock`. Rust targets also hash `^rustSource`, `^package-files` (`include_str!` reads files like `data/`, that `rustSource` does not cover) and the Rust version.
 - `shared-globals`: the Node version. The cache is shared between worktrees through the `nx-cache` sidecar.
 - `postgres` and `valkey`: the versions of the services a task runs against (and of `pg_dump`), read from the running server, since the same image in the devcontainer and in Dagger is only pinned by convention. A project whose integration tests use one adds it to the target defaults' inputs with Nx's spread, rather than copying the list: `"mocha-integration-test": { "inputs": ["...", "valkey"] }`. Any other tool from outside the repository that a task's result depends on needs a `runtime` input like these, or a cached result outlives a change to it.
 
@@ -66,6 +67,14 @@ Formats with Biome (`scripts/nx/biome-format.sh`). Writes changes, except in CI 
 Formats Go source with `gofmt` (`scripts/nx/gofmt.sh`). Like `biome`, writes changes, except in CI where it fails listing the unformatted files.
 
 **Add when:** Go projects (has `go.mod`).
+
+---
+
+### `rustfmt`
+
+Formats Rust source with `cargo fmt` (`scripts/nx/rustfmt.sh`). Like `biome`, writes changes, except in CI where it fails.
+
+**Add when:** Rust projects (has `Cargo.toml`).
 
 ---
 
@@ -131,6 +140,14 @@ Fails if `tools/local-ingress`'s image or compose file changed without a `VERSIO
 Runs `go vet ./...`, Go's built-in static checks. Runs in `check:lint`, like `eslint`. Inferred by gonx (see [Go projects](#go-projects)).
 
 **Add when:** Never: inferred for every Go project.
+
+---
+
+### `rust-clippy`
+
+Runs Clippy with warnings as errors, natively and, for a crate that compiles to it, for WASM. Runs in `check:lint`, like `eslint`. Inferred (see [Rust projects](#rust-projects)).
+
+**Add when:** Never: inferred for every Rust project.
 
 ---
 
@@ -260,11 +277,35 @@ The shared config runs pre-compiled tests with native `import` and the `threads`
 
 ---
 
+### `rust-wasm`
+
+Builds the crate for `wasm32-unknown-unknown`, then writes the `.wasm` and its JavaScript bindings to `dist/` with `wasm-bindgen --target web`. Runs in `build:run`, like `tsc`. The build removes the toolchain's path from the output, so it gives the same bytes wherever it runs. Inferred (see [Rust projects](#rust-projects)).
+
+**Add when:** Never: inferred for a crate that depends on `wasm-bindgen`.
+
+---
+
+### `rust-test`
+
+Runs the crate's tests under `cargo llvm-cov`, writing a summary to `coverage/llvm-cov.json` (gitignored). Native only, so a file compiled just for WASM isn't counted: keep logic out of it. Inferred (see [Rust projects](#rust-projects)).
+
+**Add when:** Never: inferred for a crate with a `tests/` directory.
+
+---
+
 ### `go-test`
 
 Runs `go test -cover ./...`, writing Go's coverage profile to `cover.out` (gitignored). Inferred by gonx (see [Go projects](#go-projects)). Hashes dependencies' `package-files` too, since a Go module can `//go:embed` files (like `data/`) that gonx's `goSource` input does not cover.
 
 **Add when:** Never: inferred for every Go project.
+
+---
+
+### `rust-coverage-report`
+
+Fails unless `rust-test` covered 100% of functions, lines and regions (`scripts/nx/rust-coverage-report.sh`), like `coverage-report`.
+
+**Add when:** Rust projects with tests.
 
 ---
 
@@ -292,6 +333,14 @@ Its inferred targets are renamed with a `go-` prefix, so they don't collide with
 
 `gofmt` stays a repo target, since gonx's formatter always rewrites and can't only check in CI.
 
+## Rust projects
+
+No maintained plugin supports this repo's Nx yet, so `leyman/main/scripts/nx-rust-plugin.mjs` (in `nx.json` `plugins`) does what gonx does for Go. It adds `rust-clippy`, `rust-test` and `rust-wasm` to every `Cargo.toml` with a `[package]`, and infers dependencies between crates from their `path` dependencies, through `cargo metadata --no-deps`. The rest of a target (inputs, `dependsOn`, outputs) is in name-keyed `targetDefaults`, so keep those without an `executor`. Replace the plugin with an upstream one once one supports the repo's Nx.
+
+With no `cargo` on `PATH`, as in a devcontainer not yet rebuilt, the plugin infers no dependencies instead of failing, so every other project still works. Only Rust's own targets need them, and those can't run there anyway.
+
+In Dagger, crates come from `cargo fetch --locked` in a layer of their own, and `CARGO_NET_OFFLINE` keeps everything after it from reaching the network.
+
 ## Typical `project.json` Templates
 
 ### Standard TypeScript package (unit tests only)
@@ -312,6 +361,21 @@ Its inferred targets are renamed with a `go-` prefix, so they don't collide with
     "sync-injected": {},
     "check:_": {},
     "check:lint": {},
+    // lots more of ignorable nx-lifecycle managed targets
+  }
+}
+```
+
+### Rust project
+
+```json
+{
+  "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/my-crate",
+  "targets": {
+    "biome": {},
+    "rustfmt": {},
+    "rust-coverage-report": {},
     // lots more of ignorable nx-lifecycle managed targets
   }
 }

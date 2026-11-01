@@ -1,0 +1,26 @@
+{
+  "name": "@leyman/constant-consistent-hash-rust",
+  "version": "0.0.1",
+  "description": "Rust implementation of constant-consistent-hash, compiled to WASM for TypeScript.",
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/rust-impl#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "sideEffects": false,
+  "types": "./dist/constant_consistent_hash_rust.d.ts",
+  "exports": {
+    ".": "./dist/constant_consistent_hash_rust.js",
+    "./wasm": "./dist/constant_consistent_hash_rust_bg.wasm"
+  },
+  "files": [
+    "dist"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "catalog:"
+  }
+}
