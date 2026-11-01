@@ -61,17 +61,14 @@ RUN cd /tmp \
 
 # For ad-hoc scripts only, so not mirrored in Dagger. Prebuilt CPython from
 # https://github.com/astral-sh/python-build-standalone.
-# pip is upgraded under 7 days old: an emergency security bump. Drop this note and the upgrade after 2026-10-27,
-# once a python-build-standalone release ships pip >=26.2.2
 FROM base AS python
 # PYTHON_BUILD is the python-build-standalone release tag; only bump to a release at least 7 days old
-ARG PYTHON_VERSION=3.14.8
-ARG PYTHON_BUILD=20261009
+ARG PYTHON_VERSION=3.14.9
+ARG PYTHON_BUILD=20261021
 RUN wget "https://github.com/astral-sh/python-build-standalone/releases/download/${PYTHON_BUILD}/cpython-${PYTHON_VERSION}+${PYTHON_BUILD}-$(uname -m)-unknown-linux-gnu-install_only.tar.gz" -O /tmp/python.tar.gz && \
     tar -C $HOME -xzf /tmp/python.tar.gz && \
     mv $HOME/python $HOME/.python && \
-    rm /tmp/python.tar.gz && \
-    $HOME/.python/bin/python3 -m pip install --no-cache-dir --upgrade "pip>=26.2.2"
+    rm /tmp/python.tar.gz
 
 # GitHub CLI, for local use only (not mirrored in Dagger). Only bump to a release at least 7 days old
 FROM base AS gh
