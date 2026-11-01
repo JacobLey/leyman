@@ -34,6 +34,7 @@ Files live on the host, so they survive container rebuilds. Claude Code config i
 | GitHub CLI | `gh`, for PRs and issues | Version pinned via `ARG GH_VERSION` (a release at least 7 days old). Not mirrored in Dagger. Its login lives in `GH_CONFIG_DIR` under `.shared/`, so `gh auth login` once, in any container, covers every worktree and rebuild. With no keyring in the container, the token is stored in plain text there: prefer a fine-grained token |
 | Nx, Biome, ESLint | Workspace tooling | From `leyman/main/node_modules/.bin`, on `PATH` via `remoteEnv` after `postCreateCommand` runs `pnpm install` |
 | Nx daemon | Keeps the project graph between `nx` commands | On via `NX_DAEMON` in `remoteEnv`, about 800 MB per worktree. Nx turns it off in Docker by default because a container exiting could cut off Nx Cloud's background calls ([nrwl/nx#14126](https://github.com/nrwl/nx/issues/14126)), and this repo doesn't use Nx Cloud. A single-project `build` takes about 1s rather than 2.4s, and outputs that already match aren't restored. CI runs without it. If results look stale, `nx daemon --stop` |
+| Git's `core.fsmonitor` | Off in the container only, via `GIT_CONFIG_*` in `remoteEnv` | The shared `.git/config` may set it for the host. Git refuses it on this mount, which it sees as remote, and warns on every command |
 | Local Scripts | Complicated combos of tasks in a single command | `<worktree>/scripts/commands` is on `PATH` (via `remoteEnv`), exposing these shortcuts |
 
 ## Dockerfile layout

@@ -8,6 +8,9 @@
   "remoteUser": "leyman",
 
   "remoteEnv": {
+    "GIT_CONFIG_COUNT": "1",
+    "GIT_CONFIG_KEY_0": "core.fsmonitor",
+    "GIT_CONFIG_VALUE_0": "false",
     "NX_DAEMON": "true",
     "NX_PARALLEL": "5",
     "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/leyman/main/node_modules/.bin:${containerWorkspaceFolder}/scripts/commands"
