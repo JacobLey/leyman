@@ -3,14 +3,14 @@ import type { VitestMethods } from '#internal/lib/vitest-chain.js';
 import { describe, expect, test } from 'vitest';
 import { createVitestChain } from '#internal/lib/vitest-chain.js';
 
-type Registered = (...args: unknown[]) => Promise<void>;
-
 /**
  * Fake vitest methods that record callbacks, so tests can control execution order.
  *
  * @returns recorded callbacks and fake methods
  */
 const createFakeVitest = () => {
+    type Registered = (...args: unknown[]) => Promise<void>;
+
     const registered = {
         beforeAll: [] as Registered[],
         beforeEach: [] as Registered[],
