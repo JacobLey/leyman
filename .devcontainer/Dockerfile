@@ -9,9 +9,7 @@ ARG BASE_IMAGE=mcr.microsoft.com/devcontainers/base:2.2.1-debian13
 ARG NODE_VERSION=24.22.1
 ARG GO_VERSION=1.26.10
 ARG RUST_IMAGE=rust:1.99.1-trixie@sha256:09027f873d45b8ecd1dc86f1fa13b7a62b875c961f017a0e331267b350430137
-# OpenTofu, for `infra/` (see `tofuImage` in `dagger/main.go`). Under 7 days old: an emergency security bump (1.13.2
-# stops trusting compromised intermediate certificates when `tofu init` downloads providers). Drop this note after
-# 2026-10-28
+# OpenTofu, for `infra/` (see `tofuImage` in `dagger/main.go`)
 ARG TOFU_IMAGE=ghcr.io/opentofu/opentofu:1.13.2-minimal@sha256:622dc6bb98b105c18f53cf419ab64a4f3b88bd9f8c16cc978cf89e4202f4613f
 
 FROM node:${NODE_VERSION}-trixie-slim AS node

@@ -42,8 +42,6 @@ const (
 	// Must match the `wasm-bindgen` crate in `Cargo.lock`.
 	wasmBindgenVersion = "0.2.129"
 	// ghcr.io/opentofu/opentofu:1.13.2-minimal, for `infra/`. Keep in sync with `TOFU_IMAGE` in `.devcontainer/Dockerfile`.
-	// Under 7 days old: an emergency security bump (1.13.2 stops trusting compromised intermediate certificates when
-	// `tofu init` downloads providers). Drop this note after 2026-10-28.
 	tofuImage = "ghcr.io/opentofu/opentofu:1.13.2-minimal@sha256:622dc6bb98b105c18f53cf419ab64a4f3b88bd9f8c16cc978cf89e4202f4613f"
 	// valkey/valkey:9.1.2-trixie. Keep in sync with the `valkey` service in `.devcontainer/docker-compose.yml`.
 	valkeyImage = "valkey/valkey:9.1.2-trixie@sha256:418652cfb58ef879d4978c33553735d7147016032d5aefaa14c828e611eb9dfd"
