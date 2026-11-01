@@ -859,7 +859,7 @@ func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
 		WithDirectory(workdir, source).
 		WithExec([]string{"pnpm", "install", "--frozen-lockfile", "--offline"}).
 		WithEnvVariable("PATH", "${PATH}:"+workdir+"/leyman/main/node_modules/.bin:"+workdir+"/scripts/commands", dagger.ContainerWithEnvVariableOpts{Expand: true}).
-		// More Nx tasks than CI's 4 CPUs, since many wait on services or timers: on 4 CPUs, 6 ran `verify` 14% faster than
-		// Nx's default of 3
-		WithEnvVariable("NX_PARALLEL", "6")
+		// One Nx task per CPU. More runs `verify` faster (6 was 14% ahead of Nx's default of 3), but on a cold run starves
+		// tests past their timeouts
+		WithEnvVariable("NX_PARALLEL", "4")
 }
