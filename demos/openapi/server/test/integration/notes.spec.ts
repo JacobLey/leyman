@@ -1,6 +1,7 @@
 import type { NotesHandlers } from '@leyman/demo-openapi-server';
 import { sql } from 'drizzle-orm';
 import { drizzle } from 'drizzle-orm/node-postgres';
+import * as fc from 'fast-check';
 import { Pool } from 'pg';
 import { NotesClient } from '@leyman/demo-openapi-client';
 import {
@@ -16,8 +17,11 @@ import {
     staticTokens,
     staticTokensBinding,
 } from '@leyman/demo-openapi-server';
+import document from '@leyman/demo-openapi-spec/openapi.json' with { type: 'json' };
 import { expect } from '@leyman/expect';
 import { bind, createContainer } from 'haywire';
+import { customSchema } from 'juniper';
+import { makeArbitrary } from 'juniper-arbitrary';
 import { suite } from 'mocha-chain';
 import { withDatabase } from '../helpers/database.js';
 import { listen } from '../helpers/serve.js';
@@ -32,6 +36,8 @@ const tokens = [
 ];
 // Whose `token` is
 const owner = 'alice';
+// From the document, the contract clients and this server both follow
+const newNote = customSchema<{ title: string; body: string }>(document.components.schemas.NewNote);
 const uuid = /^[\da-f]{8}-[\da-f]{4}-[\da-f]{4}-[\da-f]{4}-[\da-f]{12}$/v;
 
 suite('Notes API', () => {
@@ -75,6 +81,19 @@ suite('Notes API', () => {
 
             expect(created.status).to.equal(201);
             expect(created.body).to.include({ title: 'Dolly', body: 'A sheep' });
+        });
+
+        withServer.test('Keeps any note the document allows as it was sent', async ({ client }) => {
+            // Text is where a server and a database disagree: Unicode, quotes, the limits of a length
+            await fc.assert(
+                fc.asyncProperty(makeArbitrary(newNote), async note => {
+                    const created = await client.call('createNote', { body: note });
+
+                    expect(created.status).to.equal(201);
+                    expect(created.body).to.include(note);
+                }),
+                { numRuns: 25, seed: 42 }
+            );
         });
 
         withServer.test('Adds it as the caller', async ({ client, db }) => {

@@ -1,7 +1,7 @@
 {
   "name": "nx-lifecycle",
   "version": "1.2.1",
-  "description": "Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, …) and the targets bound to them.",
+  "description": "Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, \u2026) and the targets bound to them.",
   "engines": {
     "node": ">=24"
   },
@@ -89,6 +89,8 @@
     "c8": "catalog:",
     "eslint": "catalog:",
     "expect-type": "catalog:",
+    "fast-check": "catalog:",
+    "juniper-arbitrary": "workspace:^",
     "load-populate-files": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",

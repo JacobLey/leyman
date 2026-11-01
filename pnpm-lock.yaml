@@ -127,6 +127,9 @@ catalogs:
     ajv:
       specifier: ^8.20.0
       version: 8.20.0
+    ajv-draft-04:
+      specifier: ^1.0.0
+      version: 1.0.0
     ajv-formats:
       specifier: ^3.0.1
       version: 3.0.1
@@ -742,9 +745,15 @@ importers:
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
       juniper:
         specifier: workspace:^
         version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
+      juniper-arbitrary:
+        specifier: workspace:^
+        version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -839,6 +848,12 @@ importers:
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
+      juniper-arbitrary:
+        specifier: workspace:^
+        version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       load-populate-files:
         specifier: workspace:^
         version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
@@ -1617,9 +1632,18 @@ importers:
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
       genever-content-mapper:
         specifier: workspace:^
         version: file:apps/genever-content-mapper(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+      juniper:
+        specifier: workspace:^
+        version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
+      juniper-arbitrary:
+        specifier: workspace:^
+        version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -2114,21 +2138,39 @@ importers:
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
+      ajv:
+        specifier: 'catalog:'
+        version: 8.20.0
+      ajv-draft-04:
+        specifier: 'catalog:'
+        version: 1.0.0(ajv@8.20.0)
+      ajv-formats:
+        specifier: 'catalog:'
+        version: 3.0.1(ajv@8.20.0)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
+      default-import:
+        specifier: workspace:^
+        version: file:tools/default-import
       eslint:
         specifier: 'catalog:'
         version: 10.13.0(supports-color@8.1.1)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
       genever:
         specifier: workspace:^
         version: file:apps/genever(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       juniper:
         specifier: workspace:^
         version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
+      juniper-arbitrary:
+        specifier: workspace:^
+        version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       juniper-validator:
         specifier: workspace:^
         version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))

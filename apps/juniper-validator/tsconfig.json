@@ -17,6 +17,9 @@
       "path": "../../tools/test-chain/mocha-chain"
     },
     {
+      "path": "../juniper-arbitrary"
+    },
+    {
       "path": "../../leyman/expect"
     },
     {

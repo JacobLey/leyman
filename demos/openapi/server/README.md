@@ -91,3 +91,5 @@ const app = createContainer(
 ## Testing
 
 Every test gets a database of its own, cloned by [`pg-dolly`](../../../tools/pg-dolly) from the database package's `schema.sql` (the template is built once per run), and the app served on a free port with `@hono/node-server`, exactly as in production. Requests go through the [typed client](../client), or plain `fetch` for requests the client can't send (bad JSON, the wrong content type). Breaking responses are tested by swapping in handlers that break the spec, one binding at a time.
+
+One test posts notes generated from the document with [`juniper-arbitrary`](../../../apps/juniper-arbitrary), and checks they come back as sent. Text is where a server and a database disagree, and hand-written cases only cover the characters someone thought of.

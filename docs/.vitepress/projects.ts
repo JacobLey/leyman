@@ -535,6 +535,7 @@ export const demos: readonly Demo[] = [
         ],
         uses: [
             'juniper',
+            'juniper-arbitrary',
             'genever',
             'populate-files',
             'pg-dolly',

@@ -250,6 +250,8 @@ const app = createContainer(
 ## Testing
 
 - **Every test gets a database of its own**, cloned by [pg-dolly](/packages/pg-dolly/) from `schema.sql`, with the [mocha-chain fixture](/packages/pg-dolly/guides/test-runners#mocha-chain) from its docs. The template is built once per run, and the tests run against the real Postgres: a devcontainer sidecar, and a service in CI.
+
+One test posts notes generated from the document with [`juniper-arbitrary`](/packages/juniper-arbitrary/), and checks they come back as sent. Text is where a server and a database disagree, and hand-written cases only cover the characters someone thought of.
 - **The app is served on a free port** with `@hono/node-server`, exactly as in production, and requests go through the typed client, or plain `fetch` for requests the client can't send (bad JSON, the wrong content type).
 - **Breaking responses are tested** by swapping in handlers that break the spec, one binding at a time.
 - **The client's unit tests** use a `fetch` that records each request and answers with a canned response, and one uses the real `fetch` against a local HTTP server.

@@ -47,6 +47,12 @@
       "path": "../../../tools/test-chain/mocha-chain"
     },
     {
+      "path": "../../../apps/juniper-arbitrary"
+    },
+    {
+      "path": "../../../apps/juniper"
+    },
+    {
       "path": "../../../apps/genever-content-mapper"
     },
     {
