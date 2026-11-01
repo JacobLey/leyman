@@ -130,12 +130,14 @@ const openPage = async (browser: Browser, files: ReadonlyMap<string, string | Ui
             return;
         }
         const file = files.get(path);
-        await (file === undefined
-            ? route.fulfill({ status: 404 })
-            : route.fulfill({
-                  contentType: path.endsWith('.wasm') ? 'application/wasm' : 'text/javascript',
-                  body: typeof file === 'string' ? file : globalThis.Buffer.from(file),
-              }));
+        await route.fulfill(
+            file === undefined
+                ? { status: 404 }
+                : {
+                      contentType: path.endsWith('.wasm') ? 'application/wasm' : 'text/javascript',
+                      body: typeof file === 'string' ? file : globalThis.Buffer.from(file),
+                  }
+        );
     });
     await page.goto(origin);
     await page.waitForFunction(() => 'bench' in globalThis);
