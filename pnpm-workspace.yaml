@@ -119,8 +119,8 @@ catalog:
   '@modelcontextprotocol/server': ^2.3.1
   '@naxodev/gonx': ^4.1.2
   '@noble/hashes': ^2.4.0
-  '@nx/devkit': ^23.3.0
-  '@nx/js': ^23.3.0
+  '@nx/devkit': ^23.3.1
+  '@nx/js': ^23.3.1
   '@shikijs/vitepress-twoslash': ^4.5.0
   '@standard-schema/spec': ^1.1.0
   '@swc/cli': ^0.8.1
@@ -185,7 +185,7 @@ catalog:
   miniflare: ^4.20260730.0
   mocha: ^12.0.3
   normalize-exception: ^4.0.1
-  nx: ^23.3.0
+  nx: ^23.3.1
   oauth4webapi: ^3.8.8
   oidc-provider: ^9.12.2
   openapi-types: ^12.1.3
