@@ -180,9 +180,6 @@ export const safeStringify = (value: unknown): string => {
         const name = safeGet(value, 'name');
         return typeof name === 'string' && name ? `[Function ${name}]` : '[Function (anonymous)]';
     }
-    if (isObject(value)) {
-        return stringifyObject(value);
-    }
-    // `null`, `undefined`, booleans, numbers and symbols, none of which can throw here
-    return String(value);
+    // Otherwise `null`, `undefined`, booleans, numbers and symbols, none of which can throw here
+    return isObject(value) ? stringifyObject(value) : String(value);
 };
