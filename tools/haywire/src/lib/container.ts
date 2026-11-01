@@ -1405,14 +1405,14 @@ export class Container<Outputs extends [Extendable]> {
             eagerScopes: Set<Scopes>
         ): GenericOutputHaywireId[] | null => {
             const baseId = binding.outputId.baseId();
-            if (chain.has(baseId)) {
+            if (
                 // Part of circular dependency.
                 // If we are sync up until this point, it can remain sync.
-                return null;
-            }
-            if (eagerScopes.has(binding.scope)) {
+                chain.has(baseId) ||
                 // If the "parent" scopes have already eagerly created these resources,
                 // will be synchronously available
+                eagerScopes.has(binding.scope)
+            ) {
                 return null;
             }
             if (binding.isAsync) {
