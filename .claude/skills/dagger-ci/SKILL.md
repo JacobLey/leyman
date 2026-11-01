@@ -1,6 +1,6 @@
 ---
 name: dagger-ci
-description: Running CI locally with Dagger, and how releases to npm work
+description: Running CI locally with Dagger, how releases to npm work, and patching an older major version of a package (e.g. a security fix for v1 after v2 shipped)
 ---
 
 # Dagger CI
@@ -76,7 +76,7 @@ First check who it would help (npm's per-version downloads). If almost nobody is
    - `ci.yml`: add `release/*` to `on.push.branches`, and let the `publish` job's `if` accept `refs/heads/release/*`
    - `ci.yml`: if its `Tag releases` step pushes with `GITHUB_TOKEN`, push to the `RELEASE_TAG_TOKEN` URL as the current step does, and set `persist-credentials: false` on the job's checkout, or the checkout's credential is used instead (a release branch's workflows differ from main's, so `GITHUB_TOKEN`'s push would be refused after npm has published). Keep how the step reads the publish output: its format changed, and the current step's parsing finds nothing in the old one, silently tagging nothing
    - `dagger/main.go`: add `--tag release-<major>` to the `npm publish` command, or npm refuses a version below `latest`
-4. Apply the fix and a changeset, and delete any pending changesets the tag already had. Don't fix unrelated breakage from age; remove a package whose unrelated tests no longer pass from the branch instead.
+4. Apply the fix and a changeset, and delete any pending changesets the tag already had. Don't fix unrelated breakage from age. Rerun a timeout in an unrelated package first, as old tags keep their flaky tests; remove a package whose unrelated tests really no longer pass from the branch instead.
 5. Run `changeset version` on the branch, the one place to run it by hand: the `version` job is `main` only. Check that only the intended packages were bumped.
 6. Run `test-ci`, `dagger-test` and `dagger call --mod ./dagger publish --dry-run`, and open a PR into the branch, which runs `test`.
 7. Allow that one branch to use the `npm` environment. Without this, `publish` fails at the environment and nothing is released.
