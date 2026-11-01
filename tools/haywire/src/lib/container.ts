@@ -1299,6 +1299,11 @@ export class Container<Outputs extends [Extendable]> {
             return false;
         };
 
+        // How many cycles the walk has reached so far. An output safe with none below it stays safe on any other route,
+        // since reaching a cycle from there would mean reaching one from here. One with a cycle below it isn't recorded,
+        // since whether a cycle is safe depends on the chain that closes it.
+        let cyclesReached = 0;
+
         const isOutputSafe = (
             dependencyId: GenericHaywireId,
             evaluatedOutputIds: Set<GenericBaseHaywireId>,
@@ -1312,6 +1317,7 @@ export class Container<Outputs extends [Extendable]> {
             const bindings = this.#bindingsOf(baseId);
 
             if (evaluatedOutputIds.has(baseId)) {
+                ++cyclesReached;
                 // Each link pairs a binding with the edge it declares outward, so the cycle
                 // sub-chain is already aligned: its first link is the binding that produces
                 // `baseId`, and its last link's `outgoing` is the current `dependencyId` that
@@ -1330,7 +1336,8 @@ export class Container<Outputs extends [Extendable]> {
                 return false;
             }
 
-            return bindings.every(binding => {
+            const cyclesBefore = cyclesReached;
+            const isEveryBindingSafe = bindings.every(binding => {
                 const evaluatedOutputIdsForBinding = new Set(evaluatedOutputIds);
                 evaluatedOutputIdsForBinding.add(baseId);
                 let isSafe = true;
@@ -1351,6 +1358,10 @@ export class Container<Outputs extends [Extendable]> {
                 }
                 return isSafe;
             });
+            if (isEveryBindingSafe && cyclesReached === cyclesBefore) {
+                safeOutputs.add(baseId);
+            }
+            return isEveryBindingSafe;
         };
 
         for (const binding of this.#bindings) {
@@ -1394,7 +1405,10 @@ export class Container<Outputs extends [Extendable]> {
          * Find whether a binding can be supplied synchronously.
          *
          * @param binding - binding a supplier would request
-         * @param chain - base ids already visited on the way to this binding
+         * @param chain - base ids on the way to this binding, a cycle stops at
+         * @param visited - bindings already walked from this supplier's binding. Nothing async was found from them,
+         * and a second route can't find more: whatever `chain` hid then, it still hides or has since been walked.
+         * Keyed by binding since list elements share a base id, so one being walked doesn't mean its siblings have been.
          * @param eagerScopes - scopes created before the supplier is called
          * @returns `null` when the binding is safe to supply synchronously. Otherwise the chain of output ids
          * from the binding to the first async binding found, to explain the failure.
@@ -1402,6 +1416,7 @@ export class Container<Outputs extends [Extendable]> {
         const findAsyncChain = (
             binding: GenericBinding,
             chain: Set<GenericOutputHaywireId>,
+            visited: Set<GenericBinding>,
             eagerScopes: Set<Scopes>
         ): GenericOutputHaywireId[] | null => {
             const baseId = binding.outputId.baseId();
@@ -1409,6 +1424,7 @@ export class Container<Outputs extends [Extendable]> {
                 // Part of circular dependency.
                 // If we are sync up until this point, it can remain sync.
                 chain.has(baseId) ||
+                visited.has(binding) ||
                 // If the "parent" scopes have already eagerly created these resources,
                 // will be synchronously available
                 eagerScopes.has(binding.scope)
@@ -1419,6 +1435,8 @@ export class Container<Outputs extends [Extendable]> {
                 // Value cannot guaranteed to be present, even if belonging to "parent" scope.
                 return [binding.outputId];
             }
+            visited.add(binding);
+            chain.add(baseId);
             for (const dependencyId of binding.dependencyIds) {
                 const { supplier } = dependencyId.annotations;
                 if (typeof supplier === 'object' && (!supplier.propagateScope || !supplier.sync)) {
@@ -1432,7 +1450,8 @@ export class Container<Outputs extends [Extendable]> {
                 for (const dependencyBinding of dependencyBindings) {
                     const asyncChain = findAsyncChain(
                         dependencyBinding,
-                        new Set([...chain, baseId]),
+                        chain,
+                        visited,
                         eagerScopes
                     );
                     if (asyncChain) {
@@ -1440,6 +1459,7 @@ export class Container<Outputs extends [Extendable]> {
                     }
                 }
             }
+            chain.delete(baseId);
             return null;
         };
 
@@ -1513,7 +1533,7 @@ export class Container<Outputs extends [Extendable]> {
             );
 
             for (const syncBinding of syncBindings) {
-                const asyncChain = findAsyncChain(syncBinding, new Set(), eagerScopes);
+                const asyncChain = findAsyncChain(syncBinding, new Set(), new Set(), eagerScopes);
                 if (asyncChain) {
                     unsafeBindings.add(syncBinding);
                     addUnsafePair(syncBinding, propagateScope, asyncChain);
@@ -1539,30 +1559,34 @@ export class Container<Outputs extends [Extendable]> {
      */
     #wireSingletons(): void {
         // Walks only the edges `check()` rejects cycles through (it runs before wiring), so needs no cycle guard
-        const collectBindings = (binding: GenericBinding): GenericBinding[] => {
-            const collected: GenericBinding[] = [];
+        const collectBindings = (
+            binding: GenericBinding,
+            visited: Set<GenericBinding>,
+            collected: Set<GenericBinding>
+        ): void => {
             for (const dependencyId of binding.dependencyIds) {
                 const { deferred, supplier } = dependencyId.annotations;
                 if (deferred || (typeof supplier === 'object' && !supplier.sync)) {
                     continue;
                 }
-                const dependencyBindings = this.#bindingsOf(dependencyId);
-                for (const dependencyBinding of dependencyBindings) {
+                for (const dependencyBinding of this.#bindingsOf(dependencyId)) {
                     if (dependencyBinding.scope === eagerSingletonScope) {
-                        collected.push(dependencyBinding);
-                    } else {
-                        collected.push(...collectBindings(dependencyBinding));
+                        collected.add(dependencyBinding);
+                    } else if (!visited.has(dependencyBinding)) {
+                        visited.add(dependencyBinding);
+                        collectBindings(dependencyBinding, visited, collected);
                     }
                 }
             }
-            return collected;
         };
 
         for (const binding of this.#bindings) {
             if (binding.scope !== eagerSingletonScope) {
                 continue;
             }
-            const singletonBindings = [...new Set(collectBindings(binding))];
+            const collected = new Set<GenericBinding>();
+            collectBindings(binding, new Set(), collected);
+            const singletonBindings = [...collected];
             this.#singletonMap.set(binding, singletonBindings);
             for (const singletonBinding of singletonBindings) {
                 this.#upstreamDependents.get(singletonBinding)!.add(binding);
@@ -1582,39 +1606,44 @@ export class Container<Outputs extends [Extendable]> {
      * Does not actually perform the instantiations.
      */
     #wireRequests(): void {
+        // `stack` holds the base ids being walked, so a cycle (or a list element reaching its own list) stops there.
+        // `visited` holds the bindings walked from this root, so each is walked once however many routes reach it.
+        // A second route can't collect more: whatever `stack` hid then, it still hides or has since been walked.
+        // Keyed by binding since list elements share a base id, so one being walked doesn't mean its siblings have been.
         const collectBindings = (
             binding: GenericBinding,
-            stack: Set<GenericBaseHaywireId>
-        ): GenericBinding[] => {
-            if (stack.has(binding.outputId.baseId())) {
-                return [];
+            stack: Set<GenericBaseHaywireId>,
+            visited: Set<GenericBinding>,
+            collected: Set<GenericBinding>
+        ): void => {
+            const baseId = binding.outputId.baseId();
+            if (stack.has(baseId) || visited.has(binding)) {
+                return;
             }
-
-            const collected: GenericBinding[] = [];
-            // Track the bindings being walked (not their dependencies), so only a cycle stops the walk
-            const dependencyStack = new Set([...stack, binding.outputId.baseId()]);
+            visited.add(binding);
+            stack.add(baseId);
             for (const dependencyId of binding.dependencyIds) {
                 const { supplier } = dependencyId.annotations;
                 if (typeof supplier === 'object' && !supplier.propagateScope) {
                     // Starts a new request, which creates its own eager request values
                     continue;
                 }
-                const dependencyBindings = this.#bindingsOf(dependencyId);
-                for (const dependencyBinding of dependencyBindings) {
+                for (const dependencyBinding of this.#bindingsOf(dependencyId)) {
                     if (dependencyBinding.scope === eagerSingletonScope) {
                         continue;
                     }
                     if (dependencyBinding.scope === eagerRequestScope) {
-                        collected.push(dependencyBinding);
+                        collected.add(dependencyBinding);
                     } else {
-                        collected.push(...collectBindings(dependencyBinding, dependencyStack));
+                        collectBindings(dependencyBinding, stack, visited, collected);
                     }
                 }
             }
-            return collected;
+            stack.delete(baseId);
         };
         for (const binding of this.#bindings) {
-            const eagerBindings = new Set(collectBindings(binding, new Set()));
+            const eagerBindings = new Set<GenericBinding>();
+            collectBindings(binding, new Set(), new Set(), eagerBindings);
             this.#requestMap.set(binding, [...eagerBindings]);
         }
     }
@@ -1633,9 +1662,16 @@ export class Container<Outputs extends [Extendable]> {
      */
     #wireAsyncs(): void {
         const eagerScopes = new Set([eagerRequestScope, eagerSingletonScope]);
-        const isAsync = (binding: GenericBinding, chain: Set<GenericBaseHaywireId>): boolean => {
-            if (chain.has(binding.outputId.baseId())) {
-                // Come full circle. If nothing in the chain has forced async yet, we can stay sync
+        // `chain` and `visited` work as in `#wireRequests`. A false result can't be stored as a binding walks:
+        // it may only be false because `chain` hid a route, which would be wrong for a later root.
+        const isAsync = (
+            binding: GenericBinding,
+            chain: Set<GenericBaseHaywireId>,
+            visited: Set<GenericBinding>
+        ): boolean => {
+            const baseId = binding.outputId.baseId();
+            if (chain.has(baseId) || visited.has(binding)) {
+                // Come full circle, or already found sync. If nothing in the chain has forced async yet, we can stay sync
                 return false;
             }
             const existing = this.#isAsyncImplementationMap.get(binding);
@@ -1649,28 +1685,27 @@ export class Container<Outputs extends [Extendable]> {
                 this.#isAsyncImplementationMap.set(binding, true);
                 return true;
             }
-            return binding.dependencyIds.some(dependencyId => {
+            visited.add(binding);
+            chain.add(baseId);
+            const hasAsyncDependency = binding.dependencyIds.some(dependencyId => {
                 if (typeof dependencyId.annotations.supplier === 'object') {
                     // Suppliers are resolved "immediately" so that is sync
                     return false;
                 }
                 const dependencyBindings = this.#bindingsOf(dependencyId);
-                return dependencyBindings.some(dependencyBinding => {
-                    if (eagerScopes.has(dependencyBinding.scope)) {
+                return dependencyBindings.some(
+                    dependencyBinding =>
                         // Eager values are pre-computed, so the actual request can always rely on cache
-                        return false;
-                    }
-                    // Check dependency, appending to chain
-                    return isAsync(
-                        dependencyBinding,
-                        new Set([...chain, binding.outputId.baseId()])
-                    );
-                });
+                        !eagerScopes.has(dependencyBinding.scope) &&
+                        isAsync(dependencyBinding, chain, visited)
+                );
             });
+            chain.delete(baseId);
+            return hasAsyncDependency;
         };
 
         for (const binding of this.#bindings) {
-            this.#isAsyncImplementationMap.set(binding, isAsync(binding, new Set()));
+            this.#isAsyncImplementationMap.set(binding, isAsync(binding, new Set(), new Set()));
         }
     }
 
