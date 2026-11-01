@@ -7,6 +7,7 @@ import (
 	"context"
 	"dagger/ci/internal/dagger"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -76,6 +77,7 @@ const (
 	pnpmDir     = "/usr/local/pnpm"
 	npmRegistry = "https://registry.npmjs.org"
 	// Same as the devcontainer's. A fixed password: the service only lives as long as the test run.
+	//nolint:gosec // Not a secret, as above
 	databaseURL = "postgres://postgres:postgres@postgres:5432/postgres"
 )
 
@@ -126,8 +128,8 @@ func (m *Ci) Test(
 	// Some targets run against real services, at the same hostnames as the devcontainer's sidecars
 	built := withPostgres(ctr).WithExec([]string{"nx", "run-many", "-t", "build"})
 
-	eg, ctx := errgroup.WithContext(ctx)
-	eg.Go(func() error {
+	group, ctx := errgroup.WithContext(ctx)
+	group.Go(func() error {
 		_, err := built.
 			WithServiceBinding("valkey", valkeyService()).
 			// Browser tests connect to it rather than launching their own, so `playwright-install` downloads none
@@ -135,13 +137,16 @@ func (m *Ci) Test(
 			WithEnvVariable("PW_TEST_CONNECT_WS_ENDPOINT", "ws://playwright:3000/").
 			WithExec([]string{"test-ci"}).
 			Sync(ctx)
+
 		return err
 	})
-	eg.Go(func() error {
+	group.Go(func() error {
 		_, err := built.WithExec([]string{"nx", "run", "@leyman/main:lifecycle"}).Sync(ctx)
+
 		return err
 	})
-	return eg.Wait()
+
+	return group.Wait()
 }
 
 // Build the documentation site (`docs/`), type-checking every example, ready to deploy as static files.
@@ -165,13 +170,13 @@ func (m *Ci) DeployNxCache(
 	// Cloudflare API token that may deploy Workers
 	apiToken *dagger.Secret,
 	// Cloudflare account to deploy to
-	accountId string,
+	accountID string,
 ) (string, error) {
 	return m.installed(m.Source.WithoutDirectory(".changeset")).
 		WithExec([]string{"nx", "run", "@leyman/nx-cache-worker:build"}).
 		WithWorkdir(workdir+"/infra/nx-cache/worker").
 		WithSecretVariable("CLOUDFLARE_API_TOKEN", apiToken).
-		WithEnvVariable("CLOUDFLARE_ACCOUNT_ID", accountId).
+		WithEnvVariable("CLOUDFLARE_ACCOUNT_ID", accountID).
 		WithEnvVariable("WRANGLER_SEND_METRICS", "false").
 		WithExec([]string{"node_modules/.bin/wrangler", "deploy"}).
 		Stdout(ctx)
@@ -199,10 +204,11 @@ func (m *Ci) Version(
 			Gitignore: true,
 			Exclude:   []string{".git", "**/node_modules"},
 		})
+
 	return versioned.Changes(source)
 }
 
-// GitHub rejects PR bodies over 65536 characters
+// GitHub rejects PR bodies over 65536 characters.
 const maxNotesLength = 65000
 
 // Describe what `version` would release, as the body of a version PR: each public package's version bump,
@@ -214,51 +220,76 @@ func (m *Ci) VersionNotes(
 	repo *dagger.GitRepository,
 ) (string, error) {
 	changes := m.Version(repo)
+
 	paths, err := changes.ModifiedPaths(ctx)
 	if err != nil {
 		return "", err
 	}
 
-	type release struct {
-		name, from, to, bump, changelog string
-	}
 	releases := []release{}
+
 	for _, file := range paths {
 		if path.Base(file) != "package.json" {
 			continue
 		}
-		var before, after workspacePackage
-		if err := readJSON(ctx, changes.Before().File(file), &before); err != nil {
-			return "", err
-		}
-		if err := readJSON(ctx, changes.After().File(file), &after); err != nil {
-			return "", err
-		}
-		// Private packages are only bumped for their internal dependencies, and never published
-		if after.Private || before.Version == after.Version {
-			continue
-		}
-		changelog, err := changelogSection(ctx, changes.After(), path.Dir(file), after.Version)
+
+		found, err := releaseIn(ctx, changes, file)
 		if err != nil {
 			return "", err
 		}
-		releases = append(releases, release{after.Name, before.Version, after.Version, bumpType(before.Version, after.Version), changelog})
+
+		if found != nil {
+			releases = append(releases, *found)
+		}
 	}
+
+	return releaseNotes(releases), nil
+}
+
+// One package's version bump in a version PR.
+type release struct {
+	name, from, to, bump, changelog string
+}
+
+// What the change to a package.json releases, if anything.
+func releaseIn(ctx context.Context, changes *dagger.Changeset, file string) (*release, error) {
+	var before, after workspacePackage
+	if err := readJSON(ctx, changes.Before().File(file), &before); err != nil {
+		return nil, err
+	}
+
+	if err := readJSON(ctx, changes.After().File(file), &after); err != nil {
+		return nil, err
+	}
+	// Private packages are only bumped for their internal dependencies, and never published
+	if after.Private || before.Version == after.Version {
+		return nil, nil //nolint:nilnil // Having nothing to release isn't a failure
+	}
+
+	changelog, err := changelogSection(ctx, changes.After(), path.Dir(file), after.Version)
+	if err != nil {
+		return nil, err
+	}
+
+	return &release{after.Name, before.Version, after.Version, bumpType(before.Version, after.Version), changelog}, nil
+}
+
+// The summary table, then each package's changelog while they fit in a PR body.
+func releaseNotes(releases []release) string {
+	bumpRank := func(bump string) int { return slices.Index([]string{"major", "minor", "patch"}, bump) }
 	// Biggest bumps first, as they need the most review
 	sort.Slice(releases, func(i, j int) bool {
-		if rank, other := bumpRank[releases[i].bump], bumpRank[releases[j].bump]; rank != other {
+		if rank, other := bumpRank(releases[i].bump), bumpRank(releases[j].bump); rank != other {
 			return rank < other
 		}
+
 		return releases[i].name < releases[j].name
 	})
 
-	summary := []string{
-		"Merging this PR publishes the packages below to npm.",
-		"",
-		"| Package | Bump | Version |",
-		"| --- | --- | --- |",
-	}
-	notes := []string{}
+	summary := make([]string, 0, len(releases)+1)
+	summary = append(summary, "Merging this PR publishes the packages below to npm.\n\n| Package | Bump | Version |\n| --- | --- | --- |")
+	notes := make([]string, 0, len(releases))
+
 	for _, r := range releases {
 		summary = append(summary, fmt.Sprintf("| `%s` | %s | %s → **%s** |", r.name, r.bump, r.from, r.to))
 		notes = append(notes, strings.TrimSpace(fmt.Sprintf("## %s@%s\n\n%s", r.name, r.to, r.changelog)))
@@ -266,15 +297,14 @@ func (m *Ci) VersionNotes(
 
 	body := strings.Join(append([]string{strings.Join(summary, "\n")}, notes...), "\n\n")
 	if len(body) > maxNotesLength {
-		body = strings.Join(summary, "\n") +
+		return strings.Join(summary, "\n") +
 			"\n\nThe changelogs are too long to include here; see each package's CHANGELOG.md in this PR."
 	}
-	return body, nil
+
+	return body
 }
 
-var bumpRank = map[string]int{"major": 0, "minor": 1, "patch": 2}
-
-// The most significant part of a release version that changed: `major`, `minor` or `patch`
+// The most significant part of a release version that changed: `major`, `minor` or `patch`.
 func bumpType(from string, to string) string {
 	before, after := strings.Split(from, "."), strings.Split(to, ".")
 	for i, bump := range []string{"major", "minor"} {
@@ -282,34 +312,44 @@ func bumpType(from string, to string) string {
 			return bump
 		}
 	}
+
 	return "patch"
 }
 
-func readJSON(ctx context.Context, file *dagger.File, v any) error {
+func readJSON(ctx context.Context, file *dagger.File, target any) error {
 	contents, err := file.Contents(ctx)
 	if err != nil {
 		return err
 	}
-	return json.Unmarshal([]byte(contents), v)
+
+	if err := json.Unmarshal([]byte(contents), target); err != nil {
+		return fmt.Errorf("parsing %w", err)
+	}
+
+	return nil
 }
 
-// The body of the `## <version>` section of a package's CHANGELOG.md, if it has one
+// The body of the `## <version>` section of a package's CHANGELOG.md, if it has one.
 func changelogSection(ctx context.Context, dir *dagger.Directory, pkg string, version string) (string, error) {
 	file := path.Join(pkg, "CHANGELOG.md")
 	if exists, err := dir.Exists(ctx, file); err != nil || !exists {
 		return "", err
 	}
+
 	changelog, err := dir.File(file).Contents(ctx)
 	if err != nil {
 		return "", err
 	}
+
 	_, section, found := strings.Cut(changelog, "\n## "+version+"\n")
 	if !found {
 		return "", nil
 	}
+
 	if next := strings.Index(section, "\n## "); next != -1 {
 		section = section[:next]
 	}
+
 	return strings.TrimSpace(section), nil
 }
 
@@ -335,15 +375,17 @@ func (m *Ci) Publish(
 	githubEnv *dagger.Secret,
 ) (string, error) {
 	if githubEnv == nil && !dryRun {
-		return "", fmt.Errorf("publishing requires --github-env for npm trusted publishing (or use --dry-run)")
+		return "", errors.New("publishing requires --github-env for npm trusted publishing (or use --dry-run)")
 	}
 
 	// Check the registry before building, so pushes with nothing to publish skip the uncached build
 	installed := m.installed(m.Source)
+
 	unpublished, err := m.unpublishedPackages(ctx, installed)
 	if err != nil {
 		return "", err
 	}
+
 	if len(unpublished) == 0 {
 		return "", nil
 	}
@@ -358,37 +400,54 @@ func (m *Ci) Publish(
 			WithWorkdir(pkg.Path).
 			WithExec([]string{"pnpm", "pack", "--pack-destination", tarballPath(i)})
 	}
-	tarballs := packer.Directory(tarballDir)
 
-	// Publish the tarballs with npm, which handles trusted publishing (OIDC) with provenance
+	return publishTarballs(ctx, unpublished, packer.Directory(tarballDir), dryRun, githubEnv), nil
+}
+
+// Publishes the tarballs with npm, which handles trusted publishing (OIDC) with provenance, up to the first failure.
+func publishTarballs(
+	ctx context.Context,
+	pkgs []workspacePackage,
+	tarballs *dagger.Directory,
+	dryRun bool,
+	githubEnv *dagger.Secret,
+) string {
 	publisher := dag.Container().
 		From(nodeImage).
 		WithDirectory(tarballDir, tarballs)
+
 	publishCmd := `npm publish "$1"/*.tgz --access public ${2:+--tag "$2"}`
 	if dryRun {
 		publishCmd += " --dry-run"
 	}
+
 	if githubEnv != nil {
 		publisher = publisher.WithMountedSecret("/run/secrets/github-env", githubEnv)
 		publishCmd = "set -a && . /run/secrets/github-env && set +a && " + publishCmd + " --provenance"
 	}
+
 	results := []string{}
-	for i, pkg := range unpublished {
+
+	for i, pkg := range pkgs {
 		distTag, err := publishDistTag(ctx, pkg)
 		if err == nil {
 			_, err = publisher.WithExec([]string{"bash", "-c", publishCmd, "bash", tarballPath(i), distTag}).Sync(ctx)
 		}
+
 		if err != nil {
 			// On one line, so it can't be mistaken for another package's result
 			results = append(results, fmt.Sprintf("failed %s@%s: %s", pkg.Name, pkg.Version, strings.Join(strings.Fields(err.Error()), " ")))
+
 			break
 		}
+
 		results = append(results, fmt.Sprintf("published %s@%s", pkg.Name, pkg.Version))
 	}
-	return strings.Join(results, "\n"), nil
+
+	return strings.Join(results, "\n")
 }
 
-// Where `Publish` packs the i-th package
+// Where `Publish` packs the i-th package.
 func tarballPath(i int) string {
 	return fmt.Sprintf("%s/%d", tarballDir, i)
 }
@@ -400,34 +459,39 @@ type workspacePackage struct {
 	Private bool   `json:"private"`
 }
 
-// Public workspace packages whose current version is not on the registry
+// Public workspace packages whose current version is not on the registry.
 func (m *Ci) unpublishedPackages(ctx context.Context, ctr *dagger.Container) ([]workspacePackage, error) {
 	out, err := ctr.WithExec([]string{"pnpm", "ls", "--recursive", "--depth", "-1", "--json"}).Stdout(ctx)
 	if err != nil {
 		return nil, err
 	}
+
 	var pkgs []workspacePackage
 	if err := json.Unmarshal([]byte(out), &pkgs); err != nil {
 		return nil, fmt.Errorf("parsing workspace packages: %w", err)
 	}
 
 	unpublished := []workspacePackage{}
+
 	for _, pkg := range pkgs {
 		if pkg.Private {
 			continue
 		}
+
 		exists, err := versionExists(ctx, pkg)
 		if err != nil {
 			return nil, err
 		}
+
 		if !exists {
 			unpublished = append(unpublished, pkg)
 		}
 	}
+
 	return inDependencyOrder(ctx, ctr, unpublished)
 }
 
-// The dependencies a package needs once installed from npm: all but `devDependencies`
+// The dependencies a package needs once installed from npm: all but `devDependencies`.
 type publishedDependencies struct {
 	Dependencies         map[string]string `json:"dependencies"`
 	PeerDependencies     map[string]string `json:"peerDependencies"`
@@ -441,13 +505,45 @@ func inDependencyOrder(ctx context.Context, ctr *dagger.Container, pkgs []worksp
 	for _, pkg := range pkgs {
 		byName[pkg.Name] = pkg
 	}
-	// Only dependencies being published with it can be out of order
+
+	needs, err := dependenciesWithin(ctx, ctr, pkgs, byName)
+	if err != nil {
+		return nil, err
+	}
+
+	sorted := []workspacePackage{}
+
+	done := map[string]bool{}
+	for len(sorted) < len(pkgs) {
+		ready := readyPackages(byName, needs, done)
+		if len(ready) == 0 {
+			return nil, fmt.Errorf("workspace packages depend on each other in a cycle: %v", needs)
+		}
+
+		for _, name := range ready {
+			done[name] = true
+			sorted = append(sorted, byName[name])
+		}
+	}
+
+	return sorted, nil
+}
+
+// Each package's dependencies being published with it, as only those can be out of order.
+func dependenciesWithin(
+	ctx context.Context,
+	ctr *dagger.Container,
+	pkgs []workspacePackage,
+	byName map[string]workspacePackage,
+) (map[string][]string, error) {
 	needs := map[string][]string{}
+
 	for _, pkg := range pkgs {
 		var deps publishedDependencies
 		if err := readJSON(ctx, ctr.File(pkg.Path+"/package.json"), &deps); err != nil {
 			return nil, err
 		}
+
 		for _, group := range []map[string]string{deps.Dependencies, deps.PeerDependencies, deps.OptionalDependencies} {
 			for name := range group {
 				if _, ok := byName[name]; ok && name != pkg.Name {
@@ -457,44 +553,46 @@ func inDependencyOrder(ctx context.Context, ctr *dagger.Container, pkgs []worksp
 		}
 	}
 
-	sorted := []workspacePackage{}
-	done := map[string]bool{}
-	for len(sorted) < len(pkgs) {
-		ready := []string{}
-		for name := range byName {
-			if done[name] {
-				continue
-			}
-			isReady := true
-			for _, dep := range needs[name] {
-				isReady = isReady && done[dep]
-			}
-			if isReady {
-				ready = append(ready, name)
-			}
-		}
-		if len(ready) == 0 {
-			return nil, fmt.Errorf("workspace packages depend on each other in a cycle: %v", needs)
-		}
-		sort.Strings(ready)
-		for _, name := range ready {
-			done[name] = true
-			sorted = append(sorted, byName[name])
+	return needs, nil
+}
+
+// The packages not yet done whose dependencies all are, by name.
+func readyPackages(byName map[string]workspacePackage, needs map[string][]string, done map[string]bool) []string {
+	ready := []string{}
+
+	for name := range byName {
+		if !done[name] && !slices.ContainsFunc(needs[name], func(dep string) bool { return !done[dep] }) {
+			ready = append(ready, name)
 		}
 	}
-	return sorted, nil
+
+	sort.Strings(ready)
+
+	return ready
+}
+
+// Fetches a package document from the registry. The caller closes the body.
+func npmGet(ctx context.Context, name string, document string) (*http.Response, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, npmRegistry+"/"+url.PathEscape(name)+"/"+document, nil)
+	if err != nil {
+		return nil, fmt.Errorf("requesting %s@%s from npm: %w", name, document, err)
+	}
+
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, fmt.Errorf("requesting %s@%s from npm: %w", name, document, err)
+	}
+
+	return res, nil
 }
 
 func versionExists(ctx context.Context, pkg workspacePackage) (bool, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, npmRegistry+"/"+url.PathEscape(pkg.Name)+"/"+pkg.Version, nil)
-	if err != nil {
-		return false, err
-	}
-	res, err := http.DefaultClient.Do(req)
+	res, err := npmGet(ctx, pkg.Name, pkg.Version)
 	if err != nil {
 		return false, err
 	}
 	defer res.Body.Close()
+
 	switch res.StatusCode {
 	case http.StatusOK:
 		return true, nil
@@ -507,15 +605,12 @@ func versionExists(ctx context.Context, pkg workspacePackage) (bool, error) {
 
 // The dist-tag to publish a package's version under. Empty means npm's default, `latest`.
 func publishDistTag(ctx context.Context, pkg workspacePackage) (string, error) {
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, npmRegistry+"/"+url.PathEscape(pkg.Name)+"/latest", nil)
-	if err != nil {
-		return "", err
-	}
-	res, err := http.DefaultClient.Do(req)
+	res, err := npmGet(ctx, pkg.Name, "latest")
 	if err != nil {
 		return "", err
 	}
 	defer res.Body.Close()
+
 	switch res.StatusCode {
 	case http.StatusOK:
 		var latest struct {
@@ -524,6 +619,7 @@ func publishDistTag(ctx context.Context, pkg workspacePackage) (string, error) {
 		if err := json.NewDecoder(res.Body).Decode(&latest); err != nil {
 			return "", fmt.Errorf("parsing latest %s on npm: %w", pkg.Name, err)
 		}
+
 		return distTagFor(pkg.Version, latest.Version)
 	case http.StatusNotFound:
 		// Never published, so nothing to keep `latest` on
@@ -540,15 +636,19 @@ func distTagFor(version string, latest string) (string, error) {
 	if _, err := fmt.Sscanf(version, "%d.%d.%d", &current[0], &current[1], &current[2]); err != nil {
 		return "", fmt.Errorf("parsing version %q: %w", version, err)
 	}
+
 	if _, err := fmt.Sscanf(latest, "%d.%d.%d", &newest[0], &newest[1], &newest[2]); err != nil {
 		return "", fmt.Errorf("parsing version %q: %w", latest, err)
 	}
+
 	if slices.Compare(current[:], newest[:]) >= 0 {
 		return "", nil
 	}
+
 	if current[0] == 0 {
 		return fmt.Sprintf("release-0.%d", current[1]), nil
 	}
+
 	return fmt.Sprintf("release-%d", current[0]), nil
 }
 
@@ -560,7 +660,7 @@ func withPostgres(ctr *dagger.Container) *dagger.Container {
 		WithEnvVariable("DATABASE_URL", databaseURL)
 }
 
-// Valkey for tests, with nothing persisted, matching the devcontainer's `valkey` sidecar
+// Valkey for tests, with nothing persisted, matching the devcontainer's `valkey` sidecar.
 func valkeyService() *dagger.Service {
 	return dag.Container().
 		From(valkeyImage).
@@ -583,7 +683,7 @@ func playwrightService() *dagger.Service {
 		})
 }
 
-// Postgres for tests, with nothing persisted and durability off, matching the devcontainer's `postgres` sidecar
+// Postgres for tests, with nothing persisted and durability off, matching the devcontainer's `postgres` sidecar.
 func postgresService() *dagger.Service {
 	return dag.Container().
 		From(postgresImage).
@@ -603,17 +703,18 @@ func postgresService() *dagger.Service {
 		})
 }
 
-// Points Nx at a remote cache server, if there is one
+// Points Nx at a remote cache server, if there is one.
 func withNxCache(ctr *dagger.Container, nxCache *dagger.Service) *dagger.Container {
 	if nxCache == nil {
 		return ctr
 	}
+
 	return ctr.
 		WithServiceBinding("nx-cache", nxCache).
 		WithEnvVariable("NX_SELF_HOSTED_REMOTE_CACHE_SERVER", "http://nx-cache:3000")
 }
 
-// Postgres client tools on Debian, with nothing else installed yet
+// Postgres client tools on Debian, with nothing else installed yet.
 func system() *dagger.Container {
 	return dag.Container().
 		From(debianImage).
@@ -677,6 +778,7 @@ func withTools(ctr *dagger.Container) *dagger.Container {
 		WithExec([]string{"npm", "install", "--global", "pnpm@" + pnpmVersion}).
 		Directory("/usr/local/lib/node_modules/pnpm")
 	rust := rustToolchain()
+
 	return ctr.
 		WithDirectory(goRoot, goToolchain().Directory(goRoot)).
 		WithDirectory(rustupHome, rust.Directory(rustupHome)).
@@ -696,7 +798,7 @@ func withTools(ctr *dagger.Container) *dagger.Container {
 		WithWorkdir(workdir)
 }
 
-// Node + pnpm + Go + Rust + Postgres client tools, matching the devcontainer
+// Node + pnpm + Go + Rust + Postgres client tools, matching the devcontainer.
 func (m *Ci) base() *dagger.Container {
 	return withTools(system())
 }

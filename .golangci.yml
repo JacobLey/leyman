@@ -15,26 +15,19 @@ linters:
     # `if err := f(); err != nil` is the Go idiom, and keeps `err` scoped to the check
     - noinlineerr
   settings:
-    exhaustruct_v5:
-      # The SDK's `*Opts` structs are optional arguments: a missing field means the default
-      exclude:
-        - ^dagger/ci/internal/dagger\.
     godot:
       # Dagger's pragmas, like `+cache="never"`, have to end a doc comment as they are
       exclude:
         - ^\s*\+
-    mnd:
-      # A port number is named by the function it is passed to
-      ignored-functions:
-        - WithExposedPort
     recvcheck:
       # The generated `dagger.gen.go` gives the module's type both kinds of receiver
       exclusions:
         - Ci.MarshalJSON
     wrapcheck:
-      # The engine's errors already name the query that failed
+      # The engine's errors already name the query that failed, and a group only returns its own functions' errors
       ignore-package-globs:
         - dagger/ci/internal/dagger
+        - golang.org/x/sync/errgroup
   exclusions:
     generated: lax
     # The error from closing what was only read has nothing to report
@@ -55,6 +48,14 @@ linters:
       - path: dagger/main\.go
         linters:
           - goconst
+      # The SDK's `*Opts` structs are optional arguments: a missing field means the default
+      - text: dagger\.\w+Opts is missing
+        linters:
+          - exhaustruct_v5
+      # A port number is named by the function it is passed to
+      - source: WithExposedPort
+        linters:
+          - mnd
       # `dagger develop` writes these `replace` directives
       - path: dagger/go\.mod
         linters:
