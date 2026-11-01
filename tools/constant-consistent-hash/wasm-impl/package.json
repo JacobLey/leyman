@@ -1,0 +1,54 @@
+{
+  "name": "@leyman/constant-consistent-hash-wasm",
+  "version": "0.0.1",
+  "description": "constant-consistent-hash from TypeScript, through its Rust implementation compiled to WASM, on Node.js and in browsers.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/tools/constant-consistent-hash/wasm-impl#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "sideEffects": true,
+  "types": "./dist/consistent-hash.js",
+  "exports": {
+    ".": {
+      "types": "./dist/consistent-hash.js",
+      "browser": "./dist/browser.js",
+      "default": "./dist/node.js"
+    }
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@leyman/constant-consistent-hash-rust": "workspace:^"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/constant-consistent-hash-test-vectors": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "constant-consistent-hash": "workspace:^",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  }
+}

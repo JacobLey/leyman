@@ -132,6 +132,9 @@
     },
     {
       "path": "./apps/trusted-tsc"
+    },
+    {
+      "path": "./tools/constant-consistent-hash/wasm-impl"
     }
   ]
 }

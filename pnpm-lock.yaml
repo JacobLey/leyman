@@ -1792,6 +1792,63 @@ importers:
         specifier: workspace:^
         version: file:tools/test-chain/vitest-chain(vitest@5.0.5(@types/node@24.19.0)(happy-dom@21.0.4)(vite@8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)))
 
+  e2e/constant-consistent-hash-wasm-browser:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.5.14
+      '@leyman/constant-consistent-hash-test-vectors':
+        specifier: workspace:^
+        version: file:tools/constant-consistent-hash/test-vectors
+      '@leyman/constant-consistent-hash-wasm':
+        specifier: workspace:^
+        version: file:tools/constant-consistent-hash/wasm-impl
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.18(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      constant-consistent-hash:
+        specifier: workspace:^
+        version: file:tools/constant-consistent-hash/constant-consistent-hash
+      eslint:
+        specifier: 'catalog:'
+        version: 10.13.0(supports-color@8.1.1)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      playwright:
+        specifier: 'catalog:'
+        version: 1.64.1
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+      vite:
+        specifier: 'catalog:'
+        version: 8.3.4(@types/node@24.19.0)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0)
+
   e2e/eslint-config-schema:
     devDependencies:
       '@biomejs/biome':
@@ -2549,6 +2606,58 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.5.14
+
+  tools/constant-consistent-hash/wasm-impl:
+    dependencies:
+      '@leyman/constant-consistent-hash-rust':
+        specifier: workspace:^
+        version: file:tools/constant-consistent-hash/rust-impl
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.5.14
+      '@leyman/constant-consistent-hash-test-vectors':
+        specifier: workspace:^
+        version: file:tools/constant-consistent-hash/test-vectors
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.1(@swc/core@1.16.18(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.18(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.0
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      constant-consistent-hash:
+        specifier: workspace:^
+        version: file:tools/constant-consistent-hash/constant-consistent-hash
+      eslint:
+        specifier: 'catalog:'
+        version: 10.13.0(supports-color@8.1.1)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
 
   tools/constant-consistent-hash/weighted-rendezvous-hash:
     dependencies:
@@ -5094,8 +5203,15 @@ packages:
   '@keyv/serialize@1.1.1':
     resolution: {integrity: sha512-dXn3FZhPv0US+7dtJsIi2R+c7qWYiReoEh5zUntWCf4oSpMNib8FDhSoed6m3QyZdx5hK7iLFkYk3rNxwt8vTA==}
 
+  '@leyman/constant-consistent-hash-rust@file:tools/constant-consistent-hash/rust-impl':
+    resolution: {directory: tools/constant-consistent-hash/rust-impl, type: directory}
+
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors':
     resolution: {directory: tools/constant-consistent-hash/test-vectors, type: directory}
+
+  '@leyman/constant-consistent-hash-wasm@file:tools/constant-consistent-hash/wasm-impl':
+    resolution: {directory: tools/constant-consistent-hash/wasm-impl, type: directory}
+    engines: {node: '>=24'}
 
   '@leyman/demo-agents-mcp@file:demos/agents/mcp':
     resolution: {directory: demos/agents/mcp, type: directory}
@@ -11857,7 +11973,13 @@ snapshots:
 
   '@keyv/serialize@1.1.1': {}
 
+  '@leyman/constant-consistent-hash-rust@file:tools/constant-consistent-hash/rust-impl': {}
+
   '@leyman/constant-consistent-hash-test-vectors@file:tools/constant-consistent-hash/test-vectors': {}
+
+  '@leyman/constant-consistent-hash-wasm@file:tools/constant-consistent-hash/wasm-impl':
+    dependencies:
+      '@leyman/constant-consistent-hash-rust': file:tools/constant-consistent-hash/rust-impl
 
   '@leyman/demo-agents-mcp@file:demos/agents/mcp(eslint@10.13.0(supports-color@8.1.1))':
     dependencies:
