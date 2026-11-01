@@ -118,23 +118,7 @@
       "dependsOn": [
         "prepare:generate"
       ],
-      "cache": false,
-      "inputs": [
-        "{projectRoot}/*.json",
-        "{projectRoot}/*.(c|m)?js",
-        "{projectRoot}/src/**/*.(c|m)?tsx?",
-        "{projectRoot}/src/**/*.json",
-        "{projectRoot}/test/**/*.(c|m)?tsx?",
-        "{projectRoot}/test/**/*.json"
-      ],
-      "outputs": [
-        "{projectRoot}/*.json",
-        "{projectRoot}/*.(c|m)?js",
-        "{projectRoot}/src/**/*.(c|m)?tsx?",
-        "{projectRoot}/src/**/*.json",
-        "{projectRoot}/test/**/*.(c|m)?tsx?",
-        "{projectRoot}/test/**/*.json"
-      ]
+      "cache": false
     },
     "gofmt": {
       "executor": "nx:run-commands",
@@ -146,12 +130,6 @@
         "cwd": "{projectRoot}"
       },
       "cache": false,
-      "inputs": [
-        "{projectRoot}/**/*.go"
-      ],
-      "outputs": [
-        "{projectRoot}/**/*.go"
-      ],
       "dependsOn": [
         "prepare:generate"
       ]
@@ -166,12 +144,6 @@
         "cwd": "{projectRoot}"
       },
       "cache": false,
-      "inputs": [
-        "{projectRoot}/**/*.rs"
-      ],
-      "outputs": [
-        "{projectRoot}/**/*.rs"
-      ],
       "dependsOn": [
         "prepare:generate"
       ]
@@ -186,12 +158,6 @@
         "cwd": "{projectRoot}"
       },
       "cache": false,
-      "inputs": [
-        "{projectRoot}/**/*.tf"
-      ],
-      "outputs": [
-        "{projectRoot}/**/*.tf"
-      ],
       "dependsOn": [
         "prepare:generate"
       ]
