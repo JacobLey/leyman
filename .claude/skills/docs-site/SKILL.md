@@ -38,6 +38,7 @@ Generated blocks, placed by hand on each overview page (`index.md`) so the markd
 | [`haywire`](../../../tools/haywire/) | [`docs/src/packages/haywire/`](../../../docs/src/packages/haywire/) |
 | [`haywire-launcher`](../../../tools/haywire-launcher/) | [`docs/src/packages/haywire-launcher/`](../../../docs/src/packages/haywire-launcher/) |
 | [`juniper`](../../../apps/juniper/) | [`docs/src/packages/juniper/`](../../../docs/src/packages/juniper/) |
+| [`juniper-arbitrary`](../../../apps/juniper-arbitrary/) | [`docs/src/packages/juniper-arbitrary/`](../../../docs/src/packages/juniper-arbitrary/) |
 | [`juniper-validator`](../../../apps/juniper-validator/) | [`docs/src/packages/juniper-validator/`](../../../docs/src/packages/juniper-validator/) |
 | [`lease-cache`](../../../tools/lease-cache/) | [`docs/src/packages/lease-cache/`](../../../docs/src/packages/lease-cache/) |
 | [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | [`docs/src/packages/populate-files/`](../../../docs/src/packages/populate-files/) |

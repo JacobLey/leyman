@@ -8,6 +8,8 @@ paths:
   - "apps/juniper/src/**"
   - "apps/juniper/README.md"
   - "apps/juniper/WHY-JUNIPER.md"
+  - "apps/juniper-arbitrary/src/**"
+  - "apps/juniper-arbitrary/README.md"
   - "apps/juniper-validator/src/**"
   - "apps/juniper-validator/README.md"
   - "apps/nx-lifecycle/src/**"

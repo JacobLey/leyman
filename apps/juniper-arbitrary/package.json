@@ -13,7 +13,7 @@
     "url": "git+https://github.com/JacobLey/leyman.git",
     "directory": "apps/juniper-arbitrary"
   },
-  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/juniper-arbitrary#readme",
+  "homepage": "https://jacobley.github.io/leyman/packages/juniper-arbitrary/",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },

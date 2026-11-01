@@ -1826,6 +1826,9 @@ importers:
       enum-to-array:
         specifier: workspace:^
         version: file:tools/enum-to-array
+      fast-check:
+        specifier: 'catalog:'
+        version: 4.10.2
       fastify:
         specifier: 'catalog:'
         version: 5.12.7
@@ -1856,6 +1859,9 @@ importers:
       juniper:
         specifier: workspace:^
         version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
+      juniper-arbitrary:
+        specifier: workspace:^
+        version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       juniper-validator:
         specifier: workspace:^
         version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))

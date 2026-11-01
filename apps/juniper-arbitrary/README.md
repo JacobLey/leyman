@@ -13,6 +13,8 @@ fast-check arbitraries from Juniper schemas.
 - **Fails loudly** — a schema nothing matches throws with the path to the part responsible, where a plain `.filter()` would hang.
 - **Plain JSON** — values survive a JSON round trip unchanged: no `-0`, `undefined` or null-prototype objects.
 
+Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/juniper-arbitrary/).
+
 ## Contents
 - [Install](#install)
 - [Example](#example)

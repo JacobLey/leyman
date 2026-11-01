@@ -150,6 +150,25 @@ export const packages: readonly Package[] = [
         ],
     },
     {
+        slug: 'juniper-arbitrary',
+        title: 'Juniper Arbitrary',
+        category: 'Schemas and types',
+        pitch: 'fast-check arbitraries from Juniper schemas: typed values that always validate, for property-based tests.',
+        sources: ['apps/juniper-arbitrary'],
+        related: ['juniper', 'juniper-validator'],
+        pages: [
+            { text: 'Overview', link: '' },
+            { text: 'Getting started', link: 'getting-started' },
+            {
+                text: 'Guides',
+                items: [
+                    { text: 'How values are generated', link: 'guides/how-values-are-generated' },
+                ],
+            },
+            { text: 'Reference', items: [{ text: 'API', link: 'reference/api' }] },
+        ],
+    },
+    {
         slug: 'genever',
         title: 'genever',
         category: 'Schemas and types',
