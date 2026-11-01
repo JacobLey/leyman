@@ -1,7 +1,7 @@
 <div style="text-align:center">
 
 # format-file
-Format files and text with Biome or Prettier, whichever the project uses
+Format files and text with Biome or Prettier, whichever the project uses.
 
 [![npm package](https://badge.fury.io/js/format-file.svg)](https://www.npmjs.com/package/format-file)
 [![License](https://img.shields.io/npm/l/format-file.svg)](https://github.com/JacobLey/leyman/blob/main/tools/format-file/LICENSE)

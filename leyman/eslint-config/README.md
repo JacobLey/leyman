@@ -1,6 +1,6 @@
 # eslint-config
 
-This package contains a shared eslint-config for re-use internally across leyman packages.
+Very opinionated eslint config used internally for package linting.
 
 It is not published publicly, because the rule set is hyper-opinionated and would often include changes that could be considered breaking.
 

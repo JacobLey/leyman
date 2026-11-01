@@ -1,7 +1,7 @@
 {
   "name": "@leyman/expect",
   "version": "0.0.1",
-  "description": "Pre-configured chai assertions for internal tests.",
+  "description": "Pre-configured chai assertions for internal tests, with chai-as-promised already registered.",
   "engines": {
     "node": ">=24"
   },

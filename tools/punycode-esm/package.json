@@ -1,7 +1,7 @@
 {
   "name": "punycode-esm",
   "version": "2.0.2",
-  "description": "Typescript + ESM version of punycode.js",
+  "description": "ESM and TypeScript port of the punycode.js library.",
   "engines": {
     "node": ">=24"
   },

@@ -1,7 +1,7 @@
 {
   "name": "parse-cwd",
   "version": "2.0.3",
-  "description": "Convert relative path or URL to full path",
+  "description": "Convert a relative path or URL to an absolute directory path.",
   "engines": {
     "node": ">=24"
   },

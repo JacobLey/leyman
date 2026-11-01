@@ -1,7 +1,7 @@
 {
   "name": "@leyman/constant-consistent-hash-rust",
   "version": "0.0.1",
-  "description": "Rust implementation of constant-consistent-hash, compiled to WASM for TypeScript.",
+  "description": "Rust implementation of constant-consistent-hash, compiled to WASM for TypeScript, and tested against the shared test vectors.",
   "private": true,
   "type": "module",
   "author": "JacobLey",

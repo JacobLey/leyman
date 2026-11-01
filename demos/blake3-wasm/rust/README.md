@@ -1,6 +1,6 @@
 # demo-blake3-wasm-rust
 
-The [`blake3`](https://crates.io/crates/blake3) crate, built for WASM with SIMD, for the [BLAKE3 through WASM demo](../README.md). See [`typescript`](../typescript/README.md) for how to call it.
+BLAKE3 from the [`blake3`](https://crates.io/crates/blake3) crate, compiled to WASM with SIMD, for the [BLAKE3 through WASM demo](../README.md). See [`typescript`](../typescript/README.md) for how to call it.
 
 - **One function**, so what the demo measures is the hash and the boundary around it.
 - **SIMD comes from the crate's `wasm32_simd` feature**, only on `wasm32`. It needs no compiler flags, as the crate marks the functions that use it, and browsers have shipped WASM SIMD since 2023. Native tests use whatever the crate picks for the platform.

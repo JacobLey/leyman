@@ -1,7 +1,7 @@
 {
   "name": "@leyman/e2e-published-entrypoints",
   "version": "0.0.1",
-  "description": "Imports every entry point of every published package, from the files it publishes.",
+  "description": "Imports every entry point (each exports subpath) of every published package from the files it publishes, with only its runtime dependencies.",
   "engines": {
     "node": ">=24"
   },

@@ -1,7 +1,7 @@
 {
   "name": "entry-script",
   "version": "4.1.2",
-  "description": "Modular control for entry script execution.",
+  "description": "Node.js scripts whose main() only runs when they are the entry point, so tests can import them without side effects.",
   "engines": {
     "node": ">=24"
   },

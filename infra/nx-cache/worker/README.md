@@ -1,6 +1,6 @@
 # @leyman/nx-cache-worker
 
-The hosted Nx remote cache: a Cloudflare Worker on R2 that implements Nx's [self-hosted remote cache API](https://nx.dev/docs/guides/tasks--caching/self-hosted-caching) (`GET` and `PUT /v1/cache/{hash}`). Private: it is deployed, never published. See [`../README.md`](../README.md) for how it fits with the devcontainer, CI and OpenTofu.
+Hosted Nx remote cache on a Cloudflare Worker and R2: anyone may read, only CI on main may write. It implements Nx's [self-hosted remote cache API](https://nx.dev/docs/guides/tasks--caching/self-hosted-caching) (`GET` and `PUT /v1/cache/{hash}`). Private: it is deployed, never published. See [`../README.md`](../README.md) for how it fits with the devcontainer, CI and OpenTofu.
 
 ## Who may read and write
 

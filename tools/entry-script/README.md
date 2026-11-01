@@ -1,7 +1,7 @@
 <div style="text-align:center">
 
 # entry-script
-Modular control for entry script execution.
+Node.js scripts whose main() only runs when they are the entry point, so tests can import them without side effects.
 
 [![npm package](https://badge.fury.io/js/entry-script.svg)](https://www.npmjs.com/package/entry-script)
 [![License](https://img.shields.io/npm/l/entry-script.svg)](https://github.com/JacobLey/leyman/blob/main/tools/entry-script/LICENSE)

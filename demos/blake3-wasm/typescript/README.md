@@ -1,6 +1,6 @@
 # demo-blake3-wasm
 
-BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers: blocking or in a worker. See the [demo's README](../README.md) for what was measured.
+BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers: blocking or in a worker, measured against JavaScript to find where WASM pays off. See the [demo's README](../README.md) for the results.
 
 ```ts
 import { createHashWorker, hash } from '@leyman/demo-blake3-wasm';

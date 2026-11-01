@@ -1,6 +1,6 @@
 # e2e-juniper-openapi
 
-Builds an example OpenAPI spec for a small users and posts API, with [`juniper`](../../apps/juniper) for every schema and [`openapi3-ts`](https://www.npmjs.com/package/openapi3-ts) for paths, parameters and security schemes. It doubles as a check that juniper is pleasant to use for a real API.
+Builds an example users and posts OpenAPI spec with [`juniper`](../../apps/juniper), and checks it is valid OpenAPI 3.0 and 3.1. Juniper builds every schema, and [`openapi3-ts`](https://www.npmjs.com/package/openapi3-ts) the paths, parameters and security schemes. It doubles as a check that juniper is pleasant to use for a real API.
 
 The tests check that:
 

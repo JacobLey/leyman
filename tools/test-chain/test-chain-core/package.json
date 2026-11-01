@@ -1,7 +1,7 @@
 {
   "name": "test-chain-core",
   "version": "0.1.3",
-  "description": "Framework-agnostic internals for chaining test hooks with typed context",
+  "description": "Framework-agnostic internals for chaining test hooks with typed context.",
   "engines": {
     "node": ">=24"
   },

@@ -1,7 +1,7 @@
 {
   "name": "@leyman/demo-blake3-wasm-rust",
   "version": "0.0.1",
-  "description": "BLAKE3 from the blake3 crate, compiled to WASM with SIMD, for the blake3-wasm demo.",
+  "description": "BLAKE3 from the blake3 crate, compiled to WASM with SIMD, for the BLAKE3 through WASM demo.",
   "private": true,
   "type": "module",
   "author": "JacobLey",

@@ -28,76 +28,76 @@ See each package's README.md for full usage documentation.
 | Package | Description |
 |---------|-------------|
 | [`barrelify`](../../../apps/barrelify/) | Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions. |
-| [`genever`](../../../apps/genever/) | Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers |
-| [`genever-content-mapper`](../../../apps/genever-content-mapper/) | A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file. Private, on `catalog:typescript-next` |
-| [`trusted-tsc`](../../../apps/trusted-tsc/) | Run TypeScript 7.1's tsc with only the content mappers listed in `package.json`, each in Node's permission sandbox. Private, on `catalog:typescript-next` |
+| [`genever`](../../../apps/genever/) | Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers. |
+| [`genever-content-mapper`](../../../apps/genever-content-mapper/) | A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file. (private, on `catalog:typescript-next`) |
+| [`trusted-tsc`](../../../apps/trusted-tsc/) | Run TypeScript 7.1's tsc with only the content mappers you trust, each in Node's permission sandbox. (private, on `catalog:typescript-next`) |
 | [`juniper`](../../../apps/juniper/) | Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output. |
-| [`juniper-validator`](../../../apps/juniper-validator/) | StandardSchema-compliant validator wrapping Juniper schemas |
-| [`nx-lifecycle`](../../../apps/nx-lifecycle/) | Nx plugin for managing ordered task dependency lifecycles |
-| [`pg-dolly-schema`](../../../apps/pg-dolly-schema/) | Keep a schema.sql of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale |
-| [`populate-files`](../../../apps/populate-files/populate-files/) | Write dynamic content to static files with CI sync checking |
-| [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | Load a config file and run `populate-files` from CLI |
+| [`juniper-validator`](../../../apps/juniper-validator/) | StandardSchema-compliant validator for Juniper schemas. |
+| [`nx-lifecycle`](../../../apps/nx-lifecycle/) | Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, …) and the targets bound to them. |
+| [`pg-dolly-schema`](../../../apps/pg-dolly-schema/) | Keep a schema.sql of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale. |
+| [`populate-files`](../../../apps/populate-files/populate-files/) | Populate static files with dynamic content, and make sure they stay in sync. |
+| [`load-populate-files`](../../../apps/populate-files/load-populate-files/) | Load and dynamically populate file content based on a single file's config. |
 
 ### Tools
 
 | Package | Description |
 |---------|-------------|
-| [`constant-consistent-hash`](../../../tools/constant-consistent-hash/constant-consistent-hash/) | Stateless consistent hashing in constant time, with minimal key movement |
-| [`constant-consistent-hash-go`](../../../tools/constant-consistent-hash/go-impl/) | Go implementation of constant-consistent-hash, tested against the shared test vectors (private, Go) |
-| [`constant-consistent-hash-rust`](../../../tools/constant-consistent-hash/rust-impl/) | Rust implementation of constant-consistent-hash, compiled to WASM for TypeScript (private, Rust) |
-| [`constant-consistent-hash-test-vectors`](../../../tools/constant-consistent-hash/test-vectors/) | Test vectors shared by every constant-consistent-hash implementation (private) |
-| [`constant-consistent-hash-wasm`](../../../tools/constant-consistent-hash/wasm-impl/) | constant-consistent-hash from TypeScript, through its Rust implementation compiled to WASM, on Node.js and in browsers (private) |
-| [`default-import`](../../../tools/default-import/) | Correctly extract default exports from CJS modules in ESM |
-| [`entry-script`](../../../tools/entry-script/) | Safe CLI entry point pattern — runs only as the Node entrypoint |
-| [`enum-to-array`](../../../tools/enum-to-array/) | Convert TypeScript enums to typed arrays of keys/values |
-| [`find-import`](../../../tools/find-import/) | Find and load the first matching JS/JSON file in parent directories |
-| [`format-file`](../../../tools/format-file/) | Format files and text with Biome or Prettier, whichever the project uses |
-| [`generated-signature`](../../../tools/generated-signature/generated-signature/) | Sign generated files so hand edits are detected, while keeping manual sections editable |
+| [`constant-consistent-hash`](../../../tools/constant-consistent-hash/constant-consistent-hash/) | Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages. |
+| [`constant-consistent-hash-go`](../../../tools/constant-consistent-hash/go-impl/) | Go implementation of constant-consistent-hash, tested against the shared test vectors. (private, Go) |
+| [`constant-consistent-hash-rust`](../../../tools/constant-consistent-hash/rust-impl/) | Rust implementation of constant-consistent-hash, compiled to WASM for TypeScript, and tested against the shared test vectors. (private, Rust) |
+| [`constant-consistent-hash-test-vectors`](../../../tools/constant-consistent-hash/test-vectors/) | Test vectors shared by every constant-consistent-hash implementation. (private) |
+| [`constant-consistent-hash-wasm`](../../../tools/constant-consistent-hash/wasm-impl/) | constant-consistent-hash from TypeScript, through its Rust implementation compiled to WASM, on Node.js and in browsers. (private) |
+| [`default-import`](../../../tools/default-import/) | Properly handle CJS default imports in ESM. |
+| [`entry-script`](../../../tools/entry-script/) | Node.js scripts whose main() only runs when they are the entry point, so tests can import them without side effects. |
+| [`enum-to-array`](../../../tools/enum-to-array/) | Convert TypeScript enums to a strongly typed array. |
+| [`find-import`](../../../tools/find-import/) | Find and load the first matching JS/JSON file by searching parent directories. |
+| [`format-file`](../../../tools/format-file/) | Format files and text with Biome or Prettier, whichever the project uses. |
+| [`generated-signature`](../../../tools/generated-signature/generated-signature/) | Sign generated files so hand edits are detected, while keeping manual sections editable. |
 | [`haywire`](../../../tools/haywire/) | Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state. |
-| [`haywire-launcher`](../../../tools/haywire-launcher/) | Connect Haywire DI containers to `entry-script` CLI entry points |
+| [`haywire-launcher`](../../../tools/haywire-launcher/) | Instantiate and execute your haywire-managed entry script in one line. |
 | [`iso-crypto`](../../../tools/iso-crypto/) | Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES (including GCM), PBKDF2/HKDF key derivation and ECDH. |
-| [`lease-cache`](../../../tools/lease-cache/) | Read-through caching on Valkey or Redis with leases: one load per key across every instance, and a load that finishes after an invalidation never caches its outdated value |
-| [`mocha-chain`](../../../tools/test-chain/mocha-chain/) | Type-safe Mocha hook chaining with typed context propagation |
-| [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | Type-safe Vitest hook chaining with typed context propagation |
-| [`test-chain-core`](../../../tools/test-chain/test-chain-core/) | Framework-agnostic internals shared by `mocha-chain` and `vitest-chain` |
-| [`normalized-react-query`](../../../tools/normalized-react-query/) | Type-safe React Query wrappers that enforce consistent key/query pairing |
-| [`local-ingress`](../../../tools/local-ingress/) | One HTTPS reverse proxy per machine (Caddy, through caddy-docker-proxy) routing `https://<worktree>.<repo>.localhost` to labelled containers, with a local CA trusted once. A Docker image and compose project, not a package (private) |
-| [`oauth-dev-server`](../../../tools/oauth-dev-server/) | A local OAuth 2.1 authorization server for tests: oidc-provider with a dev login, issuing audience-bound JWT access tokens through the real flow (private) |
-| [`parse-cwd`](../../../tools/parse-cwd/) | Resolve and validate a working directory from string, URL, or undefined |
-| [`pg-dolly`](../../../tools/pg-dolly/) | A fresh Postgres database for every test, cloned from a template built once from your schema's SQL: integration tests on Postgres |
-| [`punycode-esm`](../../../tools/punycode-esm/) | ESM port of the Punycode encoding library |
+| [`lease-cache`](../../../tools/lease-cache/) | Read-through caching on Valkey or Redis with leases: one load per key across every instance, and a load that finishes after an invalidation never caches its outdated value. |
+| [`mocha-chain`](../../../tools/test-chain/mocha-chain/) | Chain mocha BDD methods together for deterministic and type safe tests. |
+| [`vitest-chain`](../../../tools/test-chain/vitest-chain/) | Chain vitest hooks together for deterministic and type safe tests. |
+| [`test-chain-core`](../../../tools/test-chain/test-chain-core/) | Framework-agnostic internals for chaining test hooks with typed context. |
+| [`normalized-react-query`](../../../tools/normalized-react-query/) | Type-safe query definitions for TanStack Query — define each key and fetcher once, and link related queries so they prefetch together. |
+| [`local-ingress`](../../../tools/local-ingress/) | `https://<worktree>.<repo>.localhost` into any devcontainer: one HTTPS reverse proxy per machine, shared by every repo, routing by host name to containers that ask for it with Docker labels. (private, a Docker image and compose project, not a package) |
+| [`oauth-dev-server`](../../../tools/oauth-dev-server/) | A local OAuth 2.1 authorization server for tests: oidc-provider with a dev login, issuing audience-bound JWT access tokens through the real flow. (private) |
+| [`parse-cwd`](../../../tools/parse-cwd/) | Convert a relative path or URL to an absolute directory path. |
+| [`pg-dolly`](../../../tools/pg-dolly/) | A fresh Postgres database for every test, cloned from a template built once from your schema's SQL. |
+| [`punycode-esm`](../../../tools/punycode-esm/) | ESM and TypeScript port of the punycode.js library. |
 | [`static-emitter`](../../../tools/static-emitter/) | Statically typed event emitter. |
-| [`unknown-error`](../../../tools/unknown-error/) | Turn any caught `unknown` into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains |
-| [`weighted-rendezvous-hash`](../../../tools/constant-consistent-hash/weighted-rendezvous-hash/) | Weighted rendezvous hashing for any set of nodes, in any order |
+| [`unknown-error`](../../../tools/unknown-error/) | Turn any caught `unknown` into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains. |
+| [`weighted-rendezvous-hash`](../../../tools/constant-consistent-hash/weighted-rendezvous-hash/) | Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion, moving few keys when the set changes. |
 
 
 ### Leyman
 
 | Package | Description |
 |---------|-------------|
-| [`eslint-config`](../../../leyman/eslint-config) | Very opinionated eslint config used internally for package linting |
-| [`expect`](../../../leyman/expect) | Pre-configured chai assertions for internal tests |
-| [`main`](../../../leyman/main) | Workaround for installing "global" packages, and executing repo-wide tasks |
-| [`vscode-tests`](../../../leyman/vscode-tests) | Run and debug a single test from VS Code |
+| [`eslint-config`](../../../leyman/eslint-config) | Very opinionated eslint config used internally for package linting. |
+| [`expect`](../../../leyman/expect) | Pre-configured chai assertions for internal tests, with chai-as-promised already registered. |
+| [`main`](../../../leyman/main) | Holds the repo's global tools and repo-wide scripts, without exposing them to every package. |
+| [`vscode-tests`](../../../leyman/vscode-tests) | Run and debug a single test from VS Code: a play button next to each test and suite, and in the Testing panel. |
 
 ### Docs
 
 | Package | Description |
 |---------|-------------|
-| [`docs`](../../../docs) | Documentation site, with every code example type-checked against the packages it documents |
+| [`docs`](../../../docs) | Documentation site for the packages in this repo, built with VitePress and deployed to GitHub Pages from main. |
 
 ### E2E
 
 | Package | Description |
 |---------|-------------|
-| [`constant-consistent-hash-wasm-browser`](../../../e2e/constant-consistent-hash-wasm-browser) | Checks that constant-consistent-hash's Rust implementation, compiled to WASM, bundles for a frontend and runs in real browsers |
-| [`eslint-config-schema`](../../../e2e/eslint-config-schema) | Checks that eslint-config's hand-written package.json schema matches what juniper builds |
-| [`normalized-react-query-ssr`](../../../e2e/normalized-react-query-ssr) | Checks that normalized-react-query's preloading carries across a server render into client hydration |
-| [`iso-crypto-browser`](../../../e2e/iso-crypto-browser) | Checks that iso-crypto's browser build runs on web APIs alone, with no Node.js APIs |
+| [`constant-consistent-hash-wasm-browser`](../../../e2e/constant-consistent-hash-wasm-browser) | Checks that constant-consistent-hash's Rust implementation, compiled to WASM, bundles for a frontend and runs in real browsers. |
+| [`eslint-config-schema`](../../../e2e/eslint-config-schema) | Checks that eslint-config's hand-written package.json schema matches what juniper builds. |
+| [`normalized-react-query-ssr`](../../../e2e/normalized-react-query-ssr) | Checks that normalized-react-query's preloading carries across a server render into client hydration. |
+| [`iso-crypto-browser`](../../../e2e/iso-crypto-browser) | Checks that iso-crypto's browser build works in real browsers, with no Node.js APIs. |
 | [`juniper-openapi`](../../../e2e/juniper-openapi) | Builds an example users and posts OpenAPI spec with juniper, and checks it is valid OpenAPI 3.0 and 3.1. |
-| [`published-entrypoints`](../../../e2e/published-entrypoints) | Imports every entry point of every published package from the files it publishes, with only its runtime dependencies |
-| [`unknown-error-comparison`](../../../e2e/unknown-error-comparison) | Runs unknown-error and the libraries it is compared to through the same edge cases, to keep its comparison table accurate |
-| [`unknown-error-browser`](../../../e2e/unknown-error-browser) | Checks that unknown-error runs in real browsers, with and without `Error.isError` |
+| [`published-entrypoints`](../../../e2e/published-entrypoints) | Imports every entry point (each exports subpath) of every published package from the files it publishes, with only its runtime dependencies. |
+| [`unknown-error-comparison`](../../../e2e/unknown-error-comparison) | Runs unknown-error and the libraries it is compared to through the same edge cases, to keep its comparison table accurate. |
+| [`unknown-error-browser`](../../../e2e/unknown-error-browser) | Checks that unknown-error runs in real browsers, with and without Error.isError. |
 
 ### Demos
 
@@ -105,18 +105,18 @@ See each package's README.md for full usage documentation.
 |---------|-------------|
 | [`agents/cli`](../../../demos/agents/cli) | A CLI for the notes API, made for agents and people: one short command per task, with login, tokens and errors handled inside. |
 | [`agents/mcp`](../../../demos/agents/mcp) | An MCP server over the notes API: tools shaped for agents, an OAuth resource server, calling the API as the agent's user by token exchange. |
-| [`blake3-wasm/rust`](../../../demos/blake3-wasm/rust) | BLAKE3 from the blake3 crate, compiled to WASM with SIMD, for the blake3-wasm demo |
-| [`blake3-wasm/typescript`](../../../demos/blake3-wasm/typescript) | BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers: blocking or in a worker, measured against JavaScript to find where WASM pays off |
-| [`openapi/client`](../../../demos/openapi/client) | A typed client for the OpenAPI demo's notes API: types generated by genever from openapi.json, routes read from it at runtime |
-| [`openapi/database`](../../../demos/openapi/database) | The OpenAPI demo's Postgres schema: Drizzle tables, the migrations that build them, and schema.sql, what the migrations build, for tests to clone |
-| [`openapi/server`](../../../demos/openapi/server) | The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication |
-| [`openapi/spec`](../../../demos/openapi/spec) | The OpenAPI document of the OpenAPI demo's notes API, built from Juniper schemas and published as openapi.json |
-| [`local-ingress`](../../../demos/local-ingress) | A Vite dev server behind tools/local-ingress: each worktree at https://<worktree>.<repo>.localhost, with hot reload through the proxy |
-| [`read-through-cache`](../../../demos/read-through-cache) | Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, cluster-wide stampede protection, and sharding with weighted rendezvous hashing |
+| [`blake3-wasm/rust`](../../../demos/blake3-wasm/rust) | BLAKE3 from the blake3 crate, compiled to WASM with SIMD, for the BLAKE3 through WASM demo. |
+| [`blake3-wasm/typescript`](../../../demos/blake3-wasm/typescript) | BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers: blocking or in a worker, measured against JavaScript to find where WASM pays off. |
+| [`openapi/client`](../../../demos/openapi/client) | A typed client for the OpenAPI demo's notes API: types imported from the spec through a content mapper, routes read from openapi.json at runtime. |
+| [`openapi/database`](../../../demos/openapi/database) | The OpenAPI demo's Postgres schema: Drizzle tables, the migrations that build them, and schema.sql, what the migrations build, for tests to clone. |
+| [`openapi/server`](../../../demos/openapi/server) | The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every request and response against openapi.json, with bearer authentication (static tokens or JWTs) and scopes. |
+| [`openapi/spec`](../../../demos/openapi/spec) | The OpenAPI document of the OpenAPI demo's notes API, built from Juniper schemas and published as openapi.json and notes.openapi.yaml. |
+| [`local-ingress`](../../../demos/local-ingress) | A Vite dev server behind tools/local-ingress: each worktree at https://<worktree>.<repo>.localhost, with hot reload through the proxy. |
+| [`read-through-cache`](../../../demos/read-through-cache) | Read-through caching on Valkey with BentoCache: memory tier, stale-while-revalidate, one load per key across instances with lease-cache, and sharding with weighted rendezvous hashing. |
 
 ### Infra
 
 | Project | Description |
 |---------|-------------|
-| [`nx-cache/tofu`](../../../infra/nx-cache/tofu) | OpenTofu configuration of the hosted Nx cache's Cloudflare resources: its R2 bucket, lifecycle rule, and CI's deploy token |
-| [`nx-cache/worker`](../../../infra/nx-cache/worker) | Hosted Nx remote cache on a Cloudflare Worker and R2: anyone may read, only CI on main may write |
+| [`nx-cache/tofu`](../../../infra/nx-cache/tofu) | OpenTofu configuration of the hosted Nx cache's Cloudflare resources: its R2 bucket, lifecycle rule, and CI's deploy token. |
+| [`nx-cache/worker`](../../../infra/nx-cache/worker) | Hosted Nx remote cache on a Cloudflare Worker and R2: anyone may read, only CI on main may write. |

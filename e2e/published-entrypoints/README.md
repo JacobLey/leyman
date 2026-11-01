@@ -1,6 +1,6 @@
 # e2e-published-entrypoints
 
-Imports every entry point (each `exports` subpath) of every published package in the repo.
+Imports every entry point (each `exports` subpath) of every published package from the files it publishes, with only its runtime dependencies.
 
 Workspace packages are installed here as copies of exactly the files they publish (see the `sync-injected` target), with only their `dependencies` and peers. So a test fails when a package's `files` leaves out a module it imports at runtime, or a runtime dependency is only in its `devDependencies`. A package's own tests can't catch either: they run from its source, with its dev dependencies installed.
 

@@ -1,7 +1,7 @@
 {
   "name": "@leyman/e2e-iso-crypto-browser",
   "version": "0.0.1",
-  "description": "Checks that iso-crypto's browser build runs on web APIs alone, with no Node.js APIs.",
+  "description": "Checks that iso-crypto's browser build works in real browsers, with no Node.js APIs.",
   "engines": {
     "node": ">=24"
   },
