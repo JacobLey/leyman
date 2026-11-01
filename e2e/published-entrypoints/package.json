@@ -39,6 +39,7 @@
     "haywire-launcher": "workspace:^",
     "iso-crypto": "workspace:^",
     "juniper": "workspace:^",
+    "juniper-arbitrary": "workspace:^",
     "juniper-validator": "workspace:^",
     "lease-cache": "workspace:^",
     "load-populate-files": "workspace:^",

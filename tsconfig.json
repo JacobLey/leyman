@@ -141,6 +141,9 @@
     },
     {
       "path": "./leyman/vscode-tests"
+    },
+    {
+      "path": "./apps/juniper-arbitrary"
     }
   ]
 }

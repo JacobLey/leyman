@@ -1,0 +1,66 @@
+{
+  "name": "juniper-arbitrary",
+  "version": "0.0.1",
+  "description": "fast-check arbitraries from Juniper schemas.",
+  "engines": {
+    "node": ">=24"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "apps/juniper-arbitrary"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/apps/juniper-arbitrary#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "json",
+    "json-schema",
+    "fast-check",
+    "property-based-testing"
+  ],
+  "sideEffects": false,
+  "types": "./dist/index.js",
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "dependencies": {
+    "ajv": "catalog:",
+    "ajv-formats": "catalog:",
+    "default-import": "workspace:^"
+  },
+  "peerDependencies": {
+    "fast-check": "^4.0.0",
+    "juniper": "workspace:^"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "expect-type": "catalog:",
+    "fast-check": "catalog:",
+    "juniper": "workspace:^",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  }
+}

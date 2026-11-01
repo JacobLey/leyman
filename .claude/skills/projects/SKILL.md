@@ -32,6 +32,7 @@ See each package's README.md for full usage documentation.
 | [`genever-content-mapper`](../../../apps/genever-content-mapper/) | A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file. (private, on `catalog:typescript-next`) |
 | [`trusted-tsc`](../../../apps/trusted-tsc/) | Run TypeScript 7.1's tsc with only the content mappers you trust, each in Node's permission sandbox. (private, on `catalog:typescript-next`) |
 | [`juniper`](../../../apps/juniper/) | Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output. |
+| [`juniper-arbitrary`](../../../apps/juniper-arbitrary/) | fast-check arbitraries from Juniper schemas. |
 | [`juniper-validator`](../../../apps/juniper-validator/) | StandardSchema-compliant validator for Juniper schemas. |
 | [`nx-lifecycle`](../../../apps/nx-lifecycle/) | Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, …) and the targets bound to them. |
 | [`pg-dolly-schema`](../../../apps/pg-dolly-schema/) | Keep a schema.sql of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale. |
