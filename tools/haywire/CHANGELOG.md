@@ -1,5 +1,11 @@
 # haywire
 
+## 1.0.1
+
+### Patch Changes
+
+- Test of the release process for older majors. No code changes from 1.0.0.
+
 ## 1.0.0
 
 ### Major Changes

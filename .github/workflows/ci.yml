@@ -5,6 +5,7 @@ on:
   push:
     branches:
       - main
+      - release/*
 
 permissions:
   contents: read
@@ -117,7 +118,7 @@ jobs:
   # Publishes every package whose version is not yet on npm (i.e. after a version PR merges)
   publish:
     needs: test
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')) }}
     runs-on: ubuntu-latest
     # Restricted to main; npm trusted publishing only accepts this environment
     environment: npm
@@ -132,6 +133,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       # npm runs inside Dagger, so hand it the GitHub Actions environment it uses for OIDC and provenance
       - name: Capture GitHub environment
@@ -153,9 +156,10 @@ jobs:
       - name: Tag releases
         env:
           PUBLISHED: ${{ steps.publish.outputs.output }}
+          TAG_TOKEN: ${{ secrets.RELEASE_TAG_TOKEN }}
         run: |
           [ -n "$PUBLISHED" ] || exit 0
           for tag in $PUBLISHED; do
             git tag "$tag"
           done
-          git push origin --tags
+          git push "https://x-access-token:${TAG_TOKEN}@github.com/${GITHUB_REPOSITORY}" --tags

@@ -168,7 +168,7 @@ func (m *Ci) Publish(
 		From(nodeImage).
 		WithDirectory(tarballDir, tarballs).
 		WithWorkdir(tarballDir)
-	publishCmd := "npm publish \"$1\" --access public"
+	publishCmd := "npm publish \"$1\" --access public --tag release-1.0"
 	if dryRun {
 		publishCmd += " --dry-run"
 	}
