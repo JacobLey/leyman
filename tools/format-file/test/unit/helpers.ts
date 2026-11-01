@@ -16,14 +16,14 @@ import {
 
 export const unformatted = {
     js: 'function f() {\nreturn 1;\n}\n',
-    md: '# Title\n\n*  item\n',
+    less: '.a {color:red}\n',
     invalid: 'const x = {\n',
 };
 
 export const formatted = {
     biome: 'function f() {\n\treturn 1;\n}\n',
     prettier: 'function f() {\n  return 1;\n}\n',
-    md: '# Title\n\n- item\n',
+    less: '.a {\n  color: red;\n}\n',
 };
 
 const notInstalled = (): string => {

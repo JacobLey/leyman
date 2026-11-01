@@ -40,12 +40,12 @@ suite('Formatter', () => {
         });
 
         withTmpCwd.test('Falls back when a formatter fails', async ctx => {
-            // Biome does not support markdown
-            await ctx.write('file.md', unformatted.md);
+            // Biome does not support Less
+            await ctx.write('file.less', unformatted.less);
 
-            await createFormatters().formatter.formatFiles([ctx.resolve('file.md')]);
+            await createFormatters().formatter.formatFiles([ctx.resolve('file.less')]);
 
-            expect(await ctx.read('file.md')).to.equal(formatted.md);
+            expect(await ctx.read('file.less')).to.equal(formatted.less);
         });
 
         withTmpCwd.test('Falls back when configured formatter has invalid config', async ctx => {
@@ -80,13 +80,13 @@ suite('Formatter', () => {
         });
 
         withTmpCwd.test('Specified formatter does not fall back', async ctx => {
-            await ctx.write('file.md', unformatted.md);
+            await ctx.write('file.less', unformatted.less);
 
-            await createFormatters().formatter.formatFiles([ctx.resolve('file.md')], {
+            await createFormatters().formatter.formatFiles([ctx.resolve('file.less')], {
                 formatter: 'biome',
             });
 
-            expect(await ctx.read('file.md')).to.equal(unformatted.md);
+            expect(await ctx.read('file.less')).to.equal(unformatted.less);
         });
 
         withTmpCwd.test('Resolves even if all formatters fail', async ctx => {
