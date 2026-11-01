@@ -188,14 +188,14 @@ suite('Failure cases', () => {
     });
 
     suite('Recorded hooks', () => {
-        type Recorded = (this: MochaContext) => Promise<void>;
-
         /**
          * Fake mocha methods that record callbacks, so tests can control execution order.
          *
          * @returns recorded callbacks and chain built on fake methods
          */
         const createRecordingChain = () => {
+            type Recorded = (this: MochaContext) => Promise<void>;
+
             const registered = {
                 before: [] as Recorded[],
                 beforeEach: [] as Recorded[],
