@@ -36,11 +36,6 @@ const classes: ReadonlySet<string> = new Set([
     'TupleSchema',
 ]);
 
-// From `eslint`'s own types, so `estree` types aren't a dependency
-type CallExpression = Parameters<NonNullable<Rule.RuleListener['CallExpression']>>[0];
-type Node = Rule.Node;
-type Identifier = Extract<Node, { type: 'Identifier' }>;
-
 /**
  * Name `juniper` exports a variable under, if the variable is imported from it.
  *
@@ -85,6 +80,10 @@ export const topLevelSchema: Rule.RuleModule = {
         schema: [],
     },
     create: context => {
+        // From `eslint`'s own types, so `estree` types aren't a dependency
+        type CallExpression = Parameters<NonNullable<Rule.RuleListener['CallExpression']>>[0];
+        type Node = Rule.Node;
+
         const { sourceCode } = context;
 
         /**
@@ -94,6 +93,8 @@ export const topLevelSchema: Rule.RuleModule = {
          * @returns factory name, for the message, or `null`
          */
         const factoryOf = (call: CallExpression): string | null => {
+            type Identifier = Extract<Node, { type: 'Identifier' }>;
+
             const { callee } = call;
             const scope = sourceCode.getScope(call);
             const resolve = (identifier: Omit<Identifier, 'parent'>): string | null =>

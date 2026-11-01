@@ -1279,11 +1279,13 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
      */
     #getNullable(params: SerializationParams): boolean {
         if (typeof params.composition?.type === 'string' && !params.composition.nullable) {
-            return this.#ref?.schema
-                ? this.#ref.schema.#getNullable({
-                      openApi30: params.openApi30,
-                  })
-                : false;
+            const refSchema = this.#ref?.schema ?? null;
+            return (
+                refSchema !== null &&
+                refSchema.#getNullable({
+                    openApi30: params.openApi30,
+                })
+            );
         }
         return (
             this.#nullable &&
@@ -1318,10 +1320,10 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             this.#conditionals.some(
                 predicate =>
                     (predicate.if.#getSchemaType(params) === 'integer' ||
-                        (predicate.then
-                            ? predicate.then.#getSchemaType(params) === 'integer'
-                            : false)) &&
-                    (predicate.else ? predicate.else.#getSchemaType(params) === 'integer' : false)
+                        (predicate.then !== null &&
+                            predicate.then.#getSchemaType(params) === 'integer')) &&
+                    predicate.else !== null &&
+                    predicate.else.#getSchemaType(params) === 'integer'
             ) ||
             this.#allOf.some(allOf => allOf.#getSchemaType(params) === 'integer') ||
             this.#anyOf.some(
