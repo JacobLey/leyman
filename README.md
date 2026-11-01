@@ -48,7 +48,7 @@ A documentation site, with every code example type-checked, is in [`docs/`](./do
 
 ## Demos
 
-Worked examples of putting open-source projects and services together well, in [`demos/`](./demos). They are never published: the code and its write-up are the point. Each is tested against real services (devcontainer sidecars, and the same images in CI) with 100% coverage, with features that compose at runtime behind [haywire](./tools/haywire) bindings so each can be tested on its own. Also on the [docs site](https://jacobley.github.io/leyman/demos/).
+Worked examples of putting open-source projects and services together well, in [`demos/`](./demos). They are never published: the code and its write-up are the point. Each is tested against real services (devcontainer sidecars, and the same images in CI) with 100% coverage, and where a demo has several moving parts, they compose at runtime behind [haywire](./tools/haywire) bindings so each can be tested on its own. Also on the [docs site](https://jacobley.github.io/leyman/demos/).
 
 | Demo | What it shows | Source |
 |---|---|---|

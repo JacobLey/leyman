@@ -68,4 +68,4 @@ An empty round trip took 64 µs on Node.js, and was under the browsers' clock re
 - **Bundle size against noble, or memory.**
 - **Other work:** this is one hash, chosen because it should favor WASM. It says nothing about work that doesn't use SIMD or 64-bit math.
 
-Unlike other demos, this one has no [haywire](../../tools/haywire) bindings: it holds no resources to compose, and the only choice, blocking or a worker, is which function to call. It has no services either, so its real environment is the browsers.
+It has no external services, so what it's tested against is real browsers.
