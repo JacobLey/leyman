@@ -59,6 +59,7 @@
     "schema-snapshot": "prepare:generate",
     "genever": "prepare:generate",
     "biome": "prepare:format",
+    "dagger-develop": "prepare:generate",
     "gofmt": "prepare:format",
     "rustfmt": "prepare:format",
     "tofu-fmt": "prepare:format",

@@ -120,3 +120,4 @@ See each package's README.md for full usage documentation.
 |---------|-------------|
 | [`nx-cache/tofu`](../../../infra/nx-cache/tofu) | OpenTofu configuration of the hosted Nx cache's Cloudflare resources: its R2 bucket, lifecycle rule, and CI's deploy token. |
 | [`nx-cache/worker`](../../../infra/nx-cache/worker) | Hosted Nx remote cache on a Cloudflare Worker and R2: anyone may read, only CI on main may write. |
+| [`dagger-ci`](../../../dagger/) | The Dagger module that runs CI: formatted, linted and compiled by `verify`, exercised by every CI run. (private, Go) |

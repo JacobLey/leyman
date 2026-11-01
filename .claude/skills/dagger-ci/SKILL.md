@@ -14,8 +14,8 @@ Nx decides what to build and test; Dagger only provides the environment. Keep pi
 
 ## Pipeline (`dagger/main.go`)
 
-1. `node` image (pinned by digest) + pnpm, plus the Go toolchain copied from the `golang` image (pinned by digest), for Go projects, the Rust toolchain from the `rust` image (pinned by digest, with the prebuilt `cargo-llvm-cov` and `wasm-bindgen` releases, checked against pinned checksums), for Rust projects, and the Postgres client tools (`psql`, `pg_dump`) from the PostgreSQL apt repository. Versions must match the devcontainer, see the [devcontainer skill](../devcontainer/SKILL.md)
-2. `cargo fetch --locked` and `pnpm fetch` from the lockfiles alone, then copy the source (filtered by `.gitignore`) and `pnpm install --offline`, carrying over the store and the metadata cache (the install checks the lockfile against the supply-chain policies). Source-only changes reuse the cached fetch.
+1. `node` image (pinned by digest) + pnpm, plus the Go toolchain copied from the `golang` image (pinned by digest, with the prebuilt `golangci-lint` release, checked against a pinned checksum), for Go projects, the Rust toolchain from the `rust` image (pinned by digest, with the prebuilt `cargo-llvm-cov` and `wasm-bindgen` releases, checked against pinned checksums), for Rust projects, and the Postgres client tools (`psql`, `pg_dump`) from the PostgreSQL apt repository. Versions must match the devcontainer, see the [devcontainer skill](../devcontainer/SKILL.md)
+2. `cargo fetch --locked`, `go mod download` and `pnpm fetch` from the lockfiles alone, then copy the source (filtered by `.gitignore`) and `pnpm install --offline`, carrying over the store and the metadata cache (the install checks the lockfile against the supply-chain policies). Source-only changes reuse the cached fetch.
 3. `nx run-many -t build`, with Postgres bound already (`DATABASE_URL`): `prepare`, which the build runs, snapshots schemas from migrations (`schema-snapshot`)
 4. In parallel: `test-ci`, and `nx run @leyman/main:lifecycle` (fails if generated lifecycle config is out of date). `test-ci` gets the services some tests run against (Valkey, and Postgres), bound under the same hostnames and with the same settings as the devcontainer's sidecars
 
@@ -27,7 +27,7 @@ Nx decides what to build and test; Dagger only provides the environment. Keep pi
 # Full CI simulation (same pipeline as GitHub Actions)
 dagger-test
 
-# Regenerate Dagger Go SDK bindings for editors (run on container creation; again after changing the module's functions or dependencies)
+# Regenerate Dagger Go SDK bindings for editors (run on container creation, and by `prepare` for `@leyman/dagger-ci`)
 dagger-develop
 ```
 
@@ -106,7 +106,10 @@ A single Go module, `ci`:
 dagger/
 ├── main.go        ← pipeline definition
 ├── dagger.json
+├── project.json   ← `@leyman/dagger-ci`, so `verify` formats, lints and compiles it
 └── go.mod
 ```
 
-If Dagger fails but `test-ci` passes locally, suspect an environment difference: a file that is gitignored or untracked, a file in a directory `New` excludes from the source (`.claude`, `.devcontainer`, `.github`, `.vscode`, `dagger`), or a version mismatch between the devcontainer and Dagger. Changing that exclude list means updating `ciExcluded` in `docs/.vitepress/config.ts` too.
+`verify` catches a mistake in `main.go` before the next CI run. It has no tests or coverage gate, since unit tests of pipeline wiring would test the Dagger SDK and every CI run exercises it. The code `dagger develop` generates is gitignored: the `dagger-develop` target writes it locally, and `New` overlays the engine's copy on the source in CI, since nothing inside Dagger can reach the engine. Its modules come from `go mod download` in a layer of their own, and `GOPROXY=off` keeps everything after it from reaching the network.
+
+If Dagger fails but `test-ci` passes locally, suspect an environment difference: a file that is gitignored or untracked, a file in a directory `New` excludes from the source (`.claude`, `.devcontainer`, `.github`, `.vscode`), or a version mismatch between the devcontainer and Dagger. Changing that exclude list means updating `ciExcluded` in `docs/.vitepress/config.ts` too.

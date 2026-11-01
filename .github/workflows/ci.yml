@@ -55,7 +55,7 @@ jobs:
         with:
           persist-credentials: false
 
-      # Here, because the source Dagger tests leaves out the devcontainer, this workflow and the Dagger module
+      # Here, because the source Dagger tests leaves out the devcontainer and this workflow
       - name: Check version parity
         run: node leyman/main/scripts/check-parity.mjs
 

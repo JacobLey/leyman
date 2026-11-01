@@ -62,6 +62,14 @@ Formats with Biome (`scripts/nx/biome-format.sh`). Writes changes, except in CI 
 
 ---
 
+### `dagger-develop`
+
+Runs `dagger develop` (`scripts/nx/dagger-develop.sh`), writing the gitignored code the Dagger module compiles against. Takes a few seconds, so it runs every time, and needs the engine. Does nothing in CI, where `New` in `dagger/main.go` overlays the same code.
+
+**Add when:** Only `dagger/`.
+
+---
+
 ### `gofmt`
 
 Formats Go source with `golangci-lint fmt` (`scripts/nx/gofmt.sh`), which runs the formatters in `.golangci.yml`. Like `biome`, writes changes, except in CI where it fails showing the diff.
@@ -337,7 +345,7 @@ Validates 100% coverage using only the C8 data from this project's own test targ
 
 ## Go projects
 
-The [`@naxodev/gonx`](https://gonx.naxo.dev/) plugin (in `nx.json` `plugins`) turns every `go.mod` into a project, except under `dagger/` (`exclude`). It also infers dependencies between them from Go `import`s, following `replace` directives, the way Nx reads `package.json` dependencies. No `implicitDependencies` needed.
+The [`@naxodev/gonx`](https://gonx.naxo.dev/) plugin (in `nx.json` `plugins`) turns every `go.mod` into a project. It also infers dependencies between them from Go `import`s, following `replace` directives, the way Nx reads `package.json` dependencies. No `implicitDependencies` needed.
 
 Its inferred targets are renamed with a `go-` prefix, so they don't collide with lifecycle targets like `build` and `test`. Only `go-lint` and `go-test` are bound in `lifecycle.json`, configured through name-keyed `targetDefaults` (inputs, `dependsOn`, and options such as `golangci-lint run` instead of gonx's default `go fmt`). Keep those defaults without an `executor`: a default naming a different executor than the inferred target is ignored. The others (`go-build`, `go-tidy`, `go-generate`, `go-serve`, `go-release-publish`) are unbound, and only run when called directly.
 

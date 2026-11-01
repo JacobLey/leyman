@@ -120,6 +120,20 @@
       ],
       "cache": false
     },
+    "dagger-develop": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "${NX_WORKSPACE_ROOT}/scripts/nx/dagger-develop.sh"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "dependsOn": [
+        "prepare:_"
+      ]
+    },
     "gofmt": {
       "executor": "nx:run-commands",
       "options": {
@@ -817,7 +831,8 @@
         "barrelify",
         "update-ts-references",
         "schema-snapshot",
-        "genever"
+        "genever",
+        "dagger-develop"
       ],
       "configurations": {
         "__lifecycle": {}
@@ -1011,9 +1026,6 @@
   "plugins": [
     {
       "plugin": "@naxodev/gonx",
-      "exclude": [
-        "dagger/**"
-      ],
       "options": {
         "buildTargetName": "go-build",
         "testTargetName": "go-test",

@@ -1,6 +1,9 @@
 // CI pipeline for the leyman monorepo.
 //
 // Nx decides what to build and test; this module only provides a clean, pinned environment to run it in.
+//
+// It has no tests of its own, as those would test the Dagger SDK: every CI run exercises it. `verify` still formats,
+// lints and compiles it.
 package main
 
 import (
@@ -69,6 +72,7 @@ const (
 const (
 	workdir     = "/workspace"
 	storeDir    = "/pnpm-store"
+	goModCache  = "/go-mod-cache"
 	cacheDir    = "/pnpm-cache"
 	tarballDir  = "/tarballs"
 	goRoot      = "/usr/local/go"
@@ -105,13 +109,14 @@ func New(
 				".devcontainer",
 				".github",
 				".vscode",
-				"dagger",
 				// Root files only: patterns are relative to the root, and a leading slash never matches
 				"AGENTS.md",
 				"CLAUDE.md",
 				"README.md",
 			},
-		}),
+		}).
+			// With the code `dagger develop` generates, which is gitignored, so `verify` can compile this module
+			WithDirectory("dagger", dag.CurrentModule().Source()),
 	}
 }
 
@@ -789,6 +794,9 @@ func withTools(ctr *dagger.Container) *dagger.Container {
 		WithEnvVariable("CARGO_NET_OFFLINE", "true").
 		// Use the pinned toolchain, never one downloaded for a newer `go` directive in a go.mod
 		WithEnvVariable("GOTOOLCHAIN", "local").
+		WithEnvVariable("GOMODCACHE", goModCache).
+		// Modules come from `go mod download` alone, see `installed`
+		WithEnvVariable("GOPROXY", "off").
 		WithDirectory(pnpmDir, pnpm).
 		WithFile("/usr/local/bin/node", dag.Container().From(nodeImage).File("/usr/local/bin/node")).
 		WithFile("/usr/local/bin/tofu", dag.Container().From(tofuImage).File("/usr/local/bin/tofu")).
@@ -834,7 +842,17 @@ func (m *Ci) installed(source *dagger.Directory) *dagger.Container {
 		WithExec([]string{"sh", "-c", `find . -mindepth 2 -name Cargo.toml -execdir sh -c 'mkdir -p src && touch src/lib.rs' \;`}).
 		WithExec([]string{"cargo", "fetch", "--locked"})
 
+	// And Go modules. Only the Dagger module has any to download.
+	goModules := m.base().
+		WithDirectory(workdir, source.Filter(dagger.DirectoryFilterOpts{
+			Include: []string{"dagger/go.mod", "dagger/go.sum"},
+		})).
+		WithWorkdir(workdir+"/dagger").
+		WithEnvVariable("GOPROXY", "https://proxy.golang.org,direct").
+		WithExec([]string{"go", "mod", "download"})
+
 	return m.base().
+		WithDirectory(goModCache, goModules.Directory(goModCache)).
 		WithDirectory(storeDir, fetched.Directory(storeDir)).
 		WithDirectory(cacheDir, fetched.Directory(cacheDir)).
 		WithDirectory(cargoHome+"/registry", crates.Directory(cargoHome+"/registry")).

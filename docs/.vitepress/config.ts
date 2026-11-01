@@ -35,7 +35,7 @@ const srcDir = fileURLToPath(new URL('../src/', import.meta.url));
  * Version-controlled directories that CI's Dagger pipeline leaves out of its source (see `New` in
  * `dagger/main.go`), so a change to them doesn't invalidate the cache.
  */
-const ciExcluded = ['.claude', '.devcontainer', '.github', '.vscode', 'dagger'];
+const ciExcluded = ['.claude', '.devcontainer', '.github', '.vscode'];
 
 /**
  * Whether a repo path exists, or can't be checked here: it is inside a directory CI excludes, and
