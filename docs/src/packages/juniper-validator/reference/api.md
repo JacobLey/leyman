@@ -22,6 +22,7 @@ Validation uses Ajv's JSON Schema 2020-12 validator ([`Ajv2020`](https://ajv.js.
 - **JSON Pointer paths.** `jsPropertySyntax` can't be passed, so each issue's `instancePath` is a [JSON Pointer](https://datatracker.ietf.org/doc/html/rfc6901), which its [`path`](/packages/juniper-validator/guides/standard-schema#issues) is read from.
 - **Options that change the value.** `coerceTypes`, `useDefaults` and `removeAdditional` change the value passed in, and `validate()` returns that same value.
 - **Standard formats.** `email`, `uuid`, `date-time` and the other formats of [ajv-formats](https://www.npmjs.com/package/ajv-formats) are validated. Add your own with Ajv's `formats` option:
+- **Startup cost.** Most of the time `makeValidator` takes is Ajv compiling its metaschema, once per validator: 20 validators took about 130 ms with it and 20 ms without. To build many at startup, pass `validateSchema: false` to skip it. It is what rejects a mistake like `.multipleOf(0)`, so keep it on in a test that builds the same schemas.
 
 ```ts
 import { stringSchema } from 'juniper';

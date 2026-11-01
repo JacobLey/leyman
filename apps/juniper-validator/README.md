@@ -71,6 +71,8 @@ Ajv is used internally to compile and run validation. The `strict` option is alw
 
 Ajv stops at the first failure within a schema, so `validate` reports one issue for an object missing two properties unless you pass `allErrors: true`.
 
+Most of the time `makeValidator` takes is Ajv compiling its metaschema, once per validator: 20 validators took about 130 ms with it and 20 ms without. To build many at startup, pass `validateSchema: false` to skip it. It is what rejects a mistake like `.multipleOf(0)`, so keep it on in a test that builds the same schemas.
+
 The validator also implements [Standard JSON Schema](https://standardschema.dev/), the same as the Juniper schema it was made from. A validator made from a plain `JsonSchema` object only supports the `'draft-2020-12'` target, and throws for the others.
 
 ## API
