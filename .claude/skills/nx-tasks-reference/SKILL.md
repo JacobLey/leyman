@@ -211,6 +211,8 @@ Deletes `./dist`, then compiles TypeScript using SWC (fast transpilation) and `t
 
 Output goes to `./dist`.
 
+A package using content mappers runs [`trusted-tsc`](../../../apps/trusted-tsc/) by setting `"options": { "env": { "TSC": "trusted-tsc" } }` on both this and `tsc-test`.
+
 **Add when:** Add to all TypeScript packages (has `tsconfig.json`).
 
 ---
