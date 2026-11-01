@@ -1,3 +1,4 @@
+import type { Context } from 'mocha';
 import type { ConsistentHashOptions } from 'constant-consistent-hash';
 import { expectTypeOf } from 'expect-type';
 import testVectors from '@leyman/constant-consistent-hash-test-vectors/test-vectors.json' with {
@@ -97,7 +98,9 @@ suite('consistentHash', () => {
     });
 
     suite('Growing the range only moves keys to the new bucket', () => {
-        test('Small ranges', () => {
+        test('Small ranges', function (this: Context) {
+            // 400k hashes: a quarter second idle, but CI runs six tasks on four CPUs and has hit the default 2s
+            this.timeout(10_000);
             expect(
                 Array.from({ length: 200 }, (_, i) => countDisruptions(i + 1)).reduce(
                     (a, b) => a + b,
