@@ -39,6 +39,7 @@
     "ts-source": [
       "shared-globals",
       "{workspaceRoot}/configs/swcrc.jsonc",
+      "{workspaceRoot}/scripts/nx/clean-dist.sh",
       "{workspaceRoot}/scripts/nx/swc-compile.sh",
       "{workspaceRoot}/configs/tsconfig.build.json",
       "{projectRoot}/package.json",
@@ -437,7 +438,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rm -rf ./dist",
+          "${NX_WORKSPACE_ROOT}/scripts/nx/clean-dist.sh",
           "${NX_WORKSPACE_ROOT}/scripts/nx/swc-compile.sh ./src ./dist",
           "${TSC:-tsc}"
         ],
