@@ -24,5 +24,7 @@
 
 /.claude-config
 /plans
-/.nx
+# Nx's own files, but not its link to @leyman/main: see leyman/main/README.md
+/.nx/*
+!/.nx/installation
 /.devcontainer/.env

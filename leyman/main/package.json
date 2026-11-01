@@ -20,6 +20,8 @@
     "@biomejs/biome": "catalog:",
     "@changesets/cli": "catalog:",
     "@leyman/eslint-config": "workspace:^",
+    "@naxodev/gonx": "catalog:",
+    "@nx/js": "catalog:",
     "@typescript/native": "catalog:",
     "eslint": "catalog:",
     "ignore": "catalog:",

@@ -1,10 +1,5 @@
 {
   "private": true,
   "type": "module",
-  "devDependencies": {
-    "@naxodev/gonx": "catalog:",
-    "@nx/js": "catalog:",
-    "typescript": "catalog:"
-  },
   "dependencies": {}
 }

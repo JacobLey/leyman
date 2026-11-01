@@ -33,7 +33,7 @@ Even at ESNext, SWC rewrites a few constructs into calls to `@swc/helpers`: `usi
 - `typescript` is an alias of `@typescript/typescript6`: the TypeScript 6 API (its CLI is `tsc6`)
 - `@typescript/native` is an alias of `typescript@7`: the `tsc` binary
 
-Every package that compiles TypeScript depends on both. `@nx/js` resolves `typescript` from each project, so the TypeScript 6 alias is needed there too, not just at the root.
+Every package that compiles TypeScript depends on both. `@nx/js` resolves `typescript` from each project, so the TypeScript 6 alias is needed there too, not just in `@leyman/main`.
 
 ESLint type-checks with TypeScript 6 while `tsc` uses TypeScript 7, and the two can disagree, mostly on generic inference. When an assertion only TypeScript 7 needs is flagged by `no-unnecessary-type-assertion`, keep it with a disable comment saying so. VS Code uses the TypeScript 7 language server (`TypeScriptTeam.native-preview`) from `leyman/main/node_modules/@typescript/native`.
 

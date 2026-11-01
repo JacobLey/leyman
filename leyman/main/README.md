@@ -20,14 +20,12 @@ Nx, ESLint, Biome, Changesets, TypeScript and the like are dependencies of this 
 | [`nx-rust-plugin.mjs`](./scripts/nx-rust-plugin.mjs) | Infers a Rust crate's Nx targets and workspace dependencies from its `Cargo.toml`, because no maintained plugin supports this repo's Nx |
 | [`sync-injected.mjs`](./scripts/sync-injected.mjs) | Mirrors a package into the copies injected into its dependents after every build. Never cached |
 
-## Why the root `package.json` has dependencies too
+## Why the root `package.json` has no dependencies
 
-Global tools live here, with three exceptions in the workspace root's `package.json`. Nx looks for these from the workspace root, and fails without them:
+Nx looks for plugins, executors and generators by package name from `.nx/installation`, then from the workspace root. [`.nx/installation`](../../.nx/installation) is a committed symlink to this package, so what Nx needs (`@naxodev/gonx`, `@nx/js`) is found here, and `nx.json` keeps using plain package names. Nx also runs the `nx` from this package because of it.
 
-| Dependency | Needed by | Without it |
-|------------|-----------|------------|
-| `@naxodev/gonx` | The Go plugin listed in `nx.json` | No `nx` command that loads the project graph runs |
-| `@nx/js` | The `@nx/js:typescript-sync` sync generator | `nx sync` can't resolve the generator |
-| `typescript` | That sync generator, which loads it as a library | `nx sync` can't find the module |
+That directory is where Nx keeps its own install in a workspace with no root `package.json`. This repo only borrows the lookup: `nx.json` has no `installation` entry, so Nx never installs anything there.
 
-Anything else belongs in this package.
+`@nx/js` imports `typescript` without declaring it, so `pnpm-workspace.yaml` adds it as a peer through `packageExtensions`, which resolves to this package's.
+
+Add anything Nx or the repo as a whole needs to this package, not to the root.

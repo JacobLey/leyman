@@ -337,24 +337,14 @@ overrides:
   '@vueuse/integrations>axios': '-'
   drizzle-kit>@esbuild-kit/esm-loader: '-'
 
-packageExtensionsChecksum: sha256-8UV81WFbfTY+410GoKu2uQAu+db+KoSSUbfnZUMtrlI=
+packageExtensionsChecksum: sha256-21nY7Flqbh3KxR1g+45WFIcs017mfzT4ZVpkG5Ek8Wg=
 
 patchedDependencies:
   '@typescript-eslint/eslint-plugin@8.72.0': 14289edb1532bcdc0e05ca26e6c77a119c79ddb4a07e3f2053e87027b7e325d9
 
 importers:
 
-  .:
-    devDependencies:
-      '@naxodev/gonx':
-        specifier: 'catalog:'
-        version: 4.1.2(@nx/devkit@23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))))(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))
-      '@nx/js':
-        specifier: 'catalog:'
-        version: 23.3.1(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.20(@swc/helpers@0.5.23))(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))(supports-color@8.1.1)
-      typescript:
-        specifier: 'catalog:'
-        version: '@typescript/typescript6@6.0.2'
+  .: {}
 
   apps/barrelify:
     dependencies:
@@ -2595,6 +2585,12 @@ importers:
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@naxodev/gonx':
+        specifier: 'catalog:'
+        version: 4.1.2(@nx/devkit@23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))))(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+      '@nx/js':
+        specifier: 'catalog:'
+        version: 23.3.1(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.20(@swc/helpers@0.5.23))(@typescript/typescript6@6.0.2)(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))(supports-color@8.1.1)
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -5388,7 +5384,7 @@ packages:
     resolution: {directory: leyman/eslint-config, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      eslint: ^10.13.0
+      eslint: 'catalog:'
 
   '@leyman/expect@file:leyman/expect':
     resolution: {directory: leyman/expect, type: directory}
@@ -5602,6 +5598,7 @@ packages:
     resolution: {integrity: sha512-G6z5qDFPP4nhjC8G3AtkXVibjoyxNaf1H7KMXWPXxTYvWQs0Q+Tbn80XvnrazZZ+sFoDF+3WOgFjGTEUeRclYg==}
     peerDependencies:
       '@swc/cli': '>=0.6.0 <0.9.0'
+      typescript: '*'
       verdaccio: ^6.0.5
     peerDependenciesMeta:
       '@swc/cli':
@@ -8115,8 +8112,8 @@ packages:
     resolution: {directory: tools/format-file, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      '@biomejs/biome': ^2.6.3
-      prettier: ^3.9.10
+      '@biomejs/biome': 'catalog:'
+      prettier: 'catalog:'
     peerDependenciesMeta:
       '@biomejs/biome':
         optional: true
@@ -8165,7 +8162,7 @@ packages:
     resolution: {directory: tools/generated-signature/generated-signature, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      eslint: ^10.13.0
+      eslint: 'catalog:'
     peerDependenciesMeta:
       eslint:
         optional: true
@@ -8379,10 +8376,6 @@ packages:
 
   ignore@5.3.2:
     resolution: {integrity: sha512-hsBTNUqQTDwkWtcdYI2i06Y/nUBEsNEDJKjWdigLvegy8kDuJAS8uRlpkkcQpyEXL0Z/pjDy5HBmMjRCJ2gq+g==}
-    engines: {node: '>= 4'}
-
-  ignore@7.0.12:
-    resolution: {integrity: sha512-/8UvqAPU9DGTI9k4mxtf49U37Isfwr8Uts96+SBHIkFxPJnHS0Ew4f00sM4Scd8V8EjM0jUNtVDdv1kPdt35lg==}
     engines: {node: '>= 4'}
 
   ignore@7.0.14:
@@ -8694,7 +8687,7 @@ packages:
     resolution: {directory: apps/juniper, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      eslint: ^10.13.0
+      eslint: 'catalog:'
     peerDependenciesMeta:
       eslint:
         optional: true
@@ -9096,8 +9089,8 @@ packages:
     resolution: {directory: tools/test-chain/mocha-chain, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      '@types/mocha': ^10.0.10
-      mocha: ^12.0.3
+      '@types/mocha': 'catalog:'
+      mocha: 'catalog:'
     peerDependenciesMeta:
       '@types/mocha':
         optional: true
@@ -9162,7 +9155,7 @@ packages:
     resolution: {directory: tools/normalized-react-query, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      '@tanstack/react-query': ^5.104.5
+      '@tanstack/react-query': 'catalog:'
       react: ^18 || ^19
 
   npm-run-path@4.0.1:
@@ -9198,7 +9191,7 @@ packages:
     resolution: {directory: tools/oauth-dev-server, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      '@modelcontextprotocol/client': ^2.4.0
+      '@modelcontextprotocol/client': 'catalog:'
     peerDependenciesMeta:
       '@modelcontextprotocol/client':
         optional: true
@@ -10476,7 +10469,7 @@ packages:
     resolution: {directory: tools/test-chain/vitest-chain, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
-      vitest: ^5.0.3
+      vitest: 'catalog:'
 
   vitest@5.0.5:
     resolution: {integrity: sha512-cPODOMF8YnkiiYtDdHo6n4wWmBrOBBbOIYH2d33M4l3CdNn72h+qMmO6uXffUN6A5AZFXNND/d+krS9mgkXRfg==}
@@ -12422,7 +12415,7 @@ snapshots:
       cross-spawn: 7.0.6
       eventsource: 3.0.7
       eventsource-parser: 3.1.1
-      jose: 6.2.12
+      jose: 6.2.13
       pkce-challenge: 5.0.1
       zod: 4.6.7
 
@@ -12541,7 +12534,7 @@ snapshots:
       tslib: 2.8.1
       yargs-parser: 21.1.1
 
-  '@nx/js@23.3.1(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.20(@swc/helpers@0.5.23))(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))(supports-color@8.1.1)':
+  '@nx/js@23.3.1(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.20(@swc/helpers@0.5.23))(@typescript/typescript6@6.0.2)(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))(supports-color@8.1.1)':
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
       '@babel/plugin-proposal-decorators': 7.28.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
@@ -12562,7 +12555,7 @@ snapshots:
       chalk: 4.1.2
       columnify: 1.6.0
       detect-port: 2.1.0
-      ignore: 7.0.12
+      ignore: 7.0.14
       js-tokens: 4.0.0
       jsonc-parser: 3.3.1
       npm-run-path: 4.0.1
@@ -12572,6 +12565,7 @@ snapshots:
       source-map-support: 0.5.19
       tinyglobby: 0.2.17
       tslib: 2.8.1
+      typescript: '@typescript/typescript6@6.0.2'
     optionalDependencies:
       '@swc/cli': 0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
     transitivePeerDependencies:
@@ -15327,8 +15321,6 @@ snapshots:
   ieee754@1.2.1: {}
 
   ignore@5.3.2: {}
-
-  ignore@7.0.12: {}
 
   ignore@7.0.14: {}
 

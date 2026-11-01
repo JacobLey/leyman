@@ -78,7 +78,7 @@ func New(
 	// Repository root
 	// +defaultPath="/"
 	// Skip uploading the largest ignored paths; .gitignore is applied in full below
-	// +ignore=["/.git", "/.claude-config", "**/node_modules", "/.pnpm-store", "/.nx", "/.coverage", "**/dist", "**/dist-test", "**/coverage"]
+	// +ignore=["/.git", "/.claude-config", "**/node_modules", "/.pnpm-store", "/.nx/*", "!/.nx/installation", "/.coverage", "**/dist", "**/dist-test", "**/coverage"]
 	source *dagger.Directory,
 ) *Ci {
 	return &Ci{

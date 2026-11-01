@@ -81,6 +81,11 @@ peerDependencyRules:
     eslint-plugin-react>eslint: '10'
 
 packageExtensions:
+  # @nx/js imports typescript without declaring it, so pnpm's strict layout can't resolve it. As a peer, it resolves to
+  # @leyman/main's.
+  '@nx/js':
+    peerDependencies:
+      typescript: '*'
   # drizzle-kit imports drizzle-orm (to check their versions match, and to read schemas) and a driver (to migrate)
   # without declaring them, so pnpm's strict layout can't resolve them. As peers, they resolve to the project's own.
   drizzle-kit:
