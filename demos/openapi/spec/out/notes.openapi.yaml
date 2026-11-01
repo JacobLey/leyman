@@ -2,8 +2,8 @@ openapi: 3.1.0
 info:
   title: Notes API
   version: 1.0.0
-  description: "The OpenAPI demo: a document built with Juniper, a typed client
-    and a validating server."
+  description: 'The OpenAPI demo: a document built with Juniper, a typed client
+    and a validating server.'
 paths:
   /notes:
     get:
@@ -30,30 +30,30 @@ paths:
             minimum: 1
             maximum: 100
       responses:
-        "200":
+        '200':
           description: Notes, newest first
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/NoteList"
-        "400":
+                $ref: '#/components/schemas/NoteList'
+        '400':
           description: The request does not match the spec
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
+                $ref: '#/components/schemas/ApiError'
+        '401':
           description: Missing or invalid bearer token
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "403":
+                $ref: '#/components/schemas/ApiError'
+        '403':
           description: The token lacks the scope the operation needs
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
+                $ref: '#/components/schemas/ApiError'
     post:
       operationId: createNote
       summary: Add a note, as the caller's
@@ -65,38 +65,38 @@ paths:
         content:
           application/json:
             schema:
-              $ref: "#/components/schemas/NewNote"
+              $ref: '#/components/schemas/NewNote'
       responses:
-        "201":
+        '201':
           description: The note added
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Note"
-        "400":
+                $ref: '#/components/schemas/Note'
+        '400':
           description: The request does not match the spec
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
+                $ref: '#/components/schemas/ApiError'
+        '401':
           description: Missing or invalid bearer token
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "403":
+                $ref: '#/components/schemas/ApiError'
+        '403':
           description: The token lacks the scope the operation needs
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "413":
+                $ref: '#/components/schemas/ApiError'
+        '413':
           description: The body is larger than any valid request
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
+                $ref: '#/components/schemas/ApiError'
   /notes/{noteId}:
     parameters:
       - name: noteId
@@ -112,36 +112,36 @@ paths:
         - bearer:
             - notes:read
       responses:
-        "200":
+        '200':
           description: The note
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/Note"
-        "400":
+                $ref: '#/components/schemas/Note'
+        '400':
           description: The request does not match the spec
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "401":
+                $ref: '#/components/schemas/ApiError'
+        '401':
           description: Missing or invalid bearer token
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "403":
+                $ref: '#/components/schemas/ApiError'
+        '403':
           description: The token lacks the scope the operation needs
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
-        "404":
+                $ref: '#/components/schemas/ApiError'
+        '404':
           description: No such note
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/ApiError"
+                $ref: '#/components/schemas/ApiError'
 components:
   securitySchemes:
     bearer:
@@ -206,6 +206,6 @@ components:
         items:
           type: array
           items:
-            $ref: "#/components/schemas/Note"
+            $ref: '#/components/schemas/Note'
       required:
         - items

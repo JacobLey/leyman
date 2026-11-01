@@ -5,7 +5,7 @@ import { formatText } from 'format-file';
 import { genever, parseYaml } from 'genever';
 import { spec } from './spec.js';
 
-const yaml = stringify(spec);
+const yaml = stringify(spec, { singleQuote: true });
 
 export default [
     { filePath: './openapi.json', content: spec },

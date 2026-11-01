@@ -7,7 +7,7 @@ description: Linting and formatting (ESLint, Biome, auto-fix)
 
 > Configs: [`../../../nx.json`](../../../nx.json) (targets: `eslint`, `biome`) · [`../../../biome.json`](../../../biome.json) · [`@leyman/eslint-config`](../../../leyman/eslint-config/)
 
-ESLint does all linting. Biome does formatting only (its linter is disabled). Both are required to pass CI. Biome leaves Markdown and YAML alone (both are off in `biome.json`).
+ESLint does all linting. Biome does formatting only (its linter is disabled). Both are required to pass CI. Biome also formats YAML, with single quotes. Its Markdown formatting is off in `biome.json`.
 
 ## Running
 
