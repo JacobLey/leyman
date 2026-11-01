@@ -7,12 +7,12 @@ import type {
     SchemaType,
     ToBaseType,
 } from '../lib/types.js';
-import type { ArrayParams, ArrayType } from './array.js';
+import type { ArrayParams, ArrayType, RequiredPrefixItems } from './array.js';
 import type { NullSchema } from './null.js';
 import { ArraySchema, ArraySchemaOverride, prefixItemsSym } from './array.js';
 
 type TupleParams<T, P extends any[], C extends P[number], M, N extends boolean> = Omit<
-    ArrayParams<T, P, C, M, N>,
+    ArrayParams<T, P, C, M, N, RequiredPrefixItems>,
     'items' | 'maxItems' | 'minItems'
 >;
 
@@ -46,7 +46,7 @@ export class TupleSchema<
     M = unknown,
     // Nullable
     N extends boolean = false,
-> extends ArraySchemaOverride<T, P, C, M, N> {
+> extends ArraySchemaOverride<T, P, C, M, N, RequiredPrefixItems> {
     /**
      * Always `false`
      */
@@ -175,8 +175,7 @@ export class TupleSchema<
             ...options,
             items: ArraySchema.falseItems,
             maxItems: prefixItemsSize,
-            // The prefix items already type every required item
-            minItems: prefixItemsSize as 0,
+            minItems: prefixItemsSize as RequiredPrefixItems,
         });
     }
 

@@ -38,6 +38,12 @@ export const anything = mergeSchema().description('Anything');
 export const array = arraySchema(stringSchema()).minItems(1).uniqueItems(true);
 export const nestedArray = arraySchema(arraySchema(numberSchema().nullable()));
 export const arrayContains = arraySchema(numberSchema()).contains(numberSchema({ minimum: 5 }));
+// Prefix items beyond `minItems` are optional
+export const optionalPrefixItems = arraySchema(stringSchema()).prefixItem(numberSchema());
+export const partlyRequiredPrefixItems = arraySchema(stringSchema())
+    .prefixItem(numberSchema())
+    .prefixItem(numberSchema())
+    .minItems(1);
 export const tuple = tupleSchema().prefixItem(stringSchema()).prefixItem(numberSchema());
 export const nullableTuple = tupleSchema().prefixItem(booleanSchema()).nullable();
 

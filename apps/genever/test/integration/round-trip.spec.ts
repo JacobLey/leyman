@@ -2,14 +2,7 @@ import type { GeneverOptions } from 'genever';
 import type { Schema } from 'juniper';
 import { expect } from '@leyman/expect';
 import { genever } from 'genever';
-import {
-    arraySchema,
-    components,
-    enumSchema,
-    numberSchema,
-    objectSchema,
-    stringSchema,
-} from 'juniper';
+import { components, enumSchema, numberSchema, objectSchema, stringSchema } from 'juniper';
 import { suite, test } from 'mocha-chain';
 import {
     assertionImports,
@@ -163,12 +156,6 @@ suite('round trip', () => {
 
         test('an object without properties is any object, not an empty object', () => {
             expectGenerated(objectSchema().toJSON(), { Schema: 'Record<string, unknown>' });
-        });
-
-        test('prefix items beyond minItems are optional', () => {
-            expectGenerated(arraySchema().prefixItem(stringSchema()).toJSON(), {
-                Schema: '[string?, ...unknown[]]',
-            });
         });
     });
 });

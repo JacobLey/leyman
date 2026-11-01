@@ -56,6 +56,30 @@ type BeyondPrefix<R extends unknown[], P extends unknown[]> = P extends [unknown
 type ArrayItem<T> = IsAny<T> extends true ? unknown : T;
 
 /**
+ * The `minItems` of a tuple, which is its length whatever that is: no count of items ever equals it,
+ * so every prefix item is required.
+ */
+export type RequiredPrefixItems = -1;
+
+/**
+ * Prefix items, optional beyond `minItems`, since `prefixItems` alone doesn't require any item to exist.
+ *
+ * @template P types of the prefix items
+ * @template I value of `minItems`
+ * @template Seen one element for each item already required
+ */
+type PrefixItems<P extends unknown[], I extends number, Seen extends unknown[] = []> = P extends [
+    infer First,
+    ...infer Rest,
+]
+    ? number extends I
+        ? Partial<P>
+        : Seen['length'] extends I
+          ? Partial<P>
+          : [First, ...PrefixItems<Rest, I, [...Seen, unknown]>]
+    : P;
+
+/**
  * Items `minItems` requires, after the prefix items.
  *
  * @template T type of each array item
@@ -72,9 +96,9 @@ export type ArrayType<T, P extends any[], M, N extends boolean, I extends number
         (IsNever<T> extends true
             ? // Without items, an array can't reach `minItems` beyond its prefix items
               MinItemsRequired<T, P, I> extends []
-                ? P
+                ? PrefixItems<P, I>
                 : never
-            : [...P, ...MinItemsRequired<T, P, I>, ...ArrayItem<T>[]]),
+            : [...PrefixItems<P, I>, ...MinItemsRequired<T, P, I>, ...ArrayItem<T>[]]),
     N
 >;
 
@@ -600,6 +624,7 @@ export class ArraySchema<
  * @template C
  * @template M
  * @template N
+ * @template I
  */
 export declare class IArraySchemaOverride<
     T,
@@ -607,7 +632,8 @@ export declare class IArraySchemaOverride<
     C extends P[number] | T,
     M,
     N extends boolean,
-> extends ArraySchema<T, P, C, M, N> {
+    I extends number,
+> extends ArraySchema<T, P, C, M, N, I> {
     declare public static readonly create: any;
 
     declare public allOf: (

@@ -117,7 +117,7 @@ suite('ArraySchema', () => {
             }>();
 
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                [`${string}b`[], `${string}c`, `${string}d`, ...`a${string}`[][]]
+                [`${string}b`[], `${string}c`, `${string}d`?, ...`a${string}`[][]]
             >();
 
             expect(schema.toJSON()).to.deep.equal({
@@ -357,9 +357,41 @@ suite('ArraySchema', () => {
                 .minItems(1);
 
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
-                [number, number, ...string[]]
+                [number, number?, ...string[]]
             >();
             expect(schema.toJSON()).to.have.property('type', 'array');
+        });
+
+        test('prefix items with no minItems are optional, as the schema accepts an empty array', () => {
+            const schema = arraySchema(stringSchema()).prefixItem(numberSchema());
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<[number?, ...string[]]>();
+            expect(compile(schema.toJSON(), { strictTuples: false })([])).to.equal(true);
+        });
+
+        test('prefix items within a minItems beyond the type cap are required', () => {
+            const schema = arraySchema(ArraySchema.falseItems)
+                .prefixItem(numberSchema())
+                .prefixItem(numberSchema())
+                .prefixItem(numberSchema())
+                .prefixItem(numberSchema())
+                .prefixItem(stringSchema())
+                .minItems(4);
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
+                [number, number, number, number, string?]
+            >();
+            expect(schema.toJSON()).to.have.property('minItems', 4);
+        });
+
+        test('prefix items with a minItems of unknown value are optional', () => {
+            const minItems = 1 as number;
+            const schema = arraySchema(stringSchema())
+                .prefixItem(numberSchema())
+                .minItems(minItems);
+
+            expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<[number?, ...string[]]>();
+            expect(schema.toJSON()).to.have.property('minItems', 1);
         });
 
         test('more than prefix items, without items, is never', () => {
@@ -382,7 +414,7 @@ suite('ArraySchema', () => {
     suite('prefixItems', () => {
         const schema = arraySchema().prefixItem(stringSchema());
 
-        expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<[string, ...unknown[]]>();
+        expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<[string?, ...unknown[]]>();
 
         expect(schema.toJSON()).to.deep.equal({
             type: 'array',

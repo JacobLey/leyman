@@ -218,7 +218,6 @@ Without `additionalProperties`, an object type has no index signature: TypeScrip
 genever is tested to generate the same type Juniper infers, for Juniper schemas covering each of its schema types and keywords. The exceptions are where the JSON says more than Juniper's type does, or less:
 
 - An object schema with no properties is `Record<string, unknown>`, not Juniper's empty object type.
-- Prefix items beyond `minItems` are optional. Juniper's `tupleSchema()` always sets `minItems`, so its tuples are identical.
 - In `if`/`then`/`else`, a property set to `false` in `else` is `?: never`.
 - A type from `.cast<T>()` or `customSchema<T>()` exists only in TypeScript, so genever reads the JSON it emits instead.
 

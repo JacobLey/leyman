@@ -77,6 +77,22 @@ type Tags = SchemaType<typeof tags>;
 //   ^?
 ```
 
+Prefix items are optional in the type beyond `minItems`, since `prefixItems` alone doesn't require any item to exist:
+
+```ts
+import { arraySchema, numberSchema, stringSchema, type SchemaType } from 'juniper';
+
+const open = arraySchema(stringSchema()).prefixItem(numberSchema());
+// [number?, ...string[]]
+type Open = SchemaType<typeof open>;
+
+const required = open.minItems(1);
+// [number, ...string[]]
+type Required = SchemaType<typeof required>;
+```
+
+`tupleSchema()` sets `minItems` itself, so all of its items are required.
+
 Larger values, or a `number` variable, leave the type as an array. To build a value from an array of unknown length, narrow it first, as a length check alone does not:
 
 ```ts
