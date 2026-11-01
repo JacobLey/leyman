@@ -107,6 +107,7 @@ const manifestNodes = (workspaceRoot, manifestPath) => {
     return [[manifestPath, { projects: { [root]: { targets } } }]];
 };
 
+// eslint-disable-next-line unicorn/no-non-function-verb-prefix -- Nx looks a plugin's `createNodesV2` up by this name
 export const createNodesV2 = [
     '**/Cargo.toml',
     (manifestPaths, _options, { workspaceRoot }) =>

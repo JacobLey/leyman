@@ -862,6 +862,11 @@ export default function makeEslintConfigForPackage({
                 'unicorn/catch-error-name': ['error', { ignore: [/^error$/v], name: 'err' }],
                 // Contradicts `arrow-body-style`
                 'unicorn/consistent-arrow-return-style': 'off',
+                'unicorn/consistent-boolean-name': [
+                    'error',
+                    // Ajv's compiled validators return a boolean, but `errors` on them says why
+                    { ignore: [/(?:^validate\d*|[Vv]alidator)$/v] },
+                ],
                 // Contradicts `@typescript-eslint/member-ordering`
                 'unicorn/consistent-class-member-order': 'off',
                 // Successor to `unicorn/prevent-abbreviations`

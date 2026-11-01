@@ -10,7 +10,6 @@ import rawReactHooksPlugin from 'eslint-plugin-react-hooks';
 import rawRegexpPlugin from 'eslint-plugin-regexp';
 import rawSonarPlugin from 'eslint-plugin-sonarjs';
 import rawUnicornPlugin from 'eslint-plugin-unicorn';
-import { withAbstractErrors } from './abstract-errors.js';
 import { withLegacyRuleContext } from './legacy-rule-context.js';
 
 export { default as eslintConfig } from '@eslint/js';
@@ -26,4 +25,4 @@ export const reactPlugin: ESLint.Plugin = withLegacyRuleContext(rawReactPlugin);
 export const reactHooksPlugin: ESLint.Plugin = rawReactHooksPlugin;
 export const regexpPlugin: ESLint.Plugin = rawRegexpPlugin;
 export const sonarPlugin: ESLint.Plugin = rawSonarPlugin;
-export const unicornPlugin: ESLint.Plugin = withAbstractErrors(rawUnicornPlugin);
+export const unicornPlugin: ESLint.Plugin = rawUnicornPlugin;
