@@ -24,6 +24,9 @@
     ],
     "package-files": [
       "{projectRoot}/package.json",
+      "dependency-files"
+    ],
+    "dependency-files": [
       "{projectRoot}/executors.json",
       "{projectRoot}/*.(c|m)?js",
       "{projectRoot}/*.d.(c|m)?ts",
@@ -45,6 +48,10 @@
       }
     ],
     "dependency-builds": [
+      {
+        "dependentTasksOutputFiles": "**/package-surface.json",
+        "transitive": true
+      },
       {
         "dependentTasksOutputFiles": "**/dist/**/*.js",
         "transitive": true
@@ -219,7 +226,7 @@
         "{projectRoot}/test/**/*",
         "package-files",
         "dependency-builds",
-        "^package-files"
+        "^dependency-files"
       ],
       "outputs": [],
       "dependsOn": [
@@ -337,7 +344,7 @@
       "inputs": [
         "rustSource",
         "^rustSource",
-        "^package-files",
+        "^dependency-files",
         {
           "runtime": "rustc --version"
         }
@@ -366,7 +373,7 @@
         "{projectRoot}/package.json",
         "{projectRoot}/src/**/*",
         "dependency-builds",
-        "^package-files",
+        "^dependency-files",
         {
           "externalDependencies": []
         }
@@ -395,7 +402,7 @@
         "{projectRoot}/migrations/**/*",
         "{projectRoot}/schema.sql",
         "dependency-builds",
-        "^package-files",
+        "^dependency-files",
         "postgres",
         {
           "env": "CI"
@@ -426,7 +433,7 @@
         "{projectRoot}/package.json",
         "{projectRoot}/src/generated/**/*",
         "dependency-builds",
-        "^package-files",
+        "^dependency-files",
         {
           "env": "CI"
         },
@@ -473,7 +480,7 @@
       "inputs": [
         "ts-source",
         "dependency-builds",
-        "^package-files"
+        "^dependency-files"
       ],
       "outputs": [
         "{projectRoot}/dist"
@@ -487,7 +494,7 @@
       "inputs": [
         "rustSource",
         "^rustSource",
-        "^package-files",
+        "^dependency-files",
         {
           "runtime": "rustc --version"
         },
@@ -550,7 +557,7 @@
       "cache": true,
       "inputs": [
         "test-source",
-        "^package-files"
+        "^dependency-files"
       ],
       "outputs": [
         "{projectRoot}/dist-test"
@@ -572,7 +579,7 @@
       "inputs": [
         "ts-source",
         "dependency-builds",
-        "^package-files"
+        "^dependency-files"
       ],
       "outputs": [
         "{projectRoot}/out"
@@ -591,6 +598,9 @@
         "cwd": "{projectRoot}"
       },
       "cache": false,
+      "outputs": [
+        "{workspaceRoot}/.package-surface/{projectName}/package-surface.json"
+      ],
       "dependsOn": [
         "build:post"
       ]
@@ -622,7 +632,7 @@
       "cache": true,
       "inputs": [
         "test-source",
-        "^package-files"
+        "^dependency-files"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
@@ -644,7 +654,7 @@
       "cache": true,
       "inputs": [
         "test-source",
-        "^package-files"
+        "^dependency-files"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/integration"
@@ -667,7 +677,7 @@
       "cache": true,
       "inputs": [
         "test-source",
-        "^package-files",
+        "^dependency-files",
         "{workspaceRoot}/configs/vitest.config.js"
       ],
       "outputs": [
@@ -686,7 +696,7 @@
       "inputs": [
         "goSource",
         "^goSource",
-        "^package-files",
+        "^dependency-files",
         {
           "runtime": "go version"
         }
@@ -703,7 +713,7 @@
       "inputs": [
         "rustSource",
         "^rustSource",
-        "^package-files",
+        "^dependency-files",
         {
           "runtime": "rustc --version"
         }

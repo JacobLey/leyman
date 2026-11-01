@@ -5,6 +5,8 @@
 /.pnpm-store
 
 /.coverage
+# What dependents consume of each package's package.json, from `sync-injected`
+/.package-surface
 
 **/.eslintcache
 **/coverage

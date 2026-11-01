@@ -19,7 +19,7 @@ Nx, ESLint, Biome, Changesets, TypeScript and the like are dependencies of this 
 | [`check-package.mjs`](./scripts/check-package.mjs) | Checks a package exactly as it would be published: lints the packed tarball with publint, checks its types resolve with Are The Types Wrong, and type checks its declarations as a strict consumer would |
 | [`check-parity.mjs`](./scripts/check-parity.mjs) | Checks that the versions the devcontainer and CI pin separately still match |
 | [`nx-rust-plugin.mjs`](./scripts/nx-rust-plugin.mjs) | Infers a Rust crate's Nx targets and workspace dependencies from its `Cargo.toml`, because no maintained plugin supports this repo's Nx |
-| [`sync-injected.mjs`](./scripts/sync-injected.mjs) | Mirrors a package into the copies injected into its dependents after every build. Never cached |
+| [`sync-injected.mjs`](./scripts/sync-injected.mjs) | Mirrors a package into the copies injected into its dependents after every build, and writes the part of its `package.json` that dependents hash. Never cached |
 
 ## Why the root `package.json` has no dependencies
 

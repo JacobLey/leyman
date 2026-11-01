@@ -6,6 +6,10 @@
 // so editors' go-to-definition opens the workspace source instead of the copied `.d.ts`.
 //
 // Never cached: dependents' cache keys hash this package's build output, so they must never run against a stale copy.
+//
+// Also writes the fields of package.json that can affect a dependent, which dependents hash in place of
+// the file, so a version bump or a new description doesn't rerun them. Inert fields are listed rather than
+// consumed ones, so a field nobody thought about still invalidates.
 
 import { execFileSync } from 'node:child_process';
 import {
@@ -22,6 +26,31 @@ import path from 'node:path';
 
 const workspaceRoot = process.env.NX_WORKSPACE_ROOT;
 const projectRoot = process.cwd();
+
+const inertFields = new Set([
+    'author',
+    'bugs',
+    'description',
+    'devDependencies',
+    'homepage',
+    'keywords',
+    'license',
+    'repository',
+    'scripts',
+    'version',
+]);
+const packageJson = JSON.parse(readFileSync(path.join(projectRoot, 'package.json'), 'utf8'));
+const surface = Object.fromEntries(
+    Object.entries(packageJson).filter(([field]) => !inertFields.has(field))
+);
+const surfacePath = path.join(
+    workspaceRoot,
+    '.package-surface',
+    process.env.NX_TASK_TARGET_PROJECT,
+    'package-surface.json'
+);
+mkdirSync(path.dirname(surfacePath), { recursive: true });
+writeFileSync(surfacePath, `${JSON.stringify(surface, null, 2)}\n`);
 
 // Exactly the files pnpm would publish, and so inject
 const { name, files } = JSON.parse(

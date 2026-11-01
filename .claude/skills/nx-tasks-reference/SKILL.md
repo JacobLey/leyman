@@ -29,11 +29,12 @@ Cache inputs are globs, so they only work if every package puts things in the sa
 Named inputs in [`nx.json`](../../../nx.json):
 
 - `ts-source`: the project's own source and build config. A change rebuilds the project.
-- `dependency-builds`: the `.js` and `.d.ts` files in dependencies' `dist/`, via `dependentTasksOutputFiles`. Dependents rebuild when a dependency's build output changes, not when its source changes. This is why tests compile to `dist-test/` rather than `dist/tests/`: `dependentTasksOutputFiles` ignores negated outputs, so tests inside `dist/` would rebuild every dependent when they change.
-- `^package-files`: dependencies' tracked entry points (`package.json`, `bin.mjs`, `out/`, `data/`…). Targets list it directly, because Nx does not allow `^` inside a named input.
+- `dependency-builds`: the `.js` and `.d.ts` files in dependencies' `dist/`, and their `package-surface.json`, via `dependentTasksOutputFiles`. Dependents rebuild when a dependency's build output changes, not when its source changes. This is why tests compile to `dist-test/` rather than `dist/tests/`: `dependentTasksOutputFiles` ignores negated outputs, so tests inside `dist/` would rebuild every dependent when they change.
+- `package-files`: the project's own tracked entry points (`package.json`, `bin.mjs`, `out/`, `data/`…).
+- `^dependency-files`: dependencies' `package-files`, minus `package.json`. Targets list it directly, because Nx does not allow `^` inside a named input. A dependency's `package.json` reaches dependents through its `package-surface.json` instead, written by [`sync-injected`](#sync-injected), which drops fields that can't affect them (`version`, `description`, `scripts`, `devDependencies`…), so a release's version bump reruns only the bumped package's tasks. A task whose result reads one of those fields of a dependency lists `^package-files` instead, as `vitepress-build` does for `homepage`.
 - `test-source`: `ts-source` plus `test/`, `configs/tsconfig.test.json`, the project's own `package-files`, the builds of its dependencies and itself, and the c8 config.
 - `goSource`: a Go project's `go.mod`, `go.sum` and `.go` files, defined per project by gonx. Go targets also hash `^goSource` and the Go version.
-- `rustSource`: a Rust project's `Cargo.toml`, `src/**/*.rs` and `tests/**/*.rs`, with the root `Cargo.toml` and `Cargo.lock`. Rust targets also hash `^rustSource`, `^package-files` (`include_str!` reads files like `data/`, that `rustSource` does not cover) and the Rust version.
+- `rustSource`: a Rust project's `Cargo.toml`, `src/**/*.rs` and `tests/**/*.rs`, with the root `Cargo.toml` and `Cargo.lock`. Rust targets also hash `^rustSource`, `^dependency-files` (`include_str!` reads files like `data/`, that `rustSource` does not cover) and the Rust version.
 - `shared-globals`: the Node version. The cache is shared between worktrees through the `nx-cache` sidecar.
 - `postgres` and `valkey`: the versions of the services a task runs against (and of `pg_dump`), read from the running server, since the same image in the devcontainer and in Dagger is only pinned by convention. A project whose integration tests use one adds it to the target defaults' inputs with Nx's spread, rather than copying the list: `"mocha-integration-test": { "inputs": ["...", "valkey"] }`. Any other tool from outside the repository that a task's result depends on needs a `runtime` input like these, or a cached result outlives a change to it.
 
@@ -199,7 +200,7 @@ Writes TypeScript types from a JSON Schema or OpenAPI document with [genever](..
 "genever": { "options": { "args": "--output src/generated/api.ts node_modules/@leyman/demo-openapi-spec/out/openapi.json" } }
 ```
 
-Hashes `src/generated/`, dependencies' builds and published files (`^package-files`, so a changed document reruns it), and `CI`.
+Hashes `src/generated/`, dependencies' builds and published files (`^dependency-files`, so a changed document reruns it), and `CI`.
 
 **Add when:** The package generates types from a schema.
 
@@ -254,6 +255,8 @@ Generates static output files by running `load-populate-files` against `./dist/f
 ### `sync-injected`
 
 Mirrors the package's published files (`pnpm pack --dry-run`) into its injected copies in `node_modules/.pnpm` (`leyman/main/scripts/sync-injected.mjs`). Workspace dependencies are installed as copies (`injectWorkspacePackages`), made at install time, so without this dependents would keep seeing the `dist/` from the last `pnpm install`. Never cached: it must also run when `tsc` is a cache hit, since restoring `dist/` doesn't update the copies.
+
+Also writes `.package-surface/<project>/package-surface.json` (gitignored): `package.json` without the fields listed as inert in the script. Dependents hash this rather than the file. Fields are listed as inert rather than consumed, so a new field invalidates until someone decides it can't matter.
 
 A build outside Nx (e.g. running `tsc` directly) doesn't sync. Run the package's `build`, or `pnpm install`, which also refreshes every copy.
 
@@ -313,7 +316,7 @@ Runs the crate's tests under `cargo llvm-cov`, writing a summary to `coverage/ll
 
 ### `go-test`
 
-Runs `go test -cover ./...`, writing Go's coverage profile to `cover.out` (gitignored). Inferred by gonx (see [Go projects](#go-projects)). Hashes dependencies' `package-files` too, since a Go module can `//go:embed` files (like `data/`) that gonx's `goSource` input does not cover.
+Runs `go test -cover ./...`, writing Go's coverage profile to `cover.out` (gitignored). Inferred by gonx (see [Go projects](#go-projects)). Hashes `^dependency-files` too, since a Go module can `//go:embed` files (like `data/`) that gonx's `goSource` input does not cover.
 
 **Add when:** Never: inferred for every Go project.
 

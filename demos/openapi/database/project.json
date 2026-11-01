@@ -19,7 +19,7 @@
         "{projectRoot}/drizzle.config.js",
         "{projectRoot}/schema.sql",
         "dependency-builds",
-        "^package-files",
+        "^dependency-files",
         "postgres",
         {
           "env": "CI"
