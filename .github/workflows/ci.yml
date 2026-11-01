@@ -265,6 +265,16 @@ jobs:
         with:
           persist-credentials: false
 
+      # Reads `test`'s results for this commit from the hosted cache, and never writes to it
+      - name: Start Nx cache server
+        env:
+          NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
+          NX_CACHE_SERVER_MAX_AGE_DAYS: ${{ env.NX_CACHE_MAX_AGE_DAYS }}
+          NX_CACHE_SERVER_UPSTREAM: ${{ vars.NX_CACHE_UPSTREAM }}
+        run: |
+          node .devcontainer/nx-cache-server.mjs &
+          curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null
+
       - name: Build docs
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         with:
@@ -272,7 +282,7 @@ jobs:
           verb: call
           module: ./dagger
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
-          args: docs export --path ./site
+          args: docs --nx-cache=tcp://localhost:3000 export --path ./site
 
       - name: Upload site
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0

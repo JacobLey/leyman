@@ -117,12 +117,7 @@ func (m *Ci) Test(
 	nxCache *dagger.Service,
 ) error {
 	// Pending changesets don't affect tests, so keep them from invalidating the cache
-	ctr := m.installed(m.Source.WithoutDirectory(".changeset"))
-	if nxCache != nil {
-		ctr = ctr.
-			WithServiceBinding("nx-cache", nxCache).
-			WithEnvVariable("NX_SELF_HOSTED_REMOTE_CACHE_SERVER", "http://nx-cache:3000")
-	}
+	ctr := withNxCache(m.installed(m.Source.WithoutDirectory(".changeset")), nxCache)
 	// Some targets run against real services, at the same hostnames as the devcontainer's sidecars
 	built := withPostgres(ctr).WithExec([]string{"nx", "run-many", "-t", "build"})
 
@@ -147,8 +142,12 @@ func (m *Ci) Test(
 // Build the documentation site (`docs/`), type-checking every example, ready to deploy as static files.
 //
 // Export it (`docs export --path ./site`) to upload to GitHub Pages.
-func (m *Ci) Docs() *dagger.Directory {
-	return withPostgres(m.installed(m.Source.WithoutDirectory(".changeset"))).
+func (m *Ci) Docs(
+	// Nx remote cache server to share task results with, as for `test`. Omitted, every task runs.
+	// +optional
+	nxCache *dagger.Service,
+) *dagger.Directory {
+	return withPostgres(withNxCache(m.installed(m.Source.WithoutDirectory(".changeset")), nxCache)).
 		WithExec([]string{"nx", "run", "@leyman/docs:build"}).
 		Directory(workdir + "/docs/dist")
 }
@@ -597,6 +596,16 @@ func postgresService() *dagger.Service {
 				"-c", "max_connections=500",
 			},
 		})
+}
+
+// Points Nx at a remote cache server, if there is one
+func withNxCache(ctr *dagger.Container, nxCache *dagger.Service) *dagger.Container {
+	if nxCache == nil {
+		return ctr
+	}
+	return ctr.
+		WithServiceBinding("nx-cache", nxCache).
+		WithEnvVariable("NX_SELF_HOSTED_REMOTE_CACHE_SERVER", "http://nx-cache:3000")
 }
 
 // Postgres client tools on Debian, with nothing else installed yet
