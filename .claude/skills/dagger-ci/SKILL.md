@@ -44,7 +44,7 @@ Run `test-ci` first; it is much faster. Use Dagger to confirm before pushing. Da
 Every push to `main` runs, after `test` passes:
 
 - **`version`**: `dagger call version` applies pending changesets (bumps versions, writes changelogs), and the workflow opens or updates a "Version Packages" PR from the result. `dagger call version-notes` writes the PR body: each public package's version bump and its new changelog section. It needs full git history, which Dagger loads from the checkout as a `GitRepository`, so changelogs can cite the commit that added each changeset.
-- **`publish`**: `dagger call publish` builds from scratch (no Nx cache), finds every public package whose version is not on npm, `pnpm pack`s it (resolving `workspace:`/`catalog:`), and publishes the tarball with `npm` using trusted publishing (OIDC) with provenance. It publishes one package at a time, each after the packages it depends on (all but `devDependencies`), and stops at the first that npm rejects, so nothing is published while a dependency it needs isn't. It prints `published <name>@<version>` for each package, and `failed <name>@<version>: <error>` for the one that failed (a failure is in the output, not the exit code). The workflow pushes a `name@version` tag for each one published (with the `RELEASE_TAG_TOKEN` fine-grained PAT in the `npm` environment, since `GITHUB_TOKEN` can't push a tag whose commit's workflows differ from main's), then fails if one didn't, so a rerun (which skips what is on npm) never leaves a release untagged. With nothing new to publish it does nothing, so merging a version PR is what triggers a release.
+- **`publish`**: `dagger call publish` builds from scratch (no Nx cache), finds every public package whose version is not on npm, `pnpm pack`s it (resolving `workspace:`/`catalog:`), and publishes the tarball with `npm` using trusted publishing (OIDC) with provenance. A version below the package's `latest` goes under a `release-<major>` dist-tag ([patching an older major](#patching-an-older-major)). It publishes one package at a time, each after the packages it depends on (all but `devDependencies`), and stops at the first that npm rejects, so nothing is published while a dependency it needs isn't. It prints `published <name>@<version>` for each package, and `failed <name>@<version>: <error>` for the one that failed (a failure is in the output, not the exit code). The workflow pushes a `name@version` tag for each one published (with the `RELEASE_TAG_TOKEN` fine-grained PAT in the `npm` environment, since `GITHUB_TOKEN` can't push a tag whose commit's workflows differ from main's), then fails if one didn't, so a rerun (which skips what is on npm) never leaves a release untagged. With nothing new to publish it does nothing, so merging a version PR is what triggers a release.
 - **`docs`**: `dagger call docs export --path ./site` builds the [docs site](../../../docs/README.md), and the workflow deploys it to GitHub Pages (`actions/deploy-pages`, authenticated with OIDC). Requires Pages to be set to deploy from GitHub Actions in the repo settings.
 
 Rehearse locally:
@@ -63,6 +63,40 @@ dagger call --mod ./dagger version --repo=<clone> as-patch contents
 # The body of that version PR
 dagger call --mod ./dagger version-notes --repo=<clone>
 ```
+
+## Patching an older major
+
+Old majors are not maintained on an ongoing basis. Each `name@version` tag is a full snapshot (source, lockfile, Dagger module, devcontainer), so a branch is only created when a fix is needed. See [`SECURITY.md`](../../../SECURITY.md) for what is promised.
+
+First check who it would help (npm's per-version downloads). If almost nobody is on that major, `npm deprecate` and an advisory may be enough. Otherwise:
+
+1. If the latest major is affected, fix it on `main` first, with a regression test.
+2. Cut `release/<package>-<major>.x` from the **newest** tag of that major, in a new worktree. An older starting point would reuse version numbers already on npm, and `publish` silently skips those.
+3. If the tag predates release branches, its CI won't run them, so make the first commit a small hand port. A cherry-pick conflicts, and nothing more is needed for a one-off:
+   - `ci.yml`: add `release/*` to `on.push.branches`, and let the `publish` job's `if` accept `refs/heads/release/*`
+   - `ci.yml`: if its `Tag releases` step pushes with `GITHUB_TOKEN`, push to the `RELEASE_TAG_TOKEN` URL as the current step does, and set `persist-credentials: false` on the job's checkout, or the checkout's credential is used instead (a release branch's workflows differ from main's, so `GITHUB_TOKEN`'s push would be refused after npm has published). Keep how the step reads the publish output: its format changed, and the current step's parsing finds nothing in the old one, silently tagging nothing
+   - `dagger/main.go`: add `--tag release-<major>` to the `npm publish` command, or npm refuses a version below `latest`
+4. Apply the fix and a changeset, and delete any pending changesets the tag already had. Don't fix unrelated breakage from age; remove a package whose unrelated tests no longer pass from the branch instead.
+5. Run `changeset version` on the branch, the one place to run it by hand: the `version` job is `main` only. Check that only the intended packages were bumped.
+6. Run `test-ci`, `dagger-test` and `dagger call --mod ./dagger publish --dry-run`, and open a PR into the branch, which runs `test`.
+7. Allow that one branch to use the `npm` environment. Without this, `publish` fails at the environment and nothing is released.
+
+   ```bash
+   gh api --method POST repos/JacobLey/leyman/environments/npm/deployment-branch-policies \
+     -f name='release/<package>-<major>.x' -f type=branch
+   ```
+
+8. Merge. `test` and `publish` run, and `publish` uses the `release-<major>` dist-tag and pushes the release tag. Check the output says `published` for what you expected. `version`, `docs` and `nx-cache` stay `main` only, so the docs site is untouched.
+9. Remove the branch from the environment, and delete the branch; its release tag keeps the code. Don't merge it into `main`.
+
+   ```bash
+   gh api repos/JacobLey/leyman/environments/npm/deployment-branch-policies
+   gh api --method DELETE repos/JacobLey/leyman/environments/npm/deployment-branch-policies/<id>
+   ```
+
+No npm settings change: a trusted publisher names the repository, workflow file (`ci.yml`) and environment (`npm`), not a branch, so keep publishing in that job. Don't publish from a machine: it has no provenance, which consumers using pnpm's `trustPolicy: no-downgrade` reject.
+
+For a vulnerability that isn't public yet, develop the fix in a [private security advisory fork](https://docs.github.com/en/code-security/security-advisories/working-with-repository-security-advisories/collaborating-in-a-temporary-private-fork-to-resolve-a-repository-security-vulnerability), test locally, then merge and publish together.
 
 ## Module Structure
 

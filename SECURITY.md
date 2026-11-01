@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Security fixes are released for the latest major version of each package published from this repository. Older major versions are not patched, so please upgrade to receive fixes.
+Security fixes are guaranteed only for the latest major version of each package published from this repository, so please upgrade to receive them. Older major versions may be patched for serious issues, case by case. Those patches are published under a `release-<major>` npm dist-tag, so `latest` does not change.
 
 ## Reporting a vulnerability
 

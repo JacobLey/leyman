@@ -28,6 +28,6 @@ A changeset for a package on the [docs site](../docs-site/SKILL.md#documented-pa
 
 ## Releasing
 
-Don't run `changeset version` or publish by hand. After a changeset merges to `main`, CI opens a "Version Packages" PR; merging that PR publishes to npm. See the [dagger-ci skill](../dagger-ci/SKILL.md#releasing).
+Don't run `changeset version` or publish by hand. After a changeset merges to `main`, CI opens a "Version Packages" PR; merging that PR publishes to npm. See the [dagger-ci skill](../dagger-ci/SKILL.md#releasing). The exception is `changeset version` on a branch [patching an older major](../dagger-ci/SKILL.md#patching-an-older-major).
 
 A changeset naming a package that is no longer in the workspace makes `changeset version` fail, so delete or edit changesets when removing a package.
