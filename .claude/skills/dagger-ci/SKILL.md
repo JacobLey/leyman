@@ -86,7 +86,7 @@ First check who it would help (npm's per-version downloads). If almost nobody is
      -f name='release/<package>-<major>.x' -f type=branch
    ```
 
-8. Merge. `test` and `publish` run, and `publish` uses the `release-<major>` dist-tag and pushes the release tag. Check the output says `published` for what you expected. `version`, `docs` and `nx-cache` stay `main` only, so the docs site is untouched.
+8. Merge. `test` and `publish` run, and `publish` uses the `release-<major>` dist-tag and pushes the release tag. Check the output says `published` for what you expected. The version can take a minute or two to appear on npm. `version`, `docs` and `nx-cache` stay `main` only, so the docs site is untouched.
 9. Remove the branch from the environment, and delete the branch; its release tag keeps the code. Don't merge it into `main`.
 
    ```bash
