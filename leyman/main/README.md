@@ -1,8 +1,8 @@
 # main
 
-Package to contain high level monorepo scripts without exposing packages to entire workspace.
+Holds the repo's global tools and repo-wide scripts, without exposing them to every package.
 
-It is not published. It holds what belongs to the repo as a whole rather than to one package.
+It is not published.
 
 ## Global tools
 
@@ -22,7 +22,7 @@ Nx, ESLint, Biome, Changesets, TypeScript and the like are dependencies of this 
 
 ## Why the root `package.json` has dependencies too
 
-Global tools live here, with four exceptions in the workspace root's `package.json`. Nx looks for these from the workspace root, and fails without them:
+Global tools live here, with three exceptions in the workspace root's `package.json`. Nx looks for these from the workspace root, and fails without them:
 
 | Dependency | Needed by | Without it |
 |------------|-----------|------------|
@@ -30,4 +30,4 @@ Global tools live here, with four exceptions in the workspace root's `package.js
 | `@nx/js` | The `@nx/js:typescript-sync` sync generator | `nx sync` can't resolve the generator |
 | `typescript` | That sync generator, which loads it as a library | `nx sync` can't find the module |
 
-The fourth, `@typescript/native`, is the `tsc` binary that pairs with `typescript`, as in every package that compiles TypeScript. Neither Nx's project graph nor `nx sync` needs it at the root.
+Anything else belongs in this package.

@@ -4,7 +4,6 @@
   "devDependencies": {
     "@naxodev/gonx": "catalog:",
     "@nx/js": "catalog:",
-    "@typescript/native": "catalog:",
     "typescript": "catalog:"
   },
   "dependencies": {}
