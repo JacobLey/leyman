@@ -43,6 +43,7 @@ The `Dockerfile` is multi-stage, so a version bump rebuilds only what it must (b
 - Declare each `ARG` in the stage that uses it, right before its first use: a changed `ARG` reruns every `RUN` after its declaration in that stage. `ARG`s before the first `FROM` are only for `FROM` lines (the base image, Node and Go).
 - Playwright's system libraries: the `playwright-deps` stage lists the packages `install-deps` would install, and the final stage installs that list. The install reruns only when the list changes.
 - Node is only the `node` binary, at `/usr/local/bin/node` (no npm). Version-free paths like this one keep editor settings unchanged across bumps.
+- An image pinned with `FROM name:tag@sha256:...` is stored with no tag, which Docker and OrbStack report as dangling. `postCreateCommand` runs `.devcontainer/tag-pinned-images.sh` to tag them. After a bump, the previous version keeps its tag, so remove it by hand.
 
 ---
 
