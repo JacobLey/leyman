@@ -134,6 +134,8 @@ type IndexedObject = SchemaType<typeof indexed>;
 //   ^?
 ```
 
+**In OpenAPI 3.0**, which has no `patternProperties`, a set `additionalProperties` also allows the pattern schemas' values, for any key, so nothing the pattern covers is rejected: `additionalProperties: false` becomes the pattern's schema, and a schema becomes an `anyOf` with it. An unset or `true` `additionalProperties` stays as it is.
+
 **Note on `patternProperties`:** The key is a regular expression pattern and cannot be interpreted directly as a TypeScript string type. Wrap the key with the `PatternProperties` helper type:
 
 ```ts

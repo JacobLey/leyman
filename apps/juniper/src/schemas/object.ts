@@ -711,7 +711,7 @@ export class ObjectSchema<
      * patterns may have unintentional overlap that is not reflected in the typing.
      *
      * __Pattern Properties are not supported in OpenAPI 3.0__
-     * They will be ignored entirely.
+     * A set `additionalProperties` allows their values too, for any key, so no key they cover is rejected.
      *
      * @see {@link https://json-schema.org/understanding-json-schema/reference/object.html#pattern-properties}
      *
@@ -942,6 +942,26 @@ export class ObjectSchema<
             }
             return ObjectSchema.getSchema(schema, params);
         };
+
+        // OpenAPI 3.0 has no `patternProperties`, so the keys they cover fall to `additionalProperties`,
+        // whose value must then allow any of them, like a tuple becoming an array of any of its items.
+        // Left open when it already was: there is nothing to widen
+        if (
+            params.openApi30 &&
+            this.#additionalProperties !== null &&
+            this.#additionalProperties !== true
+        ) {
+            const allowed = Object.values(this.#patternProperties)
+                .filter(schema => schema !== falseSchema)
+                .map(schema => schemaToProperty(schema));
+            if (allowed.length > 0) {
+                const [only, ...others] =
+                    this.#additionalProperties === false
+                        ? allowed
+                        : [schemaToProperty(this.#additionalProperties), ...allowed];
+                base.additionalProperties = others.length > 0 ? { anyOf: [only, ...others] } : only;
+            }
+        }
 
         const propertyEntries = Object.entries(this.#properties);
         if (propertyEntries.length > 0) {

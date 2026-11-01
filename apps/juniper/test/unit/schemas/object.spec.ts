@@ -250,13 +250,25 @@ suite('ObjectSchema', () => {
                         },
                     },
                     additionalProperties: {
-                        properties: {
-                            x: {
-                                type: 'number',
+                        anyOf: [
+                            {
+                                properties: {
+                                    x: {
+                                        type: 'number',
+                                    },
+                                },
+                                required: ['x'],
+                                type: 'object',
                             },
-                        },
-                        required: ['x'],
-                        type: 'object',
+                            {
+                                type: 'object',
+                                nullable: true,
+                                additionalProperties: false,
+                            },
+                            {
+                                type: 'integer',
+                            },
+                        ],
                     },
                     maxProperties: 10,
                     minProperties: 2,
@@ -442,6 +454,72 @@ suite('ObjectSchema', () => {
     });
 
     suite('patternProperties', () => {
+        suite('OpenAPI 3.0, which lacks the keyword', () => {
+            const pattern = '^x' as PatternProperties<`x${string}`>;
+
+            test('additional properties forbidden allows the pattern values', () => {
+                const schema = objectSchema()
+                    .patternProperties(pattern, numberSchema())
+                    .additionalProperties(false);
+
+                expect(schema.toJSON({ openApi30: true })).to.deep.equal({
+                    type: 'object',
+                    additionalProperties: { type: 'number' },
+                });
+            });
+
+            test('several patterns allow any of their values', () => {
+                const schema = objectSchema()
+                    .patternProperties(pattern, numberSchema())
+                    .patternProperties('^y' as PatternProperties<`y${string}`>, stringSchema())
+                    .additionalProperties(false);
+
+                expect(schema.toJSON({ openApi30: true })).to.deep.equal({
+                    type: 'object',
+                    additionalProperties: { anyOf: [{ type: 'number' }, { type: 'string' }] },
+                });
+            });
+
+            test('typed additional properties also allow the pattern values', () => {
+                const schema = objectSchema()
+                    .patternProperties(pattern, numberSchema())
+                    .additionalProperties(stringSchema());
+
+                expect(schema.toJSON({ openApi30: true })).to.deep.equal({
+                    type: 'object',
+                    additionalProperties: { anyOf: [{ type: 'string' }, { type: 'number' }] },
+                });
+            });
+
+            test('open additional properties stay open', () => {
+                const schema = objectSchema()
+                    .patternProperties(pattern, numberSchema())
+                    .additionalProperties(true);
+
+                expect(schema.toJSON({ openApi30: true })).to.deep.equal({
+                    type: 'object',
+                    additionalProperties: true,
+                });
+            });
+
+            test('no additional properties keyword stays absent', () => {
+                const schema = objectSchema().patternProperties(pattern, numberSchema());
+
+                expect(schema.toJSON({ openApi30: true })).to.deep.equal({ type: 'object' });
+            });
+
+            test('a pattern that forbids its keys allows nothing more', () => {
+                const schema = objectSchema()
+                    .patternProperties(pattern, false)
+                    .additionalProperties(false);
+
+                expect(schema.toJSON({ openApi30: true })).to.deep.equal({
+                    type: 'object',
+                    additionalProperties: false,
+                });
+            });
+        });
+
         test('success', () => {
             const strSchema = stringSchema();
 
