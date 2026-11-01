@@ -1,0 +1,50 @@
+{
+  "name": "@leyman/vscode-tests",
+  "version": "0.0.1",
+  "description": "Run and debug a single test from the editor, through a VS Code extension for this repo.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/leyman/vscode-tests#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "imports": {
+    "#parse-spec": "./dist/lib/parse-spec.js",
+    "#project": "./dist/lib/project.js",
+    "#runner": "./dist/lib/runner.js"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "dependencies": {
+    "typescript": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@types/vscode": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "vitest": "catalog:"
+  }
+}

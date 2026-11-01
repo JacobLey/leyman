@@ -11,6 +11,8 @@ Compiled output has source maps. Run with `NODE_OPTIONS=--enable-source-maps` to
 
 ## Running a single test file
 
+In VS Code, use the play button next to the test ([`vscode-tests`](../../../leyman/vscode-tests/README.md)). From a terminal:
+
 Tests are compiled into `dist-test/` and run against `dist/`, so rebuild both first (`nx run <project>:tsc-test`). Then, from the project directory (mocha is a per-project dev dependency, not on `PATH`):
 
 ```bash

@@ -140,6 +140,7 @@ catalog:
   '@types/react-dom': ^19.3.0
   '@types/sinon': ^22.0.2
   '@types/tmp': ^0.2.6
+  '@types/vscode': ^1.137.0
   '@types/yargs': ^17.0.35
   '@typescript-eslint/eslint-plugin': ^8.72.0
   '@typescript-eslint/parser': ^8.72.0

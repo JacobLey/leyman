@@ -78,6 +78,7 @@ See each package's README.md for full usage documentation.
 | [`eslint-config`](../../../leyman/eslint-config) | Very opinionated eslint config used internally for package linting |
 | [`expect`](../../../leyman/expect) | Pre-configured chai assertions for internal tests |
 | [`main`](../../../leyman/main) | Workaround for installing "global" packages, and executing repo-wide tasks |
+| [`vscode-tests`](../../../leyman/vscode-tests) | Run and debug a single test from VS Code |
 
 ### Docs
 

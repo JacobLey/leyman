@@ -1,0 +1,21 @@
+{
+  "name": "leyman-tests",
+  "publisher": "leyman",
+  "displayName": "Leyman tests",
+  "description": "Run and debug a single test of this repo. The code is in leyman/vscode-tests.",
+  "version": "0.0.1",
+  "private": true,
+  "engines": {
+    "vscode": "^1.137.0"
+  },
+  "extensionKind": [
+    "workspace"
+  ],
+  "categories": [
+    "Testing"
+  ],
+  "activationEvents": [
+    "workspaceContains:nx.json"
+  ],
+  "main": "./extension.cjs"
+}

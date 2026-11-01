@@ -138,6 +138,9 @@
     },
     {
       "path": "./demos/blake3-wasm/typescript"
+    },
+    {
+      "path": "./leyman/vscode-tests"
     }
   ]
 }

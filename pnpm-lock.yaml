@@ -103,6 +103,9 @@ catalogs:
     '@types/tmp':
       specifier: ^0.2.6
       version: 0.2.6
+    '@types/vscode':
+      specifier: ^1.137.0
+      version: 1.140.0
     '@types/yargs':
       specifier: ^17.0.35
       version: 17.0.35
@@ -2616,6 +2619,55 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
+
+  leyman/vscode-tests:
+    dependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: '@typescript/typescript6@6.0.2'
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.3
+      '@leyman/eslint-config':
+        specifier: workspace:^
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@leyman/expect':
+        specifier: workspace:^
+        version: file:leyman/expect
+      '@swc/cli':
+        specifier: 'catalog:'
+        version: 0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+      '@swc/core':
+        specifier: 'catalog:'
+        version: 1.16.20(@swc/helpers@0.5.23)
+      '@types/mocha':
+        specifier: 'catalog:'
+        version: 10.0.10
+      '@types/node':
+        specifier: 'catalog:'
+        version: 24.19.2
+      '@types/vscode':
+        specifier: 'catalog:'
+        version: 1.140.0
+      '@typescript/native':
+        specifier: 'catalog:'
+        version: typescript@7.0.2
+      c8:
+        specifier: 'catalog:'
+        version: 12.0.0
+      eslint:
+        specifier: 'catalog:'
+        version: 10.13.0(supports-color@8.1.1)
+      mocha:
+        specifier: 'catalog:'
+        version: 12.0.3
+      mocha-chain:
+        specifier: workspace:^
+        version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      vitest:
+        specifier: 'catalog:'
+        version: 5.0.5(@types/node@24.19.2)(happy-dom@21.0.4)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(tsx@4.23.15)(yaml@2.9.0))
 
   tools/constant-consistent-hash/constant-consistent-hash:
     devDependencies:
@@ -6187,6 +6239,9 @@ packages:
 
   '@types/unist@3.0.3':
     resolution: {integrity: sha512-ko/gIFJRv177XgZsZcBwnqJN5x/Gien8qNOn0D5bQU/zAzVf9Zt3BlcUiLqhV9y4ARk0GbT3tnUiPNgnTXzc/Q==}
+
+  '@types/vscode@1.140.0':
+    resolution: {integrity: sha512-KAB5RBZIgnUhpp4mKsVJPPHLOQKu6WtGy2xpfWjaajEXO4xIIC+UESAXLiQ9ewx6QD1uBmvC/S8BJzkbvv4bRA==}
 
   '@types/web-bluetooth@0.0.21':
     resolution: {integrity: sha512-oIQLCGWtcFZy2JW77j9k8nHzAOpqMHLQejDA48XXMWH6tjCQHz5RCFz1bzsmROyL6PUm+LLnUiI4BCn221inxA==}
@@ -13103,6 +13158,8 @@ snapshots:
 
   '@types/unist@3.0.3': {}
 
+  '@types/vscode@1.140.0': {}
+
   '@types/web-bluetooth@0.0.21': {}
 
   '@types/whatwg-mimetype@3.0.2': {}
@@ -13126,7 +13183,7 @@ snapshots:
       '@typescript-eslint/utils': 8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@typescript-eslint/visitor-keys': 8.72.0
       eslint: 10.13.0(supports-color@8.1.1)
-      ignore: 7.0.12
+      ignore: 7.0.14
       natural-compare: 1.4.0
       ts-api-utils: 2.5.0(@typescript/typescript6@6.0.2)
       typescript: '@typescript/typescript6@6.0.2'
@@ -13872,7 +13929,7 @@ snapshots:
       entry-script: 4.1.2
       haywire: 2.0.4
       haywire-launcher: 1.1.1(entry-script@4.1.2)(haywire@2.0.4)
-      ignore: 7.0.12
+      ignore: 7.0.14
       parse-cwd: 2.0.3
       populate-files: 1.2.0(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       tinyglobby: 0.2.17

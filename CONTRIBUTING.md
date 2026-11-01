@@ -28,6 +28,8 @@ Development happens in the [DevContainer](./.devcontainer/), which installs the 
 
 Day-to-day work happens in git worktrees, each with its own devcontainer. See the [worktrees skill](./.claude/skills/worktrees/SKILL.md) for how to create and open them.
 
+To run a single test from VS Code, see [`vscode-tests`](./leyman/vscode-tests/README.md).
+
 > **Nx is not globally installed.** It ships with `@leyman/main` and is on `PATH` inside the devcontainer. Use `nx` directly, not `npx nx` or `pnpm exec nx`.
 
 ## Making changes

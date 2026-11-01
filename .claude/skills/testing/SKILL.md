@@ -16,6 +16,8 @@ test-ci     # verify: lint + build + test + coverage-report — what CI runs
 
 Tests run against compiled `dist/`, so a test run always rebuilds first (cached when unchanged).
 
+To run one test, use the play button in VS Code ([`vscode-tests`](../../../leyman/vscode-tests/README.md)), or the commands in the [debugging skill](../debugging/SKILL.md#running-a-single-test-file).
+
 ## Coverage
 
 100% lines, statements, functions and branches, enforced by `coverage-report` as the last step of `test` (`test:report`). An incomplete package fails `test`.
