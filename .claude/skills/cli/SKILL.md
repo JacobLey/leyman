@@ -7,6 +7,8 @@ description: Structure of a package's command line interface (yargs commands col
 
 Every package with a `bin` builds its CLI the same way. [`apps/nx-lifecycle`](../../../apps/nx-lifecycle/) is the reference, as it has more than one command. [`apps/barrelify`](../../../apps/barrelify/) and [`apps/populate-files/load-populate-files`](../../../apps/populate-files/load-populate-files/) follow the same shape with a single command.
 
+The exception is [`apps/trusted-tsc`](../../../apps/trusted-tsc/): a `tsc` pass-through with no commands of its own, which forwards raw arguments, so a parser could only get in the way, and which promises to have no dependencies.
+
 The CLI never lists its commands. Each command adds itself to a [haywire list](../../../tools/haywire/README.md#lists), and the CLI receives the whole list. Adding a command touches the command's file and the container, never `cli.ts`.
 
 ## Files
