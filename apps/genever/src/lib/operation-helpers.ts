@@ -66,8 +66,9 @@ export const operationHelpers = (
             ...locations.map(location => `${field}<'${location}', ${parametersOf}['${location}']>`),
         ].join(' &\n    ');
     const requestTypes: NamedType[] =
-        request !== undefined && parametersName !== undefined
-            ? [
+        request === undefined || parametersName === undefined
+            ? []
+            : [
                   {
                       doc: doc(
                           "Each operation's `parameters`, as a validator that fills in defaults leaves them."
@@ -84,8 +85,7 @@ export const operationHelpers = (
                       parameters: `<Id extends keyof ${operations}>`,
                       type: fields(`${parametersName}[Id]`),
                   },
-              ]
-            : [];
+              ];
     return [
         {
             doc: doc(
