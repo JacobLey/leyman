@@ -202,7 +202,7 @@ Keep `tsconfig.json` `references` in sync with the package's inter-package depen
 
 ### `tsc`
 
-Deletes `./dist`, then compiles TypeScript using SWC (fast transpilation) and `tsc` (declaration file generation + type checking). Clearing `dist` inside the target means it only happens on a cache miss.
+Deletes `./dist`, then compiles TypeScript using SWC (fast transpilation) and `tsc` (declaration file generation + type checking). SWC runs through `scripts/nx/swc-compile.sh`, which only adds its `.mts` and `.cts` passes for a package that has those files. Clearing `dist` inside the target means it only happens on a cache miss.
 
 Output goes to `./dist`.
 

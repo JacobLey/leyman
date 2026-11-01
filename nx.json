@@ -39,6 +39,7 @@
     "ts-source": [
       "shared-globals",
       "{workspaceRoot}/configs/swcrc.jsonc",
+      "{workspaceRoot}/scripts/nx/swc-compile.sh",
       "{workspaceRoot}/configs/tsconfig.build.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
@@ -437,9 +438,7 @@
       "options": {
         "commands": [
           "rm -rf ./dist",
-          "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.ts?(x)'",
-          "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
-          "swc ./src -d ./dist --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
+          "${NX_WORKSPACE_ROOT}/scripts/nx/swc-compile.sh ./src ./dist",
           "${TSC:-tsc}"
         ],
         "parallel": false,
@@ -515,9 +514,7 @@
       "options": {
         "commands": [
           "rm -rf ./dist-test",
-          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.ts?(x)'",
-          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths --only '**/*.mts?(x)' --out-file-extension mjs",
-          "swc ./test -d ./dist-test --config-file $NX_WORKSPACE_ROOT/configs/swcrc.jsonc --strip-leading-paths -C module.type=commonjs -C module.ignoreDynamic=true -C module.exportInteropAnnotation=true --only '**/*.cts?(x)' --out-file-extension cjs",
+          "${NX_WORKSPACE_ROOT}/scripts/nx/swc-compile.sh ./test ./dist-test",
           "${TSC:-tsc} -p ./test"
         ],
         "parallel": false,
