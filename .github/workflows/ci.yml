@@ -78,7 +78,7 @@ jobs:
           NX_CACHE_SERVER_UPSTREAM: ${{ vars.NX_CACHE_UPSTREAM }}
           NX_CACHE_SERVER_UPSTREAM_WRITE: ${{ (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/main' && vars.NX_CACHE_UPSTREAM != '' && 'github-oidc' || '' }}
         run: |
-          node .devcontainer/nx-cache-server.mjs &
+          node .devcontainer/nx-cache-server.mjs > "$RUNNER_TEMP/nx-cache-server.log" 2>&1 &
           curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null
 
       - name: Test
@@ -92,6 +92,11 @@ jobs:
           # so a PR could write results that main's runs then trust.
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: test --nx-cache=tcp://localhost:3000
+
+      # A background process's output is lost once the step that started it ends
+      - name: Show Nx cache server log
+        if: ${{ !cancelled() }}
+        run: cat "$RUNNER_TEMP/nx-cache-server.log"
 
       # Saved even when tests fail, so tasks that passed are not re-run
       - name: Save Nx cache
