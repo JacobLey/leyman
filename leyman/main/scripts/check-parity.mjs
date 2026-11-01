@@ -31,7 +31,7 @@ const read = (file, pattern, name, after = '') => {
 
 const dockerArg = name => read(dockerfile, new RegExp(`^ARG ${name}=(?<value>.+)$`, 'mv'), name);
 const daggerConst = name =>
-    read('dagger/main.go', new RegExp(String.raw`^\s+${name} = "(?<value>.+)"$`, 'mv'), name);
+    read('dagger/main.go', new RegExp(String.raw`^\s+${name} += "(?<value>.+)"$`, 'mv'), name);
 const composeImage = service =>
     read(compose, /^ {4}image: (?<value>.+)$/mv, `${service} image`, `\n  ${service}:\n`);
 const workflowEnv = name => read(workflow, new RegExp(`^  ${name}: (?<value>.+)$`, 'mv'), name);

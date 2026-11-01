@@ -40,10 +40,15 @@ const (
 	// rust:1.99.1-trixie.
 	// Only its toolchain is copied into the Node image, for projects written in Rust.
 	rustImage = "rust:1.99.1-trixie@sha256:09027f873d45b8ecd1dc86f1fa13b7a62b875c961f017a0e331267b350430137"
-	// Installed with the toolchain, at a release at least 7 days old.
-	cargoLlvmCovVersion = "0.9.1"
+	// Downloaded with the toolchain, at a release at least 7 days old. Compiling these two takes over 2 minutes of every CI
+	// job. Checksums are of each release's `*-unknown-linux-musl.tar.gz`: amd64 for CI, arm64 for `dagger-test` on a Mac.
+	cargoLlvmCovVersion     = "0.9.1"
+	cargoLlvmCovAmd64Sha256 = "3fca950394a3c49457657c158b1619cec8dfd2647ae5b48746734c0ab969a522"
+	cargoLlvmCovArm64Sha256 = "49c0085628392a8d727c4464d91ec417c613c5015f5197cd16d5c05aa3fb5ad1"
 	// Must match the `wasm-bindgen` crate in `Cargo.lock`.
-	wasmBindgenVersion = "0.2.129"
+	wasmBindgenVersion     = "0.2.129"
+	wasmBindgenAmd64Sha256 = "82d12bb940e2d4e72e0d5605387fc1b8ca179044e012b620f0ce4e7440e8320e"
+	wasmBindgenArm64Sha256 = "2ed4351c35dd9440308bbb02767d47ea278efe851a52465300f3c94f5b6c2a87"
 	// ghcr.io/opentofu/opentofu:1.13.2-minimal, for `infra/`. Keep in sync with `TOFU_IMAGE` in `.devcontainer/Dockerfile`.
 	tofuImage = "ghcr.io/opentofu/opentofu:1.13.2-minimal@sha256:622dc6bb98b105c18f53cf419ab64a4f3b88bd9f8c16cc978cf89e4202f4613f"
 	// valkey/valkey:9.1.2-trixie. Keep in sync with the `valkey` service in `.devcontainer/docker-compose.yml`.
@@ -607,15 +612,28 @@ func system() *dagger.Container {
 			" && apt-get install --yes --no-install-recommends gcc libc6-dev"})
 }
 
-// The Rust toolchain, with the same components and tools as the devcontainer's, and no crates downloaded
+// The Rust toolchain, with the same components and tools as the devcontainer's, and no crates downloaded. The tools are
+// the releases' prebuilt binaries, where the devcontainer compiles the same versions once per image.
 func rustToolchain() *dagger.Container {
 	return dag.Container().
 		From(rustImage).
 		WithExec([]string{"sh", "-c", "rustup component add rustfmt clippy llvm-tools-preview" +
-			" && rustup target add wasm32-unknown-unknown" +
-			" && cargo install --locked --version " + cargoLlvmCovVersion + " cargo-llvm-cov" +
-			" && cargo install --locked --version " + wasmBindgenVersion + " wasm-bindgen-cli" +
-			" && rm -rf " + cargoHome + "/registry " + cargoHome + "/git"})
+			" && rustup target add wasm32-unknown-unknown"}).
+		WithExec([]string{"sh", "-c", `set -e
+case "$(uname -m)" in
+	x86_64) target=x86_64-unknown-linux-musl llvm_cov_sha256=` + cargoLlvmCovAmd64Sha256 + ` wasm_bindgen_sha256=` + wasmBindgenAmd64Sha256 + ` ;;
+	aarch64) target=aarch64-unknown-linux-musl llvm_cov_sha256=` + cargoLlvmCovArm64Sha256 + ` wasm_bindgen_sha256=` + wasmBindgenArm64Sha256 + ` ;;
+	*) echo "No pinned Rust tools for $(uname -m)" >&2; exit 1 ;;
+esac
+curl --fail --silent --show-error --location --retry 3 --output /tmp/llvm-cov.tar.gz \
+	"https://github.com/taiki-e/cargo-llvm-cov/releases/download/v` + cargoLlvmCovVersion + `/cargo-llvm-cov-$target.tar.gz"
+echo "$llvm_cov_sha256  /tmp/llvm-cov.tar.gz" | sha256sum --check --quiet
+tar --extract --gzip --file /tmp/llvm-cov.tar.gz --directory ` + cargoHome + `/bin cargo-llvm-cov
+curl --fail --silent --show-error --location --retry 3 --output /tmp/wasm-bindgen.tar.gz \
+	"https://github.com/wasm-bindgen/wasm-bindgen/releases/download/` + wasmBindgenVersion + `/wasm-bindgen-` + wasmBindgenVersion + `-$target.tar.gz"
+echo "$wasm_bindgen_sha256  /tmp/wasm-bindgen.tar.gz" | sha256sum --check --quiet
+tar --extract --gzip --file /tmp/wasm-bindgen.tar.gz --directory ` + cargoHome + `/bin --strip-components=1 --wildcards '*/wasm-bindgen' '*/wasm-bindgen-test-runner' '*/wasm2es6js'
+rm /tmp/llvm-cov.tar.gz /tmp/wasm-bindgen.tar.gz`})
 }
 
 // Adds Go, Rust, pnpm, Node and OpenTofu, matching the devcontainer: last, so bumping one reruns only these copies. No npm (as in the
