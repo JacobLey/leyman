@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"slices"
 	"sort"
 	"strings"
 
@@ -309,6 +310,9 @@ func changelogSection(ctx context.Context, dir *dagger.Directory, pkg string, ve
 // npm rejects, after which nothing more is published. A failure is in the output, not an error, so the packages
 // published before it are still listed (to be tagged); the caller must fail on a `failed` line.
 //
+// A version below the package's `latest` (a patch to an older major) is published under a `release-<major>` dist-tag,
+// so `latest` stays where it is.
+//
 // Never cached: what needs publishing depends on the registry, not just the inputs.
 // +cache="never"
 func (m *Ci) Publish(
@@ -351,7 +355,7 @@ func (m *Ci) Publish(
 	publisher := dag.Container().
 		From(nodeImage).
 		WithDirectory(tarballDir, tarballs)
-	publishCmd := `npm publish "$1"/*.tgz --access public`
+	publishCmd := `npm publish "$1"/*.tgz --access public ${2:+--tag "$2"}`
 	if dryRun {
 		publishCmd += " --dry-run"
 	}
@@ -361,7 +365,10 @@ func (m *Ci) Publish(
 	}
 	results := []string{}
 	for i, pkg := range unpublished {
-		_, err := publisher.WithExec([]string{"bash", "-c", publishCmd, "bash", tarballPath(i)}).Sync(ctx)
+		distTag, err := publishDistTag(ctx, pkg)
+		if err == nil {
+			_, err = publisher.WithExec([]string{"bash", "-c", publishCmd, "bash", tarballPath(i), distTag}).Sync(ctx)
+		}
 		if err != nil {
 			// On one line, so it can't be mistaken for another package's result
 			results = append(results, fmt.Sprintf("failed %s@%s: %s", pkg.Name, pkg.Version, strings.Join(strings.Fields(err.Error()), " ")))
@@ -487,6 +494,53 @@ func versionExists(ctx context.Context, pkg workspacePackage) (bool, error) {
 	default:
 		return false, fmt.Errorf("checking %s@%s on npm: %s", pkg.Name, pkg.Version, res.Status)
 	}
+}
+
+// The dist-tag to publish a package's version under. Empty means npm's default, `latest`.
+func publishDistTag(ctx context.Context, pkg workspacePackage) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, npmRegistry+"/"+url.PathEscape(pkg.Name)+"/latest", nil)
+	if err != nil {
+		return "", err
+	}
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	switch res.StatusCode {
+	case http.StatusOK:
+		var latest struct {
+			Version string `json:"version"`
+		}
+		if err := json.NewDecoder(res.Body).Decode(&latest); err != nil {
+			return "", fmt.Errorf("parsing latest %s on npm: %w", pkg.Name, err)
+		}
+		return distTagFor(pkg.Version, latest.Version)
+	case http.StatusNotFound:
+		// Never published, so nothing to keep `latest` on
+		return "", nil
+	default:
+		return "", fmt.Errorf("checking latest %s on npm: %s", pkg.Name, res.Status)
+	}
+}
+
+// Empty for a version at or above `latest`, otherwise the dist-tag of its release line: `release-<major>`, or
+// `release-0.<minor>` below 1.0, where each minor is its own line. Prerelease suffixes are not compared.
+func distTagFor(version string, latest string) (string, error) {
+	var current, newest [3]int
+	if _, err := fmt.Sscanf(version, "%d.%d.%d", &current[0], &current[1], &current[2]); err != nil {
+		return "", fmt.Errorf("parsing version %q: %w", version, err)
+	}
+	if _, err := fmt.Sscanf(latest, "%d.%d.%d", &newest[0], &newest[1], &newest[2]); err != nil {
+		return "", fmt.Errorf("parsing version %q: %w", latest, err)
+	}
+	if slices.Compare(current[:], newest[:]) >= 0 {
+		return "", nil
+	}
+	if current[0] == 0 {
+		return fmt.Sprintf("release-0.%d", current[1]), nil
+	}
+	return fmt.Sprintf("release-%d", current[0]), nil
 }
 
 // Binds Postgres at the devcontainer's hostname, with `DATABASE_URL` pointing at it. Every build needs it, not only

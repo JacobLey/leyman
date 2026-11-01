@@ -7,6 +7,8 @@ on:
   push:
     branches:
       - main
+      # Patches to an older major, on a branch cut from its last release. Only `test` and `publish` run on these
+      - release/*
   # Off the top of the hour, when GitHub delays and drops scheduled runs
   schedule:
     # Nightly `test` of main: catches what changes outside the repository, and writes like a push, so the hosted Nx
@@ -173,9 +175,10 @@ jobs:
   # Publishes every package whose version is not yet on npm (i.e. after a version PR merges)
   publish:
     needs: test
-    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+    if: ${{ github.event_name == 'push' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/release/')) }}
     runs-on: ubuntu-latest
-    # Restricted to main; npm trusted publishing only accepts this environment
+    # Restricted to main; npm trusted publishing only accepts this environment. A `release/*` branch fails here until
+    # it is allowed for the duration of its release, see the dagger-ci skill
     environment: npm
     concurrency:
       group: publish
