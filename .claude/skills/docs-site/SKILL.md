@@ -54,6 +54,7 @@ Demos ([`demos/`](../../../demos/)) each have a directory in [`docs/src/demos/`]
 
 | Demo | Page |
 |------|------|
+| [`blake3-wasm`](../../../demos/blake3-wasm/) | [`docs/src/demos/blake3-wasm/index.md`](../../../docs/src/demos/blake3-wasm/index.md) |
 | [`read-through-cache`](../../../demos/read-through-cache/) | [`docs/src/demos/read-through-cache/index.md`](../../../docs/src/demos/read-through-cache/index.md) |
 | [`openapi`](../../../demos/openapi/) | [`docs/src/demos/openapi/index.md`](../../../docs/src/demos/openapi/index.md) |
 | [`agents/mcp`](../../../demos/agents/mcp/) | [`docs/src/demos/mcp-server/index.md`](../../../docs/src/demos/mcp-server/index.md) |

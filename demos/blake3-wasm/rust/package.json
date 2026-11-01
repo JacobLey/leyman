@@ -1,0 +1,28 @@
+{
+  "name": "@leyman/demo-blake3-wasm-rust",
+  "version": "0.0.1",
+  "description": "BLAKE3 from the blake3 crate, compiled to WASM with SIMD, for the blake3-wasm demo.",
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/blake3-wasm/rust#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "sideEffects": false,
+  "types": "./dist/demo_blake3_wasm.d.ts",
+  "exports": {
+    ".": "./dist/demo_blake3_wasm.js",
+    "./wasm": "./dist/demo_blake3_wasm_bg.wasm",
+    "./test-vectors.json": "./data/test-vectors.json"
+  },
+  "files": [
+    "data",
+    "dist"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "catalog:"
+  }
+}

@@ -1,0 +1,59 @@
+{
+  "name": "@leyman/demo-blake3-wasm",
+  "version": "0.0.1",
+  "description": "BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers: blocking or in a worker, measured against JavaScript to find where WASM pays off.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/demos/blake3-wasm/typescript#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "scripts": {
+    "bench": "node dist-test/bench/run.js"
+  },
+  "sideEffects": true,
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/node.js",
+  "exports": {
+    ".": {
+      "types": "./dist/node.js",
+      "browser": "./dist/browser.js",
+      "default": "./dist/node.js"
+    }
+  },
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
+  "dependencies": {
+    "@leyman/demo-blake3-wasm-rust": "workspace:^",
+    "comlink": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@noble/hashes": "catalog:",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "playwright": "catalog:",
+    "typescript": "catalog:",
+    "vite": "catalog:"
+  }
+}

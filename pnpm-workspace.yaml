@@ -7,6 +7,7 @@ packages:
   - tools/test-chain/*
   - e2e/*
   - demos/*
+  - demos/blake3-wasm/*
   - demos/openapi/*
   - demos/agents/*
   - infra/nx-cache/*
@@ -117,6 +118,7 @@ catalog:
   '@modelcontextprotocol/hono': ^2.0.2
   '@modelcontextprotocol/server': ^2.3.1
   '@naxodev/gonx': ^4.1.2
+  '@noble/hashes': ^2.4.0
   '@nx/devkit': ^23.3.0
   '@nx/js': ^23.3.0
   '@shikijs/vitepress-twoslash': ^4.5.0
@@ -151,6 +153,7 @@ catalog:
   chai: ^6.2.2
   chai-as-promised: ^8.0.2
   ci-info: ^4.4.0
+  comlink: ^4.4.2
   drizzle-kit: ^0.31.11
   drizzle-orm: ^0.45.4
   ensure-error: ^5.0.0

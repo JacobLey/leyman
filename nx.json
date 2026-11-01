@@ -87,6 +87,7 @@
       "{projectRoot}/Cargo.toml",
       "{projectRoot}/src/**/*.rs",
       "{projectRoot}/tests/**/*.rs",
+      "{projectRoot}/data/**/*",
       "{workspaceRoot}/Cargo.toml",
       "{workspaceRoot}/Cargo.lock",
       {

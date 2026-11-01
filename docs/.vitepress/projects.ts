@@ -449,6 +449,30 @@ export const packages: readonly Package[] = [
 
 export const demos: readonly Demo[] = [
     {
+        slug: 'blake3-wasm',
+        title: 'BLAKE3 through WASM',
+        pitch: 'BLAKE3 from Rust through WASM with SIMD, on Node.js and in browsers, blocking or in a worker, measured against the fastest JavaScript to find where WASM pays off.',
+        source: 'demos/blake3-wasm',
+        files: [
+            { label: 'The crate', path: 'demos/blake3-wasm/rust/src/lib.rs' },
+            { label: 'Loading in a browser', path: 'demos/blake3-wasm/typescript/src/browser.ts' },
+            {
+                label: 'The worker',
+                path: 'demos/blake3-wasm/typescript/src/lib/hash-worker.ts',
+            },
+            {
+                label: 'JavaScript baseline',
+                path: 'demos/blake3-wasm/typescript/test/bench/tight-blake3.ts',
+            },
+            {
+                label: 'Browser tests',
+                path: 'demos/blake3-wasm/typescript/test/integration/browser.spec.ts',
+            },
+        ],
+        uses: [],
+        pages: [{ text: 'Overview', link: '' }],
+    },
+    {
         slug: 'read-through-cache',
         title: 'Read-through cache',
         pitch: 'BentoCache on Valkey: a memory tier kept in sync, stale-while-revalidate, one load per key across instances, and sharding over several nodes with weighted rendezvous hashing.',

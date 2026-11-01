@@ -135,6 +135,9 @@
     },
     {
       "path": "./tools/constant-consistent-hash/wasm-impl"
+    },
+    {
+      "path": "./demos/blake3-wasm/typescript"
     }
   ]
 }
