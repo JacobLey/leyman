@@ -83,8 +83,6 @@ export const checkLock = (): void => {
     }
 };
 
-type Done = (err?: unknown) => void;
-
 /**
  * Convert the core handler into a native framework callback.
  *
@@ -114,6 +112,8 @@ const toNativeCallback = <Key extends object>(
     isTest: boolean
 ): NativeMethod => {
     if (framework.supportsDone && cb.length > 1) {
+        type Done = (err?: unknown) => void;
+
         return function (this: unknown, done: Done): void {
             ++executing.count;
             let isFinished = false;
