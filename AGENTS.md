@@ -2,7 +2,7 @@
 
 This is an Nx-managed PNPM monorepo. See [nx.dev](https://nx.dev) for general Nx documentation.
 
-All agent-focused documentation should use SKILL.md, but this file is linked to CLAUDE.md for initial discoverability.
+This file is the entry point for any coding agent; `CLAUDE.md` is a symlink to it. Put agent-focused documentation in `SKILL.md` files and list them under [Skills](#skills).
 
 ## Worktrees
 
