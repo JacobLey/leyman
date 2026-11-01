@@ -301,9 +301,11 @@ suite('Authorization', () => {
                     keys: [{ ...(await exportJWK(publicKey)), kid: 'key', alg: 'ES256' }],
                 };
                 issuer.use(({ url: requested }) =>
-                    URL.parse(requested)?.pathname === '/jwks'
-                        ? Response.json(jwks)
-                        : Response.json({ issuer: issuer.url, jwks_uri: `${issuer.url}/jwks` })
+                    Response.json(
+                        URL.parse(requested)?.pathname === '/jwks'
+                            ? jwks
+                            : { issuer: issuer.url, jwks_uri: `${issuer.url}/jwks` }
+                    )
                 );
                 try {
                     serveWith(issuer.url);
