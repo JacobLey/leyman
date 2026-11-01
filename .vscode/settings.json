@@ -1,6 +1,11 @@
 {
   "biome.lsp.bin": "leyman/main/node_modules/.bin/biome",
 
+  "coverage-gutters.coverageBaseDir": ".coverage/project/**",
+
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
   "editor.formatOnSave": true,
 
   "eslint.enable": true,
@@ -25,6 +30,14 @@
     "*.cts": "typescript",
     "*.mts": "typescript"
   },
+  // Builds rewrite these, so watching them only adds work
+  "files.watcherExclude": {
+    "**/dist/**": true,
+    "**/dist-test/**": true,
+    "**/.coverage/**": true,
+    "**/.nx/**": true,
+    "**/target/**": true
+  },
 
   "git.ignoreLimitWarning": true,
 
@@ -35,9 +48,17 @@
   "js/ts.experimental.useTsgo": true,
   "js/ts.tsdk.path": "leyman/main/node_modules/@typescript/native",
 
+  // The lints the `rust-clippy` target enforces
+  "rust-analyzer.check.command": "clippy",
+
   "terminal.integrated.keyboard.protocol": "xterm",
 
   "[javascript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.tabSize": 4,
+    "files.insertFinalNewline": true
+  },
+  "[javascriptreact]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.tabSize": 4,
     "files.insertFinalNewline": true
@@ -48,10 +69,16 @@
     "files.insertFinalNewline": true
   },
   "[jsonc]": {
+    "editor.defaultFormatter": "biomejs.biome",
     "editor.tabSize": 2,
     "files.insertFinalNewline": true
   },
   "[typescript]": {
+    "editor.defaultFormatter": "biomejs.biome",
+    "editor.tabSize": 4,
+    "files.insertFinalNewline": true
+  },
+  "[typescriptreact]": {
     "editor.defaultFormatter": "biomejs.biome",
     "editor.tabSize": 4,
     "files.insertFinalNewline": true

@@ -7,21 +7,32 @@
       "label": "Worktree: new",
       "type": "shell",
       "command": "${workspaceFolder}/scripts/worktree",
-      "args": ["new", "${input:branch}", "--from", "${input:base}"],
+      "args": [
+        "new",
+        "${input:branch}",
+        "--from",
+        "${input:base}"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Worktree: open",
       "type": "shell",
       "command": "${workspaceFolder}/scripts/worktree",
-      "args": ["open", "${input:branch}"],
+      "args": [
+        "open",
+        "${input:branch}"
+      ],
       "problemMatcher": []
     },
     {
       "label": "Worktree: remove",
       "type": "shell",
       "command": "${workspaceFolder}/scripts/worktree",
-      "args": ["rm", "${input:branch}"],
+      "args": [
+        "rm",
+        "${input:branch}"
+      ],
       "problemMatcher": []
     }
   ],

@@ -1,6 +1,7 @@
 {
   "reporter": [
     "html",
+    "lcovonly",
     "text-summary"
   ],
   "exclude": [

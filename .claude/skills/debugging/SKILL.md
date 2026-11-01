@@ -11,10 +11,10 @@ Compiled output has source maps. Run with `NODE_OPTIONS=--enable-source-maps` to
 
 ## Running a single test file
 
-Tests run from compiled `dist/`, so rebuild first (`nx run <project>:build`). Then, from the project directory (mocha is a per-project dev dependency, not on `PATH`):
+Tests are compiled into `dist-test/` and run against `dist/`, so rebuild both first (`nx run <project>:tsc-test`). Then, from the project directory (mocha is a per-project dev dependency, not on `PATH`):
 
 ```bash
-NODE_OPTIONS=--enable-source-maps ./node_modules/.bin/mocha './dist/tests/unit/my.spec.js' --grep "my test name"
+NODE_OPTIONS=--enable-source-maps ./node_modules/.bin/mocha './dist-test/unit/my.spec.js' --grep "my test name"
 ```
 
 ## Stale results

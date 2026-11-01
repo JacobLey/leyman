@@ -19,11 +19,20 @@
         "anthropic.claude-code",
         "biomejs.biome",
         "dbaeumer.vscode-eslint",
+        "github.vscode-github-actions",
         "golang.go",
         "ms-azuretools.vscode-docker",
+        "nrwl.angular-console",
+        "opentofu.vscode-opentofu",
+        "redhat.vscode-yaml",
         "ritwickdey.LiveServer",
         "rust-lang.rust-analyzer",
-        "TypeScriptTeam.native-preview"
+        "ryanluker.vscode-coverage-gutters",
+        "tamasfe.even-better-toml",
+        "timonwong.shellcheck",
+        "TypeScriptTeam.native-preview",
+        "usernamehw.errorlens",
+        "yoavbls.pretty-ts-errors"
       ]
     }
   },
