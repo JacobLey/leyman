@@ -40,6 +40,7 @@ Named inputs in [`nx.json`](../../../nx.json):
 
 Gotchas, all verified on Nx 23:
 
+- Nx hashes the root `tsconfig.base.json` into every task, or the root `tsconfig.json` if there is none. So `tsconfig.base.json` stays empty, and shared compiler options go in `configs/`: an edit to it misses the cache on every task. The root `tsconfig.json` is free to change, as its `references` do with each new package.
 - **Never hash `dist/` with a file glob.** `dist/` is gitignored, and Nx only sees git-visible files, so a glob like `^{projectRoot}/dist/**` silently matches nothing. Use `dependentTasksOutputFiles`.
 - **`dependentTasksOutputFiles` does not support extglobs** like `*.(c|m)?js`. Use one entry per extension. Plain file inputs do support them.
 - **A generator's inputs must include everything it reads,** not just the files it writes. `barrelify` hashes all of `src/`, since adding a sibling module changes the barrel.

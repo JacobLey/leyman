@@ -1,0 +1,2 @@
+// Empty on purpose. Nx hashes this file into every task, in place of `tsconfig.json`, whose `references` change with each new package
+{}
