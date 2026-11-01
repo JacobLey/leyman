@@ -27,7 +27,7 @@ if [ "$worktree" != "$main_checkout" ] && [ "$(dirname "$worktree")" != "$worktr
     exit 1
 fi
 
-mkdir -p "$shared/nx-cache"
+mkdir -p "$shared/nx-cache" "$shared/nx-cache-dagger"
 
 # One-time migration of state that used to live inside the main checkout
 if [ ! -e "$shared/pnpm-store" ] && [ -d "$main_checkout/.pnpm-store" ]; then

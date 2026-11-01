@@ -101,6 +101,7 @@ To support another editor, add a case to `open_worktree` in `scripts/worktree` t
 | pnpm store | shared | `pnpm_config_store_dir=<worktrees>/.shared/pnpm-store` in `docker-compose.yml` |
 | Nx local cache and project graph (`.nx/`) | per worktree | Nx default |
 | Nx task outputs | shared | `nx-cache` sidecar ([`nx-cache-server.mjs`](../../../.devcontainer/nx-cache-server.mjs)) via `NX_SELF_HOSTED_REMOTE_CACHE_SERVER` |
+| Nx task outputs built by `dagger-test` | shared | `dagger-nx-cache` sidecar, the same server on `.shared/nx-cache-dagger`, with no upstream (see the [dagger-ci skill](../dagger-ci/SKILL.md#caching)) |
 | `nx`, `biome`, `eslint`, `scripts/commands` on `PATH` | per worktree | `remoteEnv` in `devcontainer.json` uses `${containerWorkspaceFolder}` |
 | Claude config | shared | `CLAUDE_CONFIG_DIR=<worktrees>/.shared/claude-config` |
 | GitHub CLI login | shared | `GH_CONFIG_DIR=<worktrees>/.shared/gh-config` |

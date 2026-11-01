@@ -2,4 +2,16 @@
 
 set -e
 
-dagger call --mod ./dagger test "$@"
+# `--uncached` runs every task, for a suspected missing Nx input or a last check before a release
+if [ "${1:-}" = "--uncached" ]; then
+    shift
+    exec dagger call --mod ./dagger test "$@"
+fi
+
+if ! getent hosts dagger-nx-cache > /dev/null; then
+    echo 'error: no dagger-nx-cache service: rebuild the devcontainer, or run dagger-test --uncached' >&2
+    exit 1
+fi
+
+# Reached from this container by the Dagger CLI, and bound to `nx-cache:3000` inside Dagger
+exec dagger call --mod ./dagger test --nx-cache=tcp://dagger-nx-cache:3000 "$@"

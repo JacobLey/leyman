@@ -57,6 +57,7 @@ const checks = () => ({
     'Node image': [
         daggerConst('nodeImage'),
         composeImage('nx-cache'),
+        composeImage('dagger-nx-cache'),
         read('demos/local-ingress/run', /^image='(?<value>.+)'$/mv, 'image'),
     ],
     pnpm: [dockerArg('PNPM_VERSION'), daggerConst('pnpmVersion')],

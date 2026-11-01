@@ -54,7 +54,7 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 
 | Runtime | DevContainer | Dagger |
 |---------|-------------|--------|
-| Node.js | `ARG NODE_VERSION` in `.devcontainer/Dockerfile`, the `nx-cache` image in `.devcontainer/docker-compose.yml`, and `image` in `demos/local-ingress/run` (pinned by digest, the same as `nodeImage`) | `nodeImage` tag in `dagger/main.go` |
+| Node.js | `ARG NODE_VERSION` in `.devcontainer/Dockerfile`, the `nx-cache` and `dagger-nx-cache` images in `.devcontainer/docker-compose.yml`, and `image` in `demos/local-ingress/run` (pinned by digest, the same as `nodeImage`) | `nodeImage` tag in `dagger/main.go` |
 | pnpm | `ARG PNPM_VERSION` in `.devcontainer/Dockerfile` | `pnpmVersion` in `dagger/main.go` |
 | Go | `ARG GO_IMAGE` in `.devcontainer/Dockerfile` | `goImage` in `dagger/main.go`. The same image, pinned by digest, at the Go minor of the pinned Dagger engine: check it when bumping Dagger |
 | Rust | `ARG RUST_IMAGE` in `.devcontainer/Dockerfile`, and `rust-version` in the root `Cargo.toml` | `rustImage` in `dagger/main.go`. The same image, pinned by digest |

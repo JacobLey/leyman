@@ -47,6 +47,7 @@ services:
 
     depends_on:
       - nx-cache
+      - dagger-nx-cache
       - valkey
       - postgres
 
@@ -68,6 +69,19 @@ services:
       # Reads results it doesn't have from the hosted cache that CI on main writes to (`infra/nx-cache`), never
       # writes there. Set NX_CACHE_SERVER_UPSTREAM empty (e.g. in `.devcontainer/.env`) to work offline
       NX_CACHE_SERVER_UPSTREAM: ${NX_CACHE_SERVER_UPSTREAM-https://leyman-nx-cache.leyman.workers.dev}
+    restart: unless-stopped
+
+  # The Nx cache for `dagger-test`. Separate from `nx-cache`, whose results were built in a different environment, and
+  # with no upstream, so what it serves was only ever built by Dagger on this machine. Every worktree's shares a directory.
+  # Listens on port 3000, where `Test` in `dagger/main.go` expects it.
+  dagger-nx-cache:
+    image: node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea
+    command:
+      - node
+      - /server/nx-cache-server.mjs
+    volumes:
+      - ./nx-cache-server.mjs:/server/nx-cache-server.mjs:ro
+      - ${WORKTREES_DIR}/.shared/nx-cache-dagger:/cache
     restart: unless-stopped
 
   # For tests that run against Valkey, at `valkey:6379`: Dagger binds its service under the same hostname.
