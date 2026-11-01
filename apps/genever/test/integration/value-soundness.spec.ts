@@ -64,18 +64,10 @@ const typeCheckValues = (name: string): string[] => {
  * from non-strict mode promises.
  */
 suite('Generated types accept every value the schema accepts', () => {
-    const names = Object.keys(fixtures).filter(
-        name => !withoutValues.has(name) && name !== 'recordObject'
-    );
+    const names = Object.keys(fixtures).filter(name => !withoutValues.has(name));
     for (const name of names) {
         test(name, () => {
             expect(assignability(typeCheckValues(name))).to.deep.equal([]);
         });
     }
-
-    // Known unsound: `{ a: string } & { [key: string]: number }` has no values, as `a` would have to
-    // be both. This fails once the type accepts them, which is the time to move it to the list above
-    test('recordObject has no values yet', () => {
-        expect(assignability(typeCheckValues('recordObject'))).to.not.deep.equal([]);
-    });
 });

@@ -187,7 +187,7 @@ Each row is one of the probes in [WHY-GENEVER.md](https://github.com/JacobLey/le
 | `prefixItems` + `items` | `[A, B, ...T[]]` |
 | draft 7 `items` array + `additionalItems` | same as `prefixItems` + `items` |
 | `properties` + `required` | `{ a: A; b?: B }` |
-| `additionalProperties: true` / schema | `[key: string]: unknown` / `T` |
+| `additionalProperties: true` / schema | `[key: string]: unknown` / `T`, or with `properties` or `patternProperties`, a union of `T` and their types: TypeScript applies an index signature to every key, so `T` alone would leave those keys with no valid value |
 | `patternProperties` | an index signature, keyed by `` `x-${string}` `` for a literal prefix like `^x-`, or `string` otherwise |
 | `type: "object"` with no properties | `Record<string, unknown>` |
 | `dependentRequired`, `dependentSchemas`, draft 7 `dependencies` | `{ a?: never } \| { b: B }` |

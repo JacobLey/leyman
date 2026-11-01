@@ -136,6 +136,8 @@ Represents `type: 'object'`. TypeScript type: `{}`.
 | [`dependentSchemas`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentschemas) | ❌ | ❌ | ✅ | ✅ |
 | [`unevaluatedProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties) | ✅ | ❌ | ❌ | ❌ |
 
+**`additionalProperties` beside other keys:** TypeScript applies an index signature to every key, where the schema only applies `additionalProperties` to keys nothing else covers. So the index signature also allows the types of `properties` and `patternProperties`: `{ properties: { a: stringSchema() }, additionalProperties: numberSchema() }` is `{ a?: string; [key: string]: number | string }`. Declared keys keep their own type when read.
+
 **Note on `additionalProperties`:** JSON Schema interprets omitting `additionalProperties` as `additionalProperties: true`. The emitted TypeScript type includes the index signature only when `additionalProperties` is explicitly set to `true`:
 
 ```ts

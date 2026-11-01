@@ -90,6 +90,23 @@ type MergedPatternProperties<
     X2 extends Record<string, unknown>,
 > = [X2] extends [EmptyIndex] ? X : [X] extends [EmptyIndex] ? X2 : X & X2;
 
+/**
+ * Value of a `string` index signature from `additionalProperties`.
+ *
+ * TypeScript applies it to every key, where the schema only applies it to keys nothing else covers.
+ * So it also allows the values of those keys, or no object with one of them could have this type.
+ *
+ * @template V - type of `additionalProperties`
+ * @template Stripped - properties
+ * @template X - types matched by `patternProperties`
+ */
+type IndexValue<V, Stripped, X extends Record<string, unknown>> =
+    | Exclude<X[keyof X], undefined>
+    | V
+    | (IsNever<Stripped> extends true
+          ? never
+          : { [K in keyof Stripped]: SchemaType<Stripped[K]> }[keyof Stripped]);
+
 type ObjectType<
     // Properties
     P extends BaseSchemaObject,
@@ -108,7 +125,9 @@ type ObjectType<
         AbstractStrip<X, EmptyIndex, unknown> &
             M &
             ([A] extends [true] ? Record<string, unknown> : unknown) &
-            (A extends AbstractSchema<SchemaGenerics<infer V>> ? Record<string, V> : unknown) &
+            (A extends AbstractSchema<SchemaGenerics<infer V>>
+                ? Record<string, IndexValue<V, Stripped, X>>
+                : unknown) &
             (IsNever<Stripped> extends true
                 ? unknown
                 : Partial<{

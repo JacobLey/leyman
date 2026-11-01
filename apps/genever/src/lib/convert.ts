@@ -1236,9 +1236,17 @@ export class Converter {
                 childPointer(pointer, 'additionalProperties'),
                 emptyScope
             );
+            // TypeScript applies an index signature to every key it matches, where the schema only
+            // applies `additionalProperties` to keys nothing else covers. So it also allows their
+            // values, or no object with one of those keys could have this type
+            const indexValue = union([
+                value,
+                ...properties.map(property => property.type),
+                ...index.map(signature => signature.value),
+            ]);
             for (const key of nameKeys) {
                 if (key.kind !== 'literal') {
-                    index.push({ key, value });
+                    index.push({ key, value: indexValue });
                 } else if (properties.every(property => property.name !== key.value)) {
                     // A literal key can't be an index signature, so it is an optional property
                     properties.push({

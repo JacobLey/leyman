@@ -82,7 +82,7 @@ suite('objects', () => {
                     required: ['a'],
                     additionalProperties: { type: 'number' },
                 },
-                { Schema: '{ a: string } & Record<string, number>' }
+                { Schema: '{ a: string } & Record<string, number | string>' }
             );
         });
     });
@@ -127,7 +127,7 @@ suite('objects', () => {
                     patternProperties: { '^x-': { type: 'string' } },
                     additionalProperties: { type: 'number' },
                 },
-                { Schema: 'Record<`x-${string}`, string> & Record<string, number>' }
+                { Schema: 'Record<`x-${string}`, string> & Record<string, number | string>' }
             );
         });
 
@@ -140,7 +140,7 @@ suite('objects', () => {
                     additionalProperties: { type: 'number' },
                 },
                 {
-                    Schema: '{ a?: boolean } & Record<`x-${string}`, string> & Record<string, number>',
+                    Schema: '{ a?: boolean } & Record<`x-${string}`, string> & Record<string, boolean | number | string>',
                 }
             );
         });

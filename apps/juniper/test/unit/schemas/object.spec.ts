@@ -98,6 +98,19 @@ suite('ObjectSchema', () => {
                 }>();
             });
 
+            test('additionalProperties beside properties of another type has values', () => {
+                const schema = objectSchema({
+                    properties: { a: stringSchema() },
+                    required: ['a'],
+                    additionalProperties: numberSchema(),
+                });
+                const value: SchemaType<typeof schema> = { a: 'x', b: 1 };
+
+                expectTypeOf(value.a).toEqualTypeOf<string>();
+                expectTypeOf(value.b).toEqualTypeOf<number | string | undefined>();
+                expect(compile(schema.toJSON())(value)).to.equal(true);
+            });
+
             test('Only additionalProperties', () => {
                 const schema = objectSchema({
                     additionalProperties: numberSchema(),
@@ -157,7 +170,7 @@ suite('ObjectSchema', () => {
                 expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<Flatten<
                     Record<`${string}abc`, 1 | 2> &
                         Record<`abc${string}`, EmptyObject | null> &
-                        Record<string, { x: number }> & {
+                        Record<string, number | string | EmptyObject | { x: number } | null> & {
                             bar: number;
                             foo?: string;
                         }
@@ -171,7 +184,9 @@ suite('ObjectSchema', () => {
                 expectTypeOf(example.abc).toEqualTypeOf<
                     ((1 | 2) & (EmptyObject | null)) | undefined
                 >();
-                expectTypeOf(example.random).toEqualTypeOf<{ x: number } | undefined>();
+                expectTypeOf(example.random).toEqualTypeOf<
+                    number | string | EmptyObject | { x: number } | null | undefined
+                >();
 
                 expect(schema.toJSON()).to.deep.equal({
                     type: ['object', 'null'],
@@ -1318,7 +1333,7 @@ suite('ObjectSchema', () => {
             ).to.include({ minProperties: 1, maxProperties: 8 });
             expectTypeOf<SchemaType<typeof schema>>().toEqualTypeOf<
                 Flatten<
-                    Record<string, number> & {
+                    Record<string, number | string> & {
                         id: number;
                         name?: string;
                         tag?: string;
