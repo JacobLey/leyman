@@ -536,7 +536,7 @@ export class ObjectSchema<
                       key => this.#properties[key] !== falseSchema
                   ) as K[])
                 : ([required].flat() as K[]);
-        return (this as ObjectSchema<P, K | R, A, X, M, N>).clone({
+        return (this as unknown as ObjectSchema<P, K | R, A, X, M, N>).clone({
             required: [...this.#required, ...added],
         });
     }
@@ -772,7 +772,7 @@ export class ObjectSchema<
         }
 
         return (
-            this as ObjectSchema<
+            this as unknown as ObjectSchema<
                 P,
                 R,
                 A,

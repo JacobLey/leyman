@@ -56,6 +56,19 @@ export type SerializedSpec<Spec, Options = unknown> = SerializedSpecValue<
 const isRecord = (value: unknown): value is Record<string, unknown> =>
     typeof value === 'object' && value !== null;
 
+const sortByKey = (value: Record<string, unknown>): Record<string, unknown> =>
+    Object.fromEntries(Object.entries(value).toSorted(([a], [b]) => (a < b ? -1 : Number(a > b))));
+
+/**
+ * `JSON.stringify` replacer sorting object keys, so equal schemas serialize the same whatever their key order.
+ *
+ * @param _key - key of the value
+ * @param value - value to serialize
+ * @returns value, with its keys sorted if it is an object
+ */
+const sortKeys = (_key: string, value: unknown): unknown =>
+    isRecord(value) && !Array.isArray(value) ? sortByKey(value) : value;
+
 /**
  * Serialize every Juniper schema in an OpenAPI document, and fill `components.schemas` with every
  * definition (see `define`) they use. Nothing has to be listed, so no `$ref` is left dangling.
@@ -128,7 +141,7 @@ export const serializeSpec = <
     for (const [name, schema] of existing) {
         if (
             Object.hasOwn(definitions, name) &&
-            JSON.stringify(schema) !== JSON.stringify(definitions[name])
+            JSON.stringify(schema, sortKeys) !== JSON.stringify(definitions[name], sortKeys)
         ) {
             throw new Error(`components.schemas has a different schema named "${name}"`);
         }
@@ -139,11 +152,7 @@ export const serializeSpec = <
         components: {
             ...serialized.components,
             // Sorted by name, like `components()`, so the output doesn't depend on the document's order
-            schemas: Object.fromEntries(
-                Object.entries({ ...Object.fromEntries(existing), ...definitions }).toSorted(
-                    ([a], [b]) => (a < b ? -1 : Number(a > b))
-                )
-            ),
+            schemas: sortByKey({ ...Object.fromEntries(existing), ...definitions }),
         },
     } as SerializedSpec<Spec, Options>;
 };

@@ -144,6 +144,10 @@ export interface Definitions {
      */
     cache: WeakMap<AbstractSchema<SchemaGenerics<unknown>>, Map<string, CachedReference>>;
     /**
+     * Referenced schemas serialized to compare against, so many schemas derived from one only serialize it once.
+     */
+    referenced: WeakMap<AbstractSchema<SchemaGenerics<unknown>>, JsonSchema<unknown>>;
+    /**
      * Definitions registered while serializing each cached reference, innermost last.
      */
     uses: Map<string, AbstractSchema<SchemaGenerics<unknown>>>[];
@@ -204,6 +208,7 @@ const createDefinitions = ({
     path: definitionsPath ?? (openApi30 ? COMPONENTS_PATH : DEFS_PATH),
     schemas: new Map(),
     cache: new WeakMap(),
+    referenced: new WeakMap(),
     uses: [],
 });
 
@@ -1149,16 +1154,7 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
             definitions: params.definitions,
         };
 
-        // Only compared against, never emitted, so definitions it uses are collected separately
-        params.definitions?.uses.push(new Map());
-        const refSchema = ref.schema.toSchema({
-            openApi30: params.openApi30,
-            definitions: params.definitions && {
-                ...params.definitions,
-                schemas: new Map(params.definitions.schemas),
-            },
-        });
-        params.definitions?.uses.pop();
+        const refSchema = AbstractSchema.#getReferenced(ref.schema, params);
         // From the schema's own class: `this` is not always a schema class (e.g. when called via `getSchema`)
         const defaultValues = (): Record<string, unknown> =>
             (schema.constructor as typeof AbstractSchema).getDefaultValues(params);
@@ -1217,6 +1213,36 @@ export abstract class AbstractSchema<T extends SchemaGenerics<any>>
         }
         // Changed what the schema accepts, so it is no longer the definition.
         return baseSchema;
+    }
+
+    /**
+     * Serialize a referenced schema to compare against. Never emitted, so the definitions it uses are collected
+     * separately, and the result is not modified.
+     *
+     * @param schema - referenced juniper schema
+     * @param params - serialization params
+     * @returns JSON Schema
+     */
+    static #getReferenced<T2>(
+        schema: AbstractSchema<SchemaGenerics<T2>>,
+        params: SerializationParams
+    ): JsonSchema<T2> {
+        const { definitions } = params;
+        const cached = definitions?.referenced.get(schema);
+        if (cached) {
+            return cached as JsonSchema<T2>;
+        }
+        definitions?.uses.push(new Map());
+        const json = schema.toSchema({
+            openApi30: params.openApi30,
+            definitions: definitions && {
+                ...definitions,
+                schemas: new Map(definitions.schemas),
+            },
+        });
+        definitions?.uses.pop();
+        definitions?.referenced.set(schema, json);
+        return json;
     }
 
     /**

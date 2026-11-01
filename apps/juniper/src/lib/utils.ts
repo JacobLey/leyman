@@ -9,7 +9,7 @@ import type { JsonSchema } from './types.js';
  */
 const isDeepStrictEqual = (a: unknown, b: unknown): boolean => {
     if (typeof a === 'object' && a !== null) {
-        if (typeof b !== 'object' || b === null) {
+        if (typeof b !== 'object' || b === null || Array.isArray(a) !== Array.isArray(b)) {
             return false;
         }
         const aKeys = Object.keys(a);

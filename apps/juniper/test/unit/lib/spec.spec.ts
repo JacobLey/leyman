@@ -138,6 +138,48 @@ suite('serializeSpec', () => {
         expect(spec.components.schemas.User).to.deep.equal(definition);
     });
 
+    test('Keeps an identical component with its keys in another order', () => {
+        const definition = serializeSpec({ schema: user }).components.schemas.User as Record<
+            string,
+            unknown
+        >;
+        const reorder = (value: unknown): unknown => {
+            if (Array.isArray(value)) {
+                return value.map(item => reorder(item));
+            }
+            return typeof value === 'object' && value !== null
+                ? Object.fromEntries(
+                      Object.entries(value)
+                          .toReversed()
+                          .map(([key, item]) => [key, reorder(item)])
+                  )
+                : value;
+        };
+        const reordered = reorder(definition);
+        expect(JSON.stringify(reordered)).to.not.equal(JSON.stringify(definition));
+
+        const spec = serializeSpec({ schema: user, components: { schemas: { User: reordered } } });
+
+        expect(spec.components.schemas.User).to.deep.equal(definition);
+    });
+
+    test('Rejects a component whose arrays are in another order', () => {
+        const required = objectSchema({
+            properties: { a: stringSchema(), b: stringSchema() },
+            required: ['a', 'b'],
+        }).define('Required');
+        const definition = serializeSpec({ schema: required }).components.schemas.Required;
+
+        expect(() =>
+            serializeSpec({
+                schema: required,
+                components: {
+                    schemas: { Required: { ...definition, required: ['b', 'a'] } },
+                },
+            })
+        ).to.throw(Error, 'Required');
+    });
+
     test('Rejects a different component with a definition name', () => {
         expect(() =>
             serializeSpec({ schema: user, components: { schemas: { User: { type: 'string' } } } })

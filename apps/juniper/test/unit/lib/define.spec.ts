@@ -16,6 +16,42 @@ import { suite, test } from 'mocha-chain';
 import { compile } from '../../ajv.js';
 
 suite('define', () => {
+    test('Tells an array from an empty object when comparing to the definition', () => {
+        const base = stringSchema().metadata('xExtra', []).define('Tagged');
+
+        expect(base.metadata('xExtra', {}).toJSON()).to.deep.equal({
+            type: 'string',
+            xExtra: {},
+        });
+    });
+
+    test('Compares schemas derived from a definition the same way when there are many', () => {
+        const base = objectSchema({ properties: { city: stringSchema() } }).define('Place');
+        const json = objectSchema({
+            properties: {
+                first: base.description('first'),
+                second: base.description('second'),
+                changed: base.minProperties(1),
+                alsoChanged: base.maxProperties(2),
+            },
+        }).toJSON();
+
+        expect(json.properties).to.deep.equal({
+            first: { description: 'first', $ref: '#/$defs/Place' },
+            second: { description: 'second', $ref: '#/$defs/Place' },
+            changed: {
+                type: 'object',
+                properties: { city: { type: 'string' } },
+                minProperties: 1,
+            },
+            alsoChanged: {
+                type: 'object',
+                properties: { city: { type: 'string' } },
+                maxProperties: 2,
+            },
+        });
+    });
+
     const address = objectSchema({
         properties: { city: stringSchema() },
         required: ['city'],
