@@ -27,7 +27,7 @@ Nx decides what to build and test; Dagger only provides the environment. Keep pi
 # Full CI simulation (same pipeline as GitHub Actions)
 dagger-test
 
-# Regenerate Dagger Go SDK bindings (after editing the module)
+# Regenerate Dagger Go SDK bindings for editors (run on container creation; again after changing the module's functions or dependencies)
 dagger-develop
 ```
 

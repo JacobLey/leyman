@@ -11,7 +11,10 @@
     "PATH": "${containerEnv:PATH}:${containerWorkspaceFolder}/leyman/main/node_modules/.bin:${containerWorkspaceFolder}/scripts/commands"
   },
 
-  "postCreateCommand": "pnpm install --frozen-lockfile --config.confirmModulesPurge=false",
+  "postCreateCommand": {
+    "pnpm": "pnpm install --frozen-lockfile --config.confirmModulesPurge=false",
+    "dagger": "scripts/commands/dagger-develop || echo 'warning: Dagger bindings not generated, so editors flag dagger/main.go (only editors: dagger generates its own). Run dagger-develop once Docker is up.' >&2"
+  },
 
   "customizations": {
     "vscode": {
