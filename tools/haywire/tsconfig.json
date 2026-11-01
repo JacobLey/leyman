@@ -11,6 +11,9 @@
   ],
   "references": [
     {
+      "path": "../test-chain/mocha-chain"
+    },
+    {
       "path": "../../leyman/expect"
     },
     {

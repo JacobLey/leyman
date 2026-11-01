@@ -9,7 +9,6 @@ import type {
 import type { BindingBuilder } from '#binding';
 import type { AbstractPrivateClass } from '#identifier';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import {
     bind,
@@ -20,6 +19,7 @@ import {
     requestScope,
     transientScope,
 } from 'haywire';
+import { suite, test } from 'mocha-chain';
 import { TempBinding } from '#binding';
 
 suite('bind', () => {

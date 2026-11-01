@@ -1,5 +1,4 @@
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import {
     bind,
@@ -12,6 +11,7 @@ import {
     Module,
     SyncContainer,
 } from 'haywire';
+import { suite, test } from 'mocha-chain';
 
 suite('module', () => {
     const aOrBId = identifier<'a' | 'b'>('<custom-name>').named('AorB').nullable().undefinable();

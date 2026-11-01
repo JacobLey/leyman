@@ -1,7 +1,7 @@
-import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import { identifier } from 'haywire';
 import * as publicErrors from 'haywire';
+import { suite, test } from 'mocha-chain';
 import * as errors from '#errors';
 
 suite('errors', () => {

@@ -1,4 +1,4 @@
-import { suite, test } from 'mocha';
+import { suite, test } from 'mocha-chain';
 
 suite('types', () => {
     test('coverage', async () => {

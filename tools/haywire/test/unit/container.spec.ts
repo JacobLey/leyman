@@ -1,7 +1,6 @@
 import type { AsyncSupplier, Deferred, HaywireIdType, MultiList, Supplier } from 'haywire';
 import { setTimeout } from 'node:timers/promises';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import {
     bind,
@@ -21,6 +20,7 @@ import {
     SyncContainer,
     transientScope,
 } from 'haywire';
+import { suite, test } from 'mocha-chain';
 import { InstanceBinding, TempBinding } from '#binding';
 import { addBoundInstances } from '#container';
 import {

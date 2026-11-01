@@ -1,7 +1,6 @@
 import type { Supplier } from 'haywire';
 import { setTimeout } from 'node:timers/promises';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import {
     bind,
@@ -15,6 +14,7 @@ import {
     requestScope,
     singletonScope,
 } from 'haywire';
+import { suite, test } from 'mocha-chain';
 import {
     HaywireContainerDisposedError,
     HaywireDisposerScopeError,

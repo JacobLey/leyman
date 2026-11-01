@@ -9,9 +9,9 @@ import type {
 import type { AbstractPrivateClass } from '#identifier';
 import { inspect } from 'node:util';
 import { expectTypeOf } from 'expect-type';
-import { suite, test } from 'mocha';
 import { expect } from '@leyman/expect';
 import { identifier } from 'haywire';
+import { suite, test } from 'mocha-chain';
 import { expandOutputId } from '#identifier';
 
 suite('Generate identifier', () => {
