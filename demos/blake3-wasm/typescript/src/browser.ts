@@ -16,7 +16,7 @@ await init();
  * @returns the worker, to close when done with it
  */
 export const createHashWorker = (): HashWorker => {
-    // eslint-disable-next-line unicorn/no-missing-local-resource -- Compiled from `worker-browser.ts` alongside this file
+    // eslint-disable-next-line unicorn/no-missing-local-resource, n/no-unsupported-features/node-builtins -- Compiled from `worker-browser.ts` alongside this file. This is a browser's `Worker`, not Node's
     const worker = new Worker(new URL('worker-browser.js', import.meta.url), { type: 'module' });
     return wrapHashWorker(worker, () => {
         worker.terminate();
