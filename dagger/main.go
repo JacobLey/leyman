@@ -25,9 +25,7 @@ const (
 	// node:24.22.1-trixie-slim.
 	nodeImage = "node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea"
 	// Outside the lockfile, so `minimumReleaseAge` can't check it: only bump to a release at least 7 days old.
-	// 12.9.1 fixes `--frozen-lockfile` rejecting the lockfile of injected workspace packages with `catalog:`
-	// peer dependencies.
-	pnpmVersion = "12.9.1"
+	pnpmVersion = "12.15.0"
 	// Keep in sync with `playwright` in `pnpm-workspace.yaml`: a client connects only to a server of its own version.
 	playwrightVersion = "1.64.1"
 	// mcr.microsoft.com/playwright:v1.64.1-noble, with every browser and its system libraries, for tests to connect to.

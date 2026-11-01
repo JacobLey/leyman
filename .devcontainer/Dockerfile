@@ -44,7 +44,7 @@ ENV HOME="/home/$USER"
 
 FROM base AS pnpm
 # Only bump to a release at least 7 days old, see `pnpmVersion` in `dagger/main.go`
-ARG PNPM_VERSION=12.9.1
+ARG PNPM_VERSION=12.15.0
 ENV PNPM_HOME="$HOME/.local/share/pnpm"
 RUN curl -fsSL https://get.pnpm.io/install.sh | env PNPM_VERSION=$PNPM_VERSION SHELL=bash sh -
 
