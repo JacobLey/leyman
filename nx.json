@@ -295,19 +295,23 @@
         "check:_"
       ]
     },
-    "go-vet": {
+    "go-lint": {
       "options": {
-        "linter": "go",
+        "linter": "golangci-lint",
         "args": [
-          "vet"
+          "run"
         ]
       },
       "cache": true,
       "inputs": [
         "goSource",
         "^goSource",
+        "{workspaceRoot}/.golangci.yml",
         {
           "runtime": "go version"
+        },
+        {
+          "runtime": "golangci-lint version --short"
         }
       ],
       "dependsOn": [
@@ -860,7 +864,7 @@
         "check-package",
         "check-parity",
         "drizzle-kit-check",
-        "go-vet",
+        "go-lint",
         "rust-clippy",
         "tofu-validate",
         "check-version"
@@ -1013,7 +1017,7 @@
       "options": {
         "buildTargetName": "go-build",
         "testTargetName": "go-test",
-        "lintTargetName": "go-vet",
+        "lintTargetName": "go-lint",
         "tidyTargetName": "go-tidy",
         "generateTargetName": "go-generate",
         "runTargetName": "go-serve",

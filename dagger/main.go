@@ -37,6 +37,11 @@ const (
 	// The same Go minor as the Dagger engine (`GolangVersion` in its `engine/distconsts/consts.go`), which builds this
 	// module. Keep in sync with `GO_IMAGE` in `.devcontainer/Dockerfile`.
 	goImage = "golang:1.27.3-trixie@sha256:fbb7ae40b62ff8afe31662df570d39b4f5052ac32b90dae8e60d7657a20a74f4"
+	// Downloaded with the Go toolchain, at a release at least 7 days old. Checksums are of each release's
+	// `linux-*.tar.gz`: amd64 for CI, arm64 for `dagger-test` on a Mac.
+	golangciLintVersion     = "2.15.0"
+	golangciLintAmd64Sha256 = "9b7fe6a6bf6334b98decf8d86b11415ea7889afdabdd1959fdce23af2a9ebcea"
+	golangciLintArm64Sha256 = "b4d8f17068b35ee6060cc2f69a16fb48740d706fbba81661c318649c114a6998"
 	// rust:1.99.1-trixie.
 	// Only its toolchain is copied into the Node image, for projects written in Rust.
 	rustImage = "rust:1.99.1-trixie@sha256:09027f873d45b8ecd1dc86f1fa13b7a62b875c961f017a0e331267b350430137"
@@ -621,6 +626,24 @@ func system() *dagger.Container {
 			" && apt-get install --yes --no-install-recommends gcc libc6-dev"})
 }
 
+// The Go toolchain, with the same golangci-lint release as the devcontainer's.
+func goToolchain() *dagger.Container {
+	return dag.Container().
+		From(goImage).
+		WithExec([]string{"sh", "-c", `set -e
+case "$(uname -m)" in
+	x86_64) arch=amd64 sha256=` + golangciLintAmd64Sha256 + ` ;;
+	aarch64) arch=arm64 sha256=` + golangciLintArm64Sha256 + ` ;;
+	*) echo "No pinned golangci-lint for $(uname -m)" >&2; exit 1 ;;
+esac
+release="golangci-lint-` + golangciLintVersion + `-linux-$arch"
+curl --fail --silent --show-error --location --retry 3 --output /tmp/golangci-lint.tar.gz \
+	"https://github.com/golangci/golangci-lint/releases/download/v` + golangciLintVersion + `/$release.tar.gz"
+echo "$sha256  /tmp/golangci-lint.tar.gz" | sha256sum --check --quiet
+tar --extract --gzip --file /tmp/golangci-lint.tar.gz --directory ` + goRoot + `/bin --strip-components=1 "$release/golangci-lint"
+rm /tmp/golangci-lint.tar.gz`})
+}
+
 // The Rust toolchain, with the same components and tools as the devcontainer's, and no crates downloaded. The tools are
 // the releases' prebuilt binaries, where the devcontainer compiles the same versions once per image.
 func rustToolchain() *dagger.Container {
@@ -655,7 +678,7 @@ func withTools(ctr *dagger.Container) *dagger.Container {
 		Directory("/usr/local/lib/node_modules/pnpm")
 	rust := rustToolchain()
 	return ctr.
-		WithDirectory(goRoot, dag.Container().From(goImage).Directory(goRoot)).
+		WithDirectory(goRoot, goToolchain().Directory(goRoot)).
 		WithDirectory(rustupHome, rust.Directory(rustupHome)).
 		WithDirectory(cargoHome, rust.Directory(cargoHome)).
 		WithEnvVariable("RUSTUP_HOME", rustupHome).

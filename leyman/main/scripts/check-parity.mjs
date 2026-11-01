@@ -62,6 +62,7 @@ const checks = () => ({
     ],
     pnpm: [dockerArg('PNPM_VERSION'), daggerConst('pnpmVersion')],
     'Go image': [dockerArg('GO_IMAGE'), daggerConst('goImage')],
+    'golangci-lint': [dockerArg('GOLANGCI_LINT_VERSION'), daggerConst('golangciLintVersion')],
     'Rust image': [dockerArg('RUST_IMAGE'), daggerConst('rustImage')],
     'Rust minor': [
         majorMinor(imageVersion(daggerConst('rustImage'))),

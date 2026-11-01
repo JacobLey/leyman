@@ -21,7 +21,7 @@ Files live on the host, so they survive container rebuilds. Claude Code config i
 |---------|--------------------|-------|
 | Node.js | JS runtime | Version pinned via `ARG NODE_VERSION` in `Dockerfile` |
 | pnpm | Package management | Version pinned via `ARG PNPM_VERSION`. Installed outside the lockfile, so `minimumReleaseAge` can't hold it back: only bump to a release at least 7 days old |
-| Go | Golang runtime, for Dagger and Go projects (e.g. `tools/constant-consistent-hash/go-impl`) | Image pinned by digest via `ARG GO_IMAGE`, at the Go minor of the pinned Dagger engine (`GolangVersion` in its `engine/distconsts/consts.go`); also installs `gopls` |
+| Go | Golang runtime, for Dagger and Go projects (e.g. `tools/constant-consistent-hash/go-impl`) | Image pinned by digest via `ARG GO_IMAGE`, at the Go minor of the pinned Dagger engine (`GolangVersion` in its `engine/distconsts/consts.go`); also installs `gopls`, and the `golangci-lint` release at `ARG GOLANGCI_LINT_VERSION`, checked against the release's checksums |
 | Rust | Rust runtime and WASM builds, for Rust projects (e.g. `tools/constant-consistent-hash/rust-impl`) | Image pinned by digest via `ARG RUST_IMAGE`, with `rustfmt`, `clippy`, `llvm-tools-preview`, `rust-analyzer`, `rust-src` and the `wasm32-unknown-unknown` target, plus `cargo-llvm-cov` and `wasm-bindgen-cli` at `ARG CARGO_LLVM_COV_VERSION` and `ARG WASM_BINDGEN_VERSION`. Adds about 950 MB to the image. No `rust-toolchain.toml`, which would let rustup download a different toolchain on its own |
 | Python | Ad-hoc scripting (no projects use it) | Version pinned via `ARG PYTHON_VERSION`, prebuilt by [python-build-standalone](https://github.com/astral-sh/python-build-standalone) at release `ARG PYTHON_BUILD`: only bump to a release at least 7 days old. Not mirrored in Dagger |
 | Dagger CLI | Mirror CI execution locally | Version pinned via `ARG DAGGER_VERSION`. `postCreateCommand` runs `dagger-develop` beside `pnpm install`, so editors can resolve `dagger/main.go`. A failure only warns: the container still starts |
@@ -41,7 +41,7 @@ Files live on the host, so they survive container rebuilds. Claude Code config i
 
 The `Dockerfile` is multi-stage, so a version bump rebuilds only what it must (bumping Node rebuilds in seconds, not minutes):
 
-- Each tool (Node, Go and `gopls`, Rust, pnpm, Python, `gh`, Dagger) is fetched in its own stage, at the path it has in the final image. The final stage copies them in **last**, after the slow system installs (Postgres client, Playwright's libraries, Homebrew, oh-my-zsh, Claude).
+- Each tool (Node, Go and `gopls`, golangci-lint, Rust, pnpm, Python, `gh`, Dagger) is fetched in its own stage, at the path it has in the final image. The final stage copies them in **last**, after the slow system installs (Postgres client, Playwright's libraries, Homebrew, oh-my-zsh, Claude).
 - Declare each `ARG` in the stage that uses it, right before its first use: a changed `ARG` reruns every `RUN` after its declaration in that stage. `ARG`s before the first `FROM` are only for `FROM` lines (the base image, Node and Go).
 - Playwright's system libraries: the `playwright-deps` stage lists the packages `install-deps` would install, and the final stage installs that list. The install reruns only when the list changes.
 - Node is only the `node` binary, at `/usr/local/bin/node` (no npm). Version-free paths like this one keep editor settings unchanged across bumps.
@@ -58,6 +58,7 @@ The Dagger CI pipeline runs in its own container — it does **not** use the Dev
 | Node.js | `ARG NODE_VERSION` in `.devcontainer/Dockerfile`, the `nx-cache` and `dagger-nx-cache` images in `.devcontainer/docker-compose.yml`, and `image` in `demos/local-ingress/run` (pinned by digest, the same as `nodeImage`) | `nodeImage` tag in `dagger/main.go` |
 | pnpm | `ARG PNPM_VERSION` in `.devcontainer/Dockerfile` | `pnpmVersion` in `dagger/main.go` |
 | Go | `ARG GO_IMAGE` in `.devcontainer/Dockerfile` | `goImage` in `dagger/main.go`. The same image, pinned by digest, at the Go minor of the pinned Dagger engine: check it when bumping Dagger |
+| golangci-lint | `ARG GOLANGCI_LINT_VERSION` in `.devcontainer/Dockerfile` | `golangciLintVersion` in `dagger/main.go`, with the checksums below it. The release must be built with a Go at least the `go` directive of every `go.mod` |
 | Rust | `ARG RUST_IMAGE` in `.devcontainer/Dockerfile`, and `rust-version` in the root `Cargo.toml` | `rustImage` in `dagger/main.go`. The same image, pinned by digest |
 | cargo-llvm-cov | `ARG CARGO_LLVM_COV_VERSION` in `.devcontainer/Dockerfile` | `cargoLlvmCovVersion` in `dagger/main.go`, with the checksums below it |
 | wasm-bindgen | `ARG WASM_BINDGEN_VERSION` in `.devcontainer/Dockerfile` | `wasmBindgenVersion` in `dagger/main.go`, with the checksums below it. Both must match the `wasm-bindgen` crate in `Cargo.lock`, and a mismatch fails the build |

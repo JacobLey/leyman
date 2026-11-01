@@ -65,7 +65,7 @@ Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go-impl`. 
 - `go.mod`: module `github.com/JacobLey/leyman/<path>`, with a `go` directive no newer than the pinned Go version (Dagger sets `GOTOOLCHAIN=local`, so it never downloads a newer toolchain).
 - Depend on another workspace Go module with `require <module> v0.0.0` plus `replace <module> => ../<path>`, and import it. gonx infers the Nx dependency from the import. To share data with TypeScript, give the other project a `go.mod` too, and `//go:embed` the data (see `tools/constant-consistent-hash/test-vectors`).
 - Source and `_test.go` files at the project root.
-- `project.json` targets: `biome` (formats `project.json`), `gofmt`, and `go-coverage-report` when it has tests (see the [Go template](../nx-tasks-reference/SKILL.md#go-project)). `go-vet` and `go-test` are inferred. No `tsconfig.json`, `eslint.config.js` or TypeScript targets.
+- `project.json` targets: `biome` (formats `project.json`), `gofmt`, and `go-coverage-report` when it has tests (see the [Go template](../nx-tasks-reference/SKILL.md#go-project)). `go-lint` and `go-test` are inferred. No `tsconfig.json`, `eslint.config.js` or TypeScript targets.
 - Not published: nothing deploys Go modules yet.
 
 ## Rust projects

@@ -43,6 +43,12 @@ Every `eslint-disable` comment gives its reason after `--` (`@eslint-community/e
 
 The `eslint` target runs from the workspace root. ESLint looks up the config from each file, so each file uses its package's config, with patterns relative to the package. Running from the root lets `eslint-plugin-sonarjs` find `pnpm-workspace.yaml` and resolve `catalog:` versions, which it only looks for up to ESLint's working directory. Running `eslint .` inside a package still works, but prints `could not be resolved for catalog` for each catalog dependency.
 
+## Go
+
+`golangci-lint` is held to the same bar: `.golangci.yml` at the workspace root turns on every linter (`linters.default: all`) and states a reason for each one it disables or excludes. It also picks the formatters (`gofumpt` and `goimports`), which `golangci-lint fmt` runs through the `gofmt` target. `golangci-lint run --fix` applies the fixes it can, from a project's directory.
+
+Suppress one finding with `//nolint:<linter> // reason`, after trying to fix what it found. `nolintlint` fails a suppression with no reason, or one that no longer does anything. When a linter clashes with what a whole project does, add a rule for that path to `.golangci.yml`.
+
 ## Custom rules
 
 Rules ship with the package whose code they are about, as an ESLint plugin on a `./eslint` entry point (e.g. `generated-signature/eslint`), not as separate `eslint-plugin-*` packages. A rule about no particular package goes in a standalone package that follows the same pattern, with the plugin as its main entry point.

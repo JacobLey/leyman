@@ -1,0 +1,78 @@
+# Every linter is on, as with ESLint and Clippy. A linter or a path is only turned off here with its reason.
+version: '2'
+
+linters:
+  default: all
+  disable:
+    # Deprecated, each replaced by its `_v2` or `_v5` linter, which stays on
+    - exhaustruct
+    - gomodguard
+    - wsl
+    # Needs a policy of allowed imports, and this repo has none to enforce
+    - depguard
+    # Nothing wraps Go code automatically, and neither image digests nor Dagger's `+ignore` pragma can wrap by hand
+    - lll
+    # `if err := f(); err != nil` is the Go idiom, and keeps `err` scoped to the check
+    - noinlineerr
+  settings:
+    exhaustruct_v5:
+      # The SDK's `*Opts` structs are optional arguments: a missing field means the default
+      exclude:
+        - ^dagger/ci/internal/dagger\.
+    godot:
+      # Dagger's pragmas, like `+cache="never"`, have to end a doc comment as they are
+      exclude:
+        - ^\s*\+
+    mnd:
+      # A port number is named by the function it is passed to
+      ignored-functions:
+        - WithExposedPort
+    recvcheck:
+      # The generated `dagger.gen.go` gives the module's type both kinds of receiver
+      exclusions:
+        - Ci.MarshalJSON
+    wrapcheck:
+      # The engine's errors already name the query that failed
+      ignore-package-globs:
+        - dagger/ci/internal/dagger
+  exclusions:
+    generated: lax
+    # The error from closing what was only read has nothing to report
+    presets:
+      - std-error-handling
+    paths:
+      - dagger/internal/
+    rules:
+      # Its doc comments are the CLI's help text (`dagger call --help`), not godoc
+      - path: dagger/main\.go
+        linters:
+          - godoclint
+      # Its errors are only printed by the CLI, and no caller compares them
+      - path: dagger/main\.go
+        linters:
+          - err113
+      # The words of a command line aren't one value that should change together
+      - path: dagger/main\.go
+        linters:
+          - goconst
+      # `dagger develop` writes these `replace` directives
+      - path: dagger/go\.mod
+        linters:
+          - gomoddirectives
+      # Its test vectors are a sibling project, never fetched
+      - path: tools/constant-consistent-hash/go-impl/go\.mod
+        linters:
+          - gomoddirectives
+      # Its numbers are the hash's specified constants and bit widths, which a name wouldn't explain further
+      - path: tools/constant-consistent-hash/go-impl/
+        linters:
+          - mnd
+
+formatters:
+  enable:
+    - gofumpt
+    - goimports
+  exclusions:
+    generated: lax
+    paths:
+      - dagger/internal/

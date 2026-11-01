@@ -66,7 +66,7 @@
     "check-package": "check:lint",
     "check-parity": "check:lint",
     "drizzle-kit-check": "check:lint",
-    "go-vet": "check:lint",
+    "go-lint": "check:lint",
     "rust-clippy": "check:lint",
     "tofu-validate": "check:lint",
     "check-version": "check:lint",

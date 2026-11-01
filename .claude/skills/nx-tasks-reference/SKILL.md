@@ -64,7 +64,7 @@ Formats with Biome (`scripts/nx/biome-format.sh`). Writes changes, except in CI 
 
 ### `gofmt`
 
-Formats Go source with `gofmt` (`scripts/nx/gofmt.sh`). Like `biome`, writes changes, except in CI where it fails listing the unformatted files.
+Formats Go source with `golangci-lint fmt` (`scripts/nx/gofmt.sh`), which runs the formatters in `.golangci.yml`. Like `biome`, writes changes, except in CI where it fails showing the diff.
 
 **Add when:** Go projects (has `go.mod`).
 
@@ -143,9 +143,9 @@ Fails if `tools/local-ingress`'s image or compose file changed without a `VERSIO
 
 ---
 
-### `go-vet`
+### `go-lint`
 
-Runs `go vet ./...`, Go's built-in static checks. Runs in `check:lint`, like `eslint`. Inferred by gonx (see [Go projects](#go-projects)).
+Runs `golangci-lint run ./...` with the workspace's `.golangci.yml`, where every linter is on (`go vet` is one of them). Runs in `check:lint`, like `eslint`. Inferred by gonx (see [Go projects](#go-projects)).
 
 **Add when:** Never: inferred for every Go project.
 
@@ -339,9 +339,9 @@ Validates 100% coverage using only the C8 data from this project's own test targ
 
 The [`@naxodev/gonx`](https://gonx.naxo.dev/) plugin (in `nx.json` `plugins`) turns every `go.mod` into a project, except under `dagger/` (`exclude`). It also infers dependencies between them from Go `import`s, following `replace` directives, the way Nx reads `package.json` dependencies. No `implicitDependencies` needed.
 
-Its inferred targets are renamed with a `go-` prefix, so they don't collide with lifecycle targets like `build` and `test`. Only `go-vet` and `go-test` are bound in `lifecycle.json`, configured through name-keyed `targetDefaults` (inputs, `dependsOn`, and options such as `go vet` instead of gonx's default `go fmt`). Keep those defaults without an `executor`: a default naming a different executor than the inferred target is ignored. The others (`go-build`, `go-tidy`, `go-generate`, `go-serve`, `go-release-publish`) are unbound, and only run when called directly.
+Its inferred targets are renamed with a `go-` prefix, so they don't collide with lifecycle targets like `build` and `test`. Only `go-lint` and `go-test` are bound in `lifecycle.json`, configured through name-keyed `targetDefaults` (inputs, `dependsOn`, and options such as `golangci-lint run` instead of gonx's default `go fmt`). Keep those defaults without an `executor`: a default naming a different executor than the inferred target is ignored. The others (`go-build`, `go-tidy`, `go-generate`, `go-serve`, `go-release-publish`) are unbound, and only run when called directly.
 
-`gofmt` stays a repo target, since gonx's formatter always rewrites and can't only check in CI.
+`gofmt` stays a repo target, since gonx's formatter always rewrites and can't only check in CI. It keeps its name, though `golangci-lint fmt` runs it.
 
 ## Rust projects
 

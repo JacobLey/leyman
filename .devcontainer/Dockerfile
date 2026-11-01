@@ -78,6 +78,18 @@ RUN wget "https://github.com/cli/cli/releases/download/v${GH_VERSION}/gh_${GH_VE
     && tar -C /opt/gh --strip-components=1 -xzf /tmp/gh.tar.gz \
     && rm /tmp/gh.tar.gz
 
+# The same release as `golangciLintVersion` in `dagger/main.go`. Only bump to a release at least 7 days old
+FROM base AS golangci-lint
+ARG GOLANGCI_LINT_VERSION=2.15.0
+RUN cd /tmp \
+    && release="golangci-lint-${GOLANGCI_LINT_VERSION}-linux-$(dpkg --print-architecture)" \
+    && base_url="https://github.com/golangci/golangci-lint/releases/download/v${GOLANGCI_LINT_VERSION}" \
+    && wget "$base_url/$release.tar.gz" "$base_url/golangci-lint-${GOLANGCI_LINT_VERSION}-checksums.txt" \
+    && grep " $release.tar.gz\$" "golangci-lint-${GOLANGCI_LINT_VERSION}-checksums.txt" | sha256sum --check \
+    && mkdir /opt/golangci-lint \
+    && tar -C /opt/golangci-lint --strip-components=1 -xzf "$release.tar.gz" \
+    && rm "$release.tar.gz" "golangci-lint-${GOLANGCI_LINT_VERSION}-checksums.txt"
+
 FROM base AS dagger
 ARG DAGGER_VERSION=0.21.11
 RUN curl -fsSL https://dl.dagger.io/dagger/install.sh | DAGGER_VERSION=${DAGGER_VERSION} BIN_DIR=/opt/dagger sh
@@ -118,6 +130,7 @@ RUN mkdir -p $HOME/.config/vscode-dev-containers && \
 
 # The tools, last. No npm: pnpm only
 COPY --from=gh /opt/gh/bin/gh /usr/local/bin/gh
+COPY --from=golangci-lint /opt/golangci-lint/golangci-lint /usr/local/bin/golangci-lint
 COPY --from=tofu /usr/local/bin/tofu /usr/local/bin/tofu
 COPY --from=dagger --chown=$USER:$USER /opt/dagger/dagger $HOME/.local/bin/dagger
 COPY --from=python --chown=$USER:$USER $HOME/.python $HOME/.python
