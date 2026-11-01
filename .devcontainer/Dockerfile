@@ -112,13 +112,6 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 # CLAUDE_CONFIG_DIR is set in docker-compose.yml so config is shared across worktrees
 RUN curl -fsSL https://claude.ai/install.sh | bash
 
-# Ensure NX runs at max capacity
-# Although too many and we risk file overload
-# (and frankly don't usually have infinite tasks that can be parallelized)
-RUN NX_PARALLEL="$(nproc --all)" MAX_PARALLEL=5 \
-    && echo >> $HOME/.bashrc \
-    && echo "export NX_PARALLEL=$((NX_PARALLEL>MAX_PARALLEL ? MAX_PARALLEL : NX_PARALLEL))" >> $HOME/.bashrc
-
 # Grant permissions to non-root (before the tools are copied in, already owned by them)
 RUN mkdir -p $HOME/.config/vscode-dev-containers && \
     chown -R $USER:$USER $HOME
