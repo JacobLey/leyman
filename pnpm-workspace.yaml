@@ -120,7 +120,6 @@ catalog:
   '@happy-dom/global-registrator': ^21.0.4
   '@hono/node-server': ^2.1.5
   '@modelcontextprotocol/client': ^2.4.0
-  '@modelcontextprotocol/hono': ^2.0.2
   '@modelcontextprotocol/server': ^2.4.0
   '@naxodev/gonx': ^4.1.2
   '@noble/hashes': ^2.4.0
@@ -130,7 +129,6 @@ catalog:
   '@standard-schema/spec': ^1.1.0
   '@swc/cli': ^0.8.1
   '@swc/core': ^1.16.20
-  '@swc/helpers': ^0.5.23
   '@tanstack/react-query': ^5.104.5
   '@testing-library/dom': ^10.4.2
   '@testing-library/react': ^16.3.3

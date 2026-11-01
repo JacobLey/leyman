@@ -5,7 +5,7 @@
   "inlineSourcesContent": false,
   "jsc": {
     "target": "esnext",
-    "externalHelpers": true,
+    "externalHelpers": false,
     "parser": {
       "syntax": "typescript",
       "decorators": false,
