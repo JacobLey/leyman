@@ -1,0 +1,28 @@
+diff --git a/dist/src/hasher/native-task-hasher-impl.js b/dist/src/hasher/native-task-hasher-impl.js
+index 27dac3582960974bafac4dfe487031bebd9cc4ea..5fb37877b926c3f5942256f4662ffae81d6855a8 100644
+--- a/dist/src/hasher/native-task-hasher-impl.js
++++ b/dist/src/hasher/native-task-hasher-impl.js
+@@ -4,6 +4,7 @@ exports.NativeTaskHasherImpl = void 0;
+ const native_1 = require("../native");
+ const transform_objects_1 = require("../native/transform-objects");
+ const typescript_1 = require("../plugins/js/utils/typescript");
++const prune_task_graph_1 = require("../tasks-runner/prune-task-graph");
+ const task_io_service_1 = require("../tasks-runner/task-io-service");
+ const fileutils_1 = require("../utils/fileutils");
+ const overrides_1 = require("../ultracache/overrides");
+@@ -65,10 +66,13 @@ class NativeTaskHasherImpl {
+      * planner's eligibility walk withholds their entries.
+      */
+     plan(taskIds, taskGraph, ultracacheConfigurations) {
++        // The planner reads none of the results written onto tasks as a run progresses, and N-API copies whatever it is
++        // given, so each call would otherwise copy every earlier result.
++        const prunedGraph = (0, prune_task_graph_1.pruneTaskGraph)(taskGraph);
+         if (!ultracacheConfigurations) {
+-            return this.planner.getPlansReference(taskIds, taskGraph);
++            return this.planner.getPlansReference(taskIds, prunedGraph);
+         }
+-        return this.planner.getPlansReference(taskIds, taskGraph, ultracacheConfigurations, (0, overrides_1.ultracacheEligibilityOptions)(this.projectGraph, taskGraph));
++        return this.planner.getPlansReference(taskIds, prunedGraph, ultracacheConfigurations, (0, overrides_1.ultracacheEligibilityOptions)(this.projectGraph, taskGraph));
+     }
+     async hashTasksUpfront(tasks, taskGraph, perTaskEnvs, cwd, collectInputs, ultracacheConfigurations) {
+         const plans = this.plan(tasks.map((t) => t.id), taskGraph, ultracacheConfigurations);

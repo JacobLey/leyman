@@ -246,3 +246,6 @@ patchedDependencies:
   # `prefer-string-starts-ends-with` parses a `v`-flag RegExp as if it had no flags, so it autofixes `/^\p{N}/v.test(s)`
   # to `s.startsWith('p{N}')`
   '@typescript-eslint/eslint-plugin@8.72.0': patches/@typescript-eslint__eslint-plugin@8.72.0.patch
+  # Without the daemon, as in Docker and CI, each wave of task hashing copies the whole task graph to native code with
+  # every result written onto it so far, about 112s of a warm `verify`. Nx prunes those results for the daemon only
+  nx@23.3.1: patches/nx@23.3.1.patch

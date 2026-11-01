@@ -341,6 +341,7 @@ packageExtensionsChecksum: sha256-21nY7Flqbh3KxR1g+45WFIcs017mfzT4ZVpkG5Ek8Wg=
 
 patchedDependencies:
   '@typescript-eslint/eslint-plugin@8.72.0': 14289edb1532bcdc0e05ca26e6c77a119c79ddb4a07e3f2053e87027b7e325d9
+  nx@23.3.1: aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d
 
 importers:
 
@@ -688,7 +689,7 @@ importers:
     dependencies:
       '@nx/devkit':
         specifier: 'catalog:'
-        version: 23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+        version: 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
       ci-info:
         specifier: 'catalog:'
         version: 4.4.0
@@ -715,7 +716,7 @@ importers:
         version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       nx:
         specifier: 'catalog:'
-        version: 23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))
+        version: 23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -2587,10 +2588,10 @@ importers:
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@naxodev/gonx':
         specifier: 'catalog:'
-        version: 4.1.2(@nx/devkit@23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))))(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+        version: 4.1.2(@nx/devkit@23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
       '@nx/js':
         specifier: 'catalog:'
-        version: 23.3.1(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.20(@swc/helpers@0.5.23))(@typescript/typescript6@6.0.2)(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))(supports-color@8.1.1)
+        version: 23.3.1(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.20(@swc/helpers@0.5.23))(@typescript/typescript6@6.0.2)(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))(supports-color@8.1.1)
       '@typescript/native':
         specifier: 'catalog:'
         version: typescript@7.0.2
@@ -2602,7 +2603,7 @@ importers:
         version: 7.0.14
       nx:
         specifier: 'catalog:'
-        version: 23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))
+        version: 23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))
       nx-lifecycle:
         specifier: workspace:^
         version: file:apps/nx-lifecycle(@biomejs/biome@2.6.3)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
@@ -12509,13 +12510,13 @@ snapshots:
       '@tybys/wasm-util': 0.10.4
     optional: true
 
-  '@naxodev/gonx@4.1.2(@nx/devkit@23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))))(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))':
+  '@naxodev/gonx@4.1.2(@nx/devkit@23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))':
     dependencies:
       '@melkeydev/go-blueprint': 0.10.11
-      '@nx/devkit': 23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+      '@nx/devkit': 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
       chalk: 4.1.2
       npm-run-path: 4.0.1
-      nx: 23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))
+      nx: 23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))
       p-limit: 6.2.0
       tree-sitter-go: 0.25.0
       tslib: 2.8.1
@@ -12525,16 +12526,16 @@ snapshots:
 
   '@noble/hashes@2.4.0': {}
 
-  '@nx/devkit@23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))':
+  '@nx/devkit@23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))':
     dependencies:
       ejs: 5.0.1
       minimatch: 10.2.5
-      nx: 23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))
+      nx: 23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))
       semver: 7.8.5
       tslib: 2.8.1
       yargs-parser: 21.1.1
 
-  '@nx/js@23.3.1(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.20(@swc/helpers@0.5.23))(@typescript/typescript6@6.0.2)(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))(supports-color@8.1.1)':
+  '@nx/js@23.3.1(@babel/traverse@7.29.8(supports-color@8.1.1))(@swc/cli@0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1))(@swc/core@1.16.20(@swc/helpers@0.5.23))(@typescript/typescript6@6.0.2)(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))(supports-color@8.1.1)':
     dependencies:
       '@babel/core': 7.29.7(supports-color@8.1.1)
       '@babel/plugin-proposal-decorators': 7.28.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
@@ -12546,7 +12547,7 @@ snapshots:
       '@babel/preset-env': 7.28.6(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
       '@babel/preset-typescript': 7.28.5(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
       '@babel/runtime': 7.29.7
-      '@nx/devkit': 23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+      '@nx/devkit': 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
       '@nx/workspace': 23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))
       '@zkochan/js-yaml': 0.0.7
       babel-plugin-const-enum: 1.2.0(@babel/core@7.29.7(supports-color@8.1.1))(supports-color@8.1.1)
@@ -12607,10 +12608,10 @@ snapshots:
 
   '@nx/workspace@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))':
     dependencies:
-      '@nx/devkit': 23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+      '@nx/devkit': 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
       '@zkochan/js-yaml': 0.0.7
       chalk: 4.1.2
-      nx: 23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))
+      nx: 23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))
       picomatch: 4.0.4
       semver: 7.8.5
       tslib: 2.8.1
@@ -16235,7 +16236,7 @@ snapshots:
 
   nx-lifecycle@file:apps/nx-lifecycle(@biomejs/biome@2.6.3)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
-      '@nx/devkit': 23.3.1(nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+      '@nx/devkit': 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
       fast-equals: 6.2.1
@@ -16244,7 +16245,7 @@ snapshots:
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
-      nx: 23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23))
+      nx: 23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))
       parse-cwd: file:tools/parse-cwd
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
@@ -16255,7 +16256,7 @@ snapshots:
       - eslint
       - prettier
 
-  nx@23.3.1(@swc/core@1.16.20(@swc/helpers@0.5.23)):
+  nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)):
     dependencies:
       '@clack/core': 1.4.3
       '@clack/prompts': 1.7.0
