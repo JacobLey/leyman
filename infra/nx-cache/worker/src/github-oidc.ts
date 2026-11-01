@@ -135,12 +135,10 @@ export const checkToken = async (
         claims === null ||
         rest.length > 0 ||
         headerClaims?.alg !== 'RS256' ||
-        typeof headerClaims.kid !== 'string'
+        typeof headerClaims.kid !== 'string' ||
+        // Only fetch keys for tokens that claim to be from the issuer
+        claims.iss !== policy.issuer
     ) {
-        return 'invalid';
-    }
-    // Only fetch keys for tokens that claim to be from the issuer
-    if (claims.iss !== policy.issuer) {
         return 'invalid';
     }
     const jwk = await signingKey(policy.issuer, headerClaims.kid, now);
