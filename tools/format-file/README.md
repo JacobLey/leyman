@@ -56,7 +56,7 @@ Formatting is best-effort and never throws because of the formatter. If neither 
 
 Every file passed is formatted, even when `.gitignore` lists it, since generated files are often ignored. Biome runs with its VCS integration off and Prettier reads only `.prettierignore`, so each formatter's own ignore settings (Biome's `files.includes`, `.prettierignore`) still apply.
 
-Without `formatter` (`'inherit'`), every installed formatter is tried: one with a config file found (`biome.json`/`biome.jsonc` above the working directory, or a Prettier config) first, then `biome` before `prettier`. The first one that succeeds is used, and the others are not run. Which formatters are installed and configured is determined once per process. Both are resolved as peer dependencies of `format-file`, so install them where `format-file` is installed.
+Without `formatter` (`'inherit'`), every installed formatter is tried: one with a config file found (`biome.json`/`biome.jsonc` above the working directory, or a Prettier config) first, then `biome` before `prettier`. The first one that succeeds is used, and the others are not run. Only Prettier formats Markdown (`.md`, `.markdown`), because Biome formats YAML frontmatter as a heading unless a project opts in with `markdown.parser.frontmatter`. Without Prettier, Markdown is left unchanged. Which formatters are installed and configured is determined once per process. Both are resolved as peer dependencies of `format-file`, so install them where `format-file` is installed.
 
 ## API
 

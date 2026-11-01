@@ -17,6 +17,8 @@ import {
 export const unformatted = {
     js: 'function f() {\nreturn 1;\n}\n',
     less: '.a {color:red}\n',
+    md: '# Title\n\n*  item\n',
+    frontmatter: '---\ndescription: A page\n---\n\n# Title\n',
     invalid: 'const x = {\n',
 };
 
@@ -24,6 +26,7 @@ export const formatted = {
     biome: 'function f() {\n\treturn 1;\n}\n',
     prettier: 'function f() {\n  return 1;\n}\n',
     less: '.a {\n  color: red;\n}\n',
+    md: '# Title\n\n- item\n',
 };
 
 const notInstalled = (): string => {

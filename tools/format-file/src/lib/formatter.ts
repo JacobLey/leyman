@@ -10,6 +10,53 @@ import type { Biome } from './biome.js';
 import type { Prettier } from './prettier.js';
 import Path from 'node:path';
 
+interface NamedFormatter {
+    name: string;
+    formatFiles: (files: readonly string[]) => Promise<void>;
+    formatText: (text: string, filePath: string) => Promise<string>;
+}
+
+/**
+ * Whether a file is Markdown. Unless a project opts in with `markdown.parser.frontmatter`, Biome formats YAML frontmatter
+ * as a heading, so only Prettier formats Markdown.
+ *
+ * @param filePath - file to check, by its extension
+ * @returns true if Markdown
+ */
+const isMarkdown = (filePath: string): boolean => /\.(?:markdown|md)$/iv.test(filePath);
+
+/**
+ * Formatters that may format Markdown.
+ *
+ * @param formatters - formatters to choose from
+ * @returns formatters other than Biome
+ */
+const markdownFormatters = (formatters: readonly NamedFormatter[]): readonly NamedFormatter[] =>
+    formatters.filter(({ name }) => name !== 'biome');
+
+/**
+ * Format files with the first formatter that succeeds. Without files, no formatter runs.
+ *
+ * @param files - files to format
+ * @param formatters - formatters to try in order
+ */
+const tryFormatFiles = async (
+    files: readonly string[],
+    formatters: readonly NamedFormatter[]
+): Promise<void> => {
+    if (files.length === 0) {
+        return;
+    }
+    for (const { formatFiles } of formatters) {
+        try {
+            await formatFiles(files);
+            return;
+        } catch {
+            // This formatter isn't installed, or failed: try the next
+        }
+    }
+};
+
 /**
  * Core formatting logic, choosing between available formatters.
  */
@@ -40,18 +87,15 @@ export class Formatter {
         files: readonly string[],
         options: FileFormatterOptions = {}
     ): Promise<void> {
-        if (files.length === 0) {
-            return;
-        }
         const formatters = await this.#getFormatters(options);
-        for (const { formatFiles } of formatters) {
-            try {
-                await formatFiles(files);
-                return;
-            } catch {
-                // This formatter isn't installed, or failed: try the next
-            }
-        }
+        await tryFormatFiles(
+            files.filter(file => !isMarkdown(file)),
+            formatters
+        );
+        await tryFormatFiles(
+            files.filter(file => isMarkdown(file)),
+            markdownFormatters(formatters)
+        );
     }
 
     async #formatFile(filePath: string, options?: FileFormatterOptions): Promise<void> {
@@ -78,12 +122,9 @@ export class Formatter {
      * @param options - which formatter to use, if not every usable one
      * @returns formatters, most preferred first
      */
-    async #getFormatters({ formatter = 'inherit' }: FileFormatterOptions): Promise<
-        {
-            formatFiles: (files: readonly string[]) => Promise<void>;
-            formatText: (text: string, filePath: string) => Promise<string>;
-        }[]
-    > {
+    async #getFormatters({
+        formatter = 'inherit',
+    }: FileFormatterOptions): Promise<NamedFormatter[]> {
         this.#usability ??= Promise.all([
             this.#biome.canUseBiome(),
             this.#prettier.canUsePrettier(),

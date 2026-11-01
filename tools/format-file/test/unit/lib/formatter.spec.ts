@@ -89,6 +89,58 @@ suite('Formatter', () => {
             expect(await ctx.read('file.less')).to.equal(unformatted.less);
         });
 
+        suite('Markdown', () => {
+            for (const name of ['file.md', 'file.MD', 'file.markdown']) {
+                withTmpCwd.test(
+                    `Prettier formats ${name}, even if Biome is configured`,
+                    async ctx => {
+                        await ctx.write('biome.json', '{}');
+                        await ctx.write(name, unformatted.md);
+
+                        await createFormatters().formatter.formatFiles([ctx.resolve(name)]);
+
+                        expect(await ctx.read(name)).to.equal(formatted.md);
+                    }
+                );
+            }
+
+            withTmpCwd.test('Keeps frontmatter', async ctx => {
+                await ctx.write('biome.json', '{}');
+                await ctx.write('file.md', unformatted.frontmatter);
+
+                await createFormatters().formatter.formatFiles([ctx.resolve('file.md')]);
+
+                expect(await ctx.read('file.md')).to.equal(unformatted.frontmatter);
+            });
+
+            withTmpCwd.test('Biome leaves it unchanged when specified', async ctx => {
+                await ctx.write('file.md', unformatted.md);
+
+                await createFormatters().formatter.formatFiles([ctx.resolve('file.md')], {
+                    formatter: 'biome',
+                });
+
+                expect(await ctx.read('file.md')).to.equal(unformatted.md);
+            });
+
+            withTmpCwd.test('Biome still formats the files passed with it', async ctx => {
+                await ctx.write('biome.json', '{}');
+                await ctx.write('first.md', unformatted.md);
+                await ctx.write('file.js', unformatted.js);
+                await ctx.write('second.md', unformatted.md);
+
+                await createFormatters().formatter.formatFiles([
+                    ctx.resolve('first.md'),
+                    ctx.resolve('file.js'),
+                    ctx.resolve('second.md'),
+                ]);
+
+                expect(await ctx.read('first.md')).to.equal(formatted.md);
+                expect(await ctx.read('file.js')).to.equal(formatted.biome);
+                expect(await ctx.read('second.md')).to.equal(formatted.md);
+            });
+        });
+
         withTmpCwd.test('Resolves even if all formatters fail', async ctx => {
             await ctx.write('file.js', unformatted.invalid);
 
