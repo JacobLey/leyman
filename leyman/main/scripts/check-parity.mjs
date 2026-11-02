@@ -14,6 +14,7 @@ const workspaceRoot = path.resolve(import.meta.dirname, '../../..');
 const dockerfile = '.devcontainer/Dockerfile';
 const compose = '.devcontainer/docker-compose.yml';
 const workflow = '.github/workflows/ci.yml';
+const reportWorkflow = '.github/workflows/comparison-report.yml';
 const wrangler = 'infra/nx-cache/worker/wrangler.jsonc';
 
 // `BASE_IMAGE` names the Debian release by number, every other image by codename
@@ -34,7 +35,8 @@ const daggerConst = name =>
     read('dagger/main.go', new RegExp(String.raw`^\s+${name} += "(?<value>.+)"$`, 'mv'), name);
 const composeImage = service =>
     read(compose, /^ {4}image: (?<value>.+)$/mv, `${service} image`, `\n  ${service}:\n`);
-const workflowEnv = name => read(workflow, new RegExp(`^  ${name}: (?<value>.+)$`, 'mv'), name);
+const workflowEnv = (name, file = workflow) =>
+    read(file, new RegExp(`^  ${name}: (?<value>.+)$`, 'mv'), name);
 const wranglerVar = name =>
     read(wrangler, new RegExp(String.raw`^\s+"${name}": "(?<value>.+)",?$`, 'mv'), name);
 
@@ -92,6 +94,7 @@ const checks = () => ({
             /^ {2}DAGGER_VERSION: (?<value>.+)$/mv,
             'DAGGER_VERSION'
         ),
+        workflowEnv('DAGGER_VERSION', reportWorkflow),
     ],
     Debian: [
         mapped(dockerArg('BASE_IMAGE'), image =>
@@ -117,6 +120,7 @@ const checks = () => ({
     ],
     'Cache max age': [
         workflowEnv('NX_CACHE_MAX_AGE_DAYS'),
+        workflowEnv('NX_CACHE_MAX_AGE_DAYS', reportWorkflow),
         wranglerVar('maxAgeDays'),
         read(
             'infra/nx-cache/tofu/variables.tf',

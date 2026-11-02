@@ -169,7 +169,7 @@ Where other generators commonly lose type information, genever keeps it:
 | recursive `$defs` | recursive named types | `any` after a few levels, or `undefined` |
 | `enum: ["a", 42, null]` | `"a" \| 42 \| null` | `string \| number \| null` |
 
-Each row is one of the probes in [WHY-GENEVER.md](https://github.com/JacobLey/leyman/blob/main/apps/genever/WHY-GENEVER.md#compared-to-alternatives), which compares genever with five other tools on the same schema.
+Each row is checked by the probes on the [comparison page](https://jacobley.github.io/leyman/packages/genever/comparison), which runs genever and other tools on the same documents every night.
 
 ## How schemas become types
 
@@ -415,7 +415,7 @@ The path of a written file is logged. Nothing is logged when it was already up t
 - [json-schema-to-zod](https://www.npmjs.com/package/json-schema-to-zod) — generates a validator, but every `$ref` becomes `z.any()`.
 - [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts), TypeBox `Static` — infer types in TypeScript instead of generating them, so the schema has to be pasted into TypeScript `as const`. An imported `.json` file widens to `unknown`.
 
-Tested side by side in [WHY-GENEVER.md](https://github.com/JacobLey/leyman/blob/main/apps/genever/WHY-GENEVER.md#compared-to-alternatives).
+Tested side by side every night: see the [comparison page](https://jacobley.github.io/leyman/packages/genever/comparison).
 
 ## Also See
 

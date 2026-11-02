@@ -23,19 +23,9 @@ genever uses generation. Run it once, commit the output, and `--ci` keeps it in 
 
 ## Compared to alternatives
 
-Each tool was given the same schema, built with Juniper: `$defs`, a recursive definition, nullable properties, an `enum` of mixed types, a tuple (`prefixItems` with `items: false`), a `oneOf` of objects, `patternProperties` with `additionalProperties: false`, a `^usr_` pattern and `dependentRequired`. Its type was then checked against valid values, invalid values, and reads (21 probes).
+The [comparison page](https://jacobley.github.io/leyman/packages/genever/comparison) shows a report from last night's run: genever and the top tools for generating types, on the same documents, with each type checked against valid values, invalid values and reads, and the time to generate. The numbers are there rather than here, so they stay current.
 
-| | genever | Juniper (built in TypeScript) | json-schema-to-typescript | quicktype | json-schema-to-zod | json-schema-to-ts | TypeBox `XStatic` |
-|---|---|---|---|---|---|---|---|
-| Probes passed | 21 / 21 | 21 / 21 | 15 / 21 | 12 / 21 | 15 / 21 | 14 / 21 | 16 / 21 |
-| Tuple | `[number, number]` | `[number, number]` | `never[]` (rejects valid values) | `[number, number, ...number[]]` | `any[]` | `[]` | `never[] & [number, number]` (rejects valid values) |
-| `oneOf` objects | narrows | narrows | narrows | merged into one object | `any` | narrows | narrows |
-| `$ref` / recursion | ✅ | ✅ | ✅ | ✅ | `any` | recursion is `undefined` | `any` after 3 levels |
-| Closed `patternProperties` | `` `x-${string}` `` keys | `` `x-${string}` `` keys | open `[k: string]: unknown` | dropped | every key typed `string`, rejects valid objects | open | every key typed `string`, rejects valid objects |
-| `^usr_` pattern | `` `usr_${string}` `` | `` `usr_${string}` `` | `string` | `string` | `string` | `string` | `string` |
-| From a `.json` file | ✅ | — | ✅ | ✅ | ✅ | `unknown` | wrong types |
-
-json-schema-to-ts also failed outright ("Type instantiation is excessively deep") on the schemastore schemas for `package.json` and GitHub workflows.
+The differences come up most in features JSON Schema has and TypeScript can express, but most generators leave wider than they could be: tuples, closed `patternProperties`, literal patterns and `dependentRequired`.
 
 ## Design decisions
 

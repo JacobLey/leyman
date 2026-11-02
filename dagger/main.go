@@ -191,6 +191,23 @@ func (m *Ci) Docs(
 		Directory(workdir + "/docs/dist")
 }
 
+// Run genever and the tools it is compared to through the same probes, for the report on the docs site
+// (`e2e/genever-comparison`).
+//
+// Export it (`comparison-report --commit=<sha> export --path ./genever.json`) to publish it.
+func (m *Ci) ComparisonReport(
+	// Commit being reported on, since the source here has no `.git`
+	commit string,
+	// Nx remote cache server to share task results with, as for `test`. Omitted, every task runs.
+	// +optional
+	nxCache *dagger.Service,
+) *dagger.File {
+	return withNxCache(m.installed(m.Source.WithoutDirectory(".changeset")), nxCache).
+		WithEnvVariable("COMPARISON_COMMIT", commit).
+		WithExec([]string{"nx", "run", "@leyman/e2e-genever-comparison:comparison-report"}).
+		File(workdir + "/e2e/genever-comparison/report/genever.json")
+}
+
 // Deploy the hosted Nx cache's Worker (`infra/nx-cache/worker`) to Cloudflare, with wrangler.
 //
 // The token may only deploy Workers (OpenTofu creates it, see `infra/nx-cache/tofu`).

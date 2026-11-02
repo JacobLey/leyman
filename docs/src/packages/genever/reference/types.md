@@ -58,7 +58,7 @@ Where other generators commonly lose type information, genever keeps it:
 | recursive `$defs` | recursive named types | `any` after a few levels, or `undefined` |
 | `enum: ["a", 42, null]` | `"a" \| 42 \| null` | `string \| number \| null` |
 
-Each row is one of the probes in [WHY-GENEVER.md](/packages/genever/why#compared-to-alternatives), which compares genever with five other tools on the same schema.
+Each row is checked by the probes on the [comparison](/packages/genever/comparison) page, which runs genever and other tools on the same documents every night.
 
 ## Stability of generated files
 

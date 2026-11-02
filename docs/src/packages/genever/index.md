@@ -61,7 +61,7 @@ Commit the result, and run `genever --ci` in CI to fail when it is out of date.
 
 ## Compared to
 
-Each tool was given the same schema, built with Juniper, and its type checked against 21 valid and invalid values. genever passed all 21; the others passed 12 to 16. See [Why genever](/packages/genever/why#compared-to-alternatives).
+Each tool is given the same documents every night, with its type checked against valid values, invalid values and reads. See the [comparison](/packages/genever/comparison) for the latest report.
 
 - [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) turns 2020-12 tuples into `never[]`, types every `pattern` as `string`, and opens objects with `patternProperties` to any key.
 - [quicktype](https://www.npmjs.com/package/quicktype) merges `oneOf` objects into one type with optional fields.

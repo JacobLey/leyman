@@ -1,0 +1,89 @@
+name: Comparison report
+
+# Runs other people's packages, and only reports on them: it never blocks anything, so it never runs on a pull request
+# or a push, and it stays out of `ci.yml`, whose jobs hold write access to the hosted Nx cache
+on:
+  schedule:
+    # Off the top of the hour, when GitHub delays and drops scheduled runs
+    - cron: '37 10 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+env:
+  # Keep in sync with `engineVersion` in `dagger/dagger.json` and `.devcontainer/Dockerfile`
+  DAGGER_VERSION: 0.21.11
+  NX_CACHE_DIR: /tmp/nx-cache
+  # Keep in sync with `ci.yml`
+  NX_CACHE_MAX_AGE_DAYS: 7
+
+jobs:
+  # Holds no secrets and no write access. A probe failing or a tool crashing is in the report and still passes, so this
+  # only fails if the pipeline itself is broken, and the docs page keeps showing the last report
+  report:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      # Reads what `test` built from the hosted cache, and never writes to it
+      - name: Start Nx cache server
+        env:
+          NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
+          NX_CACHE_SERVER_MAX_AGE_DAYS: ${{ env.NX_CACHE_MAX_AGE_DAYS }}
+          NX_CACHE_SERVER_UPSTREAM: ${{ vars.NX_CACHE_UPSTREAM }}
+        run: |
+          node .devcontainer/nx-cache-server.mjs &
+          curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null
+
+      - name: Run report
+        uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
+        with:
+          version: ${{ env.DAGGER_VERSION }}
+          verb: call
+          module: ./dagger
+          args: comparison-report --commit=${{ github.sha }} --nx-cache=tcp://localhost:3000 export --path ./genever.json
+
+      - name: Upload report
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: comparison-report
+          path: ./genever.json
+          retention-days: 1
+
+  # Runs no code from the report job, and only commits its file. The history is a custom ref rather than a commit to
+  # `main` or a branch, so nothing is fetched by a `git pull`, or listed among the branches
+  publish:
+    needs: report
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Download report
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: comparison-report
+          path: ${{ runner.temp }}/comparison-report
+
+      - name: Commit report
+        run: |
+          jq empty "$RUNNER_TEMP/comparison-report/genever.json"
+          if git fetch origin refs/reports/comparison; then
+            git checkout --detach FETCH_HEAD
+          else
+            git checkout --orphan comparison-report
+            git rm -rfq .
+          fi
+          cp "$RUNNER_TEMP/comparison-report/genever.json" genever.json
+          git add genever.json
+          git -c user.name='github-actions[bot]' -c user.email='41898282+github-actions[bot]@users.noreply.github.com' \
+            commit -m "Report for $GITHUB_SHA"
+          git push origin HEAD:refs/reports/comparison

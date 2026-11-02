@@ -3,6 +3,7 @@ import type { EnhanceAppContext } from 'vitepress';
 import Theme from 'vitepress/theme';
 import CategoryCards from './components/CategoryCards.vue';
 import DemoCards from './components/DemoCards.vue';
+import GeneverComparison from './components/GeneverComparison.vue';
 import InfrastructureCards from './components/InfrastructureCards.vue';
 import PackageCards from './components/PackageCards.vue';
 import ProjectHeader from './components/ProjectHeader.vue';
@@ -16,6 +17,7 @@ export default {
         app.use(TwoslashFloatingVue);
         app.component('CategoryCards', CategoryCards);
         app.component('DemoCards', DemoCards);
+        app.component('GeneverComparison', GeneverComparison);
         app.component('InfrastructureCards', InfrastructureCards);
         app.component('PackageCards', PackageCards);
         app.component('ProjectHeader', ProjectHeader);
