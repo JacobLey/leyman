@@ -1,5 +1,11 @@
 # barrelify
 
+## 2.2.4
+
+### Patch Changes
+
+- 8772416: Build the CLI directly with yargs, removing the `haywire` and `haywire-launcher` dependencies. Its commands and options are unchanged.
+
 ## 2.2.3
 
 ### Patch Changes

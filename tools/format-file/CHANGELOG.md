@@ -1,5 +1,14 @@
 # format-file
 
+## 1.2.1
+
+### Patch Changes
+
+- 5932ded: Look for a Prettier config without importing Prettier, which took about as long as a Biome run, so a project formatting with Biome no longer loads it
+- Updated dependencies [5f41957]
+- Updated dependencies [53f1fd5]
+  - haywire@2.0.5
+
 ## 1.2.0
 
 ### Minor Changes
