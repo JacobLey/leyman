@@ -2,6 +2,7 @@
 // imported by `check-fork-manifest.mjs`, which inspects the result on every run, and by `audit-fork-manifest.mjs`.
 //
 //   node fork-manifest.mjs apply --to <dir> [--with go,rust,...] [--package <path>]...
+//   node fork-manifest.mjs render
 //
 // Has no dependencies, because CI's `test` job runs it straight from the checkout, with no `node_modules`.
 
@@ -256,6 +257,52 @@ export const apply = ({ conditions = [], extraPackages = [], to }) => {
     return { files, skipped, taken };
 };
 
+const skillFile = path.join(workspaceRoot, '.claude/skills/fork-manifest/SKILL.md');
+const skillStart = '<!-- fork-manifest:start -->';
+const skillEnd = '<!-- fork-manifest:end -->';
+
+const table = (heading, rows) => [
+    `### ${heading}`,
+    '',
+    '| Path | Why |',
+    '|------|-----|',
+    ...rows.map(({ path: entryPath, why }) => `| \`${entryPath}\` | ${why} |`),
+    '',
+];
+
+/**
+ * The skill's text, with its table generated from the manifest.
+ *
+ * @returns the whole file
+ */
+export const renderSkill = () => {
+    const { conditions, entries, packages, repoOnly } = readManifest();
+    const candidates = [...entries, ...packages];
+    const text = readFileSync(skillFile, 'utf8');
+    const lines = [
+        ...table(
+            'Every fork',
+            candidates.filter(({ when }) => when === undefined)
+        ),
+        ...Object.entries(conditions)
+            .filter(([condition]) => candidates.some(({ when }) => when === condition))
+            .flatMap(([condition, description]) =>
+                table(
+                    `\`${condition}\`: ${description}`,
+                    candidates.filter(({ when }) => when === condition)
+                )
+            ),
+        ...table('Stays in this repo', repoOnly),
+    ];
+    return [
+        text.slice(0, text.indexOf(skillStart) + skillStart.length),
+        ...lines,
+        text.slice(text.indexOf(skillEnd)),
+    ].join('\n');
+};
+
+export const readSkill = () => readFileSync(skillFile, 'utf8');
+
 const dependsOnProblems = ({ targetDefaults }) =>
     Object.entries(targetDefaults).flatMap(([name, { dependsOn = [] }]) =>
         dependsOn
@@ -404,9 +451,13 @@ const main = () => {
             with: { type: 'string' },
         },
     });
+    if (positionals[0] === 'render') {
+        writeFileSync(skillFile, renderSkill());
+        return;
+    }
     if (positionals[0] !== 'apply' || values.to === undefined) {
         throw new Error(
-            'Usage: fork-manifest.mjs apply --to <dir> [--with go,rust,...] [--package <path>]...'
+            'Usage: fork-manifest.mjs render | apply --to <dir> [--with go,rust,...] [--package <path>]...'
         );
     }
     const conditions = values.with?.split(',') ?? [];

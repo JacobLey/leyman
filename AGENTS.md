@@ -31,6 +31,7 @@ Focused guides for common workflows in this repo:
 | DevContainer runtimes, CLI tools, and version parity with Dagger | [`.claude/skills/devcontainer/SKILL.md`](./.claude/skills/devcontainer/SKILL.md) |
 | Worktree layout, setup, and creating/opening/removing worktrees | [`.claude/skills/worktrees/SKILL.md`](./.claude/skills/worktrees/SKILL.md) |
 | Writing and maintaining package READMEs | [`.claude/skills/writing-readmes/SKILL.md`](./.claude/skills/writing-readmes/SKILL.md) |
+| Which infrastructure files a fork takes, and classifying a new one | [`.claude/skills/fork-manifest/SKILL.md`](./.claude/skills/fork-manifest/SKILL.md) |
 | Writing docs site pages, and keeping them in sync with package changes | [`.claude/skills/docs-site/SKILL.md`](./.claude/skills/docs-site/SKILL.md) |
 
 ### Coding Standards

@@ -18,6 +18,7 @@ import (
 	"slices"
 	"sort"
 	"strings"
+	"time"
 
 	"golang.org/x/sync/errgroup"
 )
@@ -118,6 +119,29 @@ func New(
 			// With the code `dagger develop` generates, which is gitignored, so `verify` can compile this module
 			WithDirectory("dagger", dag.CurrentModule().Source()),
 	}
+}
+
+// Prove the fork manifest by using it: `leyman/main/scripts/audit-fork-manifest.mjs`, from the source `New` leaves
+// the manifest's files out of. It resolves dependencies from the registry, and a passing run has nothing to do with this
+// module's inputs, so every call runs it.
+func (m *Ci) ForkManifestAudit(
+	ctx context.Context,
+	// Repository root
+	// +defaultPath="/"
+	// +ignore=["/.git", "/.claude-config", "**/node_modules", "/.pnpm-store", "/.nx/*", "!/.nx/installation", "/.coverage", "/.package-surface", "**/dist", "**/dist-test", "**/coverage"]
+	source *dagger.Directory,
+) error {
+	_, err := m.base().
+		// In a worktree, `.git` is a file that the ignore above doesn't reach, naming a directory that isn't here
+		WithDirectory(workdir, source.Filter(dagger.DirectoryFilterOpts{Gitignore: true, Exclude: []string{".git"}})).
+		WithExec([]string{"sh", "-c", "apt-get update && apt-get install --yes --no-install-recommends git"}).
+		// The script lists what Git would commit, which only needs the ignore rules
+		WithExec([]string{"git", "init", "--quiet"}).
+		WithEnvVariable("CACHE_BUSTER", time.Now().String()).
+		WithExec([]string{"node", "leyman/main/scripts/audit-fork-manifest.mjs"}).
+		Sync(ctx)
+
+	return err
 }
 
 // Run the full CI pipeline: install, build, test, and verify generated lifecycle config is up to date.

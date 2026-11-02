@@ -87,6 +87,11 @@ const checks = () => ({
             version => version.replace(/^v/v, '')
         ),
         workflowEnv('DAGGER_VERSION'),
+        read(
+            '.github/workflows/fork-manifest.yml',
+            /^ {2}DAGGER_VERSION: (?<value>.+)$/mv,
+            'DAGGER_VERSION'
+        ),
     ],
     Debian: [
         mapped(dockerArg('BASE_IMAGE'), image =>

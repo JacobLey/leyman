@@ -397,12 +397,20 @@
   ],
   "repoOnly": [
     {
+      "path": ".claude/skills/fork-manifest",
+      "why": "how this repo's classification works; a fork keeps the list of what it took"
+    },
+    {
       "path": ".claude/skills/projects",
       "why": "this repo's table of packages; a fork writes its own"
     },
     {
       "path": ".github/ISSUE_TEMPLATE",
       "why": "names this repo's packages and links"
+    },
+    {
+      "path": ".github/workflows/fork-manifest.yml",
+      "why": "audits this repo's classification"
     },
     {
       "path": "CODE_OF_CONDUCT.md",

@@ -14,6 +14,8 @@ import {
     inspect,
     listFiles,
     readManifest,
+    readSkill,
+    renderSkill,
     workspaceRoot,
 } from './fork-manifest.mjs';
 
@@ -117,8 +119,17 @@ const failures = () => {
         ...checkConditions(manifest, classified),
         ...checkNx(manifest),
     ];
-    // Applying needs the manifest's own paths to be right
-    return found.length > 0 ? found : checkApplied(manifest);
+    if (found.length > 0) {
+        // Applying needs the manifest's own paths to be right
+        return found;
+    }
+    const skill =
+        readSkill() === renderSkill()
+            ? []
+            : [
+                  'The fork-manifest skill is out of date: run `node leyman/main/scripts/fork-manifest.mjs render`',
+              ];
+    return [...skill, ...checkApplied(manifest)];
 };
 
 // The source Dagger tests leaves out `.git` and most of the roots (`New` in `dagger/main.go`), so inside it there is

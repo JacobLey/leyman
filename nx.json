@@ -354,6 +354,7 @@
         "{workspaceRoot}/.devcontainer/Dockerfile",
         "{workspaceRoot}/.devcontainer/docker-compose.yml",
         "{workspaceRoot}/.github/workflows/ci.yml",
+        "{workspaceRoot}/.github/workflows/fork-manifest.yml",
         "{workspaceRoot}/Cargo.lock",
         "{workspaceRoot}/Cargo.toml",
         "{workspaceRoot}/dagger/dagger.json",
