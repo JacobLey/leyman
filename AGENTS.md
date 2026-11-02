@@ -4,6 +4,8 @@ This is an Nx-managed PNPM monorepo. See [nx.dev](https://nx.dev) for general Nx
 
 This file is the entry point for any coding agent; `CLAUDE.md` is a symlink to it. Put agent-focused documentation in `SKILL.md` files and list them under [Skills](#skills).
 
+Commit messages have a short subject and the reasoning in the body: see [`.claude/skills/commit-messages/SKILL.md`](./.claude/skills/commit-messages/SKILL.md).
+
 ## Worktrees
 
 All development happens in git worktrees (kept in `<main checkout>-worktrees/`), each with its own devcontainer. The pnpm store and Nx cache are shared; `node_modules` is not. See [`.claude/skills/worktrees/SKILL.md`](./.claude/skills/worktrees/SKILL.md).
@@ -51,6 +53,7 @@ Focused guides for common workflows in this repo:
 | Running CI locally with Dagger, and releasing to npm | [`.claude/skills/dagger-ci/SKILL.md`](./.claude/skills/dagger-ci/SKILL.md) |
 | Patching an older major version of a package (e.g. a security fix for v1 after v2 shipped) | [`.claude/skills/dagger-ci/SKILL.md`](./.claude/skills/dagger-ci/SKILL.md#patching-an-older-major) |
 | Versioning packages with changesets | [`.claude/skills/versioning/SKILL.md`](./.claude/skills/versioning/SKILL.md) |
+| Writing commit messages (subject, body, what goes where) | [`.claude/skills/commit-messages/SKILL.md`](./.claude/skills/commit-messages/SKILL.md) |
 | Updating catalog dependencies to latest minor/patch versions | [`.claude/skills/updating-dependencies/SKILL.md`](./.claude/skills/updating-dependencies/SKILL.md) |
 | Debugging (source maps, cache, test failures) | [`.claude/skills/debugging/SKILL.md`](./.claude/skills/debugging/SKILL.md) |
 

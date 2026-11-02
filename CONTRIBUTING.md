@@ -82,7 +82,7 @@ Changes that only touch tests, dev tooling, configs, CI, devDependencies or the 
 ## Submitting a pull request
 
 1. Create a branch from `main`.
-2. Keep each commit focused on one thing, with a message that explains what changed and why.
+2. Keep each commit focused on one thing, with a short subject and the reasoning in the body. See the [commit messages skill](./.claude/skills/commit-messages/SKILL.md).
 3. Make sure `test-ci` passes and you've added a changeset if one is needed.
 4. Open a pull request against `main` and fill out the template.
 

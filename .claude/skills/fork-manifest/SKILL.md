@@ -41,6 +41,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | Path | Why |
 |------|-----|
 | `.claude/skills/coding-patterns` | package design, types and DI conventions |
+| `.claude/skills/commit-messages` | subject and body conventions |
 | `.claude/skills/create-package` | how to add a package |
 | `.claude/skills/debugging` | source maps, the cache and test failures |
 | `.claude/skills/devcontainer` | runtimes, CLI tools and version parity |

@@ -32,6 +32,10 @@
       "why": "package design, types and DI conventions"
     },
     {
+      "path": ".claude/skills/commit-messages",
+      "why": "subject and body conventions"
+    },
+    {
       "path": ".claude/skills/create-package",
       "why": "how to add a package"
     },
