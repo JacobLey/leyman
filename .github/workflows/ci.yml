@@ -59,6 +59,10 @@ jobs:
       - name: Check version parity
         run: node leyman/main/scripts/check-parity.mjs
 
+      # Here for the same reason, and because it lists files with git, which that source also leaves out
+      - name: Check fork manifest
+        run: node leyman/main/scripts/check-fork-manifest.mjs
+
       # PRs can read main's cache, but main never reads a PR's
       - name: Restore Nx cache
         uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0

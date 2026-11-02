@@ -17,6 +17,7 @@ Nx, ESLint, Biome, Changesets, TypeScript and the like are dependencies of this 
 | Script | Purpose |
 |--------|---------|
 | [`check-package.mjs`](./scripts/check-package.mjs) | Checks a package exactly as it would be published: lints the packed tarball with publint, checks its types resolve with Are The Types Wrong, and type checks its declarations as a strict consumer would |
+| [`check-fork-manifest.mjs`](./scripts/check-fork-manifest.mjs) | Checks that [`fork-manifest.json`](./fork-manifest.json) classifies every pattern file a fork could take, and that everything it names exists |
 | [`check-parity.mjs`](./scripts/check-parity.mjs) | Checks that the versions the devcontainer and CI pin separately still match |
 | [`check-workspace-dependencies.mjs`](./scripts/check-workspace-dependencies.mjs) | Checks that nothing takes a package in this workspace from npm rather than `workspace:` |
 | [`nx-rust-plugin.mjs`](./scripts/nx-rust-plugin.mjs) | Infers a Rust crate's Nx targets and workspace dependencies from its `Cargo.toml`, because no maintained plugin supports this repo's Nx |

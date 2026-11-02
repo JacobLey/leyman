@@ -313,6 +313,33 @@
         "check:_"
       ]
     },
+    "check-fork-manifest": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node ${NX_WORKSPACE_ROOT}/leyman/main/scripts/check-fork-manifest.mjs"
+        ],
+        "color": true
+      },
+      "cache": true,
+      "inputs": [
+        "{workspaceRoot}/leyman/main/fork-manifest.json",
+        "{workspaceRoot}/leyman/main/scripts/check-fork-manifest.mjs",
+        "{workspaceRoot}/*",
+        "{workspaceRoot}/.claude/**/*",
+        "{workspaceRoot}/.devcontainer/**/*",
+        "{workspaceRoot}/.github/**/*",
+        "{workspaceRoot}/.vscode/**/*",
+        "{workspaceRoot}/configs/**/*",
+        "{workspaceRoot}/leyman/main/**/*",
+        "{workspaceRoot}/patches/**/*",
+        "{workspaceRoot}/scripts/**/*"
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "check:_"
+      ]
+    },
     "check-parity": {
       "executor": "nx:run-commands",
       "options": {
@@ -876,6 +903,7 @@
         "check:_",
         "eslint",
         "check-package",
+        "check-fork-manifest",
         "check-parity",
         "check-workspace-dependencies",
         "drizzle-kit-check",

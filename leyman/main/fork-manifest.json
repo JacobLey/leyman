@@ -1,0 +1,484 @@
+{
+  "conditions": {
+    "ci": "runs CI on GitHub Actions",
+    "cli": "has packages with a command line interface",
+    "dagger": "runs CI through the Dagger module",
+    "docs-site": "has a VitePress docs site",
+    "drizzle": "has packages with Drizzle migrations",
+    "go": "has Go projects",
+    "local-ingress": "serves worktrees at https://<worktree>.<repo>.localhost",
+    "publishing": "publishes packages to npm with changesets",
+    "rust": "has Rust crates",
+    "tofu": "has OpenTofu projects",
+    "vitest": "has packages tested with Vitest",
+    "vscode-tests": "wants the editor's test explorer"
+  },
+  "roots": [
+    ".claude",
+    ".devcontainer",
+    ".github",
+    ".vscode",
+    "configs",
+    "leyman/main",
+    "patches",
+    "scripts"
+  ],
+  "entries": [
+    {
+      "path": ".claude/skills/coding-patterns",
+      "why": "package design, types and DI conventions"
+    },
+    {
+      "path": ".claude/skills/create-package",
+      "why": "how to add a package"
+    },
+    {
+      "path": ".claude/skills/debugging",
+      "why": "source maps, the cache and test failures"
+    },
+    {
+      "path": ".claude/skills/devcontainer",
+      "why": "runtimes, CLI tools and version parity"
+    },
+    {
+      "path": ".claude/skills/install-package",
+      "why": "how to add a dependency"
+    },
+    {
+      "path": ".claude/skills/linting-formatting",
+      "why": "ESLint, Biome and auto-fix"
+    },
+    {
+      "path": ".claude/skills/nx-run-tasks",
+      "why": "how to run Nx tasks"
+    },
+    {
+      "path": ".claude/skills/nx-tasks-reference",
+      "why": "what each target does and when to add it"
+    },
+    {
+      "path": ".claude/skills/testing",
+      "why": "Mocha, mocha-chain, Sinon and c8"
+    },
+    {
+      "path": ".claude/skills/typescript",
+      "why": "SWC, tsconfig and ESM"
+    },
+    {
+      "path": ".claude/skills/updating-dependencies",
+      "why": "how to bump the catalog"
+    },
+    {
+      "path": ".claude/skills/worktrees",
+      "why": "the worktree layout and flow"
+    },
+    {
+      "path": ".claude/skills/writing-readmes",
+      "why": "the README bar"
+    },
+    {
+      "path": ".claude/skills/cli",
+      "when": "cli",
+      "why": "yargs commands collected by a haywire list"
+    },
+    {
+      "path": ".claude/skills/dagger-ci",
+      "when": "dagger",
+      "why": "running CI locally and releasing"
+    },
+    {
+      "path": ".claude/skills/docs-site",
+      "when": "docs-site",
+      "why": "writing docs pages"
+    },
+    {
+      "path": ".claude/rules/docs-site-sync.md",
+      "when": "docs-site",
+      "why": "keeps docs pages in step with their packages"
+    },
+    {
+      "path": ".claude/skills/versioning",
+      "when": "publishing",
+      "why": "changesets"
+    },
+
+    {
+      "path": ".devcontainer/.dockerignore",
+      "why": "keeps the image's build context empty"
+    },
+    {
+      "path": ".devcontainer/Dockerfile",
+      "why": "the image everything runs in; delete the stages of languages the fork lacks"
+    },
+    {
+      "path": ".devcontainer/devcontainer-lock.json",
+      "why": "pins the devcontainer features"
+    },
+    {
+      "path": ".devcontainer/devcontainer.json",
+      "why": "the container's environment and post-create steps"
+    },
+    {
+      "path": ".devcontainer/docker-compose.yml",
+      "why": "the container and its sidecars"
+    },
+    {
+      "path": ".devcontainer/initialize.sh",
+      "why": "writes the worktree's .env on the host; tolerates a missing local-ingress"
+    },
+    {
+      "path": ".devcontainer/names.sh",
+      "why": "the worktree's DNS labels"
+    },
+    {
+      "path": ".devcontainer/nx-cache-server.mjs",
+      "why": "the Nx cache shared by worktrees, which the compose file always mounts"
+    },
+    {
+      "path": ".devcontainer/tag-pinned-images.sh",
+      "why": "keeps digest-pinned images from looking dangling"
+    },
+
+    {
+      "path": ".github/pull_request_template.md",
+      "when": "ci",
+      "why": "the PR checklist"
+    },
+    {
+      "path": ".github/workflows/ci.yml",
+      "when": "ci",
+      "why": "the CI workflow"
+    },
+
+    {
+      "path": ".vscode/settings.json",
+      "why": "points the editor at the tools in leyman/main"
+    },
+    {
+      "path": ".vscode/tasks.json",
+      "why": "worktree commands in the editor"
+    },
+    {
+      "path": ".vscode/extensions/leyman-tests",
+      "when": "vscode-tests",
+      "why": "loads the test explorer from leyman/vscode-tests"
+    },
+
+    {
+      "path": "configs/c8rc.json",
+      "why": "coverage thresholds and reporters every test target reads"
+    },
+    {
+      "path": "configs/swcrc.jsonc",
+      "why": "how every target compiles TypeScript"
+    },
+    {
+      "path": "configs/tsconfig.build.json",
+      "why": "the type checking contract for source"
+    },
+    {
+      "path": "configs/tsconfig.test.json",
+      "why": "the type checking contract for tests"
+    },
+    {
+      "path": "configs/vitest.config.js",
+      "when": "vitest",
+      "why": "the shared Vitest settings"
+    },
+
+    {
+      "path": "leyman/main/.claude/skills/lifecycle",
+      "why": "how the lifecycle stages connect"
+    },
+    {
+      "path": "leyman/main/README.md",
+      "why": "why the global tools live in this package"
+    },
+    {
+      "path": "leyman/main/eslint.config.js",
+      "why": "lints the package's own scripts"
+    },
+    {
+      "path": "leyman/main/lifecycle.json",
+      "why": "declares the stages and binds targets to them"
+    },
+    {
+      "path": "leyman/main/package.json",
+      "why": "the global tools"
+    },
+    {
+      "path": "leyman/main/project.json",
+      "why": "the lifecycle targets of the tools package"
+    },
+    {
+      "path": "leyman/main/scripts/check-package.mjs",
+      "why": "checks a package as it would be published"
+    },
+    {
+      "path": "leyman/main/scripts/sync-injected.mjs",
+      "why": "mirrors a package into its injected copies"
+    },
+    {
+      "path": "leyman/main/scripts/nx-rust-plugin.mjs",
+      "when": "rust",
+      "why": "infers a crate's Nx targets"
+    },
+
+    {
+      "path": "patches/nx@23.3.1.patch",
+      "why": "the Nx planner patch that keeps daemon-less runs fast"
+    },
+    {
+      "path": "patches/@typescript-eslint__eslint-plugin@8.72.0.patch",
+      "why": "a wrong autofix under the v flag, which the eslint config's rules reach"
+    },
+
+    {
+      "path": "scripts/commands/serve",
+      "when": "local-ingress",
+      "why": "runs a project's dev server at the worktree's URL"
+    },
+    {
+      "path": "scripts/commands/test-and-fix",
+      "why": "verify with auto-fix"
+    },
+    {
+      "path": "scripts/commands/test-ci",
+      "why": "verify"
+    },
+    {
+      "path": "scripts/commands/test-only",
+      "why": "test"
+    },
+    {
+      "path": "scripts/commands/yolo-claude",
+      "why": "the agent without prompts, in the container"
+    },
+    {
+      "path": "scripts/commands/dagger-develop",
+      "when": "dagger",
+      "why": "regenerates the Dagger module's code"
+    },
+    {
+      "path": "scripts/commands/dagger-test",
+      "when": "dagger",
+      "why": "runs CI locally"
+    },
+    {
+      "path": "scripts/nx/biome-format.sh",
+      "why": "the biome target"
+    },
+    {
+      "path": "scripts/nx/clean-dist.sh",
+      "why": "the tsc target"
+    },
+    {
+      "path": "scripts/nx/coverage-report.sh",
+      "why": "the coverage-report target"
+    },
+    {
+      "path": "scripts/nx/swc-compile.sh",
+      "why": "the tsc and tsc-test targets"
+    },
+    {
+      "path": "scripts/nx/dagger-develop.sh",
+      "when": "dagger",
+      "why": "the dagger-develop target"
+    },
+    {
+      "path": "scripts/nx/drizzle-kit-check.sh",
+      "when": "drizzle",
+      "why": "the drizzle-kit-check target"
+    },
+    {
+      "path": "scripts/nx/go-coverage-report.sh",
+      "when": "go",
+      "why": "the go-coverage-report target"
+    },
+    {
+      "path": "scripts/nx/gofmt.sh",
+      "when": "go",
+      "why": "the gofmt target"
+    },
+    {
+      "path": "scripts/nx/rust-coverage-report.sh",
+      "when": "rust",
+      "why": "the rust-coverage-report target"
+    },
+    {
+      "path": "scripts/nx/rustfmt.sh",
+      "when": "rust",
+      "why": "the rustfmt target"
+    },
+    {
+      "path": "scripts/nx/tofu-fmt.sh",
+      "when": "tofu",
+      "why": "the tofu-fmt target"
+    },
+    {
+      "path": "scripts/nx/tofu-validate.sh",
+      "when": "tofu",
+      "why": "the tofu-validate target"
+    },
+    {
+      "path": "scripts/worktree",
+      "why": "creates and opens worktrees from the host"
+    },
+
+    {
+      "path": ".changeset/config.json",
+      "when": "publishing",
+      "why": "how changesets versions packages"
+    },
+    {
+      "path": ".gitattributes",
+      "why": "marks generated output"
+    },
+    {
+      "path": ".gitignore",
+      "why": "what the targets write and nothing should commit"
+    },
+    {
+      "path": ".golangci.yml",
+      "when": "go",
+      "why": "the go-lint target's rules"
+    },
+    {
+      "path": ".nx/installation",
+      "why": "the link that lets Nx find plugins in leyman/main, so the root package.json stays empty"
+    },
+    {
+      "path": "AGENTS.md",
+      "why": "the agent entry point"
+    },
+    {
+      "path": "CLAUDE.md",
+      "why": "links to AGENTS.md"
+    },
+    {
+      "path": "Cargo.toml",
+      "when": "rust",
+      "why": "the workspace's crates"
+    },
+    {
+      "path": "Cargo.lock",
+      "when": "rust",
+      "why": "the crates' resolved versions"
+    },
+    {
+      "path": "biome.json",
+      "why": "formatting rules"
+    },
+    {
+      "path": "dagger",
+      "when": "dagger",
+      "why": "the CI module, to copy and adapt"
+    },
+    {
+      "path": "nx.json",
+      "why": "target defaults, named inputs and lifecycle targets"
+    },
+    {
+      "path": "package.json",
+      "why": "stays empty by design"
+    },
+    {
+      "path": "pnpm-workspace.yaml",
+      "why": "the catalog and workspace globs"
+    },
+    {
+      "path": "tools/local-ingress",
+      "when": "local-ingress",
+      "why": "the machine's shared HTTPS ingress"
+    },
+    {
+      "path": "tsconfig.base.json",
+      "why": "empty on purpose, so Nx hashes it in place of tsconfig.json"
+    },
+    {
+      "path": "tsconfig.json",
+      "why": "the TypeScript project root"
+    }
+  ],
+  "repoOnly": [
+    {
+      "path": ".claude/skills/projects",
+      "why": "this repo's table of packages; a fork writes its own"
+    },
+    {
+      "path": ".github/ISSUE_TEMPLATE",
+      "why": "names this repo's packages and links"
+    },
+    {
+      "path": "CODE_OF_CONDUCT.md",
+      "why": "a fork writes its own"
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "why": "a fork writes its own"
+    },
+    {
+      "path": "DEPRECATED_PACKAGES.md",
+      "why": "this repo's published history"
+    },
+    {
+      "path": "LICENSE",
+      "why": "a fork chooses its own"
+    },
+    {
+      "path": "README.md",
+      "why": "a fork writes its own"
+    },
+    {
+      "path": "SECURITY.md",
+      "why": "a fork writes its own"
+    },
+    {
+      "path": "docs",
+      "why": "this repo's docs site content"
+    },
+    {
+      "path": "e2e",
+      "why": "tests of this repo's published packages"
+    },
+    {
+      "path": "infra",
+      "why": "this repo's hosted cache deployment"
+    },
+    {
+      "path": "leyman/main/fork-manifest.json",
+      "why": "this repo's classification; a fork keeps the list of what it took"
+    },
+    {
+      "path": "leyman/main/scripts/check-fork-manifest.mjs",
+      "why": "checks this repo's classification"
+    },
+    {
+      "path": "leyman/main/scripts/check-parity.mjs",
+      "why": "anchored on this repo's Dockerfile, compose file and Dagger module"
+    },
+    {
+      "path": "leyman/main/scripts/check-workspace-dependencies.mjs",
+      "why": "only matters to a workspace that also publishes what it depends on"
+    },
+    {
+      "path": "pnpm-lock.yaml",
+      "why": "a fork resolves its own after pruning the catalog"
+    }
+  ],
+  "packages": [
+    {
+      "path": "leyman/eslint-config",
+      "why": "vendor until published: every package's eslint.config.js imports it"
+    },
+    {
+      "path": "leyman/expect",
+      "why": "vendor until published: the test assertion package"
+    },
+    {
+      "path": "leyman/vscode-tests",
+      "when": "vscode-tests",
+      "why": "vendor: what the test explorer extension loads"
+    }
+  ]
+}

@@ -122,6 +122,14 @@ Runs in `check:lint`, after the package's own build, so a packaging mistake fail
 
 ---
 
+### `check-fork-manifest`
+
+Fails if a file under one of `leyman/main/fork-manifest.json`'s `roots`, or at the top of the workspace, isn't classified exactly once, or if the manifest names a path, condition or rewrite that doesn't exist (`leyman/main/scripts/check-fork-manifest.mjs`). Runs in `check:lint`. It lists files with git and skips inside Dagger, whose source leaves out `.git` and most of the roots, so CI's `test` job runs the script from the checkout before Dagger starts.
+
+**Add when:** Never: only `@leyman/main` has it. A new file under a root goes in the manifest.
+
+---
+
 ### `check-parity`
 
 Fails if the versions the devcontainer and CI pin separately differ (`leyman/main/scripts/check-parity.mjs`), naming each location and its value. Runs in `check:lint`. It skips inside Dagger, whose source leaves out `.devcontainer`, `.github` and `dagger`, so CI's `test` job runs the script from the checkout before Dagger starts.

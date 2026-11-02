@@ -3,6 +3,7 @@
   "name": "@leyman/main",
   "targets": {
     "biome": {},
+    "check-fork-manifest": {},
     "check-parity": {},
     "check-workspace-dependencies": {},
     "eslint": {
