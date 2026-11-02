@@ -23,7 +23,7 @@ Nx never talks to the Worker. Each devcontainer, and CI's runner, already runs a
 
 - **Reads go local first, then to the Worker.** A result fetched from the Worker is kept, timestamped when the Worker stored it, so both expire it at the same time.
 - **Writes go to the Worker only from CI on `main`**, after being stored locally. The cache server requests a GitHub OIDC token itself, for each upload: tokens last minutes, longer than a CI run's first upload but shorter than the run.
-- **Results in use are uploaded again before they expire.** Nx only uploads a task it ran, never one it read from the cache, so a result `main` keeps reading would still expire 7 days after it was stored. So in CI on `main`, the cache server uploads a result it serves once it is 5 days old, and the Worker accepts a result that old being replaced. CI also runs nightly on `main` and writes like a push, so results stay warm through a week without pushes.
+- **Results in use are uploaded again before they expire.** Nx only uploads a task it ran, never one it read from the cache, so a result `main` keeps reading would still expire 7 days after it was stored. So in CI on `main`, the cache server uploads a result it serves once it is 5 days old, in the background so tasks don't wait, and the Worker accepts a result that old being replaced. The job waits for those uploads before it ends. CI also runs nightly on `main` and writes like a push, so results stay warm through a week without pushes.
 - **The Worker failing is a cache miss**, never an error: Nx runs the task instead.
 
 CI runs the same way as before: Dagger still talks to the runner's cache server, and no credential ever enters Dagger.

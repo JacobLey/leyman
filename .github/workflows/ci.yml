@@ -79,6 +79,7 @@ jobs:
           NX_CACHE_SERVER_UPSTREAM_WRITE: ${{ (github.event_name == 'push' || github.event_name == 'schedule') && github.ref == 'refs/heads/main' && vars.NX_CACHE_UPSTREAM != '' && 'github-oidc' || '' }}
         run: |
           node .devcontainer/nx-cache-server.mjs > "$RUNNER_TEMP/nx-cache-server.log" 2>&1 &
+          echo "$!" > "$RUNNER_TEMP/nx-cache-server.pid"
           curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null
 
       - name: Test
@@ -92,6 +93,16 @@ jobs:
           # so a PR could write results that main's runs then trust.
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: test --nx-cache=tcp://localhost:3000
+
+      # Results read during the run are uploaded again in the background, which the job ending would cut off. One that
+      # doesn't finish is uploaded on a later read, so running out of time is only a warning
+      - name: Stop Nx cache server
+        if: ${{ !cancelled() }}
+        run: |
+          pid=$(cat "$RUNNER_TEMP/nx-cache-server.pid")
+          if kill "$pid"; then
+            timeout 10m tail --pid="$pid" -f /dev/null || echo "::warning::Nx cache server was still refreshing results after 10 minutes"
+          fi
 
       # A background process's output is lost once the step that started it ends
       - name: Show Nx cache server log

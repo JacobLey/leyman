@@ -20,8 +20,10 @@
  *   Actions job with `id-token: write`, each upload carries an OIDC token for `NX_CACHE_SERVER_OIDC_AUDIENCE`.
  *   The upstream decides who may write (CI on `main`), so this never needs a secret.
  * - With `NX_CACHE_SERVER_REFRESH_AFTER_DAYS` too, a result it serves that was stored longer ago than that is uploaded
- *   again first, so a result that is still read never expires upstream. The upstream must accept a result that old
- *   being replaced (the hosted cache's `refreshAfterDays`).
+ *   again after serving it, so a result that is still read never expires upstream, and Nx never waits for the upload.
+ *   SIGTERM finishes those uploads before exiting, so CI waits for that before the job ends. One that doesn't finish
+ *   is uploaded on a later read. The upstream must accept a result that old being replaced (the hosted cache's
+ *   `refreshAfterDays`).
  * - The upstream failing is a miss, never an error: Nx runs the task instead.
  *
  * Uses only Node built-ins so it runs before (and independently of) `pnpm install`.
@@ -49,6 +51,8 @@ const refreshAfterMs =
 // Reading a result is quick, but a large one uploads for a while
 const upstreamReadTimeoutMs = 60 * 1000;
 const upstreamWriteTimeoutMs = 5 * 60 * 1000;
+// A quiet week makes most of a run's results due at once, which shouldn't saturate the runner's connection
+const maxConcurrentRefreshes = 4;
 
 if (writesUpstream && !process.env.ACTIONS_ID_TOKEN_REQUEST_URL) {
     throw new Error(
@@ -207,6 +211,34 @@ const refreshUpstream = async (hash, file) => {
     }
 };
 
+const waitingRefreshes = [];
+// Queued or uploading, so reading a result twice uploads it once
+const queuedRefreshes = new Set();
+const refreshWorkers = new Set();
+
+const runRefreshes = async () => {
+    while (waitingRefreshes.length > 0) {
+        const { hash, file } = waitingRefreshes.shift();
+        await refreshUpstream(hash, file);
+        queuedRefreshes.delete(hash);
+    }
+};
+
+/**
+ * Upload a result again in the background, if it is due. Never rejects: `refreshUpstream` logs its failures.
+ */
+const queueRefresh = (hash, file) => {
+    if (queuedRefreshes.has(hash)) {
+        return;
+    }
+    queuedRefreshes.add(hash);
+    waitingRefreshes.push({ hash, file });
+    if (refreshWorkers.size < maxConcurrentRefreshes) {
+        const worker = runRefreshes().finally(() => refreshWorkers.delete(worker));
+        refreshWorkers.add(worker);
+    }
+};
+
 const server = createServer(async (req, res) => {
     // Never reuse connections: Dagger's host service tunnel (CI) doesn't forward the server closing an
     // idle keep-alive connection, so Nx would send its next request into a dead socket and hang forever.
@@ -224,12 +256,11 @@ const server = createServer(async (req, res) => {
                 res.writeHead(404).end();
                 return;
             }
-            // Before responding, like a write, so the upload is done by the time Nx finishes
-            if (refreshAfterMs !== null) {
-                await refreshUpstream(hash, file);
-            }
             res.writeHead(200, { 'content-type': 'application/octet-stream' });
             await pipeline(createReadStream(file), res);
+            if (refreshAfterMs !== null) {
+                queueRefresh(hash, file);
+            }
         } else if (req.method === 'PUT') {
             if (await isFresh(file)) {
                 req.resume();
@@ -266,6 +297,13 @@ server.listen(port, () => {
     console.log(`Nx cache server listening on :${port}, storing in ${cacheDir}${tier}`);
 });
 
-const shutdown = () => server.close(() => process.exit(0));
+const shutdown = () =>
+    server.close(async () => {
+        if (queuedRefreshes.size > 0) {
+            console.log('Finishing refreshes before exiting');
+        }
+        await Promise.all(refreshWorkers);
+        process.exit(0);
+    });
 process.on('SIGTERM', shutdown);
 process.on('SIGINT', shutdown);
