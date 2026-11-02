@@ -1,4 +1,4 @@
-# The base configuration. caddy-docker-proxy adds a site for each container labelled `caddy: <host>`
+# The base configuration. caddy-docker-proxy adds a site for each container labeled `caddy: <host>`
 # on the `local-ingress` network.
 {
 	# Every certificate comes from Caddy's own CA, never a public one: these names only exist on this machine

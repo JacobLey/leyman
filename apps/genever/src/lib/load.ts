@@ -35,7 +35,7 @@ export interface LoadOptions {
      */
     readonly baseUri: string;
     /**
-     * Flavour of the input's schemas, which a file of OpenAPI objects it refers to has too.
+     * Flavor of the input's schemas, which a file of OpenAPI objects it refers to has too.
      */
     readonly dialect: Dialect;
     /**

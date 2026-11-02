@@ -49,7 +49,7 @@ The container's workspace folder is therefore the host path (for example `/Users
 
 ## URLs
 
-Each worktree's devcontainer serves port 5173 at `https://<worktree>.<repo>.localhost`, e.g. `https://feat-x.leyman.localhost` (the main checkout is `main.leyman.localhost`). Browsers resolve `*.localhost` to this machine themselves. One Caddy per machine ([`tools/local-ingress`](../../../tools/local-ingress/README.md)) routes by host name to the container labelled with it, so worktrees never compete for a port. `scripts/worktree up` prints the URL.
+Each worktree's devcontainer serves port 5173 at `https://<worktree>.<repo>.localhost`, e.g. `https://feat-x.leyman.localhost` (the main checkout is `main.leyman.localhost`). Browsers resolve `*.localhost` to this machine themselves. One Caddy per machine ([`tools/local-ingress`](../../../tools/local-ingress/README.md)) routes by host name to the container labeled with it, so worktrees never compete for a port. `scripts/worktree up` prints the URL.
 
 Once per machine, trust its CA: open `http://ingress.localhost` for the root certificate and the steps for your OS. Until then, browsers warn about the certificate.
 

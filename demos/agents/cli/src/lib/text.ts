@@ -1,5 +1,5 @@
 /**
- * Text from the API, made safe to print to a terminal: control characters (an escape sequence that recolours or
+ * Text from the API, made safe to print to a terminal: control characters (an escape sequence that recolors or
  * rewrites the terminal, a carriage return that hides what came before) are printed escaped, as JSON would, e.g.
  * `\u001b`. Notes are users' text, and whoever reads the output (a person, or an agent) should see what's there.
  *

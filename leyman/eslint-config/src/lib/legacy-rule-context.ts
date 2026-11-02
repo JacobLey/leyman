@@ -8,7 +8,7 @@ interface RuleContext {
 }
 
 /**
- * Add the rule context members that ESLint 10 removed, after deprecating them in favour of the properties they read.
+ * Add the rule context members that ESLint 10 removed, after deprecating them in favor of the properties they read.
  *
  * @param context - rule context from ESLint
  * @returns context with the removed members

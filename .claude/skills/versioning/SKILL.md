@@ -7,7 +7,7 @@ description: Versioning packages with changesets
 
 > Config: [`../../../.changeset/config.json`](../../../.changeset/config.json)
 
-Every change to a published package's behaviour, API or runtime dependencies needs a changeset. `changeset` is interactive, so as an agent write the file directly as `.changeset/<adjective-noun-verb>.md`:
+Every change to a published package's behavior, API or runtime dependencies needs a changeset. `changeset` is interactive, so as an agent write the file directly as `.changeset/<adjective-noun-verb>.md`:
 
 ```md
 ---

@@ -58,7 +58,7 @@ Every command takes `--json`, to print JSON for a program to read, and `--config
 An agent with a shell can use any CLI, and a good one costs it very little: `notes list --q sheep` is a few tokens in and a line per note out, fully authorized, with the CLI doing the work an agent would otherwise spend context on.
 
 - **Output is short by default**, and the same shape every time: a list is ids, times and titles, one per line; `get` is the title, then the body. `--json` when a program (or an agent that wants to parse it) reads it.
-- **Users' text is printed escaped.** A title or body could hold a terminal escape sequence (to recolour or rewrite what's shown) or a carriage return (to hide what came before): control characters are printed as JSON would (`\u001b`), but for a body's newlines and tabs. A title's newline is escaped too, so a list stays one line per note.
+- **Users' text is printed escaped.** A title or body could hold a terminal escape sequence (to recolor or rewrite what's shown) or a carriage return (to hide what came before): control characters are printed as JSON would (`\u001b`), but for a body's newlines and tabs. A title's newline is escaped too, so a list stays one line per note.
 - **The CLI never prompts**, except the browser login: every input is a flag, with a default where one makes sense.
 - **stdin is read only with `--stdin`.** An agent's shell may leave stdin open, and a CLI that reads it unasked waits forever.
 - **The login is set up once, by a person**, and later commands don't need it: the CLI refreshes the token when it expires, and saves the new one. An agent never handles a token.

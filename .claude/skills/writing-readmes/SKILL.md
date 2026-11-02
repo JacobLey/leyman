@@ -23,6 +23,10 @@ The README is also how the package is found and judged. npm search, web search, 
 
 See [`../../../tools/haywire/WHY-HAYWIRE.md`](../../../tools/haywire/WHY-HAYWIRE.md) as the reference example.
 
+## Spelling
+
+American spelling ("behavior"), like most published text and the npm ecosystem's docs.
+
 ## Standard README Structure
 
 ```markdown

@@ -129,7 +129,7 @@ const assertJoinsAndLeavesAtZero = (
 
 const connect = (node: ValkeyNode): ResizableShard => ({
     ...node,
-    // Fail fast rather than queueing commands for a node that is down. Reads of its keys then fail too, unless
+    // Fail fast rather than queuing commands for a node that is down. Reads of its keys then fail too, unless
     // BentoCache has a memory tier, or lease-cache has a fallback (see the README's "When Valkey is down").
     connection: new Redis(node.url, { maxRetriesPerRequest: 1 }),
 });

@@ -32,7 +32,7 @@ const rows = computed((): Row[] => {
     }
     if (found.kind === 'package') {
         const sources = theme.value.links.packages[found.project.slug] ?? [];
-        // Rows are labelled by npm name only when the pages cover several packages
+        // Rows are labeled by npm name only when the pages cover several packages
         return sources.map(({ name, npm, source, changelog }) => ({
             label: sources.length > 1 ? name : '',
             links: [
@@ -68,7 +68,7 @@ const rows = computed((): Row[] => {
 </script>
 
 <template>
-    <dl v-if="rows.length" class="project-header" :class="{ unlabelled: !rows[0]?.label }">
+    <dl v-if="rows.length" class="project-header" :class="{ unlabeled: !rows[0]?.label }">
         <template v-for="row in rows" :key="row.label">
             <dt v-if="row.label">{{ row.label }}</dt>
             <dd>
@@ -99,7 +99,7 @@ const rows = computed((): Row[] => {
     line-height: 22px;
 }
 
-.unlabelled {
+.unlabeled {
     grid-template-columns: 1fr;
 }
 

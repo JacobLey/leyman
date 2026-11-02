@@ -41,7 +41,7 @@ const refused = [...walkErrors(err)].find(({ error }) => hasCode(error, 'ECONNRE
 
 ## Printing
 
-`formatError` prints each error's stack, indented under its parent. Causes are labelled `Caused by:`, and `AggregateError` entries `-`:
+`formatError` prints each error's stack, indented under its parent. Causes are labeled `Caused by:`, and `AggregateError` entries `-`:
 
 ```ts
 import { formatError } from 'unknown-error';
@@ -63,7 +63,7 @@ console.log(formatError(error));
 //         at ...
 ```
 
-V8 starts a stack with the `Name: message` line, but Firefox and Safari don't. When a stack doesn't start with it, `formatError` adds it, so every entry is labelled the same way.
+V8 starts a stack with the `Name: message` line, but Firefox and Safari don't. When a stack doesn't start with it, `formatError` adds it, so every entry is labeled the same way.
 
 ## Circular chains
 

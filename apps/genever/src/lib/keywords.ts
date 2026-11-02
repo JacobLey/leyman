@@ -116,7 +116,7 @@ export const openApiKeywords: ReadonlySet<string> = new Set([
 export const openApi30Keywords: ReadonlySet<string> = new Set(['nullable']);
 
 /**
- * Which flavour of JSON Schema a schema is written in.
+ * Which flavor of JSON Schema a schema is written in.
  * OpenAPI 3.0 has its own (e.g. `nullable`), and OpenAPI 3.1 uses 2020-12 with a few extra keywords.
  */
 export type Dialect = 'draft-2020-12' | 'openapi-3.0' | 'openapi-3.1';

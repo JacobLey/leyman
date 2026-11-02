@@ -78,7 +78,7 @@ Visits `value`, its `cause` chain and the `errors` of any `AggregateError`, dept
 
 ## `formatError(value, options?)`
 
-Formats an error with every cause and `AggregateError` entry, each indented under its parent. Causes are labelled `Caused by:` and `AggregateError` entries `-`.
+Formats an error with every cause and `AggregateError` entry, each indented under its parent. Causes are labeled `Caused by:` and `AggregateError` entries `-`.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|

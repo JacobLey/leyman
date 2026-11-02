@@ -85,8 +85,8 @@ Labels are read when a container starts, with no ingress restart. A container th
 
 | Request | Answer |
 |---|---|
-| `https://<host>` labelled by a running container | Proxied to the container, with `X-Forwarded-Host` and `X-Forwarded-Proto` |
-| `https://<host>.localhost` nothing serves | The help page, with a 404 saying nothing serves it. A name exists only while a container labelled with it runs: a devcontainer's while it's up (and loads while its dev server listens), a name a script started until the script stops |
+| `https://<host>` labeled by a running container | Proxied to the container, with `X-Forwarded-Host` and `X-Forwarded-Proto` |
+| `https://<host>.localhost` nothing serves | The help page, with a 404 saying nothing serves it. A name exists only while a container labeled with it runs: a devcontainer's while it's up (and loads while its dev server listens), a name a script started until the script stops |
 | `http://ingress.localhost`, `https://ingress.localhost` | The help page and `/root.crt` |
 | Any other `http://` | A temporary redirect (302) to `https://`. There's no HSTS, which browsers would remember |
 | A host outside `.localhost` | Refused: no certificate is issued for it |

@@ -72,13 +72,13 @@ Infrastructure ([`infra/`](../../../infra/)) is documented the same way as demos
 
 ## Keeping pages in sync
 
-Every change to a documented package's API, behaviour, defaults, CLI flags or errors updates its pages **in the same commit**. A change that needs a [changeset](../versioning/SKILL.md) or a README update almost always needs a docs update too.
+Every change to a documented package's API, behavior, defaults, CLI flags or errors updates its pages **in the same commit**. A change that needs a [changeset](../versioning/SKILL.md) or a README update almost always needs a docs update too.
 
 1. `grep -rn '<changed name>' docs/src/<package>/` to find every page that mentions what changed. Option tables, CLI tables and "Things to know" lists are easy to miss.
 2. Update examples, tables and prose. Add the new feature where a reader would look for it (usually a guide and the reference page).
 3. Build: `nx run @leyman/docs:build`.
 
-The build catches some drift on its own: examples are type-checked against the package's built types, so a renamed export or changed signature fails it. It can't catch changed behaviour, defaults, CLI flags, output shown in comments, or JSON examples, so read the pages rather than relying on a green build.
+The build catches some drift on its own: examples are type-checked against the package's built types, so a renamed export or changed signature fails it. It can't catch changed behavior, defaults, CLI flags, output shown in comments, or JSON examples, so read the pages rather than relying on a green build.
 
 The README and the docs site cover the same API, so keep them consistent. Fix a mistake found in one in the other.
 

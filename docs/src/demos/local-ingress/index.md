@@ -6,7 +6,7 @@ description: A Vite dev server behind one machine-wide Caddy, so every worktree 
 
 <ProjectHeader />
 
-Every worktree's dev server at a production-like URL, over HTTPS: `https://<worktree>.<repo>.localhost`. One Caddy per machine ([`tools/local-ingress`](https://github.com/JacobLey/leyman/tree/main/tools/local-ingress)) routes by host name to the devcontainer labelled with it, and the demo is the proof that a frontend's dev server works behind it. The page only says which worktree and repo it was loaded from.
+Every worktree's dev server at a production-like URL, over HTTPS: `https://<worktree>.<repo>.localhost`. One Caddy per machine ([`tools/local-ingress`](https://github.com/JacobLey/leyman/tree/main/tools/local-ingress)) routes by host name to the devcontainer labeled with it, and the demo is the proof that a frontend's dev server works behind it. The page only says which worktree and repo it was loaded from.
 
 ```
 browser ──► https://feat-x.leyman.localhost ──► local-ingress (Caddy, 127.0.0.1:443) ──► feat-x's devcontainer :5173
@@ -24,7 +24,7 @@ A worked example, not a package: it is never published.
 
 ## Running it
 
-In a devcontainer, whose container is labelled for the ingress:
+In a devcontainer, whose container is labeled for the ingress:
 
 ```sh
 serve   # scripts/commands/serve: nx run @leyman/demo-local-ingress:dev --tui=false

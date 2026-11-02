@@ -5,7 +5,7 @@ description: Which infrastructure files a fork of this repo's patterns takes, ho
 
 # Fork manifest
 
-[`leyman/main/fork-manifest.json`](../../../leyman/main/fork-manifest.json) draws the line between a pattern a fork takes and what stays in this repo. Classifying is a judgement written by hand. Everything downstream is derived from it.
+[`leyman/main/fork-manifest.json`](../../../leyman/main/fork-manifest.json) draws the line between a pattern a fork takes and what stays in this repo. Classifying is a judgment written by hand. Everything downstream is derived from it.
 
 ## When you hit it
 

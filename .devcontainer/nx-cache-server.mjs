@@ -232,7 +232,7 @@ const writeUpstream = async (hash, file) => {
             },
             signal: AbortSignal.timeout(upstreamWriteTimeoutMs),
         });
-        // Read rather than cancelled: it's short, and cancelling breaks the connection mid-response
+        // Read rather than canceled: it's short, and canceling breaks the connection mid-response
         const text = await response.text();
         if (response.status !== 200 && response.status !== 409) {
             console.error(`Writing ${hash} upstream failed: HTTP ${response.status} ${text}`);

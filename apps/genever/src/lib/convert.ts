@@ -60,7 +60,7 @@ export interface ConvertOptions {
      */
     readonly baseUri: string;
     /**
-     * Flavour of JSON Schema, which decides the keywords allowed (e.g. `nullable` in OpenAPI 3.0).
+     * Flavor of JSON Schema, which decides the keywords allowed (e.g. `nullable` in OpenAPI 3.0).
      */
     readonly dialect: Dialect;
     /**

@@ -18,7 +18,7 @@ pre { padding: 0.75rem; overflow-x: auto; }
 <body>
 <h1>Local ingress</h1>
 {{if and (ne .Host "ingress.localhost") (ne .Host "127.0.0.1") (ne .Host "localhost")}}
-<p class="notice">Nothing is serving <strong>{{.Host}}</strong>. A name is served only while a container labelled with it is running, and listening on the port its labels name: for a worktree's devcontainer, start its dev server; for a name a script started (like a demo's <code>run</code>), the name went when the script stopped.</p>
+<p class="notice">Nothing is serving <strong>{{.Host}}</strong>. A name is served only while a container labeled with it is running, and listening on the port its labels name: for a worktree's devcontainer, start its dev server; for a name a script started (like a demo's <code>run</code>), the name went when the script stopped.</p>
 {{end}}
 <p>Routes <code>https://&lt;worktree&gt;.&lt;repo&gt;.localhost</code> to each worktree's devcontainer, with certificates from a certificate authority (CA) created on this machine. Trust that CA once, and every worktree of every repo loads without a warning.</p>
 

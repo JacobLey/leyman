@@ -46,7 +46,7 @@ Conventions are documented as skills in [`.claude/skills/`](./.claude/skills), i
 Some things to keep in mind:
 
 - Every published package requires **100% test coverage**.
-- Update the package's README, and its [docs site](./docs) pages if it has them, when you change its behaviour or API.
+- Update the package's README, and its [docs site](./docs) pages if it has them, when you change its behavior or API.
 - Prefer non-breaking changes. When a breaking change is necessary, keep it in its own commit and explain why it is needed.
 
 ## Verifying your changes
@@ -69,7 +69,7 @@ See the [Nx tasks skill](./.claude/skills/nx-run-tasks/SKILL.md) for running tas
 
 ## Changesets
 
-Releases are managed with [Changesets](https://github.com/changesets/changesets). Any change to a published package's behaviour, API or runtime dependencies needs a changeset:
+Releases are managed with [Changesets](https://github.com/changesets/changesets). Any change to a published package's behavior, API or runtime dependencies needs a changeset:
 
 ```bash
 changeset

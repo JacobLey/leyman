@@ -21,7 +21,7 @@ permissions:
   contents: read
 
 concurrency:
-  # Superseded PR pushes are cancelled; every commit to main gets its own run, and scheduled runs never cancel another
+  # Superseded PR pushes are canceled; every commit to main gets its own run, and scheduled runs never cancel another
   group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && github.ref || github.event_name == 'schedule' && github.run_id || github.sha }}
   cancel-in-progress: true
 

@@ -12,7 +12,7 @@ Type-safe query definitions for TanStack Query — define each key and fetcher o
 - **Typed by params** — call sites pass `{ id: 123 }`, not a hand-built key array; reads, writes and invalidation (`setQueryData`, `invalidateQuery`, …) are typed to the resource's data.
 - **Linked queries, no waterfalls** — `.propagate()` declares the queries a result leads to (a book's author, every user on a list page), which start prefetching the moment the parent loads.
 - **SSR in one call** — `.query(client, params, { awaitLinks: true })` loads a query and everything it links to, ready to dehydrate.
-- **Every hook flavour** — plain, suspense, nullable (`skipToken`), infinite and prefetched variants of TanStack's hooks.
+- **Every hook flavor** — plain, suspense, nullable (`skipToken`), infinite and prefetched variants of TanStack's hooks.
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/normalized-react-query/). For the full motivation, see [WHY-NORMALIZED-REACT-QUERY.md](https://github.com/JacobLey/leyman/blob/main/tools/normalized-react-query/WHY-NORMALIZED-REACT-QUERY.md).
 

@@ -148,8 +148,8 @@ const describe = (error: Error): string => {
 /**
  * Formats an error with every cause and `AggregateError` entry, indented by depth. Never throws.
  *
- * Each error is printed as its stack, with causes labelled `Caused by:` and `AggregateError` entries
- * labelled `-`.
+ * Each error is printed as its stack, with causes labeled `Caused by:` and `AggregateError` entries
+ * labeled `-`.
  *
  * @param value - a caught value
  * @param options - {@link WalkOptions}

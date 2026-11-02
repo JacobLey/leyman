@@ -36,7 +36,7 @@ export interface TscPlan {
 const permissionFlag = /^--(?:allow-|experimental-permission|permission)/iv;
 
 /**
- * The only environment variables `tsc`, and so each mapper, gets: where to find `node`, `tsc`'s colours, and the
+ * The only environment variables `tsc`, and so each mapper, gets: where to find `node`, `tsc`'s colors, and the
  * settings of Go's runtime, which `tsc` is built on. Anything else, such as a token, never reaches a mapper.
  */
 const keptEnv = [

@@ -325,7 +325,7 @@ Note that singletons are not _globally_ singular, and just singular for a given 
 
 Scopes can also be "eager". This means that containers will _immediately_ attempt to construct this instance when a dependent is requested. Usually this is unnecessary but has two main advantages:
 1. Eager bindings can instantiate async providers, then `supply` them _synchronously_ to dependents.
-2. Expensive/slow operations can be pushed towards the start of processing, so that they are available earlier and will not block future requests.
+2. Expensive/slow operations can be pushed toward the start of processing, so that they are available earlier and will not block future requests.
 
 ```ts
 class A {}
@@ -869,7 +869,7 @@ Providers missing for container: DB_URL (needed by Database, MigrationRunner)
 Binding has dependency on synchronous supplier that must be async: [output id: Repository, dependency supplier id: Repository(supplier(sync)), needed by: Handler, async: Repository->Database]
 ```
 
-To see the whole graph, `container.toMermaid()` returns it as a [Mermaid](https://mermaid.js.org/) flowchart, which GitHub and most Markdown editors render. Each binding is a node labelled with its id and scope. Arrows point to dependencies, dotted for suppliers and deferred dependencies, and a dependency with no binding is drawn as a dashed red node.
+To see the whole graph, `container.toMermaid()` returns it as a [Mermaid](https://mermaid.js.org/) flowchart, which GitHub and most Markdown editors render. Each binding is a node labeled with its id and scope. Arrows point to dependencies, dotted for suppliers and deferred dependencies, and a dependency with no binding is drawn as a dashed red node.
 
 ```ts
 console.log(container.toMermaid());
@@ -881,7 +881,7 @@ console.log(container.toMermaid());
 
 `container.describe()` returns the same information as data: each binding's `outputId`, `scope`, `async`, and `dependencies` (each with its declared `id` and the `providers` bound for it). Neither method checks the container, so both work on one that fails `check()`.
 
-A [`ContainerFactory`](#combining-containers-with-dynamic-runtime-values) has both methods too, describing the containers it creates. Ids still to be bound with `bindInstance()` are marked `unbound`, and drawn with a dashed border labelled `bindInstance()`.
+A [`ContainerFactory`](#combining-containers-with-dynamic-runtime-values) has both methods too, describing the containers it creates. Ids still to be bound with `bindInstance()` are marked `unbound`, and drawn with a dashed border labeled `bindInstance()`.
 
 ### Scope Gotchas
 

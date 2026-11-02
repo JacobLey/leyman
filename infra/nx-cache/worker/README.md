@@ -14,7 +14,7 @@ A `PUT` needs a `Content-Length` (411 without one): R2 only stores a stream of k
 
 ## Configuration
 
-`wrangler.jsonc`: the bucket binding (`cache`), and the variables above. `compatibility_date` is the newest the tests' Miniflare supports, so the tests run with the runtime's production behaviour.
+`wrangler.jsonc`: the bucket binding (`cache`), and the variables above. `compatibility_date` is the newest the tests' Miniflare supports, so the tests run with the runtime's production behavior.
 
 ## Tests
 

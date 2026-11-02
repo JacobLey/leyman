@@ -86,7 +86,7 @@ flowchart LR
     b3 -. supplier .-> b2
 ```
 
-Each node is a binding, labelled with its id and [scope](/packages/haywire/guides/scopes), and `async` if its provider is. Arrows point from a binding to its dependencies, dotted for suppliers and deferred dependencies, which aren't built before the binding. A dependency with no binding gets a dashed red node, since `toMermaid()` doesn't check the container: it can draw a container that fails `check()`.
+Each node is a binding, labeled with its id and [scope](/packages/haywire/guides/scopes), and `async` if its provider is. Arrows point from a binding to its dependencies, dotted for suppliers and deferred dependencies, which aren't built before the binding. A dependency with no binding gets a dashed red node, since `toMermaid()` doesn't check the container: it can draw a container that fails `check()`.
 
 For your own output, `container.describe()` returns the same information as data:
 

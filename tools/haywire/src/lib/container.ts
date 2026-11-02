@@ -860,7 +860,7 @@ export class Container<Outputs extends [Extendable]> {
     /**
      * Render the dependency graph as a Mermaid flowchart, e.g. to paste in a Markdown file.
      *
-     * Each binding is a node labelled with its output id and scope (and `async`). An arrow points from a binding to each of
+     * Each binding is a node labeled with its output id and scope (and `async`). An arrow points from a binding to each of
      * its dependencies, dotted for suppliers and deferred dependencies (which are not created before the binding).
      * A dependency with no binding is drawn with a dashed red border. In a container factory's graph, an id still to be
      * bound with `bindInstance()` is drawn with a dashed border.

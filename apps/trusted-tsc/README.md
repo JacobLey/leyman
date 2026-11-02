@@ -82,7 +82,7 @@ It refuses `--runExternalCode` (the allowlist replaces it) and `--build` (run ea
 
 - **Reading** only those directories. TypeScript sends a mapper each file's contents, so it never needs to read your project.
 - **No writing** files, starting processes, worker threads, native addons or WASI.
-- **Only a few environment variables**: `PATH` (to find `node`), `tsc`'s colour settings (`TERM`, `COLORTERM`, `NO_COLOR`, `FORCE_COLOR`), `TMPDIR`, `TZ`, the Go runtime's `GOGC`, `GOMAXPROCS` and `GOMEMLIMIT` (`tsc` is written in Go), and `NODE_OPTIONS`. `tsc` runs with only these too, so a token or key in your shell or CI job never reaches a mapper.
+- **Only a few environment variables**: `PATH` (to find `node`), `tsc`'s color settings (`TERM`, `COLORTERM`, `NO_COLOR`, `FORCE_COLOR`), `TMPDIR`, `TZ`, the Go runtime's `GOGC`, `GOMAXPROCS` and `GOMEMLIMIT` (`tsc` is written in Go), and `NODE_OPTIONS`. `tsc` runs with only these too, so a token or key in your shell or CI job never reaches a mapper.
 
 It runs the native `tsc` executable directly, since the `tsc` command is a Node script, which the sandbox would stop.
 

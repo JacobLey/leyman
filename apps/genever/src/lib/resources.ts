@@ -97,7 +97,7 @@ export interface Target {
  */
 export interface OpenApiFile {
     /**
-     * Flavour of its schemas: a document's own, or else that of the document that refers to it.
+     * Flavor of its schemas: a document's own, or else that of the document that refers to it.
      */
     readonly dialect: Dialect;
     readonly document: unknown;

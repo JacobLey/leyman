@@ -250,7 +250,7 @@ export abstract class Queryable<TParams, TQueryKey extends readonly unknown[], T
      * @param params - user provided params to identify query
      * @param filters - [QueryFilters](https://tanstack.com/query/latest/docs/framework/react/guides/filters#query-filters), minus key + exact
      * @param options - cancellation options
-     * @returns query is cancelled
+     * @returns query is canceled
      */
     public async cancelQuery(
         queryClient: QueryClient,

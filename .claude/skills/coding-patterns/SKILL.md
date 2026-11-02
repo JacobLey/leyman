@@ -30,7 +30,7 @@ What needs a comment is *why* a particular approach was chosen, especially if a 
 
 This applies at multiple levels:
 - **Inline comments** for non-obvious implementation choices
-- **README.md** for public API usage and behaviour
+- **README.md** for public API usage and behavior
 - **WHY-\<PACKAGE\>.md** for motivation and design rationale (see [`.claude/skills/writing-readmes/SKILL.md`](../writing-readmes/SKILL.md))
 - **SKILL.md files** for conventions, workflows, and context that agents or contributors need
 
@@ -40,7 +40,7 @@ If you write a workaround, a subtle ordering constraint, or a counter-intuitive 
 
 ## Prefer immutability
 
-Favour data that cannot be accidentally mutated. In practice:
+Favor data that cannot be accidentally mutated. In practice:
 
 - Use `readonly` on class fields and constructor parameters where the value won't change
 - Use `ReadonlySet` and `ReadonlyMap` for collections exposed beyond their creation site
@@ -92,7 +92,7 @@ See the haywire README for the constructor provider pattern used in this repo.
 
 Use the type system as a design tool, not just a documentation aid. Specific guidance:
 
-- **Avoid `unknown`, `object`, and `any`** except where truly warranted (e.g. a generic serialisation boundary). Prefer precise types.
+- **Avoid `unknown`, `object`, and `any`** except where truly warranted (e.g. a generic serialization boundary). Prefer precise types.
 - **Discriminated unions** are a first-class feature. An exhaustive `switch` on a discriminant is both runtime-correct and statically verified. Use them for state machines and variant types.
 - **`unique symbol` declarations** serve as nominal type brands — use them to differentiate structurally identical types at compile time (see haywire's `HaywireId` and juniper's schema types).
 - **Generic constraints** over `any` casts. When a function works across types, express that with generics rather than widening to `any`.
@@ -200,13 +200,13 @@ This avoids deep relative paths (`../../../../lib/foo.js`) and makes internal re
 
 Tests are part of the package. They are read, reviewed, and maintained just like production code — write them accordingly.
 
-**One concern per test.** Each test should assert one logical thing. If you find yourself adding a second set of assertions for a different behaviour, write a second test. A test that covers too much is hard to name, hard to diagnose on failure, and discourages future additions.
+**One concern per test.** Each test should assert one logical thing. If you find yourself adding a second set of assertions for a different behavior, write a second test. A test that covers too much is hard to name, hard to diagnose on failure, and discourages future additions.
 
 **Don't over-assert.** Only assert what the test is actually about. Checking incidental details (exact error message wording, internal call counts, unrelated return fields) makes tests fragile — they break when irrelevant things change. Assert the contract, not the implementation.
 
 **No conditionals.** A test with an `if` or `switch` has two paths, meaning it's really two tests — or one is never exercised. The exception is when a conditional is the actual subject of the test (e.g. testing a type guard or a branch in business logic by running two separate tests that each take one path).
 
-**Use assertion libraries for exceptional behaviour.** Don't `try/catch` manually to assert that something throws:
+**Use assertion libraries for exceptional behavior.** Don't `try/catch` manually to assert that something throws:
 
 ```ts
 // Avoid
@@ -222,13 +222,13 @@ await expect(doThing()).to.be.rejectedWith(MyError);
 expect(() => doThing()).to.throw(MyError);
 ```
 
-**Readable test names.** A test name should read as a plain-English statement of the expected behaviour. Someone scanning a failure report should understand what broke without opening the file.
+**Readable test names.** A test name should read as a plain-English statement of the expected behavior. Someone scanning a failure report should understand what broke without opening the file.
 
 ---
 
 ## Tests: type assertions alongside value assertions
 
-Tests verify both runtime behaviour and TypeScript types. Use `expect-type` alongside `@leyman/expect`:
+Tests verify both runtime behavior and TypeScript types. Use `expect-type` alongside `@leyman/expect`:
 
 ```ts
 import { expect } from '@leyman/expect';

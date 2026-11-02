@@ -265,7 +265,7 @@ const flattenPages = (base: string, pages: readonly Page[]): { text: string; lin
 
 /**
  * Previous and next links, within one package or demo. VitePress would otherwise follow the
- * sidebar into the neighbouring package.
+ * sidebar into the neighboring package.
  */
 const pageOrder = new Map(
     [

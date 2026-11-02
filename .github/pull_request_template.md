@@ -5,6 +5,6 @@
 ## Checklist
 
 - [ ] `test-ci` passes locally
-- [ ] Added a changeset (`changeset`) if a published package's behaviour, API or runtime dependencies changed
-- [ ] Updated the package README and docs site pages if behaviour or API changed
+- [ ] Added a changeset (`changeset`) if a published package's behavior, API or runtime dependencies changed
+- [ ] Updated the package README and docs site pages if behavior or API changed
 - [ ] Breaking changes (if any) are explained above

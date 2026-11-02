@@ -191,7 +191,7 @@ console.log(formatError(new Error('request failed', { cause: new Error('ECONNREF
 //         at ...
 ```
 
-Causes are labelled `Caused by:`, and `AggregateError` entries `-`. Each error is printed as its `stack`, with a `Name: message` line added first when the stack doesn't start with one (as in Firefox and Safari). Where `maxDepth` cut the walk short, a `… more causes omitted` line says so.
+Causes are labeled `Caused by:`, and `AggregateError` entries `-`. Each error is printed as its `stack`, with a `Name: message` line added first when the stack doesn't start with one (as in Firefox and Safari). Where `maxDepth` cut the walk short, a `… more causes omitted` line says so.
 
 ## Compared to alternatives
 

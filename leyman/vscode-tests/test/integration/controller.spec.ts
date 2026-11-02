@@ -529,7 +529,7 @@ suite('activate', () => {
             }
         );
 
-        withFixture.test('Cancelling stops the session', async ({ workspace }) => {
+        withFixture.test('Canceling stops the session', async ({ workspace }) => {
             const { root, spec } = await workspace.addProject({ name: 'a' });
             const started = await start(workspace.root, [spec]);
             const file = await resolved(started, root, spec);
