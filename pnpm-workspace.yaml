@@ -107,12 +107,17 @@ catalog:
   '@eslint/js': ^10.0.1
   '@happy-dom/global-registrator': ^21.0.4
   '@hono/node-server': ^2.1.5
+  json-schema-to-ts: ^3.1.1
+  json-schema-to-typescript: ^16.0.0
+  json-schema-to-zod: ^2.8.1
   '@modelcontextprotocol/client': ^2.4.0
   '@modelcontextprotocol/server': ^2.4.0
   '@naxodev/gonx': ^4.1.2
   '@noble/hashes': ^2.4.0
   '@nx/devkit': ^23.3.1
   '@nx/js': ^23.3.1
+  openapi-typescript: ^7.13.0
+  quicktype-core: ^26.0.0
   '@shikijs/vitepress-twoslash': ^4.5.0
   '@standard-schema/spec': ^1.1.0
   '@swc/cli': ^0.8.1
@@ -120,6 +125,7 @@ catalog:
   '@tanstack/react-query': ^5.104.5
   '@testing-library/dom': ^10.4.2
   '@testing-library/react': ^16.3.3
+  typebox: ^1.4.3
   '@types/chai': ^5.2.3
   '@types/chai-as-promised': ^8.0.2
   '@types/eslint': ^9.6.1
@@ -217,6 +223,7 @@ catalog:
   yaml: ^2.9.1
   yargs: ^18.2.0
 
+  zod: ^4.6.7
 catalogs:
   # TypeScript's next release, for content-mapper packages and the demos that use them only: every other package stays
   # on the stable `catalog:`. Pinned exactly, since `^` doesn't match prereleases. Delete this catalog once the stable

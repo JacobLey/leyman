@@ -97,6 +97,7 @@ See each package's README.md for full usage documentation.
 | [`iso-crypto-browser`](../../../e2e/iso-crypto-browser) | Checks that iso-crypto's browser build works in real browsers, with no Node.js APIs. |
 | [`juniper-openapi`](../../../e2e/juniper-openapi) | Builds an example users and posts OpenAPI spec with juniper, and checks it is valid OpenAPI 3.0 and 3.1. |
 | [`published-entrypoints`](../../../e2e/published-entrypoints) | Imports every entry point (each exports subpath) of every published package from the files it publishes, with only its runtime dependencies. |
+| [`genever-comparison`](../../../e2e/genever-comparison) | Runs genever and the top tools it is compared to through the same probes, for the report on the docs site. |
 | [`unknown-error-comparison`](../../../e2e/unknown-error-comparison) | Runs unknown-error and the libraries it is compared to through the same edge cases, to keep its comparison table accurate. |
 | [`unknown-error-browser`](../../../e2e/unknown-error-browser) | Checks that unknown-error runs in real browsers, with and without Error.isError. |
 

@@ -1,0 +1,51 @@
+{
+  "name": "@leyman/e2e-genever-comparison",
+  "version": "0.0.1",
+  "description": "Runs genever and the top tools it is compared to through the same probes, for the report on the docs site.",
+  "engines": {
+    "node": ">=24"
+  },
+  "private": true,
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": "JacobLey/leyman",
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/e2e/genever-comparison#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo"
+  ],
+  "types": "./dist/index.js",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "dependencies": {
+    "genever": "workspace:^",
+    "json-schema-to-ts": "catalog:",
+    "json-schema-to-typescript": "catalog:",
+    "json-schema-to-zod": "catalog:",
+    "openapi-typescript": "catalog:",
+    "quicktype-core": "catalog:",
+    "typebox": "catalog:",
+    "typescript": "catalog:",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^"
+  }
+}

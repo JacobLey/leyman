@@ -1,0 +1,45 @@
+{
+  "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
+  "name": "@leyman/e2e-genever-comparison",
+  "targets": {
+    "biome": {},
+    "eslint": {},
+    "update-ts-references": {},
+    "tsc": {},
+    "tsc-test": {},
+    "mocha-integration-test": {},
+    "coverage-report": {},
+    "comparison-report": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "node bin.mjs",
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "dependsOn": [
+        "build"
+      ]
+    },
+    "install:_": {},
+    "install": {},
+    "prepare:_": {},
+    "prepare:generate": {},
+    "prepare:format": {},
+    "prepare": {},
+    "check:_": {},
+    "check:lint": {},
+    "check": {},
+    "build:_": {},
+    "build:run": {},
+    "build:post": {},
+    "build:sync": {},
+    "build": {},
+    "test:_": {},
+    "test:compile": {},
+    "test:run": {},
+    "test:report": {},
+    "test": {},
+    "verify:_": {},
+    "verify": {}
+  }
+}

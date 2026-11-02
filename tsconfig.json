@@ -144,6 +144,9 @@
     },
     {
       "path": "./apps/juniper-arbitrary"
+    },
+    {
+      "path": "./e2e/genever-comparison"
     }
   ]
 }
