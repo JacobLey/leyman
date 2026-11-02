@@ -293,6 +293,9 @@
       "inputs": [
         "shared-globals",
         "{projectRoot}/**/*",
+        "!{projectRoot}/CHANGELOG.md",
+        "!{projectRoot}/eslint.config.js",
+        "!{projectRoot}/test/**/*",
         "{workspaceRoot}/.gitignore",
         "dependency-builds",
         "{workspaceRoot}/leyman/main/scripts/check-package.mjs",

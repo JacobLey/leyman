@@ -15,7 +15,9 @@ Run the high-level target you care about (`build`, `test`, `check`, `verify`). I
 
 `test` only tests the project itself. To test everything, use `nx run-many -t test` or `nx affected -t test`.
 
-`--excludeTaskDependencies` rarely does what you want. Tests run from `dist/`, so skipping the build means testing stale code.
+`--excludeTaskDependencies` rarely does what you want. Tests run from `dist/`, so skipping the build means testing stale code. It also misses the cache, and fills it with entries nothing reuses: without the dependencies in the graph, every target hashing their outputs (`dependentTasksOutputFiles`) gets a different hash.
+
+Nx finds plugins like `@naxodev/gonx` through `.nx/installation`, a link to `leyman/main`, which is how they load with nothing in the root `package.json`.
 
 ## Configurations
 

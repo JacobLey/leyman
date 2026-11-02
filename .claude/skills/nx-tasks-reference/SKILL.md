@@ -112,6 +112,8 @@ Packs the package with `pnpm pack`, exactly as it would be published, and checks
 - Declarations: `tsc` type checks the published `.d.ts` files as a strict consumer with `skipLibCheck: false` would. A `@ts-expect-error` in `src/` doesn't reach the declarations, so the error it hid fails here. Errors in dependencies' declarations are ignored.
 - Published files: every top-level path not ignored by `.gitignore` is either published, or on the script's `notPublished` list (`src`, `test`, `project.json`, ...), and nothing on that list is published. A new path, like `data/`, fails until it is added to one or the other.
 
+It hashes everything in the project but `test/`, `CHANGELOG.md` and `eslint.config.js`, whose contents can't change the result, so a new top-level path still reruns it.
+
 `e2e/published-entrypoints` complements it at runtime, importing every entry point from the published files.
 
 Runs in `check:lint`, after the package's own build, so a packaging mistake fails CI on the PR rather than after a release.
