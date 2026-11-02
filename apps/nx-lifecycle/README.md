@@ -117,6 +117,8 @@ Every time Nx builds the project graph, the plugin checks the merged configurati
 
 ## Executor
 
+Use the [plugin](#plugin) unless the workspace develops `nx-lifecycle` itself, or you want every `dependsOn` visible in the files.
+
 Register it as a target in a `project.json`. Because `lifecycle` manages dependencies for the rest of your targets, it should live in a project outside your normal build/test graph — for example, a root-level management package. See [Nx-lifecycle's own monorepo config](https://github.com/JacobLey/leyman/blob/main/leyman/main/lifecycle.json) for a real example.
 
 ```json
