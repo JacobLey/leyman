@@ -333,6 +333,19 @@ genever(parseYaml('type: array\nitems: { type: string }\n'), { name: 'Tags' });
 
 ---
 
+### `parseYamlDocument(text)` and `yamlToJson(document)`
+
+The two steps of `parseYaml`, for a tool that also needs to know where things are in the text, without parsing twice. `parseYamlDocument` returns the [`yaml`](https://www.npmjs.com/package/yaml) package's `Document`, whose nodes each have a `range`, and throws the `YAMLError`s `parseYaml` would. `yamlToJson` returns the value `parseYaml` would, and throws its `GeneverError`s.
+
+```ts
+import { geneverSource, parseYamlDocument, yamlToJson } from 'genever';
+
+const document = parseYamlDocument('type: array\nitems: { type: string }\n');
+const { names } = geneverSource(yamlToJson(document), { name: 'Tags' });
+```
+
+---
+
 ### `geneverSource(schema, options?)`
 
 Generate types as [`genever`](#geneverschema-options) does, and say where each type's name is in the source and which part of the document it comes from, so a tool showing the types can link each name back to its schema. A TypeScript content mapper uses it for go to definition into the document.

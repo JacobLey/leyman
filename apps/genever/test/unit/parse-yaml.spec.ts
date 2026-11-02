@@ -1,6 +1,6 @@
 import { YAMLError } from 'yaml';
 import { expect } from '@leyman/expect';
-import { GeneverInvalidSchemaError, parseYaml } from 'genever';
+import { GeneverInvalidSchemaError, parseYaml, parseYamlDocument, yamlToJson } from 'genever';
 import { suite, test } from 'mocha-chain';
 import { expectGenerated } from '../lib/expect-generated.js';
 
@@ -69,5 +69,30 @@ suite('parseYaml', () => {
             c: { b: 1 },
             d: { '<<': 2 },
         });
+    });
+});
+
+suite('parseYamlDocument and yamlToJson', () => {
+    test('Together are parseYaml', () => {
+        const text = 'a: &a { b: 1 }\nc: { <<: *a }\n';
+
+        expect(yamlToJson(parseYamlDocument(text))).to.deep.equal(parseYaml(text));
+    });
+
+    test('The document has where each node is', () => {
+        const text = 'type: string\n';
+        const { contents } = parseYamlDocument(text);
+
+        expect(contents?.range?.[0]).to.equal(0);
+    });
+
+    test('Syntax errors are from parseYamlDocument', () => {
+        expect(() => parseYamlDocument('a: 1\na: 2\n')).to.throw(YAMLError);
+    });
+
+    test('Values JSON does not have are from yamlToJson', () => {
+        const document = parseYamlDocument('const: .inf\n');
+
+        expect(() => yamlToJson(document)).to.throw(GeneverInvalidSchemaError);
     });
 });

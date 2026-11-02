@@ -1,5 +1,5 @@
 ---
-description: The genever CLI and its flags, the genever(), geneverFile(), parseYaml() and geneverSource() functions, and the errors they throw.
+description: The genever CLI and its flags, the genever(), geneverFile(), parseYaml(), parseYamlDocument(), yamlToJson() and geneverSource() functions, and the errors they throw.
 ---
 
 # API and CLI
@@ -88,6 +88,17 @@ import { genever, parseYaml } from 'genever';
 
 genever(parseYaml('type: array\nitems: { type: string }\n'), { name: 'Tags' });
 // export type Tags = string[];
+```
+
+## `parseYamlDocument(text)` and `yamlToJson(document)`
+
+The two steps of `parseYaml`, for a tool that also needs to know where things are in the text, without parsing twice. `parseYamlDocument` returns the [`yaml`](https://www.npmjs.com/package/yaml) package's `Document`, whose nodes each have a `range`, and throws the `YAMLError`s `parseYaml` would. `yamlToJson` returns the value `parseYaml` would, and throws its `GeneverError`s.
+
+```ts
+import { geneverSource, parseYamlDocument, yamlToJson } from 'genever';
+
+const document = parseYamlDocument('type: array\nitems: { type: string }\n');
+const { names } = geneverSource(yamlToJson(document), { name: 'Tags' });
 ```
 
 ## `geneverSource(schema, options?)`

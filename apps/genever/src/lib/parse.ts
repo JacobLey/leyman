@@ -288,21 +288,16 @@ const checkAliases = (document: Document, lineCounter: LineCounter): void => {
 };
 
 /**
- * Parse a YAML 1.2 document, with only the values JSON has.
+ * Parse a YAML 1.2 document's syntax, for {@link yamlToJson}, keeping where each node is in the text.
  *
- * Aliases are expanded, and merge keys (`<<`) merged. An alias inside the schema it names, a recursive
- * schema, becomes a `$ref` to that schema. Tags other than the core schema's (e.g. `!!binary`), keys that
- * aren't strings, duplicate keys, an alias with no anchor before it, and a merge key (`<<`) that merges a map
- * into itself are errors.
+ * Tags other than the core schema's (e.g. `!!binary`), keys that aren't strings, duplicate keys, an alias with no
+ * anchor before it, and a merge key (`<<`) that merges a map into itself are errors.
  *
  * @param text - YAML source
- * @returns parsed document
+ * @returns parsed document, with each node's `range`
  * @throws {YAMLError} if the text isn't YAML, or uses a feature JSON doesn't have
- * @throws {GeneverInvalidSchemaError} if a value has no JSON equivalent
- * @throws {GeneverUnsupportedError} if a recursive schema contains another resource
- * @throws {GeneverUnsupportedError} if the document is an unsupported OpenAPI version
  */
-export const parseYaml = (text: string): unknown => {
+export const parseYamlDocument = (text: string): Document => {
     const lineCounter = new LineCounter();
     const document = parseDocument(text, {
         lineCounter,
@@ -316,6 +311,22 @@ export const parseYaml = (text: string): unknown => {
         throw problem;
     }
     checkAliases(document, lineCounter);
+    return document;
+};
+
+/**
+ * The value of a document from {@link parseYamlDocument}, with only the values JSON has.
+ *
+ * Aliases are expanded, and merge keys (`<<`) merged. An alias inside the schema it names, a recursive
+ * schema, becomes a `$ref` to that schema.
+ *
+ * @param document - parsed document
+ * @returns parsed value
+ * @throws {GeneverInvalidSchemaError} if a value has no JSON equivalent
+ * @throws {GeneverUnsupportedError} if a recursive schema contains another resource
+ * @throws {GeneverUnsupportedError} if the document is an unsupported OpenAPI version
+ */
+export const yamlToJson = (document: Document): unknown => {
     const parsed: unknown = document.toJS();
     const roots = inputSchemas(parsed, openApiDialect(parsed) !== null).map(
         ({ pointer }) => pointer
@@ -323,6 +334,18 @@ export const parseYaml = (text: string): unknown => {
     const tree = new JsonTree(roots);
     return tree.copy(parsed, { isSchema: false, pointer: '#', resource: '#' });
 };
+
+/**
+ * Parse a YAML 1.2 document, with only the values JSON has: {@link parseYamlDocument}, then {@link yamlToJson}.
+ *
+ * @param text - YAML source
+ * @returns parsed document
+ * @throws {YAMLError} if the text isn't YAML, or uses a feature JSON doesn't have
+ * @throws {GeneverInvalidSchemaError} if a value has no JSON equivalent
+ * @throws {GeneverUnsupportedError} if a recursive schema contains another resource
+ * @throws {GeneverUnsupportedError} if the document is an unsupported OpenAPI version
+ */
+export const parseYaml = (text: string): unknown => yamlToJson(parseYamlDocument(text));
 
 /**
  * Parse a JSON or YAML document.

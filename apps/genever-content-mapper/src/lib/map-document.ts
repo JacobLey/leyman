@@ -1,13 +1,14 @@
 import type { Document, Node, Pair, Scalar, YAMLMap } from 'yaml';
 import type { MapperOptions } from './options.js';
 import { pathToFileURL } from 'node:url';
-import { isAlias, isMap, isNode, isPair, isSeq, parseDocument, YAMLError } from 'yaml';
+import { isAlias, isMap, isNode, isPair, isSeq, YAMLError } from 'yaml';
 import {
     GeneverError,
     geneverSource,
     GeneverStrictModeError,
     GeneverUnsupportedError,
-    parseYaml,
+    parseYamlDocument,
+    yamlToJson,
 } from 'genever';
 
 /**
@@ -101,9 +102,6 @@ const rangeOf = (node: Node): Span => {
     const [start, end] = node.range!;
     return [start, end];
 };
-
-const parseLocated = (text: string): Document =>
-    parseDocument(text, { merge: true, stringKeys: true });
 
 const mergeKey = '<<';
 
@@ -200,37 +198,27 @@ const find = (document: Document, textLength: number, pointer: string): Located 
 };
 
 /**
- * Find where a JSON Pointer points in the document's text.
- *
- * @param text - the document's contents
- * @param pointer - JSON Pointer from a genever error
- * @returns range of the entry (key and value) or item the pointer ends at, or of its deepest ancestor in the text
- */
-const locate = (text: string, pointer: string): { start: number; length: number } => {
-    const [start, end] = find(parseLocated(text), text.length, pointer).entry;
-    return { start, length: end - start };
-};
-
-/**
  * Describe why a document has no types.
  *
- * @param text - the document's contents
  * @param error - what parsing or generating its types threw
+ * @param text - the document's contents
+ * @param document - the parsed document, unless parsing is what threw: only a syntax error comes from that
  * @returns diagnostic, located in the document
  */
-const diagnose = (text: string, error: unknown): DocumentDiagnostic => {
+const diagnose = (error: unknown, text: string, document: Document | null): DocumentDiagnostic => {
     if (error instanceof YAMLError) {
         const [start, end] = error.pos;
         return { start, messageText: error.message, length: end - start, code: syntax };
     }
-    if (error instanceof GeneverError) {
+    if (document && error instanceof GeneverError) {
         let code: number = invalidSchema;
         if (error instanceof GeneverStrictModeError) {
             code = strictMode;
         } else if (error instanceof GeneverUnsupportedError) {
             code = unsupported;
         }
-        return { messageText: error.message, ...locate(text, error.pointer), code };
+        const [start, end] = find(document, text.length, error.pointer).entry;
+        return { messageText: error.message, length: end - start, code, start };
     }
     // Reported in the document rather than failing the transform, which TypeScript reports without the message
     return { messageText: String(error), start: 0, length: 0, code: unexpected };
@@ -252,16 +240,18 @@ export const mapDocument = (
     fileName: string,
     options: MapperOptions = {}
 ): MappedDocument => {
+    let document: Document | null = null;
     try {
+        document = parseYamlDocument(text);
         const baseUri = pathToFileURL(fileName).href;
-        const source = geneverSource(parseYaml(text), { ...options, baseUri });
-        const document = parseLocated(text);
+        const source = geneverSource(yamlToJson(document), { ...options, baseUri });
+        const parsed = document;
         const mappings = source.names.flatMap(({ name, pointer, start }): Mapping[] => {
-            const { key } = find(document, text.length, pointer);
+            const { key } = find(parsed, text.length, pointer);
             return key ? [[start, name.length, key[0], key[1] - key[0], aliasKind]] : [];
         });
         return { text: source.text, diagnostics: [], mappings };
     } catch (error) {
-        return { text: emptyModule, diagnostics: [diagnose(text, error)], mappings: [] };
+        return { text: emptyModule, diagnostics: [diagnose(error, text, document)], mappings: [] };
     }
 };
