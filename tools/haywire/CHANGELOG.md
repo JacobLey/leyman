@@ -1,5 +1,11 @@
 # haywire
 
+## 2.0.6
+
+### Patch Changes
+
+- b0484f9: Correct the spelling of "synchronous" in the sync-supplier error message. Update any code matching on the old text.
+
 ## 2.0.5
 
 ### Patch Changes
