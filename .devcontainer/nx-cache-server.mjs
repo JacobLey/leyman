@@ -12,6 +12,10 @@
  * actions/cache preserves it in CI). A result older than `NX_CACHE_SERVER_MAX_AGE_DAYS` is never
  * served, and is deleted at startup and every hour after, so the directory doesn't grow forever.
  *
+ * With `NX_CACHE_SERVER_MAX_SIZE_GB`, those sweeps also delete the results read longest ago until the directory is
+ * under that size, which it can pass between sweeps. Each read is recorded in the file's access time, as a mount with
+ * `relatime` or `noatime` wouldn't record it reliably.
+ *
  * With `NX_CACHE_SERVER_UPSTREAM` (the hosted cache, `infra/nx-cache`), it is a tier in front of another
  * cache server:
  * - A result it doesn't have is read from the upstream, and kept, timestamped when the upstream stored it
@@ -38,6 +42,9 @@ import { pipeline } from 'node:stream/promises';
 const cacheDir = process.env.NX_CACHE_SERVER_DIR ?? '/cache';
 const port = Number(process.env.NX_CACHE_SERVER_PORT ?? 3000);
 const maxAgeMs = Number(process.env.NX_CACHE_SERVER_MAX_AGE_DAYS ?? 7) * 24 * 60 * 60 * 1000;
+const maxSizeBytes = process.env.NX_CACHE_SERVER_MAX_SIZE_GB
+    ? Number(process.env.NX_CACHE_SERVER_MAX_SIZE_GB) * 1024 * 1024 * 1024
+    : null;
 const sweepIntervalMs = 60 * 60 * 1000;
 const hashPattern = /^\/v1\/cache\/(?<hash>[\w\-]+)$/v;
 // Without a trailing slash, so `${upstream}/v1/...` is one
@@ -73,16 +80,58 @@ const isFresh = async path => {
     }
 };
 
+// Keeps the timestamp a result's age is measured from
+const recordRead = async file => {
+    try {
+        const { mtime } = await stat(file);
+        await utimes(file, new Date(), mtime);
+    } catch (err) {
+        if (err.code !== 'ENOENT') {
+            console.error(`Recording a read of ${file} failed`, err);
+        }
+    }
+};
+
+// Deletes the results read longest ago until the rest fit, skipping any read since they were listed
+const evictOverMaxSize = async results => {
+    let size = results.reduce((total, result) => total + result.size, 0);
+    if (size <= maxSizeBytes) {
+        return;
+    }
+    let evicted = 0;
+    for (const { path, atimeMs, size: resultSize } of results.toSorted((a, b) => a.atimeMs - b.atimeMs)) {
+        if (size <= maxSizeBytes) {
+            break;
+        }
+        try {
+            if ((await stat(path)).atimeMs === atimeMs) {
+                await rm(path, { force: true });
+                size -= resultSize;
+                evicted++;
+            }
+        } catch (err) {
+            if (err.code !== 'ENOENT') {
+                console.error(`Evicting ${path} failed`, err);
+            }
+        }
+    }
+    console.log(`Evicted results: ${evicted}`);
+};
+
 // Also removes temp files left by an interrupted write. Other worktrees' servers sweep the same
 // directory, so a file may already be gone.
 const sweep = async () => {
     let expired = 0;
+    const results = [];
     for (const name of await readdir(cacheDir)) {
         const path = join(cacheDir, name);
         try {
-            if (isExpired(await stat(path))) {
+            const stats = await stat(path);
+            if (isExpired(stats)) {
                 await rm(path, { force: true });
                 expired++;
+            } else if (name.endsWith('.tar')) {
+                results.push({ path, atimeMs: stats.atimeMs, size: stats.size });
             }
         } catch (err) {
             if (err.code !== 'ENOENT') {
@@ -91,6 +140,9 @@ const sweep = async () => {
         }
     }
     console.log(`Expired results: ${expired}`);
+    if (maxSizeBytes !== null) {
+        await evictOverMaxSize(results);
+    }
 };
 
 /**
@@ -255,6 +307,9 @@ const server = createServer(async (req, res) => {
             if (!(await isFresh(file)) && !(upstream && (await readUpstream(hash, file)))) {
                 res.writeHead(404).end();
                 return;
+            }
+            if (maxSizeBytes !== null) {
+                await recordRead(file);
             }
             res.writeHead(200, { 'content-type': 'application/octet-stream' });
             await pipeline(createReadStream(file), res);

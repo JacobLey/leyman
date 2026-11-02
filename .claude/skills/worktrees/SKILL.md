@@ -127,5 +127,5 @@ Never `rm` the worktree you are running in; `scripts/worktree` refuses to do it.
 
 - **Container fails with "must live in …-worktrees"**: the worktree was created somewhere else, for example nested under `.claude/worktrees/`. Recreate it with `scripts/worktree new`.
 - **No `[remote cache]` hits**: from inside the container, run `curl -s -o /dev/null -w '%{http_code}' http://nx-cache:3000/v1/cache/x`. A `404` means the server is up. Hits only happen when task inputs match, and uncommitted changes alter the hashes.
-- **The shared Nx cache keeps growing**: the server never evicts anything. Prune it from the host, for example with `find <worktrees>/.shared/nx-cache -name '*.tar' -mtime +30 -delete`.
+- **The shared Nx cache is too big**: each of its servers deletes results older than 7 days, then the ones read longest ago until it is under `NX_CACHE_SERVER_MAX_SIZE_GB` (5 by default), at startup and hourly, so it can pass that between sweeps. A full cold `verify` stores about 700 MB. Set a different size in `.devcontainer/.env`, and rebuild the container.
 - **The pnpm store keeps growing**: run `pnpm store prune` in any worktree.
