@@ -22,6 +22,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 
 - [Installation](#installation)
 - [Example](#example)
+    - [A fuller example](#a-fuller-example)
 - [Concepts](#concepts)
     - [Type tracking](#type-tracking)
     - [Binding an implementation to an id](#binding-an-implementation-to-an-id)
@@ -78,151 +79,118 @@ The type safety of haywire is a primary benefit, but does not require typescript
 
 ## Example
 
-Below is an example service that wires up a database implementation to a user service.
-It includes a logging implementation and safe references to environment variables.
-
-Note the actual pattern of where to define `identifier`s and `bind`ings is just an example, and may be customized as you wish.
+Name each dependency with an id, bind each id to how it is built, collect the bindings in a module, and get instances from a container:
 
 ```ts
-// types.ts
-import { identifier } from 'haywire';
+import { bind, createContainer, createModule, identifier, singletonScope } from 'haywire';
 
-export interface ILogger {
+interface ILogger {
     info(message: string): void;
 }
-export const loggerId = identifier<ILogger>();
+const loggerId = identifier<ILogger>();
+const dbUrlId = identifier<string>().named('dbUrl');
 
-export interface IDatabase {
-    getRowById<T>(table: string, id: number): T;
-}
-export const databaseId = identifier<IDatabase>();
+// A class is its own id
+class UserService {
+    constructor(
+        private readonly logger: ILogger,
+        private readonly dbUrl: string
+    ) {}
 
-export const dbUrlId = identifier<string>().named('dbUrl');
-export const dbPasswordId = identifier<string>().named('dbPassword');
-```
-
-```ts
-// logger.ts
-import { bind, singletonScope } from 'haywire';
-
-import { type ILogger, loggerId } from './types.js';
-
-class Logger implements ILogger {
-    info(message: string): void {
-        console.log(message);
+    connect(): void {
+        this.logger.info(`Connecting to ${this.dbUrl}`);
     }
 }
 
-export const loggerBinding = bind(loggerId)
-    // Skip declaring dependencies if none exist
-    .withFactory(() => new Logger())
-    // Ensure a single value is shared across all resources
-    .scoped(singletonScope);
+const appModule = createModule(bind(loggerId).withFactory(() => console).scoped(singletonScope))
+    .addBinding(bind(dbUrlId).withInstance('postgres://localhost/app'))
+    .addBinding(bind(UserService).withDependencies([loggerId, dbUrlId]).withConstructorProvider());
+
+const container = createContainer(appModule);
+
+const userService = container.get(UserService);
+userService.connect();
 ```
 
-```ts
-// env.ts
-import { bind } from 'haywire';
+### A fuller example
 
-import { dbUrlId, dbPasswordId } from './types.js';
-
-export const urlBinding = bind(dbUrlId)
-    // Provide singleton off the bat
-    .withInstance(process.env.DATABASE_URL!);
-
-export const passwordBinding = bind(dbPasswordId)
-    // If env val does not exist at runtime, will throw an error
-    // (unless binding/id is marked undefinable)
-    // so guaranteed undefined will not leak to other resources
-    .withInstance(process.env.DATABASE_PASSWORD!);
-```
+This one binds an interface to its implementation, gives `UserService` an optional dependency, and reads the database's credentials from the environment in a separate module. It is in one file for brevity: where you define ids and bindings is up to you.
 
 ```ts
-// database.ts
-import { bind } from 'haywire';
+import { bind, createContainer, createModule, identifier, singletonScope } from 'haywire';
 
-import { type IDatabase, type ILogger, databaseId, dbPasswordId, dbUrlId, loggerId } from './types.js';
+interface ILogger {
+    info(message: string): void;
+}
+const loggerId = identifier<ILogger>();
 
-export class Database implements IDatabase {
+interface IDatabase {
+    getRowById(table: string, id: number): unknown;
+}
+const databaseId = identifier<IDatabase>();
 
-    private postgres: PostgresClient;
+const dbUrlId = identifier<string>().named('dbUrl');
+const dbPasswordId = identifier<string>().named('dbPassword');
 
-    constructor(private logger: ILogger, url: string, password: string) {
-        this.postgres = new PostgresClient(url, password);
+class Database implements IDatabase {
+    readonly #client: PostgresClient;
+
+    constructor(
+        private readonly logger: ILogger,
+        url: string,
+        password: string
+    ) {
+        this.#client = new PostgresClient(url, password);
     }
 
-    getRowById<T>(table: string, id: number): T {
+    getRowById(table: string, id: number): unknown {
         this.logger.info(`Loading ${id} from ${table}`);
-        return this.postgres.query(`SELECT * FROM ${table} WHERE id = ${id}`);
+        return this.#client.query(`SELECT * FROM ${table} WHERE id = $1`, [id]);
     }
 }
 
-export const databaseBinding = bind(databaseId)
-    .withDependencies([loggerId, dbUrlId, dbPasswordId])
-    // Fully type safe! `url` below is a `string`
-    .withProvider((logger, url, password) => new Database(logger, url, password));
-```
+class UserService {
+    constructor(
+        private readonly database: IDatabase,
+        private readonly logger?: ILogger
+    ) {}
 
-```ts
-// user-service.ts
-import { bind } from 'haywire';
-
-import { type IDatabase, type ILogger, databaseId, loggerId } from './types.js';
-
-export class UserService {
-
-    constructor(private database: IDatabase, private logger?: ILogger) {}
-
-    getUserById(id: number): User {
-        const user = this.database.getRowById<User>('users', id);
-        this.logger?.info(`Received user ${JSON.stringify(user)}`);
-        return user;
+    getUserById(id: number): unknown {
+        this.logger?.info(`Loading user ${id}`);
+        return this.database.getRowById('users', id);
     }
 }
 
-// If binding to a class directly (not an interface) you don't _have_ to use an identifier
-export const userServiceBinding = bind(UserService)
-    .withProvider((database: IDatabase, logger?: ILogger) => new UserService(database, logger))
-    // Also type safe! Providing ids for other types will result in an error.
-    // loggerId can be `undefinable` because implementation allows value to be missing
-    .withDependencies([databaseId, loggerId.undefinable()]);
-```
+const appModule = createModule(bind(loggerId).withFactory(() => console).scoped(singletonScope))
+    // Bindings can be added in any order
+    .addBinding(
+        bind(databaseId)
+            .withDependencies([loggerId, dbUrlId, dbPasswordId])
+            // Fully typed: `url` is a `string`
+            .withProvider((logger, url, password) => new Database(logger, url, password))
+    )
+    .addBinding(
+        // `undefinable()` because the `logger` parameter is optional
+        bind(UserService).withDependencies([databaseId, loggerId.undefinable()]).withConstructorProvider()
+    );
 
-```ts
-// index.ts
-import { createContainer, createModule, identifier } from 'haywire';
-
-import { loggerBinding } from './logger.js';
-import { urlBinding, passwordBinding } from './env.js';
-import { Database, databaseBinding } from './database.js';
-import { UserService, userServiceBinding } from './user-service.js';
-
-const appModule = createModule(loggerBinding)
-    // Order does not matter
-    .addBinding(databaseBinding)
-    // If any binding is added that is:
-    // > a duplicate
-    // > requires a stricter (e.g. non-null) version of a declared binding
-    // > Is a laxer (e.g. null) version of a declared dependency
-    // Then typescript will fail to build!
-    .addBinding(userServiceBinding);
-
-// Error! We forgot to add the environment bindings.
+// Type error: nothing binds `dbUrlId` or `dbPasswordId` yet
 createContainer(appModule);
 
-const envModule = createModule(urlBinding).addBinding(passwordBinding);
+const envModule = createModule(bind(dbUrlId).withInstance(process.env.DATABASE_URL!)).addBinding(
+    // A missing variable throws when the value is requested, so `undefined` never reaches a dependent
+    bind(dbPasswordId).withInstance(process.env.DATABASE_PASSWORD!)
+);
 
-// Success!
 const container = createContainer(appModule.mergeModule(envModule));
 
 const userService = container.get(UserService);
-// Does the same thing!
-container.get(identifier(UserService));
 
-// Error (both in typescript and javascript)
-// Because no binding was declared for Database directly — we declared IDatabase via databaseId
+// Type error, and throws: `databaseId` is bound, the `Database` class is not
 container.get(Database);
 ```
+
+The [Getting started](https://jacobley.github.io/leyman/packages/haywire/getting-started) guide goes through these steps one at a time, and the [docs site](https://jacobley.github.io/leyman/packages/haywire/) has guides for [scopes](https://jacobley.github.io/leyman/packages/haywire/guides/scopes), [testing](https://jacobley.github.io/leyman/packages/haywire/guides/testing), [runtime values](https://jacobley.github.io/leyman/packages/haywire/guides/runtime-values) and more.
 
 ## Concepts
 
