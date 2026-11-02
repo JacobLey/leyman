@@ -648,7 +648,6 @@
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/integration"
       ],
       "dependsOn": [
-        "mocha-unit-test",
         "test:compile"
       ]
     },
