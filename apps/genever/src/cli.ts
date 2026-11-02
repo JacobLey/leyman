@@ -1,37 +1,34 @@
-import type { Argv } from 'yargs';
-import type { Main } from 'entry-script';
-import type { GeneverCommandInput, RegisterCommand } from './commands/lib/types.js';
+import { isCI } from 'ci-info';
 import yargs from 'yargs';
-import { bind } from 'haywire';
-import { commandId } from './commands/lib/types.js';
+import { EntryScript } from 'entry-script';
+import { geneverFile } from './genever-file.js';
+import { defaultTypedMinItems } from './lib/convert.js';
+
+const yargsOutput = (e: Error | undefined, _argv: unknown, log: string): void => {
+    if (e) {
+        process.exitCode = 1;
+        if (log) {
+            console.error(log);
+        }
+    } else if (log) {
+        console.log(log);
+    }
+};
 
 /**
  * The genever CLI. Run `./bin.mjs --help` for options.
- *
- * Uses `yargs` package for command line parsing and logic flow.
  */
-export class GeneverCli implements Main {
-    readonly #commands: readonly RegisterCommand[];
-
-    /**
-     * @param commands - every command the CLI runs
-     */
-    public constructor(commands: readonly RegisterCommand[]) {
-        this.#commands = commands;
-    }
-
+export default class Cli extends EntryScript {
     /**
      * Entry point to CLI script.
      *
-     * Sets high level Yargs settings. Command/options logic is implemented in individual command modules.
-     *
      * @param argv - process arguments
      */
-    public async main(argv: string[]): Promise<void> {
+    public static override async main(argv: string[]): Promise<void> {
         // eslint-disable-next-line import-x/no-relative-parent-imports -- The build is one level below package.json
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
-        let cli: Argv<GeneverCommandInput> = yargs()
+        await yargs()
             .scriptName('genever')
             .option({
                 cwd: {
@@ -43,27 +40,132 @@ export class GeneverCli implements Main {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(packageJson.default.version);
+            .version(packageJson.default.version)
+            .command(
+                '$0 <input>',
+                'Write TypeScript types for a JSON Schema file, or the schemas of an OpenAPI document',
+                command =>
+                    command
+                        .positional('input', {
+                            describe:
+                                'Path to the JSON Schema file, or OpenAPI document. A .yaml or .yml file is read as YAML',
+                            type: 'string',
+                            demandOption: true,
+                        })
+                        .options({
+                            output: {
+                                alias: 'o',
+                                describe:
+                                    'Path of the TypeScript file to write. Defaults to the input path, with a .ts extension',
+                                type: 'string',
+                            },
+                            name: {
+                                describe:
+                                    'Name of the root schema type. Not used for an OpenAPI document',
+                                type: 'string',
+                                default: 'Schema',
+                            },
+                            strict: {
+                                describe:
+                                    'Fail on likely mistakes in the schema, such as unknown keywords. Disable with --no-strict',
+                                type: 'boolean',
+                                default: true,
+                            },
+                            openApi30: {
+                                alias: 'open-api-30',
+                                describe:
+                                    "Read the schema as an OpenAPI 3.0 schema, which allows nullable and example. An OpenAPI document's own version is used instead",
+                                type: 'boolean',
+                                default: false,
+                            },
+                            parameterDefaults: {
+                                alias: 'parameter-defaults',
+                                describe:
+                                    "With an OpenAPI document, also write OperationRequest: what a handler gets once a validator fills in parameters' defaults",
+                                type: 'boolean',
+                                default: false,
+                            },
+                            typedMinItems: {
+                                alias: 'typed-min-items',
+                                describe:
+                                    'Largest minItems typed as required items, e.g. [T, ...T[]] for minItems 1. 0 turns it off',
+                                type: 'number',
+                                default: defaultTypedMinItems,
+                            },
+                            fetch: {
+                                describe:
+                                    'Load URLs the schema references. Disable with --no-fetch to load only files',
+                                type: 'boolean',
+                                default: true,
+                            },
+                            fetchHost: {
+                                alias: 'fetch-host',
+                                describe:
+                                    'Load only URLs of this host, e.g. example.com, localhost:8080, or *.example.com for its subdomains. Repeat for more hosts',
+                                type: 'string',
+                                array: true,
+                            },
+                            ci: {
+                                describe:
+                                    'Fail if the output file is not up to date. Implies --dry-run',
+                                type: 'boolean',
+                                default: isCI,
+                            },
+                            dryRun: {
+                                alias: 'dry-run',
+                                describe: 'Do not write the output file',
+                                type: 'boolean',
+                                default: false,
+                            },
+                            signed: {
+                                describe:
+                                    'Sign the output file, and refuse to overwrite it if it was edited or is not signed',
+                                type: 'boolean',
+                                default: false,
+                            },
+                            force: {
+                                describe:
+                                    'With --signed, overwrite the output file even if it was edited',
+                                type: 'boolean',
+                                default: false,
+                            },
+                            manifest: {
+                                describe:
+                                    'Record the output, and hashes of its inputs, in this manifest. With --ci, an output still matching it is up to date without fetching URLs',
+                                type: 'string',
+                            },
+                        })
+                        .strict(),
+                async options => {
+                    // Checked here rather than in a builder `.check()`, whose failure still runs the handler when
+                    // `parseAsync` is given a callback: https://github.com/yargs/yargs/issues/1975
+                    if (!options.fetch && options.fetchHost !== undefined) {
+                        console.error('--fetch-host loads URLs, which --no-fetch disables');
+                        process.exitCode = 1;
+                        return;
+                    }
 
-        for (const register of this.#commands) {
-            cli = register(cli);
-        }
+                    const { output, updated } = await geneverFile(options.input, {
+                        check: options.ci,
+                        cwd: options.cwd,
+                        dryRun: options.dryRun,
+                        force: options.force,
+                        signed: options.signed,
+                        ...(options.manifest !== undefined && { manifest: options.manifest }),
+                        fetch: options.fetch ? (options.fetchHost ?? true) : false,
+                        name: options.name,
+                        openApi30: options.openApi30,
+                        ...(options.output !== undefined && { output: options.output }),
+                        parameterDefaults: options.parameterDefaults,
+                        strict: options.strict,
+                        typedMinItems: options.typedMinItems,
+                    });
 
-        await cli.parseAsync(argv, {}, GeneverCli.#yargsOutput);
-    }
-
-    static #yargsOutput(this: void, e: Error | undefined, _argv: unknown, log: string): void {
-        if (e) {
-            process.exitCode = 1;
-            if (log) {
-                console.error(log);
-            }
-        } else if (log) {
-            console.log(log);
-        }
+                    if (updated) {
+                        console.log(output);
+                    }
+                }
+            )
+            .parseAsync(argv, {}, yargsOutput);
     }
 }
-
-export const geneverCliBinding = bind(GeneverCli)
-    .withDependencies([commandId])
-    .withConstructorProvider();

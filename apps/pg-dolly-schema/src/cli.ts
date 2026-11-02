@@ -1,37 +1,35 @@
-import type { Argv } from 'yargs';
-import type { Main } from 'entry-script';
-import type { PgDollySchemaCommandInput, RegisterCommand } from './commands/lib/types.js';
 import yargs from 'yargs';
-import { bind } from 'haywire';
-import { commandId } from './commands/lib/types.js';
+import { EntryScript } from 'entry-script';
+import { PgDollyError } from 'pg-dolly';
+import { PopulateFilesError } from 'populate-files';
+import { PgDollySchemaError } from './lib/errors.js';
+import { snapshotSchema } from './lib/snapshot-schema.js';
+
+const yargsOutput = (e: Error | undefined, _argv: unknown, log: string): void => {
+    if (e) {
+        process.exitCode = 1;
+        if (log) {
+            console.error(log);
+        }
+    } else if (log) {
+        console.log(log);
+    }
+};
 
 /**
  * The `pg-dolly-schema` CLI. Run `./bin.mjs --help` for options.
- *
- * Uses `yargs` package for command line parsing and logic flow.
  */
-export class PgDollySchemaCli implements Main {
-    readonly #commands: readonly RegisterCommand[];
-
-    /**
-     * @param commands - every command the CLI runs
-     */
-    public constructor(commands: readonly RegisterCommand[]) {
-        this.#commands = commands;
-    }
-
+export default class Cli extends EntryScript {
     /**
      * Entry point to CLI script.
      *
-     * Sets high level Yargs settings. Command/options logic is implemented in individual command modules.
-     *
      * @param argv - process arguments
      */
-    public async main(argv: string[]): Promise<void> {
+    public static override async main(argv: string[]): Promise<void> {
         // eslint-disable-next-line import-x/no-relative-parent-imports -- The build is one level below package.json
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
-        let cli: Argv<PgDollySchemaCommandInput> = yargs()
+        await yargs()
             .scriptName('pg-dolly-schema')
             .option({
                 cwd: {
@@ -43,27 +41,71 @@ export class PgDollySchemaCli implements Main {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(packageJson.default.version);
-
-        for (const register of this.#commands) {
-            cli = register(cli);
-        }
-
-        await cli.parseAsync(argv, {}, PgDollySchemaCli.#yargsOutput);
-    }
-
-    static #yargsOutput(this: void, e: Error | undefined, _argv: unknown, log: string): void {
-        if (e) {
-            process.exitCode = 1;
-            if (log) {
-                console.error(log);
-            }
-        } else if (log) {
-            console.log(log);
-        }
+            .version(packageJson.default.version)
+            .command(
+                ['$0', 'snapshot'],
+                'Migrate an empty database and write its schema to a file',
+                command =>
+                    command
+                        // `PG_DOLLY_SCHEMA_MIGRATE`, as Nx forwards options in double quotes, where the shell would expand
+                        // `$DATABASE_URL` before the command sees the database it should migrate
+                        .env('PG_DOLLY_SCHEMA')
+                        .options({
+                            migrate: {
+                                describe:
+                                    'Shell command that migrates the database in DATABASE_URL from empty (or PG_DOLLY_SCHEMA_MIGRATE)',
+                                type: 'string',
+                                required: true,
+                            },
+                            file: {
+                                describe: 'File to write the schema to, relative to --cwd',
+                                type: 'string',
+                                default: 'schema.sql',
+                            },
+                            check: {
+                                describe:
+                                    'Fail if the file is not up to date, rather than writing it. Defaults to true in CI',
+                                type: 'boolean',
+                                alias: 'ci',
+                            },
+                            data: {
+                                describe:
+                                    "Table to keep the rows of too, e.g. the migration tool's own. Repeat for several",
+                                type: 'string',
+                                array: true,
+                            },
+                            prefix: {
+                                describe: 'Prefix of the databases created (default pg_dolly)',
+                                type: 'string',
+                            },
+                        })
+                        .strict(),
+                async options => {
+                    try {
+                        await snapshotSchema({
+                            migrate: options.migrate,
+                            file: options.file,
+                            cwd: options.cwd,
+                            check: options.check,
+                            data: options.data,
+                            prefix: options.prefix,
+                        });
+                    } catch (error) {
+                        // Expected failures (the migration, the setup, an outdated file) say what to fix, which a stack trace
+                        // would bury. Anything else keeps its stack
+                        if (
+                            error instanceof PgDollySchemaError ||
+                            error instanceof PgDollyError ||
+                            error instanceof PopulateFilesError
+                        ) {
+                            console.error(error.message);
+                            process.exitCode = 1;
+                            return;
+                        }
+                        throw error;
+                    }
+                }
+            )
+            .parseAsync(argv, {}, yargsOutput);
     }
 }
-
-export const pgDollySchemaCliBinding = bind(PgDollySchemaCli)
-    .withDependencies([commandId])
-    .withConstructorProvider();

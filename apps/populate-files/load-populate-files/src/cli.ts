@@ -1,37 +1,33 @@
-import type { Argv } from 'yargs';
-import type { Main } from 'entry-script';
-import type { LoadPopulateFilesCommandInput, RegisterCommand } from './commands/lib/types.js';
+import { isCI } from 'ci-info';
 import yargs from 'yargs';
-import { bind } from 'haywire';
-import { commandId } from './commands/lib/types.js';
+import { EntryScript } from 'entry-script';
+import { loadAndPopulateFiles } from './lib/load-populate-files.js';
+
+const yargsOutput = (e: Error | undefined, _argv: unknown, log: string): void => {
+    if (e) {
+        process.exitCode = 1;
+        if (log) {
+            console.error(log);
+        }
+    } else if (log) {
+        console.log(log);
+    }
+};
 
 /**
  * LoadPopulateFiles CLI. Run `./bin.mjs --help` for options.
- *
- * Uses `yargs` package for command line parsing and logic flow.
  */
-export class LoadPopulateFilesCli implements Main {
-    readonly #commands: readonly RegisterCommand[];
-
-    /**
-     * @param commands - every command the CLI runs
-     */
-    public constructor(commands: readonly RegisterCommand[]) {
-        this.#commands = commands;
-    }
-
+export default class Cli extends EntryScript {
     /**
      * Entry point to CLI script.
      *
-     * Sets high level Yargs settings. Command/options logic is implemented in individual command modules.
-     *
      * @param argv - process arguments
      */
-    public async main(argv: string[]): Promise<void> {
+    public static override async main(argv: string[]): Promise<void> {
         // eslint-disable-next-line import-x/no-relative-parent-imports -- The build is one level below package.json
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
-        let cli: Argv<LoadPopulateFilesCommandInput> = yargs()
+        await yargs()
             .scriptName('load-populate-files')
             .option({
                 cwd: {
@@ -50,27 +46,65 @@ export class LoadPopulateFilesCli implements Main {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(packageJson.default.version);
-
-        for (const register of this.#commands) {
-            cli = register(cli);
-        }
-
-        await cli.parseAsync(argv, {}, LoadPopulateFilesCli.#yargsOutput);
-    }
-
-    static #yargsOutput(this: void, e: Error | undefined, _argv: unknown, log: string): void {
-        if (e) {
-            process.exitCode = 1;
-            if (log) {
-                console.error(log);
-            }
-        } else if (log) {
-            console.log(log);
-        }
+            .version(packageJson.default.version)
+            .command(
+                ['$0', 'load-populate-files'],
+                'Read pre-generated content and write to file',
+                command =>
+                    command
+                        .options({
+                            filePath: {
+                                describe: 'File that exports data content to populate',
+                                type: 'string',
+                                required: true,
+                            },
+                            ci: {
+                                describe: 'Fail if file is not up to date. Implies --dry-run',
+                                type: 'boolean',
+                                default: isCI,
+                                alias: 'check',
+                            },
+                            dryRun: {
+                                describe: 'Do not write file',
+                                type: 'boolean',
+                                default: false,
+                            },
+                            clean: {
+                                describe:
+                                    'Remove files in --target-dir that were not generated. In --ci mode, fail instead of removing.',
+                                type: 'boolean',
+                                default: false,
+                            },
+                            force: {
+                                describe:
+                                    'Overwrite signed files even if they were edited, are not signed, or would lose manual sections',
+                                type: 'boolean',
+                                default: false,
+                            },
+                            manifest: {
+                                describe:
+                                    'Record generated files in this manifest (relative to --cwd), to detect edits to them and only --clean files it lists',
+                                type: 'string',
+                            },
+                        })
+                        .strict(),
+                async options => {
+                    await loadAndPopulateFiles(
+                        {
+                            filePath: options.filePath,
+                        },
+                        {
+                            cwd: options.cwd,
+                            targetDir: options.targetDir,
+                            check: options.ci,
+                            dryRun: options.dryRun,
+                            clean: options.clean,
+                            force: options.force,
+                            manifest: options.manifest,
+                        }
+                    );
+                }
+            )
+            .parseAsync(argv, {}, yargsOutput);
     }
 }
-
-export const loadPopulateFilesCliBinding = bind(LoadPopulateFilesCli)
-    .withDependencies([commandId])
-    .withConstructorProvider();

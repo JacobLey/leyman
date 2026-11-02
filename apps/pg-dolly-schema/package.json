@@ -42,8 +42,6 @@
   },
   "dependencies": {
     "entry-script": "workspace:^",
-    "haywire": "workspace:^",
-    "haywire-launcher": "workspace:^",
     "pg-dolly": "workspace:^",
     "populate-files": "workspace:^",
     "yargs": "catalog:"

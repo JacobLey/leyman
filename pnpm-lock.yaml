@@ -446,12 +446,6 @@ importers:
       generated-signature:
         specifier: workspace:^
         version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
-      haywire:
-        specifier: workspace:^
-        version: file:tools/haywire
-      haywire-launcher:
-        specifier: workspace:^
-        version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -872,12 +866,6 @@ importers:
       entry-script:
         specifier: workspace:^
         version: file:tools/entry-script
-      haywire:
-        specifier: workspace:^
-        version: file:tools/haywire
-      haywire-launcher:
-        specifier: workspace:^
-        version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       pg-dolly:
         specifier: workspace:^
         version: file:tools/pg-dolly
@@ -951,12 +939,6 @@ importers:
       entry-script:
         specifier: workspace:^
         version: file:tools/entry-script
-      haywire:
-        specifier: workspace:^
-        version: file:tools/haywire
-      haywire-launcher:
-        specifier: workspace:^
-        version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper:
         specifier: workspace:^
         version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
@@ -15228,8 +15210,6 @@ snapshots:
       entry-script: file:tools/entry-script
       format-file: file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10)
       generated-signature: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
-      haywire: file:tools/haywire
-      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml: 2.9.1
@@ -15885,8 +15865,6 @@ snapshots:
       ci-info: 4.4.0
       default-import: file:tools/default-import
       entry-script: file:tools/entry-script
-      haywire: file:tools/haywire
-      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       parse-cwd: file:tools/parse-cwd
@@ -16735,8 +16713,6 @@ snapshots:
   pg-dolly-schema@file:apps/pg-dolly-schema(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       entry-script: file:tools/entry-script
-      haywire: file:tools/haywire
-      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       pg-dolly: file:tools/pg-dolly
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yargs: 18.2.0

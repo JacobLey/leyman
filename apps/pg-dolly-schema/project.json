@@ -8,7 +8,6 @@
     "update-ts-references": {},
     "tsc": {},
     "tsc-test": {},
-    "mocha-unit-test": {},
     "mocha-integration-test": {
       "inputs": [
         "...",
