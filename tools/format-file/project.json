@@ -6,7 +6,6 @@
     "biome": {},
     "eslint": {},
     "check-package": {},
-    "barrelify": {},
     "update-ts-references": {},
     "tsc": {},
     "tsc-test": {},

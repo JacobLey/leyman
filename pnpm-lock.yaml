@@ -331,10 +331,6 @@ catalogs:
     yargs:
       specifier: ^18.2.0
       version: 18.2.0
-  leyman:
-    npm-barrelify:
-      specifier: npm:barrelify@^2.2.2
-      version: 2.2.2
   typescript-next:
     '@typescript/native':
       specifier: npm:typescript@7.1.0-beta
@@ -3166,9 +3162,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
-      npm-barrelify:
-        specifier: catalog:leyman
-        version: barrelify@2.2.2(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       prettier:
         specifier: 'catalog:'
         version: 3.9.10
@@ -3272,9 +3265,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
-      npm-barrelify:
-        specifier: catalog:leyman
-        version: barrelify@2.2.2(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -3931,9 +3921,6 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
-      npm-barrelify:
-        specifier: catalog:leyman
-        version: barrelify@2.2.2(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -7194,11 +7181,6 @@ packages:
   bare-events@2.5.4:
     resolution: {integrity: sha512-+gFfDkR8pj4/TrWCGUGWmJIkBwuxPS5F+a5yWjOHQt2hHvNZd5YLzadjmDUtFmMM4y429bnKLa8bYBMHcYdnQA==}
 
-  barrelify@2.2.2:
-    resolution: {integrity: sha512-oTru1FjGrqk08gOn0rocMTCnCrwJg+OcfhurvutB7p8wDM/xrCE4xb8uaup+iHoJs4WeZ+Hy4BEXn2EdraJrrA==}
-    engines: {node: '>=24'}
-    hasBin: true
-
   barrelify@file:apps/barrelify:
     resolution: {directory: apps/barrelify, type: directory}
     engines: {node: '>=24'}
@@ -7557,10 +7539,6 @@ packages:
     resolution: {integrity: sha512-WY/3TUME0x3KPYdRRxEJJvXRHV4PyPoUsxtZa78lwItwRQRHhd2U9xOscaT/YTf8uCXIAjeJOFBVEh/7FtD8Xg==}
     engines: {node: '>=18'}
 
-  default-import@3.0.2:
-    resolution: {integrity: sha512-YyBcOFIGfKszPQN9hjMdPkm7Vte854EYAB8fVEBWsUQc9JzIS17WYP5fMQYJ7s9b3Hp7vl7bpRC/iYAPWh/ObA==}
-    engines: {node: '>=24'}
-
   default-import@file:tools/default-import:
     resolution: {directory: tools/default-import, type: directory}
     engines: {node: '>=24'}
@@ -7789,10 +7767,6 @@ packages:
   entities@8.1.0:
     resolution: {integrity: sha512-kxL7msIffSuh9aaFAMD7rxAIuTRMAHMeBtgHW2yUdWw732ZNh4MehkF2gdjvtdmikkaIP9bFDDJOPlsvm7avrA==}
     engines: {node: '>=20.19.0'}
-
-  entry-script@4.1.2:
-    resolution: {integrity: sha512-WG5zlZT5Oj/Y+b/uGuoBXprNxqsBw5XLAkZDohLe65dGIpdBU32b8Sh+1XLMaDdZ84gck4dys/UCCLrmWgrH7A==}
-    engines: {node: '>=24'}
 
   entry-script@file:tools/entry-script:
     resolution: {directory: tools/entry-script, type: directory}
@@ -8204,18 +8178,6 @@ packages:
     resolution: {integrity: sha512-G6NsmEW15s0Uw9XnCg+33H3ViYRyiM0hMrMhhqQOR8NFc5GhYrI+6I3u7OTw7b91J2g8rtvMBZJDbcGb2YUniw==}
     engines: {node: '>= 18'}
 
-  format-file@1.1.0:
-    resolution: {integrity: sha512-CIu7wElgvoOx3ZfcHlvgIqM35kWs0ugjhT7JgRuk40UFHoRHa8JNOO1x705T41yBmRonJ3ROI0Ps3ZYGAKZPFw==}
-    engines: {node: '>=24'}
-    peerDependencies:
-      '@biomejs/biome': ^2.5.14
-      prettier: ^3.9.10
-    peerDependenciesMeta:
-      '@biomejs/biome':
-        optional: true
-      prettier:
-        optional: true
-
   format-file@file:tools/format-file:
     resolution: {directory: tools/format-file, type: directory}
     engines: {node: '>=24'}
@@ -8256,15 +8218,6 @@ packages:
 
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
-
-  generated-signature@0.1.3:
-    resolution: {integrity: sha512-WvlpmqVr8sxLQnaqOhEHB1koSnbJrS5Sg85Qblf+VvipvWR+QpIRa3cl+lUumipd1njUA6LkK7TyWVEc9ArfFA==}
-    engines: {node: '>=24'}
-    peerDependencies:
-      eslint: ^10.13.0
-    peerDependenciesMeta:
-      eslint:
-        optional: true
 
   generated-signature@file:tools/generated-signature/generated-signature:
     resolution: {directory: tools/generated-signature/generated-signature, type: directory}
@@ -8394,23 +8347,12 @@ packages:
   hast-util-whitespace@3.0.0:
     resolution: {integrity: sha512-88JUN06ipLwsnv+dVn+OIYOvAuvBMy/Qoi6O7mQHxdPXpjy+Cd6xRkWwux7DKO+4sYILtLBRIKgsdpS2gQc7qw==}
 
-  haywire-launcher@1.1.1:
-    resolution: {integrity: sha512-0qTgbokcciugez8Met0QGBECxxYdW/0wjx2aF2R3YeaJFNrwsEBznihd+wV5f/maPjZnFNM1ba5PfneuolUYQw==}
-    engines: {node: '>=24'}
-    peerDependencies:
-      entry-script: ^4.1.2
-      haywire: ^2.0.4
-
   haywire-launcher@file:tools/haywire-launcher:
     resolution: {directory: tools/haywire-launcher, type: directory}
     engines: {node: '>=24'}
     peerDependencies:
       entry-script: workspace:^
       haywire: workspace:^
-
-  haywire@2.0.4:
-    resolution: {integrity: sha512-zL670qxM/+tkYbg0nL9LavmquDpahL+UhV+zs5NYZ9bcJK5vFqYNTkzZJExAA6KKlfbgCyshEr75rvU/xguZGQ==}
-    engines: {node: '>=24'}
 
   haywire@file:tools/haywire:
     resolution: {directory: tools/haywire, type: directory}
@@ -9453,10 +9395,6 @@ packages:
     resolution: {integrity: sha512-GQ2EWRpQV8/o+Aw8YqtfZZPfNRWZYkbidE9k5rpl/hC3vtHHBfGm2Ifi6qWV+coDGkrUKZAxE3Lot5kcsRlh+g==}
     engines: {node: '>=6'}
 
-  parse-cwd@2.0.3:
-    resolution: {integrity: sha512-CpNxiz4KeDlGs3CKyt2ifThqy6GPy8Dqgfia8S0iiQ/2DZFaIdB3NM5tLH/k3o0C7TFka8eYnQph1VIRtBsqKg==}
-    engines: {node: '>=24'}
-
   parse-cwd@file:tools/parse-cwd:
     resolution: {directory: tools/parse-cwd, type: directory}
     engines: {node: '>=24'}
@@ -9608,10 +9546,6 @@ packages:
   pony-cause@2.1.11:
     resolution: {integrity: sha512-M7LhCsdNbNgiLYiP4WjsfLUuFmCfnjdF6jKe2R9NKl4WFN+HZPGHJZ9lnLP7f9ZnKe3U9nuWD0szirmj+migUg==}
     engines: {node: '>=12.0.0'}
-
-  populate-files@1.2.0:
-    resolution: {integrity: sha512-unYWv8k/lBGgKwFWqXypTe18dAR+6nmP1YVpFVhNYPbMCnlPmNRjhnBcEuhavrdplLcUdIevaHljcgIKyI/c4g==}
-    engines: {node: '>=24'}
 
   populate-files@file:apps/populate-files/populate-files:
     resolution: {directory: apps/populate-files/populate-files, type: directory}
@@ -10443,10 +10377,6 @@ packages:
 
   unist-util-visit@5.1.0:
     resolution: {integrity: sha512-m+vIdyeCOpdr/QeQCu2EzxX/ohgS8KbnPDgFni4dQsfSCtpz8UqDyY5GjRru8PDKuYn7Fq19j1CQ+nJSsGKOzg==}
-
-  unknown-error@0.1.1:
-    resolution: {integrity: sha512-ZVDjorXGlszQTrjrZqS2NHsZgrRdhpwR+18JF5WrjsqZ8kOjzAjNubNIyFc0doBNo5i/f4bLjxofxy5L35yZpg==}
-    engines: {node: '>=24'}
 
   unknown-error@file:tools/unknown-error:
     resolution: {directory: tools/unknown-error, type: directory}
@@ -14029,23 +13959,6 @@ snapshots:
   bare-events@2.5.4:
     optional: true
 
-  barrelify@2.2.2(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
-    dependencies:
-      ci-info: 4.4.0
-      entry-script: 4.1.2
-      haywire: 2.0.4
-      haywire-launcher: 1.1.1(entry-script@4.1.2)(haywire@2.0.4)
-      ignore: 7.0.14
-      parse-cwd: 2.0.3
-      populate-files: 1.2.0(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
-      tinyglobby: 0.2.17
-      unknown-error: 0.1.1
-      yargs: 18.2.0
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - eslint
-      - prettier
-
   barrelify@file:apps/barrelify(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
@@ -14378,8 +14291,6 @@ snapshots:
       bundle-name: 4.1.0
       default-browser-id: 5.0.0
 
-  default-import@3.0.2: {}
-
   default-import@file:tools/default-import: {}
 
   defaults@1.0.4:
@@ -14486,10 +14397,6 @@ snapshots:
   entities@7.0.1: {}
 
   entities@8.1.0: {}
-
-  entry-script@4.1.2:
-    dependencies:
-      default-import: 3.0.2
 
   entry-script@file:tools/entry-script:
     dependencies:
@@ -15147,14 +15054,6 @@ snapshots:
 
   form-data-encoder@4.1.0: {}
 
-  format-file@1.1.0(@biomejs/biome@2.6.3)(prettier@3.9.10):
-    dependencies:
-      find-up: 8.0.0
-      haywire: 2.0.4
-    optionalDependencies:
-      '@biomejs/biome': 2.6.3
-      prettier: 3.9.10
-
   format-file@file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10):
     dependencies:
       find-up: 8.0.0
@@ -15186,10 +15085,6 @@ snapshots:
   functional-red-black-tree@1.0.1: {}
 
   functions-have-names@1.2.3: {}
-
-  generated-signature@0.1.3(eslint@10.13.0(supports-color@8.1.1)):
-    optionalDependencies:
-      eslint: 10.13.0(supports-color@8.1.1)
 
   generated-signature@file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1)):
     optionalDependencies:
@@ -15357,19 +15252,10 @@ snapshots:
     dependencies:
       '@types/hast': 3.0.5
 
-  haywire-launcher@1.1.1(entry-script@4.1.2)(haywire@2.0.4):
-    dependencies:
-      entry-script: 4.1.2
-      haywire: 2.0.4
-
   haywire-launcher@file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire):
     dependencies:
       entry-script: file:tools/entry-script
       haywire: file:tools/haywire
-
-  haywire@2.0.4:
-    dependencies:
-      p-defer: 4.0.1
 
   haywire@file:tools/haywire:
     dependencies:
@@ -16655,8 +16541,6 @@ snapshots:
     dependencies:
       callsites: 3.1.0
 
-  parse-cwd@2.0.3: {}
-
   parse-cwd@file:tools/parse-cwd: {}
 
   parse-imports-exports@0.2.4:
@@ -16799,19 +16683,6 @@ snapshots:
   pluralize@8.0.0: {}
 
   pony-cause@2.1.11: {}
-
-  populate-files@1.2.0(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
-    dependencies:
-      ci-info: 4.4.0
-      format-file: 1.1.0(@biomejs/biome@2.6.3)(prettier@3.9.10)
-      generated-signature: 0.1.3(eslint@10.13.0(supports-color@8.1.1))
-      parse-cwd: 2.0.3
-      uint8array-extras: 1.6.0
-      unknown-error: 0.1.1
-    transitivePeerDependencies:
-      - '@biomejs/biome'
-      - eslint
-      - prettier
 
   populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
@@ -17747,8 +17618,6 @@ snapshots:
       '@types/unist': 3.0.3
       unist-util-is: 6.0.1
       unist-util-visit-parents: 6.0.2
-
-  unknown-error@0.1.1: {}
 
   unknown-error@file:tools/unknown-error: {}
 

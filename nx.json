@@ -235,6 +235,26 @@
         "check:_"
       ]
     },
+    "check-workspace-dependencies": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node ${NX_WORKSPACE_ROOT}/leyman/main/scripts/check-workspace-dependencies.mjs"
+        ],
+        "color": true
+      },
+      "cache": true,
+      "inputs": [
+        "shared-globals",
+        "{workspaceRoot}/leyman/main/scripts/check-workspace-dependencies.mjs",
+        "{workspaceRoot}/pnpm-workspace.yaml",
+        "{workspaceRoot}/**/package.json"
+      ],
+      "outputs": [],
+      "dependsOn": [
+        "check:_"
+      ]
+    },
     "drizzle-kit-check": {
       "executor": "nx:run-commands",
       "options": {
@@ -855,6 +875,7 @@
         "eslint",
         "check-package",
         "check-parity",
+        "check-workspace-dependencies",
         "drizzle-kit-check",
         "go-lint",
         "rust-clippy",

@@ -4,6 +4,7 @@
   "targets": {
     "biome": {},
     "check-parity": {},
+    "check-workspace-dependencies": {},
     "eslint": {
       "inputs": [
         "eslint-input",

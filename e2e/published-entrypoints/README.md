@@ -6,4 +6,6 @@ Workspace packages are installed here as copies of exactly the files they publis
 
 Packages are found the way `Publish` finds what to release, so a new published package fails here until it is added to `devDependencies` (with its required peers).
 
+It also checks the barrels of the packages `barrelify` depends on, which can't use its target without a cycle.
+
 It is not published, and has no source of its own: only tests.

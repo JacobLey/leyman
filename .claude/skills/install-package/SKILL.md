@@ -9,7 +9,7 @@ description: Installing a package dependency
 
 Skip if it is already there. Use the default `catalog:` only. Don't add a named catalog: every package should use the same version.
 
-The named catalogs under `catalogs:` are reserved for depending on the **npm-published** build of a package in this repo, to break a dev-time circular dependency. Read the comments there before adding to them.
+A package in this repo is never installed from npm, even as a dev dependency, as [`check-workspace-dependencies`](../nx-tasks-reference/SKILL.md#check-workspace-dependencies) enforces. If a dependency would make a cycle, which pnpm fails on, change what depends on what instead.
 
 ## 2. Reference it from the package's `package.json`
 

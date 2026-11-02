@@ -128,6 +128,14 @@ Fails if the versions the devcontainer and CI pin separately differ (`leyman/mai
 
 ---
 
+### `check-workspace-dependencies`
+
+Fails if a `package.json` or catalog takes a package in this workspace from npm rather than `workspace:` (`leyman/main/scripts/check-workspace-dependencies.mjs`), including through an `npm:` alias. pnpm's `disallowWorkspaceCycles` fails on a cycle, and a published copy is the only way around it. Runs in `check:lint`.
+
+**Add when:** Never: only `@leyman/main` has it.
+
+---
+
 ### `tofu-fmt`
 
 Formats OpenTofu configuration with `tofu fmt` (`scripts/nx/tofu-fmt.sh`). Like `gofmt`, writes changes, except in CI where it fails showing the diff.
@@ -172,7 +180,7 @@ Runs Clippy with warnings as errors, natively and, for a crate that compiles to 
 
 Rewrites `index.ts` files that contain an `// AUTO-BARREL` marker with correct re-export statements.
 
-**Add when:** The package has any `index.ts` files marked with `// AUTO-BARREL`.
+**Add when:** The package has any `index.ts` files marked with `// AUTO-BARREL`. A package `barrelify` depends on can't have this target, as that would be a cycle: it keeps the marker and writes the file by hand, and `e2e/published-entrypoints` fails if the file is out of date.
 
 ---
 

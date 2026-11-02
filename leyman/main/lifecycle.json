@@ -65,6 +65,7 @@
     "eslint": "check:lint",
     "check-package": "check:lint",
     "check-parity": "check:lint",
+    "check-workspace-dependencies": "check:lint",
     "drizzle-kit-check": "check:lint",
     "go-lint": "check:lint",
     "rust-clippy": "check:lint",
