@@ -1,5 +1,21 @@
 # juniper
 
+## 2.6.0
+
+### Minor Changes
+
+- 8985da9: Include the types of `properties` and `patternProperties` in the index signature from a typed `additionalProperties`. `{ properties: { a: stringSchema() }, additionalProperties: numberSchema() }` was `{ a?: string } & Record<string, number>`, which no object with `a` could satisfy and read `a` as `never`. It now accepts what the schema accepts, and undeclared keys read as `number | string`.
+- 09afd62: Type prefix items beyond `minItems` as optional, since the schema accepts arrays without them: `arraySchema(stringSchema()).prefixItem(numberSchema())` is now `[number?, ...string[]]`, not `[number, ...string[]]`, which claimed a first item that `[]` doesn't have. Nothing changes at runtime, or for `tupleSchema()`.
+  
+  To migrate, add `.minItems(n)` where the items must exist, which makes the schema enforce what the type promised. To keep the old type without changing what validates, use `.cast<[number, ...string[]]>()`.
+
+### Patch Changes
+
+- 79049ed: Serialize a definition once per document however many schemas derive from it, so `user.description('x')` used many times no longer serializes `user` each time.
+  
+  Fix two comparisons: a schema derived from a definition with `[]` in place of `{}` (e.g. in metadata) now keeps the difference rather than dropping it, and `serializeSpec` accepts an existing `components.schemas` entry equal to a definition whatever its key order, where it threw "has a different schema".
+- 9662f1f: Fix `toJSON({ openApi30: true })` rejecting keys that `patternProperties` allows. OpenAPI 3.0 has no such keyword, so it was dropped while `additionalProperties` stayed, leaving `additionalProperties: false` to reject every key the pattern covers. `additionalProperties` now also allows the pattern schemas' values, the way a tuple becomes an array of any of its items.
+
 ## 2.5.0
 
 ### Minor Changes

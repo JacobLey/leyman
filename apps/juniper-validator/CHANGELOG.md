@@ -1,5 +1,16 @@
 # juniper-validator
 
+## 0.5.2
+
+### Patch Changes
+
+- add6a12: Document `validateSchema: false` for building many validators at startup.
+- Updated dependencies [79049ed]
+- Updated dependencies [8985da9]
+- Updated dependencies [9662f1f]
+- Updated dependencies [09afd62]
+  - juniper@2.6.0
+
 ## 0.5.1
 
 ### Patch Changes

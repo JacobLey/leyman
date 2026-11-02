@@ -1,5 +1,20 @@
 # genever
 
+## 0.10.0
+
+### Minor Changes
+
+- 8985da9: Include the types of `properties` and `patternProperties` in the index signature from a typed `additionalProperties`. `{ a: string } & Record<string, number>` had no values, since `a` would have to be both. It is now `{ a: string } & Record<string, number | string>`, the same as Juniper infers, so undeclared keys read as `number | string`.
+- ec67f1a: Export `parseYamlDocument` and `yamlToJson`, the two steps of `parseYaml`, so a tool that needs positions in the text can parse a document once
+
+### Patch Changes
+
+- a87b3aa: Call `fetch` directly rather than through `globalThis`, with no change in behaviour
+- fd52c04: A merge key of anything but maps (`<<: 1`) throws a `YAMLError` at its position, as documented, rather than a plain `Error`
+- 9c4f7fb: Build the CLI directly with yargs, removing the `haywire` and `haywire-launcher` dependencies. Its commands and options are unchanged.
+- Updated dependencies [5932ded]
+  - format-file@1.2.1
+
 ## 0.9.0
 
 ### Minor Changes

@@ -1,6 +1,6 @@
 {
   "name": "juniper-arbitrary",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "fast-check arbitraries from Juniper schemas.",
   "engines": {
     "node": ">=24"

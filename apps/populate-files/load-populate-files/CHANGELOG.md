@@ -1,5 +1,18 @@
 # load-populate-files
 
+## 1.1.4
+
+### Patch Changes
+
+- 9c4f7fb: Build the CLI directly with yargs, removing the `haywire` and `haywire-launcher` dependencies. Its commands and options are unchanged.
+- Updated dependencies [79049ed]
+- Updated dependencies [8985da9]
+- Updated dependencies [9662f1f]
+- Updated dependencies [09afd62]
+- Updated dependencies [add6a12]
+  - juniper@2.6.0
+  - juniper-validator@0.5.2
+
 ## 1.1.3
 
 ### Patch Changes
