@@ -5,13 +5,27 @@ description: Structure of a package's command line interface (yargs commands col
 
 # CLIs
 
-Every package with a `bin` builds its CLI the same way. [`apps/nx-lifecycle`](../../../apps/nx-lifecycle/) is the reference, as it has more than one command. [`apps/barrelify`](../../../apps/barrelify/) and [`apps/populate-files/load-populate-files`](../../../apps/populate-files/load-populate-files/) follow the same shape with a single command.
+A package with a `bin` builds its CLI in one of two shapes, by how much there is to compose:
+
+- **One command:** `bin.mjs` and one `src/cli.ts`, building yargs directly. [`apps/barrelify`](../../../apps/barrelify/) is the reference.
+- **A list of commands:** from the second command on, or when a command's dependencies meet the [DI bar](../coding-patterns/SKILL.md#dependency-injection-when-to-use-it-when-not-to). [`apps/nx-lifecycle`](../../../apps/nx-lifecycle/) is the reference.
 
 The exception is [`apps/trusted-tsc`](../../../apps/trusted-tsc/): a `tsc` pass-through with no commands of its own, which forwards raw arguments, so a parser could only get in the way, and which promises to have no dependencies.
 
+## One command
+
+| File | Contents |
+|------|----------|
+| `bin.mjs` | `#!/usr/bin/env node`, re-exporting `default` from `./dist/cli.js`. Listed in `package.json` `bin` and `files` |
+| `src/cli.ts` | `export default class Cli extends EntryScript`, from `entry-script`, with a static `main(argv)` that builds and runs yargs. It only runs when the script is the entry point |
+
+The logic the command calls lives in `src/lib/`, as the package's API does. `test/integration/cli.spec.ts` runs `./bin.mjs` as a subprocess.
+
+## A list of commands
+
 The CLI never lists its commands. Each command adds itself to a [haywire list](../../../tools/haywire/README.md#lists), and the CLI receives the whole list. Adding a command touches the command's file and the container, never `cli.ts`.
 
-## Files
+### Files
 
 | File | Contents |
 |------|----------|
@@ -22,7 +36,7 @@ The CLI never lists its commands. Each command adds itself to a [haywire list](.
 | `src/commands/lib/types.ts` | The input shared by every command, the `Command` type, `RegisterCommand` and `commandId` |
 | `src/commands/<name>-command.ts` | One command and its binding |
 
-## Commands
+### Commands
 
 A command is a plain yargs command module, typed as `Command<ExtendedInput>`, where `ExtendedInput` extends the shared input with the command's own options.
 
@@ -67,7 +81,7 @@ Don't validate options with `.check()`: while [yargs#1975](https://github.com/ya
 
 Commands themselves only take dependencies from haywire when they meet the [DI bar](../coding-patterns/SKILL.md#dependency-injection-when-to-use-it-when-not-to). Otherwise they import directly.
 
-## Tests
+### Tests
 
 - `test/unit/container.spec.ts` runs `cliContainer.check()`, which catches wiring a type check can't.
 - `test/integration/cli.spec.ts` runs `./bin.mjs` as a subprocess. With more than one command, assert that `--help` lists every command, so a command missing from the container fails.

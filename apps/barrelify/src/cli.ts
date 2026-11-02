@@ -1,37 +1,34 @@
-import type { Argv } from 'yargs';
-import type { Main } from 'entry-script';
-import type { BarrelCommandInput, RegisterCommand } from './commands/lib/types.js';
+import { isCI } from 'ci-info';
 import yargs from 'yargs';
-import { bind } from 'haywire';
-import { commandId } from './commands/lib/types.js';
+import { EntryScript } from 'entry-script';
+import { parseCwd } from 'parse-cwd';
+import { barrelFiles } from './lib/barrel.js';
+
+const yargsOutput = (e: Error | undefined, _argv: unknown, log: string): void => {
+    if (e) {
+        process.exitCode = 1;
+        if (log) {
+            console.error(log);
+        }
+    } else if (log) {
+        console.log(log);
+    }
+};
 
 /**
  * Barrelify CLI. Run `./bin.mjs --help` for options.
- *
- * Uses `yargs` package for command line parsing and logic flow.
  */
-export class BarrelCli implements Main {
-    readonly #commands: readonly RegisterCommand[];
-
-    /**
-     * @param commands - every command the CLI runs
-     */
-    public constructor(commands: readonly RegisterCommand[]) {
-        this.#commands = commands;
-    }
-
+export default class Cli extends EntryScript {
     /**
      * Entry point to CLI script.
      *
-     * Sets high level Yargs settings. Command/options logic is implemented in individual command modules.
-     *
      * @param argv - process arguments
      */
-    public async main(argv: string[]): Promise<void> {
+    public static override async main(argv: string[]): Promise<void> {
         // eslint-disable-next-line import-x/no-relative-parent-imports -- The build is one level below package.json
         const packageJson = await import('../package.json', { with: { type: 'json' } });
 
-        let cli: Argv<BarrelCommandInput> = yargs()
+        await yargs()
             .scriptName('barrelify')
             .option({
                 cwd: {
@@ -48,27 +45,44 @@ export class BarrelCli implements Main {
             .strict()
             .help()
             .alias('help', 'info')
-            .version(packageJson.default.version);
+            .version(packageJson.default.version)
+            .command(
+                ['$0', 'barrel'],
+                'Write index.ts barrel files',
+                command =>
+                    command
+                        .options({
+                            ci: {
+                                describe: 'Fail if files are not up to date. Implies --dry-run',
+                                type: 'boolean',
+                                default: isCI,
+                            },
+                            dryRun: {
+                                alias: 'dry-run',
+                                describe: 'Do not write files',
+                                type: 'boolean',
+                                default: false,
+                            },
+                        })
+                        .strict(),
+                async options => {
+                    const changed = await barrelFiles({
+                        cwd: await parseCwd(options.cwd),
+                        dryRun: options.ci || options.dryRun,
+                        ignore: options.ignore ?? [],
+                    });
 
-        for (const register of this.#commands) {
-            cli = register(cli);
-        }
+                    for (const change of changed) {
+                        console.log(change);
+                    }
 
-        await cli.parseAsync(argv, {}, BarrelCli.#yargsOutput);
-    }
-
-    static #yargsOutput(this: void, e: Error | undefined, _argv: unknown, log: string): void {
-        if (e) {
-            process.exitCode = 1;
-            if (log) {
-                console.error(log);
-            }
-        } else if (log) {
-            console.log(log);
-        }
+                    if (options.ci && changed.length > 0) {
+                        throw new Error(
+                            'Barrel files are out of date. Run barrel without --ci to update them'
+                        );
+                    }
+                }
+            )
+            .parseAsync(argv, {}, yargsOutput);
     }
 }
-
-export const barrelCliBinding = bind(BarrelCli)
-    .withDependencies([commandId])
-    .withConstructorProvider();

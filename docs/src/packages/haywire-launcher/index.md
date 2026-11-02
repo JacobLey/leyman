@@ -29,7 +29,7 @@ export default launch(container, Cli);
 - **Any `Main`**: the script can be any class with a `main(argv)` method, not only an `EntryScript` subclass.
 - **Testable**: `getOriginal()` returns the instance the container builds, for testing the wiring itself.
 
-Every CLI in this repository (barrelify, genever, nx-lifecycle, …) starts this way.
+Every multi-command CLI in this repository (nx-lifecycle, …) starts this way.
 
 ## Related
 

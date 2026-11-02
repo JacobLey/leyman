@@ -364,12 +364,6 @@ importers:
       entry-script:
         specifier: workspace:^
         version: file:tools/entry-script
-      haywire:
-        specifier: workspace:^
-        version: file:tools/haywire
-      haywire-launcher:
-        specifier: workspace:^
-        version: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       ignore:
         specifier: 'catalog:'
         version: 7.0.14
@@ -14074,8 +14068,6 @@ snapshots:
     dependencies:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
-      haywire: file:tools/haywire
-      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       ignore: 7.0.14
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)

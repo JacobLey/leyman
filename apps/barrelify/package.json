@@ -48,8 +48,6 @@
   "dependencies": {
     "ci-info": "catalog:",
     "entry-script": "workspace:^",
-    "haywire": "workspace:^",
-    "haywire-launcher": "workspace:^",
     "ignore": "catalog:",
     "parse-cwd": "workspace:^",
     "populate-files": "workspace:^",
