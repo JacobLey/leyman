@@ -63,10 +63,12 @@ Commit the result, and run `genever --ci` in CI to fail when it is out of date.
 
 Each tool is given the same documents every night, with its type checked against valid values, invalid values and reads. See the [comparison](/packages/genever/comparison) for the latest report.
 
-- [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) turns 2020-12 tuples into `never[]`, types every `pattern` as `string`, and opens objects with `patternProperties` to any key.
-- [quicktype](https://www.npmjs.com/package/quicktype) merges `oneOf` objects into one type with optional fields.
-- [json-schema-to-zod](https://www.npmjs.com/package/json-schema-to-zod) generates a validator, but every `$ref` becomes `z.any()`.
-- [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts) and TypeBox infer types inside TypeScript, so the schema has to be pasted in `as const`. An imported `.json` file widens to `unknown`.
+Inspected by hand on 2026-11-02, at the versions named:
+
+- [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) 16.0.0 turns 2020-12 tuples into `never[]`, types every `pattern` as `string`, and opens objects with `patternProperties` to any key.
+- [quicktype](https://www.npmjs.com/package/quicktype) 26.0.0 merges `oneOf` objects into one type with optional fields.
+- [json-schema-to-zod](https://www.npmjs.com/package/json-schema-to-zod) 2.8.1 generates a validator, but every `$ref` becomes `z.any()`.
+- [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts) 3.1.1 and [TypeBox](https://www.npmjs.com/package/typebox) 1.4.3 infer types inside TypeScript, so the schema has to be pasted in `as const`. An imported `.json` file is a type error and `unknown` in json-schema-to-ts, and in TypeBox an object whose properties are all optional and `unknown`.
 
 ## Related
 

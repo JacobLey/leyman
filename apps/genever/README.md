@@ -410,12 +410,14 @@ The path of a written file is logged. Nothing is logged when it was already up t
 
 ## Compared to alternatives
 
-- [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) — the most used generator. 2020-12 tuples become `never[]`, `pattern` is always `string`, and `patternProperties` open the object to `[k: string]: unknown`.
-- [quicktype](https://www.npmjs.com/package/quicktype) — many languages, but merges `oneOf` objects into one type with optional fields, and widens `enum` numbers.
-- [json-schema-to-zod](https://www.npmjs.com/package/json-schema-to-zod) — generates a validator, but every `$ref` becomes `z.any()`.
-- [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts), TypeBox `Static` — infer types in TypeScript instead of generating them, so the schema has to be pasted into TypeScript `as const`. An imported `.json` file widens to `unknown`.
+Inspected by hand on 2026-11-02, at the versions named:
 
-Tested side by side every night: see the [comparison page](https://jacobley.github.io/leyman/packages/genever/comparison).
+- [json-schema-to-typescript](https://www.npmjs.com/package/json-schema-to-typescript) 16.0.0 — the most used generator. 2020-12 tuples become `never[]`, `pattern` is always `string`, and `patternProperties` open the object to any key.
+- [quicktype](https://www.npmjs.com/package/quicktype) 26.0.0 — many languages, but merges `oneOf` objects into one type with optional fields, and widens `enum` numbers.
+- [json-schema-to-zod](https://www.npmjs.com/package/json-schema-to-zod) 2.8.1 — generates a validator, but every `$ref` becomes `z.any()`.
+- [json-schema-to-ts](https://www.npmjs.com/package/json-schema-to-ts) 3.1.1, [TypeBox](https://www.npmjs.com/package/typebox) 1.4.3 — infer types in TypeScript instead of generating them, so the schema has to be pasted into TypeScript `as const`. An imported `.json` file is a type error and `unknown` in json-schema-to-ts, and in TypeBox an object whose properties are all optional and `unknown`.
+
+The same tools are tested side by side every night: see the [comparison page](https://jacobley.github.io/leyman/packages/genever/comparison).
 
 ## Also See
 
