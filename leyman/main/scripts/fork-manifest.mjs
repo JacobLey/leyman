@@ -1,0 +1,426 @@
+// Applies `fork-manifest.json`: copies what a fork takes into a directory, and cuts the shared configs down to it. Also
+// imported by `check-fork-manifest.mjs`, which inspects the result on every run, and by `audit-fork-manifest.mjs`.
+//
+//   node fork-manifest.mjs apply --to <dir> [--with go,rust,...] [--package <path>]...
+//
+// Has no dependencies, because CI's `test` job runs it straight from the checkout, with no `node_modules`.
+
+import { execFileSync } from 'node:child_process';
+import {
+    copyFileSync,
+    existsSync,
+    lstatSync,
+    mkdirSync,
+    readFileSync,
+    readlinkSync,
+    symlinkSync,
+    writeFileSync,
+} from 'node:fs';
+import path from 'node:path';
+import { parseArgs } from 'node:util';
+
+export const workspaceRoot = path.resolve(import.meta.dirname, '../../..');
+
+const dependencyFields = [
+    'dependencies',
+    'devDependencies',
+    'peerDependencies',
+    'optionalDependencies',
+];
+
+export const readManifest = () =>
+    JSON.parse(readFileSync(path.join(import.meta.dirname, '../fork-manifest.json'), 'utf8'));
+
+export const covers = (classified, file) =>
+    file === classified || file.startsWith(`${classified}/`);
+
+// What Git would commit: tracked files that still exist, and new ones that aren't ignored
+export const listFiles = () =>
+    // eslint-disable-next-line sonarjs/no-os-command-from-path -- the checkout's own Git, in a script run by hand or CI
+    execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
+        cwd: workspaceRoot,
+        encoding: 'utf8',
+    })
+        .split('\0')
+        .filter(file => file !== '' && existsSync(path.join(workspaceRoot, file)));
+
+// Some configs open with a comment on its own line
+const readJson = file =>
+    JSON.parse(
+        readFileSync(file, 'utf8')
+            .split('\n')
+            .filter(line => !line.trimStart().startsWith('//'))
+            .join('\n')
+    );
+const writeJson = (file, data) => {
+    writeFileSync(file, `${JSON.stringify(data, null, 2)}\n`);
+};
+
+const without = (object, names) =>
+    Object.fromEntries(Object.entries(object).filter(([name]) => !names.has(name)));
+
+const packageJsons = files => files.filter(file => path.basename(file) === 'package.json');
+
+const dependencyRanges = packageJson =>
+    dependencyFields.flatMap(field =>
+        Object.entries(packageJson[field] ?? {}).map(([name, range]) => ({ field, name, range }))
+    );
+
+const copyFile = (file, to) => {
+    const source = path.join(workspaceRoot, file);
+    const target = path.join(to, file);
+    mkdirSync(path.dirname(target), { recursive: true });
+    if (lstatSync(source).isSymbolicLink()) {
+        symlinkSync(readlinkSync(source), target);
+    } else {
+        copyFileSync(source, target);
+    }
+};
+
+// A kept target that names an unrequested condition's target must not keep waiting for it
+const stripNxJson = ({ nx }, requested, to) => {
+    const file = path.join(to, 'nx.json');
+    const nxJson = readJson(file);
+    const unrequested = group =>
+        Object.entries(group)
+            .filter(([condition]) => !requested.has(condition))
+            .flatMap(([, names]) => names);
+    const targets = new Set([...unrequested(nx.targets), ...nx.repoOnlyTargets]);
+    const plugins = new Set(unrequested(nx.plugins));
+
+    nxJson.plugins = nxJson.plugins.filter(plugin => !plugins.has(plugin.plugin ?? plugin));
+    nxJson.namedInputs = without(nxJson.namedInputs, new Set(unrequested(nx.namedInputs)));
+    nxJson.targetDefaults = Object.fromEntries(
+        Object.entries(without(nxJson.targetDefaults, targets)).map(([name, target]) => [
+            name,
+            target.dependsOn
+                ? {
+                      ...target,
+                      dependsOn: target.dependsOn.filter(dependency => !targets.has(dependency)),
+                  }
+                : target,
+        ])
+    );
+    writeJson(file, nxJson);
+
+    const lifecycleFile = path.join(to, 'leyman/main/lifecycle.json');
+    const lifecycle = readJson(lifecycleFile);
+    writeJson(lifecycleFile, { ...lifecycle, bindings: without(lifecycle.bindings, targets) });
+
+    const projectFile = path.join(to, 'leyman/main/project.json');
+    const project = readJson(projectFile);
+    const projectTargets = new Set([...targets, ...nx.repoOnlyProjectTargets]);
+    writeJson(projectFile, { ...project, targets: without(project.targets, projectTargets) });
+};
+
+const workspaceVersions = files =>
+    new Map(
+        packageJsons(files)
+            .map(file => readJson(path.join(workspaceRoot, file)))
+            .map(({ name, version }) => [name, version])
+    );
+
+// What the fork doesn't take comes from npm. Any release of this major, not this repo's exact version, since a release
+// from this week isn't old enough for the fork's own `minimumReleaseAge`
+const npmRange = version => {
+    const [major, minor] = version.split('.', 2);
+    return major === '0' ? `^0.${minor}.0` : `^${major}.0.0`;
+};
+
+const pointAtNpm = (files, to) => {
+    const copied = packageJsons(files);
+    const taken = new Set(copied.map(file => readJson(path.join(to, file)).name));
+    const versions = workspaceVersions(listFiles());
+    for (const file of copied) {
+        const target = path.join(to, file);
+        const packageJson = readJson(target);
+        const external = dependencyRanges(packageJson).filter(
+            ({ name, range }) => range.startsWith('workspace:') && !taken.has(name)
+        );
+        for (const { field, name } of external) {
+            packageJson[field][name] = npmRange(versions.get(name));
+        }
+        writeJson(target, packageJson);
+    }
+};
+
+// Nx's sync generator fills in `references` from each package's dependencies, once there are dependencies to read
+const dropMissingReferences = (files, to) => {
+    const tsconfigs = files.filter(file => path.basename(file) === 'tsconfig.json');
+    for (const file of tsconfigs) {
+        const target = path.join(to, file);
+        const tsconfig = readJson(target);
+        if (!tsconfig.references) {
+            continue;
+        }
+
+        tsconfig.references = tsconfig.references.filter(reference =>
+            existsSync(path.join(path.dirname(target), reference.path))
+        );
+        writeJson(target, tsconfig);
+    }
+};
+
+const catalogReferences = (files, to) => {
+    const references = new Map();
+    const ranges = packageJsons(files).flatMap(file =>
+        dependencyRanges(readJson(path.join(to, file)))
+    );
+    const fromCatalogs = ranges.filter(({ range }) => range.startsWith('catalog:'));
+    for (const { name, range } of fromCatalogs) {
+        const catalog = range.slice('catalog:'.length);
+        references.set(catalog, new Set([...(references.get(catalog) ?? []), name]));
+    }
+    return references;
+};
+
+const entryName = line => /^\s*'?(?<name>[^\s':][^':]*)'?:/v.exec(line)?.groups?.name;
+
+// Line by line, to keep the file's comments. Everything cut here is one line, under the comments that explain it
+const pruneWorkspaceYaml = ({ workspaceGlobs }, files, to) => {
+    const file = path.join(to, 'pnpm-workspace.yaml');
+    const references = catalogReferences(files, to);
+    const globs = new Set(workspaceGlobs);
+    const output = [];
+    let section = '';
+    let catalog = '';
+    let comments = [];
+    let catalogHeader = [];
+    let hasCatalogs = false;
+
+    for (const line of readFileSync(file, 'utf8').split('\n')) {
+        if (/^\S/v.test(line) && !line.startsWith('#')) {
+            section = line.slice(0, line.indexOf(':'));
+        }
+        if (line.trimStart().startsWith('#')) {
+            comments.push(line);
+        } else if (section === 'packages' && line.startsWith('  - ')) {
+            const glob = line.slice('  - '.length).replaceAll("'", '');
+            if (globs.has(glob) || glob.startsWith('!')) {
+                output.push(...comments, line);
+            }
+            comments = [];
+        } else if (section === 'catalog' && line.startsWith('  ')) {
+            if (references.get('')?.has(entryName(line))) {
+                output.push(...comments, line);
+            }
+            comments = [];
+        } else if (section === 'catalogs') {
+            if (/^ {2}\S/v.test(line)) {
+                catalog = entryName(line);
+                catalogHeader = [...comments, line];
+            } else if (references.get(catalog)?.has(entryName(line))) {
+                output.push(...(hasCatalogs ? [] : ['catalogs:']), ...catalogHeader, line);
+                hasCatalogs = true;
+                catalogHeader = [];
+            }
+            comments = [];
+        } else {
+            output.push(...comments, line);
+            comments = [];
+        }
+    }
+    writeFileSync(file, output.join('\n'));
+};
+
+/**
+ * Copies what a fork with these conditions takes, and cuts the shared configs down to it.
+ *
+ * @param options - required
+ * @param options.conditions - condition tags the fork asks for
+ * @param options.extraPackages - workspace packages to bring along, as paths
+ * @param options.to - directory to write to
+ * @returns what was copied and what was skipped, with the reason
+ * @throws {Error} for a condition the manifest doesn't list
+ */
+export const apply = ({ conditions = [], extraPackages = [], to }) => {
+    const manifest = readManifest();
+    const unknown = conditions.filter(condition => !Object.hasOwn(manifest.conditions, condition));
+    if (unknown.length > 0) {
+        throw new Error(`Unknown conditions: ${unknown.join(', ')}`);
+    }
+    const requested = new Set(conditions);
+    const candidates = [...manifest.entries, ...manifest.packages];
+    const taken = candidates.filter(({ when }) => when === undefined || requested.has(when));
+    const skipped = candidates.filter(({ when }) => when !== undefined && !requested.has(when));
+    const paths = [...taken.map(entry => entry.path), ...extraPackages];
+
+    const files = listFiles().filter(file => paths.some(entryPath => covers(entryPath, file)));
+    for (const file of files) {
+        copyFile(file, to);
+    }
+    stripNxJson(manifest, requested, to);
+    pointAtNpm(files, to);
+    dropMissingReferences(files, to);
+    pruneWorkspaceYaml(manifest, files, to);
+    return { files, skipped, taken };
+};
+
+const dependsOnProblems = ({ targetDefaults }) =>
+    Object.entries(targetDefaults).flatMap(([name, { dependsOn = [] }]) =>
+        dependsOn
+            .filter(dependency => typeof dependency === 'string')
+            .map(dependency => dependency.replace(/^\^/v, ''))
+            .filter(dependency => !Object.hasOwn(targetDefaults, dependency))
+            .map(dependency => `nx.json ${name}: depends on missing target ${dependency}`)
+    );
+
+const workspacePaths = text =>
+    text
+        .matchAll(/(?:\$\{NX_WORKSPACE_ROOT\}|\{workspaceRoot\})\/(?<file>[\w\-.\/]+)/gv)
+        .map(({ groups }) => groups.file)
+        .toArray();
+
+const targetFileProblems = ({ targetDefaults }, to) =>
+    Object.entries(targetDefaults).flatMap(([name, target]) =>
+        workspacePaths(
+            JSON.stringify([
+                target.options?.commands ?? [],
+                (target.inputs ?? []).filter(
+                    input => typeof input === 'string' && !input.includes('*')
+                ),
+            ])
+        )
+            .filter(file => !existsSync(path.join(to, file)))
+            .map(file => `nx.json ${name}: names ${file}, which the fork doesn't have`)
+    );
+
+const namedInputProblems = ({ targetDefaults }, stripped) =>
+    Object.entries(targetDefaults).flatMap(([name, { inputs = [] }]) =>
+        inputs
+            .filter(input => typeof input === 'string')
+            .map(input => input.replace(/^\^/v, ''))
+            .filter(input => stripped.has(input))
+            .map(input => `nx.json ${name}: uses stripped input ${input}`)
+    );
+
+const pluginProblems = ({ plugins = [] }, to) =>
+    plugins
+        .map(plugin => plugin.plugin ?? plugin)
+        .filter(plugin => plugin.startsWith('.') && !existsSync(path.join(to, plugin)))
+        .map(plugin => `nx.json plugin ${plugin}: missing`);
+
+const bindingProblems = ({ targetDefaults }, to) => {
+    const { bindings } = readJson(path.join(to, 'leyman/main/lifecycle.json'));
+    return Object.keys(bindings)
+        .filter(name => !Object.hasOwn(targetDefaults, name))
+        .map(name => `lifecycle.json: binds ${name}, which has no target default`);
+};
+
+const projectTargetProblems = ({ targetDefaults }, to) => {
+    const { targets } = readJson(path.join(to, 'leyman/main/project.json'));
+    return Object.entries(targets)
+        .filter(
+            ([name, target]) =>
+                !Object.hasOwn(targetDefaults, name) && Object.keys(target).length === 0
+        )
+        .map(([name]) => `leyman/main/project.json: ${name} has no definition`);
+};
+
+const catalogProblems = (files, to) => {
+    const text = readFileSync(path.join(to, 'pnpm-workspace.yaml'), 'utf8');
+    const problems = [];
+    for (const [catalog, names] of catalogReferences(files, to)) {
+        for (const name of names) {
+            const listed = text
+                .split('\n')
+                .some(line => /^\s/v.test(line) && entryName(line) === name);
+            if (!listed) {
+                problems.push(
+                    `pnpm-workspace.yaml: no ${catalog || 'default'} catalog entry for ${name}`
+                );
+            }
+        }
+    }
+    return problems;
+};
+
+const patchProblems = to =>
+    readFileSync(path.join(to, 'pnpm-workspace.yaml'), 'utf8')
+        .matchAll(/: (?<patch>patches\/\S+)$/gmv)
+        .map(({ groups }) => groups.patch)
+        .filter(patch => !existsSync(path.join(to, patch)))
+        .map(patch => `pnpm-workspace.yaml: patch ${patch} wasn't taken`)
+        .toArray();
+
+// A path into `node_modules` only exists after an install, which this check never does
+const relativePathProblems = (files, to) =>
+    files
+        .filter(file => /(?:^|\/)(?:biome|tsconfig[\w.]*|project|nx)\.json$/v.test(file))
+        .flatMap(file => {
+            const {
+                $schema: schema,
+                extends: parent,
+                references = [],
+            } = readJson(path.join(to, file));
+            return [schema, parent, ...references.map(reference => reference.path)]
+                .filter(
+                    relative =>
+                        typeof relative === 'string' &&
+                        relative.startsWith('.') &&
+                        !relative.includes('node_modules')
+                )
+                .filter(relative => !existsSync(path.join(to, path.dirname(file), relative)))
+                .map(relative => `${file}: names ${relative}, which the fork doesn't have`);
+        });
+
+/**
+ * Inspects an applied fork without installing or running anything: whatever it names must have come along.
+ *
+ * @param options - required
+ * @param options.conditions - condition tags the fork asked for
+ * @param options.files - files `apply` copied
+ * @param options.to - directory `apply` wrote to
+ * @returns one message per problem
+ */
+export const inspect = ({ conditions = [], files, to }) => {
+    const manifest = readManifest();
+    const requested = new Set(conditions);
+    const stripped = new Set(
+        Object.entries(manifest.nx.namedInputs)
+            .filter(([condition]) => !requested.has(condition))
+            .flatMap(([, names]) => names)
+    );
+    const nxJson = readJson(path.join(to, 'nx.json'));
+    return [
+        ...dependsOnProblems(nxJson),
+        ...targetFileProblems(nxJson, to),
+        ...namedInputProblems(nxJson, stripped),
+        ...pluginProblems(nxJson, to),
+        ...bindingProblems(nxJson, to),
+        ...projectTargetProblems(nxJson, to),
+        ...catalogProblems(files, to),
+        ...patchProblems(to),
+        ...relativePathProblems(files, to),
+    ];
+};
+
+const main = () => {
+    const { positionals, values } = parseArgs({
+        allowPositionals: true,
+        options: {
+            package: { multiple: true, type: 'string' },
+            to: { type: 'string' },
+            with: { type: 'string' },
+        },
+    });
+    if (positionals[0] !== 'apply' || values.to === undefined) {
+        throw new Error(
+            'Usage: fork-manifest.mjs apply --to <dir> [--with go,rust,...] [--package <path>]...'
+        );
+    }
+    const conditions = values.with?.split(',') ?? [];
+    const { files, skipped } = apply({
+        conditions,
+        extraPackages: values.package,
+        to: path.resolve(values.to),
+    });
+    console.log(`Copied ${files.length} files to ${values.to}`);
+    for (const { path: entryPath, when } of skipped) {
+        console.log(`Skipped ${entryPath}: needs \`${when}\``);
+    }
+};
+
+if (process.argv[1] === import.meta.filename) {
+    main();
+}

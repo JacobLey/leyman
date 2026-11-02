@@ -7,9 +7,12 @@
     "drizzle": "has packages with Drizzle migrations",
     "go": "has Go projects",
     "local-ingress": "serves worktrees at https://<worktree>.<repo>.localhost",
+    "playwright": "has packages tested in browsers",
+    "postgres": "has packages tested against Postgres",
     "publishing": "publishes packages to npm with changesets",
     "rust": "has Rust crates",
     "tofu": "has OpenTofu projects",
+    "valkey": "has packages tested against Valkey",
     "vitest": "has packages tested with Vitest",
     "vscode-tests": "wants the editor's test explorer"
   },
@@ -101,7 +104,6 @@
       "when": "publishing",
       "why": "changesets"
     },
-
     {
       "path": ".devcontainer/.dockerignore",
       "why": "keeps the image's build context empty"
@@ -138,7 +140,6 @@
       "path": ".devcontainer/tag-pinned-images.sh",
       "why": "keeps digest-pinned images from looking dangling"
     },
-
     {
       "path": ".github/pull_request_template.md",
       "when": "ci",
@@ -149,7 +150,6 @@
       "when": "ci",
       "why": "the CI workflow"
     },
-
     {
       "path": ".vscode/settings.json",
       "why": "points the editor at the tools in leyman/main"
@@ -163,7 +163,6 @@
       "when": "vscode-tests",
       "why": "loads the test explorer from leyman/vscode-tests"
     },
-
     {
       "path": "configs/c8rc.json",
       "why": "coverage thresholds and reporters every test target reads"
@@ -185,7 +184,6 @@
       "when": "vitest",
       "why": "the shared Vitest settings"
     },
-
     {
       "path": "leyman/main/.claude/skills/lifecycle",
       "why": "how the lifecycle stages connect"
@@ -223,7 +221,6 @@
       "when": "rust",
       "why": "infers a crate's Nx targets"
     },
-
     {
       "path": "patches/nx@23.3.1.patch",
       "why": "the Nx planner patch that keeps daemon-less runs fast"
@@ -232,7 +229,6 @@
       "path": "patches/@typescript-eslint__eslint-plugin@8.72.0.patch",
       "why": "a wrong autofix under the v flag, which the eslint config's rules reach"
     },
-
     {
       "path": "scripts/commands/serve",
       "when": "local-ingress",
@@ -324,7 +320,6 @@
       "path": "scripts/worktree",
       "why": "creates and opens worktrees from the host"
     },
-
     {
       "path": ".changeset/config.json",
       "when": "publishing",
@@ -450,6 +445,10 @@
       "why": "this repo's classification; a fork keeps the list of what it took"
     },
     {
+      "path": "leyman/main/scripts/audit-fork-manifest.mjs",
+      "why": "proves this repo's classification by running it"
+    },
+    {
       "path": "leyman/main/scripts/check-fork-manifest.mjs",
       "why": "checks this repo's classification"
     },
@@ -460,6 +459,10 @@
     {
       "path": "leyman/main/scripts/check-workspace-dependencies.mjs",
       "why": "only matters to a workspace that also publishes what it depends on"
+    },
+    {
+      "path": "leyman/main/scripts/fork-manifest.mjs",
+      "why": "applies this repo's classification; a fork keeps the list of what it took"
     },
     {
       "path": "pnpm-lock.yaml",
@@ -480,5 +483,79 @@
       "when": "vscode-tests",
       "why": "vendor: what the test explorer extension loads"
     }
+  ],
+  "nx": {
+    "plugins": {
+      "go": [
+        "@naxodev/gonx"
+      ],
+      "rust": [
+        "./leyman/main/scripts/nx-rust-plugin.mjs"
+      ]
+    },
+    "namedInputs": {
+      "postgres": [
+        "postgres"
+      ],
+      "rust": [
+        "rustSource"
+      ],
+      "valkey": [
+        "valkey"
+      ]
+    },
+    "targets": {
+      "dagger": [
+        "dagger-develop"
+      ],
+      "docs-site": [
+        "vitepress-build"
+      ],
+      "drizzle": [
+        "drizzle-kit-check"
+      ],
+      "go": [
+        "go-coverage-report",
+        "go-lint",
+        "go-test",
+        "gofmt"
+      ],
+      "playwright": [
+        "playwright-install"
+      ],
+      "postgres": [
+        "schema-snapshot"
+      ],
+      "publishing": [
+        "check-version"
+      ],
+      "rust": [
+        "rust-clippy",
+        "rust-coverage-report",
+        "rust-test",
+        "rust-wasm",
+        "rustfmt"
+      ],
+      "tofu": [
+        "tofu-fmt",
+        "tofu-validate"
+      ],
+      "vitest": [
+        "vitest-unit-test"
+      ]
+    },
+    "repoOnlyTargets": [
+      "check-fork-manifest",
+      "check-parity",
+      "check-workspace-dependencies"
+    ],
+    "repoOnlyProjectTargets": [
+      "fork-manifest-audit"
+    ]
+  },
+  "workspaceGlobs": [
+    "apps/**",
+    "leyman/*",
+    "tools/*"
   ]
 }

@@ -323,17 +323,17 @@
       },
       "cache": true,
       "inputs": [
-        "{workspaceRoot}/leyman/main/fork-manifest.json",
-        "{workspaceRoot}/leyman/main/scripts/check-fork-manifest.mjs",
         "{workspaceRoot}/*",
         "{workspaceRoot}/.claude/**/*",
         "{workspaceRoot}/.devcontainer/**/*",
         "{workspaceRoot}/.github/**/*",
         "{workspaceRoot}/.vscode/**/*",
         "{workspaceRoot}/configs/**/*",
-        "{workspaceRoot}/leyman/main/**/*",
+        "{workspaceRoot}/dagger/**/*",
+        "{workspaceRoot}/leyman/**/*",
         "{workspaceRoot}/patches/**/*",
-        "{workspaceRoot}/scripts/**/*"
+        "{workspaceRoot}/scripts/**/*",
+        "{workspaceRoot}/tools/local-ingress/**/*"
       ],
       "outputs": [],
       "dependsOn": [

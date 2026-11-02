@@ -1,5 +1,5 @@
 {
-  "$schema": "../../apps/nx-lifecycle/out/schema.json",
+  "$schema": "./node_modules/nx-lifecycle/out/schema.json",
   "stages": {
     "install": {
       "dependsOn": [

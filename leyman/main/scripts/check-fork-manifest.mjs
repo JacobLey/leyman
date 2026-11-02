@@ -1,27 +1,21 @@
 // Checks that `fork-manifest.json` still draws the line between what a fork takes and what stays in this repo: every
 // file under its `roots`, and every file at the top of the workspace, is classified exactly once, and every path,
-// condition and rewrite it names is real.
+// condition and target it names is real. It then applies the manifest to a temporary directory, and inspects that
+// whatever the result names came along too, so a wrong classification fails here without installing anything.
 //
 // Has no dependencies, because CI's `test` job runs it straight from the checkout, with no `node_modules`.
 
-import { execFileSync } from 'node:child_process';
-import { existsSync, readFileSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import path from 'node:path';
-
-const workspaceRoot = path.resolve(import.meta.dirname, '../../..');
-const allowedRewrites = new Set(['paths']);
-
-const covers = (classified, file) => file === classified || file.startsWith(`${classified}/`);
-
-// What Git would commit: tracked files that still exist, and new ones that aren't ignored
-const listFiles = () =>
-    // eslint-disable-next-line sonarjs/no-os-command-from-path -- the checkout's own Git, in a script run by hand or CI
-    execFileSync('git', ['ls-files', '--cached', '--others', '--exclude-standard', '-z'], {
-        cwd: workspaceRoot,
-        encoding: 'utf8',
-    })
-        .split('\0')
-        .filter(file => file !== '' && existsSync(path.join(workspaceRoot, file)));
+import {
+    apply,
+    covers,
+    inspect,
+    listFiles,
+    readManifest,
+    workspaceRoot,
+} from './fork-manifest.mjs';
 
 const describeEntries = ({ entries, packages, repoOnly }) => [
     ...entries.map(entry => ({ ...entry, list: 'entries' })),
@@ -29,7 +23,7 @@ const describeEntries = ({ entries, packages, repoOnly }) => [
     ...packages.map(entry => ({ ...entry, list: 'packages' })),
 ];
 
-const checkEntry = ({ conditions }, files, { list, path: entryPath, rewrite, when, why }) => [
+const checkEntry = ({ conditions }, files, { list, path: entryPath, when, why }) => [
     ...(typeof why === 'string' && why !== '' ? [] : [`${list} ${entryPath}: has no \`why\``]),
     ...(files.some(file => covers(entryPath, file))
         ? []
@@ -37,9 +31,6 @@ const checkEntry = ({ conditions }, files, { list, path: entryPath, rewrite, whe
     ...(when === undefined || Object.hasOwn(conditions, when)
         ? []
         : [`${list} ${entryPath}: unknown condition \`${when}\`, not in \`conditions\``]),
-    ...(rewrite === undefined || allowedRewrites.has(rewrite)
-        ? []
-        : [`${list} ${entryPath}: unknown rewrite \`${rewrite}\``]),
 ];
 
 const checkFiles = ({ roots }, files, classified) => {
@@ -64,22 +55,70 @@ const checkFiles = ({ roots }, files, classified) => {
     ];
 };
 
-const checkConditions = ({ conditions }, classified) =>
-    Object.keys(conditions)
-        .filter(condition => classified.every(({ when }) => when !== condition))
-        .map(condition => `conditions ${condition}: no entry uses it`);
+const checkConditions = ({ conditions, nx }, classified) => {
+    const grouped = [nx.namedInputs, nx.plugins, nx.targets];
+    return [
+        ...Object.keys(conditions)
+            .filter(
+                condition =>
+                    classified.every(({ when }) => when !== condition) &&
+                    grouped.every(group => !Object.hasOwn(group, condition))
+            )
+            .map(condition => `conditions ${condition}: nothing uses it`),
+        ...grouped
+            .flatMap(group => Object.keys(group))
+            .filter(condition => !Object.hasOwn(conditions, condition))
+            .map(condition => `nx: unknown condition \`${condition}\`, not in \`conditions\``),
+    ];
+};
+
+const checkNx = ({ nx }) => {
+    const { namedInputs, plugins, targetDefaults } = JSON.parse(
+        readFileSync(path.join(workspaceRoot, 'nx.json'), 'utf8')
+    );
+    const pluginNames = new Set(plugins.map(plugin => plugin.plugin ?? plugin));
+    return [
+        ...[...Object.values(nx.targets).flat(), ...nx.repoOnlyTargets]
+            .filter(name => !Object.hasOwn(targetDefaults, name))
+            .map(name => `nx: target ${name} isn't in nx.json`),
+        ...Object.values(nx.namedInputs)
+            .flat()
+            .filter(name => !Object.hasOwn(namedInputs, name))
+            .map(name => `nx: named input ${name} isn't in nx.json`),
+        ...Object.values(nx.plugins)
+            .flat()
+            .filter(name => !pluginNames.has(name))
+            .map(name => `nx: plugin ${name} isn't in nx.json`),
+    ];
+};
+
+// Whatever a fork asks for, what it gets must hang together: with nothing optional, and with everything
+const checkApplied = ({ conditions }) =>
+    [[], Object.keys(conditions)].flatMap(requested => {
+        const to = mkdtempSync(path.join(tmpdir(), 'fork-manifest-'));
+        try {
+            const { files } = apply({ conditions: requested, to });
+            const label = requested.length === 0 ? 'no conditions' : 'all conditions';
+            return inspect({ conditions: requested, files, to }).map(
+                problem => `Applied with ${label}: ${problem}`
+            );
+        } finally {
+            rmSync(to, { force: true, recursive: true });
+        }
+    });
 
 const failures = () => {
-    const manifest = JSON.parse(
-        readFileSync(path.join(import.meta.dirname, '../fork-manifest.json'), 'utf8')
-    );
+    const manifest = readManifest();
     const files = listFiles();
     const classified = describeEntries(manifest);
-    return [
+    const found = [
         ...classified.flatMap(entry => checkEntry(manifest, files, entry)),
         ...checkFiles(manifest, files, classified),
         ...checkConditions(manifest, classified),
+        ...checkNx(manifest),
     ];
+    // Applying needs the manifest's own paths to be right
+    return found.length > 0 ? found : checkApplied(manifest);
 };
 
 // The source Dagger tests leaves out `.git` and most of the roots (`New` in `dagger/main.go`), so inside it there is

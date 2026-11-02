@@ -30,6 +30,16 @@
         "^build"
       ]
     },
+    "fork-manifest-audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node ./scripts/audit-fork-manifest.mjs"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      }
+    },
     "install:_": {},
     "install": {},
     "prepare:_": {},

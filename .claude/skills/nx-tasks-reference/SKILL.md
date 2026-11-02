@@ -124,9 +124,17 @@ Runs in `check:lint`, after the package's own build, so a packaging mistake fail
 
 ### `check-fork-manifest`
 
-Fails if a file under one of `leyman/main/fork-manifest.json`'s `roots`, or at the top of the workspace, isn't classified exactly once, or if the manifest names a path, condition or rewrite that doesn't exist (`leyman/main/scripts/check-fork-manifest.mjs`). Runs in `check:lint`. It lists files with git and skips inside Dagger, whose source leaves out `.git` and most of the roots, so CI's `test` job runs the script from the checkout before Dagger starts.
+Fails if a file under one of `leyman/main/fork-manifest.json`'s `roots`, or at the top of the workspace, isn't classified exactly once, or if the manifest names a path, condition or target that doesn't exist (`leyman/main/scripts/check-fork-manifest.mjs`). It then applies the manifest to a temporary directory, with no optional conditions and with all of them, and fails if the result names a script, target, input, patch, catalog entry or config that didn't come along. Runs in `check:lint`. It lists files with git and skips inside Dagger, whose source leaves out `.git` and most of the roots, so CI's `test` job runs the script from the checkout before Dagger starts.
 
 **Add when:** Never: only `@leyman/main` has it. A new file under a root goes in the manifest.
+
+---
+
+### `fork-manifest-audit`
+
+Applies the manifest with `tools/parse-cwd` as a sample package, installs that from nothing, runs `verify` there and checks `lifecycle` generates no drift (`leyman/main/scripts/audit-fork-manifest.mjs`). Defined in `@leyman/main`'s `project.json` and bound to no stage, so `verify` never runs it. It is one target in one project, and it needs the network and a run from nothing, so it is never cached. The weekly `fork-manifest` workflow runs it, and failing there blocks nothing.
+
+**Add when:** Never: only `@leyman/main` has it.
 
 ---
 

@@ -1,6 +1,9 @@
 import configGenerator from '@leyman/eslint-config';
 import packageJson from './package.json' with { type: 'json' };
 
+// Past the 8 typescript-eslint allows by default, and each is small
+const maxScriptsLinted = 16;
+
 export default [
     ...configGenerator({ configUrl: import.meta.url, node: true, packageJson }),
     {
@@ -9,6 +12,8 @@ export default [
                 projectService: {
                     // No tsconfig, so lint nested scripts like top-level files
                     allowDefaultProject: ['*.js', 'scripts/*.mjs'],
+                    maximumDefaultProjectFileMatchCount_THIS_WILL_SLOW_DOWN_LINTING:
+                        maxScriptsLinted,
                 },
             },
         },
