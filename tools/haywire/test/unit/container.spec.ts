@@ -523,7 +523,7 @@ suite('container', () => {
                     .to.throw(HaywireSyncSupplierError)
                     .that.contains({
                         message: [
-                            'Binding has dependency on syncronous supplier that must be async:',
+                            'Binding has dependency on synchronous supplier that must be async:',
                             [
                                 '[output id: B, dependency supplier id: B(supplier(sync)), needed by: A, async: B]',
                                 '[output id: C, dependency supplier id: C(supplier(sync)), needed by: A, async: C->D]',
@@ -577,7 +577,7 @@ suite('container', () => {
                     .to.throw(HaywireSyncSupplierError)
                     .that.contains({
                         message: [
-                            'Binding has dependency on syncronous supplier that must be async:',
+                            'Binding has dependency on synchronous supplier that must be async:',
                             [
                                 '[output id: B, dependency supplier id: B(supplier(sync)), needed by: E, async: B]',
                                 '[output id: C, dependency supplier id: C(supplier(sync, propagating)), needed by: E, async: C]',

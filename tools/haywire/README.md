@@ -866,7 +866,7 @@ Errors from `container.check()` name the bindings involved. A missing binding li
 
 ```
 Providers missing for container: DB_URL (needed by Database, MigrationRunner)
-Binding has dependency on syncronous supplier that must be async: [output id: Repository, dependency supplier id: Repository(supplier(sync)), needed by: Handler, async: Repository->Database]
+Binding has dependency on synchronous supplier that must be async: [output id: Repository, dependency supplier id: Repository(supplier(sync)), needed by: Handler, async: Repository->Database]
 ```
 
 To see the whole graph, `container.toMermaid()` returns it as a [Mermaid](https://mermaid.js.org/) flowchart, which GitHub and most Markdown editors render. Each binding is a node labelled with its id and scope. Arrows point to dependencies, dotted for suppliers and deferred dependencies, and a dependency with no binding is drawn as a dashed red node.

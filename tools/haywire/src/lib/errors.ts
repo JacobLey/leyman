@@ -210,7 +210,7 @@ export class HaywireSyncSupplierError extends HaywireContainerValidationError {
             }))
             .toSorted((a, b) => a.message.localeCompare(b.message, 'en'));
         super(
-            `Binding has dependency on syncronous supplier that must be async: ${sorted
+            `Binding has dependency on synchronous supplier that must be async: ${sorted
                 .map(({ message }) => message)
                 .join(', ')}`
         );

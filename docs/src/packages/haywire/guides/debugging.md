@@ -17,7 +17,7 @@ Providers missing for container: DB_URL (needed by Database, MigrationRunner)
 A [sync supplier](/packages/haywire/guides/suppliers#sync-suppliers-of-async-values) of a value that can't be built synchronously names the binding that declares the supplier, and the chain of dependencies down to the async binding:
 
 ```sh
-Binding has dependency on syncronous supplier that must be async: [output id: Repository, dependency supplier id: Repository(supplier(sync)), needed by: Handler, async: Repository->Database]
+Binding has dependency on synchronous supplier that must be async: [output id: Repository, dependency supplier id: Repository(supplier(sync)), needed by: Handler, async: Repository->Database]
 ```
 
 Here `Handler` depends on `identifier(Repository).supplier()`, and `Repository` depends on `Database`, which has an async provider. Make the supplier async, or make `Database` an [eager singleton](/packages/haywire/guides/scopes) so it is ready before the supplier is called.
