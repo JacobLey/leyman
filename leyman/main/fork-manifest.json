@@ -409,6 +409,10 @@
       "why": "names this repo's packages and links"
     },
     {
+      "path": ".github/workflows/comparison-report.yml",
+      "why": "reports on genever against other tools, for this repo's docs site"
+    },
+    {
       "path": ".github/workflows/fork-manifest.yml",
       "why": "audits this repo's classification"
     },

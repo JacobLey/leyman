@@ -196,6 +196,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.claude/skills/fork-manifest` | how this repo's classification works; a fork keeps the list of what it took |
 | `.claude/skills/projects` | this repo's table of packages; a fork writes its own |
 | `.github/ISSUE_TEMPLATE` | names this repo's packages and links |
+| `.github/workflows/comparison-report.yml` | reports on genever against other tools, for this repo's docs site |
 | `.github/workflows/fork-manifest.yml` | audits this repo's classification |
 | `CODE_OF_CONDUCT.md` | a fork writes its own |
 | `CONTRIBUTING.md` | a fork writes its own |
