@@ -3,7 +3,6 @@ import type {
     Container,
     ContainerDescription,
     ContainerOptions,
-    ExpandedContainer,
     GenericContainer,
     MaybeSyncContainer,
 } from '#container';
@@ -38,13 +37,9 @@ export type GenericContainerFactory = ContainerFactory<any, any, any, any>;
 type ValidateBindInstance<
     Outputs extends [Extendable],
     Dependencies extends [Extendable],
-    Bindings extends InstanceBinding<GenericHaywireId>,
     OutputId extends GenericOutputHaywireId,
 > = [
-    ...ValidateOutputIdDoesNotExist<
-        BindingOutputType<Bindings['outputId']> | Outputs,
-        BindingOutputType<OutputId>
-    >,
+    ...ValidateOutputIdDoesNotExist<Outputs, BindingOutputType<OutputId>>,
     ...ValidateOutputSatisfiesDependency<
         Dependencies,
         BindingListOutputType<OutputId> | BindingOutputType<OutputId>
@@ -59,7 +54,10 @@ type ValidateBindInstance<
  * @template F - factory
  */
 type ValidateToContainer<F extends GenericContainerFactory> = [
-    Exclude<F[typeof idType]['dependencies'], F[typeof idType]['outputs']>,
+    Exclude<
+        F[typeof idType]['dependencies'],
+        F[typeof idType]['listOutputs'] | F[typeof idType]['outputs']
+    >,
 ] extends [never]
     ? []
     : [InvalidInput<'MissingOutput'>];
@@ -96,26 +94,27 @@ declare const idType: unique symbol;
  * The factory needs to be provided with instances for the missing bindings, at which point it can be exchanged
  * for a container that is ready for use.
  *
- * @template Outputs values that container is currently able to emit
+ * @template Outputs non-list values that container is currently able to emit, from both module and instance bindings
+ * @template ListOutputs list values that container is currently able to emit, kept apart from `Outputs` so that
+ * binding a list element only combines with the list outputs, however many other outputs there are
  * @template Dependencies dependencies declared on the module, _excluding_ outputs from both module and instance bindings.
  * List dependencies are always retained (even if satisfied) so that registered list elements can be validated against them.
  * @template Async if false, will result in a SyncContainer
- * @template Bindings instance bindings that are ready to be attached to container
  */
 export class ContainerFactory<
     Outputs extends [Extendable],
+    ListOutputs extends [Extendable],
     Dependencies extends [Extendable],
     Async extends boolean,
-    Bindings extends InstanceBinding<GenericHaywireId>,
 > {
     declare public [idType]: {
         outputs: Outputs;
+        listOutputs: ListOutputs;
         dependencies: Dependencies;
         async: Async;
-        bindings: Bindings;
     };
 
-    readonly #container: MaybeSyncContainer<Outputs, Async>;
+    readonly #container: MaybeSyncContainer<ListOutputs | Outputs, Async>;
     readonly #missingDependencyOutputsByBaseId: Map<GenericBaseHaywireId, GenericOutputHaywireId[]>;
     readonly #existingOutputBaseIds: Set<GenericBaseHaywireId>;
     /**
@@ -130,14 +129,14 @@ export class ContainerFactory<
      * Output ids that are satisfied by every list binding (from module and registered instances), keyed by base id.
      */
     readonly #listOutputIdsByBaseId: Map<GenericBaseHaywireId, ReadonlySet<GenericOutputHaywireId>>;
-    readonly #registeredBindings: Bindings[];
+    readonly #registeredBindings: readonly InstanceBinding<GenericHaywireId>[];
     /**
      * Output ids of the module bindings that depend on each dependency, to report who needs a missing instance.
      */
     readonly #dependentIds: ReadonlyMap<GenericOutputHaywireId, readonly GenericOutputHaywireId[]>;
 
     private constructor(
-        container: MaybeSyncContainer<Outputs, Async>,
+        container: MaybeSyncContainer<ListOutputs | Outputs, Async>,
         missingDependencyOutputsByBaseId: Map<GenericBaseHaywireId, GenericOutputHaywireId[]>,
         existingOutputBaseIds: Set<GenericBaseHaywireId>,
         listDependencyOutputsByBaseId: ReadonlyMap<
@@ -148,7 +147,7 @@ export class ContainerFactory<
             GenericBaseHaywireId,
             ReadonlySet<GenericOutputHaywireId>
         >,
-        registeredBindings: Bindings[],
+        registeredBindings: readonly InstanceBinding<GenericHaywireId>[],
         dependentIds: ReadonlyMap<GenericOutputHaywireId, readonly GenericOutputHaywireId[]>
     ) {
         this.#container = container;
@@ -156,12 +155,13 @@ export class ContainerFactory<
         this.#existingOutputBaseIds = new Set(existingOutputBaseIds);
         this.#listDependencyOutputsByBaseId = listDependencyOutputsByBaseId;
         this.#listOutputIdsByBaseId = new Map(listOutputIdsByBaseId);
-        this.#registeredBindings = [...registeredBindings];
+        this.#registeredBindings = registeredBindings;
         this.#dependentIds = dependentIds;
     }
 
     public static [wireContainerFactorySym]?<
         Outputs extends [Extendable],
+        ListOutputs extends [Extendable],
         Dependencies extends [Extendable],
         Async extends boolean,
     >(
@@ -170,7 +170,7 @@ export class ContainerFactory<
         listBindings: ReadonlyMap<GenericBaseHaywireId, readonly GenericBinding[]>,
         isAsync: Async,
         options: ContainerOptions
-    ): ContainerFactory<Outputs, Dependencies, Async, never> {
+    ): ContainerFactory<Outputs, ListOutputs, Dependencies, Async> {
         const outputIds = new Set(
             bindings.values().flatMap(binding => expandOutputId(binding.outputId))
         );
@@ -244,7 +244,7 @@ export class ContainerFactory<
         const mergedBindings = new Map([...bindings, ...missingImplementationBindings]);
         const mergedListBindings = new Map([...listBindings, ...missingImplementationListBindings]);
 
-        const container: Container<Outputs> = isAsync
+        const container: Container<ListOutputs | Outputs> = isAsync
             ? createAsyncContainer(mergedBindings, mergedListBindings, options)
             : createSyncContainer(mergedBindings, mergedListBindings, options);
 
@@ -253,8 +253,8 @@ export class ContainerFactory<
             bindings.keys()
         );
 
-        return new ContainerFactory<Outputs, Dependencies, Async, never>(
-            container as MaybeSyncContainer<Outputs, Async>,
+        return new ContainerFactory<Outputs, ListOutputs, Dependencies, Async>(
+            container as MaybeSyncContainer<ListOutputs | Outputs, Async>,
             missingDependencyOutputsByBaseId,
             existingOutputBaseIds,
             listDependencyOutputsByBaseId,
@@ -327,25 +327,24 @@ export class ContainerFactory<
                     ValidateBindInstance<
                         Outputs,
                         Dependencies,
-                        Bindings,
                         OutputHaywireId<BoundOutputId<IdOrClass>>
                     >
                 >
             >,
         instance: BoundInstance<IdOrClass>
     ): ContainerFactory<
+        BindingOutputType<OutputHaywireId<BoundOutputId<IdOrClass>>> | Outputs,
         CombineListOutputs<
-            Outputs,
+            ListOutputs,
             BindingListOutputType<OutputHaywireId<BoundOutputId<IdOrClass>>>
         >,
         Exclude<Dependencies, BindingOutputType<OutputHaywireId<BoundOutputId<IdOrClass>>>>,
-        Async,
-        Bindings | InstanceBinding<BoundOutputId<IdOrClass>>
+        Async
     >;
     public bindInstance<OutputId extends GenericHaywireId>(
         outputIdOrClass: OutputId,
         instance: HaywireIdProviderType<OutputId>
-    ): ContainerFactory<any, any, Async, Bindings | InstanceBinding<OutputId>> {
+    ): ContainerFactory<any, any, any, Async> {
         const outputId = unsafeIdentifier(outputIdOrClass);
         const normalizedOutputId = normalizeOutputId(outputId);
         const baseId = outputId.baseId();
@@ -377,18 +376,19 @@ export class ContainerFactory<
             }
         }
 
+        const binding = new InstanceBinding(outputId, instance);
         const factory = new ContainerFactory<
             Outputs,
+            ListOutputs,
             Exclude<Dependencies, any>,
-            Async,
-            Bindings | InstanceBinding<OutputId>
+            Async
         >(
             this.#container,
             this.#missingDependencyOutputsByBaseId,
             this.#existingOutputBaseIds,
             this.#listDependencyOutputsByBaseId,
             this.#listOutputIdsByBaseId,
-            this.#registeredBindings,
+            [...this.#registeredBindings, binding],
             this.#dependentIds
         );
         factory.#missingDependencyOutputsByBaseId.delete(baseId);
@@ -399,8 +399,6 @@ export class ContainerFactory<
             // Regular ids can only be provided once.
             factory.#existingOutputBaseIds.add(baseId);
         }
-        const binding = new InstanceBinding(outputId, instance);
-        factory.#registeredBindings.push(binding);
 
         return factory;
     }
@@ -418,8 +416,8 @@ export class ContainerFactory<
         // Not a `this` check: factories are usually incomplete, and would stop matching `GenericContainerFactory`.
         // An intersection, unlike a tuple, makes a missing argument fail on its type, which shows the message.
         ...invalidInput: Invalid<ValidateToContainer<this>> & []
-    ): ExpandedContainer<Outputs, Bindings, Async>;
-    public toContainer(): ExpandedContainer<Outputs, Bindings, Async> {
+    ): MaybeSyncContainer<ListOutputs | Outputs, Async>;
+    public toContainer(): MaybeSyncContainer<ListOutputs | Outputs, Async> {
         if (this.#missingDependencyOutputsByBaseId.size > 0) {
             throw new HaywireProviderMissingError(
                 this.#missingDependencyOutputsByBaseId.values().toArray().flat(),
@@ -427,7 +425,11 @@ export class ContainerFactory<
             );
         }
 
-        return addBoundInstances(this.#container, this.#registeredBindings);
+        // Outputs already account for the bound instances, so the container only needs them at runtime.
+        return addBoundInstances(this.#container, this.#registeredBindings) as MaybeSyncContainer<
+            ListOutputs | Outputs,
+            Async
+        >;
     }
 
     public static createContainer<F extends GenericContainerFactory>(

@@ -617,7 +617,7 @@ export class Container<Outputs extends [Extendable]> {
         Async extends boolean,
     >(
         container: MaybeSyncContainer<Outputs, Async>,
-        bindings: Bindings[]
+        bindings: readonly Bindings[]
     ): ExpandedContainer<Outputs, Bindings, Async> {
         // Same class as the container, which may be a `SyncContainer`
         const cloned = Reflect.construct(container.constructor as typeof Container, [

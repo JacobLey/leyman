@@ -90,6 +90,9 @@ type TakeXThatAreNotInY<OutputsX extends [Extendable], OutputsY extends [Extenda
  *
  * For values that are only defined in one list or the other, everything is let through.
  *
+ * Shared values are kept with `Extract`: intersecting the two unions would also add a member per pair of
+ * different values, which matches nothing but each later combine multiplies.
+ *
  * @template ExistingOutputs
  * @template IncomingOutputs
  */
@@ -97,9 +100,9 @@ export type CombineListOutputs<
     ExistingOutputs extends [Extendable],
     IncomingOutputs extends [Extendable],
 > =
+    | Extract<ExistingOutputs, IncomingOutputs>
     | TakeXThatAreNotInY<ExistingOutputs, IncomingOutputs>
-    | TakeXThatAreNotInY<IncomingOutputs, ExistingOutputs>
-    | (ExistingOutputs & IncomingOutputs);
+    | TakeXThatAreNotInY<IncomingOutputs, ExistingOutputs>;
 
 /**
  * Validate that the output of existing resource does not have any overlap with incoming binding's output.
@@ -675,10 +678,10 @@ export class Module<
     public toContainerFactory(
         options: ContainerOptions = {}
     ): ContainerFactory<
-        ListOutputs | Outputs,
+        Outputs,
+        ListOutputs,
         Exclude<Dependencies, ListOutputs | Outputs> | ListDependencies<Dependencies>,
-        Async,
-        never
+        Async
     > {
         return wireContainerFactory(this.#bindings, this.#listBindings, this.isAsync, options);
     }
@@ -693,10 +696,10 @@ export class Module<
         mod: Module<Outputs, ListOutputs, Dependencies, Async>,
         options?: ContainerOptions
     ): ContainerFactory<
-        ListOutputs | Outputs,
+        Outputs,
+        ListOutputs,
         Exclude<Dependencies, ListOutputs | Outputs> | ListDependencies<Dependencies>,
-        Async,
-        never
+        Async
     > {
         return mod.toContainerFactory(options);
     }

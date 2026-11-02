@@ -1,4 +1,6 @@
 import type { MultiList } from 'haywire';
+import type { CombineListOutputs } from '#module';
+import type { ExpandOutput } from '#types';
 import { expectTypeOf } from 'expect-type';
 import { expect } from '@leyman/expect';
 import { bind, createContainer, createContainerFactory, createModule, identifier } from 'haywire';
@@ -254,6 +256,44 @@ suite('factory', () => {
                 .bindInstance(nullableId.list('multi'), null)
                 .toContainer();
             expect(nullableContainer.get(nullableId.list())).to.deep.equal([null]);
+        });
+
+        test('Combined outputs are only those every element satisfies', () => {
+            type NullableOutputs = ExpandOutput<number, null, 'n', true, true, false>;
+            type UndefinableOutputs = ExpandOutput<number, null, 'n', true, false, true>;
+            type LaxestOutputs = ExpandOutput<number, null, 'n', true, true, true>;
+            type OtherOutputs = ExpandOutput<string, null, 'o', true, false, false>;
+
+            expectTypeOf<
+                CombineListOutputs<NullableOutputs, UndefinableOutputs>
+            >().toEqualTypeOf<LaxestOutputs>();
+            expectTypeOf<
+                CombineListOutputs<NullableOutputs | OtherOutputs, UndefinableOutputs>
+            >().toEqualTypeOf<LaxestOutputs | OtherOutputs>();
+        });
+
+        test('Container has the same outputs as a module with the same elements', () => {
+            const listId = identifier<number>().named('combined-nums').list();
+            const nullableBinding = bind(listId.nullable()).withInstance(null);
+            const baseModule = createModule(bind(sumId).withInstance(0)).addBinding(
+                nullableBinding
+            );
+
+            const factoryContainer = createContainerFactory(baseModule)
+                .bindInstance(numListId, 1)
+                .bindInstance(listId.undefinable(), undefined)
+                .bindInstance(listId, 2)
+                .toContainer();
+            const moduleContainer = baseModule
+                .addBinding(bind(numListId).withInstance(1))
+                .addBinding(bind(listId.undefinable()).withInstance(undefined))
+                .addBinding(bind(listId).withInstance(2))
+                .toContainer();
+
+            expectTypeOf(factoryContainer).toEqualTypeOf(moduleContainer);
+            expect(factoryContainer.get(listId.nullable().undefinable())).to.have.members(
+                moduleContainer.get(listId.nullable().undefinable())
+            );
         });
 
         test('Registered elements must satisfy list dependencies', () => {
