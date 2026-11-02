@@ -147,7 +147,7 @@ const MAX_NUMBER_RADIX = 36;
  *
  * Additionally can indicate the type should be a `supplier` (a function that accepts no parameters and returns the instance)
  * or `deferred` (a promise that will _eventually_ resolve into the requested value, or reject if issues arise).
- * Note that the implemention of both these annotations is internal to Haywire. If the requested value is in fact a function or a promise,
+ * Note that the implementation of both these annotations is internal to Haywire. If the requested value is in fact a function or a promise,
  * declare that on the type itself.
  *
  * @template T
@@ -291,7 +291,7 @@ export class HaywireId<
      * const databaseUsernameId = identifier<string>().named('database-username');
      * const adminEmail = identifier<string>().named('admin-email');
      *
-     * @param [name=null] - discrimintor to identify id. Can be a string or a _unique_ symbol. Defaults to null (unsets value).
+     * @param [name=null] - discriminator to identify id. Can be a string or a _unique_ symbol. Defaults to null (unsets value).
      * @returns new identifier with discriminitor set
      */
     public named(
@@ -561,7 +561,7 @@ export class HaywireId<
      * Can be used to look up previously generated instances of ids to ensure proper re-use and references.
      *
      * Since all methods on the identifier return a new instance (identifiers themselves are immutable) we need to rely on a
-     * cache to make sure that for any unique combintation of base id + annotations, at most a single instance exists.
+     * cache to make sure that for any unique combination of base id + annotations, at most a single instance exists.
      *
      * @example
      * const id = identifier();

@@ -185,7 +185,7 @@ suite('module', () => {
                     });
             });
 
-            test('Do not allow outputs that do not satisfiy outputs', () => {
+            test('Do not allow outputs that do not satisfy outputs', () => {
                 const nullableNumberModule = Module.fromBinding(numberBinding.nullable());
                 // @ts-expect-error
                 const invalidModule = nullableNumberModule.addBinding(bazBinding);
@@ -298,7 +298,7 @@ suite('module', () => {
                     });
             });
 
-            test('Do not allow outputs that do not satisfiy outputs', () => {
+            test('Do not allow outputs that do not satisfy outputs', () => {
                 const nullableBarModule = createModule(barBinding.undefinable());
                 // @ts-expect-error
                 const invalidModule = fooModule.mergeModule(nullableBarModule);

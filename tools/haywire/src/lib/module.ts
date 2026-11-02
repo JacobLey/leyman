@@ -618,7 +618,7 @@ export class Module<
      * If all bindings in the module are synchronous, the resulting container will be sync-enabled.
      * Otherwise the container will be async and require async usage for external calls to container.
      *
-     * Type checking enforces that that the current module setup declares an output for every dependency.
+     * Type checking enforces that the current module setup declares an output for every dependency.
      *
      * @param options - how the container handles provider errors
      */
@@ -642,7 +642,7 @@ export class Module<
      * If all bindings in the module are synchronous, the resulting container will be sync-enabled.
      * Otherwise the container will be async and require async usage for external calls to container.
      *
-     * Type checking enforces that that the current module setup declares an output for every dependency.
+     * Type checking enforces that the current module setup declares an output for every dependency.
      *
      * @param mod - module to create the container from
      * @param options - how the container handles provider errors

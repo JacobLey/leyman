@@ -70,7 +70,7 @@ export type HookArgs = [string, UserCallback] | [UserCallback];
 /**
  * Lookup of context by test.
  *
- * While implemention is recommended to be a WeakMap, technically it can be anything that implements `get`.
+ * While implementation is recommended to be a WeakMap, technically it can be anything that implements `get`.
  * This is useful for cases like entrypoint and one-time mapping, which will return the same value regardless
  * of what "key" is provided.
  *

@@ -206,9 +206,9 @@ But sometimes we need a little extra data around a type, such as the fact that i
 
 This is where the `identifier()` method comes into play. It is the most basic building block of our dependency injection.
 
-`identifier` takes the class as the only parameter to the method. The resulting typed `HaywireId` is interchangable with the class in all APIs.
+`identifier` takes the class as the only parameter to the method. The resulting typed `HaywireId` is interchangeable with the class in all APIs.
 
-This `HaywireId` class has the extra perks of methods like `.nullable()` to indicate allowed values of `UserService | null`. We can also attach a name to the class to distinguish it from potential other implementations that are in use. `id.named('userService')`. A named id is _not_ interchangable with a non-named, or other named id. If you aren't feeling particularly clever about naming, you can guarantee uniqueness of your implementation using symbols:
+This `HaywireId` class has the extra perks of methods like `.nullable()` to indicate allowed values of `UserService | null`. We can also attach a name to the class to distinguish it from potential other implementations that are in use. `id.named('userService')`. A named id is _not_ interchangeable with a non-named, or other named id. If you aren't feeling particularly clever about naming, you can guarantee uniqueness of your implementation using symbols:
 
 ```ts
 const sym = Symbol();

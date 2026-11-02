@@ -673,7 +673,7 @@ type DependenciesToIds<Dependencies extends readonly unknown[]> = {
     >;
 };
 
-type DependenciesMisMatch<
+type DependenciesMismatch<
     DependencyIds extends readonly (GenericHaywireId | IsClass)[],
     Dependencies extends readonly unknown[],
 > =
@@ -706,7 +706,7 @@ export class ProviderBindingBuilder<
     }
 
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
-        depIds: Invalid<DependenciesMisMatch<DependencyIds, Dependencies>> &
+        depIds: Invalid<DependenciesMismatch<DependencyIds, Dependencies>> &
             readonly [...DependencyIds]
     ): Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, false>;
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
@@ -756,7 +756,7 @@ export class AsyncProviderBindingBuilder<
     }
 
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(
-        depIds: Invalid<DependenciesMisMatch<DependencyIds, Dependencies>> &
+        depIds: Invalid<DependenciesMismatch<DependencyIds, Dependencies>> &
             readonly [...DependencyIds]
     ): Binding<OutputHaywireId<OutputId>, IdOrClassToIds<DependencyIds>, true>;
     public withDependencies<DependencyIds extends readonly (GenericHaywireId | IsClass)[]>(

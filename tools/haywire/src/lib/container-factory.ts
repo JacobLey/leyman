@@ -268,7 +268,7 @@ export class ContainerFactory<
      * Checks the underlying container.
      * Uses {@link Container.check()} directly.
      *
-     * Recommended to be called as an optimization, becaues check the factory
+     * Recommended to be called as an optimization, because check the factory
      * will ensure _every_ resulting container is pre-checked.
      */
     public check(): void {
@@ -279,7 +279,7 @@ export class ContainerFactory<
      * Wires the underlying container.
      * Uses {@link Container.wire()} directly.
      *
-     * Recommended to be called as an optimization, becaues wiring the factory
+     * Recommended to be called as an optimization, because wiring the factory
      * will ensure _every_ resulting container is pre-wired.
      */
     public wire(): void {

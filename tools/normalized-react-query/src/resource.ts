@@ -299,7 +299,7 @@ class Resource<
     }
 
     /**
-     * Set data directly in cache. Note that data should should match the result of original queryFn,
+     * Set data directly in cache. Note that data should match the result of original queryFn,
      * not any propagation.
      * See {@link populate} if you want to leave behind params that can be used to used to re-query data in future.
      *
@@ -569,7 +569,7 @@ export type { Resource };
 /**
  * Type-safe reference to react queries that are *not* "infinite".
  *
- * Ensures consistent usage of keys + queryFn, and provides convience methods around
+ * Ensures consistent usage of keys + queryFn, and provides convenience methods around
  * various QueryClient methods.
  *
  * Can be passed to "normalized" hooks for `useQuery`-like behavior.

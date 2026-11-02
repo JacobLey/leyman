@@ -175,7 +175,7 @@ export class HaywireCircularDependencyError extends HaywireContainerValidationEr
 
 /**
  * Error thrown when a synchronous supplier is declared for a provider that cannot reliably generate
- * these values syncronously.
+ * these values synchronously.
  *
  * Either:
  * - Refactor the supplier to be asynchronous itself

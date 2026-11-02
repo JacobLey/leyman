@@ -354,7 +354,7 @@ suite('annotations', () => {
     });
 });
 
-test('exapndOutputId', () => {
+test('expandOutputId', () => {
     const id = identifier<string>();
     expect(expandOutputId(id)).to.deep.equal(
         new Set([id, id.nullable(), id.undefinable(), id.nullable().undefinable()])

@@ -31,10 +31,10 @@ export const transientScope = Symbol('transient');
  */
 export const singletonScope = Symbol('singleton');
 /**
- * Same bevahior as singleton scope.
+ * Same behavior as singleton scope.
  *
  * Can be "eagerly" instantiated during container setup via `container.preloadAsync()` (or `container.preload()` on a `SyncContainer`).
- * Helpful to catch any errors and peform potentially expensive calculations/loads
+ * Helpful to catch any errors and perform potentially expensive calculations/loads
  * before any interfaces are in use.
  *
  * Can be utilized to allow synchronous suppliers with an underlying async provider.
@@ -49,7 +49,7 @@ export const eagerSingletonScope = Symbol('eager-singleton');
  *
  * **NOTE**
  * Suppliers act as a requests against the container for an instance,
- * and _by default_ do not share the share the parent's request scope.
+ * and _by default_ do not share the parent's request scope.
  *
  * If you want a dependency internal to a supplier to "inherit" the scope of the parent request,
  * set the supplier as `propagateScope`.
@@ -80,10 +80,10 @@ export const eagerSingletonScope = Symbol('eager-singleton');
  */
 export const requestScope = Symbol('request');
 /**
- * Same bevahior as request scope.
+ * Same behavior as request scope.
  *
- * Can be "eagerly" instantiated during the request to the the container.
- * Helpful to catch any errors and peform potentially expensive calculations/loads
+ * Can be "eagerly" instantiated during the request to the container.
+ * Helpful to catch any errors and perform potentially expensive calculations/loads
  * before any interfaces are in use.
  *
  * Can be utilized to allow synchronous suppliers with an underlying async provider.

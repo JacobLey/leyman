@@ -22,7 +22,7 @@ The general goal is that the path from src -> dist should be fairly obvious. Imp
 
 The `tsc` target transpiles `src/` → `dist/` with SWC, then runs `tsc` for type checking and `.d.ts` output, one command after another. `.ts` and `.mts` compile to ESM, `.cts` to CommonJS.
 
-The target output is usually the latest ESNext. That is generally compatible with what is supported by server JS runtimes like Node. Frontend JS code will have its own packaging and backwards compatibilty support that is implemented separately.
+The target output is usually the latest ESNext. That is generally compatible with what is supported by server JS runtimes like Node. Frontend JS code will have its own packaging and backwards compatibility support that is implemented separately.
 
 Even at ESNext, SWC rewrites a few constructs using helper functions: `using`/`await using` declarations, and `export *` in CommonJS output. [`configs/swcrc.jsonc`](../../../configs/swcrc.jsonc) inlines those helpers (`externalHelpers: false`), so a package never needs `@swc/helpers` as a dependency.
 

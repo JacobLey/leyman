@@ -3,7 +3,7 @@ import { parseCwd } from 'parse-cwd';
 import { barrelFiles } from './lib/barrel.js';
 
 /**
- * Programatically invoke barrelify.
+ * Programmatically invoke barrelify.
  * Similar as using CLI options.
  *
  * @param [options] - Optional

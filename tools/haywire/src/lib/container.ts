@@ -770,7 +770,7 @@ export class Container<Outputs extends [Extendable]> {
      *
      * The wiring performed is:
      * Eager Singletons
-     *   Eager singletons are tricky becuase despite their _potentially_ async nature, it is always safe to treat them as
+     *   Eager singletons are tricky because despite their _potentially_ async nature, it is always safe to treat them as
      *     sync in other parts of requests. During the very beginning of initialization though, that is not necessarily safe,
      *     so calculate the dependency order in which singletons can be instantiated without causing issues.
      * Eager Requests
@@ -779,7 +779,7 @@ export class Container<Outputs extends [Extendable]> {
      *     relevant to this top-level request.
      * Determine which dependencies are safe for async
      *   Where possible, we want to use synchronous instantiation. The logic is overall simpler and more performant. However,
-     *     it is not clear based on the binding alone whether or not an instantion can be done syncronously (e.g. has async dependencies)
+     *     it is not clear based on the binding alone whether or not an instantiation can be done synchronously (e.g. has async dependencies)
      *     so this is pre-calculated.
      */
     public wire(): void {
@@ -811,7 +811,7 @@ export class Container<Outputs extends [Extendable]> {
      *
      * The checks performed are:
      * Ensuring all dependencies have a binding
-     *   Ideally module logic protect against this, but it is possible to accidentially re-instantiate an identifier, or to
+     *   Ideally module logic protect against this, but it is possible to accidentally re-instantiate an identifier, or to
      *     have classes that _should_ be treated separately, but actually are exact matches in TypeScript's duck typing.
      * Protect Circular dependencies
      *   Circular dependencies can be tricky to see directly, as they may be the result of large chains including suppliers.
@@ -936,7 +936,7 @@ export class Container<Outputs extends [Extendable]> {
      * for following requests.
      *
      * If this is an all sync-container, fall back on the sync version of this method to ensure all instances are
-     * cached before the method retuns.
+     * cached before the method returns.
      *
      * Ensures that container is wired before any loading.
      *
@@ -1108,7 +1108,7 @@ export class Container<Outputs extends [Extendable]> {
      * For the most part, we are protected against this by strongly-typed modules and container creation, but there are ways to
      * accidentally get around this.
      *
-     * The two main ways that type safety may fail (so this check still neeeds to exist):
+     * The two main ways that type safety may fail (so this check still needs to exist):
      * Accidentally redefining the same identifier.
      *   The issue arises from `identifier() !== identifier()`.
      *     So even if the exact same types/names are provided, the actual values seen by JavaScript are different.
@@ -1233,7 +1233,7 @@ export class Container<Outputs extends [Extendable]> {
      * That means either a singleton scope, or request scope with propagation.
      *
      * In the example above, if the supplier propagated scope and `B` had been `request scope`d, it would be valid.
-     * This is because newly "supplied" instaces of D could fall back on cached version of B instead of re-instanting and infinitely looping.
+     * This is because newly "supplied" instances of D could fall back on cached version of B instead of re-instanting and infinitely looping.
      *
      * In order to detect these circular dependencies, perform a check for each individual binding.
      * Iterate over each dependency, tracking the current "chain".
@@ -1255,7 +1255,7 @@ export class Container<Outputs extends [Extendable]> {
      * example: `A` depends on `B`, `B` depends on `C`, and `C` depends on `B`.
      * Both `B` and `C` are unsafe circulars. However this is not `A`'s fault, and should be excluded from the reporting.
      *
-     * @throws {HaywireCircularDependencyError} when dependencies found to be circularly dependenct on themselves. The chains povided are unique.
+     * @throws {HaywireCircularDependencyError} when dependencies found to be circularly dependent on themselves. The chains provided are unique.
      */
     #checkForCircular(): void {
         const safeOutputs = new Set<GenericBaseHaywireId>();
@@ -1386,13 +1386,13 @@ export class Container<Outputs extends [Extendable]> {
      * Note that deferred does not "protect" a binding from async dependencies.
      * This is because deferred dependencies will resolve by the time the request completes
      * (or rather, immediately on the next event loop, which is the best we can do with promises).
-     * So a deferred dependency must resolve syncronously as well.
+     * So a deferred dependency must resolve synchronously as well.
      *
      * Suppliers that propagate their scope (and are not supplier-scoped themselves) can benefit from eager request bindings,
      * but ones that do not can only rely on eager singletons.
      *
      * We only need to inspect sync suppliers
-     * (async suppliers don't have this problem, and regular bindings can obfuscate the instantation logic, the whole point of DI)
+     * (async suppliers don't have this problem, and regular bindings can obfuscate the instantiation logic, the whole point of DI)
      * to see if the dependency chain is safe.
      *
      * Some optimizations can be performed to prevent duplicate checks against suppliers.
@@ -1555,7 +1555,7 @@ export class Container<Outputs extends [Extendable]> {
      * Only populates entries for eager singletons, so possible resulting map is actually empty or
      * has no dependencies declared.
      *
-     * Does not actually perform the instantations.
+     * Does not actually perform the instantiations.
      */
     #wireSingletons(): void {
         // Walks only the edges `check()` rejects cycles through (it runs before wiring), so needs no cycle guard
@@ -1649,10 +1649,10 @@ export class Container<Outputs extends [Extendable]> {
     }
 
     /**
-     * Calculate whether any binding can be performed syncronously.
+     * Calculate whether any binding can be performed synchronously.
      *
      * This mapping is only checked during the async path, as we _prefer_ the sync path for simplicity and performance.
-     * The sync path cannot possibly redirect the the async path, so there are checks the protect against that need.
+     * The sync path cannot possibly redirect to the async path, so there are checks that protect against that need.
      *
      * Note that whether or not the binding is being referenced via a top-level request, a provider dependency,
      * a deferred request, or a supplier is irrelevant to the logic here.
@@ -1680,8 +1680,8 @@ export class Container<Outputs extends [Extendable]> {
                 return existing;
             }
             if (binding.isAsync) {
-                // This is the only that that actually forces async implementations,
-                // but can force all consumers, including seemingly sync proiders depending on deferred dependencies
+                // This is the only thing that actually forces async implementations,
+                // but can force all consumers, including seemingly sync providers depending on deferred dependencies
                 this.#isAsyncImplementationMap.set(binding, true);
                 return true;
             }
@@ -1711,7 +1711,7 @@ export class Container<Outputs extends [Extendable]> {
 
     /**
      * Asynchronously instantiate a binding. Will create all dependencies first before invoking provider.
-     * Supplier will be implemented as as a new internal request for that binding, potentially propagating request scope.
+     * Supplier will be implemented as a new internal request for that binding, potentially propagating request scope.
      * Deferred dependencies will be implemented as a deferred promise that will be handled by the top-level request
      * (which will iteratively instantiate each dependency and resolve/reject as necessary).
      *
@@ -2012,7 +2012,7 @@ export class Container<Outputs extends [Extendable]> {
      * Synchronous version of `#getImplementation`. For the most part, logic is the same (just without promises)
      * and can defer to documentation in that method for detail.
      *
-     * In general this method is preferred due to simplicitly (no promise race conditions) and to ensure sync support
+     * In general this method is preferred due to simplicity (no promise race conditions) and to ensure sync support
      * for suppliers.
      *
      * @param params - required params

@@ -43,12 +43,12 @@ export type UnknownType<T> = [unknown] extends [T]
 export type ExtendsType<T, E, Reason extends string> = T extends E ? [] : [InvalidInput<Reason>];
 
 // https://stackoverflow.com/questions/52931116/decompose-a-typescript-union-type-into-specific-types
-type UnionToParm<U> = U extends unknown ? (k: U) => void : never;
-type UnionToSect<U> = UnionToParm<U> extends (k: infer I) => void ? I : never;
-type ExtractParm<F> = F extends (a: infer A) => void ? A : never;
+type UnionToParam<U> = U extends unknown ? (k: U) => void : never;
+type UnionToSect<U> = UnionToParam<U> extends (k: infer I) => void ? I : never;
+type ExtractParam<F> = F extends (a: infer A) => void ? A : never;
 
 type SpliceOne<Union> = Exclude<Union, ExtractOne<Union>>;
-type ExtractOne<Union> = ExtractParm<UnionToSect<UnionToParm<Union>>>;
+type ExtractOne<Union> = ExtractParam<UnionToSect<UnionToParam<Union>>>;
 
 type ToTuple<Union> = ToTupleRec<Union, []>;
 type ToTupleRec<Union, Rslt extends unknown[]> =

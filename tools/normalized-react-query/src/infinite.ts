@@ -48,7 +48,7 @@ import {
  * Class is not exposed directly to avoid subclassing and constructor overloads.
  * See exported {@link infinite} for public interface.
  *
- * @template TParams - user provdided params to trigger a query
+ * @template TParams - user provided params to trigger a query
  * @template TPageParam - user provided + computed pagination keys
  * @template TData - return type of base `queryFn`
  * @template TPropagatedData - updated type after "propagate" calls. Impacts return values from various methods, but not the actual value provided/received from cache.
@@ -453,7 +453,7 @@ class Infinite<
     }
 
     /**
-     * Set data directly in cache. Note that data should should match the result of original queryFn,
+     * Set data directly in cache. Note that data should match the result of original queryFn,
      * not any propagation.
      * See `populate` if you want to leave behind params that can be used to used to re-query data in future.
      *
@@ -757,7 +757,7 @@ export type { Infinite };
 /**
  * Type-safe reference to react queries that are "infinite" (paginated).
  *
- * Ensures consistent usage of keys + queryFn + page params, and provides convience methods around
+ * Ensures consistent usage of keys + queryFn + page params, and provides convenience methods around
  * various QueryClient methods.
  *
  * Can be passed to "normalized" hooks for `useQuery`-like behavior.
