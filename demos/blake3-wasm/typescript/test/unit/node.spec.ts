@@ -9,7 +9,7 @@ const { cases, inputByteCycle } = testVectors;
 const input = (length: number): Uint8Array<ArrayBuffer> =>
     Uint8Array.from({ length }, (_, i) => i % inputByteCycle);
 // eslint-disable-next-line unicorn/prefer-uint8array-hex -- Not on Node.js 24
-const hex = (bytes: Uint8Array): string => globalThis.Buffer.from(bytes).toString('hex');
+const hex = (bytes: Uint8Array): string => Buffer.from(bytes).toString('hex');
 
 suite('On Node.js', () => {
     test('Returns every test vector', () => {
@@ -56,11 +56,11 @@ suite('On Node.js', () => {
         test('Leaves the event loop free', async () => {
             await using worker = createHashWorker();
             let turns = 0;
-            const interval = globalThis.setInterval(() => {
+            const interval = setInterval(() => {
                 turns++;
             }, 0);
             await worker.hash(new Uint8Array(64 * 1024 * 1024), { transfer: true });
-            globalThis.clearInterval(interval);
+            clearInterval(interval);
             expect(turns).to.be.greaterThan(1);
         });
 

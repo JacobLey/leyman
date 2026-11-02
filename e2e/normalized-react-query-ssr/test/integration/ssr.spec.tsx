@@ -17,7 +17,7 @@ const renderOnServer = async (
     bookId: string,
     { awaitLinks = true }: { awaitLinks?: boolean } = {}
 ): Promise<{ html: string; state: DehydratedState }> => {
-    const { stdout } = await promisify(execFile)(globalThis.process.execPath, [
+    const { stdout } = await promisify(execFile)(process.execPath, [
         serverPath.pathname,
         bookId,
         ...(awaitLinks ? [] : ['--no-await-links']),

@@ -211,6 +211,9 @@ catalogs:
     find-up:
       specifier: ^8.0.0
       version: 8.0.0
+    globals:
+      specifier: ^17.12.0
+      version: 17.12.0
     hono:
       specifier: ^4.13.13
       version: 4.13.13
@@ -2603,6 +2606,9 @@ importers:
       eslint-plugin-unicorn:
         specifier: 'catalog:'
         version: 79.0.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      globals:
+        specifier: 'catalog:'
+        version: 17.12.0
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -12484,6 +12490,7 @@ snapshots:
       eslint-plugin-regexp: 3.3.1(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-sonarjs: 4.2.2(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-unicorn: 79.0.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      globals: 17.12.0
     transitivePeerDependencies:
       - eslint-import-resolver-node
       - supports-color

@@ -6,6 +6,7 @@ import Path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
+import globals from 'globals';
 import { getInternalRegex } from './lib/internal-regex.js';
 import { assertIsPackageJson } from './lib/package-json-schema.js';
 import { packagePluginConfig } from './lib/package-plugins.js';
@@ -173,10 +174,12 @@ export const reactComponentNamingConvention = [
  * @param params.configUrl - `import.meta.url` of project-level `eslint.config.js` file.
  * @param params.packageJson - Loaded `package.json` file
  * @param params.plugins - ESLint plugins shipped by packages (e.g. `generated-signature/eslint`), turned on with their recommended rules
+ * @param params.node - Whether the package's code only runs on Node.js, so may use its globals like `process` and `Buffer`
  * @returns Generated flat config for most rules and plugins. Can be extended as necessary via normal Flat Config extension.
  */
 export default function makeEslintConfigForPackage({
     configUrl,
+    node = false,
     packageJson,
     plugins = [],
 }: {
@@ -195,6 +198,12 @@ export default function makeEslintConfigForPackage({
      * The project must depend on the package providing the plugin.
      */
     plugins?: readonly ESLint.Plugin[];
+    /**
+     * Whether the package's code only runs on Node.js, so may use its globals like `process` and `Buffer`.
+     * By default only globals shared with browsers are defined, so a package that also runs elsewhere
+     * can't use one by accident. Tests always run on Node.js, and always have them.
+     */
+    node?: boolean;
 }): Linter.Config[] {
     assertIsPackageJson(packageJson);
 
@@ -220,11 +229,7 @@ export default function makeEslintConfigForPackage({
                     },
                     tsconfigRootDir: projectUrl,
                 },
-                globals: {
-                    console: 'readonly',
-                    setImmediate: 'readonly',
-                    setTimeout: 'readonly',
-                },
+                globals: node ? globals.nodeBuiltin : globals['shared-node-browser'],
             },
             linterOptions: {
                 reportUnusedDisableDirectives: true,
@@ -1008,6 +1013,9 @@ export default function makeEslintConfigForPackage({
         {
             // Disable "best practice" rules for tests
             files: ['test/**/*.{c,m,}ts{x,}'],
+            languageOptions: {
+                globals: globals.nodeBuiltin,
+            },
             rules: {
                 'no-magic-numbers': 'off',
                 '@typescript-eslint/explicit-function-return-type': 'off',

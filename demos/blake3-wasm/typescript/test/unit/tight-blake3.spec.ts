@@ -12,7 +12,7 @@ suite('The bench’s tight JavaScript', () => {
                 (_, i) => i % testVectors.inputByteCycle
             );
             // eslint-disable-next-line unicorn/prefer-uint8array-hex -- Not on Node.js 24
-            const actual = globalThis.Buffer.from(tightBlake3(input)).toString('hex');
+            const actual = Buffer.from(tightBlake3(input)).toString('hex');
             expect(actual, `${inputLength} bytes`).to.equal(hash);
         }
     });

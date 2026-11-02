@@ -22,9 +22,7 @@ suite('OpenAPI spec built with juniper', () => {
         suite(`OpenAPI ${version}`, () => {
             test('Is a valid spec, with every $ref resolving', async () => {
                 // `validate` resolves every reference, and fails on any that point nowhere
-                await SwaggerParser.validate(
-                    globalThis.structuredClone(buildSpec(version)) as never
-                );
+                await SwaggerParser.validate(structuredClone(buildSpec(version)) as never);
             });
 
             test('Shared schemas are emitted once, in components', () => {

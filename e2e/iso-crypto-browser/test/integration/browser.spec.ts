@@ -33,7 +33,8 @@ const nodeModules = new Set([...builtinModules, ...builtinModules.map(name => `n
 const launch = async (browserType: BrowserType): Promise<Browser> => {
     // Set by Dagger, which runs the server. Node's `process`: this file's globals are the browser's, for what runs
     // in the page
-    const endpoint = globalThis.process.env.PW_TEST_CONNECT_WS_ENDPOINT;
+    // eslint-disable-next-line n/no-process-env -- Set by Dagger, to use its Playwright service
+    const endpoint = process.env.PW_TEST_CONNECT_WS_ENDPOINT;
     return endpoint === undefined ? browserType.launch() : browserType.connect(endpoint);
 };
 

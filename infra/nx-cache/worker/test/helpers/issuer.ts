@@ -53,8 +53,7 @@ export interface Issuer {
 export const audience = 'test-nx-cache';
 export const repositoryId = '1234';
 
-const base64url = (value: string | Uint8Array): string =>
-    globalThis.Buffer.from(value).toString('base64url');
+const base64url = (value: string | Uint8Array): string => Buffer.from(value).toString('base64url');
 
 const generateRsaKeyPair = promisify(generateKeyPair);
 
@@ -123,7 +122,7 @@ export const startIssuer = async (): Promise<Issuer> => {
             );
             const signature = sign(
                 'sha256',
-                globalThis.Buffer.from(`${encodedHeader}.${payload}`),
+                Buffer.from(`${encodedHeader}.${payload}`),
                 untrusted ? untrustedKey : key.privateKey
             );
             return `${encodedHeader}.${payload}.${base64url(signature)}`;

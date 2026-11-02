@@ -2,12 +2,9 @@ import configGenerator from '@leyman/eslint-config';
 import packageJson from './package.json' with { type: 'json' };
 
 export default [
-    ...configGenerator({ configUrl: import.meta.url, packageJson }),
+    ...configGenerator({ configUrl: import.meta.url, node: true, packageJson }),
     {
         languageOptions: {
-            globals: {
-                process: 'readonly',
-            },
             parserOptions: {
                 projectService: {
                     // No tsconfig, so lint nested scripts like top-level files

@@ -55,7 +55,7 @@ const keyCache = new Map<string, { fetchedAt: number; keys: readonly SigningKey[
 const decodeSegment = (segment: string): Uint8Array<ArrayBuffer> =>
     // `Uint8Array.fromBase64` isn't in Node 24, where the tests run. Each character is one byte
     Uint8Array.from(
-        globalThis.atob(segment.replaceAll('-', '+').replaceAll('_', '/')),
+        atob(segment.replaceAll('-', '+').replaceAll('_', '/')),
         char => char.codePointAt(0)!
     );
 
@@ -97,7 +97,7 @@ const signingKey = async (issuer: string, kid: string, now: number): Promise<Sig
             return key;
         }
     }
-    const response = await globalThis.fetch(`${issuer}/.well-known/jwks`);
+    const response = await fetch(`${issuer}/.well-known/jwks`);
     if (!response.ok) {
         throw new Error(`Fetching the signing keys of ${issuer} failed: HTTP ${response.status}`);
     }
@@ -147,7 +147,7 @@ export const checkToken = async (
     }
     let isSigned: boolean;
     try {
-        const key = await globalThis.crypto.subtle.importKey(
+        const key = await crypto.subtle.importKey(
             'jwk',
             jwk,
             { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
@@ -155,7 +155,7 @@ export const checkToken = async (
             ['verify']
         );
         const encoder = new TextEncoder();
-        isSigned = await globalThis.crypto.subtle.verify(
+        isSigned = await crypto.subtle.verify(
             'RSASSA-PKCS1-v1_5',
             key,
             decodeSegment(signature),

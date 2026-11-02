@@ -155,7 +155,7 @@ const fetchAllowed = async (
         if (!isAllowed(url)) {
             return { reason: `${url.host} is not an allowed host` };
         }
-        const response = await globalThis.fetch(url, {
+        const response = await fetch(url, {
             headers: {
                 accept: 'application/schema+json, application/json, application/yaml;q=0.9',
             },

@@ -84,7 +84,7 @@ const inNode = async (): Promise<Results> => ({
     ),
     cold: await forEachCold(async (name, size) => {
         const output = execFileSync(
-            globalThis.process.execPath,
+            process.execPath,
             // eslint-disable-next-line unicorn/no-missing-local-resource -- Compiled from `node-cold.ts` alongside this file
             [fileURLToPath(new URL('node-cold.js', import.meta.url)), name, String(size)],
             { encoding: 'utf8' }
@@ -135,7 +135,7 @@ const openPage = async (browser: Browser, files: ReadonlyMap<string, string | Ui
                 ? { status: 404 }
                 : {
                       contentType: path.endsWith('.wasm') ? 'application/wasm' : 'text/javascript',
-                      body: typeof file === 'string' ? file : globalThis.Buffer.from(file),
+                      body: typeof file === 'string' ? file : Buffer.from(file),
                   }
         );
     });
@@ -148,7 +148,8 @@ const inBrowser = async (
     browserType: BrowserType,
     files: ReadonlyMap<string, string | Uint8Array>
 ): Promise<Results> => {
-    const endpoint = globalThis.process.env.PW_TEST_CONNECT_WS_ENDPOINT;
+    // eslint-disable-next-line n/no-process-env -- Set by Dagger, to use its Playwright service
+    const endpoint = process.env.PW_TEST_CONNECT_WS_ENDPOINT;
     await using browser =
         endpoint === undefined ? await browserType.launch() : await browserType.connect(endpoint);
     const page = await openPage(browser, files);

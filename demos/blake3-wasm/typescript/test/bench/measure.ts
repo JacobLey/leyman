@@ -41,12 +41,12 @@ export const measureHot = (
         for (const [size, bytes] of inputs) {
             for (const [name, hash] of Object.entries(hashes)) {
                 let calls = 0;
-                const start = globalThis.performance.now();
+                const start = performance.now();
                 let elapsed: number;
                 do {
                     hash(bytes);
                     calls++;
-                    elapsed = globalThis.performance.now() - start;
+                    elapsed = performance.now() - start;
                 } while (elapsed < BATCH_MILLISECONDS);
                 if (round < DISCARDED_ROUNDS) {
                     continue;
@@ -84,10 +84,10 @@ export const measureWorker = async <Worker extends AsyncDisposable>(
     const startups: number[] = [];
     const empty = makeBytes(0);
     for (let i = 0; i < 5; i++) {
-        const before = globalThis.performance.now();
+        const before = performance.now();
         await using worker = start();
         await call(worker, empty, false);
-        startups.push(globalThis.performance.now() - before);
+        startups.push(performance.now() - before);
     }
     await using worker = start();
     const time = async (
@@ -98,9 +98,9 @@ export const measureWorker = async <Worker extends AsyncDisposable>(
         const samples: number[] = [];
         for (let i = 0; i < runs; i++) {
             const prepared = input();
-            const before = globalThis.performance.now();
+            const before = performance.now();
             await call(worker, prepared, shouldTransfer);
-            samples.push(globalThis.performance.now() - before);
+            samples.push(performance.now() - before);
         }
         return median(samples);
     };
@@ -123,11 +123,11 @@ export const measureCold = async (
     load: () => Promise<Hash>,
     bytes: Uint8Array<ArrayBuffer>
 ): Promise<{ load: number; first: number }> => {
-    const start = globalThis.performance.now();
+    const start = performance.now();
     const hash = await load();
-    const loaded = globalThis.performance.now();
+    const loaded = performance.now();
     hash(bytes);
-    return { load: loaded - start, first: globalThis.performance.now() - loaded };
+    return { load: loaded - start, first: performance.now() - loaded };
 };
 
 export { median };

@@ -20,7 +20,7 @@ export const fakeFetch = (routes: {
     redirects?: Record<string, string>;
     schemas: Record<string, string>;
 }): FakeFetch => {
-    const original = globalThis.fetch;
+    const original = fetch;
     const requested: string[] = [];
     // eslint-disable-next-line unicorn/no-global-object-property-assignment -- genever calls the global fetch, and tests serve any host
     globalThis.fetch = async input => {

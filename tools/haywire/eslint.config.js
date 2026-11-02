@@ -8,12 +8,4 @@ export default [
             'jsdoc/require-template-description': 'off',
         },
     },
-    {
-        files: ['test/**'],
-        languageOptions: {
-            globals: {
-                process: 'readonly',
-            },
-        },
-    },
 ];

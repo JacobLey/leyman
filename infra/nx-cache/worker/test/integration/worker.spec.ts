@@ -24,7 +24,7 @@ const put = (hash: string, body: string, token?: string): Request =>
         method: 'PUT',
         // As the cache server sends, and the Worker requires. A `Request` built here has none of its own
         headers: {
-            'content-length': String(globalThis.Buffer.byteLength(body)),
+            'content-length': String(Buffer.byteLength(body)),
             ...(token !== undefined && { authorization: `Bearer ${token}` }),
         },
     });
@@ -201,7 +201,7 @@ suite('nx-cache-worker', () => {
                     string,
                 ];
                 const encode = (value: unknown): string =>
-                    globalThis.Buffer.from(JSON.stringify(value)).toString('base64url');
+                    Buffer.from(JSON.stringify(value)).toString('base64url');
                 const tokens = {
                     'not a JWT': 'not-a-jwt',
                     'too many parts': `${header}.${payload}.${signature}.extra`,

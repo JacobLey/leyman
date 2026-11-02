@@ -60,7 +60,7 @@ suite('resource', () => {
                 const onUnhandled = (reason: unknown): void => {
                     unhandled.push(reason);
                 };
-                globalThis.process.on('unhandledRejection', onUnhandled);
+                process.on('unhandledRejection', onUnhandled);
                 try {
                     const author = await withFailingLink.query(client, { authorId: tolkienId });
                     expect(author.id).to.equal(tolkienId);
@@ -72,7 +72,7 @@ suite('resource', () => {
                         setImmediate(resolve);
                     });
                 } finally {
-                    globalThis.process.off('unhandledRejection', onUnhandled);
+                    process.off('unhandledRejection', onUnhandled);
                 }
                 expect(unhandled).to.deep.equal([]);
             }
@@ -661,7 +661,7 @@ suite('resource', () => {
                     const onUnhandled = (reason: unknown): void => {
                         unhandled.push(reason);
                     };
-                    globalThis.process.on('unhandledRejection', onUnhandled);
+                    process.on('unhandledRejection', onUnhandled);
                     try {
                         const { result } = renderHook(
                             () => useNormalizedQuery(withFailingLink, { authorId: tolkienId }),
@@ -678,7 +678,7 @@ suite('resource', () => {
                             setImmediate(resolve);
                         });
                     } finally {
-                        globalThis.process.off('unhandledRejection', onUnhandled);
+                        process.off('unhandledRejection', onUnhandled);
                     }
                     expect(unhandled).to.deep.equal([]);
                 }
