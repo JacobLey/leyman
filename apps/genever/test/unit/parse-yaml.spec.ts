@@ -63,6 +63,65 @@ suite('parseYaml', () => {
         }
     });
 
+    test('rejects a merge key of anything but maps', () => {
+        for (const [text, start, length, line, column] of [
+            ['a: { <<: 1 }\n', 9, 1, 1, 10],
+            ['a: { <<: [{ b: 1 }, 2] }\n', 20, 1, 1, 21],
+            ['a: { <<: [[{ b: 1 }]] }\n', 10, 10, 1, 11],
+            ['n: &n 1\na: { <<: *n }\n', 17, 2, 2, 10],
+            ['n: &n 1\na: { <<: [*n] }\n', 18, 2, 2, 11],
+            ['s: &s [1]\na: { <<: *s }\n', 7, 1, 1, 8],
+            ['? <<\n', 2, 2, 1, 3],
+        ] as const) {
+            expect(() => parseYaml(text), text)
+                .to.throw(
+                    YAMLError,
+                    `Merge key can only merge a map or a sequence of maps at line ${line}, column ${column}`
+                )
+                .with.property('pos')
+                .that.deep.equals([start, start + length]);
+        }
+    });
+
+    test('rejects a merge key of a null, at the empty value', () => {
+        expect(() => parseYaml('a: { <<: }\n')).to.throw(YAMLError, 'Merge key can only merge');
+        expect(() => parseYaml('a:\n  <<:\n')).to.throw(YAMLError, 'Merge key can only merge');
+    });
+
+    test('rejects a merge key whose alias has no anchor, as that', () => {
+        for (const text of ['a: { <<: *x }\n', 'a: { <<: [*x] }\n']) {
+            expect(() => parseYaml(text), text).to.throw(
+                YAMLError,
+                'Alias *x has no anchor &x before it'
+            );
+        }
+    });
+
+    test('rejects a merge key of a sequence holding the map it merges', () => {
+        expect(() => parseYaml('a: &a [{ <<: *a }]\n')).to.throw(
+            YAMLError,
+            "Merge key's alias *a is inside the map &a it merges"
+        );
+        expect(() => parseYaml('a: &a { b: &s [*a], <<: *s }\n')).to.throw(
+            YAMLError,
+            "Merge key's alias *a is inside the map &a it merges"
+        );
+    });
+
+    test('merges a sequence, an alias of one, and aliases in one', () => {
+        expect(
+            parseYaml(
+                'm: &m { b: 1 }\ns: &s [*m, { c: 2 }]\nd: { <<: *s }\ne: { <<: [*m, { f: 3 }] }\ng: { <<: [] }\n'
+            )
+        ).to.deep.equal({
+            m: { b: 1 },
+            s: [{ b: 1 }, { c: 2 }],
+            d: { b: 1, c: 2 },
+            e: { b: 1, f: 3 },
+            g: {},
+        });
+    });
+
     test('merges an earlier map, and keeps a quoted "<<" key', () => {
         expect(parseYaml('a: &a { b: 1 }\nc: { <<: *a }\nd: { "<<": 2 }\n')).to.deep.equal({
             a: { b: 1 },

@@ -316,6 +316,13 @@ suite('mapDocument', () => {
             ).to.include({ code: diagnosticCodes.syntax, covers: '*p' });
         });
 
+        test('a merge key of anything but maps covers the value', () => {
+            expect(mapError('type: object\nproperties: { <<: 12 }\n')).to.include({
+                code: diagnosticCodes.syntax,
+                covers: '12',
+            });
+        });
+
         test('a key not in the document, at its parent', () => {
             expect(mapError('type: object\ndiscriminator: {}\n')).to.include({
                 covers: 'discriminator: {}',

@@ -1,6 +1,8 @@
-import type { Alias, Document } from 'yaml';
+import type { Alias, Document, ErrorCode, Node, Scalar } from 'yaml';
 import {
     isAlias,
+    isMap,
+    isNode,
     isPair,
     isScalar,
     isSeq,
@@ -222,24 +224,30 @@ class JsonTree {
     }
 }
 
-/**
- * An error at an alias that `yaml` can't expand, which it throws only once the document is converted, and as a
- * plain `ReferenceError`.
- *
- * @param alias - alias to report
- * @param problem - what is wrong with it, before its position
- * @param lineCounter - line starts of the text
- * @returns error at the alias
- */
 const mergeKey = '<<';
 
-const aliasError = (alias: Alias, problem: string, lineCounter: LineCounter): YAMLParseError => {
+/**
+ * An error at a node that `yaml` can't convert, which it throws only once the document is converted, without a
+ * position.
+ *
+ * @param node - node to report
+ * @param code - kind of error
+ * @param problem - what is wrong with it, before its position
+ * @param lineCounter - line starts of the text
+ * @returns error at the node
+ */
+const nodeError = (
+    node: Node,
+    code: ErrorCode,
+    problem: string,
+    lineCounter: LineCounter
+): YAMLParseError => {
     // The parser sets every node's range
-    const [start, end] = alias.range!;
+    const [start, end] = node.range!;
     const { line, col } = lineCounter.linePos(start);
     const error = new YAMLParseError(
         [start, end],
-        'BAD_ALIAS',
+        code,
         `${problem} at line ${line}, column ${col}`
     );
     error.linePos = [lineCounter.linePos(start), lineCounter.linePos(end)];
@@ -247,42 +255,107 @@ const aliasError = (alias: Alias, problem: string, lineCounter: LineCounter): YA
 };
 
 /**
- * Check each alias can be expanded: it has an anchor before it, and a merge key's alias isn't inside the map it
- * names, which would merge that map into itself without end.
+ * The node an alias names.
  *
+ * @param alias - alias to resolve
  * @param document - parsed document
  * @param lineCounter - line starts of the text
- * @throws {YAMLParseError} at the first alias that can't be expanded
+ * @returns named node
+ * @throws {YAMLParseError} if it has no anchor before it
  */
-const checkAliases = (document: Document, lineCounter: LineCounter): void => {
-    visit(document, (_key, node) => {
-        if (isAlias(node) && !node.resolve(document)) {
-            throw aliasError(
-                node,
-                `Alias *${node.source} has no anchor &${node.source} before it`,
+const resolveAlias = (alias: Alias, document: Document, lineCounter: LineCounter): Node => {
+    const target = alias.resolve(document);
+    if (!target) {
+        throw nodeError(
+            alias,
+            'BAD_ALIAS',
+            `Alias *${alias.source} has no anchor &${alias.source} before it`,
+            lineCounter
+        );
+    }
+    return target;
+};
+
+/**
+ * The node a merge key's value, or a member of it, stands for.
+ *
+ * @param source - value or member
+ * @param document - parsed document
+ * @param lineCounter - line starts of the text
+ * @returns the node, with an alias resolved
+ * @throws {YAMLParseError} if it is an alias with no anchor before it, or inside the map it names
+ */
+const resolveMergeSource = (
+    source: unknown,
+    document: Document,
+    lineCounter: LineCounter
+): unknown => {
+    if (!isAlias(source)) {
+        return source;
+    }
+    const target = resolveAlias(source, document, lineCounter);
+    // An anchor is before its aliases, so an alias is inside its map if it starts before the map ends
+    if (source.range![0] < target.range![1]) {
+        throw nodeError(
+            source,
+            'BAD_ALIAS',
+            `Merge key's alias *${source.source} is inside the map &${source.source} it merges`,
+            lineCounter
+        );
+    }
+    return target;
+};
+
+/**
+ * Check a merge key can be merged: its value is a map, or a sequence of maps, and any of those can be aliases.
+ *
+ * @param key - key to report a missing value at
+ * @param value - what it merges
+ * @param document - parsed document
+ * @param lineCounter - line starts of the text
+ * @throws {YAMLParseError} at the first source that can't be merged
+ */
+const checkMerge = (
+    key: Scalar,
+    value: unknown,
+    document: Document,
+    lineCounter: LineCounter
+): void => {
+    const resolved = resolveMergeSource(value, document, lineCounter);
+    const sources = isSeq(resolved) ? resolved.items : [value];
+    for (const source of sources) {
+        if (!isMap(resolveMergeSource(source, document, lineCounter))) {
+            throw nodeError(
+                // An explicit key can have no value at all
+                isNode(source) ? source : key,
+                'BAD_COLLECTION_TYPE',
+                'Merge key can only merge a map or a sequence of maps',
                 lineCounter
             );
         }
+    }
+};
+
+/**
+ * Check each alias and merge key can be expanded. See {@link resolveAlias} and {@link checkMerge}.
+ *
+ * @param document - parsed document
+ * @param lineCounter - line starts of the text
+ * @throws {YAMLParseError} at the first that can't be expanded
+ */
+const checkAliases = (document: Document, lineCounter: LineCounter): void => {
+    visit(document, (_key, node) => {
+        if (isAlias(node)) {
+            resolveAlias(node, document, lineCounter);
+        }
         // With `stringKeys`, a merge key is the string `<<`, and only unquoted
         if (
-            !isPair(node) ||
-            !isScalar(node.key) ||
-            node.key.type !== 'PLAIN' ||
-            node.key.value !== mergeKey
+            isPair(node) &&
+            isScalar(node.key) &&
+            node.key.type === 'PLAIN' &&
+            node.key.value === mergeKey
         ) {
-            return;
-        }
-        const sources = isSeq(node.value) ? node.value.items : [node.value];
-        for (const source of sources) {
-            const target = isAlias(source) ? source.resolve(document) : undefined;
-            // An anchor is before its aliases, so an alias is inside its map if it starts before the map ends
-            if (target && isAlias(source) && source.range![0] < target.range![1]) {
-                throw aliasError(
-                    source,
-                    `Merge key's alias *${source.source} is inside the map &${source.source} it merges`,
-                    lineCounter
-                );
-            }
+            checkMerge(node.key, node.value, document, lineCounter);
         }
     });
 };
@@ -291,7 +364,7 @@ const checkAliases = (document: Document, lineCounter: LineCounter): void => {
  * Parse a YAML 1.2 document's syntax, for {@link yamlToJson}, keeping where each node is in the text.
  *
  * Tags other than the core schema's (e.g. `!!binary`), keys that aren't strings, duplicate keys, an alias with no
- * anchor before it, and a merge key (`<<`) that merges a map into itself are errors.
+ * anchor before it, and a merge key (`<<`) that merges a map into itself or something other than maps are errors.
  *
  * @param text - YAML source
  * @returns parsed document, with each node's `range`
