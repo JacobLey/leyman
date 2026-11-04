@@ -28,6 +28,8 @@ Nx never talks to the Worker. Each devcontainer, and CI's runner, already runs a
 
 CI runs the same way as before: Dagger still talks to the runner's cache server, and no credential ever enters Dagger.
 
+With nothing changed since the last push, a nightly run reads 387 of its 1,878 tasks from the cache, and Nx doesn't cache the rest. Its `verify` takes 20 to 40 seconds, and the whole `Test` step, starting Dagger and installing included, 3 to 5 minutes. The weekly run with no cache takes about 17 minutes. (Measured over three nightly runs in November 2026.)
+
 ## Who may write
 
 A result written by a pull request and then served to `main` runs that pull request's code in `main`'s builds. This is called cache poisoning, and buckets that pull requests can write to have had it ([CVE-2025-36852](https://nx.dev/blog/cve-2025-36852-critical-cache-poisoning-vulnerability-creep)). So the Worker accepts a write only with a GitHub Actions OIDC token that it verifies itself, against GitHub's signing keys:
