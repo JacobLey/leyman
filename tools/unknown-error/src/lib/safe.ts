@@ -16,7 +16,7 @@ export const isObject = (value: unknown): value is object =>
     (typeof value === 'object' && value !== null) || typeof value === 'function';
 
 /**
- * Recognizes Errors where `Error.isError` is missing (Chrome before 134, Firefox before 138, Safari before 18.4).
+ * Recognizes Errors where `Error.isError` is missing (Node.js before 24, Chrome before 134, Firefox before 138, Safari before 18.4).
  *
  * `instanceof` covers this realm, and the object tag covers Errors from other realms, but both run
  * Proxy traps (`getPrototypeOf`, then a `Symbol.toStringTag` read), hence the `try`. Unlike
@@ -32,7 +32,7 @@ const isErrorFallback = (value: unknown): boolean => {
     }
     try {
         return (
-            // eslint-disable-next-line unicorn/prefer-error-is-error -- the fallback for when it's missing
+            // The fallback for when `Error.isError` is missing
             value instanceof Error || Object.prototype.toString.call(value) === '[object Error]'
         );
     } catch {

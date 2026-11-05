@@ -96,7 +96,7 @@ export default MyApp;
 
 ## Usage
 
-`entry-script` is an ESM module, for Node.js 24 or later. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { EntryScript } = await import('entry-script');`.
+`entry-script` is an ESM module, for Node.js 22 or later. It _must_ be `import`ed. To load from a CJS module, use dynamic import: `const { EntryScript } = await import('entry-script');`.
 
 The `default` export of a module using `entry-script` must be either:
 - An **instance** of an `EntryScript` subclass — the instance `main(argv)` method will be called.

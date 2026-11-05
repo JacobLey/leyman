@@ -25,7 +25,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 npm i --save-dev vitest-chain vitest
 ```
 
-ESM only, for Node.js 24 or later. `vitest` is a required peer dependency.
+ESM only, for Node.js 22.12 or later. `vitest` is a required peer dependency.
 
 ## Example
 

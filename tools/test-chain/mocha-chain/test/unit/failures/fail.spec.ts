@@ -91,7 +91,7 @@ suite('Failure cases', () => {
                 cb.call(fakeContext, mockDone as Done);
             };
 
-            mockDone.withArgs(match(err => Error.isError(err))).callsFake(arg => {
+            mockDone.withArgs(match(err => err instanceof Error)).callsFake(arg => {
                 expect(arg).to.be.an.instanceOf(Error).that.contains({
                     message: '<ERROR>',
                 });
@@ -132,7 +132,7 @@ suite('Failure cases', () => {
                 return {} as Hook;
             };
 
-            mockDone.withArgs(match(err => Error.isError(err))).callsFake(arg => {
+            mockDone.withArgs(match(err => err instanceof Error)).callsFake(arg => {
                 expect(arg).to.be.an.instanceOf(Error).that.contains({
                     message: '<ERROR>',
                 });
@@ -158,7 +158,7 @@ suite('Failure cases', () => {
                 cb.call(fakeContext, mockDone as Done);
             };
 
-            mockDone.withArgs(match(err => Error.isError(err))).callsFake(arg => {
+            mockDone.withArgs(match(err => err instanceof Error)).callsFake(arg => {
                 expect(arg).to.be.an.instanceOf(Error).that.contains({
                     message: '<ERROR>',
                 });

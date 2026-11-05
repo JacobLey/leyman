@@ -23,7 +23,7 @@ yarn add normalized-react-query @tanstack/react-query
 :::
 
 ::: tip
-`@tanstack/react-query` (v5) is a peer dependency, and does all the caching, refetching and subscribing. normalized-react-query is ESM only, and requires Node.js 24 or later for server code.
+`@tanstack/react-query` (v5) is a peer dependency, and does all the caching, refetching and subscribing. normalized-react-query is ESM only, and requires Node.js 22 or later for server code.
 :::
 
 ## Define a resource

@@ -271,7 +271,7 @@ export class StringSchema<
         this: this,
         start: Start
     ): StringSchema<StripString<`${Start}${string}` & T>, N> {
-        // eslint-disable-next-line unicorn/prefer-regexp-escape -- `RegExp.escape` hex-escapes a leading letter or digit, which would change the generated `pattern`
+        // Not `RegExp.escape`: it hex-escapes a leading letter or digit, which would change the generated `pattern`
         return this.pattern<`${Start}${string}`>(`^${escapeStringRegexp(start)}`);
     }
 
@@ -286,7 +286,7 @@ export class StringSchema<
         this: this,
         end: End
     ): StringSchema<StripString<`${string}${End}` & T>, N> {
-        // eslint-disable-next-line unicorn/prefer-regexp-escape -- `RegExp.escape` hex-escapes a leading letter or digit, which would change the generated `pattern`
+        // Not `RegExp.escape`: it hex-escapes a leading letter or digit, which would change the generated `pattern`
         return this.pattern<`${string}${End}`>(`${escapeStringRegexp(end)}$`);
     }
 
@@ -301,7 +301,7 @@ export class StringSchema<
         this: this,
         contain: Contain
     ): StringSchema<StripString<`${string}${Contain}${string}` & T>, N> {
-        // eslint-disable-next-line unicorn/prefer-regexp-escape -- `RegExp.escape` hex-escapes a leading letter or digit, which would change the generated `pattern`
+        // Not `RegExp.escape`: it hex-escapes a leading letter or digit, which would change the generated `pattern`
         return this.pattern<`${string}${Contain}${string}`>(escapeStringRegexp(contain));
     }
 

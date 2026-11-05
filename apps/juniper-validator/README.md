@@ -28,7 +28,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 npm i juniper juniper-validator
 ```
 
-`juniper` is a required peer dependency (`^2.4.4`). Requires Node 24 or later. `ajv` and `ajv-formats` are installed with this package.
+`juniper` is a required peer dependency (`^2.4.4`). Requires Node.js 22.13 or later. `ajv` and `ajv-formats` are installed with this package.
 
 ## Example
 

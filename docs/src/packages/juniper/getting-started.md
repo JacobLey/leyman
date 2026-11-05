@@ -23,7 +23,7 @@ yarn add juniper
 :::
 
 ::: tip
-Juniper is ESM only, and requires Node.js 24 or later. From CommonJS, load it with a dynamic
+Juniper is ESM only, and requires Node.js 22.13 or later. From CommonJS, load it with a dynamic
 import: `const { stringSchema } = await import('juniper');`
 :::
 

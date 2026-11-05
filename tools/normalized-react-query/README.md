@@ -41,7 +41,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 npm i normalized-react-query @tanstack/react-query react
 ```
 
-`@tanstack/react-query` (`^5.104.3`) and `react` (`^18 || ^19`) are required peer dependencies. Requires Node.js 24 or later (`engines`).
+`@tanstack/react-query` (`^5.104.3`) and `react` (`^18 || ^19`) are required peer dependencies. Requires Node.js 22 or later (`engines`).
 
 ## Example
 

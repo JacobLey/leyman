@@ -3,7 +3,7 @@
   "version": "0.1.3",
   "description": "Sign generated files so hand edits are detected, while keeping manual sections editable.",
   "engines": {
-    "node": ">=24"
+    "node": ">=22.13.0"
   },
   "type": "module",
   "author": "JacobLey",
@@ -50,7 +50,7 @@
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:node-24",
+    "@types/node": "catalog:node-22",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",

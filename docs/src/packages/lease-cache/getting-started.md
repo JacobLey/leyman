@@ -23,7 +23,7 @@ yarn add lease-cache
 :::
 
 ::: tip
-lease-cache is ESM only, for Node.js 24 or later. It has no dependencies: bring your own Valkey or Redis client.
+lease-cache is ESM only, for Node.js 22 or later. It has no dependencies: bring your own Valkey or Redis client.
 :::
 
 ## Create a cache

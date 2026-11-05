@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "description": "Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages.",
   "engines": {
-    "node": ">=24"
+    "node": ">=22"
   },
   "type": "module",
   "author": "JacobLey",
@@ -49,7 +49,7 @@
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:node-24",
+    "@types/node": "catalog:node-22",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",

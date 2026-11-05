@@ -25,7 +25,7 @@ yarn add juniper juniper-validator
 :::
 
 ::: tip
-juniper-validator is ESM only, and requires Node.js 24 or later. From CommonJS, load it with a
+juniper-validator is ESM only, and requires Node.js 22.13 or later. From CommonJS, load it with a
 dynamic import: `const { makeValidator } = await import('juniper-validator');`
 :::
 

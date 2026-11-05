@@ -32,7 +32,7 @@ Statically typed event emitter.
 npm i static-emitter
 ```
 
-No dependencies. Requires Node.js 24 or later (`engines`); the types need `EventTarget`, `CustomEvent` and `AbortSignal` from `@types/node` or the `dom` lib.
+No dependencies. Requires Node.js 22 or later (`engines`); the types need `EventTarget`, `CustomEvent` and `AbortSignal` from `@types/node` or the `dom` lib.
 
 ## Example
 

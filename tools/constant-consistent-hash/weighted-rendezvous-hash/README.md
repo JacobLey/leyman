@@ -54,7 +54,7 @@ nodes.moved(next); // 0.25, the share 'ab' takes
 
 ## Usage
 
-`weighted-rendezvous-hash` is an ESM module (Node.js 24 or later) that depends on [constant-consistent-hash](https://www.npmjs.com/package/constant-consistent-hash), installed with it. To load from a CommonJS module, use dynamic import: `const { createRendezvousHash } = await import('weighted-rendezvous-hash');`. Types `WeightedNode`, `RendezvousHash` and `RendezvousHashOptions` are exported.
+`weighted-rendezvous-hash` is an ESM module (Node.js 22 or later) that depends on [constant-consistent-hash](https://www.npmjs.com/package/constant-consistent-hash), installed with it. To load from a CommonJS module, use dynamic import: `const { createRendezvousHash } = await import('weighted-rendezvous-hash');`. Types `WeightedNode`, `RendezvousHash` and `RendezvousHashOptions` are exported.
 
 ## API
 

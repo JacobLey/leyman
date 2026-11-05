@@ -3,7 +3,7 @@
   "version": "2.6.0",
   "description": "Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output.",
   "engines": {
-    "node": ">=24"
+    "node": ">=22.13.0"
   },
   "type": "module",
   "author": "JacobLey",
@@ -64,7 +64,7 @@
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:node-24",
+    "@types/node": "catalog:node-22",
     "@typescript/native": "catalog:",
     "ajv": "catalog:",
     "c8": "catalog:",

@@ -44,6 +44,8 @@ trustPolicyExclude:
   # after an earlier release or a newer major had it
   - chokidar@4.0.3
   - semver@6.3.1
+  # `@types/node` 22 (the `node-22` catalog) pins `undici-types@~6.21.0`
+  - undici-types@6.21.0
   - why-is-node-running@3.2.2
 # Transitive dependencies may only come from the registry (no git/tarball URLs)
 blockExoticSubdeps: true

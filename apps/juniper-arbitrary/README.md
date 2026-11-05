@@ -30,7 +30,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 npm i --save-dev juniper-arbitrary fast-check juniper
 ```
 
-`fast-check` (`^4.0.0`) and `juniper` are required peer dependencies. Requires Node 24 or later. `ajv` and `ajv-formats` are installed with this package.
+`fast-check` (`^4.0.0`) and `juniper` are required peer dependencies. Requires Node.js 22.13 or later. `ajv` and `ajv-formats` are installed with this package.
 
 ## Example
 

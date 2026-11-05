@@ -1,5 +1,5 @@
 {
-  "extends": "../../../configs/tsconfig.node-24.json",
+  "extends": "../../../configs/tsconfig.node-22.json",
   "compilerOptions": {
     "importHelpers": true,
     "outDir": "dist",

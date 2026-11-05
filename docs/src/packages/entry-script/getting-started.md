@@ -23,7 +23,7 @@ yarn add entry-script
 :::
 
 ::: tip
-entry-script requires Node.js 24 or later, and is ESM only.
+entry-script requires Node.js 22 or later, and is ESM only.
 :::
 
 ## Write a script

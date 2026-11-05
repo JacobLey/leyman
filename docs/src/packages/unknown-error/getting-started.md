@@ -23,7 +23,7 @@ yarn add unknown-error
 :::
 
 ::: tip
-unknown-error is ESM only, and runs in Node.js 24 or later, Deno, Bun and browsers. From CommonJS, load it with a dynamic import: `const { toError } = await import('unknown-error');`
+unknown-error is ESM only, and runs in Node.js 22 or later, Deno, Bun and browsers. From CommonJS, load it with a dynamic import: `const { toError } = await import('unknown-error');`
 :::
 
 ## Convert a caught value

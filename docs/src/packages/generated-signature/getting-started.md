@@ -23,7 +23,7 @@ yarn add generated-signature
 :::
 
 ::: tip
-generated-signature requires Node.js 24 or later, and is ESM only. From CommonJS, load it with a dynamic import: `const { verify } = await import('generated-signature');`.
+generated-signature requires Node.js 22.13 or later, and is ESM only. From CommonJS, load it with a dynamic import: `const { verify } = await import('generated-signature');`.
 
 Using [populate-files](/packages/populate-files/guides/signed-files)? It signs and merges for you with `signed: true`. You only need this package's `manualSection()`, and the [ESLint rule](/packages/generated-signature/guides/eslint).
 :::

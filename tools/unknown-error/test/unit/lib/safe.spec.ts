@@ -2,7 +2,7 @@ import { runInNewContext } from 'node:vm';
 import { expect } from '@leyman/expect';
 import { afterEach, beforeEach, suite, test } from 'mocha-chain';
 import { hasProperty, isError, isObject, safeGet, safeKeys, safeStringify } from '#safe';
-import { hostileProxy, removeIsError, restoreIsError } from '../helpers.js';
+import { hasNativeIsError, hostileProxy, removeIsError, restoreIsError } from '../helpers.js';
 
 class CustomError extends Error {
     public override name = 'CustomError';
@@ -31,7 +31,7 @@ suite('safe', () => {
     });
 
     suite('isError', () => {
-        suite('With Error.isError', () => {
+        (hasNativeIsError ? suite : suite.skip)('With Error.isError', () => {
             test('Errors and their subclasses', () => {
                 expect(isError(new Error('x'))).to.equal(true);
                 expect(isError(new TypeError('x'))).to.equal(true);

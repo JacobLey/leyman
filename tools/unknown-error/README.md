@@ -58,9 +58,9 @@ export const loadConfig = async (): Promise<Config> => {
 
 ## Usage
 
-ESM only. Runs in Node.js 24 or later, Deno, Bun and browsers, with no Node.js APIs. From CommonJS, load it with a dynamic import: `const { toError } = await import('unknown-error');`
+ESM only. Runs in Node.js 22 or later, Deno, Bun and browsers, with no Node.js APIs. From CommonJS, load it with a dynamic import: `const { toError } = await import('unknown-error');`
 
-Errors are recognized with [`Error.isError`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/isError) where the runtime has it: Node.js 24, Chrome 134, Firefox 138, Safari 18.4 and later. In older browsers, they are recognized by `instanceof Error` or their `[object Error]` tag instead, which works across realms too, but also lets through a Proxy around an Error and an object with a forged `Symbol.toStringTag`.
+Errors are recognized with [`Error.isError`](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Error/isError) where the runtime has it: Node.js 24, Chrome 134, Firefox 138, Safari 18.4 and later. In Node.js 22 and older browsers, they are recognized by `instanceof Error` or their `[object Error]` tag instead, which works across realms too, but also lets through a Proxy around an Error and an object with a forged `Symbol.toStringTag`.
 
 In Safari and in Node.js before 24.3, `Error.isError` returns `false` for a `DOMException`, so there a `DOMException` is rebuilt as a plain Error with the same name and message rather than returned as-is.
 

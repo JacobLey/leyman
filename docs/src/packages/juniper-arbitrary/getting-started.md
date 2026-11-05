@@ -25,7 +25,7 @@ yarn add --dev juniper-arbitrary fast-check juniper
 :::
 
 ::: tip
-juniper-arbitrary is ESM only, and requires Node.js 24 or later.
+juniper-arbitrary is ESM only, and requires Node.js 22.13 or later.
 :::
 
 ## Make an arbitrary

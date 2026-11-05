@@ -29,7 +29,7 @@ foreign instanceof Error; // false
 toError(foreign) === foreign; // true
 ```
 
-`Error.isError` is in Node.js 24, Chrome 134, Firefox 138, Safari 18.4 and later. In older browsers, Errors are recognized by `instanceof Error` or their `[object Error]` tag. That works across realms too, but also lets through a Proxy around an Error and an object with a forged `Symbol.toStringTag`. Both checks run inside a `try`, so a Proxy that throws can't escape.
+`Error.isError` is in Node.js 24, Chrome 134, Firefox 138, Safari 18.4 and later. In Node.js 22 and older browsers, Errors are recognized by `instanceof Error` or their `[object Error]` tag. That works across realms too, but also lets through a Proxy around an Error and an object with a forged `Symbol.toStringTag`. Both checks run inside a `try`, so a Proxy that throws can't escape.
 
 In Safari and in Node.js before 24.3, `Error.isError` returns `false` for a `DOMException`. There, a `DOMException` is rebuilt as a plain Error with the same name and message, rather than returned as-is.
 

@@ -56,7 +56,12 @@ export const withStack = <E extends Error>(error: E, stack: string | undefined):
 const originalDescriptor = Object.getOwnPropertyDescriptor(Error, 'isError');
 
 /**
- * Removes `Error.isError`, as in Chrome before 134, Firefox before 138, Safari before 18.4, until `restoreIsError` is called.
+ * Whether the running Node.js has `Error.isError` (24 and later), so tests of the native path can run.
+ */
+export const hasNativeIsError = originalDescriptor !== undefined;
+
+/**
+ * Removes `Error.isError`, as in Node.js before 24, Chrome before 134, Firefox before 138, Safari before 18.4, until `restoreIsError` is called.
  */
 export const removeIsError = (): void => {
     Reflect.deleteProperty(Error, 'isError');
@@ -66,5 +71,9 @@ export const removeIsError = (): void => {
  * Puts back the `Error.isError` that `removeIsError` removed.
  */
 export const restoreIsError = (): void => {
-    Object.defineProperty(Error, 'isError', originalDescriptor ?? {});
+    if (originalDescriptor) {
+        Object.defineProperty(Error, 'isError', originalDescriptor);
+    } else {
+        Reflect.deleteProperty(Error, 'isError');
+    }
 };

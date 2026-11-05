@@ -42,7 +42,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 npm i juniper
 ```
 
-Requires Node 24 or later. `eslint` is an optional peer dependency, only needed for the [ESLint rules](#eslint-rules). The Example below also needs `npm i ajv`.
+Requires Node.js 22.13 or later. `eslint` is an optional peer dependency, only needed for the [ESLint rules](#eslint-rules). The Example below also needs `npm i ajv`.
 
 ## Example
 

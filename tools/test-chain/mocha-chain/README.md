@@ -31,7 +31,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 npm i --save-dev mocha-chain mocha @types/mocha
 ```
 
-`mocha-chain` is an ESM package for Node.js 24 or later, and must be imported (not required), so test files must be ES modules. It is not a replacement for mocha — it wraps mocha's native methods. `mocha` is a required peer dependency, and `@types/mocha` an optional one (for TypeScript). The two are fully interchangeable; you can mix `mocha-chain` and native mocha calls in the same suite.
+`mocha-chain` is an ESM package for Node.js 22.12 or later, and must be imported (not required), so test files must be ES modules. It is not a replacement for mocha — it wraps mocha's native methods. `mocha` is a required peer dependency, and `@types/mocha` an optional one (for TypeScript). The two are fully interchangeable; you can mix `mocha-chain` and native mocha calls in the same suite.
 
 ## Example
 

@@ -3,7 +3,7 @@
   "version": "0.1.2",
   "description": "Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion, moving few keys when the set changes.",
   "engines": {
-    "node": ">=24"
+    "node": ">=22"
   },
   "type": "module",
   "author": "JacobLey",
@@ -47,7 +47,7 @@
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:node-24",
+    "@types/node": "catalog:node-22",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
