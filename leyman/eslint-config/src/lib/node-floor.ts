@@ -1,14 +1,16 @@
+/* eslint-disable @typescript-eslint/no-magic-numbers -- Node.js major versions */
+
 import type { Linter } from 'eslint';
 import type { PackageJson } from './package-json-schema.js';
 
 /**
  * Rules that suggest a newer API, keyed by the first Node.js major version that has it.
- * `undefined` means no release has it yet.
+ * `null` means no release has it yet.
  */
-const apiRules: Readonly<Record<string, number | undefined>> = {
+const apiRules: Readonly<Record<string, number | null>> = {
     'unicorn/prefer-error-is-error': 24,
     'unicorn/prefer-iterator-concat': 26,
-    'unicorn/prefer-iterator-zip': undefined,
+    'unicorn/prefer-iterator-zip': null,
     'unicorn/prefer-promise-try': 23,
     'unicorn/prefer-regexp-escape': 24,
     'unicorn/prefer-uint8array-base64': 25,
@@ -21,6 +23,7 @@ const apiRules: Readonly<Record<string, number | undefined>> = {
  *
  * @param packageJson - Loaded `package.json` file
  * @returns Node.js major version
+ * @throws {Error} when `engines.node` doesn't start with `>=`
  */
 export const getNodeFloor = (packageJson: PackageJson): number => {
     const range = packageJson.engines?.node;
@@ -44,7 +47,7 @@ export const nodeFloorRules = (packageJson: PackageJson): Linter.RulesRecord => 
     const floor = getNodeFloor(packageJson);
     const rules: Linter.RulesRecord = {};
     for (const [rule, since] of Object.entries(apiRules)) {
-        if (since === undefined || since > floor) {
+        if (since === null || since > floor) {
             rules[rule] = 'off';
         }
     }
