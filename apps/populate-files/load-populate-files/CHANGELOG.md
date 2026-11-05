@@ -1,5 +1,20 @@
 # load-populate-files
 
+## 1.1.5
+
+### Patch Changes
+
+- Updated dependencies [8461cca]
+- Updated dependencies [8461cca]
+- Updated dependencies [8461cca]
+  - juniper@2.7.0
+  - juniper-validator@0.6.0
+  - unknown-error@0.2.0
+  - default-import@3.1.0
+  - entry-script@4.2.0
+  - parse-cwd@2.1.0
+  - populate-files@1.2.1
+
 ## 1.1.4
 
 ### Patch Changes

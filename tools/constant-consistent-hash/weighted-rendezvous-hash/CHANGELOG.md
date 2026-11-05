@@ -1,5 +1,16 @@
 # weighted-rendezvous-hash
 
+## 0.2.0
+
+### Minor Changes
+
+- 8461cca: Supports Node.js 22: `engines.node` is now `>=22`, down from `>=24`. The package uses no API newer than Node.js 22 has, and is built and tested against it.
+
+### Patch Changes
+
+- Updated dependencies [8461cca]
+  - constant-consistent-hash@0.2.0
+
 ## 0.1.2
 
 ### Patch Changes

@@ -1,5 +1,20 @@
 # nx-lifecycle
 
+## 1.2.2
+
+### Patch Changes
+
+- Updated dependencies [63ab973]
+- Updated dependencies [8461cca]
+- Updated dependencies [8461cca]
+- Updated dependencies [8461cca]
+  - format-file@1.3.0
+  - juniper@2.7.0
+  - juniper-validator@0.6.0
+  - unknown-error@0.2.0
+  - entry-script@4.2.0
+  - parse-cwd@2.1.0
+
 ## 1.2.1
 
 ### Patch Changes

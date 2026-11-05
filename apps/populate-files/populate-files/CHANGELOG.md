@@ -1,5 +1,18 @@
 # populate-files
 
+## 1.2.1
+
+### Patch Changes
+
+- Updated dependencies [63ab973]
+- Updated dependencies [8461cca]
+- Updated dependencies [8461cca]
+- Updated dependencies [8461cca]
+  - format-file@1.3.0
+  - generated-signature@0.2.0
+  - unknown-error@0.2.0
+  - parse-cwd@2.1.0
+
 ## 1.2.0
 
 ### Minor Changes

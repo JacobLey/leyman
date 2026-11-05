@@ -1,5 +1,16 @@
 # barrelify
 
+## 2.2.5
+
+### Patch Changes
+
+- Updated dependencies [8461cca]
+- Updated dependencies [8461cca]
+  - unknown-error@0.2.0
+  - entry-script@4.2.0
+  - parse-cwd@2.1.0
+  - populate-files@1.2.1
+
 ## 2.2.4
 
 ### Patch Changes
