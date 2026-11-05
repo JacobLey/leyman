@@ -103,7 +103,8 @@ func New(
 			Gitignore: true,
 			// Version controlled, but irrelevant to CI. Excluding them keeps unrelated edits from invalidating the cache.
 			// The docs build skips its existence check for registry paths in these directories (`ciExcluded` in
-			// `docs/.vitepress/config.ts`), so keep the two lists in step.
+			// `docs/.vitepress/config.ts`), and `docs/scripts/populate-docs.mjs` skips the generated files in them
+			// (its own `ciExcluded`), so keep the lists in step.
 			Exclude: []string{
 				".git",
 				".claude",

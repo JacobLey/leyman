@@ -24,7 +24,7 @@ Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)
 | `files` (in `package.json`) | Allow-list of what is published, which is also what workspace dependents get (see [`sync-injected`](../nx-tasks-reference/SKILL.md#sync-injected)): `["dist", "!dist/**/*.map", "!dist/tsconfig.tsbuildinfo"]`, plus any other entry points (`bin.mjs`, `out`, root `*.d.ts`) and `WHY-<PACKAGE>.md`. `package.json`, `README.md` and `LICENSE` are always included. Check the result with `pnpm pack --dry-run`; [`check-package`](../nx-tasks-reference/SKILL.md#check-package) fails on a top-level path that is neither published nor known not to be. |
 | `project.json` | List only the work targets the package uses, as `{}` (see [nx-tasks-reference](../nx-tasks-reference/SKILL.md)). Orchestration targets are added by the lifecycle command. |
 | `eslint.config.js` | Export `configGenerator(...)` from `@leyman/eslint-config` (see [linting-formatting](../linting-formatting/SKILL.md)). |
-| `README.md` | Required. See [writing-readmes](../writing-readmes/SKILL.md). Published packages also get a row in the root `README.md` package table. |
+| `README.md` | Required. See [writing-readmes](../writing-readmes/SKILL.md). Its first paragraph repeats the `package.json` `description`. |
 
 ## Then
 
@@ -34,7 +34,7 @@ nx run @leyman/main:lifecycle   # adds orchestration targets to project.json
 nx run-many -t build            # syncs tsconfig references
 ```
 
-Also add a row to the table in the [projects skill](../projects/SKILL.md), and a changeset if the package will be published (see [versioning](../versioning/SKILL.md)). A published package also goes in the `devDependencies` of [`e2e/published-entrypoints`](../../../e2e/published-entrypoints) (`workspace:^`), whose test fails for any public package missing there. Nx caches that test on its own inputs, so a passing cached run can hide this: run it with `--skip-nx-cache` after making a package public.
+Also add it to the package lists (the [projects skill](../projects/SKILL.md) says how), and a changeset if the package will be published (see [versioning](../versioning/SKILL.md)). A published package also goes in the `devDependencies` of [`e2e/published-entrypoints`](../../../e2e/published-entrypoints) (`workspace:^`), whose test fails for any public package missing there. Nx caches that test on its own inputs, so a passing cached run can hide this: run it with `--skip-nx-cache` after making a package public.
 
 ## E2E packages
 

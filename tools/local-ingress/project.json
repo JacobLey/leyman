@@ -1,6 +1,9 @@
 {
   "$schema": "../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "@leyman/local-ingress",
+  "metadata": {
+    "description": "`https://<worktree>.<repo>.localhost` into any devcontainer: one HTTPS reverse proxy per machine, shared by every repo, routing by host name to containers that ask for it with Docker labels."
+  },
   "targets": {
     "biome": {},
     "check-version": {

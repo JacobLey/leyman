@@ -1,6 +1,9 @@
 {
   "$schema": "../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "@leyman/dagger-ci",
+  "metadata": {
+    "description": "The Dagger module that runs CI: formatted, linted and compiled by `verify`, exercised by every CI run."
+  },
   "targets": {
     "biome": {},
     "dagger-develop": {},

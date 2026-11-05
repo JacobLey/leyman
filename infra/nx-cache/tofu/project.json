@@ -1,6 +1,9 @@
 {
   "$schema": "../../../leyman/main/node_modules/nx/schemas/project-schema.json",
   "name": "@leyman/nx-cache-tofu",
+  "metadata": {
+    "description": "OpenTofu configuration of the hosted Nx cache's Cloudflare resources: its R2 bucket, lifecycle rule, and CI's deploy token."
+  },
   "targets": {
     "biome": {},
     "tofu-fmt": {},

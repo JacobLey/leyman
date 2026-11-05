@@ -15,6 +15,19 @@
         "^build"
       ]
     },
+    "populate-files": {
+      "options": {
+        "commands": [
+          "node ./scripts/populate-docs.mjs"
+        ]
+      },
+      "cache": false,
+      "inputs": [],
+      "outputs": [],
+      "dependsOn": [
+        "build:_"
+      ]
+    },
     "install:_": {},
     "install": {},
     "prepare:_": {},
