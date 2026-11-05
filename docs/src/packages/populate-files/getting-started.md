@@ -62,7 +62,7 @@ PopulateFilesCheckError: File /repo/generated/config.json not up to date. Reason
 
 With `clean: true`, `populateFiles` also removes every file in `targetDir` that it didn't write, so renaming or dropping a file doesn't leave the old one behind. In `check` mode, a file it would remove fails the check (`Reason: stale-file`).
 
-Without a manifest, that is *every* other file in `targetDir`, so only use it on a directory that holds nothing but generated files. With a [manifest](/packages/populate-files/guides/manifest), `clean` only removes files a previous run wrote.
+Without a manifest, that is _every_ other file in `targetDir`, so only use it on a directory that holds nothing but generated files. With a [manifest](/packages/populate-files/guides/manifest), `clean` only removes files a previous run wrote.
 
 ## Next steps
 

@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # vitest-chain
+
 Chain vitest hooks together for deterministic and type safe tests.
 
 [![npm package](https://badge.fury.io/js/vitest-chain.svg)](https://www.npmjs.com/package/vitest-chain)
@@ -86,14 +87,14 @@ Each test gets a shallow copy of the context, so reassigning a key in one test d
 
 Top-level ("entrypoint") hooks/tests receive vitest's native arguments. Chained hooks/tests receive the context, followed by vitest's native arguments.
 
-| Method | Chains into | Native arguments |
-|--------|-------------|------------------|
-| `beforeAll(fn)` | `beforeAll`, `beforeEach`, `test`/`it`, `afterEach`, `afterAll` | `(context, suite)` |
-| `beforeEach(fn)` | `beforeEach`, `test`/`it`, `afterEach` | `(testContext)` |
-| `test(name, fn)` / `it` | — | `(testContext)` |
-| `afterEach(fn)` | `afterEach` | `(testContext)` |
-| `afterAll(fn)` | `afterAll` | `(context, suite)` |
-| `describe(name, fn)` / `suite` | — | — |
+| Method                         | Chains into                                                     | Native arguments   |
+| ------------------------------ | --------------------------------------------------------------- | ------------------ |
+| `beforeAll(fn)`                | `beforeAll`, `beforeEach`, `test`/`it`, `afterEach`, `afterAll` | `(context, suite)` |
+| `beforeEach(fn)`               | `beforeEach`, `test`/`it`, `afterEach`                          | `(testContext)`    |
+| `test(name, fn)` / `it`        | —                                                               | `(testContext)`    |
+| `afterEach(fn)`                | `afterEach`                                                     | `(testContext)`    |
+| `afterAll(fn)`                 | `afterAll`                                                      | `(context, suite)` |
+| `describe(name, fn)` / `suite` | —                                                               | —                  |
 
 `test` and `describe` also expose `.only` and `.skip`. Hooks and tests take only a callback (and a name), not vitest's timeout or options arguments, and there is no `.each`, `.concurrent`, `.todo` or `.skipIf`: use vitest's own functions for those.
 

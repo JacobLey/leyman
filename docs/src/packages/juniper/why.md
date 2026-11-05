@@ -89,10 +89,12 @@ Juniper emits TypeScript types for related JSON Schemas on a best-effort basis. 
 
 - **Unions** — TypeScript cannot distinguish between `oneOf` and `anyOf`. Both produce the union pipe `|`.
 - **Negation** — The `not` keyword is not fully enforced in TypeScript. The `Exclude` utility type does not actually prevent assignment:
+
   ```ts
   // Legal in TypeScript, despite appearances
   const notAbc: Exclude<string, 'abc'> = 'abc';
   ```
+
   The general exception is nullability — `.not(nullSchema())` makes a nullable schema non-nullable, in both the JSON Schema and its type.
 
 ## Comparisons

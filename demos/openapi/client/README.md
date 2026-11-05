@@ -34,11 +34,11 @@ switch (created.status) {
 
 ## Options
 
-| Option | Default | Description |
-|---|---|---|
-| `baseUrl` | — | Where the API is served. Paths in the spec are appended to its path. |
-| `token` | — | Bearer token, or a function returning one (called before each request). Every operation needs one. |
-| `fetch` | `globalThis.fetch` | Makes the requests, e.g. one with retries or tracing. |
+| Option    | Default            | Description                                                                                        |
+| --------- | ------------------ | -------------------------------------------------------------------------------------------------- |
+| `baseUrl` | —                  | Where the API is served. Paths in the spec are appended to its path.                               |
+| `token`   | —                  | Bearer token, or a function returning one (called before each request). Every operation needs one. |
+| `fetch`   | `globalThis.fetch` | Makes the requests, e.g. one with retries or tracing.                                              |
 
 ## Testing
 

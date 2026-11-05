@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # genever-content-mapper
+
 A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file and get genever's types, with no generated file.
 
 </div>
@@ -14,6 +15,7 @@ A TypeScript 7.1 content mapper: import an OpenAPI document or JSON Schema file 
 **Requires TypeScript 7.1** (`typescript@7.1.0-beta` or later), whose content mappers are new and may still change before its stable release. Private for now, and not on npm yet.
 
 ## Contents
+
 - [Example](#example)
 - [Usage](#usage)
 - [Options](#options)
@@ -70,13 +72,13 @@ Options go in the `contentMappers` entry's `options`, and apply to every mapped 
 { "package": "genever-content-mapper", "extensions": [".schema.yaml"], "options": { "name": "Root", "strict": false } }
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `name` | `string` | `'Schema'` | Name of a JSON Schema's root type. Not used for an OpenAPI document. |
-| `strict` | `boolean` | `true` | Fail on likely mistakes, such as unknown keywords. |
-| `openApi30` | `boolean` | `false` | Read a JSON Schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead. |
-| `parameterDefaults` | `boolean` | `false` | With an OpenAPI document, also generate `OperationRequest<Id>`, with parameters' defaults filled in. |
-| `typedMinItems` | `number` | `3` | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. |
+| Option              | Type      | Default    | Description                                                                                                                            |
+| ------------------- | --------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`              | `string`  | `'Schema'` | Name of a JSON Schema's root type. Not used for an OpenAPI document.                                                                   |
+| `strict`            | `boolean` | `true`     | Fail on likely mistakes, such as unknown keywords.                                                                                     |
+| `openApi30`         | `boolean` | `false`    | Read a JSON Schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead. |
+| `parameterDefaults` | `boolean` | `false`    | With an OpenAPI document, also generate `OperationRequest<Id>`, with parameters' defaults filled in.                                   |
+| `typedMinItems`     | `number`  | `3`        | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off.                                                      |
 
 An unknown or invalid option is an error at that option in `tsconfig.json` (`genever1`).
 
@@ -84,13 +86,13 @@ An unknown or invalid option is an error at that option in `tsconfig.json` (`gen
 
 A document with an error has no types (its imports fail too), and the error is reported in the document, as `genever` followed by a code:
 
-| Code | Error |
-|------|-------|
-| `genever100` | Anything unexpected. The message says what. |
-| `genever101` | The file isn't YAML, or uses something JSON can't hold (a duplicate key, a tag beyond YAML's core schema). |
+| Code         | Error                                                                                                                        |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------- |
+| `genever100` | Anything unexpected. The message says what.                                                                                  |
+| `genever101` | The file isn't YAML, or uses something JSON can't hold (a duplicate key, a tag beyond YAML's core schema).                   |
 | `genever102` | Not a valid schema, e.g. `properties` isn't an object, a `$ref` doesn't resolve, or a value has no JSON equivalent (`.inf`). |
-| `genever103` | A [strict mode](../genever/README.md#strict-mode) rule is broken. |
-| `genever104` | genever doesn't support the feature, including a `$ref` to another file or a URL (see below). |
+| `genever103` | A [strict mode](../genever/README.md#strict-mode) rule is broken.                                                            |
+| `genever104` | genever doesn't support the feature, including a `$ref` to another file or a URL (see below).                                |
 
 The error covers the entry it is about (its key and value), e.g. `minLenght: 1` for an unknown keyword.
 
@@ -116,11 +118,11 @@ The mapper itself needs no code: TypeScript runs the package's `bin.mjs`, named 
 
 The types of one document, as the mapper returns them to TypeScript.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `text` | `string` | — | Required. The document's contents, YAML or JSON. |
-| `fileName` | `string` | — | Required. Absolute path of the document, which `$id`s resolve against. |
-| `options` | `MapperOptions` | `{}` | See [Options](#options). |
+| Parameter  | Type            | Default | Description                                                            |
+| ---------- | --------------- | ------- | ---------------------------------------------------------------------- |
+| `text`     | `string`        | —       | Required. The document's contents, YAML or JSON.                       |
+| `fileName` | `string`        | —       | Required. Absolute path of the document, which `$id`s resolve against. |
+| `options`  | `MapperOptions` | `{}`    | See [Options](#options).                                               |
 
 **Returns** `MappedDocument`: `{ text, diagnostics, mappings }`. `text` is genever's TypeScript source, or `export {};` if the document has errors. Each diagnostic is `{ messageText, start, length, code }`. Each mapping is TypeScript's span map tuple `[virtualStart, virtualLength, originalStart, originalLength, 2]`, an alias from a type's or property's name in `text` to its schema's key in the document. Offsets are JavaScript string indices.
 

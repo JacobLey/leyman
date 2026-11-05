@@ -62,6 +62,6 @@ A JSON file recording generated files, for files that can't carry a token, like 
 ```
 
 - `files` keys are paths relative to the manifest's directory, with `/` separators, sorted.
-- `hash` is the file's [`contentHash`](/packages/generated-signature/reference/api#manifest): `v1:` and the first 128 bits of the SHA-256 of its content, with `\r\n` normalized to `\n`. Manual sections are *not* left out, so a file with manual sections must be signed inline.
+- `hash` is the file's [`contentHash`](/packages/generated-signature/reference/api#manifest): `v1:` and the first 128 bits of the SHA-256 of its content, with `\r\n` normalized to `\n`. Manual sections are _not_ left out, so a file with manual sections must be signed inline.
 - `signature: "inline"` means the file carries its own token, which is checked instead.
 - `inputs` is optional, and free for the generator: usually hashes of what produced the file. This package doesn't interpret it.

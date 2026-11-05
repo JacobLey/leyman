@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # parse-cwd
+
 Convert a relative path or URL to an absolute directory path.
 
 [![npm package](https://badge.fury.io/js/parse-cwd.svg)](https://www.npmjs.com/package/parse-cwd)
@@ -9,6 +10,7 @@ Convert a relative path or URL to an absolute directory path.
 </div>
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -51,9 +53,9 @@ Resolves a path or URL to an absolute directory path and validates that it exist
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `cwd` | `string \| URL \| { cwd?: string \| URL } \| null \| undefined` | `undefined` | Optional. Path, URL, or options object to resolve. Relative paths are resolved from `process.cwd()`. When omitted, `null`, or an object without `cwd`, returns `process.cwd()` unchanged. |
+| Parameter | Type                                                            | Default     | Description                                                                                                                                                                               |
+| --------- | --------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cwd`     | `string \| URL \| { cwd?: string \| URL } \| null \| undefined` | `undefined` | Optional. Path, URL, or options object to resolve. Relative paths are resolved from `process.cwd()`. When omitted, `null`, or an object without `cwd`, returns `process.cwd()` unchanged. |
 
 **Returns** `Promise<string>` — the absolute path to the resolved directory.
 

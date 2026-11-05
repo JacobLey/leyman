@@ -43,12 +43,12 @@ The manifest path is resolved from `cwd`, not `targetDir`, so it can sit outside
 
 Before overwriting an unsigned file that exists and would change, populate-files checks the manifest:
 
-| The existing file | Result |
-|-------------------|--------|
-| Is listed, and matches its hash | Overwritten. |
-| Is listed, but doesn't match its hash | `PopulateFilesOwnershipError`, reason `'edited'`. |
-| Isn't listed | `PopulateFilesOwnershipError`, reason `'not-owned'`. |
-| Already has exactly the new content | Left alone, and added to the manifest. |
+| The existing file                     | Result                                               |
+| ------------------------------------- | ---------------------------------------------------- |
+| Is listed, and matches its hash       | Overwritten.                                         |
+| Is listed, but doesn't match its hash | `PopulateFilesOwnershipError`, reason `'edited'`.    |
+| Isn't listed                          | `PopulateFilesOwnershipError`, reason `'not-owned'`. |
+| Already has exactly the new content   | Left alone, and added to the manifest.               |
 
 As for signed files, these fail with or without `check`, and `force` overwrites anyway. Signed files are listed as `"signature": "inline"`, and checked by their own token, so their [manual sections](/packages/populate-files/guides/signed-files#manual-sections) still work.
 
@@ -56,7 +56,7 @@ The last row means adding a manifest to existing output needs no `force`: run on
 
 ## Clean
 
-With a manifest, `clean` removes the files the *previous* manifest lists that this run doesn't write, and nothing else. A listed file that was edited since fails with `'edited'` instead of being removed, unless `force`.
+With a manifest, `clean` removes the files the _previous_ manifest lists that this run doesn't write, and nothing else. A listed file that was edited since fails with `'edited'` instead of being removed, unless `force`.
 
 Without a manifest, `clean` removes every file in `targetDir` that this run didn't write.
 

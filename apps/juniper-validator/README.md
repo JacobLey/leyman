@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # Juniper Validator
+
 StandardSchema-compliant validator for [Juniper](https://www.npmjs.com/package/juniper) schemas.
 
 [![npm package](https://badge.fury.io/js/juniper-validator.svg)](https://www.npmjs.com/package/juniper-validator)
@@ -11,6 +12,7 @@ StandardSchema-compliant validator for [Juniper](https://www.npmjs.com/package/j
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/juniper-validator/).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -83,10 +85,10 @@ Creates a `JuniperValidator` from a Juniper `Schema` instance or a compiled `Jso
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `schema` | `Schema \| JsonSchema` | — | Required. A Juniper `Schema` instance or plain JSON Schema object. |
-| `options` | `AjvOptions` | `{}` | Optional. [Ajv constructor options](https://ajv.js.org/options.html). The `strict` option is always forced to `true`, and `jsPropertySyntax` is not supported. Standard `format`s (`email`, `uuid`, `date-time`, ...) are validated with [ajv-formats](https://www.npmjs.com/package/ajv-formats). |
+| Parameter | Type                   | Default | Description                                                                                                                                                                                                                                                                                        |
+| --------- | ---------------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `schema`  | `Schema \| JsonSchema` | —       | Required. A Juniper `Schema` instance or plain JSON Schema object.                                                                                                                                                                                                                                 |
+| `options` | `AjvOptions`           | `{}`    | Optional. [Ajv constructor options](https://ajv.js.org/options.html). The `strict` option is always forced to `true`, and `jsPropertySyntax` is not supported. Standard `format`s (`email`, `uuid`, `date-time`, ...) are validated with [ajv-formats](https://www.npmjs.com/package/ajv-formats). |
 
 **Returns** `JuniperValidator<T>` — a validator instance typed to the schema's inferred type.
 

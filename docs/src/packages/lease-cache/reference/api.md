@@ -6,17 +6,17 @@ description: LeaseCache, its options, get, read and invalidate, its errors, and 
 
 ## `new LeaseCache(options)`
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `connection` | [`LeaseCacheConnection`](#leasecacheconnection) | — | Runs the cache's scripts. See [Clients](/packages/lease-cache/guides/clients). Never closed by the cache. |
-| `prefix` | `string` | — | Prefix of every key, so several caches can share a server. Must not contain `{`, or the constructor throws `LeaseCachePrefixError`. |
-| `ttlMs` | `number` | — | How long a loaded value is cached, in milliseconds, unless [`get`](#cache-get-key-load-options) is given its own. |
-| `leaseMs` | `number` | — | How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing. |
-| `pollMs` | `number` | — | How often a reader waiting on another's load checks again. |
-| `waitMs` | `number` | — | How long a reader waits on another's load before loading itself. It then caches nothing, as it holds no lease. Bounds how long a stuck load can stall everyone else. |
-| `staleMs` | `number` | `0` (off) | After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. See [Serving stale values](/packages/lease-cache/guides/invalidation#serving-stale-values-while-the-next-load-runs). |
-| `onWait` | `(key: string) => void` | — | Called once for each read that finds another reader loading the key, and waits on it. For example, to count the loads that leases saved. |
-| `onUnavailable` | `(error: unknown, key: string) => void` | — | Called when Valkey fails. Given, a read loads the value without caching it rather than reject, so reads keep working while Valkey is down. See [`read`](#cache-read-key-load-options). |
+| Option          | Type                                            | Default   | Description                                                                                                                                                                                                                                        |
+| --------------- | ----------------------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `connection`    | [`LeaseCacheConnection`](#leasecacheconnection) | —         | Runs the cache's scripts. See [Clients](/packages/lease-cache/guides/clients). Never closed by the cache.                                                                                                                                          |
+| `prefix`        | `string`                                        | —         | Prefix of every key, so several caches can share a server. Must not contain `{`, or the constructor throws `LeaseCachePrefixError`.                                                                                                                |
+| `ttlMs`         | `number`                                        | —         | How long a loaded value is cached, in milliseconds, unless [`get`](#cache-get-key-load-options) is given its own.                                                                                                                                  |
+| `leaseMs`       | `number`                                        | —         | How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing.                                                                                       |
+| `pollMs`        | `number`                                        | —         | How often a reader waiting on another's load checks again.                                                                                                                                                                                         |
+| `waitMs`        | `number`                                        | —         | How long a reader waits on another's load before loading itself. It then caches nothing, as it holds no lease. Bounds how long a stuck load can stall everyone else.                                                                               |
+| `staleMs`       | `number`                                        | `0` (off) | After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. See [Serving stale values](/packages/lease-cache/guides/invalidation#serving-stale-values-while-the-next-load-runs). |
+| `onWait`        | `(key: string) => void`                         | —         | Called once for each read that finds another reader loading the key, and waits on it. For example, to count the loads that leases saved.                                                                                                           |
+| `onUnavailable` | `(error: unknown, key: string) => void`         | —         | Called when Valkey fails. Given, a read loads the value without caching it rather than reject, so reads keep working while Valkey is down. See [`read`](#cache-read-key-load-options).                                                             |
 
 Durations are rounded up to whole milliseconds, as Valkey takes. Each must be a finite number above 0, except `waitMs` and `staleMs`, which may be 0: otherwise the constructor throws [`LeaseCacheDurationError`](#errors).
 
@@ -24,11 +24,11 @@ Durations are rounded up to whole milliseconds, as Valkey takes. Each must be a 
 
 Returns the cached value, or calls `load` and caches what it returns.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `key` | `string` | Identifies the value, without the prefix. Not empty, and not starting with `}`, or the read rejects with `LeaseCacheKeyError`. |
-| `load` | `() => Promise<T>` | Loads the value from the source of truth. `T` must be [JSON](#json). |
-| `options.ttlMs` | `number \| ((value: T) => number)` | How long this value is cached, in place of the cache's `ttlMs`. A function gets the loaded value. Above 0. |
+| Parameter       | Type                               | Description                                                                                                                    |
+| --------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `key`           | `string`                           | Identifies the value, without the prefix. Not empty, and not starting with `}`, or the read rejects with `LeaseCacheKeyError`. |
+| `load`          | `() => Promise<T>`                 | Loads the value from the source of truth. `T` must be [JSON](#json).                                                           |
+| `options.ttlMs` | `number \| ((value: T) => number)` | How long this value is cached, in place of the cache's `ttlMs`. A function gets the loaded value. Above 0.                     |
 
 ```ts
 import type { LeaseCache } from 'lease-cache';
@@ -60,14 +60,14 @@ As [`get`](#cache-get-key-load-options), but also says where the value came from
 
 **Returns** `Promise<ReadResult<T>>`: `{ value, source, ttlMs }`.
 
-| `source` | The value | `ttlMs` |
-|---|---|---|
-| `'hit'` | Was cached already. | The time it has left. |
-| `'filled'` | Was loaded with the lease, and cached. | The value's `ttlMs`. |
-| `'lost'` | Was loaded, but the lease was lost first (invalidated, or run out), so it wasn't cached. | `0` |
-| `'stale'` | Was kept by an invalidation (`staleMs`), and returned rather than waiting. | `0` |
-| `'timeout'` | Was loaded without a lease, after waiting `waitMs`. | `0` |
-| `'unavailable'` | Was loaded without the cache, as Valkey failed. Only with `onUnavailable`: without it, the read rejects with Valkey's error. | `0` |
+| `source`        | The value                                                                                                                    | `ttlMs`               |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------- | --------------------- |
+| `'hit'`         | Was cached already.                                                                                                          | The time it has left. |
+| `'filled'`      | Was loaded with the lease, and cached.                                                                                       | The value's `ttlMs`.  |
+| `'lost'`        | Was loaded, but the lease was lost first (invalidated, or run out), so it wasn't cached.                                     | `0`                   |
+| `'stale'`       | Was kept by an invalidation (`staleMs`), and returned rather than waiting.                                                   | `0`                   |
+| `'timeout'`     | Was loaded without a lease, after waiting `waitMs`.                                                                          | `0`                   |
+| `'unavailable'` | Was loaded without the cache, as Valkey failed. Only with `onUnavailable`: without it, the read rejects with Valkey's error. | `0`                   |
 
 ```ts
 import type { LeaseCache } from 'lease-cache';
@@ -94,12 +94,12 @@ Rejects when Valkey fails, even with `onUnavailable`: an invalidation that didn'
 
 Every error `lease-cache` throws extends `LeaseCacheError`. What `load` throws is passed on as it is.
 
-| Error | When |
-|-------|------|
+| Error                     | When                                                                                                  |
+| ------------------------- | ----------------------------------------------------------------------------------------------------- |
 | `LeaseCacheDurationError` | A duration isn't a finite number above 0 (`waitMs` and `staleMs` may be 0). Has `option` and `value`. |
-| `LeaseCacheKeyError` | A key is empty or starts with `}`, so its hash tag would be empty. Has `key`. |
-| `LeaseCachePrefixError` | The prefix contains `{`, which would change the keys' hash tag. Has `prefix`. |
-| `LeaseCacheValueError` | `load` returned something JSON can't store, e.g. `undefined`. Has `key`. |
+| `LeaseCacheKeyError`      | A key is empty or starts with `}`, so its hash tag would be empty. Has `key`.                         |
+| `LeaseCachePrefixError`   | The prefix contains `{`, which would change the keys' hash tag. Has `prefix`.                         |
+| `LeaseCacheValueError`    | `load` returned something JSON can't store, e.g. `undefined`. Has `key`.                              |
 
 ## `Json`
 

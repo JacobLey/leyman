@@ -5,6 +5,7 @@ The OpenAPI demo's Postgres schema: Drizzle tables, the migrations that build th
 Part of the [OpenAPI demo](../README.md). A worked example, never published.
 
 ## Contents
+
 - [What it exports](#what-it-exports)
 - [The schema](#the-schema)
 - [Why a package of its own](#why-a-package-of-its-own)
@@ -12,9 +13,9 @@ Part of the [OpenAPI demo](../README.md). A worked example, never published.
 
 ## What it exports
 
-| Export | What |
-|---|---|
-| `notes` | The Drizzle table, for queries |
+| Export                                     | What                                                                          |
+| ------------------------------------------ | ----------------------------------------------------------------------------- |
+| `notes`                                    | The Drizzle table, for queries                                                |
 | `@leyman/demo-openapi-database/schema.sql` | What the migrations build, for [`pg-dolly`](../../../tools/pg-dolly) to clone |
 
 ```ts

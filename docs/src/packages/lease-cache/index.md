@@ -51,12 +51,12 @@ Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Faceboo
 
 ## Compared to
 
-| | lease-cache | BentoCache, cache-manager, cachified |
-|---|---|---|
-| Concurrent misses in one instance | one load | one load |
-| Concurrent misses across instances | one load | one per instance |
-| Load finishing after an invalidation | not cached | cached until it expires |
-| Memory tier, stale-while-revalidate on expiry, many stores | ❌ | ✅ |
+|                                                            | lease-cache | BentoCache, cache-manager, cachified |
+| ---------------------------------------------------------- | ----------- | ------------------------------------ |
+| Concurrent misses in one instance                          | one load    | one load                             |
+| Concurrent misses across instances                         | one load    | one per instance                     |
+| Load finishing after an invalidation                       | not cached  | cached until it expires              |
+| Memory tier, stale-while-revalidate on expiry, many stores | ❌          | ✅                                   |
 
 See [Why lease-cache](/packages/lease-cache/why) for the full comparison.
 

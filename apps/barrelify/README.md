@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # barrelify
+
 Generate and CI-verify TypeScript barrel (index.ts) files with the correct ESM/CJS import extensions.
 
 [![npm package](https://badge.fury.io/js/barrelify.svg)](https://www.npmjs.com/package/barrelify)
@@ -17,6 +18,7 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 - **Keeps type-only exports** — lines you change to `export type *` stay type-only on later runs.
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -86,11 +88,11 @@ To re-export a file's types only, change its line to `export type * from './foo.
 
 Which siblings are exported depends on the barrel's own extension and the `"type"` of the nearest `package.json` (a nested `package.json` changes it for the folders below; a malformed one is an error). `.ts` and `.tsx` are ESM only when `"type": "module"`; `.mts` is always ESM and `.cts` always CommonJS. A CommonJS barrel can't `require` ESM, so:
 
-| Barrel | `"type": "module"` | `"type": "commonjs"` or unset |
-|--------|--------------------|-------------------------------|
-| `index.ts`, `index.tsx` | `.ts`, `.tsx`, `.cts`, `.mts` | `.ts`, `.tsx`, `.cts` |
-| `index.mts` | `.ts`, `.tsx`, `.cts`, `.mts` | `.ts`, `.tsx`, `.cts`, `.mts` |
-| `index.cts` | `.cts` | `.ts`, `.tsx`, `.cts` |
+| Barrel                  | `"type": "module"`            | `"type": "commonjs"` or unset |
+| ----------------------- | ----------------------------- | ----------------------------- |
+| `index.ts`, `index.tsx` | `.ts`, `.tsx`, `.cts`, `.mts` | `.ts`, `.tsx`, `.cts`         |
+| `index.mts`             | `.ts`, `.tsx`, `.cts`, `.mts` | `.ts`, `.tsx`, `.cts`, `.mts` |
+| `index.cts`             | `.cts`                        | `.ts`, `.tsx`, `.cts`         |
 
 To export a `.mts` file from a package that is CommonJS, rename the barrel to `index.mts`.
 
@@ -104,9 +106,9 @@ Programmatic entry point. Scans for `// AUTO-BARREL` index files and rewrites th
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `options` | `BarrelifyOptions` | `{}` | Optional. See [Options](#options). |
+| Parameter | Type               | Default | Description                        |
+| --------- | ------------------ | ------- | ---------------------------------- |
+| `options` | `BarrelifyOptions` | `{}`    | Optional. See [Options](#options). |
 
 **Returns** `Promise<string[]>` — absolute paths of the barrel files that changed (or would change, with `dryRun`).
 
@@ -120,11 +122,11 @@ await barrelify({ cwd: './src', ignore: ['**/generated/**'] });
 
 #### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `cwd` | `string \| URL` | `process.cwd()` | Root directory to start searching for index files. Searches recursively. A relative path is resolved from `process.cwd()`, and a file path means its parent directory. |
-| `dryRun` | `boolean` | `false` | If `true`, computes barrel output but does not write any files. |
-| `ignore` | `readonly string[]` | `[]` | Glob patterns for index files to skip, relative to `cwd`. |
+| Option   | Type                | Default         | Description                                                                                                                                                            |
+| -------- | ------------------- | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `cwd`    | `string \| URL`     | `process.cwd()` | Root directory to start searching for index files. Searches recursively. A relative path is resolved from `process.cwd()`, and a file path means its parent directory. |
+| `dryRun` | `boolean`           | `false`         | If `true`, computes barrel output but does not write any files.                                                                                                        |
+| `ignore` | `readonly string[]` | `[]`            | Glob patterns for index files to skip, relative to `cwd`.                                                                                                              |
 
 ## CLI
 
@@ -133,12 +135,12 @@ npx barrel [options]
 npx barrelify [options]
 ```
 
-| Flag | Description |
-|------|-------------|
-| `--ci` | Dry-run mode that prints the out-of-sync barrel files and exits with a non-zero code (error `Barrel files are out of date. Run barrel without --ci to update them`) if there are any. On by default in CI; pass `--no-ci` to write files there. |
-| `--cwd <path>` | Root directory to search. Defaults to `process.cwd()`. |
-| `--dry-run` | Compute barrel output without writing files. Prints the barrel files that would change. |
-| `--ignore <globs...>` | Glob patterns for index files to skip, relative to `--cwd`. |
+| Flag                  | Description                                                                                                                                                                                                                                     |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ci`                | Dry-run mode that prints the out-of-sync barrel files and exits with a non-zero code (error `Barrel files are out of date. Run barrel without --ci to update them`) if there are any. On by default in CI; pass `--no-ci` to write files there. |
+| `--cwd <path>`        | Root directory to search. Defaults to `process.cwd()`.                                                                                                                                                                                          |
+| `--dry-run`           | Compute barrel output without writing files. Prints the barrel files that would change.                                                                                                                                                         |
+| `--ignore <globs...>` | Glob patterns for index files to skip, relative to `--cwd`.                                                                                                                                                                                     |
 
 ```sh
 npx barrel --ci           # fail if any barrel file is stale

@@ -3,6 +3,7 @@
 Back to the [README](https://www.npmjs.com/package/lease-cache).
 
 ## Contents
+
 - [The problem](#the-problem)
 - [How it works](#how-it-works)
 - [Why it is correct](#why-it-is-correct)
@@ -14,7 +15,7 @@ Back to the [README](https://www.npmjs.com/package/lease-cache).
 
 A read-through cache returns the cached value, or loads it on a miss and caches it. Two things go wrong once several instances (processes, pods) share the cache.
 
-**Every instance loads the same miss.** When a popular key expires, every instance misses it at once, and each sends the same query to the database: a stampede. Most libraries merge concurrent misses *within* an instance, so 100 requests in one process become one load. With 20 instances, the database still sees 20.
+**Every instance loads the same miss.** When a popular key expires, every instance misses it at once, and each sends the same query to the database: a stampede. Most libraries merge concurrent misses _within_ an instance, so 100 requests in one process become one load. With 20 instances, the database still sees 20.
 
 **A slow load caches outdated data.** The usual way to keep a cache current is to invalidate a key after changing its data. But a load already in progress can undo that:
 
@@ -37,7 +38,7 @@ Both are well known, and [memcache at Facebook](https://www.usenix.org/system/fi
 Each key has a value and a lease, stored next to each other. A lease is a random token, with an expiry.
 
 1. **Read or lease.** A reader that finds the value returns it. On a miss, it takes the lease with its own token (`SET lease token NX PX leaseMs`), unless another reader holds it.
-2. **Load and fill.** The lease holder loads the value, then caches it *only if the lease still holds its token*, and frees the lease in the same step.
+2. **Load and fill.** The lease holder loads the value, then caches it _only if the lease still holds its token_, and frees the lease in the same step.
 3. **Wait.** A reader that finds the lease taken checks again every `pollMs`, and returns the value once the holder caches it.
 4. **Invalidate** deletes the value and the lease together.
 
@@ -87,14 +88,14 @@ The fill that loses its lease still returns what it loaded to its own caller. Th
 
 As of October 2026:
 
-| | lease-cache | [BentoCache](https://bentocache.dev) | [cache-manager](https://github.com/jaredwray/cacheable) | [cachified](https://github.com/epicweb-dev/cachified) |
-|---|---|---|---|---|
-| Concurrent misses in one instance | one load | one load | one load | one load |
-| Concurrent misses across instances | one load | one per instance | one per instance | one per instance |
-| Load finishing after an invalidation | not cached | cached until it expires | cached until it expires | cached until it expires |
-| Stale values while the next load runs | after an invalidation (`staleMs`) | grace periods | some | `staleWhileRevalidate` |
-| Memory tier, stale-while-revalidate on expiry, tags | ❌ | ✅ | some | some |
-| Stores | Valkey, Redis | many | many (Keyv) | many (adapters) |
+|                                                     | lease-cache                       | [BentoCache](https://bentocache.dev) | [cache-manager](https://github.com/jaredwray/cacheable) | [cachified](https://github.com/epicweb-dev/cachified) |
+| --------------------------------------------------- | --------------------------------- | ------------------------------------ | ------------------------------------------------------- | ----------------------------------------------------- |
+| Concurrent misses in one instance                   | one load                          | one load                             | one load                                                | one load                                              |
+| Concurrent misses across instances                  | one load                          | one per instance                     | one per instance                                        | one per instance                                      |
+| Load finishing after an invalidation                | not cached                        | cached until it expires              | cached until it expires                                 | cached until it expires                               |
+| Stale values while the next load runs               | after an invalidation (`staleMs`) | grace periods                        | some                                                    | `staleWhileRevalidate`                                |
+| Memory tier, stale-while-revalidate on expiry, tags | ❌                                | ✅                                   | some                                                    | some                                                  |
+| Stores                                              | Valkey, Redis                     | many                                 | many (Keyv)                                             | many (adapters)                                       |
 
 BentoCache's maintainer considered distributed locks and decided against them for now ([Julien-R44/bentocache#2](https://github.com/Julien-R44/bentocache/issues/2)). A distributed lock (e.g. Redlock) around the loader stops the stampede, but not the race: the lock decides who loads, not whether the result may still be cached.
 

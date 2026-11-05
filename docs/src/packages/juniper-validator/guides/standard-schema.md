@@ -33,12 +33,12 @@ The library infers the output type from the validator, so it matches the schema.
 
 Libraries call `validator['~standard'].validate(value)`. It is the same function as [`validator.validate()`](/packages/juniper-validator/getting-started#validate-issues), which is easier to call directly.
 
-| Property | Value |
-|----------|-------|
-| `version` | `1` |
-| `vendor` | `'juniper'` |
-| `validate` | Returns `{ value }` when the value matches, or `{ issues }` when it doesn't. Always synchronous. |
-| `jsonSchema` | Renders the schema as JSON Schema. See [JSON Schema](#json-schema). |
+| Property     | Value                                                                                            |
+| ------------ | ------------------------------------------------------------------------------------------------ |
+| `version`    | `1`                                                                                              |
+| `vendor`     | `'juniper'`                                                                                      |
+| `validate`   | Returns `{ value }` when the value matches, or `{ issues }` when it doesn't. Always synchronous. |
+| `jsonSchema` | Renders the schema as JSON Schema. See [JSON Schema](#json-schema).                              |
 
 ## Issues
 

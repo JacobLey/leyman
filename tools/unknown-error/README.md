@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # unknown-error
+
 Turn any caught `unknown` into a real Error without throwing, even for hostile values, other realms and deep or circular cause chains.
 
 [![npm package](https://badge.fury.io/js/unknown-error.svg)](https://www.npmjs.com/package/unknown-error)
@@ -17,6 +18,7 @@ Turn any caught `unknown` into a real Error without throwing, even for hostile v
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/unknown-error/). For why it exists and the design decisions behind it, see [WHY-UNKNOWN-ERROR.md](https://github.com/JacobLey/leyman/blob/main/tools/unknown-error/WHY-UNKNOWN-ERROR.md).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -70,11 +72,11 @@ Every function takes `unknown`, so pass the `catch` variable straight in. None o
 
 Converts any caught value to an Error.
 
-| `value` | Result |
-|---------|--------|
-| An Error, including one from another realm | The same Error, unmodified |
-| An object with a string `message` | A new `Error` with the object's `message`, `name`, `stack` and `cause`, and its other own properties (like `code`) copied over |
-| Anything else | A new [`NonError`](#nonerror) describing it |
+| `value`                                    | Result                                                                                                                         |
+| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------ |
+| An Error, including one from another realm | The same Error, unmodified                                                                                                     |
+| An object with a string `message`          | A new `Error` with the object's `message`, `name`, `stack` and `cause`, and its other own properties (like `code`) copied over |
+| Anything else                              | A new [`NonError`](#nonerror) describing it                                                                                    |
 
 **Returns** `Error`.
 
@@ -90,13 +92,13 @@ An error-like object without a `stack` gets a stack pointing at the `toError` ca
 
 A [`NonError`](#nonerror) message describes the value as follows:
 
-| Value | Message |
-|-------|---------|
-| String | The string itself |
-| `null`, `undefined`, number, boolean, symbol | `String(value)`, like `'null'` or `'Symbol(id)'` |
-| BigInt | `'10n'` |
-| Function | `'[Function name]'`, never its source |
-| Object or array | JSON, with circular references as `"[Circular]"` and BigInts as `"10n"` |
+| Value                                        | Message                                                                 |
+| -------------------------------------------- | ----------------------------------------------------------------------- |
+| String                                       | The string itself                                                       |
+| `null`, `undefined`, number, boolean, symbol | `String(value)`, like `'null'` or `'Symbol(id)'`                        |
+| BigInt                                       | `'10n'`                                                                 |
+| Function                                     | `'[Function name]'`, never its source                                   |
+| Object or array                              | JSON, with circular references as `"[Circular]"` and BigInts as `"10n"` |
 
 When an object's JSON is empty (`toJSON` returns `undefined`) or throws, the message falls back to `String(value)`, then to the object's tag (`[object Object]`), and finally to `[unprintable value]`.
 
@@ -115,10 +117,10 @@ getErrorMessage(404);               // '404'
 
 Whether `value` is an Error whose `code` property equals `code`. A type guard, so it narrows `value` to `Error & { readonly code: typeof code }`.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `value` | `unknown` | — | A caught value. |
-| `code` | `string \| number` | — | The code to match, like `'ENOENT'`. |
+| Parameter | Type               | Default | Description                         |
+| --------- | ------------------ | ------- | ----------------------------------- |
+| `value`   | `unknown`          | —       | A caught value.                     |
+| `code`    | `string \| number` | —       | The code to match, like `'ENOENT'`. |
 
 **Returns** `boolean`.
 
@@ -130,18 +132,18 @@ Only real Errors match. To match error-like objects too, convert them first: `ha
 
 #### `new NonError(thrown, options?)`
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `thrown` | `unknown` | — | The value that was thrown. |
-| `options` | `ErrorOptions` | — | Standard Error options, such as `cause`. |
+| Parameter | Type           | Default | Description                              |
+| --------- | -------------- | ------- | ---------------------------------------- |
+| `thrown`  | `unknown`      | —       | The value that was thrown.               |
+| `options` | `ErrorOptions` | —       | Standard Error options, such as `cause`. |
 
 #### Properties
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `name` | `'NonError'` | |
-| `message` | `string` | A description of `thrown`: strings as-is, objects as JSON (with circular references and BigInts handled), functions as `[Function name]`. Cut to 1,000 characters. |
-| `thrown` | `unknown` | The original value. |
+| Property  | Type         | Description                                                                                                                                                        |
+| --------- | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `name`    | `'NonError'` |                                                                                                                                                                    |
+| `message` | `string`     | A description of `thrown`: strings as-is, objects as JSON (with circular references and BigInts handled), functions as `[Function name]`. Cut to 1,000 characters. |
+| `thrown`  | `unknown`    | The original value.                                                                                                                                                |
 
 ### `walkErrors(value, options?)`
 
@@ -149,21 +151,21 @@ Visits `value`, its `cause` chain and the `errors` of any `AggregateError`, dept
 
 Every value is converted with `toError`, so a cause that isn't an Error still appears. A value already visited is skipped, so circular chains end. Primitives have no identity, so the same string can be visited more than once.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `value` | `unknown` | — | A caught value. |
-| `options.maxDepth` | `number` | `32` | Deepest level to visit. The root is level `0`. Pass `Infinity` for no limit. |
+| Parameter          | Type      | Default | Description                                                                  |
+| ------------------ | --------- | ------- | ---------------------------------------------------------------------------- |
+| `value`            | `unknown` | —       | A caught value.                                                              |
+| `options.maxDepth` | `number`  | `32`    | Deepest level to visit. The root is level `0`. Pass `Infinity` for no limit. |
 
 **Returns** `Generator<ErrorNode, void, undefined>`. The option and node types are exported as `WalkOptions`, `ErrorNode` and `ErrorRelation`.
 
 #### `ErrorNode`
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `error` | `Error` | The value, converted with `toError`. |
-| `depth` | `number` | Distance from the root, which is `0`. |
-| `relation` | `'root' \| 'cause' \| 'aggregate'` | How it relates to its parent: the value passed in, its parent's `cause`, or an entry in its parent's `errors`. |
-| `truncated` | `boolean` | `true` when `maxDepth` stopped the walk here, so this error's own cause and errors were skipped. |
+| Property    | Type                               | Description                                                                                                    |
+| ----------- | ---------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `error`     | `Error`                            | The value, converted with `toError`.                                                                           |
+| `depth`     | `number`                           | Distance from the root, which is `0`.                                                                          |
+| `relation`  | `'root' \| 'cause' \| 'aggregate'` | How it relates to its parent: the value passed in, its parent's `cause`, or an entry in its parent's `errors`. |
+| `truncated` | `boolean`                          | `true` when `maxDepth` stopped the walk here, so this error's own cause and errors were skipped.               |
 
 ```ts
 const error = new AggregateError([new Error('a'), 'b'], 'all', { cause: new Error('why') });
@@ -195,13 +197,13 @@ Causes are labeled `Caused by:`, and `AggregateError` entries `-`. Each error is
 
 ## Compared to alternatives
 
-| | unknown-error | [normalize-exception](https://www.npmjs.com/package/normalize-exception) | [ensure-error](https://www.npmjs.com/package/ensure-error) | [serialize-error](https://www.npmjs.com/package/serialize-error) | [pony-cause](https://www.npmjs.com/package/pony-cause) |
-|---|---|---|---|---|---|
-| Never throws on hostile values | ✅ | ✅ | ❌ | ❌ | — |
-| Errors from other realms | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Readable circular and BigInt values | ✅ | ❌ | ❌ | ❌ | — |
-| Leaves your errors unmodified | ✅ | ❌ | ❌ | ✅ | — |
-| Causes and `AggregateError` | ✅ | ✅ | ✅ | — | Causes only |
-| 10,000-deep cause chains | ✅ | ❌ | ❌ | — | ❌ |
+|                                     | unknown-error | [normalize-exception](https://www.npmjs.com/package/normalize-exception) | [ensure-error](https://www.npmjs.com/package/ensure-error) | [serialize-error](https://www.npmjs.com/package/serialize-error) | [pony-cause](https://www.npmjs.com/package/pony-cause) |
+| ----------------------------------- | ------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| Never throws on hostile values      | ✅            | ✅                                                                       | ❌                                                         | ❌                                                               | —                                                      |
+| Errors from other realms            | ✅            | ✅                                                                       | ❌                                                         | ✅                                                               | ❌                                                     |
+| Readable circular and BigInt values | ✅            | ❌                                                                       | ❌                                                         | ❌                                                               | —                                                      |
+| Leaves your errors unmodified       | ✅            | ❌                                                                       | ❌                                                         | ✅                                                               | —                                                      |
+| Causes and `AggregateError`         | ✅            | ✅                                                                       | ✅                                                         | —                                                                | Causes only                                            |
+| 10,000-deep cause chains            | ✅            | ❌                                                                       | ❌                                                         | —                                                                | ❌                                                     |
 
 Each cell is checked by a [comparison test suite](https://github.com/JacobLey/leyman/blob/main/e2e/unknown-error-comparison/test/integration/comparison.spec.ts). For every case, and where hand-written conversions fall short, see [WHY-UNKNOWN-ERROR.md](https://github.com/JacobLey/leyman/blob/main/tools/unknown-error/WHY-UNKNOWN-ERROR.md#comparison).

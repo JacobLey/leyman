@@ -10,9 +10,9 @@ Where does WebAssembly pay off? This hashes with [BLAKE3](https://github.com/BLA
 
 A worked example, not a package: nothing here is published.
 
-| Package | What it is | README |
-|---|---|---|
-| [`rust`](https://github.com/JacobLey/leyman/tree/main/demos/blake3-wasm/rust) | The [`blake3`](https://crates.io/crates/blake3) crate, built for WASM with SIMD | [The crate and its build](https://github.com/JacobLey/leyman/blob/main/demos/blake3-wasm/rust/README.md) |
+| Package                                                                                   | What it is                                                                               | README                                                                                                                 |
+| ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| [`rust`](https://github.com/JacobLey/leyman/tree/main/demos/blake3-wasm/rust)             | The [`blake3`](https://crates.io/crates/blake3) crate, built for WASM with SIMD          | [The crate and its build](https://github.com/JacobLey/leyman/blob/main/demos/blake3-wasm/rust/README.md)               |
 | [`typescript`](https://github.com/JacobLey/leyman/tree/main/demos/blake3-wasm/typescript) | The same API on both platforms, with a worker, its tests in real browsers, and the bench | [How to use it, and how it loads](https://github.com/JacobLey/leyman/blob/main/demos/blake3-wasm/typescript/README.md) |
 
 ## What was measured
@@ -25,25 +25,25 @@ A worked example, not a package: nothing here is published.
 
 Warm, time per call:
 
-| Bytes | Node.js: noble | tight | wasm | Chromium: tight | wasm | Firefox: tight | wasm | WebKit: tight | wasm |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 64 | 1.6 µs | 0.2 µs | 0.3 µs | 0.2 µs | 0.4 µs | 0.2 µs | 0.4 µs | 0.2 µs | 0.3 µs |
-| 1 Ki | 16.1 µs | 1.5 µs | 2.2 µs | 1.6 µs | 2.2 µs | 2.3 µs | 2.0 µs | 1.8 µs | 2.0 µs |
-| 3 Ki | 49.6 µs | 4.4 µs | 6.3 µs | 4.5 µs | 6.5 µs | 7.1 µs | 5.9 µs | 5.4 µs | 5.8 µs |
-| **4 Ki** | 68.0 µs | **5.8 µs** | **2.5 µs** | **6.0 µs** | **2.6 µs** | **9.6 µs** | **2.6 µs** | **7.3 µs** | **4.2 µs** |
-| 64 Ki | 1.04 ms | 94 µs | 36 µs | 95 µs | 36 µs | 154 µs | 36 µs | 118 µs | 65 µs |
-| 1 Mi | 16.8 ms | 1.50 ms | 0.56 ms | 1.51 ms | 0.55 ms | 2.44 ms | 0.57 ms | 1.91 ms | 1.00 ms |
-| 16 Mi | 273 ms | 24.2 ms | 9.1 ms | 24.3 ms | 8.9 ms | 39.0 ms | 9.0 ms | 31.0 ms | 15.5 ms |
+|    Bytes | Node.js: noble |      tight |       wasm | Chromium: tight |       wasm | Firefox: tight |       wasm | WebKit: tight |       wasm |
+| -------: | -------------: | ---------: | ---------: | --------------: | ---------: | -------------: | ---------: | ------------: | ---------: |
+|       64 |         1.6 µs |     0.2 µs |     0.3 µs |          0.2 µs |     0.4 µs |         0.2 µs |     0.4 µs |        0.2 µs |     0.3 µs |
+|     1 Ki |        16.1 µs |     1.5 µs |     2.2 µs |          1.6 µs |     2.2 µs |         2.3 µs |     2.0 µs |        1.8 µs |     2.0 µs |
+|     3 Ki |        49.6 µs |     4.4 µs |     6.3 µs |          4.5 µs |     6.5 µs |         7.1 µs |     5.9 µs |        5.4 µs |     5.8 µs |
+| **4 Ki** |        68.0 µs | **5.8 µs** | **2.5 µs** |      **6.0 µs** | **2.6 µs** |     **9.6 µs** | **2.6 µs** |    **7.3 µs** | **4.2 µs** |
+|    64 Ki |        1.04 ms |      94 µs |      36 µs |           95 µs |      36 µs |         154 µs |      36 µs |        118 µs |      65 µs |
+|     1 Mi |        16.8 ms |    1.50 ms |    0.56 ms |         1.51 ms |    0.55 ms |        2.44 ms |    0.57 ms |       1.91 ms |    1.00 ms |
+|    16 Mi |         273 ms |    24.2 ms |     9.1 ms |         24.3 ms |     8.9 ms |        39.0 ms |     9.0 ms |       31.0 ms |    15.5 ms |
 
 From nothing loaded to a first result, in a fresh process or page:
 
-| Bytes | Node.js: tight | wasm | Chromium: tight | wasm | Firefox: tight | wasm | WebKit: tight | wasm |
-|---:|---:|---:|---:|---:|---:|---:|---:|---:|
-| 64 | 1.0 ms | 5.9 ms | 2.3 ms | 2.7 ms | 5 ms | 2 ms | 3 ms | 3 ms |
-| 16 Ki | 2.5 ms | 5.6 ms | 5.7 ms | 2.6 ms | 5 ms | 2 ms | 5 ms | 3 ms |
-| 64 Ki | 5.4 ms | 6.0 ms | 8.8 ms | 2.6 ms | 8 ms | 3 ms | 8 ms | 4 ms |
-| 1 Mi | 12.1 ms | 6.7 ms | 11.8 ms | 3.8 ms | 36 ms | 4 ms | 15 ms | 5 ms |
-| 16 Mi | 35.4 ms | 16.9 ms | 35.4 ms | 14.0 ms | 74 ms | 21 ms | 55 ms | 27 ms |
+| Bytes | Node.js: tight |    wasm | Chromium: tight |    wasm | Firefox: tight |  wasm | WebKit: tight |  wasm |
+| ----: | -------------: | ------: | --------------: | ------: | -------------: | ----: | ------------: | ----: |
+|    64 |         1.0 ms |  5.9 ms |          2.3 ms |  2.7 ms |           5 ms |  2 ms |          3 ms |  3 ms |
+| 16 Ki |         2.5 ms |  5.6 ms |          5.7 ms |  2.6 ms |           5 ms |  2 ms |          5 ms |  3 ms |
+| 64 Ki |         5.4 ms |  6.0 ms |          8.8 ms |  2.6 ms |           8 ms |  3 ms |          8 ms |  4 ms |
+|  1 Mi |        12.1 ms |  6.7 ms |         11.8 ms |  3.8 ms |          36 ms |  4 ms |         15 ms |  5 ms |
+| 16 Mi |        35.4 ms | 16.9 ms |         35.4 ms | 14.0 ms |          74 ms | 21 ms |         55 ms | 27 ms |
 
 ## What was learned
 
@@ -59,11 +59,11 @@ A call into WASM blocks its thread, as any JavaScript function does. It's a ques
 
 Measured with [Comlink](https://github.com/GoogleChromeLabs/comlink) at 16 MiB:
 
-| | Node.js | Chromium | Firefox | WebKit |
-|---|---:|---:|---:|---:|
-| Start a worker, through a first answer | 18 ms | 8 ms | 11 ms | 4 ms |
-| Round trip, copying the bytes | 11.4 ms | 14.8 ms | 14 ms | 18 ms |
-| Round trip, transferring the bytes | 9.0 ms | 9.3 ms | 10 ms | 17 ms |
+|                                        | Node.js | Chromium | Firefox | WebKit |
+| -------------------------------------- | ------: | -------: | ------: | -----: |
+| Start a worker, through a first answer |   18 ms |     8 ms |   11 ms |   4 ms |
+| Round trip, copying the bytes          | 11.4 ms |  14.8 ms |   14 ms |  18 ms |
+| Round trip, transferring the bytes     |  9.0 ms |   9.3 ms |   10 ms |  17 ms |
 
 An empty round trip took 64 µs on Node.js, and was under the browsers' clock resolution. So keep a worker running rather than start one per call, and only use one for what would otherwise block too long.
 

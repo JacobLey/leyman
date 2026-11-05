@@ -17,12 +17,12 @@ database: Drizzle migrations ──► schema.sql (what the migrations build, ag
 
 Worked examples, not packages: none is published. Each is a full package (lint, types, 100% coverage), and the server's tests run against a real Postgres.
 
-| Package | Output |
-|---|---|
-| [`spec`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/spec) | `openapi.json` and `notes.openapi.yaml`, built from [Juniper](/packages/juniper/) schemas. See [The spec](#the-spec). |
-| [`client`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/client) | A typed client, from `openapi.json`. See [The client](#the-client). |
-| [`database`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/database) | The Drizzle schema, its migrations, and `schema.sql`. See [The database](#the-database). |
-| [`server`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/server) | The service: Hono on Postgres. See [The server](#the-server). |
+| Package                                                                           | Output                                                                                                                |
+| --------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [`spec`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/spec)         | `openapi.json` and `notes.openapi.yaml`, built from [Juniper](/packages/juniper/) schemas. See [The spec](#the-spec). |
+| [`client`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/client)     | A typed client, from `openapi.json`. See [The client](#the-client).                                                   |
+| [`database`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/database) | The Drizzle schema, its migrations, and `schema.sql`. See [The database](#the-database).                              |
+| [`server`](https://github.com/JacobLey/leyman/tree/main/demos/openapi/server)     | The service: Hono on Postgres. See [The server](#the-server).                                                         |
 
 ## Why each piece
 
@@ -34,11 +34,11 @@ Worked examples, not packages: none is published. Each is a full package (lint, 
 
 ## The spec
 
-| Operation | Method and path | Auth | Responses |
-|---|---|---|---|
-| `listNotes` | `GET /notes?q=&limit=` | Bearer, `notes:read` | `200 NoteList`, `400`, `401`, `403` |
-| `createNote` | `POST /notes` | Bearer, `notes:write` | `201 Note`, `400`, `401`, `403`, `413` |
-| `getNote` | `GET /notes/{noteId}` | Bearer, `notes:read` | `200 Note`, `400`, `401`, `403`, `404` |
+| Operation    | Method and path        | Auth                  | Responses                              |
+| ------------ | ---------------------- | --------------------- | -------------------------------------- |
+| `listNotes`  | `GET /notes?q=&limit=` | Bearer, `notes:read`  | `200 NoteList`, `400`, `401`, `403`    |
+| `createNote` | `POST /notes`          | Bearer, `notes:write` | `201 Note`, `400`, `401`, `403`, `413` |
+| `getNote`    | `GET /notes/{noteId}`  | Bearer, `notes:read`  | `200 Note`, `400`, `401`, `403`, `404` |
 
 Every error is an `ApiError` (`{ code, message }`). `q` keeps only notes whose title contains it, ignoring case. `limit` is 1-100, default 20. A `403` is a valid token without the operation's scope: OpenAPI 3.1 lets an `http` scheme list scopes too, not only OAuth's. Text can't contain a NUL character (`\u0000`), which Postgres can't store, so a note with one is a `400` rather than a failed insert.
 
@@ -134,11 +134,11 @@ declare const client: NotesClient;
 await client.call('getNote', { path: { noteId: 'abc' }, body: { title: 'Dolly' } });
 ```
 
-| Option | Default | Description |
-|---|---|---|
-| `baseUrl` | — | Where the API is served. Paths in the spec are appended to its path. |
-| `token` | — | Bearer token, or a function returning one (called before each request). Every operation needs one. |
-| `fetch` | `globalThis.fetch` | Makes the requests, e.g. one with retries or tracing. |
+| Option    | Default            | Description                                                                                        |
+| --------- | ------------------ | -------------------------------------------------------------------------------------------------- |
+| `baseUrl` | —                  | Where the API is served. Paths in the spec are appended to its path.                               |
+| `token`   | —                  | Bearer token, or a function returning one (called before each request). Every operation needs one. |
+| `fetch`   | `globalThis.fetch` | Makes the requests, e.g. one with retries or tracing.                                              |
 
 ## The server
 
@@ -215,13 +215,13 @@ With `protectedResource`, the API also serves its Protected Resource Metadata (R
 
 `createNotesApp` covers the common case. Underneath, each part is a [haywire](/packages/haywire/) binding, so an app (or a test) swaps one at a time:
 
-| Identifier | Bound by | Default |
-|---|---|---|
-| `databaseId` | the app: Drizzle on a pool it owns, never closed by the server | — |
-| `authenticatorId` | the app | `jwtAuthenticatorBinding(options)` or `staticTokensBinding(tokens)` |
-| `appConfigId` | the app: `onError`, and `protectedResource` | — |
-| `handlersId` | `notesModule` | `drizzleHandlersBinding` |
-| `notesAppId` | `notesModule` | the Hono app |
+| Identifier        | Bound by                                                       | Default                                                             |
+| ----------------- | -------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `databaseId`      | the app: Drizzle on a pool it owns, never closed by the server | —                                                                   |
+| `authenticatorId` | the app                                                        | `jwtAuthenticatorBinding(options)` or `staticTokensBinding(tokens)` |
+| `appConfigId`     | the app: `onError`, and `protectedResource`                    | —                                                                   |
+| `handlersId`      | `notesModule`                                                  | `drizzleHandlersBinding`                                            |
+| `notesAppId`      | `notesModule`                                                  | the Hono app                                                        |
 
 ```ts
 import type { Authenticator, NotesDatabase } from '@leyman/demo-openapi-server';

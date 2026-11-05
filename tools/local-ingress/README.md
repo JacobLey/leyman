@@ -11,6 +11,7 @@
 Private, not a package: a Docker image and compose project, started by [`ensure`](ensure).
 
 ## Contents
+
 - [Starting it](#starting-it)
 - [Trusting the CA](#trusting-the-ca)
 - [Joining from a container](#joining-from-a-container)
@@ -83,13 +84,13 @@ Labels are read when a container starts, with no ingress restart. A container th
 
 ## How it routes
 
-| Request | Answer |
-|---|---|
-| `https://<host>` labeled by a running container | Proxied to the container, with `X-Forwarded-Host` and `X-Forwarded-Proto` |
-| `https://<host>.localhost` nothing serves | The help page, with a 404 saying nothing serves it. A name exists only while a container labeled with it runs: a devcontainer's while it's up (and loads while its dev server listens), a name a script started until the script stops |
-| `http://ingress.localhost`, `https://ingress.localhost` | The help page and `/root.crt` |
-| Any other `http://` | A temporary redirect (302) to `https://`. There's no HSTS, which browsers would remember |
-| A host outside `.localhost` | Refused: no certificate is issued for it |
+| Request                                                 | Answer                                                                                                                                                                                                                                 |
+| ------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `https://<host>` labeled by a running container         | Proxied to the container, with `X-Forwarded-Host` and `X-Forwarded-Proto`                                                                                                                                                              |
+| `https://<host>.localhost` nothing serves               | The help page, with a 404 saying nothing serves it. A name exists only while a container labeled with it runs: a devcontainer's while it's up (and loads while its dev server listens), a name a script started until the script stops |
+| `http://ingress.localhost`, `https://ingress.localhost` | The help page and `/root.crt`                                                                                                                                                                                                          |
+| Any other `http://`                                     | A temporary redirect (302) to `https://`. There's no HSTS, which browsers would remember                                                                                                                                               |
+| A host outside `.localhost`                             | Refused: no certificate is issued for it                                                                                                                                                                                               |
 
 The configuration is [`Caddyfile`](Caddyfile), merged with the sites generated from labels. A certificate for a host nothing serves is issued on demand, only for `*.localhost` names.
 
@@ -126,12 +127,14 @@ It prints a random `https://<words>.trycloudflare.com`. The catch: the app sees 
 For URLs the app gets right, the tunnel keeps its public `Host`, and the worktree serves that host too. The host has to be known in advance, so use a fixed one: ngrok's free static domain, or a [named Cloudflare tunnel](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/get-started/create-remote-tunnel/) on your own domain.
 
 1. Add it to the worktree's `.devcontainer/.env`, which `initialize.sh` keeps when it rewrites the file:
+
    ```sh
    TUNNEL_HOST="feat-x.example.com"
    ```
 2. Rebuild or reopen the devcontainer. The `caddy` label becomes `feat-x.leyman.localhost feat-x.example.com`, and `TUNNEL_HOST` reaches the container, where a dev server must accept the host (Vite's `server.allowedHosts`; see [the demo](../../demos/local-ingress)).
 3. Start the tunnel with the `.localhost` name for TLS, and without rewriting `Host`:
    - **cloudflared**, a named tunnel: route the public hostname to `https://local-ingress:443` with these [origin settings](https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/configure-tunnels/origin-parameters/), and run the tunnel as a container on the `local-ingress` network with the root mounted. In a locally managed tunnel's `config.yml`:
+
      ```yaml
      ingress:
        - hostname: feat-x.example.com
@@ -141,8 +144,10 @@ For URLs the app gets right, the tunnel keeps its public `Host`, and the worktre
            caPool: /root.crt
        - service: http_status:404
      ```
+
      A tunnel managed in the dashboard has the same settings under the hostname's TLS options (Origin Server Name), but no CA file, so it skips verification instead (No TLS Verify).
    - **ngrok**, on the host, where the OS trust store already has the root (ngrok checks upstream certificates against it, or `SSL_CERT_FILE`):
+
      ```sh
      ngrok http https://feat-x.leyman.localhost --url feat-x.ngrok-free.app
      ```

@@ -27,10 +27,10 @@ A JSON Schema for the executor's config file is published at `nx-lifecycle/out/s
 
 Required. Stages by name.
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `hooks` | `string[]` | `[]` | Steps inside the stage, in order. Each becomes a `stage:hook` target, like `build:run`. Without hooks, targets are bound to the stage itself. |
-| `dependsOn` | `dependsOn[]` | `[]` | What the stage runs after, in Nx's [`dependsOn`](https://nx.dev/reference/project-configuration#dependson) format. Can't name another stage's anchor or hooks. |
+| Field       | Type          | Default | Description                                                                                                                                                    |
+| ----------- | ------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hooks`     | `string[]`    | `[]`    | Steps inside the stage, in order. Each becomes a `stage:hook` target, like `build:run`. Without hooks, targets are bound to the stage itself.                  |
+| `dependsOn` | `dependsOn[]` | `[]`    | What the stage runs after, in Nx's [`dependsOn`](https://nx.dev/reference/project-configuration#dependson) format. Can't name another stage's anchor or hooks. |
 
 See [Stages and hooks](/packages/nx-lifecycle/guides/stages-and-hooks) for the targets each stage generates.
 
@@ -64,9 +64,9 @@ Computes everything, but writes nothing. Still fails when `check` is `true`.
 
 ## Executor options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `configFile` | `string` | `lifecycle.json` | Config file with `stages` and `bindings`, resolved from `cwd`. Used when they aren't passed directly. |
-| `cwd` | `string` | the current directory (the workspace root, under Nx) | Directory `configFile` is resolved from. |
-| `stages`, `bindings` | | | Passed directly, instead of `configFile`. |
-| `check`, `dryRun` | `boolean` | | As above. Can also be set in the config file. |
+| Option               | Type      | Default                                              | Description                                                                                           |
+| -------------------- | --------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `configFile`         | `string`  | `lifecycle.json`                                     | Config file with `stages` and `bindings`, resolved from `cwd`. Used when they aren't passed directly. |
+| `cwd`                | `string`  | the current directory (the workspace root, under Nx) | Directory `configFile` is resolved from.                                                              |
+| `stages`, `bindings` |           |                                                      | Passed directly, instead of `configFile`.                                                             |
+| `check`, `dryRun`    | `boolean` |                                                      | As above. Can also be set in the config file.                                                         |

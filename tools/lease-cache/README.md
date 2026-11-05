@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # lease-cache
+
 Read-through caching on Valkey or Redis with leases: one load per key across every instance, and a load that finishes after an invalidation never caches its outdated value.
 
 [![npm package](https://badge.fury.io/js/lease-cache.svg)](https://www.npmjs.com/package/lease-cache)
@@ -19,6 +20,7 @@ Leases are the mechanism memcache uses at Facebook ([Scaling Memcache at Faceboo
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/lease-cache/). For the problem in detail, why the guarantees hold (and what they rely on), and the comparison to other caches, see [WHY-LEASE-CACHE.md](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Clients](#clients)
@@ -140,17 +142,17 @@ To keep caching through an outage, put a cache in front that keeps values in mem
 
 ### `new LeaseCache(options)`
 
-| Option | Type | Description |
-|--------|------|-------------|
-| `connection` | `LeaseCacheConnection` | Required. Anything with `eval(script, numKeys, ...args)`: see [Clients](#clients). Never closed by the cache. |
-| `prefix` | `string` | Required. Prefix of every key, so several caches can share a server. Must not contain `{`. |
-| `ttlMs` | `number` | Required. How long a loaded value is cached, unless `get` is given its own. |
-| `leaseMs` | `number` | Required. How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing. |
-| `pollMs` | `number` | Required. How often a waiting reader checks again. |
-| `waitMs` | `number` | Required. How long a reader waits on another's load before loading itself (without caching). |
-| `staleMs` | `number` | Optional, `0` (off) by default. After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. Only for reads that accept data from before the last change: a stale value is returned, never cached. |
-| `onWait` | `(key: string) => void` | Optional. Called once for each read that waits on another's load, e.g. to count saved loads. |
-| `onUnavailable` | `(error: unknown, key: string) => void` | Optional. Called when Valkey fails. Given, reads load without caching rather than reject, so they keep working while Valkey is down. |
+| Option          | Type                                    | Description                                                                                                                                                                                                                                                         |
+| --------------- | --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `connection`    | `LeaseCacheConnection`                  | Required. Anything with `eval(script, numKeys, ...args)`: see [Clients](#clients). Never closed by the cache.                                                                                                                                                       |
+| `prefix`        | `string`                                | Required. Prefix of every key, so several caches can share a server. Must not contain `{`.                                                                                                                                                                          |
+| `ttlMs`         | `number`                                | Required. How long a loaded value is cached, unless `get` is given its own.                                                                                                                                                                                         |
+| `leaseMs`       | `number`                                | Required. How long a reader may load before another can take over. Longer than a load usually takes: a load that outlives its lease still returns, but caches nothing.                                                                                              |
+| `pollMs`        | `number`                                | Required. How often a waiting reader checks again.                                                                                                                                                                                                                  |
+| `waitMs`        | `number`                                | Required. How long a reader waits on another's load before loading itself (without caching).                                                                                                                                                                        |
+| `staleMs`       | `number`                                | Optional, `0` (off) by default. After `invalidate()`, how long the old value is kept as stale. A reader that would wait on another's load returns it instead. Only for reads that accept data from before the last change: a stale value is returned, never cached. |
+| `onWait`        | `(key: string) => void`                 | Optional. Called once for each read that waits on another's load, e.g. to count saved loads.                                                                                                                                                                        |
+| `onUnavailable` | `(error: unknown, key: string) => void` | Optional. Called when Valkey fails. Given, reads load without caching rather than reject, so they keep working while Valkey is down.                                                                                                                                |
 
 Durations are rounded up to whole milliseconds. Each must be a finite number above 0 (`waitMs` and `staleMs` may be 0), or the constructor throws `LeaseCacheDurationError`.
 
@@ -172,14 +174,14 @@ const user = await cache.get(`user:${id}`, async () => db.users.find(id), {
 
 As `get`, but returns `{ value, source, ttlMs }`: where the value came from, and how much longer Valkey caches it. For a cache in front of this one, such as a memory tier: it should keep a value no longer than `ttlMs`, and not at all at `0`, since a value Valkey didn't cache may already be outdated.
 
-| `source` | The value | `ttlMs` |
-|---|---|---|
-| `'hit'` | Was cached already. | The time it has left. |
-| `'filled'` | Was loaded with the lease, and cached. | The value's `ttlMs`. |
-| `'lost'` | Was loaded, but the lease was lost first (invalidated, or run out), so it wasn't cached. | `0` |
-| `'stale'` | Was kept by an invalidation (`staleMs`), and returned rather than waiting. | `0` |
-| `'timeout'` | Was loaded without a lease, after waiting `waitMs`. | `0` |
-| `'unavailable'` | Was loaded without the cache, as Valkey failed. Only with `onUnavailable`. | `0` |
+| `source`        | The value                                                                                | `ttlMs`               |
+| --------------- | ---------------------------------------------------------------------------------------- | --------------------- |
+| `'hit'`         | Was cached already.                                                                      | The time it has left. |
+| `'filled'`      | Was loaded with the lease, and cached.                                                   | The value's `ttlMs`.  |
+| `'lost'`        | Was loaded, but the lease was lost first (invalidated, or run out), so it wasn't cached. | `0`                   |
+| `'stale'`       | Was kept by an invalidation (`staleMs`), and returned rather than waiting.               | `0`                   |
+| `'timeout'`     | Was loaded without a lease, after waiting `waitMs`.                                      | `0`                   |
+| `'unavailable'` | Was loaded without the cache, as Valkey failed. Only with `onUnavailable`.               | `0`                   |
 
 #### `cache.invalidate(key)`
 
@@ -191,20 +193,20 @@ The guarantee relies on loads reading current data: a load from a lagging replic
 
 Every error extends `LeaseCacheError`. What `load` throws is passed on as it is.
 
-| Error | When |
-|-------|------|
+| Error                     | When                                                                                                                                     |
+| ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
 | `LeaseCacheDurationError` | A duration isn't a finite number above 0 (`waitMs` and `staleMs` may be 0), including one computed by `ttlMs`. Has `option` and `value`. |
-| `LeaseCacheKeyError` | A key is empty or starts with `}`, so its hash tag would be empty (see [Clients](#clients)). Has `key`. |
-| `LeaseCachePrefixError` | The prefix contains `{`, which would change the keys' hash tag. Has `prefix`. |
-| `LeaseCacheValueError` | `load` returned something JSON can't store, e.g. `undefined`. Has `key`. |
+| `LeaseCacheKeyError`      | A key is empty or starts with `}`, so its hash tag would be empty (see [Clients](#clients)). Has `key`.                                  |
+| `LeaseCachePrefixError`   | The prefix contains `{`, which would change the keys' hash tag. Has `prefix`.                                                            |
+| `LeaseCacheValueError`    | `load` returned something JSON can't store, e.g. `undefined`. Has `key`.                                                                 |
 
 ## Compared to alternatives
 
-| | lease-cache | BentoCache, cache-manager, cachified |
-|---|---|---|
-| Concurrent misses across instances | one load | one per instance |
-| Load finishing after an invalidation | not cached | cached until it expires |
-| Readers waiting on a load after an invalidation | optional (`staleMs`) | ✅ (grace periods) |
-| Memory tier, stale-while-revalidate on expiry, many stores | ❌ | ✅ |
+|                                                            | lease-cache          | BentoCache, cache-manager, cachified |
+| ---------------------------------------------------------- | -------------------- | ------------------------------------ |
+| Concurrent misses across instances                         | one load             | one per instance                     |
+| Load finishing after an invalidation                       | not cached           | cached until it expires              |
+| Readers waiting on a load after an invalidation            | optional (`staleMs`) | ✅ (grace periods)                   |
+| Memory tier, stale-while-revalidate on expiry, many stores | ❌                   | ✅                                   |
 
 See [WHY-LEASE-CACHE.md](https://github.com/JacobLey/leyman/blob/main/tools/lease-cache/WHY-LEASE-CACHE.md#compared-to-alternatives) for the full comparison.

@@ -6,14 +6,14 @@ description: Every vitest-chain function, and the arguments its callbacks receiv
 
 Each function calls the Vitest function of the same name. vitest-chain is ESM only, with `vitest` as a peer dependency.
 
-| Function | Alias | Chains into | Vitest's arguments |
-|----------|-------|-------------|--------------------|
-| `describe(name, fn)` | `suite` | nothing | — |
-| `beforeAll(fn)` | | `beforeAll`, `beforeEach`, `test`/`it`, `afterEach`, `afterAll` | `(context, suite)` |
-| `beforeEach(fn)` | | `beforeEach`, `test`/`it`, `afterEach` | `(testContext)` |
-| `test(name, fn)` | `it` | nothing | `(testContext)` |
-| `afterEach(fn)` | | `afterEach` | `(testContext)` |
-| `afterAll(fn)` | | `afterAll` | `(context, suite)` |
+| Function             | Alias   | Chains into                                                     | Vitest's arguments |
+| -------------------- | ------- | --------------------------------------------------------------- | ------------------ |
+| `describe(name, fn)` | `suite` | nothing                                                         | —                  |
+| `beforeAll(fn)`      |         | `beforeAll`, `beforeEach`, `test`/`it`, `afterEach`, `afterAll` | `(context, suite)` |
+| `beforeEach(fn)`     |         | `beforeEach`, `test`/`it`, `afterEach`                          | `(testContext)`    |
+| `test(name, fn)`     | `it`    | nothing                                                         | `(testContext)`    |
+| `afterEach(fn)`      |         | `afterEach`                                                     | `(testContext)`    |
+| `afterAll(fn)`       |         | `afterAll`                                                      | `(context, suite)` |
 
 `describe` and `test` also have `.only` and `.skip`. Hooks and tests take only a callback (and a name), not vitest's timeout or options arguments, and there is no `.each`, `.concurrent`, `.todo` or `.skipIf`: use vitest's own functions for those.
 

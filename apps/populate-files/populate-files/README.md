@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # populate-files
+
 Populate static files with dynamic content, and make sure they stay in sync.
 
 [![npm package](https://badge.fury.io/js/populate-files.svg)](https://www.npmjs.com/package/populate-files)
@@ -68,10 +69,10 @@ Writes the provided content to the file at `params.filePath`.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `params` | `object` | — | Required. See [params](#params) below. |
-| `options` | `PopulateOptions` | `{}` | Optional. See [options](#options) below. |
+| Parameter | Type              | Default | Description                              |
+| --------- | ----------------- | ------- | ---------------------------------------- |
+| `params`  | `object`          | —       | Required. See [params](#params) below.   |
+| `options` | `PopulateOptions` | `{}`    | Optional. See [options](#options) below. |
 
 **Returns** `Promise<PopulationResponse>`: `{ filePath, updated: false }` if the file already had this content, else `{ filePath, updated: true, reason }` with `reason` `'file-not-exist'` or `'content-changed'`. `filePath` is absolute. With `dryRun`, what would have been written.
 
@@ -79,26 +80,26 @@ Writes the provided content to the file at `params.filePath`.
 
 #### `params`
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `filePath` | `string` | — | Required. Path to the file to write (and check for existing content). |
-| `content` | `string \| object \| Uint8Array \| Promise` | — | Required. Data to write. Strings and `Uint8Array` (like Buffers) are written literally. An object is `JSON.stringify`ed and pretty-formatted according to user configs. A `Promise` may be provided that resolves to one of these types. Must be a string (or a `Promise` of one) when `signed`. |
-| `signed` | `boolean` | `false` | If `true`, sign the file and keep its manual sections. See [Signed files](#signed-files). |
-| `manifestInputs` | `Record<string, string>` | — | With the `manifest` option, hashes of what produced the file, recorded in its manifest entry. See [Manifest](#manifest). |
+| Property         | Type                                        | Default | Description                                                                                                                                                                                                                                                                                      |
+| ---------------- | ------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `filePath`       | `string`                                    | —       | Required. Path to the file to write (and check for existing content).                                                                                                                                                                                                                            |
+| `content`        | `string \| object \| Uint8Array \| Promise` | —       | Required. Data to write. Strings and `Uint8Array` (like Buffers) are written literally. An object is `JSON.stringify`ed and pretty-formatted according to user configs. A `Promise` may be provided that resolves to one of these types. Must be a string (or a `Promise` of one) when `signed`. |
+| `signed`         | `boolean`                                   | `false` | If `true`, sign the file and keep its manual sections. See [Signed files](#signed-files).                                                                                                                                                                                                        |
+| `manifestInputs` | `Record<string, string>`                    | —       | With the `manifest` option, hashes of what produced the file, recorded in its manifest entry. See [Manifest](#manifest).                                                                                                                                                                         |
 
 #### `options`
 
 Typed as `PopulateOptions`.
 
-| Property | Type | Default | Description |
-|----------|------|---------|-------------|
-| `check` | `boolean` | `true` in CI, else `false` | If `true`, fails if writing the file would change its content. Useful for CI environments to verify version-controlled files are up to date before deployment. |
-| `dryRun` | `boolean` | `false` | If `true`, does not write the file regardless of changes. Can still fail if `check` is `true`. |
-| `cwd` | `string \| URL` | `process.cwd()` | Used as the current working directory when `params.filePath` is a relative path. A path must be an existing directory. |
-| `targetDir` | `string` | `'.'` | Directory used to resolve relative `filePath`s in params. Resolved relative to `cwd`. |
-| `clean` | `boolean` | `false` | Only applies to `populateFiles`. If `true`, removes files in `targetDir` that are not in the provided params. In `check` mode, fails instead of removing. |
-| `force` | `boolean` | `false` | Applies to `signed` files and the `manifest`. If `true`, overwrites files that were edited (outside manual sections), are not signed or not listed, or are malformed, and drops orphaned manual sections. Use it once when starting to sign an existing file. |
-| `manifest` | `string` | — | Path of a manifest file (relative to `cwd`) recording the generated files. See [Manifest](#manifest). |
+| Property    | Type            | Default                    | Description                                                                                                                                                                                                                                                   |
+| ----------- | --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `check`     | `boolean`       | `true` in CI, else `false` | If `true`, fails if writing the file would change its content. Useful for CI environments to verify version-controlled files are up to date before deployment.                                                                                                |
+| `dryRun`    | `boolean`       | `false`                    | If `true`, does not write the file regardless of changes. Can still fail if `check` is `true`.                                                                                                                                                                |
+| `cwd`       | `string \| URL` | `process.cwd()`            | Used as the current working directory when `params.filePath` is a relative path. A path must be an existing directory.                                                                                                                                        |
+| `targetDir` | `string`        | `'.'`                      | Directory used to resolve relative `filePath`s in params. Resolved relative to `cwd`.                                                                                                                                                                         |
+| `clean`     | `boolean`       | `false`                    | Only applies to `populateFiles`. If `true`, removes files in `targetDir` that are not in the provided params. In `check` mode, fails instead of removing.                                                                                                     |
+| `force`     | `boolean`       | `false`                    | Applies to `signed` files and the `manifest`. If `true`, overwrites files that were edited (outside manual sections), are not signed or not listed, or are malformed, and drops orphaned manual sections. Use it once when starting to sign an existing file. |
+| `manifest`  | `string`        | —                          | Path of a manifest file (relative to `cwd`) recording the generated files. See [Manifest](#manifest).                                                                                                                                                         |
 
 ---
 
@@ -108,10 +109,10 @@ Writes multiple files in parallel. Each `filePath` must be unique: two that reso
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `params` | `readonly PopulateFileParams[]` | — | Required. A list of [populateFile params](#params), with unique `filePath`s. |
-| `options` | `PopulateOptions` | `{}` | Optional. Same as [populateFile options](#options). |
+| Parameter | Type                            | Default | Description                                                                  |
+| --------- | ------------------------------- | ------- | ---------------------------------------------------------------------------- |
+| `params`  | `readonly PopulateFileParams[]` | —       | Required. A list of [populateFile params](#params), with unique `filePath`s. |
+| `options` | `PopulateOptions`               | `{}`    | Optional. Same as [populateFile options](#options).                          |
 
 **Returns** `Promise<PopulationResponse[]>`: one result per file, then one for the manifest (with `manifest`), then one per file removed by `clean` (`reason: 'stale-file'`).
 
@@ -127,12 +128,12 @@ Both errors are exported (`import { PopulateFilesCheckError, PopulateFilesOwners
 
 `PopulateFilesOwnershipError` is thrown when a `signed` file can't be overwritten without `force`. Its `filePath` property is the file, and `reason` is one of:
 
-| `reason` | Meaning |
-|----------|---------|
-| `'edited'` | The file was edited outside its manual sections (or, with a `manifest`, doesn't match its hash). |
-| `'not-owned'` | The file exists but is not signed (or, with a `manifest`, not listed in it), so it may not be generated. |
-| `'malformed'` | The file's signature or manual section markers can't be read. |
-| `'orphaned-section'` | The file has a manual section with content that the new content no longer has. |
+| `reason`             | Meaning                                                                                                  |
+| -------------------- | -------------------------------------------------------------------------------------------------------- |
+| `'edited'`           | The file was edited outside its manual sections (or, with a `manifest`, doesn't match its hash).         |
+| `'not-owned'`        | The file exists but is not signed (or, with a `manifest`, not listed in it), so it may not be generated. |
+| `'malformed'`        | The file's signature or manual section markers can't be read.                                            |
+| `'orphaned-section'` | The file has a manual section with content that the new content no longer has.                           |
 
 These are thrown with or without `check`, so CI also fails on hand-edited files. An existing file that can't be read for any reason other than not existing (e.g. `EACCES`) fails with the error from `node:fs`. An invalid manifest throws `GeneratedSignatureManifestError`, and a `signed` file with no known comment syntax (e.g. a new `.json` file) throws `GeneratedSignatureCommentStyleError`, both from [`generated-signature`](https://www.npmjs.com/package/generated-signature). Signed content that isn't a string rejects with a `TypeError` (a type error in TypeScript).
 

@@ -52,12 +52,12 @@ If a stage has hooks, bind to a hook (`build:run`), not to the stage (`build`).
 
 A stage's `dependsOn` takes the same entries as Nx's [`dependsOn`](https://nx.dev/reference/project-configuration#dependson):
 
-| Entry | Meaning |
-|-------|---------|
-| `"build"` | This project's `build` stage. |
-| `"^build"` | The `build` stage of every project this one depends on. |
-| `{ "target": "build", "projects": ["my-server"] }` | `build` of specific projects. |
-| `{ "target": "build", "params": "forward" }` | Forward command line arguments to `build`. |
+| Entry                                              | Meaning                                                 |
+| -------------------------------------------------- | ------------------------------------------------------- |
+| `"build"`                                          | This project's `build` stage.                           |
+| `"^build"`                                         | The `build` stage of every project this one depends on. |
+| `{ "target": "build", "projects": ["my-server"] }` | `build` of specific projects.                           |
+| `{ "target": "build", "params": "forward" }`       | Forward command line arguments to `build`.              |
 
 A stage can depend on another stage, or on any other target, but not on another stage's anchor or hooks: depend on `build`, not `build:post`. Depending on a hook would run part of a stage, so nx-lifecycle rejects it and suggests the stage instead.
 
@@ -92,12 +92,12 @@ export const options = {
 
 nx-lifecycle checks the stages and bindings whenever Nx builds the project graph, and fails when:
 
-| Problem | Example |
-|---------|---------|
-| A binding names a hook that doesn't exist | `"tsc": "build:compile"`, with no `compile` hook |
-| A binding names a stage that has hooks | `"tsc": "build"`, when `build` has hooks |
-| A binding names an anchor | `"tsc": "build:_"` |
-| A bound target has the name of a lifecycle target | `"build:run": "test:run"` |
-| A stage depends on another stage's anchor or hook | `"dependsOn": ["^build:post"]` |
+| Problem                                           | Example                                          |
+| ------------------------------------------------- | ------------------------------------------------ |
+| A binding names a hook that doesn't exist         | `"tsc": "build:compile"`, with no `compile` hook |
+| A binding names a stage that has hooks            | `"tsc": "build"`, when `build` has hooks         |
+| A binding names an anchor                         | `"tsc": "build:_"`                               |
+| A bound target has the name of a lifecycle target | `"build:run": "test:run"`                        |
+| A stage depends on another stage's anchor or hook | `"dependsOn": ["^build:post"]`                   |
 
 A bound target that no project declares is a warning, not an error, since it is usually a typo. Targets created by other Nx plugins aren't declared in `project.json`, so they trigger it too.

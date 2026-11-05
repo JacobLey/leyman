@@ -9,6 +9,7 @@
 </div>
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -60,9 +61,9 @@ Returns key-value pairs for all enum members in declaration order.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `enumDict` | `object` | — | Required. The enum object to convert. |
+| Parameter  | Type     | Default | Description                           |
+| ---------- | -------- | ------- | ------------------------------------- |
+| `enumDict` | `object` | —       | Required. The enum object to convert. |
 
 **Returns** `{ key: string; value: EnumValue }[]` — array of `{ key, value }` pairs, strongly typed to the enum's key and value union types. Numeric reverse-mapping entries are excluded.
 
@@ -79,10 +80,10 @@ Returns only the values of the enum in declaration order. TypeScript narrows the
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `enumDict` | `object` | — | Required. The enum object to convert. |
-| `options` | `object` | `{}` | Optional. |
+| Parameter        | Type      | Default | Description                                                              |
+| ---------------- | --------- | ------- | ------------------------------------------------------------------------ |
+| `enumDict`       | `object`  | —       | Required. The enum object to convert.                                    |
+| `options`        | `object`  | `{}`    | Optional.                                                                |
 | `options.unique` | `boolean` | `false` | When `true`, duplicate values are removed; the first occurrence is kept. |
 
 **Returns** `EnumValue[]` — array of enum values, typed to the enum's value union type.
@@ -103,9 +104,9 @@ Returns only the keys of the enum in declaration order.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `enumDict` | `object` | — | Required. The enum object to convert. |
+| Parameter  | Type     | Default | Description                           |
+| ---------- | -------- | ------- | ------------------------------------- |
+| `enumDict` | `object` | —       | Required. The enum object to convert. |
 
 **Returns** `(keyof Enum)[]` — array of enum key strings, typed to the enum's key union type.
 

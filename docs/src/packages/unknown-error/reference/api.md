@@ -10,11 +10,11 @@ Every function takes `unknown`, so the `catch` variable can be passed straight i
 
 Converts any caught value to an Error.
 
-| `value` | Result |
-|---------|--------|
-| An Error, including one from another realm | The same Error, unmodified |
-| An object with a string `message` | A new `Error` with the object's `message`, `name`, `stack` and `cause`, and its other own properties copied over |
-| Anything else | A new [`NonError`](#nonerror) describing it |
+| `value`                                    | Result                                                                                                           |
+| ------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| An Error, including one from another realm | The same Error, unmodified                                                                                       |
+| An object with a string `message`          | A new `Error` with the object's `message`, `name`, `stack` and `cause`, and its other own properties copied over |
+| Anything else                              | A new [`NonError`](#nonerror) describing it                                                                      |
 
 **Returns** `Error`. See [Converting caught values](/packages/unknown-error/guides/converting).
 
@@ -28,10 +28,10 @@ The message of `toError(value)`.
 
 Whether `value` is an Error whose `code` property equals `code`.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `value` | `unknown` | — | A caught value. |
-| `code` | `string \| number` | — | The code to match, like `'ENOENT'`. |
+| Parameter | Type               | Default | Description                         |
+| --------- | ------------------ | ------- | ----------------------------------- |
+| `value`   | `unknown`          | —       | A caught value.                     |
+| `code`    | `string \| number` | —       | The code to match, like `'ENOENT'`. |
 
 **Returns** `boolean`, narrowing `value` to `Error & { readonly code: typeof code }`:
 
@@ -54,25 +54,25 @@ Only real Errors match. To match error-like objects too, use `hasCode(toError(er
 
 ### `new NonError(thrown, options?)`
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `thrown` | `unknown` | — | The value that was thrown. |
-| `options` | `ErrorOptions` | — | Standard Error options, such as `cause`. |
+| Parameter | Type           | Default | Description                              |
+| --------- | -------------- | ------- | ---------------------------------------- |
+| `thrown`  | `unknown`      | —       | The value that was thrown.               |
+| `options` | `ErrorOptions` | —       | Standard Error options, such as `cause`. |
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `name` | `string` | `'NonError'`. |
-| `message` | `string` | A description of `thrown`, cut to 1,000 characters. See [Everything else](/packages/unknown-error/guides/converting#everything-else). |
-| `thrown` | `unknown` | The original value. |
+| Property  | Type      | Description                                                                                                                           |
+| --------- | --------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`    | `string`  | `'NonError'`.                                                                                                                         |
+| `message` | `string`  | A description of `thrown`, cut to 1,000 characters. See [Everything else](/packages/unknown-error/guides/converting#everything-else). |
+| `thrown`  | `unknown` | The original value.                                                                                                                   |
 
 ## `walkErrors(value, options?)`
 
 Visits `value`, its `cause` chain and the `errors` of any `AggregateError`, depth first: an error, then its cause, then its `errors` in order. Each value is converted with `toError`, and a value already visited is skipped.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `value` | `unknown` | — | A caught value. |
-| `options` | [`WalkOptions`](#walkoptions) | `{}` | |
+| Parameter | Type                          | Default | Description     |
+| --------- | ----------------------------- | ------- | --------------- |
+| `value`   | `unknown`                     | —       | A caught value. |
+| `options` | [`WalkOptions`](#walkoptions) | `{}`    |                 |
 
 **Returns** `Generator<ErrorNode, void, undefined>`. See [Cause chains](/packages/unknown-error/guides/cause-chains).
 
@@ -80,10 +80,10 @@ Visits `value`, its `cause` chain and the `errors` of any `AggregateError`, dept
 
 Formats an error with every cause and `AggregateError` entry, each indented under its parent. Causes are labeled `Caused by:` and `AggregateError` entries `-`.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `value` | `unknown` | — | A caught value. |
-| `options` | [`WalkOptions`](#walkoptions) | `{}` | |
+| Parameter | Type                          | Default | Description     |
+| --------- | ----------------------------- | ------- | --------------- |
+| `value`   | `unknown`                     | —       | A caught value. |
+| `options` | [`WalkOptions`](#walkoptions) | `{}`    |                 |
 
 **Returns** `string`. Each error is printed as its `stack`, with a `Name: message` line added first when the stack doesn't start with one. Where `maxDepth` cut the walk short, a `… more causes omitted` line says so.
 
@@ -91,18 +91,18 @@ Formats an error with every cause and `AggregateError` entry, each indented unde
 
 ### `WalkOptions`
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `maxDepth` | `number` | `32` | Deepest level to visit. The root is level `0`. `Infinity` for no limit. |
+| Option     | Type     | Default | Description                                                             |
+| ---------- | -------- | ------- | ----------------------------------------------------------------------- |
+| `maxDepth` | `number` | `32`    | Deepest level to visit. The root is level `0`. `Infinity` for no limit. |
 
 ### `ErrorNode`
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `error` | `Error` | The value, converted with `toError`. |
-| `depth` | `number` | Distance from the root, which is `0`. |
-| `relation` | [`ErrorRelation`](#errorrelation) | How it relates to its parent. |
-| `truncated` | `boolean` | `true` when `maxDepth` stopped the walk here, so this error's own cause and errors were skipped. |
+| Property    | Type                              | Description                                                                                      |
+| ----------- | --------------------------------- | ------------------------------------------------------------------------------------------------ |
+| `error`     | `Error`                           | The value, converted with `toError`.                                                             |
+| `depth`     | `number`                          | Distance from the root, which is `0`.                                                            |
+| `relation`  | [`ErrorRelation`](#errorrelation) | How it relates to its parent.                                                                    |
+| `truncated` | `boolean`                         | `true` when `maxDepth` stopped the walk here, so this error's own cause and errors were skipped. |
 
 ### `ErrorRelation`
 

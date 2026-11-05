@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # test-chain-core
+
 Framework-agnostic internals for chaining test hooks with typed context.
 
 [![npm package](https://badge.fury.io/js/test-chain-core.svg)](https://www.npmjs.com/package/test-chain-core)
@@ -37,22 +38,22 @@ Return values are loosely typed; framework packages cast them to their own publi
 
 **Parameters**
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
+| Parameter   | Type                  | Description                                  |
+| ----------- | --------------------- | -------------------------------------------- |
 | `framework` | `ChainFramework<Key>` | Required. Description of the test framework. |
 
 **Returns** `ChainEntrypoints`: `{ suite, before, beforeEach, test, afterEach, after }`. `suite` and `test` also have `.only` and `.skip`. Each hook returns an object of the chained methods, under the names in `names`.
 
 `ChainFramework<Key>` (`Key` must be an object):
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `methods` | `NativeMethods` | The framework's native `suite`, `before`, `beforeEach`, `test`, `afterEach`, and `after` methods. |
-| `currentTest.inHook` | `(thisArg, args) => Key` | Identify the executing test from a per-test hook's native `this`/arguments. |
-| `currentTest.inTest` | `(thisArg, args) => Key` | Identify the executing test from a test's native `this`/arguments. |
-| `supportsDone` | `boolean` | Whether callbacks that declare an extra parameter receive a `done` callback. |
-| `allowAsyncSuites` | `boolean` | Whether suite callbacks may return a promise. |
-| `names` | `ChainNames` | Property names (aliases) each chained method is exposed under: `before`, `beforeEach`, `test`, `skipTest` (aliases of `test.skip`, e.g. `xit`), `afterEach` and `after`, each a `readonly string[]`. |
+| Property             | Type                     | Description                                                                                                                                                                                          |
+| -------------------- | ------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `methods`            | `NativeMethods`          | The framework's native `suite`, `before`, `beforeEach`, `test`, `afterEach`, and `after` methods.                                                                                                    |
+| `currentTest.inHook` | `(thisArg, args) => Key` | Identify the executing test from a per-test hook's native `this`/arguments.                                                                                                                          |
+| `currentTest.inTest` | `(thisArg, args) => Key` | Identify the executing test from a test's native `this`/arguments.                                                                                                                                   |
+| `supportsDone`       | `boolean`                | Whether callbacks that declare an extra parameter receive a `done` callback.                                                                                                                         |
+| `allowAsyncSuites`   | `boolean`                | Whether suite callbacks may return a promise.                                                                                                                                                        |
+| `names`              | `ChainNames`             | Property names (aliases) each chained method is exposed under: `before`, `beforeEach`, `test`, `skipTest` (aliases of `test.skip`, e.g. `xit`), `afterEach` and `after`, each a `readonly string[]`. |
 
 `Key` identifies the currently executing test (e.g. Mocha's `Test`, Vitest's `task`), used to propagate per-test context.
 

@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # haywire
+
 Compile-time checked dependency injection for TypeScript — no decorators, no reflect-metadata, no global state.
 
 [![npm package](https://badge.fury.io/js/haywire.svg)](https://www.npmjs.com/package/haywire)
@@ -22,50 +23,50 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 
 - [Installation](#installation)
 - [Example](#example)
-    - [A fuller example](#a-fuller-example)
+  - [A fuller example](#a-fuller-example)
 - [Concepts](#concepts)
-    - [Type tracking](#type-tracking)
-    - [Binding an implementation to an id](#binding-an-implementation-to-an-id)
-    - [Supplying a value](#supplying-a-value)
-    - [Circular dependencies](#circular-dependencies)
-    - [Lists](#lists)
-    - [Collecting bindings in modules](#collecting-bindings-in-modules)
-    - [Replacing bindings in tests](#replacing-bindings-in-tests)
-    - [Requesting instances from a container](#requesting-instances-from-a-container)
-    - [Combining containers with dynamic runtime values](#combining-containers-with-dynamic-runtime-values)
-    - [Disposing containers](#disposing-containers)
-    - [Debugging a container](#debugging-a-container)
-    - [Scope Gotchas](#scope-gotchas)
-    - [Validation using types](#validation-using-types)
-    - [Typescript configuration](#typescript-configuration)
-    - [Generics on classes and methods](#generics-on-classes-and-methods)
+  - [Type tracking](#type-tracking)
+  - [Binding an implementation to an id](#binding-an-implementation-to-an-id)
+  - [Supplying a value](#supplying-a-value)
+  - [Circular dependencies](#circular-dependencies)
+  - [Lists](#lists)
+  - [Collecting bindings in modules](#collecting-bindings-in-modules)
+  - [Replacing bindings in tests](#replacing-bindings-in-tests)
+  - [Requesting instances from a container](#requesting-instances-from-a-container)
+  - [Combining containers with dynamic runtime values](#combining-containers-with-dynamic-runtime-values)
+  - [Disposing containers](#disposing-containers)
+  - [Debugging a container](#debugging-a-container)
+  - [Scope Gotchas](#scope-gotchas)
+  - [Validation using types](#validation-using-types)
+  - [Typescript configuration](#typescript-configuration)
+  - [Generics on classes and methods](#generics-on-classes-and-methods)
 - [Upgrading to 2.0](#upgrading-to-20)
 - [API](#api)
-    - [Methods](#methods)
-        - [identifier](#identifier)
-        - [bind](#bind)
-        - [createModule](#createmodule)
-        - [createContainer](#createcontainer)
-        - [isSyncContainer](#issynccontainer)
-        - [createContainerFactory](#createcontainerfactory)
-    - [Classes](#classes)
-        - [HaywireId](#haywireid)
-        - [Binding](#binding)
-        - [Module](#module)
-        - [Container](#container)
-        - [SyncContainer](#synccontainer)
-        - [ContainerFactory](#containerfactory)
-    - [Types](#types)
-        - [HaywireIdType](#haywireidtype)
-        - [AsyncSupplier](#asyncsupplier)
-        - [Supplier](#supplier)
-        - [Deferred](#deferred)
-        - [ContainerDescription](#containerdescription)
-    - [Errors](#errors)
-        - [HaywireError](#haywireerror)
-        - [HaywireModuleValidationError](#haywiremodulevalidationerror)
-        - [HaywireContainerValidationError](#haywirecontainervalidationerror)
-        - [HaywireInstanceValidationError](#haywireinstancevalidationerror)
+  - [Methods](#methods)
+    - [identifier](#identifier)
+    - [bind](#bind)
+    - [createModule](#createmodule)
+    - [createContainer](#createcontainer)
+    - [isSyncContainer](#issynccontainer)
+    - [createContainerFactory](#createcontainerfactory)
+  - [Classes](#classes)
+    - [HaywireId](#haywireid)
+    - [Binding](#binding)
+    - [Module](#module)
+    - [Container](#container)
+    - [SyncContainer](#synccontainer)
+    - [ContainerFactory](#containerfactory)
+  - [Types](#types)
+    - [HaywireIdType](#haywireidtype)
+    - [AsyncSupplier](#asyncsupplier)
+    - [Supplier](#supplier)
+    - [Deferred](#deferred)
+    - [ContainerDescription](#containerdescription)
+  - [Errors](#errors)
+    - [HaywireError](#haywireerror)
+    - [HaywireModuleValidationError](#haywiremodulevalidationerror)
+    - [HaywireContainerValidationError](#haywirecontainervalidationerror)
+    - [HaywireInstanceValidationError](#haywireinstancevalidationerror)
 - [Compared to alternatives](#compared-to-alternatives)
 - [Also See](#also-see)
 
@@ -443,13 +444,13 @@ bind(IdMiddleware)
 
 Supplier can take 5 forms, indicated by the parameters passed to `supplier()`.
 
-| parameter | resulting type | shorthand | description |
-|-----------|----------------|-----------|-------------|
-| `{ sync: true, propagateScope: false }` | `() => T` | `true`, or even omitting all parameters. | A synchronous method which effectively acts like a new call to `container.get()` every time it is invoked. |
-| `{ sync: false, propagateScope: false }` | `() => Promise<T>` | `'async'` | An asynchronous method which effectively acts like a new call to `container.getAsync()` every time it is invoked. |
-| `{ sync: true, propagateScope: true }` | `() => T` | ❌ | A synchronous method which will _retain_ the current request scope when instantiating more values. |
-| `{ sync: false, propagateScope: true }` | `() => Promise<T>` | ❌ | An asynchronous method which will _retain_ the current request scope when instantiating more values. |
-| `false` | `T` | `false` | "Reverts" a supplier id back to a non-supplier |
+| parameter                                | resulting type     | shorthand                                | description                                                                                                       |
+| ---------------------------------------- | ------------------ | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `{ sync: true, propagateScope: false }`  | `() => T`          | `true`, or even omitting all parameters. | A synchronous method which effectively acts like a new call to `container.get()` every time it is invoked.        |
+| `{ sync: false, propagateScope: false }` | `() => Promise<T>` | `'async'`                                | An asynchronous method which effectively acts like a new call to `container.getAsync()` every time it is invoked. |
+| `{ sync: true, propagateScope: true }`   | `() => T`          | ❌                                       | A synchronous method which will _retain_ the current request scope when instantiating more values.                |
+| `{ sync: false, propagateScope: true }`  | `() => Promise<T>` | ❌                                       | An asynchronous method which will _retain_ the current request scope when instantiating more values.              |
+| `false`                                  | `T`                | `false`                                  | "Reverts" a supplier id back to a non-supplier                                                                    |
 
 Synchronous suppliers are usually ideal for developer experience, as they are simpler than promises. However that means the underlying bindings _must_ be able to instantiate every related dependency synchronously. See the above [bindings](#binding-an-implementation-to-an-id) section for discussion about "eager" scopes to work around internal async dependencies. Similarly see the `isolatedRequestScope` scope if you _need_ to opt out of scope propagation.
 
@@ -707,23 +708,23 @@ If you _need_ synchronous access, but have promises internally you have two opti
 The container lifecycle happens in 4 stages. They may be explicitly activated or skipped, and internally any previous steps will be executed (and cached).
 
 1. Checking: `container.check()`
-    - Confirms the bindings from the module are complete and satisfy eachother.
-    - This both reinforces any type checking that has been performed earlier, as well as additional checks like detecting circular dependencies and synchronous suppliers that have to be async.
-    - It is highly recommended to expose this container to your test suite and call the check method to make sure the container will work at runtime.
+   - Confirms the bindings from the module are complete and satisfy eachother.
+   - This both reinforces any type checking that has been performed earlier, as well as additional checks like detecting circular dependencies and synchronous suppliers that have to be async.
+   - It is highly recommended to expose this container to your test suite and call the check method to make sure the container will work at runtime.
 2. Wiring: `container.wire()`
-    - Links up bindings to their dependencies bindings. Ensures that later requests to the container execute with high performance.
-    - Includes logic such as linking bindings to their internal eager dependencies which need to run before they are actually requested.
-    - Safe to also run in tests, but shouldn't add any additional validations.
-    - Recommended to run during startup, to perform any expensive compute ahead of time.
+   - Links up bindings to their dependencies bindings. Ensures that later requests to the container execute with high performance.
+   - Includes logic such as linking bindings to their internal eager dependencies which need to run before they are actually requested.
+   - Safe to also run in tests, but shouldn't add any additional validations.
+   - Recommended to run during startup, to perform any expensive compute ahead of time.
 3. Preloading: `container.preloadAsync()` or `container.preload()` (SyncContainer only)
-    - Initializes all eager singletons in the container.
-    - The "request" to initialize is always unique to normal `.get()` requests, even if this step is invoked as part of a `get()`.
-    - Unsafe to run at test time, since it instantiates real instances.
-    - Recommended to run during startup, to perform any expensive compute ahead of time.
+   - Initializes all eager singletons in the container.
+   - The "request" to initialize is always unique to normal `.get()` requests, even if this step is invoked as part of a `get()`.
+   - Unsafe to run at test time, since it instantiates real instances.
+   - Recommended to run during startup, to perform any expensive compute ahead of time.
 4. Instantiation: `container.getAsync(<identifier>)` or `container.get(<identifier>)` (SyncContainer only)
-    - Initializes the requested value, respecting all dependencies, scopes, and bindings that have been declared up until this point.
-    - Like other APIs, accepts both an identifier or a class.
-    - Type checking enforces that the requested value is bound in the container. Requesting a non-declared identifier, or a value that is stricter than the binding (e.g. requesting `T` when binding is for `T | null`) will both raise a type failure and throw an error.
+   - Initializes the requested value, respecting all dependencies, scopes, and bindings that have been declared up until this point.
+   - Like other APIs, accepts both an identifier or a class.
+   - Type checking enforces that the requested value is bound in the container. Requesting a non-declared identifier, or a value that is stricter than the binding (e.g. requesting `T` when binding is for `T | null`) will both raise a type failure and throw an error.
 
 ### Combining containers with dynamic runtime values
 
@@ -1048,32 +1049,32 @@ The two exceptions to this rule are:
 
 - **Errors thrown by providers are wrapped in a `HaywireProviderError`**, which names the path from the requested id to the failing binding. The original error is its `cause`, unchanged, so Node still prints its stack:
 
-    ```
-    HaywireProviderError: Provider for DB_URL failed (requested via App -> Database -> DB_URL): DB_URL is missing
+  ```
+  HaywireProviderError: Provider for DB_URL failed (requested via App -> Database -> DB_URL): DB_URL is missing
+      at ...
+    [cause]: MissingEnvError: DB_URL is missing
         at ...
-      [cause]: MissingEnvError: DB_URL is missing
-          at ...
-    ```
+  ```
 
-    Code that catches a provider's error by type around `get()` or `getAsync()` must check the `cause` instead:
+  Code that catches a provider's error by type around `get()` or `getAsync()` must check the `cause` instead:
 
-    ```ts
-    try {
-        container.get(App);
-    } catch (err) {
-        if (err instanceof HaywireProviderError && err.cause instanceof MissingEnvError) {
-            // ...
-        }
-    }
-    ```
+  ```ts
+  try {
+      container.get(App);
+  } catch (err) {
+      if (err instanceof HaywireProviderError && err.cause instanceof MissingEnvError) {
+          // ...
+      }
+  }
+  ```
 
-    Or create the container with `unsafeRawProviderErrors` to throw provider errors as they are, as before 2.0:
+  Or create the container with `unsafeRawProviderErrors` to throw provider errors as they are, as before 2.0:
 
-    ```ts
-    const container = createContainer(appModule, { unsafeRawProviderErrors: true });
-    ```
+  ```ts
+  const container = createContainer(appModule, { unsafeRawProviderErrors: true });
+  ```
 
-    Errors thrown by Haywire itself, errors thrown inside a value's own methods after it is created, and errors from disposers are not wrapped.
+  Errors thrown by Haywire itself, errors thrown inside a value's own methods after it is created, and errors from disposers are not wrapped.
 
 ## API
 
@@ -1097,22 +1098,22 @@ Method signatures:
 
 Begins the process of binding an identifier to a provider with dependencies. Does not directly return a binding, but instead returns a chainable (and immutable) instance that further attaches more data.
 
-| Instance | Method | Parameters | Return Type | Notes |
-|----------|--------|------------|-------------|-------|
-| ❌ | `bind(idOrClass: HaywireId \| Foo)` | Either a `HaywireId` or a raw class (equivalent to `identifier(Foo)`) | `BindingBuilder` | |
-| `BindingBuilder` | `withInstance(value: T)` | A singleton instance that satisfies the type of id | `Binding` | Scopes are irrelevant to resulting binding, because it is always a singleton |
-| `BindingBuilder` | `withFactory(() => T)` | A method with no parameters that returns the requested type | `Binding` | |
-| `BindingBuilder` | `withAsyncFactory(() => T \| Promise<T>)` | A method with no parameters that returns the requested type, or a `Promise` of it | `Binding` | Will result in container being async. |
-| `BindingBuilder` | `withConstructorFactory()` | Instructs Haywire to use the classes constructor directly with no parameters | `Binding` | Only available to ids constructed via a class |
-| `BindingBuilder` | `withProvider(provider: (X, Y) => T)` | Declare a method that will construct the type based on dependencies | `ProviderBindingBuilder` | |
-| `BindingBuilder` | `withAsyncProvider(provider: (X, Y) => T \| Promise<T>)` | Declare a method that constructs the type, or a `Promise` of it, based on dependencies. | `AsyncProviderBindingBuilder` | Will result in container being async. |
-| `BindingBuilder` | `withConstructorProvider()` | Tells Haywire to use the constructor of the class directly, and infer any dependencies for that. | `ProviderBindingBuilder` | Only available to ids constructed via a class |
-| `BindingBuilder` | `withDependencies([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | |
-| `ProviderBindingBuilder` | `withDependencies([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | The list is enforced via types to match types declared as parameters for the provider |
-| `AsyncProviderBindingBuilder` | `withDependencies([X, Y])` | A list of Haywire ids or classes to depend on  | `DepsBindingBuilder` | The list is enforced via types to match types declared as parameters for the provider |
-| `DepsBindingBuilder` | `withProvider(provider: (X, Y) => T)` | Declare a method that will construct the type based on dependencies | `Binding` | Types of parameters are auto-populated based on provided ids |
-| `DepsBindingBuilder` | `withAsyncProvider(provider: (X, Y) => T \| Promise<T>)` | Declare a method that constructs the type, or a `Promise` of it, based on dependencies. | `Binding` | Will result in container being async. |
-| `DepsBindingBuilder` | `withConstructorProvider()` | Tells Haywire to use the constructor of the class directly.  | `ProviderBindingBuilder` | Enforces that the type signature of the constructor matches the provided dependencies |
+| Instance                      | Method                                                   | Parameters                                                                                       | Return Type                   | Notes                                                                                 |
+| ----------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------ | ----------------------------- | ------------------------------------------------------------------------------------- |
+| ❌                            | `bind(idOrClass: HaywireId \| Foo)`                      | Either a `HaywireId` or a raw class (equivalent to `identifier(Foo)`)                            | `BindingBuilder`              |                                                                                       |
+| `BindingBuilder`              | `withInstance(value: T)`                                 | A singleton instance that satisfies the type of id                                               | `Binding`                     | Scopes are irrelevant to resulting binding, because it is always a singleton          |
+| `BindingBuilder`              | `withFactory(() => T)`                                   | A method with no parameters that returns the requested type                                      | `Binding`                     |                                                                                       |
+| `BindingBuilder`              | `withAsyncFactory(() => T \| Promise<T>)`                | A method with no parameters that returns the requested type, or a `Promise` of it                | `Binding`                     | Will result in container being async.                                                 |
+| `BindingBuilder`              | `withConstructorFactory()`                               | Instructs Haywire to use the classes constructor directly with no parameters                     | `Binding`                     | Only available to ids constructed via a class                                         |
+| `BindingBuilder`              | `withProvider(provider: (X, Y) => T)`                    | Declare a method that will construct the type based on dependencies                              | `ProviderBindingBuilder`      |                                                                                       |
+| `BindingBuilder`              | `withAsyncProvider(provider: (X, Y) => T \| Promise<T>)` | Declare a method that constructs the type, or a `Promise` of it, based on dependencies.          | `AsyncProviderBindingBuilder` | Will result in container being async.                                                 |
+| `BindingBuilder`              | `withConstructorProvider()`                              | Tells Haywire to use the constructor of the class directly, and infer any dependencies for that. | `ProviderBindingBuilder`      | Only available to ids constructed via a class                                         |
+| `BindingBuilder`              | `withDependencies([X, Y])`                               | A list of Haywire ids or classes to depend on                                                    | `DepsBindingBuilder`          |                                                                                       |
+| `ProviderBindingBuilder`      | `withDependencies([X, Y])`                               | A list of Haywire ids or classes to depend on                                                    | `DepsBindingBuilder`          | The list is enforced via types to match types declared as parameters for the provider |
+| `AsyncProviderBindingBuilder` | `withDependencies([X, Y])`                               | A list of Haywire ids or classes to depend on                                                    | `DepsBindingBuilder`          | The list is enforced via types to match types declared as parameters for the provider |
+| `DepsBindingBuilder`          | `withProvider(provider: (X, Y) => T)`                    | Declare a method that will construct the type based on dependencies                              | `Binding`                     | Types of parameters are auto-populated based on provided ids                          |
+| `DepsBindingBuilder`          | `withAsyncProvider(provider: (X, Y) => T \| Promise<T>)` | Declare a method that constructs the type, or a `Promise` of it, based on dependencies.          | `Binding`                     | Will result in container being async.                                                 |
+| `DepsBindingBuilder`          | `withConstructorProvider()`                              | Tells Haywire to use the constructor of the class directly.                                      | `ProviderBindingBuilder`      | Enforces that the type signature of the constructor matches the provided dependencies |
 
 #### `createModule`
 
@@ -1129,8 +1130,8 @@ If the module/container factory is not complete, will result in a type error.
 
 For a module, takes optional `ContainerOptions` as a second parameter:
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option                    | Type      | Default | Description                                                                                                                         |
+| ------------------------- | --------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------- |
 | `unsafeRawProviderErrors` | `boolean` | `false` | Throw errors from providers as they are, rather than wrapped in a `HaywireProviderError`. See [Upgrading to 2.0](#upgrading-to-20). |
 
 A container created from a factory uses the factory's options.
@@ -1168,77 +1169,77 @@ const originalId = modifiedId.nullable(false).undefinable(false).supplier(false)
 originalId === id; // true!
 ```
 
-| Method | Parameters | Type Modifier | Notes |
-|--------|------------|---------------|-------|
-| `toString()` | ❌ | ❌ | User friendly string representation of id. Based on class name or string parameter passed `identifier<T>('<foo-bar>') `|
-| `nullable(enabled?: boolean)` | boolean (default=`true`). If false will "revert" to a non-nullable type | `T \| null` | |
-| `undefinable(enabled?: boolean)` | boolean (default=`true`). If false, will "revert" to a non-undefined type | `T \| undefined` | |
-| `named(name: string \| unique symbol \| null)` | A _literal_ string or a _unique_ symbol. Differentiates similarly typed ids. For example you may have multiple different strings representing various environment variables. A `null` value will "revert" the naming to default omission | `T` | String unions and non-unique symbols will be rejected. |
-| `supplier(options)` | `true` (default), `false`, `'async'` or an object `{ sync: boolean, propagateScope: boolean }` | `() => T` or `() => Promise<T>` | See [Supplying A Value](#supplying-a-value) above for more context about suppliers |
-| `deferred(enabled?: boolean)` | boolean (default=`true`) | `Promise<T>` | See [Circular Dependencies](#circular-dependencies) above for more context about deferred dependencies |
-| `list(list?: boolean \| 'multi')` | `true` (default), `false`, or `'multi'` | `T[]` | See [Lists](#lists) above. `'multi'` bindings return an array of elements, but are requested/depended on the same as `true`. `baseId()` retains the list annotation (normalizing `'multi'` to `true`) |
-| `baseId()` | ❌ | `T` | Strips all modifiers (except `list`) from the id and returns the original id value that would have come from `identifier()` |
+| Method                                         | Parameters                                                                                                                                                                                                                               | Type Modifier                   | Notes                                                                                                                                                                                                 |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `toString()`                                   | ❌                                                                                                                                                                                                                                       | ❌                              | User friendly string representation of id. Based on class name or string parameter passed `identifier<T>('<foo-bar>') `                                                                               |
+| `nullable(enabled?: boolean)`                  | boolean (default=`true`). If false will "revert" to a non-nullable type                                                                                                                                                                  | `T \| null`                     |                                                                                                                                                                                                       |
+| `undefinable(enabled?: boolean)`               | boolean (default=`true`). If false, will "revert" to a non-undefined type                                                                                                                                                                | `T \| undefined`                |                                                                                                                                                                                                       |
+| `named(name: string \| unique symbol \| null)` | A _literal_ string or a _unique_ symbol. Differentiates similarly typed ids. For example you may have multiple different strings representing various environment variables. A `null` value will "revert" the naming to default omission | `T`                             | String unions and non-unique symbols will be rejected.                                                                                                                                                |
+| `supplier(options)`                            | `true` (default), `false`, `'async'` or an object `{ sync: boolean, propagateScope: boolean }`                                                                                                                                           | `() => T` or `() => Promise<T>` | See [Supplying A Value](#supplying-a-value) above for more context about suppliers                                                                                                                    |
+| `deferred(enabled?: boolean)`                  | boolean (default=`true`)                                                                                                                                                                                                                 | `Promise<T>`                    | See [Circular Dependencies](#circular-dependencies) above for more context about deferred dependencies                                                                                                |
+| `list(list?: boolean \| 'multi')`              | `true` (default), `false`, or `'multi'`                                                                                                                                                                                                  | `T[]`                           | See [Lists](#lists) above. `'multi'` bindings return an array of elements, but are requested/depended on the same as `true`. `baseId()` retains the list annotation (normalizing `'multi'` to `true`) |
+| `baseId()`                                     | ❌                                                                                                                                                                                                                                       | `T`                             | Strips all modifiers (except `list`) from the id and returns the original id value that would have come from `identifier()`                                                                           |
 
 #### `Binding`
 
 Represents a combination of provider and dependencies. Eventual output of `bind()`.
 
-| Method | Parameters | Notes |
-|--------|------------|-------|
-| `nullable(enabled?: true)` | _Only_ `true` | Marks the output as if you originally provided a `nullable()` id to original `bind()`. Useful if a class literal was used instead. Since providers have already been attached and type checked, it is not possible to "revert" |
-| `undefinable(enabled?: true)` | _Only_ `true` | Marks the output as if you originally provided a `undefinable()` id to original `bind()`. Useful if a class literal was used instead. Since providers have already been attached and type checked, it is not possible to "revert" |
-| `named(name: string \| unique symbol \| null)` | A _literal_ string or a _unique_ symbol. | Marks the output as if you originally provided a `named()` id to original `bind()`. Useful if a class literal was used instead. |
-| `list(enabled?: true)` | _Only_ `true` | Converts the output to a list, where the provider's value is a single element. See [Lists](#lists) above |
-| `scoped(scope)` | scope (default=`transientScope`) | See [Binding an Implementation](#binding-an-implementation-to-an-id) above for more context about scopes and their impact on resource lifecycles |
-| `withDisposer(disposer)` | `(instance) => void \| Promise<void>`, or `null` | How the container releases instances when it is [disposed](#disposing-containers). Defaults to `Symbol.asyncDispose`/`Symbol.dispose` (`null` for `withInstance()`). Singletons only |
+| Method                                         | Parameters                                       | Notes                                                                                                                                                                                                                             |
+| ---------------------------------------------- | ------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nullable(enabled?: true)`                     | _Only_ `true`                                    | Marks the output as if you originally provided a `nullable()` id to original `bind()`. Useful if a class literal was used instead. Since providers have already been attached and type checked, it is not possible to "revert"    |
+| `undefinable(enabled?: true)`                  | _Only_ `true`                                    | Marks the output as if you originally provided a `undefinable()` id to original `bind()`. Useful if a class literal was used instead. Since providers have already been attached and type checked, it is not possible to "revert" |
+| `named(name: string \| unique symbol \| null)` | A _literal_ string or a _unique_ symbol.         | Marks the output as if you originally provided a `named()` id to original `bind()`. Useful if a class literal was used instead.                                                                                                   |
+| `list(enabled?: true)`                         | _Only_ `true`                                    | Converts the output to a list, where the provider's value is a single element. See [Lists](#lists) above                                                                                                                          |
+| `scoped(scope)`                                | scope (default=`transientScope`)                 | See [Binding an Implementation](#binding-an-implementation-to-an-id) above for more context about scopes and their impact on resource lifecycles                                                                                  |
+| `withDisposer(disposer)`                       | `(instance) => void \| Promise<void>`, or `null` | How the container releases instances when it is [disposed](#disposing-containers). Defaults to `Symbol.asyncDispose`/`Symbol.dispose` (`null` for `withInstance()`). Singletons only                                              |
 
 #### `Module`
 
 Represents a collection of `Binding`s, each for a unique identifier.
 
-| Method | Parameters | Return Type | Notes |
-|--------|------------|-------------|-------|
-| `addBinding(binding)` | `Binding` | `Module` | Returns a _new_ module with extra binding attached. Type+runtime validations ensure it is a unique output (except [lists](#lists)) and all dependencies are still satisfied |
-| `mergeModule(module)` | `Module` | `Module` | Returns a _new_ module with two modules merged. Order does not matter (`A.mergeModule(B)` = `B.mergeModule(A)`). Type+runtime validations ensure all outputs are unique and all dependencies are still satisfied |
-| `replaceBinding(binding)` | `Binding` | `Module` | Returns a _new_ module with the existing binding for that output id (every binding, for a list) swapped for this one. Type+runtime validations ensure a binding already exists and all dependencies are still satisfied. See [Replacing bindings in tests](#replacing-bindings-in-tests) |
-| `toContainer(options?)` | `ContainerOptions` | `Container \| SyncContainer` | Returns a container of all bindings. Type enforcement ensures module is fully satisfied. Will be a `Container` if any binding's provider is async. Same as [`createContainer(module, options)`](#createcontainer). |
-| `toContainerFactory(options?)` | `ContainerOptions` | `ContainerFactory` | Returns a container factory to bind instances for the remaining dependencies. |
+| Method                         | Parameters         | Return Type                  | Notes                                                                                                                                                                                                                                                                                    |
+| ------------------------------ | ------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addBinding(binding)`          | `Binding`          | `Module`                     | Returns a _new_ module with extra binding attached. Type+runtime validations ensure it is a unique output (except [lists](#lists)) and all dependencies are still satisfied                                                                                                              |
+| `mergeModule(module)`          | `Module`           | `Module`                     | Returns a _new_ module with two modules merged. Order does not matter (`A.mergeModule(B)` = `B.mergeModule(A)`). Type+runtime validations ensure all outputs are unique and all dependencies are still satisfied                                                                         |
+| `replaceBinding(binding)`      | `Binding`          | `Module`                     | Returns a _new_ module with the existing binding for that output id (every binding, for a list) swapped for this one. Type+runtime validations ensure a binding already exists and all dependencies are still satisfied. See [Replacing bindings in tests](#replacing-bindings-in-tests) |
+| `toContainer(options?)`        | `ContainerOptions` | `Container \| SyncContainer` | Returns a container of all bindings. Type enforcement ensures module is fully satisfied. Will be a `Container` if any binding's provider is async. Same as [`createContainer(module, options)`](#createcontainer).                                                                       |
+| `toContainerFactory(options?)` | `ContainerOptions` | `ContainerFactory`           | Returns a container factory to bind instances for the remaining dependencies.                                                                                                                                                                                                            |
 
 #### `Container`
 
 A collection of bindings that is capable of _asynchronously_ instantiating any requested output.
 
-| Method | Parameters | Return Type | Notes |
-|--------|------------|-------------|-------|
-| `check()` | ❌ | `void` | Performs runtime enforcement that all dependencies are satisfied by a binding, and any [circular dependencies](#circular-dependencies) and [sync suppliers](#supplying-a-value) are handled properly. Successful result is cached, and any future calls will return immediately. |
-| `wire()` | ❌ | `void` | Wires internal mappings to ensure proper ordering of dependency instantiation and eager bindings. Result is cached, and any future calls will return immediately. Calls `check()` internally first. |
-| `preloadAsync()` | ❌ | `Promise<void>` | Instantiates all eager singletons. Result is cached, and any future calls will return immediately. Calls `wire()` internally first. |
-| `getAsync(idOrClass)` | `HaywireId` or raw class of requested value | `Promise<T>` | _Asynchronously_ instantiates the requested value. Each call counts as a separate "request" for scoping. Will throw error if requested value does not exist in bindings, including requesting a non-null value when binding is declared `.nullable()` |
-| `disposeAsync()` | ❌ | `Promise<void>` | Releases every singleton the container created, in reverse creation order, then rejects all further requests. See [Disposing containers](#disposing-containers). Safe to call multiple times. Also available as `[Symbol.asyncDispose]()` for `await using`. |
-| `describe()` | ❌ | `ContainerDescription` | Every binding with its output id, scope, whether it is async, and its dependencies with the bindings that provide them. Does not check the container. See [Debugging a container](#debugging-a-container). |
-| `toMermaid()` | ❌ | `string` | The dependency graph as a Mermaid flowchart. See [Debugging a container](#debugging-a-container). |
+| Method                | Parameters                                  | Return Type            | Notes                                                                                                                                                                                                                                                                            |
+| --------------------- | ------------------------------------------- | ---------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `check()`             | ❌                                          | `void`                 | Performs runtime enforcement that all dependencies are satisfied by a binding, and any [circular dependencies](#circular-dependencies) and [sync suppliers](#supplying-a-value) are handled properly. Successful result is cached, and any future calls will return immediately. |
+| `wire()`              | ❌                                          | `void`                 | Wires internal mappings to ensure proper ordering of dependency instantiation and eager bindings. Result is cached, and any future calls will return immediately. Calls `check()` internally first.                                                                              |
+| `preloadAsync()`      | ❌                                          | `Promise<void>`        | Instantiates all eager singletons. Result is cached, and any future calls will return immediately. Calls `wire()` internally first.                                                                                                                                              |
+| `getAsync(idOrClass)` | `HaywireId` or raw class of requested value | `Promise<T>`           | _Asynchronously_ instantiates the requested value. Each call counts as a separate "request" for scoping. Will throw error if requested value does not exist in bindings, including requesting a non-null value when binding is declared `.nullable()`                            |
+| `disposeAsync()`      | ❌                                          | `Promise<void>`        | Releases every singleton the container created, in reverse creation order, then rejects all further requests. See [Disposing containers](#disposing-containers). Safe to call multiple times. Also available as `[Symbol.asyncDispose]()` for `await using`.                     |
+| `describe()`          | ❌                                          | `ContainerDescription` | Every binding with its output id, scope, whether it is async, and its dependencies with the bindings that provide them. Does not check the container. See [Debugging a container](#debugging-a-container).                                                                       |
+| `toMermaid()`         | ❌                                          | `string`               | The dependency graph as a Mermaid flowchart. See [Debugging a container](#debugging-a-container).                                                                                                                                                                                |
 
 #### `SyncContainer`
 
 Extends `Container` and supports all methods in addition to synchronous versions of methods. Only available when every binding is synchronous.
 
-| Method | Parameters | Return Type | Notes |
-|--------|------------|-------------|-------|
-| `preload()` | ❌ | `void` | Same behavior as `preloadAsync()`, only synchronous. Calling either will perform caching for both. |
-| `get(idOrClass)` | `HaywireId` or raw class of requested value | `T` | Same behavior as `getAsync(idOrClass)`, only synchronous. |
+| Method           | Parameters                                  | Return Type | Notes                                                                                              |
+| ---------------- | ------------------------------------------- | ----------- | -------------------------------------------------------------------------------------------------- |
+| `preload()`      | ❌                                          | `void`      | Same behavior as `preloadAsync()`, only synchronous. Calling either will perform caching for both. |
+| `get(idOrClass)` | `HaywireId` or raw class of requested value | `T`         | Same behavior as `getAsync(idOrClass)`, only synchronous.                                          |
 
 #### `ContainerFactory`
 
 Collection of incomplete bindings that can still be checked and wired like a container. Once instances for the remaining dependencies are bound, can produce a container.
 
-| Method | Parameters | Return Type | Notes |
-|--------|------------|-------------|-------|
-| `check()` | ❌ | `void` | Similar to `container.check()`. Assumes that all to-be-bound instances are synchronous, eager singletons, with no dependencies. Operation will be cached for all containers generated. |
-| `wire()` | ❌ | `void` | Similar to `container.wire()`. Operation will be cached for all containers generated. |
-| `describe()` | ❌ | `ContainerDescription` | Like `container.describe()`, for the containers the factory creates: the module's bindings, the instances bound so far, and the ids still to be bound (marked `unbound`). See [Debugging a container](#debugging-a-container). |
-| `toMermaid()` | ❌ | `string` | Like `container.toMermaid()`. Ids still to be bound are drawn with a dashed border. |
-| `bindInstance(idOrClass, instance)` | First parameter is either a `HaywireId` or raw class declaring the type. Second parameter is an instance satisfying the requested type. | `ContainerFactory` | Returns a _new_ container factory with the value bound. [List](#lists) ids may be bound multiple times, each adding an element (or elements for `'multi'`). Because of this, a factory instance may be shared across multiple contexts. If the factory has been checked/wired, that state will persist. |
-| `toContainer()` | ❌ | `Container \| SyncContainer` | Returns a container with bound instances attached. Will inherit factory's checked/wired state. Will be a `Container` if any module binding's provider is async. |
+| Method                              | Parameters                                                                                                                              | Return Type                  | Notes                                                                                                                                                                                                                                                                                                   |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `check()`                           | ❌                                                                                                                                      | `void`                       | Similar to `container.check()`. Assumes that all to-be-bound instances are synchronous, eager singletons, with no dependencies. Operation will be cached for all containers generated.                                                                                                                  |
+| `wire()`                            | ❌                                                                                                                                      | `void`                       | Similar to `container.wire()`. Operation will be cached for all containers generated.                                                                                                                                                                                                                   |
+| `describe()`                        | ❌                                                                                                                                      | `ContainerDescription`       | Like `container.describe()`, for the containers the factory creates: the module's bindings, the instances bound so far, and the ids still to be bound (marked `unbound`). See [Debugging a container](#debugging-a-container).                                                                          |
+| `toMermaid()`                       | ❌                                                                                                                                      | `string`                     | Like `container.toMermaid()`. Ids still to be bound are drawn with a dashed border.                                                                                                                                                                                                                     |
+| `bindInstance(idOrClass, instance)` | First parameter is either a `HaywireId` or raw class declaring the type. Second parameter is an instance satisfying the requested type. | `ContainerFactory`           | Returns a _new_ container factory with the value bound. [List](#lists) ids may be bound multiple times, each adding an element (or elements for `'multi'`). Because of this, a factory instance may be shared across multiple contexts. If the factory has been checked/wired, that state will persist. |
+| `toContainer()`                     | ❌                                                                                                                                      | `Container \| SyncContainer` | Returns a container with bound instances attached. Will inherit factory's checked/wired state. Will be a `Container` if any module binding's provider is async.                                                                                                                                         |
 
 ### Types
 
@@ -1283,12 +1284,12 @@ This is the type used internally to represent `identifier<T>().deferred()`.
 
 Returned by `container.describe()`. Has a `bindings` array of `BindingDescription`:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `outputId` | `HaywireId` | Id the binding provides. |
-| `scope` | `Scopes` | One of the [scope](#binding-an-implementation-to-an-id) symbols. |
-| `async` | `boolean` | Whether the provider is async. |
-| `unbound` | `boolean` | Whether the id still has to be bound with `bindInstance()`. Only ever `true` in a container factory's description, where `scope` and `async` don't apply. |
+| Property       | Type                                          | Description                                                                                                                                                                                                                                           |
+| -------------- | --------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `outputId`     | `HaywireId`                                   | Id the binding provides.                                                                                                                                                                                                                              |
+| `scope`        | `Scopes`                                      | One of the [scope](#binding-an-implementation-to-an-id) symbols.                                                                                                                                                                                      |
+| `async`        | `boolean`                                     | Whether the provider is async.                                                                                                                                                                                                                        |
+| `unbound`      | `boolean`                                     | Whether the id still has to be bound with `bindInstance()`. Only ever `true` in a container factory's description, where `scope` and `async` don't apply.                                                                                             |
 | `dependencies` | `{ id: HaywireId; providers: HaywireId[] }[]` | Dependencies in provider order, as declared (including `.supplier()` and `.deferred()`), with the output ids of the bindings that provide each. `providers` has one entry per element for a [list](#lists), and is empty when no binding provides it. |
 
 ### Errors
@@ -1301,21 +1302,21 @@ It is not recommended to instantiate and throw these errors in your own code. In
 
 Every specific error is exported too, with the details of the failure as properties:
 
-| Error | Extends | Thrown | Properties |
-|-------|---------|--------|------------|
-| `HaywireDuplicateOutputError` | `HaywireModuleValidationError` | Two bindings for the same id | `outputIds` |
-| `HaywireBindingNotFoundError` | `HaywireModuleValidationError` | `replaceBinding()` for an id with no binding | `outputIds` |
-| `HaywireProviderMissingError` | `HaywireContainerValidationError` | A dependency, or a requested id, with no binding | `dependencyIds`, `dependentIds` (bindings that need each id) |
-| `HaywireCircularDependencyError` | `HaywireContainerValidationError` | A cycle with no deferred dependency | `circularChains` |
-| `HaywireSyncSupplierError` | `HaywireContainerValidationError` | A sync supplier of a value that must be async | `unsafeSupplierBindings` (each with `dependentOutputId` and `asyncChain`) |
-| `HaywireDisposerScopeError` | `HaywireContainerValidationError` | A disposer on a binding that isn't a singleton | `outputIds` |
-| `HaywireContainerDisposedError` | `HaywireError` | A request to a disposed container | |
-| `HaywireNullResponseError` | `HaywireInstanceValidationError` | `null` for an id that isn't `.nullable()` | `outputId`, `requestPath` |
-| `HaywireUndefinedResponseError` | `HaywireInstanceValidationError` | `undefined` for an id that isn't `.undefinable()` | `outputId`, `requestPath` |
-| `HaywireInstanceOfResponseError` | `HaywireInstanceValidationError` | A value that isn't an instance of the id's class | `outputId`, `value`, `requestPath` |
-| `HaywireListResponseError` | `HaywireInstanceValidationError` | A `list('multi')` provider that doesn't return an array | `outputId`, `value`, `requestPath` |
-| `HaywireProviderError` | `HaywireInstanceValidationError` | A provider throwing, unless the container has `unsafeRawProviderErrors` | `cause` (the thrown value), `outputId`, `requestPath` |
-| `HaywireMultiError` | `HaywireInstanceValidationError` | Several dependencies failing at once | `causes` |
+| Error                            | Extends                           | Thrown                                                                  | Properties                                                                |
+| -------------------------------- | --------------------------------- | ----------------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| `HaywireDuplicateOutputError`    | `HaywireModuleValidationError`    | Two bindings for the same id                                            | `outputIds`                                                               |
+| `HaywireBindingNotFoundError`    | `HaywireModuleValidationError`    | `replaceBinding()` for an id with no binding                            | `outputIds`                                                               |
+| `HaywireProviderMissingError`    | `HaywireContainerValidationError` | A dependency, or a requested id, with no binding                        | `dependencyIds`, `dependentIds` (bindings that need each id)              |
+| `HaywireCircularDependencyError` | `HaywireContainerValidationError` | A cycle with no deferred dependency                                     | `circularChains`                                                          |
+| `HaywireSyncSupplierError`       | `HaywireContainerValidationError` | A sync supplier of a value that must be async                           | `unsafeSupplierBindings` (each with `dependentOutputId` and `asyncChain`) |
+| `HaywireDisposerScopeError`      | `HaywireContainerValidationError` | A disposer on a binding that isn't a singleton                          | `outputIds`                                                               |
+| `HaywireContainerDisposedError`  | `HaywireError`                    | A request to a disposed container                                       |                                                                           |
+| `HaywireNullResponseError`       | `HaywireInstanceValidationError`  | `null` for an id that isn't `.nullable()`                               | `outputId`, `requestPath`                                                 |
+| `HaywireUndefinedResponseError`  | `HaywireInstanceValidationError`  | `undefined` for an id that isn't `.undefinable()`                       | `outputId`, `requestPath`                                                 |
+| `HaywireInstanceOfResponseError` | `HaywireInstanceValidationError`  | A value that isn't an instance of the id's class                        | `outputId`, `value`, `requestPath`                                        |
+| `HaywireListResponseError`       | `HaywireInstanceValidationError`  | A `list('multi')` provider that doesn't return an array                 | `outputId`, `value`, `requestPath`                                        |
+| `HaywireProviderError`           | `HaywireInstanceValidationError`  | A provider throwing, unless the container has `unsafeRawProviderErrors` | `cause` (the thrown value), `outputId`, `requestPath`                     |
+| `HaywireMultiError`              | `HaywireInstanceValidationError`  | Several dependencies failing at once                                    | `causes`                                                                  |
 
 #### `HaywireError`
 

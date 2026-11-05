@@ -10,18 +10,18 @@ load-populate-files --file-path <module> [options]
 
 Installed by [`load-populate-files`](/packages/populate-files/guides/config-modules). Loads the files from a config module, and writes them with [`populateFiles`](/packages/populate-files/reference/api#populatefiles-params-options).
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--file-path` | `string` | — | Required. The config module, relative to `--cwd`. |
-| `--cwd` | `string` | `.` | Directory that every other path is resolved from. |
-| `--target-dir`, `-t` | `string` | `.` | Directory that the config's `filePath`s are resolved from, relative to `--cwd`. |
-| `--ci`, `--check` | `boolean` | `true` in CI, `false` otherwise | Don't write. Fail if any file would be created, changed or removed. |
-| `--dry-run` | `boolean` | `false` | Don't write files. |
-| `--clean` | `boolean` | `false` | Remove files that are no longer generated. In `--ci` mode, fail instead. See [Clean](/packages/populate-files/guides/manifest#clean). |
-| `--force` | `boolean` | `false` | Overwrite or remove files despite an [ownership error](/packages/populate-files/reference/api#errors). |
-| `--manifest` | `string` | — | Path of a [manifest](/packages/populate-files/guides/manifest) recording the generated files, relative to `--cwd`. |
-| `--help` | | | Print usage. |
-| `--version` | | | Print the installed version. |
+| Flag                 | Type      | Default                         | Description                                                                                                                           |
+| -------------------- | --------- | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `--file-path`        | `string`  | —                               | Required. The config module, relative to `--cwd`.                                                                                     |
+| `--cwd`              | `string`  | `.`                             | Directory that every other path is resolved from.                                                                                     |
+| `--target-dir`, `-t` | `string`  | `.`                             | Directory that the config's `filePath`s are resolved from, relative to `--cwd`.                                                       |
+| `--ci`, `--check`    | `boolean` | `true` in CI, `false` otherwise | Don't write. Fail if any file would be created, changed or removed.                                                                   |
+| `--dry-run`          | `boolean` | `false`                         | Don't write files.                                                                                                                    |
+| `--clean`            | `boolean` | `false`                         | Remove files that are no longer generated. In `--ci` mode, fail instead. See [Clean](/packages/populate-files/guides/manifest#clean). |
+| `--force`            | `boolean` | `false`                         | Overwrite or remove files despite an [ownership error](/packages/populate-files/reference/api#errors).                                |
+| `--manifest`         | `string`  | —                               | Path of a [manifest](/packages/populate-files/guides/manifest) recording the generated files, relative to `--cwd`.                    |
+| `--help`             |           |                                 | Print usage.                                                                                                                          |
+| `--version`          |           |                                 | Print the installed version.                                                                                                          |
 
 Pass `--no-ci` to write files in CI.
 

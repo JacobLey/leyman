@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # weighted-rendezvous-hash
+
 Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion, moving few keys when the set changes.
 
 [![npm package](https://badge.fury.io/js/weighted-rendezvous-hash.svg)](https://www.npmjs.com/package/weighted-rendezvous-hash)
@@ -16,6 +17,7 @@ Weighted rendezvous hashing: any set of nodes, in any order, sized by proportion
 Lookups take time in proportion to the number of nodes, about 1µs for 100 nodes. For nodes numbered `0` to `n - 1` that are only added and removed at the end, [constant-consistent-hash](https://www.npmjs.com/package/constant-consistent-hash) takes constant time, and moves the minimum number of keys.
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -60,31 +62,31 @@ nodes.moved(next); // 0.25, the share 'ab' takes
 
 Builds an assignment of keys to nodes.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `nodes` | `Iterable<{ name: string; size: number }>` | — | Required. Nodes in any order, with unique names. Sizes are non-negative safe integers (at most 2^53 - 1), and at least one must be positive. A node of size `0` receives no keys. Extra properties are kept, and returned by `get`. |
-| `options.seed` | `number` | `0` | Integer between 0 and 2^32 - 1 that selects an independent hash function. |
+| Parameter      | Type                                       | Default | Description                                                                                                                                                                                                                         |
+| -------------- | ------------------------------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `nodes`        | `Iterable<{ name: string; size: number }>` | —       | Required. Nodes in any order, with unique names. Sizes are non-negative safe integers (at most 2^53 - 1), and at least one must be positive. A node of size `0` receives no keys. Extra properties are kept, and returned by `get`. |
+| `options.seed` | `number`                                   | `0`     | Integer between 0 and 2^32 - 1 that selects an independent hash function.                                                                                                                                                           |
 
 **Returns** `RendezvousHash`:
 
-| Member | Description |
-|--------|-------------|
-| `get(key)` | The node for a key (hashed as UTF-8). The same object given in `nodes`. |
-| `nodes` | Nodes with a positive size, sorted by name. |
-| `share(name)` | Fraction of keys assigned to a node: its size / total size. |
-| `moved(next)` | Expected fraction of keys `next` assigns to a different node. `next` must come from `createRendezvousHash` (or `update`) of the same installed copy of this package, or it throws `TypeError`. |
-| `update(nodes)` | Builds the assignment for new nodes, with the same options. |
+| Member          | Description                                                                                                                                                                                    |
+| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `get(key)`      | The node for a key (hashed as UTF-8). The same object given in `nodes`.                                                                                                                        |
+| `nodes`         | Nodes with a positive size, sorted by name.                                                                                                                                                    |
+| `share(name)`   | Fraction of keys assigned to a node: its size / total size.                                                                                                                                    |
+| `moved(next)`   | Expected fraction of keys `next` assigns to a different node. `next` must come from `createRendezvousHash` (or `update`) of the same installed copy of this package, or it throws `TypeError`. |
+| `update(nodes)` | Builds the assignment for new nodes, with the same options.                                                                                                                                    |
 
 **Throws** `RangeError` — from `createRendezvousHash` and `update`, when names repeat, sizes or the seed are out of bounds, or no node has a positive size.
 
 ## Compared to alternatives
 
-| | weighted-rendezvous-hash | Hash ring ([hashring](https://www.npmjs.com/package/hashring)) | [constant-consistent-hash](https://www.npmjs.com/package/constant-consistent-hash) |
-|---|---|---|---|
-| Lookup | O(n) | O(log n) | O(1) |
-| Memory | nodes | virtual nodes | none |
-| Change any node | ✅ | ✅ | ❌ (end only) |
-| Keys moved | < 2x minimal, predicted by `moved()` | ~minimal, up to ~2x on resizes | minimal |
-| Balance | exact | depends on virtual nodes | exact |
+|                 | weighted-rendezvous-hash             | Hash ring ([hashring](https://www.npmjs.com/package/hashring)) | [constant-consistent-hash](https://www.npmjs.com/package/constant-consistent-hash) |
+| --------------- | ------------------------------------ | -------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| Lookup          | O(n)                                 | O(log n)                                                       | O(1)                                                                               |
+| Memory          | nodes                                | virtual nodes                                                  | none                                                                               |
+| Change any node | ✅                                   | ✅                                                             | ❌ (end only)                                                                      |
+| Keys moved      | < 2x minimal, predicted by `moved()` | ~minimal, up to ~2x on resizes                                 | minimal                                                                            |
+| Balance         | exact                                | depends on virtual nodes                                       | exact                                                                              |
 
 A hash ring looks keys up faster with many nodes, but needs many virtual nodes per node to balance evenly.

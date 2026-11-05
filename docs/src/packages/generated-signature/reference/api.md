@@ -10,11 +10,11 @@ generated-signature is ESM only. From CommonJS, load it with a dynamic import: `
 
 Fills in the signature token's hash, inserting a signature line first if the text has no token.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `filePath` | `string` | — | Comment syntax for the inserted line, looked up from the file name with [`commentStyle`](#commentstyle-filepath). |
-| `comment` | `CommentStyle` | — | Comment syntax, given directly. Pass this or `filePath`. |
-| `message` | `string` | `'Generated file. Do not edit outside of manual sections.'` | Text after the token on the inserted line. |
+| Option     | Type           | Default                                                     | Description                                                                                                       |
+| ---------- | -------------- | ----------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| `filePath` | `string`       | —                                                           | Comment syntax for the inserted line, looked up from the file name with [`commentStyle`](#commentstyle-filepath). |
+| `comment`  | `CommentStyle` | —                                                           | Comment syntax, given directly. Pass this or `filePath`.                                                          |
+| `message`  | `string`       | `'Generated file. Do not edit outside of manual sections.'` | Text after the token on the inserted line.                                                                        |
 
 `options` is only needed when `text` has no token yet.
 
@@ -38,11 +38,11 @@ Checks the file's signature. Never throws.
 
 **Returns** `VerifyResult`, discriminated on `status`:
 
-| `status` | Meaning |
-|----------|---------|
-| `'valid'` | Signed, and unchanged outside manual sections. |
-| `'invalid'` | Signed, but changed outside manual sections. |
-| `'unsigned'` | No signature token. |
+| `status`      | Meaning                                                                        |
+| ------------- | ------------------------------------------------------------------------------ |
+| `'valid'`     | Signed, and unchanged outside manual sections.                                 |
+| `'invalid'`   | Signed, but changed outside manual sections.                                   |
+| `'unsigned'`  | No signature token.                                                            |
 | `'malformed'` | `error` is a `GeneratedSignatureMalformedError` explaining what can't be read. |
 
 ```ts
@@ -61,12 +61,12 @@ if (result.status === 'malformed') {
 
 Renders a manual section for a generator to embed.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `id` | `string` | — | Required. Section id: letters, digits, `_`, `.` and `-`. |
-| `body` | `string` | `''` | Content until someone edits it. A trailing line break is ignored. |
-| `indent` | `string` | `''` | Prefixed to both markers and every non-blank body line. |
-| `filePath` / `comment` | `string` / `CommentStyle` | — | Required. Comment syntax, as for [`sign`](#sign-text-options). |
+| Option                 | Type                      | Default | Description                                                       |
+| ---------------------- | ------------------------- | ------- | ----------------------------------------------------------------- |
+| `id`                   | `string`                  | —       | Required. Section id: letters, digits, `_`, `.` and `-`.          |
+| `body`                 | `string`                  | `''`    | Content until someone edits it. A trailing line break is ignored. |
+| `indent`               | `string`                  | `''`    | Prefixed to both markers and every non-blank body line.           |
+| `filePath` / `comment` | `string` / `CommentStyle` | —       | Required. Comment syntax, as for [`sign`](#sign-text-options).    |
 
 **Returns** `string`: the start marker, body and end marker lines, without a trailing line break.
 
@@ -76,10 +76,10 @@ Renders a manual section for a generator to embed.
 
 Carries the manual sections of an existing file into freshly generated text, matched by id.
 
-| Param | Type | Description |
-|-------|------|-------------|
+| Param       | Type     | Description                                                  |
+| ----------- | -------- | ------------------------------------------------------------ |
 | `generated` | `string` | Required. New generator output, with default section bodies. |
-| `existing` | `string` | Required. The file as it is now. |
+| `existing`  | `string` | Required. The file as it is now.                             |
 
 **Returns** `MergeResult`, `{ text: string, orphans: readonly string[] }`. `text` is `generated`, with each section's body taken from `existing` when it has a section with the same id. `orphans` lists the ids of sections only `existing` has, and whose body isn't blank: dropping them would lose someone's edits, so callers should usually fail on them.
 
@@ -95,13 +95,13 @@ Carries the manual sections of an existing file into freshly generated text, mat
 
 **Returns** the line comment syntax for a file, as a `CommentStyle` (`{ start: string, end?: string }`), or `null` if it is unknown or the format has no comments, like `.json`.
 
-| `CommentStyle` | Files |
-|----------------|-------|
-| `//` | `.c`, `.cc`, `.cjs`, `.cpp`, `.cs`, `.cts`, `.go`, `.h`, `.hpp`, `.java`, `.js`, `.json5`, `.jsonc`, `.jsx`, `.kt`, `.less`, `.mjs`, `.mts`, `.rs`, `.scss`, `.swift`, `.ts`, `.tsx` |
-| `#` | `.bash`, `.cfg`, `.conf`, `.env`, `.ini`, `.pl`, `.properties`, `.py`, `.r`, `.rb`, `.sh`, `.toml`, `.yaml`, `.yml`, `.zsh`, and `.gitattributes`, `.gitignore`, `.npmignore`, `Dockerfile`, `Makefile` |
-| `/* */` | `.css` |
-| `<!-- -->` | `.htm`, `.html`, `.md`, `.mdx`, `.svg`, `.vue`, `.xml` |
-| `--` | `.hs`, `.lua`, `.sql` |
+| `CommentStyle` | Files                                                                                                                                                                                                   |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `//`           | `.c`, `.cc`, `.cjs`, `.cpp`, `.cs`, `.cts`, `.go`, `.h`, `.hpp`, `.java`, `.js`, `.json5`, `.jsonc`, `.jsx`, `.kt`, `.less`, `.mjs`, `.mts`, `.rs`, `.scss`, `.swift`, `.ts`, `.tsx`                    |
+| `#`            | `.bash`, `.cfg`, `.conf`, `.env`, `.ini`, `.pl`, `.properties`, `.py`, `.r`, `.rb`, `.sh`, `.toml`, `.yaml`, `.yml`, `.zsh`, and `.gitattributes`, `.gitignore`, `.npmignore`, `Dockerfile`, `Makefile` |
+| `/* */`        | `.css`                                                                                                                                                                                                  |
+| `<!-- -->`     | `.htm`, `.html`, `.md`, `.mdx`, `.svg`, `.vue`, `.xml`                                                                                                                                                  |
+| `--`           | `.hs`, `.lua`, `.sql`                                                                                                                                                                                   |
 
 For any other file, pass `comment` instead of `filePath`.
 
@@ -109,12 +109,12 @@ For any other file, pass `comment` instead of `filePath`.
 
 Helpers for the [manifest format](/packages/generated-signature/reference/format#manifest).
 
-| Function | Description |
-|----------|-------------|
-| `contentHash(content: string \| Uint8Array): string` | `v1:` and 32 hex characters of SHA-256. `\r\n` counts as `\n`, also in bytes. Manual sections are **not** left out. |
-| `verifyManifestEntry(content, entry): VerifyResult` | `'valid'` or `'invalid'` for a `hash` entry, and [`verify()`](#verify-text)'s result for an `inline` entry. `content` is a `string` or `Uint8Array`. |
-| `parseManifest(text): Manifest` | Parses and validates a manifest. Throws `GeneratedSignatureManifestError` if it isn't one. |
-| `serializeManifest(files): string` | Manifest text for a `Record<string, ManifestEntry>`, with paths and inputs sorted so the output doesn't depend on write order. |
+| Function                                             | Description                                                                                                                                          |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `contentHash(content: string \| Uint8Array): string` | `v1:` and 32 hex characters of SHA-256. `\r\n` counts as `\n`, also in bytes. Manual sections are **not** left out.                                  |
+| `verifyManifestEntry(content, entry): VerifyResult`  | `'valid'` or `'invalid'` for a `hash` entry, and [`verify()`](#verify-text)'s result for an `inline` entry. `content` is a `string` or `Uint8Array`. |
+| `parseManifest(text): Manifest`                      | Parses and validates a manifest. Throws `GeneratedSignatureManifestError` if it isn't one.                                                           |
+| `serializeManifest(files): string`                   | Manifest text for a `Record<string, ManifestEntry>`, with paths and inputs sorted so the output doesn't depend on write order.                       |
 
 ```ts
 // @filename: node.d.ts
@@ -140,9 +140,9 @@ for (const [path, entry] of Object.entries(files)) {
 
 Every error extends the abstract `GeneratedSignatureError`.
 
-| Error | Properties | Thrown when |
-|-------|------------|-------------|
-| `GeneratedSignatureMalformedError` | `reason: MalformedReason`, `line: number` | A token or manual section can't be read. `reason` is one of `'duplicate-section'`, `'duplicate-signature'`, `'invalid-section-id'`, `'nested-section'`, `'unclosed-section'`, `'unopened-section'`, `'unsupported-version'`, and `line` is 1-indexed. |
-| `GeneratedSignatureCommentStyleError` | `filePath: string` | No comment syntax is known for a file. |
-| `GeneratedSignatureSectionIdError` | `id: string` | `manualSection()` gets an invalid id. |
-| `GeneratedSignatureManifestError` | | `parseManifest()` gets text that isn't a valid manifest. |
+| Error                                 | Properties                                | Thrown when                                                                                                                                                                                                                                           |
+| ------------------------------------- | ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GeneratedSignatureMalformedError`    | `reason: MalformedReason`, `line: number` | A token or manual section can't be read. `reason` is one of `'duplicate-section'`, `'duplicate-signature'`, `'invalid-section-id'`, `'nested-section'`, `'unclosed-section'`, `'unopened-section'`, `'unsupported-version'`, and `line` is 1-indexed. |
+| `GeneratedSignatureCommentStyleError` | `filePath: string`                        | No comment syntax is known for a file.                                                                                                                                                                                                                |
+| `GeneratedSignatureSectionIdError`    | `id: string`                              | `manualSection()` gets an invalid id.                                                                                                                                                                                                                 |
+| `GeneratedSignatureManifestError`     |                                           | `parseManifest()` gets text that isn't a valid manifest.                                                                                                                                                                                              |

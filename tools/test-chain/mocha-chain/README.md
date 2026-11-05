@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # mocha-chain
+
 Chain mocha BDD methods together for deterministic and type safe tests.
 
 [![npm package](https://badge.fury.io/js/mocha-chain.svg)](https://www.npmjs.com/package/mocha-chain)
@@ -15,12 +16,12 @@ Chain mocha BDD methods together for deterministic and type safe tests.
 - [Usage](#usage)
 - [Chaining hooks](#chaining-hooks)
 - [API](#api)
-    - [suite](#suitetitle-fn)
-    - [before](#beforetitle-fn)
-    - [beforeEach](#beforeeachtitle-fn)
-    - [test](#testtitle-fn)
-    - [afterEach](#aftereachtitle-fn)
-    - [after](#aftertitle-fn)
+  - [suite](#suitetitle-fn)
+  - [before](#beforetitle-fn)
+  - [beforeEach](#beforeeachtitle-fn)
+  - [test](#testtitle-fn)
+  - [afterEach](#aftereachtitle-fn)
+  - [after](#aftertitle-fn)
 
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/mocha-chain/). For the problem this solves and design rationale, see [WHY-MOCHA-CHAIN.md](https://github.com/JacobLey/leyman/blob/main/tools/test-chain/mocha-chain/WHY-MOCHA-CHAIN.md).
 
@@ -151,11 +152,11 @@ Each hook can chain to a subset of other hooks. The table below shows which targ
 `suite` sets up hooks and tests but does not itself return chainable context. `test` can be called from hooks but does not return context to chain further.
 
 | Source \ Target | `before` | `beforeEach` | `test` | `afterEach` | `after` |
-|-----------------|:--------:|:------------:|:------:|:-----------:|:-------:|
-| `before`        | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `beforeEach`    | ❌ | ✅ | ✅ | ✅ | ❌ |
-| `afterEach`     | ❌ | ❌ | ❌ | ✅ | ❌ |
-| `after`         | ❌ | ❌ | ❌ | ❌ | ✅ |
+| --------------- | :------: | :----------: | :----: | :---------: | :-----: |
+| `before`        |    ✅    |      ✅      |   ✅   |     ✅      |   ✅    |
+| `beforeEach`    |    ❌    |      ✅      |   ✅   |     ✅      |   ❌    |
+| `afterEach`     |    ❌    |      ❌      |   ❌   |     ✅      |   ❌    |
+| `after`         |    ❌    |      ❌      |   ❌   |     ❌      |   ✅    |
 
 ```ts
 before(() => {
@@ -180,10 +181,10 @@ Aliases: `describe`, `context`. Mirrors the mocha method of the same name.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | — | Required. Name of the suite. |
-| `fn` | `() => void` | — | Required. Synchronous callback that registers hooks and tests. An async callback throws a `TypeError` ("Suite callback must be synchronous") when the file loads, and is a type error. |
+| Parameter | Type         | Default | Description                                                                                                                                                                            |
+| --------- | ------------ | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `title`   | `string`     | —       | Required. Name of the suite.                                                                                                                                                           |
+| `fn`      | `() => void` | —       | Required. Synchronous callback that registers hooks and tests. An async callback throws a `TypeError` ("Suite callback must be synchronous") when the file loads, and is a type error. |
 
 `suite` does not return chainable context. Calling it inside a hook or test throws immediately.
 
@@ -206,10 +207,10 @@ Runs once at the start of the enclosing suite.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | — | Optional. Name for the hook, shown in output on failure. |
-| `fn` | `(ctx) => object \| void` | — | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
+| Parameter | Type                      | Default | Description                                                                                                       |
+| --------- | ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------- |
+| `title`   | `string`                  | —       | Optional. Name for the hook, shown in output on failure.                                                          |
+| `fn`      | `(ctx) => object \| void` | —       | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
 
 **Returns** a chainable handle. The context returned by this hook is accessible in chained `before`, `beforeEach`, `test`, `afterEach`, and `after` calls.
 
@@ -228,10 +229,10 @@ Runs before every test in the enclosing suite.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | — | Optional. Name for the hook. |
-| `fn` | `(ctx) => object \| void` | — | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
+| Parameter | Type                      | Default | Description                                                                                                       |
+| --------- | ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------- |
+| `title`   | `string`                  | —       | Optional. Name for the hook.                                                                                      |
+| `fn`      | `(ctx) => object \| void` | —       | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
 
 **Returns** a chainable handle. The context returned by this hook is accessible in chained `beforeEach`, `test`, and `afterEach` calls.
 
@@ -245,10 +246,10 @@ Runs the actual test.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | — | Required. Name of the test. |
-| `fn` | `(ctx) => void` | — | Required. The test callback. May be async. |
+| Parameter | Type            | Default | Description                                |
+| --------- | --------------- | ------- | ------------------------------------------ |
+| `title`   | `string`        | —       | Required. Name of the test.                |
+| `fn`      | `(ctx) => void` | —       | Required. The test callback. May be async. |
 
 `test` does not return chainable context.
 
@@ -269,10 +270,10 @@ Runs after every test in the enclosing suite. Guaranteed to run even if the test
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | — | Optional. Name for the hook. |
-| `fn` | `(ctx) => object \| void` | — | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
+| Parameter | Type                      | Default | Description                                                                                                       |
+| --------- | ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------- |
+| `title`   | `string`                  | —       | Optional. Name for the hook.                                                                                      |
+| `fn`      | `(ctx) => object \| void` | —       | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
 
 **Returns** a chainable handle. The context returned by this hook is accessible in chained `afterEach` calls only.
 
@@ -286,10 +287,10 @@ Runs once at the end of the enclosing suite. Guaranteed to run even if tests fai
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `title` | `string` | — | Optional. Name for the hook. |
-| `fn` | `(ctx) => object \| void` | — | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
+| Parameter | Type                      | Default | Description                                                                                                       |
+| --------- | ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------------- |
+| `title`   | `string`                  | —       | Optional. Name for the hook.                                                                                      |
+| `fn`      | `(ctx) => object \| void` | —       | Required. The hook callback. May be async. If it returns an object, its keys are merged into the chained context. |
 
 **Returns** a chainable handle. The context returned by this hook is accessible in chained `after` calls only.
 

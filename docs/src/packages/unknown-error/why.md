@@ -57,23 +57,23 @@ Every claim below is checked by the [comparison suite](https://github.com/JacobL
 
 From the [comparison suite](https://github.com/JacobLey/leyman/blob/main/e2e/unknown-error-comparison/test/integration/comparison.spec.ts). ✅ handles it, ❌ doesn't, 💥 throws, — has no API for it.
 
-| Case | unknown-error | normalize-exception | ensure-error | serialize-error | pony-cause | Hand-written |
-|---|---|---|---|---|---|---|
-| Uses a thrown string as the message, unchanged | ✅ | ✅ | ❌ quotes it | ❌ prefixes it | — | ✅ |
-| Converts a thrown `null` | ✅ | ✅ | ✅ | ✅ | — | ✅ |
-| Keeps an Error from another realm | ✅ | ✅ | ❌ | ✅ | — | ❌ |
-| Rebuilds an error-like object with its name, message, code and stack | ✅ | ✅ | ❌ | ✅ | — | ❌ |
-| Describes a circular object | ✅ | ❌ | ❌ | ❌ | — | ❌ |
-| Describes an object containing a BigInt | ✅ | ❌ | ❌ | ❌ | — | ❌ |
-| Converts an object whose `toJSON` and `toString` throw | ✅ | ✅ | ✅ | ✅ | — | 💥 |
-| Converts a Proxy that throws from every trap | ✅ | ✅ | 💥 | 💥 | — | 💥 |
-| Reads the message of an Error whose `message` getter throws | ✅ | ✅ | 💥 | 💥 | — | 💥 |
-| Leaves the Error passed in unmodified | ✅ | ❌ | ❌ | ✅ | — | ✅ |
-| Includes a cause that is not an Error | ✅ | ✅ | ✅ | — | ❌ | — |
-| Includes a cause from another realm | ✅ | ✅ | ❌ | — | ❌ | — |
-| Ends a circular cause chain | ✅ | ✅ | ✅ | — | ✅ | — |
-| Includes nested `AggregateError` entries | ✅ | ✅ | ✅ | — | ❌ | — |
-| Handles a 10,000-deep cause chain | ✅ | 💥 | 💥 | — | 💥 | — |
+| Case                                                                 | unknown-error | normalize-exception | ensure-error | serialize-error | pony-cause | Hand-written |
+| -------------------------------------------------------------------- | ------------- | ------------------- | ------------ | --------------- | ---------- | ------------ |
+| Uses a thrown string as the message, unchanged                       | ✅            | ✅                  | ❌ quotes it | ❌ prefixes it  | —          | ✅           |
+| Converts a thrown `null`                                             | ✅            | ✅                  | ✅           | ✅              | —          | ✅           |
+| Keeps an Error from another realm                                    | ✅            | ✅                  | ❌           | ✅              | —          | ❌           |
+| Rebuilds an error-like object with its name, message, code and stack | ✅            | ✅                  | ❌           | ✅              | —          | ❌           |
+| Describes a circular object                                          | ✅            | ❌                  | ❌           | ❌              | —          | ❌           |
+| Describes an object containing a BigInt                              | ✅            | ❌                  | ❌           | ❌              | —          | ❌           |
+| Converts an object whose `toJSON` and `toString` throw               | ✅            | ✅                  | ✅           | ✅              | —          | 💥           |
+| Converts a Proxy that throws from every trap                         | ✅            | ✅                  | 💥           | 💥              | —          | 💥           |
+| Reads the message of an Error whose `message` getter throws          | ✅            | ✅                  | 💥           | 💥              | —          | 💥           |
+| Leaves the Error passed in unmodified                                | ✅            | ❌                  | ❌           | ✅              | —          | ✅           |
+| Includes a cause that is not an Error                                | ✅            | ✅                  | ✅           | —               | ❌         | —            |
+| Includes a cause from another realm                                  | ✅            | ✅                  | ❌           | —               | ❌         | —            |
+| Ends a circular cause chain                                          | ✅            | ✅                  | ✅           | —               | ✅         | —            |
+| Includes nested `AggregateError` entries                             | ✅            | ✅                  | ✅           | —               | ❌         | —            |
+| Handles a 10,000-deep cause chain                                    | ✅            | 💥                  | 💥           | —               | 💥         | —            |
 
 ## Design Decisions
 

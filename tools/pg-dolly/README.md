@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # pg-dolly
+
 A fresh Postgres database for every test, cloned from a template built once from your schema's SQL.
 
 [![npm package](https://badge.fury.io/js/pg-dolly.svg)](https://www.npmjs.com/package/pg-dolly)
@@ -19,6 +20,7 @@ pg-dolly gives each test its own Postgres database. It builds a template from yo
 Named after Dolly the sheep. The design follows Go's [pgtestdb](https://github.com/peterldowns/pgtestdb). For why each test gets a database, and how runs stay out of each other's way, see [WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md). Guides for each test runner, and the full reference, are on the [docs site](https://jacobley.github.io/leyman/packages/pg-dolly/).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [The schema](#the-schema)
@@ -201,10 +203,10 @@ Data only a few tests need is better inserted by those tests, after cloning, whe
 Measured on a laptop (Postgres 18.6 in Docker), for schemas where each table has a primary key, an index and a foreign key:
 
 | Tables | Build the template (once) | Clone (per test) | Drop at `close()` (per test) |
-|---|---|---|---|
-| 10 | 20-45 ms | 7-14 ms | 2 ms |
-| 100 | 70 ms | 13-24 ms | 2 ms |
-| 500 | 300 ms | 50-60 ms | 3 ms |
+| ------ | ------------------------- | ---------------- | ---------------------------- |
+| 10     | 20-45 ms                  | 7-14 ms          | 2 ms                         |
+| 100    | 70 ms                     | 13-24 ms         | 2 ms                         |
+| 500    | 300 ms                    | 50-60 ms         | 3 ms                         |
 
 Connecting to a clone and running a first query takes another 4 ms or so.
 
@@ -235,20 +237,20 @@ Connects to the server, and drops what earlier runs left behind (see [How it wor
 
 #### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `url` | `string` | `process.env.DATABASE_URL` | Server to connect to, as a `postgres://` URL. The URLs of clones differ from it only in the database name. |
-| `prefix` | `string` | `'pg_dolly'` | Start of every database name it creates: 1-20 lowercase letters, digits and underscores, starting with a letter. |
-| `settings` | `Record<string, string \| string[]>` | `defaultSettings` | Settings of every database, as `ALTER DATABASE … SET`. A list is a setting that takes several values (`search_path: ['app', 'public']`). Names are case-insensitive, as in Postgres. Merged over the exported `defaultSettings`, which pin what `initdb` takes from the machine: `TimeZone: 'UTC'`, `DateStyle: 'ISO, MDY'`, `lc_monetary`, `lc_numeric` and `lc_time: 'C'`, and `default_text_search_config: 'pg_catalog.simple'`. Templates are built with them, and they are part of the template's hash. |
-| `retainMs` | `number` | `86_400_000` (a day) | How long a template no run has used is kept, and a clone kept from a failed test. |
+| Option     | Type                                 | Default                    | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
+| ---------- | ------------------------------------ | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `url`      | `string`                             | `process.env.DATABASE_URL` | Server to connect to, as a `postgres://` URL. The URLs of clones differ from it only in the database name.                                                                                                                                                                                                                                                                                                                                                                                                   |
+| `prefix`   | `string`                             | `'pg_dolly'`               | Start of every database name it creates: 1-20 lowercase letters, digits and underscores, starting with a letter.                                                                                                                                                                                                                                                                                                                                                                                             |
+| `settings` | `Record<string, string \| string[]>` | `defaultSettings`          | Settings of every database, as `ALTER DATABASE … SET`. A list is a setting that takes several values (`search_path: ['app', 'public']`). Names are case-insensitive, as in Postgres. Merged over the exported `defaultSettings`, which pin what `initdb` takes from the machine: `TimeZone: 'UTC'`, `DateStyle: 'ISO, MDY'`, `lc_monetary`, `lc_numeric` and `lc_time: 'C'`, and `default_text_search_config: 'pg_catalog.simple'`. Templates are built with them, and they are part of the template's hash. |
+| `retainMs` | `number`                             | `86_400_000` (a day)       | How long a template no run has used is kept, and a clone kept from a failed test.                                                                                                                                                                                                                                                                                                                                                                                                                            |
 
 ### `dolly.template(sql, options?)`
 
 Gets the template for a schema, building it unless an earlier run already did. Calls with the same SQL share one template, and templates are built one at a time.
 
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `sql` | `string` | The schema, e.g. a committed `schema.sql`. An empty string gives an empty database, e.g. to run migrations in. |
+| Parameter      | Type     | Description                                                                                                     |
+| -------------- | -------- | --------------------------------------------------------------------------------------------------------------- |
+| `sql`          | `string` | The schema, e.g. a committed `schema.sql`. An empty string gives an empty database, e.g. to run migrations in.  |
 | `options.seed` | `string` | SQL run after the schema, for data every test starts from. See [Data every test needs](#data-every-test-needs). |
 
 **Returns** `Promise<DollyTemplate>`: `{ name, hash, clone }`, where `hash` is the hash of the SQL (schema and seed), and `name` is `<prefix>_t_<hash>`.
@@ -261,10 +263,10 @@ Creates a fresh database from the template, for one test.
 
 **Returns** `Promise<DollyDatabase>`:
 
-| Property | Type | Description |
-|----------|------|-------------|
-| `name` | `string` | Database name, starting with the prefix. |
-| `url` | `string` | Connection URL: the server's, with this database's name. |
+| Property | Type         | Description                                                                                                                                                                   |
+| -------- | ------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `name`   | `string`     | Database name, starting with the prefix.                                                                                                                                      |
+| `url`    | `string`     | Connection URL: the server's, with this database's name.                                                                                                                      |
 | `keep()` | `() => void` | Keeps the database when `close()` drops the rest, and prints its name. A later run drops it once `retainMs` has passed. Throws `PgDollyClosedError` once `close()` is called. |
 
 ### `dolly.close()`
@@ -291,20 +293,20 @@ To keep a committed `schema.sql` up to date, and check it in CI, use [`pg-dolly-
 
 Every error `pg-dolly` throws extends `PgDollyError`. The types `PgDollyOptions`, `DollyTemplate`, `DollyDatabase`, `TemplateOptions`, `DatabaseSetting` and `DumpSchemaOptions` are exported too.
 
-| Error | When |
-|-------|------|
-| `PgDollyMissingUrlError` | Neither `url` nor `DATABASE_URL` is set. |
-| `PgDollyPrefixError` | The prefix can't start a database name. Has `prefix`. |
-| `PgDollyClosedError` | Used after `close()`. |
+| Error                    | When                                                  |
+| ------------------------ | ----------------------------------------------------- |
+| `PgDollyMissingUrlError` | Neither `url` nor `DATABASE_URL` is set.              |
+| `PgDollyPrefixError`     | The prefix can't start a database name. Has `prefix`. |
+| `PgDollyClosedError`     | Used after `close()`.                                 |
 
 ## Compared to alternatives
 
-| | pg-dolly | A transaction rolled back per test | One database, cleared between tests | Testcontainers | PGlite |
-|---|---|---|---|---|---|
-| Commits, `NOTIFY`, advisory locks, concurrent connections | ✅ | ❌ | ✅ | ✅ | Limited (one connection) |
-| Tests in parallel | ✅ | ✅ | ❌ | ✅ | ✅ |
-| Cost per test | A database copy | Cheapest | Truncating every table | A container, unless shared | An in-process database |
-| The real Postgres server | ✅ | ✅ | ✅ | ✅ | Postgres in WebAssembly |
-| Needs | A server | A server | A server | Docker | Nothing |
+|                                                           | pg-dolly        | A transaction rolled back per test | One database, cleared between tests | Testcontainers             | PGlite                   |
+| --------------------------------------------------------- | --------------- | ---------------------------------- | ----------------------------------- | -------------------------- | ------------------------ |
+| Commits, `NOTIFY`, advisory locks, concurrent connections | ✅              | ❌                                 | ✅                                  | ✅                         | Limited (one connection) |
+| Tests in parallel                                         | ✅              | ✅                                 | ❌                                  | ✅                         | ✅                       |
+| Cost per test                                             | A database copy | Cheapest                           | Truncating every table              | A container, unless shared | An in-process database   |
+| The real Postgres server                                  | ✅              | ✅                                 | ✅                                  | ✅                         | Postgres in WebAssembly  |
+| Needs                                                     | A server        | A server                           | A server                            | Docker                     | Nothing                  |
 
 [pgtestdb](https://github.com/peterldowns/pgtestdb) does the same in Go. See [WHY-PG-DOLLY.md](https://github.com/JacobLey/leyman/blob/main/tools/pg-dolly/WHY-PG-DOLLY.md#compared-to-alternatives) for the full comparison.

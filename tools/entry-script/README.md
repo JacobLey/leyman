@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # entry-script
+
 Node.js scripts whose main() only runs when they are the entry point, so tests can import them without side effects.
 
 [![npm package](https://badge.fury.io/js/entry-script.svg)](https://www.npmjs.com/package/entry-script)
@@ -11,6 +12,7 @@ Node.js scripts whose main() only runs when they are the entry point, so tests c
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/entry-script/).
 
 ## Contents
+
 - [The Problem](#the-problem)
 - [Install](#install)
 - [Example](#example)
@@ -121,9 +123,9 @@ import { EntryScript } from 'entry-script';
 
 Available as both a **static** and an **instance** method.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `argv` | `string[]` | — | Required. Command-line arguments, equivalent to `process.argv` with the node executable and filename stripped. |
+| Parameter | Type       | Default | Description                                                                                                    |
+| --------- | ---------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| `argv`    | `string[]` | —       | Required. Command-line arguments, equivalent to `process.argv` with the node executable and filename stripped. |
 
 **Returns** `Promise<void>` — resolves when the script has finished executing.
 

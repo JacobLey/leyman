@@ -14,11 +14,11 @@ This describes `consistentHash(key, range, { seed })` precisely enough for any l
 
 ## Inputs
 
-| Input | Description |
-|---|---|
-| `key` | Unicode string, hashed as its UTF-8 bytes. Lone surrogates (only possible in UTF-16 strings) are encoded as U+FFFD (`EF BF BD`). |
-| `range` | Integer, `1 ≤ range ≤ 2^48`. |
-| `seed` | u32, default `0`. |
+| Input   | Description                                                                                                                      |
+| ------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `key`   | Unicode string, hashed as its UTF-8 bytes. Lone surrogates (only possible in UTF-16 strings) are encoded as U+FFFD (`EF BF BD`). |
+| `range` | Integer, `1 ≤ range ≤ 2^48`.                                                                                                     |
+| `seed`  | u32, default `0`.                                                                                                                |
 
 Implementations should reject a `range` or `seed` out of bounds.
 

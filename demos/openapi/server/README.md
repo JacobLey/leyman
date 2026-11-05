@@ -5,6 +5,7 @@ The OpenAPI demo's notes API: Hono on Postgres with Drizzle, validating every re
 Part of the [OpenAPI demo](../README.md). A worked example, never published.
 
 ## Contents
+
 - [Example](#example)
 - [How a request flows](#how-a-request-flows)
 - [Validation from the document](#validation-from-the-document)
@@ -71,13 +72,13 @@ With `protectedResource`, the API also serves its Protected Resource Metadata (R
 
 `createNotesApp` covers the common case. Underneath, each part is a [haywire](../../../tools/haywire) binding, so an app (or a test) swaps one at a time:
 
-| Identifier | Bound by | Default |
-|---|---|---|
-| `databaseId` | the app: Drizzle on a pool it owns, never closed by the server | — |
-| `authenticatorId` | the app | `jwtAuthenticatorBinding(options)` or `staticTokensBinding(tokens)` |
-| `appConfigId` | the app: `onError`, and `protectedResource` | — |
-| `handlersId` | `notesModule` | `drizzleHandlersBinding` |
-| `notesAppId` | `notesModule` | the Hono app |
+| Identifier        | Bound by                                                       | Default                                                             |
+| ----------------- | -------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `databaseId`      | the app: Drizzle on a pool it owns, never closed by the server | —                                                                   |
+| `authenticatorId` | the app                                                        | `jwtAuthenticatorBinding(options)` or `staticTokensBinding(tokens)` |
+| `appConfigId`     | the app: `onError`, and `protectedResource`                    | —                                                                   |
+| `handlersId`      | `notesModule`                                                  | `drizzleHandlersBinding`                                            |
+| `notesAppId`      | `notesModule`                                                  | the Hono app                                                        |
 
 ```ts
 const app = createContainer(

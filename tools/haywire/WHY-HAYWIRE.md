@@ -85,7 +85,6 @@ Haywire meets all of the requirements above. It gets type safety without decorat
 
 When the code compiles, the container is guaranteed to work (barring external runtime issues like bad credentials or network failures). The remaining runtime validation — circular dependency detection, sync supplier validation — is exposed via `container.check()`, which is designed to be called in your test suite.
 
-
 ---
 
 ## Comparisons

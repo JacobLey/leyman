@@ -114,11 +114,11 @@ const result = verify(text);
 //    ^?
 ```
 
-| `status` | Meaning |
-|----------|---------|
-| `'valid'` | Signed, and unchanged outside manual sections. |
-| `'invalid'` | Signed, but changed outside manual sections. |
-| `'unsigned'` | No signature token. |
+| `status`      | Meaning                                                                  |
+| ------------- | ------------------------------------------------------------------------ |
+| `'valid'`     | Signed, and unchanged outside manual sections.                           |
+| `'invalid'`   | Signed, but changed outside manual sections.                             |
+| `'unsigned'`  | No signature token.                                                      |
 | `'malformed'` | The token or markers can't be read. `error` says why, and on which line. |
 
 `verify()` never throws, so it is safe to run over any file. To check files while editing them, use the [ESLint rule](/packages/generated-signature/guides/eslint).

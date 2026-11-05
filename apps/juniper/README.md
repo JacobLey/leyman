@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # Juniper
+
 Build JSON Schemas in TypeScript with inferred static types — strict, Ajv-ready, JSON Schema 2020-12 and OpenAPI 3.0 output.
 
 [![npm package](https://badge.fury.io/js/juniper.svg)](https://www.npmjs.com/package/juniper)
@@ -23,6 +24,7 @@ Juniper writes the `format` keyword as given, and does not check it. If a schema
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/juniper/). For the full motivation, design goals and non-goals, see [WHY-JUNIPER.md](https://github.com/JacobLey/leyman/blob/main/apps/juniper/WHY-JUNIPER.md).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -168,19 +170,19 @@ TypeScript's errors for these don't say what to change:
 
 Juniper exports the following schema classes with their JSON Schema and TypeScript equivalents:
 
-Juniper Class | JSON Schema | TypeScript
----|---|---
-`ArraySchema` | `type: 'array'` | `unknown[]`
-`BooleanSchema` | `type: 'boolean'` | `boolean`
-`CustomSchema` | N/A (whatever is provided) | N/A (whatever is provided)
-`EnumSchema` | `enum: []` | Union `\|` of provided literals
-`MergeSchema` | N/A (compositional schema) | `unknown`, then `\|` or `&` as appropriate
-`NeverSchema` | `not: {}` | `never`
-`NullSchema` | `type: 'null'` | `null`
-`NumberSchema` | `type: 'number'` OR `type: 'integer'` | `number`
-`ObjectSchema` | `type: 'object'` | `{}`
-`StringSchema` | `type: 'string'` | `string`
-`TupleSchema` | `type: 'array'` | `[unknown]`
+| Juniper Class   | JSON Schema                           | TypeScript                                 |
+| --------------- | ------------------------------------- | ------------------------------------------ |
+| `ArraySchema`   | `type: 'array'`                       | `unknown[]`                                |
+| `BooleanSchema` | `type: 'boolean'`                     | `boolean`                                  |
+| `CustomSchema`  | N/A (whatever is provided)            | N/A (whatever is provided)                 |
+| `EnumSchema`    | `enum: []`                            | Union `\|` of provided literals            |
+| `MergeSchema`   | N/A (compositional schema)            | `unknown`, then `\|` or `&` as appropriate |
+| `NeverSchema`   | `not: {}`                             | `never`                                    |
+| `NullSchema`    | `type: 'null'`                        | `null`                                     |
+| `NumberSchema`  | `type: 'number'` OR `type: 'integer'` | `number`                                   |
+| `ObjectSchema`  | `type: 'object'`                      | `{}`                                       |
+| `StringSchema`  | `type: 'string'`                      | `string`                                   |
+| `TupleSchema`   | `type: 'array'`                       | `[unknown]`                                |
 
 Notes:
 
@@ -332,16 +334,16 @@ A complete users and posts API, built both ways, with [openapi3-ts](https://www.
 
 ### Helper Types
 
-| Type | Interface | Description |
-|------|-----------|-------------|
-| `SchemaType` | `SchemaType<Schema>` \| `SchemaType<JSON>` | Extracts the TypeScript type from a Juniper class or JSON Schema object. |
-| `Schema` | `Schema<number>` | A Juniper Schema instance describing a TypeScript type. Accept it as a parameter to render it, or to pass to `components`, `serializeSpec`, `anyOf` and the like. It can't be passed to `properties` or `arraySchema`; see [Type traps](#type-traps). |
-| `JsonSchema` | `JsonSchema<number>` | A JSON Schema object describing the specified TypeScript type. |
-| `OpenApi30JsonSchema` | `OpenApi30JsonSchema<number>` | What `toJSON({ openApi30: true })` returns: no `true`/`false` sub-schemas, and a single `type`, so it can be assigned to OpenAPI libraries' 3.0 schema types (e.g. openapi3-ts's `oas30.SchemaObject`) without a cast. |
-| `EmptyObject` | `EmptyObject` | Describes an actually-empty object. Mostly internal but exposed for convenience. |
-| `PatternProperties` | ``PatternProperties<`abc${string}`>`` | Describes a string pattern type. See [`ObjectSchema.patternProperties`](#objectschema). |
-| `KnownFormat` | `KnownFormat` | String formats defined by JSON Schema and OpenAPI 3.0. See [`StringSchema.format`](#stringschema). |
-| `RecursiveSchema` | `RecursiveSchema<T>` | What [`defineRecursive`](#definerecursivetname-build) returns, and its `self` argument. |
+| Type                  | Interface                                  | Description                                                                                                                                                                                                                                           |
+| --------------------- | ------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `SchemaType`          | `SchemaType<Schema>` \| `SchemaType<JSON>` | Extracts the TypeScript type from a Juniper class or JSON Schema object.                                                                                                                                                                              |
+| `Schema`              | `Schema<number>`                           | A Juniper Schema instance describing a TypeScript type. Accept it as a parameter to render it, or to pass to `components`, `serializeSpec`, `anyOf` and the like. It can't be passed to `properties` or `arraySchema`; see [Type traps](#type-traps). |
+| `JsonSchema`          | `JsonSchema<number>`                       | A JSON Schema object describing the specified TypeScript type.                                                                                                                                                                                        |
+| `OpenApi30JsonSchema` | `OpenApi30JsonSchema<number>`              | What `toJSON({ openApi30: true })` returns: no `true`/`false` sub-schemas, and a single `type`, so it can be assigned to OpenAPI libraries' 3.0 schema types (e.g. openapi3-ts's `oas30.SchemaObject`) without a cast.                                |
+| `EmptyObject`         | `EmptyObject`                              | Describes an actually-empty object. Mostly internal but exposed for convenience.                                                                                                                                                                      |
+| `PatternProperties`   | ``PatternProperties<`abc${string}`>``      | Describes a string pattern type. See [`ObjectSchema.patternProperties`](#objectschema).                                                                                                                                                               |
+| `KnownFormat`         | `KnownFormat`                              | String formats defined by JSON Schema and OpenAPI 3.0. See [`StringSchema.format`](#stringschema).                                                                                                                                                    |
+| `RecursiveSchema`     | `RecursiveSchema<T>`                       | What [`defineRecursive`](#definerecursivetname-build) returns, and its `self` argument.                                                                                                                                                               |
 
 `isSchema(value)` is a type guard for whether `value` is a Juniper schema (`value is Schema<T>`). `ComponentsParams`, `SerializedSpec`, `SerializedSpecValue`, `JsonSchemaType` and `EmptyIndex` are also exported, for typing the parameters and results of the functions above.
 
@@ -377,12 +379,12 @@ The output is deterministic: the same schema always renders the same JSON, and `
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `openApi30` | `boolean` | `false` | Output a JSON Schema compliant with OpenAPI 3.0. Keywords 3.0 lacks are rewritten where possible, and dropped otherwise, so the schema may accept more than its 2020-12 form. The OpenAPI 3.0 column of each [schema](#schemas) lists which keywords are kept. |
-| `id` | `string` | — | Value to place in the `$id` field of the document. |
-| `schema` | `boolean` | `false` | Include the draft as the `$schema` property. |
-| `definitionsPath` | `string` | `'#/$defs/'` (`'#/components/schemas/'` with `openApi30`) | `$ref` prefix for [defined](#reusing-schemas-with-define) schemas. Only `#/$defs/` is embedded in the output; use `components()` for other paths. |
+| Parameter         | Type      | Default                                                   | Description                                                                                                                                                                                                                                                    |
+| ----------------- | --------- | --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `openApi30`       | `boolean` | `false`                                                   | Output a JSON Schema compliant with OpenAPI 3.0. Keywords 3.0 lacks are rewritten where possible, and dropped otherwise, so the schema may accept more than its 2020-12 form. The OpenAPI 3.0 column of each [schema](#schemas) lists which keywords are kept. |
+| `id`              | `string`  | —                                                         | Value to place in the `$id` field of the document.                                                                                                                                                                                                             |
+| `schema`          | `boolean` | `false`                                                   | Include the draft as the `$schema` property.                                                                                                                                                                                                                   |
+| `definitionsPath` | `string`  | `'#/$defs/'` (`'#/components/schemas/'` with `openApi30`) | `$ref` prefix for [defined](#reusing-schemas-with-define) schemas. Only `#/$defs/` is embedded in the output; use `components()` for other paths.                                                                                                              |
 
 **Returns** `JsonSchema<T>`, or `OpenApi30JsonSchema<T>` when `openApi30` is `true` — the rendered JSON Schema document.
 
@@ -401,11 +403,11 @@ schema['~standard'].jsonSchema.input({ target: 'openapi-3.0' });
 // { type: 'string', nullable: true }
 ```
 
-| Target | Same as |
-|--------|---------|
-| `'draft-2020-12'` | `toJSON()` |
-| `'openapi-3.0'` | `toJSON({ openApi30: true })` |
-| `'draft-07'` | `toJSON()`, rewritten as draft-07 |
+| Target            | Same as                           |
+| ----------------- | --------------------------------- |
+| `'draft-2020-12'` | `toJSON()`                        |
+| `'openapi-3.0'`   | `toJSON({ openApi30: true })`     |
+| `'draft-07'`      | `toJSON()`, rewritten as draft-07 |
 
 `'draft-07'` is the target some tool libraries request, such as the AI SDK and Mastra. Each 2020-12 keyword is rewritten to its draft-07 form: `$defs` become `definitions`, `prefixItems` becomes the array form of `items` (with `additionalItems`), `dependentRequired` and `dependentSchemas` become `dependencies`, and a `$ref` with constraints beside it moves into `allOf`. `unevaluatedProperties` becomes `additionalProperties` when nothing else in the schema evaluates properties. A schema that has no exact draft-07 form, such as one using `maxContains`, throws, so the draft-07 schema accepts the same values as the 2020-12 one.
 
@@ -421,9 +423,9 @@ Prefer [`.define(name)`](#reusing-schemas-with-define) for schemas you build wit
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `path` | `string` | — | Required. Path to where the schema is actually stored in the document. Final document structure is implementation-specific and not verifiable. |
+| Parameter | Type     | Default | Description                                                                                                                                    |
+| --------- | -------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `path`    | `string` | —       | Required. Path to where the schema is actually stored in the document. Final document structure is implementation-specific and not verifiable. |
 
 If referencing a JSON Schema entirely outside of Juniper's control, use `ref` on a `CustomSchema`. Otherwise it is designed for instances where common schemas are pulled into a reusable section, such as [OpenAPI's `components`](https://swagger.io/docs/specification/components/).
 
@@ -496,9 +498,9 @@ const nullableResourceSchema = mergeSchema().oneOf([
 
 Makes the schema a reusable definition, emitted as `$ref` and collected into `$defs`. See [Reusing schemas with define](#reusing-schemas-with-define).
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `name` | `string` | — | Required. Name of the definition, e.g. `User`. Must be unique per document. |
+| Parameter | Type     | Default | Description                                                                 |
+| --------- | -------- | ------- | --------------------------------------------------------------------------- |
+| `name`    | `string` | —       | Required. Name of the definition, e.g. `User`. Must be unique per document. |
 
 ---
 
@@ -506,10 +508,10 @@ Makes the schema a reusable definition, emitted as `$ref` and collected into `$d
 
 Defines a schema that references itself. See [Recursive schemas](#recursive-schemas).
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `name` | `string` | — | Required. Name of the definition. |
-| `build` | `(self: RecursiveSchema<T>) => Schema<T>` | — | Required. Builds the definition, given a reference to itself. Must produce `T`. |
+| Parameter | Type                                      | Default | Description                                                                     |
+| --------- | ----------------------------------------- | ------- | ------------------------------------------------------------------------------- |
+| `name`    | `string`                                  | —       | Required. Name of the definition.                                               |
+| `build`   | `(self: RecursiveSchema<T>) => Schema<T>` | —       | Required. Builds the definition, given a reference to itself. Must produce `T`. |
 
 **Returns** `RecursiveSchema<T>` — a reference to the definition.
 
@@ -519,11 +521,11 @@ Defines a schema that references itself. See [Recursive schemas](#recursive-sche
 
 Collects every definition used by `schemas` (including defined schemas themselves), keyed and sorted by name. For documents that keep definitions outside the schema, such as OpenAPI's `components.schemas`.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `schemas` | `Schema[]` | — | Required. Schemas whose definitions to collect. |
-| `options.openApi30` | `boolean` | `false` | Serialize definitions for OpenAPI 3.0. |
-| `options.definitionsPath` | `string` | `'#/components/schemas/'` | `$ref` prefix. Pass the same options to `toJSON` for schemas that use them. |
+| Parameter                 | Type       | Default                   | Description                                                                 |
+| ------------------------- | ---------- | ------------------------- | --------------------------------------------------------------------------- |
+| `schemas`                 | `Schema[]` | —                         | Required. Schemas whose definitions to collect.                             |
+| `options.openApi30`       | `boolean`  | `false`                   | Serialize definitions for OpenAPI 3.0.                                      |
+| `options.definitionsPath` | `string`   | `'#/components/schemas/'` | `$ref` prefix. Pass the same options to `toJSON` for schemas that use them. |
 
 **Throws** when different schemas are defined with the same name.
 
@@ -533,11 +535,11 @@ Collects every definition used by `schemas` (including defined schemas themselve
 
 Serializes every schema in an OpenAPI document, and fills `components.schemas` with the definitions they use, so nothing has to be listed (see [OpenAPI](#openapi)).
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `spec` | `object` | — | Required. An OpenAPI document (or any object) with Juniper schemas anywhere in it. |
-| `options.openApi30` | `boolean` | from `spec.openapi` | Serialize for OpenAPI 3.0. Defaults to `true` when `openapi` is `3.0.x`. |
-| `options.definitionsPath` | `string` | `'#/components/schemas/'` | `$ref` prefix. |
+| Parameter                 | Type      | Default                   | Description                                                                        |
+| ------------------------- | --------- | ------------------------- | ---------------------------------------------------------------------------------- |
+| `spec`                    | `object`  | —                         | Required. An OpenAPI document (or any object) with Juniper schemas anywhere in it. |
+| `options.openApi30`       | `boolean` | from `spec.openapi`       | Serialize for OpenAPI 3.0. Defaults to `true` when `openapi` is `3.0.x`.           |
+| `options.definitionsPath` | `string`  | `'#/components/schemas/'` | `$ref` prefix.                                                                     |
 
 **Returns** a copy of `spec` with every schema replaced by its JSON Schema (typed as `JsonSchema<T>`, or `OpenApi30JsonSchema<T>`), and `components.schemas` holding every definition they use, sorted by name. Other components, and other entries in `components.schemas`, are kept. A defined schema placed in `components.schemas` under its own name becomes its definition, not a reference to itself.
 
@@ -575,10 +577,10 @@ Attaches custom data to a JSON Schema. Useful for extensions like [`x-` prefixes
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `key` | `string` | — | The metadata key. Must not overlap with existing JSON Schema keywords. |
-| `value` | `unknown` | — | The metadata value. |
+| Parameter | Type      | Default | Description                                                            |
+| --------- | --------- | ------- | ---------------------------------------------------------------------- |
+| `key`     | `string`  | —       | The metadata key. Must not overlap with existing JSON Schema keywords. |
+| `value`   | `unknown` | —       | The metadata value.                                                    |
 
 Alternatively, pass a single object `{ key1: val1, key2: val2 }` to set multiple metadata entries at once.
 
@@ -590,21 +592,21 @@ Alternatively, pass a single object `{ key1: val1, key2: val2 }` to set multiple
 
 The following methods are available on every schema. All methods return a new (cloned) instance.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types |
-|--------|:--------------------:|:------------:|:-------------:|
-| [`title`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1) | ✅ | ✅ | ❌ |
-| [`description`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1) | ✅ | ✅ | ❌ |
-| [`default`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.2) | ✅ | ✅ | ❌ |
-| [`deprecated`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.3) | ✅ | ✅ | ❌ |
-| [`example(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.5) | ❌ | ❌ | ❌ |
-| [`readOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4) | ✅ | ✅ | ❌ |
-| [`writeOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4) | ✅ | ✅ | ❌ |
-| [`allOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#allof) | ❌ | ❌ | ✅ |
-| [`anyOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#anyof) | ❌ | ❌ | ✅ |
-| [`oneOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) | ❌ | ❌ | ✅ |
-| [`not`](https://json-schema.org/understanding-json-schema/reference/combining.html#not) | ❌ | ❌ | ✅ |
-| [`if then else`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else) | ❌ | ❌ | ✅ |
-| [`nullable`](https://swagger.io/docs/specification/data-models/data-types/#null) | ❌ | ❌ | ✅ |
+| Method                                                                                                       | Constructor Parameter | Can be Unset | Changes Types |
+| ------------------------------------------------------------------------------------------------------------ | :-------------------: | :----------: | :-----------: |
+| [`title`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1)                 |          ✅           |      ✅      |      ❌       |
+| [`description`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1)           |          ✅           |      ✅      |      ❌       |
+| [`default`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.2)               |          ✅           |      ✅      |      ❌       |
+| [`deprecated`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.3)            |          ✅           |      ✅      |      ❌       |
+| [`example(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.5)            |          ❌           |      ❌      |      ❌       |
+| [`readOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4)              |          ✅           |      ✅      |      ❌       |
+| [`writeOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4)             |          ✅           |      ✅      |      ❌       |
+| [`allOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#allof)                  |          ❌           |      ❌      |      ✅       |
+| [`anyOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#anyof)                  |          ❌           |      ❌      |      ✅       |
+| [`oneOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof)                  |          ❌           |      ❌      |      ✅       |
+| [`not`](https://json-schema.org/understanding-json-schema/reference/combining.html#not)                      |          ❌           |      ❌      |      ✅       |
+| [`if then else`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else) |          ❌           |      ❌      |      ✅       |
+| [`nullable`](https://swagger.io/docs/specification/data-models/data-types/#null)                             |          ❌           |      ❌      |      ✅       |
 
 Individual schemas may not expose every method when the result would be nonsensical or forbidden (e.g. `EnumSchema` cannot be `nullable`).
 
@@ -625,16 +627,16 @@ By contrast, `.not(stringSchema().nullable())` rejects every string as well as `
 
 Represents `type: 'array'`. TypeScript type: `unknown[]`.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`items`](https://json-schema.org/understanding-json-schema/reference/array.html#items) | ✅ | ❌ | ✅ | ✅ |
-| [`maxItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.1) | ✅ | ✅ | ❌ | ✅ |
-| [`minItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2) | ✅ | ✅ | ✅ | ✅ |
-| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3) | ✅ | ✅ | ❌ | ✅ |
-| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains) | ❌ | ❌ | ✅ | ❌ |
-| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4) | ✅ | ✅ | ❌ | ❌ |
-| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5) | ✅ | ✅ | ❌ | ❌ |
-| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) | ❌ | ❌ | ✅ | ❌ |
+| Method                                                                                                           | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| ---------------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`items`](https://json-schema.org/understanding-json-schema/reference/array.html#items)                          |          ✅           |      ❌      |      ✅       |     ✅      |
+| [`maxItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.1)                |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`minItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2)                |          ✅           |      ✅      |      ✅       |     ✅      |
+| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3)             |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains)                    |          ❌           |      ❌      |      ✅       |     ❌      |
+| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4)             |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5)             |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) |          ❌           |      ❌      |      ✅       |     ❌      |
 
 `minItems` up to 3 makes those items required in the type, so an empty array is rejected where the schema rejects it:
 
@@ -674,9 +676,9 @@ const isNonEmpty = <T>(array: T[]): array is [T, ...T[]] => array.length > 0;
 
 Represents `enum: []`. TypeScript type: union of provided literals.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`enum(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.2) | ✅ | ❌ | ✅ | ✅ |
+| Method                                                                                           | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| ------------------------------------------------------------------------------------------------ | :-------------------: | :----------: | :-----------: | :---------: |
+| [`enum(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.2) |          ✅           |      ❌      |      ✅       |     ✅      |
 
 ---
 
@@ -684,14 +686,14 @@ Represents `enum: []`. TypeScript type: union of provided literals.
 
 Represents `type: 'number'` or `type: 'integer'`. TypeScript type: `number`.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`type`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.1) | ✅ | ✅ | ❌ | ✅ |
-| [`multipleOf`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.1) | ✅ | ❌ | ❌ | ✅ |
-| [`maximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.2) | ✅ | ✅ | ❌ | ✅ |
-| [`exclusiveMaximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.3) | ✅ | ✅ | ❌ | ✅ |
-| [`minimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.4) | ✅ | ✅ | ❌ | ✅ |
-| [`exclusiveMinimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.5) | ✅ | ✅ | ❌ | ✅ |
+| Method                                                                                                    | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| --------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`type`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.1)             |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`multipleOf`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.1)       |          ✅           |      ❌      |      ❌       |     ✅      |
+| [`maximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.2)          |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`exclusiveMaximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.3) |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`minimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.4)          |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`exclusiveMinimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.5) |          ✅           |      ✅      |      ❌       |     ✅      |
 
 ---
 
@@ -699,17 +701,17 @@ Represents `type: 'number'` or `type: 'integer'`. TypeScript type: `number`.
 
 Represents `type: 'object'`. TypeScript type: `{}`.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`properties`](https://json-schema.org/understanding-json-schema/reference/object.html#properties) | ✅ | ✅ | ✅ | ✅ |
-| [`maxProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.1) | ✅ | ✅ | ❌ | ✅ |
-| [`minProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.2) | ✅ | ✅ | ❌ | ✅ |
-| [`required`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.3) | ✅ | ✅ | ✅ | ✅ |
-| [`additionalProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#additional-properties) | ✅ | ✅ | ✅ | ✅ |
-| [`patternProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#pattern-properties) | ❌ | ✅ | ✅ | ❌ |
-| [`dependentRequired`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentrequired) | ❌ | ❌ | ✅ | ✅ |
-| [`dependentSchemas`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentschemas) | ❌ | ❌ | ✅ | ✅ |
-| [`unevaluatedProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties) | ✅ | ❌ | ❌ | ❌ |
+| Method                                                                                                                    | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| ------------------------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`properties`](https://json-schema.org/understanding-json-schema/reference/object.html#properties)                        |          ✅           |      ✅      |      ✅       |     ✅      |
+| [`maxProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.1)                    |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`minProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.2)                    |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`required`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.3)                         |          ✅           |      ✅      |      ✅       |     ✅      |
+| [`additionalProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#additional-properties)   |          ✅           |      ✅      |      ✅       |     ✅      |
+| [`patternProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#pattern-properties)         |          ❌           |      ✅      |      ✅       |     ❌      |
+| [`dependentRequired`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentrequired)    |          ❌           |      ❌      |      ✅       |     ✅      |
+| [`dependentSchemas`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentschemas)      |          ❌           |      ❌      |      ✅       |     ✅      |
+| [`unevaluatedProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties) |          ✅           |      ❌      |      ❌       |     ❌      |
 
 **`additionalProperties` beside other keys:** TypeScript applies an index signature to every key, where the schema only applies `additionalProperties` to keys nothing else covers. So the index signature also allows the types of `properties` and `patternProperties`: `{ properties: { a: stringSchema() }, additionalProperties: numberSchema() }` is `{ a?: string; [key: string]: number | string }`. Declared keys keep their own type when read.
 
@@ -824,17 +826,17 @@ pet.toJSON();
 
 Represents `type: 'string'`. TypeScript type: `string`.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`format`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7) | ✅ | ✅ | ❌ | ✅ |
-| [`maxLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1) | ✅ | ✅ | ❌ | ✅ |
-| [`minLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1) | ✅ | ✅ | ❌ | ✅ |
-| [`pattern`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.3) | ✅ | ❌ | ❌ | ✅ |
-| `startsWith` | ❌ | ❌ | ✅ | ✅ |
-| `endsWith` | ❌ | ❌ | ✅ | ✅ |
-| `contains` | ❌ | ❌ | ✅ | ✅ |
-| [`contentEncoding`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentencoding) | ✅ | ✅ | ❌ | ❌ |
-| [`contentMediaType`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype) | ✅ | ✅ | ❌ | ❌ |
+| Method                                                                                                                | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| --------------------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`format`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7)                           |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`maxLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1)                    |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`minLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1)                    |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`pattern`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.3)                      |          ✅           |      ❌      |      ❌       |     ✅      |
+| `startsWith`                                                                                                          |          ❌           |      ❌      |      ✅       |     ✅      |
+| `endsWith`                                                                                                            |          ❌           |      ❌      |      ✅       |     ✅      |
+| `contains`                                                                                                            |          ❌           |      ❌      |      ✅       |     ✅      |
+| [`contentEncoding`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentencoding)   |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`contentMediaType`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype) |          ✅           |      ✅      |      ❌       |     ❌      |
 
 OpenAPI 3.0 has no `contentEncoding` or `contentMediaType`, so they are left out of its output. Use `format('byte')` (base64) or `format('binary')` instead.
 
@@ -861,13 +863,13 @@ pair.toJSON();
 // { type: 'array', minItems: 2, maxItems: 2, items: false, prefixItems: [{ type: 'string' }, { type: 'number' }] }
 ```
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3) | ✅ | ✅ | ❌ | ✅ |
-| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains) | ❌ | ❌ | ✅ | ❌ |
-| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4) | ✅ | ✅ | ❌ | ❌ |
-| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5) | ✅ | ✅ | ❌ | ❌ |
-| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) | ❌ | ❌ | ✅ | ❌ |
+| Method                                                                                                           | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| ---------------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3)             |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains)                    |          ❌           |      ❌      |      ✅       |     ❌      |
+| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4)             |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5)             |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) |          ❌           |      ❌      |      ✅       |     ❌      |
 
 ---
 

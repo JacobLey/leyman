@@ -27,12 +27,12 @@ The first line holds a [`generated-signature`](/packages/generated-signature/) t
 
 Before overwriting a signed file that exists, populate-files checks it was written by populate-files and not changed since:
 
-| The existing file | Result |
-|-------------------|--------|
-| Has a valid signature | Overwritten, keeping its [manual sections](#manual-sections). |
-| Was edited outside its manual sections | `PopulateFilesOwnershipError`, reason `'edited'`. |
-| Has no signature | `PopulateFilesOwnershipError`, reason `'not-owned'`: it may be a handwritten file. |
-| Has a broken signature or section markers | `PopulateFilesOwnershipError`, reason `'malformed'`. |
+| The existing file                         | Result                                                                             |
+| ----------------------------------------- | ---------------------------------------------------------------------------------- |
+| Has a valid signature                     | Overwritten, keeping its [manual sections](#manual-sections).                      |
+| Was edited outside its manual sections    | `PopulateFilesOwnershipError`, reason `'edited'`.                                  |
+| Has no signature                          | `PopulateFilesOwnershipError`, reason `'not-owned'`: it may be a handwritten file. |
+| Has a broken signature or section markers | `PopulateFilesOwnershipError`, reason `'malformed'`.                               |
 
 These fail with or without `check`, so an edit fails locally and in CI instead of being lost. Move the change into the generator, or into a manual section, and regenerate. To discard the edit, pass `force: true` (`--force`) once.
 

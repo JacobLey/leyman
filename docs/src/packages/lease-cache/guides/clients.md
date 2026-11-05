@@ -66,4 +66,3 @@ const connection: LeaseCacheConnection = {
 ```
 
 On a cluster, use the client's cluster mode (ioredis's `Cluster`, node-redis's `createCluster`, `GlideClusterClient`): each key's value, lease and stale value share a hash tag, so they live on the same node. For the tag to work, a key can't be empty or start with `}` ([`LeaseCacheKeyError`](/packages/lease-cache/reference/api#errors)), and the prefix can't contain `{` ([`LeaseCachePrefixError`](/packages/lease-cache/reference/api#errors)). The tests only cover a single server.
-

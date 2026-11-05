@@ -70,13 +70,13 @@ error.message; // '{"id":7,"total":"10n","self":"[Circular]"}'
 (error as NonError).thrown === value; // true
 ```
 
-| Value | Message |
-|-------|---------|
-| String | The string itself |
-| `null`, `undefined`, number, boolean, symbol | `String(value)`, like `'null'` or `'Symbol(id)'` |
-| BigInt | `'10n'` |
-| Function | `'[Function name]'`, never its source |
-| Object or array | JSON, with circular references as `"[Circular]"` and BigInts as `"10n"` |
+| Value                                        | Message                                                                 |
+| -------------------------------------------- | ----------------------------------------------------------------------- |
+| String                                       | The string itself                                                       |
+| `null`, `undefined`, number, boolean, symbol | `String(value)`, like `'null'` or `'Symbol(id)'`                        |
+| BigInt                                       | `'10n'`                                                                 |
+| Function                                     | `'[Function name]'`, never its source                                   |
+| Object or array                              | JSON, with circular references as `"[Circular]"` and BigInts as `"10n"` |
 
 When an object's JSON is empty (`toJSON` returns `undefined`) or throws, the message falls back to `String(value)`, then to the object's tag (`[object Object]`), and finally to `[unprintable value]`. Messages are cut to 1,000 characters.
 

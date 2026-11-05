@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # static-emitter
+
 Statically typed event emitter.
 
 [![npm package](https://badge.fury.io/js/static-emitter.svg)](https://www.npmjs.com/package/static-emitter)
@@ -14,6 +15,7 @@ Statically typed event emitter.
 - **Abortable** — every subscription returns an unsubscribe function and accepts an `AbortSignal`.
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -60,13 +62,13 @@ const value = await emitter.next('data'); // Promise<string>
 
 Individual exports are also available at sub-paths:
 
-| Import path | Exports |
-|-------------|---------|
-| `static-emitter` | all exports |
-| `static-emitter/static-emitter` | `StaticEmitter` |
+| Import path                          | Exports             |
+| ------------------------------------ | ------------------- |
+| `static-emitter`                     | all exports         |
+| `static-emitter/static-emitter`      | `StaticEmitter`     |
 | `static-emitter/static-event-target` | `StaticEventTarget` |
-| `static-emitter/typed-custom-event` | `TypedCustomEvent` |
-| `static-emitter/typed-event` | `TypedEvent` |
+| `static-emitter/typed-custom-event`  | `TypedCustomEvent`  |
+| `static-emitter/typed-event`         | `TypedEvent`        |
 
 Events are declared as a map of `eventName → value`, passed as a generic:
 - When the value is an `Event` subclass (e.g. `MouseEvent`), that event is dispatched as-is.
@@ -102,20 +104,20 @@ Extends `StaticEventTarget` with helpers for _detail_ events. Events whose value
 
 #### `new StaticEmitter<Events>()`
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `Events` | `EventMap` | `NoEvents` | Optional generic. Map of event name to `Event` subclass or detail type. |
+| Parameter | Type       | Default    | Description                                                             |
+| --------- | ---------- | ---------- | ----------------------------------------------------------------------- |
+| `Events`  | `EventMap` | `NoEvents` | Optional generic. Map of event name to `Event` subclass or detail type. |
 
 #### `.on(type, listener, options?)`
 
 Listens to an event's detail.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | detail event name | — | Required. |
-| `listener` | `(detail, event) => void` | — | Required. Receives the detail and its `TypedCustomEvent`. |
-| `options.signal` | `AbortSignal` | — | Optional. Removes the listener when aborted. |
-| `options.once` | `boolean` | `false` | Optional. Removes the listener after its first call. |
+| Parameter        | Type                      | Default | Description                                               |
+| ---------------- | ------------------------- | ------- | --------------------------------------------------------- |
+| `type`           | detail event name         | —       | Required.                                                 |
+| `listener`       | `(detail, event) => void` | —       | Required. Receives the detail and its `TypedCustomEvent`. |
+| `options.signal` | `AbortSignal`             | —       | Optional. Removes the listener when aborted.              |
+| `options.once`   | `boolean`                 | `false` | Optional. Removes the listener after its first call.      |
 
 **Returns** `() => void` — removes the listener.
 
@@ -125,10 +127,10 @@ Same as `.on()`, but the listener is removed after its first call.
 
 #### `.next(type, options?)`
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | detail event name | — | Required. |
-| `options.signal` | `AbortSignal` | — | Optional. Rejects with the signal's `reason` when aborted. |
+| Parameter        | Type              | Default | Description                                                |
+| ---------------- | ----------------- | ------- | ---------------------------------------------------------- |
+| `type`           | detail event name | —       | Required.                                                  |
+| `options.signal` | `AbortSignal`     | —       | Optional. Rejects with the signal's `reason` when aborted. |
 
 **Returns** `Promise<Detail>` — the detail of the next occurrence of the event.
 
@@ -136,10 +138,10 @@ Same as `.on()`, but the listener is removed after its first call.
 
 Dispatches a `TypedCustomEvent` with the detail. `detail` may be omitted when its type accepts `undefined`.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | detail event name | — | Required. |
-| `detail` | declared detail type | — | Required unless it accepts `undefined`. |
+| Parameter | Type                 | Default | Description                             |
+| --------- | -------------------- | ------- | --------------------------------------- |
+| `type`    | detail event name    | —       | Required.                               |
+| `detail`  | declared detail type | —       | Required unless it accepts `undefined`. |
 
 ---
 
@@ -162,11 +164,11 @@ target.dispatchEvent(new TypedCustomEvent('status', { detail: 'ok' }));
 
 #### `.addEventListener(type, listener, options?)`
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `type` | declared event name | — | Required. |
-| `listener` | typed callback, `handleEvent` object, or `null` | — | Required. |
-| `options` | `boolean \| AddEventListenerOptions` | — | Optional. Native listener options. |
+| Parameter  | Type                                            | Default | Description                        |
+| ---------- | ----------------------------------------------- | ------- | ---------------------------------- |
+| `type`     | declared event name                             | —       | Required.                          |
+| `listener` | typed callback, `handleEvent` object, or `null` | —       | Required.                          |
+| `options`  | `boolean \| AddEventListenerOptions`            | —       | Optional. Native listener options. |
 
 #### `.removeEventListener(type, listener, options?)`
 
@@ -174,9 +176,9 @@ Parameters mirror `addEventListener`.
 
 #### `.dispatchEvent(event)`
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `event` | any declared event | — | Required. |
+| Parameter | Type               | Default | Description |
+| --------- | ------------------ | ------- | ----------- |
+| `event`   | any declared event | —       | Required.   |
 
 **Returns** `boolean` — `false` if a listener called `preventDefault()` on a cancelable event.
 
@@ -213,15 +215,15 @@ class ServerEvent<T extends string> extends TypedEvent<T> {
 
 ### Types
 
-| Type | Description |
-|------|-------------|
-| `EventMap` | Constraint for event maps: `object`, so interfaces satisfy it. |
-| `NoEvents` | Default event map, with no events. |
-| `EventName<Events>` | All declared event names. |
-| `DetailEventName<Events>` | Event names usable with the `StaticEmitter` helpers. |
-| `EventOf<Events, K>` | Event object dispatched for event `K`. |
-| `AnyEventOf<Events>` | Union of every declared event object. |
-| `TypedEventListener<Events, K>` | Native listener (function or `handleEvent` object) for event `K`. |
-| `TypedEventListenerObject<Events, K>` | The `handleEvent` object form of `TypedEventListener`. |
-| `DetailListener<Events, K>` | `StaticEmitter` listener for event `K`. |
-| `SubscribeOptions` | `{ signal?: AbortSignal }`. |
+| Type                                  | Description                                                       |
+| ------------------------------------- | ----------------------------------------------------------------- |
+| `EventMap`                            | Constraint for event maps: `object`, so interfaces satisfy it.    |
+| `NoEvents`                            | Default event map, with no events.                                |
+| `EventName<Events>`                   | All declared event names.                                         |
+| `DetailEventName<Events>`             | Event names usable with the `StaticEmitter` helpers.              |
+| `EventOf<Events, K>`                  | Event object dispatched for event `K`.                            |
+| `AnyEventOf<Events>`                  | Union of every declared event object.                             |
+| `TypedEventListener<Events, K>`       | Native listener (function or `handleEvent` object) for event `K`. |
+| `TypedEventListenerObject<Events, K>` | The `handleEvent` object form of `TypedEventListener`.            |
+| `DetailListener<Events, K>`           | `StaticEmitter` listener for event `K`.                           |
+| `SubscribeOptions`                    | `{ signal?: AbortSignal }`.                                       |

@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # genever
+
 Generate TypeScript types from JSON Schema files and OpenAPI documents, with strict schema checks and the same types Juniper infers.
 
 [![npm package](https://badge.fury.io/js/genever.svg)](https://www.npmjs.com/package/genever)
@@ -18,6 +19,7 @@ Generate TypeScript types from JSON Schema files and OpenAPI documents, with str
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/genever/). For the motivation, and how it compares to other generators, see [WHY-GENEVER.md](https://github.com/JacobLey/leyman/blob/main/apps/genever/WHY-GENEVER.md).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -117,7 +119,7 @@ Loaded files are embedded with an absolute `$id`, following the bundling process
 
 #### Checking without fetching
 
-`--ci` regenerates the file, so it fetches every URL again, and fails when a remote schema changed even though nothing in the repository did. With `--manifest generated.json` (or `manifest`), genever also records the output in a [populate-files manifest](https://www.npmjs.com/package/populate-files#manifest), with hashes of everything it read, its own version, and the options. `--ci` with the same manifest then passes without loading anything if all of these hold: the version and options match, the output is unedited, and every *file* it read is unchanged. URLs are trusted as recorded. Otherwise it regenerates as usual, and fails with what is out of date. Run genever without `--ci` to pick up remote changes, which then show up as a diff in review.
+`--ci` regenerates the file, so it fetches every URL again, and fails when a remote schema changed even though nothing in the repository did. With `--manifest generated.json` (or `manifest`), genever also records the output in a [populate-files manifest](https://www.npmjs.com/package/populate-files#manifest), with hashes of everything it read, its own version, and the options. `--ci` with the same manifest then passes without loading anything if all of these hold: the version and options match, the output is unedited, and every _file_ it read is unchanged. URLs are trusted as recorded. Otherwise it regenerates as usual, and fails with what is out of date. Run genever without `--ci` to pick up remote changes, which then show up as a diff in review.
 
 ```sh
 npx genever schema.json --manifest generated.json         # writes schema.ts and generated.json
@@ -160,46 +162,46 @@ The generated file is formatted with [format-file](https://www.npmjs.com/package
 
 Where other generators commonly lose type information, genever keeps it:
 
-| Schema | genever | Often generated instead |
-|---|---|---|
-| `prefixItems: [{ number }, { number }]`, `items: false` | `[number, number]` | `never[]`, `any[]`, or `[number, number, ...number[]]` |
-| `oneOf` of objects with a `kind` const | a union that narrows on `kind` | one object, with each branch's properties optional, or `any` |
-| `pattern: "^usr_"` | `` `usr_${string}` `` | `string` |
-| `patternProperties: { "^x-": string }`, `additionalProperties: false` | `` { [key: `x-${string}`]: string } `` | `{ [k: string]: unknown }`, or `string` for every key |
-| recursive `$defs` | recursive named types | `any` after a few levels, or `undefined` |
-| `enum: ["a", 42, null]` | `"a" \| 42 \| null` | `string \| number \| null` |
+| Schema                                                                | genever                              | Often generated instead                                      |
+| --------------------------------------------------------------------- | ------------------------------------ | ------------------------------------------------------------ |
+| `prefixItems: [{ number }, { number }]`, `items: false`               | `[number, number]`                   | `never[]`, `any[]`, or `[number, number, ...number[]]`       |
+| `oneOf` of objects with a `kind` const                                | a union that narrows on `kind`       | one object, with each branch's properties optional, or `any` |
+| `pattern: "^usr_"`                                                    | `` `usr_${string}` ``                | `string`                                                     |
+| `patternProperties: { "^x-": string }`, `additionalProperties: false` | ``{ [key: `x-${string}`]: string }`` | `{ [k: string]: unknown }`, or `string` for every key        |
+| recursive `$defs`                                                     | recursive named types                | `any` after a few levels, or `undefined`                     |
+| `enum: ["a", 42, null]`                                               | `"a" \| 42 \| null`                  | `string \| number \| null`                                   |
 
 Each row is checked by the probes on the [comparison page](https://jacobley.github.io/leyman/packages/genever/comparison), which runs genever and other tools on the same documents every night.
 
 ## How schemas become types
 
-| JSON Schema | TypeScript |
-|---|---|
-| `true`, `{}` | `unknown` |
-| `false`, `{ "not": {} }` | `never` |
-| `type` | `string`, `number` (also `integer`), `boolean`, `null`; a `type` array is a union |
-| `pattern` of a literal prefix, suffix or substring (`^abc`, `abc$`, `abc`) | `` `abc${string}` ``, `` `${string}abc` ``, `` `${string}abc${string}` `` |
-| any other `pattern`, `format`, lengths, ranges | the plain type, as TypeScript can't express them |
-| `enum`, `const` | literal types, including objects and arrays |
-| `items` | `T[]` |
-| `items` + `minItems` up to 3 | `[T, ...T[]]`, with `minItems` leading items. Larger values stay `T[]` (see `typedMinItems`) |
-| `prefixItems` + `items: false` | `[A, B]`, with items beyond `minItems` optional |
-| `prefixItems` + `items` | `[A, B, ...T[]]` |
-| draft 7 `items` array + `additionalItems` | same as `prefixItems` + `items` |
-| `properties` + `required` | `{ a: A; b?: B }` |
-| `additionalProperties: true` / schema | `[key: string]: unknown` / `T`, or with `properties` or `patternProperties`, a union of `T` and their types: TypeScript applies an index signature to every key, so `T` alone would leave those keys with no valid value |
-| `patternProperties` | an index signature, keyed by `` `x-${string}` `` for a literal prefix like `^x-`, or `string` otherwise |
-| `type: "object"` with no properties | `Record<string, unknown>` |
-| `dependentRequired`, `dependentSchemas`, draft 7 `dependencies` | `{ a?: never } \| { b: B }` |
-| `allOf` | intersection |
-| `anyOf`, `oneOf` | union |
-| `if` / `then` / `else` | `(If & Then) \| Else` |
-| `not` of `null` or literal values | removes them from a union; any other `not` leaves the type |
-| `$ref` | the referenced named type. It resolves against the nearest `$id`, so `#/$defs/A` inside an embedded resource is that resource's `A`, and may name an `$anchor` |
-| draft-04 `id`, and boolean `exclusiveMinimum`/`exclusiveMaximum` | in a schema whose `$schema` is draft-04, or inside one: `id` names a resource as `$id` does, and the booleans make `minimum` and `maximum` exclusive. Elsewhere, `id` is an unknown keyword |
-| `propertyNames` with a literal prefix or `enum` | the keys of `additionalProperties`: `` `x-${string}` ``, or optional properties `a`, `b` |
-| `title`, `description`, `deprecated` | JSDoc |
-| `default`, `examples`, `format`, and constraints such as `minLength` or `maximum` | JSDoc tags, e.g. `@minLength 3`, so editors show them |
+| JSON Schema                                                                       | TypeScript                                                                                                                                                                                                               |
+| --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `true`, `{}`                                                                      | `unknown`                                                                                                                                                                                                                |
+| `false`, `{ "not": {} }`                                                          | `never`                                                                                                                                                                                                                  |
+| `type`                                                                            | `string`, `number` (also `integer`), `boolean`, `null`; a `type` array is a union                                                                                                                                        |
+| `pattern` of a literal prefix, suffix or substring (`^abc`, `abc$`, `abc`)        | `` `abc${string}` ``, `` `${string}abc` ``, `` `${string}abc${string}` ``                                                                                                                                                |
+| any other `pattern`, `format`, lengths, ranges                                    | the plain type, as TypeScript can't express them                                                                                                                                                                         |
+| `enum`, `const`                                                                   | literal types, including objects and arrays                                                                                                                                                                              |
+| `items`                                                                           | `T[]`                                                                                                                                                                                                                    |
+| `items` + `minItems` up to 3                                                      | `[T, ...T[]]`, with `minItems` leading items. Larger values stay `T[]` (see `typedMinItems`)                                                                                                                             |
+| `prefixItems` + `items: false`                                                    | `[A, B]`, with items beyond `minItems` optional                                                                                                                                                                          |
+| `prefixItems` + `items`                                                           | `[A, B, ...T[]]`                                                                                                                                                                                                         |
+| draft 7 `items` array + `additionalItems`                                         | same as `prefixItems` + `items`                                                                                                                                                                                          |
+| `properties` + `required`                                                         | `{ a: A; b?: B }`                                                                                                                                                                                                        |
+| `additionalProperties: true` / schema                                             | `[key: string]: unknown` / `T`, or with `properties` or `patternProperties`, a union of `T` and their types: TypeScript applies an index signature to every key, so `T` alone would leave those keys with no valid value |
+| `patternProperties`                                                               | an index signature, keyed by `` `x-${string}` `` for a literal prefix like `^x-`, or `string` otherwise                                                                                                                  |
+| `type: "object"` with no properties                                               | `Record<string, unknown>`                                                                                                                                                                                                |
+| `dependentRequired`, `dependentSchemas`, draft 7 `dependencies`                   | `{ a?: never } \| { b: B }`                                                                                                                                                                                              |
+| `allOf`                                                                           | intersection                                                                                                                                                                                                             |
+| `anyOf`, `oneOf`                                                                  | union                                                                                                                                                                                                                    |
+| `if` / `then` / `else`                                                            | `(If & Then) \| Else`                                                                                                                                                                                                    |
+| `not` of `null` or literal values                                                 | removes them from a union; any other `not` leaves the type                                                                                                                                                               |
+| `$ref`                                                                            | the referenced named type. It resolves against the nearest `$id`, so `#/$defs/A` inside an embedded resource is that resource's `A`, and may name an `$anchor`                                                           |
+| draft-04 `id`, and boolean `exclusiveMinimum`/`exclusiveMaximum`                  | in a schema whose `$schema` is draft-04, or inside one: `id` names a resource as `$id` does, and the booleans make `minimum` and `maximum` exclusive. Elsewhere, `id` is an unknown keyword                              |
+| `propertyNames` with a literal prefix or `enum`                                   | the keys of `additionalProperties`: `` `x-${string}` ``, or optional properties `a`, `b`                                                                                                                                 |
+| `title`, `description`, `deprecated`                                              | JSDoc                                                                                                                                                                                                                    |
+| `default`, `examples`, `format`, and constraints such as `minLength` or `maximum` | JSDoc tags, e.g. `@minLength 3`, so editors show them                                                                                                                                                                    |
 
 Subschemas of `allOf`, `anyOf`, `oneOf`, `if`/`then`/`else` and `not` without a `type` of their own apply to their parent's types, as Juniper writes them. So `{ "type": ["string", "null"], "allOf": [{ "pattern": "^a" }] }` is `` `a${string}` | null ``.
 
@@ -266,15 +268,15 @@ The types TypeScript reads from it are. A change that makes a generated type acc
 
 Generate TypeScript types from a JSON Schema.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `schema` | `unknown` | — | Required. Parsed JSON Schema, or OpenAPI document. |
-| `options.name` | `string` | `'Schema'` | Name of the root schema's type. Not used for an OpenAPI document. |
-| `options.strict` | `boolean` | `true` | Fail on likely mistakes. See [Strict mode](#strict-mode). |
-| `options.baseUri` | `string` | a placeholder | URI the schema was read from, which relative `$id`s and `$ref`s resolve against. |
-| `options.parameterDefaults` | `boolean` | `false` | With an OpenAPI document, also generate `OperationRequest<Id>`: what a handler gets once a validator that fills in defaults has run. |
-| `options.typedMinItems` | `number` | `3` | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper. |
-| `options.openApi30` | `boolean` | `false` | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead. |
+| Parameter                   | Type      | Default       | Description                                                                                                                          |
+| --------------------------- | --------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `schema`                    | `unknown` | —             | Required. Parsed JSON Schema, or OpenAPI document.                                                                                   |
+| `options.name`              | `string`  | `'Schema'`    | Name of the root schema's type. Not used for an OpenAPI document.                                                                    |
+| `options.strict`            | `boolean` | `true`        | Fail on likely mistakes. See [Strict mode](#strict-mode).                                                                            |
+| `options.baseUri`           | `string`  | a placeholder | URI the schema was read from, which relative `$id`s and `$ref`s resolve against.                                                     |
+| `options.parameterDefaults` | `boolean` | `false`       | With an OpenAPI document, also generate `OperationRequest<Id>`: what a handler gets once a validator that fills in defaults has run. |
+| `options.typedMinItems`     | `number`  | `3`           | Largest `minItems` typed as required items, e.g. `[T, ...T[]]`. `0` turns it off. The default matches Juniper.                       |
+| `options.openApi30`         | `boolean` | `false`       | Read the schema as an OpenAPI 3.0 schema, which allows `nullable` and `example`. An OpenAPI document's own version is used instead.  |
 
 **Returns** `string` — TypeScript source, not formatted.
 
@@ -293,18 +295,18 @@ genever({ type: 'array', items: { type: 'string' } }, { name: 'Tags' });
 
 Read a JSON Schema file, and write its types to a TypeScript file.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `input` | `string` | — | Required. Path to the JSON Schema file. |
-| `options.output` | `string` | input path with `.ts` instead of `.json` | Path of the TypeScript file to write. |
-| `options.cwd` | `string \| URL` | `process.cwd()` | Directory relative paths resolve from. |
-| `options.check` | `boolean` | `false` | Fail, rather than write, if the output file is not up to date. |
-| `options.dryRun` | `boolean` | `false` | Do not write the output file. |
-| `options.signed` | `boolean` | `false` | Sign the output file with [`generated-signature`](https://www.npmjs.com/package/generated-signature), so edits to it are detected. An output file that was edited, or is not signed yet, is not overwritten (a `PopulateFilesOwnershipError` from [`populate-files`](https://www.npmjs.com/package/populate-files#errors)). |
-| `options.force` | `boolean` | `false` | With `signed`, overwrite the output file anyway. Use it once to start signing an existing file. |
-| `options.manifest` | `string` | — | Path of a manifest (relative to `cwd`) to record the output and hashes of its inputs in. With `check`, an output matching its entry is up to date without loading anything. See [Checking without fetching](#checking-without-fetching). |
-| `options.fetch` | `boolean \| string[]` | `true` | Load `http:` and `https:` URLs the schema references, or only those of the hosts listed. Otherwise only files are loaded. See [References to other files](#references-to-other-files). |
-| `options.name`, `options.strict`, `options.openApi30`, `options.parameterDefaults`, `options.typedMinItems` | | | Same as [`genever`](#geneverschema-options). |
+| Parameter                                                                                                   | Type                  | Default                                  | Description                                                                                                                                                                                                                                                                                                                 |
+| ----------------------------------------------------------------------------------------------------------- | --------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `input`                                                                                                     | `string`              | —                                        | Required. Path to the JSON Schema file.                                                                                                                                                                                                                                                                                     |
+| `options.output`                                                                                            | `string`              | input path with `.ts` instead of `.json` | Path of the TypeScript file to write.                                                                                                                                                                                                                                                                                       |
+| `options.cwd`                                                                                               | `string \| URL`       | `process.cwd()`                          | Directory relative paths resolve from.                                                                                                                                                                                                                                                                                      |
+| `options.check`                                                                                             | `boolean`             | `false`                                  | Fail, rather than write, if the output file is not up to date.                                                                                                                                                                                                                                                              |
+| `options.dryRun`                                                                                            | `boolean`             | `false`                                  | Do not write the output file.                                                                                                                                                                                                                                                                                               |
+| `options.signed`                                                                                            | `boolean`             | `false`                                  | Sign the output file with [`generated-signature`](https://www.npmjs.com/package/generated-signature), so edits to it are detected. An output file that was edited, or is not signed yet, is not overwritten (a `PopulateFilesOwnershipError` from [`populate-files`](https://www.npmjs.com/package/populate-files#errors)). |
+| `options.force`                                                                                             | `boolean`             | `false`                                  | With `signed`, overwrite the output file anyway. Use it once to start signing an existing file.                                                                                                                                                                                                                             |
+| `options.manifest`                                                                                          | `string`              | —                                        | Path of a manifest (relative to `cwd`) to record the output and hashes of its inputs in. With `check`, an output matching its entry is up to date without loading anything. See [Checking without fetching](#checking-without-fetching).                                                                                    |
+| `options.fetch`                                                                                             | `boolean \| string[]` | `true`                                   | Load `http:` and `https:` URLs the schema references, or only those of the hosts listed. Otherwise only files are loaded. See [References to other files](#references-to-other-files).                                                                                                                                      |
+| `options.name`, `options.strict`, `options.openApi30`, `options.parameterDefaults`, `options.typedMinItems` |                       |                                          | Same as [`genever`](#geneverschema-options).                                                                                                                                                                                                                                                                                |
 
 **Returns** `Promise<{ output: string; updated: boolean }>` — absolute path of the output file, and whether its content changed.
 
@@ -316,9 +318,9 @@ Read a JSON Schema file, and write its types to a TypeScript file.
 
 Parse a YAML (or JSON) document the way genever reads a `.yaml` file, for [`genever`](#geneverschema-options) to generate types from. See [YAML](#yaml) for what is read and what is an error.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `text` | `string` | — | Required. YAML 1.2 source. JSON is YAML too. |
+| Parameter | Type     | Default | Description                                  |
+| --------- | -------- | ------- | -------------------------------------------- |
+| `text`    | `string` | —       | Required. YAML 1.2 source. JSON is YAML too. |
 
 **Returns** `unknown` — the parsed document, with only the values JSON has.
 
@@ -350,10 +352,10 @@ const { names } = geneverSource(yamlToJson(document), { name: 'Tags' });
 
 Generate types as [`genever`](#geneverschema-options) does, and say where each type's name is in the source and which part of the document it comes from, so a tool showing the types can link each name back to its schema. A TypeScript content mapper uses it for go to definition into the document.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `schema` | `unknown` | — | Required. Parsed JSON Schema, or OpenAPI document. |
-| `options` | `GeneverOptions` | `{}` | Same as [`genever`](#geneverschema-options). |
+| Parameter | Type             | Default | Description                                        |
+| --------- | ---------------- | ------- | -------------------------------------------------- |
+| `schema`  | `unknown`        | —       | Required. Parsed JSON Schema, or OpenAPI document. |
+| `options` | `GeneverOptions` | `{}`    | Same as [`genever`](#geneverschema-options).       |
 
 **Returns** `{ text, names }`. `text` is the same source `genever` returns. `names` lists each type generated from a schema, or a document's `paths`, and each property generated from a schema's `properties` (or a `patternProperties` pattern matching one key), in the order they are in `text`, as `{ name, pointer, start }`: `start` is the index of the name in `text`, and `pointer` the JSON Pointer to its schema (`#/$defs/Note`, `#/components/schemas/Note/properties/body`) or `#/paths` for `Paths`, in the same form as an [error](#errors)'s. A property's `name` is as printed, so quoted if it isn't an identifier (`"created at"`). A property declared by both a schema and its `allOf` members points to the schema's own `properties`, or else the first member that declares it. An OpenAPI document's helper types (`Operations`, `OperationInput` and the rest), and their own properties, aren't listed.
 
@@ -372,12 +374,12 @@ const { text, names } = geneverSource({ type: 'object', properties: { body: { ty
 
 Every error extends `GeneverError`, with a `pointer` property: the JSON Pointer to the schema or keyword at fault, e.g. `#/properties/a/type`. In another OpenAPI document, or file of OpenAPI objects, it starts with that file's URI, e.g. `file:///api/common.yaml#/components/schemas/Error/type`. The pointer is also at the end of the message.
 
-| Error | Thrown when |
-|-------|-------------|
-| `GeneverInvalidSchemaError` | The input is not a valid JSON Schema, e.g. `properties` is not an object, or a `$ref` does not resolve. |
-| `GeneverStrictModeError` | A [strict mode](#strict-mode) rule is broken. |
-| `GeneverUnsupportedError` | The schema uses a feature genever can't generate types for. See [Not supported](#not-supported). |
-| `GeneverLoadError` | A file or URL the schema references could not be loaded. Its `pointer` is to the `$ref` that needed it, in the file or URL its `referencedFrom` names: the input, or a file the input loaded. Its `cause` is the underlying error, such as the file system's or the parser's, if there was one. |
+| Error                       | Thrown when                                                                                                                                                                                                                                                                                     |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GeneverInvalidSchemaError` | The input is not a valid JSON Schema, e.g. `properties` is not an object, or a `$ref` does not resolve.                                                                                                                                                                                         |
+| `GeneverStrictModeError`    | A [strict mode](#strict-mode) rule is broken.                                                                                                                                                                                                                                                   |
+| `GeneverUnsupportedError`   | The schema uses a feature genever can't generate types for. See [Not supported](#not-supported).                                                                                                                                                                                                |
+| `GeneverLoadError`          | A file or URL the schema references could not be loaded. Its `pointer` is to the `$ref` that needed it, in the file or URL its `referencedFrom` names: the input, or a file the input loaded. Its `cause` is the underlying error, such as the file system's or the parser's, if there was one. |
 
 ## CLI
 
@@ -385,22 +387,22 @@ Every error extends `GeneverError`, with a `pointer` property: the JSON Pointer 
 genever <input> [options]
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `-o`, `--output` | input path with `.ts` | Path of the TypeScript file to write. |
-| `--name` | `Schema` | Name of the root schema's type. Not used for an OpenAPI document. |
-| `--strict` | `true` | Fail on likely mistakes. Disable with `--no-strict`. |
-| `--parameter-defaults` | `false` | With an OpenAPI document, also write `OperationRequest`, with parameters' defaults filled in. |
-| `--typed-min-items` | `3` | Largest `minItems` typed as required items. `0` turns it off. |
-| `--open-api-30` | `false` | Read the schema as an OpenAPI 3.0 schema. An OpenAPI document's own version is used instead. |
-| `--ci` | `true` in CI | Fail if the output file is not up to date. Implies `--dry-run`. |
-| `--dry-run` | `false` | Do not write the output file. |
-| `--signed` | `false` | Sign the output file, so edits to it are detected, and refuse to overwrite it if it was edited or is not signed. |
-| `--force` | `false` | With `--signed`, overwrite the output file anyway. |
-| `--manifest` | | Record the output, and hashes of its inputs, in this manifest. With `--ci`, an output that still matches it passes without fetching URLs. |
-| `--fetch` | `true` | Load URLs the schema references. `--no-fetch` loads only files. |
-| `--fetch-host` | | Load only URLs of this host, e.g. `example.com`, `localhost:8080`, or `*.example.com` for its subdomains. Repeat for more hosts. |
-| `--cwd` | `.` | Directory relative paths resolve from. |
+| Option                 | Default               | Description                                                                                                                               |
+| ---------------------- | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `-o`, `--output`       | input path with `.ts` | Path of the TypeScript file to write.                                                                                                     |
+| `--name`               | `Schema`              | Name of the root schema's type. Not used for an OpenAPI document.                                                                         |
+| `--strict`             | `true`                | Fail on likely mistakes. Disable with `--no-strict`.                                                                                      |
+| `--parameter-defaults` | `false`               | With an OpenAPI document, also write `OperationRequest`, with parameters' defaults filled in.                                             |
+| `--typed-min-items`    | `3`                   | Largest `minItems` typed as required items. `0` turns it off.                                                                             |
+| `--open-api-30`        | `false`               | Read the schema as an OpenAPI 3.0 schema. An OpenAPI document's own version is used instead.                                              |
+| `--ci`                 | `true` in CI          | Fail if the output file is not up to date. Implies `--dry-run`.                                                                           |
+| `--dry-run`            | `false`               | Do not write the output file.                                                                                                             |
+| `--signed`             | `false`               | Sign the output file, so edits to it are detected, and refuse to overwrite it if it was edited or is not signed.                          |
+| `--force`              | `false`               | With `--signed`, overwrite the output file anyway.                                                                                        |
+| `--manifest`           |                       | Record the output, and hashes of its inputs, in this manifest. With `--ci`, an output that still matches it passes without fetching URLs. |
+| `--fetch`              | `true`                | Load URLs the schema references. `--no-fetch` loads only files.                                                                           |
+| `--fetch-host`         |                       | Load only URLs of this host, e.g. `example.com`, `localhost:8080`, or `*.example.com` for its subdomains. Repeat for more hosts.          |
+| `--cwd`                | `.`                   | Directory relative paths resolve from.                                                                                                    |
 
 The path of a written file is logged. Nothing is logged when it was already up to date. Any error, including a failed `--ci` check, prints its stack trace and exits with code 1.
 

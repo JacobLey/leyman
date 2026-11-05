@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # normalized-react-query
+
 Type-safe query definitions for TanStack Query — define each key and fetcher once, and link related queries so they prefetch together.
 
 [![npm package](https://badge.fury.io/js/normalized-react-query.svg)](https://www.npmjs.com/package/normalized-react-query)
@@ -106,10 +107,10 @@ Creates a type-safe, singleton reference to a non-paginated query. The key and q
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `params.key` | `TQueryKey \| ((params: TParams) => TQueryKey)` | — | Required. A static key or function computing the key from params. |
-| `params.queryFn` | `(options: QueryFunctionContextWithParams<TParams, ...>, queryClient?) => Promise<TData> \| TData` | — | Required. The cached query function. Receives the params as `options.params`, plus standard TanStack context (`signal`, `queryKey`, …). |
+| Parameter        | Type                                                                                               | Default | Description                                                                                                                             |
+| ---------------- | -------------------------------------------------------------------------------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `params.key`     | `TQueryKey \| ((params: TParams) => TQueryKey)`                                                    | —       | Required. A static key or function computing the key from params.                                                                       |
+| `params.queryFn` | `(options: QueryFunctionContextWithParams<TParams, ...>, queryClient?) => Promise<TData> \| TData` | —       | Required. The cached query function. Receives the params as `options.params`, plus standard TanStack context (`signal`, `queryKey`, …). |
 
 Type parameters are inferred from `key` and `queryFn`, or given explicitly as `resource<TParams, TData>(...)`.
 
@@ -230,13 +231,13 @@ Creates a type-safe, singleton reference to an infinite (paginated) query, backe
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `params.key` | `TQueryKey \| ((params: TParams) => TQueryKey)` | — | Required. A static key or function computing the key from params. |
-| `params.queryFn` | `(options: QueryFunctionContextWithParams<TParams, TPageParam, ...>, queryClient?) => Promise<TData> \| TData` | — | Required. Called once per page load. |
-| `params.getInitialPageParam` | `TPageParam \| ((params: TParams) => TPageParam)` | — | Required. The page param used to fetch the first page. |
-| `params.getNextPageParam` | `(params: { lastPage, allPages, lastPageParam, allPageParams }) => TPageParam \| null \| undefined` | — | Required. Returns the next page param, or `null`/`undefined` when there are no more pages. |
-| `params.getPreviousPageParam` | `(params: { firstPage, allPages, firstPageParam, allPageParams }) => TPageParam \| null \| undefined` | `undefined` | Optional. Enables backwards pagination. |
+| Parameter                     | Type                                                                                                           | Default     | Description                                                                                |
+| ----------------------------- | -------------------------------------------------------------------------------------------------------------- | ----------- | ------------------------------------------------------------------------------------------ |
+| `params.key`                  | `TQueryKey \| ((params: TParams) => TQueryKey)`                                                                | —           | Required. A static key or function computing the key from params.                          |
+| `params.queryFn`              | `(options: QueryFunctionContextWithParams<TParams, TPageParam, ...>, queryClient?) => Promise<TData> \| TData` | —           | Required. Called once per page load.                                                       |
+| `params.getInitialPageParam`  | `TPageParam \| ((params: TParams) => TPageParam)`                                                              | —           | Required. The page param used to fetch the first page.                                     |
+| `params.getNextPageParam`     | `(params: { lastPage, allPages, lastPageParam, allPageParams }) => TPageParam \| null \| undefined`            | —           | Required. Returns the next page param, or `null`/`undefined` when there are no more pages. |
+| `params.getPreviousPageParam` | `(params: { firstPage, allPages, firstPageParam, allPageParams }) => TPageParam \| null \| undefined`          | `undefined` | Optional. Enables backwards pagination.                                                    |
 
 **Returns** `Infinite<TParams, TPageParam, TData>` — an infinite instance.
 

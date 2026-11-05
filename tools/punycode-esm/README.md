@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # punycode-esm
+
 ESM and TypeScript port of the punycode.js library.
 
 [![npm package](https://badge.fury.io/js/punycode-esm.svg)](https://www.npmjs.com/package/punycode-esm)
@@ -9,6 +10,7 @@ ESM and TypeScript port of the punycode.js library.
 </div>
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -55,9 +57,9 @@ Converts a string of Unicode symbols (a single domain label) to a Punycode strin
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `string` | `string` | — | Required. A Unicode domain label (no dots). |
+| Parameter | Type     | Default | Description                                 |
+| --------- | -------- | ------- | ------------------------------------------- |
+| `string`  | `string` | —       | Required. A Unicode domain label (no dots). |
 
 **Returns** `string` — the Punycode-encoded ASCII label.
 
@@ -74,9 +76,9 @@ Converts a Punycode string of ASCII-only symbols (a single domain label) to a st
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `string` | `string` | — | Required. A Punycode-encoded ASCII label (no dots). |
+| Parameter | Type     | Default | Description                                         |
+| --------- | -------- | ------- | --------------------------------------------------- |
+| `string`  | `string` | —       | Required. A Punycode-encoded ASCII label (no dots). |
 
 **Returns** `string` — the decoded Unicode label.
 
@@ -93,9 +95,9 @@ Converts a Unicode domain name or email address to its Punycode (ASCII) represen
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `string` | `string` | — | Required. A Unicode domain name or email address. |
+| Parameter | Type     | Default | Description                                       |
+| --------- | -------- | ------- | ------------------------------------------------- |
+| `string`  | `string` | —       | Required. A Unicode domain name or email address. |
 
 **Returns** `string` — the ASCII-compatible encoding of the domain or email.
 
@@ -113,9 +115,9 @@ Converts a Punycode domain name or email address to Unicode. Only Punycode-encod
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `string` | `string` | — | Required. A Punycode domain name or email address. |
+| Parameter | Type     | Default | Description                                        |
+| --------- | -------- | ------- | -------------------------------------------------- |
+| `string`  | `string` | —       | Required. A Punycode domain name or email address. |
 
 **Returns** `string` — the Unicode representation of the domain or email.
 
@@ -133,9 +135,9 @@ Creates an array of Unicode code point values from a string. Surrogate pairs (as
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `string` | `string` | — | Required. A UCS-2 encoded string. |
+| Parameter | Type     | Default | Description                       |
+| --------- | -------- | ------- | --------------------------------- |
+| `string`  | `string` | —       | Required. A UCS-2 encoded string. |
 
 **Returns** `number[]` — array of Unicode code point integers.
 
@@ -152,9 +154,9 @@ Creates a string from an array of Unicode code point values.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `codePoints` | `readonly number[]` | — | Required. Array of Unicode code point integers. |
+| Parameter    | Type                | Default | Description                                     |
+| ------------ | ------------------- | ------- | ----------------------------------------------- |
+| `codePoints` | `readonly number[]` | —       | Required. Array of Unicode code point integers. |
 
 **Returns** `string` — the UCS-2 encoded string.
 

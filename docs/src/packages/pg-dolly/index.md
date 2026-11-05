@@ -51,13 +51,13 @@ Named after Dolly the sheep. The design follows Go's [pgtestdb](https://github.c
 
 ## Compared to
 
-| | pg-dolly | A transaction rolled back per test | One database, cleared between tests | Testcontainers | PGlite |
-|---|---|---|---|---|---|
-| Commits, `NOTIFY`, advisory locks, concurrent connections | ✅ | ❌ | ✅ | ✅ | Limited (one connection) |
-| Tests in parallel | ✅ | ✅ | ❌ | ✅ | ✅ |
-| Cost per test | A database copy | Cheapest | Truncating every table | A container, unless shared | An in-process database |
-| The real Postgres server | ✅ | ✅ | ✅ | ✅ | Postgres in WebAssembly |
-| Needs | A server | A server | A server | Docker | Nothing |
+|                                                           | pg-dolly        | A transaction rolled back per test | One database, cleared between tests | Testcontainers             | PGlite                   |
+| --------------------------------------------------------- | --------------- | ---------------------------------- | ----------------------------------- | -------------------------- | ------------------------ |
+| Commits, `NOTIFY`, advisory locks, concurrent connections | ✅              | ❌                                 | ✅                                  | ✅                         | Limited (one connection) |
+| Tests in parallel                                         | ✅              | ✅                                 | ❌                                  | ✅                         | ✅                       |
+| Cost per test                                             | A database copy | Cheapest                           | Truncating every table              | A container, unless shared | An in-process database   |
+| The real Postgres server                                  | ✅              | ✅                                 | ✅                                  | ✅                         | Postgres in WebAssembly  |
+| Needs                                                     | A server        | A server                           | A server                            | Docker                     | Nothing                  |
 
 See [Why pg-dolly](/packages/pg-dolly/why) for the full comparison.
 

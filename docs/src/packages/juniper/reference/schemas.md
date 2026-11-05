@@ -4,19 +4,19 @@ description: Every schema class, its JSON Schema and TypeScript equivalents, and
 
 # Schemas
 
-| Juniper class | JSON Schema | TypeScript |
-|---|---|---|
-| `ArraySchema` | `type: 'array'` | `unknown[]` |
-| `BooleanSchema` | `type: 'boolean'` | `boolean` |
-| `CustomSchema` | Whatever is provided | Whatever is provided |
-| `EnumSchema` | `enum: []` | Union of the provided literals |
-| `MergeSchema` | None (compositional) | `unknown`, then `\|` or `&` as appropriate |
-| `NeverSchema` | `not: {}` | `never` |
-| `NullSchema` | `type: 'null'` | `null` |
-| `NumberSchema` | `type: 'number'` or `type: 'integer'` | `number` |
-| `ObjectSchema` | `type: 'object'` | `{}` |
-| `StringSchema` | `type: 'string'` | `string` |
-| `TupleSchema` | `type: 'array'` | `[unknown]` |
+| Juniper class   | JSON Schema                           | TypeScript                                 |
+| --------------- | ------------------------------------- | ------------------------------------------ |
+| `ArraySchema`   | `type: 'array'`                       | `unknown[]`                                |
+| `BooleanSchema` | `type: 'boolean'`                     | `boolean`                                  |
+| `CustomSchema`  | Whatever is provided                  | Whatever is provided                       |
+| `EnumSchema`    | `enum: []`                            | Union of the provided literals             |
+| `MergeSchema`   | None (compositional)                  | `unknown`, then `\|` or `&` as appropriate |
+| `NeverSchema`   | `not: {}`                             | `never`                                    |
+| `NullSchema`    | `type: 'null'`                        | `null`                                     |
+| `NumberSchema`  | `type: 'number'` or `type: 'integer'` | `number`                                   |
+| `ObjectSchema`  | `type: 'object'`                      | `{}`                                       |
+| `StringSchema`  | `type: 'string'`                      | `string`                                   |
+| `TupleSchema`   | `type: 'array'`                       | `[unknown]`                                |
 
 - There is no `any` schema. Use `MergeSchema` for `unknown`. If `any` is truly required, use `CustomSchema`, whose default output is an always-valid empty schema.
 - In the tables below, **Constructor parameter** means the keyword can be passed to the constructor as well as set with its method. **Can be unset** means the method accepts `undefined` to remove it. **Changes types** means it narrows the inferred TypeScript type.
@@ -25,21 +25,21 @@ description: Every schema class, its JSON Schema and TypeScript equivalents, and
 
 Available on every schema, except where the result would be nonsensical (for example, `EnumSchema` can't be `nullable`). All methods return a new instance.
 
-| Method | Constructor parameter | Can be unset | Changes types |
-|--------|:--------------------:|:------------:|:-------------:|
-| [`title`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1) | ✅ | ✅ | ❌ |
-| [`description`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1) | ✅ | ✅ | ❌ |
-| [`default`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.2) | ✅ | ✅ | ❌ |
-| [`deprecated`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.3) | ✅ | ✅ | ❌ |
-| [`example(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.5) | ❌ | ❌ | ❌ |
-| [`readOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4) | ✅ | ✅ | ❌ |
-| [`writeOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4) | ✅ | ✅ | ❌ |
-| [`allOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#allof) | ❌ | ❌ | ✅ |
-| [`anyOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#anyof) | ❌ | ❌ | ✅ |
-| [`oneOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof) | ❌ | ❌ | ✅ |
-| [`not`](https://json-schema.org/understanding-json-schema/reference/combining.html#not) | ❌ | ❌ | ✅ |
-| [`if then else`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else) | ❌ | ❌ | ✅ |
-| [`nullable`](https://swagger.io/docs/specification/data-models/data-types/#null) | ❌ | ❌ | ✅ |
+| Method                                                                                                       | Constructor parameter | Can be unset | Changes types |
+| ------------------------------------------------------------------------------------------------------------ | :-------------------: | :----------: | :-----------: |
+| [`title`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1)                 |          ✅           |      ✅      |      ❌       |
+| [`description`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.1)           |          ✅           |      ✅      |      ❌       |
+| [`default`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.2)               |          ✅           |      ✅      |      ❌       |
+| [`deprecated`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.3)            |          ✅           |      ✅      |      ❌       |
+| [`example(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.5)            |          ❌           |      ❌      |      ❌       |
+| [`readOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4)              |          ✅           |      ✅      |      ❌       |
+| [`writeOnly`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.9.4)             |          ✅           |      ✅      |      ❌       |
+| [`allOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#allof)                  |          ❌           |      ❌      |      ✅       |
+| [`anyOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#anyof)                  |          ❌           |      ❌      |      ✅       |
+| [`oneOf`](https://json-schema.org/understanding-json-schema/reference/combining.html#oneof)                  |          ❌           |      ❌      |      ✅       |
+| [`not`](https://json-schema.org/understanding-json-schema/reference/combining.html#not)                      |          ❌           |      ❌      |      ✅       |
+| [`if then else`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#if-then-else) |          ❌           |      ❌      |      ✅       |
+| [`nullable`](https://swagger.io/docs/specification/data-models/data-types/#null)                             |          ❌           |      ❌      |      ✅       |
 
 `not(schema)` rejects everything `schema` accepts, including `null` when `schema` is nullable. To make a nullable schema non-nullable, pass `nullSchema()`:
 
@@ -56,16 +56,16 @@ By contrast, `.not(stringSchema().nullable())` rejects every string as well as `
 
 Represents `type: 'array'`. TypeScript type: `unknown[]`.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`items`](https://json-schema.org/understanding-json-schema/reference/array.html#items) | ✅ | ❌ | ✅ | ✅ |
-| [`maxItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.1) | ✅ | ✅ | ❌ | ✅ |
-| [`minItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2) | ✅ | ✅ | ✅ | ✅ |
-| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3) | ✅ | ✅ | ❌ | ✅ |
-| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains) | ❌ | ❌ | ✅ | ❌ |
-| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4) | ✅ | ✅ | ❌ | ❌ |
-| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5) | ✅ | ✅ | ❌ | ❌ |
-| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) | ❌ | ❌ | ✅ | ❌ |
+| Method                                                                                                           | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| ---------------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`items`](https://json-schema.org/understanding-json-schema/reference/array.html#items)                          |          ✅           |      ❌      |      ✅       |     ✅      |
+| [`maxItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.1)                |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`minItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.2)                |          ✅           |      ✅      |      ✅       |     ✅      |
+| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3)             |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains)                    |          ❌           |      ❌      |      ✅       |     ❌      |
+| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4)             |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5)             |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) |          ❌           |      ❌      |      ✅       |     ❌      |
 
 `minItems` up to 3 makes those items required in the type, so an empty array is rejected where the schema rejects it:
 
@@ -103,38 +103,38 @@ const isNonEmpty = <T>(array: T[]): array is [T, ...T[]] => array.length > 0;
 
 Represents `enum: []`. TypeScript type: union of provided literals.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`enum(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.2) | ✅ | ❌ | ✅ | ✅ |
+| Method                                                                                           | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| ------------------------------------------------------------------------------------------------ | :-------------------: | :----------: | :-----------: | :---------: |
+| [`enum(s)`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.2) |          ✅           |      ❌      |      ✅       |     ✅      |
 
 ## `NumberSchema`
 
 Represents `type: 'number'` or `type: 'integer'`. TypeScript type: `number`.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`type`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.1) | ✅ | ✅ | ❌ | ✅ |
-| [`multipleOf`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.1) | ✅ | ❌ | ❌ | ✅ |
-| [`maximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.2) | ✅ | ✅ | ❌ | ✅ |
-| [`exclusiveMaximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.3) | ✅ | ✅ | ❌ | ✅ |
-| [`minimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.4) | ✅ | ✅ | ❌ | ✅ |
-| [`exclusiveMinimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.5) | ✅ | ✅ | ❌ | ✅ |
+| Method                                                                                                    | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| --------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`type`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.1.1)             |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`multipleOf`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.1)       |          ✅           |      ❌      |      ❌       |     ✅      |
+| [`maximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.2)          |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`exclusiveMaximum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.3) |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`minimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.4)          |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`exclusiveMinimum`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.2.5) |          ✅           |      ✅      |      ❌       |     ✅      |
 
 ## `ObjectSchema`
 
 Represents `type: 'object'`. TypeScript type: `{}`.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`properties`](https://json-schema.org/understanding-json-schema/reference/object.html#properties) | ✅ | ✅ | ✅ | ✅ |
-| [`maxProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.1) | ✅ | ✅ | ❌ | ✅ |
-| [`minProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.2) | ✅ | ✅ | ❌ | ✅ |
-| [`required`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.3) | ✅ | ✅ | ✅ | ✅ |
-| [`additionalProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#additional-properties) | ✅ | ✅ | ✅ | ✅ |
-| [`patternProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#pattern-properties) | ❌ | ✅ | ✅ | ❌ |
-| [`dependentRequired`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentrequired) | ❌ | ❌ | ✅ | ✅ |
-| [`dependentSchemas`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentschemas) | ❌ | ❌ | ✅ | ✅ |
-| [`unevaluatedProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties) | ✅ | ❌ | ❌ | ❌ |
+| Method                                                                                                                    | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| ------------------------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`properties`](https://json-schema.org/understanding-json-schema/reference/object.html#properties)                        |          ✅           |      ✅      |      ✅       |     ✅      |
+| [`maxProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.1)                    |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`minProperties`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.2)                    |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`required`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.5.3)                         |          ✅           |      ✅      |      ✅       |     ✅      |
+| [`additionalProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#additional-properties)   |          ✅           |      ✅      |      ✅       |     ✅      |
+| [`patternProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#pattern-properties)         |          ❌           |      ✅      |      ✅       |     ❌      |
+| [`dependentRequired`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentrequired)    |          ❌           |      ❌      |      ✅       |     ✅      |
+| [`dependentSchemas`](https://json-schema.org/understanding-json-schema/reference/conditionals.html#dependentschemas)      |          ❌           |      ❌      |      ✅       |     ✅      |
+| [`unevaluatedProperties`](https://json-schema.org/understanding-json-schema/reference/object.html#unevaluated-properties) |          ✅           |      ❌      |      ❌       |     ❌      |
 
 **`additionalProperties` beside other keys:** TypeScript applies an index signature to every key, where the schema only applies `additionalProperties` to keys nothing else covers. So the index signature also allows the types of `properties` and `patternProperties`: `{ properties: { a: stringSchema() }, additionalProperties: numberSchema() }` is `{ a?: string; [key: string]: number | string }`. Declared keys keep their own type when read.
 
@@ -181,17 +181,17 @@ To derive variants of an object schema with `pick`, `omit`, `partial`, `required
 
 Represents `type: 'string'`. TypeScript type: `string`.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`format`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7) | ✅ | ✅ | ❌ | ✅ |
-| [`maxLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1) | ✅ | ✅ | ❌ | ✅ |
-| [`minLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1) | ✅ | ✅ | ❌ | ✅ |
-| [`pattern`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.3) | ✅ | ❌ | ❌ | ✅ |
-| `startsWith` | ❌ | ❌ | ✅ | ✅ |
-| `endsWith` | ❌ | ❌ | ✅ | ✅ |
-| `contains` | ❌ | ❌ | ✅ | ✅ |
-| [`contentEncoding`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentencoding) | ✅ | ✅ | ❌ | ❌ |
-| [`contentMediaType`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype) | ✅ | ✅ | ❌ | ❌ |
+| Method                                                                                                                | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| --------------------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`format`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.7)                           |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`maxLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1)                    |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`minLength`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.1)                    |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`pattern`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.3.3)                      |          ✅           |      ❌      |      ❌       |     ✅      |
+| `startsWith`                                                                                                          |          ❌           |      ❌      |      ✅       |     ✅      |
+| `endsWith`                                                                                                            |          ❌           |      ❌      |      ✅       |     ✅      |
+| `contains`                                                                                                            |          ❌           |      ❌      |      ✅       |     ✅      |
+| [`contentEncoding`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentencoding)   |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`contentMediaType`](https://json-schema.org/understanding-json-schema/reference/non_json_data.html#contentmediatype) |          ✅           |      ✅      |      ❌       |     ❌      |
 
 OpenAPI 3.0 has no `contentEncoding` or `contentMediaType`, so they are left out of its output. Use `format('byte')` (base64) or `format('binary')` instead.
 
@@ -203,13 +203,13 @@ OpenAPI 3.0 has no `contentEncoding` or `contentMediaType`, so they are left out
 
 Represents `type: 'array'` with strict tuple semantics. TypeScript type: `[unknown]`. A convenience wrapper around `ArraySchema` that prevents editing `items` directly. Every `TupleSchema` is an `ArraySchema`.
 
-| Method | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
-|--------|:--------------------:|:------------:|:-------------:|:-----------:|
-| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3) | ✅ | ✅ | ❌ | ✅ |
-| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains) | ❌ | ❌ | ✅ | ❌ |
-| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4) | ✅ | ✅ | ❌ | ❌ |
-| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5) | ✅ | ✅ | ❌ | ❌ |
-| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) | ❌ | ❌ | ✅ | ❌ |
+| Method                                                                                                           | Constructor Parameter | Can be Unset | Changes Types | OpenAPI 3.0 |
+| ---------------------------------------------------------------------------------------------------------------- | :-------------------: | :----------: | :-----------: | :---------: |
+| [`uniqueItems`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.3)             |          ✅           |      ✅      |      ❌       |     ✅      |
+| [`contains`](https://json-schema.org/understanding-json-schema/reference/array.html#contains)                    |          ❌           |      ❌      |      ✅       |     ❌      |
+| [`maxContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.4)             |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`minContains`](https://json-schema.org/draft/2020-12/json-schema-validation.html#rfc.section.6.4.5)             |          ✅           |      ✅      |      ❌       |     ❌      |
+| [`(prepend)prefixItem`](https://json-schema.org/understanding-json-schema/reference/array.html#tuple-validation) |          ❌           |      ❌      |      ✅       |     ❌      |
 
 ## `BooleanSchema`
 
@@ -246,4 +246,3 @@ const mySchema = customSchema<{ foo: string }>({ foo: { type: 'string' } });
 ```
 
 Use `CustomSchema` when integrating with pre-existing JSON Schemas or adopting Juniper incrementally. Its use is discouraged in greenfield code.
-

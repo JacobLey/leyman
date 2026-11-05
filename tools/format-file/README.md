@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # format-file
+
 Format files and text with Biome or Prettier, whichever the project uses.
 
 [![npm package](https://badge.fury.io/js/format-file.svg)](https://www.npmjs.com/package/format-file)
@@ -66,10 +67,10 @@ Formats a file in-place according to the project's formatter configuration.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `filePath` | `string` | — | Required. Path to the file. Relative paths resolve from `process.cwd()`. |
-| `options` | `FileFormatterOptions` | `{}` | Optional. See [FileFormatterOptions](#fileformatteroptions). |
+| Parameter  | Type                   | Default | Description                                                              |
+| ---------- | ---------------------- | ------- | ------------------------------------------------------------------------ |
+| `filePath` | `string`               | —       | Required. Path to the file. Relative paths resolve from `process.cwd()`. |
+| `options`  | `FileFormatterOptions` | `{}`    | Optional. See [FileFormatterOptions](#fileformatteroptions).             |
 
 **Returns** `Promise<void>` — resolves when the file has been formatted and written.
 
@@ -82,8 +83,8 @@ await formatFile('./config.json', { formatter: 'prettier' });
 
 Exported as a type: `import type { FileFormatterOptions } from 'format-file'`.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
+| Option      | Type                                 | Default     | Description                                                            |
+| ----------- | ------------------------------------ | ----------- | ---------------------------------------------------------------------- |
 | `formatter` | `'biome' \| 'prettier' \| 'inherit'` | `'inherit'` | Formatter to use. `'inherit'` tries each available formatter in order. |
 
 ---
@@ -94,10 +95,10 @@ Formats a set of files in-place. Equivalent to calling `formatFile` on each path
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `filePaths` | `readonly string[]` | — | Required. List of file paths. Relative paths resolve from `process.cwd()`. An empty list does nothing. |
-| `options` | `FileFormatterOptions` | `{}` | Optional. Same options as [`formatFile`](#formatfilefilepath-options). |
+| Parameter   | Type                   | Default | Description                                                                                            |
+| ----------- | ---------------------- | ------- | ------------------------------------------------------------------------------------------------------ |
+| `filePaths` | `readonly string[]`    | —       | Required. List of file paths. Relative paths resolve from `process.cwd()`. An empty list does nothing. |
+| `options`   | `FileFormatterOptions` | `{}`    | Optional. Same options as [`formatFile`](#formatfilefilepath-options).                                 |
 
 **Returns** `Promise<void>` — resolves when all files have been formatted and written.
 
@@ -113,10 +114,10 @@ Formats a raw text string as if it were a file in the current working directory,
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `content` | `string` | — | Required. The raw text content to format. |
-| `options` | `TextFormatterOptions` | `{}` | Optional. See [TextFormatterOptions](#textformatteroptions). |
+| Parameter | Type                   | Default | Description                                                  |
+| --------- | ---------------------- | ------- | ------------------------------------------------------------ |
+| `content` | `string`               | —       | Required. The raw text content to format.                    |
+| `options` | `TextFormatterOptions` | `{}`    | Optional. See [TextFormatterOptions](#textformatteroptions). |
 
 **Returns** `Promise<string>` — the formatted text content.
 
@@ -128,7 +129,7 @@ const formatted = await formatText('export    const  foo={abc:1}', { ext: '.ts' 
 
 Extends [FileFormatterOptions](#fileformatteroptions) with:
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `formatter` | `'biome' \| 'prettier' \| 'inherit'` | `'inherit'` | Formatter to use. |
-| `ext` | `'.json'` or `` `.${'' \| 'c' \| 'm'}${'js' \| 'ts'}${'' \| 'x'}` `` (`.js`, `.ts`, `.mjs`, `.mts`, `.cjs`, `.cts`, `.jsx`, `.tsx`, …) | `'.js'` | File extension used to select formatting rules. |
+| Option      | Type                                                                                                                                   | Default     | Description                                     |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------- | ----------- | ----------------------------------------------- |
+| `formatter` | `'biome' \| 'prettier' \| 'inherit'`                                                                                                   | `'inherit'` | Formatter to use.                               |
+| `ext`       | `'.json'` or `` `.${'' \| 'c' \| 'm'}${'js' \| 'ts'}${'' \| 'x'}` `` (`.js`, `.ts`, `.mjs`, `.mts`, `.cjs`, `.cts`, `.jsx`, `.tsx`, …) | `'.js'`     | File extension used to select formatting rules. |

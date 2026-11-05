@@ -57,11 +57,11 @@ An agent (Claude Code, say) is pointed at `https://notes.example/mcp`, and disco
 
 ## Tools
 
-| Tool | Does | Scope | Annotations |
-|---|---|---|---|
-| `find_notes` | Lists notes, newest first, as `{ id, title, createdAt }`. Optional `q` (title contains), `limit` (default 10) | `notes:read` | read-only |
-| `read_note` | One note, with its body | `notes:read` | read-only |
-| `add_note` | Adds a note, answering `{ id, createdAt }` | `notes:write` | not read-only, not destructive, not idempotent |
+| Tool         | Does                                                                                                          | Scope         | Annotations                                    |
+| ------------ | ------------------------------------------------------------------------------------------------------------- | ------------- | ---------------------------------------------- |
+| `find_notes` | Lists notes, newest first, as `{ id, title, createdAt }`. Optional `q` (title contains), `limit` (default 10) | `notes:read`  | read-only                                      |
+| `read_note`  | One note, with its body                                                                                       | `notes:read`  | read-only                                      |
+| `add_note`   | Adds a note, answering `{ id, createdAt }`                                                                    | `notes:write` | not read-only, not destructive, not idempotent |
 
 Every result has `structuredContent` matching the tool's `outputSchema`, and the same as JSON text for clients that only read text. `tools/list` is in a fixed order, as the spec asks, so a client's prompt cache keeps hitting.
 
@@ -112,12 +112,12 @@ Each agent token's exchange is kept until 30 seconds before it expires (or half 
 
 ## Composing with haywire
 
-| Identifier | Bound by | Default in `createNotesMcpApp` |
-|---|---|---|
-| `notesApiId` | the app | `notesApiBinding(api)`: an API client for an agent's token, exchanging it for the API's |
-| `tokenVerifierId` | the app | `jwtVerifierBinding({ issuer, audience: resourceUrl })` |
-| `mcpConfigId` | the app | `resourceUrl`, `issuer`, `allowedHosts`, `onError` |
-| `mcpAppId` | `mcpModule` | the Hono app |
+| Identifier        | Bound by    | Default in `createNotesMcpApp`                                                          |
+| ----------------- | ----------- | --------------------------------------------------------------------------------------- |
+| `notesApiId`      | the app     | `notesApiBinding(api)`: an API client for an agent's token, exchanging it for the API's |
+| `tokenVerifierId` | the app     | `jwtVerifierBinding({ issuer, audience: resourceUrl })`                                 |
+| `mcpConfigId`     | the app     | `resourceUrl`, `issuer`, `allowedHosts`, `onError`                                      |
+| `mcpAppId`        | `mcpModule` | the Hono app                                                                            |
 
 Another authorization server (Keycloak, a hosted provider) is a different `issuer`; another way to verify tokens (introspection) is another `OAuthTokenVerifier` for `tokenVerifierId`.
 

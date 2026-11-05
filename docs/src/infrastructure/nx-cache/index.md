@@ -42,10 +42,10 @@ There is no long-lived write secret, since each job gets its own token. The firs
 
 ## wrangler and OpenTofu
 
-| | Manages | Run by | Credentials |
-|---|---|---|---|
-| **wrangler** | The Worker's code, its binding to the bucket, its URL | CI, on every push to `main` | A token that may only deploy Workers, in a GitHub environment only `main` can use |
-| **OpenTofu** | The R2 bucket, its lifecycle rule, and that deploy token | The maintainer, by hand | A token that may manage R2 and create tokens, and the state's passphrase, never in CI |
+|              | Manages                                                  | Run by                      | Credentials                                                                           |
+| ------------ | -------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------- |
+| **wrangler** | The Worker's code, its binding to the bucket, its URL    | CI, on every push to `main` | A token that may only deploy Workers, in a GitHub environment only `main` can use     |
+| **OpenTofu** | The R2 bucket, its lifecycle rule, and that deploy token | The maintainer, by hand     | A token that may manage R2 and create tokens, and the state's passphrase, never in CI |
 
 The Worker changes with the repository: it is bundled, tested and deployed on every merge, which is what wrangler is for. The bucket and the token change a few times a year, so they are applied by hand, after reading the plan.
 

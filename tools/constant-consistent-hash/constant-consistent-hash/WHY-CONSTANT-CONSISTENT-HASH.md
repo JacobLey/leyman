@@ -3,6 +3,7 @@
 Back to the [README](https://www.npmjs.com/package/constant-consistent-hash).
 
 ## Contents
+
 - [The problem](#the-problem)
 - [How it works](#how-it-works)
 - [Why it is correct](#why-it-is-correct)
@@ -16,13 +17,13 @@ Spreading keys across `n` buckets (shards, cache nodes, partitions, workers) wit
 
 A consistent hash keeps buckets balanced while moving as few keys as possible. Growing from `n` to `n + 1` buckets, the new bucket needs `1/(n + 1)` of the keys, so the best possible hash moves exactly that many, all of them into the new bucket, and leaves every other key alone.
 
-[Jump consistent hash](https://arxiv.org/abs/1406.2294) (Lamping and Veach, 2014) achieves that without any stored state, but it loops once per "jump" a key makes as the bucket count grows, which is O(log n) per lookup. [Power consistent hashing](https://arxiv.org/abs/2307.12448) (Leu, 2023) and [JumpBackHash](https://arxiv.org/abs/2403.18682) (Ertl, 2024) bring that down to constant time *on average*, but still loop, a number of times that depends on the key.
+[Jump consistent hash](https://arxiv.org/abs/1406.2294) (Lamping and Veach, 2014) achieves that without any stored state, but it loops once per "jump" a key makes as the bucket count grows, which is O(log n) per lookup. [Power consistent hashing](https://arxiv.org/abs/2307.12448) (Leu, 2023) and [JumpBackHash](https://arxiv.org/abs/2403.18682) (Ertl, 2024) bring that down to constant time _on average_, but still loop, a number of times that depends on the key.
 
 This package does the same with a fixed amount of work per lookup, and no loops.
 
 ## How it works
 
-Think of each key growing with the bucket count: when the count goes from `n` to `n + 1`, a key either stays, or moves to the new bucket `n` with probability `1/(n + 1)`. The set of buckets a key moves to is its *jumps*.
+Think of each key growing with the bucket count: when the count goes from `n` to `n + 1`, a key either stays, or moves to the new bucket `n` with probability `1/(n + 1)`. The set of buckets a key moves to is its _jumps_.
 
 ### Power of 2 blocks
 
@@ -42,7 +43,7 @@ When the count `n` is not a power of 2, let `m` be the next power of 2 and `h = 
 
 Jump and Power consistent hashing find that last jump by generating the jumps one by one with independent coins per bucket. A block can hold any number of jumps, hence the loop.
 
-Balance and minimal disruption do not need independent coins. They only constrain *consecutive* jumps (see [below](#why-it-is-correct)), and a block never needs more than 2 jumps to satisfy them. Given the block's last jump `M`, uniform in `[h, 2h)`:
+Balance and minimal disruption do not need independent coins. They only constrain _consecutive_ jumps (see [below](#why-it-is-correct)), and a block never needs more than 2 jumps to satisfy them. Given the block's last jump `M`, uniform in `[h, 2h)`:
 
 - the block has a second jump with probability `2h(M - h) / (M(M + 1))`,
 - and that jump is uniform in `[h, M)`.
@@ -101,17 +102,17 @@ The lanes themselves supply the 48 bits that pick a block, and each other value 
 
 ## Compared to alternatives
 
-| | Lookup | Memory | Keys moved adding a bucket | Removes any bucket |
-|---|---|---|---|---|
-| **constant-consistent-hash** | O(1), no loops | none | minimal | ❌ |
-| Modulo (`hash % n`) | O(1) | none | almost all | ❌ |
-| [Hash ring](https://en.wikipedia.org/wiki/Consistent_hashing) (Karger et al., Ketama) | O(log n) | ring of virtual nodes | ~minimal, balance depends on virtual node count | ✅ |
-| [Rendezvous / HRW](https://en.wikipedia.org/wiki/Rendezvous_hashing) | O(n) | list of nodes | minimal | ✅ |
-| [Maglev](https://research.google/pubs/maglev-a-fast-and-reliable-software-network-load-balancer/) | O(1) | lookup table | near minimal | ✅ |
-| [Jump hash](https://arxiv.org/abs/1406.2294) | O(log n) | none | minimal | ❌ |
-| [Power consistent hashing](https://arxiv.org/abs/2307.12448) | O(1) on average | none | minimal | ❌ |
-| [JumpBackHash](https://arxiv.org/abs/2403.18682) | O(1) on average | none | minimal | ❌ |
-| [AnchorHash](https://arxiv.org/abs/1812.09674), [MementoHash](https://arxiv.org/abs/2306.09783) | O(1) on average, more with many removals | state per removed bucket | minimal | ✅ |
+|                                                                                                   | Lookup                                   | Memory                   | Keys moved adding a bucket                      | Removes any bucket |
+| ------------------------------------------------------------------------------------------------- | ---------------------------------------- | ------------------------ | ----------------------------------------------- | ------------------ |
+| **constant-consistent-hash**                                                                      | O(1), no loops                           | none                     | minimal                                         | ❌                 |
+| Modulo (`hash % n`)                                                                               | O(1)                                     | none                     | almost all                                      | ❌                 |
+| [Hash ring](https://en.wikipedia.org/wiki/Consistent_hashing) (Karger et al., Ketama)             | O(log n)                                 | ring of virtual nodes    | ~minimal, balance depends on virtual node count | ✅                 |
+| [Rendezvous / HRW](https://en.wikipedia.org/wiki/Rendezvous_hashing)                              | O(n)                                     | list of nodes            | minimal                                         | ✅                 |
+| [Maglev](https://research.google/pubs/maglev-a-fast-and-reliable-software-network-load-balancer/) | O(1)                                     | lookup table             | near minimal                                    | ✅                 |
+| [Jump hash](https://arxiv.org/abs/1406.2294)                                                      | O(log n)                                 | none                     | minimal                                         | ❌                 |
+| [Power consistent hashing](https://arxiv.org/abs/2307.12448)                                      | O(1) on average                          | none                     | minimal                                         | ❌                 |
+| [JumpBackHash](https://arxiv.org/abs/2403.18682)                                                  | O(1) on average                          | none                     | minimal                                         | ❌                 |
+| [AnchorHash](https://arxiv.org/abs/1812.09674), [MementoHash](https://arxiv.org/abs/2306.09783)   | O(1) on average, more with many removals | state per removed bucket | minimal                                         | ✅                 |
 
 - **Hash rings and rendezvous** suit clusters where any node can fail and leave. They need the list of nodes, and rings need many virtual nodes per node to balance well.
 - **Jump, Power and JumpBackHash** share this package's model (buckets numbered `0` to `n - 1`, added and removed at the end). They map keys to different buckets than this package, so they cannot be swapped in for each other on existing data.

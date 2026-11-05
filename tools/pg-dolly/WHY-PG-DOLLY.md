@@ -3,6 +3,7 @@
 Integration tests against Postgres have to be **deterministic and repeatable**: each test starts from a state it sets up itself, never from whatever a developer's database happens to hold, what a previous run left behind, or a manual setup step. `pg-dolly` makes that the default: every test gets a database of its own, a copy of the schema and nothing else.
 
 ## Contents
+
 - [Why a database per test](#why-a-database-per-test)
 - [Why templates](#why-templates)
 - [Why the schema is SQL](#why-the-schema-is-sql)

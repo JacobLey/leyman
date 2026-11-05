@@ -16,10 +16,10 @@ import EntryScript from 'entry-script';
 import { EntryScript as Named } from 'entry-script';
 ```
 
-| Method | Description |
-|--------|-------------|
-| `main(argv: string[]): Promise<void>` | Runs the script, when the module's default export is an instance. |
-| `static main(argv: string[]): Promise<void>` | Runs the script, when the module's default export is the class. |
+| Method                                       | Description                                                       |
+| -------------------------------------------- | ----------------------------------------------------------------- |
+| `main(argv: string[]): Promise<void>`        | Runs the script, when the module's default export is an instance. |
+| `static main(argv: string[]): Promise<void>` | Runs the script, when the module's default export is the class.   |
 
 Implement one of them. The other throws `MainNotImplementedError`.
 

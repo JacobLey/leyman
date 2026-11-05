@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # find-import
+
 Find and load the first matching JS/JSON file by searching parent directories.
 
 [![npm package](https://badge.fury.io/js/find-import.svg)](https://www.npmjs.com/package/find-import)
@@ -9,6 +10,7 @@ Find and load the first matching JS/JSON file by searching parent directories.
 </div>
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -73,13 +75,13 @@ Only missing files are skipped. If a matching file exists but fails to load, suc
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `fileNames` | `string \| string[]` | — | Required. One or more file names to search for in each directory. |
-| `options` | `object` | `{}` | Optional. Search configuration. |
-| `options.cwd` | `string \| URL` | `process.cwd()` | Bottom-most directory to begin the search from. Relative paths resolve from `process.cwd()`. Rejects with `Directory not found: <path>` if it does not exist. |
-| `options.direction` | `'up' \| 'down'` | `'up'` | `'up'` searches from `cwd` toward `/` (returns deepest match); `'down'` reverses the order (returns top-most match). |
-| `options.startAt` | `string \| URL` | `'/'` | Top-most directory that bounds the search. Resolved like `cwd`. When `cwd` is not inside it, the result is `null`. |
+| Parameter           | Type                 | Default         | Description                                                                                                                                                   |
+| ------------------- | -------------------- | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `fileNames`         | `string \| string[]` | —               | Required. One or more file names to search for in each directory.                                                                                             |
+| `options`           | `object`             | `{}`            | Optional. Search configuration.                                                                                                                               |
+| `options.cwd`       | `string \| URL`      | `process.cwd()` | Bottom-most directory to begin the search from. Relative paths resolve from `process.cwd()`. Rejects with `Directory not found: <path>` if it does not exist. |
+| `options.direction` | `'up' \| 'down'`     | `'up'`          | `'up'` searches from `cwd` toward `/` (returns deepest match); `'down'` reverses the order (returns top-most match).                                          |
+| `options.startAt`   | `string \| URL`      | `'/'`           | Top-most directory that bounds the search. Resolved like `cwd`. When `cwd` is not inside it, the result is `null`.                                            |
 
 **Returns** `Promise<{ filePath: string; content: unknown } | null>` — the absolute path and loaded content of the first matching file, or `null` if none is found.
 

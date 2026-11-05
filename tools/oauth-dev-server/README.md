@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # oauth-dev-server
+
 A local OAuth 2.1 authorization server for tests: oidc-provider with a dev login, issuing audience-bound JWT access tokens through the real flow.
 
 </div>
@@ -16,6 +17,7 @@ A real authorization server ([oidc-provider](https://github.com/panva/node-oidc-
 Private for now: depend on it from the workspace (`"oauth-dev-server": "workspace:^"`). Runner-agnostic: plain functions, and a server to close.
 
 ## Contents
+
 - [Example](#example)
 - [API](#api)
   - [listenDevAuthorizationServer](#listendevauthorizationserveroptions)
@@ -99,9 +101,9 @@ Starts a server on `node:http`, its issuer being wherever it listens.
 
 Those of [`createDevAuthorizationServer`](#createdevauthorizationserveroptions) but `issuer`, plus:
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `port` | `number` | `0` | Port to listen on. `0` is any free port. |
+| Option     | Type     | Default       | Description                                                                              |
+| ---------- | -------- | ------------- | ---------------------------------------------------------------------------------------- |
+| `port`     | `number` | `0`           | Port to listen on. `0` is any free port.                                                 |
 | `hostname` | `string` | `'127.0.0.1'` | Where to listen: `127.0.0.1`, `[::1]` or `localhost`, unless `dangerouslyAllowNonLocal`. |
 
 ### `createDevAuthorizationServer(options)`
@@ -114,30 +116,30 @@ Builds the server as a `node:http` listener, for a server you already have.
 
 #### Options
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `issuer` | `string` | — | Required. Where it's served: its metadata, endpoints and every token's `iss` derive from it. |
-| `resources` | `ResourceServer[]` | — | Required. `{ url, scopes }`: each server that accepts its tokens (RFC 8707), and every scope it understands. `url` is the `resource` a client asks for, and the `aud` of tokens for it. |
-| `clients` | `PublicClient[]` | — | Required. Native apps, see [Clients](#clients). |
-| `services` | `ServiceClient[]` | — | Required. Confidential clients, see [Clients](#clients). |
-| `accountId` | `string` | — | Required. The account a login signs in as, unless the authorization request names another (`login_hint`). |
-| `accessTokenTtl` | `number` | `600` | How long an access token lasts, in seconds. |
-| `deviceInterval` | `number` | `5` | Seconds a device waits between polls (the device authorization response's `interval`). `1` makes tests quicker. |
-| `dangerouslyAllowNonLocal` | `boolean` | `false` | Serve at an issuer other machines can reach. Anyone who can reach it gets tokens: only in an isolated network. |
+| Option                     | Type               | Default | Description                                                                                                                                                                             |
+| -------------------------- | ------------------ | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `issuer`                   | `string`           | —       | Required. Where it's served: its metadata, endpoints and every token's `iss` derive from it.                                                                                            |
+| `resources`                | `ResourceServer[]` | —       | Required. `{ url, scopes }`: each server that accepts its tokens (RFC 8707), and every scope it understands. `url` is the `resource` a client asks for, and the `aud` of tokens for it. |
+| `clients`                  | `PublicClient[]`   | —       | Required. Native apps, see [Clients](#clients).                                                                                                                                         |
+| `services`                 | `ServiceClient[]`  | —       | Required. Confidential clients, see [Clients](#clients).                                                                                                                                |
+| `accountId`                | `string`           | —       | Required. The account a login signs in as, unless the authorization request names another (`login_hint`).                                                                               |
+| `accessTokenTtl`           | `number`           | `600`   | How long an access token lasts, in seconds.                                                                                                                                             |
+| `deviceInterval`           | `number`           | `5`     | Seconds a device waits between polls (the device authorization response's `interval`). `1` makes tests quicker.                                                                         |
+| `dangerouslyAllowNonLocal` | `boolean`          | `false` | Serve at an issuer other machines can reach. Anyone who can reach it gets tokens: only in an isolated network.                                                                          |
 
 ### `userTokens(options)`
 
 Signs a user in through the whole authorization code flow with PKCE, as a native app would, with the dev login playing the user. For a test that needs a user's token (of a resource server, say) without testing how a client gets one.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `issuer` | `string` | — | Required. The server's issuer. |
-| `clientId` | `string` | — | Required. A registered public client. |
-| `redirectUri` | `string` | — | Required. One of the client's redirect URIs; a loopback one may name any port. |
-| `resource` | `string` | — | Required. A registered resource's URL: the token's `aud`. |
-| `scope` | `string` | — | Required. Space-separated scopes. At least one: `openid` alone gets a token for the resource with none of its scopes. |
-| `user` | `string` | `accountId` | Who signs in (`login_hint`). |
-| `cookies` | `Map<string, string>` | a new jar | As for `followAuthorization`. |
+| Option        | Type                  | Default     | Description                                                                                                           |
+| ------------- | --------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------- |
+| `issuer`      | `string`              | —           | Required. The server's issuer.                                                                                        |
+| `clientId`    | `string`              | —           | Required. A registered public client.                                                                                 |
+| `redirectUri` | `string`              | —           | Required. One of the client's redirect URIs; a loopback one may name any port.                                        |
+| `resource`    | `string`              | —           | Required. A registered resource's URL: the token's `aud`.                                                             |
+| `scope`       | `string`              | —           | Required. Space-separated scopes. At least one: `openid` alone gets a token for the resource with none of its scopes. |
+| `user`        | `string`              | `accountId` | Who signs in (`login_hint`).                                                                                          |
+| `cookies`     | `Map<string, string>` | a new jar   | As for `followAuthorization`.                                                                                         |
 
 **Returns** `Promise<UserTokens>`: the token endpoint's response, `{ access_token, token_type, expires_in, scope?, refresh_token? }` (a refresh token unless the client opted out).
 
@@ -147,11 +149,11 @@ Signs a user in through the whole authorization code flow with PKCE, as a native
 
 Plays the user's browser for an authorization request: follows the server's redirects, keeping its cookies, through the dev login and consent, until it redirects to the client's redirect URI. That redirect isn't fetched.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `authorizationUrl` | `string \| URL` | — | Required. Where the client sends the user, with its `client_id`, PKCE challenge and `resource`. |
-| `redirectUri` | `string \| URL` | — | Required. The client's redirect URI. Only its origin and path are compared. |
-| `options.cookies` | `Map<string, string>` | a new jar | The browser's cookies, kept like a browser profile: a second authorization resumes the session (no login) and extends its grant, as when a client steps up to more scopes. Updated as the server sets them. |
+| Parameter          | Type                  | Default   | Description                                                                                                                                                                                                 |
+| ------------------ | --------------------- | --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `authorizationUrl` | `string \| URL`       | —         | Required. Where the client sends the user, with its `client_id`, PKCE challenge and `resource`.                                                                                                             |
+| `redirectUri`      | `string \| URL`       | —         | Required. The client's redirect URI. Only its origin and path are compared.                                                                                                                                 |
+| `options.cookies`  | `Map<string, string>` | a new jar | The browser's cookies, kept like a browser profile: a second authorization resumes the session (no login) and extends its grant, as when a client steps up to more scopes. Updated as the server sets them. |
 
 **Returns** `Promise<URL>`: the redirect, with `code`, `state` and `iss` (or `error`) in its query.
 
@@ -161,11 +163,11 @@ Plays the user's browser for an authorization request: follows the server's redi
 
 Plays the user on another device for the device authorization grant: opens the `verification_uri_complete` the device shows, posts the code, confirms it's the one shown, and signs in. The device's next poll gets its tokens.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `verificationUri` | `string \| URL` | — | Required. The device authorization response's `verification_uri_complete`. |
-| `options.deny` | `boolean` | `false` | Say the code isn't the one shown: the device is refused (`access_denied`). |
-| `options.cookies` | `Map<string, string>` | a new jar | As for `followAuthorization`. |
+| Parameter         | Type                  | Default   | Description                                                                |
+| ----------------- | --------------------- | --------- | -------------------------------------------------------------------------- |
+| `verificationUri` | `string \| URL`       | —         | Required. The device authorization response's `verification_uri_complete`. |
+| `options.deny`    | `boolean`             | `false`   | Say the code isn't the one shown: the device is refused (`access_denied`). |
+| `options.cookies` | `Map<string, string>` | a new jar | As for `followAuthorization`.                                              |
 
 **Returns** `Promise<void>`
 
@@ -209,38 +211,38 @@ try {
 
 The same applies when a tool call needs more scopes (`403 insufficient_scope`): the SDK authorizes again, and the provider's cookies resume the session, so it's the same user, with the grant extended.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `clientId` | `string` | — | Required. A registered public client. |
-| `redirectUri` | `string` | — | Required. One of its redirect URIs; a loopback one may name any port. Nothing needs to listen there. |
-| `user` | `string` | `accountId` | Who signs in (`login_hint`). |
-| `cookies` | `Map<string, string>` | a new jar | The browser's cookies, kept across the provider's authorizations. |
+| Option        | Type                  | Default     | Description                                                                                          |
+| ------------- | --------------------- | ----------- | ---------------------------------------------------------------------------------------------------- |
+| `clientId`    | `string`              | —           | Required. A registered public client.                                                                |
+| `redirectUri` | `string`              | —           | Required. One of its redirect URIs; a loopback one may name any port. Nothing needs to listen there. |
+| `user`        | `string`              | `accountId` | Who signs in (`login_hint`).                                                                         |
+| `cookies`     | `Map<string, string>` | a new jar   | The browser's cookies, kept across the provider's authorizations.                                    |
 
-| Member | Description |
-|--------|-------------|
+| Member           | Description                                                                                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `takeCallback()` | The redirect back from the last authorization (`code`, `state`, `iss`, or `error`), to pass to `transport.finishAuth`. Clears it; `null` when none is waiting. |
-| `authorizations` | Every authorization URL the SDK sent the user to, in order: one per login or step-up, to check the scopes and `resource` asked for. |
-| `tokens()` | The tokens the SDK saved. |
+| `authorizations` | Every authorization URL the SDK sent the user to, in order: one per login or step-up, to check the scopes and `resource` asked for.                            |
+| `tokens()`       | The tokens the SDK saved.                                                                                                                                      |
 
 ### Errors
 
 Every error extends `DevAuthorizationError`. The types `ListenOptions`, `ListeningAuthorizationServer`, `DevAuthorizationServerOptions`, `DevAuthorizationServer`, `ResourceServer`, `PublicClient`, `ServiceClient`, `UserTokensOptions`, `DevOAuthClientProviderOptions`, `UserTokens`, `FollowAuthorizationOptions` and `ApproveDeviceOptions` are exported too.
 
-| Error | When |
-|-------|------|
-| `DevAuthorizationServerNotLocalError` | It would serve where other machines can reach it. Has `hostname`. |
-| `DevAuthorizationFlowError` | `userTokens`, `followAuthorization` or `approveDevice` didn't finish. Has `url`, the last URL fetched. |
+| Error                                 | When                                                                                                   |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------ |
+| `DevAuthorizationServerNotLocalError` | It would serve where other machines can reach it. Has `hostname`.                                      |
+| `DevAuthorizationFlowError`           | `userTokens`, `followAuthorization` or `approveDevice` didn't finish. Has `url`, the last URL fetched. |
 
 ## Clients
 
-| | Public client (`clients`) | Service (`services`) |
-|---|---|---|
-| For | A CLI, a desktop agent: runs on the user's machine, so it can't keep a secret | A server calling another server as itself |
-| Options | `clientId`, `redirectUris`, `refreshTokens?`, `deviceAuthorization?` | `clientId`, `clientSecret`, `scopes`, `tokenExchange?` |
-| Grant | Authorization code + PKCE, then refresh token; device authorization, with `deviceAuthorization` | Client credentials; token exchange, with `tokenExchange` |
-| Authenticates with | Nothing (PKCE protects the code) | Its secret (HTTP Basic) |
-| Redirect | Loopback, any port (RFC 8252): `http://127.0.0.1/callback` matches every port | None |
-| Token's subject | The user who logged in | The client itself (`sub` is its `client_id`, RFC 9068); the user, when exchanged |
+|                    | Public client (`clients`)                                                                       | Service (`services`)                                                             |
+| ------------------ | ----------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| For                | A CLI, a desktop agent: runs on the user's machine, so it can't keep a secret                   | A server calling another server as itself                                        |
+| Options            | `clientId`, `redirectUris`, `refreshTokens?`, `deviceAuthorization?`                            | `clientId`, `clientSecret`, `scopes`, `tokenExchange?`                           |
+| Grant              | Authorization code + PKCE, then refresh token; device authorization, with `deviceAuthorization` | Client credentials; token exchange, with `tokenExchange`                         |
+| Authenticates with | Nothing (PKCE protects the code)                                                                | Its secret (HTTP Basic)                                                          |
+| Redirect           | Loopback, any port (RFC 8252): `http://127.0.0.1/callback` matches every port                   | None                                                                             |
+| Token's subject    | The user who logged in                                                                          | The client itself (`sub` is its `client_id`, RFC 9068); the user, when exchanged |
 
 A public client may opt out of refresh tokens (`refreshTokens: false`): its login then lasts as long as one access token. It may opt in to the device grant (`deviceAuthorization: true`), which is off by default: a device code can be phished (someone starts a login, and asks you to approve their code), so a client should have it only when it runs where there's no browser.
 

@@ -48,10 +48,10 @@ Kept clones wait for `retainMs`, rather than the very next run, so another packa
 Measured on a laptop (Postgres 18.6 in Docker), for schemas where each table has a primary key, an index and a foreign key:
 
 | Tables | Build the template (once) | Clone (per test) | Drop at `close()` (per test) |
-|---|---|---|---|
-| 10 | 20-45 ms | 7-14 ms | 2 ms |
-| 100 | 70 ms | 13-24 ms | 2 ms |
-| 500 | 300 ms | 50-60 ms | 3 ms |
+| ------ | ------------------------- | ---------------- | ---------------------------- |
+| 10     | 20-45 ms                  | 7-14 ms          | 2 ms                         |
+| 100    | 70 ms                     | 13-24 ms         | 2 ms                         |
+| 500    | 300 ms                    | 50-60 ms         | 3 ms                         |
 
 Connecting to a clone and running a first query takes another 4 ms or so.
 

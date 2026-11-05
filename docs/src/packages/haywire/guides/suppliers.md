@@ -44,13 +44,13 @@ function given to `withProvider()`, which builds a value from its dependencies.
 
 ## Forms
 
-| `supplier(...)` | Type | Behaves like |
-|-----------------|------|--------------|
-| `()`, `true` or `{ sync: true, propagateScope: false }` | `() => T` | A new `container.get()` call. |
-| `'async'` or `{ sync: false, propagateScope: false }` | `() => Promise<T>` | A new `container.getAsync()` call. |
-| `{ sync: true, propagateScope: true }` | `() => T` | Builds within the current request. |
-| `{ sync: false, propagateScope: true }` | `() => Promise<T>` | Builds within the current request. |
-| `false` | `T` | Not a supplier. Reverts the modifier. |
+| `supplier(...)`                                         | Type               | Behaves like                          |
+| ------------------------------------------------------- | ------------------ | ------------------------------------- |
+| `()`, `true` or `{ sync: true, propagateScope: false }` | `() => T`          | A new `container.get()` call.         |
+| `'async'` or `{ sync: false, propagateScope: false }`   | `() => Promise<T>` | A new `container.getAsync()` call.    |
+| `{ sync: true, propagateScope: true }`                  | `() => T`          | Builds within the current request.    |
+| `{ sync: false, propagateScope: true }`                 | `() => Promise<T>` | Builds within the current request.    |
+| `false`                                                 | `T`                | Not a supplier. Reverts the modifier. |
 
 Any container can have sync suppliers, even one with async bindings, as long as everything that supplier builds is synchronous.
 

@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # constant-consistent-hash
+
 Consistent hashing in constant time with no loops: stateless, evenly balanced, and only moves keys to new buckets. Portable across languages.
 
 [![npm package](https://badge.fury.io/js/constant-consistent-hash.svg)](https://www.npmjs.com/package/constant-consistent-hash)
@@ -17,6 +18,7 @@ Consistent hashing in constant time with no loops: stateless, evenly balanced, a
 Not suited to removing arbitrary buckets from the middle, or to keys chosen by an attacker. For the design and the full comparison, see [WHY-CONSTANT-CONSISTENT-HASH.md](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/WHY-CONSTANT-CONSISTENT-HASH.md).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -60,12 +62,12 @@ Maps a key to a bucket.
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `key` | `string` | — | Required. Value to be hashed, as UTF-8. |
-| `range` | `number` | — | Required. Number of buckets, an integer between 1 and 2^48. |
-| `options` | `ConsistentHashOptions` | `{}` | Optional. |
-| `options.seed` | `number` | `0` | Integer between 0 and 2^32 - 1 that selects an independent hash function. |
+| Parameter      | Type                    | Default | Description                                                               |
+| -------------- | ----------------------- | ------- | ------------------------------------------------------------------------- |
+| `key`          | `string`                | —       | Required. Value to be hashed, as UTF-8.                                   |
+| `range`        | `number`                | —       | Required. Number of buckets, an integer between 1 and 2^48.               |
+| `options`      | `ConsistentHashOptions` | `{}`    | Optional.                                                                 |
+| `options.seed` | `number`                | `0`     | Integer between 0 and 2^32 - 1 that selects an independent hash function. |
 
 **Returns** `number` — bucket between `0` and `range - 1`.
 
@@ -90,10 +92,10 @@ Changing the seed moves almost every key, so a seed is fixed for the lifetime of
 
 The hash `consistentHash` places a key with: two independent unsigned 32-bit integers, from the key's UTF-8 bytes. For building other hashing schemes on, such as [weighted-rendezvous-hash](https://www.npmjs.com/package/weighted-rendezvous-hash), with the same results in every language that implements SPEC.md.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `key` | `string` | — | Required. Value to be hashed, as UTF-8. |
-| `options.seed` | `number` | `0` | Integer between 0 and 2^32 - 1 that selects an independent hash function. |
+| Parameter      | Type     | Default | Description                                                               |
+| -------------- | -------- | ------- | ------------------------------------------------------------------------- |
+| `key`          | `string` | —       | Required. Value to be hashed, as UTF-8.                                   |
+| `options.seed` | `number` | `0`     | Integer between 0 and 2^32 - 1 that selects an independent hash function. |
 
 **Returns** `readonly [number, number]`.
 
@@ -111,11 +113,11 @@ Like `consistentHash`, it is fast but not cryptographic.
 
 ## Compared to alternatives
 
-| | constant-consistent-hash | Modulo (`hash % n`) | Hash ring | Rendezvous (HRW) | Jump hash | Power CH / JumpBackHash |
-|---|---|---|---|---|---|---|
-| Time per lookup | O(1), no loops | O(1) | O(log n) | O(n) | O(log n) | O(1) on average |
-| Keys moved when adding a bucket | 1/(n + 1) | almost all | ~1/(n + 1), with variance | 1/(n + 1) | 1/(n + 1) | 1/(n + 1) |
-| Memory | none | none | ring of virtual nodes | list of nodes | none | none |
-| Remove any bucket | ❌ | ❌ | ✅ | ✅ | ❌ | ❌ |
+|                                 | constant-consistent-hash | Modulo (`hash % n`) | Hash ring                 | Rendezvous (HRW) | Jump hash | Power CH / JumpBackHash |
+| ------------------------------- | ------------------------ | ------------------- | ------------------------- | ---------------- | --------- | ----------------------- |
+| Time per lookup                 | O(1), no loops           | O(1)                | O(log n)                  | O(n)             | O(log n)  | O(1) on average         |
+| Keys moved when adding a bucket | 1/(n + 1)                | almost all          | ~1/(n + 1), with variance | 1/(n + 1)        | 1/(n + 1) | 1/(n + 1)               |
+| Memory                          | none                     | none                | ring of virtual nodes     | list of nodes    | none      | none                    |
+| Remove any bucket               | ❌                       | ❌                  | ✅                        | ✅               | ❌        | ❌                      |
 
 See the [WHY file](https://github.com/JacobLey/leyman/blob/main/tools/constant-consistent-hash/constant-consistent-hash/WHY-CONSTANT-CONSISTENT-HASH.md#compared-to-alternatives) for the full comparison.

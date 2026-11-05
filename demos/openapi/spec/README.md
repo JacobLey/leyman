@@ -6,11 +6,11 @@ Part of the [OpenAPI demo](../README.md). A worked example, never published.
 
 ## The API
 
-| Operation | Method and path | Auth | Responses |
-|---|---|---|---|
-| `listNotes` | `GET /notes?q=&limit=` | Bearer, `notes:read` | `200 NoteList`, `400`, `401`, `403` |
-| `createNote` | `POST /notes` | Bearer, `notes:write` | `201 Note`, `400`, `401`, `403`, `413` |
-| `getNote` | `GET /notes/{noteId}` | Bearer, `notes:read` | `200 Note`, `400`, `401`, `403`, `404` |
+| Operation    | Method and path        | Auth                  | Responses                              |
+| ------------ | ---------------------- | --------------------- | -------------------------------------- |
+| `listNotes`  | `GET /notes?q=&limit=` | Bearer, `notes:read`  | `200 NoteList`, `400`, `401`, `403`    |
+| `createNote` | `POST /notes`          | Bearer, `notes:write` | `201 Note`, `400`, `401`, `403`, `413` |
+| `getNote`    | `GET /notes/{noteId}`  | Bearer, `notes:read`  | `200 Note`, `400`, `401`, `403`, `404` |
 
 Every error is an `ApiError` (`{ code, message }`). `q` keeps only notes whose title contains it, ignoring case. `limit` is 1-100, default 20. A `403` is a valid token without the operation's scope: OpenAPI 3.1 lets an `http` scheme list scopes too, not only OAuth's. Text can't contain a NUL character (`\u0000`), which Postgres can't store, so a note with one is a `400` rather than a failed insert.
 

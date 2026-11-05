@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # iso-crypto
+
 Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and node:crypto for hashing, AES (including GCM), PBKDF2/HKDF key derivation and ECDH.
 
 [![npm package](https://badge.fury.io/js/iso-crypto.svg)](https://www.npmjs.com/package/iso-crypto)
@@ -19,6 +20,7 @@ Isomorphic cryptography for browsers and Node.js — one API over WebCrypto and 
 **When not to use it:** `encrypt` stretches its secret with a single hash, so derive keys from passwords with `deriveKey` first. There is no scrypt, Argon2, secp256k1 or X25519; for those see [@noble/hashes](https://www.npmjs.com/package/@noble/hashes) and [@noble/curves](https://www.npmjs.com/package/@noble/curves).
 
 ## Contents
+
 - [Supported Algorithms](#supported-algorithms)
   - [Hash](#hash)
   - [Symmetric Encryption](#symmetric-encryption)
@@ -256,7 +258,7 @@ Any method that takes input "text" (`InputText`, see [Types](#types)) allows 3 f
 - string - inferred as `UTF8` encoding
 - Uint8Array - "raw" encoding
 - { text: string; encoding: string } - text with a custom encoding
-    - Supported encodings: `hex`, `base64`, `base64url`, `utf8`
+  - Supported encodings: `hex`, `base64`, `base64url`, `utf8`
 
 A `Uint8Array` input must be typed `Uint8Array<ArrayBuffer>` (what `new Uint8Array(n)`, `decode` and every iso-crypto output give you). A value typed as a plain `Uint8Array` (`Uint8Array<ArrayBufferLike>`) is a type error, because it could be backed by a `SharedArrayBuffer`.
 
@@ -297,13 +299,13 @@ Many methods in this module deal with "private" or "secret" values. Proper handl
 
 - **The default encryption is AES-256-GCM**, instead of AES-256-CTR. GCM detects tampering, so `decrypt` rejects altered content or the wrong secret. Data encrypted with the old default, by `encrypt` or `eccEncrypt` without an `encryption` option, no longer decrypts with the default: it rejects rather than returning garbage. Pass `unsafeLegacyEncryption`, the old default, to `decrypt` or `eccDecrypt` to read it:
 
-    ```ts
-    import { decrypt, unsafeLegacyEncryption } from 'iso-crypto';
+  ```ts
+  import { decrypt, unsafeLegacyEncryption } from 'iso-crypto';
 
-    await decrypt({ encrypted, iv, secret }, { encryption: unsafeLegacyEncryption });
-    ```
+  await decrypt({ encrypted, iv, secret }, { encryption: unsafeLegacyEncryption });
+  ```
 
-    Data encrypted with an explicit `encryption` option is unaffected. Consider re-encrypting old data with the new default.
+  Data encrypted with an explicit `encryption` option is unaffected. Consider re-encrypting old data with the new default.
 - **`decode` rejects invalid hex.** Hex text with characters other than `0-9` and `a-f` throws a `TypeError`, where those characters used to decode as `0`. Valid hex decodes as before.
 - **192-bit AES keys are deprecated**, as Chromium-based browsers do not support them. They still work for CBC and CTR where supported.
 
@@ -429,13 +431,13 @@ Asynchronously derives a key of a fixed size from a secret. Use the result as th
 
 `salt` is a random value (e.g. `randomBytes(16)`) stored alongside whatever the key protects, so equal secrets derive different keys.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `algorithm` | `'PBKDF2' \| 'HKDF'` | `'PBKDF2'` | PBKDF2 is deliberately slow, for passwords. HKDF is fast, for secrets that are already random, such as an ECDH shared secret. |
-| `hash` | `HashAlgorithm` | SHA256 | Hash the derivation is built on: `{ algorithm: 'SHA1' }` or `{ algorithm: 'SHA2', size: 256 \| 384 \| 512 }`. Unlike `Hash`, `'raw'` is not accepted. |
-| `size` | `number` | `256` | Size of the key in bits, a multiple of 8. |
-| `iterations` | `number` | `600_000` | PBKDF2 only. OWASP's recommendation for PBKDF2 with SHA256. |
-| `info` | `InputText` | `''` | HKDF only. Context for the key, so one secret can derive several unrelated keys. |
+| Option       | Type                 | Default    | Description                                                                                                                                           |
+| ------------ | -------------------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `algorithm`  | `'PBKDF2' \| 'HKDF'` | `'PBKDF2'` | PBKDF2 is deliberately slow, for passwords. HKDF is fast, for secrets that are already random, such as an ECDH shared secret.                         |
+| `hash`       | `HashAlgorithm`      | SHA256     | Hash the derivation is built on: `{ algorithm: 'SHA1' }` or `{ algorithm: 'SHA2', size: 256 \| 384 \| 512 }`. Unlike `Hash`, `'raw'` is not accepted. |
+| `size`       | `number`             | `256`      | Size of the key in bits, a multiple of 8.                                                                                                             |
+| `iterations` | `number`             | `600_000`  | PBKDF2 only. OWASP's recommendation for PBKDF2 with SHA256.                                                                                           |
+| `info`       | `InputText`          | `''`       | HKDF only. Context for the key, so one secret can derive several unrelated keys.                                                                      |
 
 ### generateEccPrivateKey(curve?: Curve)
 

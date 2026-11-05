@@ -37,13 +37,13 @@ try {
 
 ## Compared to
 
-| | unknown-error | [normalize-exception](https://www.npmjs.com/package/normalize-exception) | [ensure-error](https://www.npmjs.com/package/ensure-error) | [serialize-error](https://www.npmjs.com/package/serialize-error) | [pony-cause](https://www.npmjs.com/package/pony-cause) |
-|---|---|---|---|---|---|
-| Never throws on hostile values | ✅ | ✅ | ❌ | ❌ | — |
-| Errors from other realms | ✅ | ✅ | ❌ | ✅ | ❌ |
-| Readable circular and BigInt values | ✅ | ❌ | ❌ | ❌ | — |
-| Leaves your errors unmodified | ✅ | ❌ | ❌ | ✅ | — |
-| Causes and `AggregateError` | ✅ | ✅ | ✅ | — | Causes only |
-| 10,000-deep cause chains | ✅ | ❌ | ❌ | — | ❌ |
+|                                     | unknown-error | [normalize-exception](https://www.npmjs.com/package/normalize-exception) | [ensure-error](https://www.npmjs.com/package/ensure-error) | [serialize-error](https://www.npmjs.com/package/serialize-error) | [pony-cause](https://www.npmjs.com/package/pony-cause) |
+| ----------------------------------- | ------------- | ------------------------------------------------------------------------ | ---------------------------------------------------------- | ---------------------------------------------------------------- | ------------------------------------------------------ |
+| Never throws on hostile values      | ✅            | ✅                                                                       | ❌                                                         | ❌                                                               | —                                                      |
+| Errors from other realms            | ✅            | ✅                                                                       | ❌                                                         | ✅                                                               | ❌                                                     |
+| Readable circular and BigInt values | ✅            | ❌                                                                       | ❌                                                         | ❌                                                               | —                                                      |
+| Leaves your errors unmodified       | ✅            | ❌                                                                       | ❌                                                         | ✅                                                               | —                                                      |
+| Causes and `AggregateError`         | ✅            | ✅                                                                       | ✅                                                         | —                                                                | Causes only                                            |
+| 10,000-deep cause chains            | ✅            | ❌                                                                       | ❌                                                         | —                                                                | ❌                                                     |
 
 See [Why unknown-error](/packages/unknown-error/why) for the full comparison.

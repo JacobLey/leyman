@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # haywire-launcher
+
 Instantiate and execute your haywire-managed entry script in one line.
 
 [![npm package](https://badge.fury.io/js/haywire-launcher.svg)](https://www.npmjs.com/package/haywire-launcher)
@@ -11,6 +12,7 @@ Instantiate and execute your haywire-managed entry script in one line.
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/haywire-launcher/).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -75,18 +77,18 @@ Returns an `EntryScript` subclass that, when invoked as the entry point, resolve
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `container` | `Container` | — | Required. A haywire async container capable of providing the target instance. |
-| `id` | `HaywireId` or class | `EntryScript` | Optional. The haywire id, or class, to request from the container. Must resolve to a type implementing `Main`. |
-| `options.dispose` | `boolean` | `false` | Optional. Dispose the container (`container.disposeAsync()`) once `main()` resolves or rejects, or when getting the id fails. Off by default, for a `main()` that returns while what it started (like a server) keeps running. If disposing fails after `main()` rejected, rejects with a `SuppressedError` of both, as `await using` does. |
+| Parameter         | Type                 | Default       | Description                                                                                                                                                                                                                                                                                                                                 |
+| ----------------- | -------------------- | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `container`       | `Container`          | —             | Required. A haywire async container capable of providing the target instance.                                                                                                                                                                                                                                                               |
+| `id`              | `HaywireId` or class | `EntryScript` | Optional. The haywire id, or class, to request from the container. Must resolve to a type implementing `Main`.                                                                                                                                                                                                                              |
+| `options.dispose` | `boolean`            | `false`       | Optional. Dispose the container (`container.disposeAsync()`) once `main()` resolves or rejects, or when getting the id fails. Off by default, for a `main()` that returns while what it started (like a server) keeps running. If disposing fails after `main()` rejected, rejects with a `SuppressedError` of both, as `await using` does. |
 
 **Returns** `WrapperMain` (an `EntryScript` subclass) — a class that can be exported as `default` and will be picked up by the `entry-script` lifecycle. Its members are static, so use it as the class itself, not an instance:
 
-| Member | Description |
-|--------|-------------|
-| `main(argv)` | Gets the id from the container with `getAsync()` and calls its `main(argv)`. Called by `entry-script` when the module is the entry point. |
-| `getOriginal()` | Gets the id from the container without calling `main`, to test the wiring. |
+| Member          | Description                                                                                                                               |
+| --------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `main(argv)`    | Gets the id from the container with `getAsync()` and calls its `main(argv)`. Called by `entry-script` when the module is the entry point. |
+| `getOriginal()` | Gets the id from the container without calling `main`, to test the wiring.                                                                |
 
 **Type errors** — Passing a container that cannot provide a binding for the given id, or an id whose type does not implement `Main`, is a compile-time error that says which, e.g. `Property 'error' is missing ... '{ error: "Error: the container has no binding for this id."; }'`.
 

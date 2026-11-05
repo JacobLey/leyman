@@ -14,13 +14,13 @@ class Logger {}
 const loggerBinding = bind(Logger).withConstructorFactory().scoped(singletonScope);
 ```
 
-| Scope | A new value is built |
-|-------|----------------------|
-| `transientScope` | For every dependent. The default. |
-| `singletonScope` | Once per container, the first time it is needed. |
-| `eagerSingletonScope` | Once per container, when the container is [preloaded](#eager-scopes). |
-| `requestScope` | Once per request, shared by everything built during it. |
-| `eagerRequestScope` | Once per request, at the start of the request. |
+| Scope                  | A new value is built                                                                                                                          |
+| ---------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `transientScope`       | For every dependent. The default.                                                                                                             |
+| `singletonScope`       | Once per container, the first time it is needed.                                                                                              |
+| `eagerSingletonScope`  | Once per container, when the container is [preloaded](#eager-scopes).                                                                         |
+| `requestScope`         | Once per request, shared by everything built during it.                                                                                       |
+| `eagerRequestScope`    | Once per request, at the start of the request.                                                                                                |
 | `isolatedRequestScope` | Once per request, without sharing the request of a [supplier that propagates it](/packages/haywire/guides/suppliers#propagating-the-request). |
 
 Singletons are only shared within one container. Two containers built from the same module have their own.

@@ -13,10 +13,10 @@ Both have the same signatures, results and errors as `constant-consistent-hash`,
 
 It is not published, and only exists to test the toolchain. **Use `constant-consistent-hash` instead**: a key crossing into WASM has to be copied, so this is slower, and the `.wasm` adds about 20 KB (9 KB gzipped). Measured on Node.js 24 on one arm64 machine, with a 36 character key:
 
-| | TypeScript | WASM |
-|---|---|---|
-| `hashKey` | 61 ns | 246 ns |
-| `consistentHash` | 73 ns | 170 ns |
+|                  | TypeScript | WASM   |
+| ---------------- | ---------- | ------ |
+| `hashKey`        | 61 ns      | 246 ns |
+| `consistentHash` | 73 ns      | 170 ns |
 
 Compiling and loading the `.wasm` takes about 4 ms.
 

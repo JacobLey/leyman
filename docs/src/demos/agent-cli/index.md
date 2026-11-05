@@ -52,13 +52,13 @@ $ git log -1 --format=%B | notes add --title "Last commit" --stdin --json
 
 ## Commands
 
-| Command | Does |
-|---|---|
+| Command                                                                        | Does                                                                                                                                                     |
+| ------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `notes login [--api <url>] [--client-id notes-cli] [--device] [--timeout 600]` | Logs in (opens a browser, or with `--device` prints a URL and code to approve on another device), waiting up to `--timeout` seconds, and keeps the login |
-| `notes logout` | Revokes the login, and forgets it |
-| `notes list [--q <text>] [--limit 10]` | One line per note, newest first: id, time, title. Never bodies |
-| `notes get <id>` | The note's title, a blank line, its body |
-| `notes add --title <title> [--body <text> \| --stdin]` | Adds a note, and prints its id. `--body` and `--stdin` can't both be given |
+| `notes logout`                                                                 | Revokes the login, and forgets it                                                                                                                        |
+| `notes list [--q <text>] [--limit 10]`                                         | One line per note, newest first: id, time, title. Never bodies                                                                                           |
+| `notes get <id>`                                                               | The note's title, a blank line, its body                                                                                                                 |
+| `notes add --title <title> [--body <text> \| --stdin]`                         | Adds a note, and prints its id. `--body` and `--stdin` can't both be given                                                                               |
 
 Every command takes `--json`, to print JSON for a program to read, and `--config-dir`, where the login is kept (`$NOTES_CONFIG_DIR`, else `$XDG_CONFIG_HOME/notes-demo`, else `~/.config/notes-demo`). `--api` defaults to `$NOTES_API_URL`.
 
@@ -95,21 +95,21 @@ Every request (discovery, tokens, the API) gives up after 10 seconds. The CLI is
 
 ## Errors
 
-| When | stderr | Exit |
-|---|---|---|
-| Not logged in | `Not logged in. Run notes login --api <url> first.` | 3 |
-| The login expired, and can't be refreshed (no refresh token, or the server refuses it) | `The login has expired, …. Run notes login again.` | 3 |
-| The API refuses the token (`401` after a refresh, `403`) | `The API refused the login (…). Run notes login again.` | 3 |
-| The login fails (denied, or a forged response) | `Login failed (…). Run notes login again.` | 3 |
-| The login isn't finished in time | `Login timed out after 600s. Run notes login again.` | 3 |
-| The API refuses the input (`400`) | `The API refused it: …`, with the API's reason | 1 |
-| No such note | `No note has the id …. notes list shows the ids there are.` | 1 |
-| `--device`, at an authorization server that has no device authorization endpoint | `… can't log in a device. Run notes login without --device.` | 1 |
-| The URL isn't an API that says how to log in | `… doesn't say how to log in (…). Is it the notes API?` | 1 |
-| The authorization server can't be reached to refresh | `Failed to refresh the login at … (…).` | 1 |
-| Logging out, the authorization server can't be reached or refuses | `Logged out here, but … did not revoke the login (…): it stays good there until it expires.` | 1 |
-| Anything else (the API down, say) | `Failed: …` | 1 |
-| A mistake in the command line | yargs's message, then `Run notes --help for usage.` | 2 |
+| When                                                                                   | stderr                                                                                       | Exit |
+| -------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- | ---- |
+| Not logged in                                                                          | `Not logged in. Run notes login --api <url> first.`                                          | 3    |
+| The login expired, and can't be refreshed (no refresh token, or the server refuses it) | `The login has expired, …. Run notes login again.`                                           | 3    |
+| The API refuses the token (`401` after a refresh, `403`)                               | `The API refused the login (…). Run notes login again.`                                      | 3    |
+| The login fails (denied, or a forged response)                                         | `Login failed (…). Run notes login again.`                                                   | 3    |
+| The login isn't finished in time                                                       | `Login timed out after 600s. Run notes login again.`                                         | 3    |
+| The API refuses the input (`400`)                                                      | `The API refused it: …`, with the API's reason                                               | 1    |
+| No such note                                                                           | `No note has the id …. notes list shows the ids there are.`                                  | 1    |
+| `--device`, at an authorization server that has no device authorization endpoint       | `… can't log in a device. Run notes login without --device.`                                 | 1    |
+| The URL isn't an API that says how to log in                                           | `… doesn't say how to log in (…). Is it the notes API?`                                      | 1    |
+| The authorization server can't be reached to refresh                                   | `Failed to refresh the login at … (…).`                                                      | 1    |
+| Logging out, the authorization server can't be reached or refuses                      | `Logged out here, but … did not revoke the login (…): it stays good there until it expires.` | 1    |
+| Anything else (the API down, say)                                                      | `Failed: …`                                                                                  | 1    |
+| A mistake in the command line                                                          | yargs's message, then `Run notes --help for usage.`                                          | 2    |
 
 ## Testing
 

@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # default-import
+
 Properly handle CJS default imports in ESM.
 
 [![npm package](https://badge.fury.io/js/default-import.svg)](https://www.npmjs.com/package/default-import)
@@ -9,6 +10,7 @@ Properly handle CJS default imports in ESM.
 </div>
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -52,8 +54,8 @@ Extracts the correct default export from a CJS or ESM import. Handles the `__esM
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `value` | `unknown` | — | Required. The imported value to unwrap. Accepts a static import, dynamic import result, or any value. |
+| Parameter | Type      | Default | Description                                                                                           |
+| --------- | --------- | ------- | ----------------------------------------------------------------------------------------------------- |
+| `value`   | `unknown` | —       | Required. The imported value to unwrap. Accepts a static import, dynamic import result, or any value. |
 
 **Returns** `ExtractDefault<T>` — the unwrapped default value. TypeScript narrows the return type to match the actual default type of the input.

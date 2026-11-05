@@ -13,14 +13,14 @@ barrel [options]
 
 `barrel` and `barrelify` are the same command.
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--ci` | `boolean` | `true` in CI, `false` otherwise | Don't write files. Print the barrels that are out of date, and exit with an error if there are any. |
-| `--dry-run` | `boolean` | `false` | Don't write files. Print the barrels that would change. |
-| `--cwd` | `string` | `.` | Directory to search for index files, recursively. |
-| `--ignore` | `string[]` | — | Globs of index files to skip, relative to `--cwd`. |
-| `--help` | | | Print usage. |
-| `--version` | | | Print the installed version. |
+| Flag        | Type       | Default                         | Description                                                                                         |
+| ----------- | ---------- | ------------------------------- | --------------------------------------------------------------------------------------------------- |
+| `--ci`      | `boolean`  | `true` in CI, `false` otherwise | Don't write files. Print the barrels that are out of date, and exit with an error if there are any. |
+| `--dry-run` | `boolean`  | `false`                         | Don't write files. Print the barrels that would change.                                             |
+| `--cwd`     | `string`   | `.`                             | Directory to search for index files, recursively.                                                   |
+| `--ignore`  | `string[]` | —                               | Globs of index files to skip, relative to `--cwd`.                                                  |
+| `--help`    |            |                                 | Print usage.                                                                                        |
+| `--version` |            |                                 | Print the installed version.                                                                        |
 
 Pass `--no-ci` to write barrels in CI.
 
@@ -37,11 +37,11 @@ Rewrites every `// AUTO-BARREL` index file, like the CLI.
 
 Barrelify is ESM only. From CommonJS, load it with a dynamic import: `const { barrelify } = await import('barrelify');`.
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `cwd` | `string \| URL` | `process.cwd()` | Directory to search for index files, recursively. |
-| `dryRun` | `boolean` | `false` | Compute every barrel, but don't write any. |
-| `ignore` | `readonly string[]` | `[]` | Globs of index files to skip, relative to `cwd`. |
+| Option   | Type                | Default         | Description                                       |
+| -------- | ------------------- | --------------- | ------------------------------------------------- |
+| `cwd`    | `string \| URL`     | `process.cwd()` | Directory to search for index files, recursively. |
+| `dryRun` | `boolean`           | `false`         | Compute every barrel, but don't write any.        |
+| `ignore` | `readonly string[]` | `[]`            | Globs of index files to skip, relative to `cwd`.  |
 
 **Returns** `Promise<string[]>`: the absolute paths of the barrels that changed, or would change with `dryRun`.
 

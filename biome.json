@@ -48,10 +48,14 @@
   },
   "markdown": {
     "formatter": {
-      "enabled": false
+      "enabled": true,
+      "formatEmbeds": false
     },
     "linter": {
       "enabled": false
+    },
+    "parser": {
+      "frontmatter": true
     }
   },
   "yaml": {
@@ -62,5 +66,17 @@
     "linter": {
       "enabled": false
     }
-  }
+  },
+  "overrides": [
+    {
+      "includes": [
+        "**/CHANGELOG.md"
+      ],
+      "markdown": {
+        "formatter": {
+          "enabled": false
+        }
+      }
+    }
+  ]
 }

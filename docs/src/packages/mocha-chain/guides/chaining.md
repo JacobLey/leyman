@@ -11,11 +11,11 @@ Every hook returns a handle with the hooks and tests that can follow it. A chain
 A hook can only be followed by hooks that run after it, for the same tests:
 
 | After \ Can chain | `before` | `beforeEach` | `test` | `afterEach` | `after` |
-|-------------------|:--------:|:------------:|:------:|:-----------:|:-------:|
-| `before`          | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `beforeEach`      | | ✅ | ✅ | ✅ | |
-| `afterEach`       | | | | ✅ | |
-| `after`           | | | | | ✅ |
+| ----------------- | :------: | :----------: | :----: | :---------: | :-----: |
+| `before`          |    ✅    |      ✅      |   ✅   |     ✅      |   ✅    |
+| `beforeEach`      |          |      ✅      |   ✅   |     ✅      |         |
+| `afterEach`       |          |              |        |     ✅      |         |
+| `after`           |          |              |        |             |   ✅    |
 
 `suite` and `test` return nothing to chain. In [vitest-chain](/packages/vitest-chain/), `before` and `after` are `beforeAll` and `afterAll`.
 

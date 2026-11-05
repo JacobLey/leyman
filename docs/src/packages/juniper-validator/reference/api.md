@@ -8,10 +8,10 @@ description: makeValidator, JuniperValidator and the utility types of juniper-va
 
 Compiles a schema into a validator. Compiling is the slow part, so make each validator once and reuse it.
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `schema` | `Schema<T> \| JsonSchema<T>` | — | A Juniper schema, or a rendered JSON Schema object. Juniper schemas are rendered with `$schema`. |
-| `options` | `Omit<AjvOptions, 'jsPropertySyntax' \| 'strict'>` | `{}` | [Ajv options](https://ajv.js.org/options.html). |
+| Parameter | Type                                               | Default | Description                                                                                      |
+| --------- | -------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------ |
+| `schema`  | `Schema<T> \| JsonSchema<T>`                       | —       | A Juniper schema, or a rendered JSON Schema object. Juniper schemas are rendered with `$schema`. |
+| `options` | `Omit<AjvOptions, 'jsPropertySyntax' \| 'strict'>` | `{}`    | [Ajv options](https://ajv.js.org/options.html).                                                  |
 
 **Returns** `JuniperValidator<T>`, typed by the schema.
 
@@ -37,21 +37,21 @@ const skuValidator = makeValidator(stringSchema().format('sku'), {
 
 Returned by `makeValidator`, and implements [`StandardSchemaV1<T>`](/packages/juniper-validator/guides/standard-schema) and [`StandardJSONSchemaV1<T>`](/packages/juniper-validator/guides/standard-schema#json-schema).
 
-| Member | Type | Description |
-|--------|------|-------------|
-| `is` | `(value: unknown) => value is T` | Returns whether the value matches, narrowing it to `T`. |
-| `assert` | `(value: unknown) => asserts value is T` | Throws when the value doesn't match, and narrows it to `T` after the call. |
-| `validate` | `(value: unknown) => StandardSchemaV1.Result<T>` | Returns `{ value }` when the value matches, or `{ issues }` when it doesn't. |
+| Member      | Type                                                        | Description                                                                                                                                                                                            |
+| ----------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `is`        | `(value: unknown) => value is T`                            | Returns whether the value matches, narrowing it to `T`.                                                                                                                                                |
+| `assert`    | `(value: unknown) => asserts value is T`                    | Throws when the value doesn't match, and narrows it to `T` after the call.                                                                                                                             |
+| `validate`  | `(value: unknown) => StandardSchemaV1.Result<T>`            | Returns `{ value }` when the value matches, or `{ issues }` when it doesn't.                                                                                                                           |
 | `~standard` | `StandardJSONSchemaV1.Props<T> & StandardSchemaV1.Props<T>` | The [Standard Schema](/packages/juniper-validator/guides/standard-schema#the-standard-property) and [Standard JSON Schema](/packages/juniper-validator/guides/standard-schema#json-schema) interfaces. |
 
 `assert` throws an `Error` with the message `Value does not match schema`, and Ajv's [error objects](https://ajv.js.org/api.html#error-objects) as its `cause`. To narrow with it, its type must be written out. See [`assert()`](/packages/juniper-validator/getting-started#assert-throw).
 
 ## Utility types
 
-| Type | Example | Description |
-|------|---------|-------------|
+| Type            | Example                           | Description                                                              |
+| --------------- | --------------------------------- | ------------------------------------------------------------------------ |
 | `ValidatorType` | `ValidatorType<typeof validator>` | The type a validator checks for. The same as `SchemaType` of its schema. |
-| `AssertionType` | `AssertionType<typeof validator>` | The type of a validator's `assert`, to annotate it with. |
+| `AssertionType` | `AssertionType<typeof validator>` | The type of a validator's `assert`, to annotate it with.                 |
 
 ```ts
 import { numberSchema } from 'juniper';

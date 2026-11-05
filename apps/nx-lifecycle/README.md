@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # nx-lifecycle
+
 [Nx](https://nx.dev/) plugin that derives every `dependsOn` from declared lifecycle stages (build, test, …) and the targets bound to them.
 
 [![npm package](https://badge.fury.io/js/nx-lifecycle.svg)](https://www.npmjs.com/package/nx-lifecycle)
@@ -20,17 +21,17 @@ Guides and the full reference are on the [docs site](https://jacobley.github.io/
 
 - [Install](#install)
 - [Plugin](#plugin)
-    - [Overriding inferred targets](#overriding-inferred-targets)
-    - [Limitations](#limitations)
-    - [Migrating from the executor](#migrating-from-the-executor)
+  - [Overriding inferred targets](#overriding-inferred-targets)
+  - [Limitations](#limitations)
+  - [Migrating from the executor](#migrating-from-the-executor)
 - [Executor](#executor)
 - [Configuration](#configuration)
-    - [stages](#stages)
-    - [bindings](#bindings)
-    - [check](#check)
-    - [dryRun](#dryrun)
+  - [stages](#stages)
+  - [bindings](#bindings)
+  - [check](#check)
+  - [dryRun](#dryrun)
 - [CLI](#cli)
-    - [explain](#explain)
+  - [explain](#explain)
 - [Compared to alternatives](#compared-to-alternatives)
 
 ## Install
@@ -214,10 +215,10 @@ Required. No default.
 
 Declares the abstract workflow stages that `nx-lifecycle` will own. Each key is a stage name; the value configures that stage's structure and upstream dependencies.
 
-| Field | Type | Default | Description |
-|-------|------|---------|-------------|
-| `hooks` | `string[]` | — | Ordered list of sub-steps within the stage. The resulting target names are `stage:hook` (e.g. `build:run`). If omitted, the stage has no sub-steps and is referenced directly by name. |
-| `dependsOn` | `dependsOn[]` | — | Upstream dependencies for this stage, using the same format as Nx's native [`dependsOn`](https://nx.dev/reference/project-configuration#dependson): `"build"` (this project's stage), `"^build"` (the stage of every dependency project), `{ "target": "build", "projects": ["my-server"] }`. Can name a stage or any other target, but not another stage's anchor or hook (`^build:post` is rejected: depend on `build`). |
+| Field       | Type          | Default | Description                                                                                                                                                                                                                                                                                                                                                                                                                |
+| ----------- | ------------- | ------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `hooks`     | `string[]`    | —       | Ordered list of sub-steps within the stage. The resulting target names are `stage:hook` (e.g. `build:run`). If omitted, the stage has no sub-steps and is referenced directly by name.                                                                                                                                                                                                                                     |
+| `dependsOn` | `dependsOn[]` | —       | Upstream dependencies for this stage, using the same format as Nx's native [`dependsOn`](https://nx.dev/reference/project-configuration#dependson): `"build"` (this project's stage), `"^build"` (the stage of every dependency project), `{ "target": "build", "projects": ["my-server"] }`. Can name a stage or any other target, but not another stage's anchor or hook (`^build:post` is rejected: depend on `build`). |
 
 **Note:** If a stage declares `hooks`, bindings must reference a specific hook (`build:run`), not the stage name alone (`build`). A stage without hooks still generates an anchor: `lint:_ → eslint → lint`.
 
@@ -314,8 +315,8 @@ Use this sparingly. If many projects need the same dependency, it belongs in the
 
 Executor only.
 
-| Type | Default |
-|------|---------|
+| Type      | Default                         |
+| --------- | ------------------------------- |
 | `boolean` | `true` in CI, `false` otherwise |
 
 When `true`, the executor writes nothing and fails if `nx.json` or any `project.json` is out of sync with what `nx-lifecycle` would generate. Use this in CI to verify that generated configs are committed and up to date before deployment proceeds.
@@ -324,8 +325,8 @@ When `true`, the executor writes nothing and fails if `nx.json` or any `project.
 
 Executor only.
 
-| Type | Default |
-|------|---------|
+| Type      | Default |
+| --------- | ------- |
 | `boolean` | `false` |
 
 When `true`, performs all computation but skips writing any files. Can still fail when `check` is `true`.
@@ -339,12 +340,12 @@ pnpx nx-lifecycle --help
 pnpx nx-lifecycle --config-file ./my-lifecycle.json --dry-run
 ```
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--config-file` | `string` | `lifecycle.json` | Path to the lifecycle config file. |
-| `--dry-run` | `boolean` | `false` | Compute changes without writing files. |
-| `--check`, `--ci` | `boolean` | `true` in CI | Fail if any file is out of sync. |
-| `--cwd` | `string` | `.` | Directory other paths are resolved from. |
+| Flag              | Type      | Default          | Description                              |
+| ----------------- | --------- | ---------------- | ---------------------------------------- |
+| `--config-file`   | `string`  | `lifecycle.json` | Path to the lifecycle config file.       |
+| `--dry-run`       | `boolean` | `false`          | Compute changes without writing files.   |
+| `--check`, `--ci` | `boolean` | `true` in CI     | Fail if any file is out of sync.         |
+| `--cwd`           | `string`  | `.`              | Directory other paths are resolved from. |
 
 ### `explain`
 

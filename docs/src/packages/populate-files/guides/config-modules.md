@@ -4,7 +4,7 @@ description: Describe generated files in a module, and write or check them with 
 
 # Config modules and the CLI
 
-`load-populate-files` loads the files to write from a module, and passes them to [`populateFiles`](/packages/populate-files/reference/api#populatefiles-params-options). The module holds only *what* to generate; the CLI (or a script, or an Nx target) decides where and when.
+`load-populate-files` loads the files to write from a module, and passes them to [`populateFiles`](/packages/populate-files/reference/api#populatefiles-params-options). The module holds only _what_ to generate; the CLI (or a script, or an Nx target) decides where and when.
 
 ::: code-group
 

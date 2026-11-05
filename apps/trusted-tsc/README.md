@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # trusted-tsc
+
 Run TypeScript 7.1's tsc with only the content mappers you trust, each in Node's permission sandbox.
 
 </div>
@@ -14,6 +15,7 @@ Run TypeScript 7.1's tsc with only the content mappers you trust, each in Node's
 **Requires TypeScript 7.1** (`typescript@7.1.0-beta` or later), whose content mappers may still change before its stable release. Private for now, and not on npm yet.
 
 ## Contents
+
 - [Example](#example)
 - [Usage](#usage)
 - [The sandbox](#the-sandbox)

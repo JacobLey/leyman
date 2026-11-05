@@ -45,12 +45,12 @@ The databases it made are dropped at the end, except the one a failed migrate co
 
 The command runs in a shell, in `--cwd`, with `DATABASE_URL` pointing at the empty database. It must migrate that database: a command that leaves it empty (for example because the tool reads another variable) fails, so it can't quietly migrate some other database.
 
-| Tool | Command | Notes |
-|------|---------|-------|
-| Drizzle | `drizzle-kit migrate` | With `dbCredentials: { url: process.env.DATABASE_URL }` in `drizzle.config.ts`. Keep `drizzle-kit`'s own check (nothing left to `generate`) for what Drizzle models. |
-| Prisma | `prisma migrate deploy` | With `url = env("DATABASE_URL")` in the datasource. |
-| Kysely | `node migrate.ts` | A script that runs `Migrator.migrateToLatest()` on a `PostgresDialect` connected to `process.env.DATABASE_URL`. |
-| Plain SQL files | `for f in migrations/*.sql; do psql -v ON_ERROR_STOP=1 -f "$f" "$DATABASE_URL" \|\| exit 1; done` | |
+| Tool            | Command                                                                                           | Notes                                                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Drizzle         | `drizzle-kit migrate`                                                                             | With `dbCredentials: { url: process.env.DATABASE_URL }` in `drizzle.config.ts`. Keep `drizzle-kit`'s own check (nothing left to `generate`) for what Drizzle models. |
+| Prisma          | `prisma migrate deploy`                                                                           | With `url = env("DATABASE_URL")` in the datasource.                                                                                                                  |
+| Kysely          | `node migrate.ts`                                                                                 | A script that runs `Migrator.migrateToLatest()` on a `PostgresDialect` connected to `process.env.DATABASE_URL`.                                                      |
+| Plain SQL files | `for f in migrations/*.sql; do psql -v ON_ERROR_STOP=1 -f "$f" "$DATABASE_URL" \|\| exit 1; done` |                                                                                                                                                                      |
 
 Every dump leaves out owners, privileges and tablespaces, which name one server's roles. Changing data in migrations works, but the snapshot only keeps the schema.
 

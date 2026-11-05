@@ -5,6 +5,7 @@ A Vite dev server behind [`tools/local-ingress`](../../tools/local-ingress): eac
 A worked example, not a package: it is never published. It is the proof that a frontend's dev server works behind the machine's shared HTTPS ingress: routing by host name, TLS from the local CA, and the hot reload WebSocket all go through Caddy, and a page in one worktree can't see another's cookies. The page itself only says which worktree and repo it was loaded from. This README is the write-up: what a dev server needs (very little), and what was learned.
 
 ## Contents
+
 - [Running it](#running-it)
 - [The Vite settings](#the-vite-settings)
 - [Names on the page](#names-on-the-page)
@@ -42,12 +43,12 @@ It starts the ingress if needed (it refuses to start twice for one worktree), th
 
 Everything is in [`src/vite-config.ts`](src/vite-config.ts), and it's short, because Vite 8 already does most of it:
 
-| Setting | Why |
-|---|---|
-| `server.host: '0.0.0.0'` | The ingress reaches the container at its address on the `local-ingress` network. Vite's default, `localhost`, only answers inside the container |
-| `server.port: 5173`, `strictPort: true` | The port the devcontainer's labels name. Without `strictPort`, a taken port makes Vite quietly move to another, which the ingress doesn't know about |
-| `server.allowedHosts` | Only for a tunnel host (`TUNNEL_HOST`). Vite accepts `localhost` and `*.localhost` by default, so the ingress's hosts need nothing |
-| The hot reload WebSocket | **Nothing.** Vite's client connects to the page's own host and port (`wss://<worktree>.<repo>.localhost`, port 443 or the ingress's override), and Caddy proxies the upgrade like any request |
+| Setting                                 | Why                                                                                                                                                                                           |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `server.host: '0.0.0.0'`                | The ingress reaches the container at its address on the `local-ingress` network. Vite's default, `localhost`, only answers inside the container                                               |
+| `server.port: 5173`, `strictPort: true` | The port the devcontainer's labels name. Without `strictPort`, a taken port makes Vite quietly move to another, which the ingress doesn't know about                                          |
+| `server.allowedHosts`                   | Only for a tunnel host (`TUNNEL_HOST`). Vite accepts `localhost` and `*.localhost` by default, so the ingress's hosts need nothing                                                            |
+| The hot reload WebSocket                | **Nothing.** Vite's client connects to the page's own host and port (`wss://<worktree>.<repo>.localhost`, port 443 or the ingress's override), and Caddy proxies the upgrade like any request |
 
 Guides for running Vite behind a proxy often set `server.hmr.clientPort: 443`. Don't: in Vite 8 it's deprecated (for `server.ws.*`), and it's only needed when the WebSocket must use a different port from the page. Pinning 443 would also break hot reload when the ingress runs on another port.
 

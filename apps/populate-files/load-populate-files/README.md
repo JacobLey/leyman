@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # load-populate-files
+
 Load and dynamically populate file content based on a single file's config.
 
 [![npm package](https://badge.fury.io/js/load-populate-files.svg)](https://www.npmjs.com/package/load-populate-files)
@@ -71,10 +72,10 @@ Loads the config exported at `params.filePath` and passes it to [`populateFiles(
 
 **Parameters**
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `params.filePath` | `string` | — | Required. Path to the config module, resolved from `options.cwd`. When using the CLI, pass as `--file-path`. |
-| `options` | `object` | `{}` | Optional. See [options](#options) below. |
+| Parameter         | Type     | Default | Description                                                                                                  |
+| ----------------- | -------- | ------- | ------------------------------------------------------------------------------------------------------------ |
+| `params.filePath` | `string` | —       | Required. Path to the config module, resolved from `options.cwd`. When using the CLI, pass as `--file-path`. |
+| `options`         | `object` | `{}`    | Optional. See [options](#options) below.                                                                     |
 
 **Returns** `Promise<PopulationResponse[]>`, from `populateFiles()`.
 
@@ -84,15 +85,15 @@ Loads the config exported at `params.filePath` and passes it to [`populateFiles(
 
 Options are passed through to the underlying `populateFiles()` call. They are also available as CLI flags.
 
-| Property | CLI flag | Type | Default | Description |
-|----------|----------|------|---------|-------------|
-| `check` | `--ci`, `--check` (`--no-ci` to write in CI) | `boolean` | `true` in CI, else `false` | If `true`, fails if writing a file would change its content. Useful for verifying version-controlled files are up to date before deployment. |
-| `dryRun` | `--dry-run` | `boolean` | `false` | If `true`, does not write any files regardless of changes. Can still fail if `check` is `true`. |
-| `cwd` | `--cwd` | `string \| URL` | `process.cwd()` | Used as the current working directory for `filePath` and the `targetDir` and `manifest` paths. Must be an existing directory. |
-| `targetDir` | `--target-dir`, `-t` | `string` | `'.'` | Target directory for resolving output file paths. Resolved relative to `cwd`. |
-| `clean` | `--clean` | `boolean` | `false` | If `true`, removes files in `targetDir` that were not generated (with `manifest`, only files it lists). In `--ci` mode, fails instead of removing. |
-| `force` | `--force` | `boolean` | `false` | Applies to `signed` files and the `manifest`. If `true`, overwrites files that were edited, are not signed or not listed, or are malformed. See [`populate-files`](https://www.npmjs.com/package/populate-files#signed-files). |
-| `manifest` | `--manifest` | `string` | — | Path of a manifest (relative to `cwd`) recording the generated files, to detect edits to any file type and `clean` only files it lists. See [`populate-files`](https://www.npmjs.com/package/populate-files#manifest). |
+| Property    | CLI flag                                     | Type            | Default                    | Description                                                                                                                                                                                                                    |
+| ----------- | -------------------------------------------- | --------------- | -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `check`     | `--ci`, `--check` (`--no-ci` to write in CI) | `boolean`       | `true` in CI, else `false` | If `true`, fails if writing a file would change its content. Useful for verifying version-controlled files are up to date before deployment.                                                                                   |
+| `dryRun`    | `--dry-run`                                  | `boolean`       | `false`                    | If `true`, does not write any files regardless of changes. Can still fail if `check` is `true`.                                                                                                                                |
+| `cwd`       | `--cwd`                                      | `string \| URL` | `process.cwd()`            | Used as the current working directory for `filePath` and the `targetDir` and `manifest` paths. Must be an existing directory.                                                                                                  |
+| `targetDir` | `--target-dir`, `-t`                         | `string`        | `'.'`                      | Target directory for resolving output file paths. Resolved relative to `cwd`.                                                                                                                                                  |
+| `clean`     | `--clean`                                    | `boolean`       | `false`                    | If `true`, removes files in `targetDir` that were not generated (with `manifest`, only files it lists). In `--ci` mode, fails instead of removing.                                                                             |
+| `force`     | `--force`                                    | `boolean`       | `false`                    | Applies to `signed` files and the `manifest`. If `true`, overwrites files that were edited, are not signed or not listed, or are malformed. See [`populate-files`](https://www.npmjs.com/package/populate-files#signed-files). |
+| `manifest`  | `--manifest`                                 | `string`        | —                          | Path of a manifest (relative to `cwd`) recording the generated files, to detect edits to any file type and `clean` only files it lists. See [`populate-files`](https://www.npmjs.com/package/populate-files#manifest).         |
 
 ## Types
 

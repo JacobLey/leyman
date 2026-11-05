@@ -38,12 +38,12 @@ With only Docker on the host (no Node, pnpm or Nx), `demos/local-ingress/run` ru
 
 Everything is in [`src/vite-config.ts`](https://github.com/JacobLey/leyman/blob/main/demos/local-ingress/src/vite-config.ts), and it's short, because Vite 8 already does most of it:
 
-| Setting | Why |
-|---|---|
-| `server.host: '0.0.0.0'` | The ingress reaches the container at its address on the `local-ingress` network. Vite's default, `localhost`, only answers inside the container |
+| Setting                                 | Why                                                                                                                                                  |
+| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `server.host: '0.0.0.0'`                | The ingress reaches the container at its address on the `local-ingress` network. Vite's default, `localhost`, only answers inside the container      |
 | `server.port: 5173`, `strictPort: true` | The port the devcontainer's labels name. Without `strictPort`, a taken port makes Vite quietly move to another, which the ingress doesn't know about |
-| `server.allowedHosts` | Only for a tunnel's host (`TUNNEL_HOST`). Vite accepts `localhost` and `*.localhost` by default, so the ingress's hosts need nothing |
-| The hot reload WebSocket | **Nothing.** Vite's client connects to the page's own host and port, which are the ingress's, and Caddy proxies the upgrade |
+| `server.allowedHosts`                   | Only for a tunnel's host (`TUNNEL_HOST`). Vite accepts `localhost` and `*.localhost` by default, so the ingress's hosts need nothing                 |
+| The hot reload WebSocket                | **Nothing.** Vite's client connects to the page's own host and port, which are the ingress's, and Caddy proxies the upgrade                          |
 
 Guides for running Vite behind a proxy often set `server.hmr.clientPort: 443`. Don't: in Vite 8 it's deprecated, and it's only needed when the WebSocket must use a different port from the page. Pinning 443 would also break hot reload when the ingress runs on another port.
 

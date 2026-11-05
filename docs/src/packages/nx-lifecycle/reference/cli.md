@@ -16,11 +16,11 @@ The default command. Writes lifecycle targets into `nx.json` and every `project.
 npx nx-lifecycle --config-file ./my-lifecycle.json --dry-run
 ```
 
-| Flag | Type | Default | Description |
-|------|------|---------|-------------|
-| `--config-file` | `string` | `lifecycle.json` | Config file with `stages` and `bindings`. |
-| `--check`, `--ci` | `boolean` | `true` in CI | Write nothing, and fail if any file is out of date. |
-| `--dry-run` | `boolean` | `false` | Write nothing. |
+| Flag              | Type      | Default          | Description                                         |
+| ----------------- | --------- | ---------------- | --------------------------------------------------- |
+| `--config-file`   | `string`  | `lifecycle.json` | Config file with `stages` and `bindings`.           |
+| `--check`, `--ci` | `boolean` | `true` in CI     | Write nothing, and fail if any file is out of date. |
+| `--dry-run`       | `boolean` | `false`          | Write nothing.                                      |
 
 ## `explain`
 
@@ -53,10 +53,10 @@ my-lib
      coverage-report
 ```
 
-| Argument | Description |
-|----------|-------------|
-| `project` | Required. Name of the Nx project. |
-| `stage` | Only this stage, and the stages it runs after. |
+| Argument        | Description                                                                             |
+| --------------- | --------------------------------------------------------------------------------------- |
+| `project`       | Required. Name of the Nx project.                                                       |
+| `stage`         | Only this stage, and the stages it runs after.                                          |
 | `--config-file` | Config file, used when `nx.json` doesn't register the plugin. Default `lifecycle.json`. |
 
 Stages and bindings come from the plugin options in `nx.json`, or else from `--config-file`. Bound targets and their other dependencies come from the project as Nx resolves it, after `targetDefaults` and `project.json`.

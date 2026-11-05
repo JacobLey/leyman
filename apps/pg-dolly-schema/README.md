@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # pg-dolly-schema
+
 Keep a schema.sql of what your Postgres migrations build: migrate an empty database, dump it, and fail CI when the committed file is stale.
 
 [![npm package](https://badge.fury.io/js/pg-dolly-schema.svg)](https://www.npmjs.com/package/pg-dolly-schema)
@@ -19,6 +20,7 @@ The `structure.sql` approach, for any stack. For why the schema is SQL, see [pg-
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/pg-dolly-schema/).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Migrate commands](#migrate-commands)
@@ -46,12 +48,12 @@ This clones an empty database on the server, runs the migrate command with `DATA
 
 The command runs in a shell, in `--cwd`, with `DATABASE_URL` pointing at the empty database. It must migrate that database: a command that leaves it empty (for example because the tool reads another variable) fails, so it can't quietly migrate some other database.
 
-| Tool | Command | Notes |
-|------|---------|-------|
-| Drizzle | `drizzle-kit migrate` | With `dbCredentials: { url: process.env.DATABASE_URL }` in `drizzle.config.ts`. Keep `drizzle-kit`'s own check (nothing left to `generate`) for what Drizzle models. |
-| Prisma | `prisma migrate deploy` | With `url = env("DATABASE_URL")` in the datasource. |
-| Kysely | `node migrate.ts` | A script that runs `Migrator.migrateToLatest()` on a `PostgresDialect` connected to `process.env.DATABASE_URL`. |
-| Plain SQL files | `for f in migrations/*.sql; do psql -v ON_ERROR_STOP=1 -f "$f" "$DATABASE_URL" \|\| exit 1; done` | |
+| Tool            | Command                                                                                           | Notes                                                                                                                                                                |
+| --------------- | ------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Drizzle         | `drizzle-kit migrate`                                                                             | With `dbCredentials: { url: process.env.DATABASE_URL }` in `drizzle.config.ts`. Keep `drizzle-kit`'s own check (nothing left to `generate`) for what Drizzle models. |
+| Prisma          | `prisma migrate deploy`                                                                           | With `url = env("DATABASE_URL")` in the datasource.                                                                                                                  |
+| Kysely          | `node migrate.ts`                                                                                 | A script that runs `Migrator.migrateToLatest()` on a `PostgresDialect` connected to `process.env.DATABASE_URL`.                                                      |
+| Plain SQL files | `for f in migrations/*.sql; do psql -v ON_ERROR_STOP=1 -f "$f" "$DATABASE_URL" \|\| exit 1; done` |                                                                                                                                                                      |
 
 Every dump leaves out owners, privileges and tablespaces, which name one server's roles. Changing data in migrations works, but the snapshot only keeps the schema, and the rows of the `--data` tables.
 
@@ -101,14 +103,14 @@ As an Nx target, set the command in `env`, not as an option: Nx passes options t
 pg-dolly-schema --migrate <command> [--file schema.sql] [--cwd .] [--check] [--data <table>...] [--prefix pg_dolly]
 ```
 
-| Option | Default | Description |
-|--------|---------|-------------|
-| `--migrate` | `PG_DOLLY_SCHEMA_MIGRATE` | Required. Shell command that migrates the database in `DATABASE_URL` from empty. |
-| `--file` | `schema.sql` | File to write the schema to, relative to `--cwd`. |
-| `--cwd` | `.` | Directory the command runs in, and `--file` is relative to. |
-| `--check`, `--ci` | `true` in CI | Fail if the file is not up to date, rather than writing it. `--no-check` writes even in CI. |
-| `--data` | — | Table to keep the rows of too, e.g. the migration tool's own. Repeat for several. See [Migrate commands](#migrate-commands). |
-| `--prefix` | `pg_dolly` | Prefix of the databases created, as in [`PgDolly.connect()`](https://www.npmjs.com/package/pg-dolly#options). |
+| Option            | Default                   | Description                                                                                                                  |
+| ----------------- | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
+| `--migrate`       | `PG_DOLLY_SCHEMA_MIGRATE` | Required. Shell command that migrates the database in `DATABASE_URL` from empty.                                             |
+| `--file`          | `schema.sql`              | File to write the schema to, relative to `--cwd`.                                                                            |
+| `--cwd`           | `.`                       | Directory the command runs in, and `--file` is relative to.                                                                  |
+| `--check`, `--ci` | `true` in CI              | Fail if the file is not up to date, rather than writing it. `--no-check` writes even in CI.                                  |
+| `--data`          | —                         | Table to keep the rows of too, e.g. the migration tool's own. Repeat for several. See [Migrate commands](#migrate-commands). |
+| `--prefix`        | `pg_dolly`                | Prefix of the databases created, as in [`PgDolly.connect()`](https://www.npmjs.com/package/pg-dolly#options).                |
 
 Every option can also be set as an environment variable: `PG_DOLLY_SCHEMA_` and the option in capitals (`PG_DOLLY_SCHEMA_MIGRATE`). The server is always `DATABASE_URL`: the CLI has no `--url`.
 
@@ -124,13 +126,13 @@ What the CLI runs. Options as above: `migrate` (required), `file`, `cwd`, `check
 
 **Rejects**
 
-| Error | When |
-|-------|------|
-| `PgDollySchemaMigrateError` | The migrate command failed. Has `command`, `exitCode` (`null` if killed) and `database`, which is kept. |
-| `PgDollySchemaEmptyError` | The migrate command succeeded but left the database empty. Has `command`. |
-| `PopulateFilesCheckError`, from [`populate-files`](https://www.npmjs.com/package/populate-files#errors) | With `check`, the file is not up to date. |
-| From [`pg-dolly`](https://www.npmjs.com/package/pg-dolly#errors) | `PgDollyMissingUrlError` without `url` or `DATABASE_URL`, `PgDollyPrefixError` for an invalid prefix. |
-| An `Error` | `pg_dump` failed (e.g. a `--data` table that doesn't exist, or `pg_dump` is not on the `PATH`). |
+| Error                                                                                                   | When                                                                                                    |
+| ------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------- |
+| `PgDollySchemaMigrateError`                                                                             | The migrate command failed. Has `command`, `exitCode` (`null` if killed) and `database`, which is kept. |
+| `PgDollySchemaEmptyError`                                                                               | The migrate command succeeded but left the database empty. Has `command`.                               |
+| `PopulateFilesCheckError`, from [`populate-files`](https://www.npmjs.com/package/populate-files#errors) | With `check`, the file is not up to date.                                                               |
+| From [`pg-dolly`](https://www.npmjs.com/package/pg-dolly#errors)                                        | `PgDollyMissingUrlError` without `url` or `DATABASE_URL`, `PgDollyPrefixError` for an invalid prefix.   |
+| An `Error`                                                                                              | `pg_dump` failed (e.g. a `--data` table that doesn't exist, or `pg_dump` is not on the `PATH`).         |
 
 `PgDollySchemaMigrateError` and `PgDollySchemaEmptyError` extend `PgDollySchemaError`. The `SnapshotSchemaOptions` type is exported too.
 

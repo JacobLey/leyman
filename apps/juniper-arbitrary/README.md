@@ -1,6 +1,7 @@
 <div style="text-align:center">
 
 # Juniper Arbitrary
+
 fast-check arbitraries from Juniper schemas.
 
 [![npm package](https://badge.fury.io/js/juniper-arbitrary.svg)](https://www.npmjs.com/package/juniper-arbitrary)
@@ -16,6 +17,7 @@ fast-check arbitraries from Juniper schemas.
 Guides and the full reference are on the [docs site](https://jacobley.github.io/leyman/packages/juniper-arbitrary/).
 
 ## Contents
+
 - [Install](#install)
 - [Example](#example)
 - [Usage](#usage)
@@ -57,14 +59,14 @@ fc.assert(
 
 Every JSON Schema keyword Juniper emits is covered. How each is handled decides how fast generation is, never whether a value is valid:
 
-| Keywords | Handling |
-|---|---|
-| `type`, `enum`, `const`, numeric bounds, `multipleOf`, `minLength`, `maxLength`, `minItems`, `maxItems`, `uniqueItems`, `items`, `prefixItems`, `contains`, `minContains`, `properties`, `required`, `additionalProperties`, `patternProperties`, `propertyNames`, `minProperties`, `dependentRequired`, `dependentSchemas` | Generated directly. |
-| `pattern` | Generated from the regular expression. Several combine when they can (`startsWith()`, `contains()`, `endsWith()`). Lookaround is removed first, since fast-check can't generate from it. |
-| `format` | Generated for every format Juniper knows by name. Any other is a plain string. |
-| `allOf`, `anyOf`, `$ref`, recursion | Resolved, then generated directly. `anyOf` reaches every branch. |
-| `oneOf`, `if`/`then`/`else` | Each branch is generated, and values matching too many are dropped. |
-| `not`, `unevaluatedItems`, `unevaluatedProperties`, `maxContains`, `maxProperties` | Values that don't match are dropped. |
+| Keywords                                                                                                                                                                                                                                                                                                                    | Handling                                                                                                                                                                                 |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `type`, `enum`, `const`, numeric bounds, `multipleOf`, `minLength`, `maxLength`, `minItems`, `maxItems`, `uniqueItems`, `items`, `prefixItems`, `contains`, `minContains`, `properties`, `required`, `additionalProperties`, `patternProperties`, `propertyNames`, `minProperties`, `dependentRequired`, `dependentSchemas` | Generated directly.                                                                                                                                                                      |
+| `pattern`                                                                                                                                                                                                                                                                                                                   | Generated from the regular expression. Several combine when they can (`startsWith()`, `contains()`, `endsWith()`). Lookaround is removed first, since fast-check can't generate from it. |
+| `format`                                                                                                                                                                                                                                                                                                                    | Generated for every format Juniper knows by name. Any other is a plain string.                                                                                                           |
+| `allOf`, `anyOf`, `$ref`, recursion                                                                                                                                                                                                                                                                                         | Resolved, then generated directly. `anyOf` reaches every branch.                                                                                                                         |
+| `oneOf`, `if`/`then`/`else`                                                                                                                                                                                                                                                                                                 | Each branch is generated, and values matching too many are dropped.                                                                                                                      |
+| `not`, `unevaluatedItems`, `unevaluatedProperties`, `maxContains`, `maxProperties`                                                                                                                                                                                                                                          | Values that don't match are dropped.                                                                                                                                                     |
 
 Some shapes are deliberately limited:
 
@@ -79,9 +81,9 @@ A value is rejected up to 1000 times in a row before generation gives up, which 
 
 ### `makeArbitrary(schema)`
 
-| Parameter | Type | Description |
-|---|---|---|
-| `schema` | `Schema<T>` | Any Juniper schema. |
+| Parameter | Type        | Description         |
+| --------- | ----------- | ------------------- |
+| `schema`  | `Schema<T>` | Any Juniper schema. |
 
 Returns `Arbitrary<T>`. Values are generated from the same seed the same way, so a fast-check failure replays. Its shrinking stays valid.
 
@@ -91,10 +93,10 @@ Throws while building, and while generating when the schema can only be found ou
 
 Each has `path`, a JSON Pointer to the part of the schema responsible (`#/properties/name`), and extends `JuniperArbitraryError`.
 
-| Error | Thrown when |
-|---|---|
-| `UnsatisfiableSchemaError` | Nothing matches (`neverSchema()`, `minimum` above `maximum`, recursion with no way out), or no valid value turned up in time. |
-| `UnsupportedSchemaError` | The schema doesn't compile, such as a `$ref` from `.ref()` to something outside it. Use `.define()` for definitions a schema should carry. |
+| Error                      | Thrown when                                                                                                                                |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `UnsatisfiableSchemaError` | Nothing matches (`neverSchema()`, `minimum` above `maximum`, recursion with no way out), or no valid value turned up in time.              |
+| `UnsupportedSchemaError`   | The schema doesn't compile, such as a `$ref` from `.ref()` to something outside it. Use `.define()` for definitions a schema should carry. |
 
 ## Also See
 
