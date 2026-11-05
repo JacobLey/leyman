@@ -9,14 +9,17 @@
 //
 // Checks the package builds against its support floor, the major version of `engines.node`: its tsconfig.json
 // extends that floor's `configs/tsconfig.node-<major>.json`, and `@types/node` comes from its `catalog:node-<major>`,
-// so source can't use an API that version lacks.
+// so source can't use an API that version lacks. And that every runtime dependency (`dependencies`, peers and
+// optional ones) supports the oldest Node.js the package's engines.node allows, so a floor is never below a
+// dependency's. A gap above it (vitest skips Node.js 25) is the dependency's to state. Workspace dependencies are
+// checked the same way in turn, which covers transitive ones.
 //
 // Finally type checks the published declaration files as a strict consumer with `skipLibCheck: false` would. A
 // `@ts-expect-error` in the source doesn't reach the declarations, so an error it hid surfaces only there. Errors in
 // dependencies' declarations are not ours to fix, so only those in the package's own files are reported.
 
 import { execFileSync } from 'node:child_process';
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { checkPackage, createPackageFromTarballData } from '@arethetypeswrong/core';
@@ -24,6 +27,7 @@ import { problemAffectsResolutionKind, problemKindInfo } from '@arethetypeswrong
 import ignore from 'ignore';
 import { publint } from 'publint';
 import { formatMessage } from 'publint/utils';
+import semver from 'semver';
 
 const esmResolutionKinds = ['node16-esm', 'bundler'];
 
@@ -84,6 +88,28 @@ try {
             errors.push(
                 `package.json: @types/node is "${types}", but engines.node "${engine}" needs "catalog:node-${floor}".`
             );
+        }
+        const runtimeDependencies = new Set(
+            ['dependencies', 'peerDependencies', 'optionalDependencies'].flatMap(field =>
+                Object.keys(packageJson[field] ?? {})
+            )
+        );
+        for (const name of runtimeDependencies) {
+            const dependencyJsonPath = path.join('node_modules', name, 'package.json');
+            if (!existsSync(dependencyJsonPath)) {
+                errors.push(
+                    `engines.node: ${name} is not installed, so its engines can't be checked.`
+                );
+                continue;
+            }
+            const dependencyEngine = JSON.parse(readFileSync(dependencyJsonPath, 'utf8')).engines
+                ?.node;
+            const oldest = semver.minVersion(engine);
+            if (dependencyEngine !== undefined && !semver.satisfies(oldest, dependencyEngine)) {
+                errors.push(
+                    `engines.node: "${engine}" allows Node.js ${oldest}, which ${name} doesn't support ("${dependencyEngine}"). Raise the floor to match.`
+                );
+            }
         }
     }
 

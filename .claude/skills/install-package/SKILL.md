@@ -7,7 +7,7 @@ description: Installing a package dependency
 
 ## 1. Add the version to the default `catalog:` in [`pnpm-workspace.yaml`](../../../pnpm-workspace.yaml)
 
-Skip if it is already there. Use the default `catalog:` only. Don't add a named catalog: every package should use the same version.
+Skip if it is already there. Use the default `catalog:` only. Don't add a named catalog: every package should use the same version. The exceptions are deliberate and commented in the file: `typescript-next`, and `node-<major>` for a published package's `@types/node` (see [Support floors](../typescript/SKILL.md#support-floors)).
 
 A package in this repo is never installed from npm, even as a dev dependency, as [`check-workspace-dependencies`](../nx-tasks-reference/SKILL.md#check-workspace-dependencies) enforces. If a dependency would make a cycle, which pnpm fails on, change what depends on what instead.
 

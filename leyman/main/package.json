@@ -28,6 +28,7 @@
     "nx": "catalog:",
     "nx-lifecycle": "workspace:^",
     "publint": "catalog:",
+    "semver": "catalog:",
     "typescript": "catalog:"
   }
 }

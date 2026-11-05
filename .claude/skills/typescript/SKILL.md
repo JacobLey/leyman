@@ -35,7 +35,7 @@ The toolchain runs the newest Node.js, while a published package supports the ol
 - [`scripts/nx/swc-compile.sh`](../../../scripts/nx/swc-compile.sh) compiles to that version's ES year when the floor is older than the running Node.js.
 - `@leyman/eslint-config` turns off rules that suggest an API the floor lacks (`unicorn/prefer-error-is-error` below 24...), and `n/no-unsupported-features/*` reads `engines` itself.
 
-[`check-package`](../nx-tasks-reference/SKILL.md#check-package) fails when the tsconfig or `@types/node` doesn't match `engines.node`. Private packages have no floor: they extend `tsconfig.build.json` and use `catalog:`.
+[`check-package`](../nx-tasks-reference/SKILL.md#check-package) fails when the tsconfig or `@types/node` doesn't match `engines.node`, or when a runtime dependency doesn't support the floor: haywire needs 24 (`Error.isError`), so everything that depends on it at runtime does too. CI's `floor-test` (in `e2e/published-entrypoints`) imports each package on Node.js 22 when its `engines` allows it. Lowering a floor is a minor change; raising one is breaking. Private packages have no floor: they extend `tsconfig.build.json` and use `catalog:`.
 
 ## TypeScript 6 and 7
 

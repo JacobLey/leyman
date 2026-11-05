@@ -304,6 +304,9 @@ catalogs:
     reflect-metadata:
       specifier: ^0.2.2
       version: 0.2.2
+    semver:
+      specifier: ^7.8.5
+      version: 7.8.5
     serialize-error:
       specifier: ^13.0.2
       version: 13.0.2
@@ -2801,6 +2804,9 @@ importers:
       publint:
         specifier: 'catalog:'
         version: 0.3.25
+      semver:
+        specifier: 'catalog:'
+        version: 7.8.5
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'

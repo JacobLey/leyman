@@ -118,6 +118,7 @@ catalog:
   '@nx/js': ^23.3.1
   openapi-typescript: ^7.13.0
   quicktype-core: ^26.0.0
+  semver: ^7.8.5
   '@shikijs/vitepress-twoslash': ^4.5.0
   '@standard-schema/spec': ^1.1.0
   '@swc/cli': ^0.8.1
