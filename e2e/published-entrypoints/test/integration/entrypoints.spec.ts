@@ -12,6 +12,7 @@ interface WorkspacePackage {
 
 interface PackageJson {
     devDependencies?: Record<string, string>;
+    engines?: { node?: string };
     exports?: unknown;
 }
 
@@ -30,10 +31,17 @@ const published = (JSON.parse(workspace) as WorkspacePackage[])
         packageJsonPath: path.join(pkg.path, 'package.json'),
     }))
     .toSorted((a, b) => a.name.localeCompare(b.name));
-const publishedExports = new Map<string, unknown>();
+// The `floor-test` target runs this on the oldest Node.js a package may support, where a package that needs newer
+// is skipped
+const runningMajor = Number(process.versions.node.split('.', 1)[0]);
+const publishedPackages = new Map<string, { exports: unknown; floor: number }>();
 for (const { name, packageJsonPath } of published) {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as PackageJson;
-    publishedExports.set(name, packageJson.exports);
+    publishedPackages.set(name, {
+        exports: packageJson.exports,
+        // `check-package` checks every published package names its floor this way
+        floor: Number(/^>=\s*(?<major>\d+)/v.exec(packageJson.engines?.node ?? '')?.groups?.major),
+    });
 }
 
 // Compiled to `dist-test/integration/`
@@ -67,12 +75,12 @@ suite('Published entry points', () => {
         ).to.deep.equal([]);
     });
 
-    for (const [name, exports] of publishedExports) {
+    for (const [name, { exports, floor }] of publishedPackages) {
         suite(name, () => {
             for (const subpath of subpaths(exports)) {
                 const specifier = `${name}${subpath.slice(1)}`;
 
-                test(`Imports ${specifier}`, async () => {
+                (floor > runningMajor ? test.skip : test)(`Imports ${specifier}`, async () => {
                     // A pattern (`./*`) would need a file to import for each match
                     expect(subpath).to.not.include('*', 'Subpath patterns are not supported');
 

@@ -6,6 +6,18 @@
     "eslint": {},
     "tsc-test": {},
     "mocha-integration-test": {},
+    "floor-test": {
+      "executor": "nx:run-commands",
+      "options": {
+        "command": "\"${NODE_22:?Set NODE_22 to a Node.js 22 binary}\" node_modules/mocha/bin/mocha.js --timeout 10000 dist-test/integration/entrypoints.spec.js",
+        "color": true,
+        "cwd": "{projectRoot}"
+      },
+      "cache": false,
+      "dependsOn": [
+        "tsc-test"
+      ]
+    },
     "install:_": {},
     "install": {},
     "prepare:_": {},

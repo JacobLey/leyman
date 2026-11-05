@@ -30,6 +30,9 @@ const (
 	debianImage = "debian:trixie-slim@sha256:62bd423aeee912639ca8ee681c2b762cb3e25137e0a92b20be455898a9f034ad"
 	// node:24.22.1-trixie-slim.
 	nodeImage = "node:24.22.1-trixie-slim@sha256:43b9ba1142b8dcf33fa8f922ca1be85714adc444e0586c7cf7726daaeabc1bea"
+	// node:22.23.4-trixie-slim, the oldest Node.js a published package may support (see `floor-test` in
+	// `e2e/published-entrypoints`). Only its `node` binary is used.
+	node22Image = "node:22.23.4-trixie-slim@sha256:2117f713a417f3aff682ac8f5bc2ebbdf1beed51f36e67ab1e0fd3866b6d2d8f"
 	// Outside the lockfile, so `minimumReleaseAge` can't check it: only bump to a release at least 7 days old.
 	pnpmVersion = "12.15.0"
 	// Keep in sync with `playwright` in `pnpm-workspace.yaml`: a client connects only to a server of its own version.
@@ -145,7 +148,8 @@ func (m *Ci) ForkManifestAudit(
 	return err
 }
 
-// Run the full CI pipeline: install, build, test, and verify generated lifecycle config is up to date.
+// Run the full CI pipeline: install, build, test, check published entry points import on their oldest supported
+// Node.js, and verify generated lifecycle config is up to date.
 func (m *Ci) Test(
 	ctx context.Context,
 	// Nx remote cache server to share task results with (e.g. `tcp://localhost:3000`, see `.devcontainer/nx-cache-server.mjs`).
@@ -172,6 +176,17 @@ func (m *Ci) Test(
 	})
 	group.Go(func() error {
 		_, err := built.WithExec([]string{"nx", "run", "@leyman/main:lifecycle"}).Sync(ctx)
+
+		return err
+	})
+	group.Go(func() error {
+		// Imports each published package's entry points on the oldest Node.js its `engines` allows. Everything else,
+		// Nx and pnpm included, stays on the toolchain's Node.js.
+		_, err := built.
+			WithFile("/opt/node-22/bin/node", dag.Container().From(node22Image).File("/usr/local/bin/node")).
+			WithEnvVariable("NODE_22", "/opt/node-22/bin/node").
+			WithExec([]string{"nx", "run", "@leyman/e2e-published-entrypoints:floor-test"}).
+			Sync(ctx)
 
 		return err
 	})
