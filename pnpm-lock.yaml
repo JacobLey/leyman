@@ -352,6 +352,10 @@ catalogs:
     zod:
       specifier: ^4.6.7
       version: 4.6.7
+  node-24:
+    '@types/node':
+      specifier: ^24.19.2
+      version: 24.19.2
   typescript-next:
     '@typescript/native':
       specifier: npm:typescript@7.1.0-beta
@@ -419,7 +423,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/yargs':
         specifier: 'catalog:'
@@ -495,7 +499,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/yargs':
         specifier: 'catalog:'
@@ -617,7 +621,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -675,7 +679,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -739,7 +743,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -833,7 +837,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/sinon':
         specifier: 'catalog:'
@@ -912,7 +916,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/pg':
         specifier: 'catalog:'
@@ -994,7 +998,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/yargs':
         specifier: 'catalog:'
@@ -1064,7 +1068,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/tmp':
         specifier: 'catalog:'
@@ -2874,7 +2878,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -2987,7 +2991,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3035,7 +3039,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3087,7 +3091,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3129,7 +3133,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3178,7 +3182,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3230,7 +3234,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/tmp':
         specifier: 'catalog:'
@@ -3284,7 +3288,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3333,7 +3337,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3378,7 +3382,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/sinon':
         specifier: 'catalog:'
@@ -3432,7 +3436,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3480,7 +3484,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3552,7 +3556,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/react':
         specifier: 'catalog:'
@@ -3670,7 +3674,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3716,7 +3720,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/pg':
         specifier: 'catalog:'
@@ -3764,7 +3768,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3806,7 +3810,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3858,7 +3862,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@types/sinon':
         specifier: 'catalog:'
@@ -3910,7 +3914,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3947,7 +3951,7 @@ importers:
         specifier: 'catalog:'
         version: 1.16.20(@swc/helpers@0.5.23)
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'
@@ -3989,7 +3993,7 @@ importers:
         specifier: 'catalog:'
         version: 10.0.10
       '@types/node':
-        specifier: 'catalog:'
+        specifier: catalog:node-24
         version: 24.19.2
       '@typescript/native':
         specifier: 'catalog:'

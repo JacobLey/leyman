@@ -13,6 +13,9 @@ const dependenciesSchema = objectSchema({
 const juniperSchema = objectSchema({
     properties: {
         name: stringSchema(),
+        engines: objectSchema({
+            properties: { node: stringSchema() },
+        }),
         dependencies: dependenciesSchema,
         devDependencies: dependenciesSchema,
         optionalDependencies: dependenciesSchema,

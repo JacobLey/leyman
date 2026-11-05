@@ -42,6 +42,7 @@
       "{workspaceRoot}/scripts/nx/clean-dist.sh",
       "{workspaceRoot}/scripts/nx/swc-compile.sh",
       "{workspaceRoot}/configs/tsconfig.build.json",
+      "{workspaceRoot}/configs/tsconfig.node-*.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
       "{projectRoot}/src/**/*",

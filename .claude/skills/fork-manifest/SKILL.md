@@ -68,6 +68,8 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `configs/c8rc.json` | coverage thresholds and reporters every test target reads |
 | `configs/swcrc.jsonc` | how every target compiles TypeScript |
 | `configs/tsconfig.build.json` | the type checking contract for source |
+| `configs/tsconfig.node-22.json` | source type checking for packages supporting Node.js 22 |
+| `configs/tsconfig.node-24.json` | source type checking for packages supporting Node.js 24 |
 | `configs/tsconfig.test.json` | the type checking contract for tests |
 | `leyman/main/.claude/skills/lifecycle` | how the lifecycle stages connect |
 | `leyman/main/README.md` | why the global tools live in this package |

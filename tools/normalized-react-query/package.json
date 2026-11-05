@@ -56,7 +56,7 @@
     "@testing-library/dom": "catalog:",
     "@testing-library/react": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:",
+    "@types/node": "catalog:node-24",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "@typescript/native": "catalog:",

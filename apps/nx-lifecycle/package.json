@@ -81,7 +81,7 @@
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:",
+    "@types/node": "catalog:node-24",
     "@types/sinon": "catalog:",
     "@types/yargs": "catalog:",
     "@typescript/native": "catalog:",

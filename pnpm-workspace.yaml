@@ -230,6 +230,13 @@ catalogs:
   # release is 7 days old, moving `catalog:` to it.
   typescript-next:
     '@typescript/native': npm:typescript@7.1.0-beta
+  # `@types/node` for published packages, one catalog per support floor: a package uses the one its `engines.node`
+  # names (checked by `check-package`), so its source can't use an API newer than the oldest Node.js it supports.
+  # The default `catalog:` follows the toolchain.
+  node-22:
+    '@types/node': ^22.20.5
+  node-24:
+    '@types/node': ^24.19.2
 # Each patch fixes a bug that a release doesn't yet. Delete it once a release with the fix is at least 7 days old.
 patchedDependencies:
   # `prefer-string-starts-ends-with` parses a `v`-flag RegExp as if it had no flags, so it autofixes `/^\p{N}/v.test(s)`

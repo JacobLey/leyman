@@ -8,6 +8,7 @@ import typescriptPlugin from '@typescript-eslint/eslint-plugin';
 import typescriptParser from '@typescript-eslint/parser';
 import globals from 'globals';
 import { getInternalRegex } from './lib/internal-regex.js';
+import { nodeFloorRules } from './lib/node-floor.js';
 import { assertIsPackageJson } from './lib/package-json-schema.js';
 import { packagePluginConfig } from './lib/package-plugins.js';
 import {
@@ -898,18 +899,16 @@ export default function makeEslintConfigForPackage({
                 'unicorn/prefer-export-from': ['error', { checkUsedVariables: false }],
                 // Contradicts `unicorn/prefer-number-properties`
                 'unicorn/prefer-global-number-constants': 'off',
-                // `Iterator.concat` is not available in Node 24
-                'unicorn/prefer-iterator-concat': 'off',
                 'unicorn/prefer-ternary': ['error', 'only-single-line'],
                 // Contradicts `@typescript-eslint/sort-type-constituents`
                 'unicorn/prefer-type-literal-last': 'off',
-                // `Uint8Array.fromBase64` and `Uint8Array#toBase64` are not available in Node 24
-                'unicorn/prefer-uint8array-base64': 'off',
                 // Deprecated for `unicorn/name-replacements`, which is off too
                 'unicorn/prevent-abbreviations': 'off',
                 'unicorn/template-indent': ['error', { indent: 4 }],
                 // A complexity of 1 is too strict, and `try`/`finally` must wrap all the code it guards
                 'unicorn/try-complexity': 'off',
+                // Off where the package's oldest supported Node.js lacks the API they suggest
+                ...nodeFloorRules(packageJson),
             },
         },
         {

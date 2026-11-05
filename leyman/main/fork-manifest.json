@@ -180,6 +180,14 @@
       "why": "the type checking contract for source"
     },
     {
+      "path": "configs/tsconfig.node-22.json",
+      "why": "source type checking for packages supporting Node.js 22"
+    },
+    {
+      "path": "configs/tsconfig.node-24.json",
+      "why": "source type checking for packages supporting Node.js 24"
+    },
+    {
       "path": "configs/tsconfig.test.json",
       "why": "the type checking contract for tests"
     },

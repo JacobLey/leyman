@@ -47,7 +47,7 @@
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:",
+    "@types/node": "catalog:node-24",
     "@types/pg": "catalog:",
     "@typescript/native": "catalog:",
     "c8": "catalog:",

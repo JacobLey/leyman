@@ -4,6 +4,7 @@ type Dependencies = Record<string, string>;
 
 export interface PackageJson {
     name: string;
+    engines?: { node?: string };
     dependencies?: Dependencies;
     devDependencies?: Dependencies;
     optionalDependencies?: Dependencies;
@@ -21,6 +22,10 @@ export const packageJsonSchema = {
     type: 'object',
     properties: {
         name: { type: 'string' },
+        engines: {
+            type: 'object',
+            properties: { node: { type: 'string' } },
+        },
         dependencies: dependenciesSchema,
         devDependencies: dependenciesSchema,
         optionalDependencies: dependenciesSchema,

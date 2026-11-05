@@ -7,6 +7,10 @@
 // Also checks every top-level path of the package is either published or known not to be, so a new one (like
 // `data/`) can't be left out of `files` by accident, and nothing that should stay private is published.
 //
+// Checks the package builds against its support floor, the major version of `engines.node`: its tsconfig.json
+// extends that floor's `configs/tsconfig.node-<major>.json`, and `@types/node` comes from its `catalog:node-<major>`,
+// so source can't use an API that version lacks.
+//
 // Finally type checks the published declaration files as a strict consumer with `skipLibCheck: false` would. A
 // `@ts-expect-error` in the source doesn't reach the declarations, so an error it hid surfaces only there. Errors in
 // dependencies' declarations are not ours to fix, so only those in the package's own files are reported.
@@ -56,6 +60,32 @@ try {
     const tarball = readFileSync(path.resolve(packDir, filename));
 
     const errors = [];
+
+    const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
+    const engine = packageJson.engines?.node;
+    const floor = /^>=\s*(?<major>\d+)/v.exec(engine ?? '')?.groups?.major;
+    if (floor === undefined) {
+        errors.push(`engines.node: "${engine}" names no floor. Use ">=<version>".`);
+    } else {
+        const floorConfig = `configs/tsconfig.node-${floor}.json`;
+        const tsconfig = JSON.parse(readFileSync('tsconfig.json', 'utf8'));
+        if (
+            tsconfig.extends !==
+            path
+                .relative(process.cwd(), path.join(workspaceRoot, floorConfig))
+                .replaceAll(path.sep, '/')
+        ) {
+            errors.push(
+                `tsconfig.json: extends "${tsconfig.extends}", but engines.node "${engine}" needs ${floorConfig}.`
+            );
+        }
+        const types = packageJson.devDependencies?.['@types/node'];
+        if (types !== `catalog:node-${floor}`) {
+            errors.push(
+                `package.json: @types/node is "${types}", but engines.node "${engine}" needs "catalog:node-${floor}".`
+            );
+        }
+    }
 
     const published = new Set(files.map(file => file.path.split('/', 1)[0]));
     const entries = readdirSync(process.cwd(), { withFileTypes: true });

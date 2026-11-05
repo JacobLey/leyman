@@ -22,9 +22,20 @@ The general goal is that the path from src -> dist should be fairly obvious. Imp
 
 The `tsc` target transpiles `src/` → `dist/` with SWC, then runs `tsc` for type checking and `.d.ts` output, one command after another. `.ts` and `.mts` compile to ESM, `.cts` to CommonJS.
 
-The target output is usually the latest ESNext. That is generally compatible with what is supported by server JS runtimes like Node. Frontend JS code will have its own packaging and backwards compatibility support that is implemented separately.
+The target output is ESNext, except for a published package whose support floor is older than the running Node.js (below). Frontend JS code will have its own packaging and backwards compatibility support that is implemented separately.
 
 Even at ESNext, SWC rewrites a few constructs using helper functions: `using`/`await using` declarations, and `export *` in CommonJS output. [`configs/swcrc.jsonc`](../../../configs/swcrc.jsonc) inlines those helpers (`externalHelpers: false`), so a package never needs `@swc/helpers` as a dependency.
+
+## Support floors
+
+The toolchain runs the newest Node.js, while a published package supports the oldest version it can without losing functionality: its floor, the major version of `engines.node` (`>=22`). Everything that decides what source may use follows that one field:
+
+- `tsconfig.json` extends `configs/tsconfig.node-<major>.json`, whose `lib` and `target` hold only what that Node.js has, so a newer API is a compile error.
+- `@types/node` comes from `catalog:node-<major>` in `pnpm-workspace.yaml`.
+- [`scripts/nx/swc-compile.sh`](../../../scripts/nx/swc-compile.sh) compiles to that version's ES year when the floor is older than the running Node.js.
+- `@leyman/eslint-config` turns off rules that suggest an API the floor lacks (`unicorn/prefer-error-is-error` below 24...), and `n/no-unsupported-features/*` reads `engines` itself.
+
+[`check-package`](../nx-tasks-reference/SKILL.md#check-package) fails when the tsconfig or `@types/node` doesn't match `engines.node`. Private packages have no floor: they extend `tsconfig.build.json` and use `catalog:`.
 
 ## TypeScript 6 and 7
 

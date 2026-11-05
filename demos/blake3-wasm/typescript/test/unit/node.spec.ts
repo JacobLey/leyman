@@ -8,7 +8,6 @@ const { cases, inputByteCycle } = testVectors;
 
 const input = (length: number): Uint8Array<ArrayBuffer> =>
     Uint8Array.from({ length }, (_, i) => i % inputByteCycle);
-// eslint-disable-next-line unicorn/prefer-uint8array-hex -- Not on Node.js 24
 const hex = (bytes: Uint8Array): string => Buffer.from(bytes).toString('hex');
 
 suite('On Node.js', () => {
