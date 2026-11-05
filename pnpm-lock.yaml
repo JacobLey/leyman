@@ -14,8 +14,8 @@ catalogs:
       specifier: ^0.18.5
       version: 0.18.5
     '@biomejs/biome':
-      specifier: ^2.6.3
-      version: 2.6.3
+      specifier: ^2.6.4
+      version: 2.6.4
     '@changesets/cli':
       specifier: ^3.0.3
       version: 3.0.3
@@ -389,7 +389,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       tinyglobby:
         specifier: 'catalog:'
         version: 0.2.17
@@ -402,7 +402,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -459,7 +459,7 @@ importers:
         version: file:tools/entry-script
       format-file:
         specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10)
+        version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
         version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
@@ -468,7 +468,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
@@ -478,7 +478,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -538,14 +538,14 @@ importers:
     dependencies:
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml:
         specifier: 'catalog:'
         version: 2.9.1
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/demo-openapi-spec':
         specifier: workspace:^
         version: file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))
@@ -600,7 +600,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -658,7 +658,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -722,7 +722,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -788,7 +788,7 @@ importers:
         version: 6.2.1
       format-file:
         specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10)
+        version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -816,7 +816,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -846,7 +846,7 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/barrelify(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -864,7 +864,7 @@ importers:
         version: file:apps/juniper-arbitrary(fast-check@4.10.2)(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -888,14 +888,14 @@ importers:
         version: file:tools/pg-dolly
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yargs:
         specifier: 'catalog:'
         version: 18.2.0
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -967,7 +967,7 @@ importers:
         version: file:tools/parse-cwd
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       unknown-error:
         specifier: workspace:^
         version: file:tools/unknown-error
@@ -977,7 +977,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1031,7 +1031,7 @@ importers:
         version: 4.4.0
       format-file:
         specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10)
+        version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
         version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
@@ -1047,7 +1047,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1095,7 +1095,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1125,7 +1125,7 @@ importers:
         version: 10.13.0(supports-color@8.1.1)
       genever-content-mapper:
         specifier: workspace:^
-        version: file:apps/genever-content-mapper(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever-content-mapper(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -1162,7 +1162,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.1.5(hono@4.13.13)
@@ -1250,7 +1250,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.1.5(hono@4.13.13)
@@ -1328,7 +1328,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
 
   demos/blake3-wasm/typescript:
     dependencies:
@@ -1341,7 +1341,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1396,7 +1396,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@happy-dom/global-registrator':
         specifier: 'catalog:'
         version: 21.0.4
@@ -1445,7 +1445,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1478,7 +1478,7 @@ importers:
         version: 1.4.0
       genever-content-mapper:
         specifier: workspace:^
-        version: file:apps/genever-content-mapper(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever-content-mapper(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -1500,7 +1500,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1548,7 +1548,7 @@ importers:
         version: file:tools/pg-dolly
       pg-dolly-schema:
         specifier: workspace:^
-        version: file:apps/pg-dolly-schema(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/pg-dolly-schema(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -1591,7 +1591,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/demo-openapi-client':
         specifier: workspace:^
         version: file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))
@@ -1633,7 +1633,7 @@ importers:
         version: 4.10.2
       genever-content-mapper:
         specifier: workspace:^
-        version: file:apps/genever-content-mapper(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever-content-mapper(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       juniper:
         specifier: workspace:^
         version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
@@ -1670,7 +1670,7 @@ importers:
         version: 13.1.0(openapi-types@12.1.3)
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1700,13 +1700,13 @@ importers:
         version: 10.13.0(supports-color@8.1.1)
       format-file:
         specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10)
+        version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -1746,7 +1746,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1794,7 +1794,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.1.5(hono@4.13.13)
@@ -1839,7 +1839,7 @@ importers:
         version: 8.20.0
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/barrelify(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       chai:
         specifier: 'catalog:'
         version: 6.3.0
@@ -1863,7 +1863,7 @@ importers:
         version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -1896,7 +1896,7 @@ importers:
         version: file:tools/lease-cache
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -1908,7 +1908,7 @@ importers:
         version: file:tools/normalized-react-query(@tanstack/react-query@5.104.5(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
       nx-lifecycle:
         specifier: workspace:^
-        version: file:apps/nx-lifecycle(@biomejs/biome@2.6.3)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.6.4)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       openapi3-ts:
         specifier: 'catalog:'
         version: 4.6.2
@@ -1920,10 +1920,10 @@ importers:
         version: file:tools/pg-dolly
       pg-dolly-schema:
         specifier: workspace:^
-        version: file:apps/pg-dolly-schema(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/pg-dolly-schema(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       redis:
         specifier: 'catalog:'
         version: 6.3.0
@@ -1953,7 +1953,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/constant-consistent-hash-test-vectors':
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/test-vectors
@@ -2010,7 +2010,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2058,7 +2058,7 @@ importers:
     dependencies:
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       json-schema-to-ts:
         specifier: 'catalog:'
         version: 3.1.1
@@ -2086,7 +2086,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2125,7 +2125,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2179,7 +2179,7 @@ importers:
         version: 13.1.0(openapi-types@12.1.3)
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2227,7 +2227,7 @@ importers:
         version: 4.10.2
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       juniper:
         specifier: workspace:^
         version: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
@@ -2257,7 +2257,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@happy-dom/global-registrator':
         specifier: 'catalog:'
         version: 21.0.4
@@ -2326,7 +2326,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2353,7 +2353,7 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/barrelify(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -2377,13 +2377,13 @@ importers:
         version: file:tools/find-import
       format-file:
         specifier: workspace:^
-        version: file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10)
+        version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
         version: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
-        version: file:apps/genever(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       haywire:
         specifier: workspace:^
         version: file:tools/haywire
@@ -2407,7 +2407,7 @@ importers:
         version: file:tools/lease-cache
       load-populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -2419,7 +2419,7 @@ importers:
         version: file:tools/normalized-react-query(@tanstack/react-query@5.104.5(@types/react@19.3.0)(react@19.3.1))(react@19.3.1)
       nx-lifecycle:
         specifier: workspace:^
-        version: file:apps/nx-lifecycle(@biomejs/biome@2.6.3)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.6.4)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -2428,10 +2428,10 @@ importers:
         version: file:tools/pg-dolly
       pg-dolly-schema:
         specifier: workspace:^
-        version: file:apps/pg-dolly-schema(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/pg-dolly-schema(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       populate-files:
         specifier: workspace:^
-        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       punycode-esm:
         specifier: workspace:^
         version: file:tools/punycode-esm
@@ -2464,7 +2464,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2515,7 +2515,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2572,7 +2572,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2672,7 +2672,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@swc/cli':
         specifier: 'catalog:'
         version: 0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
@@ -2727,7 +2727,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2766,7 +2766,7 @@ importers:
         version: 0.18.5
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@changesets/cli':
         specifier: 'catalog:'
         version: 3.0.3
@@ -2793,7 +2793,7 @@ importers:
         version: 23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))
       nx-lifecycle:
         specifier: workspace:^
-        version: file:apps/nx-lifecycle(@biomejs/biome@2.6.3)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.6.4)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       publint:
         specifier: 'catalog:'
         version: 0.3.25
@@ -2809,7 +2809,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2854,7 +2854,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/constant-consistent-hash-test-vectors':
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/test-vectors
@@ -2902,13 +2902,13 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
 
   tools/constant-consistent-hash/test-vectors:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
 
   tools/constant-consistent-hash/wasm-impl:
     dependencies:
@@ -2918,7 +2918,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/constant-consistent-hash-test-vectors':
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/test-vectors
@@ -2970,7 +2970,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3015,7 +3015,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3070,7 +3070,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3112,7 +3112,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3161,7 +3161,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3213,7 +3213,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3267,7 +3267,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3316,7 +3316,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3361,7 +3361,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3415,7 +3415,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3439,7 +3439,7 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/barrelify(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -3463,7 +3463,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3523,7 +3523,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@happy-dom/global-registrator':
         specifier: 'catalog:'
         version: 21.0.4
@@ -3565,7 +3565,7 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/barrelify(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -3599,7 +3599,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3653,7 +3653,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3699,7 +3699,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3747,7 +3747,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3789,7 +3789,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3813,7 +3813,7 @@ importers:
         version: typescript@7.0.2
       barrelify:
         specifier: workspace:^
-        version: file:apps/barrelify(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+        version: file:apps/barrelify(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       c8:
         specifier: 'catalog:'
         version: 12.0.0
@@ -3841,7 +3841,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3893,7 +3893,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3936,7 +3936,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3972,7 +3972,7 @@ importers:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
-        version: 2.6.3
+        version: 2.6.4
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -4586,71 +4586,71 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@biomejs/biome@2.6.3':
-    resolution: {integrity: sha512-va/0xPku7wnfzv+D8Zpdm5uKiGJWiV8neqoEPnRjvNQQwhl4tVXS4fETs4H0CCB2rGeqJ4cu9y4iOZOnOYKAUA==}
+  '@biomejs/biome@2.6.4':
+    resolution: {integrity: sha512-8sKKwaNW4ot22awZ3lBjwWLHnUFXgXnrBPYS2gNlBAXRbDC++7kqjK2H7dR/FgCDtPvO1xfKpgEhJkGxAKYkxA==}
     engines: {node: '>=14.21.3'}
     hasBin: true
 
-  '@biomejs/cli-android-arm64@2.6.3':
-    resolution: {integrity: sha512-5JD7QQDEHxdeEb4sftEHG+lsuUyu8Cob/hVLqRELbgGlFl68Rldv/PPi2k4dRjERZ/EItJ3O6Xmv8lqsEtUBiw==}
+  '@biomejs/cli-android-arm64@2.6.4':
+    resolution: {integrity: sha512-jwrwigP4tBcHxzuV8izioX/BOUhJL/4e2rNSOE5nCjBkVC018LQAQUGiH+CNkFYvLtQ1dcZo5/xXERmaAGc7JQ==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [android]
 
-  '@biomejs/cli-android-x64@2.6.3':
-    resolution: {integrity: sha512-70WOGKCgpT+Uqg6LFdTLqefV54/DypdZg+LnBQDO6AWvkgXO+9xhVClajQyDsIHYjnXMtI1pRO5sP+zMXlS/bw==}
+  '@biomejs/cli-android-x64@2.6.4':
+    resolution: {integrity: sha512-HdGInPJ4nZFwHxzvEtcp2nmSBtUyJrurmtIK43upFckuS3+ZqVM05HtsxQWnqGsuy/pxckIAjyKWlEKRlBXUyA==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [android]
 
-  '@biomejs/cli-darwin-arm64@2.6.3':
-    resolution: {integrity: sha512-ezf+XEKeyJ2yYlBhrzyEEHLvfRYrhtNKc6maLzR/WcAcBccb4RVDeFxsymjBve2LO0bpIMRUAiS90D4bUBRT0A==}
+  '@biomejs/cli-darwin-arm64@2.6.4':
+    resolution: {integrity: sha512-0VvcUz46wbg59Q4TZ59KkIjDJrxEyu4Eoe79+F4SChxoWe+W7AEyIp6F5r72C9+p6MsB6dIovnZt1D30lGM3XA==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [darwin]
 
-  '@biomejs/cli-darwin-x64@2.6.3':
-    resolution: {integrity: sha512-Lg2tFdg4elJo+7i707PpLMs6N1hATVt4kqDo6MD/q/VnPs8rsKReKXsz1TA5GNdfRVAQNJ5GRiyK2EwNptK+MA==}
+  '@biomejs/cli-darwin-x64@2.6.4':
+    resolution: {integrity: sha512-fxmvkF81srlS3DiMyfm+aG3J0eG+6/BjaxRyjy57KbLSafnq0PO+hHfVWmtH2ty0S7nm6yDXBRwySfFeaRJKRQ==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [darwin]
 
-  '@biomejs/cli-linux-arm64-musl@2.6.3':
-    resolution: {integrity: sha512-dYU70A89OFHzakQPE9VOPbE60JNcQt4mtxvUGQl+EgTkGtqCFxLD2RUn1SbiMu8Mu5xFscS1bfYDpoasaUrqNA==}
+  '@biomejs/cli-linux-arm64-musl@2.6.4':
+    resolution: {integrity: sha512-31ZaH/MHqPX+O+evRwRrCHQ8W5/9adY+/eMytGGWZnRx1T41QsWIF09+/WujynLBhWZUxNGS5CtsWLwgOFTAyg==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [linux]
     libc: [musl]
 
-  '@biomejs/cli-linux-arm64@2.6.3':
-    resolution: {integrity: sha512-8Stcvq98n1gs9VyLKuaWrnsd8kbXE2nKDAHtuLHGSYdGyNWN5JIIm5a28xdnmgdKzKHmiDgYyATetkEv7+zGow==}
+  '@biomejs/cli-linux-arm64@2.6.4':
+    resolution: {integrity: sha512-6+bK1Y/evmIUiJr7auertuMbiaYVicJhqA1bZyL47lCMWugv8l0gFQCqvR/gN1vZMHYm+HwoTKgeMxdNFCoQTg==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [linux]
     libc: [glibc]
 
-  '@biomejs/cli-linux-x64-musl@2.6.3':
-    resolution: {integrity: sha512-j6eFjUcWSphmgVTbrobEMA0wdbfNHKrGi8hRsFkc17jeS1n7nHwFACxp6jWqe9sxQqyFAeyOgt2/1bOGVcbATA==}
+  '@biomejs/cli-linux-x64-musl@2.6.4':
+    resolution: {integrity: sha512-bomSa2XdQAGGj6Cwdm4M13qE+lN9+AOlW8KtI4hdyVyRRF/Z71qPAi95T4wtdZK0QpBbkTW8hgbZZCwPi4xzIw==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [linux]
     libc: [musl]
 
-  '@biomejs/cli-linux-x64@2.6.3':
-    resolution: {integrity: sha512-CShmx0bO6BngywT3minv8K1xsQX1ig1vsBqYTLnmDY3mBiDYHlaLRIsdHoM1pEU9dV3BN5a0uiH0IGDtYh9TWA==}
+  '@biomejs/cli-linux-x64@2.6.4':
+    resolution: {integrity: sha512-tbFZMdL6dP/ws4edXxYG9WhvaVa1ZDzL4G5DzahnWW7Psib9H+VTdyU4XXVxpJk5j/nYZroSbvSNyYlpW3yCIw==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [linux]
     libc: [glibc]
 
-  '@biomejs/cli-win32-arm64@2.6.3':
-    resolution: {integrity: sha512-00SthDxBPwNiT7IL/mOneif6fiEU1PXK875zhr+InpeZjovY1mF5tCuDhXo1Hh0GYyiKHKzLbItzn58SAyLhJQ==}
+  '@biomejs/cli-win32-arm64@2.6.4':
+    resolution: {integrity: sha512-eCsqt8Ma3eVap+oyJCDnJZH60SIU464B66n3y38EUTJdM1T/HfZol1FJC9vb+sHToX0ix8XzqPcwJnOzyAJz0g==}
     engines: {node: '>=14.21.3'}
     cpu: [arm64]
     os: [win32]
 
-  '@biomejs/cli-win32-x64@2.6.3':
-    resolution: {integrity: sha512-GhtOPphBWlnCepqpNk/w5eGN5oGRCzL20EbAkL1XCIpyboeVC9R642noyT43l8LSenGS4qz9IL8sKPfwY37V/Q==}
+  '@biomejs/cli-win32-x64@2.6.4':
+    resolution: {integrity: sha512-pYsMy5AThiHFOZAsngg8qN4PurM6nInKBhVX7sbj3eNpRQqo1Hb0MgCwPL7VqVMrmcEEMj9Ks3qbkallR65e8g==}
     engines: {node: '>=14.21.3'}
     cpu: [x64]
     os: [win32]
@@ -11752,47 +11752,47 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@biomejs/biome@2.6.3':
+  '@biomejs/biome@2.6.4':
     optionalDependencies:
-      '@biomejs/cli-android-arm64': 2.6.3
-      '@biomejs/cli-android-x64': 2.6.3
-      '@biomejs/cli-darwin-arm64': 2.6.3
-      '@biomejs/cli-darwin-x64': 2.6.3
-      '@biomejs/cli-linux-arm64': 2.6.3
-      '@biomejs/cli-linux-arm64-musl': 2.6.3
-      '@biomejs/cli-linux-x64': 2.6.3
-      '@biomejs/cli-linux-x64-musl': 2.6.3
-      '@biomejs/cli-win32-arm64': 2.6.3
-      '@biomejs/cli-win32-x64': 2.6.3
+      '@biomejs/cli-android-arm64': 2.6.4
+      '@biomejs/cli-android-x64': 2.6.4
+      '@biomejs/cli-darwin-arm64': 2.6.4
+      '@biomejs/cli-darwin-x64': 2.6.4
+      '@biomejs/cli-linux-arm64': 2.6.4
+      '@biomejs/cli-linux-arm64-musl': 2.6.4
+      '@biomejs/cli-linux-x64': 2.6.4
+      '@biomejs/cli-linux-x64-musl': 2.6.4
+      '@biomejs/cli-win32-arm64': 2.6.4
+      '@biomejs/cli-win32-x64': 2.6.4
 
-  '@biomejs/cli-android-arm64@2.6.3':
+  '@biomejs/cli-android-arm64@2.6.4':
     optional: true
 
-  '@biomejs/cli-android-x64@2.6.3':
+  '@biomejs/cli-android-x64@2.6.4':
     optional: true
 
-  '@biomejs/cli-darwin-arm64@2.6.3':
+  '@biomejs/cli-darwin-arm64@2.6.4':
     optional: true
 
-  '@biomejs/cli-darwin-x64@2.6.3':
+  '@biomejs/cli-darwin-x64@2.6.4':
     optional: true
 
-  '@biomejs/cli-linux-arm64-musl@2.6.3':
+  '@biomejs/cli-linux-arm64-musl@2.6.4':
     optional: true
 
-  '@biomejs/cli-linux-arm64@2.6.3':
+  '@biomejs/cli-linux-arm64@2.6.4':
     optional: true
 
-  '@biomejs/cli-linux-x64-musl@2.6.3':
+  '@biomejs/cli-linux-x64-musl@2.6.4':
     optional: true
 
-  '@biomejs/cli-linux-x64@2.6.3':
+  '@biomejs/cli-linux-x64@2.6.4':
     optional: true
 
-  '@biomejs/cli-win32-arm64@2.6.3':
+  '@biomejs/cli-win32-arm64@2.6.4':
     optional: true
 
-  '@biomejs/cli-win32-x64@2.6.3':
+  '@biomejs/cli-win32-x64@2.6.4':
     optional: true
 
   '@borewit/text-codec@0.2.2': {}
@@ -14252,13 +14252,13 @@ snapshots:
   bare-events@2.5.4:
     optional: true
 
-  barrelify@file:apps/barrelify(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
+  barrelify@file:apps/barrelify(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
       ignore: 7.0.14
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       tinyglobby: 0.2.17
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
@@ -15368,12 +15368,12 @@ snapshots:
 
   form-data-encoder@4.1.0: {}
 
-  format-file@file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10):
+  format-file@file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10):
     dependencies:
       find-up: 8.0.0
       haywire: file:tools/haywire
     optionalDependencies:
-      '@biomejs/biome': 2.6.3
+      '@biomejs/biome': 2.6.4
       prettier: 3.9.10
 
   fresh@0.5.2: {}
@@ -15404,23 +15404,23 @@ snapshots:
     optionalDependencies:
       eslint: 10.13.0(supports-color@8.1.1)
 
-  genever-content-mapper@file:apps/genever-content-mapper(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
+  genever-content-mapper@file:apps/genever-content-mapper(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
-      genever: file:apps/genever(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+      genever: file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml: 2.9.1
     transitivePeerDependencies:
       - '@biomejs/biome'
       - eslint
       - prettier
 
-  genever@file:apps/genever(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
+  genever@file:apps/genever(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
-      format-file: file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10)
+      format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml: 2.9.1
       yargs: 18.2.0
     transitivePeerDependencies:
@@ -16095,7 +16095,7 @@ snapshots:
     dependencies:
       uc.micro: 3.0.0
 
-  load-populate-files@file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
+  load-populate-files@file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
       default-import: file:tools/default-import
@@ -16103,7 +16103,7 @@ snapshots:
       juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
       juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
       parse-cwd: file:tools/parse-cwd
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       unknown-error: file:tools/unknown-error
       yargs: 18.2.0
     transitivePeerDependencies:
@@ -16595,13 +16595,13 @@ snapshots:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
 
-  nx-lifecycle@file:apps/nx-lifecycle(@biomejs/biome@2.6.3)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
+  nx-lifecycle@file:apps/nx-lifecycle(@biomejs/biome@2.6.4)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       '@nx/devkit': 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
       fast-equals: 6.2.1
-      format-file: file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10)
+      format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       haywire: file:tools/haywire
       haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
       juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
@@ -16967,11 +16967,11 @@ snapshots:
 
   pg-connection-string@2.14.1: {}
 
-  pg-dolly-schema@file:apps/pg-dolly-schema(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
+  pg-dolly-schema@file:apps/pg-dolly-schema(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       entry-script: file:tools/entry-script
       pg-dolly: file:tools/pg-dolly
-      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10)
       yargs: 18.2.0
     transitivePeerDependencies:
       - '@biomejs/biome'
@@ -17057,10 +17057,10 @@ snapshots:
 
   pony-cause@2.1.11: {}
 
-  populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.6.3)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
+  populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
       ci-info: 4.4.0
-      format-file: file:tools/format-file(@biomejs/biome@2.6.3)(prettier@3.9.10)
+      format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1))
       parse-cwd: file:tools/parse-cwd
       uint8array-extras: 1.6.0
