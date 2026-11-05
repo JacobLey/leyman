@@ -1,5 +1,14 @@
 # pg-dolly-schema
 
+## 0.1.4
+
+### Patch Changes
+
+- Updated dependencies [8461cca]
+  - entry-script@4.2.0
+  - pg-dolly@0.3.0
+  - populate-files@1.2.1
+
 ## 0.1.3
 
 ### Patch Changes

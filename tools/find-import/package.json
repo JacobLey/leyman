@@ -1,6 +1,6 @@
 {
   "name": "find-import",
-  "version": "2.1.1",
+  "version": "2.2.0",
   "description": "Find and load the first matching JS/JSON file by searching parent directories.",
   "engines": {
     "node": ">=22"

@@ -1,5 +1,12 @@
 # unknown-error
 
+## 0.2.0
+
+### Minor Changes
+
+- 8461cca: On Node.js 22, which has no `Error.isError`, Errors are recognized by `instanceof Error` or their `[object Error]` tag, as in older browsers.
+- 8461cca: Supports Node.js 22: `engines.node` is now `>=22`, down from `>=24`. The package uses no API newer than Node.js 22 has, and is built and tested against it.
+
 ## 0.1.1
 
 ### Patch Changes

@@ -1,5 +1,16 @@
 # vitest-chain
 
+## 0.1.0
+
+### Minor Changes
+
+- 8461cca: Supports Node.js 22.12 and later: `engines.node` is now `>=22.12.0`, down from `>=24`, the oldest version its test runner peer dependency supports.
+
+### Patch Changes
+
+- Updated dependencies [8461cca]
+  - test-chain-core@0.2.0
+
 ## 0.0.5
 
 ### Patch Changes

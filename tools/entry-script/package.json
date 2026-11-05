@@ -1,6 +1,6 @@
 {
   "name": "entry-script",
-  "version": "4.1.2",
+  "version": "4.2.0",
   "description": "Node.js scripts whose main() only runs when they are the entry point, so tests can import them without side effects.",
   "engines": {
     "node": ">=22"

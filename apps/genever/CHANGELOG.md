@@ -1,5 +1,18 @@
 # genever
 
+## 0.10.1
+
+### Patch Changes
+
+- Updated dependencies [63ab973]
+- Updated dependencies [8461cca]
+- Updated dependencies [8461cca]
+  - format-file@1.3.0
+  - generated-signature@0.2.0
+  - entry-script@4.2.0
+  - parse-cwd@2.1.0
+  - populate-files@1.2.1
+
 ## 0.10.0
 
 ### Minor Changes
