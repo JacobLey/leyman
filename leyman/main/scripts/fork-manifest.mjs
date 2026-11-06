@@ -19,6 +19,7 @@ import {
 } from 'node:fs';
 import path from 'node:path';
 import { parseArgs } from 'node:util';
+import { targetNames } from '@leyman/nx-plugin';
 
 export const workspaceRoot = path.resolve(import.meta.dirname, '../../..');
 
@@ -107,6 +108,18 @@ const stripNxJson = ({ nx }, requested, to) => {
     const lifecycleFile = path.join(to, 'leyman/main/lifecycle.json');
     const lifecycle = readJson(lifecycleFile);
     writeJson(lifecycleFile, { ...lifecycle, bindings: without(lifecycle.bindings, targets) });
+
+    // The plugin writes the targets it infers back into nx.json, so a cut one must be off there too
+    const pluginFile = path.join(to, 'leyman/main/nx-plugin.json');
+    const pluginOptions = readJson(pluginFile);
+    const cutPluginTargets = targetNames.filter(name => targets.has(name));
+    writeJson(pluginFile, {
+        ...pluginOptions,
+        targets: {
+            ...pluginOptions.targets,
+            ...Object.fromEntries(cutPluginTargets.map(name => [name, false])),
+        },
+    });
 
     const projectFile = path.join(to, 'leyman/main/project.json');
     const project = readJson(projectFile);
