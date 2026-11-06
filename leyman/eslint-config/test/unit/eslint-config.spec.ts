@@ -1,6 +1,6 @@
 import { expect } from 'chai';
 import { suite, test } from 'mocha';
-import configGenerator from '#internal/eslint-config.js';
+import configGenerator, { nonDeprecatedRules } from '#internal/eslint-config.js';
 
 const globalsOf = (options: { node?: boolean }) => {
     const config = configGenerator({
@@ -49,5 +49,26 @@ suite('configGenerator React version', () => {
 
     test('Skips detection without React', () => {
         expect(reactVersionOf({ dependencies: { chai: '^6' } })).to.equal('999.999.999');
+    });
+});
+
+suite('nonDeprecatedRules', () => {
+    const rule = { create: () => ({}) };
+
+    test('Turns on each rule, except deprecated, non-JavaScript and skipped ones', () => {
+        expect(
+            nonDeprecatedRules(
+                'plugin',
+                {
+                    rules: {
+                        kept: rule,
+                        deprecated: { ...rule, meta: { deprecated: true } },
+                        css: { ...rule, meta: { languages: ['css/css'] } },
+                        skipped: rule,
+                    },
+                },
+                ['skipped', 'not-defined']
+            )
+        ).to.deep.equal({ 'plugin/kept': 'error' });
     });
 });

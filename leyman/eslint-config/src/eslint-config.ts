@@ -37,11 +37,25 @@ const isForJavaScript = (rule: {
 interface PluginRules {
     rules?: Record<string, Rule.RuleModule | RuleModule<string, unknown[]>> | undefined;
 }
-export const nonDeprecatedRules = (name: string, plugin: PluginRules): Linter.RulesRecord => {
+/**
+ * Turns on every rule of a plugin that isn't deprecated and applies to JavaScript.
+ *
+ * @param name - the plugin's prefix, e.g. `import-x`
+ * @param plugin - its rules
+ * @param skip - rules left unset, so off. For a rule only some versions of the plugin define, as ESLint rejects a
+ * setting for a rule the installed version doesn't have.
+ * @returns each rule, as `error`
+ */
+export const nonDeprecatedRules = (
+    name: string,
+    plugin: PluginRules,
+    skip: readonly string[] = []
+): Linter.RulesRecord => {
     const rules: Linter.RulesRecord = {};
     for (const [ruleName, rule] of Object.entries(plugin.rules!)) {
         if (
             typeof rule === 'object' &&
+            !skip.includes(ruleName) &&
             (rule.meta?.deprecated ?? false) === false &&
             isForJavaScript(rule)
         ) {
@@ -521,7 +535,16 @@ export default function makeEslintConfigForPackage({
                 '@typescript-eslint/require-await': 'off',
 
                 // Import
-                ...nonDeprecatedRules('import-x', importPlugin),
+                // Added in eslint-plugin-import-x 4.18, so skipped rather than set off:
+                ...nonDeprecatedRules('import-x', importPlugin, [
+                    // Namespace imports (`import * as`) are allowed, as `import-x/no-namespace` is off
+                    'avoid-namespace-import',
+                    // A package's entry point is a barrel of its API (as barrelify writes), which dependents import
+                    'avoid-barrel-files',
+                    'avoid-importing-barrel-files',
+                    // Barrelify writes `export * from` barrels
+                    'avoid-re-export-all',
+                ]),
                 'import-x/consistent-type-specifier-style': ['error', 'prefer-top-level'],
                 // No bundler here reads webpack chunk names
                 'import-x/dynamic-import-chunkname': 'off',
