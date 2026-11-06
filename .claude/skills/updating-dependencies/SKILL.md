@@ -14,7 +14,7 @@ By default only apply **minor/patch** updates. Only bump a **major** version whe
 1. **Find updates:** `pnpm outdated -r --format json`.
 2. **Classify:** an update is minor/patch when the latest major equals the current major. For `0.x`, `0.7 → 0.8` counts as minor.
 3. **Edit `catalog:`** in `pnpm-workspace.yaml` to `^<new-version>`. Leave the named `catalogs:` alone unless the package is already listed there.
-4. **Changeset:** for each updated entry whose `dependencyType` is not `devDependencies`, collect its `dependentPackages[].name`, skipping packages under `leyman/`. Write one changeset (see [versioning](../versioning/SKILL.md)) with:
+4. **Changeset:** for each updated entry whose `dependencyType` is not `devDependencies`, collect its `dependentPackages[].name`, skipping private packages. Write one changeset (see [versioning](../versioning/SKILL.md)) with:
    - `minor` for packages where it is a `peerDependency` or `optionalDependency`
    - `patch` where it is a regular `dependency`
 

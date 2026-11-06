@@ -1,19 +1,33 @@
 {
   "name": "@leyman/expect",
   "version": "0.0.1",
-  "description": "Pre-configured chai assertions for internal tests, with chai-as-promised already registered.",
+  "description": "Chai's expect and assert with chai-as-promised registered, as one ESM import, so async assertions work in any test file without setup.",
   "engines": {
-    "node": ">=24"
+    "node": ">=22"
   },
-  "private": true,
   "type": "module",
   "author": "JacobLey",
   "license": "MIT",
-  "repository": "JacobLey/leyman",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "leyman/expect"
+  },
   "homepage": "https://github.com/JacobLey/leyman/tree/main/leyman/expect#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
+  "keywords": [
+    "chai",
+    "chai-as-promised",
+    "expect",
+    "assert",
+    "assertions",
+    "testing",
+    "mocha",
+    "esm",
+    "typescript"
+  ],
   "sideEffects": true,
   "exports": {
     ".": "./dist/expect.js"
@@ -35,7 +49,7 @@
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:",
+    "@types/node": "catalog:node-22",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",

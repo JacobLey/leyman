@@ -23,7 +23,7 @@ A changeset for a package on the [docs site](../docs-site/SKILL.md#documented-pa
 
 ## No changeset needed for
 
-- Packages under `leyman/` (private, never published)
+- Private packages (`"private": true`), such as `@leyman/main`
 - Changes only to tests, dev tooling, configs, CI or devDependencies
 
 ## Releasing

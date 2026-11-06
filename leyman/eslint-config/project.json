@@ -3,6 +3,7 @@
   "name": "@leyman/eslint-config",
   "targets": {
     "biome": {},
+    "check-package": {},
     "update-ts-references": {},
     "tsc": {},
     "tsc-test": {},

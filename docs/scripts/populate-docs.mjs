@@ -33,7 +33,7 @@ const sections = [
 /**
  * Folders whose projects are all private, so marking each one would say nothing.
  */
-const privateFolders = new Set(['leyman', 'docs', 'e2e', 'demos', 'infra', 'dagger']);
+const privateFolders = new Set(['docs', 'e2e', 'demos', 'infra', 'dagger']);
 /**
  * Folders whose project names repeat the folder (`@leyman/e2e-…`), so the path under it is shown.
  */
@@ -77,6 +77,8 @@ const readProject = directory => {
         folder,
         description,
         name: (packageJson?.name ?? project.name).replace(/^@leyman\//v, ''),
+        // What npm knows it by, scope included
+        npmName: packageJson?.name,
         published: packageJson !== null && packageJson.private !== true,
         typescriptNext: dependencies.includes('catalog:typescript-next'),
         go: existsSync(path.join(root, directory, 'go.mod')),
@@ -194,7 +196,7 @@ const readme = () => {
     const filePath = 'README.md';
     const published = projects
         .filter(project => project.published)
-        .toSorted((a, b) => byName(a.name, b.name));
+        .toSorted((a, b) => byName(a.npmName, b.npmName));
     return `${header()}
 
 ${manual(filePath, 'intro')}
@@ -206,7 +208,7 @@ Published to npm:
 ${table(
     ['Package', 'Description', 'Source'],
     published.map(project => [
-        `[${code(project.name)}](https://www.npmjs.com/package/${project.name})`,
+        `[${code(project.npmName)}](https://www.npmjs.com/package/${project.npmName})`,
         project.description,
         `[${code(project.directory)}](./${project.directory})`,
     ])

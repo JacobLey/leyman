@@ -1,19 +1,34 @@
 {
   "name": "@leyman/eslint-config",
   "version": "0.0.1",
-  "description": "Very opinionated eslint config used internally for package linting.",
+  "description": "Strict, opinionated ESLint flat config for TypeScript ESM packages, generated from each package's package.json: nearly every rule on, every exception explained.",
   "engines": {
-    "node": ">=24"
+    "node": ">=24.15.0"
   },
-  "private": true,
   "type": "module",
   "author": "JacobLey",
   "license": "MIT",
-  "repository": "JacobLey/leyman",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "leyman/eslint-config"
+  },
   "homepage": "https://github.com/JacobLey/leyman/tree/main/leyman/eslint-config#readme",
   "bugs": {
     "url": "https://github.com/JacobLey/leyman/issues"
   },
+  "keywords": [
+    "eslint",
+    "eslint-config",
+    "eslintconfig",
+    "flat-config",
+    "typescript",
+    "typescript-eslint",
+    "esm",
+    "strict",
+    "opinionated",
+    "biome"
+  ],
   "sideEffects": false,
   "exports": {
     ".": "./dist/eslint-config.js",
@@ -22,8 +37,7 @@
   "files": [
     "dist",
     "!dist/**/*.map",
-    "!dist/tsconfig.tsbuildinfo",
-    "types.d.ts"
+    "!dist/tsconfig.tsbuildinfo"
   ],
   "dependencies": {
     "@eslint-community/eslint-plugin-eslint-comments": "catalog:",
@@ -45,7 +59,8 @@
     "globals": "catalog:"
   },
   "peerDependencies": {
-    "eslint": "catalog:"
+    "eslint": "catalog:",
+    "typescript": "*"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -54,7 +69,7 @@
     "@types/chai": "catalog:",
     "@types/eslint": "catalog:",
     "@types/mocha": "catalog:",
-    "@types/node": "catalog:",
+    "@types/node": "catalog:node-24",
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "chai": "catalog:",
