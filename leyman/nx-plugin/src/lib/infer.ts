@@ -10,6 +10,18 @@ export interface InferencePackageJson {
 }
 
 /**
+ * Every path, relative to a project, whose presence inference reads.
+ */
+export const inferencePaths = [
+    'eslint.config.js',
+    'src',
+    'test/integration',
+    'test/tsconfig.json',
+    'test/unit',
+    'tsconfig.json',
+] as const;
+
+/**
  * What inference knows of a project.
  */
 export interface ProjectFacts {
@@ -28,9 +40,9 @@ export interface ProjectFacts {
     /**
      * Whether a file or directory exists in the project.
      *
-     * @param path - relative to the project root
+     * @param path - one of {@link inferencePaths}
      */
-    readonly has: (path: string) => boolean;
+    readonly has: (path: (typeof inferencePaths)[number]) => boolean;
 }
 
 /**

@@ -17,6 +17,15 @@
         "{projectRoot}/scripts/**/*"
       ]
     },
+    "nx-plugin-targets": {
+      "executor": "@leyman/nx-plugin:targets",
+      "options": {
+        "config": "leyman/main/nx-plugin.json"
+      },
+      "dependsOn": [
+        "^build"
+      ]
+    },
     "lifecycle": {
       "executor": "nx:run-commands",
       "options": {
@@ -27,7 +36,8 @@
         "cwd": "{projectRoot}"
       },
       "dependsOn": [
-        "^build"
+        "^build",
+        "nx-plugin-targets"
       ]
     },
     "fork-manifest-audit": {

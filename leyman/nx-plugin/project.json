@@ -5,6 +5,7 @@
     "biome": {},
     "eslint": {},
     "check-package": {},
+    "populate-files": {},
     "update-ts-references": {},
     "tsc": {},
     "tsc-test": {},

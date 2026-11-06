@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "files": {
+    "executors/targets/schema.json": {
+      "hash": "v1:1cde9d7c5c55150bc9e72bc7643568dc"
+    },
+    "schema.json": {
+      "hash": "v1:b75f5d421508cc8a7e18add6a856bb35"
+    }
+  }
+}

@@ -9,7 +9,7 @@ Nx plugin inferring the build, test, lint and package-check targets of TypeScrip
 
 </div>
 
-Work in progress: the target configurations, their inference and the scripts the targets run are here; the Nx plugin and the executor that writes the targets into `nx.json` come next.
+Work in progress: the target configurations, their inference, the scripts the targets run, and the `targets` executor, which writes the targets into `nx.json` and each `project.json` from an options file (and fails on drift in CI), are here; loading it as an Nx plugin comes next.
 
 ## Scripts
 

@@ -1,0 +1,22 @@
+{
+  "version": 1,
+  "outputCapture": "direct-nodejs",
+  "cli": "nx",
+  "type": "object",
+  "title": "targets",
+  "description": "Writes the plugin's named inputs and target defaults into nx.json, and the targets each project gets into its project.json",
+  "additionalProperties": false,
+  "properties": {
+    "config": {
+      "type": "string",
+      "description": "Path of the file holding the plugin options, relative to the workspace root"
+    },
+    "check": {
+      "type": "boolean",
+      "description": "Fail rather than write when a file is out of date. Defaults to true in CI"
+    }
+  },
+  "required": [
+    "config"
+  ]
+}

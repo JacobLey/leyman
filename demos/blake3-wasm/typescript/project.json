@@ -11,7 +11,6 @@
     "mocha-unit-test": {},
     "mocha-integration-test": {},
     "coverage-report": {},
-    "sync-injected": {},
     "install:_": {},
     "install": {},
     "prepare:_": {},

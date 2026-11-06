@@ -1,0 +1,624 @@
+{
+  "type": "object",
+  "title": "@leyman/nx-plugin",
+  "description": "Infers the targets of TypeScript ESM packages",
+  "additionalProperties": false,
+  "properties": {
+    "targets": {
+      "type": "object",
+      "description": "Each target's options, or `false` to infer it nowhere",
+      "additionalProperties": false,
+      "properties": {
+        "biome": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "eslint": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "check-package": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "update-ts-references": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "tsc": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "tsc-test": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "mocha-unit-test": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "mocha-integration-test": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "vitest-unit-test": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "coverage-report": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        },
+        "sync-injected": {
+          "oneOf": [
+            {
+              "description": "Infer the target nowhere",
+              "const": false
+            },
+            {
+              "type": "object",
+              "additionalProperties": false,
+              "properties": {
+                "name": {
+                  "type": "string",
+                  "description": "Name of the target. Defaults to the target's own"
+                },
+                "include": {
+                  "type": "array",
+                  "description": "Projects that get the target whatever their files",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                },
+                "exclude": {
+                  "type": "array",
+                  "description": "Projects that never get the target",
+                  "items": {
+                    "type": "string",
+                    "description": "Root of a project, e.g. `packages/a`"
+                  }
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
+    "configs": {
+      "type": "object",
+      "description": "Paths of the shared configs, relative to each project",
+      "additionalProperties": false,
+      "properties": {
+        "swc": {
+          "type": "string",
+          "default": "node_modules/@leyman/configs/swcrc.jsonc"
+        },
+        "c8": {
+          "type": "string",
+          "default": "node_modules/@leyman/configs/c8rc.json"
+        },
+        "vitest": {
+          "type": "string",
+          "default": "node_modules/@leyman/configs/vitest.config.js"
+        }
+      }
+    },
+    "scripts": {
+      "type": "string",
+      "description": "Directory to run the plugin's scripts from, instead of the package's bins (`leyman-swc-compile`...)"
+    },
+    "coverage": {
+      "type": "object",
+      "description": "Coverage thresholds `coverage-report` passes to c8, over the c8 config's",
+      "additionalProperties": false,
+      "properties": {
+        "branches": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "functions": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "lines": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "statements": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 100
+        }
+      }
+    },
+    "checkPackage": {
+      "type": "object",
+      "description": "Options of `check-package`",
+      "additionalProperties": false,
+      "properties": {
+        "profile": {
+          "description": "The module resolutions every entry point must work under",
+          "enum": [
+            "esm-only",
+            "node16",
+            "strict"
+          ]
+        },
+        "floorTsconfig": {
+          "oneOf": [
+            {
+              "type": "string",
+              "default": "@leyman/configs/tsconfig.node-{major}.json",
+              "description": "The config a package's `tsconfig.json` must extend, with `{major}` for its support floor"
+            },
+            {
+              "description": "Not checked",
+              "const": false
+            }
+          ]
+        },
+        "inputs": {
+          "type": "array",
+          "description": "What a change of check-package itself is hashed by",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "A file pattern, or the name of a named input"
+              },
+              {
+                "type": "object",
+                "description": "An input object, such as `{ \"externalDependencies\": [\"pkg\"] }`"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "inputs": {
+      "type": "object",
+      "description": "What changes of the shared tools are hashed by",
+      "additionalProperties": false,
+      "properties": {
+        "configs": {
+          "type": "array",
+          "description": "The shared configs, for every target that reads one",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "A file pattern, or the name of a named input"
+              },
+              {
+                "type": "object",
+                "description": "An input object, such as `{ \"externalDependencies\": [\"pkg\"] }`"
+              }
+            ]
+          }
+        },
+        "tools": {
+          "type": "array",
+          "description": "This plugin's scripts, for every target that runs one",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "A file pattern, or the name of a named input"
+              },
+              {
+                "type": "object",
+                "description": "An input object, such as `{ \"externalDependencies\": [\"pkg\"] }`"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "namedInputs": {
+      "type": "object",
+      "description": "Inputs added to the end of each named input, such as a file the tests read",
+      "additionalProperties": false,
+      "properties": {
+        "dependency-files": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "A file pattern, or the name of a named input"
+              },
+              {
+                "type": "object",
+                "description": "An input object, such as `{ \"externalDependencies\": [\"pkg\"] }`"
+              }
+            ]
+          }
+        },
+        "package-files": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "A file pattern, or the name of a named input"
+              },
+              {
+                "type": "object",
+                "description": "An input object, such as `{ \"externalDependencies\": [\"pkg\"] }`"
+              }
+            ]
+          }
+        },
+        "eslint-input": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "A file pattern, or the name of a named input"
+              },
+              {
+                "type": "object",
+                "description": "An input object, such as `{ \"externalDependencies\": [\"pkg\"] }`"
+              }
+            ]
+          }
+        },
+        "ts-source": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "A file pattern, or the name of a named input"
+              },
+              {
+                "type": "object",
+                "description": "An input object, such as `{ \"externalDependencies\": [\"pkg\"] }`"
+              }
+            ]
+          }
+        },
+        "dependency-builds": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "A file pattern, or the name of a named input"
+              },
+              {
+                "type": "object",
+                "description": "An input object, such as `{ \"externalDependencies\": [\"pkg\"] }`"
+              }
+            ]
+          }
+        },
+        "test-source": {
+          "type": "array",
+          "items": {
+            "oneOf": [
+              {
+                "type": "string",
+                "description": "A file pattern, or the name of a named input"
+              },
+              {
+                "type": "object",
+                "description": "An input object, such as `{ \"externalDependencies\": [\"pkg\"] }`"
+              }
+            ]
+          }
+        }
+      }
+    },
+    "$schema": {
+      "type": "string",
+      "description": "Path or URL of this JSON schema"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

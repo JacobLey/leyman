@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "description": "Nx plugin inferring the build, test, lint and package-check targets of TypeScript ESM packages: SWC and tsc builds, Mocha or Vitest under c8, ESLint, Biome and check-package.",
   "engines": {
-    "node": ">=22"
+    "node": ">=22.13.0"
   },
   "type": "module",
   "author": "JacobLey",
@@ -31,6 +31,7 @@
     "targets"
   ],
   "sideEffects": false,
+  "executors": "./executors.json",
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
@@ -46,10 +47,19 @@
     "dist",
     "!dist/**/*.map",
     "!dist/tsconfig.tsbuildinfo",
+    "!dist/file-content.*",
+    "executors.json",
+    "out",
+    "!out/.generated.json",
     "scripts"
   ],
+  "imports": {
+    "#internal/*": "./dist/*"
+  },
   "dependencies": {
-    "@nx/devkit": "catalog:"
+    "@nx/devkit": "catalog:",
+    "juniper": "workspace:^",
+    "juniper-validator": "workspace:^"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -63,6 +73,7 @@
     "@typescript/native": "catalog:",
     "c8": "catalog:",
     "eslint": "catalog:",
+    "load-populate-files": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
     "typescript": "catalog:"

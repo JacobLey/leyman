@@ -10,7 +10,16 @@
   ],
   "references": [
     {
+      "path": "../../apps/juniper-validator"
+    },
+    {
+      "path": "../../apps/juniper"
+    },
+    {
       "path": "../../tools/test-chain/mocha-chain"
+    },
+    {
+      "path": "../../apps/populate-files/load-populate-files"
     },
     {
       "path": "../expect"

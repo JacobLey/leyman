@@ -37,11 +37,14 @@
       "{projectRoot}/eslint.config.js"
     ],
     "ts-source": [
-      "shared-globals",
+      {
+        "runtime": "node --version"
+      },
+      "{workspaceRoot}/leyman/configs/c8rc.json",
       "{workspaceRoot}/leyman/configs/swcrc.jsonc",
+      "{workspaceRoot}/leyman/configs/tsconfig.*.json",
+      "{workspaceRoot}/leyman/configs/vitest.config.js",
       "{workspaceRoot}/leyman/nx-plugin/scripts/**/*",
-      "{workspaceRoot}/leyman/configs/tsconfig.build.json",
-      "{workspaceRoot}/leyman/configs/tsconfig.node-*.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
       "{projectRoot}/src/**/*",
@@ -86,11 +89,9 @@
     "test-source": [
       "ts-source",
       "{projectRoot}/test/**/*",
-      "{projectRoot}/schema.sql",
-      "{workspaceRoot}/leyman/configs/tsconfig.test.json",
       "package-files",
       "dependency-builds",
-      "{workspaceRoot}/leyman/configs/c8rc.json"
+      "{projectRoot}/schema.sql"
     ],
     "rustSource": [
       "{projectRoot}/Cargo.toml",
@@ -124,10 +125,10 @@
           ]
         }
       },
+      "cache": false,
       "dependsOn": [
         "prepare:generate"
-      ],
-      "cache": false
+      ]
     },
     "dagger-develop": {
       "executor": "nx:run-commands",
@@ -284,14 +285,16 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "check-package --profile esm-only --floor-tsconfig '@leyman/configs/tsconfig.node-{major}.json'"
+          "check-package --profile esm-only --floor-tsconfig @leyman/configs/tsconfig.node-{major}.json"
         ],
         "color": true,
         "cwd": "{projectRoot}"
       },
       "cache": true,
       "inputs": [
-        "shared-globals",
+        {
+          "runtime": "node --version"
+        },
         "{projectRoot}/**/*",
         "!{projectRoot}/CHANGELOG.md",
         "!{projectRoot}/eslint.config.js",
@@ -701,8 +704,7 @@
       "cache": true,
       "inputs": [
         "test-source",
-        "^dependency-files",
-        "{workspaceRoot}/leyman/configs/vitest.config.js"
+        "^dependency-files"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
@@ -760,10 +762,10 @@
       },
       "cache": true,
       "inputs": [
-        "shared-globals",
+        {
+          "runtime": "node --version"
+        },
         "ts-source",
-        "{workspaceRoot}/leyman/configs/c8rc.json",
-        "{workspaceRoot}/leyman/nx-plugin/scripts/**/*",
         {
           "dependentTasksOutputFiles": ".coverage/project/**/*.json",
           "transitive": true

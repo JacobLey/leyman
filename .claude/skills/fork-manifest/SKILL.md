@@ -70,6 +70,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/main/README.md` | why the global tools live in this package |
 | `leyman/main/eslint.config.js` | lints the package's own scripts |
 | `leyman/main/lifecycle.json` | declares the stages and binds targets to them |
+| `leyman/main/nx-plugin.json` | the options the TypeScript targets in nx.json are written from |
 | `leyman/main/package.json` | the global tools |
 | `leyman/main/project.json` | the lifecycle targets of the tools package |
 | `patches/nx@23.3.1.patch` | the Nx planner patch that keeps daemon-less runs fast |

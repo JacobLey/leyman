@@ -1,0 +1,9 @@
+{
+  "executors": {
+    "targets": {
+      "implementation": "./dist/executors/targets.js",
+      "schema": "./out/executors/targets/schema.json",
+      "description": "Writes the plugin's named inputs and target defaults into nx.json, and the targets each project gets into its project.json."
+    }
+  }
+}

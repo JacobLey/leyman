@@ -1,0 +1,46 @@
+{
+  "$schema": "./node_modules/@leyman/nx-plugin/out/schema.json",
+  "scripts": "${NX_WORKSPACE_ROOT}/leyman/nx-plugin/scripts",
+  "targets": {
+    "eslint": {
+      "exclude": [
+        "leyman/eslint-config"
+      ]
+    },
+    "mocha-integration-test": {
+      "include": [
+        "leyman/eslint-config"
+      ]
+    }
+  },
+  "checkPackage": {
+    "profile": "esm-only",
+    "inputs": [
+      {
+        "externalDependencies": [
+          "@arethetypeswrong/core",
+          "ignore",
+          "publint",
+          "semver",
+          "typescript"
+        ]
+      }
+    ]
+  },
+  "inputs": {
+    "configs": [
+      "{workspaceRoot}/leyman/configs/c8rc.json",
+      "{workspaceRoot}/leyman/configs/swcrc.jsonc",
+      "{workspaceRoot}/leyman/configs/tsconfig.*.json",
+      "{workspaceRoot}/leyman/configs/vitest.config.js"
+    ],
+    "tools": [
+      "{workspaceRoot}/leyman/nx-plugin/scripts/**/*"
+    ]
+  },
+  "namedInputs": {
+    "test-source": [
+      "{projectRoot}/schema.sql"
+    ]
+  }
+}

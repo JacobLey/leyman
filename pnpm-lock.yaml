@@ -2509,7 +2509,7 @@ importers:
         version: file:leyman/expect
       '@leyman/nx-plugin':
         specifier: workspace:^
-        version: file:leyman/nx-plugin(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+        version: file:leyman/nx-plugin(eslint@10.13.0(supports-color@8.1.1))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
       '@swc/cli':
         specifier: 'catalog:'
         version: 0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
@@ -2971,6 +2971,9 @@ importers:
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
+      '@leyman/nx-plugin':
+        specifier: workspace:^
+        version: file:leyman/nx-plugin(eslint@10.13.0(supports-color@8.1.1))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
       '@naxodev/gonx':
         specifier: 'catalog:'
         version: 4.1.2(@nx/devkit@23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
@@ -2998,6 +3001,12 @@ importers:
       '@nx/devkit':
         specifier: 'catalog:'
         version: 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+      juniper:
+        specifier: workspace:^
+        version: file:apps/juniper(eslint@10.13.0(supports-color@10.2.2))
+      juniper-validator:
+        specifier: workspace:^
+        version: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@10.2.2)))
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -3032,6 +3041,9 @@ importers:
       eslint:
         specifier: 'catalog:'
         version: 10.13.0(supports-color@10.2.2)
+      load-populate-files:
+        specifier: workspace:^
+        version: file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@10.2.2))(prettier@3.9.10)
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -5906,7 +5918,7 @@ packages:
 
   '@leyman/nx-plugin@file:leyman/nx-plugin':
     resolution: {directory: leyman/nx-plugin, type: directory}
-    engines: {node: '>=22'}
+    engines: {node: '>=22.13.0'}
     hasBin: true
 
   '@loaderkit/resolve@1.0.6':
@@ -13108,10 +13120,13 @@ snapshots:
       chai: 6.3.0
       chai-as-promised: 8.0.2(chai@6.3.0)
 
-  '@leyman/nx-plugin@file:leyman/nx-plugin(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))':
+  '@leyman/nx-plugin@file:leyman/nx-plugin(eslint@10.13.0(supports-color@8.1.1))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))':
     dependencies:
       '@nx/devkit': 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+      juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
+      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)))
     transitivePeerDependencies:
+      - eslint
       - nx
 
   '@loaderkit/resolve@1.0.6':
@@ -16281,6 +16296,10 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
+  generated-signature@file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@10.2.2)):
+    optionalDependencies:
+      eslint: 10.13.0(supports-color@10.2.2)
+
   generated-signature@file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@8.1.1)):
     optionalDependencies:
       eslint: 10.13.0(supports-color@8.1.1)
@@ -16845,6 +16864,14 @@ snapshots:
       fast-check: 4.10.2
       juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
 
+  juniper-validator@file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@10.2.2))):
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      ajv: 8.20.0
+      ajv-formats: 3.0.1(ajv@8.20.0)
+      default-import: file:tools/default-import
+      juniper: file:apps/juniper(eslint@10.13.0(supports-color@10.2.2))
+
   juniper-validator@file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))):
     dependencies:
       '@standard-schema/spec': 1.1.0
@@ -16852,6 +16879,13 @@ snapshots:
       ajv-formats: 3.0.1(ajv@8.20.0)
       default-import: file:tools/default-import
       juniper: file:apps/juniper(eslint@10.13.0(supports-color@8.1.1))
+
+  juniper@file:apps/juniper(eslint@10.13.0(supports-color@10.2.2)):
+    dependencies:
+      '@standard-schema/spec': 1.1.0
+      escape-string-regexp: 5.0.0
+    optionalDependencies:
+      eslint: 10.13.0(supports-color@10.2.2)
 
   juniper@file:apps/juniper(eslint@10.13.0(supports-color@8.1.1)):
     dependencies:
@@ -16975,6 +17009,22 @@ snapshots:
   linkify-it@6.1.0:
     dependencies:
       uc.micro: 3.0.0
+
+  load-populate-files@file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@10.2.2))(prettier@3.9.10):
+    dependencies:
+      ci-info: 4.4.0
+      default-import: file:tools/default-import
+      entry-script: file:tools/entry-script
+      juniper: file:apps/juniper(eslint@10.13.0(supports-color@10.2.2))
+      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@10.2.2)))
+      parse-cwd: file:tools/parse-cwd
+      populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@10.2.2))(prettier@3.9.10)
+      unknown-error: file:tools/unknown-error
+      yargs: 18.2.0
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - eslint
+      - prettier
 
   load-populate-files@file:apps/populate-files/load-populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:
@@ -17960,6 +18010,19 @@ snapshots:
   pluralize@8.0.0: {}
 
   pony-cause@2.1.11: {}
+
+  populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@10.2.2))(prettier@3.9.10):
+    dependencies:
+      ci-info: 4.4.0
+      format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
+      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.13.0(supports-color@10.2.2))
+      parse-cwd: file:tools/parse-cwd
+      uint8array-extras: 1.6.0
+      unknown-error: file:tools/unknown-error
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - eslint
+      - prettier
 
   populate-files@file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:

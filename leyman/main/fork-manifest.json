@@ -187,6 +187,10 @@
       "why": "declares the stages and binds targets to them"
     },
     {
+      "path": "leyman/main/nx-plugin.json",
+      "why": "the options the TypeScript targets in nx.json are written from"
+    },
+    {
       "path": "leyman/main/package.json",
       "why": "the global tools"
     },
