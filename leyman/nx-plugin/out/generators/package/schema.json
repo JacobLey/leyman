@@ -1,0 +1,79 @@
+{
+  "cli": "nx",
+  "type": "object",
+  "title": "package",
+  "description": "Adds a TypeScript ESM package, with a project.json declaring the targets the plugin infers",
+  "additionalProperties": false,
+  "properties": {
+    "directory": {
+      "$default": {
+        "$source": "argv",
+        "index": 0
+      },
+      "x-prompt": "Which directory should the package go in?",
+      "type": "string",
+      "description": "Where the package goes, relative to the workspace root"
+    },
+    "name": {
+      "type": "string",
+      "description": "Name of the package. Defaults to the directory's last segment"
+    },
+    "description": {
+      "x-prompt": "What does the package do?",
+      "type": "string",
+      "description": "Description, for package.json and the README"
+    },
+    "published": {
+      "type": "boolean",
+      "default": false,
+      "description": "Published to npm, rather than private"
+    },
+    "floor": {
+      "type": "integer",
+      "default": 22,
+      "description": "Major of the oldest Node.js a published package supports"
+    },
+    "test": {
+      "default": "mocha",
+      "description": "Test runner, or none",
+      "enum": [
+        "mocha",
+        "vitest",
+        "none"
+      ]
+    },
+    "repository": {
+      "type": "string",
+      "description": "URL of the workspace's GitHub repository, for a published package's repository, homepage and bugs"
+    },
+    "author": {
+      "type": "string",
+      "description": "author of package.json"
+    },
+    "license": {
+      "type": "string",
+      "description": "license of package.json. A published package also gets a copy of the workspace's LICENSE"
+    },
+    "devDependencies": {
+      "type": "array",
+      "description": "More packages to add to devDependencies",
+      "items": {
+        "type": "string"
+      }
+    },
+    "config": {
+      "type": "string",
+      "description": "File of the plugin options, relative to the workspace root, for a workspace running the targets executor. Defaults to the options in nx.json"
+    },
+    "skipInstall": {
+      "type": "boolean",
+      "default": false,
+      "description": "Don't install dependencies afterwards"
+    }
+  },
+  "required": [
+    "directory",
+    "description"
+  ],
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}

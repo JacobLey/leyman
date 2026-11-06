@@ -12,7 +12,16 @@ export { namedInputNames, resolveOptions, targetNames } from './lib/options.js';
 export { namedInputs, targetConfigurations } from './lib/targets.js';
 export type { WorkspaceProject } from './lib/sync.js';
 export { syncTargets } from './lib/sync.js';
-export { assertOptions, executorJsonSchema, optionsJsonSchema } from './lib/schema.js';
+export {
+    assertOptions,
+    executorJsonSchema,
+    optionsJsonSchema,
+    packageGeneratorJsonSchema,
+} from './lib/schema.js';
 export { createNodes, name } from './lib/plugin.js';
 export type { LoadedProject, WorkspacePackageJson } from './lib/projects.js';
 export { loadProjects } from './lib/projects.js';
+export type { PackageGeneratorOptions } from './generators/package.js';
+export { default as packageGenerator } from './generators/package.js';
+export type { WorkspaceVersions } from './lib/versions.js';
+export { readWorkspaceVersions, resolveVersion } from './lib/versions.js';

@@ -147,6 +147,74 @@ export const executorJsonSchema = executorSchema
     .metadata({ version: 1, outputCapture: 'direct-nodejs', cli: 'nx' })
     .toJSON();
 
+/**
+ * Major of the oldest Node.js a package the `package` generator adds supports, unless told otherwise.
+ */
+export const defaultFloor = 22;
+
+const packageGeneratorSchema = objectSchema({
+    title: 'package',
+    description:
+        'Adds a TypeScript ESM package, with a project.json declaring the targets the plugin infers',
+    properties: {
+        directory: stringSchema({
+            description: 'Where the package goes, relative to the workspace root',
+        }).metadata({
+            $default: { $source: 'argv', index: 0 },
+            'x-prompt': 'Which directory should the package go in?',
+        }),
+        name: stringSchema({
+            description: "Name of the package. Defaults to the directory's last segment",
+        }),
+        description: stringSchema({
+            description: 'Description, for package.json and the README',
+        }).metadata('x-prompt', 'What does the package do?'),
+        published: booleanSchema({
+            description: 'Published to npm, rather than private',
+            default: false,
+        }),
+        floor: numberSchema({
+            type: 'integer',
+            description: 'Major of the oldest Node.js a published package supports',
+            default: defaultFloor,
+        }),
+        test: enumSchema({
+            enum: ['mocha', 'vitest', 'none'] as const,
+            description: 'Test runner, or none',
+            default: 'mocha',
+        }),
+        repository: stringSchema({
+            description:
+                "URL of the workspace's GitHub repository, for a published package's repository, homepage and bugs",
+        }),
+        author: stringSchema({ description: 'author of package.json' }),
+        license: stringSchema({
+            description:
+                "license of package.json. A published package also gets a copy of the workspace's LICENSE",
+        }),
+        devDependencies: arraySchema(stringSchema()).description(
+            'More packages to add to devDependencies'
+        ),
+        config: stringSchema({
+            description:
+                'File of the plugin options, relative to the workspace root, for a workspace running the targets executor. Defaults to the options in nx.json',
+        }),
+        skipInstall: booleanSchema({
+            description: "Don't install dependencies afterwards",
+            default: false,
+        }),
+    },
+    required: ['directory', 'description'],
+    additionalProperties: false,
+});
+
+/**
+ * JSON schema of the `package` generator's options.
+ */
+export const packageGeneratorJsonSchema = packageGeneratorSchema
+    .metadata('cli', 'nx')
+    .toJSON({ schema: true });
+
 const optionsValidator = makeValidator(optionsJsonSchema);
 
 /**

@@ -1,0 +1,9 @@
+{
+  "generators": {
+    "package": {
+      "factory": "./dist/generators/package.js",
+      "schema": "./out/generators/package/schema.json",
+      "description": "Adds a TypeScript ESM package, with a project.json declaring the targets the plugin infers."
+    }
+  }
+}

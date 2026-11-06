@@ -32,6 +32,7 @@
   ],
   "sideEffects": false,
   "executors": "./executors.json",
+  "generators": "./generators.json",
   "exports": {
     ".": "./dist/index.js",
     "./package.json": "./package.json"
@@ -49,6 +50,7 @@
     "!dist/tsconfig.tsbuildinfo",
     "!dist/file-content.*",
     "executors.json",
+    "generators.json",
     "out",
     "!out/.generated.json",
     "scripts"
@@ -59,7 +61,8 @@
   "dependencies": {
     "@nx/devkit": "catalog:",
     "juniper": "workspace:^",
-    "juniper-validator": "workspace:^"
+    "juniper-validator": "workspace:^",
+    "yaml": "catalog:"
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
@@ -78,6 +81,7 @@
     "mocha-chain": "workspace:^",
     "nx": "catalog:",
     "nx-lifecycle": "workspace:^",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "vitest": "catalog:"
   }
 }
