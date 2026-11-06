@@ -1,5 +1,11 @@
 # nx-lifecycle
 
+## 1.3.0
+
+### Minor Changes
+
+- d60951e: The plugin takes `warnUnusedBindings: false`, to stay quiet about bindings no project defines the target of yet, such as a generator's full set.
+
 ## 1.2.2
 
 ### Patch Changes
