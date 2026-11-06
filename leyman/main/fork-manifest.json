@@ -225,10 +225,6 @@
       "why": "the lifecycle targets of the tools package"
     },
     {
-      "path": "leyman/main/scripts/check-package.mjs",
-      "why": "checks a package as it would be published"
-    },
-    {
       "path": "leyman/main/scripts/sync-injected.mjs",
       "why": "mirrors a package into its injected copies"
     },
@@ -498,6 +494,10 @@
     }
   ],
   "packages": [
+    {
+      "path": "apps/check-package",
+      "why": "vendor until published: the check-package target runs its CLI"
+    },
     {
       "path": "leyman/eslint-config",
       "why": "vendor until published: every package's eslint.config.js imports it"

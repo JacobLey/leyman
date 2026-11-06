@@ -16,19 +16,16 @@
   },
   "sideEffects": false,
   "dependencies": {
-    "@arethetypeswrong/core": "catalog:",
     "@biomejs/biome": "catalog:",
     "@changesets/cli": "catalog:",
+    "@leyman/check-package": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@naxodev/gonx": "catalog:",
     "@nx/js": "catalog:",
     "@typescript/native": "catalog:",
     "eslint": "catalog:",
-    "ignore": "catalog:",
     "nx": "catalog:",
     "nx-lifecycle": "workspace:^",
-    "publint": "catalog:",
-    "semver": "catalog:",
     "typescript": "catalog:"
   }
 }

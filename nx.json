@@ -285,7 +285,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "node ${NX_WORKSPACE_ROOT}/leyman/main/scripts/check-package.mjs"
+          "check-package --profile esm-only --floor-tsconfig 'configs/tsconfig.node-{major}.json'"
         ],
         "color": true,
         "cwd": "{projectRoot}"
@@ -299,7 +299,6 @@
         "!{projectRoot}/test/**/*",
         "{workspaceRoot}/.gitignore",
         "dependency-builds",
-        "{workspaceRoot}/leyman/main/scripts/check-package.mjs",
         {
           "externalDependencies": [
             "@arethetypeswrong/core",
@@ -312,6 +311,12 @@
       ],
       "outputs": [],
       "dependsOn": [
+        {
+          "projects": [
+            "@leyman/check-package"
+          ],
+          "target": "build"
+        },
         "check:_"
       ]
     },

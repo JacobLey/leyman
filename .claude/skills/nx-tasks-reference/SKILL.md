@@ -105,13 +105,13 @@ Fails if the package's Drizzle schema has changes that no migration covers, or i
 
 ### `check-package`
 
-Packs the package with `pnpm pack`, exactly as it would be published, and checks the tarball (`leyman/main/scripts/check-package.mjs`):
+Packs the package with `pnpm pack`, exactly as it would be published, and checks the tarball, with [`@leyman/check-package`](../../../apps/check-package/) (`--profile esm-only --floor-tsconfig 'configs/tsconfig.node-{major}.json'`):
 
 - [publint](https://publint.dev/), in strict mode: `exports`, `bin` and other entry points exist in the tarball and are well formed.
 - [Are The Types Wrong](https://arethetypeswrong.github.io/): every entry point resolves to JavaScript and types for ESM consumers, under both Node.js (`node16`) and bundler resolution. CommonJS and `node10` resolution are expected to fail for ESM-only packages, so they are not checked.
 - Declarations: `tsc` type checks the published `.d.ts` files as a strict consumer with `skipLibCheck: false` would. A `@ts-expect-error` in `src/` doesn't reach the declarations, so the error it hid fails here. Errors in dependencies' declarations are ignored.
-- Support floor: `tsconfig.json` extends `configs/tsconfig.node-<major>.json` and `@types/node` is `catalog:node-<major>`, for the major version of `engines.node` (see [Support floors](../typescript/SKILL.md#support-floors)). Every runtime dependency's `engines.node` must allow the oldest version the package's allows, so lowering a floor fails while a dependency still needs newer, and raising a dependency's fails until its dependents follow.
-- Published files: every top-level path not ignored by `.gitignore` is either published, or on the script's `notPublished` list (`src`, `test`, `project.json`, ...), and nothing on that list is published. A new path, like `data/`, fails until it is added to one or the other.
+- Support floor: `tsconfig.json` extends `configs/tsconfig.node-<major>.json` and the installed `@types/node` has that major version (so `catalog:node-<major>`), for the major version of `engines.node` (see [Support floors](../typescript/SKILL.md#support-floors)). Every runtime dependency's `engines.node` must allow the oldest version the package's allows, so lowering a floor fails while a dependency still needs newer, and raising a dependency's fails until its dependents follow.
+- Published files: every top-level path not ignored by `.gitignore` is either published, or on check-package's list of paths never published (`src`, `test`, `project.json`, ...; more with `--not-published`), and nothing on that list is published. A new path, like `data/`, fails until it is added to one or the other.
 
 It hashes everything in the project but `test/`, `CHANGELOG.md` and `eslint.config.js`, whose contents can't change the result, so a new top-level path still reruns it.
 

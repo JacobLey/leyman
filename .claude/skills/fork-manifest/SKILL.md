@@ -78,7 +78,6 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/main/lifecycle.json` | declares the stages and binds targets to them |
 | `leyman/main/package.json` | the global tools |
 | `leyman/main/project.json` | the lifecycle targets of the tools package |
-| `leyman/main/scripts/check-package.mjs` | checks a package as it would be published |
 | `leyman/main/scripts/sync-injected.mjs` | mirrors a package into its injected copies |
 | `patches/nx@23.3.1.patch` | the Nx planner patch that keeps daemon-less runs fast |
 | `patches/@typescript-eslint__eslint-plugin@8.72.0.patch` | a wrong autofix under the v flag, which the eslint config's rules reach |
@@ -102,6 +101,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `pnpm-workspace.yaml` | the catalog and workspace globs |
 | `tsconfig.base.json` | empty on purpose, so Nx hashes it in place of tsconfig.json |
 | `tsconfig.json` | the TypeScript project root |
+| `apps/check-package` | vendor until published: the check-package target runs its CLI |
 | `leyman/eslint-config` | vendor until published: every package's eslint.config.js imports it |
 | `leyman/expect` | vendor until published: the test assertion package |
 

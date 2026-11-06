@@ -147,6 +147,9 @@
     },
     {
       "path": "./e2e/genever-comparison"
+    },
+    {
+      "path": "./apps/check-package"
     }
   ]
 }
