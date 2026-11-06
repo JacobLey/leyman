@@ -211,6 +211,12 @@ export default function makeEslintConfigForPackage({
     const projectUrl = Path.dirname(fileURLToPath(configUrl));
     const sourceFiles = ['**/*.{c,m,}ts{x,}', '**/*.{c,m,}js'] as const;
     const extraneousDependencies = { includeInternal: true, whitelist: [packageJson.name] };
+    const hasReact = [
+        packageJson.dependencies,
+        packageJson.devDependencies,
+        packageJson.optionalDependencies,
+        packageJson.peerDependencies,
+    ].some(dependencies => dependencies !== undefined && 'react' in dependencies);
 
     return [
         {
@@ -251,8 +257,10 @@ export default function makeEslintConfigForPackage({
             settings: {
                 'import-x/internal-regex': getInternalRegex(packageJson),
                 react: {
-                    // Keep in sync with `react` in the workspace catalog
-                    version: '19.3.0',
+                    // The installed React, resolved from each linted file. A package without React has no
+                    // JSX for the version to matter to, and `999.999.999` is eslint-plugin-react's own
+                    // "latest", which skips detection and its warning that React isn't installed.
+                    version: hasReact ? 'detect' : '999.999.999',
                 },
             },
             rules: {

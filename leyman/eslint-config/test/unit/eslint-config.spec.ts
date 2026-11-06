@@ -29,3 +29,25 @@ suite('configGenerator globals', () => {
         expect(globalsOf({}).tests).to.include.keys('Buffer', 'process', 'setImmediate');
     });
 });
+
+const reactVersionOf = (packageJson: object) =>
+    configGenerator({
+        configUrl: import.meta.url,
+        packageJson: { name: 'fake', version: '1.0.0', ...packageJson },
+    })
+        .map(block => (block.settings?.react as { version?: string } | undefined)?.version)
+        .find(version => version !== undefined);
+
+suite('configGenerator React version', () => {
+    test('Detects the installed React when the package depends on it', () => {
+        expect(reactVersionOf({ peerDependencies: { react: '^19' } })).to.equal('detect');
+    });
+
+    test('Detects the installed React when only tests depend on it', () => {
+        expect(reactVersionOf({ devDependencies: { react: '^19' } })).to.equal('detect');
+    });
+
+    test('Skips detection without React', () => {
+        expect(reactVersionOf({ dependencies: { chai: '^6' } })).to.equal('999.999.999');
+    });
+});
