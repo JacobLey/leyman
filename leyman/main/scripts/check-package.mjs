@@ -40,6 +40,8 @@ const notPublished = new Set([
     'src',
     'test',
     'tsconfig.json',
+    // Ambient declarations for untyped dependencies, used only to compile the source
+    'types.d.ts',
 ]);
 
 const workspaceRoot = process.env.NX_WORKSPACE_ROOT;
