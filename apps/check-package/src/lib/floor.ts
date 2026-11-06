@@ -22,7 +22,8 @@ const readJson = async (path: string): Promise<unknown> => JSON.parse(await read
  * @param params.cwd - the package directory
  * @param params.engine - the package's `engines.node` range
  * @param params.floor - the floor's major version
- * @param params.floorTsconfig - path of the config, relative to `root`, with `{major}` for the floor
+ * @param params.floorTsconfig - the config, with `{major}` for the floor: a package specifier, matched as is, or a
+ * path relative to `root` starting with `./` or `../`
  * @param params.root - the workspace root
  * @returns the problem, if any
  */
@@ -39,13 +40,10 @@ const tsconfigProblem = async ({
     floorTsconfig: string;
     root: string;
 }): Promise<string | null> => {
-    const expected = Path.relative(
-        cwd,
-        Path.join(
-            root,
-            floorTsconfig.replaceAll('{major}', () => floor)
-        )
-    ).replaceAll(Path.sep, '/');
+    const config = floorTsconfig.replaceAll('{major}', () => floor);
+    const expected = /^\.\.?\//v.test(config)
+        ? Path.relative(cwd, Path.join(root, config)).replaceAll(Path.sep, '/')
+        : config;
     const tsconfigPath = Path.join(cwd, 'tsconfig.json');
     const extended = (await isPresent(tsconfigPath))
         ? ((await readJson(tsconfigPath)) as { extends?: unknown }).extends
@@ -107,7 +105,8 @@ const dependencyProblem = async (
  *
  * @param params - the package, its `package.json`, the workspace root and the config template
  * @param params.cwd - the package directory
- * @param params.floorTsconfig - path of the config `tsconfig.json` must extend, relative to `root`, with `{major}` for the floor
+ * @param params.floorTsconfig - the config `tsconfig.json` must extend, with `{major}` for the floor: a package
+ * specifier, or a path relative to `root` starting with `./` or `../`
  * @param params.packageJson - the `engines` and dependencies, from `package.json`
  * @param params.root - the workspace root
  * @returns each problem found

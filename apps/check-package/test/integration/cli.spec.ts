@@ -47,7 +47,7 @@ suite('cli', () => {
                     '--not-published',
                     'data',
                     '--floor-tsconfig',
-                    'configs/node-{major}.json',
+                    './configs/node-{major}.json',
                     '--tsc',
                     tsc,
                 ]);

@@ -25,8 +25,8 @@ export interface CheckPackageOptions {
      */
     readonly cwd?: string | URL;
     /**
-     * The workspace root: where `.gitignore` files start to apply, and what `floorTsconfig` is
-     * relative to. Defaults to the nearest directory with a lockfile, from the package up.
+     * The workspace root: where `.gitignore` files start to apply, and what a relative
+     * `floorTsconfig` starts from. Defaults to the nearest directory with a lockfile, from the package up.
      */
     readonly root?: string | URL;
     /**
@@ -44,8 +44,10 @@ export interface CheckPackageOptions {
      */
     readonly notPublished?: readonly string[];
     /**
-     * Path of the config the package's `tsconfig.json` must extend, relative to the root, with
-     * `{major}` for the support floor, e.g. `configs/tsconfig.node-{major}.json`. Not checked by default.
+     * The config the package's `tsconfig.json` must extend, with `{major}` for the support floor:
+     * a package specifier, matched as written (`@scope/configs/tsconfig.node-{major}.json`), or a
+     * path relative to the root starting with `./` or `../` (`./configs/tsconfig.node-{major}.json`).
+     * Not checked by default.
      */
     readonly floorTsconfig?: string;
     /**

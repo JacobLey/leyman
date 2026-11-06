@@ -72,7 +72,7 @@ export default class Cli extends EntryScript {
                             floorTsconfig: {
                                 alias: 'floor-tsconfig',
                                 describe:
-                                    'The config tsconfig.json must extend, relative to the root, with {major} for the support floor',
+                                    'The config tsconfig.json must extend, with {major} for the support floor: a package specifier, or a path relative to the root starting with ./',
                                 type: 'string',
                             },
                             tsc: {

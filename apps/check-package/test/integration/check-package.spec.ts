@@ -283,7 +283,7 @@ suite('checkPackage', () => {
                 });
 
                 const { problems } = await checkPackage({
-                    floorTsconfig: 'configs/node-{major}.json',
+                    floorTsconfig: './configs/node-{major}.json',
                     profile: 'esm-only',
                     cwd,
                     tsc,
@@ -304,7 +304,51 @@ suite('checkPackage', () => {
                 });
 
                 const { problems } = await checkPackage({
-                    floorTsconfig: 'configs/node-{major}.json',
+                    floorTsconfig: './configs/node-{major}.json',
+                    profile: 'esm-only',
+                    cwd,
+                    tsc,
+                });
+
+                expect(problems).to.deep.equal([]);
+            }
+        );
+
+        withWorkspace.test(
+            "Matches a package's floor config as written",
+            async ({ cwd, writeFiles }) => {
+                await writeFiles({
+                    ...goodPackage(),
+                    'pkg/tsconfig.json': JSON.stringify({
+                        extends: '@scope/configs/node-24.json',
+                    }),
+                });
+
+                const { problems } = await checkPackage({
+                    floorTsconfig: '@scope/configs/node-{major}.json',
+                    profile: 'esm-only',
+                    cwd,
+                    tsc,
+                });
+
+                expect(problems).to.deep.equal([
+                    'tsconfig.json: extends "@scope/configs/node-24.json", but engines.node ">=22" needs "@scope/configs/node-22.json".',
+                ]);
+            }
+        );
+
+        withWorkspace.test(
+            "Accepts tsconfig.json extending a package's floor config",
+            async ({ cwd, writeFiles }) => {
+                await writeFiles({
+                    ...goodPackage(),
+                    'pkg/tsconfig.json': JSON.stringify({
+                        extends: '@scope/configs/node-22.json',
+                    }),
+                });
+
+                const { problems } = await checkPackage({
+                    floorTsconfig: '@scope/configs/node-{major}.json',
                     profile: 'esm-only',
                     cwd,
                     tsc,
@@ -318,7 +362,7 @@ suite('checkPackage', () => {
             await writeFiles(goodPackage());
 
             const { problems } = await checkPackage({
-                floorTsconfig: 'configs/node-{major}.json',
+                floorTsconfig: './configs/node-{major}.json',
                 profile: 'esm-only',
                 cwd,
                 tsc,
