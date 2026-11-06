@@ -1,6 +1,6 @@
 {
   "commit": "891c647f5ad001ac7c57ca4a164ad0b80711807a",
-  "generatedAt": "2026-11-05T18:15:13.244Z",
+  "generatedAt": "2026-11-06T17:41:31.706Z",
   "suites": {
     "jsonSchema": [
       {
@@ -176,7 +176,7 @@
             true,
             true
           ],
-          "generateMs": 105.08741899999995
+          "generateMs": 53.859378000000106
         },
         "openApi": {
           "typeErrors": [],
@@ -192,7 +192,7 @@
             true,
             true
           ],
-          "generateMs": 120.32446000000004
+          "generateMs": 70.92073900000003
         }
       }
     },
@@ -228,7 +228,7 @@
             true,
             false
           ],
-          "generateMs": 217.94443600000022
+          "generateMs": 140.51779299999998
         }
       }
     },
@@ -264,7 +264,7 @@
             true,
             false
           ],
-          "generateMs": 575.1062249999995
+          "generateMs": 294.75622299999986
         }
       }
     },
@@ -394,7 +394,7 @@
             true,
             true
           ],
-          "generateMs": 273.2655219999997
+          "generateMs": 159.70587200000045
         }
       }
     }
