@@ -16,6 +16,9 @@
       "path": "../../apps/juniper"
     },
     {
+      "path": "../../apps/nx-lifecycle"
+    },
+    {
       "path": "../../tools/test-chain/mocha-chain"
     },
     {

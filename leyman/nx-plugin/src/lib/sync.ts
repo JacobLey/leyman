@@ -1,36 +1,15 @@
 import type { TargetConfiguration } from '@nx/devkit';
-import type { InferencePackageJson } from './infer.js';
 import type { NxPluginOptions, ResolvedOptions, TargetName } from './options.js';
-import { access, readFile, writeFile } from 'node:fs/promises';
+import { writeFile } from 'node:fs/promises';
 import Path from 'node:path';
 import { isDeepStrictEqual } from 'node:util';
-import { inferencePaths, inferTargets } from './infer.js';
+import { inferTargets } from './infer.js';
 import { namedInputNames, resolveOptions, targetNames } from './options.js';
+import { loadProjects, readJson } from './projects.js';
 import { assertOptions } from './schema.js';
 import { namedInputs, targetConfigurations } from './targets.js';
 
 type JsonObject = Record<string, unknown>;
-
-interface WorkspacePackageJson extends InferencePackageJson {
-    readonly name?: string;
-    readonly dependencies?: Readonly<Record<string, string>>;
-    readonly optionalDependencies?: Readonly<Record<string, string>>;
-    readonly peerDependencies?: Readonly<Record<string, string>>;
-}
-
-const readJson = async (path: string): Promise<unknown> => JSON.parse(await readFile(path, 'utf8'));
-
-const isPresent = async (path: string): Promise<boolean> => {
-    try {
-        await access(path);
-        return true;
-    } catch {
-        return false;
-    }
-};
-
-const readJsonIfPresent = async (path: string): Promise<unknown> =>
-    (await isPresent(path)) ? readJson(path) : undefined;
 
 /**
  * Sets each entry of `updates` on `object`, keeping the position of keys it already has, and removes
@@ -182,33 +161,9 @@ export const syncTargets = async ({
     assertOptions(options, optionsSource);
     const resolved = resolveOptions(options satisfies NxPluginOptions);
 
-    const loaded = await Promise.all(
-        projects.map(async project => {
-            const projectRoot = Path.join(root, project.root);
-            const [projectJson, packageJson, present] = await Promise.all([
-                readJsonIfPresent(Path.join(projectRoot, 'project.json')),
-                readJsonIfPresent(Path.join(projectRoot, 'package.json')),
-                Promise.all(
-                    inferencePaths.map(async path => isPresent(Path.join(projectRoot, path)))
-                ),
-            ]);
-            return {
-                ...project,
-                present: new Set(inferencePaths.filter((_path, i) => present[i] === true)),
-                projectJson: projectJson as JsonObject | undefined,
-                packageJson: packageJson as WorkspacePackageJson | undefined,
-            };
-        })
-    );
-    const dependencies = new Set(
-        loaded.flatMap(({ packageJson }) =>
-            [
-                packageJson?.dependencies,
-                packageJson?.devDependencies,
-                packageJson?.optionalDependencies,
-                packageJson?.peerDependencies,
-            ].flatMap(field => Object.keys(field ?? {}))
-        )
+    const loaded = await loadProjects(
+        root,
+        projects.map(project => project.root)
     );
 
     const nxJsonPath = Path.join(root, 'nx.json');
@@ -216,24 +171,16 @@ export const syncTargets = async ({
     const files = [
         { path: nxJsonPath, current: nxJson, updated: updateNxJson(nxJson, resolved) },
         ...loaded
-            .filter(({ projectJson }) => projectJson !== undefined)
-            .map(({ packageJson, present, projectJson, root: projectRoot }) => {
-                const inferred = inferTargets(
-                    {
-                        packageJson,
-                        root: projectRoot,
-                        isDependency:
-                            packageJson?.name !== undefined && dependencies.has(packageJson.name),
-                        has: path => present.has(path),
-                    },
+            .filter(project => project.projectJson !== undefined)
+            .map(project => ({
+                path: Path.join(root, project.root, 'project.json'),
+                current: project.projectJson!,
+                updated: updateProjectJson(
+                    project.projectJson!,
+                    inferTargets(project, resolved),
                     resolved
-                );
-                return {
-                    path: Path.join(root, projectRoot, 'project.json'),
-                    current: projectJson!,
-                    updated: updateProjectJson(projectJson!, inferred, resolved),
-                };
-            }),
+                ),
+            })),
     ];
 
     const outdated = files.filter(

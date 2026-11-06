@@ -3050,6 +3050,12 @@ importers:
       mocha-chain:
         specifier: workspace:^
         version: file:tools/test-chain/mocha-chain(@types/mocha@10.0.10)(mocha@12.0.3)
+      nx:
+        specifier: 'catalog:'
+        version: 23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))
+      nx-lifecycle:
+        specifier: workspace:^
+        version: file:apps/nx-lifecycle(@biomejs/biome@2.6.4)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@10.2.2))(prettier@3.9.10)
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
@@ -17548,6 +17554,28 @@ snapshots:
     dependencies:
       path-key: 4.0.0
       unicorn-magic: 0.3.0
+
+  nx-lifecycle@file:apps/nx-lifecycle(@biomejs/biome@2.6.4)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@10.2.2))(prettier@3.9.10):
+    dependencies:
+      '@nx/devkit': 23.3.1(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
+      ci-info: 4.4.0
+      entry-script: file:tools/entry-script
+      fast-equals: 6.2.1
+      format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
+      haywire: file:tools/haywire
+      haywire-launcher: file:tools/haywire-launcher(entry-script@file:tools/entry-script)(haywire@file:tools/haywire)
+      juniper: file:apps/juniper(eslint@10.13.0(supports-color@10.2.2))
+      juniper-validator: file:apps/juniper-validator(juniper@file:apps/juniper(eslint@10.13.0(supports-color@10.2.2)))
+      nx: 23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23))
+      parse-cwd: file:tools/parse-cwd
+      unknown-error: file:tools/unknown-error
+      yargs: 18.2.0
+    transitivePeerDependencies:
+      - '@biomejs/biome'
+      - '@swc-node/register'
+      - '@swc/core'
+      - eslint
+      - prettier
 
   nx-lifecycle@file:apps/nx-lifecycle(@biomejs/biome@2.6.4)(@swc/core@1.16.20(@swc/helpers@0.5.23))(eslint@10.13.0(supports-color@8.1.1))(prettier@3.9.10):
     dependencies:

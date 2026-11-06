@@ -76,6 +76,8 @@
     "load-populate-files": "workspace:^",
     "mocha": "catalog:",
     "mocha-chain": "workspace:^",
+    "nx": "catalog:",
+    "nx-lifecycle": "workspace:^",
     "typescript": "catalog:"
   }
 }

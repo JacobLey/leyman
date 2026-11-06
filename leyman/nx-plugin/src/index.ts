@@ -13,3 +13,5 @@ export { namedInputs, targetConfigurations } from './lib/targets.js';
 export type { WorkspaceProject } from './lib/sync.js';
 export { syncTargets } from './lib/sync.js';
 export { assertOptions, executorJsonSchema, optionsJsonSchema } from './lib/schema.js';
+export { createNodes, name } from './lib/plugin.js';
+export type { LoadedProject, WorkspacePackageJson } from './lib/projects.js';
