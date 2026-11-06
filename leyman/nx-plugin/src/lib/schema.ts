@@ -215,6 +215,35 @@ export const packageGeneratorJsonSchema = packageGeneratorSchema
     .metadata('cli', 'nx')
     .toJSON({ schema: true });
 
+const initGeneratorSchema = objectSchema({
+    title: 'init',
+    description:
+        'Sets an Nx workspace up for the plugin: nx.json, root devDependencies, the Biome config, pnpm injection and the principles skill',
+    properties: {
+        lifecycle: booleanSchema({
+            description: "Wire the targets' order with nx-lifecycle",
+            default: true,
+        }),
+        skill: booleanSchema({
+            description:
+                'Write a .claude/skills/principles/SKILL.md pointing coding agents at the principles behind the setup',
+            default: true,
+        }),
+        skipInstall: booleanSchema({
+            description: "Don't install dependencies afterwards",
+            default: false,
+        }),
+    },
+    additionalProperties: false,
+});
+
+/**
+ * JSON schema of the `init` generator's options.
+ */
+export const initGeneratorJsonSchema = initGeneratorSchema
+    .metadata('cli', 'nx')
+    .toJSON({ schema: true });
+
 const optionsValidator = makeValidator(optionsJsonSchema);
 
 /**

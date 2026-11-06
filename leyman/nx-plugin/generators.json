@@ -1,5 +1,10 @@
 {
   "generators": {
+    "init": {
+      "factory": "./dist/generators/init.js",
+      "schema": "./out/generators/init/schema.json",
+      "description": "Sets an Nx workspace up for the plugin: nx.json, root devDependencies, the Biome config, pnpm injection and the principles skill."
+    },
     "package": {
       "factory": "./dist/generators/package.js",
       "schema": "./out/generators/package/schema.json",

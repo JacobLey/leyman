@@ -38,18 +38,27 @@ export interface WorkspaceVersions {
 const isProtocol = (range: string): boolean => /^(?:catalog|workspace):/v.test(range);
 
 /**
- * The plugin's own `devDependencies` with a version, which the published package has for every tool its targets run.
+ * The plugin itself, and its own `devDependencies` with a version, which the published package has for every tool its
+ * targets run.
  *
- * @returns each devDependency, by name
+ * @returns each version, by package
  */
 const ownVersions = async (): Promise<Dependencies> => {
     const path = new URL(import.meta.resolve('@leyman/nx-plugin/package.json'));
-    const { devDependencies = {} } = JSON.parse(
-        await readFile(path, 'utf8')
-    ) as DependentPackageJson;
-    return Object.fromEntries(
-        Object.entries(devDependencies).filter(([, range]) => !isProtocol(range))
-    );
+    const {
+        name,
+        version,
+        devDependencies = {},
+    } = JSON.parse(await readFile(path, 'utf8')) as DependentPackageJson & {
+        name: string;
+        version: string;
+    };
+    return {
+        ...Object.fromEntries(
+            Object.entries(devDependencies).filter(([, range]) => !isProtocol(range))
+        ),
+        [name]: `^${version}`,
+    };
 };
 
 /**

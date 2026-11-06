@@ -15,12 +15,19 @@ export { syncTargets } from './lib/sync.js';
 export {
     assertOptions,
     executorJsonSchema,
+    initGeneratorJsonSchema,
     optionsJsonSchema,
     packageGeneratorJsonSchema,
 } from './lib/schema.js';
 export { createNodes, name } from './lib/plugin.js';
 export type { LoadedProject, WorkspacePackageJson } from './lib/projects.js';
 export { loadProjects } from './lib/projects.js';
+export type { InitGeneratorOptions } from './generators/init.js';
+export {
+    default as initGenerator,
+    lifecycleBindings,
+    lifecycleStages,
+} from './generators/init.js';
 export type { PackageGeneratorOptions } from './generators/package.js';
 export { default as packageGenerator } from './generators/package.js';
 export type { WorkspaceVersions } from './lib/versions.js';

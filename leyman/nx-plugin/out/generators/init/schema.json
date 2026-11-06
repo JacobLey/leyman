@@ -1,0 +1,25 @@
+{
+  "cli": "nx",
+  "type": "object",
+  "title": "init",
+  "description": "Sets an Nx workspace up for the plugin: nx.json, root devDependencies, the Biome config, pnpm injection and the principles skill",
+  "additionalProperties": false,
+  "properties": {
+    "lifecycle": {
+      "type": "boolean",
+      "default": true,
+      "description": "Wire the targets' order with nx-lifecycle"
+    },
+    "skill": {
+      "type": "boolean",
+      "default": true,
+      "description": "Write a .claude/skills/principles/SKILL.md pointing coding agents at the principles behind the setup"
+    },
+    "skipInstall": {
+      "type": "boolean",
+      "default": false,
+      "description": "Don't install dependencies afterwards"
+    }
+  },
+  "$schema": "https://json-schema.org/draft/2020-12/schema"
+}
