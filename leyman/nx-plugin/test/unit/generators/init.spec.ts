@@ -17,6 +17,11 @@ catalog:
   nx-lifecycle: ^1.0.0
 `;
 
+// Compiled to `dist-test/unit/generators/`
+const { version } = JSON.parse(
+    await readFile(Path.join(import.meta.dirname, '../../../package.json'), 'utf8')
+) as { version: string };
+
 interface RootPackageJson {
     devDependencies: Record<string, string>;
 }
@@ -42,7 +47,7 @@ suite('initGenerator', () => {
             },
         ]);
         expect(readJson<RootPackageJson>(tree, 'package.json').devDependencies).to.deep.equal({
-            '@leyman/nx-plugin': '^0.0.1',
+            '@leyman/nx-plugin': `^${version}`,
             '@biomejs/biome': 'catalog:',
             '@leyman/check-package': 'catalog:',
             '@leyman/configs': 'catalog:',
