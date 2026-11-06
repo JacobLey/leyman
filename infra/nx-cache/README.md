@@ -50,14 +50,13 @@ Done once, by the maintainer. You need a Cloudflare account with R2 enabled (R2 
    curl -i -X PUT https://leyman-nx-cache.leyman.workers.dev/v1/cache/0   # 401: no token, can't write
    ```
 
-8. **Use it**: add the repository variable `NX_CACHE_UPSTREAM`, `https://leyman-nx-cache.leyman.workers.dev`, so CI reads from it and `main` writes to it. Devcontainers already read from it (`NX_CACHE_SERVER_UPSTREAM` in `.devcontainer/docker-compose.yml`) once their `nx-cache` sidecar restarts (`docker compose up -d nx-cache`, or rebuild).
-9. **Later**, once it has worked for a while, remove the `actions/cache` steps from `.github/workflows/ci.yml`: the hosted cache replaces them.
+8. **Use it**: add the repository variable `NX_CACHE_UPSTREAM`, `https://leyman-nx-cache.leyman.workers.dev`, so CI reads from it and `main` writes to it. Devcontainers already read from it (`NX_CACHE_SERVER_UPSTREAM` in `.devcontainer/docker-compose.yml`) once their `nx-cache` sidecar restarts (`docker compose up -d nx-cache`, or rebuild). CI keeps no cache of its own, so until this is set every run starts cold.
 
 ## Changing it
 
 - **The Worker**: change `worker/`, merge to `main`, and CI deploys it.
 - **The bucket, its lifecycle or the token**: change `tofu/`, then `tofu plan` and `tofu apply` as in step 5. The deploy token has no expiry: to rotate it, `tofu apply -replace=cloudflare_account_token.deploy`, and update the environment's secret.
-- **Discarding every cached result** (e.g. after finding an input Nx doesn't hash): empty the bucket from the dashboard, and bump `NX_CACHE_VERSION` in `ci.yml` for the runner's own cache.
+- **Discarding every cached result** (e.g. after finding an input Nx doesn't hash): empty the bucket from the dashboard. CI keeps nothing between runs, and each devcontainer's local results expire on their own (`NX_CACHE_SERVER_MAX_AGE_DAYS`), or delete the shared cache directory to drop them at once.
 - **Removing it**: unset `NX_CACHE_UPSTREAM` and `CLOUDFLARE_ACCOUNT_ID`, delete the Worker (dashboard, or `wrangler delete`), then `tofu destroy`.
 
 ## What it doesn't fix

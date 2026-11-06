@@ -28,10 +28,9 @@ concurrency:
 env:
   # Keep in sync with `engineVersion` in `dagger/dagger.json` and `.devcontainer/Dockerfile`
   DAGGER_VERSION: 0.21.11
+  # The cache server's local directory, empty at the start of every run: earlier results come from the hosted cache.
   # Outside the checkout, so it is never part of the source Dagger tests
   NX_CACHE_DIR: /tmp/nx-cache
-  # Bump to discard every cached Nx result (e.g. after finding an input Nx doesn't hash)
-  NX_CACHE_VERSION: v1
   # Cached Nx results older than this are never served
   NX_CACHE_MAX_AGE_DAYS: 7
   # Runs that write to the hosted cache upload a result they read again once it is this old, so a result in use never
@@ -63,17 +62,9 @@ jobs:
       - name: Check fork manifest
         run: node leyman/main/scripts/check-fork-manifest.mjs
 
-      # PRs can read main's cache, but main never reads a PR's
-      - name: Restore Nx cache
-        uses: actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ env.NX_CACHE_DIR }}
-          key: nx-${{ env.NX_CACHE_VERSION }}-${{ github.sha }}
-          restore-keys: nx-${{ env.NX_CACHE_VERSION }}-
-
-      # Deletes expired results before it starts listening, and never serves one. In front of the hosted cache
-      # (`infra/nx-cache`) once the `NX_CACHE_UPSTREAM` variable names it: every run reads from it, and pushes to
-      # main and nightly runs write to it
+      # Never serves an expired result. In front of the hosted cache (`infra/nx-cache`) once the `NX_CACHE_UPSTREAM`
+      # variable names it: every run reads from it, and pushes to main and nightly runs write to it, so PRs read
+      # main's results but main never reads a PR's
       - name: Start Nx cache server
         env:
           NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
@@ -93,8 +84,8 @@ jobs:
           verb: call
           module: ./dagger
           # Only for Dagger Cloud traces when debugging. PR runs get this token too, so never
-          # enable Dagger Cloud caching on it: that cache isn't scoped by branch like actions/cache,
-          # so a PR could write results that main's runs then trust.
+          # enable Dagger Cloud caching on it: that cache isn't scoped by branch, so a PR could write
+          # results that main's runs then trust.
           cloud-token: ${{ secrets.DAGGER_CLOUD_TOKEN }}
           args: test --nx-cache=tcp://localhost:3000
 
@@ -112,14 +103,6 @@ jobs:
       - name: Show Nx cache server log
         if: ${{ !cancelled() }}
         run: cat "$RUNNER_TEMP/nx-cache-server.log"
-
-      # Saved even when tests fail, so tasks that passed are not re-run
-      - name: Save Nx cache
-        if: ${{ !cancelled() }}
-        uses: actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
-        with:
-          path: ${{ env.NX_CACHE_DIR }}
-          key: nx-${{ env.NX_CACHE_VERSION }}-${{ github.sha }}
 
   # Weekly, every task with no Nx cache at all, reading or writing. A task that fails here but passes from the cache
   # all week depends on something its inputs don't hash: add the input, rather than re-running

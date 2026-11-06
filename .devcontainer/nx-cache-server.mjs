@@ -8,8 +8,7 @@
  * Every worktree's devcontainer runs its own instance, but all of them point at the same
  * directory, so a task cached in one worktree is a cache hit in every other worktree.
  *
- * Each file is one task result, timestamped when it was stored (reads don't touch it, and
- * actions/cache preserves it in CI). A result older than `NX_CACHE_SERVER_MAX_AGE_DAYS` is never
+ * Each file is one task result, timestamped when it was stored (reads don't touch it). A result older than `NX_CACHE_SERVER_MAX_AGE_DAYS` is never
  * served, and is deleted at startup and every hour after, so the directory doesn't grow forever.
  *
  * With `NX_CACHE_SERVER_MAX_SIZE_GB`, those sweeps also delete the results read longest ago until the directory is
