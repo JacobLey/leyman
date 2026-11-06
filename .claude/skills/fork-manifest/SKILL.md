@@ -91,11 +91,6 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `pnpm-workspace.yaml` | the catalog and workspace globs |
 | `tsconfig.base.json` | empty on purpose, so Nx hashes it in place of tsconfig.json |
 | `tsconfig.json` | the TypeScript project root |
-| `apps/check-package` | vendor until published: the check-package target runs its CLI |
-| `leyman/configs` | vendor until published: every tsconfig extends it, and the swc, c8 and Vitest targets read it |
-| `leyman/eslint-config` | vendor until published: every package's eslint.config.js imports it |
-| `leyman/expect` | vendor until published: the test assertion package |
-| `leyman/nx-plugin` | vendor until published: the TypeScript targets run its scripts |
 
 ### `ci`: runs CI on GitHub Actions
 
@@ -204,5 +199,10 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/main/scripts/check-workspace-dependencies.mjs` | only matters to a workspace that also publishes what it depends on |
 | `leyman/main/scripts/fork-manifest.mjs` | applies this repo's classification; a fork keeps the list of what it took |
 | `pnpm-lock.yaml` | a fork resolves its own after pruning the catalog |
+| `apps/check-package` | on npm as @leyman/check-package: a fork installs it |
+| `leyman/configs` | on npm as @leyman/configs: a fork installs it |
+| `leyman/eslint-config` | on npm as @leyman/eslint-config: a fork installs it |
+| `leyman/expect` | on npm as @leyman/expect: a fork installs it |
+| `leyman/nx-plugin` | on npm as @leyman/nx-plugin: a fork installs it |
 
 <!-- fork-manifest:end -->

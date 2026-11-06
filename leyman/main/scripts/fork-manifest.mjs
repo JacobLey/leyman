@@ -168,6 +168,105 @@ const pointAtNpm = (files, to) => {
     }
 };
 
+// The plugin's defaults for what its options point at in this repo: the shared configs and its scripts, installed
+const npmToolInputs = {
+    configs: [{ externalDependencies: ['@leyman/configs'] }],
+    tools: [{ externalDependencies: ['@leyman/nx-plugin'] }],
+    checkPackage: [{ externalDependencies: ['@leyman/check-package', 'typescript'] }],
+};
+
+// Replaces each run of `run` in `array` (compared as JSON) with `replacement`
+const replaceRuns = (array, run, replacement) => {
+    const key = JSON.stringify;
+    const result = [];
+    for (let i = 0; i < array.length; ) {
+        if (run.length > 0 && key(array.slice(i, i + run.length)) === key(run)) {
+            result.push(...replacement);
+            i += run.length;
+        } else {
+            result.push(array[i]);
+            i++;
+        }
+    }
+    return result;
+};
+
+// A fork installs the shared configs and the Nx plugin from npm instead of copying them: what points into their
+// folders here points at the installed packages there, and nx.json holds what the plugin generates from that
+const installTools = to => {
+    const pluginFile = path.join(to, 'leyman/main/nx-plugin.json');
+    const { scripts, inputs: toolInputs = {}, ...pluginOptions } = readJson(pluginFile);
+    const { inputs: checkPackageInputs, ...checkPackage } = pluginOptions.checkPackage ?? {};
+    const inputs = { ...toolInputs, checkPackage: checkPackageInputs };
+    // Projects the fork doesn't have can't get or skip a target
+    const inFork = root => existsSync(path.join(to, root));
+    const targets = Object.fromEntries(
+        Object.entries(pluginOptions.targets ?? {}).map(([name, target]) => {
+            if (target === false) {
+                return [name, target];
+            }
+            const kept = Object.fromEntries(
+                Object.entries(target)
+                    .map(([key, value]) => [
+                        key,
+                        Array.isArray(value) ? value.filter(root => inFork(root)) : value,
+                    ])
+                    .filter(([, value]) => !Array.isArray(value) || value.length > 0)
+            );
+            return [name, kept];
+        })
+    );
+    writeJson(pluginFile, {
+        ...pluginOptions,
+        targets: Object.fromEntries(
+            Object.entries(targets).filter(
+                ([, target]) => target === false || Object.keys(target).length > 0
+            )
+        ),
+        checkPackage,
+    });
+
+    const nxFile = path.join(to, 'nx.json');
+    let nxJson = readJson(nxFile);
+    const replaceInputs = list => {
+        let current = list;
+        for (const [name, replacement] of Object.entries(npmToolInputs)) {
+            current = replaceRuns(current, inputs[name] ?? [], replacement);
+        }
+        return current;
+    };
+    nxJson.namedInputs = Object.fromEntries(
+        Object.entries(nxJson.namedInputs).map(([name, list]) => [name, replaceInputs(list)])
+    );
+    nxJson.targetDefaults = Object.fromEntries(
+        Object.entries(nxJson.targetDefaults).map(([name, target]) => [
+            name,
+            target.inputs ? { ...target, inputs: replaceInputs(target.inputs) } : target,
+        ])
+    );
+    if (scripts) {
+        // Each script runs as the bin the package names it by
+        const { bin } = readJson(path.join(workspaceRoot, 'leyman/nx-plugin/package.json'));
+        let text = JSON.stringify(nxJson);
+        for (const [name, file] of Object.entries(bin)) {
+            text = text.replaceAll(`${scripts}/${path.posix.basename(file)}`, () => name);
+        }
+        nxJson = JSON.parse(text);
+    }
+    writeJson(nxFile, nxJson);
+
+    for (const file of ['biome.json', 'tsconfig.json']) {
+        const target = path.join(to, file);
+        writeFileSync(
+            target,
+            readFileSync(target, 'utf8').replaceAll(
+                './leyman/configs/',
+                './leyman/main/node_modules/@leyman/configs/'
+            )
+        );
+    }
+};
+
 // Nx's sync generator fills in `references` from each package's dependencies, once there are dependencies to read
 const dropMissingReferences = (files, to) => {
     const tsconfigs = files.filter(file => path.basename(file) === 'tsconfig.json');
@@ -275,6 +374,7 @@ export const apply = ({ conditions = [], extraPackages = [], to }) => {
     }
     stripNxJson(manifest, requested, to);
     pointAtNpm(files, to);
+    installTools(to);
     dropMissingReferences(files, to);
     pruneWorkspaceYaml(manifest, files, to);
     return { files, skipped, taken };

@@ -445,29 +445,29 @@
     {
       "path": "pnpm-lock.yaml",
       "why": "a fork resolves its own after pruning the catalog"
-    }
-  ],
-  "packages": [
+    },
     {
       "path": "apps/check-package",
-      "why": "vendor until published: the check-package target runs its CLI"
+      "why": "on npm as @leyman/check-package: a fork installs it"
     },
     {
       "path": "leyman/configs",
-      "why": "vendor until published: every tsconfig extends it, and the swc, c8 and Vitest targets read it"
+      "why": "on npm as @leyman/configs: a fork installs it"
     },
     {
       "path": "leyman/eslint-config",
-      "why": "vendor until published: every package's eslint.config.js imports it"
+      "why": "on npm as @leyman/eslint-config: a fork installs it"
     },
     {
       "path": "leyman/expect",
-      "why": "vendor until published: the test assertion package"
+      "why": "on npm as @leyman/expect: a fork installs it"
     },
     {
       "path": "leyman/nx-plugin",
-      "why": "vendor until published: the TypeScript targets run its scripts"
-    },
+      "why": "on npm as @leyman/nx-plugin: a fork installs it"
+    }
+  ],
+  "packages": [
     {
       "path": "leyman/vscode-tests",
       "when": "vscode-tests",

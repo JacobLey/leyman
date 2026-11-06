@@ -19,6 +19,7 @@
     "@biomejs/biome": "catalog:",
     "@changesets/cli": "catalog:",
     "@leyman/check-package": "workspace:^",
+    "@leyman/configs": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/nx-plugin": "workspace:^",
     "@naxodev/gonx": "catalog:",
