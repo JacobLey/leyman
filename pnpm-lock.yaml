@@ -19,12 +19,6 @@ catalogs:
     '@changesets/cli':
       specifier: ^3.0.3
       version: 3.0.3
-    '@eslint-community/eslint-plugin-eslint-comments':
-      specifier: ^4.8.1
-      version: 4.8.1
-    '@eslint/js':
-      specifier: ^10.0.1
-      version: 10.0.1
     '@happy-dom/global-registrator':
       specifier: ^21.0.4
       version: 21.0.4
@@ -112,15 +106,6 @@ catalogs:
     '@types/yargs':
       specifier: ^17.0.35
       version: 17.0.35
-    '@typescript-eslint/eslint-plugin':
-      specifier: ^8.72.0
-      version: 8.72.0
-    '@typescript-eslint/parser':
-      specifier: ^8.72.0
-      version: 8.72.0
-    '@typescript-eslint/utils':
-      specifier: ^8.72.0
-      version: 8.72.0
     '@typescript/native':
       specifier: npm:typescript@^7.0.2
       version: 7.0.2
@@ -172,33 +157,6 @@ catalogs:
     eslint-config-prettier:
       specifier: ^10.1.8
       version: 10.1.8
-    eslint-plugin-import-x:
-      specifier: ^4.17.1
-      version: 4.17.1
-    eslint-plugin-jsdoc:
-      specifier: ^65.4.2
-      version: 65.4.2
-    eslint-plugin-jsx-a11y:
-      specifier: ^6.10.2
-      version: 6.10.2
-    eslint-plugin-n:
-      specifier: ^18.5.0
-      version: 18.5.0
-    eslint-plugin-react:
-      specifier: ^7.37.5
-      version: 7.37.5
-    eslint-plugin-react-hooks:
-      specifier: ^7.1.1
-      version: 7.1.1
-    eslint-plugin-regexp:
-      specifier: ^3.3.1
-      version: 3.3.1
-    eslint-plugin-sonarjs:
-      specifier: ^4.2.2
-      version: 4.2.2
-    eslint-plugin-unicorn:
-      specifier: ^79.0.0
-      version: 79.0.0
     expect-type:
       specifier: ^1.4.0
       version: 1.4.0
@@ -358,6 +316,49 @@ catalogs:
     zod:
       specifier: ^4.6.7
       version: 4.6.7
+  eslint-rules:
+    '@eslint-community/eslint-plugin-eslint-comments':
+      specifier: ~4.8.1
+      version: 4.8.1
+    '@eslint/js':
+      specifier: ~10.0.1
+      version: 10.0.1
+    '@typescript-eslint/eslint-plugin':
+      specifier: ~8.72.0
+      version: 8.72.0
+    '@typescript-eslint/parser':
+      specifier: ~8.72.0
+      version: 8.72.0
+    '@typescript-eslint/utils':
+      specifier: ~8.72.0
+      version: 8.72.0
+    eslint-plugin-import-x:
+      specifier: ~4.17.1
+      version: 4.17.1
+    eslint-plugin-jsdoc:
+      specifier: ~65.4.2
+      version: 65.4.2
+    eslint-plugin-jsx-a11y:
+      specifier: ~6.10.2
+      version: 6.10.2
+    eslint-plugin-n:
+      specifier: ~18.5.0
+      version: 18.5.0
+    eslint-plugin-react:
+      specifier: ~7.37.5
+      version: 7.37.5
+    eslint-plugin-react-hooks:
+      specifier: ~7.1.1
+      version: 7.1.1
+    eslint-plugin-regexp:
+      specifier: ~3.3.1
+      version: 3.3.1
+    eslint-plugin-sonarjs:
+      specifier: ~4.2.2
+      version: 4.2.2
+    eslint-plugin-unicorn:
+      specifier: ~79.0.0
+      version: 79.0.0
   node-22:
     '@types/node':
       specifier: ^22.20.5
@@ -2811,19 +2812,19 @@ importers:
   leyman/eslint-config:
     dependencies:
       '@eslint-community/eslint-plugin-eslint-comments':
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 4.8.1(eslint@10.13.0(supports-color@8.1.1))
       '@eslint/js':
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 10.0.1(eslint@10.13.0(supports-color@8.1.1))
       '@typescript-eslint/eslint-plugin':
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 8.72.0(patch_hash=14289edb1532bcdc0e05ca26e6c77a119c79ddb4a07e3f2053e87027b7e325d9)(@typescript-eslint/parser@8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@typescript-eslint/parser':
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       '@typescript-eslint/utils':
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       ajv:
         specifier: 'catalog:'
@@ -2832,31 +2833,31 @@ importers:
         specifier: 'catalog:'
         version: 10.1.8(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-import-x:
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 4.17.1(@typescript-eslint/utils@8.72.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1))(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-jsdoc:
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 65.4.2(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-jsx-a11y:
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 6.10.2(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-n:
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 18.5.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-react:
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 7.37.5(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-react-hooks:
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 7.1.1(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       eslint-plugin-regexp:
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 3.3.1(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-sonarjs:
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 4.2.2(eslint@10.13.0(supports-color@8.1.1))
       eslint-plugin-unicorn:
-        specifier: 'catalog:'
+        specifier: catalog:eslint-rules
         version: 79.0.0(@typescript/typescript6@6.0.2)(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
       globals:
         specifier: 'catalog:'

@@ -104,7 +104,7 @@ The options passed to `@typescript-eslint/naming-convention`, the second only in
 
 Before 1.0, a release that can make passing code fail (a new rule, a stricter option) is a minor, and other changes are patches.
 
-The plugins are dependencies with `^` ranges, and every rule a plugin ships is on. So a plugin's minor release can add errors without a release of this package. Keep a lockfile, and update it deliberately, as you would for this package.
+Every rule a plugin ships is on, so the plugins (and `@eslint/js` and typescript-eslint) are dependencies with `~` ranges: a plugin's patch releases reach you, but its minors, which add rules, only come with a release of this package, once each new rule is decided. Other dependencies take `^`.
 
 ## Known issues
 

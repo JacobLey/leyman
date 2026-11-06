@@ -5,7 +5,7 @@ description: Updating catalog dependencies to latest minor/patch versions
 
 # Updating Dependencies
 
-All external versions live in the default `catalog:` in `pnpm-workspace.yaml`. Changing a version there changes it for every package.
+All external versions live in the default `catalog:` in `pnpm-workspace.yaml`, except a few named `catalogs:`. Changing a version there changes it for every package.
 
 By default only apply **minor/patch** updates. Only bump a **major** version when the user asked for that specific package, since it may be held back on purpose.
 
@@ -14,6 +14,7 @@ By default only apply **minor/patch** updates. Only bump a **major** version whe
 1. **Find updates:** `pnpm outdated -r --format json`.
 2. **Classify:** an update is minor/patch when the latest major equals the current major. For `0.x`, `0.7 → 0.8` counts as minor.
 3. **Edit `catalog:`** in `pnpm-workspace.yaml` to `^<new-version>`. Leave the named `catalogs:` alone unless the package is already listed there.
+   - The `eslint-rules` catalog keeps `~`, so `@leyman/eslint-config`'s consumers get a plugin's new rules only through its releases. A patch there is routine. A minor can add rules, all on as errors: run `eslint` across the workspace, decide each new rule (keep it on and fix the code, or turn it off with the reason, as in the [linting skill](../linting-formatting/SKILL.md)), and give eslint-config a `minor` changeset if a rule stays on.
 4. **Changeset:** for each updated entry whose `dependencyType` is not `devDependencies`, collect its `dependentPackages[].name`, skipping private packages. Write one changeset (see [versioning](../versioning/SKILL.md)) with:
    - `minor` for packages where it is a `peerDependency` or `optionalDependency`
    - `patch` where it is a regular `dependency`
