@@ -49,6 +49,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.claude/skills/linting-formatting` | ESLint, Biome and auto-fix |
 | `.claude/skills/nx-run-tasks` | how to run Nx tasks |
 | `.claude/skills/nx-tasks-reference` | what each target does and when to add it |
+| `.claude/skills/principles` | the principles behind the setup, and why |
 | `.claude/skills/testing` | Mocha, mocha-chain, Sinon and c8 |
 | `.claude/skills/typescript` | SWC, tsconfig and ESM |
 | `.claude/skills/updating-dependencies` | how to bump the catalog |

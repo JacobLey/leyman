@@ -5,7 +5,7 @@ description: Coding patterns and conventions (package design, types, DI, docs)
 
 # Coding Patterns
 
-This document covers the soft rules and conventions of this codebase. Hard rules — formatting, import ordering, lint errors — are enforced automatically by Biome and ESLint (see the [linting-formatting skill](../linting-formatting/SKILL.md)). Everything here is about judgment, not automation.
+This document covers the soft rules and conventions of this codebase. Hard rules — formatting, import ordering, lint errors — are enforced automatically by Biome and ESLint (see the [linting-formatting skill](../linting-formatting/SKILL.md)). Everything here is about judgment, not automation. The principles behind these choices (the bar for a package, versioning, dependencies) are in the [principles skill](../principles/SKILL.md).
 
 ---
 

@@ -64,6 +64,10 @@
       "why": "what each target does and when to add it"
     },
     {
+      "path": ".claude/skills/principles",
+      "why": "the principles behind the setup, and why"
+    },
+    {
       "path": ".claude/skills/testing",
       "why": "Mocha, mocha-chain, Sinon and c8"
     },

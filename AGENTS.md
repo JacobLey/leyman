@@ -40,6 +40,7 @@ Focused guides for common workflows in this repo:
 
 | Topic | Skill |
 |-------|-------|
+| The principles behind the setup, and why (the package bar, versions, support floors, dependencies, lint, generated content, workarounds, committing and verifying) | [`.claude/skills/principles/SKILL.md`](./.claude/skills/principles/SKILL.md) |
 | Coding patterns and conventions (package design, types, DI, docs) | [`.claude/skills/coding-patterns/SKILL.md`](./.claude/skills/coding-patterns/SKILL.md) |
 
 ### Development Workflows
