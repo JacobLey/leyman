@@ -12,7 +12,7 @@ A project is any directory with a `project.json`. Every project has a README.md.
 
 - `tools/`: libraries consumed via `import`.
 - `apps/`: CLIs, Nx plugins, and larger packages that are used other than by plain `import`.
-- `leyman/`: the repo's own tooling: shared configs and global tools. Most are private; `@leyman/configs`, `@leyman/eslint-config` and `@leyman/expect` are published.
+- `leyman/`: the repo's own tooling: shared configs and global tools. Most are private; `@leyman/configs`, `@leyman/eslint-config`, `@leyman/expect` and `@leyman/nx-plugin` are published.
 - `docs/`: the documentation site (private, never published). See its [README](../../../docs/README.md).
 - `e2e/`: private, test-only packages that check several packages together, in ways no single package can (e.g. because depending on each other would be circular). See [create-package](../create-package/SKILL.md#e2e-packages).
 - `infra/`: deployed, never-published infrastructure, e.g. the hosted Nx cache (`infra/nx-cache`: a Worker, and the OpenTofu configuration of its Cloudflare resources). See its [README](../../../infra/nx-cache/README.md).

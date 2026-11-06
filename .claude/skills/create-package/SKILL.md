@@ -22,7 +22,7 @@ Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)
 | `tsconfig.json` | `{ "extends": "@leyman/configs/tsconfig.build.json", "compilerOptions": { "outDir": "dist", "rootDir": "src", "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo" }, "include": ["src", "*.d.ts"] }`. `references` are generated. A published package extends its support floor's `@leyman/configs/tsconfig.node-<major>.json` instead, and takes `@types/node` from `catalog:node-<major>`, both matching `engines.node` (`>=<major>`); see [Support floors](../typescript/SKILL.md#support-floors). |
 | `test/tsconfig.json` | `{ "extends": "@leyman/configs/tsconfig.test.json", "references": [{ "path": ".." }] }` (no `references` in e2e packages). See the [testing skill](../testing/SKILL.md#layout). |
 | `files` (in `package.json`) | Allow-list of what is published, which is also what workspace dependents get (see [`sync-injected`](../nx-tasks-reference/SKILL.md#sync-injected)): `["dist", "!dist/**/*.map", "!dist/tsconfig.tsbuildinfo"]`, plus any other entry points (`bin.mjs`, `out`, root `*.d.ts`) and `WHY-<PACKAGE>.md`. `package.json`, `README.md` and `LICENSE` are always included. Check the result with `pnpm pack --dry-run`; [`check-package`](../nx-tasks-reference/SKILL.md#check-package) fails on a top-level path that is neither published nor known not to be. |
-| `project.json` | List only the work targets the package uses, as `{}` (see [nx-tasks-reference](../nx-tasks-reference/SKILL.md)). Orchestration targets are added by the lifecycle command. |
+| `project.json` | `{ "$schema": ..., "name": ... }`, plus any work target the TypeScript ones don't cover (`barrelify`, `populate-files`...), as `{}` (see [nx-tasks-reference](../nx-tasks-reference/SKILL.md)). The lifecycle command adds the TypeScript targets the package's files call for (`tsc` for `src/` and `tsconfig.json`, `mocha-unit-test` for `test/unit` with mocha...) and the orchestration targets. |
 | `eslint.config.js` | Export `configGenerator(...)` from `@leyman/eslint-config` (see [linting-formatting](../linting-formatting/SKILL.md)). |
 | `README.md` | Required. See [writing-readmes](../writing-readmes/SKILL.md). Its first paragraph repeats the `package.json` `description`. |
 
@@ -30,7 +30,7 @@ Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)
 
 ```bash
 pnpm i
-nx run @leyman/main:lifecycle   # adds orchestration targets to project.json
+nx run @leyman/main:lifecycle   # adds the TypeScript and orchestration targets to project.json
 nx run-many -t build            # syncs tsconfig references
 ```
 
