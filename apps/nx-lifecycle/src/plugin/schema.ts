@@ -1,6 +1,6 @@
 import type { SchemaType } from 'juniper';
 import type { JuniperValidator } from 'juniper-validator';
-import { objectSchema } from 'juniper';
+import { booleanSchema, objectSchema } from 'juniper';
 import { makeValidator } from 'juniper-validator';
 import { bindingsSchema, stagesSchema } from '../lifecycle/schema.js';
 
@@ -10,6 +10,11 @@ const lifecyclePluginOptionsSchema = objectSchema({
     properties: {
         stages: stagesSchema,
         bindings: bindingsSchema,
+        warnUnusedBindings: booleanSchema({
+            description:
+                'Warn about a binding no project defines the target of, which is usually a typo. Turn it off when bindings are written for targets projects add later.',
+            default: true,
+        }),
     },
     required: ['stages', 'bindings'],
     additionalProperties: false,

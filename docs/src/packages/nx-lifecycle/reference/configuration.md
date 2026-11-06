@@ -50,6 +50,12 @@ Required. Maps target names to the hook they run in, as `stage:hook`, or `stage`
 
 A binding applies to every project whose `project.json` declares the target, e.g. `"tsc": {}`. Its implementation can come from `targetDefaults`. Any number of targets can be bound to the same hook.
 
+## `warnUnusedBindings`
+
+Plugin only. `boolean`, `true` by default.
+
+Logs a warning for each binding whose target no project defines, since it is usually a typo. Turn it off when the bindings cover targets that projects add later, such as a generator's full set.
+
 ## `check`
 
 Executor only. `boolean`, `true` in CI and `false` otherwise.

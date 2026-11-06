@@ -338,6 +338,16 @@ suite('LifecyclePlugin', () => {
             ]);
         });
 
+        withWorkspace.test('Stays quiet about unused bindings when told to', ctx => {
+            expect(
+                createDependencies(
+                    { ...options, warnUnusedBindings: false },
+                    contextFor({ foo: { targets: {} } })
+                )
+            ).to.deep.equal([]);
+            expect(ctx.warn.callCount).to.equal(0);
+        });
+
         withWorkspace.test('Fails on invalid options', () => {
             expect(() => createDependencies(undefined, contextFor({}))).to.throw(
                 Error,

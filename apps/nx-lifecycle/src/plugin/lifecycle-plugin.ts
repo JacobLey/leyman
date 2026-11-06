@@ -248,7 +248,7 @@ export const createDependencies = (
     }
 
     for (const targetName of lifecyclePlan.registeredTargets.keys()) {
-        if (!definedTargets.has(targetName)) {
+        if (options?.warnUnusedBindings !== false && !definedTargets.has(targetName)) {
             logger.warn(`Bound target ${targetName} is not defined in any project. Is it a typo?`);
         }
     }

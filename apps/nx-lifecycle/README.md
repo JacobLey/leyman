@@ -292,7 +292,7 @@ Multiple targets from different languages or toolchains can bind to the same hoo
 }
 ```
 
-A binding applies to every project that defines the target, through `targetDefaults` or its own `project.json`. A project opts in by defining it (e.g. `"tsc": {}`). A warning is logged for a binding that no `project.json` declares, since it is usually a typo. Targets inferred by Nx plugins are not declared in `project.json`, so they trigger the warning too.
+A binding applies to every project that defines the target, through `targetDefaults` or its own `project.json`. A project opts in by defining it (e.g. `"tsc": {}`). A warning is logged for a binding that no `project.json` declares, since it is usually a typo. Targets inferred by Nx plugins are not declared in `project.json`, so they trigger the warning too. The plugin's `"warnUnusedBindings": false` turns it off, for bindings that cover targets projects add later.
 
 #### Project-specific dependencies
 
