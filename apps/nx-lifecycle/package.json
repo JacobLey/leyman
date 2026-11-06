@@ -1,6 +1,6 @@
 {
   "name": "nx-lifecycle",
-  "version": "1.2.2",
+  "version": "1.3.0",
   "description": "Nx plugin that derives every dependsOn from declared lifecycle stages (build, test, \u2026) and the targets bound to them.",
   "engines": {
     "node": ">=24"
