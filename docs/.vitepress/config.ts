@@ -8,6 +8,7 @@ import {
     categories,
     type Demo,
     demos,
+    framework,
     hasRelated,
     infrastructure,
     type Links,
@@ -143,6 +144,18 @@ const checkRegistry = (): void => {
             );
         }
     }
+    // Framework pages are single files, each listed once
+    const frameworkFiles = new Set(framework.map(({ link }) => `${link || 'index'}.md`));
+    for (const file of frameworkFiles) {
+        if (!existsSync(`${srcDir}framework/${file}`)) {
+            problems.push(`Framework: src/framework/${file} does not exist`);
+        }
+    }
+    for (const file of readdirSync(`${srcDir}framework`)) {
+        if (!frameworkFiles.has(file)) {
+            problems.push(`src/framework/${file} has no entry in projects.ts`);
+        }
+    }
     if (problems.length > 0) {
         throw new Error(`docs/.vitepress/projects.ts:\n${problems.join('\n')}`);
     }
@@ -254,6 +267,15 @@ const sidebar: DefaultTheme.SidebarMulti = Object.fromEntries([
     ...demos.map(({ slug }) => [`/demos/${slug}/`, demosSidebar(slug)]),
     ['/infrastructure/', infrastructureSidebar()],
     ...infrastructure.map(({ slug }) => [`/infrastructure/${slug}/`, infrastructureSidebar(slug)]),
+    [
+        '/framework/',
+        [
+            {
+                text: 'Framework',
+                items: framework.map(({ text, link }) => ({ text, link: `/framework/${link}` })),
+            },
+        ],
+    ],
 ]);
 
 const flattenPages = (base: string, pages: readonly Page[]): { text: string; link: string }[] =>
@@ -272,6 +294,7 @@ const pageOrder = new Map(
         ...packages.map(({ slug, pages }) => flattenPages(`/packages/${slug}/`, pages)),
         ...demos.map(({ slug, pages }) => flattenPages(`/demos/${slug}/`, pages)),
         ...infrastructure.map(({ slug, pages }) => flattenPages(`/infrastructure/${slug}/`, pages)),
+        flattenPages('/framework/', framework),
     ].flatMap(order =>
         order.map((page, index) => [
             page.link,
@@ -312,8 +335,8 @@ const writeRedirects = (outDir: string, base: string): void => {
 };
 
 /**
- * Writes `/llms.txt` ([llmstxt.org](https://llmstxt.org/)): an index of every package, demo and
- * infrastructure entry for AI agents, with links to the pages, npm and GitHub. Generated from the
+ * Writes `/llms.txt` ([llmstxt.org](https://llmstxt.org/)): an index of every package, demo,
+ * infrastructure entry and framework page for AI agents, with links to the pages, npm and GitHub. Generated from the
  * registry, so it lists exactly what the site does.
  */
 const writeLlmsTxt = (outDir: string): void => {
@@ -352,6 +375,12 @@ const writeLlmsTxt = (outDir: string): void => {
         '## Infrastructure',
         '',
         ...showcase('infrastructure', infrastructure),
+        '',
+        '## Framework',
+        '',
+        ...framework.map(
+            ({ text, link, pitch }) => `- [${text}](${siteUrl}framework/${link}): ${pitch}`
+        ),
     ];
     writeFileSync(join(outDir, 'llms.txt'), `${lines.join('\n')}\n`);
 };
@@ -388,6 +417,11 @@ const nav: DefaultTheme.NavItem[] = [
                 link: `/infrastructure/${slug}/`,
             })),
         ],
+    },
+    {
+        text: 'Framework',
+        activeMatch: '^/framework/',
+        items: framework.map(({ text, link }) => ({ text, link: `/framework/${link}` })),
     },
 ];
 

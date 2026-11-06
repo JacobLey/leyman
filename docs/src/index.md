@@ -14,6 +14,9 @@ hero:
     - theme: alt
       text: Infrastructure
       link: /infrastructure/
+    - theme: alt
+      text: Framework
+      link: /framework/
 ---
 
 ## Packages
@@ -33,6 +36,10 @@ Worked examples, never published: small packages fully tested against real servi
 What this repository runs on: real, deployed systems, and how they are built. [All infrastructure →](/infrastructure/)
 
 <InfrastructureCards />
+
+## Framework
+
+The setup these packages are built on, as a framework another repository can adopt in slices. [Start here →](/framework/)
 
 ## For AI agents
 

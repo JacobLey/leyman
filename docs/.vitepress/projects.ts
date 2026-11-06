@@ -634,6 +634,28 @@ export const infrastructure: readonly Demo[] = [
 ];
 
 /**
+ * The framework section: how this repository's setup works and how another repository adopts it.
+ * Each page, `docs/src/framework/<link>.md` (`''` is the overview), is the source of its text: the
+ * matching skill points here rather than repeating it.
+ */
+export const framework: readonly {
+    readonly text: string;
+    readonly link: string;
+    readonly pitch: string;
+}[] = [
+    {
+        text: 'Overview',
+        link: '',
+        pitch: "This repository's setup as a framework another repository can adopt.",
+    },
+    {
+        text: 'Principles',
+        link: 'principles',
+        pitch: 'The principles behind the setup, and why: the bar for a package, versions, support floors, dependencies, lint, generated content, workarounds, committing and verifying.',
+    },
+];
+
+/**
  * Whether a package's overview has anything to show under "Related": related packages (declared on
  * either side), or demos that use it.
  */
