@@ -135,7 +135,15 @@ Fails if a file under one of `leyman/main/fork-manifest.json`'s `roots`, or at t
 
 ### `fork-manifest-audit`
 
-Applies the manifest with `tools/parse-cwd` as a sample package, installs that from nothing, runs `verify` there and checks `lifecycle` generates no drift (`leyman/main/scripts/audit-fork-manifest.mjs`). Defined in `@leyman/main`'s `project.json` and bound to no stage, so `verify` never runs it. It is one target in one project, and it needs the network and a run from nothing, so it is never cached. The weekly `fork-manifest` workflow runs it, and failing there blocks nothing.
+Applies the manifest with `tools/parse-cwd` as a sample package, installs that from nothing, runs `verify` there and checks `lifecycle` generates no drift (`leyman/main/scripts/audit-fork-manifest.mjs`). Defined in `@leyman/main`'s `project.json` and bound to no stage, so `verify` never runs it. It is one target in one project, and it needs the network and a run from nothing, so it is never cached. The weekly `Adoption audits` workflow runs it, and failing there blocks nothing.
+
+**Add when:** Never: only `@leyman/main` has it.
+
+---
+
+### `starter-audit`
+
+Runs every `sh` block of the [getting-started page](../../../docs/src/framework/getting-started.md) in order in a temporary directory, as a new user would with the published packages, then declares `sync-injected` on the dependency and runs `verify` again (`leyman/main/scripts/audit-starter.mjs`). `--local` installs this repository's builds of those packages instead, for a change before its release. Defined in `@leyman/main`'s `project.json` and bound to no stage, like `fork-manifest-audit`, and for the same reasons never cached. The weekly `Adoption audits` workflow runs it, and failing there blocks nothing.
 
 **Add when:** Never: only `@leyman/main` has it.
 

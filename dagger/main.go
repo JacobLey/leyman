@@ -148,6 +148,29 @@ func (m *Ci) ForkManifestAudit(
 	return err
 }
 
+// Prove the getting-started page by running it: `leyman/main/scripts/audit-starter.mjs`, which runs the page's commands
+// in a new workspace with the published packages. Like `ForkManifestAudit`, it resolves from the registry, so every call
+// runs it.
+func (m *Ci) StarterAudit(
+	ctx context.Context,
+	// Repository root
+	// +defaultPath="/"
+	// +ignore=["/.git", "/.claude-config", "**/node_modules", "/.pnpm-store", "/.nx/*", "!/.nx/installation", "/.coverage", "/.package-surface", "**/dist", "**/dist-test", "**/coverage"]
+	source *dagger.Directory,
+) error {
+	_, err := m.base().
+		// Only the page and the script: the workspace it makes installs everything else from the registry
+		WithFile(workdir+"/docs/src/framework/getting-started.md", source.File("docs/src/framework/getting-started.md")).
+		WithFile(workdir+"/leyman/main/scripts/audit-starter.mjs", source.File("leyman/main/scripts/audit-starter.mjs")).
+		// The page starts with `git init`
+		WithExec([]string{"sh", "-c", "apt-get update && apt-get install --yes --no-install-recommends git"}).
+		WithEnvVariable("CACHE_BUSTER", time.Now().String()).
+		WithExec([]string{"node", "leyman/main/scripts/audit-starter.mjs"}).
+		Sync(ctx)
+
+	return err
+}
+
 // Run the full CI pipeline: install, build, test, check published entry points import on their oldest supported
 // Node.js, and verify generated lifecycle config is up to date.
 func (m *Ci) Test(

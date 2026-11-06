@@ -90,7 +90,7 @@ const checks = () => ({
         ),
         workflowEnv('DAGGER_VERSION'),
         read(
-            '.github/workflows/fork-manifest.yml',
+            '.github/workflows/adoption-audits.yml',
             /^ {2}DAGGER_VERSION: (?<value>.+)$/mv,
             'DAGGER_VERSION'
         ),

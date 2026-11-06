@@ -375,7 +375,7 @@
         "{workspaceRoot}/.devcontainer/Dockerfile",
         "{workspaceRoot}/.devcontainer/docker-compose.yml",
         "{workspaceRoot}/.github/workflows/ci.yml",
-        "{workspaceRoot}/.github/workflows/fork-manifest.yml",
+        "{workspaceRoot}/.github/workflows/adoption-audits.yml",
         "{workspaceRoot}/.github/workflows/comparison-report.yml",
         "{workspaceRoot}/Cargo.lock",
         "{workspaceRoot}/Cargo.toml",

@@ -7,7 +7,7 @@ description: Which infrastructure files a fork of this repo's patterns takes, ho
 
 [`leyman/main/fork-manifest.json`](../../../leyman/main/fork-manifest.json) draws the line between a pattern a fork takes and what stays in this repo. Classifying is a judgment written by hand. Everything downstream is derived from it.
 
-A fork is the last of the [adoption tiers](https://jacobley.github.io/leyman/framework/adoption) (source: [`docs/src/framework/adoption.md`](../../../docs/src/framework/adoption.md)): the files that can't be packages. The tiers before it are published packages, which the fork installs from npm. Keep that page in step when what a tier installs, buys or costs changes. [Getting started](https://jacobley.github.io/leyman/framework/getting-started) (source: [`docs/src/framework/getting-started.md`](../../../docs/src/framework/getting-started.md)) walks tiers 1 to 3 from an empty directory: when `@leyman/nx-plugin`'s generators change, run its steps again in a scratch directory, with a `PATH` free of this repository's `node_modules/.bin`, and fix the page or the generators until a published package passes `verify`.
+A fork is the last of the [adoption tiers](https://jacobley.github.io/leyman/framework/adoption) (source: [`docs/src/framework/adoption.md`](../../../docs/src/framework/adoption.md)): the files that can't be packages. The tiers before it are published packages, which the fork installs from npm. Keep that page in step when what a tier installs, buys or costs changes. [Getting started](https://jacobley.github.io/leyman/framework/getting-started) (source: [`docs/src/framework/getting-started.md`](../../../docs/src/framework/getting-started.md)) walks tiers 1 to 3 from an empty directory. `starter-audit` (`leyman/main/scripts/audit-starter.mjs`) runs every `sh` block of it, in order, then declares the `sync-injected` the page asks for in prose and runs `verify` again; the same weekly workflow runs it against npm. Before releasing a change to a published package the page installs, build them and run `node leyman/main/scripts/audit-starter.mjs --local`, which installs this repository's builds through a global pnpmfile. Keep every `sh` block on the page runnable.
 
 ## When you hit it
 
@@ -31,7 +31,7 @@ A file is portable if it works with the other entries and nothing else. It may m
 
 The audit runs without any optional condition, so it doesn't prove the conditional files work. It also doesn't read the skills, which still name this repo's packages as examples.
 
-To try a fork by hand, `node leyman/main/scripts/fork-manifest.mjs apply --to <dir> --with go,rust --package tools/parse-cwd` prints what it skipped and why. To audit from CI, run the `Fork manifest` workflow. To audit in Dagger, `dagger call --mod ./dagger fork-manifest-audit`.
+To try a fork by hand, `node leyman/main/scripts/fork-manifest.mjs apply --to <dir> --with go,rust --package tools/parse-cwd` prints what it skipped and why. To audit from CI, run the `Adoption audits` workflow. To audit in Dagger, `dagger call --mod ./dagger fork-manifest-audit`.
 
 ## What a fork gets
 
@@ -184,7 +184,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.claude/skills/projects` | this repo's table of packages; a fork writes its own |
 | `.github/ISSUE_TEMPLATE` | names this repo's packages and links |
 | `.github/workflows/comparison-report.yml` | reports on genever against other tools, for this repo's docs site |
-| `.github/workflows/fork-manifest.yml` | audits this repo's classification |
+| `.github/workflows/adoption-audits.yml` | audits this repo's classification and getting-started page |
 | `CODE_OF_CONDUCT.md` | a fork writes its own |
 | `CONTRIBUTING.md` | a fork writes its own |
 | `DEPRECATED_PACKAGES.md` | this repo's published history |
@@ -196,6 +196,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `infra` | this repo's hosted cache deployment |
 | `leyman/main/fork-manifest.json` | this repo's classification; a fork keeps the list of what it took |
 | `leyman/main/scripts/audit-fork-manifest.mjs` | proves this repo's classification by running it |
+| `leyman/main/scripts/audit-starter.mjs` | runs this repo's getting-started page |
 | `leyman/main/scripts/check-fork-manifest.mjs` | checks this repo's classification |
 | `leyman/main/scripts/check-parity.mjs` | anchored on this repo's Dockerfile, compose file and Dagger module |
 | `leyman/main/scripts/check-workspace-dependencies.mjs` | only matters to a workspace that also publishes what it depends on |

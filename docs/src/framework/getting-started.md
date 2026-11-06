@@ -4,6 +4,8 @@ description: 'From an empty directory to a first package that passes verify, wit
 
 # Getting started
 
+<!-- A weekly audit runs every sh block here, in order, in one shell: leyman/main/scripts/audit-starter.mjs. Keep each one runnable. -->
+
 This walks from an empty directory to a first package that passes `verify`. It takes [tiers 1 to 3](/framework/adoption) of the setup, all from npm. It was last run with pnpm 12 and Nx 24.
 
 ## 1. Create the workspace
@@ -62,7 +64,13 @@ pnpm warns that eslint-plugin-react and eslint-plugin-jsx-a11y want an older ESL
 
 ## Next
 
-**Publish a package.** Pass `--published`, plus `--repository`, `--author` and `--license`, or set them once in `nx.json`:
+**Publish a package.** Pass `--published`, with the fields npm shows:
+
+```sh
+pnpm nx g @leyman/nx-plugin:package packages/my-app --description "Uses my-lib." --published --repository https://github.com/owner/repo --author Me --license MIT
+```
+
+A published package takes the tsconfig of its Node.js support floor (`--floor`, 22 by default) and gets a `check-package` target. That target packs the package and checks it as npm would get it. Add a `LICENSE` at the root first, and the generator copies it into each published package. To pass the same options every time, set them once in `nx.json`:
 
 ```json
 {
@@ -74,14 +82,12 @@ pnpm warns that eslint-plugin-react and eslint-plugin-jsx-a11y want an older ESL
 }
 ```
 
-A published package takes the tsconfig of its Node.js support floor (`--floor`, 22 by default) and gets a `check-package` target. That target packs the package and checks it as npm would get it. Add a `LICENSE` at the root first, and the generator copies it into each published package.
-
 **Depend on another package.** Add it as a workspace dependency:
 
 ```sh
 pnpm --filter my-app add my-lib@workspace:^
 ```
 
-The dependency then needs `"sync-injected": {}` in its `project.json`. That target keeps a dependent's injected copy current after each build. nx-lifecycle fails, naming the project, until it is declared.
+The dependency then needs `"sync-injected": {}` in its `project.json`. That target keeps a dependent's injected copy current after each build. nx-lifecycle fails, naming the project, until it is declared. Then run `pnpm nx sync` and `verify` again.
 
 **Take the rest.** The devcontainer, CI on Dagger, releases and the full set of agent skills are [tier 4](/framework/adoption#_4-devcontainer-ci-and-skills): files you copy rather than install.

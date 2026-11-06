@@ -379,8 +379,8 @@
       "why": "reports on genever against other tools, for this repo's docs site"
     },
     {
-      "path": ".github/workflows/fork-manifest.yml",
-      "why": "audits this repo's classification"
+      "path": ".github/workflows/adoption-audits.yml",
+      "why": "audits this repo's classification and getting-started page"
     },
     {
       "path": "CODE_OF_CONDUCT.md",
@@ -425,6 +425,10 @@
     {
       "path": "leyman/main/scripts/audit-fork-manifest.mjs",
       "why": "proves this repo's classification by running it"
+    },
+    {
+      "path": "leyman/main/scripts/audit-starter.mjs",
+      "why": "runs this repo's getting-started page"
     },
     {
       "path": "leyman/main/scripts/check-fork-manifest.mjs",
@@ -540,7 +544,8 @@
       "check-workspace-dependencies"
     ],
     "repoOnlyProjectTargets": [
-      "fork-manifest-audit"
+      "fork-manifest-audit",
+      "starter-audit"
     ]
   },
   "workspaceGlobs": [

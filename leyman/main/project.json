@@ -50,6 +50,16 @@
         "cwd": "{projectRoot}"
       }
     },
+    "starter-audit": {
+      "executor": "nx:run-commands",
+      "options": {
+        "commands": [
+          "node ./scripts/audit-starter.mjs"
+        ],
+        "color": true,
+        "cwd": "{projectRoot}"
+      }
+    },
     "install:_": {},
     "install": {},
     "prepare:_": {},
