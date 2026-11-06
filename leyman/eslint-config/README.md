@@ -9,7 +9,7 @@ Strict, opinionated ESLint flat config for TypeScript ESM packages, generated fr
 
 </div>
 
-- **Every rule on** — every non-deprecated rule of ESLint and of ten plugins (typescript-eslint, import-x, jsdoc, n, regexp, sonarjs, unicorn, React, React Hooks, JSX accessibility) is an error, read from the installed plugins, so a new rule is on as soon as the plugin ships it.
+- **Every rule on** — every non-deprecated rule of ESLint and of ten plugins (typescript-eslint, import-x, jsdoc, n, regexp, sonarjs, unicorn, React, React Hooks, JSX accessibility) is an error, read from the installed plugins, so a new rule is on as soon as this package takes the plugin release that adds it.
 - **Every exception explained** — each rule turned off or configured has a comment saying why.
 - **Generated from package.json** — workspace dependencies become internal imports, `engines.node` turns off rules that suggest APIs the package's oldest supported Node.js lacks, and React rules follow whether the package uses React.
 - **Type-aware** — typescript-eslint's type-checked rules run through the project service, with no `parserOptions.project` to maintain.

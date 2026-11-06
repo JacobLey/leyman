@@ -7,6 +7,8 @@ description: Which infrastructure files a fork of this repo's patterns takes, ho
 
 [`leyman/main/fork-manifest.json`](../../../leyman/main/fork-manifest.json) draws the line between a pattern a fork takes and what stays in this repo. Classifying is a judgment written by hand. Everything downstream is derived from it.
 
+A fork is the last of the [adoption tiers](https://jacobley.github.io/leyman/framework/adoption) (source: [`docs/src/framework/adoption.md`](../../../docs/src/framework/adoption.md)): the files that can't be packages. The tiers before it are published packages, which the fork installs from npm. Keep that page in step when what a tier installs, buys or costs changes.
+
 ## When you hit it
 
 `check-fork-manifest` fails when a new file under one of the manifest's `roots`, or at the top of the workspace, isn't classified. Add one line:
@@ -24,7 +26,7 @@ A file is portable if it works with the other entries and nothing else. It may m
 
 | What | When | What it catches |
 |------|------|-----------------|
-| `XXcheck-fork-manifest` | Every `verify` and CI run, under a second | Unclassified files, stale paths and conditions, and anything an applied fork names that didn't come along, with no optional conditions and with all of them |
+| `check-fork-manifest` | Every `verify` and CI run, under a second | Unclassified files, stale paths and conditions, and anything an applied fork names that didn't come along, with no optional conditions and with all of them |
 | `fork-manifest-audit` | By hand and weekly, never in `verify` | What only shows up when a fork runs: applies the manifest with `tools/parse-cwd`, installs from nothing, runs `verify` and checks for lifecycle drift |
 
 The audit runs without any optional condition, so it doesn't prove the conditional files work. It also doesn't read the skills, which still name this repo's packages as examples.

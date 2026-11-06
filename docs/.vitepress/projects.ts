@@ -653,6 +653,11 @@ export const framework: readonly {
         link: 'principles',
         pitch: 'The principles behind the setup, and why: the bar for a package, versions, support floors, dependencies, lint, generated content, workarounds, committing and verifying.',
     },
+    {
+        text: 'Adoption tiers',
+        link: 'adoption',
+        pitch: 'Four tiers of adopting the setup, from published checks to the whole devcontainer and CI: what each installs, buys and costs.',
+    },
 ];
 
 /**
