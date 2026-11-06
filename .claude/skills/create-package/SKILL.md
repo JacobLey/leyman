@@ -5,34 +5,27 @@ description: Creating a new package in the monorepo
 
 # Creating a New Package
 
-There are no generators. Copy an existing package of similar shape and adapt it:
+Generate it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)):
 
-- Simple library: `tools/parse-cwd`, `tools/enum-to-array`
-- Library with DI: `tools/haywire`
-- CLI app: `apps/barrelify`, structured as in the [cli skill](../cli/SKILL.md)
+```bash
+nx g @leyman/nx-plugin:package tools/my-lib --description "Does things." --published
+pnpm i                          # the generator runs this, unless --skipInstall
+nx sync                         # adds the tsconfig references
+nx run @leyman/main:lifecycle   # adds the orchestration targets to project.json
+```
 
-Put it under `tools/` or `apps/` (see the [projects skill](../projects/SKILL.md)).
+The [`@leyman/nx-plugin` README](../../../leyman/nx-plugin/README.md#package) lists its options. `nx.json` sets this repository's defaults (`config: leyman/main/nx-plugin.json`, the repository URL, author, license, and `@typescript/native` in `devDependencies`), so the usual choices are only `--published`, `--floor` (Node.js major, default 22), `--test` (`mocha`, `vitest` or `none`) and `--name` (default: the directory's last part).
 
-## Files
+It writes `package.json` (versions from the catalog or `workspace:^`), `tsconfig.json` (the support floor's `@leyman/configs/tsconfig.node-<major>.json` when published, else `tsconfig.build.json`; see [Support floors](../typescript/SKILL.md#support-floors)), `src/index.ts`, `test/tsconfig.json` and a first spec in `test/unit/`, `eslint.config.js`, a README stub, `LICENSE` when published, and a `project.json` declaring as `{}` the TypeScript targets the plugin infers from those files. Then adapt it:
 
-| File | Notes |
+| What | Notes |
 |------|-------|
-| `package.json` | `"type": "module"`, version `0.0.1`. Dependencies via `catalog:` / `workspace:^` (see [install-package](../install-package/SKILL.md)). Every TypeScript package devDepends on `@leyman/configs` (its tsconfigs extend it, and the build and test targets read its SWC, c8 and Vitest configs from the package's `node_modules`). Tests need dev deps on `mocha`, `mocha-chain`, `@leyman/expect`, `c8`. Set `"repository": { "type": "git", "url": "git+https://github.com/JacobLey/leyman.git", "directory": "<path>" }` and `"homepage": "https://github.com/JacobLey/leyman/tree/main/<path>#readme"` (the docs site page instead, once it has one). |
-| `src/`, `test/`, `data/`, `out/` | Where files go decides what is cached; see [Project layout and caching](../nx-tasks-reference/SKILL.md#project-layout-and-caching). |
-| `tsconfig.json` | `{ "extends": "@leyman/configs/tsconfig.build.json", "compilerOptions": { "outDir": "dist", "rootDir": "src", "tsBuildInfoFile": "dist/tsconfig.tsbuildinfo" }, "include": ["src", "*.d.ts"] }`. `references` are generated. A published package extends its support floor's `@leyman/configs/tsconfig.node-<major>.json` instead, and takes `@types/node` from `catalog:node-<major>`, both matching `engines.node` (`>=<major>`); see [Support floors](../typescript/SKILL.md#support-floors). |
-| `test/tsconfig.json` | `{ "extends": "@leyman/configs/tsconfig.test.json", "references": [{ "path": ".." }] }` (no `references` in e2e packages). See the [testing skill](../testing/SKILL.md#layout). |
-| `files` (in `package.json`) | Allow-list of what is published, which is also what workspace dependents get (see [`sync-injected`](../nx-tasks-reference/SKILL.md#sync-injected)): `["dist", "!dist/**/*.map", "!dist/tsconfig.tsbuildinfo"]`, plus any other entry points (`bin.mjs`, `out`, root `*.d.ts`) and `WHY-<PACKAGE>.md`. `package.json`, `README.md` and `LICENSE` are always included. Check the result with `pnpm pack --dry-run`; [`check-package`](../nx-tasks-reference/SKILL.md#check-package) fails on a top-level path that is neither published nor known not to be. |
-| `project.json` | `{ "$schema": ..., "name": ... }`, plus any work target the TypeScript ones don't cover (`barrelify`, `populate-files`...), as `{}` (see [nx-tasks-reference](../nx-tasks-reference/SKILL.md)). The lifecycle command adds the TypeScript targets the package's files call for (`tsc` for `src/` and `tsconfig.json`, `mocha-unit-test` for `test/unit` with mocha...) and the orchestration targets. |
-| `eslint.config.js` | Export `configGenerator(...)` from `@leyman/eslint-config` (see [linting-formatting](../linting-formatting/SKILL.md)). |
+| Code | Replace the placeholder `packageName` export and its spec. Where files go decides what is cached; see [Project layout and caching](../nx-tasks-reference/SKILL.md#project-layout-and-caching). For a library with DI, see `tools/haywire`; for a CLI, `apps/barrelify` and the [cli skill](../cli/SKILL.md). |
+| `package.json` | Rename `src/index.ts`, `exports` and `types` to the package's own entry name if it has one (e.g. `./dist/parse-cwd.js`). `files` is the allow-list of what is published, which is also what workspace dependents get (see [`sync-injected`](../nx-tasks-reference/SKILL.md#sync-injected)): add any other entry points (`bin.mjs`, `out`, root `*.d.ts`) and `WHY-<PACKAGE>.md`. Check the result with `pnpm pack --dry-run`; [`check-package`](../nx-tasks-reference/SKILL.md#check-package) fails on a top-level path that is neither published nor known not to be. Add `keywords`, and point `homepage` at the docs site page once it has one. Add dependencies with [install-package](../install-package/SKILL.md). |
+| `project.json` | Add any work target the TypeScript ones don't cover (`barrelify`, `populate-files`...) as `{}` (see [nx-tasks-reference](../nx-tasks-reference/SKILL.md)). After the files change (a new `test/integration/`, say), `nx run @leyman/main:lifecycle` re-declares the TypeScript ones, as it runs `nx-plugin-targets` first. |
 | `README.md` | Required. See [writing-readmes](../writing-readmes/SKILL.md). Its first paragraph repeats the `package.json` `description`. |
 
 ## Then
-
-```bash
-pnpm i
-nx run @leyman/main:lifecycle   # adds the TypeScript and orchestration targets to project.json
-nx run-many -t build            # syncs tsconfig references
-```
 
 Also add it to the package lists (the [projects skill](../projects/SKILL.md) says how), and a changeset if the package will be published (see [versioning](../versioning/SKILL.md)). A published package also goes in the `devDependencies` of [`e2e/published-entrypoints`](../../../e2e/published-entrypoints) (`workspace:^`), whose test fails for any public package missing there. Nx caches that test on its own inputs, so a passing cached run can hide this: run it with `--skip-nx-cache` after making a package public.
 

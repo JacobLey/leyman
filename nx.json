@@ -3,6 +3,19 @@
   "cli": {
     "packageManager": "pnpm"
   },
+  "generators": {
+    "@leyman/nx-plugin": {
+      "package": {
+        "config": "leyman/main/nx-plugin.json",
+        "repository": "https://github.com/JacobLey/leyman",
+        "author": "JacobLey",
+        "license": "MIT",
+        "devDependencies": [
+          "@typescript/native"
+        ]
+      }
+    }
+  },
   "namedInputs": {
     "shared-globals": [
       {

@@ -91,6 +91,12 @@ const stripNxJson = ({ nx }, requested, to) => {
     const plugins = new Set(unrequested(nx.plugins));
 
     nxJson.plugins = nxJson.plugins.filter(plugin => !plugins.has(plugin.plugin ?? plugin));
+    // The package generator's defaults name this repository and its owner, which a fork sets for itself
+    const packageDefaults = nxJson.generators?.['@leyman/nx-plugin']?.package;
+    if (packageDefaults) {
+        delete packageDefaults.repository;
+        delete packageDefaults.author;
+    }
     nxJson.namedInputs = without(nxJson.namedInputs, new Set(unrequested(nx.namedInputs)));
     nxJson.targetDefaults = Object.fromEntries(
         Object.entries(without(nxJson.targetDefaults, targets)).map(([name, target]) => [

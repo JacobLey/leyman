@@ -14,6 +14,7 @@ Nx plugin inferring the build, test, lint and package-check targets of TypeScrip
 - **Builds that respect the support floor** — SWC compiles to the ES year of the oldest Node.js `engines.node` allows, and `tsc` checks types and writes declarations.
 - **Coverage over all of a project's tests** — each test target runs under c8, and `coverage-report` checks the coverage of all of them together.
 - **Overridable** — rename a target, turn it off, include or exclude projects, or override any part in `project.json`.
+- **Generators** — `init` sets an Nx workspace up for the plugin (`nx add @leyman/nx-plugin` runs it), and `package` adds a package with the targets it gets already declared.
 - **Or written out** — a workspace that can't load the plugin (because it builds it, say) writes the same targets into `nx.json` and each `project.json` with the `targets` executor, which fails on drift in CI.
 
 It is the setup of the [leyman](https://github.com/JacobLey/leyman) monorepo, published as-is. Expect it to be opinionated and to change: see [Versioning](#versioning).
@@ -25,11 +26,18 @@ It is the setup of the [leyman](https://github.com/JacobLey/leyman) monorepo, pu
 - [Usage](#usage)
 - [Targets](#targets)
 - [Options](#options)
+- [Generators](#generators)
 - [The targets executor](#the-targets-executor)
 - [API](#api)
 - [Versioning](#versioning)
 
 ## Install
+
+```sh
+nx add @leyman/nx-plugin
+```
+
+That installs the plugin and runs its [`init`](#init) generator. Or install it yourself:
 
 ```sh
 npm i -D @leyman/nx-plugin @leyman/configs
@@ -118,6 +126,61 @@ All optional.
 
 The options are checked against [`out/schema.json`](./out/schema.json); an invalid one fails with its path.
 
+## Generators
+
+### `init`
+
+```sh
+nx g @leyman/nx-plugin:init
+```
+
+Sets the workspace up for the plugin, leaving alone anything already set:
+
+- `nx.json`: the plugin, and [nx-lifecycle](https://www.npmjs.com/package/nx-lifecycle)'s plugin with the stages install, prepare (generate, format), check (lint), build (run, post, sync), test (compile, run, report) and verify, and each target bound to one, under the name the options give it. `--lifecycle=false` leaves nx-lifecycle out.
+- `devDependencies` of the root `package.json`: the plugin, `@leyman/configs`, `@biomejs/biome`, `@leyman/check-package`, `@nx/js` and `nx-lifecycle`.
+- `biome.json`, extending `@leyman/configs/biome.base.json`.
+- `pnpm-workspace.yaml`, if there is one: `injectWorkspacePackages: true` and `dedupeInjectedDeps: false`, so dependents get workspace packages as published, which `sync-injected` keeps current.
+- `.claude/skills/principles/SKILL.md`, pointing coding agents at the [principles](https://jacobley.github.io/leyman/framework/principles) of the setup. `--skill=false` leaves it out.
+
+Then it installs the dependencies, unless `--skipInstall`.
+
+### `package`
+
+```sh
+nx g @leyman/nx-plugin:package packages/my-lib --description "Does things."
+```
+
+Adds a TypeScript ESM package: `package.json`, `tsconfig.json` (extending `@leyman/configs`), `src/index.ts`, a first test with its `test/tsconfig.json`, `eslint.config.js`, a `README.md`, and a `project.json` declaring as `{}` the targets the plugin infers from those files, so nx-lifecycle wires them. Then it installs the dependencies, unless `--skipInstall`, and `nx sync` adds the `tsconfig.json` references.
+
+| Option            | Default                   | Description                                                                                                                                                                                             |
+| ----------------- | ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `directory`       | —                         | Where the package goes, relative to the workspace root. The first argument.                                                                                                                             |
+| `description`     | —                         | For `package.json` and the README.                                                                                                                                                                      |
+| `name`            | The directory's last part | Name of the package.                                                                                                                                                                                    |
+| `published`       | `false`                   | Published to npm, rather than `private`: it gets `engines`, extends its support floor's `@leyman/configs/tsconfig.node-{floor}.json`, takes `@types/node` of that major, and the workspace's `LICENSE`. |
+| `floor`           | `22`                      | Major of the oldest Node.js a published package supports.                                                                                                                                               |
+| `test`            | `mocha`                   | `mocha`, `vitest`, or `none`.                                                                                                                                                                           |
+| `repository`      | —                         | URL of the workspace's GitHub repository, for a published package's `repository`, `homepage` and `bugs`.                                                                                                |
+| `author`          | —                         | `author` of `package.json`.                                                                                                                                                                             |
+| `license`         | —                         | `license` of `package.json`.                                                                                                                                                                            |
+| `devDependencies` | —                         | More packages to add to `devDependencies`.                                                                                                                                                              |
+| `config`          | The options in `nx.json`  | A file of the plugin [options](#options), for a workspace running the [targets executor](#the-targets-executor).                                                                                        |
+| `skipInstall`     | `false`                   | Don't install the dependencies.                                                                                                                                                                         |
+
+Set the ones a workspace always passes as defaults in `nx.json`:
+
+```json
+{
+  "generators": {
+    "@leyman/nx-plugin": {
+      "package": { "repository": "https://github.com/owner/repo", "license": "MIT" }
+    }
+  }
+}
+```
+
+Each dependency's version comes from the workspace if it can: `workspace:^` for one of its own packages, `catalog:` for one in the pnpm catalog (`catalog:node-{floor}` for a published package's `@types/node`), or the range another package already uses. Otherwise it is the version this plugin was published with, and a package with none of those fails.
+
 ## The targets executor
 
 A workspace that can't load the plugin, such as one that builds it, writes the same targets out instead:
@@ -145,7 +208,9 @@ The plugin's pieces, for tools built on it:
 - `inferTargets(project, resolved)`: the targets a project gets, from `{ root, packageJson, isDependency, has(path) }`; `inferencePaths` are the paths `has` is asked about.
 - `loadProjects(workspaceRoot, roots)`: reads that for each project.
 - `syncTargets({ root, projects, options, optionsSource, check })`: what the executor does.
-- `assertOptions(options, where)`, `optionsJsonSchema`, `executorJsonSchema`: option validation and the JSON schemas.
+- `initGenerator(tree, options?)`, `packageGenerator(tree, options)`: the generators. `lifecycleStages` and `lifecycleBindings` are the nx-lifecycle options `init` writes.
+- `readWorkspaceVersions(tree)`, `resolveVersion(name, versions)`: the version a generator gives a dependency.
+- `assertOptions(options, where)`, `optionsJsonSchema`, `executorJsonSchema`, `initGeneratorJsonSchema`, `packageGeneratorJsonSchema`: option validation and the JSON schemas.
 
 ## Versioning
 
