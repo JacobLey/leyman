@@ -38,7 +38,9 @@
     "sourceMap": true,
     "strict": true,
     "target": "ESNext",
-    "types": ["node"],
+    "types": [
+      "node"
+    ],
     "useDefineForClassFields": true,
     "useUnknownInCatchVariables": true
   },

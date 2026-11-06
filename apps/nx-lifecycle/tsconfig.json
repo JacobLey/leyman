@@ -1,5 +1,5 @@
 {
-  "extends": "../../configs/tsconfig.node-24.json",
+  "extends": "@leyman/configs/tsconfig.node-24.json",
   "compilerOptions": {
     "outDir": "dist",
     "rootDir": "src",

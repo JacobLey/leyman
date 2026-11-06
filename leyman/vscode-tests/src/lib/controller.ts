@@ -337,7 +337,6 @@ class SpecTests {
             const command = buildCommand({
                 project,
                 isDebug,
-                workspace: this.#workspace,
                 spec: path,
                 selections: whole ? [] : selections,
                 report: Path.join(directory, 'report.json'),

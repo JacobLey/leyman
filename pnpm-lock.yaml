@@ -417,6 +417,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -490,6 +493,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.13.0(supports-color@10.2.2))(supports-color@10.2.2)
@@ -566,6 +572,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -633,6 +642,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/demo-openapi-spec':
         specifier: workspace:^
         version: file:demos/openapi/spec(eslint@10.13.0(supports-color@8.1.1))
@@ -688,6 +700,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -746,6 +761,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -810,6 +828,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -904,6 +925,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -983,6 +1007,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1065,6 +1092,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1135,6 +1165,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1183,6 +1216,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1253,6 +1289,9 @@ importers:
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.1.5(hono@4.13.13)
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/demo-openapi-database':
         specifier: workspace:^
         version: file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
@@ -1341,6 +1380,9 @@ importers:
       '@hono/node-server':
         specifier: 'catalog:'
         version: 2.1.5(hono@4.13.13)
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/demo-openapi-database':
         specifier: workspace:^
         version: file:demos/openapi/database(@types/pg@8.23.1)(pg@8.23.1)
@@ -1429,6 +1471,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1487,6 +1532,9 @@ importers:
       '@happy-dom/global-registrator':
         specifier: 'catalog:'
         version: 21.0.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1533,6 +1581,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1588,6 +1639,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1679,6 +1733,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/demo-openapi-client':
         specifier: workspace:^
         version: file:demos/openapi/client(eslint@10.13.0(supports-color@8.1.1))
@@ -1758,6 +1815,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -1834,6 +1894,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2041,6 +2104,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/constant-consistent-hash-test-vectors':
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/test-vectors
@@ -2098,6 +2164,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2174,6 +2243,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2213,6 +2285,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2267,6 +2342,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2348,6 +2426,9 @@ importers:
       '@happy-dom/global-registrator':
         specifier: 'catalog:'
         version: 21.0.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2417,6 +2498,9 @@ importers:
       '@leyman/check-package':
         specifier: workspace:^
         version: file:apps/check-package
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2555,6 +2639,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2606,6 +2693,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2663,6 +2753,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2705,6 +2798,12 @@ importers:
       wrangler:
         specifier: 'catalog:'
         version: 4.152.0(@types/node@24.19.2)
+
+  leyman/configs:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
 
   leyman/eslint-config:
     dependencies:
@@ -2763,6 +2862,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@swc/cli':
         specifier: 'catalog:'
         version: 0.8.1(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
@@ -2818,6 +2920,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2894,6 +2999,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -2939,6 +3047,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/constant-consistent-hash-test-vectors':
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/test-vectors
@@ -3003,6 +3114,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/constant-consistent-hash-test-vectors':
         specifier: workspace:^
         version: file:tools/constant-consistent-hash/test-vectors
@@ -3055,6 +3169,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3100,6 +3217,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3155,6 +3275,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3197,6 +3320,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3246,6 +3372,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3298,6 +3427,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3352,6 +3484,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3401,6 +3536,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3446,6 +3584,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3500,6 +3641,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3548,6 +3692,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3611,6 +3758,9 @@ importers:
       '@happy-dom/global-registrator':
         specifier: 'catalog:'
         version: 21.0.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3684,6 +3834,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3738,6 +3891,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3784,6 +3940,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3832,6 +3991,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3874,6 +4036,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3926,6 +4091,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -3978,6 +4146,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -4021,6 +4192,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -4057,6 +4231,9 @@ importers:
       '@biomejs/biome':
         specifier: 'catalog:'
         version: 2.6.4
+      '@leyman/configs':
+        specifier: workspace:^
+        version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
         version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.13.0(supports-color@8.1.1))(supports-color@8.1.1)
@@ -5623,6 +5800,9 @@ packages:
     resolution: {directory: apps/check-package, type: directory}
     engines: {node: '>=22.12.0'}
     hasBin: true
+
+  '@leyman/configs@file:leyman/configs':
+    resolution: {directory: leyman/configs, type: directory}
 
   '@leyman/constant-consistent-hash-rust@file:tools/constant-consistent-hash/rust-impl':
     resolution: {directory: tools/constant-consistent-hash/rust-impl, type: directory}
@@ -12680,6 +12860,8 @@ snapshots:
       publint: 0.3.25
       semver: 7.8.5
       yargs: 18.2.0
+
+  '@leyman/configs@file:leyman/configs': {}
 
   '@leyman/constant-consistent-hash-rust@file:tools/constant-consistent-hash/rust-impl': {}
 

@@ -76,7 +76,6 @@ export const titlePattern = (
  * The runner's command for a spec, in the shape of the project's test targets, minus coverage.
  *
  * @param options - what to run
- * @param options.workspace - root of the workspace
  * @param options.project - project of the spec
  * @param options.spec - path of the spec's source
  * @param options.selections - parts of the spec to run, or all of it if empty
@@ -85,14 +84,12 @@ export const titlePattern = (
  * @returns program, its arguments and where it reports
  */
 export const buildCommand = ({
-    workspace,
     project,
     spec,
     selections,
     report,
     isDebug,
 }: {
-    workspace: string;
     project: Project;
     spec: string;
     selections: readonly Selection[];
@@ -110,7 +107,7 @@ export const buildCommand = ({
             args: [
                 'run',
                 '--config',
-                Path.join(workspace, 'configs', 'vitest.config.js'),
+                Path.join(cwd, 'node_modules', '@leyman', 'configs', 'vitest.config.js'),
                 '--root',
                 '.',
                 '--reporter',

@@ -1,5 +1,5 @@
 /**
- * Shared vitest config, used by the `vitest-unit-test` target.
+ * Vitest config for tests compiled to `dist-test/unit` before they run.
  *
  * Plain object (rather than `defineConfig`) so it can be loaded without resolving `vitest` from this directory.
  */

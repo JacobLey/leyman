@@ -3,7 +3,13 @@
   "compilerOptions": {
     // Node.js 24 has ES2025, plus `Array.fromAsync`, `using` with `DisposableStack`, and `Error.isError`, but not
     // `Uint8Array.fromBase64` or `Iterator.concat`
-    "lib": ["DOM", "ES2025", "ESNext.Array", "ESNext.Disposable", "ESNext.Error"],
+    "lib": [
+      "DOM",
+      "ES2025",
+      "ESNext.Array",
+      "ESNext.Disposable",
+      "ESNext.Error"
+    ],
     "target": "ES2025"
   }
 }

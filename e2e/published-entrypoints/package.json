@@ -17,6 +17,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@leyman/check-package": "workspace:^",
+    "@leyman/configs": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",
     "@swc/cli": "catalog:",

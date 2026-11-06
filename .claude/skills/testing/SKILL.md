@@ -5,7 +5,7 @@ description: Writing and running tests (Mocha, mocha-chain, Sinon, C8)
 
 # Testing
 
-> Config: [`../../../nx.json`](../../../nx.json) (targets: `mocha-unit-test`, `mocha-integration-test`, `vitest-unit-test`, `coverage-report`) · [`../../../configs/c8rc.json`](../../../configs/c8rc.json)
+> Config: [`../../../nx.json`](../../../nx.json) (targets: `mocha-unit-test`, `mocha-integration-test`, `vitest-unit-test`, `coverage-report`) · [`c8rc.json`](../../../leyman/configs/c8rc.json)
 
 ## Running
 
@@ -54,7 +54,7 @@ Get each test's database from [`pg-dolly`](../../../tools/pg-dolly/) (dev depend
 test/unit/          ← mirrors src/ (src/lib/foo.ts → test/unit/lib/foo.spec.ts)
 test/integration/   ← user-level workflows (CLI runs, real file system), not per-file
 test/data/          ← fixtures (any file type)
-test/tsconfig.json  ← { "extends": "<relative>/configs/tsconfig.test.json", "references": [{ "path": ".." }] }
+test/tsconfig.json  ← { "extends": "@leyman/configs/tsconfig.test.json", "references": [{ "path": ".." }] }
 ```
 
 The reference to the package's own project is for the editor: tests import the package by name, which resolves to its `dist/`, and builds delete and rewrite `dist/`. With the reference, the language server reads `src/` instead, so a rebuild doesn't break types in open test files. `tsc -p ./test` still checks against `dist/`. e2e packages have no project of their own to reference.

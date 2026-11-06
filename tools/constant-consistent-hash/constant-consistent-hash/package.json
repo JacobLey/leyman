@@ -43,6 +43,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
     "@leyman/constant-consistent-hash-test-vectors": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",

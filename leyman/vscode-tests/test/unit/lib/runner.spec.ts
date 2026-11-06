@@ -33,7 +33,7 @@ suite('runner', () => {
     });
 
     suite('buildCommand', () => {
-        const base = { workspace: '/w', selections: [], report: '/r.json', isDebug: false };
+        const base = { selections: [], report: '/r.json', isDebug: false };
 
         test('Mocha runs the compiled spec', () => {
             expect(
@@ -86,7 +86,7 @@ suite('runner', () => {
                 args: [
                     'run',
                     '--config',
-                    '/w/configs/vitest.config.js',
+                    '/a/node_modules/@leyman/configs/vitest.config.js',
                     '--root',
                     '.',
                     '--reporter',

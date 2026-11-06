@@ -14,6 +14,7 @@ interface PackageJson {
     devDependencies?: Record<string, string>;
     engines?: { node?: string };
     exports?: unknown;
+    main?: string;
 }
 
 // Tests are defined synchronously, so everything they need is read up front.
@@ -38,7 +39,7 @@ const publishedPackages = new Map<string, { exports: unknown; floor: number }>()
 for (const { name, packageJsonPath } of published) {
     const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as PackageJson;
     publishedPackages.set(name, {
-        exports: packageJson.exports,
+        exports: packageJson.exports ?? packageJson.main,
         // `check-package` checks every published package names its floor this way
         floor: Number(/^>=\s*(?<major>\d+)/v.exec(packageJson.engines?.node ?? '')?.groups?.major),
     });
@@ -53,11 +54,15 @@ const installed = Object.keys(ownPackageJson.devDependencies ?? {});
 /**
  * Subpaths of `exports`, e.g. `.` and `./package.json`.
  * `exports` can also be a single path, or the conditions for `.` alone.
+ * A package with neither `exports` nor `main` (a package of config files) has nothing to import.
  *
- * @param exports - `exports` field of a package.json
+ * @param exports - `exports` field of a package.json, or else its `main`
  * @returns each subpath the package can be imported by
  */
 const subpaths = (exports: unknown): string[] => {
+    if (exports === undefined) {
+        return [];
+    }
     if (
         exports !== null &&
         typeof exports === 'object' &&

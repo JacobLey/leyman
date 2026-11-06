@@ -41,6 +41,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
     "@leyman/demo-openapi-client": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",

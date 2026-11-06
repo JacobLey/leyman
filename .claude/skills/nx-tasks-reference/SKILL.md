@@ -27,11 +27,11 @@ Cache inputs are globs, so they only work if every package puts things in the sa
 
 Named inputs in [`nx.json`](../../../nx.json):
 
-- `ts-source`: the project's own source and build config. A change rebuilds the project.
+- `ts-source`: the project's own source and build config, and the shared configs it reads from [`@leyman/configs`](../../../leyman/configs/). A change rebuilds the project. The shared configs are hashed at `{workspaceRoot}/leyman/configs/`: tools read each package's installed copy, which no build writes for Nx to hash as an output.
 - `dependency-builds`: the `.js` and `.d.ts` files in dependencies' `dist/`, and their `package-surface.json`, via `dependentTasksOutputFiles`. Dependents rebuild when a dependency's build output changes, not when its source changes. This is why tests compile to `dist-test/` rather than `dist/tests/`: `dependentTasksOutputFiles` ignores negated outputs, so tests inside `dist/` would rebuild every dependent when they change.
 - `package-files`: the project's own tracked entry points (`package.json`, `bin.mjs`, `out/`, `data/`…).
 - `^dependency-files`: dependencies' `package-files`, minus `package.json`. Targets list it directly, because Nx does not allow `^` inside a named input. A dependency's `package.json` reaches dependents through its `package-surface.json` instead, written by [`sync-injected`](#sync-injected), which drops fields that can't affect them (`version`, `description`, `scripts`, `devDependencies`…), so a release's version bump reruns only the bumped package's tasks. A task whose result reads one of those fields of a dependency lists `^package-files` instead, as `vitepress-build` does for `homepage`.
-- `test-source`: `ts-source` plus `test/`, `configs/tsconfig.test.json`, the project's own `package-files`, the builds of its dependencies and itself, and the c8 config.
+- `test-source`: `ts-source` plus `test/`, `tsconfig.test.json`, the project's own `package-files`, the builds of its dependencies and itself, and the c8 config.
 - `goSource`: a Go project's `go.mod`, `go.sum` and `.go` files, defined per project by gonx. Go targets also hash `^goSource` and the Go version.
 - `rustSource`: a Rust project's `Cargo.toml`, `src/**/*.rs` and `tests/**/*.rs`, with the root `Cargo.toml` and `Cargo.lock`. Rust targets also hash `^rustSource`, `^dependency-files` (`include_str!` reads files like `data/`, that `rustSource` does not cover) and the Rust version.
 - `shared-globals`: the Node version. The cache is shared between worktrees through the `nx-cache` sidecar.
@@ -39,7 +39,7 @@ Named inputs in [`nx.json`](../../../nx.json):
 
 Gotchas, all verified on Nx 23:
 
-- Nx hashes the root `tsconfig.base.json` into every task, or the root `tsconfig.json` if there is none. So `tsconfig.base.json` stays empty, and shared compiler options go in `configs/`: an edit to it misses the cache on every task. The root `tsconfig.json` is free to change, as its `references` do with each new package.
+- Nx hashes the root `tsconfig.base.json` into every task, or the root `tsconfig.json` if there is none. So `tsconfig.base.json` stays empty, and shared compiler options go in [`@leyman/configs`](../../../leyman/configs/): an edit to `tsconfig.base.json` misses the cache on every task. The root `tsconfig.json` is free to change, as its `references` do with each new package.
 - **Never hash `dist/` with a file glob.** `dist/` is gitignored, and Nx only sees git-visible files, so a glob like `^{projectRoot}/dist/**` silently matches nothing. Use `dependentTasksOutputFiles`.
 - **`dependentTasksOutputFiles` does not support extglobs** like `*.(c|m)?js`. Use one entry per extension. Plain file inputs do support them.
 - **A generator's inputs must include everything it reads,** not just the files it writes. `barrelify` hashes all of `src/`, since adding a sibling module changes the barrel.
@@ -105,12 +105,12 @@ Fails if the package's Drizzle schema has changes that no migration covers, or i
 
 ### `check-package`
 
-Packs the package with `pnpm pack`, exactly as it would be published, and checks the tarball, with [`@leyman/check-package`](../../../apps/check-package/) (`--profile esm-only --floor-tsconfig 'configs/tsconfig.node-{major}.json'`):
+Packs the package with `pnpm pack`, exactly as it would be published, and checks the tarball, with [`@leyman/check-package`](../../../apps/check-package/) (`--profile esm-only --floor-tsconfig '@leyman/configs/tsconfig.node-{major}.json'`):
 
 - [publint](https://publint.dev/), in strict mode: `exports`, `bin` and other entry points exist in the tarball and are well formed.
 - [Are The Types Wrong](https://arethetypeswrong.github.io/): every entry point resolves to JavaScript and types for ESM consumers, under both Node.js (`node16`) and bundler resolution. CommonJS and `node10` resolution are expected to fail for ESM-only packages, so they are not checked.
 - Declarations: `tsc` type checks the published `.d.ts` files as a strict consumer with `skipLibCheck: false` would. A `@ts-expect-error` in `src/` doesn't reach the declarations, so the error it hid fails here. Errors in dependencies' declarations are ignored.
-- Support floor: `tsconfig.json` extends `configs/tsconfig.node-<major>.json` and the installed `@types/node` has that major version (so `catalog:node-<major>`), for the major version of `engines.node` (see [Support floors](../typescript/SKILL.md#support-floors)). Every runtime dependency's `engines.node` must allow the oldest version the package's allows, so lowering a floor fails while a dependency still needs newer, and raising a dependency's fails until its dependents follow.
+- Support floor: `tsconfig.json` extends `@leyman/configs/tsconfig.node-<major>.json` and the installed `@types/node` has that major version (so `catalog:node-<major>`), for the major version of `engines.node` (see [Support floors](../typescript/SKILL.md#support-floors)). Every runtime dependency's `engines.node` must allow the oldest version the package's allows, so lowering a floor fails while a dependency still needs newer, and raising a dependency's fails until its dependents follow.
 - Published files: every top-level path not ignored by `.gitignore` is either published, or on check-package's list of paths never published (`src`, `test`, `project.json`, ...; more with `--not-published`), and nothing on that list is published. A new path, like `data/`, fails until it is added to one or the other.
 
 It hashes everything in the project but `test/`, `CHANGELOG.md` and `eslint.config.js`, whose contents can't change the result, so a new top-level path still reruns it.
@@ -253,7 +253,7 @@ Dependencies' builds are inputs, since the docs site type-checks its examples ag
 
 ### `tsc-test`
 
-Deletes `./dist-test`, compiles `test/` into it with SWC, then type-checks the tests with `tsc -p ./test` (no emit; `test/tsconfig.json` extends the shared [`configs/tsconfig.test.json`](../../../configs/tsconfig.test.json)). Runs in `test:compile`, after the package's own build, so tests are type-checked against its published `.d.ts` exactly as a consumer would see them.
+Deletes `./dist-test`, compiles `test/` into it with SWC, then type-checks the tests with `tsc -p ./test` (no emit; `test/tsconfig.json` extends the shared [`@leyman/configs/tsconfig.test.json`](../../../leyman/configs/tsconfig.test.json)). Runs in `test:compile`, after the package's own build, so tests are type-checked against its published `.d.ts` exactly as a consumer would see them.
 
 **Add when:** The package has tests. Add whenever `mocha-unit-test`, `mocha-integration-test`, or `vitest-unit-test` is present.
 
@@ -307,7 +307,7 @@ Clears its coverage directory, then runs Mocha integration tests from `./dist-te
 
 ### `vitest-unit-test`
 
-Clears its coverage directory, then runs Vitest unit tests from `./dist-test/unit/**/*.spec.js` under C8 coverage instrumentation, using the shared [`configs/vitest.config.js`](../../../configs/vitest.config.js).
+Clears its coverage directory, then runs Vitest unit tests from `./dist-test/unit/**/*.spec.js` under C8 coverage instrumentation, using the shared [`vitest.config.js`](../../../leyman/configs/vitest.config.js), read from the package's installed `@leyman/configs`.
 
 The shared config runs pre-compiled tests with native `import` and the `threads` pool (so C8 can collect V8 coverage), and sets `sequence.hooks: "list"` (required by `vitest-chain`).
 

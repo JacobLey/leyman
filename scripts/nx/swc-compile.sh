@@ -30,7 +30,7 @@ target=$(node -e '
 ')
 
 compile() {
-    swc "$source_dir" -d "$output_dir" --config-file "$NX_WORKSPACE_ROOT/configs/swcrc.jsonc" \
+    swc "$source_dir" -d "$output_dir" --config-file node_modules/@leyman/configs/swcrc.jsonc \
         -C "jsc.target=$target" --strip-leading-paths "$@"
 }
 

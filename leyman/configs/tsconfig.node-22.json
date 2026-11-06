@@ -3,7 +3,13 @@
   "compilerOptions": {
     // Node.js 22 has ES2024, plus Set methods, iterator helpers and `Array.fromAsync` from later years, but not
     // `Promise.try`, `RegExp.escape`, `Error.isError` or `Float16Array`
-    "lib": ["DOM", "ES2024", "ES2025.Collection", "ES2025.Iterator", "ESNext.Array"],
+    "lib": [
+      "DOM",
+      "ES2024",
+      "ES2025.Collection",
+      "ES2025.Iterator",
+      "ESNext.Array"
+    ],
     "target": "ES2024"
   }
 }

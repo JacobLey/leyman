@@ -41,6 +41,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@hono/node-server": "catalog:",
+    "@leyman/configs": "workspace:^",
     "@leyman/demo-openapi-database": "workspace:^",
     "@leyman/demo-openapi-server": "workspace:^",
     "@leyman/eslint-config": "workspace:^",

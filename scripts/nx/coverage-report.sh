@@ -13,5 +13,5 @@ find "$COVERAGE_DIR/tmp" -maxdepth 2 -name "*.json" -exec cp {} "$COVERAGE_TMP/"
 
 # lcov paths are from the workspace root: Coverage Gutters matches a file by the end of its path, so
 # `src/index.ts`, relative to the package, would show this package's coverage on every package's index.ts.
-c8 --temp-directory="$COVERAGE_TMP" -o "$COVERAGE_DIR/report" -c "$NX_WORKSPACE_ROOT/configs/c8rc.json" \
+c8 --temp-directory="$COVERAGE_TMP" -o "$COVERAGE_DIR/report" -c node_modules/@leyman/configs/c8rc.json \
     --reporter-options.lcovonly.projectRoot="$NX_WORKSPACE_ROOT" report --all --check-coverage --merge-async

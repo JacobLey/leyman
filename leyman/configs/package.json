@@ -1,0 +1,43 @@
+{
+  "name": "@leyman/configs",
+  "version": "0.0.1",
+  "description": "Strict shared configs for TypeScript ESM packages: tsconfig bases per Node.js support floor, SWC, c8 at 100% coverage, Biome and Vitest, each consumed by extending or pointing at the installed file.",
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "leyman/configs"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/leyman/configs#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "tsconfig",
+    "typescript",
+    "swc",
+    "swcrc",
+    "c8",
+    "coverage",
+    "biome",
+    "vitest",
+    "config",
+    "strict",
+    "esm"
+  ],
+  "files": [
+    "biome.base.json",
+    "c8rc.json",
+    "swcrc.jsonc",
+    "tsconfig.build.json",
+    "tsconfig.node-22.json",
+    "tsconfig.node-24.json",
+    "tsconfig.test.json",
+    "vitest.config.js"
+  ],
+  "devDependencies": {
+    "@biomejs/biome": "catalog:"
+  }
+}

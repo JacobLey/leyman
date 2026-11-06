@@ -21,7 +21,6 @@
     ".devcontainer",
     ".github",
     ".vscode",
-    "configs",
     "leyman/main",
     "patches",
     "scripts"
@@ -170,35 +169,6 @@
       "path": ".vscode/extensions/leyman-tests",
       "when": "vscode-tests",
       "why": "loads the test explorer from leyman/vscode-tests"
-    },
-    {
-      "path": "configs/c8rc.json",
-      "why": "coverage thresholds and reporters every test target reads"
-    },
-    {
-      "path": "configs/swcrc.jsonc",
-      "why": "how every target compiles TypeScript"
-    },
-    {
-      "path": "configs/tsconfig.build.json",
-      "why": "the type checking contract for source"
-    },
-    {
-      "path": "configs/tsconfig.node-22.json",
-      "why": "source type checking for packages supporting Node.js 22"
-    },
-    {
-      "path": "configs/tsconfig.node-24.json",
-      "why": "source type checking for packages supporting Node.js 24"
-    },
-    {
-      "path": "configs/tsconfig.test.json",
-      "why": "the type checking contract for tests"
-    },
-    {
-      "path": "configs/vitest.config.js",
-      "when": "vitest",
-      "why": "the shared Vitest settings"
     },
     {
       "path": "leyman/main/.claude/skills/lifecycle",
@@ -497,6 +467,10 @@
     {
       "path": "apps/check-package",
       "why": "vendor until published: the check-package target runs its CLI"
+    },
+    {
+      "path": "leyman/configs",
+      "why": "vendor until published: every tsconfig extends it, and the swc, c8 and Vitest targets read it"
     },
     {
       "path": "leyman/eslint-config",

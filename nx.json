@@ -38,11 +38,11 @@
     ],
     "ts-source": [
       "shared-globals",
-      "{workspaceRoot}/configs/swcrc.jsonc",
+      "{workspaceRoot}/leyman/configs/swcrc.jsonc",
       "{workspaceRoot}/scripts/nx/clean-dist.sh",
       "{workspaceRoot}/scripts/nx/swc-compile.sh",
-      "{workspaceRoot}/configs/tsconfig.build.json",
-      "{workspaceRoot}/configs/tsconfig.node-*.json",
+      "{workspaceRoot}/leyman/configs/tsconfig.build.json",
+      "{workspaceRoot}/leyman/configs/tsconfig.node-*.json",
       "{projectRoot}/package.json",
       "{projectRoot}/tsconfig.json",
       "{projectRoot}/src/**/*",
@@ -88,10 +88,10 @@
       "ts-source",
       "{projectRoot}/test/**/*",
       "{projectRoot}/schema.sql",
-      "{workspaceRoot}/configs/tsconfig.test.json",
+      "{workspaceRoot}/leyman/configs/tsconfig.test.json",
       "package-files",
       "dependency-builds",
-      "{workspaceRoot}/configs/c8rc.json"
+      "{workspaceRoot}/leyman/configs/c8rc.json"
     ],
     "rustSource": [
       "{projectRoot}/Cargo.toml",
@@ -285,7 +285,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "check-package --profile esm-only --floor-tsconfig 'configs/tsconfig.node-{major}.json'"
+          "check-package --profile esm-only --floor-tsconfig '@leyman/configs/tsconfig.node-{major}.json'"
         ],
         "color": true,
         "cwd": "{projectRoot}"
@@ -335,7 +335,6 @@
         "{workspaceRoot}/.devcontainer/**/*",
         "{workspaceRoot}/.github/**/*",
         "{workspaceRoot}/.vscode/**/*",
-        "{workspaceRoot}/configs/**/*",
         "{workspaceRoot}/dagger/**/*",
         "{workspaceRoot}/leyman/**/*",
         "{workspaceRoot}/patches/**/*",
@@ -694,7 +693,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none vitest run --config $NX_WORKSPACE_ROOT/configs/vitest.config.js --root ."
+          "rm -rf $NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit && NODE_OPTIONS=--enable-source-maps c8 --temp-directory=$NX_WORKSPACE_ROOT/.coverage/project/{projectName}/tmp/unit --src=$NX_WORKSPACE_ROOT --clean=false --reporter=none vitest run --config node_modules/@leyman/configs/vitest.config.js --root ."
         ],
         "parallel": true,
         "color": true,
@@ -704,7 +703,7 @@
       "inputs": [
         "test-source",
         "^dependency-files",
-        "{workspaceRoot}/configs/vitest.config.js"
+        "{workspaceRoot}/leyman/configs/vitest.config.js"
       ],
       "outputs": [
         "{workspaceRoot}/.coverage/project/{projectName}/tmp/unit"
@@ -764,7 +763,7 @@
       "inputs": [
         "shared-globals",
         "ts-source",
-        "{workspaceRoot}/configs/c8rc.json",
+        "{workspaceRoot}/leyman/configs/c8rc.json",
         "{workspaceRoot}/scripts/nx/coverage-report.sh",
         {
           "dependentTasksOutputFiles": ".coverage/project/**/*.json",

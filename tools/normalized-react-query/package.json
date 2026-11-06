@@ -48,6 +48,7 @@
   "devDependencies": {
     "@biomejs/biome": "catalog:",
     "@happy-dom/global-registrator": "catalog:",
+    "@leyman/configs": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",
     "@swc/cli": "catalog:",

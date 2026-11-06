@@ -16,6 +16,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
     "@leyman/constant-consistent-hash-test-vectors": "workspace:^",
     "@leyman/constant-consistent-hash-wasm": "workspace:^",
     "@leyman/eslint-config": "workspace:^",

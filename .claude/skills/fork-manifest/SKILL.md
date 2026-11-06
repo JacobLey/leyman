@@ -66,12 +66,6 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.devcontainer/tag-pinned-images.sh` | keeps digest-pinned images from looking dangling |
 | `.vscode/settings.json` | points the editor at the tools in leyman/main |
 | `.vscode/tasks.json` | worktree commands in the editor |
-| `configs/c8rc.json` | coverage thresholds and reporters every test target reads |
-| `configs/swcrc.jsonc` | how every target compiles TypeScript |
-| `configs/tsconfig.build.json` | the type checking contract for source |
-| `configs/tsconfig.node-22.json` | source type checking for packages supporting Node.js 22 |
-| `configs/tsconfig.node-24.json` | source type checking for packages supporting Node.js 24 |
-| `configs/tsconfig.test.json` | the type checking contract for tests |
 | `leyman/main/.claude/skills/lifecycle` | how the lifecycle stages connect |
 | `leyman/main/README.md` | why the global tools live in this package |
 | `leyman/main/eslint.config.js` | lints the package's own scripts |
@@ -102,6 +96,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `tsconfig.base.json` | empty on purpose, so Nx hashes it in place of tsconfig.json |
 | `tsconfig.json` | the TypeScript project root |
 | `apps/check-package` | vendor until published: the check-package target runs its CLI |
+| `leyman/configs` | vendor until published: every tsconfig extends it, and the swc, c8 and Vitest targets read it |
 | `leyman/eslint-config` | vendor until published: every package's eslint.config.js imports it |
 | `leyman/expect` | vendor until published: the test assertion package |
 
@@ -179,12 +174,6 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 |------|-----|
 | `scripts/nx/tofu-fmt.sh` | the tofu-fmt target |
 | `scripts/nx/tofu-validate.sh` | the tofu-validate target |
-
-### `vitest`: has packages tested with Vitest
-
-| Path | Why |
-|------|-----|
-| `configs/vitest.config.js` | the shared Vitest settings |
 
 ### `vscode-tests`: wants the editor's test explorer
 

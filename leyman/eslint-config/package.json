@@ -64,6 +64,7 @@
   },
   "devDependencies": {
     "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@types/chai": "catalog:",
