@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 // Workspace dependencies are injected (`injectWorkspacePackages`): each dependent gets a copy of the
 // package's published files in the virtual store, made at install time. Those copies don't follow
 // later builds, or Nx restoring `dist/` from cache, so mirror the package into them after every build.
@@ -82,7 +84,7 @@ const declarationMaps = [...packed]
     .map(file => `${file}.map`)
     .filter(file => {
         try {
-            return statSync(path.join(projectRoot, file)).isFile() === true;
+            return statSync(path.join(projectRoot, file)).isFile();
         } catch {
             return false;
         }
@@ -112,7 +114,7 @@ for (const copy of copies) {
     const entries = readdirSync(copy, { recursive: true, withFileTypes: true });
     for (const entry of entries) {
         const file = path.relative(copy, path.join(entry.parentPath, entry.name));
-        if (entry.isDirectory() !== true && !expected.has(file)) {
+        if (!entry.isDirectory() && !expected.has(file)) {
             rmSync(path.join(copy, file));
         }
     }
@@ -129,7 +131,7 @@ for (const copy of copies) {
     for (const file of packed) {
         const source = path.join(projectRoot, file);
         const target = path.join(copy, file);
-        if (isSameFile(source, target) === true) {
+        if (isSameFile(source, target)) {
             continue;
         }
         mkdirSync(path.dirname(target), { recursive: true });

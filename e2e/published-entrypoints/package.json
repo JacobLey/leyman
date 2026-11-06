@@ -20,6 +20,7 @@
     "@leyman/configs": "workspace:^",
     "@leyman/eslint-config": "workspace:^",
     "@leyman/expect": "workspace:^",
+    "@leyman/nx-plugin": "workspace:^",
     "@swc/cli": "catalog:",
     "@swc/core": "catalog:",
     "@tanstack/react-query": "catalog:",

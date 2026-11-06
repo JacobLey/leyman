@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Compiles a directory of TypeScript with SWC: swc-compile.sh <source> <output>.
+# Compiles a directory of TypeScript with SWC: leyman-swc-compile <source> <output> <swcrc>.
 # `.mts` and `.cts` need a pass each, for their extension and module type. Starting SWC costs over 100ms,
 # and few packages have either, so those passes only run when there is a file for them.
 #
@@ -12,6 +12,7 @@ set -e
 
 source_dir=$1
 output_dir=$2
+config_file=$3
 
 target=$(node -e '
     const { readFileSync } = require("node:fs");
@@ -24,13 +25,13 @@ target=$(node -e '
     } else if (floor in targets) {
         console.log(targets[floor]);
     } else {
-        console.error(`swc-compile.sh: no target for engines.node "${range}"; add its floor to the table`);
+        console.error(`leyman-swc-compile: no target for engines.node "${range}"; add its floor to the table`);
         process.exit(1);
     }
 ')
 
 compile() {
-    swc "$source_dir" -d "$output_dir" --config-file node_modules/@leyman/configs/swcrc.jsonc \
+    swc "$source_dir" -d "$output_dir" --config-file "$config_file" \
         -C "jsc.target=$target" --strip-leading-paths "$@"
 }
 

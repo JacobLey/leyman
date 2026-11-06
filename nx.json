@@ -39,8 +39,7 @@
     "ts-source": [
       "shared-globals",
       "{workspaceRoot}/leyman/configs/swcrc.jsonc",
-      "{workspaceRoot}/scripts/nx/clean-dist.sh",
-      "{workspaceRoot}/scripts/nx/swc-compile.sh",
+      "{workspaceRoot}/leyman/nx-plugin/scripts/**/*",
       "{workspaceRoot}/leyman/configs/tsconfig.build.json",
       "{workspaceRoot}/leyman/configs/tsconfig.node-*.json",
       "{projectRoot}/package.json",
@@ -113,7 +112,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "${NX_WORKSPACE_ROOT}/scripts/nx/biome-format.sh"
+          "${NX_WORKSPACE_ROOT}/leyman/nx-plugin/scripts/biome-format.sh"
         ],
         "color": true,
         "cwd": "{projectRoot}"
@@ -496,8 +495,8 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "${NX_WORKSPACE_ROOT}/scripts/nx/clean-dist.sh",
-          "${NX_WORKSPACE_ROOT}/scripts/nx/swc-compile.sh ./src ./dist",
+          "${NX_WORKSPACE_ROOT}/leyman/nx-plugin/scripts/clean-dist.sh",
+          "${NX_WORKSPACE_ROOT}/leyman/nx-plugin/scripts/swc-compile.sh ./src ./dist node_modules/@leyman/configs/swcrc.jsonc",
           "${TSC:-tsc}"
         ],
         "parallel": false,
@@ -573,7 +572,7 @@
       "options": {
         "commands": [
           "rm -rf ./dist-test",
-          "${NX_WORKSPACE_ROOT}/scripts/nx/swc-compile.sh ./test ./dist-test",
+          "${NX_WORKSPACE_ROOT}/leyman/nx-plugin/scripts/swc-compile.sh ./test ./dist-test node_modules/@leyman/configs/swcrc.jsonc",
           "${TSC:-tsc} -p ./test"
         ],
         "parallel": false,
@@ -618,7 +617,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "node ${NX_WORKSPACE_ROOT}/leyman/main/scripts/sync-injected.mjs"
+          "${NX_WORKSPACE_ROOT}/leyman/nx-plugin/scripts/sync-injected.mjs"
         ],
         "color": true,
         "cwd": "{projectRoot}"
@@ -754,7 +753,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "${NX_WORKSPACE_ROOT}/scripts/nx/coverage-report.sh"
+          "${NX_WORKSPACE_ROOT}/leyman/nx-plugin/scripts/coverage-report.sh node_modules/@leyman/configs/c8rc.json"
         ],
         "color": true,
         "cwd": "{projectRoot}"
@@ -764,7 +763,7 @@
         "shared-globals",
         "ts-source",
         "{workspaceRoot}/leyman/configs/c8rc.json",
-        "{workspaceRoot}/scripts/nx/coverage-report.sh",
+        "{workspaceRoot}/leyman/nx-plugin/scripts/**/*",
         {
           "dependentTasksOutputFiles": ".coverage/project/**/*.json",
           "transitive": true

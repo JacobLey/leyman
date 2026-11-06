@@ -72,17 +72,12 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/main/lifecycle.json` | declares the stages and binds targets to them |
 | `leyman/main/package.json` | the global tools |
 | `leyman/main/project.json` | the lifecycle targets of the tools package |
-| `leyman/main/scripts/sync-injected.mjs` | mirrors a package into its injected copies |
 | `patches/nx@23.3.1.patch` | the Nx planner patch that keeps daemon-less runs fast |
 | `patches/@typescript-eslint__eslint-plugin@8.72.0.patch` | a wrong autofix under the v flag, which the eslint config's rules reach |
 | `scripts/commands/test-and-fix` | verify with auto-fix |
 | `scripts/commands/test-ci` | verify |
 | `scripts/commands/test-only` | test |
 | `scripts/commands/yolo-claude` | the agent without prompts, in the container |
-| `scripts/nx/biome-format.sh` | the biome target |
-| `scripts/nx/clean-dist.sh` | the tsc target |
-| `scripts/nx/coverage-report.sh` | the coverage-report target |
-| `scripts/nx/swc-compile.sh` | the tsc and tsc-test targets |
 | `scripts/worktree` | creates and opens worktrees from the host |
 | `.gitattributes` | marks generated output |
 | `.gitignore` | what the targets write and nothing should commit |
@@ -99,6 +94,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/configs` | vendor until published: every tsconfig extends it, and the swc, c8 and Vitest targets read it |
 | `leyman/eslint-config` | vendor until published: every package's eslint.config.js imports it |
 | `leyman/expect` | vendor until published: the test assertion package |
+| `leyman/nx-plugin` | vendor until published: the TypeScript targets run its scripts |
 
 ### `ci`: runs CI on GitHub Actions
 

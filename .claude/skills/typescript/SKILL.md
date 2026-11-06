@@ -20,7 +20,7 @@ This repo primarily uses vanilla typescript. Transformers (like babel plugins) a
 
 The general goal is that the path from src -> dist should be fairly obvious. Import aliases are managed via `package.json` rather than `tsconfig` magic.
 
-Compiler, SWC, c8, Biome and Vitest configs live in [`@leyman/configs`](../../../leyman/configs/), which every TypeScript package devDepends on: tsconfigs extend `@leyman/configs/<file>`, and `swc-compile.sh`, `coverage-report.sh` and `vitest-unit-test` pass the file in the package's `node_modules` (SWC and Vitest can't extend a package's config). Like any workspace dependency, each package has its own copy ([`sync-injected`](../nx-tasks-reference/SKILL.md#sync-injected)), so after editing a config run `nx run @leyman/configs:build` before the editor or a tool run outside Nx sees it; Nx tasks run it first. The root `tsconfig.json` and `biome.json` extend `./leyman/configs/...` by path, as the root package installs nothing.
+Compiler, SWC, c8, Biome and Vitest configs live in [`@leyman/configs`](../../../leyman/configs/), which every TypeScript package devDepends on: tsconfigs extend `@leyman/configs/<file>`, and the `tsc`, `tsc-test`, `coverage-report` and `vitest-unit-test` targets pass the file in the package's `node_modules` (SWC and Vitest can't extend a package's config). Like any workspace dependency, each package has its own copy ([`sync-injected`](../nx-tasks-reference/SKILL.md#sync-injected)), so after editing a config run `nx run @leyman/configs:build` before the editor or a tool run outside Nx sees it; Nx tasks run it first. The root `tsconfig.json` and `biome.json` extend `./leyman/configs/...` by path, as the root package installs nothing.
 
 The `tsc` target transpiles `src/` → `dist/` with SWC, then runs `tsc` for type checking and `.d.ts` output, one command after another. `.ts` and `.mts` compile to ESM, `.cts` to CommonJS.
 
@@ -34,7 +34,7 @@ The toolchain runs the newest Node.js, while a published package supports the ol
 
 - `tsconfig.json` extends `@leyman/configs/tsconfig.node-<major>.json`, whose `lib` and `target` hold only what that Node.js has, so a newer API is a compile error.
 - `@types/node` comes from `catalog:node-<major>` in `pnpm-workspace.yaml`.
-- [`scripts/nx/swc-compile.sh`](../../../scripts/nx/swc-compile.sh) compiles to that version's ES year when the floor is older than the running Node.js.
+- [`swc-compile.sh`](../../../leyman/nx-plugin/scripts/swc-compile.sh) compiles to that version's ES year when the floor is older than the running Node.js.
 - `@leyman/eslint-config` turns off rules that suggest an API the floor lacks (`unicorn/prefer-error-is-error` below 24...), and `n/no-unsupported-features/*` reads `engines` itself.
 
 [`check-package`](../nx-tasks-reference/SKILL.md#check-package) fails when the tsconfig or `@types/node` doesn't match `engines.node`, or when a runtime dependency doesn't support the floor: haywire needs 24 (`Error.isError`), so everything that depends on it at runtime does too. CI's `floor-test` (in `e2e/published-entrypoints`) imports each package on Node.js 22 when its `engines` allows it. Lowering a floor is a minor change; raising one is breaking. Private packages have no floor: they extend `tsconfig.build.json` and use `catalog:`.

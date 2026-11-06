@@ -195,10 +195,6 @@
       "why": "the lifecycle targets of the tools package"
     },
     {
-      "path": "leyman/main/scripts/sync-injected.mjs",
-      "why": "mirrors a package into its injected copies"
-    },
-    {
       "path": "leyman/main/scripts/nx-rust-plugin.mjs",
       "when": "rust",
       "why": "infers a crate's Nx targets"
@@ -241,22 +237,6 @@
       "path": "scripts/commands/dagger-test",
       "when": "dagger",
       "why": "runs CI locally"
-    },
-    {
-      "path": "scripts/nx/biome-format.sh",
-      "why": "the biome target"
-    },
-    {
-      "path": "scripts/nx/clean-dist.sh",
-      "why": "the tsc target"
-    },
-    {
-      "path": "scripts/nx/coverage-report.sh",
-      "why": "the coverage-report target"
-    },
-    {
-      "path": "scripts/nx/swc-compile.sh",
-      "why": "the tsc and tsc-test targets"
     },
     {
       "path": "scripts/nx/dagger-develop.sh",
@@ -479,6 +459,10 @@
     {
       "path": "leyman/expect",
       "why": "vendor until published: the test assertion package"
+    },
+    {
+      "path": "leyman/nx-plugin",
+      "why": "vendor until published: the TypeScript targets run its scripts"
     },
     {
       "path": "leyman/vscode-tests",

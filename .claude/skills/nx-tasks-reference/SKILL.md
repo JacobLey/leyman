@@ -57,7 +57,7 @@ Every work target except repo-wide commands (like `lifecycle` itself) must be bo
 
 ### `biome`
 
-Formats with Biome (`scripts/nx/biome-format.sh`). Writes changes, except in CI where it only checks. `-c check` checks without writing.
+Formats with Biome ([`biome-format.sh`](../../../leyman/nx-plugin/scripts/biome-format.sh)). Writes changes, except in CI where it only checks. `-c check` checks without writing.
 
 **Add when:** Every package.
 
@@ -229,7 +229,7 @@ Keep `tsconfig.json` `references` in sync with the package's inter-package depen
 
 ### `tsc`
 
-Clears `./dist` (`scripts/nx/clean-dist.sh`), then compiles TypeScript using SWC (fast transpilation) and `tsc` (declaration file generation + type checking). SWC runs through `scripts/nx/swc-compile.sh`, which only adds its `.mts` and `.cts` passes for a package that has those files. Clearing `dist` inside the target means it only happens on a cache miss.
+Clears `./dist` ([`clean-dist.sh`](../../../leyman/nx-plugin/scripts/clean-dist.sh)), then compiles TypeScript using SWC (fast transpilation) and `tsc` (declaration file generation + type checking). SWC runs through [`swc-compile.sh`](../../../leyman/nx-plugin/scripts/swc-compile.sh), which only adds its `.mts` and `.cts` passes for a package that has those files. Clearing `dist` inside the target means it only happens on a cache miss.
 
 The clear keeps `tsconfig.tsbuildinfo` and the declarations while the declarations match the current sources, so `tsc` only redoes what changed. Never delete a declaration and keep the build info: `tsc` trusts the build info, doesn't write the file again, and still passes.
 
@@ -271,7 +271,7 @@ This is also the route for types generated from a schema: call `genever()` from 
 
 ### `sync-injected`
 
-Mirrors the package's published files (`pnpm pack --dry-run`) into its injected copies in `node_modules/.pnpm` (`leyman/main/scripts/sync-injected.mjs`). Workspace dependencies are installed as copies (`injectWorkspacePackages`), made at install time, so without this dependents would keep seeing the `dist/` from the last `pnpm install`. Never cached: it must also run when `tsc` is a cache hit, since restoring `dist/` doesn't update the copies.
+Mirrors the package's published files (`pnpm pack --dry-run`) into its injected copies in `node_modules/.pnpm` ([`sync-injected.mjs`](../../../leyman/nx-plugin/scripts/sync-injected.mjs)). Workspace dependencies are installed as copies (`injectWorkspacePackages`), made at install time, so without this dependents would keep seeing the `dist/` from the last `pnpm install`. Never cached: it must also run when `tsc` is a cache hit, since restoring `dist/` doesn't update the copies.
 
 Also writes `.package-surface/<project>/package-surface.json` (gitignored): `package.json` without the fields listed as inert in the script. Dependents hash this rather than the file. Fields are listed as inert rather than consumed, so a new field invalidates until someone decides it can't matter.
 
@@ -357,7 +357,7 @@ Fails unless `go-test`'s `cover.out` shows 100% coverage (`scripts/nx/go-coverag
 
 ### `coverage-report`
 
-Validates 100% coverage using only the C8 data from this project's own test targets (`scripts/nx/coverage-report.sh`). Runs in `test:report`, after the test suites. Coverage from dependents' tests does not count.
+Validates 100% coverage using only the C8 data from this project's own test targets ([`coverage-report.sh`](../../../leyman/nx-plugin/scripts/coverage-report.sh)). Runs in `test:report`, after the test suites. Coverage from dependents' tests does not count.
 
 **Add when:** The package has any test target.
 

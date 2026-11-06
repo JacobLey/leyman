@@ -39,7 +39,7 @@ nx show target inputs <project>:<target>   # what is hashed for caching
 
 ## Coverage
 
-HTML reports are written to `.coverage/project/<name>/report/index.html`. Only the project's own tests count toward its coverage (see `scripts/nx/coverage-report.sh`).
+HTML reports are written to `.coverage/project/<name>/report/index.html`. Only the project's own tests count toward its coverage (see [`coverage-report.sh`](../../../leyman/nx-plugin/scripts/coverage-report.sh)).
 
 ## Command not found
 

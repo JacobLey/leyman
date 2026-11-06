@@ -1,0 +1,70 @@
+{
+  "name": "@leyman/nx-plugin",
+  "version": "0.0.1",
+  "description": "Nx plugin inferring the build, test, lint and package-check targets of TypeScript ESM packages: SWC and tsc builds, Mocha or Vitest under c8, ESLint, Biome and check-package.",
+  "engines": {
+    "node": ">=22"
+  },
+  "type": "module",
+  "author": "JacobLey",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/JacobLey/leyman.git",
+    "directory": "leyman/nx-plugin"
+  },
+  "homepage": "https://github.com/JacobLey/leyman/tree/main/leyman/nx-plugin#readme",
+  "bugs": {
+    "url": "https://github.com/JacobLey/leyman/issues"
+  },
+  "keywords": [
+    "nx",
+    "nx-plugin",
+    "monorepo",
+    "typescript",
+    "swc",
+    "mocha",
+    "vitest",
+    "c8",
+    "eslint",
+    "biome",
+    "targets"
+  ],
+  "sideEffects": false,
+  "exports": {
+    ".": "./dist/index.js",
+    "./package.json": "./package.json"
+  },
+  "bin": {
+    "leyman-biome-format": "./scripts/biome-format.sh",
+    "leyman-clean-dist": "./scripts/clean-dist.sh",
+    "leyman-coverage-report": "./scripts/coverage-report.sh",
+    "leyman-swc-compile": "./scripts/swc-compile.sh",
+    "leyman-sync-injected": "./scripts/sync-injected.mjs"
+  },
+  "files": [
+    "dist",
+    "!dist/**/*.map",
+    "!dist/tsconfig.tsbuildinfo",
+    "scripts"
+  ],
+  "dependencies": {
+    "@nx/devkit": "catalog:"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "catalog:",
+    "@leyman/configs": "workspace:^",
+    "@leyman/eslint-config": "workspace:^",
+    "@leyman/expect": "workspace:^",
+    "@swc/cli": "catalog:",
+    "@swc/core": "catalog:",
+    "@types/mocha": "catalog:",
+    "@types/node": "catalog:node-22",
+    "@typescript/native": "catalog:",
+    "c8": "catalog:",
+    "eslint": "catalog:",
+    "mocha": "catalog:",
+    "mocha-chain": "workspace:^",
+    "typescript": "catalog:"
+  }
+}
