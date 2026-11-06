@@ -14,6 +14,7 @@ import {
     mkdirSync,
     readFileSync,
     readlinkSync,
+    rmSync,
     symlinkSync,
     writeFileSync,
 } from 'node:fs';
@@ -193,7 +194,7 @@ const replaceRuns = (array, run, replacement) => {
 
 // A fork installs the shared configs and the Nx plugin from npm instead of copying them: what points into their
 // folders here points at the installed packages there, and nx.json holds what the plugin generates from that
-const installTools = to => {
+const installTools = (files, to) => {
     const pluginFile = path.join(to, 'leyman/main/nx-plugin.json');
     const { scripts, inputs: toolInputs = {}, ...pluginOptions } = readJson(pluginFile);
     const { inputs: checkPackageInputs, ...checkPackage } = pluginOptions.checkPackage ?? {};
@@ -255,6 +256,40 @@ const installTools = to => {
     }
     writeJson(nxFile, nxJson);
 
+    // A target can't wait on a project the fork installs instead, such as building check-package before running it
+    const copied = packageJsons(files).map(file => readJson(path.join(to, file)));
+    const names = new Set(copied.map(({ name }) => name));
+    const forkedNxJson = readJson(nxFile);
+    forkedNxJson.targetDefaults = Object.fromEntries(
+        Object.entries(forkedNxJson.targetDefaults).map(([name, target]) => [
+            name,
+            target.dependsOn
+                ? {
+                      ...target,
+                      dependsOn: target.dependsOn.filter(
+                          dependency => !dependency.projects?.every(project => !names.has(project))
+                      ),
+                  }
+                : target,
+        ])
+    );
+    writeJson(nxFile, forkedNxJson);
+
+    // Only a package another one depends on gets `sync-injected`, and the packages that depended on some here are on npm
+    const dependedOn = new Set(
+        copied.flatMap(packageJson => dependencyRanges(packageJson).map(({ name }) => name))
+    );
+    const undepended = packageJsons(files)
+        .filter(file => !dependedOn.has(readJson(path.join(to, file)).name))
+        .map(file => path.join(to, path.dirname(file), 'project.json'))
+        .filter(projectFile => existsSync(projectFile))
+        .filter(projectFile => readJson(projectFile).targets?.['sync-injected']);
+    for (const projectFile of undepended) {
+        const project = readJson(projectFile);
+        delete project.targets['sync-injected'];
+        writeJson(projectFile, project);
+    }
+
     for (const file of ['biome.json', 'tsconfig.json']) {
         const target = path.join(to, file);
         writeFileSync(
@@ -310,6 +345,7 @@ const pruneWorkspaceYaml = ({ workspaceGlobs }, files, to) => {
     let comments = [];
     let catalogHeader = [];
     let hasCatalogs = false;
+    let patchesHeader = [];
 
     for (const line of readFileSync(file, 'utf8').split('\n')) {
         if (/^\S/v.test(line) && !line.startsWith('#')) {
@@ -326,6 +362,24 @@ const pruneWorkspaceYaml = ({ workspaceGlobs }, files, to) => {
         } else if (section === 'catalog' && line.startsWith('  ')) {
             if (references.get('')?.has(entryName(line))) {
                 output.push(...comments, line);
+            }
+            comments = [];
+        } else if (line === 'patchedDependencies:') {
+            // Written with the first patch kept
+            patchesHeader = [...comments, line];
+            comments = [];
+        } else if (section === 'patchedDependencies' && line.startsWith('  ')) {
+            // A patch only applies to what the fork installs directly: a dependency of a package it takes from npm
+            // resolves by that package's own range
+            const entry = entryName(line);
+            const name = entry.slice(0, entry.lastIndexOf('@'));
+            const patch = line.slice(line.lastIndexOf(': ') + ': '.length).trim();
+            if (references.values().some(names => names.has(name))) {
+                output.push(...patchesHeader, ...comments, line);
+                patchesHeader = [];
+            } else {
+                rmSync(path.join(to, patch));
+                files.splice(files.indexOf(patch), 1);
             }
             comments = [];
         } else if (section === 'catalogs') {
@@ -374,7 +428,7 @@ export const apply = ({ conditions = [], extraPackages = [], to }) => {
     }
     stripNxJson(manifest, requested, to);
     pointAtNpm(files, to);
-    installTools(to);
+    installTools(files, to);
     dropMissingReferences(files, to);
     pruneWorkspaceYaml(manifest, files, to);
     return { files, skipped, taken };
