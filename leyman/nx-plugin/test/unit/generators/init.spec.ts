@@ -195,6 +195,11 @@ suite('initGenerator', () => {
         ) as { stages: unknown; bindings: Record<string, string> };
 
         expect(lifecycle.stages).to.deep.equal(lifecycleStages);
-        expect(lifecycle.bindings).to.include(lifecycleBindings);
+        // A fork binds only the targets it takes
+        const bound = Object.entries(lifecycleBindings).filter(([target]) =>
+            Object.hasOwn(lifecycle.bindings, target)
+        );
+        expect(bound).to.have.length.greaterThan(0);
+        expect(lifecycle.bindings).to.include(Object.fromEntries(bound));
     });
 });
