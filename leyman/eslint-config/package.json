@@ -1,6 +1,6 @@
 {
   "name": "@leyman/eslint-config",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Strict, opinionated ESLint flat config for TypeScript ESM packages, generated from each package's package.json: nearly every rule on, every exception explained.",
   "engines": {
     "node": ">=24.15.0"
