@@ -49,7 +49,7 @@ Install [`@leyman/configs`](https://www.npmjs.com/package/@leyman/configs) in ea
 
 ## 3. Nx plugin and lifecycle
 
-In an Nx workspace, run `nx add @leyman/nx-plugin`. It installs [`@leyman/nx-plugin`](https://www.npmjs.com/package/@leyman/nx-plugin) and runs its `init` generator, which adds it and [nx-lifecycle](/packages/nx-lifecycle/) to `nx.json`, installs tiers 1 and 2 at the root, and writes a `biome.json`. Add packages with `nx g @leyman/nx-plugin:package`.
+In an Nx workspace, run `nx add @leyman/nx-plugin`. It installs [`@leyman/nx-plugin`](https://www.npmjs.com/package/@leyman/nx-plugin) and runs its `init` generator, which adds it and [nx-lifecycle](/packages/nx-lifecycle/) to `nx.json`, installs tiers 1 and 2 at the root, and writes the root files the targets need. Add packages with `nx g @leyman/nx-plugin:package`. [Getting started](/framework/getting-started) walks through it from an empty directory.
 
 **What it buys**
 

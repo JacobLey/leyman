@@ -1,7 +1,7 @@
 import type { GeneratorCallback, PluginConfiguration, Tree } from '@nx/devkit';
 import type { TargetName } from '../lib/options.js';
 import { installPackagesTask, readJson, readNxJson, writeJson } from '@nx/devkit';
-import { parse } from 'yaml';
+import { parseDocument, stringify } from 'yaml';
 import { resolveOptions } from '../lib/options.js';
 import { name as pluginName } from '../lib/plugin.js';
 import { assertOptions } from '../lib/schema.js';
@@ -64,7 +64,7 @@ export const lifecycleBindings = {
 const lifecyclePlugin = 'nx-lifecycle/plugin';
 
 /**
- * Packages the workspace root installs: Nx resolves plugins from it, and the targets run check-package and Nx's
+ * Packages the workspace root installs: Nx resolves plugins from it, and the targets run check-package, `tsc` and Nx's
  * TypeScript sync generator from it.
  */
 const rootDependencies = [
@@ -73,7 +73,14 @@ const rootDependencies = [
     '@leyman/check-package',
     '@leyman/configs',
     '@nx/js',
+    '@typescript/native',
 ] as const;
+
+/**
+ * Packages whose install scripts pnpm needs a decision on. Neither needs it: each installs its platform's native binary
+ * as an optional dependency.
+ */
+const skippedBuilds = ['@swc/core', 'nx'] as const;
 
 const principlesSkill = `---
 name: principles
@@ -97,32 +104,84 @@ dedupeInjectedDeps: false
 `;
 
 /**
- * Has pnpm install workspace packages as copies, which \`sync-injected\` keeps current: sets \`injectWorkspacePackages\`
- * and \`dedupeInjectedDeps\` at the end of \`pnpm-workspace.yaml\`, unless it sets them already.
+ * What the targets write that is never committed: installs, build and test output, coverage, what `sync-injected`
+ * records, and Nx's cache.
+ */
+const ignoredPaths = [
+    'node_modules',
+    'dist',
+    'dist-test',
+    '/.coverage',
+    '/.package-surface',
+    '/.nx/cache',
+    '/.nx/workspace-data',
+] as const;
+
+/**
+ * Adds each of {@link ignoredPaths} that `.gitignore` lacks, creating it if need be. check-package reads it too, for
+ * the files a package doesn't publish.
  *
  * @param tree - Nx's view of the files
  */
-const injectWorkspacePackages = (tree: Tree): void => {
+const ignoreOutputs = (tree: Tree): void => {
+    const gitignore = tree.read('.gitignore', 'utf8') ?? '';
+    const lines = new Set(gitignore.split('\n').map(line => line.trim()));
+    const missing = ignoredPaths.filter(path => !lines.has(path));
+    if (missing.length === 0) {
+        return;
+    }
+    const separator = gitignore === '' || gitignore.endsWith('\n') ? '' : '\n';
+    const added = missing.map(path => `${path}\n`).join('');
+    tree.write('.gitignore', `${gitignore}${separator}${added}`);
+};
+
+/**
+ * Sets `pnpm-workspace.yaml` up, leaving alone what it sets already: has pnpm install workspace packages as copies,
+ * which `sync-injected` keeps current (`injectWorkspacePackages` and `dedupeInjectedDeps`), and skip the install
+ * scripts of the packages the targets run, which it otherwise fails on (`allowBuilds`).
+ *
+ * @param tree - Nx's view of the files
+ */
+const configurePnpm = (tree: Tree): void => {
     const yaml = tree.read('pnpm-workspace.yaml', 'utf8');
     if (yaml === null) {
         return;
     }
-    const settings = (parse(yaml) ?? {}) as Record<string, unknown>;
+    const document = parseDocument(yaml);
+    const missingBuilds = skippedBuilds.filter(name => !document.hasIn(['allowBuilds', name]));
+    const hasAllowBuilds = document.has('allowBuilds');
+    let updated = yaml;
+    if (hasAllowBuilds && missingBuilds.length > 0) {
+        for (const name of missingBuilds) {
+            document.setIn(['allowBuilds', name], false);
+        }
+        updated = document.toString({ singleQuote: true });
+    }
+    const allowBuilds = Object.fromEntries(missingBuilds.map(name => [name, false]));
     const added = [
-        ...(Object.hasOwn(settings, 'injectWorkspacePackages') ? [] : [injectSettings]),
-        ...(Object.hasOwn(settings, 'dedupeInjectedDeps') ? [] : [dedupeSettings]),
+        ...(document.has('injectWorkspacePackages') ? [] : [injectSettings]),
+        ...(document.has('dedupeInjectedDeps') ? [] : [dedupeSettings]),
+        ...(hasAllowBuilds
+            ? []
+            : [
+                  `# Install scripts of the packages the targets run, which they don't need\n${stringify(
+                      { allowBuilds },
+                      { singleQuote: true }
+                  )}`,
+              ]),
     ];
-    if (added.length === 0) {
+    if (updated === yaml && added.length === 0) {
         return;
     }
-    const separator = yaml === '' || yaml.endsWith('\n') ? '' : '\n';
-    tree.write('pnpm-workspace.yaml', `${yaml}${separator}${added.join('')}`);
+    const separator = updated === '' || updated.endsWith('\n') ? '' : '\n';
+    tree.write('pnpm-workspace.yaml', `${updated}${separator}${added.join('')}`);
 };
 
 /**
  * Nx generator setting an Nx workspace up for the plugin: adds it (and nx-lifecycle, with stages and bindings for its
- * targets) to `nx.json`, installs it and the tools its targets run at the root, extends the shared Biome config, has
- * pnpm inject workspace packages, and points coding agents at the principles. Run by `nx add @leyman/nx-plugin`.
+ * targets) to `nx.json`, installs it and the tools its targets run at the root, extends the shared Biome config, writes
+ * a root `tsconfig.json`, has pnpm inject workspace packages and skip install scripts the targets don't need, ignores
+ * what the targets write in `.gitignore`, and points coding agents at the principles. Run by `nx add @leyman/nx-plugin`.
  * Leaves alone what is already set.
  *
  * @param tree - Nx's view of the files
@@ -139,7 +198,8 @@ const initGenerator = async (
     const plugins = [...(nxJson.plugins ?? [])];
     const existing = plugins.find(entry => pluginOf(entry) === pluginName);
     if (existing === undefined) {
-        plugins.push({ plugin: pluginName, options: {} });
+        // The package generator writes ESM-only packages
+        plugins.push({ plugin: pluginName, options: { checkPackage: { profile: 'esm-only' } } });
     }
     const pluginOptions: unknown = typeof existing === 'object' ? (existing.options ?? {}) : {};
     assertOptions(pluginOptions, 'nx.json');
@@ -153,7 +213,12 @@ const initGenerator = async (
         );
         plugins.push({
             plugin: lifecyclePlugin,
-            options: { stages: lifecycleStages, bindings: Object.fromEntries(bindings) },
+            options: {
+                stages: lifecycleStages,
+                bindings: Object.fromEntries(bindings),
+                // Bound for every target the plugin has, before any project defines them
+                warnUnusedBindings: false,
+            },
         });
     }
     writeJson(tree, 'nx.json', { ...nxJson, plugins });
@@ -175,7 +240,12 @@ const initGenerator = async (
             extends: ['@leyman/configs/biome.base.json'],
         });
     }
-    injectWorkspacePackages(tree);
+    // Nx's TypeScript sync generator keeps its references to every package
+    if (!tree.exists('tsconfig.json')) {
+        writeJson(tree, 'tsconfig.json', { files: [], references: [] });
+    }
+    configurePnpm(tree);
+    ignoreOutputs(tree);
     const skillPath = '.claude/skills/principles/SKILL.md';
     if (skill && !tree.exists(skillPath)) {
         tree.write(skillPath, principlesSkill);

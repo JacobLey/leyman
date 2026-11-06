@@ -46,6 +46,7 @@ catalog:
   '@swc/core': ^1.0.0
   '@types/mocha': ^10.0.0
   '@types/node': ^25.0.0
+  '@typescript/native': ^7.0.0
   c8: ^11.0.0
   eslint: ^10.0.0
   mocha: ^11.0.0

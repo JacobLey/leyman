@@ -658,6 +658,11 @@ export const framework: readonly {
         link: 'adoption',
         pitch: 'Four tiers of adopting the setup, from published checks to the whole devcontainer and CI: what each installs, buys and costs.',
     },
+    {
+        text: 'Getting started',
+        link: 'getting-started',
+        pitch: 'From an empty directory to a first package that passes verify, with the published Nx plugin and its generators.',
+    },
 ];
 
 /**

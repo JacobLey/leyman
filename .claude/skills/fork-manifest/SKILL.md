@@ -7,7 +7,7 @@ description: Which infrastructure files a fork of this repo's patterns takes, ho
 
 [`leyman/main/fork-manifest.json`](../../../leyman/main/fork-manifest.json) draws the line between a pattern a fork takes and what stays in this repo. Classifying is a judgment written by hand. Everything downstream is derived from it.
 
-A fork is the last of the [adoption tiers](https://jacobley.github.io/leyman/framework/adoption) (source: [`docs/src/framework/adoption.md`](../../../docs/src/framework/adoption.md)): the files that can't be packages. The tiers before it are published packages, which the fork installs from npm. Keep that page in step when what a tier installs, buys or costs changes.
+A fork is the last of the [adoption tiers](https://jacobley.github.io/leyman/framework/adoption) (source: [`docs/src/framework/adoption.md`](../../../docs/src/framework/adoption.md)): the files that can't be packages. The tiers before it are published packages, which the fork installs from npm. Keep that page in step when what a tier installs, buys or costs changes. [Getting started](https://jacobley.github.io/leyman/framework/getting-started) (source: [`docs/src/framework/getting-started.md`](../../../docs/src/framework/getting-started.md)) walks tiers 1 to 3 from an empty directory: when `@leyman/nx-plugin`'s generators change, run its steps again in a scratch directory, with a `PATH` free of this repository's `node_modules/.bin`, and fix the page or the generators until a published package passes `verify`.
 
 ## When you hit it
 

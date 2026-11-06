@@ -70,13 +70,20 @@ const ownVersions = async (): Promise<Dependencies> => {
 export const readWorkspaceVersions = async (tree: Tree): Promise<WorkspaceVersions> => {
     const packages = new Set<string>();
     const ranges = new Map<string, string>();
-    for (const { root } of getProjects(tree).values()) {
+    const roots = new Set(
+        getProjects(tree)
+            .values()
+            .map(({ root }) => root)
+    );
+    // The workspace root's own dependencies, such as `nx`, last
+    roots.add('.');
+    for (const root of roots) {
         const path = joinPathFragments(root, 'package.json');
         if (!tree.exists(path)) {
             continue;
         }
         const packageJson = readJson<DependentPackageJson>(tree, path);
-        if (packageJson.name !== undefined) {
+        if (root !== '.' && packageJson.name !== undefined) {
             packages.add(packageJson.name);
         }
         const entries = [
@@ -86,7 +93,7 @@ export const readWorkspaceVersions = async (tree: Tree): Promise<WorkspaceVersio
             packageJson.peerDependencies,
         ].flatMap(field => (field === undefined ? [] : Object.entries(field)));
         for (const [name, range] of entries) {
-            if (!ranges.has(name) && !range.startsWith('workspace:')) {
+            if (!ranges.has(name) && !isProtocol(range)) {
                 ranges.set(name, range);
             }
         }
@@ -108,7 +115,8 @@ export const readWorkspaceVersions = async (tree: Tree): Promise<WorkspaceVersio
 
 /**
  * The range to depend on a package by: `workspace:^` for one of the workspace's own, else `catalog:` from the default
- * catalog, else a range another workspace package uses, else the version this plugin was published with.
+ * catalog, else a range a workspace package uses, else, for one of Nx's own plugins (`@nx/*`), the range of `nx`,
+ * else the version this plugin was published with.
  *
  * @param name - the package
  * @param versions - from {@link readWorkspaceVersions}
@@ -122,7 +130,12 @@ export const resolveVersion = (name: string, versions: WorkspaceVersions): strin
     if (versions.catalogs.default?.[name] !== undefined) {
         return 'catalog:';
     }
-    const range = versions.ranges.get(name) ?? versions.fallback[name];
+    const range =
+        versions.ranges.get(name) ??
+        (name.startsWith('@nx/')
+            ? (versions.ranges.get('nx') ?? versions.catalogs.default?.nx)
+            : undefined) ??
+        versions.fallback[name];
     if (range === undefined) {
         throw new Error(
             `No version of ${name} in the workspace: add it to the pnpm catalog or to a package first`

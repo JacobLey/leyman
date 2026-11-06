@@ -136,10 +136,12 @@ nx g @leyman/nx-plugin:init
 
 Sets the workspace up for the plugin, leaving alone anything already set:
 
-- `nx.json`: the plugin, and [nx-lifecycle](https://www.npmjs.com/package/nx-lifecycle)'s plugin with the stages install, prepare (generate, format), check (lint), build (run, post, sync), test (compile, run, report) and verify, and each target bound to one, under the name the options give it. `--lifecycle=false` leaves nx-lifecycle out.
-- `devDependencies` of the root `package.json`: the plugin, `@leyman/configs`, `@biomejs/biome`, `@leyman/check-package`, `@nx/js` and `nx-lifecycle`.
+- `nx.json`: the plugin, with `checkPackage.profile` `esm-only` for the packages the `package` generator writes, and [nx-lifecycle](https://www.npmjs.com/package/nx-lifecycle)'s plugin with the stages install, prepare (generate, format), check (lint), build (run, post, sync), test (compile, run, report) and verify, and each target bound to one, under the name the options give it. As every target is bound before any project has it, nx-lifecycle's `warnUnusedBindings` is off. `--lifecycle=false` leaves nx-lifecycle out.
+- `devDependencies` of the root `package.json`: the plugin, `@leyman/configs`, `@biomejs/biome`, `@leyman/check-package`, `@nx/js`, `@typescript/native` (TypeScript 7, the `tsc` the targets run) and `nx-lifecycle`.
 - `biome.json`, extending `@leyman/configs/biome.base.json`.
-- `pnpm-workspace.yaml`, if there is one: `injectWorkspacePackages: true` and `dedupeInjectedDeps: false`, so dependents get workspace packages as published, which `sync-injected` keeps current.
+- `tsconfig.json`, with no files, for Nx's TypeScript sync generator to keep a reference to each package in.
+- `.gitignore`: `node_modules`, `dist`, `dist-test`, and what the targets and Nx write at the root (`.coverage`, `.package-surface`, `.nx/cache` and `.nx/workspace-data`). check-package reads it for the files a package doesn't publish.
+- `pnpm-workspace.yaml`, if there is one: `injectWorkspacePackages: true` and `dedupeInjectedDeps: false`, so dependents get workspace packages as published, which `sync-injected` keeps current, and `allowBuilds` `false` for `nx` and `@swc/core`, whose install scripts pnpm otherwise stops on.
 - `.claude/skills/principles/SKILL.md`, pointing coding agents at the [principles](https://jacobley.github.io/leyman/framework/principles) of the setup. `--skill=false` leaves it out.
 
 Then it installs the dependencies, unless `--skipInstall`.
@@ -179,7 +181,7 @@ Set the ones a workspace always passes as defaults in `nx.json`:
 }
 ```
 
-Each dependency's version comes from the workspace if it can: `workspace:^` for one of its own packages, `catalog:` for one in the pnpm catalog (`catalog:node-{floor}` for a published package's `@types/node`), or the range another package already uses. Otherwise it is the version this plugin was published with, and a package with none of those fails.
+Each dependency's version comes from the workspace if it can: `workspace:^` for one of its own packages, `catalog:` for one in the pnpm catalog (`catalog:node-{floor}` for a published package's `@types/node`), or the range another package (or the root `package.json`) already uses. Nx's own plugins, such as `@nx/js`, otherwise take the range of `nx`. Otherwise it is the version this plugin was published with, and a package with none of those fails.
 
 ## The targets executor
 
