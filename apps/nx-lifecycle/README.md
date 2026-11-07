@@ -45,7 +45,7 @@ npm i -D nx-lifecycle
 - **[Plugin](#plugin)** (recommended): infers the lifecycle targets whenever Nx builds the project graph. Nothing is written to files.
 - **[Executor](#executor)**: writes the lifecycle targets into `nx.json` and every `project.json`, to be committed. CI checks they are up to date.
 
-The package ships a skill for coding agents, `skills/nx-lifecycle/SKILL.md`: how the workspace orders its targets, and how to add one without breaking the wiring. Link it where your agent reads skills, e.g. `ln -s ../../node_modules/nx-lifecycle/skills/nx-lifecycle .agents/skills/nx-lifecycle`, or with [`leyman-framework skills`](https://github.com/JacobLey/leyman/tree/main/leyman/framework#skills).
+The package ships a skill for coding agents, `skills/nx-lifecycle/SKILL.md`: how the workspace orders its targets, and how to add one without breaking the wiring. pnpm (12.11 or later) links it into your agent's skills once you approve it: `pnpm approve`, or `nx-lifecycle: { skills: true }` under `permissions` in `pnpm-workspace.yaml`.
 
 Both take the same [stages](#stages) and [bindings](#bindings). Requires Node.js 24 or later. `nx` and `@nx/devkit` (`^23.3.0`) are regular dependencies of `nx-lifecycle` (not peers), so use the same Nx major version in the workspace.
 

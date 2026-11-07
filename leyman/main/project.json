@@ -5,6 +5,7 @@
     "biome": {},
     "check-fork-manifest": {},
     "check-parity": {},
+    "check-skills": {},
     "check-workspace-dependencies": {},
     "eslint": {
       "inputs": [

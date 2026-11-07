@@ -28,6 +28,10 @@
   ],
   "entries": [
     {
+      "path": ".agents/skills/.gitignore",
+      "why": "pnpm's list of the skill links it makes, which aren't committed"
+    },
+    {
       "path": ".claude/skills",
       "why": "links Claude Code's skills directory to .agents/skills, which other agents read"
     },
@@ -369,23 +373,23 @@
   "repoOnly": [
     {
       "path": ".agents/skills/framework-audit",
-      "why": "a link to the workspace package's source; a fork links its installed copy with leyman-framework skills"
+      "why": "a link to @leyman/framework's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
     },
     {
       "path": ".agents/skills/eslint-config",
-      "why": "a link to @leyman/eslint-config's source; a fork links its installed copy with leyman-framework skills"
+      "why": "a link to @leyman/eslint-config's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
     },
     {
       "path": ".agents/skills/principles",
-      "why": "a link to @leyman/configs' source; a fork links its installed copy (nx-plugin init or leyman-framework skills)"
+      "why": "a link to @leyman/configs' source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
     },
     {
       "path": ".agents/skills/mocha-chain",
-      "why": "a link to mocha-chain's source; a fork links its installed copy with leyman-framework skills"
+      "why": "a link to mocha-chain's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
     },
     {
       "path": ".agents/skills/nx-lifecycle",
-      "why": "a link to nx-lifecycle's source; a fork links its installed copy with leyman-framework skills"
+      "why": "a link to nx-lifecycle's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets)"
     },
     {
       "path": ".agents/skills/fork-manifest",
@@ -498,6 +502,10 @@
     {
       "path": "leyman/nx-plugin",
       "why": "on npm as @leyman/nx-plugin: a fork installs it"
+    },
+    {
+      "path": "leyman/main/scripts/link-skills.mjs",
+      "why": "links this workspace's packages' skills to their source; a fork installs the packages, and pnpm links their skills"
     }
   ],
   "packages": [

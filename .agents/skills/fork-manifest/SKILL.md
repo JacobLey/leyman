@@ -51,6 +51,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 
 | Path | Why |
 |------|-----|
+| `.agents/skills/.gitignore` | pnpm's list of the skill links it makes, which aren't committed |
 | `.claude/skills` | links Claude Code's skills directory to .agents/skills, which other agents read |
 | `.agents/skills/coding-patterns` | package design, types and DI conventions |
 | `.agents/skills/commit-messages` | subject and body conventions |
@@ -190,11 +191,11 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 
 | Path | Why |
 |------|-----|
-| `.agents/skills/framework-audit` | a link to the workspace package's source; a fork links its installed copy with leyman-framework skills |
-| `.agents/skills/eslint-config` | a link to @leyman/eslint-config's source; a fork links its installed copy with leyman-framework skills |
-| `.agents/skills/principles` | a link to @leyman/configs' source; a fork links its installed copy (nx-plugin init or leyman-framework skills) |
-| `.agents/skills/mocha-chain` | a link to mocha-chain's source; a fork links its installed copy with leyman-framework skills |
-| `.agents/skills/nx-lifecycle` | a link to nx-lifecycle's source; a fork links its installed copy with leyman-framework skills |
+| `.agents/skills/framework-audit` | a link to @leyman/framework's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
+| `.agents/skills/eslint-config` | a link to @leyman/eslint-config's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
+| `.agents/skills/principles` | a link to @leyman/configs' source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
+| `.agents/skills/mocha-chain` | a link to mocha-chain's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
+| `.agents/skills/nx-lifecycle` | a link to nx-lifecycle's source; a fork has pnpm link its installed copy (permissions in pnpm-workspace.yaml, which nx-plugin init sets) |
 | `.agents/skills/fork-manifest` | how this repo's classification works; a fork keeps the list of what it took |
 | `.agents/skills/projects` | this repo's table of packages; a fork writes its own |
 | `.github/ISSUE_TEMPLATE` | names this repo's packages and links |
@@ -223,5 +224,6 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `leyman/expect` | on npm as @leyman/expect: a fork installs it |
 | `leyman/framework` | on npm as @leyman/framework: a fork runs it |
 | `leyman/nx-plugin` | on npm as @leyman/nx-plugin: a fork installs it |
+| `leyman/main/scripts/link-skills.mjs` | links this workspace's packages' skills to their source; a fork installs the packages, and pnpm links their skills |
 
 <!-- fork-manifest:end -->

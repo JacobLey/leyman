@@ -366,7 +366,7 @@
       "executor": "nx:run-commands",
       "options": {
         "commands": [
-          "[ ! -e .agents ] || node {projectRoot}/bin.mjs skills --check"
+          "[ ! -e .agents ] || node leyman/main/scripts/link-skills.mjs --check"
         ],
         "color": true,
         "cwd": "{workspaceRoot}"

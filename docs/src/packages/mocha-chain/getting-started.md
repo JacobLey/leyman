@@ -26,7 +26,7 @@ yarn add -D mocha-chain
 mocha-chain wraps Mocha, which is a peer dependency, along with `@types/mocha`. It is ESM only, so test files must be ES modules. Run tests with `mocha` as usual: nothing changes in its configuration.
 :::
 
-The package ships a skill for coding agents, `skills/mocha-chain/SKILL.md`: chaining context, and which hooks run for which tests. Link it where your agent reads skills, e.g. `ln -s ../../node_modules/mocha-chain/skills/mocha-chain .agents/skills/mocha-chain`, or with [`leyman-framework skills`](https://github.com/JacobLey/leyman/tree/main/leyman/framework#skills).
+The package ships a skill for coding agents, `skills/mocha-chain/SKILL.md`: chaining context, and which hooks run for which tests. pnpm (12.11 or later) links it into your agent's skills once you approve it: `pnpm approve`, or `mocha-chain: { skills: true }` under `permissions` in `pnpm-workspace.yaml`.
 
 ## Return context from a hook
 

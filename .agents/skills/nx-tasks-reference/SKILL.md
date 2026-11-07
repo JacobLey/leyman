@@ -159,9 +159,9 @@ Fails if the versions the devcontainer and CI pin separately differ (`leyman/mai
 
 ### `check-skills`
 
-Fails if a skill that a framework package ships (`skills/<name>/SKILL.md` in `@leyman/framework`, `nx-lifecycle`...) isn't linked into `.agents/skills/<name>`, a link there names a skill no package ships, or `.claude/skills` isn't a link to `.agents/skills`: `leyman-framework skills --check`, from the built `@leyman/framework`. Runs in `check:lint`. Fix it with `node leyman/framework/bin.mjs skills`. It skips inside Dagger, whose source leaves out `.agents`, so only local runs check it.
+Fails if a skill that a package of this workspace ships (`<package>/skills/<name>/SKILL.md`) isn't linked into `.agents/skills/<name>`, or a link there names a skill no package ships (`leyman/main/scripts/link-skills.mjs --check`). pnpm links an installed dependency's skills once approved, but never a workspace package's, which is where all of this repository's are. Runs in `check:lint`. Fix it with `node leyman/main/scripts/link-skills.mjs`. It skips inside Dagger, whose source leaves out `.agents`, so only local runs check it.
 
-**Add when:** Never: only `@leyman/framework` has it.
+**Add when:** Never: only `@leyman/main` has it.
 
 ---
 

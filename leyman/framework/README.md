@@ -12,7 +12,6 @@ Audits how much of the leyman framework a repository has adopted, tier by tier, 
 - **Measures against the tiers**: runs one set of checks for each of the four [adoption tiers](https://jacobley.github.io/leyman/framework/adoption) (checks, shared configs, the Nx plugin and lifecycle, and the devcontainer, CI and skills), and reports the highest tier the repository meets.
 - **Every failure comes with its fix**: what failed, where, and what to do about it.
 - **Works at any tier**: reads the repository's files and needs nothing installed, so it audits a repository that has adopted nothing yet.
-- **Skills versioned with the code**: links the skills the framework's packages ship into `.agents/skills`, so a coding agent reads the version installed.
 - **An agent brief for the rest**: a skill for the judgment calls no script can make (package design, READMEs, comments, tests and versions), against the [principles](https://jacobley.github.io/leyman/framework/principles).
 
 ## Contents
@@ -22,7 +21,6 @@ Audits how much of the leyman framework a repository has adopted, tier by tier, 
 - [CLI](#cli)
 - [Checks](#checks)
 - [The agent audit](#the-agent-audit)
-- [Skills](#skills)
 - [API](#api)
 
 ## Install
@@ -64,10 +62,7 @@ Meets tier 3: Nx plugin and lifecycle.
 
 ```sh
 leyman-framework audit [--cwd <root>] [--offline] [--tier <1-4>]
-leyman-framework skills [--cwd <root>] [--check] [--package <name>]...
 ```
-
-### `audit`
 
 | Option      | Default | Description                                                      |
 | ----------- | ------- | ---------------------------------------------------------------- |
@@ -76,18 +71,6 @@ leyman-framework skills [--cwd <root>] [--check] [--package <name>]...
 | `--tier`    | —       | Exit with 1 unless the repository meets this tier.               |
 
 Without `--tier` it exits with 0 whatever it finds, so the report is for reading.
-
-### `skills`
-
-Links each skill the installed framework packages ship into `.agents/skills/<name>`: see [Skills](#skills).
-
-| Option      | Default | Description                                                         |
-| ----------- | ------- | ------------------------------------------------------------------- |
-| `--cwd`     | `.`     | Root of the repository.                                             |
-| `--check`   | `false` | Change nothing, and exit with 1 if anything would change.           |
-| `--package` | —       | Another installed package whose `skills/` to link. Repeat for more. |
-
-It exits with 1 on a skill it can't link.
 
 ## Checks
 
@@ -115,17 +98,7 @@ The packages are those `pnpm-workspace.yaml` (or `package.json` `workspaces`) li
 
 ## The agent audit
 
-The package ships a skill, `skills/framework-audit/SKILL.md`, for a coding agent to run in the repository. It starts with this CLI, then checks what needs judgment against the principles, and reports each finding with the principle it misses. The CLI prints the skill's path. With the package installed, `leyman-framework skills` links it into `.agents/skills` with the others; otherwise point the agent at it.
-
-## Skills
-
-A framework package ships its skills in `skills/<name>/SKILL.md`, beside its code, so an agent reads the instructions for the version installed. `leyman-framework skills` links each one into `.agents/skills/<name>`, which most coding agents read, and `.claude/skills` to `.agents/skills` for Claude Code, which reads only that:
-
-- A package of the workspace links to its source, and any other to its install: in the root's `node_modules`, or a workspace package's.
-- Every link in `.agents/skills` is its own: one that no package ships any more is removed. A skill directory of the repository's own is never touched, and a package skill of the same name isn't linked.
-- Two packages shipping the same skill, or a `.claude/skills` that isn't the link, is a problem it reports rather than resolves.
-
-Commit the links. One into `node_modules` dangles until the install, and the next upgrade changes the skill with the code. Run it again after adding or removing a framework package, or with `--check` in CI. Only the framework's packages (and those named with `--package`) are linked, never every dependency that ships a `skills/` directory: what an agent reads stays a choice.
+The package ships a skill, `skills/framework-audit/SKILL.md`, for a coding agent to run in the repository. It starts with this CLI, then checks what needs judgment against the principles, and reports each finding with the principle it misses. The CLI prints the skill's path. With the package installed, pnpm links it into the agent's skills once you approve it (`pnpm approve`); otherwise point the agent at it.
 
 ## API
 
@@ -155,16 +128,6 @@ The report as the CLI prints it, with `skill` as the path of the agent audit bri
 
 Reads a package's `latest` version from npm's registry, or `undefined` when npm has none. Rejects when the registry can't be reached.
 
-### `linkSkills(options?)`
+### `frameworkPackages`, `tierNames`
 
-What the `skills` command does. Resolves to the `links` (each skill's `name`, `package` and `target`, relative to `.agents/skills`), the `changes` made (or that would be, with `check`) and the `problems` that kept a skill from being linked. Rejects when the root has no `package.json`.
-
-| Option     | Default             | Description                               |
-| ---------- | ------------------- | ----------------------------------------- |
-| `cwd`      | `process.cwd()`     | Root of the repository.                   |
-| `packages` | `frameworkPackages` | The packages whose skills to link.        |
-| `check`    | `false`             | Report what would change, change nothing. |
-
-### `frameworkPackages`, `tierNames`, `skillsDir`, `claudeSkillsDir`
-
-The packages the versions check compares with npm (and whose skills are linked), each tier's name, and the two skills directories.
+The packages the versions check compares with npm, and each tier's name.

@@ -226,7 +226,7 @@ const initGeneratorSchema = objectSchema({
         }),
         skill: booleanSchema({
             description:
-                'Link the principles skill @leyman/configs ships into .agents/skills, and .claude/skills to it',
+                "Have pnpm link the skills of the framework's packages into .agents/skills, and link .claude/skills to it",
             default: true,
         }),
         skipInstall: booleanSchema({

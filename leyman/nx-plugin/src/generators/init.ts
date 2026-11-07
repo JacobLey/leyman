@@ -20,8 +20,8 @@ export interface InitGeneratorOptions {
      */
     readonly lifecycle?: boolean;
     /**
-     * Link the principles skill `@leyman/configs` ships into `.agents/skills/principles`, and `.claude/skills` to
-     * `.agents/skills`, so coding agents read the principles of the version installed.
+     * Have pnpm link the skills the framework's packages ship into `.agents/skills`, approved in `pnpm-workspace.yaml`,
+     * and link `.claude/skills` to `.agents/skills`, so coding agents read the skills of the versions installed.
      *
      * @default true
      */
@@ -86,27 +86,35 @@ const rootDependencies = [
 const skippedBuilds = ['@swc/core', 'nx'] as const;
 
 /**
- * The principles skill `@leyman/configs` ships, linked where coding agents read skills: `.agents/skills` for most,
- * `.claude/skills` (a link to it) for Claude Code.
+ * The framework's packages that ship skills for coding agents, which pnpm links once approved.
  */
-const skillLinks = [
-    {
-        path: '.agents/skills/principles',
-        target: '../../node_modules/@leyman/configs/skills/principles',
-    },
-    { path: '.claude/skills', target: '../.agents/skills' },
+const skilledPackages = [
+    '@leyman/configs',
+    '@leyman/eslint-config',
+    'mocha-chain',
+    'nx-lifecycle',
 ] as const;
 
-const linkSkills = async (root: string): Promise<void> => {
-    for (const { path, target } of skillLinks) {
-        const absolute = Path.join(root, path);
-        try {
-            // Anything already there is the workspace's own: a directory of skills, or a link it chose
-            await lstat(absolute);
-        } catch {
-            await mkdir(Path.dirname(absolute), { recursive: true });
-            await symlink(target, absolute);
-        }
+const skillsSettings = `# Where pnpm links the skills that approved dependencies ship. .claude/skills is a link to it, for Claude Code
+skills:
+  dirs:
+    - .agents/skills
+`;
+
+/**
+ * Links `.claude/skills`, the only skills Claude Code reads, to `.agents/skills`, which other agents read and pnpm links
+ * skills into. A `.claude/skills` already there is the workspace's own, and left alone.
+ *
+ * @param root - the workspace root
+ */
+const linkClaudeSkills = async (root: string): Promise<void> => {
+    await mkdir(Path.join(root, '.agents/skills'), { recursive: true });
+    const claudeSkills = Path.join(root, '.claude/skills');
+    try {
+        await lstat(claudeSkills);
+    } catch {
+        await mkdir(Path.dirname(claudeSkills), { recursive: true });
+        await symlink('../.agents/skills', claudeSkills);
     }
 };
 
@@ -156,11 +164,13 @@ const ignoreOutputs = (tree: Tree): void => {
 /**
  * Sets `pnpm-workspace.yaml` up, leaving alone what it sets already: has pnpm install workspace packages as copies,
  * which `sync-injected` keeps current (`injectWorkspacePackages` and `dedupeInjectedDeps`), and skip the install
- * scripts of the packages the targets run, which it otherwise fails on (`allowBuilds`).
+ * scripts of the packages the targets run, which it otherwise fails on (`allowBuilds`). With `shouldLinkSkills`, also
+ * links the skills the framework's packages ship into `.agents/skills` (`skills.dirs`, and `permissions` approving them).
  *
  * @param tree - Nx's view of the files
+ * @param shouldLinkSkills - whether pnpm links the framework's skills
  */
-const configurePnpm = (tree: Tree): void => {
+const configurePnpm = (tree: Tree, shouldLinkSkills: boolean): void => {
     const yaml = tree.read('pnpm-workspace.yaml', 'utf8');
     if (yaml === null) {
         return;
@@ -168,13 +178,24 @@ const configurePnpm = (tree: Tree): void => {
     const document = parseDocument(yaml);
     const missingBuilds = skippedBuilds.filter(name => !document.hasIn(['allowBuilds', name]));
     const hasAllowBuilds = document.has('allowBuilds');
-    let updated = yaml;
-    if (hasAllowBuilds && missingBuilds.length > 0) {
-        for (const name of missingBuilds) {
-            document.setIn(['allowBuilds', name], false);
-        }
-        updated = document.toString({ singleQuote: true });
+    const hasPermissions = document.has('permissions');
+    const missingSkills = shouldLinkSkills
+        ? skilledPackages.filter(name => !document.hasIn(['permissions', name]))
+        : [];
+    // Entries for a map the file has go into it; otherwise the map is added below, with a comment
+    const buildsToSet = hasAllowBuilds ? missingBuilds : [];
+    const skillsToSet = hasPermissions ? missingSkills : [];
+    for (const name of buildsToSet) {
+        document.setIn(['allowBuilds', name], false);
     }
+    for (const name of skillsToSet) {
+        document.setIn(['permissions', name], { skills: true });
+    }
+    const updated =
+        buildsToSet.length + skillsToSet.length > 0
+            ? document.toString({ singleQuote: true })
+            : yaml;
+    const permissions = Object.fromEntries(missingSkills.map(name => [name, { skills: true }]));
     const allowBuilds = Object.fromEntries(missingBuilds.map(name => [name, false]));
     const added = [
         ...(document.has('injectWorkspacePackages') ? [] : [injectSettings]),
@@ -184,6 +205,15 @@ const configurePnpm = (tree: Tree): void => {
             : [
                   `# Install scripts of the packages the targets run, which they don't need\n${stringify(
                       { allowBuilds },
+                      { singleQuote: true }
+                  )}`,
+              ]),
+        ...(shouldLinkSkills && !document.has('skills') ? [skillsSettings] : []),
+        ...(hasPermissions || missingSkills.length === 0
+            ? []
+            : [
+                  `# The skills the framework's packages ship for coding agents\n${stringify(
+                      { permissions },
                       { singleQuote: true }
                   )}`,
               ]),
@@ -199,7 +229,7 @@ const configurePnpm = (tree: Tree): void => {
  * Nx generator setting an Nx workspace up for the plugin: adds it (and nx-lifecycle, with stages and bindings for its
  * targets) to `nx.json`, installs it and the tools its targets run at the root, extends the shared Biome config, writes
  * a root `tsconfig.json`, has pnpm inject workspace packages and skip install scripts the targets don't need, ignores
- * what the targets write in `.gitignore`, and points coding agents at the principles. Run by `nx add @leyman/nx-plugin`.
+ * what the targets write in `.gitignore`, and has pnpm link the skills of the framework's packages for coding agents. Run by `nx add @leyman/nx-plugin`.
  * Leaves alone what is already set.
  *
  * @param tree - Nx's view of the files
@@ -262,13 +292,13 @@ const initGenerator = async (
     if (!tree.exists('tsconfig.json')) {
         writeJson(tree, 'tsconfig.json', { files: [], references: [] });
     }
-    configurePnpm(tree);
+    configurePnpm(tree, skill);
     ignoreOutputs(tree);
 
     const tasks: GeneratorCallback[] = [
         ...(options.skipInstall === true ? [] : [installPackagesTask.bind(undefined, tree)]),
         // Nx's tree can't hold a link, so the links are made on disk once it is written
-        ...(skill ? [linkSkills.bind(undefined, tree.root)] : []),
+        ...(skill ? [linkClaudeSkills.bind(undefined, tree.root)] : []),
     ];
     return tasks.length === 0 ? undefined : runTasksInSerial(...tasks);
 };

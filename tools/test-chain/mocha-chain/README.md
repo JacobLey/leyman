@@ -33,7 +33,7 @@ npm i --save-dev mocha-chain mocha @types/mocha
 
 `mocha-chain` is an ESM package for Node.js 22.12 or later, and must be imported (not required), so test files must be ES modules. It is not a replacement for mocha — it wraps mocha's native methods. `mocha` is a required peer dependency, and `@types/mocha` an optional one (for TypeScript). The two are fully interchangeable; you can mix `mocha-chain` and native mocha calls in the same suite.
 
-The package ships a skill for coding agents, `skills/mocha-chain/SKILL.md`: chaining context, and which hooks run for which tests. Link it where your agent reads skills, e.g. `ln -s ../../node_modules/mocha-chain/skills/mocha-chain .agents/skills/mocha-chain`, or with [`leyman-framework skills`](https://github.com/JacobLey/leyman/tree/main/leyman/framework#skills).
+The package ships a skill for coding agents, `skills/mocha-chain/SKILL.md`: chaining context, and which hooks run for which tests. pnpm (12.11 or later) links it into your agent's skills once you approve it: `pnpm approve`, or `mocha-chain: { skills: true }` under `permissions` in `pnpm-workspace.yaml`.
 
 ## Example
 

@@ -70,7 +70,11 @@ suite('initGenerator', () => {
             .to.satisfy((yaml: string) => yaml.startsWith(catalogYaml))
             .and.include('\ninjectWorkspacePackages: true\n')
             .and.include('\ndedupeInjectedDeps: false\n')
-            .and.include("\nallowBuilds:\n  '@swc/core': false\n  nx: false\n");
+            .and.include("\nallowBuilds:\n  '@swc/core': false\n  nx: false\n")
+            .and.include('\nskills:\n  dirs:\n    - .agents/skills\n')
+            .and.include(
+                "\npermissions:\n  '@leyman/configs':\n    skills: true\n  '@leyman/eslint-config':\n    skills: true\n  mocha-chain:\n    skills: true\n  nx-lifecycle:\n    skills: true\n"
+            );
         expect(read(tree, '.gitignore')).to.equal(
             'node_modules\ndist\ndist-test\n/.coverage\n/.package-surface\n/.nx/cache\n/.nx/workspace-data\n'
         );
@@ -89,7 +93,7 @@ suite('initGenerator', () => {
         tree.write('tsconfig.json', '{ "extends": "./tsconfig.base.json" }');
         tree.write(
             'pnpm-workspace.yaml',
-            `${catalogYaml}allowBuilds:\n  nx: true\ninjectWorkspacePackages: false`
+            `${catalogYaml}allowBuilds:\n  nx: true\ninjectWorkspacePackages: false\nskills:\n  dirs: []\npermissions:\n  nx-lifecycle:\n    skills: false\n`
         );
         // Without a final newline
         tree.write('.gitignore', 'node_modules\ndist\ndist-test\n/.coverage\n/.nx/cache');
@@ -107,7 +111,7 @@ suite('initGenerator', () => {
         expect(tree.exists('biome.json')).to.equal(false);
         expect(read(tree, 'tsconfig.json')).to.equal('{ "extends": "./tsconfig.base.json" }');
         expect(read(tree, 'pnpm-workspace.yaml')).to.equal(
-            `${catalogYaml}allowBuilds:\n  nx: true\n  '@swc/core': false\ninjectWorkspacePackages: false\n# Otherwise pnpm symlinks to the source again whenever peers allow it\ndedupeInjectedDeps: false\n`
+            `${catalogYaml}allowBuilds:\n  nx: true\n  '@swc/core': false\ninjectWorkspacePackages: false\nskills:\n  dirs: []\npermissions:\n  nx-lifecycle:\n    skills: false\n  '@leyman/configs':\n    skills: true\n  '@leyman/eslint-config':\n    skills: true\n  mocha-chain:\n    skills: true\n# Otherwise pnpm symlinks to the source again whenever peers allow it\ndedupeInjectedDeps: false\n`
         );
         expect(read(tree, '.gitignore')).to.equal(
             'node_modules\ndist\ndist-test\n/.coverage\n/.nx/cache\n/.package-surface\n/.nx/workspace-data\n'
@@ -168,7 +172,7 @@ suite('initGenerator', () => {
         // Without a final newline
         tree.write('pnpm-workspace.yaml', `${catalogYaml}dedupeInjectedDeps: true`);
 
-        await initGenerator(tree, { skipInstall: true });
+        await initGenerator(tree, { skill: false, skipInstall: true });
 
         const lifecycle = readNxJson(tree)!.plugins![1] as {
             options: { bindings: Record<string, string> };
@@ -185,7 +189,7 @@ suite('initGenerator', () => {
         const yaml = `${catalogYaml}injectWorkspacePackages: true\ndedupeInjectedDeps: false\nallowBuilds:\n  '@swc/core': true\n  nx: false\n`;
         tree.write('pnpm-workspace.yaml', yaml);
 
-        await initGenerator(tree, { lifecycle: false, skipInstall: true });
+        await initGenerator(tree, { lifecycle: false, skill: false, skipInstall: true });
 
         expect(read(tree, 'pnpm-workspace.yaml')).to.equal(yaml);
         expect(readNxJson(tree)!.plugins).to.deep.equal([{ plugin: '@leyman/nx-plugin' }]);
@@ -260,20 +264,14 @@ suite('initGenerator', () => {
             await rm(root, { recursive: true, force: true });
         });
 
-        withRoot.test(
-            'Links the principles skill once the tree is written',
-            async ({ tree, root }) => {
-                const task = await initGenerator(tree, { skipInstall: true });
-                await task!();
+        withRoot.test('Links .claude/skills once the tree is written', async ({ tree, root }) => {
+            const task = await initGenerator(tree, { skipInstall: true });
+            await task!();
 
-                expect(await readlink(Path.join(root, '.agents/skills/principles'))).to.equal(
-                    '../../node_modules/@leyman/configs/skills/principles'
-                );
-                expect(await readlink(Path.join(root, '.claude/skills'))).to.equal(
-                    '../.agents/skills'
-                );
-            }
-        );
+            const agentsSkills = await lstat(Path.join(root, '.agents/skills'));
+            expect(agentsSkills.isDirectory()).to.equal(true);
+            expect(await readlink(Path.join(root, '.claude/skills'))).to.equal('../.agents/skills');
+        });
 
         withRoot.test('Leaves alone what is already there', async ({ tree, root }) => {
             await mkdir(Path.join(root, '.claude/skills/own'), { recursive: true });
@@ -283,9 +281,6 @@ suite('initGenerator', () => {
 
             const claude = await lstat(Path.join(root, '.claude/skills'));
             expect(claude.isDirectory()).to.equal(true);
-            expect(await readlink(Path.join(root, '.agents/skills/principles'))).to.equal(
-                '../../node_modules/@leyman/configs/skills/principles'
-            );
         });
     });
 });
