@@ -50,6 +50,17 @@ A worked example under `demos/` shows how to use open-source projects and servic
 - A demo made of several packages (e.g. a spec, a client and a server) goes in a directory of its own (`demos/openapi/`), with a README for the whole, and one per package. Each directory of packages is listed in `pnpm-workspace.yaml` (`demos/openapi/*`).
 - Advertise it: a row in the root README's Demos table, and a docs site page (see the [docs-site skill](../docs-site/SKILL.md#documented-packages)).
 
+## One package in several languages
+
+A package implemented in more than one language is a directory named after the package, holding one project per language, beside the vectors they share (e.g. `tools/constant-consistent-hash/`, `apps/genever/`):
+
+- `ts/`, `go/`, `rust/`: one implementation each. `wasm/` is a TypeScript package calling the Rust one.
+- `test-vectors/`: inputs and expected results every implementation runs, as an npm package and a Go module (and a crate, for Rust). The TypeScript implementation computes the expected values once, and they are committed. An implementation never regenerates the values it is tested against.
+- Other packages built on it, such as `weighted-rendezvous-hash` or `load-populate-files`, stay beside them under their own names.
+- `README.md`: what every implementation promises, whatever its language (the format it reads and writes, its rules), and a table of the projects. Each project still has its own README.
+
+A new language's implementation goes in that directory, not inside the package that first needs it, so the package's format stays in one place.
+
 ## Go projects
 
 Nx is not limited to TypeScript. Copy `tools/constant-consistent-hash/go`. Go is in the devcontainer and the Dagger pipeline (see the [devcontainer skill](../devcontainer/SKILL.md#version-parity-devcontainer--dagger)), and the gonx plugin makes a project of every `go.mod` (see [Go projects](../nx-tasks-reference/SKILL.md#go-projects)). Compared to a regular package:
