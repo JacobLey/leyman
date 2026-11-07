@@ -11,7 +11,7 @@ import (
 
 	genever "github.com/JacobLey/leyman/apps/genever/go"
 	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go-impl"
-	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
 // fileOptions are the defaults of GenerateFile, in a directory.

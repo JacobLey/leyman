@@ -1,11 +1,11 @@
 # generated-signature-go
 
-Go implementation of [generated-signature](../generated-signature/), tested against the shared [test vectors](../test-vectors/).
+Go implementation of [generated-signature](../ts/), tested against the shared [test vectors](../test-vectors/).
 
 A file signed by either implementation verifies with the other, manual sections merge the same way, and both read and write the same manifests, so a Go generator (like the Go port of [genever](../../../apps/genever/)) can share files with TypeScript tooling.
 
 ```go
-import generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+import generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 
 section, _ := generatedsignature.RenderManualSection(generatedsignature.ManualSectionOptions{
     ID:             "value",

@@ -86,7 +86,7 @@
       "path": "./apps/genever/ts"
     },
     {
-      "path": "./tools/generated-signature/generated-signature"
+      "path": "./tools/generated-signature/ts"
     },
     {
       "path": "./tools/lease-cache"

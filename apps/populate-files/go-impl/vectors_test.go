@@ -14,7 +14,7 @@ import (
 
 	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go-impl"
 	testvectors "github.com/JacobLey/leyman/apps/populate-files/test-vectors"
-	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
 type file struct {

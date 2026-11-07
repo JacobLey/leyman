@@ -660,7 +660,7 @@ importers:
         version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@10.2.2))
+        version: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@10.2.2))
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -1177,7 +1177,7 @@ importers:
         version: 10.14.0(supports-color@8.1.1)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1))
       mocha:
         specifier: 'catalog:'
         version: 12.0.3
@@ -1201,7 +1201,7 @@ importers:
         version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1))
       parse-cwd:
         specifier: workspace:^
         version: file:tools/parse-cwd
@@ -2069,7 +2069,7 @@ importers:
         version: 5.12.7
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
         version: file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
@@ -2619,7 +2619,7 @@ importers:
         version: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
       generated-signature:
         specifier: workspace:^
-        version: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1))
+        version: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1))
       genever:
         specifier: workspace:^
         version: file:apps/genever/ts(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
@@ -3687,7 +3687,13 @@ importers:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
 
-  tools/generated-signature/generated-signature:
+  tools/generated-signature/test-vectors:
+    devDependencies:
+      '@biomejs/biome':
+        specifier: 'catalog:'
+        version: 2.6.4
+
+  tools/generated-signature/ts:
     devDependencies:
       '@biomejs/biome':
         specifier: 'catalog:'
@@ -3697,7 +3703,7 @@ importers:
         version: file:leyman/configs
       '@leyman/eslint-config':
         specifier: workspace:^
-        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@8.1.1))(eslint@10.14.0(supports-color@8.1.1))(supports-color@8.1.1)
+        version: file:leyman/eslint-config(@typescript/typescript6@6.0.2)(eslint-import-resolver-node@0.3.9(supports-color@10.2.2))(eslint@10.14.0(supports-color@10.2.2))(supports-color@10.2.2)
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
@@ -3706,7 +3712,7 @@ importers:
         version: file:tools/generated-signature/test-vectors
       '@swc/cli':
         specifier: 'catalog:'
-        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@8.1.1)
+        version: 0.8.2(@swc/core@1.16.20(@swc/helpers@0.5.23))(chokidar@5.0.0)(supports-color@10.2.2)
       '@swc/core':
         specifier: 'catalog:'
         version: 1.16.20(@swc/helpers@0.5.23)
@@ -3724,7 +3730,7 @@ importers:
         version: 12.0.0
       eslint:
         specifier: 'catalog:'
-        version: 10.14.0(supports-color@8.1.1)
+        version: 10.14.0(supports-color@10.2.2)
       expect-type:
         specifier: 'catalog:'
         version: 1.4.0
@@ -3737,12 +3743,6 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: '@typescript/typescript6@6.0.2'
-
-  tools/generated-signature/test-vectors:
-    devDependencies:
-      '@biomejs/biome':
-        specifier: 'catalog:'
-        version: 2.6.4
 
   tools/haywire:
     dependencies:
@@ -8887,8 +8887,8 @@ packages:
   functions-have-names@1.2.3:
     resolution: {integrity: sha512-xckBUXyTIqT97tq2x2AMb+g163b5JFysYk0x4qxNFwbfQkmNZoiRHb6sPzI9/QV33WeuvVYBUIiD4NzNIyqaRQ==}
 
-  generated-signature@file:tools/generated-signature/generated-signature:
-    resolution: {directory: tools/generated-signature/generated-signature, type: directory}
+  generated-signature@file:tools/generated-signature/ts:
+    resolution: {directory: tools/generated-signature/ts, type: directory}
     engines: {node: '>=22.13.0'}
     peerDependencies:
       eslint: 'catalog:'
@@ -17160,11 +17160,11 @@ snapshots:
 
   functions-have-names@1.2.3: {}
 
-  generated-signature@file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@10.2.2)):
+  generated-signature@file:tools/generated-signature/ts(eslint@10.14.0(supports-color@10.2.2)):
     optionalDependencies:
       eslint: 10.14.0(supports-color@10.2.2)
 
-  generated-signature@file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1)):
+  generated-signature@file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1)):
     optionalDependencies:
       eslint: 10.14.0(supports-color@8.1.1)
 
@@ -17182,7 +17182,7 @@ snapshots:
       ci-info: 4.4.0
       entry-script: file:tools/entry-script
       format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
-      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1))
+      generated-signature: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1))
       parse-cwd: file:tools/parse-cwd
       populate-files: file:apps/populate-files/populate-files(@biomejs/biome@2.6.4)(eslint@10.14.0(supports-color@8.1.1))(prettier@3.9.10)
       yaml: 2.9.1
@@ -18897,7 +18897,7 @@ snapshots:
     dependencies:
       ci-info: 4.4.0
       format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
-      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@10.2.2))
+      generated-signature: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@10.2.2))
       parse-cwd: file:tools/parse-cwd
       uint8array-extras: 1.6.0
       unknown-error: file:tools/unknown-error
@@ -18910,7 +18910,7 @@ snapshots:
     dependencies:
       ci-info: 4.4.0
       format-file: file:tools/format-file(@biomejs/biome@2.6.4)(prettier@3.9.10)
-      generated-signature: file:tools/generated-signature/generated-signature(eslint@10.14.0(supports-color@8.1.1))
+      generated-signature: file:tools/generated-signature/ts(eslint@10.14.0(supports-color@8.1.1))
       parse-cwd: file:tools/parse-cwd
       uint8array-extras: 1.6.0
       unknown-error: file:tools/unknown-error

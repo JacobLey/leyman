@@ -2,7 +2,7 @@
 
 Go implementation of [populate-files](../populate-files/), tested against the shared [test vectors](../test-vectors/).
 
-It writes generated files and keeps them in sync, with the same rules as the TypeScript package: a check fails on files that are out of date, signed files keep their manual sections and refuse to overwrite hand edits, and a manifest records the generated files so stale ones can be cleaned. It signs with the [Go implementation of generated-signature](../../../tools/generated-signature/go-impl/), so the files and manifests it writes are read the same way by the TypeScript tools.
+It writes generated files and keeps them in sync, with the same rules as the TypeScript package: a check fails on files that are out of date, signed files keep their manual sections and refuse to overwrite hand edits, and a manifest records the generated files so stale ones can be cleaned. It signs with the [Go implementation of generated-signature](../../../tools/generated-signature/go/), so the files and manifests it writes are read the same way by the TypeScript tools.
 
 ```go
 import populatefiles "github.com/JacobLey/leyman/apps/populate-files/go-impl"

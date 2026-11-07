@@ -7,7 +7,7 @@ import (
 	"slices"
 	"testing"
 
-	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 	testvectors "github.com/JacobLey/leyman/tools/generated-signature/test-vectors"
 )
 

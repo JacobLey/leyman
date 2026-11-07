@@ -11,7 +11,7 @@
   "repository": {
     "type": "git",
     "url": "git+https://github.com/JacobLey/leyman.git",
-    "directory": "tools/generated-signature/generated-signature"
+    "directory": "tools/generated-signature/ts"
   },
   "homepage": "https://jacobley.github.io/leyman/packages/generated-signature/",
   "bugs": {

@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
 // byteOrderMark is dropped from an existing file's text, as JavaScript's TextDecoder drops it.

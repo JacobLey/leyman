@@ -1,8 +1,8 @@
 # generated-signature-test-vectors
 
-Test vectors shared by every [generated-signature](../generated-signature/) implementation.
+Test vectors shared by every [generated-signature](../ts/) implementation.
 
-Each implementation depends on this package, through its own package manager, and asserts that it produces exactly these signatures, sections, hashes and manifests. So a file that the TypeScript package signs, merges or lists in a manifest is read the same way by the [Go implementation](../go-impl/).
+Each implementation depends on this package, through its own package manager, and asserts that it produces exactly these signatures, sections, hashes and manifests. So a file that the TypeScript package signs, merges or lists in a manifest is read the same way by the [Go implementation](../go/).
 
 ```ts
 import testVectors from '@leyman/generated-signature-test-vectors/test-vectors.json' with { type: 'json' };
@@ -16,7 +16,7 @@ import testvectors "github.com/JacobLey/leyman/tools/generated-signature/test-ve
 json.Unmarshal(testvectors.JSON, &vectors)
 ```
 
-The module is not published, so require it with a `replace` pointing at this directory (see the [Go implementation](../go-impl/go.mod)). Implementations in other languages can read [`data/test-vectors.json`](./data/test-vectors.json) directly.
+The module is not published, so require it with a `replace` pointing at this directory (see the [Go implementation](../go/go.mod)). Implementations in other languages can read [`data/test-vectors.json`](./data/test-vectors.json) directly.
 
 ## Format
 

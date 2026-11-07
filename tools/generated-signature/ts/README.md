@@ -5,7 +5,7 @@
 Sign generated files so hand edits are detected, while keeping manual sections editable.
 
 [![npm package](https://badge.fury.io/js/generated-signature.svg)](https://www.npmjs.com/package/generated-signature)
-[![License](https://img.shields.io/npm/l/generated-signature.svg)](https://github.com/JacobLey/leyman/blob/main/tools/generated-signature/generated-signature/LICENSE)
+[![License](https://img.shields.io/npm/l/generated-signature.svg)](https://github.com/JacobLey/leyman/blob/main/tools/generated-signature/ts/LICENSE)
 
 </div>
 

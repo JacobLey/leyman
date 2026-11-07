@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
 func TestErrorMessages(t *testing.T) {

@@ -390,7 +390,7 @@ export const packages: readonly Package[] = [
         title: 'generated-signature',
         category: 'Generated files and monorepo tooling',
         pitch: 'Sign generated files so hand edits are detected by an ESLint rule or a single function call, while manual sections stay editable.',
-        sources: ['tools/generated-signature/generated-signature'],
+        sources: ['tools/generated-signature/ts'],
         pages: [
             { text: 'Overview', link: '' },
             { text: 'Getting started', link: 'getting-started' },

@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"slices"
 
-	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
 // A lookup is a manifest, with its entries by absolute path.

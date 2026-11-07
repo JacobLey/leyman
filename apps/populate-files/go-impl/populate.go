@@ -16,7 +16,7 @@ import (
 	"os"
 	"path/filepath"
 
-	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
 // A File to populate.

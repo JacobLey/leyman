@@ -9,7 +9,7 @@ import (
 	"testing"
 
 	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go-impl"
-	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
 // errCause is the cause of an ownership error.

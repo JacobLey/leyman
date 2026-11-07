@@ -14,7 +14,7 @@ import (
 	"github.com/JacobLey/leyman/apps/genever/go/internal/convert"
 	"github.com/JacobLey/leyman/apps/genever/go/internal/jsonv"
 	populatefiles "github.com/JacobLey/leyman/apps/populate-files/go-impl"
-	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go-impl"
+	generatedsignature "github.com/JacobLey/leyman/tools/generated-signature/go"
 )
 
 // Version is genever's, recorded in manifests so a new version regenerates its files.
