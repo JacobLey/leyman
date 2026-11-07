@@ -134,15 +134,30 @@ jobs:
     needs: test
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
-    # Only the latest main commit's version PR matters
+    # Only the tip of main opens the version PR. Never cancels a running job, which could be the tip's
     concurrency:
       group: version
-      cancel-in-progress: true
+      cancel-in-progress: false
     permissions:
       contents: write
       pull-requests: write
     steps:
+      # Skips the rest once main has moved on, since the newer commit's run of this job does it instead, before or
+      # after this one. Checked inside the concurrency group, which runs one job at a time
+      - name: Check for a newer commit
+        id: tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tip=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq .object.sha)
+          if [ "$tip" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Skipped: main has moved on to $tip, whose run does this instead"
+          fi
+
       - name: Checkout
+        if: ${{ steps.tip.outputs.current == 'true' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           # Changelogs reference the commit that added each changeset
@@ -150,6 +165,7 @@ jobs:
           persist-credentials: false
 
       - name: Apply changesets
+        if: ${{ steps.tip.outputs.current == 'true' }}
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         with:
           version: ${{ env.DAGGER_VERSION }}
@@ -160,6 +176,7 @@ jobs:
 
       # Reuses the versioned result from the previous step
       - name: Describe releases
+        if: ${{ steps.tip.outputs.current == 'true' }}
         id: notes
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         with:
@@ -171,6 +188,7 @@ jobs:
 
       # Does nothing when there are no pending changesets
       - name: Open version PR
+        if: ${{ steps.tip.outputs.current == 'true' }}
         uses: peter-evans/create-pull-request@5f6978faf089d4d20b00c7766989d076bb2fc7f1 # v8.1.1
         with:
           branch: changeset-release/main
@@ -245,7 +263,7 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Deploy every commit in order; a newer one replaces the site when it finishes
+    # Only the tip of main deploys. Runs queue rather than cancel, so a deploy is never cut off halfway
     concurrency:
       group: pages
       cancel-in-progress: false
@@ -258,13 +276,29 @@ jobs:
       name: github-pages
       url: ${{ steps.deploy.outputs.page_url }}
     steps:
+      # Skips the rest once main has moved on, since the newer commit's run of this job does it instead, before or
+      # after this one. Checked inside the concurrency group, which runs one job at a time
+      - name: Check for a newer commit
+        id: tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tip=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq .object.sha)
+          if [ "$tip" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Skipped: main has moved on to $tip, whose run does this instead"
+          fi
+
       - name: Checkout
+        if: ${{ steps.tip.outputs.current == 'true' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       # Reads `test`'s results for this commit from the hosted cache, and never writes to it
       - name: Start Nx cache server
+        if: ${{ steps.tip.outputs.current == 'true' }}
         env:
           NX_CACHE_SERVER_DIR: ${{ env.NX_CACHE_DIR }}
           NX_CACHE_SERVER_MAX_AGE_DAYS: ${{ env.NX_CACHE_MAX_AGE_DAYS }}
@@ -274,6 +308,7 @@ jobs:
           curl --silent --retry 10 --retry-connrefused --retry-delay 1 http://localhost:3000/ > /dev/null
 
       - name: Build docs
+        if: ${{ steps.tip.outputs.current == 'true' }}
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         with:
           version: ${{ env.DAGGER_VERSION }}
@@ -283,11 +318,13 @@ jobs:
           args: docs --nx-cache=tcp://localhost:3000 export --path ./site
 
       - name: Upload site
+        if: ${{ steps.tip.outputs.current == 'true' }}
         uses: actions/upload-pages-artifact@fc324d3547104276b827a68afc52ff2a11cc49c9 # v5.0.0
         with:
           path: ./site
 
       - name: Deploy
+        if: ${{ steps.tip.outputs.current == 'true' }}
         id: deploy
         uses: actions/deploy-pages@368f82528645a54fb793d4d04e342629a3f51346 # v5.0.1
 
@@ -298,21 +335,37 @@ jobs:
     if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && vars.CLOUDFLARE_ACCOUNT_ID != '' }}
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    # Each deploy replaces the last, so only the latest matters
+    # Only the tip of main deploys. Never cancels a running job, which could be the tip's
     concurrency:
       group: nx-cache
-      cancel-in-progress: true
+      cancel-in-progress: false
     # Restricted to main: holds the deploy token, which only ever reaches this job
     environment: nx-cache
     permissions:
       contents: read
     steps:
+      # Skips the rest once main has moved on, since the newer commit's run of this job does it instead, before or
+      # after this one. Checked inside the concurrency group, which runs one job at a time
+      - name: Check for a newer commit
+        id: tip
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tip=$(gh api "repos/${GITHUB_REPOSITORY}/git/ref/heads/main" --jq .object.sha)
+          if [ "$tip" = "$GITHUB_SHA" ]; then
+            echo "current=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::Skipped: main has moved on to $tip, whose run does this instead"
+          fi
+
       - name: Checkout
+        if: ${{ steps.tip.outputs.current == 'true' }}
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
 
       - name: Deploy
+        if: ${{ steps.tip.outputs.current == 'true' }}
         uses: dagger/dagger-for-github@27b130bf0f79a7f6fbbbe0fbca6760dc9bb40a77 # v8.4.1
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
