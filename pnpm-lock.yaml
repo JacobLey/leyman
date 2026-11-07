@@ -2508,6 +2508,9 @@ importers:
       '@leyman/expect':
         specifier: workspace:^
         version: file:leyman/expect
+      '@leyman/framework':
+        specifier: workspace:^
+        version: file:leyman/framework
       '@leyman/nx-plugin':
         specifier: workspace:^
         version: file:leyman/nx-plugin(eslint@10.13.0(supports-color@8.1.1))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))
@@ -5998,6 +6001,11 @@ packages:
   '@leyman/expect@file:leyman/expect':
     resolution: {directory: leyman/expect, type: directory}
     engines: {node: '>=22'}
+
+  '@leyman/framework@file:leyman/framework':
+    resolution: {directory: leyman/framework, type: directory}
+    engines: {node: '>=22.12.0'}
+    hasBin: true
 
   '@leyman/nx-plugin@file:leyman/nx-plugin':
     resolution: {directory: leyman/nx-plugin, type: directory}
@@ -13802,6 +13810,13 @@ snapshots:
       '@types/chai-as-promised': 8.0.2
       chai: 6.3.0
       chai-as-promised: 8.0.2(chai@6.3.0)
+
+  '@leyman/framework@file:leyman/framework':
+    dependencies:
+      entry-script: file:tools/entry-script
+      tinyglobby: 0.2.17
+      yaml: 2.9.1
+      yargs: 18.2.0
 
   '@leyman/nx-plugin@file:leyman/nx-plugin(eslint@10.13.0(supports-color@8.1.1))(nx@23.3.1(patch_hash=aef2c1c308e48d665aa5ae3dcfa0aa95406aaaa2e021d30664f8bf7baac2da9d)(@swc/core@1.16.20(@swc/helpers@0.5.23)))':
     dependencies:

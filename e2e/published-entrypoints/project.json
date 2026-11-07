@@ -5,7 +5,15 @@
     "biome": {},
     "eslint": {},
     "tsc-test": {},
-    "mocha-integration-test": {},
+    "mocha-integration-test": {
+      "inputs": [
+        "test-source",
+        "^dependency-files",
+        "{workspaceRoot}/apps/**/package.json",
+        "{workspaceRoot}/leyman/**/package.json",
+        "{workspaceRoot}/tools/**/package.json"
+      ]
+    },
     "floor-test": {
       "executor": "nx:run-commands",
       "options": {
