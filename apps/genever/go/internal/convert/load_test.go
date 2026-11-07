@@ -50,9 +50,18 @@ func load(t *testing.T, input, baseURI string, options convert.LoadOptions) (any
 		t.Fatal(err)
 	}
 
+	bundle, err := loadBundle(t, value, baseURI, options)
+
+	return bundle.Input, err
+}
+
+// loadBundle loads what an input, read from baseURI, references.
+func loadBundle(t *testing.T, input jsonv.Value, baseURI string, options convert.LoadOptions) (convert.Bundle, error) {
+	t.Helper()
+
 	options.BaseURI = baseURI
 
-	return convert.Load(t.Context(), value, options) //nolint:wrapcheck // The error under test
+	return convert.Load(t.Context(), input, options) //nolint:wrapcheck // The error under test
 }
 
 func noLoading() convert.LoadOptions {
@@ -540,4 +549,170 @@ func TestLoadBodyFails(t *testing.T) {
 
 	_, err := load(t, `{"$ref": "https://example.com/a.json"}`, "file:///root.json", fetching(client))
 	expectLoadError(t, err, "#/$ref", "file:///root.json", "connection reset")
+}
+
+// loadAndConvert loads what an input references, and converts it with the files loaded beside it, in strict mode:
+// as a document if it is one. It returns the types' names and their keys.
+func loadAndConvert(t *testing.T, input, baseURI string) map[string]string {
+	t.Helper()
+
+	bundle, err := loadBundle(t, mustParse(t, input), baseURI, noLoading())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	dialect, isDocument, _ := convert.DocumentDialect(bundle.Input)
+	options := strict()
+	options.BaseURI = baseURI
+	options.Dialect = dialect
+	options.Files = bundle.Files
+
+	var types []convert.NamedType
+	if isDocument {
+		types, err = convert.Document(bundle.Input, options)
+	} else {
+		types, err = convert.Convert(bundle.Input, rootName, options)
+	}
+
+	if err != nil {
+		t.Fatalf("%v\n%s", err, jsonv.Stringify(bundle.Input))
+	}
+
+	result := map[string]string{}
+	for _, named := range types {
+		result[named.Name] = named.Type.Key()
+	}
+
+	return result
+}
+
+func TestLoadIntoDocument(t *testing.T) {
+	t.Parallel()
+
+	base := writeFiles(t, map[string]string{
+		"address.json": `{"type": "object", "properties": {"city": {"type": "string"}}}`,
+		"id.yaml":      "type: string\n",
+	})
+
+	types := loadAndConvert(t, `{
+		"openapi": "3.1.0",
+		"paths": {"/a": {"get": {"responses": {"200": {"content": {"application/json": {
+			"schema": {"$ref": "id.yaml"}
+		}}}}}}},
+		"components": {"schemas": {"User": {"type": "object", "properties": {"home": {"$ref": "address.json"}}}}}
+	}`, base+"api.json")
+	expectTypeNames(t, types, "User", "Address", "Id")
+
+	// Given components to embed in
+	types = loadAndConvert(t, `{"openapi": "3.0.3", "paths": {"/a": {"parameters": [
+		{"name": "a", "in": "query", "schema": {"$ref": "address.json"}}
+	]}}}`, base+"api.json")
+	expectTypeNames(t, types, "Address")
+
+	for text, kind := range map[string]error{
+		`{"openapi": "3.1.0", "components": []}`: gerr.ErrInvalidSchema,
+		`{"openapi": "4.0.0"}`:                   gerr.ErrUnsupported,
+	} {
+		if _, err := load(t, text, base+"api.json", noLoading()); !errors.Is(err, kind) {
+			t.Errorf("%s: got %v", text, err)
+		}
+	}
+}
+
+// documentFiles are an OpenAPI 3.0 document of pets, the schema it refers to, and documents that can't be loaded.
+func documentFiles() map[string]string {
+	return map[string]string{
+		"pets.yaml": `openapi: 3.0.3
+paths:
+  /pets:
+    get:
+      responses:
+        "200":
+          content:
+            application/json:
+              schema: { type: array, items: { $ref: "#/components/schemas/Pet" } }
+components:
+  schemas:
+    Pet:
+      type: object
+      properties:
+        tag: { $ref: "#/components/schemas/Tag" }
+        owner: { $ref: "owner.json" }
+        nick: { type: string, nullable: true }
+    Tag: { type: string }
+`,
+		"owner.json": `{"title": "Owner", "type": "object", "properties": {"name": {"type": "string"}}}`,
+		"v4.json":    `{"openapi": "4.0.0"}`,
+		"ids.json": `{"openapi": "3.1.0",
+			"paths": {"/x": {"get": {"responses": {
+				"200": {"content": {"a/j": {"schema": {"$id": 1}}}},
+				"201": {"content": {"a/j": {"schema": {"$id": "dup"}}}}
+			}}}},
+			"components": {"schemas": {"A": {"$id": "dup"}}}}`,
+		"twice.json": `{"openapi": "3.1.0", "components": {"schemas": {"A": {"$id": "a"}, "B": {"$id": "a"}}}}`,
+	}
+}
+
+func TestLoadDocuments(t *testing.T) {
+	t.Parallel()
+
+	base := writeFiles(t, documentFiles())
+
+	types := loadAndConvert(t, `{
+		"openapi": "3.1.0",
+		"components": {"schemas": {"Shop": {"type": "object", "properties": {
+			"pet": {"$ref": "pets.yaml#/components/schemas/Pet"},
+			"again": {"$ref": "pets.yaml#/components/schemas/Pet"},
+			"list": {"$ref": "pets.yaml#/paths/~1pets/get/responses/200/content/application~1json/schema"},
+			"inside": {"$ref": "pets.yaml#/components/schemas/Pet/properties/nick"}
+		}}}}
+	}`, base+"api.json")
+
+	// Pet's nick is nullable in the 3.0 file, though not in the input's 3.1
+	expectTypeNames(t, types, "Shop", "Pet", "Tag", "Owner",
+		"PathsPetsGetResponses200ContentApplicationJsonSchema", "ComponentsSchemasPetPropertiesNick")
+}
+
+func TestLoadDocumentFailures(t *testing.T) {
+	t.Parallel()
+
+	base := writeFiles(t, documentFiles())
+
+	// A reference to an anchor, or to nothing, fails where it's used
+	bundle, err := loadBundle(t, mustParse(t, `{"openapi": "3.1.0", "components": {"schemas": {"A": {"anyOf": [
+		{"$ref": "pets.yaml#name"}, {"$ref": "pets.yaml#/components/schemas/Missing"}
+	]}}}}`), base+"api.json", noLoading())
+	if err != nil || len(bundle.Files) != 1 {
+		t.Errorf("got %v, %v", bundle.Files, err)
+	}
+
+	// A schema of a loaded document is indexed as it is found
+	_, err = load(t, `{"anyOf": [{"$ref": "ids.json#/components/schemas/A"},
+		{"$ref": "ids.json#/paths/~1x/get/responses/200/content/a~1j/schema"}]}`, base+"api.json", noLoading())
+	if !errors.Is(err, gerr.ErrInvalidSchema) {
+		t.Errorf("got %v", err)
+	}
+
+	// Found apart, each is fine, but together they declare one URI twice
+	bundle, err = loadBundle(t, mustParse(t, `{"anyOf": [{"$ref": "ids.json#/components/schemas/A"},
+		{"$ref": "ids.json#/paths/~1x/get/responses/201/content/a~1j/schema"}]}`), base+"api.json", noLoading())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	options := strict()
+	options.BaseURI = base + "api.json"
+	options.Files = bundle.Files
+
+	if _, err := convert.Convert(bundle.Input, rootName, options); !errors.Is(err, gerr.ErrInvalidSchema) {
+		t.Errorf("got %v", err)
+	}
+
+	_, err = load(t, `{"$ref": "v4.json"}`, base+"api.json", noLoading())
+	expectLoadError(t, err, "#/$ref", base+"api.json", "Only OpenAPI 3.0 and 3.1 documents are supported")
+
+	if _, err = load(t, `{"$ref": "twice.json#/components/schemas/A"}`, base+"api.json", noLoading()); !errors.Is(
+		err, gerr.ErrInvalidSchema) {
+		t.Errorf("got %v", err)
+	}
 }

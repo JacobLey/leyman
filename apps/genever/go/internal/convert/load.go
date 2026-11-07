@@ -74,38 +74,66 @@ type loader struct {
 	// resources are the loaded schemas, to embed.
 	resources []*jsonv.Object
 	failures  []loadFailure
+	// files are the OpenAPI documents loaded, by the URI they were referenced by.
+	files map[string]*loadingFile
 	// pending are the references still to load, as a stack: the last is next. Each file's are pushed in reverse, so
 	// references load in the order they appear, each followed by what it refers to.
 	pending        []pendingReference
 	isInputDraft04 bool
 }
 
-// Load loads every file and URL an input schema references, and everything they reference in turn.
+// A loadingFile is an OpenAPI document being loaded.
+type loadingFile struct {
+	OpenAPIFile
+
+	// walked are the targets whose schemas have been found, by JSON Pointer.
+	walked map[string]bool
+}
+
+// A Bundle is an input, and every file and URL it references.
+type Bundle struct {
+	// Input is the input, with every schema it references embedded.
+	Input jsonv.Value
+	// Files are the OpenAPI documents the input references, by URI, for Options.Files.
+	Files map[string]OpenAPIFile
+}
+
+// Load loads every file and URL an input references, and everything they reference in turn. The input is a schema, or
+// an OpenAPI document, whose schemas' references are loaded.
 //
-// Loaded schemas are embedded in the input's `$defs` with an absolute `$id`, named after their `title`, or else their
-// file name. References are left as they are, and resolve to the embedded schemas by URI, as in the bundling process of
-// JSON Schema 2020-12. The input is returned as it is if it references nothing to load.
+// Loaded schemas are embedded in the input's `$defs` (or an OpenAPI document's `components.schemas`) with an absolute
+// `$id`, named after their `title`, or else their file name. References are left as they are, and resolve to the
+// embedded schemas by URI, as in the bundling process of JSON Schema 2020-12. The input is returned as it is if it
+// references nothing to load.
+//
+// Another OpenAPI document isn't a schema, so isn't embedded: it's returned beside the input, with the schemas of it
+// that are used, which are its components' and those referenced in it.
 //
 // A file or URL that can't be loaded fails with ErrLoad, unless another loaded schema declares its URI with `$id`. A
 // loaded schema that isn't valid fails as the input would, with a pointer into that schema. An allowed host that is
 // not a host fails with ErrHost.
-func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (any, error) {
+func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (Bundle, error) {
+	none := Bundle{Input: nil, Files: nil}
+
 	isAllowed, err := fetchFilter(options.Fetch, options.FetchHosts)
 	if err != nil {
-		return nil, err
+		return none, err
+	}
+
+	_, isDocument, err := DocumentDialect(input)
+	if err != nil {
+		return none, err
 	}
 
 	client := options.Client
 	if client == nil {
-		client = &http.Client{ //nolint:exhaustruct_v5 // Defaults, but for redirects
-			CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
-		}
+		client = noRedirects()
 	}
 
 	schema, isSchema := input.(*jsonv.Object)
 	isInputDraft04 := false
 
-	if isSchema {
+	if isSchema && !isDocument {
 		isInputDraft04, _ = declaresDraft04(schema)
 	}
 
@@ -113,25 +141,53 @@ func Load(ctx context.Context, input jsonv.Value, options LoadOptions) (any, err
 		ctx: ctx, options: options, isAllowed: isAllowed, client: client,
 		known: map[string]bool{}, attempted: map[string]bool{}, isInputDraft04: isInputDraft04,
 		// Found as references are loaded
-		resources: nil, failures: nil, pending: nil,
+		resources: nil, failures: nil, files: map[string]*loadingFile{}, pending: nil,
 	}
 
-	index, err := indexDocument(input, options.BaseURI, false)
+	index, err := indexInput(input, isDocument, options.BaseURI)
 	if err != nil {
-		return nil, err
+		return none, err
 	}
 
 	load.queue(index, options.BaseURI)
 
 	if err := load.run(); err != nil {
-		return nil, err
+		return none, err
+	}
+
+	files := map[string]OpenAPIFile{}
+	for uri, file := range load.files {
+		files[uri] = file.OpenAPIFile
 	}
 
 	if len(load.resources) == 0 {
-		return input, nil
+		return Bundle{Input: input, Files: files}, nil
 	}
 
-	return embed(schema, load.resources), nil
+	return Bundle{Input: embed(schema, load.resources, isDocument), Files: files}, nil
+}
+
+// noRedirects is a client that doesn't follow redirects.
+func noRedirects() *http.Client {
+	return &http.Client{ //nolint:exhaustruct_v5 // Defaults, but for redirects
+		CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse },
+	}
+}
+
+// indexInput indexes the schemas of an input: itself, or an OpenAPI document's, whose components must be an object to
+// embed schemas in.
+func indexInput(input jsonv.Value, isDocument bool, baseURI string) (documentIndex, error) {
+	if !isDocument {
+		return indexDocument(input, baseURI, false)
+	}
+
+	if components, ok := input.(*jsonv.Object).Get("components"); ok { //nolint:forcetypeassert // A document's an object
+		if _, err := readObject(components, "#/components"); err != nil {
+			return documentIndex{}, err
+		}
+	}
+
+	return indexSchemas(input, documentSchemas(input, true), baseURI, false)
 }
 
 // queue adds the references of a file's schemas to load.
@@ -149,6 +205,14 @@ func (l *loader) run() error {
 	for len(l.pending) > 0 {
 		reference := l.pending[len(l.pending)-1]
 		l.pending = l.pending[:len(l.pending)-1]
+
+		if file, ok := l.files[reference.uri]; ok {
+			if err := l.walk(file, reference); err != nil {
+				return err
+			}
+
+			continue
+		}
 
 		if l.known[reference.uri] || l.attempted[reference.uri] {
 			continue
@@ -201,6 +265,17 @@ func (l *loader) load(reference pendingReference) error {
 		return nil
 	}
 
+	dialect, isDocument, err := DocumentDialect(parsed)
+	if err != nil {
+		fail(unloadable{cause: err, reason: err.Error()})
+
+		return nil //nolint:nilerr // A failure, only reported if no other schema declares the URI
+	}
+
+	if isDocument {
+		return l.loadDocument(reference, parsed, dialect)
+	}
+
 	resource, why := schemaResource(parsed, readURI, l.isInputDraft04)
 	if why != nil {
 		fail(*why)
@@ -233,6 +308,61 @@ func (l *loader) load(reference pendingReference) error {
 	// Referred to by its URL, even if its `$id` is another
 	l.known[reference.uri] = true
 	l.queue(index, reference.uri)
+
+	return nil
+}
+
+// loadDocument adds a loaded OpenAPI document to the files, with its components' schemas, and the schema the
+// reference refers to. Its references resolve against the URI it was referenced by, even if redirected, so it has one
+// URI.
+func (l *loader) loadDocument(reference pendingReference, document jsonv.Value, dialect Dialect) error {
+	file := &loadingFile{
+		OpenAPIFile: OpenAPIFile{document: document, schemas: nil, dialect: dialect},
+		walked:      map[string]bool{},
+	}
+	l.files[reference.uri] = file
+	l.known[reference.uri] = true
+
+	if err := l.addSchemas(reference.uri, file, documentSchemas(document, false)); err != nil {
+		return err
+	}
+
+	return l.walk(file, reference)
+}
+
+// walk adds the schema a reference refers to in an OpenAPI document. A reference to nothing, or to an anchor, is
+// reported where it's used, if it doesn't resolve.
+func (l *loader) walk(file *loadingFile, reference pendingReference) error {
+	if !isPointer(reference.fragment) {
+		return nil
+	}
+
+	found, ok := followPointer(target{schema: file.document, pointer: "#"}, reference.fragment)
+	if !ok || file.walked[found.pointer] {
+		return nil
+	}
+
+	file.walked[found.pointer] = true
+
+	return l.addSchemas(reference.uri, file, []target{found})
+}
+
+// addSchemas adds schemas found in an OpenAPI document, and queues their references. One inside a schema already found
+// is indexed with it, under the right base URI.
+func (l *loader) addSchemas(uri string, file *loadingFile, schemas []target) error {
+	added := slices.DeleteFunc(schemas, func(schema target) bool {
+		return slices.ContainsFunc(file.schemas, func(found target) bool {
+			return schema.pointer == found.pointer || strings.HasPrefix(schema.pointer, found.pointer+"/")
+		})
+	})
+	file.schemas = append(file.schemas, added...)
+
+	index, err := indexSchemas(file.document, added, uri, false)
+	if err != nil {
+		return err
+	}
+
+	l.queue(index, uri)
 
 	return nil
 }
@@ -417,11 +547,23 @@ func cloneObject(object *jsonv.Object) *jsonv.Object {
 	return clone
 }
 
-// embed returns a copy of the input with the resources added to its `$defs`.
-func embed(input *jsonv.Object, resources []*jsonv.Object) *jsonv.Object {
+// embed returns a copy of the input with the resources added to its `$defs`, or an OpenAPI document's
+// `components.schemas`.
+func embed(input *jsonv.Object, resources []*jsonv.Object, isDocument bool) *jsonv.Object {
+	parent, key := input, keywordDefs
+
+	if isDocument {
+		parent, key = jsonv.NewObject(), "schemas"
+
+		if components, ok := input.Get("components"); ok {
+			// Load checked its components are an object
+			parent = cloneObject(components.(*jsonv.Object)) //nolint:forcetypeassert // Checked by Load
+		}
+	}
+
 	container := jsonv.NewObject()
 
-	existing, _ := input.Get("$defs")
+	existing, _ := parent.Get(key)
 	if defs, ok := existing.(*jsonv.Object); ok {
 		container = cloneObject(defs)
 	}
@@ -437,8 +579,14 @@ func embed(input *jsonv.Object, resources []*jsonv.Object) *jsonv.Object {
 		container.Set(name, resource)
 	}
 
+	parent.Set(key, container)
+
+	if !isDocument {
+		return parent
+	}
+
 	bundled := cloneObject(input)
-	bundled.Set("$defs", container)
+	bundled.Set("components", parent)
 
 	return bundled
 }

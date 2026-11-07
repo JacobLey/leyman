@@ -20,6 +20,7 @@ const (
 	keywordOneOf            = "oneOf"
 	keywordAnyOf            = "anyOf"
 	keywordAllOf            = "allOf"
+	keywordDefs             = "$defs"
 	keywordDependencies     = "dependencies"
 	keywordDependentSchemas = "dependentSchemas"
 	keywordElse             = "else"

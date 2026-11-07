@@ -1,6 +1,7 @@
 package convert
 
 import (
+	"maps"
 	"net/url"
 	"regexp"
 	"slices"
@@ -28,7 +29,7 @@ var schemaArrayKeywords = []string{keywordAllOf, keywordAnyOf, keywordItems, key
 //
 //nolint:gochecknoglobals // Never changed
 var schemaMapKeywords = []string{
-	"$defs", "definitions", keywordDependencies, keywordDependentSchemas, "patternProperties", "properties",
+	keywordDefs, "definitions", keywordDependencies, keywordDependentSchemas, "patternProperties", "properties",
 }
 
 var (
@@ -200,6 +201,23 @@ func (x *indexer) visit(value jsonv.Value, pointer, parentBaseURI string, isPare
 	return nil
 }
 
+// visitFile indexes the schemas of an OpenAPI file at uri, with pointers starting with the URI.
+func (x *indexer) visitFile(uri string, file OpenAPIFile) error {
+	pointer := uri + "#"
+	// Load never loads a file whose URI another schema declares
+	x.index.resources[uri] = target{schema: file.document, pointer: pointer}
+
+	x.index.baseURIs[pointer] = uri
+
+	for _, schema := range file.schemas {
+		if err := x.visit(schema.schema, uri+schema.pointer, uri, false); err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
 // addReference records a schema's `$ref`, unless an earlier `$ref` refers to the same URI. An invalid `$ref` is
 // reported where it's used.
 func (x *indexer) addReference(schema *jsonv.Object, pointer, baseURI string) {
@@ -341,6 +359,14 @@ func indexDocument(root jsonv.Value, baseURI string, isDraft04 bool) (documentIn
 // indexSchemas indexes the schemas of a document read from baseURI: the document itself, or those of an OpenAPI
 // document, which is not a schema.
 func indexSchemas(root jsonv.Value, schemas []target, baseURI string, isDraft04 bool) (documentIndex, error) {
+	return indexFiles(root, schemas, nil, baseURI, isDraft04)
+}
+
+// indexFiles indexes the schemas of a document, as indexSchemas does, and those of the OpenAPI files it refers to,
+// under their URIs.
+func indexFiles(
+	root jsonv.Value, schemas []target, files map[string]OpenAPIFile, baseURI string, isDraft04 bool,
+) (documentIndex, error) {
 	documentURI := documentURIOf(root, baseURI)
 
 	walker := &indexer{index: documentIndex{
@@ -354,6 +380,12 @@ func indexSchemas(root jsonv.Value, schemas []target, baseURI string, isDraft04 
 
 	for _, schema := range schemas {
 		if err := walker.visit(schema.schema, schema.pointer, documentURI, isDraft04); err != nil {
+			return documentIndex{}, err //nolint:exhaustruct // Unused with an error
+		}
+	}
+
+	for _, uri := range slices.Sorted(maps.Keys(files)) {
+		if err := walker.visitFile(uri, files[uri]); err != nil {
 			return documentIndex{}, err //nolint:exhaustruct // Unused with an error
 		}
 	}

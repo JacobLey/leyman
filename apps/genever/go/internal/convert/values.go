@@ -47,7 +47,7 @@ func numberBound(inclusive, exclusive bound, direction float64) rangeBound {
 // number is the type of a schema's numbers, or integers.
 func (c *converter) number(schema *jsonv.Object, pointer string, valueType jsonType) (*model.Type, error) {
 	// OpenAPI 3.0 and draft-04 mark `minimum` and `maximum` exclusive with booleans
-	isBooleanAllowed := c.options.Dialect == OpenAPI30 || c.index.isDraft04(pointer)
+	isBooleanAllowed := c.dialectOf(pointer) == OpenAPI30 || c.index.isDraft04(pointer)
 	bounds := map[string]bound{}
 
 	for _, keyword := range []string{keywordMinimum, keywordExclusiveMinimum, keywordMaximum, keywordExclusiveMaximum} {
@@ -338,7 +338,7 @@ func (c *converter) types(schema *jsonv.Object, pointer string, inherited scope)
 
 // isKnownKeyword reports whether a keyword that applies to every type is known, in the schema's dialect.
 func (c *converter) isKnownKeyword(keyword, pointer string) bool {
-	dialect := c.options.Dialect
+	dialect := c.dialectOf(pointer)
 
 	return strings.HasPrefix(keyword, "x-") ||
 		// Draft-04 names a schema's resource with `id`

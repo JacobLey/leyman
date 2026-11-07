@@ -97,7 +97,8 @@ func generate(root jsonv.Value, options Options) ([]byte, error) {
 		dialect = documentDialect
 	}
 
-	convertOptions := convert.Options{BaseURI: baseURI, Dialect: dialect, Strict: !options.NoStrict}
+	// Without loading, there are no files
+	convertOptions := convert.Options{BaseURI: baseURI, Dialect: dialect, Files: nil, Strict: !options.NoStrict}
 
 	var types []convert.NamedType
 	if isDocument {

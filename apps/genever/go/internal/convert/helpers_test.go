@@ -12,7 +12,7 @@ import (
 
 // strict are the default options.
 func strict() convert.Options {
-	return convert.Options{BaseURI: convert.DefaultBaseURI, Dialect: convert.Draft202012, Strict: true}
+	return convert.Options{BaseURI: convert.DefaultBaseURI, Dialect: convert.Draft202012, Files: nil, Strict: true}
 }
 
 // lax are the default options, outside strict mode.

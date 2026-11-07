@@ -53,7 +53,7 @@ type converter struct {
 // the document, and any other schema targeted by a `$ref`, becomes a named type, and everything else is inlined. It
 // returns the root (named rootName) first, then the rest sorted by name, by byte. The error is a *gerr.Error.
 func Convert(root jsonv.Value, rootName string, options Options) ([]NamedType, error) {
-	index, err := indexDocument(root, options.BaseURI, false)
+	index, err := indexFiles(root, []target{{schema: root, pointer: "#"}}, options.Files, options.BaseURI, false)
 	if err != nil {
 		return nil, err
 	}
@@ -69,7 +69,7 @@ func Convert(root jsonv.Value, rootName string, options Options) ([]NamedType, e
 	}
 	conv.register("#", rootName, root)
 
-	for _, container := range []string{"$defs", "definitions"} {
+	for _, container := range []string{keywordDefs, "definitions"} {
 		if err := conv.registerContainer(container); err != nil {
 			return nil, err
 		}
@@ -113,7 +113,7 @@ func Document(document jsonv.Value, options Options) ([]NamedType, error) {
 	}
 
 	// A document is not a schema, but each of its components is
-	conv.index, err = indexSchemas(document, documentSchemas(document), options.BaseURI, false)
+	conv.index, err = indexFiles(document, documentSchemas(document, true), options.Files, options.BaseURI, false)
 	if err != nil {
 		return nil, err
 	}
@@ -128,6 +128,17 @@ func Document(document jsonv.Value, options Options) ([]NamedType, error) {
 	})
 
 	return types, nil
+}
+
+// dialectOf is the dialect of the schema at a JSON Pointer: the document's, or that of the file it is in.
+func (c *converter) dialectOf(pointer string) Dialect {
+	if strings.HasPrefix(pointer, "#") {
+		return c.options.Dialect
+	}
+
+	uri, _, _ := strings.Cut(pointer, "#")
+
+	return c.options.Files[uri].dialect
 }
 
 // child reads a key of an object that, if present, must be an object, and returns it, or nil if absent.
@@ -537,7 +548,7 @@ func (c *converter) not(converted *model.Type, value jsonv.Value, pointer string
 // nullable applies OpenAPI 3.0 `nullable`.
 func (c *converter) nullable(schema *jsonv.Object, pointer string, converted *model.Type) (*model.Type, error) {
 	value, ok := schema.Get("nullable")
-	if c.options.Dialect != OpenAPI30 || !ok {
+	if c.dialectOf(pointer) != OpenAPI30 || !ok {
 		return converted, nil
 	}
 

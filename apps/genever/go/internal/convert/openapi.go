@@ -80,9 +80,9 @@ const (
 	kindPathItem
 )
 
-// documentSchemas lists the schemas of an OpenAPI document, in its components and its operations: component schemas
-// first. A reference object has none of its own.
-func documentSchemas(document jsonv.Value) []target {
+// documentSchemas lists the schemas of an OpenAPI document, in its components, and its operations if includePaths:
+// component schemas first. A reference object has none of its own.
+func documentSchemas(document jsonv.Value, includePaths bool) []target {
 	root, _ := document.(*jsonv.Object)
 	components, _ := root.Get("components")
 	componentsObject, _ := components.(*jsonv.Object)
@@ -108,8 +108,14 @@ func documentSchemas(document jsonv.Value) []target {
 		}
 	}
 
-	paths, _ := root.Get("paths")
-	for _, item := range append(component("pathItems"), members(paths, "#/paths")...) {
+	items := component("pathItems")
+
+	if includePaths {
+		paths, _ := root.Get("paths")
+		items = append(items, members(paths, "#/paths")...)
+	}
+
+	for _, item := range items {
 		schemas = collectSchemas(item, kindPathItem, schemas)
 	}
 

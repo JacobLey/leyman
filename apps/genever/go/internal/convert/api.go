@@ -6,7 +6,10 @@
 // doesn't read every ECMAScript pattern.
 package convert
 
-import "github.com/JacobLey/leyman/apps/genever/go/internal/model"
+import (
+	"github.com/JacobLey/leyman/apps/genever/go/internal/jsonv"
+	"github.com/JacobLey/leyman/apps/genever/go/internal/model"
+)
 
 // A Dialect is the flavor of JSON Schema a schema is written in.
 type Dialect int
@@ -27,8 +30,20 @@ type Options struct {
 	BaseURI string
 	// Dialect decides the keywords allowed.
 	Dialect Dialect
+	// Files are the OpenAPI documents, and files of OpenAPI objects, the document refers to, by URI, as Load returns
+	// them. Their schemas are in their own dialect.
+	Files map[string]OpenAPIFile
 	// Strict fails on schemas that are valid but likely mistakes.
 	Strict bool
+}
+
+// An OpenAPIFile is an OpenAPI document, or a file of OpenAPI objects, that a document refers to.
+type OpenAPIFile struct {
+	document jsonv.Value
+	// schemas are the schemas of it that are used, with JSON Pointers from its root.
+	schemas []target
+	// dialect is its schemas': a document's own, or else that of the document that refers to it.
+	dialect Dialect
 }
 
 // A NamedType is a type to generate, with its name.
