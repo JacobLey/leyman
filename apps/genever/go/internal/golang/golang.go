@@ -9,6 +9,7 @@ package golang
 import (
 	"fmt"
 	"go/format"
+	"go/token"
 	"slices"
 	"sort"
 	"strings"
@@ -38,7 +39,16 @@ type generator struct {
 	markers map[string][]string
 	// resolving guards against following a cycle of references.
 	resolving map[string]bool
-	decls     []string
+	// aliasTargets are the types named types written as `type A = B` name.
+	aliasTargets map[string]string
+	// holds are the fields that hold a named type by value, written as placeholders until every type is declared.
+	holds []hold
+	decls []string
+}
+
+// hold is a struct's field that holds a named type by value.
+type hold struct {
+	owner, goType string
 }
 
 // Generate writes Go source for the named types, in package pkg, formatted as gofmt does.
@@ -52,7 +62,10 @@ func Generate(types []convert.NamedType, pkg string) ([]byte, error) {
 		defined:   map[string]bool{},
 		markers:   map[string][]string{},
 		resolving: map[string]bool{},
-		decls:     nil,
+		// Filled as types are declared
+		aliasTargets: map[string]string{},
+		holds:        nil,
+		decls:        nil,
 	}
 
 	for _, named := range types {
@@ -113,6 +126,8 @@ func (g *generator) file(pkg string) string {
 		body.WriteString(decl)
 		body.WriteString("\n\n")
 	}
+
+	g.breakCycles(&body)
 
 	for _, name := range sortedKeys(g.markers) {
 		for _, method := range g.markers[name] {
@@ -228,6 +243,7 @@ func (g *generator) declareNamed(name string, doc *model.Doc, typ *model.Type) {
 
 		g.decls = append(g.decls, docComment(doc)+fmt.Sprintf("type %s = %s", name, g.use(helperName)))
 	case typ.Kind == model.KindReference:
+		g.aliasTargets[name] = typ.Name
 		g.decls = append(g.decls, docComment(doc)+fmt.Sprintf("type %s = %s", name, typ.Name))
 	default:
 		g.declareDefined(name, doc, typ)
@@ -543,10 +559,12 @@ type field struct {
 	doc      *model.Doc
 }
 
-// fieldOf returns the field of a property or tuple item: required, it is the type (a pointer if it may be null);
-// optional, a pointer, or Optional where a pointer can't tell an absent value from null.
-func (g *generator) fieldOf(name, jsonKey string, typ *model.Type, optional bool, hint string) field {
+// fieldOf returns the field of a property or tuple item of struct owner: required, it is the type (a pointer if it may
+// be null, or if the type holds the owner by value); optional, a pointer, or Optional where a pointer can't tell an
+// absent value from null.
+func (g *generator) fieldOf(owner, name, jsonKey string, typ *model.Type, optional bool) field {
 	result := field{name: name, goType: "", jsonKey: jsonKey, omit: "", presence: "", doc: nil}
+	hint := owner + name
 
 	switch {
 	case typ.Is(model.Unknown):
@@ -556,7 +574,7 @@ func (g *generator) fieldOf(name, jsonKey string, typ *model.Type, optional bool
 			result.presence = "s." + name + " != nil"
 		}
 	case !optional:
-		result.goType = g.goType(typ, hint)
+		result.goType = g.hold(owner, g.goType(typ, hint))
 	case g.includesNull(typ):
 		result.goType = fmt.Sprintf("%s[%s]", g.use(helperOptional), g.goType(typ, hint))
 		result.omit = "omitzero"
@@ -583,7 +601,7 @@ func (g *generator) declareObject(name string, doc *model.Doc, properties []mode
 		}
 
 		fieldName := fieldNames.reserve(Identifier(property.Name, "Field"))
-		result := g.fieldOf(fieldName, property.Name, property.Type, property.Optional, name+fieldName)
+		result := g.fieldOf(name, fieldName, property.Name, property.Type, property.Optional)
 		result.doc = property.Doc
 		fields = append(fields, result)
 	}
@@ -655,6 +673,77 @@ func (s *%[1]s) UnmarshalJSON(data []byte) error {
 }`, name, encoding, g.use(helperWith), g.use(helperExtra), extraType, joinPrefixed(known))
 }
 
+// hold returns the type of a required field of struct owner, as a placeholder breakCycles replaces when the type is
+// named, as only once every type is declared is it known whether the type holds the owner in turn.
+func (g *generator) hold(owner, goType string) string {
+	if !token.IsIdentifier(goType) {
+		return goType
+	}
+
+	g.holds = append(g.holds, hold{owner: owner, goType: goType})
+
+	return holdMark(len(g.holds) - 1)
+}
+
+func holdMark(index int) string {
+	return fmt.Sprintf("\x00%d\x00", index)
+}
+
+// breakCycles writes the type of each field hold placed, a pointer where the field's type is a named type of the
+// document that holds its struct by value, as Go can't size a struct that contains itself. A type declared for a
+// part of a named type is only held by that part's parent, so every cycle passes through a named type, and every
+// such field of a cycle is a pointer, whatever order the types were declared in.
+func (g *generator) breakCycles(body *strings.Builder) {
+	holds := map[string][]string{}
+	for _, field := range g.holds {
+		holds[field.owner] = append(holds[field.owner], g.unalias(field.goType))
+	}
+
+	// Each placeholder, then its type
+	replacements := make([]string, 0, len(g.holds)+len(g.holds))
+
+	for index, field := range g.holds {
+		goType := field.goType
+		if g.named[goType] != nil && reaches(holds, g.unalias(goType), field.owner, map[string]bool{}) {
+			goType = "*" + goType
+		}
+
+		replacements = append(replacements, holdMark(index), goType)
+	}
+
+	source := strings.NewReplacer(replacements...).Replace(body.String())
+	body.Reset()
+	body.WriteString(source)
+}
+
+// unalias follows `type A = B` aliases to the type they name.
+func (g *generator) unalias(goType string) string {
+	seen := map[string]bool{}
+	for target, ok := g.aliasTargets[goType]; ok && !seen[goType]; target, ok = g.aliasTargets[goType] {
+		seen[goType] = true
+		goType = target
+	}
+
+	return goType
+}
+
+// reaches reports whether struct from holds struct target by value, itself or through the structs it holds.
+func reaches(holds map[string][]string, from, target string, seen map[string]bool) bool {
+	if from == target {
+		return true
+	}
+
+	if seen[from] {
+		return false
+	}
+
+	seen[from] = true
+
+	return slices.ContainsFunc(holds[from], func(next string) bool {
+		return reaches(holds, next, target, seen)
+	})
+}
+
 func joinPrefixed(items []string) string {
 	if len(items) == 0 {
 		return ""
@@ -671,7 +760,7 @@ func (g *generator) declareTuple(name string, doc *model.Doc, typ *model.Type) {
 
 	for i, element := range typ.Elements {
 		fieldName := fmt.Sprintf("Item%d", i)
-		fields[i] = g.fieldOf(fieldName, "", element.Type, element.Optional, name+fieldName)
+		fields[i] = g.fieldOf(name, fieldName, "", element.Type, element.Optional)
 
 		if !element.Optional {
 			required = i + 1

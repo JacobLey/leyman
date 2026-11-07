@@ -445,6 +445,32 @@ func TestNamedTypes(t *testing.T) {
 	expectFields(t, fields(t, pkg, "SchemaEmpty"), map[string]string{})
 }
 
+func TestRecursiveFields(t *testing.T) {
+	t.Parallel()
+
+	pkg, _ := compile(t, []convert.NamedType{
+		named("Schema", object(
+			prop("self", ref("Schema"), false), prop("pair", ref("Pair"), false),
+			prop("nested", object(prop("back", ref("Schema"), false)), false), prop("leaf", ref("Leaf"), false),
+			prop("alias", ref("SchemaAlias"), false), prop("items", model.Array(ref("Schema")), false),
+		)),
+		named("Pair", model.Tuple([]model.Element{element(ref("Schema"), false)}, nil)),
+		named("Leaf", object(prop("n", model.NumberType, false))),
+		named("SchemaAlias", ref("Schema")),
+		named("A", object(prop("b", ref("B"), false), prop("leaf", ref("Leaf"), false))),
+		named("B", object(prop("a", ref("A"), false))),
+	})
+
+	expectFields(t, fields(t, pkg, "Schema"), map[string]string{
+		"Self": "*Schema", "Pair": "*Pair", "Nested": "SchemaNested", "Leaf": "Leaf", "Alias": "*SchemaAlias",
+		"Items": "[]Schema",
+	})
+	expectFields(t, fields(t, pkg, "SchemaNested"), map[string]string{"Back": "*Schema"})
+	expectFields(t, fields(t, pkg, "Pair"), map[string]string{"Item0": "*Schema"})
+	expectFields(t, fields(t, pkg, "A"), map[string]string{"B": "*B", "Leaf": "Leaf"})
+	expectFields(t, fields(t, pkg, "B"), map[string]string{"A": "*A"})
+}
+
 func TestUnionConstants(t *testing.T) {
 	t.Parallel()
 
