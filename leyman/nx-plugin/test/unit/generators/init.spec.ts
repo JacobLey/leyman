@@ -1,5 +1,6 @@
 import type { Tree } from '@nx/devkit';
-import { readFile } from 'node:fs/promises';
+import { lstat, mkdir, mkdtemp, readFile, readlink, rm } from 'node:fs/promises';
+import Os from 'node:os';
 import Path from 'node:path';
 import { readJson, readNxJson, updateNxJson, writeJson } from '@nx/devkit';
 import { createTreeWithEmptyWorkspace } from '@nx/devkit/testing';
@@ -73,9 +74,6 @@ suite('initGenerator', () => {
         expect(read(tree, '.gitignore')).to.equal(
             'node_modules\ndist\ndist-test\n/.coverage\n/.package-surface\n/.nx/cache\n/.nx/workspace-data\n'
         );
-        expect(read(tree, '.claude/skills/principles/SKILL.md')).to.include(
-            'https://jacobley.github.io/leyman/framework/principles'
-        );
     });
 
     withTree.test('Leaves alone what is already set', async ({ tree }) => {
@@ -93,7 +91,6 @@ suite('initGenerator', () => {
             'pnpm-workspace.yaml',
             `${catalogYaml}allowBuilds:\n  nx: true\ninjectWorkspacePackages: false`
         );
-        tree.write('.claude/skills/principles/SKILL.md', 'Own');
         // Without a final newline
         tree.write('.gitignore', 'node_modules\ndist\ndist-test\n/.coverage\n/.nx/cache');
 
@@ -112,7 +109,6 @@ suite('initGenerator', () => {
         expect(read(tree, 'pnpm-workspace.yaml')).to.equal(
             `${catalogYaml}allowBuilds:\n  nx: true\n  '@swc/core': false\ninjectWorkspacePackages: false\n# Otherwise pnpm symlinks to the source again whenever peers allow it\ndedupeInjectedDeps: false\n`
         );
-        expect(read(tree, '.claude/skills/principles/SKILL.md')).to.equal('Own');
         expect(read(tree, '.gitignore')).to.equal(
             'node_modules\ndist\ndist-test\n/.coverage\n/.nx/cache\n/.package-surface\n/.nx/workspace-data\n'
         );
@@ -141,7 +137,13 @@ suite('initGenerator', () => {
                 'node_modules\ndist\ndist-test\n/.coverage\n/.package-surface\n/.nx/cache\n/.nx/workspace-data\n';
             tree.write('.gitignore', ignored);
 
-            await initGenerator(tree, { lifecycle: false, skill: false, skipInstall: true });
+            const task = await initGenerator(tree, {
+                lifecycle: false,
+                skill: false,
+                skipInstall: true,
+            });
+
+            expect(task).to.equal(undefined);
 
             expect(readNxJson(tree)!.plugins).to.deep.equal(['@leyman/nx-plugin']);
             const { devDependencies } = readJson<RootPackageJson>(tree, 'package.json');
@@ -149,7 +151,6 @@ suite('initGenerator', () => {
             expect(devDependencies).to.include({ '@nx/js': '^24.0.0' });
             expect(devDependencies).to.not.have.property('nx-lifecycle');
             expect(tree.exists('pnpm-workspace.yaml')).to.equal(false);
-            expect(tree.exists('.claude')).to.equal(false);
             // Ignores everything already
             expect(read(tree, '.gitignore')).to.equal(ignored);
         }
@@ -246,5 +247,45 @@ suite('initGenerator', () => {
         );
         expect(bound).to.have.length.greaterThan(0);
         expect(lifecycle.bindings).to.include(Object.fromEntries(bound));
+    });
+
+    suite('Skill links', () => {
+        const withRoot = withTree.beforeEach(async ({ tree }) => {
+            const root = await mkdtemp(Path.join(Os.tmpdir(), 'nx-plugin-init-'));
+            // The links are made on disk, under the tree's root
+            Object.defineProperty(tree, 'root', { value: root });
+            return { root };
+        });
+        withRoot.afterEach(async ({ root }) => {
+            await rm(root, { recursive: true, force: true });
+        });
+
+        withRoot.test(
+            'Links the principles skill once the tree is written',
+            async ({ tree, root }) => {
+                const task = await initGenerator(tree, { skipInstall: true });
+                await task!();
+
+                expect(await readlink(Path.join(root, '.agents/skills/principles'))).to.equal(
+                    '../../node_modules/@leyman/configs/skills/principles'
+                );
+                expect(await readlink(Path.join(root, '.claude/skills'))).to.equal(
+                    '../.agents/skills'
+                );
+            }
+        );
+
+        withRoot.test('Leaves alone what is already there', async ({ tree, root }) => {
+            await mkdir(Path.join(root, '.claude/skills/own'), { recursive: true });
+
+            const task = await initGenerator(tree, { skipInstall: true });
+            await task!();
+
+            const claude = await lstat(Path.join(root, '.claude/skills'));
+            expect(claude.isDirectory()).to.equal(true);
+            expect(await readlink(Path.join(root, '.agents/skills/principles'))).to.equal(
+                '../../node_modules/@leyman/configs/skills/principles'
+            );
+        });
     });
 });

@@ -13,7 +13,7 @@
     "skill": {
       "type": "boolean",
       "default": true,
-      "description": "Write a .claude/skills/principles/SKILL.md pointing coding agents at the principles behind the setup"
+      "description": "Link the principles skill @leyman/configs ships into .agents/skills, and .claude/skills to it"
     },
     "skipInstall": {
       "type": "boolean",

@@ -61,7 +61,6 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | `.agents/skills/linting-formatting` | ESLint, Biome and auto-fix |
 | `.agents/skills/nx-run-tasks` | how to run Nx tasks |
 | `.agents/skills/nx-tasks-reference` | what each target does and when to add it |
-| `.agents/skills/principles` | the principles behind the setup, and why |
 | `.agents/skills/testing` | Mocha, mocha-chain, Sinon and c8 |
 | `.agents/skills/typescript` | SWC, tsconfig and ESM |
 | `.agents/skills/updating-dependencies` | how to bump the catalog |
@@ -192,6 +191,7 @@ Generated from the manifest by `node leyman/main/scripts/fork-manifest.mjs rende
 | Path | Why |
 |------|-----|
 | `.agents/skills/framework-audit` | a link to the workspace package's source; a fork links its installed copy with leyman-framework skills |
+| `.agents/skills/principles` | a link to @leyman/configs' source; a fork links its installed copy (nx-plugin init or leyman-framework skills) |
 | `.agents/skills/fork-manifest` | how this repo's classification works; a fork keeps the list of what it took |
 | `.agents/skills/projects` | this repo's table of packages; a fork writes its own |
 | `.github/ISSUE_TEMPLATE` | names this repo's packages and links |

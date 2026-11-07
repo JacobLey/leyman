@@ -142,9 +142,7 @@ Sets the workspace up for the plugin, leaving alone anything already set:
 - `tsconfig.json`, with no files, for Nx's TypeScript sync generator to keep a reference to each package in.
 - `.gitignore`: `node_modules`, `dist`, `dist-test`, and what the targets and Nx write at the root (`.coverage`, `.package-surface`, `.nx/cache` and `.nx/workspace-data`). check-package reads it for the files a package doesn't publish.
 - `pnpm-workspace.yaml`, if there is one: `injectWorkspacePackages: true` and `dedupeInjectedDeps: false`, so dependents get workspace packages as published, which `sync-injected` keeps current, and `allowBuilds` `false` for `nx` and `@swc/core`, whose install scripts pnpm otherwise stops on.
-- `.claude/skills/principles/SKILL.md`, pointing coding agents at the [principles](https://jacobley.github.io/leyman/framework/principles) of the setup. `--skill=false` leaves it out.
-
-Then it installs the dependencies, unless `--skipInstall`.
+  Then it installs the dependencies, unless `--skipInstall`, and links the [principles](https://jacobley.github.io/leyman/framework/principles) skill that `@leyman/configs` ships into `.agents/skills/principles`, and `.claude/skills` to `.agents/skills`, so a coding agent reads the principles of the version installed. A path that already exists is left alone, and `--skill=false` skips both. [`@leyman/framework`](https://github.com/JacobLey/leyman/tree/main/leyman/framework#skills)'s `leyman-framework skills` links the rest of the framework's skills the same way.
 
 ### `package`
 

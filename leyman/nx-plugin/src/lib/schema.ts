@@ -226,7 +226,7 @@ const initGeneratorSchema = objectSchema({
         }),
         skill: booleanSchema({
             description:
-                'Write a .claude/skills/principles/SKILL.md pointing coding agents at the principles behind the setup',
+                'Link the principles skill @leyman/configs ships into .agents/skills, and .claude/skills to it',
             default: true,
         }),
         skipInstall: booleanSchema({

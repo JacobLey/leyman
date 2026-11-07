@@ -1,6 +1,8 @@
 import type { GeneratorCallback, PluginConfiguration, Tree } from '@nx/devkit';
 import type { TargetName } from '../lib/options.js';
-import { installPackagesTask, readJson, readNxJson, writeJson } from '@nx/devkit';
+import { lstat, mkdir, symlink } from 'node:fs/promises';
+import Path from 'node:path';
+import { installPackagesTask, readJson, readNxJson, runTasksInSerial, writeJson } from '@nx/devkit';
 import { parseDocument, stringify } from 'yaml';
 import { resolveOptions } from '../lib/options.js';
 import { name as pluginName } from '../lib/plugin.js';
@@ -18,7 +20,8 @@ export interface InitGeneratorOptions {
      */
     readonly lifecycle?: boolean;
     /**
-     * Write a `.claude/skills/principles/SKILL.md` pointing coding agents at the principles behind the setup.
+     * Link the principles skill `@leyman/configs` ships into `.agents/skills/principles`, and `.claude/skills` to
+     * `.agents/skills`, so coding agents read the principles of the version installed.
      *
      * @default true
      */
@@ -82,15 +85,30 @@ const rootDependencies = [
  */
 const skippedBuilds = ['@swc/core', 'nx'] as const;
 
-const principlesSkill = `---
-name: principles
-description: The principles behind this setup (the bar for packages, versioning, support floors, dependencies, lint, generated content, patches, and how work is committed and verified), and why
----
+/**
+ * The principles skill `@leyman/configs` ships, linked where coding agents read skills: `.agents/skills` for most,
+ * `.claude/skills` (a link to it) for Claude Code.
+ */
+const skillLinks = [
+    {
+        path: '.agents/skills/principles',
+        target: '../../node_modules/@leyman/configs/skills/principles',
+    },
+    { path: '.claude/skills', target: '../.agents/skills' },
+] as const;
 
-# Principles
-
-Read the [principles](https://jacobley.github.io/leyman/framework/principles) of the setup this workspace follows before a design, a review or an audit, and decide anything no other skill covers by them.
-`;
+const linkSkills = async (root: string): Promise<void> => {
+    for (const { path, target } of skillLinks) {
+        const absolute = Path.join(root, path);
+        try {
+            // Anything already there is the workspace's own: a directory of skills, or a link it chose
+            await lstat(absolute);
+        } catch {
+            await mkdir(Path.dirname(absolute), { recursive: true });
+            await symlink(target, absolute);
+        }
+    }
+};
 
 const pluginOf = (entry: PluginConfiguration): string =>
     typeof entry === 'string' ? entry : entry.plugin;
@@ -246,11 +264,12 @@ const initGenerator = async (
     }
     configurePnpm(tree);
     ignoreOutputs(tree);
-    const skillPath = '.claude/skills/principles/SKILL.md';
-    if (skill && !tree.exists(skillPath)) {
-        tree.write(skillPath, principlesSkill);
-    }
 
-    return options.skipInstall === true ? undefined : installPackagesTask.bind(undefined, tree);
+    const tasks: GeneratorCallback[] = [
+        ...(options.skipInstall === true ? [] : [installPackagesTask.bind(undefined, tree)]),
+        // Nx's tree can't hold a link, so the links are made on disk once it is written
+        ...(skill ? [linkSkills.bind(undefined, tree.root)] : []),
+    ];
+    return tasks.length === 0 ? undefined : runTasksInSerial(...tasks);
 };
 export default initGenerator;

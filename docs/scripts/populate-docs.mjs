@@ -1,7 +1,8 @@
 /**
  * Generates the package lists that docs repeat: the README's package and demo tables, the
  * projects skill's tables, the docs-site skill's tables, `docs/README.md`'s list of documented
- * packages, and the paths of the docs-site rule.
+ * packages, and the paths of the docs-site rule. Also the principles skill `@leyman/configs`
+ * ships, from the principles page.
  *
  * Data comes from each project's `package.json` (or `project.json` `metadata.description` for a
  * project with none) and from `docs/.vitepress/projects.ts`. Prose lives in manual sections, kept
@@ -354,12 +355,29 @@ const excludedHere = filePath =>
             !existsSync(path.join(root, excluded))
     );
 
+/**
+ * The principles page as a skill, so a repository reads the principles of the version it installs.
+ */
+const principlesSkill = () => {
+    const page = readFileSync(path.join(root, 'docs/src/framework/principles.md'), 'utf8');
+    const body = page.replace(/^---\n.*?\n---\n\n/sv, '');
+    return `---
+name: principles
+description: The principles behind the leyman framework (the bar for packages, versioning, support floors, dependencies, lint, generated content, patches, and how work is committed and verified), and why. Read before a design, a review or an audit, and decide by them anything no other skill covers
+---
+
+${header()}
+
+${body}`;
+};
+
 const files = [
     { filePath: 'README.md', content: readme },
     { filePath: 'docs/README.md', content: docsReadme },
     { filePath: '.agents/skills/projects/SKILL.md', content: projectsSkill },
     { filePath: '.agents/skills/docs-site/SKILL.md', content: docsSiteSkill },
     { filePath: '.claude/rules/docs-site-sync.md', content: docsSiteRule },
+    { filePath: 'leyman/configs/skills/principles/SKILL.md', content: principlesSkill },
 ];
 const results = await populateFiles(
     files

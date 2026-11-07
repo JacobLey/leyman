@@ -40,7 +40,7 @@ Focused guides for common workflows in this repo:
 
 | Topic | Skill |
 |-------|-------|
-| The principles behind the setup, and why (the package bar, versions, support floors, dependencies, lint, generated content, workarounds, committing and verifying) | [`.agents/skills/principles/SKILL.md`](./.agents/skills/principles/SKILL.md) |
+| The principles behind the setup, and why (the package bar, versions, support floors, dependencies, lint, generated content, workarounds, committing and verifying) | [`leyman/configs/skills/principles/SKILL.md`](./leyman/configs/skills/principles/SKILL.md), generated from the [principles page](./docs/src/framework/principles.md) and linked into `.agents/skills` |
 | Auditing a repository against the principles, for what a script can't check | [`leyman/framework/skills/framework-audit/SKILL.md`](./leyman/framework/skills/framework-audit/SKILL.md), linked into `.agents/skills` |
 | Coding patterns and conventions (package design, types, DI, docs) | [`.agents/skills/coding-patterns/SKILL.md`](./.agents/skills/coding-patterns/SKILL.md) |
 

@@ -30,6 +30,7 @@
   "files": [
     "biome.base.json",
     "c8rc.json",
+    "skills",
     "swcrc.jsonc",
     "tsconfig.build.json",
     "tsconfig.node-22.json",
