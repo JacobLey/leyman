@@ -1,8 +1,9 @@
 // Checks a released Go module (one with a VERSION file), run from its directory:
 // - VERSION is a plain `X.Y.Z`, and the first `## ` heading of CHANGELOG.md names it.
 // - Its major version fits the module path (v0 and v1 have no `/vN` suffix).
-// - Every workspace module it requires (a `replace` to a local directory) is released, at the version its VERSION
-//   names. Consumers ignore `replace` and fetch the required version, so it must be the one tested here.
+// - Every workspace module it requires (a `replace` to a local directory, holding the module it replaces) is released,
+//   at the version its VERSION names. Consumers ignore `replace` and fetch the required version, so it must be the one
+//   tested here.
 //
 // CI tags `<directory>/v<VERSION>` for each released module once it reaches main, see the dagger-ci skill.
 
@@ -16,12 +17,24 @@ const errors = [];
  * The version a module's VERSION file names, as written.
  *
  * @param directory - a module's directory
- * @returns the file's content, or null when it has none
+ * @returns the file's content, or undefined when it has none
  */
 const readVersion = directory => {
     const file = path.join(directory, 'VERSION');
-    return existsSync(file) ? readFileSync(file, 'utf8') : null;
+    return existsSync(file) ? readFileSync(file, 'utf8') : undefined;
 };
+
+/**
+ * A go.mod, as `go mod edit -json` reads it.
+ *
+ * @param file - path of the go.mod file to read
+ * @returns its fields
+ */
+const readGoMod = file =>
+    JSON.parse(
+        // eslint-disable-next-line sonarjs/no-os-command-from-path -- the toolchain's own Go, in a script run by Nx
+        execFileSync('go', ['mod', 'edit', '-json', file], { encoding: 'utf8' })
+    );
 
 /**
  * Checks the module's go.mod against its version, and its workspace dependencies' VERSION files.
@@ -29,10 +42,7 @@ const readVersion = directory => {
  * @param released - the module's version
  */
 const checkGoMod = released => {
-    const goMod = JSON.parse(
-        // eslint-disable-next-line sonarjs/no-os-command-from-path -- the toolchain's own Go, in a script run by Nx
-        execFileSync('go', ['mod', 'edit', '-json'], { encoding: 'utf8' })
-    );
+    const goMod = readGoMod('go.mod');
 
     const [major] = released.split('.', 1);
     const suffix = /\/v(?<major>\d+)$/v.exec(goMod.Module.Path)?.groups?.major ?? '1';
@@ -47,19 +57,23 @@ const checkGoMod = released => {
             errors.push(`${Old.Path} is replaced with a module, which consumers would not see`);
             continue;
         }
+        const local = readGoMod(path.join(New.Path, 'go.mod')).Module.Path;
         const dependency = readVersion(New.Path)?.trim();
-        if (dependency === undefined) {
+        const requiredVersion = required.get(Old.Path);
+        if (local !== Old.Path) {
+            errors.push(`${Old.Path} is replaced with ${New.Path}, which holds ${local}`);
+        } else if (dependency === undefined) {
             errors.push(`${Old.Path} (${New.Path}) is not released, so consumers can't fetch it`);
-        } else if (required.get(Old.Path) !== `v${dependency}`) {
+        } else if (requiredVersion !== `v${dependency}`) {
             errors.push(
-                `${Old.Path} must be required at v${dependency} (its VERSION), got ${required.get(Old.Path)}`
+                `${Old.Path} must be required at v${dependency} (its VERSION), got ${requiredVersion ?? 'not required'}`
             );
         }
     }
 };
 
 const version = readVersion('.');
-if (version === null) {
+if (version === undefined) {
     errors.push('VERSION is missing');
 } else if (/^\d+\.\d+\.\d+\n$/v.test(version)) {
     const released = version.trim();

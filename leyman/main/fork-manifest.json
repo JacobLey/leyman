@@ -277,6 +277,11 @@
       "why": "the check-go-release target"
     },
     {
+      "path": "scripts/go-release.sh",
+      "when": "go",
+      "why": "CI's check and tagging of released Go modules"
+    },
+    {
       "path": "scripts/nx/rust-coverage-report.sh",
       "when": "rust",
       "why": "the rust-coverage-report target"
